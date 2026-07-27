@@ -13,6 +13,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 // SharedListPermission is defined in unified_shopping_list.dart
@@ -524,6 +525,39 @@ void main() {
         expect(daysAgo.activitySummary, contains('Johan'));
         expect(daysAgo.activitySummary, contains('dagar sedan'));
       });
+
+      /// BUT-1697: the writers stamp `lastActivityByUserId` and
+      /// `lastActivityByDisplayName` as ONE fact, and write the name EMPTY when
+      /// the profile has none — precisely so `copyWith`'s `??` cannot keep the
+      /// previous editor's name while the id moves on. The banner must then go
+      /// quiet rather than render a sentence with a hole where the name was.
+      ///
+      /// Without this the empty-name branch is deletable-green: the sibling
+      /// repository test only asserts the WRONG name is absent, which an
+      /// "' ändrade nyss'" render satisfies just as well.
+      test(
+        'should report no activity when the stamped name is empty',
+        () {
+          final noName = testList.copyWith(
+            lastActivityAt: DateTime.now(),
+            lastActivityByDisplayName: '',
+          );
+
+          expect(
+            noName.activitySummary,
+            AppLocale.current.shoppingListNoActivity,
+          );
+
+          // Positive control on the same fixture: only the name differs, so the
+          // quiet result above cannot be coming from the timestamp branch.
+          final named = noName.copyWith(lastActivityByDisplayName: 'Anna');
+          expect(named.activitySummary, contains('Anna'));
+          expect(
+            named.activitySummary,
+            isNot(AppLocale.current.shoppingListNoActivity),
+          );
+        },
+      );
 
       test('should detect recent activity', () {
         // Recent (within 24 hours)

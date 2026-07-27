@@ -94,6 +94,10 @@ class _Harness {
   final UnifiedShoppingList? cached;
   final String uid;
   final String displayName;
+
+  /// The name `UserService.currentDisplayName` would resolve to. Null models
+  /// an account whose profile name has never been set.
+  final String? profileName;
   final bool requiredFieldsThrows;
 
   late final FakeAuthRepository auth;
@@ -104,6 +108,7 @@ class _Harness {
     required this.cached,
     this.uid = _alice,
     this.displayName = 'Alice Andersson',
+    this.profileName = 'Alice Andersson',
     this.requiredFieldsThrows = false,
   }) {
     auth = FakeAuthRepository()
@@ -162,6 +167,11 @@ class _Harness {
           },
       validateRequiredFields: _validateRequiredFields,
       logPermissionCheck: _logPermissionCheck,
+      // BUT-1697: the PROFILE display name, injected. `profileName` is
+      // deliberately settable to null so a test can prove that an account
+      // with no resolvable name stamps empty rather than inheriting the
+      // previous editor's.
+      resolveDisplayName: () => profileName,
     );
   }
 
@@ -393,6 +403,7 @@ void main() {
         cached: _cachedList(),
         uid: _bob,
         displayName: 'Bob Bergman',
+        profileName: 'Bob Bergman',
       );
       await h.seedLive(_liveList());
 
@@ -406,6 +417,83 @@ void main() {
       expect(stored.lastActivityByDisplayName, 'Bob Bergman');
       expect(stored.items.firstWhere((i) => i.id == 'ägg').bought, isTrue);
       expect(stored.items.firstWhere((i) => i.id == 'mjölk').bought, isTrue);
+    });
+
+    // BUT-1697: the id/name pair is ONE fact. `copyWith` falls back to the
+    // stored value on null, so writing a null name used to advance the id to
+    // the new editor while KEEPING the previous editor's name — the shared
+    // list then told the household Bob changed what Alice changed. An
+    // unresolvable name must blank the field, never inherit one.
+    test(
+      'an editor with no resolvable name blanks the name instead of '
+      'inheriting the previous editor’s',
+      () async {
+        final h = _Harness(
+          cached: _cachedList(),
+          uid: _bob,
+          displayName: 'Bob Bergman',
+          profileName: null,
+        );
+        await h.seedLive(_liveList());
+
+        await h.module.updateItem(_listId, _item('ägg', bought: true));
+
+        final stored = await h.storedList();
+        expect(stored.lastActivityByUserId, _bob);
+        expect(stored.lastActivityByDisplayName, isEmpty);
+        // The banner must go quiet rather than name the wrong person.
+        expect(stored.activitySummary, isNot(contains('Cecilia')));
+      },
+    );
+
+    // BUT-1697: the name comes from the PROFILE (what
+    // on-profile-updated.ts propagates), not the Auth handle — otherwise the
+    // client and the Cloud Function write two different strings into the same
+    // field and the CF's backfill silently overwrites the client's.
+    test('the stamped name is the profile name, not the auth handle', () async {
+      final h = _Harness(
+        cached: _cachedList(),
+        uid: _bob,
+        displayName: 'stale-auth-handle',
+        profileName: 'Bob Bergman',
+      );
+      await h.seedLive(_liveList());
+
+      await h.module.addItem(_listId, _item('kaffe'));
+
+      expect((await h.storedList()).lastActivityByDisplayName, 'Bob Bergman');
+    });
+
+    // BUT-1697: "avmarkera alla" used to fire one transaction PER item at the
+    // same document; 30 of them contend and roll each other back. One call,
+    // one mutation.
+    test(
+      'updateItemsBatch applies every change in a single mutation',
+      () async {
+        final h = _Harness(cached: _cachedList());
+        await h.seedLive(_liveList());
+
+        await h.module.updateItemsBatch(_listId, [
+          _item('ägg', bought: false),
+          _item('mjölk', bought: false),
+        ]);
+
+        final stored = await h.storedList();
+        expect(h.mutateCalls, 1);
+        expect(stored.items.map((i) => i.id), ['ägg', 'mjölk', 'bröd']);
+        expect(stored.items.every((i) => !i.bought), isTrue);
+      },
+    );
+
+    // A row another member deleted while the batch was in flight must not be
+    // resurrected by the update.
+    test('updateItemsBatch ignores ids no longer on the live list', () async {
+      final h = _Harness(cached: _cachedList());
+      await h.seedLive(_liveList());
+
+      await h.module.updateItemsBatch(_listId, [_item('raderad')]);
+
+      expect((await h.storedItemIds()), ['ägg', 'mjölk', 'bröd']);
     });
 
     test('logs a granted audit entry naming the operation', () async {
@@ -476,6 +564,106 @@ void main() {
 
       expect(await h.personalItemIds(), ['smör']);
       expect(h.mutateCalls, 0);
+    });
+
+    // The personal leg drops ids that no longer exist rather than letting one
+    // `not-found` fail the whole chunk — but when NOTHING survives the filter it
+    // must not return normally: the caller shows a success message on the
+    // strength of that. Both of these are unreachable from the collaborative
+    // fixtures above, which take the transactional leg.
+    test('updateItemsBatch throws when every submitted row is gone', () async {
+      final h = _Harness(cached: _personalList());
+      await h.module.addItem(_listId, _item('kvar'));
+      // The seeding `addItem` logs its own granted row; only what the batch
+      // itself logs is under test here.
+      h.permissionCalls.clear();
+      h.ownershipCalls.clear();
+
+      await expectLater(
+        () => h.module.updateItemsBatch(_listId, [
+          _item('borta-a', bought: false),
+          _item('borta-b', bought: false),
+        ]),
+        throwsA(isA<ResourceNotFoundException>()),
+      );
+
+      // The anti-resurrection assertion: a `set(merge: true)` "repair" would
+      // create the missing rows instead of refusing.
+      expect(await h.personalItemIds(), ['kvar']);
+      expect(h.mutateCalls, 0);
+      // A granted audit row for a write that never happened is a false
+      // attestation, so the log must stay empty on this path.
+      expect(h.permissionCalls, isEmpty);
+      // Positive control: the code DID reach the personal branch.
+      expect(h.ownershipCalls.single.resourceOwnerId, _alice);
+    });
+
+    test('updateItemsBatch writes the survivors and drops the rest', () async {
+      final h = _Harness(cached: _personalList());
+      await h.module.addItemsBatch(_listId, [
+        _item('a', bought: true),
+        _item('b', bought: true),
+      ]);
+
+      await h.module.updateItemsBatch(_listId, [
+        _item('a', bought: false),
+        _item('b', bought: false),
+        _item('borta', bought: false),
+      ]);
+
+      expect(await h.personalItemIds(), ['a', 'b']);
+      for (final id in ['a', 'b']) {
+        final doc = await h.firestore
+            .collection(FirestoreCollections.users)
+            .doc(_alice)
+            .collection(FirestoreCollections.unifiedShoppingLists)
+            .doc(_listId)
+            .collection(FirestoreCollections.items)
+            .doc(id)
+            .get();
+        expect(doc.data()!['bought'], isFalse, reason: id);
+      }
+      expect(h.mutateCalls, 0);
+    });
+
+    // BUT-1697: the PERSONAL leg of the "avmarkera alla" write. The two new
+    // updateItemsBatch tests above both drive a collaborative list, so this
+    // whole branch — ownership check, subcollection target, chunking — shipped
+    // unexercised. An off-by-one dropping the trailing partial chunk leaves
+    // rows still ticked after the user asked for all of them to be cleared,
+    // which is the half-unchecked list the ticket set out to remove.
+    test('updateItemsBatch writes through past the batch chunk size', () async {
+      final h = _Harness(cached: _personalList());
+      final ids = List.generate(
+        kFirestoreBatchSafeChunkSize + 1,
+        (i) => 'vara-$i',
+      );
+      expect(ids.length, greaterThan(kFirestoreBatchSafeChunkSize));
+
+      final itemsRef = h.firestore
+          .collection(FirestoreCollections.users)
+          .doc(_alice)
+          .collection(FirestoreCollections.unifiedShoppingLists)
+          .doc(_listId)
+          .collection(FirestoreCollections.items);
+      for (final id in ids) {
+        await itemsRef.doc(id).set(_item(id, bought: true).toFirestore());
+      }
+
+      await h.module.updateItemsBatch(_listId, [
+        for (final id in ids) _item(id),
+      ]);
+
+      // Named explicitly: a dropped trailing chunk hides inside an
+      // "every doc" assertion if the seeding loop also stopped early.
+      expect((await itemsRef.doc(ids.last).get()).data()!['bought'], isFalse);
+      final stored = await itemsRef.get();
+      expect(stored.docs, hasLength(ids.length));
+      expect(stored.docs.every((d) => d.data()['bought'] == false), isTrue);
+      // The personal leg must never reach the collaborative transaction, and
+      // it must still gate on ownership.
+      expect(h.mutateCalls, 0);
+      expect(h.ownershipCalls.single.resourceOwnerId, _alice);
     });
 
     // Firestore caps a batch at 500 writes, so the delete loop chunks. An

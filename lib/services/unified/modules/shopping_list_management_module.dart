@@ -37,7 +37,9 @@ class ShoppingListManagementModule {
       final newList = UnifiedShoppingList(
         name: name,
         ownerId: getCurrentUserId().orEmpty(),
-        ownerDisplayName: getCurrentUserDisplayName() ?? 'Du',
+        // Stamp empty, never a placeholder: this string is persisted, and
+        // every display site already guards `isNotEmpty` (BUT-1697).
+        ownerDisplayName: getCurrentUserDisplayName().orEmpty(),
         items: (items ?? [])
             .map(
               (item) => item is UnifiedShoppingItem
@@ -76,9 +78,13 @@ class ShoppingListManagementModule {
   }) async {
     try {
       final currentUserId = getCurrentUserId();
+      // Deliberately NOT part of the authentication guard: the display name is
+      // resolved from the user PROFILE, which may not have loaded yet, and
+      // refusing to create the list over a missing label would be a worse
+      // failure than an unnamed owner (BUT-1697).
       final currentUserDisplayName = getCurrentUserDisplayName();
 
-      if (currentUserId == null || currentUserDisplayName == null) {
+      if (currentUserId == null) {
         AppLogger.error(
           'Cannot create collaborative list: User not authenticated',
         );
@@ -105,7 +111,7 @@ class ShoppingListManagementModule {
       final newList = UnifiedShoppingList(
         name: name,
         ownerId: currentUserId,
-        ownerDisplayName: currentUserDisplayName,
+        ownerDisplayName: currentUserDisplayName.orEmpty(),
         description: description,
         items: items ?? [],
         type: ListType.collaborative,
@@ -113,7 +119,7 @@ class ShoppingListManagementModule {
         allowGuestEditing: allowGuestEditing,
         autoRemoveCompleted: autoRemoveCompleted,
         lastActivityByUserId: currentUserId,
-        lastActivityByDisplayName: currentUserDisplayName,
+        lastActivityByDisplayName: currentUserDisplayName.orEmpty(),
       );
 
       // Save to Firebase repository
@@ -230,8 +236,15 @@ class ShoppingListManagementModule {
       // Delete from Firebase
       await repository.delete(listId);
 
-      // Remove from local state
-      lists.removeAt(listIndex);
+      // Re-find after the await: the collaborative snapshot handler rebuilds the
+      // same `lists` instance during the round-trip, so the index captured
+      // above can point at a different list by now. A stale `removeAt` would drop a list
+      // that still exists and leave the deleted one on screen — or throw
+      // RangeError if the collaborative set shrank.
+      final deletedIndex = lists.indexWhere((list) => list.id == listId);
+      if (deletedIndex >= 0) {
+        lists.removeAt(deletedIndex);
+      }
 
       // Reset active list if we deleted it
       if (getActiveListId() == listId) {
@@ -261,8 +274,14 @@ class ShoppingListManagementModule {
       // Update in Firebase
       await repository.update(oldList.copyWith(name: newName));
 
-      // Update local state
-      lists[listIndex] = oldList.copyWith(name: newName);
+      // Re-find after the await: the collaborative snapshot handler rebuilds the
+      // same `lists` instance during the round-trip, so the index captured
+      // above can point at a different list by now. Writing `oldList` into a
+      // drifted slot would overwrite another list with a copy of this one.
+      final renamedIndex = lists.indexWhere((list) => list.id == listId);
+      if (renamedIndex >= 0) {
+        lists[renamedIndex] = lists[renamedIndex].copyWith(name: newName);
+      }
       notifyListeners();
 
       return true;

@@ -1,16 +1,9 @@
 # firebase-backend-security — accumulated knowledge
 
-This file is the agent's long-term memory across sessions. The agent **MUST**
-read it as Step 0 of every security/backend task and **APPEND** to it when
-it discovers a new pattern, settles a GDPR question, or is corrected by the
-user.
-
-## How to update this file
-
-This file holds **principles** and is meant to be rewritten — see "How new learning enters
-this file" below for the full contract. In short: edit the bullet a finding extends; the
-dated raw entry goes to `firebase-backend-security.knowledge.archive.md`, which is the
-append-only audit trail.
+Step-0 read for every security/backend task. **Principles only** — edit the bullet a finding
+extends; the dated raw entry goes to the append-only
+`firebase-backend-security.knowledge.archive.md`. Full contract: "How new learning enters this
+file", below.
 
 ---
 
@@ -152,6 +145,17 @@ callers) vs `ShoppingItemManagementModule → ShoppingItemOperationsModule → u
 caller before approval** — a fix on the dead twin reviews as green and changes nothing. Name the
 view/VM file that reaches the edited method, or file it as unreached.
 
+**Its twin: TWO STORAGE SHAPES for one field.** Personal shopping lists keep items BOTH as an
+`items` array inside the parent doc (`toFirestore()` emits it) AND as an `items` subcollection
+(what `addItem`/`addItemsBatch` write and what `readAll` reads back, overwriting the array via
+`copyWith(items:)`). Any write that fills only the array is invisible after the next read:
+`createPersonalList(name, items: …)` → `super.create()` writes the array only, so
+convert-collaborative-to-personal copies the items, deletes the source list, and the copy reads
+empty on the next load (in-memory cache hides it until restart). When reviewing a
+collection with a nested child collection, ask which shape each writer and each reader uses —
+and note that the GDPR export is only complete because it dumps BOTH (parent doc data + child
+docs), which makes it a superset of what the app itself can read.
+
 ### Firestore rules & permission patterns
 - Full-doc `set()` collections: create pins `request.resource.data.userId==auth.uid`; update
   pins BOTH `resource.data.userId` AND `request.resource.data.userId`; delete pins
@@ -183,7 +187,16 @@ view/VM file that reaches the edited method, or file it as unreached.
   fixed update, then mutate, and `createCollaborativeList` is STILL unguarded — a finding that says
   "fix both" without naming the third method never reaches it). A guard added to one sibling is also
   a gap opened in the other: once `update` blocks privilege escalation, `mutate` on the same
-  collection and the same public interface becomes the soft spot. And a client check that is LOOSER
+  collection and the same public interface becomes the soft spot. **When the sibling finally gets
+  its guard, check EVERY CONJUNCT of the rule, not just the identity one**: BUT-1696 added
+  `_requireSelfOwnedCreate` (ownerId==uid) to `createCollaborativeList`, but the create rule is a
+  triple — `ownerId==uid` AND `uid in memberPermissions` AND
+  `hasRequiredFields(['ownerId','memberPermissions','items','createdAt'])` — so a create missing
+  the membership key still logs `granted:true` and is still refused by the server. Half a mirror
+  is still a forged grant. (Status 2026-07-26: the `ownerId==uid` half landed and is tested;
+  `items`/`createdAt` are unconditional in `toFirestore()` and the one live caller
+  (`ShoppingListManagementModule.createCollaborativeList`) always seats the owner as `admin`, so
+  the membership conjunct is now an audit-only residual — downgrade it, don't drop it.) And a client check that is LOOSER
   than the matching rule
   (repo accepts any `memberPermissions` key; rule demands `edit`/`admin`) still logs
   `granted:true` for a write the server then denies — mirror the rule's predicate exactly.
@@ -242,19 +255,70 @@ view/VM file that reaches the edited method, or file it as unreached.
   discriminator field is ABSENT from both buckets — every writer must set it unconditionally.
 
 ### GDPR: deletion, export, and the recurring "wrong probe shape" bug
-- **Most-repeated bug class: a cascade/probe/export query targets the wrong field or shape for
-  the collection** — seen 3+ times independently: `where('userId'==uid)` against a collection
+- **Most-repeated bug class: a cascade/probe/export query targets the wrong field, shape or
+  COLLECTION NAME** — seen 4+ times independently: `where('userId'==uid)` against a collection
   keyed `ownerId` (matches zero, "deletion" no-ops); an OR-owned collection
   (`senderId==uid OR targetUserId==uid`) folded into one probe instead of a per-field loop; a
-  subcollection with no `userId` field probed by equality instead of existence. **Always open
-  the actual `.where()` clause and confirm it matches the collection's real ownership
-  field/shape — a function existing with the right name proves nothing.**
+  subcollection with no `userId` field probed by equality instead of existence; and **a path
+  nothing writes** — Butlery has TWO constants for the same concept (`unifiedShoppingLists =
+  'unified_shopping_lists'`, what the repo writes via `collectionName` + `getUserCollection`, vs
+  `userShoppingLists = 'shopping_lists'`, what BOTH the deletion cascade and the Art-15 export
+  read), so personal shopping lists had never been erased or exported (CLOSED 2026-07-26/BUT-1697:
+  cascade, export and the residual probe all moved to `unified_shopping_lists`, legacy name still
+  swept, items subcollection deleted before its parent). **Always open the actual
+  `.where()`/`.collection()` clause and confirm it matches the collection the repository really
+  writes — a function existing with the right name proves nothing.** Cheapest independent check:
+  grep `firestore.rules` for the path. No rule block ⇒ nothing writes there (default-deny), so a
+  cascade or export aimed at it is dead. Same for the `probeResidualData` canary list — a
+  collection missing from it can no-op for months in silence. **The other half of the same
+  shape error is the WRONG NESTING LEVEL**: `deleteUserSubcollections` sweeps
+  `users/{uid}/user_shared_shopping_lists` and `.../user_shared_menus`, but the app writes both
+  as TOP-LEVEL trees `user_shared_shopping_lists/{uid}/received_lists/{id}` — the only shape
+  `firestore.rules` grants — so those inbox rows (carrying `sharedByUserId` +
+  `sharedByDisplayName`) survive erasure, are absent from the export, and are absent from the
+  canary (OPEN, filed 2026-07-26). `users/{uid}/X` vs top-level `X/{uid}/Y` read identically in a
+  grep of the constant; only the `.collection(...).doc(...)` chain and the rules path settle it.
+  **Grep the LITERAL as well as the constant** — the readers that survive a rename are the ones
+  that hard-code the string (`functions/src/analytics/compute-feature-retention.ts` still probes
+  `users/{uid}/shopping_lists`, so its `shopped` retention flag is permanently false), and a
+  doc comment on the legacy constant that enumerates "the only remaining reader" is a claim to
+  re-grep, not evidence — and such an enumeration is systematically blind to ADMIN-SDK readers
+  (`account-deletion-cascade.ts`'s legacy sweep, `admin/reset-user-data.ts`), which hard-code the
+  string, are rules-exempt, and are therefore empty rather than denied. Verified 2026-07-27: for
+  `userShoppingLists` both client/CF readers the comment names are real
+  (`friends_utility_operations.dart:146` root query → catch-all deny `firestore.rules:2526-2528`;
+  `compute-feature-retention.ts:212`), and a denied QUERY surfaces as `permission-denied`, not empty.
+- **Deleting a list/parent doc does NOT delete its subcollections.** `batchDeleteAll(db, docs)`
+  over `users/{uid}/<lists>` leaves every `<listId>/items/*` doc alive and unreferenced. A
+  cascade over any doc that owns a subcollection needs an explicit per-doc child sweep (or
+  `recursiveDelete`) — child sweep STRICT, parent delete best-effort, in that order, or a
+  swallowed chunk failure strands children under a deleted parent that no query can reach again.
+  When the step sweeps SEVERAL name variants of the same collection (live + legacy), the child
+  sweep must cover every variant; Butlery's fixed `deleteShoppingLists` sweeps
+  `unified_shopping_lists/{id}/items` but still bulk-deletes legacy `shopping_lists` parents bare.
 - "Export ⊇ erasure" is a field-PAIR property: export filter and deletion filter must target the
   identical field on the identical collection. Every new user-data collection needs BOTH
   cascades checked in the same review (deletion AND export) — one wired, one forgotten recurs.
 - A pure `users/{uid}/*` subcollection is cheapest to get right: erase = one entry in a generic
   subcollection sweep, export = one whole-doc read of the same subcollection, nothing to
-  keep in sync field-by-field.
+  keep in sync field-by-field. A residual probe that `count()`s the PARENT collection is blind to
+  orphaned SUBCOLLECTION docs — if the child sweep half-fails, the canary reads clean.
+- **A membership MAP KEY is itself a raw identifier, and a scrub that clears the neighbouring
+  name/id fields but leaves the ACL key is incomplete** — it is what the rule reads as write
+  authorization and what the UI derives member counts from. Fix shape (CLOSED for Butlery's shared
+  shopping lists, BUT-1697): `FieldValue.delete()` on the key in the SAME per-doc `update()` as the
+  scrub, so a retry either still finds the key (its own re-entry handle) or finds nothing to do; a
+  sole-member owned doc is DELETED instead, since `ownerId` must stay (nulling it orphans the list
+  for remaining members).
+- **A cascade step that finds its docs by ONE query cannot fix a residual its probe finds by
+  ANOTHER.** The shared-list step iterates `where('memberPermissions.{uid}','!=',null)` while the
+  canary also counts `where('ownerId','==',uid)` sole-member docs — an owned list missing the
+  owner's own key is unreachable by the fix and permanently reported, and `residual_data_detected`
+  forces `success:false`/`gdprCompliant:false`. Keep the probe's query set ⊆ the cascade's. And a
+  "the retry re-discovers everything" comment is only true if a retry exists: Butlery calls
+  `auth.deleteUser` unconditionally after the cascade, so the account is gone and the ONLY retry is
+  a human running `functions/src/admin/reset-user-data.ts` — nothing alerts on the failed run.
+  Prefer strict/loud anyway, but say what the recovery actually is.
 - Cross-user cascade mutations stage their audit-log entry in the SAME batch as the mutation.
 - Denormalized author/sharer PII travels in FIELD GROUPS (`sharedBy*`, `authorName*`,
   `lastActivityBy*`) — tombstoning one field on deletion requires clearing every field sharing
@@ -282,6 +346,13 @@ view/VM file that reaches the edited method, or file it as unreached.
   stay in the result set and get revisited forever without one).
 - Export truncation idiom: fetch `limit+1`, `truncated = fetched.length > limit`, export only
   `take(limit)`. Keying truncation off `length>=limit` falsely flags an exactly-complete export.
+  `ExportPaginationHelper.fetchCapped` + a declared `exportLimits` entry is the correct shape and
+  covers the OUTER cap. **A NESTED per-parent cap has no such helper and is the gap to look for**:
+  `exportPersonalShoppingLists`' `maxItemsPerList` and `exportConversationsAndMessages`'
+  per-conversation cap are enforced with a bare `.limit()`, and only the latter emits a flag. A
+  swallowed child-collection read is the same defect — a `catch` that logs at debug and returns
+  `items: []` makes "read failed" indistinguishable from "no items", so the section must carry an
+  error/truncation marker, not a log line.
 - A roster/keep-set diff that DELETES user data must refuse to run when the keep-set is empty or
   implausibly small — an empty denormalized member list must not read as "everyone left"; guard
   `if (roster.size===0) return docs;` and prefer the authoritative membership list over a
@@ -368,6 +439,49 @@ view/VM file that reaches the edited method, or file it as unreached.
   take the name from the source the rename-propagation CF writes (`userService.currentUserProfile`
   → profile displayName), never `authRepository.currentUser?.displayName` — the CLAUDE.md
   data-source footgun in denormalized form; the two diverge until the user next edits their profile.
+  Butlery's fix stamps `resolveDisplayName() ?? ''` and teaches the model to read empty as
+  "unknown"; note `UserService.currentDisplayName` still FALLS BACK to the Auth handle, which
+  re-opens the divergence on the accounts that have one — read the profile field directly. An
+  injected `resolveDisplayName` seam also means the unit test pins the seam, not the production
+  resolver: assert the wiring separately or the footgun rides back in through the default.
+  Shipped state (BUT-1697): the repository writer stamps `resolveDisplayName() ?? ''` wired to
+  `UserService.currentDisplayName` (profile-first, Auth-fallback — good enough, not exact), and
+  `activitySummary` treats empty as unknown. **The unfixed SIBLING writer is the one to name in
+  the next pass:** `UnifiedShoppingService.currentUserDisplayName` is
+  `authRepository.getCurrentUser()?.displayName ?? 'Du'` and feeds `ownerDisplayName` +
+  `lastActivityBy*` at collaborative-create time and the whole `ListItemOperations` facade — so a
+  household member can read another member's name as the literal `'Du'`. Fixing one writer of a
+  denormalized name and leaving a `?? '<pronoun>'` sibling is half a fix. **Third writer, same
+  family:** `PermissionService.currentUser` looks like a profile handle but SYNTHESIZES a
+  `UserProfile` from the Auth user with `displayName ?? 'User'` — it is the auth-only side of the
+  CLAUDE.md footgun wearing the user-data type. `shopping_social_share_module` /
+  `social_menu_operations` stamp `sharedByDisplayName` + `sharedByAvatarUrl` from it into OTHER
+  users' inbox trees, and `sharedBy*` is NOT in `on-profile-updated.ts`'s propagation pairs, so a
+  recipient can see the literal `'User'` permanently. Treat any `permissionService.currentUser.<
+  profile field>` as a finding on sight.
+- A rollback that finally "says why" must not read a SHARED error field: Butlery's
+  `UnifiedShoppingService._error` carries both list-load failures and mutation failures, and the
+  early-return denial paths (`!canEditActiveList`, list/item not in local state) set nothing — so
+  a view that shows `viewModel.error` after a failed tick can print last hour's
+  "couldn't load lists" as the reason. Clear before the call, or set a message on every `false`.
+  **The shape that actually works, and the one to copy** (BUT-1696 final, verified 2026-07-26): a
+  DEDICATED field the load-scoped `hasError`/state emitter never reads, set by a `_failMutation`
+  that does NOT `notifyListeners()` (so report-before-rollback can no longer emit a frame carrying
+  the optimistic value plus the error), read through a self-clearing `consumeMutationError()` the
+  view calls BEFORE its `if (!mounted) return;` — read-once removes both the sticky full-screen
+  error and every "caller forgot to clear" path. Residual, still open: nothing clears the field at
+  the START of a mutation and the early-return `false`s (`!canEditActiveList`, no active list,
+  list/item absent from local state) still set nothing, so an unconsumed message from an earlier
+  failure can be shown as the reason for a later, different one. Clear-before-the-call is the last
+  mile; a per-branch message set can never cover an early return someone adds later.
+  **A NEW exception type thrown by a repository needs its own arm at that mapping seam in the same
+  diff**, or it inherits a sibling's wording and asserts a cause nobody established: BUT-1697's
+  row-level `ResourceNotFoundException(resourceType:'shopping_item')` maps to
+  `AppLocale.shoppingListNotFound` ("Lista hittades inte") for a list that is on screen — exactly the
+  lie `ShoppingItemManagementModule.toggleItemBought` documents refusing. Switch on the
+  `resourceType` the exception already carries; and note the rollback behind such a message restores
+  rows the server no longer has, which only a live snapshot stream corrects — personal shopping lists
+  have none (they come from `readAll()`), so that stale state survives until a manual reload.
 - A moderation "hide" flag is search-suppression + UI-placeholder, not a read boundary, unless
   every direct-fetch consumer also filters it.
 - A presence opt-out must gate every derived surface, not just the boolean (a hidden dot with an
@@ -404,13 +518,31 @@ view/VM file that reaches the edited method, or file it as unreached.
   swallowing fail-safe; permissive-default would make it Critical.
 - A parser/lookup that can turn 1 input into N reads needs a cap at the split site — same
   "bound the worst case" rule as `.snapshots()` limits.
+- **A pre-write EXISTENCE read that filters rows out** (so one stale id can't fail a whole
+  `batch.update` chunk with `not-found`) is a sound repair, but judge three things. (a) It is not an
+  authorization TOCTOU when the path is derived from `requireCurrentUserId()` on both the read and
+  the write — nothing can re-point either at another user — only a staleness mitigation, best-effort
+  by construction. (b) Offline, a *query* resolves from cache and returns a possibly-empty snapshot
+  with NO error (unlike an explicit `Source.cache` doc miss, which throws `unavailable`), so an
+  empty survivor set is unfalsifiable: gate any "nothing exists any more" verdict on
+  `snapshot.metadata.isFromCache == false`, or a cold cache converts a write Firestore would have
+  queued and replayed into an abandoned write plus a rollback. (c) Reading the WHOLE subcollection
+  to validate M ids bills one read per row on the list; `whereIn(FieldPath.documentId, chunk)` at
+  `kFirestoreWhereInLimit = 30` bills only the submitted ids and is never worse — don't confuse it
+  with `kFirestoreBatchSafeChunkSize = 450` for the write loop. And log the WRITTEN count in the
+  audit row, not the submitted one.
 - **`runTransaction` has no offline path.** Persistence is on (`firestore_bootstrap.dart`), so a
   `set()` lands in the local cache instantly and syncs later; a transaction simply fails
   (`unavailable`) with no optimistic local write. Converting a user-facing write (a shopping tick
   in a store) to a transaction trades a lost-update race for a hard offline failure — require an
   explicit fallback or a written accepted-deviation. Also skip the write entirely when the mutator
   returns the base unchanged (`identical(mutated, live)`): a no-op still bills a write and, worse,
-  reports success, firing downstream analytics/side-effects for an edit that never happened.
+  reports success, firing downstream analytics/side-effects for an edit that never happened. An
+  activity STAMP (`updatedAt`/`lastActivityBy*`) defeats that identity check, so on a bulk-replace
+  path the no-op guard must be "no submitted id matched a live row", not object identity — and it
+  must be on EVERY leg: `updateItemsBatch`'s personal leg throws when nothing survives its filter
+  while the collaborative leg commits a stamped no-op and still reports success, contradicting its
+  own doc comment (open, BUT-1697).
   Verified plugin mechanics for reviewing such a fallback (cloud_firestore 6.6.0): a custom
   `timeout:` budget expires client-side and surfaces as `FirebaseException(code:'deadline-exceeded')`
   (Android `TransactionStreamHandler` semaphore → `Code.DEADLINE_EXCEEDED`), so keying a fallback on
@@ -420,7 +552,31 @@ view/VM file that reaches the edited method, or file it as unreached.
   of "offline" though — a slow-but-working link hits it too, so a cached-base fallback on that code
   reintroduces the lost update it was built to prevent; say so explicitly or gate on real
   connectivity. Awaiting a check between `transaction.get` and `transaction.set` is safe only if the
-  check issues no reads — confirm the validator is pure in-memory before approving it.
+  check issues no reads — confirm the validator is pure in-memory before approving it. The right
+  offline repair is a **field-level merge primitive, not a better base**: an APPEND queued as
+  `FieldValue.arrayUnion(newRows)` (detected by comparing the serialized prefix of the array, not
+  ids — a tick rewrites `bought` on an unchanged id) replays without losing a concurrent edit and
+  is safe even on the `deadline-exceeded`-but-online case; only a change to an EXISTING row has no
+  offline-replayable primitive and still needs the cached base (Butlery accepts that: BUT-1683,
+  `ACCEPTED_DEVIATIONS.md`). Two things to check on such a narrowed payload: the whitelisted keys
+  must exclude every key the rule forbids a non-owner from touching, and the whitelist is scoped
+  to today's mutators — on a PUBLIC interface method a future mutator that appends a row *and*
+  changes some other field loses that field silently while the method returns the full mutated
+  object. Require a fallback-to-full-write assertion, not a comment: **STILL OPEN after three
+  passes** — `_appendPayload`'s comment names the excluded keys correctly (Butlery's whitelist
+  `items` + `updatedAt`/`lastActivityAt`/`lastActivityBy{UserId,DisplayName}` exactly complements
+  the rule's forbidden `ownerId`/`memberPermissions`/`createdAt`), but nothing DETECTS a mutator
+  that also moves `name`/`description`/`settings`/`categoryIds`/`autoRemoveCompleted`. The cheap
+  enforcement is a serialized-doc diff (`mutated.toFirestore()` vs `live.toFirestore()`): any
+  differing key outside `items` + the whitelist ⇒ return null and take the full merge write.
+  `syncStatus` looks like an instance of this and is not — the model sets it in `addItem` but
+  `toFirestore()` never emits it; the diff is also trivial to write because `toFirestore()` emits a
+  FIXED key set. Two adjacent mechanics: a `Source.cache` MISS **throws**
+  `FirebaseException('unavailable')` in real Firestore while `fake_cloud_firestore` ignores
+  `GetOptions` and returns `exists == false`, so a cached-base fallback must handle both shapes or
+  its not-found branch is dead in production (mock the sealed `DocumentReference` to pin it); and
+  `arrayUnion` dedupes by deep equality, safe to ignore only while every appended row has a
+  unique id.
 - Per-item analytics loops over a REPLACEMENT set double-count on every regeneration — log once
   with a count, or diff against the previous set, or the funnel the event exists to measure lies.
   Such a loop is also a cost trap: each tracker call awaits `hasAnalyticsConsent()`, and
@@ -506,10 +662,9 @@ view/VM file that reaches the edited method, or file it as unreached.
 - Reference `firestore.rules` branches by path+rule type in comments, never by line number.
 
 ### Superseded
-- `activity_events` rules: "no block exists" was superseded same-day by confirmation the block
-  now exists (two still-open follow-ups: inert rate-limit guard, unbounded payload fields).
-- Comment-image Storage cleanup: "orphans on delete" was closed by best-effort cleanup
-  (moderator-triggered deletes still legitimately orphan images, by design).
+- Both prior entries here are fully closed and retired (2026-07-26): `activity_events` rules
+  block exists (open follow-ups: inert rate-limit guard, unbounded payload fields);
+  comment-image Storage orphans are handled by best-effort cleanup. Grep the archive for detail.
 
 ## When to consult the archive
 Grep the archive when: a principle needs its exact rule predicate/path/excerpt to copy rather

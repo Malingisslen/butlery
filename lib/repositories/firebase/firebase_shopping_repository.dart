@@ -8,7 +8,9 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/user_service.dart';
 
 // Module imports
 import 'package:butlery/repositories/firebase/modules/shopping_repository_routing_module.dart';
@@ -121,6 +123,12 @@ class FirebaseShoppingRepository
       validateOwnership: validateOwnership,
       validateRequiredFields: validateRequiredFields,
       logPermissionCheck: logPermissionCheck,
+      // BUT-1697: the profile display name is the one the Cloud Function
+      // propagates, so it is the one the client must write. tryGet keeps a
+      // repository built before/without the service graph working — an
+      // unresolved name stamps empty, never a stale one.
+      resolveDisplayName: () =>
+          ServiceLocator.tryGet<UserService>()?.currentDisplayName,
     );
 
     _templateOpsModule = ShoppingTemplateOperationsModule(
@@ -353,6 +361,12 @@ class FirebaseShoppingRepository
   @override
   Future<void> updateItem(String listId, UnifiedShoppingItem item) async =>
       _itemOpsModule.updateItem(listId, item);
+
+  @override
+  Future<void> updateItemsBatch(
+    String listId,
+    List<UnifiedShoppingItem> items,
+  ) async => _itemOpsModule.updateItemsBatch(listId, items);
 
   @override
   Future<void> removeItemsBatch(String listId, List<String> itemIds) async =>

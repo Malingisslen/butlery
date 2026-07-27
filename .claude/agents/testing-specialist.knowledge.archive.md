@@ -6583,3 +6583,927 @@ did not lop principles I could not verify stale. Flagged for a dedicated compact
 VERIFICATION. `flutter analyze --fatal-infos` clean on the 3 code files; architecture 20/20;
 repository unit 6/6 after the header edit; weekly-menu integration 10/10. All scratch replicas and
 probes deleted, production file md5-verified unchanged, sentinel count still 3.
+
+## 2026-07-26 — BUT-1691 review: shared SwedishWordBoundary util + four migrated call sites (trigger: sprint review, "import" area)
+
+SCOPE. `lib/utils/text/swedish_word_boundary.dart` (new), its new suite
+`test/unit/utils/text/swedish_word_boundary_test.dart`, the four migrated consumers
+(`services/import/heuristics/ingredient_line_detector.dart`,
+`services/import/parsers/recipe_section_detector.dart`,
+`services/menu/parser/text_normalizer.dart`,
+`services/voice/cooking_command_interpreter.dart`,
+`services/shopping/ingredient_categorizer.dart`) and the extended detector suite.
+
+STRING-EQUIVALENCE AUDIT (all five swaps): `before`/`after` expand byte-identically to the
+literals they replaced; `beforeWith('é')` reorders the class to `[a-zåäö0-9é]` (a set, so
+identical); `_cheesePattern`/`_souredMilkPattern` keep their top-level alternation
+un-grouped exactly as before; `_phrase` == the old `RegExp('$_nb(?:$variants)$_na')`.
+`boundedRegExp` defaults `caseSensitive: true`, matching every old `RegExp(...)` default. So
+the only BEHAVIOURAL change in the diff is `IngredientLineDetector`, which moved from ASCII
+`\b` to the shared lookarounds (plus hoisting 13 regexes out of the per-line loop).
+
+PROBE (scratch `test/zz_scratch_boundary_probe_test.dart`, deleted after; replica of the
+pre-fix predicate + two half-mutants + the live widgets duplicate + the cache normalizer):
+
+```
+line                 old    fixed  aheadOnly  behindOnly  widgetsCopy
+Kål                  true   false  true       false       true
+Mjöl                 true   false  true       false       true
+Höst                 true   false  true       false       true
+Kålrot och mjöl      true   false  true       false       true
+Gör så här           true   false  false      true        false
+Lök:                 true   false  false      true        true
+Rödkål:              true   false  true       false       true
+Gäddan               true   false  false      true        true
+Råg                  true   false  true       false       true
+2 l mjölk            true   true   true       true        true
+en st kål            true   true   true       true        true
+ca 3 dl grädde       true   true   true       true        true
+```
+
+FINDING 1 (test gap, fixed here). The four committed negatives are ALL trailing-side
+(`behindOnly=false` → a lookbehind-only mutant keeps them green), as are the three
+positives. The whole `SwedishWordBoundary.after` half of the fix was therefore deletable
+with the suite green. The fixtures that flip it are exactly the leading-side traps the
+2026-07-25 archive entry recorded as live production false positives: `Gör så här`, `Lök:`,
+`Gäddan`. Added as a second group with a comment naming which half each group proves, plus
+`Rödkål:` to the trailing group.
+
+FINDING 2 (test-only, fixed here). `swedish_word_boundary_test.dart:53`
+`expect(boundedRegExp('dl').hasMatch('handduk'), isFalse)` is vacuous — "handduk" contains
+no `dl` substring at all (probe: `'handduk'.contains('dl') == false`), so the assertion holds
+under any boundary, including none. Swapped to `medlem`, which genuinely contains `dl`.
+
+FINDING 3 (production, reported not fixed). `lib/widgets/import/ingredient_line_detector.dart`
+is a SECOND class of the same name, still `RegExp(r'\b' + RegExp.escape(measurement) + r'\b',
+caseSensitive: false)` over a 30-entry unit list including `l`, `g`, `st`. Its sole caller is
+`assisted_import_viewmodel.dart:112` (`detectFromLines`, used whenever
+`preDetectedIngredientLines == null`, i.e. the photo/OCR + text assisted-import paths). The
+FIXED class's only caller is `url_import_strategy.dart:466`. So the doc comment written into
+the fixed file — "Every section heading built from such a word was pre-ticked as an
+ingredient line in assisted import (BUT-1691)" — names a symptom that is still live on the
+path it names. The widgets copy has NO test file (`grep -rl IngredientLineDetector test/`
+returns only the services suite).
+
+FINDING 4 (production, reported not fixed). `RecipeTextNormalizer._allUnitsRe`
+(`lib/services/import/cache/recipe_text_normalizer.dart:122`) is
+`'\b(${ingredientUnits.join('|')})\b'` with `l`, `g`, `st` in the list, and it is used as
+`replaceAll(_allUnitsRe, '')` at `:150`, so it DELETES the letter:
+`normalizeIngredientName("2 dl mjöl") == "mjö"`, `"vitkål" → "vitkå"`, `"råg" → "rå"`,
+`"öl" → ""` (empty → whole ingredient dropped). Sole consumer `content_fingerprint.dart:92`
+= the import parse-cache key, so the exposure is a cache collision returning another input's
+parse, not a miss. The file's own comment at `:112` already acknowledges the interaction and
+routes `CanonicalPoolKey` around it (fold-first) instead of fixing it.
+
+MECHANISM NOTE. The lefthook `swedish-boundary-guard` cannot catch findings 3 or 4:
+`tools/check_swedish_boundary.sh` greps ERE `\b[åäöÅÄÖ]|[åäöÅÄÖ]\b`, i.e. a literal `\b`
+*adjacent to a Swedish character in the source text*. `r'\b' + variable + r'\b'` has ASCII on
+both sides of the escape, so the gate is silent on the exact shape that carries the bug. The
+guard proves notation, not semantics — same failure mode as `grep uf8ff` for the U+F8FF
+sentinel.
+
+RECALL TRADEOFF (accepted, not a finding). The tightening costs `looksLikeIngredient` the
+bare nouns `Mjöl`/`Kål`/`Öl`/`Råg` as standalone lines. Acceptable here because the output is
+`ImportResult.likelyIngredientLines`, a PRE-TICK list in a review screen the user can still
+tick by hand — not a drop. This is the opposite asymmetry from
+`RecipeSectionDetector.looksLikeIngredient`, whose callers (`text_import_strategy.dart:686`,
+`multi_recipe_splitter.dart:120`) decide the OPPOSITE of "is an ingredient" and DO drop the
+line, which is why that one stayed deliberately one-sided in BUT-1661.
+
+VERIFICATION. `flutter analyze --fatal-infos` clean on all 8 reviewed files (40s).
+`swedish_word_boundary_test.dart` + `ingredient_line_detector_test.dart` 24/24.
+Siblings green after the swap: `cooking_command_interpreter_test.dart`,
+`text_normalizer_test.dart`, `recipe_section_detector_test.dart` (145 total) and
+`test/golden/llm/categorize_ingredient_test.dart` (corpus 37/37, 0 failures). Scratch probe
+deleted; `git status` confirms only the two test files touched.
+
+## 2026-07-26 — BUT-1698 / BUT-1686 review: export truncation flags in `social_export_manager` + `activity_export_manager` (trigger: sprint review, "account" area)
+
+SCOPE. Five files: the two managers, `export_pagination_helper.dart` (one new `exportLimits`
+entry, `'feedback': 1000`), and the two matching unit suites. The diff moves five social reads
+(friends, sent/received requests, shared recipes, shared menus) and three activity reads
+(comments, ratings, feedback) onto `ExportPaginationHelper.fetchCapped`, and adds 17 new tests.
+
+NON-VACUITY, PROVEN BY THREE MUTANTS (revert-probe, backed up + md5-verified restore, one
+minute each):
+1. `fetchCapped`: `rows.length > cap` → `>= cap`. Exactly 5 reds, all "at the cap" boundary
+   tests (comments+ratings, feedback, pooled-ratings, friends, shared content). Nothing else
+   moved — the trim/forwarding tests are insensitive to it, as they should be.
+2. `social_export_manager`: dropped the LAST term of the 3-way friends OR
+   (`receivedRequests.truncated`) → exactly 1 red, "flags truncated when only the
+   RECEIVED-requests leg is over".
+3. Same file: dropped `sharedMenus.truncated` from the 2-way shared-content OR → exactly 1 red,
+   "flags truncated when only the MENUS leg is over". Confirms again that an N-leg OR needs N
+   positive tests and that covering only the FIRST leg would have missed both.
+After restore: `md5sum` identical to the backups, `git diff --stat` back to 36/4/70 lines.
+Full `test/unit/services/account/` 198/198 green; `flutter analyze --fatal-infos` clean on
+both reviewed dirs (130s).
+
+FINDING 1 (Medium, pre-existing, proven not asserted). The `messages` section is the one
+section in `social_export_manager.dart` that already CLAIMED a truncation signal, and it is
+dead end to end:
+- `firebase_data_export_repository.dart:347` computes
+  `'messages_truncated': messagesSnapshot.docs.length >= maxMessagesPerConversation` — the
+  exact `length >= cap` false-positive rule BUT-1562/1662 retired. A conversation holding
+  exactly 1000 messages is stamped clipped.
+- `social_export_manager.dart:150-152` copies it onto each conversation map, which lives
+  INSIDE the `conversations` LIST.
+- `data_export_service.dart:257` walks `for (final nested in value.values) if (nested is Map
+  && nested['messages_truncated'] == true)` — and the `messages` section's values are
+  `[List<dynamic>, int, int]`. The Map branch never fires.
+Probe (throwaway `zz_scratch_messages_truncated_probe_test.dart`, deleted): drove the real
+`exportMessages` with a fake conversation carrying `messages_truncated: true`, then replicated
+the aggregator loop verbatim. Output: `per-conversation flag: true`,
+`truncated_collections: []`, `section value runtime types: [List<dynamic>, int, int]`. So the
+comment at that line in `data_export_service` ("Check nested maps (e.g., messages with
+per-conversation truncation)") documents an intent the code does not implement. `grep -rn
+messages_truncated test/` = ZERO hits, which is why it survived.
+
+FINDING 2 (Medium, pre-existing). Error-only sections are invisible in the bundle manifest.
+`exportFriends`, `exportSharedContent`, `exportCommentsAndRatings` and `exportFeedback` all
+`catch (e) → return {'error': e.toString()}` with NO `error_code`, while
+`exportPooledRatingEvents` in the same file sets
+`'error_code': 'pooled-rating-events-export-failed'` precisely so `data_export_service:249`
+lifts it into `export_metadata.warnings`. A failed read therefore yields a bundle whose
+metadata shows neither `truncated_collections` nor `warnings` — the same
+"incomplete-reads-as-complete" GDPR failure BUT-1698 exists to fix, on the error axis instead
+of the cap axis. None of the four catch paths has a test in either reviewed suite.
+
+FINDING 3 (Low, ticket-vs-code). BUT-1698 AC1 says the sections must "emit a `truncated`
+boolean … never omitting the key" and AC2 says at-cap "reports `truncated: false`". The
+implementation OMITS the key when complete (`if (...) friendsData['truncated'] = true`) and the
+new tests assert `containsKey('truncated') isFalse`. Behaviourally identical for the only
+consumer (`value['truncated'] == true`) and consistent with ~12 sibling sections in
+`content_`/`preferences_export_manager`, so the code is right and the AC text is wrong — but
+the next reader can "fix" the tests toward the AC and weaken them. Amend the ticket.
+
+FINDING 4 (Low). `'feedback': 1000` duplicates `FirebaseFeedbackRepository.exportFeedbackByUser`'s
+own `maxDocuments = 1000` default. The code comment's claim ("pinned at the repository default
+this section was already riding … without shrinking anyone's export") rests on two independent
+numbers in two files with nothing tying them. The new manager tests derive the cap from
+`getLimitForType('feedback')`, so they are silent on the VALUE. Cheapest fix: one literal pin
+in `export_pagination_helper_test.dart` naming the repository default in a comment.
+
+FINDING 5 (Info). Residual unprobed capped reads in the same reviewed file, all still emitting
+no flag: `exportFriendCategories` (repo default 100 — the SMALLEST cap in the file, and the one
+deferred), `exportOutgoingBlocks`/`exportIncomingBlocks` (500), `exportConversationMemberships`
+(500), `exportReports` (500), `exportPings` (500), and the conversation LIST inside
+`exportConversationsAndMessages` (500). The code comment defers them to BUT-1701; `BUT-1701`
+appears nowhere else in the repo and this agent has no Linear access, so the deferral is
+unverified.
+
+GOOD PATTERNS WORTH REUSING (from the new suites).
+- `final Map<String, int> capturedMax` on the shared `extends Fake`, one entry per repository
+  method, asserted as a WHOLE map (`expect(repo.capturedMax, {m1: cap+1, m2: cap+1})`). That
+  single assertion proves per-leg forwarding AND that no other capped read fired in the method
+  — strictly stronger than N separate field checks.
+- Sentinel default `int maxDocuments = -1` on every Fake override (vs the real 500/1000
+  defaults) so a production path that stops forwarding its cap fails instead of coincidentally
+  matching. Combined with deriving the expectation from `getLimitForType`, a typo'd `type:`
+  string (silent fall-through to `defaultBatchSize`) is also caught by the forwarding test.
+- Row factory `_cappedRow(prefix, i) => {'id': '$prefix$i', 'data': {'n': i}}` makes the trim
+  assertion say something: `isNot(contains('f$friendCap'))` pins that the PROBE row specifically
+  was dropped, not merely that the length is right.
+- Every "omits truncated" boundary test also asserts a positive total, so a whole-section throw
+  (which returns `{'error': ...}` and thus also has no `truncated` key) cannot make it pass.
+  Checked all five; all have the control.
+
+## 2026-07-26 — Shopping sprint review (BUT-1681 / BUT-1683 / BUT-1696 / BUT-1697)
+
+**Trigger:** review-only pass over the shopping-area working tree (22 files: routing module,
+item-operations module, unified shopping service + item-management module, VM, view,
+analytics tracker, menu generator, CF account-deletion cascade, and the six matching suites).
+No production edits. All six suites green (`shopping_repository_routing_module_test.dart`
+62/62, plus service/VM/generator: 141 total), `flutter analyze` clean on all changed paths.
+
+### What the tree actually shipped
+- **BUT-1683** split `_mutateFromCache` in two: a PURE-APPEND mutation is queued as
+  `FieldValue.arrayUnion` on `items` (replay merges, nothing lost); anything touching an
+  existing row still queues the cached base (documented accepted deviation, both in
+  `docs/architecture/ACCEPTED_DEVIATIONS.md` and `.claude/rules/accepted-deviations.md`).
+  Classifier is `_appendedItems(live, mutated)`: null unless `mutated.items.length >
+  live.items.length` AND every `live`-length prefix row is `DeepCollectionEquality`-equal on
+  `toFirestore()`.
+- **BUT-1696** added `_readCachedDoc` (catches `FirebaseException` from a `Source.cache` read
+  and remaps to `ResourceNotFoundException` — the real-Firestore shape the fake can't produce),
+  `_requireSelfOwnedCreate`, `_onReplayRejected`, `createdAt` in the escalation triple, and a
+  three-way user-facing error mapping in `UnifiedShoppingService.mutateSharedList` +
+  `ShoppingItemManagementModule._report`.
+- **BUT-1697** added `updateItemsBatch` (interface + repo + ops module + service), switched
+  `uncheckAllItems` from `Future.wait` over N `updateItem` transactions to ONE batch, moved
+  `lastActivityByDisplayName` from the Auth handle to an injected profile-name resolver
+  (`resolveDisplayName() ?? ''`), taught `activitySummary` that empty == unknown, and extended
+  the CF cascade with a LIST-level scrub.
+- **BUT-1681** added `source`/`item_count` to two shopping analytics events and tagged four
+  call sites.
+
+### Verified facts (each checked against code, not the diff)
+1. Firestore rule `/unified_shared_shopping_lists` update clause (firestore.rules:1620-1626)
+   forbids a non-owner touching `['ownerId','memberPermissions','createdAt']` — the BUT-1683
+   review's "the forbidden set is a triple" claim is CORRECT.
+2. `on-profile-updated.ts:163-164` is indeed the canonical writer, with pairs
+   `{ownerId→ownerDisplayName}` and `{lastActivityByUserId→lastActivityByDisplayName}` — so the
+   CF cascade's field inventory mirrors it correctly, and BUT-1697's "profile name, not Auth
+   handle" premise is right.
+3. `createCollaborativeListFromInvitation` really is dead in `lib/` (only the service facade
+   and the module define it) — the new `_requireSelfOwnedCreate` comment is accurate.
+4. No `FieldValue` anywhere in `UnifiedShoppingItem.toFirestore` / `UnifiedShoppingList
+   .toFirestore` (all `Timestamp.fromDate`), so `DeepCollectionEquality` over serialized rows
+   is sound and all four `_activityFieldKeys` are always present in the serialized map.
+5. `UnifiedShoppingList.addItem` is a pure `[...items, item]` append with no sort/merge, so the
+   BUT-1683 append fast path is genuinely reachable.
+6. VM `error`/`clearError` delegate to the service (`unified_shopping_viewmodel.dart:79,671`),
+   so the view's `_viewModel.error ?? fallback` snackbar reads the right string on the toggle
+   path. Live chain confirmed: view → VM.toggleItemBought → service → `_itemManagement
+   .toggleItemBought` → `_report`.
+
+### The probe that mattered
+`_appendedItems`'s prefix-equality loop is the ONLY thing stopping an in-place edit from being
+queued as an `arrayUnion` (which cannot express one, so the edit is silently dropped on replay).
+Every offline fixture in the routing suite builds on `_collabList()`, which has `items: []`, and
+the one new cached-base test has equal lengths (early return before the loop) — so the loop never
+executes anywhere and is deletable-green. Throwaway probe
+(`test/.../zz_scratch_append_guard_test.dart`, deleted after the run) drove the REAL module with
+a 1-item server base and a single mutator doing both an append and a tick:
+
+```
+AUDIT DETAILS -> List: Handla, offline cached-base item mutation
+STORED -> [mjölk:true, bröd:false]
+```
+
+i.e. the guard is live and correct — purely unasserted. This is the missing test.
+
+### Findings filed (9)
+High: (1) BUT-1696's live checkbox path has zero tests — `grep -rn reportFailure test/` = 0 hits
+and `buildModule()` in `shopping_item_management_module_test.dart` never passes it, so `_report`
+is a no-op in all 62 module tests; the one new test drives `mutateSharedList`, which the
+production comment itself says is NOT the checkbox path. (2) `unified_shopping_view
+._uncheckAllItems:521-525` ignores the bool and shows `shoppingAllUnchecked` unconditionally, so
+the new uncheck-all failure message is never read and never cleared (stale `service._error` can
+later flip `_emitState` to `ShoppingStateError`).
+Medium: (3) `updateItemsBatch` personal leg contradicts its own interface doc ("Items not
+present on the list are ignored") — `batch.update` on a deleted item raises NOT_FOUND and fails
+the whole chunk; the entire personal leg incl. chunking is untested although sibling
+`removeItemsBatch` has a chunk-size test. (4) the `_appendedItems` loop above. (5)
+`activitySummary`'s new `.isEmpty` branch is deletable-green — the ops-module assertion
+`isNot(contains('Cecilia'))` still passes without it (an empty name renders as
+`shoppingListLastActivityBy('', …)`), and `test/unit/models/unified_shopping_list_test.dart:494`
+has no empty case. (6) attribution fix not swept to
+`UnifiedShoppingService.currentUserDisplayName` (`auth.displayName ?? 'Du'` → live
+`createCollaborativeList` → `ownerDisplayName` → `UnifiedShoppingList.collaborative` copies it
+into `lastActivityByDisplayName`). (7) CF list-level scrub untested — the `ussl-${RUN}` fixture in
+`request-account-deletion.integration.test.ts:355` sets no `lastActivityByUserId`/`ownerId`.
+(8) the two parameterised routing tests named "`$code` falls back to the cached base and returns
+the tick" now take the APPEND path (empty base + append mutator), so both names/comments are
+false and `deadline-exceeded` has lost its cached-base coverage.
+Low: (9) `_readCachedDoc` remaps every `FirebaseException` to `ResourceNotFoundException`, so an
+offline cache MISS now surfaces "Lista hittades inte" (list deleted) instead of an offline
+message — wrong branch of the three-way distinction BUT-1696 exists to build; plus `_report(e)`
+fires BEFORE the rollback in `toggleItemBought` (inverse of `uncheckAllItems`), and two VM
+analytics tests are soft (`un-checking logs no check event` has no in-test positive control; `a
+recipe add is tagged recipe` drives `addItemsFromRecipe`, which the sibling suite's own comment
+says has no `lib/` callers).
+
+## 2026-07-26 — BUT-1698 / BUT-1686 RE-REVIEW round 2 (trigger: "re-review after automated fixes", account area)
+
+SCOPE as asked: `social_export_manager.dart`, `activity_export_manager.dart`,
+`export_pagination_helper.dart` + the two matching suites, as they stand in the working tree.
+
+**The tree did NOT move on the production side.** `git diff --stat HEAD` is still exactly
+36/4/70 lines on activity/pagination/social — byte-for-byte the same three files the first
+round mutation-proved. `data_export_service.dart` is not in `git status` at all (still HEAD),
+and `firebase_data_export_repository.dart` IS modified but only in `exportPersonalShoppingLists`
+(the BUT-1697 `shopping_lists` → `unified_shopping_lists` collection-name fix); line 353's
+`messages_truncated: docs.length >= maxMessagesPerConversation` is untouched. So the automated
+fix loop consumed nothing here, exactly as principle "the fix loop consumes Critical/High only"
+predicts for a round whose findings were all Medium/Low. I did NOT re-run the three mutants —
+identical bytes, and the first round's md5-verified restore is in this archive above. What I did
+re-verify live, because those were the load-bearing claims:
+- `FeedbackRepository.exportFeedbackByUser` default `maxDocuments = 1000` (interface :32) and
+  `FirebaseFeedbackRepository` :142 — so the `'feedback': 1000` comment's "pinned at the
+  repository default" claim is TRUE. Round 1 asserted it; now it's checked.
+- All five reviewed sections are TOP-LEVEL keys in `data_export_service` (`friends`,
+  `shared_content`, `comments_and_ratings`, `feedback`, `pooled_rating_events` at :170-213), so
+  the section-root `truncated` really is lifted by the `:243` pass. The fixes are
+  consumer-visible; that was never actually confirmed in round 1.
+- `messages_truncated` is still dead end to end: the `messages` section's values are
+  `[List, int, int]` and the aggregator's nested pass (`:257`) only fires on `nested is Map`.
+  Both sides re-read at HEAD. `grep -rn messages_truncated lib/ test/` = 4 lib hits, 0 test hits.
+
+**TEST-ONLY FIX APPLIED BY ME** (per the re-review economics principle — never edit `lib/` in a
+review pass): round 1's Finding 4 (Low) was "the `'feedback': 1000` claim spans two files with
+nothing tying the numbers, and every new test derives the cap from `getLimitForType`, so all of
+them follow a silent change". Added ONE literal pin to
+`activity_export_manager_test.dart`'s feedback truncation group:
+`test('the declared cap still equals the repository default it replaced', () { expect(cap, 1000); })`
+with a comment naming both repository defaults. Suites: 34/34 green (was 33),
+`dart format` clean, `flutter analyze --fatal-infos` on `lib/services/account/export` +
+`test/unit/services/account/export` clean (253 s).
+
+**NEW this round (neither round 1 nor the fix loop saw these).**
+1. *(Low)* `exportFriends` emits a section-root `truncated` ORed over THREE reads while the
+   section carries FOUR record types — `friend_categories` (`:74`) still calls
+   `exportFriendCategories(userId)` with no cap argument at all, riding the repo's implicit 100.
+   A user with >100 categories gets a section that positively asserts completeness. That is
+   strictly worse than the pre-BUT-1698 state of emitting no flag, and the code comment at
+   :88-90 deferring it to BUT-1701 is the only thing marking it. `BUT-1701` still appears
+   nowhere else in the repo (no Linear access here, so the deferral remains unverified).
+2. *(Info)* Cap-TYPE reuse across sections: `exportSharedContent` probes `type:'recipes'` (2000)
+   and `type:'menus'` (1000) — the caps for the user's OWN library — while the underlying
+   `exportSharedRecipesReceived`/`exportSharedMenusReceived` repo defaults are 1000/500.
+   Pre-existing (the manager passed the same two `getLimitForType` values before the diff), so
+   not a regression, but it means tuning the recipe-library cap silently moves the shared-content
+   completeness boundary, and both new truncation tests derive from `getLimitForType` so they
+   would move with it without a word.
+3. Re-confirmed unfixed and re-filed: the error-axis asymmetry INSIDE
+   `activity_export_manager.dart` itself — `exportPooledRatingEvents` :146 sets
+   `error_code: 'pooled-rating-events-export-failed'` so `data_export_service:249` lifts it into
+   `export_metadata.warnings`, while `exportCommentsAndRatings` :103 and `exportFeedback` :171
+   (plus `exportFriends` :100 and `exportSharedContent` :213 in the sibling file) return a bare
+   `{'error': e.toString()}`. Same file, two conventions; the bare four produce a bundle with
+   neither `truncated_collections` nor `warnings`. Still zero tests on any of the four catch
+   paths — deliberately NOT added, because a test asserting the current bare-error shape would
+   cement the bug rather than catch it.
+
+**Test-quality notes on the suites as they stand.** All five "omits truncated" boundary tests
+still carry a positive total control. One honest limit on the whole-map forwarding assertion:
+`expect(repo.capturedMax, {...3 methods})` proves per-leg forwarding, but the "and no other
+capped read fired" reading of it is narrower than round 1 claimed — `exportFriendCategories`'s
+override simply doesn't record into `capturedMax`, so an unprobed read is invisible to it, which
+is finding 1 above wearing a different hat. `total_count counts the included events` is
+self-consistent-plus-`isNot(cap + 1)`, non-vacuous only because the sibling test pins
+`events.length == cap`; worth keeping both together.
+
+## 2026-07-26 — BUT-1691 re-review round 2: the SwedishWordBoundary sweep (import area)
+
+**Trigger:** re-review after automated fixes, 8 files — `lib/utils/text/swedish_word_boundary.dart`
+(new), `lib/services/import/heuristics/ingredient_line_detector.dart`,
+`lib/services/import/parsers/recipe_section_detector.dart`,
+`lib/services/menu/parser/text_normalizer.dart`,
+`lib/services/voice/cooking_command_interpreter.dart`,
+`lib/services/shopping/ingredient_categorizer.dart`, plus
+`test/unit/services/import/heuristics/ingredient_line_detector_test.dart` and
+`test/unit/utils/text/swedish_word_boundary_test.dart`.
+
+### Tree moved (re-review economics step 0)
+
+Confirmed non-identical vs the round-1 tree: `lib/utils/text/swedish_word_boundary.dart` and
+`test/unit/utils/text/swedish_word_boundary_test.dart` are new/untracked,
+`test/unit/widgets/import/` is a new directory (21 tests), and all six lib files carry a diff.
+Round 1's two "still live and unfixed" detector copies both landed.
+
+### What is behaviour-neutral and how it was proven
+
+Four of the five modified lib files are pure RESPELLINGS. `SwedishWordBoundary.before`/`after`
+render byte-identical strings to the literals they replaced; `beforeWith('é')`/`afterWith('é')`
+render `[a-zåäö0-9é]` where the old literal was `[a-zåäöé0-9]` (set-equal — order inside a
+character class is semantically irrelevant); and `boundedRegExp(v)` renders exactly
+`cooking_command_interpreter._phrase`'s old `'$_nb(?:$v)$_na'`. `_cheesePattern` /
+`_beefPattern` are character-for-character equal after interpolation. Sibling suites green:
+`recipe_section_detector_test`, `menu/parser/text_normalizer_test`, `spoken_prompt_golden_test`,
+`voice/cooking_command_interpreter_test`, `swedish_word_boundary_test`,
+`import/heuristics/ingredient_line_detector_test`, `test/unit/widgets/import` → 228 passed;
+`test/golden/llm/categorize_ingredient_test` + `adversarial_test` → green (adversarial 11/11).
+`flutter analyze` clean on all 8. `tools/check_swedish_boundary.sh` passes on all 8 — including
+the new util test, which deliberately ASSEMBLES the broken pattern from two raw-string fragments
+so the guard's "backslash-b adjacent to åäö" grep cannot see a literal boundary escape next to
+`å`. That assembly trick is the right way to keep a "prove the bug exists" test in a repo that
+lints the bug's spelling.
+
+### The one behavioural change, and why two-sided is correct HERE
+
+`heuristics/ingredient_line_detector.dart` went from an inline ASCII-boundary-wrapped unit regex
+(rebuilt per call, 13 per line) to a pre-compiled
+`SwedishWordBoundary.boundedRegExp(RegExp.escape(m))` list. That is a strict tightening on
+Swedish text: the lookaround class is a superset of ASCII word characters minus `_`, so every
+case where the old pattern matched and the new one does not is exactly a phantom boundary — no
+recall loss. Traced the consumer: `url_import_strategy._createUserAssistedResult` puts the
+indices into `ImportResult.assistance(likelyIngredientLines: …)` alongside the full
+`extractedText` — i.e. checkbox PRE-selection in the assisted wizard. A false negative costs one
+tick; a false positive pre-ticks a heading. So two-sided is right here, while
+`parsers/recipe_section_detector.looksLikeIngredient` is right to stay TRAILING-ONLY (its
+`text_import_strategy` caller has no fallback branch — a false negative deletes an
+allergen-bearing line). Both shapes now coexist correctly and each carries its reasoning in a
+comment. Do not harmonise them.
+
+### The vacuity found, and the mutation probe that proved it
+
+Three tests in `import/heuristics/ingredient_line_detector_test.dart` were unfalsifiable because
+`looksLikeIngredient` is an OR of branches and every positive fixture started with a digit,
+which the `_leadingQuantityPattern` branch answers regardless of the unit loop:
+
+- `'true when a Swedish unit word matches as a whole word'` looped `'2 $unit mjölk'`
+- `'case-insensitive unit matching'` used `'2 DL Mjölk'`, `'1 KG Kött'`
+- the recall control used `'2 l mjölk'`
+
+Probe (`test/.../zz_scratch_boundary_probe_test.dart`, deleted after the run): a faithful replica
+of `looksLikeIngredient` with two knobs — the boundary strings and a `unitLoop` bool — opened by
+a CONTROL test asserting the unmutated replica agrees with the real production function on all 13
+fixtures. Three mutants, all red as intended:
+
+```
+lookbehind deleted, wrongly true: [Kål, Mjöl, Höst, Råg, Kålrot och mjöl, Rödkål:]
+lookahead deleted, wrongly true:  [Gör så här, Lök:, Gäddan]
+unit-loop-deleted now false:      [ca 2 l mjölk, en st kål, ca 3 dl grädde, Ca DL Mjölk, CA KG Kött]
+```
+
+First run of the probe reported `[]` for both boundary mutants — I had paired them backwards
+(deleting the lookBEHIND is what frees the TRAILING-side words, because it is the lookbehind that
+sees the `å` preceding the unit letter). `expect(flipped, isNotEmpty)` would have hidden a
+partial flip too; asserting the FULL expected group is what makes the probe honest.
+
+### Test-only fixes applied in this pass (zero production edits)
+
+1. Unit-loop fixtures re-led with `'ca …'` so the loop is the only branch that can answer.
+2. `'Råg'` added to the trailing-edge group — a round-1-recorded live false positive that was in
+   the util test's `trapWords` but missing from the detector's own suite.
+3. Case-insensitivity fixtures changed to `'Ca DL Mjölk'` / `'CA KG Kött'`, plus `'RÖDKÅL'` →
+   `isFalse` so the phantom-boundary rejection is proven to survive the same lowercasing.
+4. Deleted the autopilot `'measurements list contains expected Swedish units'` test (six
+   `contains` assertions restating the constant) and replaced it with a `findIngredientLines`
+   invariant pinning the USER-VISIBLE symptom: `['Rödkål:', 'ca 3 dl vinäger', 'Gör så här',
+   'ca 2 msk salt']` → `[1, 3]`, i.e. neither Swedish heading arrives pre-ticked while both real
+   lines do. One fixture per boundary half.
+5. Added `'caseSensitive: false keeps the boundary intact for uppercase å/ä/ö'` to the util test:
+   `boundedRegExp('l', caseSensitive: false)` must match `'2 L Mjölk'` and reject `'KÅL'` /
+   `'MJÖL'`. The param had zero callers and zero coverage on a brand-new shared util; the trap it
+   guards is a regex engine not applying the case-insensitive flag inside a lookaround's
+   character class, which would let uppercase `Å` sail past a boundary lowercase `å` is stopped
+   by. Dart does apply it — now pinned.
+
+### Remaining interpolated-boundary sites in `lib/` (found by grep, invisible to the lefthook guard)
+
+The guard greps for a literal boundary escape TOUCHING å/ä/ö, so none of these are visible to it:
+
+- `import/cache/recipe_text_normalizer.dart:119,123` — a boundary-wrapped alternation over
+  `ingredientUnits` with `l`, `g`, `st` in the set, applied via `replaceAll(…, '')`, so it
+  DELETES letters (`normalizeIngredientName('2 dl mjöl')` → `'mjö'`, `'vitkål'` → `'vitkå'`).
+  NOT a drive-by fix: the file header says "behavior-preserving extraction … do not improve them
+  here without treating it as a cache-invalidating change" and
+  `content_fingerprint_golden_test.dart` fails on any drift. Deliberately frozen → the
+  deliverable is a ticket, not an edit.
+- `rating/canonical_pool_key.dart:157,161` — same shape, but the units are `_foldDiacritics`-ed
+  first and the subject is folded before matching, so the boundary operates on pure ASCII. SAFE.
+  Check for a fold before calling any such site broken.
+- `utils/text/ingredient_preprocessor.dart:169,234` — boundary-wrapped over
+  `['ca.', 'cirka.', 'ungefär.', 'ca', …]`. A trailing boundary after an escaped `.` can only
+  fire before a word character, so `"ca. 2 dl"` never matches the dotted form; the bare `ca`
+  alternative then strips the letters and leaves the orphaned period that the "dotted forms
+  FIRST to prevent orphaned periods" comment exists to prevent. Pre-existing, unrelated to åäö.
+- `menu/parser/global_extractor.dart:27,239` — leading-only boundary before lexicon day words and
+  verbs; safe while every key starts with an ASCII letter, which is a lexicon-content assumption
+  nothing asserts.
+
+### Small notes on the new util itself
+
+`beforeWith`/`afterWith` interpolate `extraLetters` straight into a character class with no
+escaping — a caller passing `-`, `^` or `]` silently changes or breaks the class. Only caller
+passes `'é'`, so no live bug; worth a doc line. The class doc's claim "Four call sites had
+hand-rolled the same two strings" checks out exactly (recipe_section_detector,
+menu/parser/text_normalizer, cooking_command_interpreter, ingredient_categorizer).
+
+## 2026-07-26 — Shopping sprint RE-review after automated fixes (BUT-1681 / 1683 / 1696 / 1697)
+
+**Trigger:** re-review of the 22-file shopping working tree "as it stands now, after automated
+fixes were applied." Tree HAD moved since the previous entry (`reportFailure` is now wired in
+`shopping_item_management_module_test.dart:282`; `unified_shopping_view._uncheckAllItems` now
+consumes the bool + `error` + `clearError`; the CF list-level scrub has fixtures and four new
+assertions). Baseline: 252 tests green across the seven shopping suites, `flutter analyze` clean
+on all seven in-scope `lib/` files.
+
+### Previous round's findings, verified one by one
+- **#1 (High) FIXED** — `reportFailure: reported.add` in `buildModule()`; six new tests drive the
+  LIVE checkbox path (`toggleItemBought`) plus the bulk sibling, each asserting a DISTINCT Swedish
+  sentence and one asserting the three-set `hasLength(3)`. `notifyListeners()` also correctly moved
+  out of the `if (rollbackIndex != -1)` block, so the message reaches the UI even when the row is gone.
+- **#2 (High) FIXED** — view `_uncheckAllItems:520-543` and `_onItemTap:231-244` both branch on the
+  bool, show `viewModel.error ?? fallback`, and `clearError()`. Service-level lifetime test added
+  (`clearError removes the reason and stops it poisoning an empty-list state`) driving a real
+  `deleteList` → `ShoppingStateData` afterwards.
+- **#7 (Medium) FIXED** — `ussl-${RUN}` now seeds `ownerId`/`ownerDisplayName`/`lastActivityBy*` and
+  `addedBy*`/`lastModifiedBy*`, plus a `ussl-control-${RUN}` negative list owned by OTHER. New tests
+  I7b/I7c/I8b cover the live `unified_shopping_lists` path + its `items` subcollection + the OTHER
+  control; I-SL2b pins `addedByUserId === "deleted"` (anonymize, not null, so `isCollaborative`
+  survives); I-SL5 pins the list-level pair nulled with `ownerId` retained.
+- **#3 (Medium) STILL OPEN** — `updateItemsBatch` personal leg. Both new ops-module tests use
+  `h.mutateCalls`, i.e. collaborative only. Probe run (`zz_scratch_personal_batch_test.dart`, deleted):
+  `batch.update` on a missing doc gives `[FakeFirestore/not-found] Some requested document was not
+  found.` — so the interface doc's "Items not present on the list are ignored" is true of the
+  transactional leg only. Also noticed while there: the sibling `addItemsBatch` personal leg builds
+  ONE unchunked batch, so it is the only bulk method in the file that can exceed 500 ops.
+- **#4 (Medium) FIXED** — `_appendedItems`'s prefix loop is now exercised: the new `an offline append
+  unions rather than overwriting the array` test injects a `fromFirestore` that strips items, so the
+  cached base genuinely predates the server row, and asserts `containsAll(['bröd','mjölk'])`.
+- **#5 (Medium) FIXED BY ME (test-only)** — see below.
+- **#6 (Medium) STILL OPEN** — `UnifiedShoppingService.currentUserDisplayName:270-271` is still
+  `_authRepository.getCurrentUser()?.displayName ?? 'Du'` and feeds
+  `shopping_list_management_module.dart:108,116` (`ownerDisplayName` AND `lastActivityByDisplayName`)
+  on shared-list creation, so the FIRST stamp is auth-sourced and can read the literal "Du".
+  `FirebaseShoppingRepository` correctly resolves `UserService.currentDisplayName` for the item path.
+  Note that getter itself falls back to the auth handle when the profile name is empty, so the
+  module's "PROFILE name, not the Auth handle" doc comment is slightly stronger than the resolver.
+- **#8 (Medium) FIXED BY ME (test-only)** — see below.
+- **#9 (Low)** — `_report(e)` before rollback in `toggleItemBought`: RETRACTED. There is no await
+  between `_report` and the rollback, so both `notifyListeners()` land in one synchronous block and
+  Flutter cannot render the intermediate state. `_readCachedDoc`'s blanket remap of every
+  `FirebaseException` to `ResourceNotFoundException` stands as Low (an offline cache MISS now reads
+  "Lista hittades inte"). VM analytics test softness stands as Low.
+
+### The new finding this round (the reason to re-review at all)
+`ShoppingItemManagementModule.clearCompletedItems:442-454` is the THIRD optimistic-rollback path in
+the file and the only one that got neither half of BUT-1696: no `_report(e)` in its catch, and its
+caller `lib/views/unified_shopping/widgets/dialogs/shopping_list_operations.dart:58-59` does
+`await viewModel.clearBoughtItems();` (bool discarded) then `onSuccess(l10n.shoppingPurchasedCleared)`
+unconditionally. `clearBoughtItems` is `Future<bool>` all the way down. So the exact defect the sprint
+exists to fix — a destructive bulk action that silently rolls back and reports success — is still
+reachable from the "Rensa klara" menu item. Found by grepping the module for `catch` blocks that
+restore local state and `return false`, rather than by re-reading the ticket.
+
+### Test-only fixes applied (zero production risk)
+1. **`test/unit/models/unified_shopping_list_test.dart`** — new `should report no activity when the
+   stamped name is empty`. `activitySummary`'s new `lastActivityByDisplayName!.isEmpty` clause had NO
+   test anywhere (`grep activitySummary test/` → four render tests, all with names; the ops-module
+   assertion `isNot(contains('Cecilia'))` also passes when the render is `"Senaste aktivitet av  nu"`).
+   Asserts equality with `AppLocale.current.shoppingListNoActivity` plus a same-fixture positive
+   control differing only in the name.
+2. **`shopping_repository_routing_module_test.dart`** — the parameterised
+   `for (final code in ['unavailable','deadline-exceeded'])` was named "falls back to the cached base
+   and returns the tick" while building on `_collabList()` (`items: []`) with an appending mutator, so
+   BOTH iterations took BUT-1683's `arrayUnion` fast path and `deadline-exceeded` had zero cached-base
+   coverage. Reseeded with one row + a tick mutator and switched the audit assertion from
+   `contains('offline')` (true on both legs) to `contains('cached-base')` (the leg discriminator).
+   Confirmed by name: both iterations now green on the cached-base branch. Deleted the standalone
+   `an offline tick still takes the cached-base path`, which became a duplicate of the 'unavailable'
+   iteration, and folded its rationale comment into the loop. Renamed `the offline path lets an
+   edit-level member tick items` → `add items` (its mutator appends).
+3. **`shopping_item_operations_module_test.dart`** — new `updateItemsBatch writes through past the
+   batch chunk size` in the personal-list group: seeds `kFirestoreBatchSafeChunkSize + 1` bought item
+   docs, unchecks all, asserts the TRAILING id explicitly (a dropped last chunk hides inside an
+   "every doc" assertion), plus `mutateCalls == 0` and the ownership call. Covers the untested leg
+   without pinning the NOT_FOUND behaviour the interface doc contradicts.
+
+Post-fix: 253 tests green across the seven suites (252 − 1 deleted duplicate + 2 new), `flutter
+analyze --no-fatal-infos` clean on the three edited test files and the seven `lib/` files.
+
+## 2026-07-26 — BUT-1698 / BUT-1686 RE-REVIEW round 3 (trigger: "re-review after automated fixes", account area, five files)
+
+**Production is byte-identical to rounds 1 AND 2.** `git diff --stat HEAD` on the three `lib/`
+files is still exactly 36/4/70; mtimes 14:18–14:35. The only file that moved since round 2 is
+`activity_export_manager_test.dart` (16:22) — which was round 2's OWN test-only edit (the
+`expect(cap, 1000)` literal pin). So the automated fix loop has now consumed nothing on this
+area for two consecutive rounds, exactly as the re-review-economics principle predicts for a
+round whose findings are all Medium/Low. Three rounds, one tree. I did not re-run round 1's
+three mutants (identical bytes, md5-verified restore already in this archive).
+
+### What I audited fresh this round, rather than trusting the archive
+
+1. **The `fetchCapped` cost claim, audit (3)/(4) from the sweep principle — PASSES.** Its doc
+   comment says "Costs exactly one extra document read per section." Traced all eight capped
+   reads these two managers make. Five go through
+   `FirebaseDataExportRepository._queryList` (`:159`), which is a plain
+   `query.limit(limit).get()` — no fan-out, no batching. `exportCommentsByAuthor` (:470),
+   `exportRatingsByUser` (:527) and `exportFeedbackByUser` (:151) are each a plain
+   `.where(...).limit(maxDocuments).get()`. So `cap + 1` really is +1 doc here. Worth recording
+   because the SAME file's `ExportPaginationHelper.paginatedQuery` (:77) loops
+   `while (totalFetched < maxDocuments)` in `batchSize` steps and never trims — any section
+   routed through THAT would over-read by up to `batchSize - 1` and could return more than
+   `cap + 1` rows (the flag still comes out right; only the cost claim breaks). Folded the
+   discriminator into the principle so future rounds do one grep instead of re-deriving.
+2. **Round 2's "cap-TYPE reuse is pre-existing, not a regression" claim — CONFIRMED from the
+   diff.** The removed lines really did read
+   `getLimitForType('recipes')` / `getLimitForType('menus')`, so the manager was already
+   raising the shared-content caps above the repo defaults (2000 vs 1000, 1000 vs 500) before
+   BUT-1698. Info, unchanged.
+3. **All four `truncated`-omitted boundary tests double as the "neither leg over cap but
+   COMBINED over cap" case** the sweep principle calls the highest-value one: friends is
+   1000+500+500 = 2000 with every leg at its own cap and the flag absent; comments+ratings is
+   1000+1000; shared content 2000+1000. That case is covered, contrary to what I expected to
+   find. No action.
+
+### TEST-ONLY FIXES APPLIED BY ME (never `lib/` in a review pass). 34 → 36 tests, green.
+
+All three close holes that round 1 and round 2 both missed, and all three are in
+`social_export_manager_test.dart`, the file that had NOT been touched since 14:18.
+
+- **`exportMessages` forwarded its two caps with zero test coverage — the sharpest hole in
+  either suite.** The manager passes `maxConversations: getLimitForType('conversations')` (500)
+  and `maxMessagesPerConversation: ...('messages_per_conversation')` (1000), while the
+  repository's own defaults are **100 and 500**. A regression dropping either forward therefore
+  deletes four fifths of a heavy user's conversations from an Art. 15/20 bundle — silently, and
+  with no usable flag (see below). The fake's overrides were carrying the REAL defaults
+  (100/500), i.e. the fake-default-same-as-expected vacuity in its purest form: a dropped
+  forward would have produced exactly the fixture's own numbers. Swapped both to the sentinel
+  `-1`, added `capturedMaxConversations` / `capturedMaxMessagesPerConversation` fields, and one
+  forwarding test deriving both expectations from `getLimitForType`. **Root cause worth
+  generalising: this read takes TWO caps, so it could not live in the suite's method-keyed
+  `Map<String,int> capturedMax` at all — and the whole-map assertion's "everything is
+  accounted for" reading silently exempted it.** The N-cap read is the one that ships
+  unforwarded.
+- **Recorded the UNPROBED `exportFriendCategories` read into the same whole-map assertion, at
+  its sentinel.** Round 2 filed the gap (section-root `truncated` ORs three reads while the
+  section aggregates four record types; categories rides the repo's implicit 100) and round 2's
+  own note that `capturedMax` "can't see it" was the same finding wearing a different hat. Fix:
+  the fake now records it, and `expect(repo.capturedMax, {...3 legs at cap+1,
+  'exportFriendCategories': -1})` states the gap as an executable fact. The `-1` is strictly
+  better than a `containsKey isFalse` — it reddens the day someone adds the cap WITHOUT the
+  truncation probe, and again when BUT-1701 closes it properly, at which point the comment
+  tells the fixer to add a categories-leg positive test beside the other three.
+- **`messages_truncated` now has its first and only reference under `test/`.** Rounds 1 and 2
+  both proved it dead end to end (repo computes `docs.length >= cap`, the retired
+  false-positive rule; `data_export_service:257` only walks `value.values.whereType<Map>()`
+  and this flag lives inside the `conversations` LIST) and both declined to test it. The
+  manager's OWN half is correct, though, so I pinned that: two conversations, one flagged and
+  one not, asserting the flag is carried on the first and OMITTED on the second, with a
+  positive control on the complete conversation's message list. The comment names both
+  surrounding defects. This does not cement anything — unlike a test asserting the bare
+  `{'error'}` shape, which is why round 2 was right to skip the error-axis ones — and it makes
+  a two-file defect greppable for the first time.
+- Also corrected the fake's own header comment, which claimed "the overrides below default to
+  a sentinel -1" when five of ten carried real defaults.
+
+### Still open, re-filed unchanged (all pre-existing, none introduced by this diff)
+
+`friend_categories` completeness gap (now tripwired, above); the error-axis asymmetry —
+`exportPooledRatingEvents` emits `error_code` so the aggregator lifts a warning, while
+`exportCommentsAndRatings:103`, `exportFeedback:171`, `exportFriends:100` and
+`exportSharedContent:214` return a bare `{'error': ...}`, yielding a bundle with neither
+`truncated_collections` nor `warnings`; the dead `messages_truncated`; and BUT-1698's AC text
+saying the key is "never omitted" when the code (correctly, matching ~12 sibling sections)
+omits it on complete sections. Nothing here is Critical or High, and the diff introduced no new
+issue of any severity.
+
+Verification: `flutter test` on both suites 36/36 green; `dart format` clean;
+`flutter analyze --fatal-infos lib/services/account/export test/unit/services/account/export`
+"No issues found" (128 s).
+
+## 2026-07-26 — BUT-1691 re-review round 3: the SwedishWordBoundary sweep (import area, tree UNMOVED)
+
+**Trigger:** third "re-review after automated fixes" on the same 8 files
+(`lib/utils/text/swedish_word_boundary.dart`, `services/import/heuristics/ingredient_line_detector.dart`,
+`services/import/parsers/recipe_section_detector.dart`, `services/menu/parser/text_normalizer.dart`,
+`services/voice/cooking_command_interpreter.dart`, `services/shopping/ingredient_categorizer.dart`,
+`test/unit/services/import/heuristics/ingredient_line_detector_test.dart`,
+`test/unit/utils/text/swedish_word_boundary_test.dart`).
+
+### Step 0: the tree did NOT move
+
+`ls --time-style=full-iso` on all eight: lib files 14:18–15:05, the two test files 16:21 — every
+one older than the round-2 archive entry I wrote at ~16:2x/16:46. So round 3 opened on a
+byte-identical tree to the end of round 2. Nothing in the fix loop consumed round 2's output
+because round 2 closed with zero Critical/High. Reported that up front instead of re-deriving.
+
+### Re-verified round 2's claims live (not trusted)
+
+- String-equivalence of the four respellings, read off the real diffs: `_noWordAfter =
+  SwedishWordBoundary.after` (recipe_section_detector:366), `_noWordBefore/_noWordAfter`
+  (text_normalizer:120-121), `_nb/_na` + `_phrase → boundedRegExp` (cooking_command_interpreter:87-93),
+  `_cheesePattern`/`_beefPattern`/`_souredMilkPattern` (ingredient_categorizer:32/41/65). All render
+  the prior strings; `beforeWith('é')` is set-equal to the old `[a-zåäöé0-9]`.
+- Lowercasing precondition of the lowercase-only class holds at every migrated site:
+  `recipe_section_detector:428`, `ingredient_categorizer:73`, and the detector's own `lower`.
+- Live-path check: `heuristics` copy ← `url_import_strategy.dart:26` only; `widgets` copy ←
+  `assisted_import_viewmodel.dart:16`. Round 1's High finding #3 is CLOSED — the widgets copy is
+  migrated, each header names the other, and `test/unit/widgets/import/ingredient_line_detector_test.dart`
+  exists (part of the 190-test green run).
+- Re-checked every round-2 fixture by hand for the sibling-OR trap: all unit-loop positives lead with
+  `ca`/`en`, so `_leadingQuantityPattern` cannot answer for them; `'RÖDKÅL'`, `'Rödkål:'`, `'Gör så här'`
+  reach the boundary. No residual vacuity in either in-scope test file.
+
+### The new finding — a LITERAL `\b` alternation surviving inside a swept file
+
+`RecipeSectionDetector._subHeadingUnitGuard:52-56` is still
+`RegExp(r'\b(dl|cl|ml|l|msk|tsk|krm|st|g|kg|hg|burk|pkt|påse|...)\b', caseSensitive: false)` —
+300 lines above the `SwedishWordBoundary.after` the same file now imports. Invisible to
+`tools/check_swedish_boundary.sh` (no å/ä/ö adjacent to the escape; the guard exits 0 on the whole
+repo right now) AND to rounds 1–2, which grepped only for INTERPOLATED `\b` + variable.
+
+Probe (`test/.../zz_scratch_subheading_probe_test.dart`, deleted; ran the live guard, a
+safe-boundary rendering, and the real `componentSubHeadingLabel` side by side):
+
+```
+Rödkål:              ascii=true  safe=false live=null
+Vitkål:              ascii=true  safe=false live=null
+Kål:                 ascii=true  safe=false live=null
+Mjöl:                ascii=true  safe=false live=null
+Mjölk:               ascii=false safe=false live=Mjölk
+Öl:                  ascii=true  safe=false live=null
+Till kål:            ascii=true  safe=false live=null
+Kål och morötter:    ascii=true  safe=false live=null
+Höst:                ascii=true  safe=false live=null
+Råg:                 ascii=true  safe=false live=null
+Deg:                 ascii=false safe=false live=Deg
+Fyllning:            ascii=false safe=false live=Fyllning
+1 dl mjölk:          ascii=true  safe=true  live=null
+smör 100 g:          ascii=true  safe=true  live=null
+2 dl vetemjöl        ascii=true  safe=true  live=null
+```
+
+So nine Swedish component headings are silently NOT recognised (`hasMatch(label)` → `return null`
+at `:121`) while `Mjölk:`/`Deg:`/`Fyllning:` are, and the three genuine ingredient lines stay
+guarded under either boundary (`safe=true`) — i.e. the repair costs no recall on the guard's real
+job. Consumers: `swedish_line_classifier.dart:381` and `schema_org_tier.dart:262`.
+
+**Direction analysis is what sets the severity, and it also blocks the drive-by fix.** The misfire
+fails OPEN (the line stays in the flat ingredient list, so allergen tagging is unaffected — only
+section structure is lost), which keeps it Medium. And repairing the boundary would move `Mjöl:`,
+`Råg:` and `Öl:` — all gluten-bearing — from "kept as ingredient" into the file's already-ACCEPTED
+"a colon-terminated bare word IS a heading" strip-bucket, the same decision
+`recipe_section_detector_test.dart:110-130` pins for `Mjölk:`. That is a documented tradeoff to
+extend deliberately, not to inherit by accident, so the deliverable is a ticket + the paired test
+(`'Mjöl:' → 'Mjöl'` beside the existing `'Mjölk:'` case, keeping `'1 dl mjölk:' → null` as the
+recall control) — NOT a test pinning today's accidental answer.
+
+### Still open, unchanged from round 2
+
+`swedish_word_boundary.dart:34-39` — `beforeWith`/`afterWith` interpolate `extraLetters` raw into a
+character class; `-`, `^`, `]` or a trailing `\` from a future caller silently changes or breaks it.
+Only caller passes `'é'`. Low; a doc line (or an assert) is the whole fix.
+The four interpolated-`\b` sites listed in the round-2 entry are unchanged and still correctly
+classified there (`recipe_text_normalizer` frozen-by-golden → ticket; `canonical_pool_key` safe via
+fold-first; `ingredient_preprocessor` dotted-token orphan period; `global_extractor` lexicon
+assumption).
+
+### Verification
+
+`flutter analyze --fatal-infos` on all 8 in-scope files: "No issues found" (4.2 s).
+`flutter test` over `swedish_word_boundary_test`, `import/heuristics/ingredient_line_detector_test`,
+`import/parsers/recipe_section_detector_test`, `menu/parser/text_normalizer_test`,
+`voice/cooking_command_interpreter_test`, `test/unit/widgets/import/ingredient_line_detector_test`
+→ 190 passed. `test/golden/llm/categorize_ingredient_test` → corpus 37/37, 0 failures.
+`tools/check_swedish_boundary.sh` → exit 0 (which is itself the evidence that the guard cannot see
+the finding above). Scratch probe deleted; `git status` clean for `test/unit/services/import/parsers/`.
+No production files edited in this pass.
+
+## 2026-07-26 — Shopping sprint RE-review #3 after automated fixes (BUT-1681 / 1683 / 1696 / 1697)
+
+**Trigger:** third re-review of the 22-file shopping working tree "as it stands now, after
+automated fixes were applied." The tree HAD moved again since re-review #2: the whole error
+channel was redesigned (`UnifiedShoppingService._lastMutationError` + `consumeMutationError()`
+replacing the `_error`/`clearError()` route the previous round verified), `clearCompletedItems`
+gained `_report(e)`, and `ShoppingListOperations.showClearCompletedConfirmation` gained a
+required `onError` positional. Baseline: 258 tests green across the seven shopping suites,
+`flutter analyze --no-fatal-infos` clean on all 14 in-scope `lib/` files.
+
+### Previous round's findings, verified one by one
+- **New finding of round #2 (`clearCompletedItems` silent rollback) FIXED, both halves.**
+  `_report(e)` sits in the catch (`shopping_item_management_module.dart:449-455`) and the caller
+  now branches: `final success = await viewModel.clearBoughtItems(); final reason = success ? null
+  : viewModel.consumeMutationError();` then `onError(reason ?? errorNetwork)`. Four new tests in
+  the `clearCompletedItems` group (denied / lost / transport / silent-on-success). The `onError`
+  param being a REQUIRED positional makes the wiring half compile-enforced, which is stronger than
+  the bool-consumption pattern the other two callers use.
+- **The `_error`-poisoning risk raised in round #2 is designed out, not patched.** `_failMutation`
+  writes a SEPARATE `_lastMutationError`; `hasError`/`_emitState` never read it; `consumeMutationError()`
+  self-clears on read so an early `if (!mounted) return;` cannot strand it. Five service-level tests
+  pin exactly that, including "emptying the lists still yields `ShoppingStateData`" with the reason
+  never consumed. Good design; the read-once contract is the part I would have got wrong.
+- **#3 (updateItemsBatch personal leg) — test hole CLOSED (my round-#2 chunk test survives, now at
+  `shopping_item_operations_module_test.dart:569`), contract mismatch STILL OPEN.** Both doc comments
+  (interface `:22-25`, module `:315-316`) promise "items not present on the list are ignored"; the
+  personal leg is `batch.update` (`:353`), which raises NOT_FOUND and fails the whole chunk. True of
+  the transactional leg only.
+- **#6 (auth-sourced display name) STILL OPEN, unchanged.** `unified_shopping_service.dart:281-282`
+  is still `_authRepository.getCurrentUser()?.displayName ?? 'Du'`, feeding
+  `shopping_list_management_module.dart:108,116` — so `ownerDisplayName` AND
+  `lastActivityByDisplayName` on a freshly created shared list can literally read "Du" to other
+  members, while the item path (`resolveDisplayName` → `UserService.currentDisplayName`) is correct.
+- **Round-#2 Low re `_readCachedDoc`'s blanket FirebaseException remap: STILL OPEN**, unchanged.
+- **`addItemsBatch` personal leg still unchunked** (`:245-255`) — now the only bulk write in the
+  file without `kFirestoreBatchSafeChunkSize`, since `updateItemsBatch:350` and
+  `removeItemsBatch:449` both chunk.
+
+### Claims verified by direct probe rather than trusted
+- **`_requireSelfOwnedCreate` does not break a live path.** The code comment concedes it "also fails
+  `createCollaborativeListFromInvitation` locally instead of at the server." Grepped: that method has
+  callers only at its own definition + the service delegate (`unified_shopping_service.dart:382`), no
+  view/VM caller anywhere in `lib/`, and `firestore.rules:1612-1615` requires
+  `request.auth.uid == request.resource.data.ownerId` on create, so the path was already dead. Safe.
+- **The `createdAt` addition to `_requireNoPrivilegeEscalation` does NOT lock the owner out of member
+  management.** `if (stored.ownerId == uid) return;` is the first line (`:482`), and
+  `firestore.rules:1620-1621` lets the owner update unconditionally. No regression.
+- **The append payload cannot silently drop a non-item field for any REAL caller.** `_appendPayload`
+  writes only `items` + four activity keys, so a mutator that appended a row AND renamed the list
+  would lose the rename. Walked every mutator: all six `mutateCollaborativeList` call sites go through
+  `_withItems` (items + activity only), and the three `mutateSharedList` callers use
+  `UnifiedShoppingList.addItem/toggleItemBought/removeItem`. `toFirestore()` carries no derived total,
+  so nothing else changes on an append. Latent, not live.
+- **The cache-miss test is non-vacuous.** `return _mutateFromCache(...)` sits INSIDE the
+  `on FirebaseException` catch, so a raw `unavailable` from `_readCachedDoc` escapes rather than
+  re-entering the fallback — without the remap the `isA<ResourceNotFoundException>()` expectation
+  goes red.
+
+### The new finding this round
+`UnifiedShoppingViewModel.addItemsToList:271-277` still calls `_shoppingService.addItemsBatch(items)`
+with no `source:`, so BUT-1681's defaulted `String source = 'manual'` stamps a MENU→list add as
+`manual`. Live chain, walked end to end: `veckomeny_view.dart:327` →
+`VeckomenyDialogs.showShoppingListSelector:144` → `InputComponents.showListSelector:93` →
+`ShoppingListSelector._addMenuToList:337` → `viewModel.addItemsToList`. The VM's own doc comment
+(`:283-288`) now asserts the opposite — "Menu-generated lists do NOT flow through here … it stays
+analytically silent" — which is how the next session re-closes the ticket without looking. Note the
+generator's own event IS correct and correctly suppressed on regeneration (two new tests pin the count
+at 1 and 0).
+
+### Test-only fix applied (zero production risk)
+`shopping_repository_routing_module_test.dart` — new `the queued append carries the activity stamp and
+no rule-locked key`. `_appendPayload` is a HAND-BUILT narrow map, and neither half was pinned: deleting
+the `for (final key in _activityFieldKeys)` loop left every suite green (the existing append test reads
+only `items` and the audit `details` string; `grep lastActivity` over the whole file returned nothing),
+and spreading the serialized map instead would have written the three keys the update rule forbids. The
+fixture makes the two values DIFFER — the doc is created with `lastActivityByUserId: 'alice'` by
+`UnifiedShoppingList.collaborative`, the mutator stamps `'bob'` — so the assertion cannot pass without
+the loop, and a `createdAt`-shifting mutator run as the OWNER (escalation guard returns early, so it
+cannot be what preserves the field) pins the omission half. 259 green after, analyze clean.
+
+## 2026-07-27 — Shopping sprint RE-review #4, final round (BUT-1696 / 1697; five files, tree MOVED)
+
+Tree-moved check first: in-scope `lib/` mtimes are 2026-07-27 19:14–19:17 vs the archive's
+2026-07-26 17:46, and `git diff` (worktree vs index) isolates exactly four unstaged behavioural
+deltas — the `_reindex` re-find, the personal-leg `ResourceNotFoundException`, the dialog's
+`isNotEmpty` fallbacks, and the dropped display-name abort in `createCollaborativeList`. The
+*staged* halves were reviewed in round 3. Only the four deltas were examined.
+
+### 1. The `_reindex` / re-find-after-await guard — unpinned AND fixture-blind
+`ShoppingBulkItemModule._reindex:44` + the inline twin in
+`ShoppingItemManagementModule.toggleItemBought:417`. Premise verified in production, not just in
+the comment: `unified_shopping_service.dart:335-336` really is `_lists.removeWhere((l) =>
+l.isCollaborative); _lists.addAll(collabLists);` on the SAME `List` instance the two modules hold
+by reference, so a shared list arriving/leaving during the in-flight write reorders indices under
+the module.
+
+HYPOTHESIS (not executed, `flutter test` was forbidden this round): reverting all three re-finds to
+the captured `listIndex` leaves the whole suite green. Evidence: `grep -c "lists.add"` in
+`shopping_item_management_module_test.dart` = 36, and every one of the 36 is a single
+`lists.add(...)` per test — no test ever holds two lists, so `indexWhere(id)` and the captured index
+are identically equal by construction, and the `_reindex → null` arm (list removed entirely) is
+unreachable from every fixture. This is the "guard that compares OLD vs NEW is untested whenever
+every fixture's base is the same LENGTH" pattern again, one layer up: here the compared thing is a
+LIST-COLLECTION index rather than an item list.
+
+Reachable with existing seams — no new production seam needed. The module's own
+`notifyListeners` callback fires AFTER the optimistic mutation and BEFORE the await
+(`shopping_bulk_item_module.dart:110`, `:127`; `shopping_item_management_module.dart:402`), and the
+harness already injects it as `notifyListeners: () => notifyCalls++`. A test can therefore reorder
+`lists` from inside that closure on its first invocation — which is exactly what a snapshot does in
+production — then let the armed `throwOnUpdateItemsBatch` drive the catch block. Second, equally
+cheap seam: a `void Function()? beforeThrow` hook on `_FakeShoppingRepository` (test-file change
+only). Nothing in `lib/` needs to move.
+
+### 2. Personal-leg `updateItemsBatch` — the throw and the PARTIAL case are both unpinned
+`shopping_item_operations_module.dart:366-375` (`present.isEmpty → throw
+ResourceNotFoundException`). The two `updateItemsBatch` "ignores ids no longer on the list" tests
+(`shopping_item_operations_module_test.dart:471`, `:490`) both build on `_cachedList()`, i.e. a
+COLLABORATIVE list, so they take the transactional leg and never reach the `else`. The only
+personal-leg test (`:575`) seeds EVERY id into the subcollection first, so `present.length ==
+items.length` and neither the filter nor the throw is exercised. Test-file mtime 2026-07-26 16:33 <
+production 2026-07-27 19:14 — the throw landed after the last test edit.
+
+Two real behaviour notes found while tracing the callers:
+- The two legs now DISAGREE with their own doc comment ("dropped on BOTH legs"). Collaborative
+  all-ids-gone returns normally, still runs the transaction, and still stamps
+  `lastActivityByUserId`/`…DisplayName` — so a shared "avmarkera alla" over rows another member
+  already deleted reports SUCCESS and posts a spurious "X ändrade listan" banner, while the
+  identical personal case reports failure.
+- `shoppingFailureMessage:25` maps `ResourceNotFoundException` → `shoppingListNotFound` = "Lista
+  hittades inte". So the new throw tells the shopper the LIST is gone while it is on screen —
+  precisely the "fresh lie" that `toggleItemBought:388` deliberately stays silent about for the
+  single-row twin. Same class, opposite treatment.
+- `logPermissionCheck(details: 'Items: ${items.length}')` logs the REQUESTED count, not the
+  written count, so a partial batch over-reports in the audit trail.
+
+### 3. `ShoppingShareStatusDialog` — zero tests, and the obvious test is VACUOUS
+`grep -rln "ShoppingShareStatusDialog\|shopping_sharing_status_dialog" test/` → zero hits. The
+dialog is now the render site that turns an empty `ownerDisplayName` into something a user reads
+(`:125-127`).
+
+The trap: `displayUnknownUser` (owner fallback, `:127`) and `shoppingUnknownUser` (member-row
+fallback, `:273`) are two DIFFERENT l10n keys with the IDENTICAL Swedish string "Okänd användare"
+(`app_sv.arb:6987`-equivalent and `:5085`). On a collaborative fixture `userDisplayNames` defaults
+to `const {}`, so every member row already renders "Okänd användare" — `expect(find.text('Okänd
+användare'), findsOneWidget)` would pass with the whole Skapare fallback deleted. Fix: supply
+`userDisplayNames` for every member id, or use a personal-list fixture (no members section).
+Structural facts that make the test cheap: no `FutureBuilder` anywhere (member names come from the
+`userDisplayNames` param, `UserService` is passed but unused for names), so one synchronous pump is
+enough; `build` does resolve `PermissionService` + `UserService` from the PRODUCTION locator, so the
+`prod.ServiceLocator.initialize(DIContainer())` bridge is required (template:
+`test/widget/dialogs/slot_picker_dialog_test.dart:34-45`).
+For the activity half, the `Av`-row absence needs a co-asserted positive: the `När` row still
+renders from `lastActivityAt`, so assert it in the same test.
+
+### 4. `createCollaborativeList`'s dropped display-name abort — unpinned
+`shopping_list_management_module.dart:87` (`currentUserDisplayName == null` no longer aborts) and
+`:114`/`:122`/`:42` (`.orEmpty()`). `grep -rln ShoppingListManagementModule test/` → zero hits; the
+module has no test file at all. Every `createCollaborativeList` hit under `test/` is either the
+REPOSITORY's entity-taking method (`shopping_repository_routing_module_test.dart`) or a mocktail
+stub on the service (`create_shared_list_viewmodel_test.dart:242`) — wiring, never the guard.
+Verified no gate blocks the empty string: `grep ownerDisplayName firestore.rules` → nothing, and the
+repository's `validateRequiredFields` is applied to ITEMS, not to the list document.
+Upstream half now correct and also unpinned: `UnifiedShoppingService.currentUserDisplayName:295-296`
+is `ServiceLocator.tryGet<UserService>()?.currentDisplayName` — the `?? 'Du'` recorded in the
+principles file on 2026-07-26 is GONE, so that finding is closed; nothing asserts the profile
+source at the service level.
+
+### Closed from earlier rounds
+`ShoppingItemManagementModule.clearCompletedItems` now reports (`shopping_bulk_item_module.dart:90`)
+AND its caller reads the reason: `shopping_list_operations.dart:65-71` does `final reason = success ?
+null : viewModel.consumeMutationError();` then `onError(reason ?? errorGeneric)`. Both halves of the
+round-2/3 "report with no reader" finding are landed.

@@ -82,6 +82,7 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
       startAt(): typeof query;
       endAt(): typeof query;
       count(): { get(): Promise<{ data(): { count: number } }> };
+      listDocuments(): Promise<unknown[]>;
       doc(id: string): unknown;
       add(data: RecordedAuditRow): Promise<{ id: string }>;
     } = {
@@ -109,6 +110,15 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
             return { data: () => ({ count: 0 }) };
           },
         };
+      },
+      // BUT-1697: the shopping-list sweep and its residual probe use
+      // `listDocuments()`, not `get()` — only that call can see a MISSING
+      // parent document that still owns an `items` subcollection. This fake
+      // holds nothing, so an empty list is the honest answer; the point is that
+      // the method EXISTS, otherwise the step throws and the orchestration test
+      // reports a cascade failure that has nothing to do with orchestration.
+      async listDocuments(): Promise<unknown[]> {
+        return [];
       },
       doc(_id: string): unknown {
         return makeDoc(name);
@@ -153,6 +163,21 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
     },
     batch() {
       return makeBatch();
+    },
+    // BUT-1697: the shared shopping-list scrub runs one transaction per list.
+    // Both shared queries return empty here, so the loop never spins — but a
+    // fake missing the method turns any future seeded fixture into a TypeError
+    // that reads as an orchestration failure rather than a fixture gap.
+    async runTransaction<T>(
+      fn: (tx: unknown) => Promise<T>,
+    ): Promise<T> {
+      return fn({
+        async get() {
+          return { exists: false, data: () => undefined };
+        },
+        update() {},
+        delete() {},
+      });
     },
   } as unknown as admin.firestore.Firestore;
 }

@@ -493,17 +493,23 @@ class AnalyticsService extends BaseService {
     required String listId,
     required String listType,
     int? initialItemCount,
+    String? source,
   }) => _shoppingTracker.logShoppingListCreated(
     listId: listId,
     listType: listType,
     initialItemCount: initialItemCount,
+    source: source,
   );
 
   Future<void> logShoppingListItemAdded({
     required String listId,
     String? source,
-  }) =>
-      _shoppingTracker.logShoppingListItemAdded(listId: listId, source: source);
+    int? itemCount,
+  }) => _shoppingTracker.logShoppingListItemAdded(
+    listId: listId,
+    source: source,
+    itemCount: itemCount,
+  );
 
   Future<void> logShoppingListItemChecked({
     required String listId,

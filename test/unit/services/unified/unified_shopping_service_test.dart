@@ -43,6 +43,13 @@ library;
 
 import 'dart:async';
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/account/user_consent.dart';
+import 'package:butlery/repositories/interfaces/analytics_repository.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/services/analytics/trackers/shopping_events_tracker.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/core/storage/drift/app_database.dart';
@@ -59,6 +66,7 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -83,6 +91,7 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   Object? throwOnAddItem;
   Object? throwOnAddItemsBatch;
   Object? throwOnUpdateItem;
+  Object? throwOnUpdateItemsBatch;
   Object? throwOnRemoveItem;
   Object? throwOnRemoveItemsBatch;
   Object? throwOnCreate;
@@ -92,6 +101,7 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   /// Call log for verification.
   final List<UnifiedShoppingItem> addedItems = [];
   final List<UnifiedShoppingItem> updatedItems = [];
+  final List<List<UnifiedShoppingItem>> updatedBatches = [];
   final List<List<UnifiedShoppingItem>> batchedItems = [];
   final List<String> removedItemIds = [];
   final List<List<String>> removedBatches = [];
@@ -150,6 +160,16 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   Future<void> updateItem(String listId, UnifiedShoppingItem item) async {
     if (throwOnUpdateItem != null) throw throwOnUpdateItem!;
     updatedItems.add(item);
+  }
+
+  @override
+  Future<void> updateItemsBatch(
+    String listId,
+    List<UnifiedShoppingItem> items,
+  ) async {
+    if (throwOnUpdateItemsBatch != null) throw throwOnUpdateItemsBatch!;
+    updatedBatches.add(items);
+    updatedItems.addAll(items);
   }
 
   @override
@@ -218,6 +238,12 @@ class _FakePermissionService extends Fake implements PermissionService {
 class _MockIngredientLookupService extends Mock
     implements IngredientLookupService {}
 
+class _MockAnalyticsService extends Mock implements AnalyticsService {}
+
+class _MockAnalyticsRepository extends Mock implements AnalyticsRepository {}
+
+class _MockConsentService extends Mock implements ConsentService {}
+
 class _MockOfflineService extends Mock implements OfflineService {}
 
 class _MockAppDatabase extends Mock implements AppDatabase {}
@@ -240,7 +266,36 @@ void main() {
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
+    registerFallbackValue(ConsentPurpose.analytics);
   });
+
+  /// BUT-1681: registers a real ShoppingEventsTracker over a mock repository
+  /// and returns the (name, parameters) list it records. A real tracker (not a
+  /// mocked AnalyticsService method) is used so the assertions see the
+  /// parameter map production would actually send.
+  List<(String, Map<String, Object>?)> registerAnalyticsSpy() {
+    final events = <(String, Map<String, Object>?)>[];
+    final repo = _MockAnalyticsRepository();
+    when(
+      () => repo.logEvent(
+        name: any(named: 'name'),
+        parameters: any(named: 'parameters'),
+      ),
+    ).thenAnswer((invocation) async {
+      events.add((
+        invocation.namedArguments[#name] as String,
+        invocation.namedArguments[#parameters] as Map<String, Object>?,
+      ));
+    });
+    final consent = _MockConsentService();
+    when(() => consent.hasConsent(any())).thenAnswer((_) async => true);
+    final analytics = _MockAnalyticsService();
+    when(() => analytics.shopping).thenReturn(
+      ShoppingEventsTracker(repository: repo)..setConsentService(consent),
+    );
+    TestServiceLocator.registerMock<AnalyticsService>(analytics);
+    return events;
+  }
 
   setUp(() async {
     await TestServiceLocator.initialize();
@@ -251,9 +306,12 @@ void main() {
     fakeFirestoreRepo = mocks.FakeFirestoreRepository();
     mockAuthRepository = _MockFirebaseAuthRepository();
 
-    // Auth repo: `currentUser` is read by initialize() for cache user; the
-    // display-name getter calls `getCurrentUser()?.displayName`. Returning
-    // null is fine — production falls back to 'Du'.
+    // Auth repo: `currentUser` is read by initialize() for the cache user.
+    // It no longer feeds the display name — BUT-1697 moved that to
+    // `UserService.currentDisplayName`, which this suite does not register, so
+    // `currentUserDisplayName` is null here. Null/empty IS the intended
+    // unresolved value now; the old `'Du'` placeholder was being persisted into
+    // other members' copies of a shared list.
     when(() => mockAuthRepository.currentUser).thenReturn(null);
     when(() => mockAuthRepository.getCurrentUser()).thenReturn(null);
 
@@ -474,6 +532,62 @@ void main() {
       expect(fakeRepo.updatedItems, isEmpty);
     });
 
+    /// BUT-1681: this is the path "lägg till receptets ingredienser" really
+    /// takes (the viewmodel's addItemsFromRecipe has no callers in lib/), and
+    /// it emitted nothing at all. It now emits ONE event carrying the source
+    /// and the row count — not one per row, which for a 20-ingredient recipe
+    /// would be 20x the analytics cost for the same answer.
+    test('a recipe bulk-add emits one tagged item-added event', () async {
+      final loggedEvents = registerAnalyticsSpy();
+      final listId = await service.createPersonalList('L');
+      await service.setActiveList(listId!);
+
+      final ok = await service.addItemsBatch([
+        UnifiedShoppingItem(name: 'Mjölk', amount: 1),
+        UnifiedShoppingItem(name: 'Ägg', amount: 6),
+      ], source: 'recipe');
+      await Future<void>.delayed(Duration.zero);
+
+      expect(ok, isTrue);
+      expect(loggedEvents, hasLength(1));
+      final (name, params) = loggedEvents.single;
+      expect(name, 'shopping_list_item_added');
+      expect(params!['source'], 'recipe');
+      expect(params['item_count'], 2);
+      expect(params['list_id'], listId);
+    });
+
+    /// The default keeps a plain bulk add readable as manual rather than
+    /// silently inheriting whatever the last caller passed.
+    test('an untagged bulk-add defaults to manual', () async {
+      final loggedEvents = registerAnalyticsSpy();
+      final listId = await service.createPersonalList('L');
+      await service.setActiveList(listId!);
+
+      await service.addItemsBatch([
+        UnifiedShoppingItem(name: 'Mjölk', amount: 1),
+      ]);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(loggedEvents.single.$2!['source'], 'manual');
+    });
+
+    /// A failed batch must not report an add that never happened.
+    test('a failed batch emits nothing', () async {
+      final loggedEvents = registerAnalyticsSpy();
+      final listId = await service.createPersonalList('L');
+      await service.setActiveList(listId!);
+      fakeRepo.throwOnAddItemsBatch = Exception('boom');
+
+      final ok = await service.addItemsBatch([
+        UnifiedShoppingItem(name: 'Mjölk', amount: 1),
+      ], source: 'recipe');
+      await Future<void>.delayed(Duration.zero);
+
+      expect(ok, isFalse);
+      expect(loggedEvents, isEmpty);
+    });
+
     /// Proves: dedup contract — adding "1 dl mjölk" when "1 dl Mjölk" already
     /// exists merges by summing amounts (case- and whitespace-insensitive,
     /// same unit). A regression where dedup compared raw strings would yield
@@ -583,6 +697,32 @@ void main() {
       expect(ok, isFalse);
       // Local state must be reverted to original (bought=false).
       expect(service.activeList!.items.single.bought, isFalse);
+    });
+
+    /// BUT-1696: the rollback must also leave a MESSAGE behind. `false` alone
+    /// is what the view used to get, and it had nothing to show — the checkbox
+    /// un-ticked itself and said nothing.
+    test('records a displayable reason when the repo throws', () async {
+      final item = UnifiedShoppingItem(name: 'Mjölk', amount: 1);
+      final listId = await service.createPersonalList('L', items: [item]);
+      await service.setActiveList(listId!);
+
+      fakeRepo.throwOnUpdateItem = PermissionDeniedException(
+        'nope',
+        resource: 'shopping_list:$listId',
+        userId: 'u',
+      );
+      expect(await service.toggleItemBought(item.id), isFalse);
+
+      expect(
+        service.consumeMutationError(),
+        // A PERSONAL list (`createPersonalList` above): the sentence must not
+        // describe it as shared.
+        AppLocale.current.shoppingNoEditPermission,
+      );
+      // And it must NOT have flipped the load-scoped error: the lists are still
+      // valid, so a failed tick may never turn the tab into an error screen.
+      expect(service.hasError, isFalse);
     });
 
     /// Proves: toggle of an unknown item id is a safe no-op (false), no
@@ -748,6 +888,118 @@ void main() {
         expect(local.items.map((i) => i.name), ['Bröd']);
       },
     );
+
+    /// BUT-1696: three failures used to collapse into a bare `false`, so a
+    /// denied edit looked exactly like a flaky connection — the checkbox
+    /// ticked and silently un-ticked with nothing said. Each now records the
+    /// sentence the view reads back, and they must differ from each other.
+    test('a denied edit is reported differently from a lost list', () async {
+      final list = await seedShared();
+
+      fakeRepo.throwOnMutateCollaborative = PermissionDeniedException(
+        'nope',
+        resource: 'collaborative_list:${list.id}',
+        userId: 'u',
+      );
+      expect(
+        await service.mutateSharedList(list.id, (live) => live),
+        isFalse,
+      );
+      final denied = service.consumeMutationError();
+
+      fakeRepo.throwOnMutateCollaborative = ResourceNotFoundException(
+        'gone',
+        resourceType: 'collaborative_shopping_list',
+        resourceId: list.id,
+      );
+      expect(
+        await service.mutateSharedList(list.id, (live) => live),
+        isFalse,
+      );
+      final gone = service.consumeMutationError();
+
+      fakeRepo.throwOnMutateCollaborative = Exception('socket');
+      expect(
+        await service.mutateSharedList(list.id, (live) => live),
+        isFalse,
+      );
+      final transport = service.consumeMutationError();
+
+      expect(denied, isNotNull);
+      expect(gone, isNotNull);
+      expect(transport, isNotNull);
+      expect(
+        {denied, gone, transport},
+        hasLength(3),
+        reason:
+            'the whole point is that the user can tell the three apart; one '
+            'shared string would be the bug this ticket fixes',
+      );
+      expect(denied, AppLocale.current.shoppingNoEditPermissionShared);
+      expect(gone, AppLocale.current.shoppingListNotFound);
+    });
+
+    /// A denial decided by the RULES rather than by a client-side guard
+    /// arrives as a RAW FirebaseException — every other test throws a typed
+    /// exception, so without this the `permission-denied` arm of
+    /// `shoppingFailureMessage` is deletable with the suite green and the
+    /// server's verdict reaches the shopper as "check your connection".
+    test(
+      'a rules-level denial is worded as a denial, not a network problem',
+      () async {
+        final list = await seedShared();
+        fakeRepo.throwOnMutateCollaborative = FirebaseException(
+          plugin: 'cloud_firestore',
+          code: 'permission-denied',
+        );
+
+        expect(
+          await service.mutateSharedList(list.id, (live) => live),
+          isFalse,
+        );
+        final reason = service.consumeMutationError();
+        expect(reason, AppLocale.current.shoppingNoEditPermissionShared);
+        expect(reason, isNot(AppLocale.current.errorNetwork));
+      },
+    );
+
+    /// The sibling arm, same reasoning.
+    test('a rules-level not-found is worded as a missing list', () async {
+      final list = await seedShared();
+      fakeRepo.throwOnMutateCollaborative = FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'not-found',
+      );
+
+      expect(await service.mutateSharedList(list.id, (live) => live), isFalse);
+      final reason = service.consumeMutationError();
+      expect(reason, AppLocale.current.shoppingListNotFound);
+      expect(reason, isNot(AppLocale.current.errorNetwork));
+    });
+
+    /// The slot is cleared on ENTRY, not only on read. A caller that bails
+    /// without consuming — the collaborative screen does exactly that — used to
+    /// strand its reason for whoever read next, so a later, unrelated and
+    /// SUCCESSFUL action could surface someone else's error sentence.
+    test('a reason nobody consumed cannot survive the next mutation', () async {
+      final list = await seedShared();
+      fakeRepo.throwOnMutateCollaborative = PermissionDeniedException(
+        'nope',
+        resource: 'shopping_list:${list.id}',
+        userId: 'u',
+      );
+      expect(await service.mutateSharedList(list.id, (live) => live), isFalse);
+      // Deliberately NOT consumed.
+
+      fakeRepo.throwOnMutateCollaborative = null;
+      expect(await service.mutateSharedList(list.id, (live) => live), isTrue);
+
+      expect(
+        service.consumeMutationError(),
+        isNull,
+        reason: 'a stale reason must not attach itself to a later action',
+      );
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -876,6 +1128,110 @@ void main() {
       service.dispose();
       // Second dispose / late notify must not throw.
       expect(() => service.notifyListeners(), returnsNormally);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // uncheckAllItems — failure reporting + error lifetime (BUT-1696/BUT-1697)
+  // -------------------------------------------------------------------------
+
+  group('uncheckAllItems failure reporting', () {
+    Future<String> seedWithOneBoughtItem() async {
+      final item = UnifiedShoppingItem(name: 'Mjölk', amount: 1);
+      final listId = await service.createPersonalList('L', items: [item]);
+      await service.setActiveList(listId!);
+      expect(await service.toggleItemBought(item.id), isTrue);
+      expect(service.activeList!.items.single.bought, isTrue);
+      return listId;
+    }
+
+    /// Proves: a failed bulk uncheck rolls the rows back AND leaves the
+    /// specific reason on `consumeMutationError()`. The view reads exactly this
+    /// to decide between an error snackbar and "Alla avmarkerade" — with `false`
+    /// alone it showed the success message over a fully re-ticked list.
+    test('a denied bulk uncheck rolls back and records the reason', () async {
+      final listId = await seedWithOneBoughtItem();
+
+      fakeRepo.throwOnUpdateItemsBatch = PermissionDeniedException(
+        'nope',
+        resource: 'shopping_list:$listId',
+        userId: 'u',
+      );
+
+      expect(await service.uncheckAllItems(), isFalse);
+      expect(service.activeList!.items.single.bought, isTrue);
+      expect(
+        service.consumeMutationError(),
+        // Seeded as a personal list — the wording follows the list, not the
+        // failure class.
+        AppLocale.current.shoppingNoEditPermission,
+      );
+    });
+
+    /// Proves the reason is SPECIFIC, not one shared string — a deleted list
+    /// and a denied edit are different instructions to someone in a shop.
+    test('a lost list records a different reason', () async {
+      final listId = await seedWithOneBoughtItem();
+
+      fakeRepo.throwOnUpdateItemsBatch = ResourceNotFoundException(
+        'gone',
+        resourceType: 'shopping_list',
+        resourceId: listId,
+      );
+
+      expect(await service.uncheckAllItems(), isFalse);
+      final reason = service.consumeMutationError();
+      expect(reason, AppLocale.current.shoppingListNotFound);
+      expect(reason, isNot(AppLocale.current.shoppingNoEditPermission));
+    });
+
+    /// Proves a mutation failure NEVER reaches the load-scoped `_error`.
+    ///
+    /// That is the whole reason the reason lives in its own field: `hasError`
+    /// and `_emitState` read `_error`, and the shopping-list content widget
+    /// turns `hasError` into a full-screen error + retry that replaces the list.
+    /// The service is a lazy singleton, so writing a transient mutation failure
+    /// there poisoned the tab until the next `initialize()`/`loadLists()`.
+    test(
+      'a failed bulk uncheck never sets hasError and never becomes an error state',
+      () async {
+        final listId = await seedWithOneBoughtItem();
+        fakeRepo.throwOnUpdateItemsBatch = Exception('socket');
+        expect(await service.uncheckAllItems(), isFalse);
+
+        expect(service.hasError, isFalse);
+        expect(service.error, isNull);
+        expect(service.currentState, isA<ShoppingStateData>());
+
+        // Even with the reason NEVER consumed, emptying the lists must produce a
+        // normal empty data state rather than the stale-message error screen —
+        // no view is responsible for remembering to clean up.
+        expect(await service.deleteList(listId), isTrue);
+        expect(service.lists, isEmpty);
+        expect(service.currentState, isA<ShoppingStateData>());
+      },
+    );
+
+    /// Proves the reason is READ-ONCE. Self-clearing on read is what removes the
+    /// ordering hazard: a view that bails out early (`if (!mounted) return;`)
+    /// cannot strand a message for the next reader.
+    test('consumeMutationError self-clears after the first read', () async {
+      await seedWithOneBoughtItem();
+      fakeRepo.throwOnUpdateItemsBatch = Exception('socket');
+      expect(await service.uncheckAllItems(), isFalse);
+
+      expect(service.consumeMutationError(), isNotNull);
+      expect(service.consumeMutationError(), isNull);
+    });
+
+    /// Control: a successful bulk uncheck must not record a reason at all.
+    test('a successful bulk uncheck leaves no mutation reason', () async {
+      await seedWithOneBoughtItem();
+
+      expect(await service.uncheckAllItems(), isTrue);
+      expect(service.activeList!.items.single.bought, isFalse);
+      expect(service.error, isNull);
+      expect(service.consumeMutationError(), isNull);
     });
   });
 }

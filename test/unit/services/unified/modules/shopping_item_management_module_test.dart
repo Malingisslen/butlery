@@ -47,6 +47,10 @@
 /// 18. `toggleItemBought` ROLLS BACK local state when the repo throws —
 ///     this is the optimistic-rollback invariant that batch 7 was asked
 ///     to pin.
+/// 18b.`toggleItemBought` REPORTS a distinct Swedish sentence per failure
+///     kind (denied / list gone / transport) — BUT-1696. `reportFailure`
+///     is wired in `buildModule()`; without it `_report` is a silent
+///     no-op and these assertions would be vacuous.
 /// 19. `clearCompletedItems` short-circuits with true (no repo call)
 ///     when nothing is bought — must not call `removeItemsBatch([])`.
 /// 20. `clearCompletedItems` rolls back the bought items into local
@@ -54,11 +58,15 @@
 /// 21. `uncheckAllItems` short-circuits with true when nothing is bought.
 /// 22. `uncheckAllItems` rolls back the original item shape (not just
 ///     bought=true; the whole snapshot) when the parallel update fails.
+/// 22b.`uncheckAllItems` reports the SAME three-way mapping on failure and
+///     reports nothing on success (BUT-1696/BUT-1697).
 /// 23. `addItemsFromRecipe` empty list returns true without touching repo.
 /// 24. `addItemsFromRecipe` accepts dynamic input (e.g. strings) and
 ///     wraps each in a `UnifiedShoppingItem` before batching.
 library;
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
 import 'package:butlery/models/category_preferences.dart';
@@ -88,6 +96,7 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   Object? throwOnAddItem;
   Object? throwOnAddItemsBatch;
   Object? throwOnUpdateItem;
+  Object? throwOnUpdateItemsBatch;
   Object? throwOnRemoveItem;
   Object? throwOnRemoveItemsBatch;
 
@@ -95,6 +104,7 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   final List<UnifiedShoppingItem> addedItems = [];
   final List<List<UnifiedShoppingItem>> batchedItems = [];
   final List<UnifiedShoppingItem> updatedItems = [];
+  final List<List<UnifiedShoppingItem>> updatedBatches = [];
   final List<String> removedItemIds = [];
   final List<List<String>> removedBatches = [];
 
@@ -117,6 +127,16 @@ class _FakeShoppingRepository extends Fake implements ShoppingRepository {
   Future<void> updateItem(String listId, UnifiedShoppingItem item) async {
     if (throwOnUpdateItem != null) throw throwOnUpdateItem!;
     updatedItems.add(item);
+  }
+
+  @override
+  Future<void> updateItemsBatch(
+    String listId,
+    List<UnifiedShoppingItem> items,
+  ) async {
+    if (throwOnUpdateItemsBatch != null) throw throwOnUpdateItemsBatch!;
+    updatedBatches.add(items);
+    updatedItems.addAll(items);
   }
 
   @override
@@ -182,6 +202,7 @@ IngredientData _ingredient({
 UnifiedShoppingList _seedList({
   String id = 'list-1',
   List<UnifiedShoppingItem>? items,
+  ListType type = ListType.personal,
 }) {
   return UnifiedShoppingList(
     id: id,
@@ -189,7 +210,7 @@ UnifiedShoppingList _seedList({
     ownerId: 'owner',
     ownerDisplayName: 'O',
     items: items ?? const [],
-    type: ListType.personal,
+    type: type,
   );
 }
 
@@ -203,6 +224,12 @@ void main() {
   late List<UnifiedShoppingList> lists;
   late String? activeListId;
   late int notifyCalls;
+
+  /// BUT-1696: every message the module hands back for display. Wired into
+  /// `buildModule()` so the reporting half of the fix is never vacuous —
+  /// leaving `reportFailure` null (the constructor default) made `_report`
+  /// a no-op and the whole suite stayed green with the call deleted.
+  late List<String> reported;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
@@ -234,6 +261,7 @@ void main() {
     lists = <UnifiedShoppingList>[];
     activeListId = null;
     notifyCalls = 0;
+    reported = <String>[];
   });
 
   tearDown(() async {
@@ -252,6 +280,7 @@ void main() {
       getActiveListId: () => activeListId,
       notifyListeners: () => notifyCalls++,
       getCategoryPreferences: () => prefsModule,
+      reportFailure: reported.add,
     );
   }
 
@@ -644,11 +673,272 @@ void main() {
       // Two notifies: optimistic apply + rollback.
       expect(notifyCalls, 2);
     });
+
+    /// BUT-1696: this is the LIVE checkbox path — view `_onItemTap` →
+    /// `UnifiedShoppingViewModel.toggleItemBought` → service →
+    /// `ShoppingItemManagementModule.toggleItemBought`. It does NOT go through
+    /// `mutateSharedList`, so the service-level three-way test does not cover
+    /// it. Without these two, deleting `_report(e)` from the rollback leaves
+    /// the whole suite green and the checkbox silently un-ticks again.
+    test(
+      'a denied edit reports the permission sentence and rolls back',
+      () async {
+        final item = UnifiedShoppingItem(name: 'A', amount: 1);
+        lists.add(_seedList(id: 'L', items: [item]));
+        activeListId = 'L';
+        fakeRepo.throwOnUpdateItem = PermissionDeniedException(
+          'nope',
+          resource: 'shopping_list:L',
+          userId: 'u',
+        );
+
+        final ok = await buildModule().toggleItemBought(item.id);
+
+        expect(ok, isFalse);
+        expect(lists.first.items.single.bought, isFalse);
+        expect(
+          reported.single,
+          // The fixture is a PERSONAL list, so the sentence must not call it a
+          // shared one — see the collaborative twin below.
+          AppLocale.current.shoppingNoEditPermission,
+        );
+      },
+    );
+
+    /// The wording branch itself. A member denied on a SHARED list must be
+    /// told it is shared — and someone on their own list must not be. Without
+    /// this twin, dropping the `shared:` argument from `shoppingFailureMessage`
+    /// leaves the suite green with every list described as shared.
+    test(
+      'a denied edit on a COLLABORATIVE list reports the shared sentence',
+      () async {
+        final item = UnifiedShoppingItem(name: 'A', amount: 1);
+        lists.add(
+          _seedList(id: 'L', items: [item], type: ListType.collaborative),
+        );
+        activeListId = 'L';
+        fakeRepo.throwOnUpdateItem = PermissionDeniedException(
+          'nope',
+          resource: 'shopping_list:L',
+          userId: 'u',
+        );
+
+        final ok = await buildModule().toggleItemBought(item.id);
+
+        expect(ok, isFalse);
+        expect(
+          reported.single,
+          AppLocale.current.shoppingNoEditPermissionShared,
+        );
+        expect(
+          reported.single,
+          isNot(AppLocale.current.shoppingNoEditPermission),
+        );
+      },
+    );
+
+    /// The two "nothing happened" branches are deliberately DIFFERENT, and the
+    /// difference is the whole BUT-1696 lesson: say what is true, or say
+    /// nothing. A list that is gone gets a sentence; a row that vanished from a
+    /// list still on screen gets silence, because "Lista hittades inte" would
+    /// be a fresh invented cause. Swapping the two goes unnoticed without both
+    /// halves of this pair.
+    test('no active list reports that the list is gone', () async {
+      lists.clear();
+      activeListId = null;
+
+      expect(await buildModule().toggleItemBought('whatever'), isFalse);
+
+      expect(reported.single, AppLocale.current.shoppingListNotFound);
+    });
+
+    test('a vanished ROW on a present list reports nothing', () async {
+      lists.add(
+        _seedList(
+          id: 'L',
+          items: [UnifiedShoppingItem(name: 'A', amount: 1)],
+        ),
+      );
+      activeListId = 'L';
+
+      expect(await buildModule().toggleItemBought('no-such-item'), isFalse);
+
+      expect(
+        reported,
+        isEmpty,
+        reason:
+            'the list is right there on screen — claiming it is missing would '
+            'be the invented cause this ticket exists to remove',
+      );
+    });
+
+    /// Proves the SECOND branch of the mapping, and that it differs from the
+    /// first — telling "du får inte ändra" apart from "listan finns inte" is
+    /// the entire point of the ticket for someone standing in a shop.
+    test(
+      'a lost list reports a different sentence than a denied edit',
+      () async {
+        final item = UnifiedShoppingItem(name: 'A', amount: 1);
+        lists.add(_seedList(id: 'L', items: [item]));
+        activeListId = 'L';
+        fakeRepo.throwOnUpdateItem = ResourceNotFoundException(
+          'gone',
+          resourceType: 'shopping_list',
+          resourceId: 'L',
+        );
+
+        final ok = await buildModule().toggleItemBought(item.id);
+
+        expect(ok, isFalse);
+        expect(lists.first.items.single.bought, isFalse);
+        expect(reported.single, AppLocale.current.shoppingListNotFound);
+        expect(
+          reported.single,
+          // The fixture is a PERSONAL list, so the competing sentence is the
+          // personal one — asserting against the shared string cannot fail here.
+          isNot(AppLocale.current.shoppingNoEditPermission),
+          reason:
+              'one shared string for both failures would be the bug BUT-1696 '
+              'fixed',
+        );
+      },
+    );
+
+    /// Proves the fallback branch is distinct too, so all three outcomes are
+    /// separable rather than two-plus-a-collapse.
+    test('an unclassified failure reports the transport sentence', () async {
+      final item = UnifiedShoppingItem(name: 'A', amount: 1);
+      lists.add(_seedList(id: 'L', items: [item]));
+      activeListId = 'L';
+      fakeRepo.throwOnUpdateItem = StateError('socket');
+
+      expect(await buildModule().toggleItemBought(item.id), isFalse);
+
+      expect(reported.single, AppLocale.current.errorNetwork);
+      expect(
+        {
+          AppLocale.current.shoppingNoEditPermissionShared,
+          AppLocale.current.shoppingListNotFound,
+          AppLocale.current.errorNetwork,
+        },
+        hasLength(3),
+        reason: 'the three sentences must be distinguishable to the user',
+      );
+    });
   });
 
   // -------------------------------------------------------------------------
   // clearCompletedItems — bulk + rollback
   // -------------------------------------------------------------------------
+
+  // The rollback path takes an index BEFORE the network round-trip and uses it
+  // AFTER. In production `UnifiedShoppingService`'s collaborative snapshot
+  // handler rebuilds the very `lists` instance these modules hold
+  // (`removeWhere(isCollaborative)` then `addAll`), so that index can point at a
+  // different list by the time the rollback runs — or past the end of a shorter
+  // one. Every other fixture in this file seeds ONE list, where a stale index
+  // and a re-found index are equal by construction, so nothing here could ever
+  // have caught it.
+  //
+  // The seam is `notifyListeners`: the module calls it after applying the
+  // optimistic change and before awaiting, and the harness already injects it.
+  // Reordering `lists` from inside that callback reproduces the snapshot.
+  group('a snapshot reordering lists mid-write', () {
+    /// Returns a `notifyListeners` that performs [drift] exactly once, on its
+    /// first call — i.e. in the window between the optimistic mutation and the
+    /// await, which is where the real handler lands.
+    void Function() driftOnce(void Function() drift) {
+      var fired = false;
+      return () {
+        notifyCalls++;
+        if (fired) return;
+        fired = true;
+        drift();
+      };
+    }
+
+    test('a failed bulk uncheck rolls back the RIGHT list', () async {
+      final kanel = UnifiedShoppingItem(name: 'kanel', amount: 1);
+      final ticked = UnifiedShoppingItem(
+        name: 'mjölk',
+        amount: 1,
+        bought: true,
+      );
+      final personal = _seedList(id: 'A', items: [kanel]);
+      final shared = _seedList(
+        id: 'B',
+        items: [ticked],
+        type: ListType.collaborative,
+      );
+      lists.addAll([personal, shared]);
+      activeListId = 'B';
+      fakeRepo.throwOnUpdateItemsBatch = StateError('boom');
+
+      final module = ShoppingItemManagementModule(
+        repository: fakeRepo,
+        lists: lists,
+        getActiveListId: () => activeListId,
+        // The snapshot moves the collaborative list to the front, so the index
+        // captured for B (1) now addresses A.
+        notifyListeners: driftOnce(() {
+          lists
+            ..clear()
+            ..addAll([shared, personal]);
+        }),
+        getCategoryPreferences: () => prefsModule,
+        reportFailure: reported.add,
+      );
+
+      expect(await module.uncheckAllItems(), isFalse);
+
+      // The discriminator: with a stale index, B's rows land on A.
+      final a = lists.firstWhere((l) => l.id == 'A');
+      expect(
+        a.items.map((i) => i.name),
+        ['kanel'],
+        reason: "list A must not receive list B's rows",
+      );
+      final b = lists.firstWhere((l) => l.id == 'B');
+      expect(b.items.single.bought, isTrue, reason: 'B must be rolled back');
+    });
+
+    test('a list that disappears mid-write does not throw', () async {
+      final ticked = UnifiedShoppingItem(
+        name: 'mjölk',
+        amount: 1,
+        bought: true,
+      );
+      final shared = _seedList(
+        id: 'B',
+        items: [ticked],
+        type: ListType.collaborative,
+      );
+      final other = _seedList(id: 'A', items: []);
+      lists.addAll([other, shared]);
+      activeListId = 'B';
+      fakeRepo.throwOnUpdateItemsBatch = StateError('boom');
+
+      final module = ShoppingItemManagementModule(
+        repository: fakeRepo,
+        lists: lists,
+        getActiveListId: () => activeListId,
+        // The snapshot drops the collaborative list entirely: the captured
+        // index is now out of range.
+        notifyListeners: driftOnce(() {
+          lists
+            ..clear()
+            ..addAll([other]);
+        }),
+        getCategoryPreferences: () => prefsModule,
+        reportFailure: reported.add,
+      );
+
+      expect(await module.uncheckAllItems(), isFalse);
+      expect(lists.map((l) => l.id), ['A']);
+      expect(lists.single.items, isEmpty, reason: 'A must be untouched');
+      expect(reported, isNotEmpty, reason: 'the failure still needs a reason');
+    });
+  });
 
   group('clearCompletedItems', () {
     /// Proves: nothing bought → true short-circuit, NO repo call. A
@@ -692,6 +982,93 @@ void main() {
         expect(notifyCalls, 2);
       },
     );
+
+    /// BUT-1696: the DESTRUCTIVE sibling of the bulk uncheck, and the last of
+    /// the three optimistic-rollback paths to get the fix. The caller discarded
+    /// the bool and always said "Rensat", so a denied clear rolled the bought
+    /// rows back on screen while the user was told the delete worked. The
+    /// existing rollback test above stays green with `_report` deleted, so this
+    /// group is what actually pins the reporting half.
+    test('a denied clear reports the permission sentence', () async {
+      final bought = UnifiedShoppingItem(
+        name: 'Bought',
+        amount: 1,
+      ).copyWith(bought: true);
+      lists.add(_seedList(id: 'L', items: [bought]));
+      activeListId = 'L';
+      fakeRepo.throwOnRemoveItemsBatch = PermissionDeniedException(
+        'nope',
+        resource: 'shopping_list:L',
+        userId: 'u',
+      );
+
+      expect(await buildModule().clearCompletedItems(), isFalse);
+
+      expect(lists.first.items.map((i) => i.id), [bought.id]);
+      expect(reported.single, AppLocale.current.shoppingNoEditPermission);
+    });
+
+    /// Proves the clear path distinguishes a deleted list from a denied edit —
+    /// "someone removed the list" and "you may not edit it" are different
+    /// instructions to someone standing in a shop.
+    test('a lost list reports a different sentence on clear', () async {
+      final bought = UnifiedShoppingItem(
+        name: 'Bought',
+        amount: 1,
+      ).copyWith(bought: true);
+      lists.add(_seedList(id: 'L', items: [bought]));
+      activeListId = 'L';
+      fakeRepo.throwOnRemoveItemsBatch = ResourceNotFoundException(
+        'gone',
+        resourceType: 'shopping_list',
+        resourceId: 'L',
+      );
+
+      expect(await buildModule().clearCompletedItems(), isFalse);
+
+      expect(reported.single, AppLocale.current.shoppingListNotFound);
+      expect(
+        reported.single,
+        // The fixture is a PERSONAL list, so the competing sentence is the
+        // personal one — asserting against the shared string cannot fail here.
+        isNot(AppLocale.current.shoppingNoEditPermission),
+      );
+    });
+
+    /// Anything that is neither denial nor a missing list is transport.
+    test(
+      'a transport failure reports the connection sentence on clear',
+      () async {
+        final bought = UnifiedShoppingItem(
+          name: 'Bought',
+          amount: 1,
+        ).copyWith(bought: true);
+        lists.add(_seedList(id: 'L', items: [bought]));
+        activeListId = 'L';
+        fakeRepo.throwOnRemoveItemsBatch = StateError('socket');
+
+        expect(await buildModule().clearCompletedItems(), isFalse);
+
+        expect(reported.single, AppLocale.current.errorNetwork);
+      },
+    );
+
+    /// Proves the happy path stays SILENT — a success that also reported a
+    /// failure would make the caller show an error over a completed delete.
+    test('reports nothing when the clear succeeds', () async {
+      final bought = UnifiedShoppingItem(
+        name: 'Bought',
+        amount: 1,
+      ).copyWith(bought: true);
+      final keep = UnifiedShoppingItem(name: 'Keep', amount: 1);
+      lists.add(_seedList(id: 'L', items: [bought, keep]));
+      activeListId = 'L';
+
+      expect(await buildModule().clearCompletedItems(), isTrue);
+
+      expect(lists.first.items.map((i) => i.id), [keep.id]);
+      expect(reported, isEmpty);
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -725,7 +1102,7 @@ void main() {
         ).copyWith(bought: true);
         lists.add(_seedList(id: 'L', items: [checked]));
         activeListId = 'L';
-        fakeRepo.throwOnUpdateItem = StateError('boom');
+        fakeRepo.throwOnUpdateItemsBatch = StateError('boom');
 
         final ok = await buildModule().uncheckAllItems();
 
@@ -736,6 +1113,70 @@ void main() {
         expect(notifyCalls, 2);
       },
     );
+
+    /// BUT-1696/BUT-1697: the bulk sibling of the checkbox path. A rollback
+    /// that re-ticks 30 rows with nothing said is the same silent failure, so
+    /// the same three-way mapping must fire here — and the view must have a
+    /// message to show instead of a green "Alla avmarkerade".
+    test('a denied bulk uncheck reports the permission sentence', () async {
+      final checked = UnifiedShoppingItem(
+        name: 'A',
+        amount: 1,
+      ).copyWith(bought: true);
+      lists.add(_seedList(id: 'L', items: [checked]));
+      activeListId = 'L';
+      fakeRepo.throwOnUpdateItemsBatch = PermissionDeniedException(
+        'nope',
+        resource: 'shopping_list:L',
+        userId: 'u',
+      );
+
+      expect(await buildModule().uncheckAllItems(), isFalse);
+
+      expect(lists.first.items.single.bought, isTrue);
+      expect(reported.single, AppLocale.current.shoppingNoEditPermission);
+    });
+
+    /// Proves the bulk path distinguishes a deleted list from a denied edit.
+    test('a lost list reports a different sentence on bulk uncheck', () async {
+      final checked = UnifiedShoppingItem(
+        name: 'A',
+        amount: 1,
+      ).copyWith(bought: true);
+      lists.add(_seedList(id: 'L', items: [checked]));
+      activeListId = 'L';
+      fakeRepo.throwOnUpdateItemsBatch = ResourceNotFoundException(
+        'gone',
+        resourceType: 'shopping_list',
+        resourceId: 'L',
+      );
+
+      expect(await buildModule().uncheckAllItems(), isFalse);
+
+      expect(reported.single, AppLocale.current.shoppingListNotFound);
+      expect(
+        reported.single,
+        // The fixture is a PERSONAL list, so the competing sentence is the
+        // personal one — asserting against the shared string cannot fail here.
+        isNot(AppLocale.current.shoppingNoEditPermission),
+      );
+    });
+
+    /// Proves the happy path stays SILENT — a success that also reported a
+    /// failure would make the view show an error snackbar over a green result.
+    test('reports nothing when the bulk uncheck succeeds', () async {
+      final checked = UnifiedShoppingItem(
+        name: 'A',
+        amount: 1,
+      ).copyWith(bought: true);
+      lists.add(_seedList(id: 'L', items: [checked]));
+      activeListId = 'L';
+
+      expect(await buildModule().uncheckAllItems(), isTrue);
+
+      expect(lists.first.items.single.bought, isFalse);
+      expect(reported, isEmpty);
+    });
   });
 
   // -------------------------------------------------------------------------

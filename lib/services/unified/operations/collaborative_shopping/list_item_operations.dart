@@ -1,3 +1,4 @@
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -72,8 +73,15 @@ class ListItemOperations {
     if (list == null) return false;
 
     final currentUserId = _getCurrentUserId();
-    final currentUserDisplayName = _getCurrentUserDisplayName();
-    if (currentUserId == null || currentUserDisplayName == null) {
+    // BUT-1697: the display name is resolved from the user PROFILE and is
+    // genuinely nullable before it loads. It is a LABEL — refusing to add the
+    // item over a missing one would be a worse failure than an unnamed edit, so
+    // only the id is load-bearing. An unresolved name stamps empty, never a
+    // placeholder and never null: a null would make `copyWith` keep the
+    // PREVIOUS editor's name while the id moves to this user, which is the
+    // mismatched pair BUT-1697 exists to remove.
+    final currentUserDisplayName = _getCurrentUserDisplayName().orEmpty();
+    if (currentUserId == null) {
       AppLogger.error('Cannot add item: User information incomplete');
       return false;
     }
@@ -125,7 +133,8 @@ class ListItemOperations {
         return live.toggleItemBought(
           itemId,
           userId: _getCurrentUserId(),
-          userDisplayName: _getCurrentUserDisplayName(),
+          // Empty, never null — see the note in [addItem].
+          userDisplayName: _getCurrentUserDisplayName().orEmpty(),
         );
       });
       if (!applied) return false;
@@ -151,7 +160,8 @@ class ListItemOperations {
         (live) => live.removeItem(
           itemId,
           userId: _getCurrentUserId(),
-          userDisplayName: _getCurrentUserDisplayName(),
+          // Empty, never null — see the note in [addItem].
+          userDisplayName: _getCurrentUserDisplayName().orEmpty(),
         ),
       );
       if (!applied) return false;

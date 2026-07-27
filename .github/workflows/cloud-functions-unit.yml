@@ -18,6 +18,9 @@ on:
       - "functions/tsconfig.json"
       - "functions/scripts/**"
       - ".github/workflows/cloud-functions-unit.yml"
+      # BUT-1675: the test-registration guard reads the rules workflow's
+      # `paths:` triggers, so an edit there must re-run this job.
+      - ".github/workflows/firestore-rules.yml"
   pull_request:
     paths:
       - "functions/src/**"
@@ -26,6 +29,7 @@ on:
       - "functions/tsconfig.json"
       - "functions/scripts/**"
       - ".github/workflows/cloud-functions-unit.yml"
+      - ".github/workflows/firestore-rules.yml"
   workflow_dispatch:
 
 concurrency:
@@ -54,6 +58,14 @@ jobs:
       - name: Install function deps
         working-directory: functions
         run: npm ci
+
+      # BUT-1675: fails BEFORE the suites run if a test file is registered
+      # nowhere, is registered but reachable by no CI lane, or is missing from
+      # the rules workflow's `paths:` triggers. A green suite list proves
+      # nothing if the list itself silently lost an entry.
+      - name: Check test registration
+        working-directory: functions
+        run: node scripts/check-test-registration.js
 
       - name: Build TypeScript
         working-directory: functions

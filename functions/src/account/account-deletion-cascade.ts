@@ -25,18 +25,15 @@
  * `failedCollections` is non-empty.
  *
  * Idempotency: every step uses Firestore deletes / `arrayRemove` / `set`
- * with merge — all safe to re-run if the caller retries after a partial
- * failure. The post-cascade probe (`probeResidualData`) confirms the
+ * with merge, or a per-document transaction that re-reads before it writes
+ * — all safe to re-run if the caller retries after a partial failure. The post-cascade probe (`probeResidualData`) confirms the
  * highest-risk collections are empty after the run.
  */
 
 import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../shared/batch-update";
-
-// Mirrors lib/core/extensions/iterable_extensions.dart:18.
-// Firestore allows 500 ops/batch; 450 leaves audit/cleanup headroom.
-const BATCH_CHUNK = 450;
+import { Collections } from "../shared/collections";
 
 export interface DeletionResult {
   deletedCollections: string[];
@@ -136,29 +133,112 @@ export async function probeResidualData(
       );
     }
   }
-  // Pooled ratings (decision 12): canonical_rating_events is a SUBCOLLECTION
-  // (users/{uid}/canonical_rating_events), not a top-level userId-scoped
-  // collection — a where("userId","==",uid) probe would silently match zero (the
-  // realtime_recipes wrong-field trap). Probe the subcollection directly; the
-  // cascade erases it in deleteUserSubcollections.
+  // Subcollections under users/{uid}. These are NOT top-level userId-scoped
+  // collections, so a where("userId","==",uid) probe would silently match zero
+  // (the realtime_recipes wrong-field trap). Probe each one directly.
+  //
+  // - canonical_rating_events (decision 12): the user's frozen pool events,
+  //   erased in deleteUserSubcollections. A leaf collection — `count()` sees
+  //   everything it can hold.
+  const subProbes = ["canonical_rating_events"] as const;
+  for (const col of subProbes) {
+    try {
+      const snap = await db
+        .collection("users")
+        .doc(uid)
+        .collection(col)
+        .count()
+        .get();
+      const count = snap.data().count ?? 0;
+      if (count > 0) {
+        residual += count;
+        logger.warn(`[deletion-cascade] residual in ${col}: ${count} docs`);
+      }
+    } catch (err) {
+      residual += 1;
+      logger.error(`[deletion-cascade] residual probe failed: ${col}`, { err });
+    }
+  }
+
+  // unified_shopping_lists (BUT-1697): the LIVE personal shopping-list path,
+  // erased in deleteShoppingLists. The canary was blind to it while the cascade
+  // swept only the legacy `shopping_lists` name.
+  //
+  // `listDocuments()`, not `count()`. The client deletes a list doc without
+  // recursing into its `items` subcollection, so a residual here can be a
+  // MISSING parent that still owns live item docs — a state `count()` reports as
+  // zero. A probe that cannot see what the deleter must remove is a probe that
+  // certifies an incomplete erasure.
   try {
-    const snap = await db
+    const listRefs = await db
       .collection("users")
       .doc(uid)
-      .collection("canonical_rating_events")
-      .count()
-      .get();
-    const count = snap.data().count ?? 0;
-    if (count > 0) {
-      residual += count;
+      .collection(Collections.unifiedShoppingLists)
+      .listDocuments();
+    if (listRefs.length > 0) {
+      residual += listRefs.length;
       logger.warn(
-        `[deletion-cascade] residual in canonical_rating_events: ${count} docs`,
+        `[deletion-cascade] residual in ${Collections.unifiedShoppingLists}: ${listRefs.length} list refs (incl. missing parents that still own items)`,
       );
     }
   } catch (err) {
     residual += 1;
     logger.error(
-      `[deletion-cascade] residual probe failed: canonical_rating_events`,
+      `[deletion-cascade] residual probe failed: ${Collections.unifiedShoppingLists}`,
+      { err },
+    );
+  }
+
+  // unified_shared_shopping_lists (BUT-1697 follow-up). Two distinct residual
+  // classes, neither of which a plain `ownerId == uid` count could express:
+  //
+  //  1. the deleted uid still present as a `memberPermissions` MAP KEY — after
+  //     the cascade that key is gone on every matched doc, whether the doc was
+  //     scrubbed or deleted, so ANY hit here is a residual.
+  //  2. a list still owned by the uid with NO other member left — an orphan no
+  //     account can read. A list owned by the uid that OTHER members still
+  //     share is the one justified residual (nulling `ownerId` would orphan it
+  //     for them), so it must NOT count. That distinction is why this leg reads
+  //     the docs instead of using `count()`.
+  try {
+    const keyed = await db
+      .collection("unified_shared_shopping_lists")
+      .where(`memberPermissions.${uid}`, "!=", null)
+      .count()
+      .get();
+    const keyedCount = keyed.data().count ?? 0;
+    if (keyedCount > 0) {
+      residual += keyedCount;
+      // uid_prefix, never the raw uid: Cloud Logging outlives the account, and
+      // a per-user message string would destroy grouping on the one canary you
+      // actually query. Same convention as request-account-deletion.ts.
+      logger.warn(
+        "[deletion-cascade] residual shared-list member keys",
+        { uid_prefix: uid.slice(0, 6), count: keyedCount },
+      );
+    }
+
+    const owned = await db
+      .collection("unified_shared_shopping_lists")
+      .where("ownerId", "==", uid)
+      .get();
+    const orphaned = owned.docs.filter((doc) => {
+      const perms = (doc.data().memberPermissions ?? {}) as Record<
+        string,
+        unknown
+      >;
+      return !Object.keys(perms).some((k) => k !== uid);
+    });
+    if (orphaned.length > 0) {
+      residual += orphaned.length;
+      logger.warn(
+        `[deletion-cascade] residual sole-member shared shopping lists: ${orphaned.length} docs`,
+      );
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error(
+      "[deletion-cascade] residual probe failed: unified_shared_shopping_lists",
       { err },
     );
   }
@@ -168,7 +248,7 @@ export async function probeResidualData(
   }
 }
 
-/** Batch-delete every doc, chunked at 450 ops/batch. */
+/** Batch-delete every doc, chunked at `BATCH_LIMIT` (500) ops/batch. */
 async function batchDeleteAll(
   db: admin.firestore.Firestore,
   docs: admin.firestore.QueryDocumentSnapshot[],
@@ -231,47 +311,306 @@ export async function deleteMenus(
   return true;
 }
 
+/**
+ * Delete every doc in a personal shopping list's `items` subcollection.
+ *
+ * STRICT: a swallowed failure here strands item docs under a list reference the
+ * caller is about to delete, and nothing could ever reach them again.
+ */
+async function deleteListItems(
+  db: admin.firestore.Firestore,
+  listRef: admin.firestore.DocumentReference,
+): Promise<void> {
+  const items = await listRef.collection("items").get();
+  if (items.docs.length === 0) return;
+  await commitInChunks(
+    db,
+    items.docs,
+    (batch, doc) => batch.delete(doc.ref),
+    { label: "deletePersonalListItems", strict: true },
+  );
+}
+
 export async function deleteShoppingLists(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
-  const sub = await db
-    .collection("users")
-    .doc(uid)
-    .collection("shopping_lists")
-    .get();
-  await batchDeleteAll(db, sub.docs);
+  const userRef = db.collection("users").doc(uid);
 
-  // Scrub assignedToUserId/purchasedByUserId across collaborative lists.
-  const shared = await db
-    .collection("unified_shared_shopping_lists")
-    .where(`memberPermissions.${uid}`, "!=", null)
-    .get();
-  for (const listDoc of shared.docs) {
-    const data = listDoc.data();
-    const items = data.items;
-    if (!Array.isArray(items)) continue;
-    let changed = false;
-    const scrubbed = items.map((raw) => {
-      if (!raw || typeof raw !== "object") return raw;
-      const item = { ...(raw as Record<string, unknown>) };
-      if (item.assignedToUserId === uid) {
-        item.assignedToUserId = null;
-        item.assignedToDisplayName = null;
-        item.assignedAt = null;
-        changed = true;
-      }
-      if (item.purchasedByUserId === uid) {
-        item.purchasedByUserId = null;
-        item.purchasedByDisplayName = null;
-        item.purchasedAt = null;
-        changed = true;
-      }
-      return item;
-    });
-    if (changed) {
-      await listDoc.ref.update({ items: scrubbed });
+  // BUT-1697: TWO personal paths, and only the second one holds live data.
+  //
+  // `shopping_lists` is the pre-rename name. It is swept for the sake of any
+  // account that predates the rename, but nothing writes it today: the client
+  // routes every personal list through `FirebaseShoppingRepository`, whose
+  // `collectionName` is `FirestoreCollections.unifiedShoppingLists`, and
+  // `firestore.rules` grants no `users/{uid}/shopping_lists` match at all —
+  // so a client write there is default-denied and the path cannot hold data.
+  // Sweeping only the legacy name left every live personal list on disk after
+  // an Article 17 erasure. Do not collapse these two into one name.
+  //
+  // Items are a SUBCOLLECTION of each personal list
+  // (`users/{uid}/unified_shopping_lists/{listId}/items/{itemId}` — see the
+  // nested `items` match in firestore.rules). Deleting a Firestore document
+  // never cascades to its subcollections, so the items must go FIRST, before
+  // the parent reference is gone.
+  // `listDocuments()`, not `get()`. A query returns only documents that EXIST,
+  // and the client deletes a personal list with a plain `doc(id).delete()`
+  // (`base_firebase_repository.dart`) which never recurses into `items`. Every
+  // list the user deleted in-app therefore leaves a MISSING parent that still
+  // owns a live `items` subcollection: invisible to `get()`, and counted as zero
+  // by a `count()` probe, so an erasure would report clean with every item name
+  // still on disk. `listDocuments()` is the Admin-SDK call that deliberately
+  // includes references to missing documents that have subcollections.
+  const personalRefs = await userRef
+    .collection(Collections.unifiedShoppingLists)
+    .listDocuments();
+  // STRICT on the items, best-effort on the parents. Swallowing an item-chunk
+  // failure would strand item docs under a list reference this function is
+  // about to delete. Same reasoning as `deleteFamilyData`: losing the parent
+  // handle strands unreachable PII, so failing loudly beats partial cleanup.
+  //
+  // Throwing makes `runStep` mark `shopping_lists` failed with the residual
+  // still on disk and DISCOVERABLE — `listDocuments()` finds it again even
+  // though the parent is gone. There is no automatic retry: the callable
+  // deletes the auth user unconditionally (`request-account-deletion.ts`), so
+  // the real remediation is a human reading `deletion_audit_logs` for
+  // `gdprCompliant: false` and running `admin/reset-user-data.ts`.
+  //
+  // Accumulate rather than letting the first failure escape: `deleteListItems`
+  // is strict, and an unguarded loop would abort the whole step before the
+  // legacy leg and the shared-list scrub below, leaving the deleted uid on
+  // every co-member's list. A list whose items failed keeps its PARENT too, so
+  // `listDocuments()` finds it again on a remediation run.
+  const failedPersonal = new Set<string>();
+  for (const listRef of personalRefs) {
+    try {
+      await deleteListItems(db, listRef);
+    } catch (err) {
+      failedPersonal.add(listRef.id);
+      logger.error("[deletion-cascade] personal list items delete failed", {
+        uid_prefix: uid.slice(0, 6),
+        listId: listRef.id,
+        // Code and name, never `err` or `err.message`: firebase-functions only
+        // unwraps a POSITIONAL Error, so `{ err }` serialises to `{}` and the
+        // cause disappears from the one log an operator reads before running
+        // the manual remediation — and a Firestore commit message can embed the
+        // full document path, i.e. the raw uid, in a log that outlives the
+        // account.
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      });
     }
+  }
+  await commitInChunks(
+    db,
+    personalRefs.filter((ref) => !failedPersonal.has(ref.id)),
+    (batch, ref) => batch.delete(ref),
+    { label: "deletePersonalLists", strict: false },
+  );
+
+  // LAST, deliberately: this leg is strict too, and the pre-rename path is
+  // the one that can hold nothing (no rule grants it). Sweeping it first
+  // would let an impossible failure abort the step before any live data was
+  // touched.
+  const legacyRefs = await userRef.collection("shopping_lists").listDocuments();
+  const failedLegacy = new Set<string>();
+  for (const listRef of legacyRefs) {
+    try {
+      await deleteListItems(db, listRef);
+    } catch (err) {
+      failedLegacy.add(listRef.id);
+      logger.error("[deletion-cascade] legacy list items delete failed", {
+        uid_prefix: uid.slice(0, 6),
+        listId: listRef.id,
+        // Code and name, never `err` or `err.message`: firebase-functions only
+        // unwraps a POSITIONAL Error, so `{ err }` serialises to `{}` and the
+        // cause disappears from the one log an operator reads before running
+        // the manual remediation — and a Firestore commit message can embed the
+        // full document path, i.e. the raw uid, in a log that outlives the
+        // account.
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      });
+    }
+  }
+  await commitInChunks(
+    db,
+    legacyRefs.filter((ref) => !failedLegacy.has(ref.id)),
+    (batch, ref) => batch.delete(ref),
+    { label: "deleteLegacyShoppingLists", strict: false },
+  );
+
+  // Scrub the deleted user out of collaborative lists other members keep.
+  //
+  // Two levels, both required (BUT-1697). The item level clears the
+  // assigned/purchased pairs and anonymizes the added/last-modified pairs. The
+  // LIST level clears `lastActivityByUserId` + `lastActivityByDisplayName` and
+  // `ownerDisplayName` — since every item tick writes the activity pair, a
+  // deleted account otherwise leaves its raw uid and name on a shared document
+  // indefinitely.
+  //
+  // The list-level pairs mirror `on-profile-updated.ts`, the canonical writer
+  // of those fields. The item-level pairs deliberately go BEYOND it: that CF
+  // only propagates owner + activity, while the client stamps four more
+  // identity fields per item. Mirroring the propagation writer alone is not a
+  // complete inventory — see the per-item block below.
+  //
+  // `ownerId` is deliberately NOT cleared: it is the key the Firestore rules
+  // read to decide who may write the document, so nulling it would orphan the
+  // list for every remaining member. Only the human-readable name goes. That
+  // retention is justified only for a list OTHER members keep — see the
+  // sole-member branch below, which deletes instead of scrubbing.
+  // The deleter must be a SUPERSET of every residual probe leg, or the probe
+  // reports data no code path can clear. `probeResidualData` flags a sole-member
+  // list matched on `ownerId == uid`, and an owner may persist a
+  // `memberPermissions` map without their own key (the rules place no
+  // `cannotModify` guard on the owner), so a member-key query alone misses it.
+  // Union both queries and dedup by document id.
+  const [keyedShared, ownedShared] = await Promise.all([
+    db
+      .collection("unified_shared_shopping_lists")
+      .where(`memberPermissions.${uid}`, "!=", null)
+      .get(),
+    db
+      .collection("unified_shared_shopping_lists")
+      .where("ownerId", "==", uid)
+      .get(),
+  ]);
+  const sharedRefs = new Map<string, admin.firestore.DocumentReference>();
+  for (const doc of [...keyedShared.docs, ...ownedShared.docs]) {
+    sharedRefs.set(doc.id, doc.ref);
+  }
+
+  // One transaction per list, re-reading inside it. Two reasons, both real:
+  // the scrub rewrites the whole `items` array, so a member's tick landing
+  // between the query and the write would be silently lost (the client moved
+  // every shared-list mutation into a transaction in BUT-1665 for exactly
+  // this); and a bare `update()` on a list the owner deleted meanwhile throws
+  // NOT_FOUND, which would abort every REMAINING list in the loop and leave
+  // their raw uids in place.
+  //
+  // The transaction only removes the NOT_FOUND abort. A contention ABORTED or a
+  // DEADLINE_EXCEEDED still escapes, and on a live shared document contention is
+  // the likelier failure — so each list is caught individually and the step
+  // fails ONCE at the end. Failing per-list would strand every later list;
+  // swallowing would report a clean erasure over retained uids.
+  const failedShared: string[] = [];
+  for (const listRef of sharedRefs.values()) {
+    try {
+      await db.runTransaction(async (tx) => {
+      const snap = await tx.get(listRef);
+      if (!snap.exists) return;
+      const data = snap.data() ?? {};
+      const perms = (data.memberPermissions ?? {}) as Record<string, unknown>;
+      const othersRemain = Object.keys(perms).some((k) => k !== uid);
+
+      // A "collaborative" list the user created and never actually shared is
+      // pure own data — every item name is theirs — and it is reachable:
+      // `createCollaborativeList` accepts an empty `memberIds`, and
+      // `UnifiedShoppingList.collaborative` always inserts the owner into
+      // `memberPermissions`. Scrubbing it would leave the whole list on disk
+      // readable by nobody (rules 1606-1609 need ownerId==uid or a
+      // memberPermissions key), which is retention without a purpose. Delete it.
+      if (data.ownerId === uid && !othersRemain) {
+        tx.delete(listRef);
+        return;
+      }
+
+      const update: Record<string, unknown> = {};
+
+      const items = data.items;
+      if (Array.isArray(items)) {
+        let itemsChanged = false;
+        const scrubbed = items.map((raw) => {
+          if (!raw || typeof raw !== "object") return raw;
+          const item = { ...(raw as Record<string, unknown>) };
+          if (item.assignedToUserId === uid) {
+            item.assignedToUserId = null;
+            item.assignedToDisplayName = null;
+            item.assignedAt = null;
+            itemsChanged = true;
+          }
+          if (item.purchasedByUserId === uid) {
+            item.purchasedByUserId = null;
+            item.purchasedByDisplayName = null;
+            item.purchasedAt = null;
+            itemsChanged = true;
+          }
+          // BUT-1697: `addedBy*` and `lastModifiedBy*` are stamped by the
+          // CLIENT (`UnifiedShoppingItem.collaborative` / `.copyWith`), so
+          // mirroring only `on-profile-updated.ts` — which propagates the owner
+          // + activity pairs — covers a strict subset of the identity a deleted
+          // user leaves behind. Both survive on every item they added or last
+          // touched, on a document the remaining members keep indefinitely.
+          //
+          // `addedByUserId` is ANONYMIZED rather than nulled: the model's
+          // `isCollaborative => addedByUserId != null`, so nulling it would flip
+          // a shared item to "personal" for everyone else. Same convention as
+          // `deleteCommentsAndRatings`.
+          if (item.addedByUserId === uid) {
+            item.addedByUserId = "deleted";
+            item.addedByDisplayName = null;
+            itemsChanged = true;
+          }
+          if (item.lastModifiedByUserId === uid) {
+            item.lastModifiedByUserId = "deleted";
+            item.lastModifiedByDisplayName = null;
+            itemsChanged = true;
+          }
+          return item;
+        });
+        if (itemsChanged) update.items = scrubbed;
+      }
+
+      if (data.lastActivityByUserId === uid) {
+        update.lastActivityByUserId = null;
+        update.lastActivityByDisplayName = null;
+      }
+      if (data.ownerId === uid && data.ownerDisplayName != null) {
+        update.ownerDisplayName = null;
+      }
+
+      // The raw uid also survives as the MAP KEY this query matched on, and
+      // firestore.rules:1620-1626 still reads it as write authorization for an
+      // account that no longer exists. It also shows up in the UI:
+      // `UnifiedShoppingList.memberCount`/`collaborators` are derived from these
+      // keys, so remaining members see a ghost member forever. Two sibling steps
+      // in this file already delete it (`deleteWeeklyMenuPlans`,
+      // `deleteFamilyData`).
+      //
+      // It MUST go in the SAME per-doc write as the scrub, never a second one:
+      // this key is the step's re-entry query handle, so a split write that
+      // removed the key first would make a re-run skip the unscrubbed doc. As
+      // one transaction, a re-run either still finds the key or finds nothing
+      // left to do.
+      if (Object.prototype.hasOwnProperty.call(perms, uid)) {
+        update[`memberPermissions.${uid}`] =
+          admin.firestore.FieldValue.delete();
+      }
+
+      if (Object.keys(update).length > 0) {
+        tx.update(listRef, update);
+      }
+      });
+    } catch (err) {
+      failedShared.push(listRef.id);
+      logger.error("[deletion-cascade] shared shopping-list scrub failed", {
+        uid_prefix: uid.slice(0, 6),
+        listId: listRef.id,
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      });
+    }
+  }
+  const failedItems = failedPersonal.size + failedLegacy.size;
+  if (failedShared.length > 0 || failedItems > 0) {
+    // One throw, AFTER every leg has run: `runStep` records the step failed and
+    // the audit row lands with `gdprCompliant: false`, which is the signal a
+    // human reads before running `admin/reset-user-data.ts`.
+    throw new Error(
+      `shopping-list erasure incomplete: ${failedItems} list(s) kept their ` +
+        `items, ${failedShared.length} shared list(s) unscrubbed`,
+    );
   }
   return true;
 }
@@ -841,6 +1180,3 @@ export async function deleteUserProfile(
   await db.collection("users").doc(uid).delete();
   return true;
 }
-
-// `BATCH_CHUNK` referenced for parity with prior chunk-size documentation.
-void BATCH_CHUNK;

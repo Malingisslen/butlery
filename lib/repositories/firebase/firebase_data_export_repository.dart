@@ -208,8 +208,14 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     limit: maxDocuments,
   );
 
-  /// `users/{uid}/shopping_lists` with each list's nested `items` subcoll.
-  /// Returns `{id, data, items: [{id, data}]}` shapes.
+  /// `users/{uid}/unified_shopping_lists` with each list's nested `items`
+  /// subcollection. Returns `{id, data, items: [{id, data}]}` shapes.
+  ///
+  /// BUT-1697: this must stay on the same constant as
+  /// [FirebaseShoppingRepository.collectionName]. It previously read the
+  /// pre-rename `shopping_lists` name, which nothing writes and which
+  /// `firestore.rules` does not even grant — so the Article 15/20 export of
+  /// personal shopping lists returned an empty list for every user.
   Future<List<Map<String, dynamic>>> exportPersonalShoppingLists(
     String userId, {
     int maxLists = 1000,
@@ -219,7 +225,7 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     final listsSnapshot = await firestore
         .collection(FirestoreCollections.users)
         .doc(userId)
-        .collection(FirestoreCollections.userShoppingLists)
+        .collection(FirestoreCollections.unifiedShoppingLists)
         .limit(maxLists)
         .get();
 

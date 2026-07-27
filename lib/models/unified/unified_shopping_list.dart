@@ -380,7 +380,13 @@ class UnifiedShoppingList {
 
   String get activitySummary {
     final l = AppLocale.current;
-    if (lastActivityAt == null || lastActivityByDisplayName == null) {
+    // BUT-1697: an empty name means "we know WHO edited but not their name" —
+    // the writers stamp the id/name pair together and write empty rather than
+    // let a null fall through `copyWith` and re-use the previous editor's
+    // name. Showing no attribution beats showing the wrong person's.
+    if (lastActivityAt == null ||
+        lastActivityByDisplayName == null ||
+        lastActivityByDisplayName!.isEmpty) {
       return l.shoppingListNoActivity;
     }
 

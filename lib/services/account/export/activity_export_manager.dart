@@ -53,18 +53,26 @@ class ActivityExportManager {
         'comments': [],
         'ratings': [],
       };
-      final commentLimit = ExportPaginationHelper.getLimitForType('comments');
-      final ratingLimit = ExportPaginationHelper.getLimitForType('ratings');
-
+      // BUT-1698: both reads carry a cap, so both get the N+1 probe and the
+      // section declares truncation when either clipped. Applying the cap
+      // silently made a partial Art. 15/20 bundle read as complete.
       final results = await Future.wait([
-        _comments.exportCommentsByAuthor(userId, maxDocuments: commentLimit),
-        _ratings.exportRatingsByUser(userId, maxDocuments: ratingLimit),
+        ExportPaginationHelper.fetchCapped(
+          type: 'comments',
+          fetch: (max) =>
+              _comments.exportCommentsByAuthor(userId, maxDocuments: max),
+        ),
+        ExportPaginationHelper.fetchCapped(
+          type: 'ratings',
+          fetch: (max) =>
+              _ratings.exportRatingsByUser(userId, maxDocuments: max),
+        ),
       ]);
 
       final recipeComments = results[0];
       final recipeRatings = results[1];
 
-      for (final entry in recipeComments) {
+      for (final entry in recipeComments.items) {
         data['comments'].add({
           'comment_id': entry['id'],
           'type': 'recipe',
@@ -72,7 +80,7 @@ class ActivityExportManager {
         });
       }
 
-      for (final entry in recipeRatings) {
+      for (final entry in recipeRatings.items) {
         data['ratings'].add({
           'rating_id': entry['id'],
           'type': 'recipe',
@@ -82,6 +90,9 @@ class ActivityExportManager {
 
       data['total_comments'] = data['comments'].length;
       data['total_ratings'] = data['ratings'].length;
+      if (recipeComments.truncated || recipeRatings.truncated) {
+        data['truncated'] = true;
+      }
 
       return data;
     } catch (e) {
@@ -140,13 +151,20 @@ class ActivityExportManager {
   /// Export user feedback submissions
   Future<Map<String, dynamic>> exportFeedback(String userId) async {
     try {
-      final feedback = await _feedback.exportFeedbackByUser(userId);
+      // BUT-1698: this read was riding the repository's default cap, so a user
+      // over it lost submissions with no signal at all.
+      final feedback = await ExportPaginationHelper.fetchCapped(
+        type: 'feedback',
+        fetch: (max) =>
+            _feedback.exportFeedbackByUser(userId, maxDocuments: max),
+      );
 
       return {
-        'submissions': feedback
+        'submissions': feedback.items
             .map((entry) => sanitizeForJson(entry['data']))
             .toList(),
         'total': feedback.length,
+        if (feedback.truncated) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export feedback', e);

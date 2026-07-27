@@ -15,6 +15,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
+import 'package:butlery/services/account/export/export_pagination_helper.dart';
 import 'package:butlery/services/account/export/social_export_manager.dart';
 
 class _FakeDataExportRepository extends Fake
@@ -43,48 +44,84 @@ class _FakeDataExportRepository extends Fake
   final List<Map<String, dynamic>> incomingBlocks;
   final List<Map<String, dynamic>> memberships;
 
+  /// Per-method captured `maxDocuments`, keyed by repository method name.
+  /// Every override that the manager is expected to pass a cap to defaults to
+  /// a sentinel -1 no real caller would pass, so a production path that stops
+  /// forwarding its cap fails the forwarding test instead of coincidentally
+  /// matching the repository's own default. The remaining overrides
+  /// (blocks, memberships) keep the real defaults — the manager forwards
+  /// nothing to them and they carry no truncation probe.
+  final Map<String, int> capturedMax = <String, int>{};
+
+  /// `exportConversationsAndMessages` takes TWO caps, so it records into its
+  /// own fields rather than [capturedMax].
+  int? capturedMaxConversations;
+  int? capturedMaxMessagesPerConversation;
+
   @override
   Future<List<Map<String, dynamic>>> exportFriendsSubcollection(
     String userId, {
-    int maxDocuments = 1000,
-  }) async => friends;
+    int maxDocuments = -1,
+  }) async {
+    capturedMax['exportFriendsSubcollection'] = maxDocuments;
+    return friends;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> exportSocialRequestsSent(
     String userId, {
-    int maxDocuments = 500,
-  }) async => sentRequests;
+    int maxDocuments = -1,
+  }) async {
+    capturedMax['exportSocialRequestsSent'] = maxDocuments;
+    return sentRequests;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> exportSocialRequestsReceived(
     String userId, {
-    int maxDocuments = 500,
-  }) async => receivedRequests;
+    int maxDocuments = -1,
+  }) async {
+    capturedMax['exportSocialRequestsReceived'] = maxDocuments;
+    return receivedRequests;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> exportFriendCategories(
     String userId, {
-    int maxDocuments = 100,
-  }) async => categories;
+    int maxDocuments = -1,
+  }) async {
+    capturedMax['exportFriendCategories'] = maxDocuments;
+    return categories;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> exportConversationsAndMessages(
     String userId, {
-    int maxConversations = 100,
-    int maxMessagesPerConversation = 500,
-  }) async => conversations;
+    int maxConversations = -1,
+    int maxMessagesPerConversation = -1,
+  }) async {
+    capturedMaxConversations = maxConversations;
+    capturedMaxMessagesPerConversation = maxMessagesPerConversation;
+    return conversations;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> exportSharedRecipesReceived(
     String userId, {
-    int maxDocuments = 1000,
-  }) async => sharedRecipes;
+    int maxDocuments = -1,
+  }) async {
+    capturedMax['exportSharedRecipesReceived'] = maxDocuments;
+    return sharedRecipes;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> exportSharedMenusReceived(
     String userId, {
-    int maxDocuments = 500,
-  }) async => sharedMenus;
+    int maxDocuments = -1,
+  }) async {
+    capturedMax['exportSharedMenusReceived'] = maxDocuments;
+    return sharedMenus;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> exportOutgoingBlocks(
@@ -247,6 +284,98 @@ void main() {
         expect(result['total_messages'], 2);
       },
     );
+
+    test(
+      'forwards the declared conversation and per-conversation message caps',
+      () async {
+        // Both caps must actually reach the repository: its own defaults are
+        // LOWER than the declared export limits (100 conversations / 500
+        // messages vs 500 / 1000), so a regression that stopped forwarding
+        // them would silently drop four fifths of a heavy user's
+        // conversations from an Article 15/20 bundle — no error, and (see the
+        // truncation test below) no usable flag either. The sentinel default
+        // on the fake is what makes a dropped forward visible; matching the
+        // real defaults would have let the regression pass.
+        final repo = _FakeDataExportRepository();
+        await SocialExportManager(
+          dataExportRepository: repo,
+        ).exportMessages('user-uid');
+
+        expect(
+          repo.capturedMaxConversations,
+          ExportPaginationHelper.getLimitForType('conversations'),
+        );
+        expect(
+          repo.capturedMaxMessagesPerConversation,
+          ExportPaginationHelper.getLimitForType('messages_per_conversation'),
+        );
+      },
+    );
+
+    test(
+      'carries a per-conversation messages_truncated flag through, and omits '
+      'it on complete conversations',
+      () async {
+        // The manager's copy is correct and this pins it. Two defects AROUND
+        // it are known and deliberately NOT asserted as desired behaviour:
+        //   1. firebase_data_export_repository computes the flag as
+        //      `docs.length >= maxMessagesPerConversation`, the false-positive
+        //      rule BUT-1562/1662 retired everywhere else, so a conversation
+        //      holding exactly `cap` messages is stamped clipped;
+        //   2. data_export_service's nested truncation pass only walks
+        //      `section.values.whereType<Map>()`, and this flag lives inside
+        //      the `conversations` LIST — so it never reaches
+        //      `truncated_collections` and the user never sees it.
+        // This test exists so both are greppable: it is the only reference to
+        // `messages_truncated` anywhere under test/.
+        const userId = 'user-uid';
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'clipped',
+                'data': {'title': 'Long thread'},
+                'messages': [
+                  {
+                    'id': 'm1',
+                    'data': {'senderId': userId, 'text': 'hej'},
+                  },
+                ],
+                'messages_truncated': true,
+              },
+              {
+                'id': 'complete',
+                'data': {'title': 'Short thread'},
+                'messages': [
+                  {
+                    'id': 'm2',
+                    'data': {'senderId': userId, 'text': 'hej igen'},
+                  },
+                ],
+                'messages_truncated': false,
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+
+        final conversations = (result['conversations'] as List)
+            .cast<Map<String, dynamic>>();
+        final clipped = conversations.firstWhere(
+          (c) => c['conversation_id'] == 'clipped',
+        );
+        final complete = conversations.firstWhere(
+          (c) => c['conversation_id'] == 'complete',
+        );
+
+        expect(clipped['messages_truncated'], isTrue);
+        // Omitted rather than `false`, matching the section-root convention.
+        expect(complete.containsKey('messages_truncated'), isFalse);
+        // Positive control: the absence above is not a build that fell over.
+        expect((complete['messages'] as List), hasLength(1));
+      },
+    );
   });
 
   group('SocialExportManager.exportSharedContent (BUT-1438)', () {
@@ -333,4 +462,189 @@ void main() {
       ]);
     });
   });
+
+  // BUT-1698: these sections applied their caps SILENTLY — no `truncated` key
+  // whatsoever — so a user at or over a cap received a clipped Article 15/20
+  // bundle presented as complete. They now run the same N+1 probe the
+  // preferences sections use (BUT-1662): fetch cap + 1, flag only when a row
+  // beyond the cap actually exists, trim to the cap. `data_export_service`
+  // rolls a section-root `truncated` into `truncated_collections` verbatim, so
+  // this key IS the completeness signal the user sees.
+  group('SocialExportManager.exportFriends truncation (BUT-1698)', () {
+    final friendCap = ExportPaginationHelper.getLimitForType('friends');
+    final requestCap = ExportPaginationHelper.getLimitForType(
+      'friend_requests',
+    );
+
+    SocialExportManager managerWith({
+      int friends = 0,
+      int sent = 0,
+      int received = 0,
+    }) => SocialExportManager(
+      dataExportRepository: _FakeDataExportRepository(
+        friends: List.generate(friends, (i) => _cappedRow('f', i)),
+        sentRequests: List.generate(sent, (i) => _cappedRow('s', i)),
+        receivedRequests: List.generate(received, (i) => _cappedRow('r', i)),
+      ),
+    );
+
+    test('omits truncated when every leg sits exactly at its cap', () async {
+      // Boundary: "exactly `cap` records exist" is a COMPLETE export. Deriving
+      // the flag from `length >= cap` would stamp it truncated and tell the
+      // user data was withheld when none was.
+      final result = await managerWith(
+        friends: friendCap,
+        sent: requestCap,
+        received: requestCap,
+      ).exportFriends('user-uid');
+
+      expect((result['friends'] as List).length, friendCap);
+      expect(result['total_friends'], friendCap);
+      expect(result['total_pending_sent'], requestCap);
+      expect(result['total_pending_received'], requestCap);
+      expect(result.containsKey('truncated'), isFalse);
+    });
+
+    test('flags truncated and trims when the FRIENDS leg is over', () async {
+      final result = await managerWith(
+        friends: friendCap + 1,
+        sent: 2,
+        received: 2,
+      ).exportFriends('user-uid');
+
+      final friends = (result['friends'] as List).cast<Map<String, dynamic>>();
+      expect(result['truncated'], isTrue);
+      expect(friends.length, friendCap);
+      expect(result['total_friends'], friendCap);
+      // The probe row must not reach the bundle.
+      expect(
+        friends.map((f) => f['friend_id']),
+        isNot(contains('f$friendCap')),
+      );
+    });
+
+    test('flags truncated when only the SENT-requests leg is over', () async {
+      // Each leg carries the cap independently, so the OR needs a positive
+      // case per leg — a collapse to a single leg would ship silently.
+      final result = await managerWith(
+        friends: 2,
+        sent: requestCap + 1,
+        received: 2,
+      ).exportFriends('user-uid');
+
+      expect(result['truncated'], isTrue);
+      expect(result['total_pending_sent'], requestCap);
+      expect(result['total_pending_received'], 2);
+    });
+
+    test(
+      'flags truncated when only the RECEIVED-requests leg is over',
+      () async {
+        final result = await managerWith(
+          friends: 2,
+          sent: 2,
+          received: requestCap + 1,
+        ).exportFriends('user-uid');
+
+        expect(result['truncated'], isTrue);
+        expect(result['total_pending_received'], requestCap);
+        expect(result['total_pending_sent'], 2);
+      },
+    );
+
+    test('forwards cap + 1 to each capped repository query', () async {
+      final repo = _FakeDataExportRepository();
+      await SocialExportManager(
+        dataExportRepository: repo,
+      ).exportFriends('user-uid');
+
+      // Whole-map equality rather than three field checks: it proves per-leg
+      // forwarding AND that every read this section makes is accounted for.
+      // `exportFriendCategories` records the SENTINEL because the manager
+      // forwards no cap to it at all — that fourth record type rides the
+      // repository's implicit default (100) and is therefore NOT covered by
+      // the section-root `truncated` flag the other three legs OR into. A
+      // user with more than 100 categories gets a section that positively
+      // asserts completeness. Deferred to BUT-1701; when it closes, this
+      // entry becomes `categoryCap + 1` and a positive truncation test for
+      // the categories leg belongs beside the other three.
+      expect(repo.capturedMax, {
+        'exportFriendsSubcollection': friendCap + 1,
+        'exportSocialRequestsSent': requestCap + 1,
+        'exportSocialRequestsReceived': requestCap + 1,
+        'exportFriendCategories': -1,
+      });
+    });
+  });
+
+  group('SocialExportManager.exportSharedContent truncation (BUT-1698)', () {
+    final recipeCap = ExportPaginationHelper.getLimitForType('recipes');
+    final menuCap = ExportPaginationHelper.getLimitForType('menus');
+
+    SocialExportManager managerWith({int recipes = 0, int menus = 0}) =>
+        SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            sharedRecipes: List.generate(recipes, (i) => _cappedRow('sr', i)),
+            sharedMenus: List.generate(menus, (i) => _cappedRow('sm', i)),
+          ),
+        );
+
+    test('omits truncated when both legs sit exactly at their cap', () async {
+      final result = await managerWith(
+        recipes: recipeCap,
+        menus: menuCap,
+      ).exportSharedContent('user-uid');
+
+      expect(result['total_shared_recipes'], recipeCap);
+      expect(result['total_shared_menus'], menuCap);
+      expect(result.containsKey('truncated'), isFalse);
+    });
+
+    test('flags truncated and trims when the RECIPES leg is over', () async {
+      final result = await managerWith(
+        recipes: recipeCap + 1,
+        menus: 1,
+      ).exportSharedContent('user-uid');
+
+      final recipes = (result['shared_recipes_received'] as List)
+          .cast<Map<String, dynamic>>();
+      expect(result['truncated'], isTrue);
+      expect(recipes.length, recipeCap);
+      expect(result['total_shared_recipes'], recipeCap);
+      expect(
+        recipes.map((r) => r['share_id']),
+        isNot(contains('sr$recipeCap')),
+      );
+    });
+
+    test('flags truncated when only the MENUS leg is over', () async {
+      final result = await managerWith(
+        recipes: 1,
+        menus: menuCap + 1,
+      ).exportSharedContent('user-uid');
+
+      expect(result['truncated'], isTrue);
+      expect(result['total_shared_menus'], menuCap);
+      expect(result['total_shared_recipes'], 1);
+    });
+
+    test('forwards cap + 1 to each capped repository query', () async {
+      final repo = _FakeDataExportRepository();
+      await SocialExportManager(
+        dataExportRepository: repo,
+      ).exportSharedContent('user-uid');
+
+      expect(repo.capturedMax, {
+        'exportSharedRecipesReceived': recipeCap + 1,
+        'exportSharedMenusReceived': menuCap + 1,
+      });
+    });
+  });
 }
+
+/// A capped-section row with a stable, per-index id so a trimmed payload can be
+/// told apart from a re-ordered one.
+Map<String, dynamic> _cappedRow(String prefix, int i) => {
+  'id': '$prefix$i',
+  'data': {'n': i},
+};

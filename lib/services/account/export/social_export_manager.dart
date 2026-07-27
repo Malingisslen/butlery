@@ -31,38 +31,40 @@ class SocialExportManager {
         'friend_requests_received': [],
         'friend_categories': [],
       };
-      final friendLimit = ExportPaginationHelper.getLimitForType('friends');
-      final requestLimit = ExportPaginationHelper.getLimitForType(
-        'friend_requests',
+      // BUT-1698: each capped read carries its own N+1 truncation probe, and
+      // the section declares itself truncated when ANY of them clipped. Before
+      // this the caps applied silently, so an Art. 15/20 bundle that had
+      // dropped records still read as complete.
+      final friends = await ExportPaginationHelper.fetchCapped(
+        type: 'friends',
+        fetch: (max) =>
+            _exports.exportFriendsSubcollection(userId, maxDocuments: max),
       );
-
-      final friends = await _exports.exportFriendsSubcollection(
-        userId,
-        maxDocuments: friendLimit,
-      );
-      for (final entry in friends) {
+      for (final entry in friends.items) {
         friendsData['friends'].add({
           'friend_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
         });
       }
 
-      final sentRequests = await _exports.exportSocialRequestsSent(
-        userId,
-        maxDocuments: requestLimit,
+      final sentRequests = await ExportPaginationHelper.fetchCapped(
+        type: 'friend_requests',
+        fetch: (max) =>
+            _exports.exportSocialRequestsSent(userId, maxDocuments: max),
       );
-      for (final entry in sentRequests) {
+      for (final entry in sentRequests.items) {
         friendsData['friend_requests_sent'].add({
           'request_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
         });
       }
 
-      final receivedRequests = await _exports.exportSocialRequestsReceived(
-        userId,
-        maxDocuments: requestLimit,
+      final receivedRequests = await ExportPaginationHelper.fetchCapped(
+        type: 'friend_requests',
+        fetch: (max) =>
+            _exports.exportSocialRequestsReceived(userId, maxDocuments: max),
       );
-      for (final entry in receivedRequests) {
+      for (final entry in receivedRequests.items) {
         friendsData['friend_requests_received'].add({
           'request_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
@@ -83,6 +85,14 @@ class SocialExportManager {
       friendsData['total_pending_received'] =
           friendsData['friend_requests_received'].length;
       friendsData['total_categories'] = friendsData['friend_categories'].length;
+      // `friend_categories` still rides the repository's own default cap and is
+      // not probed here — tracked on BUT-1701 with the other implicit-default
+      // caps (blocks, memberships, reports, pings, the conversation list).
+      if (friends.truncated ||
+          sentRequests.truncated ||
+          receivedRequests.truncated) {
+        friendsData['truncated'] = true;
+      }
 
       return friendsData;
     } catch (e) {
@@ -161,25 +171,26 @@ class SocialExportManager {
         'shared_recipes_received': [],
         'shared_menus_received': [],
       };
-      final recipeLimit = ExportPaginationHelper.getLimitForType('recipes');
-      final menuLimit = ExportPaginationHelper.getLimitForType('menus');
-
-      final sharedRecipes = await _exports.exportSharedRecipesReceived(
-        userId,
-        maxDocuments: recipeLimit,
+      // BUT-1698: both legs are probed independently and the section is
+      // truncated when either clipped.
+      final sharedRecipes = await ExportPaginationHelper.fetchCapped(
+        type: 'recipes',
+        fetch: (max) =>
+            _exports.exportSharedRecipesReceived(userId, maxDocuments: max),
       );
-      for (final entry in sharedRecipes) {
+      for (final entry in sharedRecipes.items) {
         sharedData['shared_recipes_received'].add({
           'share_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
         });
       }
 
-      final sharedMenus = await _exports.exportSharedMenusReceived(
-        userId,
-        maxDocuments: menuLimit,
+      final sharedMenus = await ExportPaginationHelper.fetchCapped(
+        type: 'menus',
+        fetch: (max) =>
+            _exports.exportSharedMenusReceived(userId, maxDocuments: max),
       );
-      for (final entry in sharedMenus) {
+      for (final entry in sharedMenus.items) {
         sharedData['shared_menus_received'].add({
           'menu_id': entry['id'],
           'data': sanitizeForJson(entry['data']),
@@ -190,6 +201,9 @@ class SocialExportManager {
           sharedData['shared_recipes_received'].length;
       sharedData['total_shared_menus'] =
           sharedData['shared_menus_received'].length;
+      if (sharedRecipes.truncated || sharedMenus.truncated) {
+        sharedData['truncated'] = true;
+      }
 
       return sharedData;
     } catch (e) {

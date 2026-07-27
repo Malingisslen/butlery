@@ -76,6 +76,28 @@ abstract final class FirestoreCollections {
   // ── User subcollections (under users/{userId}/) ──
 
   static const String userRecipes = 'recipes';
+
+  /// DEAD PATH — kept only so a future reader recognises the name.
+  ///
+  /// Nothing writes `users/{uid}/shopping_lists`: the client routes every
+  /// personal list through `FirebaseShoppingRepository`, whose `collectionName`
+  /// is [unifiedShoppingLists], and `firestore.rules` grants no match for this
+  /// name at all. Two constants for one concept is what broke the GDPR export
+  /// and the erasure cascade (BUT-1697) — do not reintroduce it as a live path.
+  ///
+  /// The remaining readers are all broken rather than merely empty, and are
+  /// tracked in BUT-1724: `friends_utility_operations.dart:146` queries a ROOT
+  /// `shopping_lists` (not this subcollection), which the catch-all deny turns
+  /// into `permission-denied` on every call, so "senaste inköpssamarbeten" is
+  /// permanently empty; `functions/src/analytics/compute-feature-retention.ts`
+  /// probes this subcollection for its `shopped` flag, which is therefore false
+  /// for every user every day.
+  ///
+  /// Two Admin-SDK readers sweep it DELIBERATELY and correctly no-op:
+  /// `functions/src/account/account-deletion-cascade.ts` (a legacy safety net
+  /// for accounts predating the rename) and `functions/src/admin/
+  /// reset-user-data.ts`. Both hard-code the string, so a grep for this
+  /// constant does not find them.
   static const String userShoppingLists = 'shopping_lists';
   static const String userFriends = 'friends';
   static const String userFriendCategories = 'friend_categories';

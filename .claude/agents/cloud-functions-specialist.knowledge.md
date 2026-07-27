@@ -142,19 +142,42 @@ logger.info("descriptive event", { userId, recipeId, action });
   PII. `logger.info(JSON.stringify({...}))` defeats Cloud Logging's
   queryable `jsonPayload` even when "queryable telemetry" is the stated
   goal — never crush structured data into the message string.
-- Errors: `{ err }`, not `err.message` (loses stack) or the raw `Error` as
-  2nd arg (loses structured wrapper).
+- Errors: an Error nested in the payload object serializes to `err: {}` —
+  `firebase-functions`'s `entryFromArgs` unwraps an Error only when it is
+  passed POSITIONALLY (`logger/index.js:112-121`), so `logger.error(msg,
+  { err })` records NO cause at all (verified against the emulator, not
+  inferred). Where the only other record is a count-only throw, add
+  `errCode: (err as {code?:number|string}).code` + `errName` — the gRPC code
+  is what separates DEADLINE_EXCEEDED from PERMISSION_DENIED, and unlike
+  `err.message` it cannot carry a doc path containing the raw uid.
 - **Hash ALL PII/title-derived log fields consistently, not just some** — a
   mixed line (one hashed, a sibling cleartext) is a tell the cleartext one
   was kept for eyeballing. Swedish dish titles often lead with a given name
   ("Annas paj", "Mormors …"); if only inequality-across-events matters for
   detection, a hash gives that signal without the leak. `hashUid(uid)`
   everywhere a raw uid would sit near other identifying fields.
+- **A raw uid interpolated into the MESSAGE string is the recurring form of
+  this leak**, and it fails twice: it is cleartext PII (worst on the Art. 17
+  erasure path, where the log outlives the account) and it gives every user a
+  distinct message, destroying Cloud Logging grouping. The account family's
+  settled convention is `uid_prefix: uid.slice(0, 6)`
+  (`request-account-deletion.ts:178,266`) or `hashUid(uid)`
+  (`verify-signup-age.ts`). Grep `\${uid}` inside backticked log strings on
+  any cascade/probe diff — one such line among a dozen clean siblings is the
+  tell that it was added ad hoc.
 - A literal NUL (or odd byte) in a source file makes `ripgrep` treat the
   WHOLE file as binary and silently skip it in sweeps — use `Read`/Node to
   inspect suspect files. CI backstop: `functions-binary-guard` in
   `test.yml` (`git ls-files -z 'functions/src/**' | xargs -0 -r grep -laP
   '\x00'`).
+- **Doc-ID prefix ranges (`startAt(x).endAt(x+sentinel)`) must spell the
+  sentinel as the 6-character escape (backslash-u-f-8-f-f), never a raw literal** — the literal
+  renders as nothing, so the range reads as degenerate and invites a "fix"
+  that erases the bound (BUT-1690 was exactly that false report). Verify with
+  `Read`/Node codepoints, not eyes. The `lib/**.dart` guard added for BUT-1690
+  lives in `test/architecture/architecture_test.dart` and does NOT cover
+  `functions/src/**` — `account-deletion-cascade.ts`'s `system_rate_limits`
+  range still carries the raw form, including inside its own comment prose.
 
 ## What NOT to do
 
@@ -207,6 +230,22 @@ see "When to consult the archive" at the end.
 - **A wrapper/gate test is non-vacuous only if breaking the gate produces a
   DIFFERENT observable result than any other failure mode** — check this
   deliberately before trusting a green wrapper suite.
+- **Some guards are only reachable on a SECOND invocation, so only a
+  re-run test can pin them.** Firestore `update(ref, {})` throws "At least
+  one field must be updated", so an idempotent scrub's
+  `if (Object.keys(update).length > 0)` guard is dead code on run 1 (every
+  matched doc still has something to change) and load-bearing on run 2. A
+  `<step> is idempotent on re-run (retry-safe)` test that simply calls the
+  exported step a second time and awaits it catches that class outright —
+  verified by mutation, it was the ONLY red in a 58-test suite. Give every
+  re-enterable cascade step one.
+- **An unsimulated fake stub must THROW, not answer.** A hand-rolled
+  `runTransaction` whose `tx.get` hard-returns `{exists:false}` is safe only
+  while no fixture reaches it; the day one is seeded, the SUT's
+  `if (!snap.exists) return` early-exits and the test PASSES having scrubbed
+  nothing. Same for a `listDocuments()` returning `[]`. Answer with a throw
+  naming the right lane ("seed the emulator suite"), and never let the stub's
+  comment claim it protects a future fixture.
 - **A fix living in the I/O wrapper / handler-level gate can't be pinned by
   a pure-core unit suite.** Check which side of the pure-core/handler seam a
   fix landed on before crediting a suite with covering it. A test asserting
@@ -234,12 +273,116 @@ see "When to consult the archive" at the end.
   must guard against the query itself being under-populated** — a
   transiently empty/incomplete read must not permanently delete regulated
   data.
-- Cross-check the identity field a cascade filters on across all three
-  legs (Dart model `toFirestore`, `firestore.rules` `resource.data.<field>`,
-  deleter/probe query) before trusting `where(field,"==",uid)` matches real
-  docs — a wrong field deletes NOTHING, silently. Every GDPR-deletion test
-  needs a POSITIVE "owned doc is gone" assertion, not just "control
-  survives."
+- Cross-check the identity field **and the COLLECTION NAME** a cascade
+  filters on across all legs (Dart repo `collectionName`/`getUserCollection`,
+  `firestore.rules` match block, deleter, export, probe) before trusting a
+  query matches real docs — a wrong field or a pre-rename name deletes
+  NOTHING, silently. Two live examples: `realtime_recipes` (`userId` vs
+  `ownerId`) and `users/{uid}/shopping_lists` vs the real
+  `unified_shopping_lists` (which also owns a per-list `items` subcollection
+  needing its own sweep, and whose Art. 15 export read the same dead name).
+  **A missing `match` block for the queried path in `firestore.rules` is
+  proof the path holds no client-written data** — the cheapest check there
+  is. `admin/reset-user-data.ts` listing two names for one thing is the tell.
+  Every GDPR-deletion test needs a POSITIVE "owned doc is gone" assertion,
+  not just "control survives." **Fixing a dead collection name in ONE consumer
+  does not fix the rename** — sweep EVERY consumer in the same change
+  (deleter, probe, Art. 15 export, denorm propagation, analytics/retention
+  probes, Dart repo constants). `users/{uid}/shopping_lists` still lives in
+  `analytics/compute-feature-retention.ts:212` (+ its docstring line 41), so
+  the `shopped` feature is structurally always false, after the cascade +
+  export legs were fixed.
+- **One logical field can have TWO stores; only the READER decides which is
+  authoritative.** Personal `unified_shopping_lists` keep items BOTH embedded
+  in the list doc (written by `repository.update`) and in an `items`
+  subcollection (written by the item-ops module) — and
+  `ShoppingRepositoryQueryModule.readAll` does `list.copyWith(items:
+  <subcollection>)`, so the doc array is silently discarded on every reload.
+  When sizing a cascade/export/analytics leg, prove which store the app READS
+  (a 20-line fake-Firestore round-trip settles it) instead of trusting the
+  writer you happened to open. A cascade must erase BOTH stores.
+- **Deleting a parent doc after a BEST-EFFORT (`strict:false`) sweep of its
+  subcollection strands unreachable child PII**: the swallowed chunk failure
+  is warn-only, the parent goes anyway, the retry has lost its handle, and a
+  probe that counts only parent docs reports 0. Children of a to-be-deleted
+  parent use `strict:true` (the `deleteFamilyData` household precedent) so the
+  step fails loudly and the parent survives for the retry. Corollary: that
+  strict child sweep now THROWS, so it must not sit in front of a
+  higher-value leg in the same step — a legacy/pre-rename path swept before
+  the live one can abort the step before the live data is ever touched. Order
+  the live path first.
+- **A parent-with-subcollection deleted by a plain client `doc(id).delete()`
+  leaves an orphan the server cannot QUERY.** `get()` returns only existing
+  docs and `count()` reports 0, so both a sweep and a residual probe certify
+  a clean erasure while every child doc is still on disk. `listDocuments()`
+  is the only Admin-SDK call that returns refs for MISSING documents that
+  still own subcollections — use it on both the sweep and the probe wherever
+  the client deletes a parent without recursing. `batch.delete(ref)` on such
+  a phantom ref is a safe no-op, so the parent leg needs no exists-gate.
+- **A "shared" collection also holds SOLO-owner docs, which are pure own-data
+  and must be DELETED, not scrubbed.** A scrub-only loop over
+  `where(memberPermissions.{uid} != null)` retains a collaborative list the
+  deleted user created and never invited anyone to — item names and all,
+  readable by nobody, invisible to every probe. Inside the same loop: delete
+  when `ownerId === uid` and no other `memberPermissions` key remains.
+- **Scrubbing a deleted user off a SHARED doc must enumerate every
+  {uid, displayName} pair on the MODEL, including pairs inside embedded array
+  elements — not just the pairs the profile-propagation CF writes.** That CF
+  is a subset (owner + last-activity); the client stamps more
+  (`addedBy*`, `lastModifiedBy*` on `UnifiedShoppingItem`). Also delete the
+  `memberPermissions.{uid}` key like `deleteWeeklyMenuPlans`/
+  `deleteFamilyData` do — in the SAME atomic per-doc `update()`, since that
+  key is the step's re-entry query handle.
+- **A cascade step that read-then-rewrites a whole embedded array via a
+  serial `ref.update()` loop has two defects at once**: NOT_FOUND on a
+  concurrently deleted doc aborts every remaining doc in the loop, and the
+  full-array write is a lost update against live editors. Per-doc
+  `runTransaction` (re-read inside, `if (!snap.exists) return`) fixes both —
+  but ONLY for NOT_FOUND. Every other transaction error (ABORTED after
+  contention retries, DEADLINE_EXCEEDED) still escapes the `await` and aborts
+  the rest of the loop, and contention is the LIKELIER failure on a live
+  shared doc. Wrap each per-doc transaction in its own try/catch, collect the
+  failures, throw once after the loop. Two corollaries, both missed on the
+  first fix pass: (a) apply it to EVERY serial loop in the step, not only the
+  one under review — a `for (ref of refs) await deleteChildren(ref)` whose
+  child sweep is `strict:true` aborts on item 1 and skips every later item PLUS
+  every leg after it (`deleteShoppingLists`' personal-items loop still does
+  this while the shared loop below it accumulates); (b) converting abort-early
+  → accumulate makes an UNCONDITIONAL downstream write unsafe, because the
+  abort used to protect it for free — after accumulating item-sweep failures
+  you must filter those ids out of the parent-delete batch, or you delete the
+  parent whose children just failed and strand them unreachable. The
+  accumulation itself is invisible to a suite with no failure injection: only a
+  seam that makes ONE iteration throw distinguishes it from the aborting
+  version — and that seam needs NO production code change. Pass the step a
+  `Proxy` over `db` whose `batch()` records each `delete(ref).path` and throws
+  on `commit()` when a path matches the child collection (`/items/`); real
+  transactions and parent deletes still run, so one ~20-line script proves the
+  later legs execute (done for `deleteShoppingLists`: parent kept, items kept,
+  shared scrub applied, count-only throw, remediation re-run clean).
+  Corollary (c): converting abort-early → accumulate moves the CAUSE out of
+  `runStep`'s `result.errors` (which used to receive the raw `err.message` in
+  the audit row) into a per-iteration log line — so the aggregate throw stays
+  count-only for PII and the log line MUST carry the error code, or the
+  failure is diagnosable nowhere.
+- A denorm-name propagation step querying a name as a TOP-LEVEL collection
+  when it is a user SUBCOLLECTION updates zero docs, silently
+  (`on-profile-updated.ts:159` still passes `Collections.unifiedShoppingLists`
+  to `paginatedDualUpdate`, which does `db.collection(name)`). A
+  `collectionGroup` fix needs `fieldOverrides` with
+  `queryScope:"COLLECTION_GROUP"`.
+- **`probeResidualData` must not be BROADER than the deleter** — a probe leg
+  the cascade has no path to clear makes the canary permanently red. The
+  shared-shopping-list orphan probe counts `ownerId == uid` with no other
+  member, while the deleter is keyed only on `memberPermissions.{uid}`; a doc
+  with `ownerId == uid` and no such key (tampered client — the owner branch of
+  the update rule carries no `cannotModify`) is retained own-data the probe
+  reports forever. Make the deleter's scoping a SUPERSET of every probe leg —
+  literally union the probe's own queries and dedup by doc id. The property
+  is PROVABLE, not just assertable: delete one union leg and the suite must
+  redden BOTH the targeted fixture test AND the `no failed collections` test
+  (the probe flagging its own uncleaable residual). If only one reddens, the
+  probe and the deleter are not actually coupled.
 - A forged/rushed commit-gate marker does NOT imply bad code — always
   re-review the real diff regardless of how the marker was created.
 
@@ -490,6 +633,11 @@ see "When to consult the archive" at the end.
 - Verify an index-to-query mapping stated in a commit message against the
   ACTUAL queries in the actual files — a commit has misattributed an index
   to the wrong file before.
+- **Review the STAGED copy (`git show :<path>`), not only the worktree.** A
+  `MM` file means the index is older than the fix under review, so `git commit`
+  ships the version the review just rejected — `account-deletion-cascade.ts`
+  sat `MM` with the abort-early regression in the index while the worktree held
+  the accepted fix. Diff both, and say which one you reviewed.
 
 ### When to consult the archive
 Grep `cloud-functions-specialist.knowledge.archive.md` (not this file) for:

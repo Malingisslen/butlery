@@ -183,3 +183,25 @@ deferred to **BUT-1625**.
 **Why:** presence must never under-filter an allergen for a member who might eat. Do NOT file a
 "presence should scope generation" / "presentUnionForGeneration missing" / "menu ignores who's
 home" finding against the weekly-menu or generator code — it is a decided safety call. — 2026-07-17
+
+### [Shopping/Offline] A shared-list EDIT made offline may still lose another member's concurrent edit (BUT-1665 → BUT-1683)
+`ShoppingRepositoryRoutingModule.mutateCollaborativeList` writes through a Firestore transaction
+that re-reads the live document — that is what BUT-1665 shipped. When the transaction cannot
+reach a server inside its 8-second budget (`unavailable` / `deadline-exceeded`),
+`_mutateFromCache` takes over. BUT-1683 split that fallback in two:
+- **Appends are now safe.** A mutation that only adds rows is queued as `FieldValue.arrayUnion`
+  on `items`, so the replay MERGES with whatever the household did meanwhile. Nothing can be
+  lost on the add path any more.
+- **Edits of an existing row (tick, amend, remove) still queue the cached base**, and that write
+  replaces the whole `items` array on replay. If another member ticked a different item inside
+  the same window, their tick is overwritten. **Accepted.**
+**Why:** Firestore has no offline-replayable primitive for "change element X of this array" —
+`arrayRemove` + `arrayUnion` is not atomic and loses the row if the replay half-lands, and a
+transaction by definition needs a server. The only alternative is refusing offline ticks, which
+breaks the app's core moment: standing in a shop with poor reception, ticking items off. The
+window is narrow (offline device AND another member editing the same list at the same time), the
+loss is a single tick rather than the list, and it is no longer silent — the write logs a warning
+and BUT-1696 surfaces a rules-rejected replay distinctly in the audit trail. Do NOT file "the
+offline fallback re-opens BUT-1665 / client-side merge forbidden by AC2" against
+`_mutateFromCache` — decided. Revisit only if `items` becomes a map keyed by item id, which would
+make per-row offline writes mergeable. — 2026-07-26

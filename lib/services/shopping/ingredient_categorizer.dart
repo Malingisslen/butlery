@@ -1,4 +1,5 @@
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/utils/text/swedish_word_boundary.dart';
 
 /// Categorizes a Swedish ingredient name into one of the
 /// [ShoppingCategory] buckets used by the shopping list UI.
@@ -29,7 +30,7 @@ class IngredientCategorizer {
   /// ("ostskiva", "parmesanost"), so the rule is "at least one word
   /// boundary" rather than "both".
   static final RegExp _cheesePattern = RegExp(
-    r'(?<![a-zåäö0-9])ost|ost(?![a-zåäö0-9])',
+    '${SwedishWordBoundary.before}ost|ost${SwedishWordBoundary.after}',
   );
 
   /// BUT-1666: 'nöt' (beef) only ever LEADS a compound — "nötkött",
@@ -37,7 +38,9 @@ class IngredientCategorizer {
   /// nuts ("jordnöt", "kokosnöt", "valnöt") or take the nut plural
   /// ("nötter", "nötkärnor"), which is why a bare substring rule was filing
   /// nuts under meat.
-  static final RegExp _beefPattern = RegExp(r'(?<![a-zåäö0-9])nöt(?!ter|kärn)');
+  static final RegExp _beefPattern = RegExp(
+    '${SwedishWordBoundary.before}nöt(?!ter|kärn)',
+  );
 
   /// BUT-1666: paprika as a GROUND SPICE, in every spelling a Swedish shopping
   /// line uses. Allowlisting the two closed compounds was not enough — the
@@ -60,7 +63,8 @@ class IngredientCategorizer {
   /// the ASCII `\b` it replaced ever caught it — Swedish sour cream has been
   /// landing in `other` all along.
   static final RegExp _souredMilkPattern = RegExp(
-    r'gräddfil|(?<![a-zåäöé0-9])fil(?![a-zåäöé0-9])',
+    'gräddfil|${SwedishWordBoundary.beforeWith('é')}fil'
+    '${SwedishWordBoundary.afterWith('é')}',
   );
 
   /// Returns a [ShoppingCategory] constant for [ingredientName],

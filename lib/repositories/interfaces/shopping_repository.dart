@@ -19,6 +19,13 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   /// Updates an existing item in the specified shopping list atomically.
   Future<void> updateItem(String listId, UnifiedShoppingItem item);
 
+  /// BUT-1697: updates several existing items in ONE write. On a
+  /// collaborative list that is a single transaction, not one per item —
+  /// N transactions against the same document contend and roll each other
+  /// back ("avmarkera alla" on a full list). Items not present on the list
+  /// are ignored rather than resurrected.
+  Future<void> updateItemsBatch(String listId, List<UnifiedShoppingItem> items);
+
   /// Removes multiple items from the specified shopping list using batch operations.
   Future<void> removeItemsBatch(String listId, List<String> itemIds);
 

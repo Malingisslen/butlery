@@ -2,6 +2,7 @@
 library;
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/utils/text/swedish_word_boundary.dart';
 
 /// Normalizes a Swedish prompt for matching: lowercase, collapse whitespace,
 /// strip trailing punctuation. Diacritics are preserved here — diacritic
@@ -116,10 +117,11 @@ final String _correctionMarkerAlt = kCorrectionMarkers
 const String _correctionSep = r'[\s,–—-]';
 
 // Dart's \b treats å/ä/ö as NON-word characters (ASCII-only \w), so a \b
-// anchor silently fails after "två" and matches inside "råtta". These
-// explicit lookarounds are the Unicode-safe word boundary for Swedish.
-const String _noWordBefore = '(?<![a-zåäö0-9])';
-const String _noWordAfter = '(?![a-zåäö0-9])';
+// anchor silently fails after "två" and matches inside "råtta". Local aliases
+// keep the long interpolated patterns below readable; the definition itself is
+// shared (BUT-1691).
+const String _noWordBefore = SwedishWordBoundary.before;
+const String _noWordAfter = SwedishWordBoundary.after;
 
 /// Resolves spoken self-corrections with a LAST-WINS policy: in
 /// "tre, nej fyra middagar" the speaker's final value ("fyra") replaces the

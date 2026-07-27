@@ -337,6 +337,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         final success = await viewModel.addItemsToList(
           selectedList.id,
           menuItems,
+          // This button only ever adds the week's MENU to an existing list —
+          // the widget bails when there is no menu.
+          source: 'menu_generated',
         );
 
         if (mounted && context.mounted) {

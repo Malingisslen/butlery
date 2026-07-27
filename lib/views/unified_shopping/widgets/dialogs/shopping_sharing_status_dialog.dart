@@ -117,7 +117,15 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingM),
             _buildInfoRow(context.l10n.commonName, list.name),
             _buildInfoRow(context.l10n.commonType, _getListTypeLabel(context)),
-            _buildInfoRow(context.l10n.shoppingCreator, list.ownerDisplayName),
+            // BUT-1697: the owner name is stamped EMPTY when the profile has
+            // not resolved, and is nulled outright when the owner's account is
+            // erased — an empty "Skapare:" row is worse than an honest one.
+            _buildInfoRow(
+              context.l10n.shoppingCreator,
+              list.ownerDisplayName.isNotEmpty
+                  ? list.ownerDisplayName
+                  : context.l10n.displayUnknownUser,
+            ),
           ],
         ),
       ),
@@ -370,7 +378,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            if (list.lastActivityByDisplayName != null)
+            // Empty, not null, is the unresolved value since BUT-1697 — a bare
+            // `!= null` check renders a nameless attribution row.
+            if (list.lastActivityByDisplayName?.isNotEmpty ?? false)
               _buildInfoRow(
                 context.l10n.shoppingBy,
                 list.lastActivityByDisplayName!,

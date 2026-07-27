@@ -10,6 +10,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/iterable_extensions.dart';
 
 /// Module handling shopping item operations with dual storage support.
@@ -57,6 +58,16 @@ class ShoppingItemOperationsModule {
   })
   logPermissionCheck;
 
+  /// BUT-1697: the display name written into `lastActivityByDisplayName`.
+  ///
+  /// Must resolve the PROFILE name (`userService.currentUserProfile`), not the
+  /// Auth handle: `functions/src/social/on-profile-updated.ts` is the
+  /// canonical writer of this field and propagates the profile name, so an
+  /// Auth-sourced client write disagrees with the backfill that later
+  /// overwrites it. Injected so this module keeps no service dependency of its
+  /// own; the repository supplies the lookup.
+  final String? Function() resolveDisplayName;
+
   ShoppingItemOperationsModule({
     required this.firestore,
     required this.authRepository,
@@ -67,10 +78,19 @@ class ShoppingItemOperationsModule {
     required this.validateOwnership,
     required this.validateRequiredFields,
     required this.logPermissionCheck,
+    required this.resolveDisplayName,
   });
 
   /// Rebuilds [live] with [items] and stamps the shared-list activity fields.
   /// Always applied to the transaction's live document, never to a cached one.
+  ///
+  /// BUT-1697: the id and the name are ONE fact and are stamped together. The
+  /// name used to be `authRepository.currentUser?.displayName`, which is null
+  /// for every account whose Auth profile was never populated — and
+  /// `copyWith`'s `??` then kept the PREVIOUS editor's name while the id moved
+  /// on, so a list other household members read told them Erik changed what
+  /// Anna changed. An unknown name now writes empty (the model treats that as
+  /// "unknown") instead of falling through to someone else's.
   UnifiedShoppingList _withItems(
     UnifiedShoppingList live,
     List<UnifiedShoppingItem> items,
@@ -82,7 +102,7 @@ class ShoppingItemOperationsModule {
       updatedAt: now,
       lastActivityAt: now,
       lastActivityByUserId: uid,
-      lastActivityByDisplayName: authRepository.currentUser?.displayName,
+      lastActivityByDisplayName: resolveDisplayName().orEmpty(),
     );
   }
 
@@ -240,7 +260,8 @@ class ShoppingItemOperationsModule {
       resource: 'shopping_item',
       operation: 'batch_add',
       granted: true,
-      details: 'List: $listId, Items: ${items.length}, Type: ${list.type}',
+      details:
+          'List: $listId, Items: ${items.length} submitted, Type: ${list.type}',
     );
   }
 
@@ -285,6 +306,104 @@ class ShoppingItemOperationsModule {
       operation: 'update',
       granted: true,
       details: 'List: $listId, Item: ${item.id}, Type: ${list.type}',
+    );
+  }
+
+  /// Update several existing items in one write (BUT-1697).
+  ///
+  /// The collaborative leg is ONE transaction applying every replacement to
+  /// the live document; the personal leg is one chunked Firestore batch over
+  /// the rows that still exist. Items whose id is no longer on the list are
+  /// dropped on both legs — a member who deleted a row while someone else was
+  /// unchecking must not get it back, and a stale id must not fail the write
+  /// for every other row in the same batch.
+  ///
+  /// The legs differ on the ALL-gone case, and that difference is not a design:
+  /// the personal leg throws (it would otherwise report success having written
+  /// nothing), while the collaborative leg still commits a transaction that
+  /// changes only the activity stamp — a billed no-op that names a member who
+  /// changed nothing. Making them agree means redefining a tested contract, so
+  /// it is tracked rather than changed here.
+  Future<void> updateItemsBatch(
+    String listId,
+    List<UnifiedShoppingItem> items,
+  ) async {
+    if (items.isEmpty) return;
+
+    final uid = requireCurrentUserId();
+    final list = await _requireList(listId);
+    final replacements = {for (final item in items) item.id: item};
+
+    if (list.type == ListType.collaborative) {
+      await mutateCollaborativeList(
+        listId,
+        (live) => _withItems(
+          live,
+          live.items
+              .map((existing) => replacements[existing.id] ?? existing)
+              .toList(),
+          uid,
+        ),
+      );
+    } else {
+      await validateOwnership(
+        currentUserId: uid,
+        resourceOwnerId: list.ownerId,
+        resourceType: 'shopping_list',
+        resourceId: listId,
+      );
+
+      final itemsCollection = getUserCollection(
+        uid,
+      ).doc(listId).collection(FirestoreCollections.items);
+
+      // One read to learn which rows still exist, so the same "ids no longer
+      // on the list are dropped" contract holds on both legs.
+      //
+      // `batch.update` on a missing document raises `not-found` and fails the
+      // WHOLE chunk, so without this a single row another device deleted turns
+      // "avmarkera alla" into a wholesale failure the shopper is then told to
+      // blame on their connection. `set(merge: true)` is the wrong repair — it
+      // would resurrect the deleted row. The live ids cannot come from
+      // `list.items`: the parent document carries an `items` array that only
+      // whole-list writes refresh, so it is STALE rather than absent — printing
+      // it shows rows and invites deleting this read.
+      final snapshot = await itemsCollection.get();
+      final liveIds = snapshot.docs.map((doc) => doc.id).toSet();
+
+      // A query resolves from CACHE when offline and reports no error, so an
+      // empty or partial result there says nothing about the server. Filtering
+      // on it would abandon a write Firestore would otherwise have queued and
+      // replayed. Offline, submit everything and let the replay decide.
+      final present = snapshot.metadata.isFromCache
+          ? items
+          : items.where((item) => liveIds.contains(item.id)).toList();
+      if (present.isEmpty) {
+        // Every requested row is already gone. Nothing to write, but the caller
+        // must not be told "wrote everything" — it shows a success message on
+        // the strength of this returning normally.
+        throw ResourceNotFoundException(
+          'None of the ${items.length} item(s) exist on this list any more',
+          resourceType: 'shopping_item',
+          resourceId: listId,
+        );
+      }
+
+      for (final chunk in present.chunked(kFirestoreBatchSafeChunkSize)) {
+        final batch = firestore.batch();
+        for (final item in chunk) {
+          batch.update(itemsCollection.doc(item.id), item.toFirestore());
+        }
+        await batch.commit();
+      }
+    }
+
+    logPermissionCheck(
+      userId: uid,
+      resource: 'shopping_item',
+      operation: 'batch_update',
+      granted: true,
+      details: 'List: $listId, Items: ${items.length}, Type: ${list.type}',
     );
   }
 

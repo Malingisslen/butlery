@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/repositories/firebase/modules/shopping_offline_write_module.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -80,6 +81,13 @@ class ShoppingRepositoryRoutingModule {
   /// Test seam — see [CollaborativeListTransactionRunner]. Null in production.
   final CollaborativeListTransactionRunner? transactionRunner;
 
+  /// The offline write half: cached read, append detection, narrow payloads and
+  /// the replay-rejection audit. Lazy so it can close over
+  /// [logPermissionCheck] after the constructor binds it.
+  late final ShoppingOfflineWriteModule _offline = ShoppingOfflineWriteModule(
+    logPermissionCheck: logPermissionCheck,
+  );
+
   ShoppingRepositoryRoutingModule({
     required this.firestore,
     required this.authRepository,
@@ -104,6 +112,16 @@ class ShoppingRepositoryRoutingModule {
       requiredFields: ['name', 'ownerId', 'memberPermissions'],
       resourceType: 'collaborative_shopping_list',
     );
+
+    // SECURITY (BUT-1696): mirror the create rule for
+    // /unified_shared_shopping_lists — `request.auth.uid ==
+    // request.resource.data.ownerId`. This was the one write path in the file
+    // that logged `granted: true` behind no client-side decision at all: the
+    // server refused a foreign-owner create anyway, but the audit row claimed
+    // a grant nobody made. Note this also fails
+    // `createCollaborativeListFromInvitation` locally instead of at the
+    // server — that path has always been dead against the same rule.
+    _requireSelfOwnedCreate(uid, entity);
 
     final docRef = sharedListsRef.doc();
     final listToSave = UnifiedShoppingList(
@@ -273,43 +291,42 @@ class ShoppingRepositoryRoutingModule {
   );
 
   /// Offline path for [mutateCollaborativeList]: apply [mutate] to the cached
-  /// document and queue a merge write, which Firestore replays on reconnect.
+  /// document and queue a write, which Firestore replays on reconnect.
+  ///
+  /// BUT-1683 narrows the lost-update window this path used to open across the
+  /// board. A mutation that only APPENDS rows — the add-item path — is queued
+  /// as an `arrayUnion` on `items` instead of a whole-array overwrite, so a
+  /// replay merges with whatever the household did meanwhile instead of
+  /// replacing it: nothing can be lost. Only a mutation that touches an
+  /// EXISTING row (tick, edit, remove) still queues the cached base, because
+  /// Firestore has no offline-replayable primitive for "change element X of
+  /// this array". That residual is an accepted deviation — see
+  /// `docs/architecture/ACCEPTED_DEVIATIONS.md` — since the alternative is a
+  /// checkbox that refuses to work in a shop with no reception.
   Future<UnifiedShoppingList> _mutateFromCache(
     String uid,
     String listId,
     DocumentReference<Map<String, dynamic>> docRef,
     UnifiedShoppingList Function(UnifiedShoppingList live) mutate,
   ) async {
-    final cached = await docRef.get(const GetOptions(source: Source.cache));
-    if (!cached.exists) {
-      throw ResourceNotFoundException(
-        'Collaborative shopping list not found',
-        resourceType: 'collaborative_shopping_list',
-        resourceId: listId,
-      );
-    }
-
-    final live = fromFirestore(cached);
+    final live = fromFirestore(await _offline.readCachedDoc(docRef, listId));
     await _requireEditRights(uid, listId, live);
 
     final mutated = mutate(live);
     // Same escalation bar as the transactional path — the cached base makes the
     // check weaker, not unnecessary.
     _requireNoPrivilegeEscalation(uid, mutated, live);
+
+    final appended = _offline.appendedItems(live, mutated);
     // Deliberately not awaited: while offline this future only settles once
     // the write reaches the server, but the local cache and every snapshot
     // listener update immediately. Errors are caught here so a rejected
     // replay surfaces as a log line rather than an uncaught async error.
     unawaited(
-      docRef
-          .set(mutated.toFirestore(), SetOptions(merge: true))
-          .catchError(
-            (Object e) => AppLogger.error(
-              'Queued offline mutation of collaborative list $listId was '
-              'rejected on replay',
-              e,
-            ),
-          ),
+      (appended != null
+              ? docRef.update(_offline.appendPayload(mutated, appended))
+              : docRef.update(_offline.cachedBasePayload(mutated)))
+          .catchError((Object e) => _offline.onReplayRejected(uid, listId, e)),
     );
 
     logPermissionCheck(
@@ -317,14 +334,26 @@ class ShoppingRepositoryRoutingModule {
       resource: 'collaborative_shopping_list',
       operation: 'update',
       granted: true,
-      details: 'List: ${mutated.name}, offline cached-base item mutation',
+      details:
+          'List: ${mutated.name}, offline '
+          '${appended != null ? 'append-only (arrayUnion)' : 'cached-base'} '
+          'item mutation',
     );
 
-    AppLogger.warning(
-      'Offline: queued a cached-base mutation of collaborative list '
-          '"${mutated.name}" — a concurrent edit by another member may be lost',
-      'ShoppingRepository',
-    );
+    if (appended == null) {
+      AppLogger.warning(
+        'Offline: queued a cached-base mutation of collaborative list '
+            '"${mutated.name}" — a concurrent edit by another member may be '
+            'lost (accepted deviation, BUT-1683)',
+        'ShoppingRepository',
+      );
+    } else {
+      AppLogger.info(
+        'Offline: queued an append-only mutation of collaborative list '
+        '"${mutated.name}" — ${appended.length} row(s) unioned, no concurrent '
+        'edit can be lost',
+      );
+    }
     return mutated;
   }
 
@@ -338,9 +367,9 @@ class ShoppingRepositoryRoutingModule {
   /// the escalation. [proposed] is that payload; [stored] is the server state it
   /// is being compared against. This mirrors the
   /// Firestore rule for `/unified_shared_shopping_lists` (non-owners may not
-  /// touch `ownerId`/`memberPermissions`); the rule is the real enforcement,
-  /// this turns a raw `permission-denied` from the server into a decision the
-  /// audit log records.
+  /// touch `ownerId`/`memberPermissions`/`createdAt`); the rule is the real
+  /// enforcement, this turns a raw `permission-denied` from the server into a
+  /// decision the audit log records.
   void _requireNoPrivilegeEscalation(
     String uid,
     UnifiedShoppingList proposed,
@@ -356,21 +385,63 @@ class ShoppingRepositoryRoutingModule {
         stored.memberPermissions.entries.any(
           (e) => proposed.memberPermissions[e.key] != e.value,
         );
-    if (!rewritesOwner && !rewritesMembers) return;
+    // BUT-1683 review: the rule's forbidden-key set is a triple, not a pair.
+    // `copyWith` cannot move createdAt so the mutate path never trips this,
+    // but updateCollaborativeList persists a caller-supplied entity verbatim.
+    final rewritesCreatedAt = proposed.createdAt != stored.createdAt;
+    if (!rewritesOwner && !rewritesMembers && !rewritesCreatedAt) return;
 
+    final field = rewritesOwner
+        ? 'ownerId'
+        : rewritesMembers
+        ? 'memberPermissions'
+        : 'createdAt';
     logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'update',
       granted: false,
-      details:
-          'List: ${proposed.id}, non-owner attempted to rewrite '
-          '${rewritesOwner ? 'ownerId' : 'memberPermissions'}',
+      details: 'List: ${proposed.id}, non-owner attempted to rewrite $field',
     );
     throw PermissionDeniedException(
-      'User $uid may not change ownership or member permissions on '
-      'collaborative shopping list ${proposed.id}',
+      'User $uid may not change ownership, member permissions or the creation '
+      'time of collaborative shopping list ${proposed.id}',
       resource: 'collaborative_list:${proposed.id}',
+      userId: uid,
+    );
+  }
+
+  /// Throws [PermissionDeniedException] unless [uid] is creating a list it
+  /// owns itself, mirroring the create rule for
+  /// `/unified_shared_shopping_lists`.
+  void _requireSelfOwnedCreate(String uid, UnifiedShoppingList entity) {
+    final ownsIt = entity.ownerId == uid;
+    // The create rule has TWO conjuncts, and mirroring only the first one is
+    // how an audit row ends up claiming a grant the server then refuses: it
+    // also requires the creator's own key in `memberPermissions`. The
+    // `UnifiedShoppingList.collaborative` factory always seats the owner, but
+    // the plain constructor does not, and it is on the public interface.
+    final seatedAsMember = entity.memberPermissions.containsKey(uid);
+    if (ownsIt && seatedAsMember) return;
+
+    final reason = !ownsIt
+        ? 'attempted to create a list owned by another user'
+        : 'attempted to create a list without seating the owner in '
+              'memberPermissions';
+    logPermissionCheck(
+      userId: uid,
+      resource: 'collaborative_shopping_list',
+      operation: 'create',
+      granted: false,
+      details: 'List: ${entity.name}, $reason',
+    );
+    throw PermissionDeniedException(
+      !ownsIt
+          ? 'User $uid may not create a collaborative shopping list owned by '
+                '${entity.ownerId}'
+          : 'User $uid may not create a collaborative shopping list without a '
+                'memberPermissions entry for themselves',
+      resource: 'collaborative_list:${entity.id}',
       userId: uid,
     );
   }

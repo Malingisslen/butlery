@@ -5349,3 +5349,510 @@ section (per-ITEM charge couples maxTokens to the payload cap; `enforceRateLimit
 violation row; additive split buckets), the logging section (hash all PII-ish log fields),
 and the test-seam section (a fix living in the handler-level gate cannot be pinned by a
 pure-core unit suite). This re-review is confirmation, not a new pattern.
+
+---
+
+### 2026-07-26 — Shopping sprint review: `deleteShoppingLists` two-level scrub (BUT-1697/1696/1683/1681)
+[Bug fixed] [Pattern discovered]
+
+Diff under review: `functions/src/account/account-deletion-cascade.ts` gained a LIST-level
+scrub inside `deleteShoppingLists` — `lastActivityByUserId`/`lastActivityByDisplayName`
+nulled when they name the deleted uid, `ownerDisplayName` nulled when `ownerId === uid`,
+merged with the pre-existing item-level `assignedTo*`/`purchasedBy*` scrub into ONE
+`update` per doc. `ownerId` deliberately retained (rules read it for write access).
+The rest of the sprint was Dart (shopping repository/service/view + analytics).
+
+**Critical, found by verifying the diff's own claim.** The step's first act is
+`db.collection("users").doc(uid).collection("shopping_lists").get()` — but
+`FirebaseShoppingRepository.collectionName` is `FirestoreCollections.unifiedShoppingLists`
+= `unified_shopping_lists`, and `getUserCollection` routes personal lists to
+`users/{uid}/unified_shopping_lists`, each list owning an `items` subcollection.
+`firestore.rules` has `match /users/{userId}/unified_shopping_lists/{listId}` (line ~394)
+with a nested `items` match, and NO `match /shopping_lists` anywhere under `users` — so the
+legacy path cannot even hold client-written data. Net: every live personal shopping list
+(and its items subcollection) survives account deletion. `probeResidualData` doesn't probe
+it either, so the canary is silent. `functions/src/admin/reset-user-data.ts` lists BOTH
+names, which is where the stale one presumably came from.
+
+Same wrong name on two more legs, found by following the path:
+- `lib/repositories/firebase/firebase_data_export_repository.dart:222`
+  (`exportPersonalShoppingLists`) reads `FirestoreCollections.userShoppingLists` =
+  `'shopping_lists'` → the GDPR Art. 15 export of personal shopping lists is empty too.
+  This is the *inverse* of the realtime_recipes trap (that one exported but never erased;
+  this one neither).
+- `functions/src/analytics/compute-feature-retention.ts:212` probes
+  `users/{uid}/shopping_lists` for the `shopped` retention feature → structurally always
+  false; the shopping column of feature-retention has never been non-zero.
+- `lib/services/unified/friends/friends_utility_operations.dart:146` — same constant.
+
+**High:** the new comment claims the two-level field inventory "mirrors the {queryField,
+updateField} pairs in on-profile-updated.ts", and it does — but that CF is only the writer
+of the OWNER + LAST-ACTIVITY pairs. `UnifiedShoppingItem` also carries
+`addedByUserId`/`addedByDisplayName` (stamped by `UnifiedShoppingItem.collaborative`, and
+`isCollaborative => addedByUserId != null`) and `lastModifiedByUserId`/
+`lastModifiedByDisplayName`. Both survive on every item the deleted user added, on a doc
+other members keep — precisely the residual the ticket says it closes. Mirroring the
+propagation writer covers a SUBSET of the identity fields the client writes.
+
+**Medium/High:** `memberPermissions.{uid}` is left in place. Two sibling steps in the same
+file (`deleteWeeklyMenuPlans`, `deleteFamilyData`) do
+`[`memberPermissions.${uid}`]: FieldValue.delete()`. Removing it here is retry-safe because
+the whole scrub is one atomic per-doc `update()` — but it also destroys the re-entry query
+handle (`where('memberPermissions.'+uid, '!=', null)`), so it must be in the SAME update,
+never a second write.
+
+**Medium (robustness/lost update):** the loop does a serial unbounded
+`listDoc.ref.update()`. (a) a concurrently deleted list throws NOT_FOUND and aborts the
+remaining lists — the whole step reports failed; (b) `update.items = scrubbed` is a
+read-then-rewrite-whole-array, the exact lost-update BUT-1665 made the CLIENT transactional
+to avoid. `db.runTransaction` per doc, or `getAll`-probe + skip-if-absent, fixes both.
+
+**High (test):** no test. `request-account-deletion.integration.test.ts:350` already seeds
+`unified_shared_shopping_lists/ussl-${RUN}` but with no `lastActivityByUserId`, no `ownerId`
+and no `addedByUserId` on the items — so both the new scrub and the addedBy gap are
+structurally invisible. `npm run test:request-account-deletion` (4/4 pass) is
+orchestrator-level only; `npm run build` clean.
+
+Dart side (handed to the Dart reviewers, recorded here because the ticket is the same):
+- `lib/views/unified_shopping_view.dart:521` `_uncheckAllItems` ignores the returned bool
+  and always shows `shoppingAllUnchecked`, while the sprint added `_report(e)` in
+  `ShoppingItemManagementModule.uncheckAllItems`. So the new error message is written and
+  never read, the user is told "Alla avmarkerade" on a full rollback, and `_error` is left
+  set on `ShoppingStateData` until the next `loadLists` — where `_emitState`'s
+  `_error != null && _lists.isEmpty` branch can later flip the whole screen to
+  `ShoppingStateError` with a stale message. `buildModule()` in the module test never wires
+  `reportFailure`, so the three-way message mapping is untested at module level (the
+  service-level `mutateSharedList` triple IS well covered and non-vacuous).
+- `ShoppingItemOperationsModule.updateItemsBatch`: the collaborative leg filters
+  replacements against the live list ("items no longer on the list are dropped" — both
+  docstrings promise this), the PERSONAL leg passes `items` straight to `batch.update` on
+  `.../{listId}/items/{itemId}`. A doc deleted underneath → `not-found` → the whole chunk
+  aborts. Personal leg has no test at all.
+- Verified clean: no analytics double-fire (the menu generator writes via `updateList`, not
+  `addItemsBatch`, and creates via `shoppingService.createPersonalList`, so the single
+  `logShoppingListCreated(source:'menu_generated')` is the only event); `resolveDisplayName()
+  ?? ''` + the `activitySummary` empty-check are a coherent pair with the cascade nulling
+  the same field.
+- `on-profile-updated.ts:160` propagates the name into `Collections.unifiedShoppingLists`
+  as a TOP-LEVEL collection — same subcollection confusion, so that half of the loop
+  updates zero docs. A `collectionGroup("unified_shopping_lists")` fix needs a
+  `fieldOverrides` entry with `queryScope: "COLLECTION_GROUP"` for `ownerId` and
+  `lastActivityByUserId`.
+
+---
+
+### 2026-07-26 — Shopping sprint RE-review: BUT-1697 cascade fix verified; residuals still open
+[Bug fixed] [Pattern discovered]
+
+Re-review of the applied fixes for the 2026-07-26 shopping sprint. Everything the previous
+entry filed as Critical/High on `functions/src/account/account-deletion-cascade.ts` is
+genuinely fixed, and verified against a REAL emulator, not just by reading:
+
+- `deleteShoppingLists` now sweeps `users/{uid}/unified_shopping_lists` (via
+  `Collections.unifiedShoppingLists`) AND each list's `items` subcollection, items first,
+  keeping the legacy `shopping_lists` name as a pre-rename sweep. `probeResidualData` gained
+  the same subcollection probe next to `canonical_rating_events`.
+- The item-level scrub now also anonymizes `addedByUserId`/`lastModifiedByUserId` to
+  `"deleted"` and nulls their display names. Anonymize-not-null is right, because
+  `UnifiedShoppingItem.isCollaborative => addedByUserId != null`.
+- List level: `lastActivityByUserId`/`lastActivityByDisplayName` nulled, `ownerDisplayName`
+  nulled, `ownerId` deliberately retained (firestore.rules 1602-1631 reads `ownerId` for
+  update/delete, so nulling it orphans the list for the remaining members).
+  `ownerDisplayName` being a NON-NULLABLE Dart String is safe: `fromFirestore` routes it
+  through `SerializationUtils.safeString`, which maps null to the empty string - checked; no
+  deserialization crash for remaining members, and `activitySummary` got a matching
+  `isEmpty` guard in the same sprint.
+- Verified: `npm run build` clean; `npm run test:request-account-deletion` 4/4;
+  `npx ts-node src/__tests__/request-account-deletion.integration.test.ts` against the
+  already-running emulator on 127.0.0.1:8080 gives 50/50 PASS including the four new
+  BUT-1697 cases; `node scripts/check-test-registration.js` OK (116 files registered, 4
+  accepted BUT-1702 warnings). Dart: 214/214 across the six shopping suites.
+  (`firebase emulators:exec` fails with "port taken" when another session already runs the
+  emulator - run the ts-node entrypoint directly instead; the suite pins its own PROJECT_ID
+  namespace and clears only that, so it is safe against a shared emulator.)
+
+STILL OPEN, each with a named fix:
+
+1. HIGH, NEW this round - solo-owner shared lists are never deleted. The loop over
+   `unified_shared_shopping_lists where memberPermissions.{uid} != null` only ever scrubs.
+   A collaborative list the user created and never invited anyone to is pure own-data (item
+   names included): it survives Art. 17 forever, is readable by nobody, and no probe covers
+   that collection at all. Fix inside the same loop: when `ownerId === uid` and no other
+   `memberPermissions` key remains, `listDoc.ref.delete()` instead of the update. The
+   previous review missed this because it reasoned about "shared docs other members keep"
+   and never asked whether the shared collection also holds solo docs.
+2. HIGH, filed last round and NOT applied - `memberPermissions.{uid}` is still left in
+   place. The deleted user's raw uid stays a map key on a doc other members keep, and
+   `memberCount`/`collaborators` count a ghost member. `deleteWeeklyMenuPlans` and
+   `deleteFamilyData` both delete the equivalent key. It must go in the SAME per-doc
+   `update()` (it is the step's re-entry query handle).
+3. HIGH, introduced BY the fix - the `items` subcollection is deleted through
+   `batchDeleteAll` = `commitInChunks(..., strict:false)`, which swallows a failed chunk
+   with a v1 warn; the parent list doc is then deleted unconditionally. One transient
+   commit failure strands item docs under a deleted parent: unreachable by any retry (the
+   handle is gone) and invisible to the probe (which counts list docs, so it reports 0).
+   `deleteFamilyData` already uses `strict:true` for children of a doomed parent for exactly
+   this reason. Fix: `strict:true` on the items sweep.
+4. MEDIUM - the serial `listDoc.ref.update(update)` loop is unchanged: NOT_FOUND on a
+   concurrently deleted list aborts every remaining list, and `update.items = scrubbed` is a
+   whole-array lost update. Per-doc `runTransaction`, or `getAll` probe + skip-if-absent.
+5. MEDIUM - the rename is only half-swept. `analytics/compute-feature-retention.ts:212`
+   (plus its docstring at line 41) still probes `users/{uid}/shopping_lists`, so the
+   `shopped` retention feature is structurally always false; and
+   `social/on-profile-updated.ts:160` still passes `Collections.unifiedShoppingLists` to
+   `paginatedDualUpdate`, which does `db.collection(collection)` - a TOP-LEVEL read of a
+   user subcollection, so that half of the loop updates zero docs. The cascade's new comment
+   cites that CF as "the canonical writer" of those fields, which is only true for the
+   shared collection.
+6. LOW - `account-deletion-cascade.ts:898/899/908`: the `system_rate_limits` doc-ID range
+   still ends in a RAW U+F8FF literal, and the comment explaining it contains an invisible
+   copy ("The upper bound's trailing <invisible> is a high-codepoint sentinel"). BUT-1690's
+   guard is scoped to `lib/**.dart` in `test/architecture/architecture_test.dart` and does
+   not cover `functions/src`.
+
+Dart side, re-verified FIXED: `unified_shopping_view.dart` now consumes the returned bool
+AND `viewModel.error` + `clearError()` for both `_onItemTap` and `_uncheckAllItems`;
+`ShoppingItemManagementModule.reportFailure` is wired from
+`UnifiedShoppingService._failMutation`; the VM's `clearError` forwards to the service's
+`_error`, so the stale-error to `ShoppingStateError` path is closed. BUT-1683's offline
+append path (`arrayUnion` plus a 4-key activity payload that excludes
+`ownerId`/`memberPermissions`/`createdAt`) is coherent with the rules, and `toFirestore()`
+carries no denormalized counters that the narrowed payload would leave stale.
+
+Dart side, still open (MEDIUM): `ShoppingItemOperationsModule.updateItemsBatch`'s PERSONAL
+leg. Both docstrings promise stale ids are dropped, but the personal leg passes `items`
+straight to `batch.update` on `.../{listId}/items/{itemId}` with no filter - and `readList`
+does not hydrate a personal list's items, so honouring the promise needs one
+`collection('items')` read to build the id set. One `not-found` aborts the whole "avmarkera
+alla", and no test exercises that leg at all, even though it is the COMMON case (most lists
+are personal; only the collaborative leg is tested).
+
+### 2026-07-26 — Shopping sprint THIRD review: cascade items 1-3 verified fixed; 4-6 still open; a new Dart dual-store bug found
+[Bug fixed] [Pattern discovered]
+
+Third pass over the same working tree (`functions/src/account/account-deletion-cascade.ts`
+plus the 22 Dart shopping files). Everything the second re-review filed as HIGH is now
+applied and verified against a REAL emulator:
+
+- Solo-owner shared lists: the loop now does `if (data.ownerId === uid && !othersRemain)
+  { await listDoc.ref.delete(); continue; }` before building the scrub payload.
+- `memberPermissions.{uid}` is deleted with `FieldValue.delete()` inside the SAME per-doc
+  `update(update)` as the scrub (re-entry handle preserved).
+- The personal `items` sweep is now `commitInChunks(..., { label:
+  "deletePersonalListItems", strict: true })`, items before parents, legacy
+  `shopping_lists` still swept as a pre-rename net.
+- `probeResidualData` gained a `subProbes` loop (`canonical_rating_events` +
+  `Collections.unifiedShoppingLists`) and a two-leg
+  `unified_shared_shopping_lists` probe (memberPermissions key count + owned-with-no-other-
+  member orphan scan).
+
+Verification run: `npm run build` clean; `npm run test:request-account-deletion` 4/4;
+`npx ts-node src/__tests__/request-account-deletion.integration.test.ts` against the
+already-running emulator on 127.0.0.1:8080 → **54/54 PASS** (was 50/50; the four new cases
+are I-SL7, I-SL7b, I-SL8, I-SL9 plus I7b/I7c/I8b); `node scripts/check-test-registration.js`
+OK (116 files, 4 accepted BUT-1702 warnings). Dart: `flutter test` over the six shopping
+suites → **219/219 PASS**. `updateItemsBatch`'s personal leg is now exercised
+(`updateItemsBatch writes through past the batch chunk size`, fixture straddles
+`kFirestoreBatchSafeChunkSize`).
+
+STILL OPEN, unchanged from last round (each re-verified in the current tree):
+
+4. MEDIUM — serial `listDoc.ref.update(update)` loop, lines ~458-461. NOT_FOUND on a
+   concurrently deleted list aborts every remaining list; `update.items = scrubbed` is a
+   whole-array lost update against live editors. Per-doc `runTransaction`, or a `getAll`
+   existence probe + skip-if-absent.
+5. MEDIUM — `analytics/compute-feature-retention.ts:212` (+ docstring line 41) still probes
+   `users/{uid}/shopping_lists`; `social/on-profile-updated.ts:159` still hands
+   `Collections.unifiedShoppingLists` to `paginatedDualUpdate`, which does
+   `db.collection(name)` = a top-level read of a user subcollection (0 docs, 2 wasted
+   queries per profile rename). The cascade's new comment calling that CF "the canonical
+   writer" is only true for the shared collection.
+6. LOW — `account-deletion-cascade.ts:999/1000/1009`: the `system_rate_limits` doc-ID range
+   still ends in a RAW U+F8FF literal and the comment at 1000 contains an invisible copy
+   ("The upper bound's trailing <invisible> is …"). Verified by a Node codepoint scan, not
+   by eye. BUT-1690's guard is `lib/**.dart` only.
+
+NEW this round:
+
+7. LOW — `probeResidualData`'s orphan leg is BROADER than the deleter. It counts
+   `unified_shared_shopping_lists where ownerId == uid` with no other `memberPermissions`
+   key, but `deleteShoppingLists` only ever visits docs matched by
+   `memberPermissions.{uid} != null`. A doc with `ownerId == uid` and no such key is
+   retained own-data that the canary reports as residual FOREVER, because no cascade path
+   reaches it. Not client-reachable today (`ListMemberOperations.removeMember`/`leaveList`
+   both refuse to drop the owner's own key) but the owner branch of the update rule
+   (firestore.rules:1621) carries no `cannotModify`, so a tampered client can produce it.
+   Fix: add an `ownerId == uid` leg to the deleter — delete when orphaned, null
+   `ownerDisplayName` otherwise. New principle: a probe leg must never be broader than the
+   deleter's scoping.
+8. **HIGH, pre-existing, empirically proven — personal shopping lists have TWO item stores
+   and the reader keeps the wrong one.** `ShoppingRepositoryQueryModule.readAll` (line 47)
+   does `list.copyWith(items: <items subcollection>)`, and `copyWith` uses
+   `items ?? List.from(this.items)`, so an EMPTY subcollection overwrites the doc's embedded
+   `items` array. But `repository.update(personal)` → `super.update(entity)` writes only the
+   doc array. So every writer that goes through `UnifiedShoppingService.updateList` loses
+   its items on the next `initialize()`/`loadLists()`:
+   `menu_shopping_list_generator.dart:216` (the whole "generera inköpslista för veckan"
+   feature), `personal_shopping_operations.dart:250` (updateItem) and `:522`
+   (importItemsFromText). Proved with a throw-away fake-Firestore round trip: seed a
+   personal list doc with 2 embedded items, no subcollection → `readAll()` returns
+   `items = []`. Scratch test deleted after the run.
+   Consequence for BUT-1681: the new `logShoppingListCreated(source:'menu_generated',
+   initialItemCount: items.length)` records a row count for a list that reads back empty,
+   so the funnel metric it exists to build will be misleading until the store split is
+   fixed. Recommended fix: make the personal write path own the subcollection (write items
+   there in `update`, or drop the subcollection and let `readAll` trust the doc array) —
+   one store, chosen deliberately. Not in this diff's blast radius; needs its own ticket.
+
+Also: a stray zero-byte `addedByUserId` file was sitting untracked at the repo root
+(shell-redirect artifact from the scrub work). Deleted.
+
+### 2026-07-27 — BUT-1697 account-deletion cascade: commit-gate RE-REVIEW of the five fixes
+
+[Bug fixed] / [Pattern discovered]
+
+Second pass over the uncommitted account-deletion cascade (HEAD 543e0f7a3, nothing
+committed). The prior pass had filed five blocking defects; this pass verified the fixes
+adversarially rather than accepting them. Files: `functions/src/account/
+account-deletion-cascade.ts`, `functions/src/__tests__/request-account-deletion.
+integration.test.ts`, `functions/src/__tests__/request-account-deletion.test.ts`.
+
+Useful mechanic: the file was staged AND dirty (`MM`), so `git diff` (worktree vs index)
+isolated the FIX from the earlier pass, while `git diff HEAD` showed the whole change.
+When the review question is "does the rewrite preserve the previous semantics", the index
+version is the baseline to diff against, not HEAD.
+
+**What I executed** (all on the live emulator at 127.0.0.1:8080; the suite hardcodes its
+own `FIRESTORE_EMULATOR_HOST` and project `butlery-acct-deletion-integration`, so the
+env vars in the task description were inert):
+- baseline integration suite: 58/58 PASS
+- `npx tsc --noEmit`: exit 0
+- `npm run test:request-account-deletion`: 4/4 PASS
+- mutation A — deleted the `ownerId == uid` leg of the union in `deleteShoppingLists`:
+  **2 FAIL** — `unified_shared_shopping_lists: a target-owned list with no member key is
+  handled` AND `cascade: completed with no failed collections`. The second red is the
+  interesting one: `probeResidualData`'s own `ownerId == uid` leg flags the residual the
+  crippled deleter can no longer clear, so the deleter-superset-of-probe property is
+  enforced end-to-end by the suite, not merely asserted in a comment.
+- mutation B — deleted the `if (Object.keys(update).length > 0)` guard around
+  `tx.update(listRef, update)`: **1 FAIL**, uniquely the new
+  `deleteShoppingLists is idempotent on re-run (retry-safe)` test, with
+  `Update() requires ... At least one field must be updated.` Run 1 never produces an
+  empty update (every matched doc has something to change); only run 2 does. That is a
+  whole class of guard that no single-pass suite can reach.
+- file restored byte-identical after each probe (md5 `8d01811ae0f091af9a5a34aa8148f4da`).
+
+**Verdicts on the five claimed fixes**
+
+1. `listDocuments()` on the personal sweep + probe — CORRECT, on both names
+   (`shopping_lists` legacy at :360, `Collections.unifiedShoppingLists` at :371) and on the
+   probe leg (:172-190). `deleteListItems` (strict:true) runs BEFORE each parent delete.
+   `batch.delete(ref)` on a phantom ref (a missing parent that only owns subcollections) is
+   a no-op success — confirmed live, the orphan fixture's parent doc never existed.
+2. Union of `memberPermissions.{uid} != null` and `ownerId == uid`, dedup by doc id —
+   CORRECT and provably a superset of both probe legs (mutation A above).
+3. Per-list `db.runTransaction` — semantics preserved EXACTLY vs the index version,
+   line-by-line: sole-member delete (`continue`→`return`), all four item pair scrubs,
+   activity pair, `ownerDisplayName` gated on `ownerId===uid && != null`, and the
+   `memberPermissions.{uid}` FieldValue.delete() inside the SAME `update` object → one
+   `tx.update`. Additions are only `if (!snap.exists) return;` and reading from the tx
+   snapshot. Reads precede writes.
+4. The corrected "no automatic retry" comment — VERIFIED against
+   `request-account-deletion.ts:240-250`: `auth.deleteUser(uid)` runs unconditionally after
+   `probeResidualData`, regardless of `failedCollections`; remediation really is
+   `deletion_audit_logs` + `admin/reset-user-data.ts`.
+5. `BATCH_CHUNK` / `void BATCH_CHUNK;` deleted — confirmed gone.
+
+Shared lists carry items INLINE (rules 1602-1630 have no nested `items` match; the Dart
+item-ops module header states "Personal lists: Items in subcollection (/items)" /
+collaborative = inline), so the sole-member `tx.delete(listRef)` strands no subcollection.
+Checked deliberately, because it would have been the same defect the personal path had
+just been fixed for.
+
+**New findings filed this pass**
+
+- HIGH — `account-deletion-cascade.ts:211-214` logs the RAW uid inside the warn MESSAGE:
+  `` `[deletion-cascade] residual memberPermissions.${uid} keys on shared shopping lists:
+  ${keyedCount} docs` ``. Verified new vs HEAD, and verified it is the ONLY log line in the
+  1108-line file that interpolates `${uid}` (the other nine hits are field paths and doc-id
+  ranges). The family convention is `uid_prefix: uid.slice(0, 6)`
+  (`request-account-deletion.ts:178,266`) and `hashUid(uid)` (`verify-signup-age.ts`, whose
+  docstring calls it "hashUid-everywhere discipline"). Blocking: cleartext pseudonymous PII
+  written to Cloud Logging on the Art. 17 path, where the log outlives the erased account,
+  plus per-user message cardinality that defeats grouping.
+- MEDIUM — the per-list transaction fixes the NOT_FOUND-aborts-the-rest problem its own
+  comment (:436-442) claims it fixes, but ONLY that one. ABORTED (contention exhausted
+  after the SDK's retries) or DEADLINE_EXCEEDED still escapes the `await` and skips every
+  remaining shared list. Contention is the likelier failure on a live shared doc.
+- MEDIUM — the legacy `shopping_lists` leg now runs a strict:true `deleteListItems` BEFORE
+  the live path, so a legacy item-chunk failure aborts the step before the LIVE personal
+  lists and the shared scrub are touched. New: at the index version the legacy leg was a
+  non-throwing `batchDeleteAll`. Probability ~0 (rules grant no match for that path) but
+  the remedy is a block swap.
+- LOW — `batchDeleteAll`'s docstring (:247) still says "chunked at 450 ops/batch"; the 450
+  constant it referred to was deleted in this very diff and `commitInChunks` chunks at
+  `BATCH_LIMIT` = 500.
+- LOW — the header docstring (:27-30) enumerates "deletes / arrayRemove / set with merge"
+  as the idempotency inventory and no longer mentions the per-doc transaction.
+- LOW — the hand-rolled fake in `request-account-deletion.test.ts` has no `runTransaction`.
+  It passes only because both shared queries return empty snapshots, so `sharedRefs` is
+  empty and the loop never runs. Seeding a single shared list into that fake would produce
+  a TypeError that looks like an orchestration failure.
+- LOW, carry-over, NOT this diff — `system_rate_limits` at :1082/:1092 still spells the
+  range sentinel as a raw literal. Byte-verified present and load-bearing: codepoint dump
+  shows `endAt(\`${uid}_U+F8FF\`)`. The BUT-1690 lint covers `lib/**.dart` only.
+
+CI wiring checked (the recurring trap): `test:request-account-deletion` and
+`test:integration:account-deletion` both exist in `package.json`, the integration file is
+in the `test:rules:all` chain, and `firestore-rules.yml` carries `functions/src/account/**`
+in BOTH the `pull_request` (:51) and `push` (:102) `paths:` — so editing the cascade source
+really does trigger the emulator job.
+
+Non-vacuity of the four new tests, by executed mutation:
+`:762` orphan erasure ← `listDocuments()`→`get()` (the reporter's revert-probe; the fixture
+writes only the item doc, never the parent). `:772` scope control ← a widened sweep; weak
+alone by construction and honestly labelled as a control. `:784` owned-without-member-key ←
+mutation A. `:1318` re-run idempotency ← mutation B, unique in the suite. The fake's
+`listDocuments()` returning `[]` is vacuous by design and says so.
+
+Verdict: BLOCKING on the raw-uid log line alone; everything else Medium/Low.
+
+### 2026-07-27 — BUT-1697 commit-gate FINAL pass: the High closes, two Mediums remain [Bug fixed]
+
+Third pass over the same three files (`account-deletion-cascade.ts`,
+`request-account-deletion.test.ts`, `.integration.test.ts`), HEAD 543e0f7a3, nothing
+committed. Verified the five claimed remediations against current bytes; re-ran the
+emulator suite myself: **58/58**. `check-test-registration.js` exit 0 (the integration file
+is NOT among its four accepted-debt warnings, so a CI lane does run it).
+
+VERIFIED CLOSED:
+- HIGH raw uid → `:215-218` is now
+  `logger.warn("[deletion-cascade] residual shared-list member keys", { uid_prefix: uid.slice(0,6), count: keyedCount })`.
+  Swept the whole file by script rather than by eye: 12 `logger.*` calls, zero `${uid}`
+  inside any log string. The only surviving `${uid}` interpolations are field paths
+  (`memberPermissions.${uid}` at :206/:432/:547/:676/:823) and the doc-id range at
+  :1120-1121. The sibling error log at `:557` also uses `uid_prefix`. Clean.
+- Error accumulation → `:457-568`. `runStep` (:50-67) catches, pushes `shopping_lists` into
+  `failedCollections` + a message into `errors`; `writeDeletionAuditLog`
+  (`request-account-deletion.ts:324`) derives `gdprCompliant: failedCollections.length === 0`
+  → false, and `success` (:264) → false. The thrown message carries only a COUNT, no list
+  ids and no uid, so nothing PII-shaped reaches `result.errors` (which IS returned to the
+  caller). Confirmed correct end to end.
+- Reorder (live before legacy, `:364-401`) → no semantics beyond failure ordering. The two
+  legs read disjoint collections, share only `userRef`, neither feeds the other, and both
+  parent commits are `strict:false`. Only delta: which strict leg's throw aborts the rest.
+- Docstrings → `:251` says `BATCH_LIMIT` (500); the dead `BATCH_CHUNK = 450` + its
+  `void BATCH_CHUNK` sentinel were DELETED outright, better than the claim. Header :27-29
+  mentions the per-document transaction (reflow left :29 overlong; `functions/` has no
+  eslint flat config, so no lint gate — cosmetic only).
+
+STILL OPEN (filed, not blocking):
+- MEDIUM `:378-380` — the personal-items loop is the same defect they just fixed 80 lines
+  down. `deleteListItems` is `strict:true`, so a DEADLINE_EXCEEDED on list #1's item chunk
+  skips lists 2..N, skips ALL parent deletes (:381), skips the legacy leg, and skips the
+  ENTIRE shared-list scrub (:429-568) — the deleted uid stays on every co-member's list.
+  Auth user is deleted regardless. Discoverable (probe + `gdprCompliant:false`), so Medium
+  not High, but the residual is maximal. Fix must ALSO filter the failed ids out of the
+  parent-delete batch: today the abort protects that unconditional write for free.
+- MEDIUM — the accumulation is UNPINNED. Grepped the integration file: no failure
+  injection anywhere, so reverting :458-563 to a bare `await db.runTransaction(...)` keeps
+  the suite 58/58. Adjacent mutation that IS caught: removing the
+  `if (Object.keys(update).length > 0)` guard at :551 reddens the re-run test (empty update
+  → "At least one field must be updated" → caught → throw), which proves the catch is
+  REACHABLE but not that a later list still gets processed. Cheap fix: the suite already
+  calls `deleteShoppingLists(db, TARGET)` directly, so pass a proxy db whose
+  `runTransaction` throws on the first call only, seed two shared lists, assert it throws
+  once AND the second list was scrubbed.
+- LOW — the new `runTransaction` fake (`request-account-deletion.test.ts:171-181`) hard-
+  returns `{exists:false}` from `tx.get`. Its comment claims it protects "any future seeded
+  fixture"; the opposite is true — a seeded list would hit `if (!snap.exists) return` and
+  PASS having scrubbed nothing. Honest form: throw from `tx.get`, safe today because both
+  shared queries return empty and the loop never spins.
+- LOW — `"unified_shared_shopping_lists"` is a bare literal at :205/:222/:241/:431/:436
+  while `Collections.unifiedSharedShoppingLists` exists (`shared/collections.ts:18`) and
+  the personal path in the SAME function uses the const. BUT-1697 exists because a rename
+  went unswept; the literal is the exact form that survives one silently.
+- LOW carry-over, already recorded, NOT re-filed: the `system_rate_limits` raw sentinel,
+  and `analytics/compute-feature-retention.ts:212` still reading the dead
+  `users/{uid}/shopping_lists` name.
+
+Checks that came back clean and are worth not re-doing: `unified_shared_shopping_lists` has
+NO `items` subcollection (`firestore.rules:1602-1631`, and :1604 states items are embedded),
+so the sole-member `tx.delete(listRef)` at :475 strands nothing — the orphan-parent trap
+applies to the PERSONAL path only (`firestore.rules:394-401` is where the nested `items`
+match lives). Deleter ⊇ probe still holds after the rewrite, including the
+`ownerId==uid`-without-member-key case. Re-run idempotency reasoned through per doc class:
+the retained shared list still matches `ownedShared` on a second run and produces an EMPTY
+update, which is why the :551 guard is load-bearing.
+
+Verdict: CLEAN. The High is closed, no Critical/High remains, and every open item is a
+bounded, discoverable, non-silent degradation.
+
+### 2026-07-27 — BUT-1697 final gate round: accumulate-and-throw verified BY EXECUTION; index held the regression [Pattern discovered]
+
+Fourth pass over `functions/src/account/account-deletion-cascade.ts` (HEAD 543e0f7a3, nothing
+committed). The claim to verify: `deleteListItems` commits `strict:true`, so the previous
+unguarded `for (const listRef of personalRefs) await deleteListItems(...)` aborted
+`deleteShoppingLists` before the legacy leg AND the whole shared-list scrub. The fix wraps
+both item loops in try/catch, accumulates failed list ids into a `Set`, filters those ids out
+of each parent-delete `commitInChunks`, and throws ONCE after every leg with a count-only
+message.
+
+Rather than reason about it, I injected the failure. `Proxy` over the `db` passed to the step:
+`batch()` returns a proxied `WriteBatch` that records `delete(ref).path` and throws
+`INJECTED items chunk commit failure` on `commit()` when any recorded path contains `/items/`.
+Parent deletes (`users/{uid}/unified_shopping_lists/{id}`) and `runTransaction` are untouched,
+so the injection lands exactly inside `deleteListItems`. Script:
+`<scratchpad>/inject-item-failure.ts`, project namespace `butlery-cfspec-inject` (kept off the
+58-test suite's namespace), run as
+`NODE_PATH=functions/node_modules TS_NODE_COMPILER_OPTIONS='{"module":"commonjs","moduleResolution":"node","esModuleInterop":true,"target":"es2020","skipLibCheck":true}' npx ts-node -T <script>`
+(the plain invocation fails TS5109 because the tsconfig isn't picked up outside the project,
+and then MODULE_NOT_FOUND because CJS resolves from the script's dir).
+
+20/20 checks passed: throws once; message is exactly
+`shopping-list erasure incomplete: 2 list(s) kept their items, 0 shared list(s) unscrubbed`
+(no uid, no list ids); L1 parent KEPT with its items; a list with no items still deleted;
+legacy parent KEPT with its items; **shared scrub reached** — `memberPermissions.{uid}` key
+gone, other member's key intact, activity pair nulled, `addedByUserId` → `"deleted"`,
+assignment cleared, sole-member list deleted; then a remediation run with the injection
+removed cleared all four residuals, and a third run threw nothing. So the whole point of the
+change is executed, not hypothesised. `commitInChunks` returns 0 on an empty array
+(`batch-update.ts:249`), so filtering every ref out is safe. `runStep` → `failedCollections`
+→ `gdprCompliant: result.failedCollections.length === 0`
+(`request-account-deletion.ts:190,214,324`) confirmed by reading the chain.
+
+Two new findings:
+
+- HIGH (process, not code) — `git show :functions/src/account/account-deletion-cascade.ts`
+  showed the INDEX still holding the unguarded loops (`await deleteListItems(db, listRef);`
+  with no try/catch, unfiltered `personalRefs`/`legacyRefs`). The file was `MM`. A `git commit`
+  at that moment would have shipped the exact abort-early regression this round was convened
+  to fix, with a green review marker. Remedy: `git add` the file, then re-verify the index.
+  Generalised into the ops principle: on a commit gate, diff the staged copy too and state
+  which one you reviewed. Four `lib/` files and one unstaged `lib/views/...` dialog were in
+  the same state (flutter-side, handed off).
+
+- MEDIUM — both new catch blocks log `{ uid_prefix, listId, err }`. Emulator output was
+  literally `{"uid_prefix":"target","listId":"L1","err":{},...}`: `firebase-functions`'s
+  `entryFromArgs` (`logger/index.js:112-121`) unwraps an Error only when it is a POSITIONAL
+  arg, and `JSON.stringify(new Error("x"))` is `{}`. `INJECTED items chunk commit failure`
+  appears nowhere. Before this change the raw error escaped to `runStep`, which pushed
+  `err.message` into `result.errors` and therefore into the `deletion_audit_logs` row; now the
+  audit row says only "2 list(s) kept their items" and the log carries no cause, which
+  directly weakens the documented remediation path ("a human reading `deletion_audit_logs`
+  for `gdprCompliant: false`"). Recommended minimal fix is `errCode`/`errName`, not
+  `errMessage`: a Firestore commit error's message can embed the full doc path, i.e. the raw
+  uid, in a log that outlives the account. This corrects the older knowledge line that
+  preferred `{ err }` over `err.message`.
+
+Clean on re-check: nothing swallows a failure that used to surface (the only code between the
+accumulation and the throw is the two `strict:false` parent commits, which never throw, and
+the shared query/loop — a throw from the shared query still fails the step). No parent can be
+deleted while its items survive (a Firestore batch is atomic, and any `deleteListItems` throw
+adds the id to the filter set); the reverse — a `strict:false` parent-delete failure leaving
+the list doc with its embedded `items` array — is pre-existing and IS caught, by the probe's
+`listDocuments()` leg at :172-190. `listId` is a UUID v4 (`unified_shopping_list.dart:254`),
+not user-derived, so it is not PII. No new imports, no extra reads, no batch-limit change,
+no cold-start delta.
+
+Verdict: BLOCKING on the staging state only. The code as written in the worktree is correct.

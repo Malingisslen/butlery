@@ -50,6 +50,13 @@ void main() {
         // Unit token present → ingredient.
         '1 dl mjölk:',
         'smör 100 g:',
+        // Digit-FREE, so the `RegExp(r'\d')` check above cannot answer first:
+        // these reach the unit guard itself. Without them the guard is
+        // deletable with the suite green, and every digit-free unit-bearing
+        // line becomes a heading — i.e. leaves the tagging input.
+        'nypa salt:',
+        'påse spenat:',
+        'burk krossade tomater:',
         // Generic block markers are not component groups — incl. the
         // colon-terminated forms the classifier's anchored regexes caught
         // before delegating here (equivalence guard for the consolidation).
@@ -126,6 +133,75 @@ void main() {
 
     test('but the SAME word without a colon stays an ingredient', () {
       expect(RecipeSectionDetector.componentSubHeadingLabel('Mjölk'), isNull);
+    });
+
+    // BUT-1691 ENLARGED this set, and that must be visible rather than
+    // discovered later. Before the Swedish word boundary landed, the unit guard
+    // used ASCII `\b`, so `\bl\b` matched the trailing letter of "Kål" and
+    // `\bg\b` that of "Råg": those lines were treated as unit-bearing and
+    // therefore kept as ingredients — by accident, not by decision. With a
+    // correct boundary they now follow the same colon-wins contract as
+    // "Mjölk:". Same reasoning, same low risk (a lone word plus a colon is
+    // structurally a heading, and the rows grouped under it are still tagged),
+    // but three of these are gluten-bearing, so it is pinned explicitly.
+    const enlargedByBoundaryFix = <(String, String)>[
+      ('Mjöl:', 'Mjöl'),
+      ('Vetemjöl:', 'Vetemjöl'),
+      ('Kål:', 'Kål'),
+      ('Råg:', 'Råg'),
+      ('Öl:', 'Öl'),
+    ];
+
+    for (final (input, label) in enlargedByBoundaryFix) {
+      test(
+        '"$input" → "$label" (colon wins; was an accident of ASCII \\b)',
+        () {
+          expect(RecipeSectionDetector.componentSubHeadingLabel(input), label);
+        },
+      );
+    }
+
+    test('the same words without a colon stay ingredients', () {
+      for (final w in const ['Mjöl', 'Vetemjöl', 'Kål', 'Råg', 'Öl']) {
+        expect(
+          RecipeSectionDetector.componentSubHeadingLabel(w),
+          isNull,
+          reason: '"$w" must stay an ingredient without a colon',
+        );
+      }
+    });
+  });
+
+  // BUT-1691, the other half: `instructionScore` is a DROP gate. At >= 2 the
+  // line never reaches the measurement extractor (`text_import_strategy`
+  // `continue`s), so a phantom point deletes a real ingredient row. With ASCII
+  // `\b` the "sen" alternative matched the tail of any word ending in "-sen"
+  // after a Swedish vowel, and "såsen" is itself in the curated section
+  // vocabulary. Reverting the boundary reddens these.
+  group('instructionScore — no phantom sequencing points', () {
+    const ingredientLinesThatMustSurvive = <String>[
+      '2 st burkar krossade tomater samt lite av spadet till såsen',
+      '1 påse riven ost till gratängen och lite extra i gräddsåsen',
+      'ett par nävar färska gräsen och örter till garneringen ovanpå',
+    ];
+
+    for (final line in ingredientLinesThatMustSurvive) {
+      test('"$line" scores below the drop gate', () {
+        expect(
+          RecipeSectionDetector.instructionScore(line),
+          lessThan(2),
+          reason:
+              'a phantom "sen" match plus the >40-char point reaches 2, and '
+              'the caller drops the line outright',
+        );
+      });
+    }
+
+    test('a real sequencing word still scores', () {
+      expect(
+        RecipeSectionDetector.instructionScore('Sedan rör du om i grytan'),
+        greaterThanOrEqualTo(1),
+      );
     });
   });
 

@@ -52,6 +52,7 @@ on:
       - "functions/src/storage/**"
       - "functions/src/messaging/**"
       - "functions/src/social/**"
+      - "functions/scripts/**"
       - "functions/package.json"
       - "functions/package-lock.json"
       - ".github/workflows/firestore-rules.yml"
@@ -102,6 +103,7 @@ on:
       - "functions/src/storage/**"
       - "functions/src/messaging/**"
       - "functions/src/social/**"
+      - "functions/scripts/**"
   workflow_dispatch:
 
 concurrency:
@@ -115,8 +117,13 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      # BUT-1677: full history so the coverage gate can diff the match blocks
+      # in firestore.rules against the base revision. A shallow clone has no
+      # base to compare with and the gate would silently skip.
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -173,6 +180,32 @@ jobs:
       - name: Run rules unit tests
         working-directory: functions
         run: npm run test:rules:all
+
+      # BUT-1677: green assertions say nothing about the paths nobody asserted
+      # on. Pull the emulator's own per-project coverage (it is scoped per
+      # projectId and every suite uses its own, so the script unions them),
+      # render a per-block hit table into the job summary, and FAIL if a match
+      # block that did not exist on the base revision was never evaluated.
+      # Must run BEFORE "Stop emulator" — the report dies with the emulator.
+      - name: Rules coverage report + new-block gate
+        working-directory: functions
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -n "$BASE_SHA" ] && [ "$BASE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            node scripts/rules-coverage-report.js --out ../rules-coverage --base "$BASE_SHA"
+          else
+            node scripts/rules-coverage-report.js --out ../rules-coverage
+          fi
+
+      - name: Upload rules coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firestore-rules-coverage
+          path: rules-coverage/
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Stop emulator
         if: always()

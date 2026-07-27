@@ -11,9 +11,15 @@ import 'package:butlery/services/shopping/shopping_checkoff_pantry_service.dart'
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/account/user_consent.dart';
+import 'package:butlery/repositories/interfaces/analytics_repository.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/services/analytics/trackers/shopping_events_tracker.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 import '../../infrastructure/factories/shopping_list_factory.dart';
@@ -26,6 +32,12 @@ class _MockCheckoffPantryService extends Mock
     implements ShoppingCheckoffPantryService {}
 
 class _MockUserServiceForSeam extends Mock implements UserService {}
+
+class _MockAnalyticsService extends Mock implements AnalyticsService {}
+
+class _MockAnalyticsRepository extends Mock implements AnalyticsRepository {}
+
+class _MockConsentServiceForAnalytics extends Mock implements ConsentService {}
 
 /// Fake connectivity source with real ChangeNotifier semantics so the VM's
 /// `addListener` subscription actually fires when connectivity flips. Overrides
@@ -89,6 +101,7 @@ void main() {
     registerFallbackValue(ShoppingListFactory.build());
     registerFallbackValue(ShoppingListFactory.buildItem());
     registerFallbackValue(<UnifiedShoppingItem>[]);
+    registerFallbackValue(ConsentPurpose.analytics);
   });
 
   setUp(() {
@@ -184,6 +197,12 @@ void main() {
     ).thenAnswer((_) async => true);
     when(
       () => mockShoppingService.addItemsBatch(any()),
+    ).thenAnswer((_) async => true);
+    when(
+      () => mockShoppingService.addItemsBatch(
+        any(),
+        source: any(named: 'source'),
+      ),
     ).thenAnswer((_) async => true);
     when(
       () => mockShoppingService.createListFromTemplate(
@@ -417,6 +436,32 @@ void main() {
     });
   });
 
+  group('Add-source attribution', () {
+    // BUT-1681: `addItemsToList` is the weekly-menu "add to an existing list"
+    // path. Before it took a required source it fell through to
+    // `addItemsBatch`'s `manual` default, so every menu add was logged as a
+    // manual one — a wrong tag carrying an item count, which is worse than the
+    // silence it replaced.
+    test(
+      'addItemsToList forwards the caller\'s source tag unchanged',
+      () async {
+        await viewModel.addItemsToList(testListId, [
+          testItem,
+        ], source: 'menu_generated');
+
+        verify(
+          () => mockShoppingService.addItemsBatch(
+            any(),
+            source: 'menu_generated',
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockShoppingService.addItemsBatch(any(), source: 'manual'),
+        );
+      },
+    );
+  });
+
   group('Permissions', () {
     test('canEditActiveList checks permission service', () {
       final canEdit = viewModel.canEditActiveList;
@@ -431,6 +476,90 @@ void main() {
         isInitialized: true,
       );
       expect(viewModel.canEditActiveList, isFalse);
+    });
+
+    // BUT-1696's headline case lives HERE, not in the service: a view-only
+    // member's tap is refused by `canEditActiveList` and never reaches
+    // `UnifiedShoppingService`, so the service-level three-way mapping cannot
+    // cover it. Without these, the one screen the ticket was filed about keeps
+    // showing "Kunde inte uppdatera Mjölk" with no cause.
+    test(
+      'a refused tap on a SHARED list reports the shared permission sentence',
+      () async {
+        mockShoppingService.setShoppingState(
+          lists: [
+            ShoppingListFactory.build(
+              id: testListId,
+              name: 'Delad lista',
+              ownerId: 'someone-else',
+              items: [testItem],
+              type: ListType.collaborative,
+            ),
+          ],
+          activeListId: testListId,
+          currentUserId: testUserId,
+          isInitialized: true,
+        );
+        mockPermissionService.setPermissionState(
+          currentUserId: testUserId,
+          isAuthenticated: true,
+          defaultHasPermission: false,
+        );
+
+        expect(await viewModel.toggleItemBought(testItem.id), isFalse);
+
+        verify(
+          () => mockShoppingService.reportMutationFailure(
+            AppLocale.current.shoppingNoEditPermissionShared,
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockShoppingService.reportMutationFailure(
+            AppLocale.current.shoppingNoEditPermission,
+          ),
+        );
+      },
+    );
+
+    test('a refused tap on a PERSONAL list does not call it shared', () async {
+      mockPermissionService.setPermissionState(
+        currentUserId: testUserId,
+        isAuthenticated: true,
+        defaultHasPermission: false,
+      );
+
+      expect(await viewModel.toggleItemBought(testItem.id), isFalse);
+
+      verify(
+        () => mockShoppingService.reportMutationFailure(
+          AppLocale.current.shoppingNoEditPermission,
+        ),
+      ).called(1);
+      verifyNever(
+        () => mockShoppingService.reportMutationFailure(
+          AppLocale.current.shoppingNoEditPermissionShared,
+        ),
+      );
+    });
+
+    // `canEditActiveList` is false for three different reasons. Reporting a
+    // permission sentence when there simply is no active list would invent a
+    // cause — the same defect class, one layer up.
+    test('no active list reports "list not found", not a denial', () async {
+      mockShoppingService.setShoppingState(
+        lists: [],
+        activeListId: null,
+        currentUserId: testUserId,
+        isInitialized: true,
+      );
+
+      expect(await viewModel.toggleItemBought(testItem.id), isFalse);
+
+      verify(
+        () => mockShoppingService.reportMutationFailure(
+          AppLocale.current.shoppingListNotFound,
+        ),
+      ).called(1);
     });
 
     test('addItem respects permission check', () async {
@@ -917,5 +1046,122 @@ void main() {
         );
       },
     );
+  });
+
+  // BUT-1681 / BUT-1670: the "how do people fill their list?" funnel. All
+  // three behaviours below shipped untested, which is why AC2 could pass
+  // review while being unreachable in the real app.
+  group('Add-source analytics (BUT-1681)', () {
+    late List<(String, Map<String, Object>?)> loggedEvents;
+
+    setUp(() {
+      loggedEvents = [];
+      final repo = _MockAnalyticsRepository();
+      when(
+        () => repo.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((invocation) async {
+        loggedEvents.add((
+          invocation.namedArguments[#name] as String,
+          invocation.namedArguments[#parameters] as Map<String, Object>?,
+        ));
+      });
+      final consent = _MockConsentServiceForAnalytics();
+      when(() => consent.hasConsent(any())).thenAnswer((_) async => true);
+      final analytics = _MockAnalyticsService();
+      when(() => analytics.shopping).thenReturn(
+        ShoppingEventsTracker(repository: repo)..setConsentService(consent),
+      );
+
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<AnalyticsService>()) {
+        getIt.unregister<AnalyticsService>();
+      }
+      getIt.registerSingleton<AnalyticsService>(analytics);
+      // Belt and braces: `_analytics` is a LAZY `late final`, so it resolves on
+      // first read rather than at construction and the outer VM would pick the
+      // mock up anyway. Rebuilding keeps the group independent of whether an
+      // earlier test in it happened to read the field first.
+      viewModel.dispose();
+      viewModel = UnifiedShoppingViewModel();
+    });
+
+    tearDown(() {
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<AnalyticsService>()) {
+        getIt.unregister<AnalyticsService>();
+      }
+    });
+
+    Iterable<(String, Map<String, Object>?)> eventsNamed(String name) =>
+        loggedEvents.where((e) => e.$1 == name);
+
+    test('a plain add is tagged manual', () async {
+      await viewModel.addItem(name: 'Salt', amount: 1);
+      await Future<void>.delayed(Duration.zero);
+
+      final added = eventsNamed('shopping_list_item_added');
+      expect(added, hasLength(1));
+      expect(added.single.$2!['source'], 'manual');
+    });
+
+    test('a recipe add is tagged recipe', () async {
+      await viewModel.addItemsFromRecipe([
+        <String, dynamic>{'name': 'Salt', 'amount': 1, 'unit': 'tsk'},
+      ]);
+      await Future<void>.delayed(Duration.zero);
+
+      final added = eventsNamed('shopping_list_item_added');
+      expect(added, hasLength(1));
+      expect(
+        added.single.$2!['source'],
+        'recipe',
+        reason:
+            'without the tag the funnel reads as 100% manual, which is the '
+            'thing BUT-1670 existed to fix',
+      );
+    });
+
+    test('un-checking an item logs no check event', () async {
+      final bought = ShoppingListFactory.buildItem(
+        id: 'bought-1',
+        name: 'Mjolk',
+        bought: true,
+      );
+      mockShoppingService.setShoppingState(
+        lists: [
+          ShoppingListFactory.build(
+            id: testListId,
+            name: 'Veckans inkop',
+            ownerId: testUserId,
+            items: [bought],
+          ),
+        ],
+        personalLists: [
+          ShoppingListFactory.build(
+            id: testListId,
+            name: 'Veckans inkop',
+            ownerId: testUserId,
+            items: [bought],
+          ),
+        ],
+        activeListId: testListId,
+        isInitialized: true,
+        currentUserId: testUserId,
+      );
+
+      await viewModel.toggleItemBought('bought-1');
+      await Future<void>.delayed(Duration.zero);
+
+      expect(
+        eventsNamed('shopping_list_item_checked'),
+        isEmpty,
+        reason:
+            'toggle fires on unchecking too; counting that as a check-off '
+            'inflated the metric and made the funnel unreadable',
+      );
+    });
   });
 }

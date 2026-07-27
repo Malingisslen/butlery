@@ -41,6 +41,7 @@ class ShoppingListOperations {
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
     Function(String) onSuccess,
+    Function(String) onError,
   ) async {
     if (viewModel.boughtItems == 0) return;
 
@@ -55,8 +56,20 @@ class ShoppingListOperations {
     );
 
     if (confirmed == true) {
-      await viewModel.clearBoughtItems();
-      if (context.mounted) onSuccess(context.l10n.shoppingPurchasedCleared);
+      // BUT-1696: the bool is load-bearing. `clearBoughtItems` rolls the bought
+      // rows back on failure (a shared-list permission denial is the realistic
+      // trigger), so discarding it and always saying "Rensat" told the user a
+      // destructive action succeeded while the rows reappeared. Consume the
+      // reason before the mounted check — the read is what clears it.
+      final success = await viewModel.clearBoughtItems();
+      final reason = success ? null : viewModel.consumeMutationError();
+      if (!context.mounted) return;
+      if (success) {
+        onSuccess(context.l10n.shoppingPurchasedCleared);
+      } else {
+        // Cause-neutral fallback — see the note in unified_shopping_view.
+        onError(reason ?? context.l10n.errorGeneric);
+      }
     }
   }
 

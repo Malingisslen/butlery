@@ -9,6 +9,7 @@ import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_aggregator.dart';
@@ -168,6 +169,7 @@ class MenuShoppingListGenerator extends BaseService {
             .where((l) => l.generatedForWeek == weekKey)
             .toList();
         String listId;
+        var wasCreated = false;
         if (existing.isNotEmpty) {
           listId = existing.first.id;
         } else {
@@ -176,6 +178,7 @@ class MenuShoppingListGenerator extends BaseService {
             throw StateError('Could not create shopping list "$listName"');
           }
           listId = created;
+          wasCreated = true;
         }
 
         // Preserve bought-status across regeneration. The key uses the SAME
@@ -218,6 +221,25 @@ class MenuShoppingListGenerator extends BaseService {
         // snackbar must echo it.
         if (!updated) {
           throw StateError('Could not write items to "${list.name}"');
+        }
+
+        // BUT-1681: EXACTLY ONE analytics event per generation, and only for a
+        // genuine creation.
+        //
+        // The reverted first attempt fired `shopping_list_item_added` per
+        // generated line and re-fired the whole set on every regeneration —
+        // ~250 events for one 50-item week, inflating the very funnel the
+        // event exists to build. `initial_item_count` carries the volume, so
+        // the per-line events bought nothing the summary doesn't. Weekly
+        // regeneration of the same list is not a new list and stays silent.
+        if (wasCreated) {
+          ServiceLocator.tryGet<AnalyticsService>()?.shopping
+              .logShoppingListCreated(
+                listId: listId,
+                listType: 'personal',
+                initialItemCount: items.length,
+                source: 'menu_generated',
+              );
         }
 
         return MenuShoppingGenerationResult(

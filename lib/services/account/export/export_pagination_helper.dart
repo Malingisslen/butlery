@@ -191,6 +191,10 @@ class ExportPaginationHelper {
     'messages_per_conversation': 1000,
     'comments': 1000,
     'ratings': 1000,
+    // BUT-1698: pinned at the repository default this section was already
+    // riding, so declaring the cap here adds the truncation probe without
+    // shrinking anyone's export.
+    'feedback': 1000,
     'consent_records': 100,
     'weekly_menu_plans': 260, // ~5 years × 52 weeks
     'pantry_items': 1000,

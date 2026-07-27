@@ -16,6 +16,7 @@ library;
 
 import 'package:butlery/services/menu/parser/text_normalizer.dart'
     show stripSpokenFillers;
+import 'package:butlery/utils/text/swedish_word_boundary.dart';
 
 /// A recognized cooking-mode voice command. Sealed: the controller's switch
 /// stays exhaustive when the vocabulary grows.
@@ -83,12 +84,13 @@ class Unrecognized extends CookingCommand {
   final String heard;
 }
 
-// Dart \b is ASCII-only; these are the Unicode-safe Swedish word boundaries
-// (same construction as text_normalizer's correction regexes).
-const String _nb = '(?<![a-zåäö0-9])';
-const String _na = '(?![a-zåäö0-9])';
+// Dart \b is ASCII-only; these are the Unicode-safe Swedish word boundaries.
+// Local aliases keep the interpolated duration patterns below readable; the
+// definition itself is shared (BUT-1691).
+const String _nb = SwedishWordBoundary.before;
+const String _na = SwedishWordBoundary.after;
 
-RegExp _phrase(String variants) => RegExp('$_nb(?:$variants)$_na');
+RegExp _phrase(String variants) => SwedishWordBoundary.boundedRegExp(variants);
 
 // Navigation / readout vocabularies. Variants are alternations of full
 // phrases; longest-first inside each alternation.

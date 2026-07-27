@@ -222,7 +222,10 @@ class RecipeShoppingHandler {
         return;
       }
 
-      final success = await shoppingService.addItemsBatch(shoppingItems);
+      final success = await shoppingService.addItemsBatch(
+        shoppingItems,
+        source: 'recipe',
+      );
 
       if (!context.mounted) return;
       if (success) {

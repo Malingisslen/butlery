@@ -32,7 +32,12 @@ import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/models/account/user_consent.dart';
+import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/services/analytics/trackers/shopping_events_tracker.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/pantry/pantry_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
@@ -48,6 +53,12 @@ class _MockWeeklyMenuPlanService extends Mock
     implements WeeklyMenuPlanService {}
 
 class _MockPantryService extends Mock implements PantryService {}
+
+class _MockAnalyticsService extends Mock implements AnalyticsService {}
+
+class _MockAnalyticsRepository extends Mock implements AnalyticsRepository {}
+
+class _MockConsentService extends Mock implements ConsentService {}
 
 const _testUserId = 'test-user-123';
 
@@ -167,8 +178,14 @@ void main() {
   late _MockPantryService pantryService;
   late MenuShoppingListGenerator generator;
 
+  /// BUT-1681: every analytics event the generation emitted, as
+  /// (name, parameters). The count is as load-bearing as the content — the
+  /// reverted first attempt fired one per generated line.
+  late List<(String, Map<String, Object>?)> loggedEvents;
+
   setUpAll(() {
     production.ServiceLocator.initialize(DIContainer());
+    registerFallbackValue(ConsentPurpose.analytics);
     registerFallbackValue(
       UnifiedShoppingList(
         name: 'fallback',
@@ -203,6 +220,30 @@ void main() {
     TestServiceLocator.registerMock<UnifiedRecipeService>(recipeService);
     TestServiceLocator.registerMock<UnifiedShoppingService>(shoppingService);
     TestServiceLocator.registerMock<PantryService>(pantryService);
+
+    // BUT-1681: a real ShoppingEventsTracker over a mock repository, so the
+    // assertions read the parameters production would actually send. Consent
+    // must be granted explicitly — BaseTracker fails closed without it.
+    loggedEvents = [];
+    final analyticsRepo = _MockAnalyticsRepository();
+    when(
+      () => analyticsRepo.logEvent(
+        name: any(named: 'name'),
+        parameters: any(named: 'parameters'),
+      ),
+    ).thenAnswer((invocation) async {
+      loggedEvents.add((
+        invocation.namedArguments[#name] as String,
+        invocation.namedArguments[#parameters] as Map<String, Object>?,
+      ));
+    });
+    final consent = _MockConsentService();
+    when(() => consent.hasConsent(any())).thenAnswer((_) async => true);
+    final tracker = ShoppingEventsTracker(repository: analyticsRepo)
+      ..setConsentService(consent);
+    final analytics = _MockAnalyticsService();
+    when(() => analytics.shopping).thenReturn(tracker);
+    TestServiceLocator.registerMock<AnalyticsService>(analytics);
 
     generator = MenuShoppingListGenerator();
   });
@@ -1233,6 +1274,69 @@ void main() {
         writtenByName()['mjöl']!.amount,
         9,
         reason: 'per-placement scale then sum: 3 dl + 6 dl = 9 dl',
+      );
+    });
+  });
+
+  // BUT-1681: the generated path was analytically silent (its first
+  // implementation was reverted for firing one event per line). It now emits
+  // exactly ONE event per genuine creation, tagged so a generated list is
+  // distinguishable from a hand-made one.
+  group('generation analytics (BUT-1681)', () {
+    test(
+      'a fresh week logs exactly one menu_generated creation event',
+      () async {
+        seedTwoRecipePlan();
+        seedFreshListCreation();
+
+        final result = await generator.generateForWeek(_date);
+        // Analytics is fire-and-forget (it must never delay the user's list),
+        // so let the consent check + logEvent chain settle before asserting.
+        await Future<void>.delayed(Duration.zero);
+
+        expect(result, isNotNull, reason: 'generation must run');
+        expect(
+          loggedEvents,
+          hasLength(1),
+          reason:
+              'one summary event per generation — per-line events cost 30-40x '
+              'as much and inflate the funnel they exist to measure',
+        );
+        final (name, params) = loggedEvents.single;
+        expect(name, 'shopping_list_created');
+        expect(params!['source'], 'menu_generated');
+        expect(params['list_type'], 'personal');
+        expect(
+          params['initial_item_count'],
+          2,
+          reason: 'the row count is what the per-line events used to carry',
+        );
+      },
+    );
+
+    test('regenerating an existing week logs nothing', () async {
+      seedTwoRecipePlan();
+      // The week already has its marked list, so nothing is created.
+      final existing = _list(
+        'week-list',
+        _expectedListName,
+        generatedForWeek: _expectedWeekKey,
+      );
+      shoppingService.setShoppingState(
+        lists: [existing],
+        personalLists: [existing],
+      );
+
+      final result = await generator.generateForWeek(_date);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(result, isNotNull, reason: 'regeneration must run');
+      expect(
+        loggedEvents,
+        isEmpty,
+        reason:
+            'weekly regeneration is not a new list — counting it would '
+            'inflate list-creation week over week',
       );
     });
   });

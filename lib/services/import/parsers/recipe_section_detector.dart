@@ -1,5 +1,8 @@
 /// Recipe Section Detector - Section detection and scoring for recipe import.
 /// Extracted from text_import_strategy.dart for better organization.
+library;
+
+import 'package:butlery/utils/text/swedish_word_boundary.dart';
 
 /// Provides section header detection, instruction scoring, and content
 /// classification for Swedish and English recipe text.
@@ -46,9 +49,19 @@ class RecipeSectionDetector {
   /// of `swedish_units.dart`'s `kSwedishUnits` (kept explicit here so the
   /// heading heuristic never depends on a unit constant changing shape); if a
   /// new common unit is added there, mirror it here.
-  static final _subHeadingUnitGuard = RegExp(
-    r'\b(dl|cl|ml|l|msk|tsk|krm|st|g|kg|hg|burk|pkt|påse|paket|förp|'
-    r'nypa|knippe|klyfta|skiva|bit|näve|klick|droppe)\b',
+  ///
+  /// BUT-1691: bounded with [SwedishWordBoundary], never ASCII `\b` — which
+  /// treats å/ä/ö as non-word, so `\bl\b` matched the last letter of "Kål".
+  static final _subHeadingUnitGuard = SwedishWordBoundary.boundedRegExp(
+    r'dl|cl|ml|l|msk|tsk|krm|st|g|kg|hg|burk|pkt|påse|paket|förp|'
+    r'nypa|knippe|klyfta|skiva|bit|näve|klick|droppe',
+    caseSensitive: false,
+  );
+
+  /// Sequencing words that push a line towards "instruction" — see the
+  /// boundary note at the use site in [instructionScore].
+  static final _sequencingWords = SwedishWordBoundary.boundedRegExp(
+    r'sedan|därefter|tills|medan|när|sen',
     caseSensitive: false,
   );
 
@@ -254,11 +267,10 @@ class RecipeSectionDetector {
       score += 2;
     }
 
-    // +1: Contains sequencing words
-    if (RegExp(
-      r'\b(sedan|därefter|tills|medan|när|sen)\b',
-      caseSensitive: false,
-    ).hasMatch(lower)) {
+    // +1: Contains sequencing words. BUT-1691: with ASCII `\b` the "sen"
+    // alternative matched the tail of "såsen"/"gräsen", and this score is a
+    // DROP gate at >= 2 — a phantom point deleted real ingredient rows.
+    if (_sequencingWords.hasMatch(lower)) {
       score += 1;
     }
 
@@ -360,7 +372,7 @@ class RecipeSectionDetector {
   // this check. "råmjölk" carries an allergen, so losing it is a safety
   // matter, not a tidiness one. The trailing edge is what keeps the real
   // false positives out ("äggröra", "mjölkchoklad", "riskaka", "vitlöksbröd").
-  static const _noWordAfter = '(?![a-zåäö0-9])';
+  static const _noWordAfter = SwedishWordBoundary.after;
 
   /// Common ingredient words, matched against the lowercased line as a word
   /// ENDING. Pre-compiled so a per-line scan doesn't rebuild every pattern.

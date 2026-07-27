@@ -7,9 +7,15 @@
 /// FakeFirebaseFirestore and capturing every callback invocation.
 library;
 
+// The BUT-1696 cache-miss test mocks two sealed cloud_firestore types; that is
+// the only way to make a `Source.cache` read THROW the way real Firestore does
+// (fake_cloud_firestore ignores GetOptions entirely).
+// ignore_for_file: subtype_of_sealed_class
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -50,6 +56,9 @@ ShoppingRepositoryRoutingModule _routing(
   bool requiredFieldsThrows = false,
   String? currentUid,
   CollaborativeListTransactionRunner? transactionRunner,
+  CollectionReference<Map<String, dynamic>>? sharedListsRef,
+  UnifiedShoppingList Function(DocumentSnapshot<Map<String, dynamic>>)?
+  fromFirestore,
 }) {
   return ShoppingRepositoryRoutingModule(
     transactionRunner: transactionRunner,
@@ -61,7 +70,7 @@ ShoppingRepositoryRoutingModule _routing(
             entity.memberPermissions.containsKey(userId)),
     firestore: firestore,
     authRepository: FakeAuthRepository(),
-    sharedListsRef: firestore.collection(_sharedPath),
+    sharedListsRef: sharedListsRef ?? firestore.collection(_sharedPath),
     requireCurrentUserId: () => currentUid ?? _userId,
     validateRequiredFields:
         ({
@@ -88,7 +97,7 @@ ShoppingRepositoryRoutingModule _routing(
             _PermissionCall(userId, resource, operation, granted, details),
           );
         },
-    fromFirestore: UnifiedShoppingList.fromFirestore,
+    fromFirestore: fromFirestore ?? UnifiedShoppingList.fromFirestore,
   );
 }
 
@@ -102,12 +111,16 @@ UnifiedShoppingItem _item(String id, {bool bought = false}) =>
       bought: bought,
     );
 
-UnifiedShoppingList _collabList({String name = 'Veckans handla'}) {
+UnifiedShoppingList _collabList({
+  String name = 'Veckans handla',
+  List<UnifiedShoppingItem>? items,
+}) {
   return UnifiedShoppingList.collaborative(
     name: name,
     ownerId: _userId,
     ownerDisplayName: 'Alice',
     memberPermissions: const {'bob': SharedListPermission.edit},
+    items: items,
   );
 }
 
@@ -653,6 +666,13 @@ void main() {
     // Both codes mean the same thing in a shop: no server round-trip happened.
     // 'deadline-exceeded' is what the platform reports once the module's short
     // transaction budget runs out on a flaky-but-present connection.
+    //
+    // The mutator TICKS an existing row deliberately. An append would take
+    // BUT-1683's arrayUnion fast path instead, and then neither code would ever
+    // exercise the cached-base leg — the one that carries the accepted
+    // lost-update deviation and is the whole reason this group exists. This is
+    // also the half of BUT-1683's decision that must stay deliberate: an edit
+    // of an EXISTING row has no offline-mergeable primitive.
     for (final code in ['unavailable', 'deadline-exceeded']) {
       test(
         '$code falls back to the cached base and returns the tick',
@@ -661,6 +681,9 @@ void main() {
           final saved = await _routing(
             firestore,
           ).createCollaborativeList(_collabList());
+          await firestore.collection(_sharedPath).doc(saved.id).update({
+            'items': [_item('mjölk').toFirestore()],
+          });
 
           final permissionCalls = <_PermissionCall>[];
           final offline = _routing(
@@ -672,13 +695,15 @@ void main() {
 
           final merged = await offline.mutateCollaborativeList(
             saved.id,
-            (live) => live.copyWith(items: [...live.items, _item('mjölk')]),
+            (live) => live.copyWith(
+              items: [live.items.single.copyWith(bought: true)],
+            ),
           );
 
           // The caller gets the mutated list, so the optimistic tick stands.
-          expect(merged.items.single.id, 'mjölk');
+          expect(merged.items.single.bought, isTrue);
           expect(permissionCalls.single.granted, isTrue);
-          expect(permissionCalls.single.details, contains('offline'));
+          expect(permissionCalls.single.details, contains('cached-base'));
 
           // The merge write is queued rather than awaited; it lands on the next
           // microtask against the fake.
@@ -688,7 +713,7 @@ void main() {
               .doc(saved.id)
               .get();
           final stored = (snap.data()!['items'] as List).cast<Map>();
-          expect(stored.map((i) => i['id']), ['mjölk']);
+          expect(stored.single['bought'], isTrue);
         },
       );
     }
@@ -751,7 +776,7 @@ void main() {
     // Positive control for the denial below: same member, same leg, same
     // mutator shape — only the memberPermissions rewrite differs, so the
     // denial cannot be coming from anything but the escalation guard.
-    test('the offline path lets an edit-level member tick items', () async {
+    test('the offline path lets an edit-level member add items', () async {
       final firestore = FakeFirebaseFirestore();
       final saved = await _routing(
         firestore,
@@ -830,5 +855,303 @@ void main() {
         throwsA(isA<ResourceNotFoundException>()),
       );
     });
+
+    // BUT-1696 #3: the test above passes only because fake_cloud_firestore
+    // ignores GetOptions.source and hands back a non-existent snapshot. REAL
+    // Firestore THROWS `unavailable` on a Source.cache miss, so that branch
+    // never fired in production and an offline mutation of a never-seen list
+    // escaped as a raw FirebaseException. This pins the production shape.
+    test('a cache read that THROWS also surfaces as not-found', () async {
+      registerFallbackValue(const GetOptions());
+      final firestore = FakeFirebaseFirestore();
+      final collection = _MockCollectionRef();
+      final doc = _MockDocRef();
+      when(() => collection.doc(any())).thenReturn(doc);
+      when(() => doc.get(any())).thenThrow(
+        FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
+      );
+
+      final module = _routing(
+        firestore,
+        sharedListsRef: collection,
+        transactionRunner: failsWith('unavailable'),
+      );
+
+      await expectLater(
+        () => module.mutateCollaborativeList('never-seen', (live) => live),
+        throwsA(isA<ResourceNotFoundException>()),
+      );
+    });
+
+    // BUT-1683: the narrowed offline path. An APPEND is queued as an
+    // arrayUnion, so a row the client's cache never saw is still there after
+    // the replay. Under the old whole-array write "bröd" would be gone.
+    test(
+      'an offline append unions rather than overwriting the array',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final saved = await _routing(
+          firestore,
+        ).createCollaborativeList(_collabList());
+
+        // Bob added "bröd" from his phone while Alice was offline.
+        await firestore.collection(_sharedPath).doc(saved.id).update({
+          'items': [_item('bröd').toFirestore()],
+        });
+
+        final permissionCalls = <_PermissionCall>[];
+        final offline = _routing(
+          firestore,
+          permissionCalls: permissionCalls,
+          transactionRunner: failsWith('unavailable'),
+          // Alice's cached copy predates Bob's add — the divergence the fake
+          // cannot produce on its own.
+          fromFirestore: (doc) =>
+              UnifiedShoppingList.fromFirestore(doc).copyWith(items: const []),
+        );
+        permissionCalls.clear();
+
+        final merged = await offline.mutateCollaborativeList(
+          saved.id,
+          (live) => live.copyWith(items: [...live.items, _item('mjölk')]),
+        );
+        expect(merged.items.single.id, 'mjölk');
+        expect(permissionCalls.single.details, contains('append-only'));
+
+        await Future<void>.delayed(Duration.zero);
+        final snap = await firestore
+            .collection(_sharedPath)
+            .doc(saved.id)
+            .get();
+        final stored = (snap.data()!['items'] as List).cast<Map>();
+        expect(stored.map((i) => i['id']), containsAll(['bröd', 'mjölk']));
+      },
+    );
+
+    // BUT-1683/BUT-1697: the append payload is a HAND-BUILT narrow map, not
+    // the serialized list, so both halves of it need pinning. The activity
+    // stamp must ride along — a replayed row landing under the PREVIOUS
+    // editor's name is exactly the defect BUT-1697 removed elsewhere — and the
+    // three keys the update rule forbids a non-owner from touching must stay
+    // out, or the whole replay is rejected for a member who only ticked a box.
+    // Nothing else in this file reads either field on the offline path.
+    test(
+      'the queued append carries the activity stamp and no rule-locked key',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final saved = await _routing(
+          firestore,
+        ).createCollaborativeList(_collabList());
+        final createdAtBefore =
+            (await firestore.collection(_sharedPath).doc(saved.id).get())
+                    .data()!['createdAt']
+                as Timestamp;
+
+        final offline = _routing(
+          firestore,
+          transactionRunner: failsWith('unavailable'),
+        );
+
+        await offline.mutateCollaborativeList(
+          saved.id,
+          // Owner-driven, so the escalation guard returns early and cannot be
+          // what keeps createdAt in place.
+          (live) => UnifiedShoppingList(
+            id: live.id,
+            name: live.name,
+            ownerId: live.ownerId,
+            ownerDisplayName: live.ownerDisplayName,
+            items: [...live.items, _item('mjölk')],
+            createdAt: live.createdAt.subtract(const Duration(days: 365)),
+            type: ListType.collaborative,
+            memberPermissions: live.memberPermissions,
+            lastActivityAt: live.lastActivityAt,
+            lastActivityByUserId: 'bob',
+            lastActivityByDisplayName: 'Bob Bergman',
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        final data =
+            (await firestore.collection(_sharedPath).doc(saved.id).get())
+                .data()!;
+        expect((data['items'] as List), hasLength(1));
+        expect(data['lastActivityByUserId'], 'bob');
+        expect(data['lastActivityByDisplayName'], 'Bob Bergman');
+        expect(
+          data['createdAt'],
+          createdAtBefore,
+          reason:
+              'createdAt is in the rule\'s forbidden triple — the narrowed '
+              'append write must never carry it',
+        );
+      },
+    );
+
+    // The security twin of the append test above, and the one that was missing
+    // when the narrowing landed. A TICK is not an append, so it queues the
+    // cached-base payload — which used to be `set(mutated.toFirestore(),
+    // merge: true)`, i.e. the whole cached document. If the cache is stale for
+    // `memberPermissions`, that replay silently reinstates a member the owner
+    // removed from another device. Reverting `cachedBasePayload` to the old
+    // whole-document write must redden HERE; nothing else covers it.
+    test(
+      'the queued cached-base write carries no rule-locked key',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final saved = await _routing(
+          firestore,
+        ).createCollaborativeList(_collabList(items: [_item('mjölk')]));
+
+        // The stale ACL has to come from the MUTATOR, not from the stored doc:
+        // `fake_cloud_firestore` ignores `GetOptions.source`, so the "cached"
+        // read returns current server state and a doc-level divergence cannot
+        // be staged. A mutator that carries the pre-removal permission map is
+        // the same shape — the payload the offline path is about to queue holds
+        // a member the server no longer has.
+        //
+        // Owner-driven, so the escalation guard returns early and cannot be
+        // what keeps the map out of the write.
+        final offline = _routing(
+          firestore,
+          transactionRunner: failsWith('unavailable'),
+        );
+        await offline.mutateCollaborativeList(
+          saved.id,
+          (live) => UnifiedShoppingList(
+            id: live.id,
+            name: live.name,
+            ownerId: live.ownerId,
+            ownerDisplayName: live.ownerDisplayName,
+            items: [live.items.single.copyWith(bought: true)],
+            createdAt: live.createdAt,
+            type: ListType.collaborative,
+            memberPermissions: const {
+              'bob': SharedListPermission.edit,
+              'carol': SharedListPermission.edit,
+            },
+            lastActivityAt: live.lastActivityAt,
+          ),
+        );
+        await Future<void>.delayed(Duration.zero);
+
+        final data =
+            (await firestore.collection(_sharedPath).doc(saved.id).get())
+                .data()!;
+        expect(
+          (data['items'] as List).single['bought'],
+          isTrue,
+          reason: 'the tick itself must still land',
+        );
+        expect(
+          (data['memberPermissions'] as Map).keys,
+          isNot(contains('carol')),
+          reason:
+              'a cached-base replay must never carry memberPermissions — an '
+              'owner-authored write would silently reinstate whatever the '
+              'stale copy said, including a member removed elsewhere',
+        );
+      },
+    );
+  });
+
+  // BUT-1696 #4: the third write path in this module used to log
+  // `granted: true` behind no client-side decision at all.
+  group('createCollaborativeList authorization', () {
+    // The create rule has TWO conjuncts and the existing test below fails the
+    // FIRST one, so it cannot tell whether the second is enforced at all —
+    // classic sibling-branch short-circuit. The plain constructor is the
+    // reachable route: unlike the `collaborative` factory it does not seat the
+    // owner, and it is on the public interface.
+    test('refuses a list that does not seat the creator as a member', () async {
+      final firestore = FakeFirebaseFirestore();
+      final permissionCalls = <_PermissionCall>[];
+      final module = _routing(firestore, permissionCalls: permissionCalls);
+
+      await expectLater(
+        () => module.createCollaborativeList(
+          UnifiedShoppingList(
+            name: 'Handla',
+            ownerId: _userId,
+            ownerDisplayName: 'Alice',
+            type: ListType.collaborative,
+            memberPermissions: const {'bob': SharedListPermission.edit},
+          ),
+        ),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+
+      expect(permissionCalls.single.granted, isFalse);
+      expect(permissionCalls.single.details, contains('memberPermissions'));
+      expect((await firestore.collection(_sharedPath).get()).docs, isEmpty);
+    });
+
+    test('refuses to create a list owned by someone else', () async {
+      final firestore = FakeFirebaseFirestore();
+      final permissionCalls = <_PermissionCall>[];
+      final module = _routing(firestore, permissionCalls: permissionCalls);
+
+      await expectLater(
+        () => module.createCollaborativeList(
+          UnifiedShoppingList.collaborative(
+            name: 'Handla',
+            ownerId: 'bob',
+            ownerDisplayName: 'Bob',
+            memberPermissions: const {_userId: SharedListPermission.edit},
+          ),
+        ),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+
+      expect(permissionCalls.single.granted, isFalse);
+      expect(permissionCalls.single.operation, 'create');
+      final docs = await firestore.collection(_sharedPath).get();
+      expect(docs.docs, isEmpty);
+    });
+  });
+
+  // BUT-1683 security review: the rule's forbidden-key set for a non-owner is
+  // ownerId / memberPermissions / createdAt. The client guard only mirrored
+  // the first two, so a whole-list write moving createdAt was audited as a
+  // grant and then refused by the server.
+  group('privilege-escalation parity with the Firestore rule', () {
+    test('a non-owner may not move createdAt', () async {
+      final firestore = FakeFirebaseFirestore();
+      final saved = await _routing(
+        firestore,
+      ).createCollaborativeList(_collabList());
+
+      final permissionCalls = <_PermissionCall>[];
+      final bob = _routing(
+        firestore,
+        permissionCalls: permissionCalls,
+        currentUid: 'bob',
+      );
+      permissionCalls.clear();
+
+      final moved = UnifiedShoppingList(
+        id: saved.id,
+        name: saved.name,
+        ownerId: saved.ownerId,
+        ownerDisplayName: saved.ownerDisplayName,
+        items: saved.items,
+        createdAt: saved.createdAt.subtract(const Duration(days: 365)),
+        type: ListType.collaborative,
+        memberPermissions: saved.memberPermissions,
+      );
+
+      await expectLater(
+        () => bob.updateCollaborativeList(moved),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+      expect(permissionCalls.last.granted, isFalse);
+      expect(permissionCalls.last.details, contains('createdAt'));
+    });
   });
 }
+
+class _MockCollectionRef extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
+
+class _MockDocRef extends Mock
+    implements DocumentReference<Map<String, dynamic>> {}

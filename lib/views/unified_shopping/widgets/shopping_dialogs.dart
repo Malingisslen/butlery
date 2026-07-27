@@ -67,11 +67,13 @@ class ShoppingDialogs {
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
     Function(String) onSuccess,
+    Function(String) onError,
   ) async {
     return ShoppingListOperations.showClearCompletedConfirmation(
       context,
       viewModel,
       onSuccess,
+      onError,
     );
   }
 

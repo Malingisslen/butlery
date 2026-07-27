@@ -68,6 +68,7 @@ const {
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {
   deleteFamilyData,
+  deleteShoppingLists,
 } = require("../account/account-deletion-cascade");
 
 // Per-run suffix keeps re-runs from colliding on fixed ids even if the
@@ -185,7 +186,7 @@ async function seedFixtures(): Promise<void> {
     sharedToUserIds: [TARGET, THIRD],
   });
 
-  // --- shopping_lists: own subcollection + control ---
+  // --- shopping_lists (LEGACY name): own subcollection + control ---
   await db
     .collection("users")
     .doc(TARGET)
@@ -198,6 +199,71 @@ async function seedFixtures(): Promise<void> {
     .collection("shopping_lists")
     .doc(`sl-control-${RUN}`)
     .set({ name: "annans lista" });
+
+  // --- unified_shopping_lists (BUT-1697: the LIVE personal path) ---
+  // This is what FirebaseShoppingRepository writes. Each list owns an `items`
+  // subcollection Firestore will not cascade, so both levels are seeded and
+  // both are asserted gone. OTHER's list is the scope control.
+  const targetPersonal = db
+    .collection("users")
+    .doc(TARGET)
+    .collection("unified_shopping_lists")
+    .doc(`usl-${RUN}`);
+  await targetPersonal.set({ name: "min riktiga lista", ownerId: TARGET });
+  await targetPersonal
+    .collection("items")
+    .doc(`usl-item-${RUN}`)
+    .set({ name: "mjölk", bought: false });
+  const otherPersonal = db
+    .collection("users")
+    .doc(OTHER)
+    .collection("unified_shopping_lists")
+    .doc(`usl-control-${RUN}`);
+  await otherPersonal.set({ name: "annans riktiga lista", ownerId: OTHER });
+  await otherPersonal
+    .collection("items")
+    .doc(`usl-control-item-${RUN}`)
+    .set({ name: "ägg", bought: false });
+
+  // --- ORPHANED items: a list the user DELETED in the app ---
+  // `base_firebase_repository.delete()` removes the list document with a plain
+  // `doc(id).delete()` and never recurses, so the `items` subcollection lives
+  // on under a MISSING parent. A `get()` on the collection cannot see it and a
+  // `count()` reports zero, which is why the sweep and the probe both use
+  // `listDocuments()`. Seeded here by writing ONLY the item.
+  await db
+    .collection("users")
+    .doc(TARGET)
+    .collection("unified_shopping_lists")
+    .doc(`usl-orphan-${RUN}`)
+    .collection("items")
+    .doc(`usl-orphan-item-${RUN}`)
+    .set({ name: "kanel", bought: true });
+  await db
+    .collection("users")
+    .doc(OTHER)
+    .collection("unified_shopping_lists")
+    .doc(`usl-orphan-control-${RUN}`)
+    .collection("items")
+    .doc(`usl-orphan-control-item-${RUN}`)
+    .set({ name: "salt", bought: false });
+
+  // --- a shared list OWNED by target whose memberPermissions lacks their key -
+  // The rules place no `cannotModify` guard on the owner, so an owner can
+  // persist a permission map without themselves in it. A deleter keyed only on
+  // `memberPermissions.{uid}` never matches it, while the residual probe — which
+  // matches on `ownerId` — does: the probe would flag a residual no code path
+  // could clear. The deleter must be a superset of every probe leg.
+  await db
+    .collection("unified_shared_shopping_lists")
+    .doc(`ussl-ownerless-${RUN}`)
+    .set({
+      name: "lista utan ägarnyckel",
+      ownerId: TARGET,
+      ownerDisplayName: "Target",
+      memberPermissions: {},
+      items: [],
+    });
 
   // --- shared_content with target as a member (members subcollection) ---
   await db.collection("shared_content").doc(`sc-inbound-${RUN}`).set({
@@ -347,19 +413,26 @@ async function seedFixtures(): Promise<void> {
     .doc(`rat-control-${RUN}`)
     .set({ ratedBy: OTHER, value: 4 });
 
-  // --- unified_shared_shopping_lists item-level scrub (BUT-1191) ---
-  // The cascade queries `memberPermissions.{uid} != null` then rewrites the
-  // `items` array, nulling assignedTo*/purchasedBy* fields on items where the
-  // uid appears. The list itself is RETAINED (shared, not owned-only), other
-  // members' item authorship untouched.
+  // --- unified_shared_shopping_lists scrub (BUT-1191 items, BUT-1697 list) ---
+  // The cascade queries `memberPermissions.{uid} != null`, then scrubs at TWO
+  // levels: the `items` array (assignedTo*/purchasedBy* nulled, addedBy*/
+  // lastModifiedBy* anonymized to "deleted") and the LIST document
+  // (lastActivityBy* nulled, ownerDisplayName nulled but ownerId kept).
+  // The list itself is RETAINED (shared, not owned-only), other members'
+  // authorship untouched.
   await db
     .collection("unified_shared_shopping_lists")
     .doc(`ussl-${RUN}`)
     .set({
       name: "delad lista",
       memberPermissions: { [TARGET]: "editor", [OTHER]: "owner" },
+      ownerId: TARGET,
+      ownerDisplayName: "Target",
+      lastActivityByUserId: TARGET,
+      lastActivityByDisplayName: "Target",
       items: [
         // item 0: assigned AND purchased by target → both blocks scrubbed.
+        // Also added + last-modified by target → both anonymized.
         {
           id: "i0",
           name: "mjölk",
@@ -369,8 +442,12 @@ async function seedFixtures(): Promise<void> {
           purchasedByUserId: TARGET,
           purchasedByDisplayName: "Target",
           purchasedAt: new Date(),
+          addedByUserId: TARGET,
+          addedByDisplayName: "Target",
+          lastModifiedByUserId: TARGET,
+          lastModifiedByDisplayName: "Target",
         },
-        // item 1: assigned to OTHER → must be untouched (scope proof).
+        // item 1: everything belongs to OTHER → must be untouched (scope proof).
         {
           id: "i1",
           name: "ägg",
@@ -380,6 +457,10 @@ async function seedFixtures(): Promise<void> {
           purchasedByUserId: null,
           purchasedByDisplayName: null,
           purchasedAt: null,
+          addedByUserId: OTHER,
+          addedByDisplayName: "Other",
+          lastModifiedByUserId: OTHER,
+          lastModifiedByDisplayName: "Other",
         },
         // item 2: purchased by target only → only purchased block scrubbed.
         {
@@ -393,6 +474,50 @@ async function seedFixtures(): Promise<void> {
           purchasedAt: new Date(),
         },
       ],
+    });
+
+  // Negative control for the LIST-level scrub: a shared list the target is a
+  // member of, but whose owner and last activity belong to OTHER. Every
+  // list-level identity field must survive untouched.
+  await db
+    .collection("unified_shared_shopping_lists")
+    .doc(`ussl-control-${RUN}`)
+    .set({
+      name: "annans delade lista",
+      memberPermissions: { [TARGET]: "viewer", [OTHER]: "owner" },
+      ownerId: OTHER,
+      ownerDisplayName: "Other",
+      lastActivityByUserId: OTHER,
+      lastActivityByDisplayName: "Other",
+      items: [],
+    });
+
+  // Sole-member "collaborative" list: owned by TARGET, nobody else in
+  // memberPermissions. This is pure own data (every item name is theirs) and
+  // after erasure no account could read it, so the cascade must DELETE it
+  // rather than scrub it.
+  await db
+    .collection("unified_shared_shopping_lists")
+    .doc(`ussl-solo-${RUN}`)
+    .set({
+      name: "min egna delade lista",
+      memberPermissions: { [TARGET]: "admin" },
+      ownerId: TARGET,
+      ownerDisplayName: "Target",
+      items: [{ id: "s0", name: "kaffe", addedByUserId: TARGET }],
+    });
+
+  // Foreign list the target was never a member of — the membership query must
+  // not reach it at all.
+  await db
+    .collection("unified_shared_shopping_lists")
+    .doc(`ussl-foreign-${RUN}`)
+    .set({
+      name: "helt annans lista",
+      memberPermissions: { [OTHER]: "owner", [THIRD]: "editor" },
+      ownerId: OTHER,
+      ownerDisplayName: "Other",
+      items: [],
     });
 
   // --- family (BUT Phase 5 item 15, §5b) ---
@@ -607,6 +732,73 @@ test("shopping_lists: another user's list is retained", async () => {
   assert(
     await exists(`users/${OTHER}/shopping_lists/sl-control-${RUN}`),
     "control shopping list owned by OTHER must survive",
+  );
+});
+
+// I7b (BUT-1697): the LIVE personal path is erased — this is the one that
+// actually holds data. A green I7 alone proved nothing about real users.
+test("unified_shopping_lists: target's live personal list is deleted", async () => {
+  assert(
+    !(await exists(`users/${TARGET}/unified_shopping_lists/usl-${RUN}`)),
+    "live personal shopping list should be gone",
+  );
+});
+
+// I7c (BUT-1697): the list's `items` subcollection goes too — Firestore never
+// cascades subcollections, so deleting the parent doc alone orphans the items.
+test("unified_shopping_lists: the list's items subcollection is deleted", async () => {
+  assert(
+    !(await exists(
+      `users/${TARGET}/unified_shopping_lists/usl-${RUN}/items/usl-item-${RUN}`,
+    )),
+    "personal shopping-list items must be deleted, not orphaned under a deleted parent",
+  );
+});
+
+// The Critical case the sweep was rewritten for: items under a list document
+// the user had already deleted in-app. Reverting either `listDocuments()` call
+// to `get()`/`count()` makes this test fail AND the residual probe report clean
+// while the item names are still on disk.
+test("unified_shopping_lists: items orphaned under a deleted parent are erased", async () => {
+  assert(
+    !(await exists(
+      `users/${TARGET}/unified_shopping_lists/usl-orphan-${RUN}/items/usl-orphan-item-${RUN}`,
+    )),
+    "items under a MISSING parent list must be erased — a query cannot see them, so the sweep must use listDocuments()",
+  );
+});
+
+// Scope proof for the same mechanism.
+test("unified_shopping_lists: another user's orphaned items are retained", async () => {
+  assert(
+    await exists(
+      `users/${OTHER}/unified_shopping_lists/usl-orphan-control-${RUN}/items/usl-orphan-control-item-${RUN}`,
+    ),
+    "the orphan sweep must stay scoped to the target user",
+  );
+});
+
+// The deleter-superset-of-probe case: owned, no member key. On the member-key
+// query alone this list survives with every item name and the owner's display
+// name intact, and the probe flags it forever.
+test("unified_shared_shopping_lists: a target-owned list with no member key is handled", async () => {
+  assert(
+    !(await exists(`unified_shared_shopping_lists/ussl-ownerless-${RUN}`)),
+    "a sole-owner list without a memberPermissions key must be deleted, not left for a probe that can never be satisfied",
+  );
+});
+
+// I8b: another user's live personal list and its items are retained.
+test("unified_shopping_lists: another user's live list and items are retained", async () => {
+  assert(
+    await exists(`users/${OTHER}/unified_shopping_lists/usl-control-${RUN}`),
+    "control live personal list owned by OTHER must survive",
+  );
+  assert(
+    await exists(
+      `users/${OTHER}/unified_shopping_lists/usl-control-${RUN}/items/usl-control-item-${RUN}`,
+    ),
+    "control live personal list items owned by OTHER must survive",
   );
 });
 
@@ -862,6 +1054,131 @@ test("unified_shared_shopping_lists: another member's item authorship is untouch
     i1!.assignedToDisplayName === "Other",
     "i1 assignedToDisplayName must be unchanged",
   );
+  // BUT-1697 scope proof for the added/last-modified pairs.
+  assert(i1!.addedByUserId === OTHER, "i1 addedByUserId (OTHER) must be unchanged");
+  assert(
+    i1!.addedByDisplayName === "Other",
+    "i1 addedByDisplayName must be unchanged",
+  );
+  assert(
+    i1!.lastModifiedByUserId === OTHER,
+    "i1 lastModifiedByUserId (OTHER) must be unchanged",
+  );
+  assert(
+    i1!.lastModifiedByDisplayName === "Other",
+    "i1 lastModifiedByDisplayName must be unchanged",
+  );
+});
+
+// I-SL2b (BUT-1697): the target's addedBy*/lastModifiedBy* pairs are
+// ANONYMIZED, not nulled — `isCollaborative => addedByUserId != null`, so a
+// null would silently demote a shared item to personal for everyone else.
+test("unified_shared_shopping_lists: target's addedBy/lastModifiedBy is anonymized, not nulled", async () => {
+  const data = await dataAt(`unified_shared_shopping_lists/ussl-${RUN}`);
+  const items = (data.items as Array<Record<string, unknown>>) ?? [];
+  const i0 = items.find((it) => it.id === "i0");
+  assert(!!i0, "item i0 must still be present");
+  assert(
+    i0!.addedByUserId === "deleted",
+    "i0 addedByUserId must be anonymized to 'deleted', not left as the raw uid and not nulled",
+  );
+  assert(i0!.addedByDisplayName === null, "i0 addedByDisplayName must be nulled");
+  assert(
+    i0!.lastModifiedByUserId === "deleted",
+    "i0 lastModifiedByUserId must be anonymized to 'deleted'",
+  );
+  assert(
+    i0!.lastModifiedByDisplayName === null,
+    "i0 lastModifiedByDisplayName must be nulled",
+  );
+});
+
+// I-SL5 (BUT-1697): LIST-level scrub. The activity pair goes entirely;
+// ownerDisplayName goes but ownerId STAYS (the rules read it to decide who may
+// write, so nulling it would orphan the list for remaining members).
+test("unified_shared_shopping_lists: list-level activity pair is nulled and ownerDisplayName removed while ownerId survives", async () => {
+  const data = await dataAt(`unified_shared_shopping_lists/ussl-${RUN}`);
+  assert(
+    data.lastActivityByUserId === null,
+    "lastActivityByUserId must be nulled",
+  );
+  assert(
+    data.lastActivityByDisplayName === null,
+    "lastActivityByDisplayName must be nulled",
+  );
+  assert(data.ownerDisplayName === null, "ownerDisplayName must be nulled");
+  assert(
+    data.ownerId === TARGET,
+    "ownerId must be UNCHANGED — the Firestore rules read it for write access",
+  );
+});
+
+// I-SL6 (BUT-1697): negative control — a shared list whose owner and last
+// activity are OTHER's keeps every list-level identity field.
+test("unified_shared_shopping_lists: another member's list-level identity is untouched", async () => {
+  const data = await dataAt(`unified_shared_shopping_lists/ussl-control-${RUN}`);
+  assert(
+    data.lastActivityByUserId === OTHER,
+    "control lastActivityByUserId (OTHER) must be unchanged",
+  );
+  assert(
+    data.lastActivityByDisplayName === "Other",
+    "control lastActivityByDisplayName must be unchanged",
+  );
+  assert(data.ownerId === OTHER, "control ownerId must be unchanged");
+  assert(
+    data.ownerDisplayName === "Other",
+    "control ownerDisplayName must be unchanged — only the deleted user's name goes",
+  );
+});
+
+// I-SL7: the uid must not survive as a memberPermissions MAP KEY. It is the
+// key the rules read as write authorization and the key the UI derives
+// memberCount/collaborators from, so leaving it keeps a ghost member forever.
+// Other members' keys and `ownerId` must be untouched.
+test("unified_shared_shopping_lists: target's memberPermissions key is removed while other members' keys survive", async () => {
+  const data = await dataAt(`unified_shared_shopping_lists/ussl-${RUN}`);
+  const perms = (data.memberPermissions as Record<string, unknown>) ?? {};
+  assert(
+    perms[TARGET] === undefined,
+    "memberPermissions must no longer carry the deleted uid as a key",
+  );
+  assert(
+    perms[OTHER] === "owner",
+    "the remaining member's permission entry must be unchanged",
+  );
+  assert(
+    data.ownerId === TARGET,
+    "ownerId still stays — the rules read it for the remaining members' write access",
+  );
+});
+
+// I-SL7b: same on the list the target only VIEWED — the key goes there too,
+// even though no other field on that doc changes.
+test("unified_shared_shopping_lists: target's key is removed from a list they only viewed", async () => {
+  const data = await dataAt(`unified_shared_shopping_lists/ussl-control-${RUN}`);
+  const perms = (data.memberPermissions as Record<string, unknown>) ?? {};
+  assert(perms[TARGET] === undefined, "viewer key must be removed");
+  assert(perms[OTHER] === "owner", "owner key must survive");
+});
+
+// I-SL8: a sole-member list owned by the target is pure own data — DELETED,
+// not scrubbed. Scrubbing would leave a doc no account can read.
+test("unified_shared_shopping_lists: sole-member list owned by target is deleted", async () => {
+  assert(
+    !(await exists(`unified_shared_shopping_lists/ussl-solo-${RUN}`)),
+    "a collaborative list with no other member is own data and must be deleted",
+  );
+});
+
+// I-SL9: a list the target was never a member of is untouched (scope proof for
+// the new delete branch — a bug there could reach foreign documents).
+test("unified_shared_shopping_lists: a list the target never belonged to is untouched", async () => {
+  const data = await dataAt(`unified_shared_shopping_lists/ussl-foreign-${RUN}`);
+  const perms = (data.memberPermissions as Record<string, unknown>) ?? {};
+  assert(perms[OTHER] === "owner", "foreign list owner key must be unchanged");
+  assert(perms[THIRD] === "editor", "foreign list member key must be unchanged");
+  assert(data.ownerDisplayName === "Other", "foreign list name must be unchanged");
 });
 
 // I-SL4: item purchased by target but assigned to OTHER scrubs ONLY the
@@ -990,6 +1307,29 @@ test("family: deleteFamilyData is idempotent on re-run (retry-safe)", async () =
   assert(
     !(await exists(`family_ratings/fr-rerun-mine-${RUN}`)),
     "own verdict stays deleted after re-run",
+  );
+});
+
+// Retry-safety for the shopping sweep. `runStep` records a failure and the
+// cascade continues, so any step can be re-entered by a manual remediation run
+// (`admin/reset-user-data.ts`). The second call must be a clean no-op rather
+// than throwing on documents the first call already removed — the per-document
+// transaction and the missing-document tolerance are what make that true.
+test("unified_shopping_lists: deleteShoppingLists is idempotent on re-run (retry-safe)", async () => {
+  await deleteShoppingLists(db, TARGET); // second run over an already-swept user
+  assert(
+    !(await exists(`users/${TARGET}/unified_shopping_lists/usl-${RUN}`)),
+    "list stays deleted after re-run",
+  );
+  assert(
+    !(await exists(
+      `users/${TARGET}/unified_shopping_lists/usl-orphan-${RUN}/items/usl-orphan-item-${RUN}`,
+    )),
+    "orphaned items stay deleted after re-run",
+  );
+  assert(
+    await exists(`users/${OTHER}/unified_shopping_lists/usl-control-${RUN}`),
+    "re-run must not widen scope to another user",
   );
 });
 

@@ -174,6 +174,9 @@ class UnifiedShoppingViewModel extends BaseViewModel {
         listId: listId,
         listType: 'personal',
         initialItemCount: 0,
+        // BUT-1681: tags a hand-made list so a menu-generated one
+        // (source: 'menu_generated') is distinguishable in the funnel.
+        source: 'manual',
       );
     }
     return listId != null;
@@ -208,6 +211,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
         listId: listId,
         listType: 'collaborative',
         initialItemCount: items?.length ?? 0,
+        source: 'manual',
       );
     }
     return listId != null;
@@ -263,13 +267,20 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     return exportListAsText();
   }
 
-  /// Adds bulk items to specific shopping list using batch operations
+  /// Adds bulk items to a specific shopping list using batch operations.
+  ///
+  /// BUT-1681: [source] is REQUIRED, deliberately. `addItemsBatch` defaults to
+  /// `manual`, and this method's only live caller is the weekly-menu
+  /// "add to an existing list" button — so a defaulted call here would tag
+  /// 100% of menu adds as manual and make the funnel confidently wrong rather
+  /// than merely silent. A caller that has to name the source cannot forget.
   Future<bool> addItemsToList(
     String listId,
-    List<UnifiedShoppingItem> items,
-  ) async {
+    List<UnifiedShoppingItem> items, {
+    required String source,
+  }) async {
     await setActiveList(listId);
-    return await _shoppingService.addItemsBatch(items);
+    return await _shoppingService.addItemsBatch(items, source: source);
   }
 
   /// Add item (original API)
@@ -279,10 +290,11 @@ class UnifiedShoppingViewModel extends BaseViewModel {
   /// [addItemsFromRecipe] passes `recipe`, so the "how do people fill their
   /// list?" funnel stops reading as 100% manual.
   ///
-  /// Menu-generated lists do NOT flow through here — that path needs a
-  /// per-line vs per-list event decision first (BUT-1681), so it stays
-  /// analytically silent rather than shipping a count that regeneration
-  /// inflates.
+  /// Menu-generated lists do NOT flow through here, and they are no longer
+  /// silent: BUT-1681 settled the per-line vs per-list question in favour of a
+  /// single list-level event, emitted by `MenuShoppingListGenerator` when it
+  /// creates the list. Do not add a second event here for that path — it would
+  /// double-count.
   Future<bool> addItem({
     required String name,
     required double amount,
@@ -361,6 +373,24 @@ class UnifiedShoppingViewModel extends BaseViewModel {
   Future<bool> toggleItemBought(String itemId) async {
     if (!canEditActiveList) {
       AppLogger.warning('PERMISSION DENIED: User cannot edit active list');
+      // BUT-1696's headline case, and the one the ticket is named for: a
+      // view-only member taps a checkbox on a shared list. The tap never
+      // reaches the service, so without reporting here the view falls back to
+      // the cause-free "Kunde inte uppdatera X" — a checkbox that un-ticks
+      // itself and says nothing about why.
+      //
+      // `canEditActiveList` is false for three different reasons, so the
+      // sentence has to follow the actual one: no active list is not a
+      // permission problem, and saying it is would be the same kind of
+      // invented cause the ticket exists to remove.
+      final list = activeList;
+      _shoppingService.reportMutationFailure(
+        list == null
+            ? AppLocale.current.shoppingListNotFound
+            : list.isCollaborative
+            ? AppLocale.current.shoppingNoEditPermissionShared
+            : AppLocale.current.shoppingNoEditPermission,
+      );
       return false;
     }
 
@@ -666,6 +696,15 @@ class UnifiedShoppingViewModel extends BaseViewModel {
 
     _shoppingService.clearError();
   }
+
+  /// Why the last mutation failed, read-once (BUT-1696).
+  ///
+  /// Separate from [error] on purpose: [error] is the load-scoped field that
+  /// [hasError] and the shopping-list content widget turn into a full-screen
+  /// error state. A failed tick or a failed bulk action must not do that, so the
+  /// reason lives in its own field and is consumed here. No disposal guard is
+  /// needed — reading notifies nobody.
+  String? consumeMutationError() => _shoppingService.consumeMutationError();
 
   /// Get shopping insights for UI
   Map<String, dynamic> get shoppingInsights =>

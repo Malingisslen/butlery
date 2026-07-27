@@ -111,7 +111,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `fcm_token_manager.dart` | 652 | FCM token lifecycle management |
 | `deep_link_service.dart` | 559 | Deep link routing service |
 | `llm_tier.dart` | 707 | LLM-based recipe parsing tier |
-| `unified_shopping_service.dart` | 592 | Shopping service facade |
+| `unified_shopping_service.dart` | 741 | Shopping service facade |
 | `realtime_recipe_service.dart` | 525 | Explicit facade; delegates to RecipeContentOperations + RecipeParticipants |
 | `realtime_menu_service.dart` | 512 | Explicit facade; delegates to MenuOperations + MenuParticipants modules |
 | `file_import_strategy.dart` | 599 | File-format (CSV/Excel) import strategy; coherent single-platform pipeline |
@@ -220,7 +220,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `smart_import_viewmodel.dart` | 614 | Smart import pipeline VM — delegates to ImportManager |
 | `shopping_list_content.dart` | 685 | Shopping list UI — drag/reorder, categories, collaborative |
 | `cooking_mode_view.dart` | 815 | Full cooking mode screen — timer, steps, landscape layout (drifted +103 from 585 — BUT-550 reconciled 2026-05-28) |
-| `unified_shopping_viewmodel.dart` | 686 | Shopping list VM — personal + collaborative, sync |
+| `unified_shopping_viewmodel.dart` | 739 | Shopping list VM — personal + collaborative, sync |
 | `recipe_query_viewmodel.dart` | 636 | Recipe search/filter/sort VM with history |
 | `menu_content_widgets.dart` | 665 | **candidate**: multiple static widget builders for distinct menu sections — splittable by section type |
 | `image_gallery_widget.dart` | 536 | Image gallery widget |
@@ -232,7 +232,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `shared_content_actions.dart` | 528 | Static action helper with one responsibility: import/dismiss shared content |
 | `upload_progress_widgets.dart` | 528 | Focused static widget for upload progress UI |
 | `family_member_form_view.dart` | 526 | Form view with two-tier GDPR consent; consent + allergen logic tightly coupled by legal design |
-| `unified_shopping_view.dart` | 625 | Facade pattern per doc comment; delegates to focused sub-widgets (AppBar, Header, Content, Dialogs) |
+| `unified_shopping_view.dart` | 660 | Facade pattern per doc comment; delegates to focused sub-widgets (AppBar, Header, Content, Dialogs) |
 | `recipe_detail_comments.dart` | 654 | Extracted sub-widget for comments section; single cohesive concern |
 | `veckomeny_view.dart` | 519 | **candidate**: top-level weekly-menu view pulling many widget builders — split candidates exist |
 | `collection_stats_view.dart` | 521 | **candidate**: stats view splittable into section sub-widgets (_HeroBanner, _SectionHeader, etc.) |

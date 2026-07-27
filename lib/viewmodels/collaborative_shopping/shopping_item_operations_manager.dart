@@ -124,7 +124,15 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
         AppLogger.success('✅ Artikel status växlad: $itemId');
         return true;
       } else {
-        setError(AppLocale.current.errorCouldNotUpdateItem);
+        // BUT-1696: prefer the service's specific reason (denied / list gone /
+        // no connection) over the generic sentence — on a shared list that
+        // distinction is the whole answer. Consuming it here also keeps the
+        // service's one-shot slot from carrying a stale message to the next
+        // reader on another screen.
+        setError(
+          _shoppingService.consumeMutationError() ??
+              AppLocale.current.errorCouldNotUpdateItem,
+        );
         AppLogger.error('❌ Kunde inte växla artikel status: $itemId');
         return false;
       }

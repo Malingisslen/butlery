@@ -4776,7 +4776,7 @@
     {
       "id": "flow-menu-5",
       "label": "Inköpslistor",
-      "description": "Enhetlig hantering av inköpslistor: skapa en delad lista, handla tillsammans i realtid (ta/lämna varor, närvaroindikator för vem som handlar just nu), bläddra bland delade listor, och dela en redan befintlig lista med fler vänner. BUT-1665 (2026-07-26): samtidiga ändringar på en delad lista slår inte längre ut varandra — varje enskild varuändring skrivs transaktionellt mot serverns version av listan i stället för mot klientens cache, så två personer som bockar av var sin vara i butiken båda får sina bockar kvar. ConflictBanner nedan ytar fortfarande den tysta konfliktlösningen; skillnaden är att den vanliga avbockningen inte längre ÄR en konflikt.",
+      "description": "Enhetlig hantering av inköpslistor: skapa en delad lista, handla tillsammans i realtid (ta/lämna varor, närvaroindikator för vem som handlar just nu), bläddra bland delade listor, och dela en redan befintlig lista med fler vänner. BUT-1665 (2026-07-26): samtidiga ändringar på en delad lista slår inte längre ut varandra — varje enskild varuändring skrivs transaktionellt mot serverns version av listan i stället för mot klientens cache, så två personer som bockar av var sin vara i butiken båda får sina bockar kvar. ConflictBanner nedan ytar fortfarande den tysta konfliktlösningen; skillnaden är att den vanliga avbockningen inte längre ÄR en konflikt. BUT-1696/BUT-1697 (2026-07-26): när en avbockning ändå misslyckas visas numera VARFÖR — nekad behörighet, borttagen lista eller tappad anslutning — i stället för att bocken bara hoppar tillbaka tyst. Samma gäller \"Avmarkera alla\".",
       "features": [
         "MENU-11",
         "MENU-12",

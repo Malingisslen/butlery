@@ -1,6 +1,7 @@
 // lib/services/unified/modules/shopping_item_management_module.dart
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -9,6 +10,8 @@ import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/shopping_category_mapper.dart';
 import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
+import 'package:butlery/services/unified/modules/shopping_bulk_item_module.dart';
+import 'package:butlery/services/unified/shopping_failure_message.dart';
 
 /// Shopping item management module for all item operations.
 class ShoppingItemManagementModule {
@@ -18,13 +21,54 @@ class ShoppingItemManagementModule {
   final void Function() notifyListeners;
   final ShoppingCategoryPreferencesModule Function() getCategoryPreferences;
 
+  /// BUT-1696: records a user-facing reason when an optimistic change is
+  /// rolled back. Optional so the module stays constructible in tests that
+  /// only care about the Firestore calls.
+  final void Function(String message)? reportFailure;
+
   ShoppingItemManagementModule({
     required this.repository,
     required this.lists,
     required this.getActiveListId,
     required this.notifyListeners,
     required this.getCategoryPreferences,
+    this.reportFailure,
   });
+
+  /// Lazy so it can close over this module's own reporting seams.
+  late final ShoppingBulkItemModule _bulk = ShoppingBulkItemModule(
+    repository: repository,
+    lists: lists,
+    getActiveListId: getActiveListId,
+    notifyListeners: notifyListeners,
+    report: _report,
+    failListMissing: _failListMissing,
+  );
+
+  /// Records the Swedish sentence the shopping view shows for [error].
+  /// The mapping itself lives in [shoppingFailureMessage] so this seam and
+  /// `UnifiedShoppingService` cannot drift apart.
+  void _report(Object error) {
+    reportFailure?.call(
+      shoppingFailureMessage(
+        error,
+        shared: activeList?.isCollaborative ?? false,
+      ),
+    );
+  }
+
+  /// The list the user is acting on is not there — no list is active, or it
+  /// disappeared from local state (another device deleted it, or the snapshot
+  /// stream dropped it). NOT for a missing row on a list that is present.
+  ///
+  /// BUT-1696: these early returns used to hand the caller a bare `false` with
+  /// no reason, and every caller's fallback asserts a cause the user can act on
+  /// ("check your connection"). Being told your connection is broken while
+  /// standing in a shop with four bars is worse than being told nothing.
+  bool _failListMissing() {
+    reportFailure?.call(AppLocale.current.shoppingListNotFound);
+    return false;
+  }
 
   UnifiedShoppingList? get activeList {
     final activeListId = getActiveListId();
@@ -206,16 +250,23 @@ class ShoppingItemManagementModule {
         return false;
       }
 
-      // Update local state
-      final currentItems = List<UnifiedShoppingItem>.from(
-        lists[listIndex].items,
-      );
-      for (final updated in itemsToUpdate) {
-        final idx = currentItems.indexWhere((i) => i.id == updated.id);
-        if (idx >= 0) currentItems[idx] = updated;
+      // Update local state through a FRESH index: the collaborative snapshot
+      // handler rebuilds the same `lists` instance during the awaits above, so
+      // the index captured before them can point at a different list — which
+      // would append these rows to the wrong list and, for a personal target,
+      // feed that corrupted array into the next merge that IS persisted.
+      final targetIndex = lists.indexWhere((list) => list.id == activeListId);
+      if (targetIndex >= 0) {
+        final currentItems = List<UnifiedShoppingItem>.from(
+          lists[targetIndex].items,
+        );
+        for (final updated in itemsToUpdate) {
+          final idx = currentItems.indexWhere((i) => i.id == updated.id);
+          if (idx >= 0) currentItems[idx] = updated;
+        }
+        currentItems.addAll(itemsToAdd);
+        lists[targetIndex] = lists[targetIndex].copyWith(items: currentItems);
       }
-      currentItems.addAll(itemsToAdd);
-      lists[listIndex] = lists[listIndex].copyWith(items: currentItems);
       notifyListeners();
 
       return true;
@@ -270,13 +321,20 @@ class ShoppingItemManagementModule {
       // Atomic update in Firebase
       await repository.updateItem(activeListId, updatedItem);
 
-      // Update local state
-      final updatedItems = List<UnifiedShoppingItem>.from(
-        lists[listIndex].items,
-      );
-      updatedItems[itemIndex] = updatedItem;
-
-      lists[listIndex] = lists[listIndex].copyWith(items: updatedItems);
+      // Update local state by ID, not by the indices captured before the await:
+      // both the list index and the row index can have drifted, and a positional
+      // write would then replace an unrelated row of an unrelated list.
+      final targetIndex = lists.indexWhere((list) => list.id == activeListId);
+      if (targetIndex >= 0) {
+        final updatedItems = List<UnifiedShoppingItem>.from(
+          lists[targetIndex].items,
+        );
+        final rowIndex = updatedItems.indexWhere((i) => i.id == itemId);
+        if (rowIndex >= 0) {
+          updatedItems[rowIndex] = updatedItem;
+          lists[targetIndex] = lists[targetIndex].copyWith(items: updatedItems);
+        }
+      }
       notifyListeners();
 
       return true;
@@ -328,19 +386,23 @@ class ShoppingItemManagementModule {
   Future<bool> toggleItemBought(String itemId) async {
     final activeListId = getActiveListId();
     if (activeListId == null) {
-      return false;
+      return _failListMissing();
     }
 
     // Find the item in local state
     final listIndex = lists.indexWhere((list) => list.id == activeListId);
     if (listIndex == -1) {
-      return false;
+      return _failListMissing();
     }
 
     final itemIndex = lists[listIndex].items.indexWhere(
       (item) => item.id == itemId,
     );
     if (itemIndex == -1) {
+      // Deliberately NO reason: the list is right there on screen, so
+      // "Lista hittades inte" would be a fresh lie. Only the row is stale —
+      // another member removed it between build and tap — and the view's
+      // cause-neutral fallback is the honest thing to show.
       return false;
     }
 
@@ -358,18 +420,28 @@ class ShoppingItemManagementModule {
       await repository.updateItem(activeListId, updatedItem);
       return true;
     } catch (e) {
-      // ROLLBACK: Revert to original state on failure
-      final rollbackItems = List<UnifiedShoppingItem>.from(
-        lists[listIndex].items,
-      );
-      final rollbackIndex = rollbackItems.indexWhere(
-        (item) => item.id == itemId,
-      );
-      if (rollbackIndex != -1) {
-        rollbackItems[rollbackIndex] = currentItem;
-        lists[listIndex] = lists[listIndex].copyWith(items: rollbackItems);
-        notifyListeners();
+      // ROLLBACK: Revert to original state on failure. BUT-1696: say why —
+      // an un-ticking checkbox with no message is the shared-list bug report
+      // this ticket exists for.
+      _report(e);
+      // Re-find the list rather than reusing the index captured before the
+      // await: the collaborative snapshot handler rebuilds `lists` while the
+      // write is in flight, so that index can point at a different list by now
+      // — or past the end of a shorter one.
+      final listIdx = lists.indexWhere((list) => list.id == activeListId);
+      if (listIdx >= 0) {
+        final rollbackItems = List<UnifiedShoppingItem>.from(
+          lists[listIdx].items,
+        );
+        final rollbackIndex = rollbackItems.indexWhere(
+          (item) => item.id == itemId,
+        );
+        if (rollbackIndex != -1) {
+          rollbackItems[rollbackIndex] = currentItem;
+          lists[listIdx] = lists[listIdx].copyWith(items: rollbackItems);
+        }
       }
+      notifyListeners();
       return false;
     }
   }
@@ -395,80 +467,11 @@ class ShoppingItemManagementModule {
     return ShoppingCategory.other;
   }
 
-  Future<bool> clearCompletedItems() async {
-    final activeListId = getActiveListId();
-    if (activeListId == null) return false;
+  /// Bulk actions over the active list live in [ShoppingBulkItemModule]; the
+  /// two methods below keep this module's public surface unchanged.
+  Future<bool> clearCompletedItems() => _bulk.clearCompletedItems();
 
-    final listIndex = lists.indexWhere((list) => list.id == activeListId);
-    if (listIndex == -1) return false;
-
-    final boughtItems = lists[listIndex].items
-        .where((item) => item.bought)
-        .toList();
-    if (boughtItems.isEmpty) return true;
-
-    // Optimistic UI: remove from local state immediately
-    final remainingItems = lists[listIndex].items
-        .where((item) => !item.bought)
-        .toList();
-    lists[listIndex] = lists[listIndex].copyWith(items: remainingItems);
-    notifyListeners();
-
-    // Background: batch remove from Firebase
-    try {
-      final itemIds = boughtItems.map((item) => item.id).toList();
-      await repository.removeItemsBatch(activeListId, itemIds);
-      return true;
-    } catch (e) {
-      // Rollback on failure
-      lists[listIndex] = lists[listIndex].copyWith(
-        items: [...remainingItems, ...boughtItems],
-      );
-      notifyListeners();
-      AppLogger.error('Failed to clear completed items: $e');
-      return false;
-    }
-  }
-
-  Future<bool> uncheckAllItems() async {
-    final activeListId = getActiveListId();
-    if (activeListId == null) return false;
-
-    final listIndex = lists.indexWhere((list) => list.id == activeListId);
-    if (listIndex == -1) return false;
-
-    final checkedItems = lists[listIndex].items
-        .where((item) => item.bought)
-        .toList();
-    if (checkedItems.isEmpty) return true;
-
-    // Optimistic UI: uncheck all in local state
-    final originalItems = List<UnifiedShoppingItem>.from(
-      lists[listIndex].items,
-    );
-    final updatedItems = lists[listIndex].items.map((item) {
-      return item.bought ? item.copyWith(bought: false) : item;
-    }).toList();
-    lists[listIndex] = lists[listIndex].copyWith(items: updatedItems);
-    notifyListeners();
-
-    // Background: update checked items in Firebase (parallel)
-    try {
-      await Future.wait(
-        checkedItems.map(
-          (item) =>
-              repository.updateItem(activeListId, item.copyWith(bought: false)),
-        ),
-      );
-      return true;
-    } catch (e) {
-      // Rollback on failure
-      lists[listIndex] = lists[listIndex].copyWith(items: originalItems);
-      notifyListeners();
-      AppLogger.error('Failed to uncheck all items: $e');
-      return false;
-    }
-  }
+  Future<bool> uncheckAllItems() => _bulk.uncheckAllItems();
 
   Future<bool> addItemsFromRecipe({
     required String recipeId,

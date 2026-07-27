@@ -41,3 +41,7 @@ files in the same edit.
   judged; there is no edit-triggered detachment and no detach notice. 2026-07-03
 - **Four mockup departures are intentional** — green rating pill, the "Lagat idag" chip,
   hidden UNKNOWN allergen badge, and the cream colour scale. 2026-06-22
+- **A shared-list EDIT made offline may still lose a concurrent edit** — appends are merged
+  via `arrayUnion` (safe); tick/amend/remove queues the cached base, because Firestore has
+  no offline-replayable per-row primitive and refusing offline ticks breaks the shop-aisle
+  case. BUT-1683, 2026-07-26

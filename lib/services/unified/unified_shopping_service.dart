@@ -12,9 +12,12 @@ import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/mixins/firebase_sync_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -32,6 +35,7 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/unified/modules/shopping_initialization_module.dart';
 import 'package:butlery/services/unified/modules/shopping_list_management_module.dart';
 import 'package:butlery/services/unified/modules/shopping_item_management_module.dart';
+import 'package:butlery/services/unified/shopping_failure_message.dart';
 import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
 import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
 
@@ -189,6 +193,10 @@ class UnifiedShoppingService
       getActiveListId: () => _activeListId,
       notifyListeners: notifyListeners,
       getCategoryPreferences: () => _categoryPreferences,
+      // BUT-1696: the checkbox on a shared list reaches Firestore through this
+      // module, not through mutateSharedList, so it needs the same seam to
+      // report WHY an optimistic tick was rolled back.
+      reportFailure: _failMutation,
     );
 
     _categoryPreferences = ShoppingCategoryPreferencesModule(
@@ -203,6 +211,18 @@ class UnifiedShoppingService
   String? _activeListId;
   bool _isLoading = false;
   String? _error;
+
+  /// Why the LAST mutation failed, kept strictly apart from [_error].
+  ///
+  /// BUT-1696 originally wrote mutation failures into [_error], which is
+  /// load-scoped: [hasError] and [_emitState] read it, so a transient "you may
+  /// not edit this list" replaced the whole shopping tab with a full-screen
+  /// error + retry button, and it stayed there until the next
+  /// `initialize()`/`loadLists()` because this service is a lazy singleton.
+  /// This field is read ONLY through [consumeMutationError], which self-clears,
+  /// so no caller has to remember to clean up and no ordering hazard (an early
+  /// `if (!mounted) return;`) can leave a sticky error behind.
+  String? _lastMutationError;
   StreamSubscription<List<UnifiedShoppingList>>? _collaborativeStreamSub;
 
   final _stateSubject = BehaviorSubject<ShoppingServiceState>.seeded(
@@ -261,8 +281,19 @@ class UnifiedShoppingService
   @override
   String? get currentUserId =>
       ServiceLocator.get<PermissionService>().currentUserId;
+
+  /// BUT-1697: the PROFILE name, not the Auth handle, and never a placeholder.
+  ///
+  /// This getter feeds persisted attribution — `ownerDisplayName` and
+  /// `lastActivityByDisplayName` on a document other household members read —
+  /// so the literal `'Du'` it used to fall back to was written into their copy
+  /// of the list and shown to them as the editor's name. An unresolved name
+  /// stamps empty (every display site already guards `isNotEmpty`), which is
+  /// honest; the "Du" wording belongs at display time, to the person it is
+  /// actually about. Same source as `FirebaseShoppingRepository`'s
+  /// `resolveDisplayName`, so the two writers cannot disagree.
   String? get currentUserDisplayName =>
-      _authRepository.getCurrentUser()?.displayName ?? 'Du';
+      ServiceLocator.tryGet<UserService>()?.currentDisplayName;
   @override
   FirebaseFirestore get firestore => _firestore;
 
@@ -399,10 +430,19 @@ class UnifiedShoppingService
   /// live document. The local copy is refreshed optimistically; the
   /// collaborative snapshot stream is still the authority and lands right
   /// after.
+  /// BUT-1696: the three ways this can fail are three different things to tell
+  /// the user, and collapsing them into a bare `false` made a denied edit look
+  /// like a checkbox that ticks and un-ticks itself. The wording comes from
+  /// [shoppingFailureMessage] — the ONE mapping, shared with the item module,
+  /// so a new failure class can never be worded here and not there. It is read
+  /// back via [consumeMutationError], NOT via [error], which would turn a
+  /// failed tick into a full-screen error state; the bool still says only "did
+  /// it land". The typed arms survive only for their distinct log lines.
   Future<bool> mutateSharedList(
     String listId,
     UnifiedShoppingList Function(UnifiedShoppingList live) mutate,
   ) async {
+    _beginMutation();
     try {
       final merged = await _shoppingRepository.mutateCollaborativeList(
         listId,
@@ -414,10 +454,74 @@ class UnifiedShoppingService
         notifyListeners();
       }
       return true;
+    } on PermissionDeniedException catch (e) {
+      AppLogger.warning(
+        'Edit denied on shared list $listId: ${e.message}',
+        'ShoppingService',
+      );
+      _failMutation(shoppingFailureMessage(e, shared: true));
+      return false;
+    } on ResourceNotFoundException catch (e) {
+      AppLogger.warning(
+        'Shared list $listId is gone: ${e.message}',
+        'ShoppingService',
+      );
+      _failMutation(shoppingFailureMessage(e, shared: true));
+      return false;
+    } on FirebaseException catch (e) {
+      // A denial raised by the RULES rather than by a client-side guard arrives
+      // as a raw FirebaseException; [shoppingFailureMessage] has the arm for it,
+      // so the server's verdict cannot reach the shopper as "check your
+      // connection" — that is the BUT-1696 defect wearing a different mask.
+      AppLogger.warning(
+        'Shared list $listId mutation failed with ${e.code}: ${e.message}',
+        'ShoppingService',
+      );
+      _failMutation(shoppingFailureMessage(e, shared: true));
+      return false;
     } catch (e) {
       AppLogger.error('Failed to mutate shared list $listId', e);
+      _failMutation(shoppingFailureMessage(e, shared: true));
       return false;
     }
+  }
+
+  /// Records why a mutation failed so the view can show it. Deliberately does
+  /// NOT touch [_error]: the lists are still loaded and valid, so a failed tick
+  /// must never turn into a full-screen error state.
+  void _failMutation(String message) {
+    _lastMutationError = message;
+  }
+
+  /// Drops any reason left behind by an earlier mutation.
+  ///
+  /// Read-to-clear is not enough on its own: a caller that shows its own static
+  /// message and never consumes — the collaborative screen does exactly that on
+  /// "rensa klara" — parks a sentence in the slot, and the next action to
+  /// return `false` WITHOUT reporting (a row another member deleted, which is
+  /// deliberately silent) would surface that stale sentence as its cause. Every
+  /// mutation entry point clears on the way in, so a reason can only ever
+  /// describe the action the user just took.
+  void _beginMutation() {
+    _lastMutationError = null;
+  }
+
+  /// Records a mutation failure decided ABOVE this service — a ViewModel that
+  /// refuses a tap on a list the member may not edit never reaches
+  /// [mutateSharedList], so without this the view would fall back to the
+  /// cause-free generic message on the one case BUT-1696 is named for.
+  void reportMutationFailure(String message) => _failMutation(message);
+
+  /// Reads and clears the reason the last mutation failed. Returns null when
+  /// the last mutation did not report one.
+  ///
+  /// Self-clearing on read is the point: a caller that shows the message cannot
+  /// forget to clean up, and a caller that bails early (`if (!mounted) return;`)
+  /// cannot strand it for the next reader.
+  String? consumeMutationError() {
+    final message = _lastMutationError;
+    _lastMutationError = null;
+    return message;
   }
 
   Future<bool> renameList(String listId, String newName) async {
@@ -463,6 +567,7 @@ class UnifiedShoppingService
   }
 
   Future<bool> toggleItemBought(String itemId) async {
+    _beginMutation();
     return await _itemManagement.toggleItemBought(itemId);
   }
 
@@ -527,10 +632,12 @@ class UnifiedShoppingService
 
   /// Alias for clearCompletedItems for backward compatibility
   Future<bool> clearBoughtItems() async {
+    _beginMutation();
     return await clearCompletedItems();
   }
 
   Future<bool> uncheckAllItems() async {
+    _beginMutation();
     return await _itemManagement.uncheckAllItems();
   }
 
@@ -546,9 +653,29 @@ class UnifiedShoppingService
     );
   }
 
-  /// Add multiple items to active list using high-performance batch operations
-  Future<bool> addItemsBatch(List<UnifiedShoppingItem> items) async {
-    return await _itemManagement.addItemsBatchToActiveList(items);
+  /// Add multiple items to active list using high-performance batch operations.
+  ///
+  /// BUT-1681: this — not `UnifiedShoppingViewModel.addItemsFromRecipe` — is
+  /// the path "lägg till receptets ingredienser" actually takes, so the
+  /// analytics tag lives here. ONE event carrying [source] and the row count,
+  /// not one per row: a recipe adds 8–20 lines and the funnel question is
+  /// "where did this list come from", which a count answers as well as N
+  /// events would, at 1/Nth the cost.
+  Future<bool> addItemsBatch(
+    List<UnifiedShoppingItem> items, {
+    String source = 'manual',
+  }) async {
+    final listId = _activeListId;
+    final added = await _itemManagement.addItemsBatchToActiveList(items);
+    if (added && items.isNotEmpty && listId != null) {
+      ServiceLocator.tryGet<AnalyticsService>()?.shopping
+          .logShoppingListItemAdded(
+            listId: listId,
+            source: source,
+            itemCount: items.length,
+          );
+    }
+    return added;
   }
 
   // Template operations (delegating to repository)
@@ -589,6 +716,7 @@ class UnifiedShoppingService
 
   void clearError() {
     _error = null;
+    _lastMutationError = null;
     notifyListeners();
   }
 
@@ -609,6 +737,7 @@ class UnifiedShoppingService
     _lists.clear();
     _activeListId = null;
     _error = null;
+    _lastMutationError = null;
     _categoryPreferences.reset();
     _stateSubject.add(const ShoppingStateLoading());
   }

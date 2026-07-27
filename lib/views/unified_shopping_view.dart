@@ -228,7 +228,23 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
 
     final success = await _viewModel.toggleItemBought(item.id);
 
-    if (success && shouldPrompt && mounted) {
+    if (!success) {
+      // BUT-1696: the tick has just un-ticked itself on screen. On a shared
+      // list "did that work?" is the whole question, so say which of the three
+      // things happened — denied, list gone, or no connection — instead of
+      // letting the checkbox answer silently.
+      //
+      // Consume BEFORE the mounted check: the read is what clears the reason, so
+      // navigating away mid-tick must not leave it for the next reader.
+      final reason = _viewModel.consumeMutationError();
+      if (!mounted) return;
+      _showErrorSnackBar(
+        reason ?? context.l10n.shoppingCouldNotUpdateItem(item.name),
+      );
+      return;
+    }
+
+    if (shouldPrompt && mounted) {
       await _maybeShowFirstCheckoffPrompt();
     }
   }
@@ -492,6 +508,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
       context,
       viewModel,
       _showSuccessSnackBar,
+      _showErrorSnackBar,
     );
   }
 
@@ -506,7 +523,25 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
   /// - Success feedback with Swedish localized messaging and user experience optimization
   Future<void> _uncheckAllItems(UnifiedShoppingViewModel viewModel) async {
     final msg = context.l10n.shoppingAllUnchecked;
-    await viewModel.uncheckAllItems();
+    final success = await viewModel.uncheckAllItems();
+
+    if (!success) {
+      // BUT-1696/BUT-1697: same defect class as the single checkbox in
+      // [_onItemTap]. The module rolls every row back on failure, so a
+      // green "Alla avmarkerade" here would contradict what the user sees.
+      // Consumed before the mounted check so an early return can't strand the
+      // reason for whoever reads next.
+      final reason = viewModel.consumeMutationError();
+      if (!mounted) return;
+      // The fallback is cause-NEUTRAL on purpose: every path that knows why now
+      // reports a reason, so a message left here would be asserting a cause
+      // nobody established. Telling a shopper with four bars that their
+      // connection is broken is its own bug (BUT-1696).
+      _showErrorSnackBar(reason ?? context.l10n.errorGeneric);
+      return;
+    }
+
+    if (!mounted) return;
     _showSuccessSnackBar(msg);
   }
 

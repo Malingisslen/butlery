@@ -2,7 +2,23 @@
 ///
 /// Uses Swedish measurement patterns and common ingredient formats
 /// to identify likely ingredient lines for pre-selection in user-assisted import.
+///
+/// **Name collision, deliberate for now.** There is a second
+/// `IngredientLineDetector` at `lib/services/import/heuristics/`. THIS copy is
+/// the one on the ASSISTED-import path: `assisted_import_viewmodel.dart:112`
+/// calls [detectFromLines] for every photo/OCR and text import that arrives
+/// without `preDetectedIngredientLines`. The services copy is reached only from
+/// `url_import_strategy.dart`. They carry different vocabularies (this one adds
+/// unit and starter words plus exclusion patterns), so folding them into one is
+/// a real merge, not a rename: the two vocabularies have to be reconciled, and
+/// no ticket carries that yet. BUT-1480 is about the two URL entry points, not
+/// this pair. BUT-1691's Swedish word boundary landed on BOTH copies on
+/// 2026-07-26; any future behavioural change
+/// must be applied to both as well, or the two import paths start disagreeing
+/// about what an ingredient line is.
 library;
+
+import 'package:butlery/utils/text/swedish_word_boundary.dart';
 
 /// Detects likely ingredient lines in extracted text.
 class IngredientLineDetector {
@@ -41,6 +57,25 @@ class IngredientLineDetector {
     'tärning',
     'tärningar',
   ];
+
+  /// One whole-word pattern per unit, compiled once. Both [_isLikelyIngredient]
+  /// and [getConfidence] run per line of every imported page, and the old
+  /// inline `RegExp(...)` rebuilt all thirty on every call of each.
+  ///
+  /// The boundary is [SwedishWordBoundary], not `\b`: Dart's ASCII `\b` treats
+  /// å/ä/ö as non-word characters, so it reported a phantom boundary beside
+  /// them and the one-letter units matched *inside* ordinary Swedish words.
+  /// With `\b` this list pre-ticked "Kål", "Mjöl", "Höst", "Lök:", "Rödkål:",
+  /// "Gäddan" and "Råg" as ingredient lines on the assisted-import path
+  /// (BUT-1691). Patterns are pre-lowercased because every caller lowercases
+  /// the subject first — the boundary's character class is lowercase-only.
+  static final _measurementPatterns = _swedishMeasurements
+      .map(
+        (m) => SwedishWordBoundary.boundedRegExp(
+          RegExp.escape(m.toLowerCase()),
+        ),
+      )
+      .toList(growable: false);
 
   // Common ingredient starters
   static const _ingredientStarters = [
@@ -128,14 +163,10 @@ class IngredientLineDetector {
 
     final lowerLine = line.toLowerCase();
 
-    // Check for Swedish measurements
-    for (final measurement in _swedishMeasurements) {
-      // Match whole words only
-      final measurementPattern = RegExp(
-        r'\b' + RegExp.escape(measurement) + r'\b',
-        caseSensitive: false,
-      );
-      if (measurementPattern.hasMatch(lowerLine)) {
+    // Check for Swedish measurements (whole words only — see
+    // _measurementPatterns for why the boundary can't be `\b`).
+    for (final pattern in _measurementPatterns) {
+      if (pattern.hasMatch(lowerLine)) {
         return true;
       }
     }
@@ -177,12 +208,8 @@ class IngredientLineDetector {
     }
 
     // Measurements are strong indicators
-    for (final measurement in _swedishMeasurements) {
-      final measurementPattern = RegExp(
-        r'\b' + RegExp.escape(measurement) + r'\b',
-        caseSensitive: false,
-      );
-      if (measurementPattern.hasMatch(lowerLine)) {
+    for (final pattern in _measurementPatterns) {
+      if (pattern.hasMatch(lowerLine)) {
         score += 0.4;
         break;
       }
