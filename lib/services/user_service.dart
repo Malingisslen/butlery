@@ -84,7 +84,27 @@ class UserService extends ChangeNotifier
   String? get currentUserId =>
       ServiceLocator.get<PermissionService>().currentUserId;
 
+  /// BUT-1705: the profile name and NOTHING else — no Firebase Auth fallback.
+  ///
+  /// Use this wherever the name is about to be PERSISTED as attribution on a
+  /// document other people read (shared shopping lists, collaborative items).
+  /// The Auth handle is the legal name attached to the user's Google/Apple
+  /// account, not a display name they chose to expose, and it is also invisible
+  /// to the two systems that maintain such copies: `on-profile-updated.ts`
+  /// propagates the PROFILE name, and account deletion scrubs what that CF
+  /// wrote — so an Auth-sourced stamp is both unconsented and un-erasable.
+  ///
+  /// Null before the profile loads. Callers stamp empty rather than blocking;
+  /// a name is a label, an unlabelled edit is better than a wrong one.
+  String? get profileDisplayName {
+    final profileName = _currentUserProfile?.displayName;
+    return (profileName != null && profileName.isNotEmpty) ? profileName : null;
+  }
+
   /// Display name with Firebase Auth fallback for pre-profile-load state.
+  ///
+  /// For DISPLAY only. Anything that persists the name as attribution must use
+  /// [profileDisplayName] instead (BUT-1705).
   String? get currentDisplayName {
     final profileName = _currentUserProfile?.displayName;
     if (profileName != null && profileName.isNotEmpty) return profileName;

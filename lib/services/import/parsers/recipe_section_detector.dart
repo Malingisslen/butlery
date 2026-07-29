@@ -2,6 +2,7 @@
 /// Extracted from text_import_strategy.dart for better organization.
 library;
 
+import 'package:butlery/services/import/parsers/heading_word_lists.dart';
 import 'package:butlery/utils/text/swedish_word_boundary.dart';
 
 /// Provides section header detection, instruction scoring, and content
@@ -65,32 +66,6 @@ class RecipeSectionDetector {
     caseSensitive: false,
   );
 
-  /// Generic ingredient/instruction block markers that are NOT component
-  /// groups (checked colon-stripped + lowercased in [componentSubHeadingLabel]).
-  /// Mirrors the anchored header regexes the Swedish line classifier used
-  /// before it delegated here, so consolidation stays behaviour-equivalent —
-  /// e.g. "Metod:" / "Så gör du:" clear the group instead of becoming one.
-  /// Kept separate from [isInstructionHeader] (a loose `contains` check with
-  /// other callers) to avoid changing multi-recipe splitting behaviour.
-  static const _genericBlockMarkers = {
-    'ingrediens',
-    'ingredienser',
-    'ingredienserna',
-    'du behöver',
-    'detta behövs',
-    'det här behöver du',
-    'gör så här',
-    'så gör du',
-    'instruktion',
-    'instruktioner',
-    'tillagning',
-    'tillagningssätt',
-    'tillredning',
-    'framställning',
-    'steg',
-    'metod',
-  };
-
   /// The one audited "is this a component sub-heading?" heuristic, shared by
   /// the rule-based line classifier and the schema.org import tier. Returns
   /// the group label ("Deg", "Fyllning", "Till servering") for a heading line,
@@ -124,11 +99,21 @@ class RecipeSectionDetector {
 
     // Generic block markers keep their colon-terminated forms out of the
     // component-group space ("Metod:", "Så gör du:") — they clear the group.
-    if (_genericBlockMarkers.contains(label.toLowerCase())) return null;
+    if (HeadingWordLists.genericBlockMarkers.contains(label.toLowerCase())) {
+      return null;
+    }
 
     // Any digit or unit token ⇒ treat as an ingredient, never a heading.
     if (RegExp(r'\d').hasMatch(label)) return null;
     if (_subHeadingUnitGuard.hasMatch(label)) return null;
+
+    // BUT-1714: a lone GLUTEN word plus a colon stays an ingredient. The
+    // colon-wins contract below is right for "Deg:"/"Fyllning:", but "Mjöl:"
+    // and "Öl:" are indistinguishable from an OCR'd ingredient row whose
+    // quantity landed in another column — and a heading is pulled OUT of the
+    // flat list tagging reads, so guessing "heading" loses the gluten. Guessing
+    // "ingredient" only adds a noisy row. Recorded in ACCEPTED_DEVIATIONS.md.
+    if (HeadingWordLists.isBareGlutenWord(label)) return null;
 
     // Strong-signal gate: a trailing colon, or a curated-vocabulary hit for
     // colon-less lines. A bare word outside the curated set stays an
@@ -137,6 +122,23 @@ class RecipeSectionDetector {
     if (!hasColon && !inVocabulary) return null;
 
     return label;
+  }
+
+  /// The ingredient text to KEEP for a line the BUT-1714 carve-out at
+  /// [componentSubHeadingLabel] refuses — a LONE gluten word, with or without
+  /// its trailing colon — or null when [text] is not such a line. A caller with
+  /// no ingredient fallback asks here instead of reading intent out of a null.
+  ///
+  /// COLON-STRIPPED, deliberately: lookup folds diacritics but strips no
+  /// punctuation, so re-inserting "Mjöl:" queries `mjol:`, matches no registry
+  /// document and takes every allergen verdict on the recipe to UNKNOWN rather
+  /// than resolving gluten to YES. Measured both ways in ACCEPTED_DEVIATIONS.md.
+  static String? bareGlutenIngredientLabel(String text) {
+    final clean = text.trim();
+    final label = clean.endsWith(':')
+        ? clean.substring(0, clean.length - 1).trim()
+        : clean;
+    return HeadingWordLists.isBareGlutenWord(label) ? label : null;
   }
 
   /// Check if text is a section header (like "biffen", "såsen")

@@ -80,6 +80,23 @@ pre-commit:
       fail_text: "A Cloud Functions test file or rules trigger is not wired into CI (see above). Add the npm test:* script, or the functions/src/__tests__/... entry in BOTH paths: blocks of .github/workflows/firestore-rules.yml."
       priority: 6
 
+    # BUT-1709 / BUT-1707: the two CI-wiring guards are the only thing that
+    # notices when a test file or a rules block stops being covered — so an
+    # edit to a guard is exactly when its own fixtures must run. Glob-gated to
+    # functions/scripts (unlike test-registration above, whose drift case is a
+    # DELETED file that never appears in {staged_files}): a guard cannot lose a
+    # criterion without its own source being staged. Plain Node, ~1s.
+    # NOTE the glob shape: lefthook's `**/*.js` requires at least one
+    # intermediate directory, so it does NOT match
+    # `functions/scripts/check-test-registration.js` — the guard's own source,
+    # i.e. precisely the file this hook exists to gate. `functions/scripts/**`
+    # matches both the flat sources and the `__tests__/` fixtures.
+    script-guard-tests:
+      glob: "functions/scripts/**"
+      run: node functions/scripts/__tests__/check-test-registration.test.js && node functions/scripts/__tests__/rules-coverage-report.test.js
+      fail_text: "A CI-wiring guard's own tests failed (see above). The guards decide what CI runs — fix the guard or the fixture before committing, never the assertion."
+      priority: 7
+
 commit-msg:
   commands:
     # Validate conventional commit format

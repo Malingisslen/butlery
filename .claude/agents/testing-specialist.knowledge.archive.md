@@ -7507,3 +7507,715 @@ source at the service level.
 AND its caller reads the reason: `shopping_list_operations.dart:65-71` does `final reason = success ?
 null : viewModel.consumeMutationError();` then `onError(reason ?? errorGeneric)`. Both halves of the
 round-2/3 "report with no reader" finding are landed.
+
+## 2026-07-27 — BUT-1713 / BUT-1714 review: unit-regex boundary re-pin + the gluten carve-out (trigger: sprint review, "parsing" area)
+
+Files in scope: `lib/services/import/cache/recipe_text_normalizer.dart`,
+`lib/services/import/parsers/recipe_section_detector.dart`,
+`lib/services/import/parsers/heading_word_lists.dart` (new),
+`test/unit/services/import/content_fingerprint_golden_test.dart`,
+`test/unit/services/import/parsers/recipe_section_detector_test.dart`,
+`docs/architecture/ACCEPTED_DEVIATIONS.md`, `.claude/rules/accepted-deviations.md`.
+
+### Production verdict: both changes correct
+
+BUT-1713 swaps `RecipeTextNormalizer._allUnitsRe` from `RegExp('\b(units)\b')` onto
+`SwedishWordBoundary.boundedRegExp(units, caseSensitive: false)`. Verified by replica probe
+(`test/zz_scratch_but1713_probe_test.dart`, deleted after the run; the replica reused the real
+public regexes and was control-tested against the production method on every fixture):
+
+```
+old: \b(dl|msk|tsk|krm|g|kg|ml|l|cl|st|stk|port|...|ask|askar)\b
+new: (?<![a-zåäö0-9])(?:dl|msk|...|askar)(?![a-zåäö0-9])
+FLIPPED (4):  "2 dl mjöl" mjö→mjöl | "vitkål" vitkå→vitkål
+              "1 gul lök" gul ök→gul lök | "3 st rödlök" röök→rödlök
+UNCHANGED (7): havregryn, mjölk, blandfärs, socker, bacon, grädde, "ca 2 dl grädde"
+```
+
+The `caseSensitive:false` flag also case-folds the `[a-zåäö0-9]` boundary class, so `Ö` in "Öl"
+is correctly excluded; `normalizeIngredientName` lowercases first anyway. The class omits `_`
+(where `\w` included it) — the only looser direction, and unreachable in ingredient text.
+`extraLetters` was NOT passed for `é`; walked the whole unit set against real loan words
+("filé", "gruyère", "crème", "müsli", "jalapeño") and found no unit that gains a boundary from
+an accented neighbour, so the omission is harmless.
+
+The **"rödlök" case is the new shape**: previous rounds framed the phantom boundary as a
+single trailing letter. Here a TWO-letter unit sits wholly inside the word — "rö|dl|ök", with
+ö on both sides opening two ASCII boundaries — so `\bdl\b` deleted letters from the middle.
+The shipped comment attributed it to "leading 'st' AND trailing 'l'", which is wrong twice:
+"rödlök" has no ASCII boundary before its 'l' (preceded by 'd'), and removing an 'l' would
+give "rödök", not "röök". Fixed the comment.
+
+`canonical_pool_key.dart:156/161` re-verified: `_foldedUnitsRe`/`_foldedApproxRe` run against
+already-folded text (`_foldDiacritics(raw.toLowerCase())` at line 139), so their ASCII `\b`
+is safe — "mjöl"→"mjol" gives 'l' an ASCII word char to its left. The updated comment in
+`recipe_text_normalizer.dart:111-116` is accurate. `approximateWordsRe` (same file, line 120)
+is still ASCII `\b`; walked its five tokens — none borders å/ä/ö in realistic Swedish
+ingredient text — so harmless, but the fixed regex's "never ASCII `\b`" reads as a file-level
+claim next to it.
+
+Golden re-pin verified by running the suite: 5 of 6 hashes moved, `flygande_jakob` held. That
+fixture DOES contain å/ä/é ("grädde", "chilisås", "kycklingfilé") and still didn't move, so it
+is a genuine sanity control, not an ASCII-only freebie.
+
+BUT-1714's carve-out sits after the digit and unit guards in `componentSubHeadingLabel`, and
+the unit guard no longer shadows any gluten word (checked each: `mjöl`, `råg`, `öl`, `havre`,
+`malt`, `bulgur`, `dinkel`, `vetekli`, `semolina`, `vetegroddar` — none matches
+`_subHeadingUnitGuard` under the fixed boundary), so the new branch is live for all 17 set
+members. `genericBlockMarkers` moved verbatim: 16 entries in, 16 out, byte-identical.
+
+### Mutation probe on the test suite (`test/zz_scratch_but1714_probe_test.dart`, deleted)
+
+```
+whitespace-guard mutant flips: []                       <-- entirely untested
+suffix-rule mutant flips: [Vetemjöl:, Rågmjöl:, Grahamsmjöl:]
+Potatismjöl:/Majsmjöl:/Mandelmjöl:/Kokosmjöl:/Bovetemjöl: -> null (over-capture, unpinned)
+gluten words with no fixture: [matvete, vetekli, vetegroddar, semolina]
+"Fint vetemjöl" guarded=false unguarded=true            <-- the discriminator that was missing
+```
+
+The whitespace guard (`if (word.contains(RegExp(r'\s'))) return false;`) is the file's own
+stated scope boundary AND the deviation doc's ("applies to single-word labels only"), yet all
+23 shipped fixtures stayed green with it deleted — because "Till degen", the label chosen to
+illustrate it, is not a gluten word under either version. That is the generalisable trap: the
+fixture picked to DEMONSTRATE a scope guard is usually outside the predicate's vocabulary and
+therefore cannot discriminate it.
+
+### Live-path check
+
+`componentSubHeadingLabel` has exactly two callers: `swedish_line_classifier.dart:381` and
+`schema_org_tier.dart:262`. The latter's `_splitHeadings` is where a non-null label REMOVES the
+line from the flat ingredient list — the whole safety rationale. `grep -n "Mjöl\|gluten"` over
+`schema_org_tier_test.dart`, `swedish_line_classifier_test.dart` and
+`rule_based_tier_sections_test.dart` returned ZERO hits, so nothing proves "Mjöl:" survives
+into `ingredients`. Both suites already own a section group (schema_org's "ingredient section
+headings (heading pre-scan)", including a kill-switch case for `isSectionCaptureEnabled`), so
+this is one added case per suite. Filed rather than edited — those files were outside the
+declared review fileset.
+
+### Test-only edits applied this round
+
+- `content_fingerprint_golden_test.dart`: replaced the false "reverting reddens every case
+  below" with the measured count (four discriminators, seven recall controls, named); rewrote
+  the "3 st rödlök" comment to attribute it to the embedded `dl`.
+- `recipe_section_detector_test.dart`: added `('Ljust vetemjöl:', 'Ljust vetemjöl')` and
+  `('Till mjöl:', 'Till mjöl')` to `stillHeadings` (the only fixtures that can redden if the
+  whitespace guard is dropped), plus a `gluten-free -mjöl compounds ride along, by design`
+  test pinning `Potatismjöl:`/`Majsmjöl:`/`Mandelmjöl:` with the direction argument.
+
+Suites after the edits: 110 tests green (was 105); `flutter analyze --fatal-infos` on
+`lib/services/import` + `test/unit/services/import` clean.
+
+## 2026-07-27 — BUT-1705/1719/1723/1725 shopping+account review (round 1)
+
+Scope: 18 files, "shopping-account" sprint area. `flutter analyze` clean on the touched
+areas; all four changed Dart suites green (97 tests) before review.
+
+### 1. `confirmPersistedItemCount` returns null for EVERY personal list in production
+`shopping_repository_query_module.dart:141-152`. The method probes the shared collection
+first and falls through to the personal `items` subcollection only when the shared doc
+`!exists`. But its `catch` around the shared read does `return null` instead of falling
+through. Under the live rules — `firestore.rules:1606-1609`,
+`allow read: if isAuthenticated() && (request.auth.uid == resource.data.ownerId || request.auth.uid in resource.data.memberPermissions)`
+— a `get` on a document that DOES NOT EXIST dereferences a null `resource`, the clause
+errors, the rule denies, and the client gets `permission-denied`. So
+`confirmPersistedItemCount(<personal list id>)` throws there on every call, returns null,
+`ListLifecycleOperations._copyIsSafeToTrust` reads null as "unconfirmed", and
+`convertCollaborativeToPersonal` NEVER deletes the shared source. The feature stops
+completing; the gate is always-deny in that direction.
+The convention was already in the same file's sibling: `FirebaseShoppingRepository.read()`
+(`firebase_shopping_repository.dart:264-277`) catches the shared read and FALLS THROUGH to
+the user collection for exactly this reason.
+Test blindness: `FakeFirebaseFirestore` enforces no rules, so the new test
+`returns zero for a list that does not exist anywhere`
+(`shopping_repository_query_module_test.dart`) pins the FAKE's answer (0, via fall-through)
+as though it were production's (null, via permission-denied). The suite is green and
+inverted. The routing suite in the same directory already has the sealed-class mock trick
+(`// ignore_for_file: subtype_of_sealed_class`, BUT-1696 cache-miss test) that can make
+`sharedListsRef.doc().get()` throw `FirebaseException(code:'permission-denied')` — that is
+the one-file fixture that catches this.
+Also: the INTERFACE doc (`shopping_repository.dart:40-43`) promises null for a "missing
+list"; the implementation and the new test say 0. Two contracts, one delete gate.
+
+### 2. The BUT-1723 root-cause fix itself has zero tests
+`firebase_shopping_repository.dart:235-237` — the personal-create fan-out into the `items`
+subcollection. `grep -rln FirebaseShoppingRepository test/` returns four files, none of them
+a unit test for the class (`test/unit/repositories/firebase/` has no
+`firebase_shopping_repository_test.dart`). Deleting those three lines leaves all four
+changed suites green; only the emulator-lane integration file could see it, and per the
+standing caveat nothing in CI passes `USE_EMULATOR=true` over `test/integration`.
+Related: `addItemsBatch`'s personal leg (`shopping_item_operations_module.dart:244-255`) is
+still an unchunked `firestore.batch()`, so the new fan-out inherits the 500-op cap and a
+>500-item conversion now throws AFTER `super.create` has written the parent doc.
+
+### 3. `UserService.profileDisplayName` — the whole BUT-1705 fix, untested
+`user_service.dart:99-102`. `grep currentDisplayName test/unit/services/user_service_test.dart`
+returns zero hits, and `profileDisplayName` has none either. The discriminator is one test:
+profile absent-or-empty `displayName` plus `authRepository.currentUser!.displayName` set to
+a real name, then `currentDisplayName` returns that name while `profileDisplayName` returns
+null. Without it, respelling `profileDisplayName`'s body back to `currentDisplayName`'s is
+green everywhere.
+
+### 4. The new contract's own sibling is still wrong
+`currentDisplayName`'s new doc comment: "Anything that persists the name as attribution must
+use [profileDisplayName]". Grepping `.currentDisplayName` across `lib/` gives three sites;
+two are render-only (`recipe_list_avatar_badge.dart:45,94`), but
+`recipe_share_request_module.dart:59` persists it as `SocialRequest.fromUserName` on a
+document ANOTHER user reads, and forwards the same string into a push notification. That is
+the Google/Apple real name, the exact leak BUT-1705 names, one grep away from the fix.
+
+### 5. `contributorUserIds`: the "one chokepoint" comment is false
+`shopping_repository_routing_module.dart:291-292` calls `mutateCollaborativeList` "the one
+chokepoint every collaborative item write passes through". `updateCollaborativeList` also
+persists `items` (it is `ShoppingRepository.update`'s collaborative leg) and does NOT union
+the writer. Live caller: `menu_shopping_list_generator.dart:216` to
+`UnifiedShoppingService.updateList` to `ShoppingListManagementModule.updateList:211` to
+`repository.update(list)`, and the selector offers shared lists. Latent today only because
+the generator builds `UnifiedShoppingItem(name:, amount:, unit:, category:, bought:)` with
+no `addedByUserId` — one added attribution field reopens the erasure hole, and the comment
+is what will stop the next session from looking.
+
+### 6. Untested legs on the new code
+- Offline contributor trail: `_mutateFromCache` calling `_withContributor` (`:375-380`) has
+  no test. Both new `contributorUserIds` tests drive create plus the online transaction. The
+  fixture already exists — the suite injects a `transactionRunner` that raises
+  `unavailable` — so deleting `_withContributor` from the cached-base path is green today.
+- `narrowUpdatePayload`'s cached-base refusal is tested only for `memberPermissions`;
+  `ownerId` and `createdAt` (the other two `privilegedKeys`) have no leg.
+- `functions/src/migrations/backfill-shared-list-contributors.ts` ships with zero tests
+  while its own header (line 12) instructs a future reader to delete a
+  `test:backfill-shared-list-contributors` npm script that does not exist. Both sibling
+  backfills have `functions/src/__tests__/backfill-*.test.ts`. `reconstructContributors` is
+  pure (the `ANONYMIZED` exclusion at `:89` is the security-relevant line — re-adding
+  `"deleted"` would resurrect a handle erasure removed) and `runBackfill`'s
+  idempotency/`hasMore` logic is a fake-db unit test.
+
+### 7. Two weak assertions in the new tests
+- `shopping_repository_routing_module_test.dart`, "writes nothing when the entity matches
+  the stored doc", compares `after.data()` to `before.data()`. With the pre-fix
+  `set(entity.toFirestore(), merge: true)` the stored data is byte-identical anyway, so the
+  assertion cannot tell "no write" from "an identical write" — it stays green with
+  `if (payload.isNotEmpty)` deleted. Needs a write-count observable (count
+  `docRef.snapshots()` emissions, or a spy `DocumentReference`).
+- `collaborative_shopping_operations_test.dart` never straddles the gate's flip point.
+  `_copyIsSafeToTrust` is `persisted >= expectedItems`; the fixtures are 0 (deny), null
+  (deny) and a shared default of 99 (allow) against a ONE-item source, so tightening `>=`
+  to `>` stays green. `confirmedItemCount = 1` plus asserting the delete IS called is the
+  missing case. `convertPersonalToCollaborative` also has only the null leg, no
+  "landed short".
+
+### 8. Probe that came back negative — record it so nobody re-files it
+Suspected `expect(map, isNot(contains('bob')))` (routing suite, member-removal test) was
+vacuous, because package:matcher's `_Contains` is documented in places as using
+`containsValue` for Maps. Ran a throwaway: `expect({'bob':'edit'}, contains('bob'))`
+PASSES, `contains('edit')` FAILS. So `contains` on a Map matches KEYS in the pinned
+matcher version and the assertion is sound. Do not re-file.
+
+### 9. Cosmetic
+`account-deletion-cascade.ts:221-248` adds each new probe leg's `count` into `residual`
+separately, so a list matching BOTH (a departed contributor who was also the last-activity
+stamp) is counted twice in a number the surrounding legs treat as a document count.
+
+## 2026-07-27 — BUT-1705/1719/1723/1725 shopping+account review (round 2, after automated fixes)
+
+Tree-moved check first: 9 of 19 in-scope files newer than round 1's archive entry
+(22:16). Moved: query module, `firebase_shopping_repository.dart`, `user_service.dart`,
+`list_lifecycle_operations.dart`, two suites, plus three NEW test files
+(`firebase_shopping_repository_test.dart`, the `user_service_test` group, the CF backfill
+suite). Unmoved at 21:54: routing module, offline write module, permission guards,
+`unified_shopping_service.dart`, sharing dialog, all `functions/src/*.ts` production files.
+
+### Round-1 findings CONFIRMED fixed
+1. `confirmPersistedItemCount`'s shared-probe catch now FALLS THROUGH instead of
+   `return null`, with the rules reasoning in the comment. Pinned by a sealed-class mock
+   raising `permission-denied` — the fake cannot stage it. Interface doc corrected to
+   match (`shopping_repository.dart:40-43`).
+2. BUT-1723 root cause now has `test/unit/repositories/firebase/firebase_shopping_repository_test.dart`
+   asserting the RAW `items` subcollection, plus a `readAll` round-trip. Deleting the
+   three fan-out lines reddens it.
+3. `UserService.profileDisplayName` has a discriminating test (empty profile name + a
+   real auth handle → `currentDisplayName` returns the handle, `profileDisplayName`
+   returns null) with a both-getters positive control.
+4. `recipe_share_request_module.dart:59` switched to `profileDisplayName` — the
+   persist-vs-render sweep is now consistent with the new doc comment.
+6c. The CF backfill has `functions/src/__tests__/backfill-shared-list-contributors.test.ts`,
+   9/9 green, registered in `package.json` and clean under `check-test-registration.js`.
+   It covers the security-relevant `"deleted"`-sentinel exclusion, idempotency, dryRun and
+   the `hasMore` boundary.
+
+Also new and correct: `ListConversionResult` record (`newListId`, `originalKept`) threaded
+service → `shopping_list_operations.dart:237-246,279-288`, so an unconfirmed copy now
+reports `shoppingConvertedOriginalKept` instead of a false success.
+
+### The gap the fixes opened, and closed here (test-only, applied)
+The fix added TWO `metadata.isFromCache → return null` guards — the load-bearing claim of
+the entire gate ("a cached read is not confirmation"). `grep isFromCache` over both new
+suites returned ZERO. `FakeFirebaseFirestore` answers every read `isFromCache == false`,
+so both lines were dead across the suite. Revert-probe (both lines deleted): ONLY the two
+new tests redden, `Expected: null / Actual: <2>` and `Actual: <0>`; restored byte-identical.
+Staging it needs the file's existing sealed-class mock trick extended to
+`DocumentSnapshot`, `QuerySnapshot` and `SnapshotMetadata`.
+
+Also applied, both probed red-then-restored:
+- `collaborative_shopping_operations_test.dart` — `confirmedItemCount = 1` against the
+  one-item source. Fixtures were 0/null/99 only, so `>=`→`>` stayed green (round-1 #7b).
+- `shopping_repository_routing_module_test.dart` — offline edit AND offline append both
+  extend `contributorUserIds`. Both existing contributor tests drove the online
+  transaction; dropping `_withContributor` from the offline payload builder left the whole
+  group green (round-1 #6a). The `unavailable` transactionRunner fixture already existed.
+
+Suites after the edits: 107 green across the five shopping suites; `flutter analyze
+--fatal-infos` clean on `lib/repositories`, `lib/services/unified`, `lib/services/user_service.dart`,
+`test/unit/repositories/firebase`, `test/unit/services/unified`.
+
+### Still open — production behaviour, unchanged since round 1 (files never moved)
+- #5 `shopping_repository_routing_module.dart:291-292` still calls
+  `mutateCollaborativeList` "the one chokepoint"; `updateCollaborativeList` persists
+  `items` without unioning the writer, reachable from `menu_shopping_list_generator` →
+  `UnifiedShoppingService.updateList`. Latent only because that generator writes no
+  `addedByUserId`.
+- #6b `narrowUpdatePayload`'s cached-base refusal still covers only `memberPermissions`,
+  not `ownerId`/`createdAt`.
+- #7a routing suite's "writes nothing when the entity matches the stored doc" still
+  compares `after.data()` to `before.data()` — cannot tell "no write" from "identical
+  write". Needs a snapshot-emission count or a spy `DocumentReference`.
+- #9 `account-deletion-cascade.ts:221-248` still double-counts a list matching both probe
+  legs into `residual`.
+
+### New this round (both from the fan-out in `create`)
+- `addItemsBatch`'s personal leg is an UNCHUNKED `firestore.batch()`
+  (`shopping_item_operations_module.dart:244-255`), and `FirebaseShoppingRepository.create`
+  now routes every personal create through it. >500 items throws the Firestore batch cap
+  AFTER `super.create` wrote the parent doc. Failure direction is safe —
+  `ShoppingListManagementModule.createPersonalList` catches → null → conversion returns
+  `(newListId: null, originalKept: false)` → the shared source is untouched — but the
+  conversion becomes permanently impossible for such a list and each attempt orphans an
+  empty personal list. Verified: `ownerId` is `getCurrentUserId().orEmpty()` and
+  `UnifiedShoppingItem`'s `id` is auto-generated, so `validateOwnership` and the
+  `requiredFields: ['name','id']` check do NOT introduce a new throw on normal input.
+- The documented empty-list corner: with `expectedItems == 0`, a fall-through to a
+  server-answered-empty personal leg yields `0 >= 0` → the source IS deleted even though
+  the copy was never positively confirmed. Accepted and stated in the method's own doc
+  comment ("there is nothing there to lose"); recorded so nobody re-files it.
+
+## 2026-07-27 — BUT-1713 / BUT-1714 re-review round 2 (parsing area, post-automated-fix)
+
+**Trigger:** re-review of `recipe_text_normalizer.dart`, `recipe_section_detector.dart`,
+`heading_word_lists.dart` (new), `content_fingerprint_golden_test.dart`,
+`recipe_section_detector_test.dart`, plus both accepted-deviations files, as they stand in
+the working tree after automated fixes.
+
+### Tree actually moved
+Confirmed via `git diff` before reviewing: the normalizer gained the
+`SwedishWordBoundary` swap (+15/-5), the detector gained the BUT-1714 gluten guard and
+`isBareGlutenHeadingCandidate` (+28/-27), `heading_word_lists.dart` is new and untracked,
+and both deviation files gained the BUT-1714 entry. Not a byte-identical re-read.
+
+### Mutation probes run (all restored, `diff`-verified byte-identical afterwards)
+
+| Mutant | Change | Result |
+|---|---|---|
+| A | `_allUnitsRe` → ASCII `\b` | exactly the FOUR å/ä/ö cases red (`2 dl mjöl`, `vitkål`, `1 gul lök`, `3 st rödlök`); the seven recall controls stayed green; 5 of 6 goldens red with `flygande_jakob` green — every claim in the test's comment measured true |
+| B | drop `isBareGlutenWord`'s whitespace guard | exactly `Ljust vetemjöl:` + `Till mjöl:` red — matches the comment's "the only two fixtures that can fail" |
+| C | drop `endsWith('mjöl')` | `Vetemjöl:`, `Rågmjöl:`, `Grahamsmjöl:` + the gluten-free-compound group red |
+| D | delete the whole gluten guard from `componentSubHeadingLabel` | all 18 gluten labels + the gluten-free group red (19 tests) — no fixture is answered by an earlier branch, i.e. no sibling-OR short-circuit |
+| E | `isBareGlutenHeadingCandidate → false` | ONLY `swedish_line_classifier_test.dart`'s "sectionHeader-classified 'Mjöl:' stays in the flat list" red; the detector suite is entirely blind to that method |
+
+### The escaping trap (new lesson)
+The first attempt at mutant A patched the Dart source from a bash heredoc and wrote
+`'\b(...)\b'` instead of `'\b(...)\b'` — i.e. a literal U+0008 backspace, matching
+nothing. The suite went `+2 -15` and briefly read as "the comment's 'exactly four' claim is
+false, and `flygande_jakob` moves too." `sed -n` on the patched line showed the mangling
+immediately. **A mutant that reddens far MORE than the comment claims is evidence you built
+the wrong mutant.** Read the mutated line back, always.
+
+### Correctness checks that came back clean
+- All three callers of `componentSubHeadingLabel` enumerated. `schema_org_tier._splitHeadings:262-268`
+  and `swedish_line_classifier`'s `LineType.ingredient` arm both `lines.add(line)` on null,
+  so only the `LineType.sectionHeader` arm ever needed the explicit ask. No second
+  delete-on-null caller was missed.
+- `GlobalRecipeCache` has no version constant — `global_recipe_cache.dart:128` queries
+  `contentFingerprint` and `:211` builds `fp_$fingerprint` as the doc id. The golden test's
+  "the fingerprint IS the key, a content miss re-extracts once" rationale is accurate.
+- `approximateWordsRe` is still ASCII `\b`, but the BUT-1713 rationale is now a `///` doc
+  comment attached to `_allUnitsRe` alone, so the earlier round's "reads as a file-level
+  claim" finding is closed. None of `ca|cirka|ungefär|about|approximately` borders å/ä/ö in
+  real ingredient text, so the sibling is genuinely harmless.
+- `dart analyze` and `dart format --set-exit-if-changed` clean on all five code files.
+
+### Findings filed
+1. **Low —** `recipe_section_detector.dart` is 501 lines, one over the soft guard
+   (`.claude/hooks/file-size-guard.sh:34`). It was exactly 500 at HEAD, and
+   `heading_word_lists.dart:5-6` states the extraction happened "so the detector stays
+   inside the 500-line limit" — the doc comment is falsified by one line. Moving
+   `isBareGlutenHeadingCandidate`'s 3-line body onto `HeadingWordLists` or dropping one
+   blank fixes both.
+2. **Info —** `isBareGlutenHeadingCandidate` had zero coverage in its own suite (mutant E).
+   Fixed in this pass.
+
+### Test work applied (Phase 9 contract)
+Deleted three autopilot duplicates from `stillHeadings` — `('Deg:','Deg')`,
+`('Fyllning:','Fyllning')`, `('Rödkål:','Rödkål')` are asserted verbatim in the two groups
+directly above, so they added assertions but no discriminating power.
+
+Added `group('BUT-1714: the gluten vocabulary and its two entry points agree')`, four tests,
+each proven red under its own mutant:
+- `the vocabulary still covers the words BUT-1691 moved` — `containsAll(['mjöl','råg','öl','vete'])`.
+  Red when `'öl'` is removed from the set (which also reddens the `Öl:` fixture, but the
+  premise assertion is what names the cause).
+- `every bareGlutenWords entry is reachable` — red when a spaced entry (`'graham vete'`) is
+  added; the lone-word guard makes such an entry dead-on-arrival while reading as coverage.
+- `every vocabulary word is a candidate AND is refused as a heading` — 4 surface forms per
+  word (bare, `+':'`, uppercase, whitespace-padded) plus three suffix-rule forms. Red under
+  the spaced-entry mutant AND under a mutant that stops `isBareGlutenHeadingCandidate` from
+  stripping the colon. This is the cross-derivation drift guard: the classifier's rescue
+  only fires when the detector already said null, so a future "candidate true, label
+  non-null" divergence would delete the gluten row with every hand-typed fixture green.
+- `an ordinary component heading is NOT a candidate` — the recall control. Red under
+  `isBareGlutenHeadingCandidate → true`, without which that mutant satisfies the whole group.
+
+Suite: 94 → 98 tests, all green; `swedish_line_classifier_test.dart` (153 tests) green.
+
+## 2026-07-28 — BUT-1705/1719/1723/1725 shopping+account RE-REVIEW round 3 (18 files, tree MOVED, and mutated MID-REVIEW)
+
+Tree-moved check: 8 of 18 in-scope files newer than round 2's archive write (00:04:35).
+Moved since: `list_lifecycle_operations.dart` (00:31), the collaborative-ops suite (00:24),
+routing module (23:59), routing suite (23:55), query module (23:50), query suite (23:46),
+`firebase_shopping_repository.dart` (23:16), `user_service.dart` (23:13). Unmoved at 21:54:
+offline write module, permission guards, `unified_shopping_service.dart`, sharing dialog,
+`shopping_repository.dart`, all four `functions/src` files.
+
+### The find, and why it is not a finding
+`functions/src/migrations/backfill-shared-list-contributors.ts:160` read
+
+    batch.update(doc.ref, {
+      contributorUserIdsMUTANT: admin.firestore.FieldValue.arrayUnion(...missing),
+    });
+
+on a `Read` and again on an independent `Grep`. The suite was 9/9 GREEN against it. Twelve
+minutes later the file's mtime moved to 00:43:10 and the token was back to
+`contributorUserIds` — a parallel session's revert-probe caught mid-run. So the production
+bug is NOT live and was not filed as Critical. What IS durable is that the suite could not
+have caught it, and that is the round's deliverable.
+
+Why the suite was blind: `makeFakeDb`'s `batch.commit()` recorded `op.data` into `writes`
+but then wrote the store value itself —
+`store[op.id] = {...store[op.id], contributorUserIds: [...existing, ...reconstructContributors(store[op.id])]}`
+— i.e. it MODELLED arrayUnion's effect under a hardcoded key instead of APPLYING the
+payload. Every assertion in the file then read a value the double invented. Two fixes,
+both test-only, applied here:
+  - the union now lands under `const [field] = Object.keys(op.data);`
+  - a new case, `runBackfill writes the trail under contributorUserIds, the field erasure
+    queries`, asserting the update's key set equals `contributorUserIds`, with a comment
+    naming the two consumers (`probeResidualData`, `deleteShoppingLists`, both
+    `array-contains`).
+Non-vacuity proven: renaming the production field to `contributorUserIdsX` now reddens
+3 of 10 (`stamps a list that has no trail yet`, the new key test, `is idempotent`), where
+the identical class of mutation previously reddened 0. Restored byte-identical (`cmp`),
+10/10 green, `npx tsc --noEmit` exit 0, `check-test-registration.js` OK (117 files).
+
+Blast radius had it shipped: the callable returns `success: true, migrated: n,
+hasMore: false` — the operator's signal that the migration is DONE — while every
+pre-existing shared list stays invisible to `deleteShoppingLists`' contributor leg, and the
+idempotency guard (which reads `data.contributorUserIds`) never converges, so a re-run
+rewrites everything forever.
+
+### Round-2 open items, both closed here (test-only, both revert-probed)
+- **#7a** `shopping_repository_routing_module_test.dart` — "writes nothing when the entity
+  matches the stored doc" compared `after.data()` to `before.data()`, which cannot tell a
+  skipped write from an identical one. Replaced with a `docRef.snapshots()` emission
+  counter plus a positive control (one changed field) in the same test. Mutant: drop
+  `if (payload.isNotEmpty)` → `Expected: <1> Actual: <2>`. Useful fact: FakeFirebaseFirestore
+  DOES emit for an empty `update({})`, so the counter is a real discriminator there.
+- **#6b** `shopping_offline_write_module_test.dart` — `narrowUpdatePayload`'s cached-base
+  refusal covered only `memberPermissions`. Added a table over the other two
+  `privilegedKeys` (`ownerId`, `createdAt`), each with a refusal leg (asserting the
+  exception NAMES the field) and a server-base RECALL CONTROL (`baseIsCached: false` still
+  emits the key) — without the control a blanket "never write these" regression reads as a
+  passing safety test. `UnifiedShoppingList.copyWith` deliberately cannot move either
+  field, so the fixture goes through a `_rebuilt()` helper using the plain constructor,
+  which is exactly the shape `ShoppingRepository.update` accepts from callers. Mutant:
+  shrink `privilegedKeys` to `{memberPermissions}` → both refusal legs red, controls green.
+
+### Round-2 open items still open (production, unchanged)
+- **#5** `shopping_repository_routing_module.dart:291-292` still calls
+  `mutateCollaborativeList` "the one chokepoint every collaborative item write passes
+  through". Re-verified this round: `shopping_item_operations_module.dart` DOES route all
+  its collaborative mutators through it (lines 145/225/278/338/423/471), and
+  `firestore.collection('unified_shared_shopping_lists')` appears exactly once in `lib/`
+  (`firebase_shopping_repository.dart:206`), so the claim is true of ITEM writes.
+  `updateCollaborativeList` remains the exception and still does not union the writer.
+  Newly checked and clean: `narrowUpdatePayload` diffs `toFirestore()` maps and
+  `contributorUserIds` is not in `UnifiedShoppingList.toFirestore()`, so the whole-list path
+  cannot CLOBBER the trail either — it just never extends it. Latent, as before.
+- **#9** `account-deletion-cascade.ts:225-249` still adds each of the two new probe legs
+  into `residual` separately, so a list matching both `contributorUserIds` and
+  `lastActivityByUserId` is counted twice (and again against the `owned` leg). A magnitude
+  error in a diagnostic, not a correctness one.
+
+### Verified correct this round (no finding)
+- `_withoutForeignAttribution` / `_stripForeignIdentities` (new,
+  `list_lifecycle_operations.dart:233-281`): enumerates all 21 `UnifiedShoppingItem` fields
+  — checked one by one against the model, no field silently dropped. Its test (`strips other
+  members identities from the personal copy`) has the owner-keeps-own-attribution positive
+  control and would redden if the strip were removed. Note `UnifiedShoppingItem ==` is
+  id-only, which is why the older
+  `verify(createPersonalList('Familjehandling', items: [testItem1]))` assertion is
+  insensitive to it and the new test correctly uses `captureAny`.
+- `firestore.rules` `keepsContributorTrail()` vs all three client writers: the transactional
+  `set(merge:true)` sends the explicit union, `_mutateFromCache` sends `arrayUnion` (rules
+  evaluate `request.resource.data` POST-transform, so `hasAll` holds), and
+  `updateCollaborativeList`'s narrowed `update()` omits the field entirely (unchanged fields
+  survive into `request.resource.data`). No client path can trip the append-only rule.
+- `probeResidualData` is a strict subset of `deleteShoppingLists`: every new probe leg's
+  field is cleared in the same per-doc transaction (`lastActivityByUserId` → null at :619,
+  `contributorUserIds` → arrayRemove at :649), and the sole-owner branch deletes the doc.
+- `FirebaseShoppingRepository.create`'s personal fan-out reaches `addItemsBatch`'s PERSONAL
+  leg (`shopping_item_operations_module.dart:229-256`, gated on `list.type`), not the
+  collaborative one — `_requireList` routes the read correctly. The round-2 unchunked-batch
+  note stands unchanged.
+
+### Pre-existing, outside this diff, recorded so it is not re-derived
+A non-owner cannot leave a shared shopping list. `leaveList` → `removeMember(self)` →
+`updateList` → `updateCollaborativeList` → `requireNoPrivilegeEscalation`, which throws for
+any non-owner whose payload changes `memberPermissions` — including removing their OWN key.
+`removeMember` catches and returns false. The Firestore rule agrees (a non-owner may not
+touch `memberPermissions`), so client and server are consistent; this is a product gap from
+BUT-1665, not a client/server divergence. It does mean BUT-1725's "a user who LEFT a list"
+is today only reachable via the OWNER removing a member — still a real case, so the erasure
+work is not moot. Do not file this against the shopping-account diff.
+
+### Suite state at close
+162 green across the six shopping/account Dart suites (query module, routing module, offline
+write module, collaborative ops, `firebase_shopping_repository_test.dart`,
+`user_service_test`), 10/10 on the CF backfill suite, `flutter analyze --fatal-infos` clean
+on `lib/repositories`, `lib/services/unified`, `lib/services/user_service.dart`,
+`lib/views/unified_shopping`, `test/unit/repositories/firebase`, `test/unit/services/unified`;
+`npx tsc --noEmit` exit 0.
+
+## 2026-07-28 — BUT-1713/1714 re-review round 2 (parsing area, post-automated-fix)
+
+**Trigger:** re-review of `recipe_text_normalizer.dart`, `content_fingerprint_golden_test.dart`,
+`recipe_section_detector.dart`, `heading_word_lists.dart`, `recipe_section_detector_test.dart`,
+`ACCEPTED_DEVIATIONS.md`, `.claude/rules/accepted-deviations.md` as they stand in the working
+tree after automated fixes.
+
+### Tree-moved check (first, per the re-review-economics principle)
+`ls --time-style=full-iso`: normalizer 00:40, `heading_word_lists.dart` 00:43, detector 00:45,
+detector test 01:04:52 — all NEWER than the previous archive entry (01:05:05 was that entry's
+own write). The tree genuinely moved; the round was spent on probes the earlier rounds did not run.
+
+### Probes run (all live, none inferred)
+1. **Suite state.** 111 green across the two in-scope test files; `flutter analyze --fatal-infos`
+   clean on all five Dart files.
+2. **Mutation count of the BUT-1713 claim** ("reverting `_allUnitsRe` to `\b` reddens exactly the
+   FOUR å/ä/ö cases"). Pure-Dart replica (`dart run`, Write tool, raw strings — never a heredoc)
+   printing the mutant pattern first: `\b(dl|msk|...|askar)\b`. Result 4 of 11, and exactly the
+   four named — `2 dl mjöl`→"mjö", `vitkål`→"vitkå", `1 gul lök`→"gul ök", `3 st rödlök`→"röök".
+   The other seven byte-identical under both. The comment's measured claim is TRUE as written.
+3. **Golden re-pin sanity.** `git show HEAD:` the golden map: `flygande_jakob` =
+   `f9df56ab08f511a2` on both sides, the other five moved. The "only Swedish-letter cases moved"
+   claim is TRUE.
+4. **`SwedishWordBoundary.bounded` binds correctly** — `'${before}(?:$pattern)${after}'`, so a
+   top-level alternation cannot swallow the boundaries. Checked because both in-scope regexes
+   pass a bare `a|b|c` string.
+5. **Dart `caseSensitive: false` DOES case-fold Å/Ä/Ö against a lowercase `[a-zåäö0-9]` class.**
+   `boundedRegExp('l')` is false on both `RÖDKÅL` and `rödkål`; `boundedRegExp('g')` false on
+   both `ÄGG` and `ägg`. So `_subHeadingUnitGuard.hasMatch(label)` matching the ORIGINAL-CASE
+   label (detector line 108) is safe — `RÖDKÅL:`→`RÖDKÅL`, `SÅSEN:`→`SÅSEN`, `ÖVRIGT:`→`ÖVRIGT`,
+   all identical to their mixed-case twins. The `SwedishWordBoundary` doc's "lowercase-only by
+   design" is about the class literal, not a caller obligation when compiled case-insensitively.
+6. **Shadowing probe over `bareGlutenWords`** (the "dead entry reads as coverage" pattern):
+   replica of `componentSubHeadingLabel` WITHOUT the BUT-1714 check, run over `"<word>:"` for all
+   17 entries. 0 shadowed — every entry flips from a non-null label to null because of the gluten
+   check alone. The six `-mjöl` suffix forms likewise (`Vetemjöl:`, `Rågmjöl:`, `Grahamsmjöl:`,
+   `Potatismjöl:`, `Majsmjöl:`, `Mandelmjöl:` all `withoutGluten=<label>` → `real=null`).
+7. **Two-entry-point agreement over the whole vocabulary × 4 surface forms** — zero disagreements.
+8. **Whitespace-guard discriminator claim** (test lines 221-227: "the two below are the only
+   fixtures that can fail if the LONE-word half is dropped"). Verified: `Ljust vetemjöl:` and
+   `Till mjöl:` both flip; `Mjölblandning:` does not. Claim TRUE.
+9. **`genericBlockMarkers` moved verbatim** — `git show HEAD:` diff of the set is byte-identical.
+
+### The one real finding — the preserved row keeps its colon
+The carve-out's stated purpose is that the gluten row "survives in the flat list tagging reads".
+It survives; it does not RESOLVE. Measured end-to-end through the tagging front end:
+
+```
+"Mjöl:" -> pre="mjöl:" parsedName="mjöl:" normalized="mjöl:"
+"Råg:"  -> pre="råg:"  parsedName="råg:"  normalized="råg:"
+"Mjöl"  -> pre="mjöl"  parsedName="mjöl"  normalized="mjöl"
+```
+
+`IngredientPreprocessor` → `IngredientParser` → `IngredientNormalizer` all keep the colon, and
+`IngredientLookupService._cleanForLookup` (lines 223-233) only applies
+`SwedishCharacterNormalizer.normalize` + a leading-article strip + a trailing-quantity strip —
+no punctuation strip. `_generateLookupVariations` (234-380) is suffix/plural/adjective surgery
+only, also no punctuation. So the lookup key is `mjol:`, which cannot match the `mjol` registry
+document, and the gluten property comes back UNKNOWN rather than YES.
+
+Directionally still the right side of the trade (UNKNOWN beats a deleted row that would have let
+the recipe read gluten-NO), and it IS an improvement on the pre-BUT-1714 behaviour — the ONNX
+classifier labels a colon-terminated lone word `sectionHeader`, and that branch used to set
+`currentSection = null` and drop the line entirely. But the doc comment at
+`recipe_section_detector.dart:110-115` and the ACCEPTED_DEVIATIONS entry both read as if the row
+rejoins tagging normally, and `swedish_line_classifier_test.dart:664,743` pins
+`contains('Mjöl:')` — i.e. the colon-carrying shape is now cemented by a passing test.
+
+Both re-insertion sites carry the raw line: `swedish_line_classifier.dart:375`
+(`ingredients.add(headerText)`) and `schema_org_tier.dart:265` (`lines.add(line)`).
+The API shape invites it — `isBareGlutenHeadingCandidate` answers `bool`, so the caller has no
+colon-stripped label to insert, unlike `componentSubHeadingLabel` which returns one.
+
+### Test-only fix applied in this round
+`recipe_section_detector_test.dart:274-276` said `isBareGlutenHeadingCandidate` "re-derives the
+label". It returns `bool`. Rewritten to say it re-derives the PREDICATE and to name the
+consequence (the caller re-inserts the raw line including its colon), so the next reader does not
+have to re-run probe 9 to find that out. 94 green after, analyze clean.
+
+### File-size note
+`recipe_section_detector.dart` is 501 lines — HEAD was exactly 500, and the BUT-1714 extraction
+was justified in `heading_word_lists.dart:5-6` as keeping the detector "inside the 500-line
+limit". Net +1 (the 36-line marker set left, ~17 lines of carve-out + comment arrived). Not in
+`ACCEPTED_LARGE_FILES.md`. `.claude/hooks/file-size-guard.sh:34` warns at `> 500` and is
+explicitly non-blocking; `test/architecture/architecture_test.dart` does NOT enforce a line cap
+(its only `ACCEPTED_LARGE_FILES` mention is a comment in the Firestore-instance test). So: real
+but cosmetic, and the falsified rationale comment is the part worth fixing.
+
+### Not filed, deliberately
+`Mjölk:`/`Ägg:`/`Soja:`/`Sesam:`/`Fisk:`/`Jordnötter:`/`Selleri:`/`Senap:`/`Lupin:`/`Sulfit:` all
+still return their label (colon-wins) — probed and confirmed. That asymmetry is the recorded
+2026-07-27 deviation in both `.claude/rules/accepted-deviations.md` and
+`docs/architecture/ACCEPTED_DEVIATIONS.md`, which explicitly forbids the finding. The two docs
+agree with each other and with the code.
+
+## 2026-07-28 — BUT-1723/1719/1725/1705/1714/1695 staged-diff test-coverage review (18 mutation probes, 2 new suites)
+
+Task: review the STAGED diff (HEAD e5fec5883, nothing committed) for whether its tests BITE,
+confirm/refute three gaps a completeness critic had flagged, and write the small missing ones.
+
+### Baseline
+
+`flutter test` over the 10 staged unit suites: **331 passed**, 0 failed.
+
+### Mutation-probe table (all 18; each = back up binary, mutate, run, restore, `cmp`/md5)
+
+| # | Production file | Mutation | Suite | Reds |
+|---|---|---|---|---|
+| P1 | `firebase_shopping_repository.dart` | delete `if (saved.items.isNotEmpty) addItemsBatch(...)` | `firebase_shopping_repository_test` | **2 of 3** (`writes every item...`, `survives a re-read through readAll`) |
+| P2a | `shopping_repository_query_module.dart` | drop `if (shared.metadata.isFromCache) return null` | query module | **1** (`a cached shared-list answer is unconfirmed`) |
+| P2b | same | drop `if (snapshot.metadata.isFromCache) return null` | query module | **1** (`a cached personal-subcollection answer is unconfirmed`) |
+| P3 | same | shared-probe catch `return null` instead of falling through | query module | **1** (`falls through ... when the shared probe is denied`) |
+| P4 | `shopping_offline_write_module.dart` | delete the cached-base refusal | offline write | **3** (memberPermissions + ownerId + createdAt) |
+| P4b | same | `privilegedKeys` shrunk to `{memberPermissions}` | offline write | **2** (ownerId + createdAt) |
+| P5 | same | write `memberPermissions` as a whole map (drop `_memberDiff`) | offline write | **2** (targeted delete, adding a member) |
+| P6 | `shopping_repository_routing_module.dart` | drop `_withContributor` on the OFFLINE payloads | routing | **2** (offline edit + offline append trail) |
+| P11 | same | revert online update to `set(entity.toFirestore(), merge:true)` | routing | **2** (member removal, no-op write) |
+| P11b | same | drop `if (payload.isNotEmpty)` | routing | **1** (`writes nothing when the entity matches`) |
+| P7 | `list_lifecycle_operations.dart` | `persisted >= expected` becomes `>` | collab shopping ops | **1** (`deletes the source when the copy matches EXACTLY`) |
+| P8 | same | drop `_withoutForeignAttribution` | collab shopping ops | **1** (`strips other members identities`) |
+| P9 | `user_service.dart` | `profileDisplayName => currentDisplayName` | user_service | **2** (empty profile name, no profile) |
+| P10 | `recipe_share_request_module.dart` | `profileDisplayName` back to `currentDisplayName` | request_recipe_share | **1** (fallback label, not the auth handle) |
+| P12 | `heading_word_lists.dart` | `isBareGlutenWord` returns false | detector + classifier | **23** |
+| P13 | same | drop the lone-word whitespace SCOPE guard | detector | **2** ("Ljust vetemjol:", "Till mjol:" -- with real Swedish vowels in the fixtures) |
+| P15 | `swedish_line_classifier.dart` | disable the gluten carve-out branch | classifier | **2** (incl. the capture-OFF leg) |
+| P14 | `recipe_text_normalizer.dart` | `SwedishWordBoundary.boundedRegExp` back to ASCII word-boundary | fingerprint golden | **9** (4 of 11 aao fixtures + 5 of 6 goldens; `flygande_jakob` correctly stays green) |
+| P16 | `shopping_sharing_status_dialog.dart` | `_knownNameOrNull` drops the empty/whitespace half | NEW dialog suite | **3** |
+| P17 | same | `Av:` row guard becomes a bare `case final by?` | NEW dialog suite | **1** |
+| P18 | `shopping_list_operations.dart` | `if (outcome.originalKept)` becomes `if (false)` | NEW convert suite | **1** (`Actual: ['Listan omvandlad till personlig']`) |
+
+Zero assertions survived their own mutation. P13 is the notable one: it closes the exact hole
+the 2026-07-27 entry recorded as OPEN -- the BUT-1714 scope guard used to survive deletion
+across all 23 shipped fixtures because "Till degen" sits outside the predicate's vocabulary
+entirely. The discriminating fixtures that finally bite are "Ljust vetemjol:" and "Till mjol:",
+which satisfy the predicate's POSITIVE half and fail only on the guarded shape.
+
+### Gap verdicts
+
+**Gap 1 -- `ShoppingShareStatusDialog` (BUT-1705 AC3): CONFIRMED, then CLOSED.**
+`grep -rn "ShoppingShareStatusDialog\|shopping_sharing_status_dialog" test/` returned zero hits.
+Wrote `test/widget/shopping/shopping_share_status_dialog_test.dart` (5 tests, all green,
+`flutter analyze --fatal-infos` clean). Fixture design forced by the l10n-collision principle:
+`displayUnknownUser` and `shoppingUnknownUser` are distinct keys carrying the identical Swedish
+string, and the dialog renders one per member row PLUS one for the creator -- so every
+non-target row gets a real name and `lastActivityAt` is null in the member-row tests. The
+`Av:`-suppression test co-asserts the `Nar:` row of the same card (findsNothing needs a positive
+render). Deliberately NOT asserted: the avatar initial -- "O" vs "?" flipped under me mid-round
+and is a design call, not the guard.
+
+**Gap 2 -- `ShoppingListOperations` outcome-to-message mapping (BUT-1723): CONFIRMED, then CLOSED.**
+`grep -rn "ShoppingListOperations\|shopping_list_operations" test/` returned zero hits. Wrote
+`test/widget/shopping/shopping_list_operations_convert_test.dart` (4 tests, green, analyze
+clean), driving the real menu action: tap, confirm the danger dialog, settle the stubbed
+`CollaborativeShoppingOperations.convertCollaborativeToPersonal`. Written CHANNEL-AGNOSTIC on
+purpose -- see the parallel-session section.
+
+**Gap 3 -- BUT-1695 emulator lane runs ZERO times: CONFIRMED, and it is a project, not a flag.**
+Evidence, all run:
+
+* `scripts/run_e2e_tests.sh:10` sets `TEST_DIR="test/e2e"`. Its `--tier emulator` branch runs
+  `flutter test "$TEST_DIR" --dart-define=USE_EMULATOR=true`, i.e. it has never touched
+  `test/integration`. The `emulator` matrix leg of `e2e_tests.yml` calls exactly that script.
+* `git show :.github/workflows/test.yml | grep "flutter test"` shows line 602
+  `flutter test test/integration --reporter=expanded`, no define. `grep -rn USE_EMULATOR
+  .github/ scripts/` finds only that script line plus the new explanatory comment.
+* Mock tier on the BUT-1665 two-writer proof: `+0 ~1: All tests skipped.`
+* Same command with `--dart-define=USE_EMULATOR=true`:
+  `PlatformException(channel-error, Unable to establish connection on channel:
+  "dev.flutter.pigeon.firebase_core_platform_interface.FirebaseCoreHostApi.initializeCore")`
+* Full `flutter test test/integration` in mock tier: `+202 ~38: All tests passed!` -- 38 skipped.
+
+Flipping the define turns the job RED rather than covering anything. The staged diff's response
+-- document it in `emulator_lane.dart`'s header, in the `emulatorOnlySkip` message ("treat this
+group as unverified"), in the CI step comment, and declare the `firebase` tag in
+`dart_test.yaml` so the tag stops warning on every run -- is the correct review-round outcome.
+Not built here.
+
+### Parallel-session movement DURING the round (the operational lesson)
+
+Between reading the staged diff and writing the tests, another session live-edited five files in
+scope (mtimes 23:15-23:30 while I worked):
+
+* `shopping_list_operations.dart` -- the staged `onError(shoppingConvertedOriginalKept)` became a
+  blocking `DialogFactory.showError` via a new `_warnConversionIncomplete`, and a SECOND l10n key
+  `shoppingConvertedToPersonalOriginalKept` appeared. It changed again mid-probe
+  (`context` to `context.mounted ? context : null`).
+* `shopping_sharing_status_dialog.dart` -- the staged inline trim/isEmpty guard was consolidated
+  into a static `_knownNameOrNull` and applied to the creator row too; the avatar initial was
+  re-keyed off the resolved name, flipping "O" to "?".
+* `heading_word_lists.dart` (hoisted `_whitespace`), `recipe_section_detector.dart`
+  (`isBareGlutenHeadingCandidate` replaced by a label-returning rescue -- exactly the `String?`
+  shape the 2026-07-27 principle asked for), `swedish_line_classifier.dart`.
+
+Consequences worth keeping:
+
+1. A test pinning the staged MESSAGE would have been stale before it was committed. The durable
+   assertion is the invariant "onSuccess is never called", plus a merged "what did the user
+   actually see" list (the `errors` callback list unioned with every rendered `Text`), so the UX
+   channel can move without the safety test moving.
+2. `grep <mutated token>` coming back EMPTY at the end of a round is ambiguous -- mine was the
+   other session's refactor, not a failed restore. Resolve with `ls --time-style=full-iso` plus a
+   `git diff` of the region, and re-run the affected suites against the FINAL tree (re-ran the
+   three parser suites after their edits and got `+158: All tests passed!`).
+
+### Probe-harness mechanics (Windows)
+
+Built `scratchpad/mut3.py`: `apply <file> <tag> <old.txt> <new.txt|->` and
+`restore <file> <tag>`. Reads and writes BINARY, keeps a `<tag>.bak`, normalises the snippet's
+newlines to the target file's, and refuses unless the search text occurs exactly once.
+
+* An earlier text-mode helper silently rewrote CRLF to LF, so the restored file's md5 differed
+  from the pristine one while `git diff` still read clean (autocrlf normalises on read). A
+  "restored" claim backed only by `git diff` is not byte-exact.
+* Snippets must come from FILES. In this same session a quoted bash heredoc halved a
+  double-backslash to a single one; the giveaway was Python's
+  `SyntaxWarning: invalid escape sequence`. The one Dart mutant that genuinely needed a double
+  backslash (the ASCII word-boundary regex) had to be written with the Write tool and verified
+  with `sed -n` before the run. A heredoc also failed outright when appending this very entry.
+
+Final state: every `lib/` file I probed is byte-identical to before (md5 / `cmp` verified);
+`grep -rn "if (false)" lib/` returns none. Full re-run of the 10 staged suites plus the 2 new
+ones: `+585 ~1: All tests passed!`
+
+Housekeeping note: `testing-specialist.knowledge.md` is now ~99 KB against its stated ~35 KB
+budget. That is a pre-existing overrun, not this round's doing, and the file is currently staged
+by another session -- a compaction pass deserves its own round rather than a drive-by trim.

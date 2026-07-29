@@ -55,8 +55,15 @@ class RecipeShareRequestModule {
           .recipeShareRequestExists(me, ownerId, recipeId);
       if (alreadyRequested) return true;
 
+      // BUT-1705: `profileDisplayName`, NOT `currentDisplayName`. This name is
+      // PERSISTED as `SocialRequest.fromUserName` on a document the recipient
+      // reads, and forwarded into a push notification. The Auth fallback would
+      // stamp the real name on the user's Google/Apple account — never chosen
+      // for display, not what `on-profile-updated.ts` propagates, and not what
+      // account deletion scrubs, so it would be both unconsented and
+      // un-erasable.
       final fromUserName =
-          userService.currentDisplayName ??
+          userService.profileDisplayName ??
           AppLocale.current.displayUnknownUser;
 
       final request = SocialRequest.recipeShareRequest(

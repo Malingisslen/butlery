@@ -9091,6 +9091,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shoppingConvertError => 'Could not convert list';
 
   @override
+  String get shoppingConvertIncompleteTitle =>
+      'The conversion did not complete';
+
+  @override
+  String get shoppingConvertedOriginalKept =>
+      'The list was copied, but the original is still there — check the new list and delete the original manually.';
+
+  @override
+  String get shoppingConvertedToPersonalOriginalKept =>
+      'The list was copied to a personal list, but the shared list is still there — every member still has access to it. Delete the shared list manually if no one else should be able to reach it.';
+
+  @override
   String get shoppingDescriptionLabel => 'Description (optional)';
 
   @override

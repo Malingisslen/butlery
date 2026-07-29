@@ -111,7 +111,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `fcm_token_manager.dart` | 652 | FCM token lifecycle management |
 | `deep_link_service.dart` | 559 | Deep link routing service |
 | `llm_tier.dart` | 707 | LLM-based recipe parsing tier |
-| `unified_shopping_service.dart` | 741 | Shopping service facade |
+| `unified_shopping_service.dart` | 766 | Shopping service facade |
 | `realtime_recipe_service.dart` | 525 | Explicit facade; delegates to RecipeContentOperations + RecipeParticipants |
 | `realtime_menu_service.dart` | 512 | Explicit facade; delegates to MenuOperations + MenuParticipants modules |
 | `file_import_strategy.dart` | 599 | File-format (CSV/Excel) import strategy; coherent single-platform pipeline |
@@ -160,6 +160,7 @@ Intentionally centralized reference data.
 | `cuisine_config.dart` | 683 | Cuisine classification config — 22-cuisine data table; splitting harms lookup clarity |
 | `app_dimensions.dart` | 745 | Theme dimension constants — intentionally centralized |
 | `swedish_line_classifier.dart` | 582 | Swedish text line classification — enum + classification rules |
+| `recipe_section_detector.dart` | 502 | The single audited heading/ingredient safety hinge — the heuristics must be read together, and each carries the reasoning that stops an allergen-dropping regression; vocabularies already extracted to `heading_word_lists.dart` (BUT-1714) |
 | `html_sanitizer.dart` | 549 | HTML sanitizer rules — cleaning rules table |
 | `ingredient_normalizer.dart` | 536 | Ingredient name normalization — lookup tables |
 | `swedish_pluralization.dart` | 514 | Swedish pluralization rules |
@@ -226,7 +227,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `image_gallery_widget.dart` | 536 | Image gallery widget |
 | `social_facade.dart` | 517 | Social UI facade widget |
 | `duplicate_merge_sheet.dart` | 507 | Single-purpose bottom sheet; merge logic and UI tightly coupled by design |
-| `shopping_sharing_status_dialog.dart` | 505 | **candidate**: dialog rendering 5+ distinct sections that could become private sub-widgets |
+| `shopping_sharing_status_dialog.dart` | 533 | **candidate**: dialog rendering 5+ distinct sections that could become private sub-widgets |
 | `calendar_cells.dart` | 573 | Focused stateless widget for calendar cell rendering; extracted for reuse |
 | `selection_app_bar.dart` | 559 | Single-purpose bulk-selection app bar extracted from `mina_recept_view` |
 | `shared_content_actions.dart` | 528 | Static action helper with one responsibility: import/dismiss shared content |
@@ -254,7 +255,7 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 | `friend_category_manager.dart` | 519 | Friend-picker UI and category-management UI are independent; split into picker + management sub-widgets |
 | `veckomeny_view.dart` | 519 | Top-level weekly-menu view pulling many widget builders; extract section sub-widgets |
 | `collection_stats_view.dart` | 521 | Stats sections (_HeroBanner, _SectionHeader, etc.) are self-contained; good widget-extraction candidates |
-| `shopping_sharing_status_dialog.dart` | 505 | 5+ distinct sections in one dialog; extract as private sub-widgets |
+| `shopping_sharing_status_dialog.dart` | 533 | 5+ distinct sections in one dialog; extract as private sub-widgets |
 | `menu_content_widgets.dart` | 665 | Multiple static widget builders for distinct menu sections; group by section into separate files |
 | `performance_monitoring_service.dart` | 516 | Frame, network, cache, memory, and custom metrics can each be a focused sub-service |
 | `social_group_detail_viewmodel.dart` | 511 | Group load, events, leave, ownership transfer, content sharing — extract managers |

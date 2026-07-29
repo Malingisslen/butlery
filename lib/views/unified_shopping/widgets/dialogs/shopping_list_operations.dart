@@ -12,12 +12,53 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// List management operations for shopping lists
 class ShoppingListOperations {
+  /// BUT-1723: a conversion that kept BOTH lists blocks on a dialog, never a
+  /// snackbar.
+  ///
+  /// The user has just confirmed a dangerous action whose dialog promised the
+  /// other side disappears, and the outcome contradicts it. There is no undo
+  /// path — the remedy is a manual delete — so `ui-conventions.md`'s
+  /// class-2 rule applies: state the consequence and what to do, and make the
+  /// user dismiss it. A 5-second `showError` snackbar is dismissed by walking
+  /// away from the phone.
+  ///
+  /// [originatingContext] is the caller's context, or null when it has already
+  /// unmounted — the caller owns that check, so the async-gap lint can see it.
+  /// The outcome depends on a server round-trip and the user is free to leave
+  /// the list meanwhile, so we fall back to the app-level navigator (the same
+  /// escape hatch `incoming_share_handler` and `butlery_app` use to show UI
+  /// from outside a live subtree). Silently dropping THIS warning would leave
+  /// someone believing a list is private while every collaborator still has
+  /// access. [buildMessage] takes whichever context actually renders.
+  static Future<void> _warnConversionIncomplete(
+    BuildContext? originatingContext,
+    String Function(BuildContext) buildMessage,
+  ) async {
+    final host = originatingContext ?? appNavigatorKey.currentContext;
+    if (host == null) {
+      // Only reachable with no navigator at all (app tearing down). Nothing can
+      // render, so leave a trail rather than pretending the warning was shown.
+      AppLogger.error(
+        'Conversion kept both lists but no context was available to warn the '
+        'user — the shared list is still shared',
+      );
+      return;
+    }
+
+    await DialogFactory.showError(
+      host,
+      title: host.l10n.shoppingConvertIncompleteTitle,
+      message: buildMessage(host),
+    );
+  }
+
   static Future<void> showCreateListDialog(
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
@@ -225,7 +266,7 @@ class ShoppingListOperations {
         for (final f in result.selectedFriends) f.uid: f.displayName,
       };
 
-      final newListId = await shoppingService.collaborative
+      final outcome = await shoppingService.collaborative
           .convertPersonalToCollaborative(
             personalListId: list.id,
             memberIds: memberIds,
@@ -233,10 +274,22 @@ class ShoppingListOperations {
             description: result.description,
           );
 
-      if (newListId != null && context.mounted) {
-        onSuccess(context.l10n.shoppingConvertedToCollaborative);
-      } else if (context.mounted) {
+      if (outcome.originalKept) {
+        // BUT-1723: the copy could not be confirmed on the server, so the
+        // source survives on purpose. Saying "converted" here would hide a
+        // duplicate the user has to resolve by hand.
+        await _warnConversionIncomplete(
+          context.mounted ? context : null,
+          (ctx) => ctx.l10n.shoppingConvertedOriginalKept,
+        );
+        return;
+      }
+
+      if (!context.mounted) return;
+      if (outcome.newListId == null) {
         onError(context.l10n.shoppingConvertError);
+      } else {
+        onSuccess(context.l10n.shoppingConvertedToCollaborative);
       }
     } catch (e) {
       AppLogger.error('Error converting to collaborative: $e');
@@ -266,13 +319,27 @@ class ShoppingListOperations {
 
     try {
       final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
-      final newListId = await shoppingService.collaborative
+      final outcome = await shoppingService.collaborative
           .convertCollaborativeToPersonal(list.id);
 
-      if (newListId != null && context.mounted) {
-        onSuccess(context.l10n.shoppingConvertedToPersonal);
-      } else if (context.mounted) {
+      if (outcome.originalKept) {
+        // BUT-1723: the shared source is still there and every collaborator
+        // still has access — the exact opposite of what the danger dialog just
+        // promised. This must not be reported as a clean success, and it needs
+        // its OWN wording: "the original is still there" does not tell an owner
+        // who converted specifically to cut somebody off that they are still in.
+        await _warnConversionIncomplete(
+          context.mounted ? context : null,
+          (ctx) => ctx.l10n.shoppingConvertedToPersonalOriginalKept,
+        );
+        return;
+      }
+
+      if (!context.mounted) return;
+      if (outcome.newListId == null) {
         onError(context.l10n.shoppingConvertError);
+      } else {
+        onSuccess(context.l10n.shoppingConvertedToPersonal);
       }
     } catch (e) {
       AppLogger.error('Error converting to personal: $e');

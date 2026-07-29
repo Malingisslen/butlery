@@ -123,6 +123,64 @@ class ShoppingRepositoryQueryModule {
     }
   }
 
+  /// BUT-1723: how many items the SERVER actually holds for [listId], or null
+  /// when that could not be established.
+  ///
+  /// Null means "not confirmed" — a cached read or a failed read. Firestore
+  /// serves a local write straight back out of its cache while offline, so a
+  /// plain `get()` would report a conversion copy as complete before a byte
+  /// left the device, which is how the source list got deleted with the copy
+  /// still empty.
+  ///
+  /// A list that exists nowhere counts as 0, not null: the caller compares
+  /// against how many items it expected, so a vanished copy of a non-empty
+  /// list already fails the comparison. Only a copy that was expected to be
+  /// empty passes, and there is nothing there to lose.
+  ///
+  /// Both storage shapes are covered: a collaborative list keeps its items
+  /// inline on the document, a personal list keeps them in the `items`
+  /// subcollection. The shared probe runs first and is allowed to FAIL — under
+  /// the live rules a `get` on a shared-list id that does not exist is denied
+  /// rather than answered, which is what every personal list id looks like.
+  /// Only the personal leg may conclude "unconfirmed".
+  Future<int?> confirmPersistedItemCount(String listId) async {
+    try {
+      final shared = await sharedListsRef.doc(listId).get();
+      if (shared.metadata.isFromCache) return null;
+      if (shared.exists) {
+        final items = shared.data()?['items'];
+        return items is List ? items.length : 0;
+      }
+    } catch (e) {
+      // NOT a failure to report — the normal answer for a personal list id.
+      // The shared-list read rule dereferences `resource.data.ownerId`, and
+      // `resource` is null for a document that does not exist, so the
+      // expression errors and the client gets `permission-denied` instead of
+      // an `exists == false` snapshot. Returning null here would make the
+      // personal leg below unreachable in production and would block every
+      // convert-to-personal. Fall through, exactly as
+      // `FirebaseShoppingRepository.read()` already does for the same probe.
+      AppLogger.warning(
+        'Shared-list probe for $listId did not resolve ($e); '
+        'trying the personal collection',
+      );
+    }
+
+    try {
+      final uid = requireCurrentUserId();
+      final snapshot = await getUserCollection(
+        uid,
+      ).doc(listId).collection(FirestoreCollections.items).get();
+      if (snapshot.metadata.isFromCache) return null;
+      return snapshot.docs.length;
+    } catch (e) {
+      AppLogger.warning(
+        'Could not confirm persisted items for personal list $listId: $e',
+      );
+      return null;
+    }
+  }
+
   /// Get currently active list
   Future<UnifiedShoppingList?> getActiveList(String? activeListId) async {
     if (activeListId == null) return null;

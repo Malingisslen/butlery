@@ -205,3 +205,37 @@ and BUT-1696 surfaces a rules-rejected replay distinctly in the audit trail. Do 
 offline fallback re-opens BUT-1665 / client-side merge forbidden by AC2" against
 `_mutateFromCache` — decided. Revisit only if `items` becomes a map keyed by item id, which would
 make per-row offline writes mergeable. — 2026-07-26
+
+### [Tagging/Safety] A colon-terminated bare GLUTEN word stays an ingredient; other allergens keep colon-wins (BUT-1691 → BUT-1714)
+`RecipeSectionDetector.componentSubHeadingLabel` is the single hinge that decides whether an
+imported line is a component heading (pulled OUT of the flat ingredient list that tagging reads)
+or an ingredient (kept). Its audited contract treats a trailing colon as a strong heading signal,
+so a lone word plus a colon — "Deg:", "Fyllning:", "Mjölk:" — is a heading. BUT-1691 fixed the
+unit guard's ASCII `\b` (which had matched the trailing `l` of "Kål" and `g` of "Råg" and thereby
+kept those lines as ingredients *by accident*), and that correctness fix silently ENLARGED the
+heading set to include "Mjöl:", "Vetemjöl:", "Råg:" and "Öl:" — four gluten sources.
+**BUT-1714 decision (2026-07-27): carve gluten out. A bare gluten word plus a colon returns null
+and stays an ingredient. Every other allergen — dairy, egg, soy, nuts — keeps the colon-wins
+contract.** The word list is `HeadingWordLists.bareGlutenWords` plus an `endsWith('mjöl')` suffix
+rule; it applies to single-word labels only, so "Till degen:" and "Mjölblandning:" remain
+headings.
+**Why:** the two errors are not symmetric. Import sources include OCR'd cookbooks where a
+quantity routinely sits in another column, so "Mjöl:" is as plausibly a quantity-less ingredient
+row as a group name — and reading it as a heading DELETES the gluten from the tagging input,
+while reading it as an ingredient only adds a noisy row a user can clear. Gluten-only, not all
+fourteen EU allergens, because gluten is where the "heading" reading is least plausible (no
+Swedish recipe groups its components under "Råg:"); widening to dairy/egg/nuts would start
+turning genuine component groups into phantom ingredient rows and needs its own evidence.
+Do NOT file "this is inconsistent — Mjölk: should behave like Mjöl:" or "the gluten list is
+incomplete" findings against `heading_word_lists.dart` — the asymmetry is the decision, and it is
+pinned in `recipe_section_detector_test.dart`. — 2026-07-27
+**Implementation constraint the decision depends on (2026-07-28, verified in code that day):** the
+preserved row must be re-inserted COLON-STRIPPED, via
+`RecipeSectionDetector.bareGlutenIngredientLabel`, at both re-insertion sites
+(`swedish_line_classifier.dart`, `schema_org_tier.dart`). Ingredient lookup folds diacritics but
+strips no punctuation, so a re-inserted "Mjöl:" queries `mjol:`, matches no registry document and
+leaves the row unmatched — which drops lookup coverage below 1.0 and turns EVERY allergen verdict
+on the recipe to UNKNOWN instead of resolving gluten to YES. Measured end-to-end both ways
+(raw: coverage 0.5, gluten UNKNOWN; stripped: coverage 1.0, gluten CONTAINS) and pinned in
+`swedish_line_classifier_test.dart`. Re-inserting the raw line looks harmless and is not; this
+sentence is here because the code cannot say it out loud.

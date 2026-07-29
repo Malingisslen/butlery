@@ -49,7 +49,7 @@ class CollaborativeShoppingOperations {
   UnifiedShoppingList? getListById(String id) => lifecycle.getListById(id);
   List<UnifiedShoppingList> getOwnedLists() => lifecycle.getOwnedLists();
   List<UnifiedShoppingList> getSharedWithMe() => lifecycle.getSharedWithMe();
-  Future<String?> convertPersonalToCollaborative({
+  Future<ListConversionResult> convertPersonalToCollaborative({
     required String personalListId,
     required List<String> memberIds,
     required Map<String, String> memberDisplayNames,
@@ -60,8 +60,9 @@ class CollaborativeShoppingOperations {
     memberDisplayNames: memberDisplayNames,
     description: description,
   );
-  Future<String?> convertCollaborativeToPersonal(String collaborativeListId) =>
-      lifecycle.convertCollaborativeToPersonal(collaborativeListId);
+  Future<ListConversionResult> convertCollaborativeToPersonal(
+    String collaborativeListId,
+  ) => lifecycle.convertCollaborativeToPersonal(collaborativeListId);
 
   // Member delegation
   Future<bool> addMember({

@@ -11,9 +11,23 @@
 ///   in-memory `FakeFirebaseFirestore`; tests that import this helper
 ///   with `emulatorOnlySkip` are skipped.
 /// * Emulator tier: `flutter test test/integration --dart-define=USE_EMULATOR=true`
-///   — the runner script `scripts/run_e2e_tests.sh --tier emulator` already
-///   starts `firebase emulators:start --only auth,firestore,storage` first.
-///   CI job `.github/workflows/e2e_tests.yml` does the same matrix leg.
+///   with `firebase emulators:start --only auth,firestore,storage` running.
+///
+/// BUT-1695 — READ THIS BEFORE COUNTING ON THIS LANE. It runs NOWHERE in CI,
+/// and it cannot be turned on with a flag:
+///   * `scripts/run_e2e_tests.sh --tier emulator` (and the `emulator` leg of
+///     `.github/workflows/e2e_tests.yml`) only ever runs `test/e2e`. It has
+///     never run `test/integration`. That claim used to live in this comment
+///     and is what made the gap invisible.
+///   * The `integration-tests` job in `.github/workflows/test.yml` does run
+///     `test/integration` with the emulators up, but in MOCK tier, because
+///     passing the define makes `Firebase.initializeApp` below throw
+///     `PlatformException(channel-error, ...FirebaseCoreHostApi.initializeCore)`
+///     — `flutter test` runs on the Dart VM, where the FlutterFire plugins have
+///     no implementation to bind to. Verified locally on the exact command.
+/// Making the lane real needs a host that loads the plugins (`integration_test`
+/// on a device/emulator) or a pure-Dart Firestore client. Until then, treat
+/// every `emulatorOnlySkip` group as UNVERIFIED, not as covered.
 ///
 /// Example usage inside a `_test.dart` file:
 ///
@@ -54,9 +68,10 @@ const bool useEmulatorLane = bool.fromEnvironment('USE_EMULATOR');
 /// `null` leaves the group running.
 const Object? emulatorOnlySkip = useEmulatorLane
     ? null
-    : 'Requires Firebase emulator — '
-          'run with `flutter test --dart-define=USE_EMULATOR=true` '
-          '(CI emulator tier picks this up automatically).';
+    : 'Requires Firebase emulator — run with '
+          '`flutter test --dart-define=USE_EMULATOR=true`. NOT covered by any '
+          'CI job today, and the define does not work under `flutter test` '
+          '(BUT-1695) — treat this group as unverified.';
 
 FirebaseFirestore? _lane;
 bool _firebaseInitialized = false;

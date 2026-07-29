@@ -120,11 +120,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             // BUT-1697: the owner name is stamped EMPTY when the profile has
             // not resolved, and is nulled outright when the owner's account is
             // erased — an empty "Skapare:" row is worse than an honest one.
+            // BUT-1705: trimmed, because a whitespace-only name passes
+            // `isNotEmpty` and renders the same blank row it is meant to stop.
             _buildInfoRow(
               context.l10n.shoppingCreator,
-              list.ownerDisplayName.isNotEmpty
-                  ? list.ownerDisplayName
-                  : context.l10n.displayUnknownUser,
+              _knownNameOrNull(list.ownerDisplayName) ??
+                  context.l10n.displayUnknownUser,
             ),
           ],
         ),
@@ -269,8 +270,12 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     bool isOwner,
   ) {
     final cs = Theme.of(context).colorScheme;
-    final String displayName =
-        userDisplayNames[userId] ?? context.l10n.shoppingUnknownUser;
+    // BUT-1705: an unresolved name is stamped as EMPTY, never omitted and never
+    // a placeholder (BUT-1697), so `?? unknown` never fired for it — the member
+    // rendered as a blank line under a '?' avatar. Absent, empty and
+    // whitespace-only are the same fact here: we do not know who this is.
+    final String? knownName = _knownNameOrNull(userDisplayNames[userId]);
+    final String displayName = knownName ?? context.l10n.shoppingUnknownUser;
 
     String permissionLabel;
     IconData permissionIcon;
@@ -310,7 +315,10 @@ class ShoppingShareStatusDialog extends StatelessWidget {
               alpha: AppDimensions.opacityVeryLight,
             ),
             child: Text(
-              displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+              // Keyed off the RESOLVED name, not the rendered one: the unknown
+              // fallback is a sentence, and its initial ("O" for "Okänd
+              // användare") would read as a real person's initial.
+              knownName != null ? knownName[0].toUpperCase() : '?',
               style: AppTextStyles.labelLarge.copyWith(
                 color: cs.primary,
               ),
@@ -379,12 +387,11 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingM),
             // Empty, not null, is the unresolved value since BUT-1697 — a bare
-            // `!= null` check renders a nameless attribution row.
-            if (list.lastActivityByDisplayName?.isNotEmpty ?? false)
-              _buildInfoRow(
-                context.l10n.shoppingBy,
-                list.lastActivityByDisplayName!,
-              ),
+            // `!= null` check renders a nameless attribution row, and so does
+            // a bare `isNotEmpty` once the stamped name is whitespace-only
+            // (BUT-1705).
+            if (_knownNameOrNull(list.lastActivityByDisplayName) case final by?)
+              _buildInfoRow(context.l10n.shoppingBy, by),
             if (list.lastActivityAt != null)
               _buildInfoRow(
                 context.l10n.shoppingWhen,
@@ -394,6 +401,17 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// BUT-1705: the one place that decides whether a stored name identifies
+  /// anybody. Three writers can land here — an unresolved profile stamps EMPTY
+  /// (BUT-1697), an erased account nulls the field, and a profile whose display
+  /// name is whitespace passes both of those guards while rendering as nothing.
+  /// Every attribution row in this dialog goes through it so they cannot drift
+  /// apart again.
+  static String? _knownNameOrNull(String? storedName) {
+    final trimmed = storedName?.trim();
+    return (trimmed == null || trimmed.isEmpty) ? null : trimmed;
   }
 
   Widget _buildInfoRow(String label, String value) {

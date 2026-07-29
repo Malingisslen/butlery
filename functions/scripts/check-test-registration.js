@@ -22,6 +22,12 @@
  *                          so editing that suite actually fires the rules job.
  *   5. NO_STALE_TRIGGER  — every test path listed in those blocks matches a file.
  *
+ * BUT-1709: the guard is itself the thing nothing else checks, so its criteria are
+ * expressed as `runCheck(options)` over an injectable tree and exercised against
+ * synthetic fixtures in scripts/__tests__/check-test-registration.test.js. Keep new
+ * criteria inside runCheck — anything that reads the real repo at module load is,
+ * by construction, untestable.
+ *
  * Plain Node, no deps. Runs pre-commit (lefthook) and in the CF unit-test job.
  */
 
@@ -30,13 +36,6 @@ const path = require("path");
 
 const FUNCTIONS_DIR = path.resolve(__dirname, "..");
 const REPO_ROOT = path.resolve(FUNCTIONS_DIR, "..");
-const TESTS_DIR = path.join(FUNCTIONS_DIR, "src", "__tests__");
-const RULES_WORKFLOW = path.join(
-  REPO_ROOT,
-  ".github",
-  "workflows",
-  "firestore-rules.yml",
-);
 
 // Mirrors run-all-tests.js / run-ci-unit-tests.js discovery: these prefixes are
 // emulator-bound and therefore skipped by the non-emulator unit runners.
@@ -150,166 +149,209 @@ function workflowPathBlocks(yaml) {
   return blocks;
 }
 
-const failures = [];
-const warnings = [];
-const fail = (check, message) => failures.push(`[${check}] ${message}`);
+/**
+ * Run every criterion against a tree. Pure apart from the reads it is told to
+ * do, so a fixture directory exercises exactly the code CI runs.
+ *
+ * Returns `{ failures, warnings, summary }`; the caller decides how to exit.
+ * `fatalNoTests` distinguishes "this tree has no test files" (fatal for the
+ * real repo, since a vacuous pass is the failure mode) from the fixture case.
+ */
+function runCheck({
+  functionsDir = FUNCTIONS_DIR,
+  repoRoot = REPO_ROOT,
+  rulesWorkflow = null,
+  unregisteredOk = UNREGISTERED_OK,
+  knownUnreachable = KNOWN_UNREACHABLE,
+} = {}) {
+  const testsDir = path.join(functionsDir, "src", "__tests__");
+  const workflowPath =
+    rulesWorkflow ??
+    path.join(repoRoot, ".github", "workflows", "firestore-rules.yml");
 
-const pkg = JSON.parse(
-  fs.readFileSync(path.join(FUNCTIONS_DIR, "package.json"), "utf8"),
-);
-const testFiles = fs
-  .readdirSync(TESTS_DIR)
-  .filter((name) => name.endsWith(".test.ts"))
-  .sort();
+  const failures = [];
+  const warnings = [];
+  const fail = (check, message) => failures.push(`[${check}] ${message}`);
 
-if (testFiles.length === 0) {
-  console.error(
-    "check-test-registration: no *.test.ts found — refusing to pass vacuously.",
+  const pkg = JSON.parse(
+    fs.readFileSync(path.join(functionsDir, "package.json"), "utf8"),
   );
-  process.exit(1);
-}
+  const testFiles = fs.existsSync(testsDir)
+    ? fs
+        .readdirSync(testsDir)
+        .filter((name) => name.endsWith(".test.ts"))
+        .sort()
+    : [];
 
-const scripts = Object.entries(pkg.scripts ?? {}).filter(([name]) =>
-  name.startsWith("test"),
-);
-
-const registered = new Set();
-const unitLaneReachable = new Set();
-for (const [name, command] of scripts) {
-  const files = referencedTestFiles(command);
-  const isUnitLane =
-    name.startsWith("test:") &&
-    !NON_UNIT_PREFIXES.some((prefix) => name.startsWith(prefix));
-  for (const file of files) {
-    registered.add(file);
-    if (isUnitLane) unitLaneReachable.add(file);
+  if (testFiles.length === 0) {
+    fail(
+      "NO_TESTS",
+      "no *.test.ts found under src/__tests__ — refusing to pass vacuously.",
+    );
+    return { failures, warnings, summary: null, testFiles };
   }
-}
 
-const rulesAllCommand = pkg.scripts?.["test:rules:all"];
-if (!rulesAllCommand) {
-  fail(
-    "RULES_TRIGGERS",
-    "functions/package.json has no `test:rules:all` script — the Firestore Rules job runs that chain; nothing to verify against.",
+  const scripts = Object.entries(pkg.scripts ?? {}).filter(([name]) =>
+    name.startsWith("test"),
   );
-}
-const rulesChain = rulesAllCommand
-  ? referencedTestFiles(rulesAllCommand)
-  : new Set();
 
-// 0. The allowlists themselves.
-for (const [listName, list] of [
-  ["UNREGISTERED_OK", UNREGISTERED_OK],
-  ["KNOWN_UNREACHABLE", KNOWN_UNREACHABLE],
-]) {
-  for (const [file, reason] of list) {
-    if (!TICKET_RE.test(reason ?? "")) {
-      fail(
-        "ALLOWLIST",
-        `${listName} entry "${file}" has no Linear ticket reference (expected e.g. BUT-1234) — an exemption without an owner never expires.`,
-      );
+  const registered = new Set();
+  const unitLaneReachable = new Set();
+  for (const [name, command] of scripts) {
+    const files = referencedTestFiles(command);
+    const isUnitLane =
+      name.startsWith("test:") &&
+      !NON_UNIT_PREFIXES.some((prefix) => name.startsWith(prefix));
+    for (const file of files) {
+      registered.add(file);
+      if (isUnitLane) unitLaneReachable.add(file);
     }
   }
-}
 
-// 1. REGISTERED
-for (const file of testFiles) {
-  if (registered.has(file)) continue;
-  const known = UNREGISTERED_OK.get(file);
-  if (known) {
-    warnings.push(`${file} is referenced by no script (accepted, ${known}).`);
-    continue;
-  }
-  fail(
-    "REGISTERED",
-    `${file} is named by no test* script in functions/package.json — it never runs. Add e.g. "test:${file.replace(/\.test\.ts$/, "")}": "ts-node src/__tests__/${file}".`,
-  );
-}
-
-// 2. NO_STALE_SCRIPT
-const existing = new Set(testFiles);
-for (const file of registered) {
-  if (!existing.has(file)) {
-    fail(
-      "NO_STALE_SCRIPT",
-      `a test* script points at functions/src/__tests__/${file}, which does not exist — delete the script entry.`,
-    );
-  }
-}
-
-// 3. CI_REACHABLE
-for (const file of testFiles) {
-  if (!registered.has(file)) continue; // already reported by REGISTERED
-  if (unitLaneReachable.has(file) || rulesChain.has(file)) continue;
-  const known = KNOWN_UNREACHABLE.get(file);
-  if (known) {
-    warnings.push(
-      `${file} is registered but NO CI lane runs it (accepted debt, ${known}).`,
-    );
-    continue;
-  }
-  fail(
-    "CI_REACHABLE",
-    `${file} has a script but no CI lane runs it: the unit runners skip test:rules*/test:integration:* and \`test:rules:all\` does not name it. Rename the script to a unit-lane name, or append the file to test:rules:all so the emulator job runs it.`,
-  );
-}
-
-// 4 + 5. Workflow trigger blocks
-const yaml = fs.readFileSync(RULES_WORKFLOW, "utf8");
-const blocks = workflowPathBlocks(yaml);
-if (blocks.length < 2) {
-  fail(
-    "RULES_TRIGGERS",
-    `expected at least 2 \`paths:\` trigger blocks in .github/workflows/firestore-rules.yml (pull_request + push), parsed ${blocks.length}. Either a trigger was dropped or this guard's parser needs updating.`,
-  );
-}
-
-for (const block of blocks) {
-  const testEntries = block.entries
-    .filter((entry) => entry.startsWith("functions/src/__tests__/"))
-    .map((entry) => entry.slice("functions/src/__tests__/".length));
-
-  if (testEntries.length === 0) {
+  const rulesAllCommand = pkg.scripts?.["test:rules:all"];
+  if (!rulesAllCommand) {
     fail(
       "RULES_TRIGGERS",
-      `the \`${block.trigger}\` trigger's \`paths:\` block (firestore-rules.yml line ${block.line}) lists no test files — a change to any rules suite would not fire the job.`,
+      "functions/package.json has no `test:rules:all` script — the Firestore Rules job runs that chain; nothing to verify against.",
     );
-    continue;
+  }
+  const rulesChain = rulesAllCommand
+    ? referencedTestFiles(rulesAllCommand)
+    : new Set();
+
+  // 0. The allowlists themselves.
+  for (const [listName, list] of [
+    ["UNREGISTERED_OK", unregisteredOk],
+    ["KNOWN_UNREACHABLE", knownUnreachable],
+  ]) {
+    for (const [file, reason] of list) {
+      if (!TICKET_RE.test(reason ?? "")) {
+        fail(
+          "ALLOWLIST",
+          `${listName} entry "${file}" has no Linear ticket reference (expected e.g. BUT-1234) — an exemption without an owner never expires.`,
+        );
+      }
+    }
   }
 
-  for (const file of rulesChain) {
-    if (!matchesAny(file, testEntries)) {
+  // 1. REGISTERED
+  for (const file of testFiles) {
+    if (registered.has(file)) continue;
+    const known = unregisteredOk.get(file);
+    if (known) {
+      warnings.push(`${file} is referenced by no script (accepted, ${known}).`);
+      continue;
+    }
+    fail(
+      "REGISTERED",
+      `${file} is named by no test* script in functions/package.json — it never runs. Add e.g. "test:${file.replace(/\.test\.ts$/, "")}": "ts-node src/__tests__/${file}".`,
+    );
+  }
+
+  // 2. NO_STALE_SCRIPT
+  const existing = new Set(testFiles);
+  for (const file of registered) {
+    if (!existing.has(file)) {
+      fail(
+        "NO_STALE_SCRIPT",
+        `a test* script points at functions/src/__tests__/${file}, which does not exist — delete the script entry.`,
+      );
+    }
+  }
+
+  // 3. CI_REACHABLE
+  for (const file of testFiles) {
+    if (!registered.has(file)) continue; // already reported by REGISTERED
+    if (unitLaneReachable.has(file) || rulesChain.has(file)) continue;
+    const known = knownUnreachable.get(file);
+    if (known) {
+      warnings.push(
+        `${file} is registered but NO CI lane runs it (accepted debt, ${known}).`,
+      );
+      continue;
+    }
+    fail(
+      "CI_REACHABLE",
+      `${file} has a script but no CI lane runs it: the unit runners skip test:rules*/test:integration:* and \`test:rules:all\` does not name it. Rename the script to a unit-lane name, or append the file to test:rules:all so the emulator job runs it.`,
+    );
+  }
+
+  // 4 + 5. Workflow trigger blocks
+  const yaml = fs.readFileSync(workflowPath, "utf8");
+  const blocks = workflowPathBlocks(yaml);
+  if (blocks.length < 2) {
+    fail(
+      "RULES_TRIGGERS",
+      `expected at least 2 \`paths:\` trigger blocks in .github/workflows/firestore-rules.yml (pull_request + push), parsed ${blocks.length}. Either a trigger was dropped or this guard's parser needs updating.`,
+    );
+  }
+
+  for (const block of blocks) {
+    const testEntries = block.entries
+      .filter((entry) => entry.startsWith("functions/src/__tests__/"))
+      .map((entry) => entry.slice("functions/src/__tests__/".length));
+
+    if (testEntries.length === 0) {
       fail(
         "RULES_TRIGGERS",
-        `${file} runs in test:rules:all but is missing from the \`${block.trigger}\` trigger's \`paths:\` block (firestore-rules.yml line ${block.line}) — editing it would not fire the rules job. Add "functions/src/__tests__/${file}".`,
+        `the \`${block.trigger}\` trigger's \`paths:\` block (firestore-rules.yml line ${block.line}) lists no test files — a change to any rules suite would not fire the job.`,
       );
+      continue;
+    }
+
+    for (const file of rulesChain) {
+      if (!matchesAny(file, testEntries)) {
+        fail(
+          "RULES_TRIGGERS",
+          `${file} runs in test:rules:all but is missing from the \`${block.trigger}\` trigger's \`paths:\` block (firestore-rules.yml line ${block.line}) — editing it would not fire the rules job. Add "functions/src/__tests__/${file}".`,
+        );
+      }
+    }
+
+    for (const entry of testEntries) {
+      const matches = entry.includes("*")
+        ? testFiles.some((file) => globToRegExp(entry).test(file))
+        : existing.has(entry);
+      if (!matches) {
+        fail(
+          "NO_STALE_TRIGGER",
+          `the \`${block.trigger}\` trigger's \`paths:\` block (firestore-rules.yml line ${block.line}) lists functions/src/__tests__/${entry}, which matches no file — delete the stale entry.`,
+        );
+      }
     }
   }
 
-  for (const entry of testEntries) {
-    const matches = entry.includes("*")
-      ? testFiles.some((file) => globToRegExp(entry).test(file))
-      : existing.has(entry);
-    if (!matches) {
-      fail(
-        "NO_STALE_TRIGGER",
-        `the \`${block.trigger}\` trigger's \`paths:\` block (firestore-rules.yml line ${block.line}) lists functions/src/__tests__/${entry}, which matches no file — delete the stale entry.`,
-      );
-    }
-  }
+  return {
+    failures,
+    warnings,
+    testFiles,
+    summary: `${testFiles.length} test files registered, ${rulesChain.size} rules suites triggered by ${blocks.length} paths blocks`,
+  };
 }
 
-for (const warning of warnings) console.warn(`WARN  ${warning}`);
+module.exports = {
+  runCheck,
+  referencedTestFiles,
+  workflowPathBlocks,
+  globToRegExp,
+  matchesAny,
+};
 
-if (failures.length > 0) {
-  console.error(
-    `\ncheck-test-registration: ${failures.length} problem(s) — a test file or rules trigger is not wired into CI.\n`,
+if (require.main === module) {
+  const { failures, warnings, summary } = runCheck();
+
+  for (const warning of warnings) console.warn(`WARN  ${warning}`);
+
+  if (failures.length > 0) {
+    console.error(
+      `\ncheck-test-registration: ${failures.length} problem(s) — a test file or rules trigger is not wired into CI.\n`,
+    );
+    for (const failure of failures) console.error(`  - ${failure}`);
+    console.error("");
+    process.exit(1);
+  }
+
+  console.log(
+    `check-test-registration: OK — ${summary}${warnings.length ? `, ${warnings.length} accepted-debt warning(s)` : ""}.`,
   );
-  for (const failure of failures) console.error(`  - ${failure}`);
-  console.error("");
-  process.exit(1);
 }
-
-console.log(
-  `check-test-registration: OK — ${testFiles.length} test files registered, ${rulesChain.size} rules suites triggered by ${blocks.length} paths blocks${warnings.length ? `, ${warnings.length} accepted-debt warning(s)` : ""}.`,
-);

@@ -216,6 +216,12 @@ class ShoppingDialogs {
 
     final Map<String, String> userDisplayNames = {};
     if (activeList.isCollaborative) {
+      // BUT-1705: trimmed at the door. A profile display name of whitespace
+      // clears every `isNotEmpty` guard downstream and then renders as a blank
+      // member row, which is the same defect an empty name causes — and this
+      // map is handed on to the member-management dialog too, so filtering it
+      // here fixes both consumers rather than one.
+      final ownerName = activeList.ownerDisplayName.trim();
       try {
         final userService = ServiceLocator.get<UserService>();
         final allUserIds = <String>{
@@ -225,19 +231,20 @@ class ShoppingDialogs {
 
         final profiles = await userService.getUserProfiles(allUserIds);
         for (final profile in profiles) {
-          userDisplayNames[profile.uid] = profile.displayName;
+          final name = profile.displayName.trim();
+          if (name.isNotEmpty) userDisplayNames[profile.uid] = name;
         }
 
         if (!userDisplayNames.containsKey(activeList.ownerId) &&
-            activeList.ownerDisplayName.isNotEmpty) {
-          userDisplayNames[activeList.ownerId] = activeList.ownerDisplayName;
+            ownerName.isNotEmpty) {
+          userDisplayNames[activeList.ownerId] = ownerName;
         }
       } catch (e) {
         AppLogger.warning(
           'Could not load user profiles for sharing dialog: $e',
         );
-        if (activeList.ownerDisplayName.isNotEmpty) {
-          userDisplayNames[activeList.ownerId] = activeList.ownerDisplayName;
+        if (ownerName.isNotEmpty) {
+          userDisplayNames[activeList.ownerId] = ownerName;
         }
       }
     }

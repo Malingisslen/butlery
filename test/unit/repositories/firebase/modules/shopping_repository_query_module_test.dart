@@ -9,9 +9,16 @@
 /// map-path keys, so those are exercised only as smoke tests.
 library;
 
+// The BUT-1723 permission-denied test mocks two sealed cloud_firestore types;
+// that is the only way to make the shared-collection probe THROW the way the
+// live rules do (fake_cloud_firestore evaluates no rules at all, so it answers
+// `exists == false` where production answers `permission-denied`).
+// ignore_for_file: subtype_of_sealed_class
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_repository_query_module.dart';
@@ -43,10 +50,11 @@ UnifiedShoppingList _fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
 ShoppingRepositoryQueryModule _module(
   FakeFirebaseFirestore firestore, {
   Future<UnifiedShoppingList?> Function(String)? readList,
+  CollectionReference<Map<String, dynamic>>? sharedListsRef,
 }) {
   return ShoppingRepositoryQueryModule(
     firestore: firestore,
-    sharedListsRef: firestore.collection(_sharedPath),
+    sharedListsRef: sharedListsRef ?? firestore.collection(_sharedPath),
     requireCurrentUserId: () => _userId,
     getUserCollection: (uid) => _userLists(firestore, uid),
     fromFirestore: _fromFirestore,
@@ -229,4 +237,205 @@ void main() {
       expect(lists.length, lessThanOrEqualTo(20));
     });
   });
+
+  // BUT-1723: the gate a conversion consults before deleting the original.
+  // It must count what is actually STORED, not what the caller believes it
+  // wrote — the personal list's truth is its `items` subcollection, and the
+  // parent document's `items` array is stale by design.
+  group('confirmPersistedItemCount', () {
+    test('counts a personal list from its items subcollection', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seedPersonalList(
+        firestore,
+        id: 'a',
+        name: 'Veckohandling',
+        updatedAt: DateTime.utc(2026, 1, 1),
+        items: [
+          _itemDoc(name: 'Mjölk'),
+          _itemDoc(name: 'Bröd'),
+        ],
+      );
+
+      expect(await _module(firestore).confirmPersistedItemCount('a'), 2);
+    });
+
+    test('reports zero for a personal list whose items never landed', () async {
+      // The exact pre-fix state: the document exists and its `items` ARRAY is
+      // full, but the subcollection — the only thing readAll reads — is empty.
+      // A conversion that trusted "the create returned an id" deleted the
+      // source over precisely this.
+      final firestore = FakeFirebaseFirestore();
+      await _userLists(firestore, _userId).doc('a').set({
+        'name': 'Veckohandling',
+        'ownerId': _userId,
+        'ownerDisplayName': 'Alice',
+        'items': [_itemDoc(name: 'Mjölk')],
+        'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+      });
+
+      expect(await _module(firestore).confirmPersistedItemCount('a'), 0);
+    });
+
+    test('counts a collaborative list from its inline items array', () async {
+      final firestore = FakeFirebaseFirestore();
+      await firestore.collection(_sharedPath).doc('s1').set({
+        'name': 'Familjehandling',
+        'ownerId': _userId,
+        'items': [_itemDoc(name: 'Ost'), _itemDoc(name: 'Ägg')],
+      });
+
+      expect(await _module(firestore).confirmPersistedItemCount('s1'), 2);
+    });
+
+    test('returns zero for a list that does not exist anywhere', () async {
+      final firestore = FakeFirebaseFirestore();
+      expect(await _module(firestore).confirmPersistedItemCount('ghost'), 0);
+    });
+
+    // The production-shaped case the fake cannot produce on its own. The
+    // shared-list read rule dereferences `resource.data.ownerId`, and
+    // `resource` is null for a document that does not exist — so a `get` on a
+    // PERSONAL list id is DENIED, never answered with `exists == false`. If the
+    // shared catch returned null, the personal leg below would be unreachable
+    // in production and convert-to-personal would never delete its source.
+    test(
+      'falls through to the personal subcollection when the shared probe is '
+      'denied',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await _seedPersonalList(
+          firestore,
+          id: 'a',
+          name: 'Veckohandling',
+          updatedAt: DateTime.utc(2026, 1, 1),
+          items: [
+            _itemDoc(name: 'Mjölk'),
+            _itemDoc(name: 'Bröd'),
+          ],
+        );
+
+        final denied = _MockCollectionRef();
+        final deniedDoc = _MockDocRef();
+        when(() => denied.doc(any())).thenReturn(deniedDoc);
+        when(deniedDoc.get).thenThrow(
+          FirebaseException(
+            plugin: 'cloud_firestore',
+            code: 'permission-denied',
+            message: 'Missing or insufficient permissions.',
+          ),
+        );
+
+        final module = _module(firestore, sharedListsRef: denied);
+        expect(await module.confirmPersistedItemCount('a'), 2);
+      },
+    );
+
+    // The reason this method exists at all, and the one thing
+    // fake_cloud_firestore cannot stage: it answers every read with
+    // `isFromCache == false`, so BOTH cache guards are unreachable from a
+    // plain fake and every other test in this group passes with them deleted.
+    // Firestore hands a local write straight back out of its own cache while
+    // offline, so without these two lines a conversion copy reads as complete
+    // before a byte has left the device — and the source list is then deleted.
+    test('a cached shared-list answer is unconfirmed, not a count', () async {
+      final firestore = FakeFirebaseFirestore();
+      final cachedRef = _MockCollectionRef();
+      final cachedDoc = _MockDocRef();
+      final snapshot = _MockDocSnapshot();
+      final metadata = _MockSnapshotMetadata();
+
+      when(() => cachedRef.doc(any())).thenReturn(cachedDoc);
+      when(cachedDoc.get).thenAnswer((_) async => snapshot);
+      when(() => snapshot.metadata).thenReturn(metadata);
+      when(() => metadata.isFromCache).thenReturn(true);
+      // Deliberately a COMPLETE-looking answer: two items, document present.
+      // Only the cache flag separates it from a genuine server confirmation.
+      when(() => snapshot.exists).thenReturn(true);
+      when(snapshot.data).thenReturn({
+        'items': [_itemDoc(name: 'Ost'), _itemDoc(name: 'Ägg')],
+      });
+
+      final module = _module(firestore, sharedListsRef: cachedRef);
+      expect(await module.confirmPersistedItemCount('s1'), isNull);
+    });
+
+    test('a cached personal-subcollection answer is unconfirmed', () async {
+      final firestore = FakeFirebaseFirestore();
+
+      // Production shape: the shared probe on a personal id is denied, so the
+      // personal leg is the one that answers — from the local cache.
+      final denied = _MockCollectionRef();
+      final deniedDoc = _MockDocRef();
+      when(() => denied.doc(any())).thenReturn(deniedDoc);
+      when(deniedDoc.get).thenThrow(
+        FirebaseException(plugin: 'cloud_firestore', code: 'permission-denied'),
+      );
+
+      final userLists = _MockCollectionRef();
+      final listDoc = _MockDocRef();
+      final itemsRef = _MockCollectionRef();
+      final querySnapshot = _MockQuerySnapshot();
+      final metadata = _MockSnapshotMetadata();
+
+      when(() => userLists.doc(any())).thenReturn(listDoc);
+      when(() => listDoc.collection(any())).thenReturn(itemsRef);
+      when(itemsRef.get).thenAnswer((_) async => querySnapshot);
+      when(() => querySnapshot.metadata).thenReturn(metadata);
+      when(() => metadata.isFromCache).thenReturn(true);
+      // Without the guard this returns 0 — "confirmed empty" — and a
+      // conversion of an empty source list then passes `0 >= 0` and deletes
+      // the original on the strength of a read no server ever answered.
+      when(() => querySnapshot.docs).thenReturn(const []);
+
+      final module = ShoppingRepositoryQueryModule(
+        firestore: firestore,
+        sharedListsRef: denied,
+        requireCurrentUserId: () => _userId,
+        getUserCollection: (_) => userLists,
+        fromFirestore: _fromFirestore,
+        readList: (_) async => null,
+      );
+
+      expect(await module.confirmPersistedItemCount('a'), isNull);
+    });
+
+    test('still reports unconfirmed when BOTH probes fail', () async {
+      final firestore = FakeFirebaseFirestore();
+      final denied = _MockCollectionRef();
+      final deniedDoc = _MockDocRef();
+      when(() => denied.doc(any())).thenReturn(deniedDoc);
+      when(deniedDoc.get).thenThrow(
+        FirebaseException(
+          plugin: 'cloud_firestore',
+          code: 'permission-denied',
+        ),
+      );
+
+      final module = ShoppingRepositoryQueryModule(
+        firestore: firestore,
+        sharedListsRef: denied,
+        requireCurrentUserId: () => throw StateError('not signed in'),
+        getUserCollection: (uid) => _userLists(firestore, uid),
+        fromFirestore: _fromFirestore,
+        readList: (_) async => null,
+      );
+
+      expect(await module.confirmPersistedItemCount('a'), isNull);
+    });
+  });
 }
+
+class _MockCollectionRef extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
+
+class _MockDocRef extends Mock
+    implements DocumentReference<Map<String, dynamic>> {}
+
+class _MockDocSnapshot extends Mock
+    implements DocumentSnapshot<Map<String, dynamic>> {}
+
+class _MockQuerySnapshot extends Mock
+    implements QuerySnapshot<Map<String, dynamic>> {}
+
+class _MockSnapshotMetadata extends Mock implements SnapshotMetadata {}

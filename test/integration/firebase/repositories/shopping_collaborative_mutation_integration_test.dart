@@ -13,9 +13,12 @@
 /// Mock tier skips the group; the emulator tier runs it:
 /// `flutter test test/integration --dart-define=USE_EMULATOR=true`
 /// (requires `firebase emulators:start --only firestore`).
-// Only `integration` — `firebase` is not declared in dart_test.yaml and an
-// undeclared tag makes every run print a warning.
-@Tags(['integration'])
+///
+/// BUT-1695: that tier currently runs NOWHERE — not in CI, and not locally
+/// under `flutter test`, where `Firebase.initializeApp` has no platform channel
+/// to bind to. So this group is UNVERIFIED rather than covered; see the header
+/// of `test/test_support/emulator_lane.dart` for what it would take.
+@Tags(['integration', 'firebase'])
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';

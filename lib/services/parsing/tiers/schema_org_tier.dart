@@ -263,7 +263,12 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
       if (label != null) {
         current = label;
       } else {
-        lines.add(line);
+        // BUT-1714: a refused bare gluten word re-enters WITHOUT its colon —
+        // lookup strips no punctuation, so "Mjöl:" would query `mjol:` and
+        // leave the row unmatched. Every other line rides through untouched.
+        lines.add(
+          RecipeSectionDetector.bareGlutenIngredientLabel(line) ?? line,
+        );
         sections.add(current);
       }
     }

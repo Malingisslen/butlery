@@ -73,6 +73,7 @@ const ADMIN_EXEMPT: ReadonlySet<string> = new Set([
   "reviewLearnedAlias", // analytics/review-learned-alias.ts — requireAdmin (BUT-1468 alias review)
   "revokeLearnedAlias", // analytics/review-learned-alias.ts — requireAdmin (BUT-1468 alias undo)
   "backfillCanonicalRatings", // migrations/backfill-canonical-ratings.ts — requireAdmin one-shot backfill
+  "backfillSharedListContributors", // migrations/backfill-shared-list-contributors.ts — requireAdmin one-shot backfill
 ]);
 
 interface CallableDecl {

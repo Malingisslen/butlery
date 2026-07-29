@@ -49,6 +49,26 @@ const http = require("http");
 const path = require("path");
 const { execFileSync } = require("child_process");
 
+/**
+ * BUT-1708 decision — the untested-block count is REPORT-ONLY.
+ *
+ * The number (how many match blocks nothing ever evaluates) is printed on every
+ * run, written to `coverage-summary.json` beside the table, and uploaded with
+ * the job's artifacts. It does NOT gate the build, and there is deliberately no
+ * ratchet:
+ *   - the ratchet's failure mode is the wrong one. A red build on a number that
+ *     drifted while the author touched an unrelated rule teaches people to
+ *     re-baseline the floor, which is how a ratchet becomes decoration.
+ *   - the number is not yet stable: it moves with block-parsing changes (this
+ *     ticket alone moved it) and with which suites the emulator managed to run.
+ *     Ratcheting a metric whose definition is still settling ratchets noise.
+ *   - the real hole was never the backlog of old untested blocks — it was NEW
+ *     ones shipping unexercised, and that IS gated, per-block, above.
+ * Revisit once the number has held steady across a few weeks of runs; a floor
+ * would then be a one-line change here plus a stored baseline.
+ */
+const UNTESTED_BLOCK_POLICY = "report-only";
+
 const FUNCTIONS_DIR = path.resolve(__dirname, "..");
 const REPO_ROOT = path.resolve(FUNCTIONS_DIR, "..");
 const TESTS_DIR = path.join(FUNCTIONS_DIR, "src", "__tests__");
@@ -79,46 +99,142 @@ function normalize(source) {
   return source.replace(/\r\n/g, "\n").trim();
 }
 
-function stripComment(line) {
-  const idx = line.indexOf("//");
-  return idx === -1 ? line : line.slice(0, idx);
+/**
+ * Comment-free view of [source], LINE-ALIGNED with the original.
+ *
+ * `//` AND `/* … *\/` are both blanked, and blanking (rather than dropping)
+ * keeps every reported line number pointing at the real file. The block form is
+ * not exotic — the Firebase console's own default `firestore.rules` ships with
+ * one — and it must be removed BEFORE the character scan: a comment such as
+ * `/* legacy: match /ghost/{id} was removed *\/` otherwise reads as a real
+ * match header and swallows the block underneath it.
+ */
+function stripComments(source) {
+  const out = [];
+  let inBlock = false;
+  for (const raw of source.split(/\r?\n/)) {
+    let line = "";
+    for (let c = 0; c < raw.length; c++) {
+      if (inBlock) {
+        if (raw[c] === "*" && raw[c + 1] === "/") {
+          inBlock = false;
+          c++;
+        }
+        continue;
+      }
+      if (raw[c] === "/" && raw[c + 1] === "/") break;
+      if (raw[c] === "/" && raw[c + 1] === "*") {
+        inBlock = true;
+        c++;
+        continue;
+      }
+      line += raw[c];
+    }
+    out.push(line);
+  }
+  return out;
 }
+
+const WORD_CHAR = /[A-Za-z0-9_$]/;
+
+/** A header may wrap, but never far — beyond this it is a stray `match` word. */
+const MAX_HEADER_LINES = 3;
 
 /**
  * Fully-qualified match blocks with their line span.
  *
- * Brace-depth scan rather than a flat regex: blocks nest, and the path segments
- * themselves contain braces (`/users/{userId}`) that a naive counter would
- * mistake for scopes. They are balanced, so only the LAST `{` on a `match ... {`
- * line opens the body.
+ * Character scan rather than a line regex (BUT-1707): the earlier
+ * `/^\s*match\s+(.+?)\s*\{\s*$/` only recognised a block whose line ENDED with
+ * the opening brace, so a legal one-liner —
+ * `match /leaky/{id} { allow read: if true; }` — parsed as no block at all.
+ * It then never appeared in the new-block set and the gate waved it through: a
+ * world-readable path could ship green. Braces are therefore tracked per
+ * character, and a `match` header is read until the brace that opens its body.
+ *
+ * Path wildcards (`/users/{userId}`, `/{doc=**}`) are always introduced by `/`,
+ * which is what separates a path brace from the body brace no matter how the
+ * header is wrapped across lines.
+ *
+ * A character scan is looser than a line regex, so the token alone cannot be
+ * the accept condition — `allow read: if resource.data.kind == "match";` would
+ * otherwise start a header that runs on until the next non-path `{`, merging
+ * the real block after it out of existence and taking the gate's coverage
+ * attribution with it. Three constraints keep a started header honest:
+ * comments are stripped first, the first non-space character after `match`
+ * MUST be the `/` that opens a path, and a header is abandoned at `;`, at a
+ * stray `}`, or once it has run past [MAX_HEADER_LINES].
  */
 function parseMatchBlocks(source) {
-  const lines = source.split(/\r?\n/);
+  const lines = stripComments(source);
   const stack = [];
   const blocks = [];
   let depth = 0;
+  let pending = null;
 
   for (let i = 0; i < lines.length; i++) {
-    const line = stripComment(lines[i]);
-    const opener = /^\s*match\s+(.+?)\s*\{\s*$/.exec(line);
-    let lastOpenIdx = -1;
-    if (opener) lastOpenIdx = line.lastIndexOf("{");
-
+    const line = lines[i];
     for (let c = 0; c < line.length; c++) {
       const ch = line[c];
-      if (ch === "{") {
-        depth++;
-        if (opener && c === lastOpenIdx) {
-          const parent = stack[stack.length - 1];
-          const fullPath = (parent ? parent.path : "") + opener[1];
-          stack.push({
-            path: fullPath,
-            segment: opener[1],
+
+      if (!pending && ch === "m" && line.startsWith("match", c)) {
+        const before = c === 0 ? "" : line[c - 1];
+        const after = line[c + 5] ?? " ";
+        if (!WORD_CHAR.test(before) && !WORD_CHAR.test(after)) {
+          pending = {
+            text: "",
             startLine: i + 1,
+            pathDepth: 0,
+            sawPath: false,
+          };
+          c += 4;
+          continue;
+        }
+      }
+
+      if (pending && !pending.sawPath) {
+        // A real header's path starts here. Anything else means the `match`
+        // token was a word in an expression, not a block opener.
+        if (ch === " " || ch === "\t") continue;
+        if (ch === "/") pending.sawPath = true;
+        else pending = null;
+      }
+
+      if (pending && (ch === ";" || (ch === "}" && pending.pathDepth === 0))) {
+        pending = null;
+      }
+
+      if (pending) {
+        if (ch === "{") {
+          const prev = c === 0 ? "" : line[c - 1];
+          if (pending.pathDepth > 0 || prev === "/") {
+            pending.pathDepth++;
+            pending.text += ch;
+            continue;
+          }
+          depth++;
+          const parent = stack[stack.length - 1];
+          const segment = pending.text.trim().replace(/\s+/g, " ");
+          stack.push({
+            path: (parent ? parent.path : "") + segment,
+            segment,
+            startLine: pending.startLine,
             openDepth: depth,
             indent: stack.length,
           });
+          pending = null;
+          continue;
         }
+        if (ch === "}" && pending.pathDepth > 0) {
+          pending.pathDepth--;
+          pending.text += ch;
+          continue;
+        }
+        pending.text += ch;
+        continue;
+      }
+
+      if (ch === "{") {
+        depth++;
       } else if (ch === "}") {
         const top = stack[stack.length - 1];
         if (top && top.openDepth === depth) {
@@ -128,12 +244,123 @@ function parseMatchBlocks(source) {
         depth--;
       }
     }
+    // A header may wrap, but only a little. Waiting until EOF to give up lets
+    // one bad start consume the rest of the file.
+    if (pending && i + 1 - pending.startLine >= MAX_HEADER_LINES) pending = null;
   }
 
   for (const unclosed of stack) {
     blocks.push({ ...unclosed, endLine: lines.length });
   }
   return blocks.sort((a, b) => a.startLine - b.startLine);
+}
+
+/**
+ * The block's OWN body text — nested match blocks removed, comments stripped.
+ * A parent's `allow` statements are its own; a child's belong to the child.
+ */
+function ownBodyText(source, blocks, block) {
+  const lines = stripComments(source);
+  const children = blocks.filter(
+    (other) =>
+      other !== block &&
+      other.startLine >= block.startLine &&
+      other.endLine <= block.endLine &&
+      !(other.startLine === block.startLine && other.endLine === block.endLine),
+  );
+  const kept = [];
+  for (let line = block.startLine; line <= block.endLine; line++) {
+    const inChild = children.some(
+      (child) => line >= child.startLine && line <= child.endLine,
+    );
+    if (inChild) continue;
+    kept.push(lines[line - 1] ?? "");
+  }
+  // Drop the header line's `match ... {` prefix and the closing brace so a
+  // one-liner body is read the same way as a multi-line one.
+  return kept
+    .join("\n")
+    .replace(/^[\s\S]*?\{/, "")
+    .replace(/\}\s*$/, "");
+}
+
+/**
+ * What the block grants when nobody tests it.
+ *
+ * BUT-1707: the gate used to exempt every block the emulator reported no
+ * expression for ("constant body, nothing to measure"). That is true of
+ * `allow read, write: if false;` — and equally true of `if true`, so a new
+ * world-open block was exempted by the very rule written to spare deny-all
+ * blocks. Constant ALLOW and constant DENY are now told apart from the rules
+ * source, which is evidence that always exists, rather than from a coverage
+ * payload that by definition has nothing to say about a constant.
+ *
+ *   container      — no `allow` of its own (a grouping block; children carry it)
+ *   constant-deny  — every allow is `if false` (unmeasurable AND harmless)
+ *   constant-allow — some allow is unconditional or `if true` (never exempt)
+ *   conditional    — some allow has a real condition (must be exercised)
+ */
+function classifyBlockBody(source, blocks, block) {
+  const body = ownBodyText(source, blocks, block);
+  const allows = [];
+  for (const match of body.matchAll(/\ballow\b([^;{}]*)(?:;|$)/g)) {
+    const clause = match[1];
+    const colon = clause.indexOf(":");
+    const condition = colon === -1 ? "" : clause.slice(colon + 1).trim();
+    const stripped = condition.replace(/^if\b/, "").trim();
+    if (stripped === "" || /^\(*\s*true\s*\)*$/.test(stripped)) {
+      allows.push({ effect: "open", condition: stripped });
+    } else if (/^\(*\s*false\s*\)*$/.test(stripped)) {
+      allows.push({ effect: "deny", condition: stripped });
+    } else {
+      allows.push({ effect: "conditional", condition: stripped });
+    }
+  }
+
+  let kind = "container";
+  if (allows.some((a) => a.effect === "open")) kind = "constant-allow";
+  else if (allows.some((a) => a.effect === "conditional")) kind = "conditional";
+  else if (allows.length > 0) kind = "constant-deny";
+  return { kind, allows };
+}
+
+/**
+ * The gate decision for one run, as data — so it can be exercised over fixtures
+ * without an emulator, a git history or a CI runner.
+ *
+ * `statsByPath`: path -> { exprTotal, exprHit }. `newPaths`: Set of block paths
+ * absent from the base revision, or null when the gate is skipped.
+ */
+function evaluateGate({ source, blocks, statsByPath, newPaths }) {
+  const untestedAll = [];
+  const failures = [];
+  const exempt = [];
+
+  for (const block of blocks) {
+    const stat = statsByPath.get(block.path) ?? { exprTotal: 0, exprHit: 0 };
+    const { kind } = classifyBlockBody(source, blocks, block);
+    const measurable = kind === "constant-allow" || kind === "conditional";
+    const untested = measurable && stat.exprHit === 0;
+    if (untested) untestedAll.push({ path: block.path, kind, block });
+    if (!newPaths || !newPaths.has(block.path)) continue;
+    if (!untested) continue;
+
+    const reason =
+      kind === "constant-allow"
+        ? "grants access unconditionally (`if true` / no condition) and no test asserts it"
+        : stat.exprTotal === 0
+          ? "the emulator reported no expression for it at all — the block was never reached"
+          : "was never evaluated by test:rules:all";
+    failures.push({ path: block.path, kind, reason, block });
+  }
+
+  for (const block of blocks) {
+    if (!newPaths || !newPaths.has(block.path)) continue;
+    if (failures.some((f) => f.path === block.path)) continue;
+    exempt.push({ path: block.path });
+  }
+
+  return { failures, untestedAll, exempt };
 }
 
 /** Project ids used by the rules suites — coverage is scoped per project. */
@@ -356,15 +583,30 @@ async function main() {
   const hitExpr = [...merged.values()].filter((n) => n.count > 0).length;
   const percent = ((hitExpr / totalExpr) * 100).toFixed(1);
 
+  const statsByPath = new Map(
+    blocks.map((block) => [block.path, stats.get(block)]),
+  );
+  const gate = evaluateGate({
+    source: rulesSource,
+    blocks,
+    statsByPath,
+    newPaths,
+  });
+  const untestedPaths = new Set(gate.untestedAll.map((entry) => entry.path));
+
   const rows = [];
   for (const block of blocks) {
     const stat = stats.get(block);
     const isNew = newPaths ? newPaths.has(block.path) : false;
-    const status =
-      stat.exprTotal === 0
-        ? "· constant body, nothing to measure"
-        : stat.exprHit === 0
-          ? "❌ untested"
+    const { kind } = classifyBlockBody(rulesSource, blocks, block);
+    const status = untestedPaths.has(block.path)
+      ? kind === "constant-allow"
+        ? "❌ untested — grants access unconditionally"
+        : "❌ untested"
+      : kind === "constant-deny"
+        ? "· constant deny, nothing to measure"
+        : kind === "container"
+          ? "· grouping block, no allow of its own"
           : stat.exprHit === stat.exprTotal
             ? "✅ full"
             : "⚠️ partial";
@@ -377,6 +619,9 @@ async function main() {
     "## Firestore rules coverage",
     "",
     `Expressions evaluated at least once: **${hitExpr}/${totalExpr} (${percent}%)**, unioned over ${fetched.length} project report(s).`,
+    "",
+    // BUT-1708: the tracked number. Report-only by decision — see the header.
+    `Untested match blocks: **${gate.untestedAll.length}** of ${blocks.length} (report-only — no floor is enforced on this number; the gate fails only on NEW untested blocks).`,
     "",
     gateNote,
     "",
@@ -403,26 +648,40 @@ async function main() {
   }
   console.log(table);
 
+  // BUT-1708: persist the tracked numbers next to the table so a run's coverage
+  // is a machine-readable artifact, not just prose in a job summary. Written
+  // BEFORE the gate can exit(1) — the number is most interesting on a red run.
+  const summary = {
+    generatedAt: new Date().toISOString(),
+    policy: UNTESTED_BLOCK_POLICY,
+    totalBlocks: blocks.length,
+    untestedBlocks: gate.untestedAll.length,
+    untestedBlockPaths: gate.untestedAll.map((entry) => entry.path),
+    expressions: { total: totalExpr, hit: hitExpr, percent: Number(percent) },
+    newBlocks: newPaths ? newPaths.size : null,
+    newUntestedBlocks: newPaths ? gate.failures.length : null,
+    projects: { fetched, skipped },
+  };
+  fs.writeFileSync(
+    path.join(outDir, "coverage-summary.json"),
+    `${JSON.stringify(summary, null, 2)}\n`,
+  );
+  console.log(
+    `\nrules-coverage-report: untested match blocks = ${gate.untestedAll.length}/${blocks.length} (policy: ${UNTESTED_BLOCK_POLICY}).`,
+  );
+
   if (!newPaths) {
-    console.log(`\nrules-coverage-report: ${gateNote}`);
+    console.log(`rules-coverage-report: ${gateNote}`);
     return;
   }
 
-  // exprTotal === 0 means the emulator emitted no expression node for the block
-  // at all — verified behaviour for a constant body like `allow read, write: if
-  // false;`. That is unmeasurable, not untested, and failing it would block
-  // every new deny-all block on evidence that cannot exist.
-  const untestedNew = blocks.filter((block) => {
-    const stat = stats.get(block);
-    return newPaths.has(block.path) && stat.exprTotal > 0 && stat.exprHit === 0;
-  });
-  if (untestedNew.length > 0) {
+  if (gate.failures.length > 0) {
     console.error(
-      `\nrules-coverage-report: ${untestedNew.length} newly-added match block(s) were never evaluated by test:rules:all:\n`,
+      `\nrules-coverage-report: ${gate.failures.length} newly-added match block(s) are not exercised by test:rules:all:\n`,
     );
-    for (const block of untestedNew) {
+    for (const failure of gate.failures) {
       console.error(
-        `  - ${block.path}  (firestore.rules:${block.startLine}–${block.endLine})`,
+        `  - ${failure.path}  (firestore.rules:${failure.block.startLine}–${failure.block.endLine})\n      ${failure.reason}`,
       );
     }
     console.error(
@@ -432,12 +691,21 @@ async function main() {
   }
 
   console.log(
-    `\nrules-coverage-report: OK — every one of the ${newPaths.size} new match block(s) was evaluated.`,
+    `rules-coverage-report: OK — every one of the ${newPaths.size} new match block(s) is either exercised or a constant deny.`,
   );
 }
 
-// Exported so the parser and attribution can be exercised without an emulator.
-module.exports = { parseMatchBlocks, collectExprNodes, innermostBlock };
+// Exported so the parser, the body classifier and the gate decision can be
+// exercised over fixtures without an emulator (scripts/__tests__).
+module.exports = {
+  parseMatchBlocks,
+  collectExprNodes,
+  innermostBlock,
+  classifyBlockBody,
+  evaluateGate,
+  ownBodyText,
+  UNTESTED_BLOCK_POLICY,
+};
 
 if (require.main === module) {
   main().catch((err) => {

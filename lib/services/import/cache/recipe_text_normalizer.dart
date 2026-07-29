@@ -14,6 +14,8 @@
 /// cache-invalidating change.
 library;
 
+import 'package:butlery/utils/text/swedish_word_boundary.dart';
+
 class RecipeTextNormalizer {
   RecipeTextNormalizer._();
 
@@ -109,18 +111,30 @@ class RecipeTextNormalizer {
   // Pre-compiled RegExp patterns for normalization hot paths. Public so the
   // pooled-ratings CanonicalPoolKey path can reuse the amount/parenthetical
   // patterns (which are diacritic-agnostic) while building its OWN folded unit
-  // regex — it must NOT reuse [_allUnitsRe], whose single-letter units ('l',
-  // 'g') interact with non-ASCII word boundaries (see the fold-first note in
-  // canonical_pool_key.dart).
+  // regex — it must NOT reuse [_allUnitsRe], which is bounded for un-folded
+  // Swedish text while that path folds diacritics first (see the fold-first
+  // note in canonical_pool_key.dart).
   static final punctuationRe = RegExp(r'[^\wåäö\s]');
   static final multiSpaceRe = RegExp(r'\s+');
   static final leadingNumbersRe = RegExp(r'^\s*\d+[\s,./]*\d*\s*');
+  // ASCII `\b` here is assessed and deliberate (BUT-1713): no member of
+  // [approximateWords] starts or ends with å/ä/ö, so neither the missing- nor
+  // the phantom-boundary failure can fire, and re-bounding it would move the
+  // persisted fingerprint a second time for no behaviour change.
   static final approximateWordsRe = RegExp(
     '\\b(${approximateWords.join('|')})\\b',
   );
   static final parentheticalRe = RegExp(r'\([^)]*\)');
-  static final _allUnitsRe = RegExp(
-    '\\b(${ingredientUnits.join('|')})\\b',
+
+  /// BUT-1713: bounded with [SwedishWordBoundary], never ASCII `\b`. Dart's
+  /// `\b` treats å/ä/ö as non-word characters, so it opened a phantom boundary
+  /// right before a trailing consonant: `\bl\b` matched the last letter of
+  /// "mjöl", "vitkål" and "lök", and `\bst\b` the tail of "höst". The unit was
+  /// then deleted from the middle of a real ingredient name — "2 dl mjöl"
+  /// fingerprinted as "mjö", "1 gul lök" as "gul ök". The boundary is one-sided
+  /// nowhere here: a unit is a standalone token, so both edges must hold.
+  static final _allUnitsRe = SwedishWordBoundary.boundedRegExp(
+    ingredientUnits.join('|'),
     caseSensitive: false,
   );
 

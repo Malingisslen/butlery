@@ -11,7 +11,15 @@ tags:
   integration:
     description: Integration tests with external dependencies
     timeout: 5m
-    
+
+  # BUT-1695: tests that talk to a real Firebase instance — in practice the
+  # local emulator, reached via `--dart-define=USE_EMULATOR=true`. Declared
+  # because several suites already carry the tag; an UNDECLARED tag makes every
+  # run print a warning, which is why files silently dropped it.
+  firebase:
+    description: Tests that need a real Firebase (emulator) instance
+    timeout: 5m
+
   # Performance tests
   performance:
     description: Performance and benchmark tests

@@ -1600,6 +1600,22 @@ service cloud.firestore {
     // ========================================
     
     match /unified_shared_shopping_lists/{listId} {
+      // BUT-1725: `contributorUserIds` is the ONLY handle account erasure has
+      // on a shared list a member has already LEFT — the deletion cascade
+      // queries it (`array-contains`) to find lists whose items still carry
+      // that person's `addedByDisplayName`, and the residual probe re-checks it.
+      // The client only ever unions into the array, so make that the rule: no
+      // client write may drop an entry, or a household member could strip a
+      // departed member's uid and hide their name from erasure forever
+      // (Art. 17). The Admin SDK cascade bypasses rules, so its `arrayRemove`
+      // is unaffected. The size bound keeps the trail from being used as
+      // unbounded storage on a document everyone in the household can write.
+      function keepsContributorTrail() {
+        return request.resource.data.get('contributorUserIds', [])
+                 .hasAll(resource.data.get('contributorUserIds', []))
+          && request.resource.data.get('contributorUserIds', []).size() <= 200;
+      }
+
       // Can read if you're the owner or a member (key in memberPermissions map)
       // BUT-238: read access implicitly covers assignedToUserId/assignedToDisplayName/assignedAt
       // since items are embedded in the list doc.
@@ -1612,12 +1628,18 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.ownerId
         && request.auth.uid in request.resource.data.memberPermissions
-        && hasRequiredFields(['ownerId', 'memberPermissions', 'items', 'createdAt']);
+        && hasRequiredFields(['ownerId', 'memberPermissions', 'items', 'createdAt'])
+        // The client seats `[uid]` here; only the bound applies on create,
+        // since there is no prior array to preserve.
+        && request.resource.data.get('contributorUserIds', []).size() <= 200;
 
       // Can update if you're a member with edit/admin permission (for real-time collaboration).
       // BUT-238: claim/unclaim (assignedToUserId/assignedToDisplayName/assignedAt fields on items[])
       // is just an item-array mutation — allowed for edit/admin. View-only members cannot write.
-      allow update: if isAuthenticated() && (
+      // The erasure trail is append-only for EVERY client writer, the owner
+      // included — the owner is as able to strip a departed member's uid as
+      // anyone else, and the cascade needs it either way.
+      allow update: if isAuthenticated() && keepsContributorTrail() && (
         request.auth.uid == resource.data.ownerId ||
         (request.auth.uid in resource.data.memberPermissions
          && resource.data.memberPermissions[request.auth.uid] in ['edit', 'admin']

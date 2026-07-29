@@ -7,16 +7,31 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-/// The offline half of collaborative shopping-list writes: reading the cached
-/// document, deciding whether a mutation is a pure append, building the narrow
-/// payload that gets queued, and auditing a replay the rules reject.
+/// Narrow write payloads for collaborative shopping lists, plus the offline
+/// half they were first built for: reading the cached document, deciding
+/// whether a mutation is a pure append, and auditing a replay the rules reject.
+///
+/// BUT-1719 widened the remit past "offline". The reason a queued write may not
+/// re-send `ownerId` / `memberPermissions` / `createdAt` — a stale copy of an
+/// access-control decision made elsewhere — is not a property of being offline;
+/// it is a property of writing fields the caller did not change. The ONLINE
+/// whole-list path had the same hole, so the narrowing rule lives here once and
+/// both paths use it ([narrowUpdatePayload]).
 ///
 /// Split out of `ShoppingRepositoryRoutingModule` so that module stays a
-/// routing facade under the 500-line limit. The guards (edit rights, privilege
-/// escalation) deliberately stay with the routing module: they apply to the
-/// online path too, and a guard that lives next to only one caller is a guard
-/// waiting to be forgotten.
+/// routing facade under the 500-line limit. The rule mirrors that decide
+/// WHETHER a caller may write live in `ShoppingListPermissionGuards`; this
+/// module only decides WHAT the write says.
 class ShoppingOfflineWriteModule {
+  /// The three keys `firestore.rules` forbids a non-owner from touching on
+  /// `/unified_shared_shopping_lists`. A write that carries one of them is
+  /// making an access-control statement, so it needs a base it can vouch for.
+  static const Set<String> privilegedKeys = {
+    'ownerId',
+    'memberPermissions',
+    'createdAt',
+  };
+
   /// Document fields an offline write may carry alongside the items it changes.
   ///
   /// Deliberately excludes `ownerId`, `memberPermissions` and `createdAt` — the
@@ -146,6 +161,103 @@ class ShoppingOfflineWriteModule {
       // Non-null only — see the note on [appendPayload].
       for (final key in _activityFieldKeys)
         if (serialized[key] != null) key: serialized[key],
+    };
+  }
+
+  /// BUT-1719: the keys of [proposed] that actually DIFFER from [stored], as a
+  /// payload for `update()`.
+  ///
+  /// The whole-list path used to write `set(proposed.toFirestore(), merge:
+  /// true)`. Two things go wrong with that, and a rename triggers both.
+  ///
+  /// `merge: true` UNIONS map fields rather than replacing them, so the whole
+  /// `memberPermissions` map rode along on every rename — and a key the caller
+  /// had dropped was merged straight back in. Removing a member therefore never
+  /// actually removed them, and a caller holding a stale copy (an offline cache
+  /// outlives a membership change made on another device) re-granted edit
+  /// rights to someone who had been removed. [_memberDiff] emits per-key field
+  /// paths so both halves of that are impossible.
+  ///
+  /// And re-sending unchanged fields is not free even when the values match:
+  /// the rule compares `diff(resource.data).affectedKeys()`, so a stale copy of
+  /// a field the caller never touched either denies the whole write (non-owner)
+  /// or silently overwrites someone else's change (owner). Sending only what
+  /// changed makes the write say exactly what the caller did.
+  ///
+  /// An empty result means "nothing to write" — the caller must skip the write
+  /// rather than send an empty update.
+  ///
+  /// [baseIsCached] refuses the write outright when the narrowed payload
+  /// touches a [privilegedKeys] field: offline, `stored` is whatever this
+  /// device last saw, so "the caller changed memberPermissions" is
+  /// indistinguishable from "someone else changed it while we were offline",
+  /// and replaying the local answer is exactly how a removed member gets their
+  /// edit rights back. Renames and item edits still queue offline; only
+  /// membership and ownership wait for a server read.
+  Map<String, Object?> narrowUpdatePayload(
+    String uid,
+    UnifiedShoppingList proposed,
+    UnifiedShoppingList stored, {
+    required bool baseIsCached,
+  }) {
+    const equality = DeepCollectionEquality();
+    final next = proposed.toFirestore();
+    final current = stored.toFirestore();
+    final payload = <String, Object?>{};
+
+    for (final entry in next.entries) {
+      if (entry.key == _memberPermissions) {
+        payload.addAll(_memberDiff(entry.value, current[entry.key]));
+        continue;
+      }
+      if (!equality.equals(entry.value, current[entry.key])) {
+        payload[entry.key] = entry.value;
+      }
+    }
+
+    final privileged = payload.keys
+        .map((key) => key.split('.').first)
+        .where(privilegedKeys.contains)
+        .toSet()
+        .toList();
+    if (privileged.isEmpty || !baseIsCached) return payload;
+
+    logPermissionCheck(
+      userId: uid,
+      resource: 'collaborative_shopping_list',
+      operation: 'update',
+      granted: false,
+      details:
+          'List: ${proposed.id}, refused ${privileged.join(", ")} change made '
+          'against a cached document',
+    );
+    throw PermissionDeniedException(
+      'Changing ${privileged.join(", ")} on collaborative shopping list '
+      '${proposed.id} needs a server read; this device is offline',
+      resource: 'collaborative_list:${proposed.id}',
+      userId: uid,
+    );
+  }
+
+  static const String _memberPermissions = 'memberPermissions';
+
+  /// The member map as per-key FIELD PATHS rather than one map value.
+  ///
+  /// Whether a whole-map value merges or replaces depends on the call used to
+  /// write it — `set(merge: true)` merges, `update()` replaces — and a removal
+  /// silently becomes a no-op if that assumption is ever wrong. Emitting
+  /// `memberPermissions.<uid>` per changed key, with `FieldValue.delete()` for
+  /// a removed one, says what happened under either call and matches how the
+  /// erasure cascade removes the same key server-side.
+  Map<String, Object?> _memberDiff(Object? proposed, Object? stored) {
+    const equality = DeepCollectionEquality();
+    final next = (proposed as Map?)?.cast<String, Object?>() ?? const {};
+    final current = (stored as Map?)?.cast<String, Object?>() ?? const {};
+
+    return {
+      for (final uid in {...next.keys, ...current.keys})
+        if (!equality.equals(next[uid], current[uid]))
+          '$_memberPermissions.$uid': next[uid] ?? FieldValue.delete(),
     };
   }
 

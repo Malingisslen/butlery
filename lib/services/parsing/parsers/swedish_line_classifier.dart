@@ -262,8 +262,10 @@ class SwedishLineClassifier {
   /// down from the tier (ServiceLocator isn't reachable inside a background
   /// isolate, so the flag must arrive as a value). When false, component
   /// sub-heading lines ("Deg:") are RETAINED as ingredients rather than pulled
-  /// out — so flipping the flag off fully reverts the text path, matching the
-  /// LLM/schema.org tiers.
+  /// out, matching the LLM/schema.org tiers. OFF means "no grouping" — it is
+  /// NOT a full revert: a bare gluten line ("Mjöl:") is still kept, and kept
+  /// colon-stripped, because losing an allergen is the one outcome the switch
+  /// must never produce (BUT-1714).
   ParsedRecipeStructure parseStructure(
     String text, {
     bool captureSubHeadings = true,
@@ -353,9 +355,35 @@ class SwedishLineClassifier {
             // ("Ingredienser:", "Gör så här:") clears the group; a genuine
             // component header ("Deg:") sets it. With capture off, no group
             // is tracked (sections aren't stamped anyway).
-            currentSection = captureSubHeadings
-                ? _componentSubHeading(line.text)
+            final headerText = line.text.trim();
+            final headerLabel = captureSubHeadings
+                ? _componentSubHeading(headerText)
                 : null;
+            final glutenLabel = headerLabel == null
+                ? RecipeSectionDetector.bareGlutenIngredientLabel(headerText)
+                : null;
+            if (glutenLabel != null) {
+              // BUT-1714: the detector refused this line as a heading exactly
+              // so the gluten row survives in the flat list tagging reads.
+              // Unlike the ingredient branch above, a null here would DELETE
+              // the line — the ONNX classifier labels a colon-terminated lone
+              // word `sectionHeader`, so this is the live path for "Mjöl:".
+              //
+              // The COLON-STRIPPED label is what goes in, not the raw line:
+              // ingredient lookup strips no punctuation, so "Mjöl:" would query
+              // `mjol:`, match nothing, and take every allergen verdict on the
+              // recipe to UNKNOWN. See [bareGlutenIngredientLabel].
+              //
+              // Deliberately NOT gated on [captureSubHeadings]: with capture
+              // off `headerLabel` is already null, and gating here would make
+              // the kill switch drop the gluten line — the one outcome the
+              // switch must never produce. Off means "no grouping", never
+              // "lose an allergen".
+              ingredients.add(glutenLabel);
+              ingredientSections.add(currentSection);
+            } else {
+              currentSection = headerLabel;
+            }
             break;
           case LineType.empty:
           case LineType.noise:

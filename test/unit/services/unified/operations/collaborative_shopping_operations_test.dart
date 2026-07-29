@@ -32,6 +32,10 @@ void main() {
     late UnifiedShoppingItem testItem1;
     late UnifiedShoppingItem testItem2;
 
+    /// BUT-1723: what the server-confirmed read-back reports for a freshly
+    /// created copy. Null models "could not be confirmed" (offline).
+    late int? confirmedItemCount;
+
     setUpAll(() async {
       // Register fallback values for mocktail
       registerFallbackValue(SharedListPermission.view);
@@ -241,12 +245,18 @@ void main() {
       });
 
       // Build operations with typed deps (no _parent back-reference)
+      // BUT-1723: a conversion deletes the source only once the copy reads
+      // back from the SERVER. Default to a count no copy can fall short of, so
+      // the pre-existing happy-path tests still exercise the delete; the tests
+      // that care set it explicitly.
+      confirmedItemCount = 99;
       final lifecycleOps = ListLifecycleOperations(
         getCollaborativeLists: () => mockParentService.collaborativeLists,
         getPersonalLists: () => mockParentService.personalLists,
         createCollaborativeList: mockParentService.createCollaborativeList,
         deleteList: mockParentService.deleteList,
         createPersonalList: mockParentService.createPersonalList,
+        confirmPersistedItemCount: (_) async => confirmedItemCount,
       );
 
       final memberOps = ListMemberOperations(
@@ -374,7 +384,8 @@ void main() {
         );
 
         // Assert
-        expect(collaborativeId, equals('new_list_id'));
+        expect(collaborativeId.newListId, equals('new_list_id'));
+        expect(collaborativeId.originalKept, isFalse);
         verify(
           () => mockParentService.createCollaborativeList(
             name: 'Min lista',
@@ -397,7 +408,8 @@ void main() {
         );
 
         // Assert
-        expect(personalId, equals('new_personal_list_id'));
+        expect(personalId.newListId, equals('new_personal_list_id'));
+        expect(personalId.originalKept, isFalse);
         verify(
           () => mockParentService.createPersonalList(
             'Familjehandling',
@@ -406,6 +418,144 @@ void main() {
         ).called(1);
         verify(() => mockParentService.deleteList('collab_list_1')).called(1);
       });
+
+      // BUT-1723: the delete is irreversible and the create call returning an
+      // id proves nothing — Firestore answers from the local cache while
+      // offline, and the personal copy used to persist zero items even when it
+      // succeeded. Unconfirmed must mean "keep both lists".
+      test('keeps the shared list when the copy cannot be confirmed', () async {
+        confirmedItemCount = null;
+
+        final personalId = await operations.convertCollaborativeToPersonal(
+          'collab_list_1',
+        );
+
+        expect(personalId.newListId, equals('new_personal_list_id'));
+        // The caller-visible signal: the copy exists, the ORIGINAL is still
+        // there. Without this the UI reports a clean "converted" while every
+        // collaborator still has access.
+        expect(personalId.originalKept, isTrue);
+        verifyNever(() => mockParentService.deleteList('collab_list_1'));
+      });
+
+      test('keeps the shared list when the copy landed short', () async {
+        // The source has one item; a copy the server says is empty is exactly
+        // the data-loss shape this gate exists to catch.
+        confirmedItemCount = 0;
+
+        final personalId = await operations.convertCollaborativeToPersonal(
+          'collab_list_1',
+        );
+
+        expect(personalId.originalKept, isTrue);
+        verifyNever(() => mockParentService.deleteList('collab_list_1'));
+      });
+
+      // The gate's exact flip point. Every other fixture here is 0, null or a
+      // generous 99 against a ONE-item source, so none of them can tell
+      // `persisted >= expected` from `persisted > expected` — and tightening it
+      // by one character would strand every correctly-copied list as a
+      // permanent duplicate the user has to clean up by hand.
+      test('deletes the source when the copy matches EXACTLY', () async {
+        confirmedItemCount = 1; // collab_list_1 holds exactly one item
+
+        final personalId = await operations.convertCollaborativeToPersonal(
+          'collab_list_1',
+        );
+
+        expect(personalId.newListId, equals('new_personal_list_id'));
+        expect(personalId.originalKept, isFalse);
+        verify(() => mockParentService.deleteList('collab_list_1')).called(1);
+      });
+
+      // The personal copy lands in `users/{me}/unified_shopping_lists` — a tree
+      // no OTHER user's account-deletion cascade can query. A collaborator's
+      // uid or display name copied in there would survive their own erasure
+      // indefinitely, so the conversion keeps what happened and drops who did
+      // it. The owner's own attribution is their own data and stays.
+      test('strips other members identities from the personal copy', () async {
+        final foreignItem = UnifiedShoppingItem(
+          id: 'item_foreign',
+          name: 'Bröd',
+          amount: 1.0,
+          unit: 'st',
+          category: 'Bageri',
+          bought: true,
+          addedByUserId: 'user_456',
+          addedByDisplayName: 'Anna Andersson',
+          addedAt: DateTime(2026, 7, 1),
+          purchasedByUserId: 'user_456',
+          purchasedByDisplayName: 'Anna Andersson',
+          purchasedAt: DateTime(2026, 7, 2),
+          lastModifiedByUserId: 'user_456',
+          lastModifiedByDisplayName: 'Anna Andersson',
+          lastModifiedAt: DateTime(2026, 7, 2),
+          assignedToUserId: 'user_789',
+          assignedToDisplayName: 'Erik Eriksson',
+          assignedAt: DateTime(2026, 7, 3),
+        );
+        mockParentService.setShoppingState(
+          collaborativeLists: [
+            testCollaborativeList.copyWith(items: [testItem1, foreignItem]),
+            testSharedList,
+          ],
+          personalLists: [testPersonalList],
+          currentUserId: 'user_123',
+          currentUserDisplayName: 'Test User',
+        );
+
+        await operations.convertCollaborativeToPersonal('collab_list_1');
+
+        final copied =
+            verify(
+                  () => mockParentService.createPersonalList(
+                    any(),
+                    items: captureAny(named: 'items'),
+                  ),
+                ).captured.single
+                as List<UnifiedShoppingItem>;
+
+        final theirs = copied.firstWhere((i) => i.id == 'item_foreign');
+        expect(theirs.addedByUserId, isNull);
+        expect(theirs.addedByDisplayName, isNull);
+        expect(theirs.purchasedByUserId, isNull);
+        expect(theirs.purchasedByDisplayName, isNull);
+        expect(theirs.lastModifiedByUserId, isNull);
+        expect(theirs.lastModifiedByDisplayName, isNull);
+        expect(theirs.assignedToUserId, isNull);
+        expect(theirs.assignedToDisplayName, isNull);
+        expect(
+          theirs.isCollaborative,
+          isFalse,
+          reason: 'a row in a personal list must not read as collaborative',
+        );
+        // The purchase is a fact about the list, not about a person.
+        expect(theirs.name, equals('Bröd'));
+        expect(theirs.bought, isTrue);
+        expect(theirs.purchasedAt, equals(DateTime(2026, 7, 2)));
+
+        final mine = copied.firstWhere((i) => i.id == 'item_1');
+        expect(mine.addedByUserId, equals('user_123'));
+        expect(mine.addedByDisplayName, equals('Test User'));
+      });
+
+      test(
+        'keeps the personal list when the copy cannot be confirmed',
+        () async {
+          confirmedItemCount = null;
+
+          final collaborativeId = await operations
+              .convertPersonalToCollaborative(
+                personalListId: 'personal_list_1',
+                memberIds: ['user_456'],
+                memberDisplayNames: {'user_456': 'Anna'},
+              );
+
+          expect(collaborativeId.newListId, equals('new_list_id'));
+          expect(collaborativeId.originalKept, isTrue);
+          verifyNever(() => mockParentService.deleteList('personal_list_1'));
+        },
+      );
     });
 
     group('Member Management', () {

@@ -507,6 +507,58 @@ async function seedFixtures(): Promise<void> {
       items: [{ id: "s0", name: "kaffe", addedByUserId: TARGET }],
     });
 
+  // BUT-1725/BUT-1705: the list the target LEFT (or was removed from). No
+  // memberPermissions key, not the owner, not the last activity — the two
+  // handles the cascade used to query on are both absent, while every item
+  // they added still carries their name. `contributorUserIds` is the only
+  // thing that makes this list reachable, which is why the client unions it on
+  // every item write.
+  await db
+    .collection("unified_shared_shopping_lists")
+    .doc(`ussl-departed-${RUN}`)
+    .set({
+      name: "lista jag lämnat",
+      memberPermissions: { [OTHER]: "owner", [THIRD]: "editor" },
+      ownerId: OTHER,
+      ownerDisplayName: "Other",
+      lastActivityByUserId: OTHER,
+      lastActivityByDisplayName: "Other",
+      contributorUserIds: [OTHER, TARGET],
+      items: [
+        {
+          id: "d0",
+          name: "kanel",
+          addedByUserId: TARGET,
+          addedByDisplayName: "Target",
+          purchasedByUserId: TARGET,
+          purchasedByDisplayName: "Target",
+          purchasedAt: new Date(),
+        },
+        {
+          id: "d1",
+          name: "kardemumma",
+          addedByUserId: OTHER,
+          addedByDisplayName: "Other",
+        },
+      ],
+    });
+
+  // The other half of the same gap: a list where the target is neither member
+  // nor owner nor contributor, but IS the last-activity stamp. That field alone
+  // carries a raw uid and a display name on a document other people keep.
+  await db
+    .collection("unified_shared_shopping_lists")
+    .doc(`ussl-lastactivity-${RUN}`)
+    .set({
+      name: "lista med min sista aktivitet",
+      memberPermissions: { [OTHER]: "owner" },
+      ownerId: OTHER,
+      ownerDisplayName: "Other",
+      lastActivityByUserId: TARGET,
+      lastActivityByDisplayName: "Target",
+      items: [],
+    });
+
   // Foreign list the target was never a member of — the membership query must
   // not reach it at all.
   await db
@@ -785,6 +837,70 @@ test("unified_shared_shopping_lists: a target-owned list with no member key is h
   assert(
     !(await exists(`unified_shared_shopping_lists/ussl-ownerless-${RUN}`)),
     "a sole-owner list without a memberPermissions key must be deleted, not left for a probe that can never be satisfied",
+  );
+});
+
+// BUT-1725: erasure must reach a list the target LEFT. Membership and
+// ownership are both gone; only the contributor trail can find it, and until it
+// existed the departed member's name stayed on the items forever while the
+// residual probe reported the erasure clean.
+test("unified_shared_shopping_lists: a list the target left is still scrubbed", async () => {
+  const path = `unified_shared_shopping_lists/ussl-departed-${RUN}`;
+  assert(await exists(path), "the remaining members' list must survive");
+
+  const data = await dataAt(path);
+  const items = (data.items as Record<string, unknown>[]) ?? [];
+  const mine = items.find((i) => i.id === "d0")!;
+  const theirs = items.find((i) => i.id === "d1")!;
+
+  assert(
+    mine.addedByDisplayName === null,
+    "a departed member's name must not survive on an item they added",
+  );
+  assert(
+    mine.addedByUserId === "deleted",
+    "addedByUserId is anonymized, not nulled — nulling flips the item to personal",
+  );
+  assert(
+    mine.purchasedByUserId === null && mine.purchasedByDisplayName === null,
+    "the purchased pair must be cleared",
+  );
+  assert(
+    theirs.addedByDisplayName === "Other",
+    "another member's authorship must be untouched",
+  );
+
+  const contributors = (data.contributorUserIds as string[]) ?? [];
+  assert(
+    !contributors.includes(TARGET),
+    "the trail that found the list is itself a raw uid and must go in the same write",
+  );
+  assert(
+    contributors.includes(OTHER),
+    "other contributors must remain, or the next erasure cannot find them",
+  );
+});
+
+// BUT-1705: the same gap via the other queryable handle.
+test("unified_shared_shopping_lists: a last-activity-only stamp is cleared", async () => {
+  const path = `unified_shared_shopping_lists/ussl-lastactivity-${RUN}`;
+  assert(await exists(path), "the owner's list must survive");
+
+  const data = await dataAt(path);
+  assert(
+    data.lastActivityByUserId === null &&
+      data.lastActivityByDisplayName === null,
+    "a deleted account's activity stamp must not survive on someone else's list",
+  );
+  assert(data.ownerDisplayName === "Other", "the owner's own name is untouched");
+});
+
+// Scope proof: a list the target never touched at all must not be rewritten.
+test("unified_shared_shopping_lists: an untouched foreign list is not modified", async () => {
+  const data = await dataAt(`unified_shared_shopping_lists/ussl-foreign-${RUN}`);
+  assert(
+    data.ownerDisplayName === "Other",
+    "the foreign list must be out of every query's reach",
   );
 });
 

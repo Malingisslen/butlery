@@ -44,6 +44,7 @@ on:
       - "functions/src/__tests__/canonical-stats-rules.test.ts"
       - "functions/src/__tests__/collection-group-wildcards-rules.test.ts"
       - "functions/src/__tests__/tag-overrides-log-rules.test.ts"
+      - "functions/src/__tests__/shared-shopping-lists-rules.test.ts"
       - "functions/src/__tests__/purge-dormant-family-data.integration.test.ts"
       - "functions/src/__tests__/enforce-group-minor-membership.integration.test.ts"
       - "functions/src/__tests__/analyze-corrections-alias.test.ts"
@@ -95,6 +96,7 @@ on:
       - "functions/src/__tests__/canonical-stats-rules.test.ts"
       - "functions/src/__tests__/collection-group-wildcards-rules.test.ts"
       - "functions/src/__tests__/tag-overrides-log-rules.test.ts"
+      - "functions/src/__tests__/shared-shopping-lists-rules.test.ts"
       - "functions/src/__tests__/purge-dormant-family-data.integration.test.ts"
       - "functions/src/__tests__/enforce-group-minor-membership.integration.test.ts"
       - "functions/src/__tests__/analyze-corrections-alias.test.ts"
@@ -187,6 +189,15 @@ jobs:
       # render a per-block hit table into the job summary, and FAIL if a match
       # block that did not exist on the base revision was never evaluated.
       # Must run BEFORE "Stop emulator" — the report dies with the emulator.
+      #
+      # BUT-1707: "new" is decided from the base revision below, so the
+      # fetch-depth: 0 checkout above is load-bearing — a shallow clone turns
+      # this gate into a no-op that still prints green.
+      #
+      # BUT-1708: the run also prints and persists the untested-match-block
+      # count (rules-coverage/coverage-summary.json, uploaded below). That
+      # number is REPORT-ONLY by decision — no floor, no ratchet; the rationale
+      # and the conditions for revisiting it are in the script's header.
       - name: Rules coverage report + new-block gate
         working-directory: functions
         env:

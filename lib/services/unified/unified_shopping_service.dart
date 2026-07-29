@@ -138,6 +138,7 @@ class UnifiedShoppingService
       createCollaborativeList: createCollaborativeList,
       deleteList: deleteList,
       createPersonalList: createPersonalList,
+      confirmPersistedItemCount: _shoppingRepository.confirmPersistedItemCount,
     );
 
     final memberOps = ListMemberOperations(
@@ -292,8 +293,23 @@ class UnifiedShoppingService
   /// honest; the "Du" wording belongs at display time, to the person it is
   /// actually about. Same source as `FirebaseShoppingRepository`'s
   /// `resolveDisplayName`, so the two writers cannot disagree.
+  ///
+  /// BUT-1705: this said "the PROFILE name, not the Auth handle" while calling
+  /// `currentDisplayName`, which falls back to exactly that handle whenever the
+  /// profile has not loaded — the common case right after a cold start, which
+  /// is also when a shopper opens the list. `profileDisplayName` has no such
+  /// fallback, so THIS getter can no longer stamp a Google/Apple account name
+  /// onto a shared shopping list.
+  ///
+  /// Scope: this writer and `FirebaseShoppingRepository.resolveDisplayName`
+  /// only. Other writers still persist the Auth-sourced name onto documents
+  /// other users read — `social_menu_operations.dart` (`sharedByDisplayName`,
+  /// `sharedByAvatarUrl`, via `PermissionService.currentUser`, which is
+  /// synthesized from `FirebaseAuth.currentUser`) and the two realtime
+  /// services' `_currentUserDisplayName`. Those are out of BUT-1705's scope,
+  /// not already fixed. Do not read this as a repo-wide guarantee.
   String? get currentUserDisplayName =>
-      ServiceLocator.tryGet<UserService>()?.currentDisplayName;
+      ServiceLocator.tryGet<UserService>()?.profileDisplayName;
   @override
   FirebaseFirestore get firestore => _firestore;
 

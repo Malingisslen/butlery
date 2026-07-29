@@ -9,6 +9,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/services/import/parsers/heading_word_lists.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 
 void main() {
@@ -122,7 +123,12 @@ void main() {
     // mjölk", never a bare "Mjölk:"; structurally a lone-word-plus-colon IS a
     // heading. The items grouped UNDER such a heading are still tagged. These
     // tests pin the tradeoff so it stays a visible decision, not a silent one.
-    // (No known import source emits "Allergen:" as its own recipeIngredient.)
+    //
+    // The old "no known import source emits 'Allergen:' as its own
+    // recipeIngredient" line is GONE on purpose: BUT-1714 found that OCR'd
+    // cookbooks do exactly that when the quantity lands in another column.
+    // The tradeoff therefore survives for dairy/egg/soy only, and gluten is
+    // carved out below — do not re-generalise it from this group alone.
     test('"Mjölk:" → "Mjölk" (colon wins — accepted, not an allergen-safety '
         'regression because lone "Mjölk:" is structurally a heading)', () {
       expect(
@@ -135,38 +141,227 @@ void main() {
       expect(RecipeSectionDetector.componentSubHeadingLabel('Mjölk'), isNull);
     });
 
-    // BUT-1691 ENLARGED this set, and that must be visible rather than
-    // discovered later. Before the Swedish word boundary landed, the unit guard
-    // used ASCII `\b`, so `\bl\b` matched the trailing letter of "Kål" and
-    // `\bg\b` that of "Råg": those lines were treated as unit-bearing and
-    // therefore kept as ingredients — by accident, not by decision. With a
-    // correct boundary they now follow the same colon-wins contract as
-    // "Mjölk:". Same reasoning, same low risk (a lone word plus a colon is
-    // structurally a heading, and the rows grouped under it are still tagged),
-    // but three of these are gluten-bearing, so it is pinned explicitly.
-    const enlargedByBoundaryFix = <(String, String)>[
-      ('Mjöl:', 'Mjöl'),
-      ('Vetemjöl:', 'Vetemjöl'),
+    // BUT-1691 ENLARGED this set: before the Swedish word boundary landed the
+    // unit guard used ASCII `\b`, so `\bl\b` matched the trailing letter of
+    // "Kål" and `\bg\b` that of "Råg", and those lines were kept as
+    // ingredients by accident. With a correct boundary the NON-gluten ones
+    // follow the colon-wins contract; "Råg:" itself does not — BUT-1714 moved
+    // it back to ingredient deliberately (see the carve-out group below), so
+    // only non-allergen words are pinned here.
+    const colonWins = <(String, String)>[
       ('Kål:', 'Kål'),
-      ('Råg:', 'Råg'),
-      ('Öl:', 'Öl'),
+      ('Rödkål:', 'Rödkål'),
     ];
 
-    for (final (input, label) in enlargedByBoundaryFix) {
-      test(
-        '"$input" → "$label" (colon wins; was an accident of ASCII \\b)',
-        () {
-          expect(RecipeSectionDetector.componentSubHeadingLabel(input), label);
-        },
-      );
+    for (final (input, label) in colonWins) {
+      test('"$input" → "$label" (colon wins)', () {
+        expect(RecipeSectionDetector.componentSubHeadingLabel(input), label);
+      });
     }
 
     test('the same words without a colon stay ingredients', () {
-      for (final w in const ['Mjöl', 'Vetemjöl', 'Kål', 'Råg', 'Öl']) {
+      for (final w in const ['Mjölk', 'Kål', 'Rödkål']) {
         expect(
           RecipeSectionDetector.componentSubHeadingLabel(w),
           isNull,
           reason: '"$w" must stay an ingredient without a colon',
+        );
+      }
+    });
+  });
+
+  // BUT-1714. The colon-wins contract above is CARVED OUT for gluten. BUT-1691
+  // made "Mjöl:", "Vetemjöl:", "Råg:" and "Öl:" headings — correct boundary
+  // handling, but it enlarged the set of allergen lines that leave the flat
+  // ingredient list tagging reads, and it did so as a side effect rather than
+  // as a decision. A bare gluten word plus a colon is genuinely ambiguous: in
+  // an OCR'd cookbook the quantity often sits in another column, so "Mjöl:" is
+  // as likely a quantity-less ingredient row as a group name. The two errors
+  // are not symmetric — reading it as a heading DELETES the gluten from the
+  // tagging input, reading it as an ingredient only adds a noisy row — so the
+  // conservative reading wins.
+  group('BUT-1714: a bare gluten word + colon stays an ingredient', () {
+    const glutenLabels = <String>[
+      'Mjöl:',
+      'MJÖL:',
+      'Vetemjöl:',
+      'Rågmjöl:',
+      'Grahamsmjöl:',
+      'Råg:',
+      'Öl:',
+      'Vete:',
+      'Korn:',
+      'Havre:',
+      'Havregryn:',
+      'Dinkel:',
+      'Mannagryn:',
+      'Ströbröd:',
+      'Bulgur:',
+      'Couscous:',
+      'Malt:',
+      '  Mjöl:  ',
+    ];
+
+    for (final input in glutenLabels) {
+      test('"$input" → null (kept for gluten tagging)', () {
+        expect(RecipeSectionDetector.componentSubHeadingLabel(input), isNull);
+      });
+    }
+
+    // The carve-out is narrow on purpose: it must not eat ordinary component
+    // groups, including ones that merely contain a gluten word.
+    //
+    // "Deg:", "Fyllning:" and "Rödkål:" are deliberately NOT repeated here —
+    // they are asserted verbatim in the two groups above, and a mutation that
+    // widened the carve-out to eat them reddens there first. Only fixtures
+    // this group is the sole owner of are listed.
+    const stillHeadings = <(String, String)>[
+      ('Till degen:', 'Till degen'),
+      ('Mjölblandning:', 'Mjölblandning'), // gluten word as a PREFIX, not lone
+      // The two below are the only fixtures that can fail if the LONE-word
+      // half of [HeadingWordLists.isBareGlutenWord] is dropped: both END in a
+      // gluten word, so without the whitespace guard they would return null
+      // and a real component group would collapse into an ingredient row.
+      // "Till degen:" above cannot catch that — it is not a gluten word under
+      // either version. Single-word-only is the recorded BUT-1714 scope
+      // (ACCEPTED_DEVIATIONS.md), so it is pinned rather than left implicit.
+      ('Ljust vetemjöl:', 'Ljust vetemjöl'),
+      ('Till mjöl:', 'Till mjöl'),
+    ];
+
+    for (final (input, label) in stillHeadings) {
+      test('"$input" is still a heading → "$label"', () {
+        expect(RecipeSectionDetector.componentSubHeadingLabel(input), label);
+      });
+    }
+
+    // Scope boundary, pinned so the asymmetry is visible rather than looking
+    // like an oversight: the carve-out covers gluten only. The other EU
+    // allergens keep the colon-wins contract until that widening is evidenced
+    // and decided on its own.
+    // The `endsWith('mjöl')` suffix rule deliberately over-captures: these
+    // flours carry no gluten, yet they too stay ingredients. Pinned because
+    // the direction is what makes it acceptable — an extra ingredient row is
+    // noise a user clears, whereas narrowing the suffix to an enumerated
+    // gluten-flour list would put a lone "Mjöl:"-shaped OCR row one typo away
+    // from being read as a heading and losing the allergen.
+    test('gluten-free -mjöl compounds ride along, by design', () {
+      for (final w in const ['Potatismjöl:', 'Majsmjöl:', 'Mandelmjöl:']) {
+        expect(
+          RecipeSectionDetector.componentSubHeadingLabel(w),
+          isNull,
+          reason: 'the suffix rule is intentionally wider than gluten',
+        );
+      }
+    });
+
+    test('non-gluten allergen words keep the colon-wins contract', () {
+      for (final w in const ['Mjölk:', 'Ägg:', 'Soja:']) {
+        expect(
+          RecipeSectionDetector.componentSubHeadingLabel(w),
+          w.substring(0, w.length - 1),
+          reason: 'the BUT-1714 carve-out is deliberately gluten-only',
+        );
+      }
+    });
+  });
+
+  // BUT-1714, the two halves the hand-typed fixture lists above cannot reach.
+  //
+  // The carve-out has TWO entry points over the SAME vocabulary:
+  // [RecipeSectionDetector.componentSubHeadingLabel] refuses the line by
+  // returning null, and [RecipeSectionDetector.bareGlutenIngredientLabel]
+  // re-derives the same predicate for a caller with no ingredient fallback
+  // (`swedish_line_classifier`'s `LineType.sectionHeader` branch — reading the
+  // null as "clear the group" there DELETED the gluten row). It returns the
+  // COLON-STRIPPED label, which is what that caller re-inserts: lookup keys
+  // strip no punctuation, so a re-inserted "Mjöl:" queries `mjol:`, matches no
+  // registry document and takes every allergen verdict to UNKNOWN. Both the
+  // agreement of the two derivations AND the stripped shape are pinned here;
+  // two copies of one predicate can drift, and the fixture lists above pin
+  // neither the drift nor the vocabulary itself.
+  group('BUT-1714: the gluten vocabulary and its two entry points agree', () {
+    // Premise of the whole ticket: these are the words BUT-1691's boundary fix
+    // moved into the heading bucket. If the set stops containing them, every
+    // "→ null" fixture above still passes for the wrong reason.
+    test('the vocabulary still covers the words BUT-1691 moved', () {
+      expect(
+        HeadingWordLists.bareGlutenWords,
+        containsAll(<String>['mjöl', 'råg', 'öl', 'vete']),
+      );
+    });
+
+    test('every bareGlutenWords entry is reachable', () {
+      // isBareGlutenWord lowercases and refuses multi-word labels, so an entry
+      // carrying a space, a stray colon or an uppercase letter would be dead
+      // on arrival — present in the set, matching nothing, reading as coverage.
+      // Nothing else in this suite drives the set itself, so a word added
+      // later ships untested without this.
+      for (final word in HeadingWordLists.bareGlutenWords) {
+        expect(
+          HeadingWordLists.isBareGlutenWord(word),
+          isTrue,
+          reason: '"$word" is in the set but can never match a label',
+        );
+      }
+    });
+
+    test('every vocabulary word is a candidate AND is refused as a heading', () {
+      // The invariant the classifier's rescue branch rests on: it consults the
+      // candidate check only AFTER the detector returned null. Should the two
+      // derivations ever disagree the other way — candidate true, label
+      // non-null — the classifier takes the heading branch and the gluten row
+      // vanishes from the tagging input, silently, with every fixture above
+      // green. Four surface forms per word, because the two functions strip
+      // the colon and the whitespace independently of each other.
+      final forms = <String>[
+        for (final w in HeadingWordLists.bareGlutenWords) ...[
+          w,
+          '$w:',
+          w.toUpperCase(),
+          '  ${w.toUpperCase()}:  ',
+        ],
+        // Suffix-rule forms, which are not set members at all.
+        'rågmjöl:',
+        'Grahamsmjöl:',
+        'Potatismjöl:',
+      ];
+
+      for (final form in forms) {
+        final kept = RecipeSectionDetector.bareGlutenIngredientLabel(form);
+        expect(
+          kept,
+          isNotNull,
+          reason: '"$form" must be recognisable without reading a null',
+        );
+        // The re-inserted text is what tagging looks up, so its SHAPE is part
+        // of the contract: no trailing colon (the key would become `mjol:` and
+        // match nothing) and no surrounding whitespace.
+        expect(
+          kept,
+          isNot(contains(':')),
+          reason: '"$form" would be looked up with its colon and miss',
+        );
+        expect(kept, kept!.trim());
+        expect(
+          RecipeSectionDetector.componentSubHeadingLabel(form),
+          isNull,
+          reason:
+              'the two derivations disagree on "$form" — the classifier would '
+              'take the heading branch and drop the gluten row',
+        );
+      }
+    });
+
+    test('an ordinary component heading yields no ingredient label', () {
+      // Recall control for the check above: without it, a function hardcoded to
+      // return its argument would satisfy every assertion in this group, and
+      // the classifier would push real group labels into the ingredient list.
+      for (final w in const ['Deg:', 'Fyllning:', 'Till degen:', 'Mjölk:']) {
+        expect(
+          RecipeSectionDetector.bareGlutenIngredientLabel(w),
+          isNull,
+          reason: '"$w" is a real heading — the classifier must set the group',
         );
       }
     });

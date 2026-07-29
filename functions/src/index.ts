@@ -130,6 +130,11 @@ export { backfillRecipeCommentsDenorm } from "./migrations/backfill-recipe-comme
 // a real run refuses unless enable_pooled_ratings is ON; see the file header for the
 // full run gate + lifecycle-delete conditions. Built now, not run.
 export { backfillCanonicalRatings } from "./migrations/backfill-canonical-ratings";
+// BUT-1725: one-shot backfill of contributorUserIds on shared shopping lists,
+// the handle account erasure uses to find lists a user has LEFT. REMOVE this
+// export (and the source file) after a `hasMore: false` run plus a 30-day soak
+// with no residual_data_detected on a shared list; see the file header.
+export { backfillSharedListContributors } from "./migrations/backfill-shared-list-contributors";
 
 // Notification Functions - FCM push notifications
 export { sendNotification, sendNotificationBatch } from "./notifications/send-notification";

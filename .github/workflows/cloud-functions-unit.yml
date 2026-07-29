@@ -63,6 +63,13 @@ jobs:
       # nowhere, is registered but reachable by no CI lane, or is missing from
       # the rules workflow's `paths:` triggers. A green suite list proves
       # nothing if the list itself silently lost an entry.
+      #
+      # BUT-1709: the guard's own criteria are proven by
+      # `test:script-test-registration` (and the rules-coverage gate's by
+      # `test:script-coverage-report`), which the DI-seam step below discovers
+      # like any other unit suite — deliberately the same lane the guard's
+      # CI_REACHABLE criterion models, so a guard that stops running is caught
+      # by the mechanism it protects.
       - name: Check test registration
         working-directory: functions
         run: node scripts/check-test-registration.js

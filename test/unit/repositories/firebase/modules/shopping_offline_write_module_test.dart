@@ -14,6 +14,7 @@ library;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_offline_write_module.dart';
@@ -50,6 +51,25 @@ UnifiedShoppingList _list({
 
 UnifiedShoppingItem _item(String name) =>
     UnifiedShoppingItem(id: name, name: name, amount: 1);
+
+/// [list] with an `ownerId` / `createdAt` the model's `copyWith` refuses to
+/// move — the shape only a hand-assembled entity can produce, which is what
+/// `ShoppingRepository.update` accepts from its callers.
+UnifiedShoppingList _rebuilt(
+  UnifiedShoppingList list, {
+  String? ownerId,
+  DateTime? createdAt,
+}) => UnifiedShoppingList(
+  id: list.id,
+  name: list.name,
+  ownerId: ownerId ?? list.ownerId,
+  ownerDisplayName: list.ownerDisplayName,
+  items: list.items,
+  createdAt: createdAt ?? list.createdAt,
+  updatedAt: list.updatedAt,
+  type: list.type,
+  memberPermissions: list.memberPermissions,
+);
 
 void main() {
   late List<_PermissionCall> calls;
@@ -163,6 +183,181 @@ void main() {
         reason: 'an unstamped field must be absent, not queued as null',
       );
       expect(payload.keys, isNot(contains('lastActivityByDisplayName')));
+    });
+  });
+
+  // BUT-1719: the whole-list write path (rename, member management) used to
+  // `set(entity.toFirestore(), merge: true)`, which re-sent the ENTIRE member
+  // map on every rename. `merge` unions map keys, so a caller whose copy
+  // predated a removal handed the removed member their edit rights back — and
+  // `merge` can never delete a key, so removing a member never stuck either.
+  group('narrowUpdatePayload', () {
+    test('a rename carries the name and nothing about membership', () {
+      final stored = _list();
+      final payload = module.narrowUpdatePayload(
+        'alice',
+        stored.copyWith(name: 'Söndagshandel'),
+        stored,
+        baseIsCached: false,
+      );
+
+      expect(payload['name'], 'Söndagshandel');
+      expect(
+        payload.keys.where((k) => k.startsWith('memberPermissions')),
+        isEmpty,
+      );
+      expect(payload.keys, isNot(contains('ownerId')));
+      expect(payload.keys, isNot(contains('createdAt')));
+    });
+
+    test('an offline rename against a stale cached base still goes through', () {
+      // The ticket's exact scenario: this device has been offline since before
+      // Bob was removed, so BOTH the cached base and the caller's copy still
+      // list him. Nothing about membership differs, so nothing about
+      // membership is written — the rename is not the moment to replay a
+      // months-old access-control decision.
+      final staleCache = _list();
+      final payload = module.narrowUpdatePayload(
+        'alice',
+        staleCache.copyWith(name: 'Söndagshandel'),
+        staleCache,
+        baseIsCached: true,
+      );
+
+      expect(payload['name'], 'Söndagshandel');
+      expect(
+        payload.keys.where((k) => k.startsWith('memberPermissions')),
+        isEmpty,
+      );
+    });
+
+    test('removing a member emits a targeted delete, not a shrunken map', () {
+      final stored = _list();
+      final payload = module.narrowUpdatePayload(
+        'alice',
+        stored.copyWith(
+          memberPermissions: const {'alice': SharedListPermission.admin},
+        ),
+        stored,
+        baseIsCached: false,
+      );
+
+      expect(payload['memberPermissions.bob'], isA<FieldValue>());
+      expect(
+        payload.keys,
+        isNot(contains('memberPermissions')),
+        reason:
+            'a whole-map value merges or replaces depending on the call '
+            'used to write it; a field path does not',
+      );
+    });
+
+    test('adding a member emits only that key', () {
+      final stored = _list();
+      final payload = module.narrowUpdatePayload(
+        'alice',
+        stored.copyWith(
+          memberPermissions: const {
+            'alice': SharedListPermission.admin,
+            'bob': SharedListPermission.edit,
+            'cecilia': SharedListPermission.view,
+          },
+        ),
+        stored,
+        baseIsCached: false,
+      );
+
+      expect(payload['memberPermissions.cecilia'], 'view');
+      expect(payload.keys, isNot(contains('memberPermissions.bob')));
+    });
+
+    test('refuses a membership change made against a cached base', () {
+      // Offline, "the caller changed memberPermissions" and "someone else
+      // changed it while we were offline" look identical. Replaying the local
+      // answer is how a removed member comes back, so this one waits for a
+      // server read.
+      final stored = _list();
+
+      expect(
+        () => module.narrowUpdatePayload(
+          'alice',
+          stored.copyWith(
+            memberPermissions: const {'alice': SharedListPermission.admin},
+          ),
+          stored,
+          baseIsCached: true,
+        ),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+      expect(calls.single.granted, isFalse);
+    });
+
+    // `privilegedKeys` is a TRIPLE, and only `memberPermissions` had a leg.
+    // The other two are reachable for exactly one caller — the OWNER, whose
+    // `requireNoPrivilegeEscalation` returns early — so this refusal is the
+    // only thing standing between an offline owner and replaying a stale
+    // ownership transfer over whoever holds the list now.
+    //
+    // `copyWith` deliberately cannot move either field, so the mutation is
+    // built with the plain constructor — which is exactly how the caller
+    // reaches it: `updateCollaborativeList` is `ShoppingRepository.update`'s
+    // collaborative leg and takes whatever entity the caller assembled.
+    for (final (name, mutate)
+        in <(String, UnifiedShoppingList Function(UnifiedShoppingList))>[
+          ('ownerId', (l) => _rebuilt(l, ownerId: 'bob')),
+          (
+            'createdAt',
+            (l) => _rebuilt(l, createdAt: DateTime.utc(2020, 1, 1)),
+          ),
+        ]) {
+      test('refuses a $name change made against a cached base', () {
+        final stored = _list();
+
+        expect(
+          () => module.narrowUpdatePayload(
+            'alice',
+            mutate(stored),
+            stored,
+            baseIsCached: true,
+          ),
+          throwsA(
+            isA<PermissionDeniedException>().having(
+              (e) => e.toString(),
+              'names the refused field',
+              contains(name),
+            ),
+          ),
+        );
+        expect(calls.single.granted, isFalse);
+      });
+
+      test('allows the same $name change against a SERVER base', () {
+        // The recall control: the refusal is about the BASE being cached, not
+        // about the field being untouchable. Without this a blanket "never
+        // write these keys" regression reads as a passing safety test.
+        final stored = _list();
+        final payload = module.narrowUpdatePayload(
+          'alice',
+          mutate(stored),
+          stored,
+          baseIsCached: false,
+        );
+
+        expect(payload.keys, contains(name));
+      });
+    }
+
+    test('an identical entity produces no write at all', () {
+      final stored = _list();
+      expect(
+        module.narrowUpdatePayload(
+          'alice',
+          stored,
+          stored,
+          baseIsCached: false,
+        ),
+        isEmpty,
+      );
     });
   });
 }

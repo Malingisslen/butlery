@@ -37,6 +37,11 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
     UnifiedShoppingList Function(UnifiedShoppingList live) mutate,
   );
 
+  /// BUT-1723: how many items the SERVER holds for [listId], or null when that
+  /// could not be confirmed (cached read, missing list, failed read). Callers
+  /// deleting an original after copying it MUST treat null as "keep it".
+  Future<int?> confirmPersistedItemCount(String listId);
+
   // Template operations
   Future<String> saveAsTemplate({
     required String listId,

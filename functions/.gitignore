@@ -2,8 +2,12 @@
 lib/
 *.js
 *.js.map
-# ...except intentional admin/migration scripts (BUT-1214 backfill etc.)
+# ...except intentional admin/migration scripts (BUT-1214 backfill etc.) and the
+# CI-wiring guards' own fixtures under scripts/__tests__ (BUT-1707/BUT-1709) —
+# `!scripts/*.js` alone does not reach a subdirectory, and a guard test that
+# cannot be committed is a guard test that never runs.
 !scripts/*.js
+!scripts/**/*.js
 
 # Node dependencies
 node_modules/

@@ -15271,6 +15271,24 @@ abstract class AppLocalizations {
   /// **'Kunde inte omvandla listan'**
   String get shoppingConvertError;
 
+  /// No description provided for @shoppingConvertIncompleteTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omvandlingen slutfördes inte'**
+  String get shoppingConvertIncompleteTitle;
+
+  /// No description provided for @shoppingConvertedOriginalKept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan kopierades, men originalet finns kvar — kontrollera den nya listan och ta bort originalet manuellt.'**
+  String get shoppingConvertedOriginalKept;
+
+  /// No description provided for @shoppingConvertedToPersonalOriginalKept.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan kopierades till en personlig lista, men den delade listan finns kvar — alla medlemmar har fortfarande tillgång till den. Ta bort den delade listan manuellt om ingen annan ska komma åt den.'**
+  String get shoppingConvertedToPersonalOriginalKept;
+
   /// No description provided for @shoppingDescriptionLabel.
   ///
   /// In sv, this message translates to:

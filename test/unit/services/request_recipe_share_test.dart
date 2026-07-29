@@ -23,6 +23,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/social_request.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -50,10 +51,18 @@ class _FakePermissionService extends Fake implements PermissionService {
 }
 
 class _FakeUserService extends Fake implements UserService {
-  String? displayName = 'Malin';
+  /// The name the user chose and the profile document stores.
+  String? profileName = 'Malin';
+
+  /// The Firebase Auth handle — the real name the OAuth provider supplied.
+  /// Display-only; BUT-1705 forbids persisting it as attribution.
+  String? authHandle = 'Malin Gisslen';
 
   @override
-  String? get currentDisplayName => displayName;
+  String? get profileDisplayName => profileName;
+
+  @override
+  String? get currentDisplayName => profileName ?? authHandle;
 }
 
 /// Records `createRequest` writes and `updateRequestStatus` calls, and lets a
@@ -221,6 +230,30 @@ void main() {
       // Payload type must be recipeShareRequest, not friendRequest.
       expect(data['type'], NotificationPayloadType.recipeShareRequest);
     });
+
+    // BUT-1705: `fromUserName` is PERSISTED on a document the recipient reads
+    // and is forwarded into a push notification. A profile without a chosen
+    // name must fall back to the neutral label, never to the Auth handle — the
+    // OAuth provider's real name is unconsented here and account deletion does
+    // not scrub it.
+    test(
+      'an empty profile name stamps the fallback label, not the auth handle',
+      () async {
+        userService.profileName = null;
+        userService.authHandle = 'Malin Gisslen';
+
+        final ok = await module.requestRecipeShare(
+          ownerId: 'owner-uid',
+          recipeId: 'recipe-1',
+          recipeTitle: 'Pannkakor',
+        );
+
+        expect(ok, isTrue);
+        final req = requestRepo.created.single;
+        expect(req.fromUserName, isNot('Malin Gisslen'));
+        expect(req.fromUserName, AppLocale.current.displayUnknownUser);
+      },
+    );
 
     test('null current user → false, no write, no notification', () async {
       permission.setUserId(null);

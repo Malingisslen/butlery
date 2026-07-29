@@ -42,35 +42,12 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// - **Template Privacy**: Supports public and private template visibility
 /// - **Permission Logging**: Audit trail for all permission-sensitive operations
 /// - **Field Validation**: Ensures data integrity for lists, items, and templates
-/// **Performance Features:**
-/// - **Smart Querying**: Optimized template search with client-side filtering fallback
-/// - **Batch Operations**: Efficient bulk operations for items and templates
-/// - **Stream Management**: Real-time updates for both personal and collaborative lists
-/// - **Query Limits**: Performance-conscious limits on template and archive queries
-/// **Template System:**
-/// Creates reusable shopping list templates that users can save, share publicly,
-/// and use to quickly generate new shopping lists. Supports search, categorization,
-/// and metadata tracking for enhanced discoverability.
-/// **Usage Examples:**
-/// ```dart
-/// final shoppingRepo = FirebaseShoppingRepository(
-///   authRepository: ServiceLocator.get<AuthRepository>(),
-/// );
-/// // Create a list
-/// final list = UnifiedShoppingList(name: 'Weekly Groceries');
-/// final created = await shoppingRepo.create(list);
-/// // Save as template
-/// final templateId = await shoppingRepo.saveAsTemplate(
-///   listId: created.id,
-///   templateName: 'Weekly Template',
-///   isPublic: true,
-/// );
-/// // Create from template
-/// final newListId = await shoppingRepo.createListFromTemplate(
-///   templateId: templateId,
-///   listName: 'This Week\'s List',
-/// );
-/// ```
+/// **Item storage differs by list type, and that asymmetry is load-bearing:**
+/// a collaborative list keeps its items INLINE on the shared document (so one
+/// transaction can merge two members' edits), while a personal list keeps them
+/// in an `items` SUBCOLLECTION which [readAll] treats as the only truth. A
+/// personal-list write that skips the subcollection persists nothing, however
+/// healthy the returned model looks (BUT-1723).
 class FirebaseShoppingRepository
     extends BaseFirebaseRepository<UnifiedShoppingList>
     with UserScopedFirebaseRepository<UnifiedShoppingList>
@@ -127,8 +104,15 @@ class FirebaseShoppingRepository
       // propagates, so it is the one the client must write. tryGet keeps a
       // repository built before/without the service graph working — an
       // unresolved name stamps empty, never a stale one.
+      //
+      // BUT-1705: `profileDisplayName`, NOT `currentDisplayName`. The latter
+      // falls back to the Firebase Auth handle, which is the user's real name
+      // from their Google/Apple account and is a name they never chose to show
+      // a shared list. It is also not the name `on-profile-updated.ts`
+      // propagates or the one account deletion scrubs, so an Auth-sourced
+      // stamp survives both.
       resolveDisplayName: () =>
-          ServiceLocator.tryGet<UserService>()?.currentDisplayName,
+          ServiceLocator.tryGet<UserService>()?.profileDisplayName,
     );
 
     _templateOpsModule = ShoppingTemplateOperationsModule(
@@ -230,14 +214,33 @@ class FirebaseShoppingRepository
         'ShoppingRepository',
       );
       return await _routingModule.createCollaborativeList(entity);
-    } else {
-      AppLogger.info(
-        'Routing personal list "${entity.name}" to user collection',
-        'ShoppingRepository',
-      );
-      return await super.create(entity);
     }
+
+    AppLogger.info(
+      'Routing personal list "${entity.name}" to user collection',
+      'ShoppingRepository',
+    );
+    final saved = await super.create(entity);
+
+    // BUT-1723: a personal list's items live in the `items` SUBCOLLECTION, and
+    // `readAll()` rebuilds every personal list from it — OVERWRITING whatever
+    // the parent document's `items` array said. Writing only the document
+    // therefore looks correct for the rest of the session and comes back empty
+    // on the next launch, which is what made `convertCollaborativeToPersonal` a
+    // data-loss path: it deleted the shared source on the strength of a copy
+    // that had persisted no items at all.
+    //
+    // A failure propagates deliberately — `create` must not report success over
+    // a half-written list, because the conversion's delete is gated on it.
+    if (saved.items.isNotEmpty) {
+      await _itemOpsModule.addItemsBatch(saved.id, saved.items);
+    }
+    return saved;
   }
+
+  @override
+  Future<int?> confirmPersistedItemCount(String listId) async =>
+      _queryModule.confirmPersistedItemCount(listId);
 
   /// Override update method to route collaborative lists to correct collection
   @override

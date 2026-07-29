@@ -958,3 +958,403 @@ the string. The comment this one replaced named the cascade; the rewrite dropped
 **GDPR: no consequence on either file.** The read touches only the caller's own doc ids and adds no
 field, no export/erasure surface and no new PII in logs; the constant's comment is documentation
 only, and a permanently-empty analytics probe collects nothing.
+
+### 2026-07-27 — BUT-1723/1725/1705 shopping+account review: conversion data-loss gate, the erasure trail, and the profile-name split
+
+Reviewed: `firebase_shopping_repository.dart`, `shopping_repository_query_module.dart`,
+`shopping_repository_routing_module.dart`, `shopping_offline_write_module.dart`,
+`shopping_list_permission_guards.dart` (new), `shopping_repository.dart` (interface),
+`list_lifecycle_operations.dart`, `unified_shopping_service.dart`, `user_service.dart`,
+`shopping_sharing_status_dialog.dart`, `account-deletion-cascade.ts`, `index.ts`,
+`backfill-shared-list-contributors.ts` (new), + 5 test files.
+
+**What landed and is correct.** (1) The three rule mirrors moved out of the routing module into
+`ShoppingListPermissionGuards` verbatim — `requireSelfOwnedCreate` (both conjuncts),
+`requireNoPrivilegeEscalation` (the ownerId/memberPermissions/createdAt triple),
+`requireEditRights` — and all four write paths still call them; the module is 418 lines, the
+guards 158. Pure extraction, no predicate changed. (2) `deleteShoppingLists` now unions FOUR
+queries (`memberPermissions.<uid>`, `ownerId`, `contributorUserIds array-contains`,
+`lastActivityByUserId ==`) and `probeResidualData` counts the same two new handles, so
+deleter ⊇ probe still holds; `lastActivityBy{UserId,DisplayName}` is finally scrubbed
+(`account-deletion-cascade.ts:619-622`), closing the open BUT-1665 finding in the principles file.
+The `contributorUserIds` removal is `arrayRemove` inside the SAME per-doc transaction as the scrub
+— the arrayRemove-in-a-fake hazard does not apply because the coverage is emulator-backed
+(`request-account-deletion.integration.test.ts`, two new fixtures: a left list and a
+last-activity-only list). No index work needed: both new filters are single-field, and
+`firestore.indexes.json` has no `unified_shared_shopping_lists` fieldOverride.
+(3) `UserService.profileDisplayName` (no Auth fallback) is now the source for the repository's
+`resolveDisplayName` and `UnifiedShoppingService.currentUserDisplayName` — the last two persisted
+shopping attribution writers named in the principles file. The dialog treats empty and absent
+alike.
+
+**F1 (High) — `confirmPersistedItemCount` is permanently inconclusive for personal lists.**
+`shopping_repository_query_module.dart:151-156`: the `catch` around the shared-collection probe
+does `return null` instead of falling through to the personal-list probe. `firestore.rules:1606-1609`
+dereferences `resource.data.ownerId`, so a `get()` on a listId that does not exist in
+`unified_shared_shopping_lists` is denied, not empty — which is EVERY personal list. So
+`_copyIsSafeToTrust` sees null, and `convertCollaborativeToPersonal` never deletes the source:
+convert silently degrades to copy. `FakeFirebaseFirestore` returns `exists == false` without
+consulting rules, so all four new unit tests pass. Fix: fall through (keep the warning); the second
+`catch` still returns null for a genuine failure. Needs an emulator/rules-lane test.
+
+**F2 (Medium) — the erasure trail has a hole on `updateCollaborativeList`.** `_withContributor` is
+applied in `_mutateFromCache` (:375) and inline in the transaction (:297-305) but not on the
+whole-list path (:218-226), whose `narrowUpdatePayload` DOES emit `items` when they differ.
+`ShoppingRepository.update()` / `ShoppingListManagementModule.updateList` are public and route a
+collaborative list there. Today's live item writers all go through `mutateCollaborativeList`
+(`personal_shopping_operations` self-scopes to `isPersonal`), so it is latent, not live. Best fix
+also closes a pre-existing lost-update: drop `items` from the whole-list path entirely.
+
+**F3 (Medium) — rules not changed in lockstep.** `firestore.rules:1620-1626` lets any edit/admin
+member write `contributorUserIds` freely; a modified client can strip a departed member's uid and
+make their `addedByDisplayName` unreachable to the cascade. Wants an append-only conjunct + size
+bound; hand to `firestore-rules-tester`.
+
+**F4 (Medium) — the BUT-1723 fan-out activated a cross-user PII copy.** Now that
+`create()` really persists items, `convertCollaborativeToPersonal`
+(`list_lifecycle_operations.dart:188-191`) writes other members' `addedBy*`/`purchasedBy*`/
+`lastModifiedBy*` into `users/{me}/unified_shopping_lists/{id}/items` — a tree no other user's
+cascade scans. Also flips `UnifiedShoppingItem.isCollaborative` true inside a personal list.
+
+**F5 (Medium) — export/erasure pair.** Erasure now claims four handles on shared lists; the Art-15
+export (`content_export_manager.dart:187-193`) still covers personal lists only and has no
+shared-list section at all. Pre-existing, widened.
+
+**F6 (Medium) — the backfill has no test.** `backfill-shared-list-contributors.ts` exports
+`reconstructContributors`/`runBackfill` "for unit testing" and its header (:12) tells the reader to
+delete a `test:backfill-shared-list-contributors` script that does not exist in
+`functions/package.json`; both sibling backfills have one. `check-test-registration.js` guards
+test→script, not source→test, so nothing reddens. Logic itself read clean (admin-gated, idempotent,
+arrayUnion not set, documentId cursor, 450×23 ≥ default 10000 cap, `hasMore` correct).
+
+**F7 (Medium, cost) — reads.** The personal leg of `confirmPersistedItemCount` reads every item doc
+to count one number (use `count()`); `create()`'s new `addItemsBatch` call re-enters
+`_requireList` → `read()`, which always spends a doomed shared-collection read first.
+
+**F8 (Low) — unchunked batch.** `addItemsBatch` commits one `WriteBatch` with no chunking, and
+`create()` now feeds it `saved.items` unbounded; >500 items throws and, by the new deliberate
+propagation, fails the whole create. `kFirestoreBatchSafeChunkSize = 450` exists.
+
+**F9/F10 (Low/Info).** The offline `arrayUnion` contributor union is untested. Remaining
+Auth-fallback attribution writers outside this fileset:
+`social/modules/recipe_share_request_module.dart:59` and
+`realtime/realtime_recipe_service.dart:49` — same class as the BUT-1705 fix.
+
+### 2026-07-27 (post-fix re-review, same working tree) — BUT-1723/1725/1705: the fall-through is FIXED; three of the prior findings are still open and the backfill cannot finish at scale
+
+Same fileset as the entry above, re-read after the automated fixes. Ran the four changed Dart test
+files (102 pass), `firebase_shopping_repository_test.dart` + `user_service_test.dart` (57 pass),
+`unified_shopping_service_test.dart` + `shopping_item_management_module_test.dart` (75 pass), and
+`npx tsc --noEmit` in `functions/` (clean). No new Critical/High introduced by the fixes.
+
+**Closed since the last pass.** F1 (High) is genuinely fixed: `confirmPersistedItemCount`
+(`shopping_repository_query_module.dart:154-167`) now logs and FALLS THROUGH to the personal leg
+instead of `return null`, with a comment naming the `resource`-is-null rules mechanic, and the
+unit test mocks the sealed `CollectionReference`/`DocumentReference` to stage a real
+`permission-denied` — the one shape `fake_cloud_firestore` cannot produce. Both `isFromCache`
+guards are pinned by their own mocked-metadata tests, which is the only way to reach them (the fake
+answers `isFromCache == false` for everything). F6 is fixed:
+`functions/src/__tests__/backfill-shared-list-contributors.test.ts` exists and
+`functions/package.json:81` carries the `test:backfill-shared-list-contributors` script the header
+tells the operator to delete.
+
+**Still open, unchanged, re-verified line by line:** F2 (`updateCollaborativeList:218-226` writes
+`items` via `narrowUpdatePayload` without `_withContributor`), F3 (`contributorUserIds` appears
+NOWHERE in `firestore.rules`; the non-owner update branch at :1620-1626 forbids only
+`ownerId`/`memberPermissions`/`createdAt`, so any edit-level member can blank the erasure trail),
+F4 (`list_lifecycle_operations.dart:204-207` still passes `collaborativeList.items` verbatim),
+F5 (no shared-list section in the Art-15 export), F7/F8 (whole-subcollection read to count; one
+unchunked `WriteBatch` now fed unbounded `saved.items`).
+
+**NEW F11 (Medium) — the backfill has no RESUME cursor, so `hasMore: false` is unreachable past
+~10k docs.** The prior pass cleared this as "documentId cursor, 450×23 ≥ default 10000 cap,
+`hasMore` correct" — that reads the loop, not the invocation boundary. `lastDocId`
+(`backfill-shared-list-contributors.ts:123`) is loop-LOCAL and `BackfillRequest` exposes only
+`dryRun`/`maxLists`; every invocation therefore restarts at the top of the collection. Already-done
+docs are skipped but still SCANNED and still counted toward `maxLists`, so past
+`MAX_BATCHES_PER_INVOCATION × BATCH_SIZE` the callable can never reach the end — and
+`hasMore: false` is the documented condition for deleting the file. The sibling
+`backfill-canonical-ratings.ts:97-101,121` already has the right shape (`startAfter` in the
+request, `nextCursor` in the response); `backfill-recipe-comments-denorm.ts` has the same gap, so
+copying the wrong sibling is how this recurs. Secondary: `hasMore` is forced true whenever
+`batchesProcessed` hits the cap (:179), including the case where the final batch was also the end
+of the collection (`snapshot.size < BATCH_SIZE` breaks AFTER the increment) — safe direction, one
+wasted run.
+
+**NEW F12 (Medium) — the conversion gate confirms the COPY server-side and the SOURCE from local
+state.** `_copyIsSafeToTrust(copyId, personalList.items.length)`
+(`list_lifecycle_operations.dart:157,213`): the expected count comes from
+`_getPersonalLists()`/`getListById`, i.e. whatever `readAll()` last loaded on THIS device. Personal
+lists have no snapshot stream, so a row added from another device is absent from that count, the
+copy matches the short number, and the source is deleted with those rows. Same bug class the
+ticket fixed, one level up. Either confirm the source with the same server-only probe or state in
+the doc comment that the source count is trusted.
+
+**Notes that are NOT findings.** `narrowUpdatePayload` is safe against the sentinel trap —
+`UnifiedShoppingList.toFirestore()` (model :595-624) emits `Timestamp.fromDate`, never
+`FieldValue.serverTimestamp()`, and a fixed key set, so the `DeepCollectionEquality` diff is
+stable and no key can be silently dropped. `_memberDiff`'s per-key field paths are written through
+`docRef.update()`, where a dotted key IS a field path — correct, and the routing-module test proves
+a removal now actually lands (`merge: true` could never delete a key). Two accidental improvements
+worth knowing: the narrowing also stops `fromFirestore` writing a normalised unknown enum value
+back over the server's (the CF fixtures carry `'owner'`/`'editor'`, which the Dart enum does not
+have), and the privileged-key refusal on a cached base surfaces through `updateList`'s
+`catch → return false`, so no misleading "permission denied" copy reaches the user. Removing the
+Auth fallback from `currentUserDisplayName` means a collaborative list created before the profile
+loads stamps `ownerDisplayName: ''` permanently — `on-profile-updated.ts` only fires on a profile
+CHANGE, so it never self-heals; deliberate under BUT-1705, worth knowing.
+
+### 2026-07-28 (third post-fix pass, same working tree) — BUT-1723/1725/1705: F3 and F4 closed; the rules half is now the untested half
+
+Same fileset as the two entries above. Verified green before writing: `flutter analyze` on the ten
+reviewed Dart files (no issues), `flutter test` on the four changed test files plus
+`firebase_shopping_repository_test.dart` and `user_service_test.dart` (162 pass), `npx tsc --noEmit`
+in `functions/` (clean), `npm run test:backfill-shared-list-contributors` (10/10). No new
+Critical/High from the fixes themselves.
+
+**Closed since the last pass.**
+- **F3 (rules lockstep).** `firestore.rules:1613-1617` now defines `keepsContributorTrail()` —
+  `request.resource.data.get('contributorUserIds', []).hasAll(resource.data.get(...))` plus
+  `size() <= 200` — and it is a conjunct of `allow update` (:1642, applied to the OWNER too, which
+  is right: the owner can strip a departed member's uid as easily as anyone) and, in bound-only
+  form, of `allow create` (:1634). The `.get(field, [])` default makes a pre-backfill doc with no
+  array pass `[].hasAll([])`. Model check that makes the narrow-update path safe by construction:
+  `UnifiedShoppingList` has NO `contributorUserIds` field, so `toFirestore()` never emits it and
+  `narrowUpdatePayload`'s diff can never put it in the payload — the value survives on
+  `docRef.update()` by merge semantics.
+- **F4 (cross-user PII in the personal copy).** `list_lifecycle_operations.dart:204-281`:
+  `_withoutForeignAttribution` / `_stripForeignIdentities` drop `addedBy*`, `purchasedBy*`,
+  `lastModifiedBy*` and `assignedTo*` (plus `assignedAt`, since a claim without a claimer is noise)
+  unless the uid equals `PermissionService.currentUserId`, keeping name/amount/`bought`/timestamps.
+  Checked the rebuild is lossless: the constructor's 21 parameters
+  (`unified_shopping_item.dart:292-314`) are exactly the fields the helper passes — no silent reset.
+  A null `currentUserId` strips everything, which is the fail-safe direction. `isCollaborative` is a
+  derived getter (`addedByUserId != null`) with zero production consumers on the ITEM type, so the
+  owner's own retained attribution flipping it true inside a personal list is inert.
+- **F9.** The offline `arrayUnion` contributor union is now tested both ways —
+  `shopping_repository_routing_module_test.dart:466-560` covers create-seats-`[uid]`, the online
+  transaction union by a non-owner, the offline TICK (cached-base payload) and the offline APPEND
+  (arrayUnion payload), the last two behind an injected `transactionRunner` that throws
+  `unavailable`.
+- **Conversion UI.** `ListConversionResult` is consumed correctly at both call sites
+  (`shopping_list_operations.dart:238-245, 280-288`): `newListId == null` → error,
+  `originalKept` → `shoppingConvertedOriginalKept` (an error toast, not a success).
+- **`arrayRemove`-in-a-fake risk retired for this cascade.** The contributor removal is asserted in
+  `request-account-deletion.integration.test.ts` against the real emulator (`ussl-departed-<RUN>`
+  fixture: the target has no member key, is not the owner, is not the activity stamp — only the
+  trail can find it), plus a `ussl-lastactivity-<RUN>` fixture and an untouched-foreign-list scope
+  proof. Deleter superset-of-probe re-verified leg by leg: probe counts `contributorUserIds
+  array-contains` and `lastActivityByUserId ==`; the deleter queries both and clears both in the
+  same per-doc `update()`. No `firestore.indexes.json` entry needed (single-field equality + the
+  automatic array index; the file has no `unified_shared_shopping_lists` field overrides).
+
+**NEW F13 (High) — the new rule conjunct is completely untested.** `unified_shared_shopping_lists`
+has no `*-rules.test.ts` anywhere in `functions/src/__tests__/` (grep: only the backfill unit test
+and the deletion integration test mention the collection), and `keepsContributorTrail()` now gates
+EVERY client write to it. The specific unproven mechanic is the offline path: `_mutateFromCache`
+queues the handle as `FieldValue.arrayUnion([uid])`, so `hasAll` passes only if
+`request.resource.data` reflects field transforms. If it does not, every queued shop-aisle tick is
+denied on replay and silently rolled back, and the only trace is `onReplayRejected`'s log line. Four
+cases to prove on the emulator: arrayUnion-append allowed; explicit-array-superset allowed;
+dropping another uid denied for an edit-member AND for the owner; a 201-entry array denied. Owner
+of that work is `firestore-rules-tester`.
+
+**Still open, unchanged, re-verified.** F2 (`shopping_repository_routing_module.dart:220-226` —
+`updateCollaborativeList` writes a narrowed payload that DOES include `items` when they differ, with
+no `_withContributor`; reachable from `ShoppingRepository.update` and the deprecated
+`saveCollaborativeList`, latent only because every live item writer goes through
+`mutateCollaborativeList`). F5 (no shared-list section in the Art-15 export while erasure now claims
+four handles). F7 (the personal leg of `confirmPersistedItemCount` reads every item doc to produce
+one number — `count()` bills 1; and `create()`'s `addItemsBatch` re-enters `_requireList` → `read()`,
+which spends a doomed shared-collection read plus a warning log on every personal create). F8
+(`addItemsBatch` commits one unchunked `WriteBatch`, now fed `saved.items` unbounded by `create()`;
+`kFirestoreBatchSafeChunkSize = 450` exists). F11 (`backfill-shared-list-contributors.ts:123,192-201`
+— `lastDocId` is still loop-local, `BackfillRequest` still exposes only `dryRun`/`maxLists`, response
+still has no `nextCursor`; `MAX_BATCHES_PER_INVOCATION x BATCH_SIZE = 10350` hard-caps a scan that
+always restarts at the top, so the documented `hasMore: false` file-deletion gate is unreachable past
+that many docs. `backfill-canonical-ratings.ts:97-101,121` is the sibling with the right shape).
+F12, now narrowed to ONE leg: `convertCollaborativeToPersonal`'s source count comes from
+`_getCollaborativeLists()`, which IS backed by `collaborativeListsStream()`, so that leg is fine;
+`convertPersonalToCollaborative` still takes `personalList.items.length` from `_getPersonalLists()`,
+i.e. whatever `readAll()` last loaded on this device, and personal lists have no stream.
+
+**NEW F14 (Low) — a partial `create()` leaves an orphan list doc.** `create()` deliberately
+propagates an `addItemsBatch` failure so it cannot report success over a half-written list, but the
+parent document is already written by then and nothing removes it.
+`ShoppingListManagementModule.createPersonalList:64-66` swallows to `null`, so the conversion reports
+`shoppingConvertError` while an empty list appears in the user's list on the next `readAll()`. Safe
+direction (no data loss), but say so in the doc comment or delete the parent on the failure path.
+
+**Notes that are NOT findings.** `UnifiedShoppingService.currentUserDisplayName` and
+`FirebaseShoppingRepository`'s `resolveDisplayName` both now read `UserService.profileDisplayName`
+(no Auth fallback), and `UserService.currentDisplayName` keeps its fallback with a doc comment
+scoping it to DISPLAY — the BUT-1705 split is clean and pinned by
+`user_service_test.dart:873-937`. `shopping_sharing_status_dialog.dart:272-279` treats absent and
+empty alike, which is the right pairing for the "stamp empty, never a placeholder" convention.
+`ShoppingListPermissionGuards` is a clean extraction — the routing module is back to 418 lines and
+the guards carry both create conjuncts, the three-key escalation bar and the edit-rights bar.
+`appendPayload` and `_withContributor` transform DIFFERENT fields (`items` vs
+`contributorUserIds`), so Firestore's one-transform-per-field rule is not violated.
+`shopping_sharing_status_dialog.dart` is 521 lines against a 505 allowlist entry — allowlisted file,
+not filed.
+
+### 2026-07-28 — BUT-1705/BUT-1719/BUT-1723/BUT-1725 shopping-account re-review (post-fix round)
+
+Re-reviewed 18 files in the working tree after the automated fix round. Verified clean, with the
+evidence that made each one clean rather than merely plausible:
+
+- **Guard extraction is faithful.** `ShoppingListPermissionGuards` is a byte-for-byte move of
+  `_requireNoPrivilegeEscalation` / `_requireSelfOwnedCreate` / `_requireEditRights` out of
+  `ShoppingRepositoryRoutingModule` (418 lines now, under the 500 limit; guards 158, offline-write
+  302, query 232, lifecycle 282, repo 490). All three call sites now go through `_guards`, including
+  the offline `_mutateFromCache` leg.
+- **`set(merge:true)` → `update(narrowUpdatePayload(...))` on `updateCollaborativeList` is sound.**
+  Prerequisite verified directly: `UnifiedShoppingList.toFirestore()` is sentinel-free (every
+  timestamp is `Timestamp.fromDate`, no `FieldValue.serverTimestamp()`), so the `DeepCollectionEquality`
+  diff does not report every key as changed on every call. `contributorUserIds` is absent from
+  `toFirestore()`/`fromFirestore`, so the narrowing can never drop it.
+- **`_stripForeignIdentities` constructor is exhaustive.** Counted the `UnifiedShoppingItem`
+  constructor's parameter list (21 params) against the rebuild — all 21 present, so no field
+  silently resets to its default. `isCollaborative => addedByUserId != null` has NO production
+  consumer (grep: only the class's own doc example), so nulling it on the personal copy is safe;
+  the CF cascade still anonymizes to `"deleted"` because on a SHARED doc other members read it.
+- **Erasure deleter ⊇ probe holds.** Probe legs are now member-key / `contributorUserIds`
+  array-contains / `lastActivityByUserId` == / sole-member-owned; the deleter runs the same four
+  queries and clears each handle in the SAME per-doc transaction as the item scrub. The owned leg
+  still filters to orphans only, so a scrubbed list other members keep does not report residual
+  forever. Indexes: both new queries are single-field; `firestore.indexes.json` has no
+  `unified_shared_shopping_lists` entry and no fieldOverride disabling `contributorUserIds`, so the
+  automatic index covers them.
+- **Ran the gates rather than asserting them.** 166 Dart unit tests green across the six shopping/
+  user-service test files (Windows native-PATH `.bat` wrapper); `dart analyze` clean over
+  `lib/repositories/firebase`, `lib/services/unified/operations/collaborative_shopping`,
+  `user_service.dart`, `unified_shopping_service.dart` and the shopping dialogs; `tsc --noEmit`
+  clean on `functions/`; `npm run test:backfill-shared-list-contributors` 10/10.
+
+Findings filed (all Medium or below — no new Critical/High introduced by the fix round):
+
+1. `backfill-shared-list-contributors.ts` has NO request-level resume cursor — `lastDocId` is
+   loop-local and seeded to `null`, `BackfillRequest` has no `startAfter`, `BackfillResponse` no
+   `nextCursor`. Ceiling `MAX_BATCHES_PER_INVOCATION(23) × BATCH_SIZE(450) = 10,350`, default
+   `maxLists` 10,000. Past that the file-header removal gate (`hasMore: false`) is unreachable and
+   the tail of the collection never gets the trail. The idempotent skip does not rescue it — skipped
+   docs still consume the `maxLists` budget. `backfill-canonical-ratings.ts` has the shape to copy
+   (`startAfter?: string` in, `nextCursor: string | null` out). This is the SECOND backfill to ship
+   with it, so the principles file now says to open the request/response interfaces first.
+2. `updateCollaborativeList` is the one shared-list write path that can emit `items` without
+   unioning `contributorUserIds`. `_withContributor` is wired only to `_mutateFromCache`; the
+   transaction computes the union inline; create seeds `[uid]`. Reachable through the public
+   `ShoppingRepository.update()` interface. Traced the live caller chain to
+   `ShoppingListManagementModule.updateList` ← `menu_shopping_list_generator.dart:216`, whose
+   generated rows carry no `addedByUserId` — so nothing leaks TODAY, which is why it is Medium and
+   not High. Fix: union when the narrowed payload `containsKey('items')`.
+3. The BUT-1705 doc claim in `unified_shopping_service.dart` ("a real name from the user's
+   Google/Apple account can no longer be stamped onto a document other people read") is repo-wide
+   and false: `shopping_social_share_module.dart:66-68,93-94` still writes `sharedByDisplayName` +
+   `sharedByAvatarUrl` from `PermissionService.currentUser`, which synthesizes a `UserProfile` from
+   the Auth user (`permission_service.dart:130-134`: `displayName ?? 'User'`,
+   `avatarUrl: firebaseUser.photoURL`). Lands in the recipient's
+   `user_shared_shopping_lists/{uid}/received_lists/{id}` tree; `sharedBy*` is not in
+   `on-profile-updated.ts`'s pairs, so it is never corrected. The DI-wired social coordinators
+   (`social_module.dart:192/211/253`) are profile-first but fall back to the localized placeholder
+   `AppLocale.current.displayUnknownUser` and PERSIST it — same "store a fact nobody asserted"
+   defect the shopping writers just stopped doing.
+4. `convertPersonalToCollaborative` confirms the COPY server-side but takes `expectedItems` from
+   local state of the source (`_getPersonalLists()`), and personal lists have no snapshot stream —
+   they come from `readAll()`. A source that gained rows on another device is deleted on the
+   strength of a copy complete only against this device's view. The collaborative→personal leg is
+   fine (stream-backed source). Fix or say "the source count is trusted" in the doc comment.
+5. `FirebaseShoppingRepository.create` leaves an orphan parent document when the new
+   `addItemsBatch` fan-out throws — `createPersonalList` swallows the exception and returns null, so
+   the conversion correctly keeps the source, but `readAll()` rebuilds the orphan from an empty
+   `items` subcollection and shows the user an empty duplicate list.
+6. `confirmPersistedItemCount`'s personal leg downloads every item doc to count them.
+   `.count().get()` bills ~1 read per 1000 index entries AND has no offline path (it fails rather
+   than serving cache), which is exactly the "server-confirmed" semantics the method needs —
+   cheaper and stronger than the current `metadata.isFromCache` check. Low: conversion-only path.
+7. Handed to `firestore-rules-tester`: the new `keepsContributorTrail()` conjunct gates EVERY client
+   update of a live collection with zero rules-test coverage. Grepped all ~28
+   `functions/src/__tests__/*rules*.test.ts` for `unified_shared_shopping_lists` — zero hits. The
+   load-bearing unproven assumption is that `request.resource.data` reflects an `arrayUnion` field
+   transform (the offline replay queues exactly that); if it does not, every queued shop-aisle tick
+   is denied on replay and rolled back with only a log line as evidence.
+
+### 2026-07-28 — BUT-1723/1719/1705/1725 fix-round review (staged, HEAD e5fec5883)
+
+Scope: `firebase_shopping_repository.dart`, new `shopping_list_permission_guards.dart`,
+`shopping_offline_write_module.dart`, `shopping_repository_query_module.dart`,
+`shopping_repository_routing_module.dart`, `interfaces/shopping_repository.dart`,
+`user_service.dart`, `social/modules/recipe_share_request_module.dart`.
+
+Commands actually run (counts as observed):
+- `flutter test` on the four staged shopping repository/module test files → **75/75 passed**
+  (incl. `contributorUserIds seats the creator on create`, `… unions an item-writing member who is
+  not the owner`, `… an offline edit still extends the trail`, `… an offline append still extends
+  the trail`, `createCollaborativeList authorization refuses a list that does not seat the creator
+  as a member`, `privilege-escalation parity … a non-owner may not move createdAt`).
+- `flutter test` on `user_service_test.dart` + `request_recipe_share_test.dart` +
+  `collaborative_shopping_operations_test.dart` → **101/101 passed**.
+- `npx ts-node functions/src/__tests__/backfill-shared-list-contributors.test.ts` → **10/10 passed**.
+- `flutter analyze` on the 8 scoped files → **No issues found (47.1s)**.
+
+CONFIRMED FIXED / CLEAN this round:
+- All four collaborative write paths call the extracted guards (create → `requireSelfOwnedCreate`;
+  whole-list update, transactional mutate and cached-base offline mutate → `requireEditRights` +
+  `requireNoPrivilegeEscalation`). Verified against the STAGED `firestore.rules` block for
+  `/unified_shared_shopping_lists`, conjunct by conjunct. `requireSelfOwnedCreate` now mirrors BOTH
+  create conjuncts, closing the audit-only residual carried since BUT-1696.
+- `keepsContributorTrail()` (`hasAll` + `size() <= 200`) is a conjunct of BOTH create and update,
+  owner included; `contributorUserIds` is deliberately absent from the update rule's non-owner
+  forbidden-key set, so an edit member can union but not drop.
+- Deleter ⊇ probe holds for the shared-list legs: probe counts member-key, `contributorUserIds`,
+  `lastActivityByUserId` and sole-member `ownerId`; the deleter's four queries cover all of them and
+  every probed field is cleared inside the SAME per-doc transaction (sole-owner list deleted
+  outright). No composite index needed — no `fieldOverrides` for the collection, so automatic
+  single-field indexes cover `array-contains` and `==`.
+- Fail-safe shapes verified rather than assumed: `confirmPersistedItemCount` returns null (⇒ KEEP
+  BOTH) on `isFromCache` and on failure; the shared-leg `catch` FALLS THROUGH instead of returning,
+  which is the only reason the personal leg is reachable in production;
+  `narrowUpdatePayload` THROWS on a privileged key against a cached base; `requireEditRights` lets a
+  `validateUpdatePermission` throw propagate (fail-closed).
+- Data-source rule respected throughout: `permissionService.currentUserId` for auth only,
+  `userService.profileDisplayName` (profile-only, NO Auth fallback) for anything persisted as
+  attribution.
+
+FINDINGS FILED:
+1. HIGH — `functions/src/__tests__/shared-shopping-lists-rules.test.ts` is `??` UNTRACKED while the
+   `keepsContributorTrail()` rule change is STAGED; its `package.json` script and
+   `firestore-rules.yml` path triggers are unstaged (`MM`). The proof exists (528 lines, SSL11
+   asserts the `arrayUnion` shape) but ships nothing, and the CI new-block gate stays green because
+   the match block is not new — only the function inside.
+2. MEDIUM — `updateCollaborativeList` (routing module :220-226) still does not extend
+   `contributorUserIds`; `_withContributor` (:329) is wired to `_mutateFromCache` only. Structural
+   cause: the payload is diffed from `entity.toFirestore()`, whose key set never contains the
+   handle. Full caller trace showed no live leak today (`personal_shopping_operations` preserves
+   attribution, `list_member_operations` is owner-only, `menu_shopping_list_generator` writes
+   attribution-free rows), so the invariant rests on caller discipline.
+3. MEDIUM — the third `PermissionService.currentUser` writer is still live
+   (`permission_service.dart:125-141` synthesizes a `UserProfile` from Auth with
+   `displayName ?? 'User'` and `photoURL`; `social_menu_operations.dart:87-88,113-114` stamps
+   `sharedByDisplayName`/`sharedByAvatarUrl` from it into `shared_content` and other users'
+   `user_shared_menus/{friendId}/received_menus`), while the new comment at
+   `unified_shopping_service.dart:293-300` reads as a repo-wide "can no longer be stamped" claim.
+4. MEDIUM — the BUT-1723 fan-out routes through `read()`, which probes the shared collection first,
+   so every personal create with items bills a guaranteed `permission-denied` round trip plus a
+   warning log on the happy path.
+5. LOW — the personal `delete()` still leaves the `items` subcollection orphaned, now always
+   populated because of the fan-out; covered by the CF cascade + `listDocuments()` probe, so storage
+   waste rather than a GDPR hole.
+6. LOW — `recipe_share_request_module.dart:67-69` persists `?? AppLocale.current.displayUnknownUser`
+   into `SocialRequest.fromUserName` (a cross-user doc + push payload), freezing the SENDER's locale
+   — the opposite of the stamp-empty rule this same round established for shopping.
+7. LOW — `deleteCollaborativeList` (`firebase_shopping_repository.dart:412-415`) is a bare
+   `doc().delete()` with no `validateDeletePermission` and no audit row, next to a guarded
+   `delete()`; grepped to zero production callers (integration test only).
+8. LOW (outside declared scope) — `backfill-shared-list-contributors.ts:65-77` has no
+   `startAfter`/`nextCursor` on its request/response interfaces (loop-local `lastDocId` only), so
+   the documented `hasMore: false` removal gate is unreachable past 23×450 = 10,350 docs. Third time
+   this shape has shipped.
+
+New mechanic learned: modules receiving `logPermissionCheck` as a `void Function({...})` callback
+silently drop the `Future<void>` the mixin returns (Dart return-type covariance to `void`), so every
+audit row written from the shopping modules — including the new guards class — is fire-and-forget.

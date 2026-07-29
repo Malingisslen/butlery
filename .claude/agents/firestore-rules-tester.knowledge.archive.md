@@ -1321,3 +1321,65 @@ The public_profiles minor-searchability tests (PP1–PP5) from the prior entry r
 green in the same age-gate run (38/38): PP2 deny `@ L614`, PP4 deny `@ L635`+`@ L664`
 (isSearchable-update branch AND admin branch both deny), PP1/PP3/PP5 the allow contrasts.
 
+
+### 2026-07-28 — BUT-1725 `unified_shared_shopping_lists` append-only contributor trail
+
+New suite `functions/src/__tests__/shared-shopping-lists-rules.test.ts`
+(`test:rules:shared-shopping-lists`, PROJECT_ID `butlery-shared-shopping-lists-test`),
+**25/25 green**. Registered in `test:rules:all` and in BOTH `paths:` blocks of
+`.github/workflows/firestore-rules.yml`.
+
+The rule (firestore.rules L1612-1616, invoked at L1642; create-side bound at L1634):
+```
+function keepsContributorTrail() {
+  return request.resource.data.get('contributorUserIds', [])
+           .hasAll(resource.data.get('contributorUserIds', []))
+    && request.resource.data.get('contributorUserIds', []).size() <= 200;
+}
+allow update: if isAuthenticated() && keepsContributorTrail() && ( owner || member-with-edit )
+```
+`contributorUserIds` is the only handle `account-deletion-cascade.ts` (L227/L521,
+`array-contains`) has on a shared list a member has already LEFT. Append-only for
+EVERY client writer, owner included; Admin SDK bypasses rules so the cascade's
+`arrayRemove` still works (pinned as SSL24).
+
+Client write shapes it must not break (all verified):
+- `createCollaborativeList` — `docRef.set({...toFirestore(), contributorUserIds:[uid]})` (SSL1)
+- `updateCollaborativeList` — narrowed `docRef.update(payload)`, field untouched (SSL6)
+- `mutateCollaborativeList` — `transaction.set(..., merge:true)` with the union computed
+  from a Dart **Set**, so ELEMENT ORDER IS NOT PRESERVED (SSL8 — `hasAll` is
+  set-semantics, this is why the rule must not be an equality/prefix check)
+- `_withContributor` offline replay — `FieldValue.arrayUnion([uid])` (SSL11, SSL10)
+
+**Findings, no rule defect:**
+1. (Medium, by design) The bound reads `request.resource` only, so a doc already over
+   200 is FROZEN — even an items-only update denies (SSL20 pins it). Reachable only via
+   an Admin-SDK write, since the client path can never cross the bound. Fix would be a
+   rule change, not a client one.
+2. (Low, by design) At exactly 200 a 201st contributor is not merely un-trailed, they
+   are fully locked out of editing, because the client unconditionally unions itself
+   (SSL19). Bound is inclusive: 200 allows on both create (SSL3) and update (SSL12).
+
+**One false FAIL of my own making**, worth remembering: my `validListBody` stamped
+`createdAt: new Date()`, and the member branch (L1647) forbids a non-owner touching
+`createdAt` — SSL8 denied for a reason unrelated to BUT-1725 and initially read as a
+rule defect. Fixed with a module-level `CREATED_AT` constant; SSL25 now pins the
+createdAt-immutability rule so the pairing is self-documenting.
+
+**Emulator debug output reads TWO evaluation passes.** Every authenticated deny printed
+`evaluation error at L1642:24 for 'update' @ L1642, ... false for 'update' @ L1642` —
+the first pass has no `resource` loaded so anything dereferencing `resource.data` errors;
+only the unauthenticated test short-circuited at `isAuthenticated()` and printed a clean
+`false`. Pre-existing (the old rule also dereferenced `resource.data` in its first
+conjunct), NOT introduced by this diff. Read the second verdict.
+
+**Mutation probe** (in-memory `rules.replace`, throwaway projectIds `but1725-probe-a/b`,
+file never touched, probe deleted after):
+- A — `keepsContributorTrail() &&` removed from `allow update`: SSL13/14/15/16/17/19/20
+  ALL flipped to allowed (7/7).
+- B — `.size() <= 200` raised to 100000: SSL4 (create 201) and SSL19 (grow past 200) both
+  flipped.
+- B initially reported SSL4 "still denied" — **probe bug, not a rule finding**: the
+  function's bound and the create rule's bound are byte-identical (`.size() <= 200;`) and
+  a non-global `String.replace` patched only the first. `/g` fixed it. Always `/g` when
+  mutating a literal that appears more than once in firestore.rules.

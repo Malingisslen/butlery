@@ -5856,3 +5856,472 @@ not user-derived, so it is not PII. No new imports, no extra reads, no batch-lim
 no cold-start delta.
 
 Verdict: BLOCKING on the staging state only. The code as written in the worktree is correct.
+
+---
+
+### 2026-07-27 — BUT-1705/1723/1725 shopping-account sprint review (`contributorUserIds` erasure handle)
+[Bug fixed] [Pattern discovered]
+
+Reviewed diff: `functions/src/account/account-deletion-cascade.ts`,
+`functions/src/index.ts`, new `functions/src/migrations/backfill-shared-list-contributors.ts`,
+`functions/src/__tests__/request-account-deletion.integration.test.ts`, plus the Dart
+shopping repository/service/test files in the same sprint.
+
+**The design under review.** Account erasure located a user's shared shopping lists by
+`memberPermissions.<uid>` or `ownerId`. A user who LEFT a list (or was removed) has neither,
+while every item they added still carries `addedByUserId`/`addedByDisplayName` inline on the
+shared document — and Firestore cannot query fields nested inside an array of maps. So the
+departed member's name stayed visible to the remaining members forever, and
+`probeResidualData` certified the erasure clean. The fix adds a flat, `array-contains`-
+queryable `contributorUserIds` array, unioned client-side at three chokepoints
+(`createCollaborativeList` seeds `[uid]`, `mutateCollaborativeList` computes the union
+inside the transaction, `_mutateFromCache` queues `FieldValue.arrayUnion`), plus a
+`lastActivityByUserId == uid` query leg. Deleter and probe were both widened; the deleter
+stays a strict superset (4 union'd queries vs 2 probe legs), and the `arrayRemove` of the
+uid goes in the SAME per-doc transaction as the scrub because it is the step's re-entry
+handle. That part is correct and well-argued.
+
+**Findings.**
+
+1. **HIGH — `backfillSharedListContributors` is unclassified in
+   `app-check-enforcement.test.ts`.** Reproduced, not inferred:
+   `npx ts-node src/__tests__/app-check-enforcement.test.ts` → `14/15 passed, 1 failed`,
+   "Unclassified onCall callable(s) found … backfillSharedListContributors
+   (migrations\backfill-shared-list-contributors.ts)". `CI_EXCLUDE` in
+   `scripts/run-ci-unit-tests.js` is empty, so this is a red CI lane, not a latent one.
+   Fix: add `"backfillSharedListContributors", // migrations/… — requireAdmin one-shot
+   backfill` to `ADMIN_EXEMPT` (justified: `requireAdmin(request)` is the handler's first
+   statement).
+
+2. **HIGH — the migration ships with zero tests and no `test:*` script.** Its own header
+   instructs a future reader to "remove the matching `test:backfill-shared-list-contributors`
+   script entry" — which does not exist. Both sibling backfills have one
+   (`test:backfill-canonical-ratings`, `test:backfill-recipe-comments`).
+   `reconstructContributors` and `runBackfill` are exported specifically for testing and
+   nothing calls them. Note `node scripts/check-test-registration.js` printed `OK — 116 test
+   files registered` — it only validates that EXISTING test files are registered, so a source
+   file with no test at all is invisible to it. That is a real blind spot in the guard.
+
+3. **MEDIUM (GDPR) — the migration can re-create a deleted user's uid.**
+   `reconstructContributors` excludes the `"deleted"` sentinel and nulls (good — the cascade
+   anonymises `addedByUserId`/`lastModifiedByUserId` to `"deleted"`, nulls the
+   purchased/assigned pairs and nulls `lastActivityByUserId`, so no resurrection there). But
+   it does `add(data.ownerId)`, and `ownerId` is the ONE identifier the cascade deliberately
+   RETAINS raw on a shared list other members keep (`account-deletion-cascade.ts:488-492` —
+   nulling it would orphan the list for everyone, since `firestore.rules:1620-1626` reads it
+   for write authorization). So for a list owned by an already-deleted account, the backfill
+   writes that uid into a brand-new field. Fix: gate it —
+   `const perms = data.memberPermissions; if (perms && typeof perms === "object" &&
+   Object.prototype.hasOwnProperty.call(perms, data.ownerId)) add(data.ownerId);` — the
+   cascade removes `memberPermissions.{uid}`, so a deleted owner is cleanly excluded while a
+   live owner (create rule requires their own key) always passes.
+
+4. **MEDIUM — no resume cursor; the backfill cannot progress past `maxLists`.**
+   `runBackfill` pages with a purely LOCAL `lastDocId` over an UNFILTERED
+   `orderBy(documentId()).limit(450)` scan of the whole collection. Already-migrated docs
+   remain matched (they're just counted as `skipped`), and `totalScanned` counts them, so
+   invocation 2 rescans exactly the same first 10 000 docs and returns `hasMore: true`
+   again — forever. The file's own removal gate ("a successful invocation returns
+   `hasMore: false`") is therefore unreachable above the cap.
+   `backfillCanonicalRatings` already solves this: `startAfter` in the request,
+   `nextCursor` in the response. `backfillRecipeCommentsDenorm` has the same defect, which
+   is presumably where the shape was copied from.
+
+5. **MEDIUM — `batch.update()` is not safe on a missing doc.** A shared list deleted by its
+   owner between the paginated read and `batch.commit()` makes the whole 450-op batch throw
+   NOT_FOUND (grpc code 5), aborting the invocation. Re-running recovers (idempotent) but
+   loses every remaining batch. Fix: `try { await batch.commit(); } catch (e) { if ((e as
+   {code?:number}).code !== 5) throw e; /* fall back to per-doc updates, skipping NOT_FOUND */ }`.
+
+6. **MEDIUM (rules, handed to `firestore-rules-tester`) — `contributorUserIds` is now a GDPR
+   erasure handle but is freely client-writable.** `firestore.rules:1620-1626` only blocks
+   `ownerId`/`memberPermissions`/`createdAt` for non-owners, so any edit-member (or the
+   owner) can SHRINK the array and make a departed member's data permanently unreachable to
+   the cascade. All in-app paths union (arrayUnion / transaction-computed union) and
+   `narrowUpdatePayload` never carries the field, so this is tampered-client only — but the
+   append-only property the file header claims is not enforced anywhere. Suggested guard:
+   `resource.data.get('contributorUserIds', []).removeAll(
+      request.resource.data.get('contributorUserIds', [])).size() == 0`. The Admin SDK's
+   `arrayRemove` in the cascade bypasses rules, so an append-only rule is compatible with it.
+
+7. **LOW — `updateCollaborativeList` writes `items` (via `narrowUpdatePayload`) without
+   stamping the contributor trail.** Every in-app item mutation goes through
+   `mutateCollaborativeList` (verified: all six call sites are in
+   `shopping_item_operations_module.dart`), so this is currently unreachable, but the
+   trail's invariant is "every path that writes attributed items unions the writer" and one
+   path on the public interface doesn't.
+
+8. **LOW — `deleteShoppingLists` now issues four unbounded `.get()`s** on
+   `unified_shared_shopping_lists` (was two). Fine at current volume on a rare GDPR path;
+   worth a `limit()` + drain if the collection ever grows.
+
+**Clean on re-check.** Region unchanged (`setGlobalOptions` untouched; the migration pins
+`REGION = "europe-west1"` like both siblings). No PII in logs — the new probe legs use
+`uid_prefix: uid.slice(0, 6)` and structured fields; the migration logs counts only. The
+per-doc scrub transaction, its per-list try/catch, the accumulate-then-throw-once shape and
+the "same write as the re-entry handle" rule all survive the diff intact. `npx tsc --noEmit`
+clean. `npx ts-node src/__tests__/but753-legacy-sharedwith-cascade.test.ts` → 13/13.
+Dart: `flutter test` over the four listed suites → 97/97 pass (native-PATH .bat wrapper).
+Shared lists keep items INLINE only (no `items` subcollection — confirmed against
+`confirmPersistedItemCount` and the repository docstring), so `reconstructContributors`
+scanning `data.items` is a complete scan, not a partial one.
+
+---
+
+### 2026-07-27 — BUT-1725 re-review after automated fixes (shopping-account sprint)
+[Bug fixed] [Pattern discovered]
+
+Re-reviewed the SAME worktree files as the entry above, after the sprint's automated fix
+pass. Scope: `functions/src/account/account-deletion-cascade.ts`, `functions/src/index.ts`,
+`functions/src/migrations/backfill-shared-list-contributors.ts`, new
+`functions/src/__tests__/backfill-shared-list-contributors.test.ts`,
+`functions/src/__tests__/request-account-deletion.integration.test.ts`,
+`functions/package.json`, `functions/.gitignore`, the two CI workflows.
+
+**Both HIGHs are fixed and verified by running the tools, not by reading the diff.**
+- `backfillSharedListContributors` added to `ADMIN_EXEMPT` in
+  `app-check-enforcement.test.ts` (justified — `requireAdmin(request)` is the handler's
+  first statement). `npx ts-node src/__tests__/app-check-enforcement.test.ts` → 15/15
+  (was 14/15 with the unclassified-callable failure).
+- The migration now ships `src/__tests__/backfill-shared-list-contributors.test.ts` +
+  `test:backfill-shared-list-contributors` in package.json → 9/9. The fake models
+  `arrayUnion`'s observable effect so the idempotent-re-run case is real, and the
+  `"deleted"`-sentinel exclusion (the security-relevant line) is pinned directly.
+  `node scripts/check-test-registration.js` → OK, 117 files (was 116).
+- Also landed alongside: `functions/.gitignore` `!scripts/**/*.js` so the new
+  `scripts/__tests__/*.test.js` guard fixtures are committable at all (`!scripts/*.js`
+  does not reach a subdirectory), and `test:script-coverage-report` /
+  `test:script-test-registration` registered so `run-all-tests.js` discovers them.
+
+**Not fixed — the three MEDIUMs from the previous entry still stand verbatim in the
+worktree**, and no accepted-deviation entry was filed for any of them (checked both
+`.claude/rules/accepted-deviations.md` and `docs/architecture/ACCEPTED_DEVIATIONS.md`;
+the only new entry there is BUT-1714's gluten/colon carve-out, unrelated):
+1. `reconstructContributors` still does an unconditional `add(data.ownerId)` at
+   `backfill-shared-list-contributors.ts:94`, and `ownerId` is the ONE identifier the
+   cascade deliberately RETAINS raw (`account-deletion-cascade.ts:488-492`). For a list
+   owned by an already-deleted account the backfill writes that uid into a brand-new
+   field. The new test suite does not cover it: its sentinel case asserts `"deleted"` is
+   excluded, but a deleted OWNER's `ownerId` is their real uid, not the sentinel — so the
+   suite passes while the hole is open. Gate on `memberPermissions` still holding the
+   owner's key (the cascade removes it; the create rule requires it for a live owner).
+2. No resume cursor — `runBackfill` has no `startAfter` parameter and returns no
+   `nextCursor`, so above ~10k docs it rescans the same prefix forever.
+3. `batch.update()` over 450 docs with no NOT_FOUND fallback.
+New sub-findings from this pass, both from re-deriving the loop rather than trusting the
+previous entry: the `hasMore` computation has NO `reachedEnd` flag (the canonical backfill
+has one), so a corpus exhausted by a short page on batch 23 reports `hasMore: true` and the
+file's own removal gate never opens; and `maxLists` is only consulted BETWEEN batches — the
+suite's own log line proves it (`maxLists: 10` → `"migrated":450`), so the docstring's
+"hard ceiling on docs to process" is wrong.
+
+**Clean on re-check.** `npx tsc --noEmit` clean. `setGlobalOptions({region:"europe-west1"})`
+and `admin.initializeApp()` untouched at `index.ts:41,43`; the migration pins the same
+region like both siblings. No PII: new probe legs use `uid_prefix: uid.slice(0,6)` +
+structured fields, the migration logs counts only. Cascade unit lane green —
+`request-account-deletion` 4/4, `but753-legacy-sharedwith-cascade` 13/13,
+`cascade-audit-log` 3/3, `cascade-audit-log-wirings` 3/3. Deleter/probe superset property
+re-derived by hand and holds for all four handles (member key, ownerId, contributor trail,
+lastActivity), including the sole-owner delete branch; the integration suite's
+`no failed collections` test at line 1523 is the coupling check that would redden if a
+union leg were dropped. Two docs matching both new probe legs double-count into `residual`
+— cosmetic only, `residual` is a count. Rules finding #6 from the previous entry is still
+open and still belongs to `firestore-rules-tester`: `firestore.rules:1602-1630` has no
+`contributorUserIds` guard at all (grepped — the field appears nowhere in the rules file),
+so the append-only property the migration header claims is enforced nowhere.
+
+---
+
+### 2026-07-28 — BUT-1725 third pass: fixes confirmed, migration suite proven vacuous
+[Bug fixed] [Pattern discovered]
+
+Third review of the same worktree (`functions/src/account/account-deletion-cascade.ts`,
+`functions/src/index.ts`, `functions/src/migrations/backfill-shared-list-contributors.ts`,
+`functions/src/__tests__/backfill-shared-list-contributors.test.ts`,
+`functions/src/__tests__/request-account-deletion.integration.test.ts`,
+`functions/src/__tests__/app-check-enforcement.test.ts`, `functions/package.json`,
+`functions/.gitignore`, both CI workflows). Nothing is staged — index clean, so worktree ==
+what a `git add` would commit; I reviewed the worktree.
+
+**Confirmed fixed (tools run, not read).** `npx tsc --noEmit` clean.
+`app-check-enforcement.test.ts` 15/15 (`backfillSharedListContributors` now in
+`ADMIN_EXEMPT`, justified — `requireAdmin(request)` is the handler's first statement).
+`backfill-shared-list-contributors.test.ts` 9/9 and registered as
+`test:backfill-shared-list-contributors`. `node scripts/check-test-registration.js` → OK,
+117 files, 4 accepted-debt warnings (none of them these). `request-account-deletion` 4/4,
+`but753-legacy-sharedwith-cascade` 13/13. Deleter⊇probe re-derived by hand over all four
+handles and holds. No index override exists for `unified_shared_shopping_lists` in
+`firestore.indexes.json`, so both new equality/array-contains legs ride automatic
+single-field indexes — no composite needed. Client side verified wired: `contributorsField`
+is written at three chokepoints in `shopping_repository_routing_module.dart` (:171 create,
+:298-304 transaction union, :334 offline `FieldValue.arrayUnion`), so the erasure handle is
+not dead on arrival. Rules finding #6 from the first pass was ALSO fixed by
+`firestore-rules-tester` — `firestore.rules` now carries `keepsContributorTrail()`
+(`hasAll` + `size() <= 200`) on update, and a size bound on create.
+
+**NEW finding, mutation-proven — the migration's unit suite says nothing about the write.**
+`makeFakeDb`'s `commit()` ignores the recorded op payload and instead recomputes
+`reconstructContributors(store[op.id])`, stamping `contributorUserIds` itself. So the fake
+models the effect the test WANTS rather than the effect the SUT REQUESTED. Proof: renamed
+the migration's written key to `contributorUserIdsMUTANT` (md5 before `29be8baf…`, restored
+and re-verified `29be8baf…` after) — suite stayed **9/9 green**. Field name, arrayUnion vs
+set, and the `missing`-only payload are all unasserted; the only real coverage is over
+`reconstructContributors`, which is already directly tested. Minimal kill: in "runBackfill
+stamps a list that has no trail yet", assert
+`Object.keys(fake.writes[0].data).join(',') === 'contributorUserIds'`, and optionally
+`(fake.writes[0].data.contributorUserIds as FieldValue).isEqual(
+FieldValue.arrayUnion('friend','owner'))` — constructing a sentinel needs no initialized app.
+
+**Still open, verbatim from the 2026-07-27 re-review, no accepted-deviation entry filed**
+(re-checked both deviation files: the only new entry is BUT-1714's gluten/colon carve-out):
+`reconstructContributors:94` unconditional `add(data.ownerId)`; no resume cursor
+(`runBackfill` takes no `startAfter`, returns no `nextCursor`); `batch.update()` over 450
+docs with no grpc-5 fallback; no `reachedEnd` flag so a short 23rd page reports
+`hasMore: true` and the file's own removal gate never opens; `maxLists` docstring says "hard
+ceiling" while it is only consulted between batches. NEW this pass on the ownerId one: now
+that `contributorUserIds` is append-only in rules, a resurrected owner uid can be removed by
+NO client write and by no future cascade run (that account's cascade already finished) —
+admin script only. That raises the cost of the same Medium, though the trigger window stays
+narrow (a list owned by an already-deleted account with surviving members, backfilled after).
+
+**Clean on re-check.** `setGlobalOptions({region:"europe-west1"})` and
+`admin.initializeApp()` untouched; migration pins the same region like both siblings. No PII
+in logs — new probe legs use `uid_prefix: uid.slice(0,6)` + structured fields, the migration
+logs counts only. Scrub + memberPermissions-key delete + `arrayRemove` all still land in ONE
+per-doc transaction (the re-entry-handle rule). Per-list try/catch with
+`errCode`/`errName`, accumulate-then-throw-once intact. The integration suite's three new
+tests (departed member, last-activity-only, untouched foreign list) assert the positive
+"owned data is gone" shape, not just a control survivor. Cosmetic only: two new probe legs
+double-count a doc matching both, and `deleteShoppingLists` now issues four unbounded
+`.get()`s where it issued two.
+
+---
+
+### 2026-07-28 — BUT-1725 fourth pass: two open Mediums PROVEN by execution, one promoted to High
+[Bug fixed] [Pattern discovered]
+
+Fourth review of the same worktree, after another automated fix pass. Index clean (nothing
+staged), so worktree == what `git add` would commit; I reviewed the worktree. Files:
+`functions/src/account/account-deletion-cascade.ts`, `functions/src/index.ts`,
+`functions/src/migrations/backfill-shared-list-contributors.ts`,
+`functions/src/__tests__/backfill-shared-list-contributors.test.ts`,
+`functions/src/__tests__/request-account-deletion.integration.test.ts`,
+`functions/src/__tests__/app-check-enforcement.test.ts`, `functions/package.json`,
+`functions/.gitignore`, both CI workflows, plus the sprint's Dart files (hand-off scope).
+
+**Confirmed fixed since pass 3.** The vacuous-fake finding LANDED: `makeFakeDb`'s `commit()`
+now unions under `const [field] = Object.keys(op.data)` instead of a hardcoded key, and a new
+10th case ("runBackfill writes the trail under contributorUserIds, the field erasure queries")
+asserts `Object.keys(fake.writes[0].data).join(",") === "contributorUserIds"`. Suite 10/10
+(was 9/9). `npx tsc --noEmit` clean. `app-check-enforcement` 15/15.
+`node scripts/check-test-registration.js` OK — 117 files, 4 accepted-debt warnings.
+`request-account-deletion` 4/4, `but753-legacy-sharedwith-cascade` 13/13, `cascade-audit-log`
+3/3. Region untouched. No PII in new logs (`uid_prefix` + structured fields; migration logs
+counts only). No `unified_shared_shopping_lists` entry in `firestore.indexes.json`, so both
+new probe/deleter legs ride automatic single-field indexes.
+
+**Promoted Medium → HIGH, and this pass PROVED it by running the code rather than reading it.**
+`reconstructContributors` (`backfill-shared-list-contributors.ts:94`) still does an
+unconditional `add(data.ownerId)`. Ran the real exported function against a
+post-cascade-shaped doc (`ownerId: "ERASED_UID"`, `ownerDisplayName: null`,
+`memberPermissions: {survivor:"owner"}`, `lastActivityByUserId: null`, items anonymized to
+`"deleted"`/null) → returned `[ 'ERASED_UID', 'survivor' ]`. So the migration writes an
+already-erased account's raw uid into a brand-new field on a document surviving members keep.
+Now that `firestore.rules` makes `contributorUserIds` append-only (`keepsContributorTrail()`,
+landed by `firestore-rules-tester` between passes), that resurrected uid is removable by NO
+client write and by no future cascade run (that account's cascade already completed) — admin
+script only. The new 10-case suite cannot see it: its sentinel case asserts `"deleted"` is
+excluded, and a deleted OWNER's `ownerId` is their real uid, not the sentinel. Fix stays:
+gate `add(data.ownerId)` on the owner's key still being present in `memberPermissions` (the
+cascade removes it; the create rule requires it for a live owner).
+
+**`hasMore` false positive PROVEN, not derived.** Built a 10 000-doc (22×450 + 100) in-memory
+store and called the real `runBackfill` with `maxLists: 1_000_000`:
+`{"batchesProcessed":23,"hasMore":true}` on a collection that was fully exhausted by a SHORT
+23rd page. Cause: `if (snapshot.size < BATCH_SIZE) break;` (:172) leaves `batchesProcessed`
+already incremented to 23, and the post-loop `if (batchesProcessed >= MAX_BATCHES_PER_INVOCATION)
+hasMore = true;` (:179) then overrides the correct `false`. Combined with the missing resume
+cursor (`runBackfill` still takes no `startAfter`, returns no `nextCursor`), any corpus above
+~9 900 docs reports `hasMore: true` forever and the file's own "delete this file once a run
+returns `hasMore: false`" lifecycle gate never opens. Fix: a `reachedEnd` flag set at BOTH
+exhaustion breaks (`snapshot.empty` and the short-page break), `hasMore = !reachedEnd &&
+(batchesProcessed >= MAX || totalScanned >= maxLists)`, plus the
+`backfillCanonicalRatings`-style `startAfter`/`nextCursor` pair.
+
+**Still open, unchanged.** `batch.update()` over up to 450 docs with no grpc-5 fallback
+(:159-167) — one concurrently deleted list aborts the whole page. `maxLists` docstring says
+"Hard ceiling on docs to process this invocation" (:68) while it is only consulted BETWEEN
+batches; the suite's own log line proves it (`maxLists: 10` → `"migrated":450`). No
+accepted-deviation entry exists for any of these (re-checked both deviation files; the only
+new entry is BUT-1714's gluten/colon carve-out).
+
+**New this pass.** (a) The two new probe legs were INSERTED into the existing
+`unified_shared_shopping_lists` try block ABOVE the sole-member-orphan leg
+(`account-deletion-cascade.ts:221-249` before :251), so a transient failure on the contributor
+query now also skips the orphan leg it used to reach — folded into the principles file as a
+general rule (append or give each leg its own try). (b) The fake's `commit()` still recomputes
+`reconstructContributors(store[op.id])` for the VALUE; the field name is now pinned but the
+`arrayUnion` sentinel and the `missing`-only payload remain unasserted —
+`sentinel.isEqual(FieldValue.arrayUnion(...expected))` needs no initialized app.
+(c) `firestore.rules`' `size() <= 200` bound is a whole-write denial, not a field-level clamp:
+the 201st distinct contributor's every item write fails, because the union rides in the same
+`update()` (rules domain, implausible at Butlery's scale — Info).
+
+**Dart side (hand-off, reviewed for the CF contract only).** `contributorsField` is written at
+all three chokepoints in `shopping_repository_routing_module.dart` (:171 create, :298-304
+transaction union, :334 offline `FieldValue.arrayUnion`), so the erasure handle is live.
+`updateCollaborativeList` (:220) still writes `items` through `narrowUpdatePayload` without
+unioning the writer — unreachable today (all six item call sites go through
+`mutateCollaborativeList`), but it is the one public-interface path that can write attributed
+items without extending the trail. `deleteShoppingLists` now issues four unbounded `.get()`s
+where it issued two; fine on a rare GDPR path at current volume.
+
+### 2026-07-28 — BUT-1725 / BUT-1707-1709 staged re-review (run-everything pass) [Bug fixed] [Pattern discovered]
+
+Re-reviewed the FINAL staged tree (`git write-tree` → `git archive` into a scratch dir, so
+the parallel session's unstaged `shared-shopping-lists-rules.test.ts` wiring could not
+contaminate the verdict). Index == worktree for every in-scope file; `firestore-rules.yml`
+and `functions/package.json` were `MM` from the OTHER session, not this diff.
+
+**Commands + counts observed.** `npx tsc --noEmit` exit 0, 0 lines. `test:backfill-shared-
+list-contributors` 10/10. `test:app-check-enforcement` 15/15 (new `backfillSharedList
+Contributors` classified `ADMIN_EXEMPT`, `requireAdmin` is the handler's first statement).
+`test:script-coverage-report` 27/27. `test:script-test-registration` 14/14. Staged-tree
+`node scripts/check-test-registration.js` → OK, 117 test files registered, 37 rules suites,
+2 paths blocks, 4 accepted-debt warnings, exit 0. `test:request-account-deletion` 4/4,
+`test:cascade-audit-log` 3/3, `test:cascade-audit-log-wirings` 3/3,
+`test:but753-sharedwith-cascade` 13/13. Emulator integration suite not run (no emulator).
+
+**The lefthook glob IS fixed — proven by running, not reading.**
+`npx lefthook run pre-commit --command script-guard-tests --no-auto-install` → the job fired
+on the staged `functions/scripts/*.js` and returned `exit status 1` with the configured
+`fail_text`. Two side lessons: (1) `lefthook run <hook> --command <name>` is the way to
+prove a glob matches without running the whole hook (`--commands` plural is NOT a flag);
+(2) lefthook HIDES unstaged changes for pre-commit, so the hook saw the staged
+`package.json` (no `test:rules:shared-shopping-lists`) plus the other session's UNTRACKED
+`shared-shopping-lists-rules.test.ts` still on disk → `REGISTERED` failure. Git state was
+verified intact afterwards (index unchanged, worktree restored, no new stash).
+
+**Vacuous criterion inside the new guard suite (mutation-proven).**
+`if (!matchesAny(file, testEntries)) {` → `if (false) {` in `check-test-registration.js:303`
+left `check-test-registration.test.js` at **14/14 green**, including the test literally named
+"RULES_TRIGGERS fires when a chained suite is missing from ONE trigger block". Cause: the
+fixture sets `push: ["firestore.rules"]`, i.e. zero `functions/src/__tests__/` entries, which
+trips the OTHER `RULES_TRIGGERS` branch (`testEntries.length === 0` → fail + `continue`);
+both branches emit the same code and both messages contain "`push` trigger", so
+`codesOf(...) === ["RULES_TRIGGERS"]` + `/\`push\` trigger/` cannot tell them apart.
+Verified remediation: `push: ["functions/src/__tests__/alpha.test.ts"]` and assert
+`/beta-rules\.test\.ts runs in test:rules:all but is missing from the \`push\` trigger/`
+→ 14/14 unmutated, 13/14 under the same mutation. Control mutations that DO redden:
+`unitLaneReachable||rulesChain` → `true` (12/14), `RULES_TRIGGERS`→renamed tag (11/14).
+`rules-coverage-report.test.js` is non-vacuous on all three mutations tried
+(`if (!untested) continue` → `true` = 24/27; drop `constant-allow` from `measurable` = 26/27;
+`untested = false` = 22/27).
+
+**The guard's own registration is outside the guard's universe.** Deleting BOTH
+`test:script-coverage-report` and `test:script-test-registration` from `package.json` leaves
+`check-test-registration.js` at exit 0 / "117 test files registered" (it only scans
+`functions/src/__tests__/`), while `run-ci-unit-tests.js` discovery drops from 78 to 76
+suites with 0 guard suites — and the `script-guard-tests` hook does not fire either, because
+its glob is `functions/scripts/**` and the deletion is a `functions/package.json` edit.
+
+**Backfill pagination — the no-cursor stall, with real numbers.** Ran `runBackfill` against
+an in-memory double at scale (scratch harness, not committed):
+- corpus 10,000 (22×450 + a 100-doc final page): fully scanned and fully migrated in ONE
+  invocation (`docsRead: 10000`) yet returns `{"batchesProcessed":23,"hasMore":true}` —
+  because the short-page `break` sets no `reachedEnd` and `batchesProcessed >= 23` is then
+  read as "more remains". The header's "REMOVE THIS FILE WHEN a successful invocation
+  returns hasMore:false" gate can never open at that corpus size.
+- corpus 20,000, three sequential invocations: run 1 `migrated 10350`, runs 2 and 3
+  `migrated 0, skipped 10350`, each re-reading the SAME 10,350 docs; 10,350/20,000 stamped
+  after three runs and docs 10,351+ never reached. Not a cosmetic lifecycle nag — above
+  10,350 shared lists the migration structurally cannot finish while reporting
+  `success: true`.
+
+**`ownerId` resurrection: FLAGGED PREVIOUSLY, STILL PRESENT.**
+`backfill-shared-list-contributors.ts:88` does a bare `add(data.ownerId)`. The cascade's
+scrub branch (`account-deletion-cascade.ts:623`) nulls only `ownerDisplayName` and keeps
+`ownerId` raw by design, so for a list an erased owner shared with someone the backfill
+re-adds the erased uid to `contributorUserIds` — a field `firestore.rules:1613-1617` makes
+APPEND-ONLY for every client including the owner. No client write and no future cascade run
+can remove it (that user's cascade already completed); only `admin/reset-user-data.ts` can.
+The suite's `ownerId: "deleted"` fixture gives false comfort: `"deleted"` is the sentinel
+the cascade writes for *item* `addedByUserId`/`lastModifiedByUserId`, never for `ownerId`.
+Gate: only `add(data.ownerId)` when `ownerId` is a key of `memberPermissions` — the create
+rule (`firestore.rules:1630`) pins a live owner into that map, and the cascade deletes the
+key, so membership is the handle that actually tracks erasure.
+
+**Also still open from the prior pass, re-confirmed on the final staged content.** Two new
+probe legs inserted ABOVE the sole-member-orphan leg inside one `try`
+(`account-deletion-cascade.ts:225-249` before `:251`). No grpc-5 fallback on the 450-op
+`batch.update()` (`backfill-…:159-167`). `maxLists` documented as a "Hard ceiling" (:68)
+while it is only consulted between batches — the suite's own log proves it
+(`maxLists: 10` → `"migrated":450`). Deleter/probe superset property itself is CORRECT on
+this diff: all four deleter legs union-dedup by doc id, and every probe handle
+(`memberPermissions.{uid}`, `contributorUserIds`, `lastActivityByUserId`, sole-member
+`ownerId`) is cleared in the same per-doc transaction or the doc is deleted outright.
+New: a read-modify-write race — a backfill page read before a concurrent cascade commits
+will `arrayUnion` uids the cascade just removed.
+
+### 2026-07-28 — BUT-1725 F1/F2/F5/F7/F8 + BUT-1709 F3: fixes implemented [Bug fixed]
+
+Same-session follow-up to the review entry above; Malin approved landing this sprint. F4
+(guard-deregistration blind spot), F6 (grpc-5 batch abort), F9 (`maxLists` docstring) and
+F10 (four unbounded `.get()`s) were deliberately NOT done — filed as tickets. F6 turned out
+to be dissolved by F8 anyway: the 450-op `batch.update()` no longer exists, so there is no
+batch left for one deleted doc to abort; the per-doc transaction handles it with
+`if (!fresh.exists) return "raced"`.
+
+**F1** `backfill-…:158-164` — `add(data.ownerId)` is now gated on
+`hasOwnProperty(memberPermissions, ownerId)`. **F2** `:93,106,115-137,269,327` —
+`startAfter` on the request, `nextCursor` on the response, `assertValidCursor` (non-empty,
+≤1500 UTF-8 BYTES via `Buffer.byteLength`, no `/`, not `.`/`..`, not `/^__.*__$/`) throwing
+`invalid-argument`. **F5** `:274,326` — `reachedEnd` set at all three exhaustion breaks;
+`hasMore = !reachedEnd`. **F8** `:180-229,231-249,299-312` — the 450-op batch is gone;
+`stampContributors` re-derives `missingContributors` inside a per-doc transaction, run
+through a 25-wide `mapWithConcurrency` pool, counting written/raced/failed with
+`success: failed === 0`. **F7** `account-deletion-cascade.ts:246-292` — the two attribution
+probe legs moved OUT of the shared `try` and APPENDED after the sole-member-orphan leg,
+each with its own catch (`residual += 1`, `errCode`/`errName`, `uid_prefix`).
+**F3** `scripts/__tests__/check-test-registration.test.js:193,198-201` — `push` block now
+carries a real non-chained entry and the assertion matches branch-unique text.
+
+**Suite grew 10 → 18.** New cases: the erased-owner shape, the live-owner control, the
+`arrayUnion` sentinel `isEqual` assertion, the cascade-scrub race, failure accounting, the
+short-final-page `hasMore`, `startAfter` resumption, the two-invocation 20,000-doc walk,
+and cursor validation (incl. `"ä".repeat(751)` = 1502 bytes at length 751, which a
+`.length` check would pass).
+
+**The fake was rebuilt.** `runTransaction` with an `onTransactionRead(id)` seam to stage
+"the cascade committed between the page read and our write", a `failIds` set for the
+failure path, and `applyUnion` which unwraps the sentinel's PUBLIC `elements` and THROWS if
+that shape is unrecognised — no re-derivation of the intended effect anywhere. Its comment
+states plainly that it models ordering and payload, NOT isolation (per the fake-transaction
+lesson in `lessons-digest-testing.md`).
+
+**Mutation results (all restored, md5-verified byte-identical).** Revert the F1 gate → 2
+reds incl. the race test. Revert `reachedEnd` → 2 reds. Drop the `startAfter` seed → 2 reds.
+Hoist the union out of the transaction → **exactly 1** red, the race test. Neuter
+`matchesAny` in the guard → 14/14 before the F3 fix, **13/14 after**, only the targeted
+test. First attempt at two of these produced a FALSE "mutation survived": the worktree files
+are CRLF and the `\n`-based replace silently no-opped; a second false negative came from
+keying a `Map` on `ref.id` when the double's ref carries `__id`, which reddened five
+unrelated tests and left the target green.
+
+**Post-fix measurements (scratch harness, real `runBackfill`).**
+`reconstruct(post-cascade doc)` → `[]`, backfill leaves `contributorUserIds` absent, and a
+live owner still yields `["live"]`. Corpus 10,000 → `hasMore:false, nextCursor:null`
+(was `hasMore:true`). Corpus 20,000 → run 1 `migrated 10350, nextCursor "l010349"`, run 2
+`migrated 9650, hasMore:false`; **20,000/20,000 stamped, 20,000 docs scanned total, zero
+re-reads** (before: 10,350 stamped after three runs and 31,050 reads).
+
+**Counts after the fixes.** `npx tsc --noEmit` exit 0 / 0 lines. backfill 18/18,
+app-check-enforcement 15/15, script-coverage-report 27/27, script-test-registration 14/14,
+request-account-deletion 4/4, cascade-audit-log 3/3, -wirings 3/3, but753-sharedwith 13/13.
+`check-test-registration.js` OK (118 files / 38 rules suites in the worktree — the parallel
+session's unstaged `shared-shopping-lists-rules.test.ts` wiring; 117/37 on the staged tree).
+The test file was written LF and normalised back to CRLF to match its siblings (`file` →
+"JavaScript source, Unicode text, UTF-8 text, with CRLF line terminators", not binary).
+`lefthook run pre-commit --command script-guard-tests` was NOT re-run: it stashes unstaged
+changes, and the parallel session was actively writing `lib/`. The guard scripts it invokes
+were run directly instead.

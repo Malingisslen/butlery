@@ -411,6 +411,176 @@ void main() {
         'cecilia': 'view',
       });
     });
+
+    // BUT-1719. The payload-narrowing itself is pinned in
+    // shopping_offline_write_module_test.dart, where `narrowUpdatePayload` can
+    // be called directly (including the cached-base leg, which
+    // FakeFirebaseFirestore cannot produce — it always reports isFromCache
+    // false). What this layer proves is that the narrowed payload reaches
+    // Firestore as an `update`, so a removal actually lands.
+    //
+    // `merge: true` could never DELETE a map key, so removing a member never
+    // removed them server-side.
+    test(
+      'removing a member drops the key rather than merging it back',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final owner = _routing(firestore);
+        final saved = await owner.createCollaborativeList(_collabList());
+
+        await owner.updateCollaborativeList(
+          saved.copyWith(
+            memberPermissions: {_userId: SharedListPermission.admin},
+          ),
+        );
+
+        final snap = await firestore
+            .collection(_sharedPath)
+            .doc(saved.id)
+            .get();
+        expect(snap.data()!['memberPermissions'], isNot(contains('bob')));
+      },
+    );
+
+    test('writes nothing when the entity matches the stored doc', () async {
+      final firestore = FakeFirebaseFirestore();
+      final owner = _routing(firestore);
+      final saved = await owner.createCollaborativeList(_collabList());
+
+      // Count WRITES, not values. Comparing the document before and after
+      // cannot tell "skipped the write" from "wrote the identical bytes back",
+      // so `if (payload.isNotEmpty)` stays green when deleted — and the whole
+      // point of the narrowing is that an unchanged field must not be RE-SENT,
+      // because the rule compares `diff(resource.data).affectedKeys()`. A
+      // snapshot listener fires once per write regardless of whether the
+      // stored value moved.
+      var writes = 0;
+      final sub = firestore
+          .collection(_sharedPath)
+          .doc(saved.id)
+          .snapshots()
+          .listen((_) => writes++);
+      await pumpEventQueue();
+      final afterSubscribe = writes;
+
+      await owner.updateCollaborativeList(saved);
+      await pumpEventQueue();
+      expect(
+        writes,
+        afterSubscribe,
+        reason: 'an identical entity must not reach Firestore at all',
+      );
+
+      // Positive control in the SAME fixture: one changed field DOES write, so
+      // the assertion above cannot be passing because the listener is dead.
+      await owner.updateCollaborativeList(
+        saved.copyWith(name: 'Söndagshandel'),
+      );
+      await pumpEventQueue();
+      expect(writes, greaterThan(afterSubscribe));
+
+      await sub.cancel();
+    });
+  });
+
+  // BUT-1725: the erasure trail. Account deletion finds a user's shared lists
+  // by membership or ownership, and a user who LEFT a list has neither — while
+  // their name stays on every item they added. `contributorUserIds` is the
+  // append-only handle that makes those lists reachable, so it has to be
+  // written by the same paths that stamp the attribution.
+  group('contributorUserIds', () {
+    test('seats the creator on create', () async {
+      final firestore = FakeFirebaseFirestore();
+      final saved = await _routing(
+        firestore,
+      ).createCollaborativeList(_collabList());
+
+      final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
+      expect(snap.data()!['contributorUserIds'], [_userId]);
+    });
+
+    test('unions an item-writing member who is not the owner', () async {
+      final firestore = FakeFirebaseFirestore();
+      final saved = await _routing(
+        firestore,
+      ).createCollaborativeList(_collabList());
+
+      final bob = _routing(firestore, currentUid: 'bob');
+      await bob.mutateCollaborativeList(
+        saved.id,
+        (live) => live.copyWith(items: [...live.items, _item('mjolk')]),
+      );
+
+      final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
+      expect((snap.data()!['contributorUserIds'] as List).toSet(), {
+        _userId,
+        'bob',
+      });
+    });
+
+    // The OFFLINE leg. Both tests above drive the online transaction, so
+    // `_withContributor` on the queued payload was unasserted — deleting it
+    // left the whole group green. A shop-aisle edit is the likeliest way a
+    // member ever touches a list they later leave, so it is precisely the case
+    // where the erasure handle must still be written: without it, that user's
+    // name stays on the row and account deletion can no longer find the list.
+    test('an offline edit still extends the trail', () async {
+      final firestore = FakeFirebaseFirestore();
+      final saved = await _routing(
+        firestore,
+      ).createCollaborativeList(_collabList());
+      await firestore.collection(_sharedPath).doc(saved.id).update({
+        'items': [_item('mjölk').toFirestore()],
+      });
+
+      final bob = _routing(
+        firestore,
+        currentUid: 'bob',
+        transactionRunner: (_) async => throw FirebaseException(
+          plugin: 'cloud_firestore',
+          code: 'unavailable',
+        ),
+      );
+      // A tick, not an append: an append takes BUT-1683's arrayUnion fast path,
+      // which is a different payload builder. Both must carry the trail.
+      await bob.mutateCollaborativeList(
+        saved.id,
+        (live) =>
+            live.copyWith(items: [live.items.single.copyWith(bought: true)]),
+      );
+
+      final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
+      expect((snap.data()!['contributorUserIds'] as List).toSet(), {
+        _userId,
+        'bob',
+      });
+    });
+
+    test('an offline append still extends the trail', () async {
+      final firestore = FakeFirebaseFirestore();
+      final saved = await _routing(
+        firestore,
+      ).createCollaborativeList(_collabList());
+
+      final bob = _routing(
+        firestore,
+        currentUid: 'bob',
+        transactionRunner: (_) async => throw FirebaseException(
+          plugin: 'cloud_firestore',
+          code: 'unavailable',
+        ),
+      );
+      await bob.mutateCollaborativeList(
+        saved.id,
+        (live) => live.copyWith(items: [...live.items, _item('bröd')]),
+      );
+
+      final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
+      expect((snap.data()!['contributorUserIds'] as List).toSet(), {
+        _userId,
+        'bob',
+      });
+    });
   });
 
   // BUT-1665. What these fake-backed tests pin, and nothing more: the mutator's

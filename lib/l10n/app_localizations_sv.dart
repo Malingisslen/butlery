@@ -9112,6 +9112,17 @@ class AppLocalizationsSv extends AppLocalizations {
   String get shoppingConvertError => 'Kunde inte omvandla listan';
 
   @override
+  String get shoppingConvertIncompleteTitle => 'Omvandlingen slutfördes inte';
+
+  @override
+  String get shoppingConvertedOriginalKept =>
+      'Listan kopierades, men originalet finns kvar — kontrollera den nya listan och ta bort originalet manuellt.';
+
+  @override
+  String get shoppingConvertedToPersonalOriginalKept =>
+      'Listan kopierades till en personlig lista, men den delade listan finns kvar — alla medlemmar har fortfarande tillgång till den. Ta bort den delade listan manuellt om ingen annan ska komma åt den.';
+
+  @override
   String get shoppingDescriptionLabel => 'Beskrivning (valfritt)';
 
   @override

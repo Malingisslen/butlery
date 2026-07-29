@@ -580,10 +580,25 @@ jobs:
           wait_for_port "Auth" "http://localhost:9099/"
 
       # Run integration tests only
+      #
+      # BUT-1695: this job boots the emulators above, but the run below is
+      # deliberately still MOCK tier — no `--dart-define=USE_EMULATOR=true`.
+      # Adding the define does not work: the emulator lane calls
+      # `Firebase.initializeApp`, and under `flutter test` (Dart VM, no plugin
+      # registrants) that throws
+      #   PlatformException(channel-error, Unable to establish connection on
+      #   channel "...FirebaseCoreHostApi.initializeCore")
+      # — reproduced locally on the exact command, so flipping the define here
+      # would turn this job red rather than covering anything. The emulator
+      # lane needs a host that can load the FlutterFire plugins
+      # (`integration_test` on a device/emulator) or a pure-Dart Firestore
+      # client; that is a project, not a flag. Until then the three
+      # `emulatorOnlySkip` suites are honestly reported as skipped, and the
+      # emulator boot above is kept for the tests that talk to it directly.
       - name: Run integration tests
         run: |
           if [ -n "$(find test/integration -name '*.dart' -type f 2>/dev/null)" ]; then
-            echo "Running integration tests..."
+            echo "Running integration tests (mock tier — see BUT-1695)..."
             flutter test test/integration --reporter=expanded
           else
             echo "No integration tests found, skipping integration test step"

@@ -229,7 +229,15 @@ see "When to consult the archive" at the end.
   is enough to redden a reverted order without a full seam.
 - **A wrapper/gate test is non-vacuous only if breaking the gate produces a
   DIFFERENT observable result than any other failure mode** — check this
-  deliberately before trusting a green wrapper suite.
+  deliberately before trusting a green wrapper suite. The recurring form:
+  ONE failure code emitted from TWO branches. `check-test-registration.js`
+  raises `RULES_TRIGGERS` both for "block lists no test files at all" and for
+  "this chained suite is missing from the block"; the fixture set the other
+  trigger to `["firestore.rules"]` (zero test entries), so it exercised the
+  wrong branch and `if (!matchesAny(...))` → `if (false)` left the suite
+  **14/14 green**. Rule: build the fixture so only the targeted branch CAN
+  fire, and assert on branch-unique message text, not the shared code. A
+  criterion is pinned only when you have watched it go red.
 - **Some guards are only reachable on a SECOND invocation, so only a
   re-run test can pin them.** Firestore `update(ref, {})` throws "At least
   one field must be updated", so an idempotent scrub's
@@ -251,6 +259,25 @@ see "When to consult the archive" at the end.
   fix landed on before crediting a suite with covering it. A test asserting
   on a literal built in the test file, or on an input pre-transformed the
   same way the SUT would, tests the fixture, not the code.
+- **A fake whose `commit()` RE-DERIVES the intended effect instead of
+  APPLYING the recorded write payload makes the whole write vacuous.** The
+  sentinel is not actually opaque: `FieldValue.arrayUnion(...)` is an
+  `ArrayUnionTransform` whose `elements` is a PUBLIC own property and whose
+  `isEqual` works with no initialized app (order-sensitive) — so a double can
+  apply the payload it was handed and throw when the shape is unrecognised,
+  instead of recomputing the intended effect. Pair that with an explicit
+  `sentinel.isEqual(FieldValue.arrayUnion(...expected))` assertion: field name,
+  sentinel type and value set all pinned at once. Any hand-rolled
+  batch/transaction double.
+- **A mutation applied by string-replace against a CRLF worktree file silently
+  no-ops** — the replace returns the input, the suite stays green, and you
+  write up "criterion unpinned" about a mutation that never happened. Every
+  mutation harness must assert `s.includes(target)` and `out !== s` (match on
+  LF after `raw.replace(/\r\n/g,"\n")`, restore endings on write), and finish
+  with an md5 check that the source is byte-identical again. A mutation whose
+  reds are all in OTHER tests is also suspect: check it failed for the intended
+  reason (keying a `Map` on `ref.id` when the fake's ref carries `__id` broke
+  five unrelated tests and left the targeted one green).
 
 ### PII scrubbing + GDPR cascade design
 - Cross-port heuristic vectors (TS↔Dart) live in one shared JSON fixture;
@@ -448,7 +475,11 @@ see "When to consult the archive" at the end.
   collection (two probes when a collection has two owner-ish fields; a
   subcollection-shaped probe, never top-level `where`, for a subcollection).
   `count()` is the probe primitive; a probe error should ADD to the
-  residual count, never abort the cascade.
+  residual count, never abort the cascade. **A new probe leg dropped INSIDE an
+  existing `try` shortens every leg after it** — one transient error on the new
+  query now also skips the legs it was inserted above (BUT-1725 put two legs in
+  front of the sole-member-orphan leg). Give each independent leg its own
+  try/catch, or append rather than insert.
 - Pure `users/{uid}/*` subcollections erase via a generic uid-scoped sweep
   (retry-safe by construction). Canonical test triple for any new deleter:
   own-erased + other-kept + `failedCollections` empty.
@@ -514,6 +545,61 @@ see "When to consult the archive" at the end.
   distinct marker-collection + log-prefix adapter, never a fork.
   Claim-by-delete before aggregating; the aggregation itself should be a
   full re-read + `set(merge)` so a marker-race double-run is safe.
+- **A backfill that RECONSTRUCTS a value from fields still on the doc must
+  exclude every field the erasure cascade DELIBERATELY RETAINS, not just the
+  sentinel it writes.** Excluding the `"deleted"` sentinel and `null`s is the
+  obvious half; `ownerId` on `unified_shared_shopping_lists` is the trap — the
+  cascade keeps it raw on purpose (rules read it for write authorization), so
+  a reconstruction that adds it re-creates a deleted user's identifier in a
+  NEW field. Gate on a handle the cascade actually clears (owner present in
+  `memberPermissions`), not on the retained one. Worse once the field is
+  made APPEND-ONLY in `firestore.rules` (BUT-1725 did exactly that): the
+  re-created uid is then removable by no client write and by no future
+  cascade run (that user's cascade already completed) — only by an admin
+  script. Check the rule before rating a resurrection finding as merely
+  cosmetic. The discriminator to gate on is the handle the cascade CLEARS: the
+  create rule pins a live owner into `memberPermissions` and the cascade
+  deletes that key, so `hasOwnProperty(memberPermissions, ownerId)` separates
+  live from erased. A fixture feeding the SENTINEL into the retained field
+  (`ownerId: "deleted"`) proves nothing — the sentinel is written for item
+  `addedByUserId`/`lastModifiedByUserId` only; assert the shape the cascade
+  actually leaves. Re-flagged unfixed on a second review pass: verify a
+  resurrection finding against the FINAL staged bytes, never against the
+  earlier pass's write-up.
+- **A full-collection `orderBy(documentId()).limit(N)` backfill with NO filter
+  cannot self-advance across invocations** — already-migrated docs stay
+  matched and burn the per-invocation scan cap, so run 2 rescans run 1 and
+  `hasMore` never reaches false above the cap. That shape needs an
+  operator-supplied `startAfter` in the request + a `nextCursor` in the
+  response (`backfillCanonicalRatings` is the correct precedent;
+  `backfillRecipeCommentsDenorm` and `backfillSharedListContributors` share the
+  defect — don't copy either). A filter-mutating sweep is the only shape that
+  may skip the cursor. Measured on `backfillSharedListContributors`
+  (23×450 cap): corpus 20,000 → run 1 stamps 10,350, runs 2 and 3 re-read the
+  SAME 10,350 (`migrated 0, skipped 10350`) and docs 10,351+ are never reached,
+  while every run returns `success: true` — structurally unfinishable, not a
+  cosmetic nag. Two things get dropped when the shape is copied without
+  the cursor: (a) an explicit `reachedEnd` flag set at EVERY exhaustion break —
+  inferring completion from `batchesProcessed >= MAX` reports `hasMore: true`
+  when the final allowed batch was a SHORT page, i.e. exactly when the corpus
+  IS done (measured: corpus 10,000 fully migrated in one pass, still
+  `hasMore: true`), and a "delete this file once a run returns `hasMore:false`"
+  lifecycle gate then never opens; (b) NOT_FOUND handling on the 450-op
+  `batch.update()` — one doc a client deleted between the page read and the
+  commit aborts all 450 (catch grpc code 5, fall back per-doc). A
+  `maxLists`-style cap tested only between batches is a SOFT cap: with
+  `maxLists:10` the run still processes the whole 450-doc page — don't document
+  it as a hard ceiling. A snapshot-read + blind-`arrayUnion` backfill also races
+  a concurrent cascade: the page read before the cascade commits re-adds uids it
+  just removed. Fix shape (BUT-1725): drop the 450-op batch entirely and give
+  each doc needing a write its own transaction that RE-DERIVES the write set
+  from the fresh read — the cascade's anonymised items then yield an empty set
+  and nothing is written. This also dissolves the grpc-5 batch-abort problem
+  (`if (!fresh.exists) return "raced"`). It costs one extra read per written
+  doc and nothing at all on re-runs, but 450 sequential transactions per page
+  will not fit a 540s budget: run them through a small concurrency pool (25),
+  counting `written`/`raced`/`failed` and returning `success: failed === 0`
+  rather than aborting the page.
 - One-shot backfills: persist the resume cursor; use TWO cursors
   (`lastFetched` drives the query, `lastProcessed` drives the resume value)
   when a per-batch cap can stop mid-fetch — a single cursor plus a
@@ -536,14 +622,21 @@ see "When to consult the archive" at the end.
   client field the trigger trusts (e.g. `metadata.creatorId`) to
   `request.auth.uid` — else the tampered-client adversary the trigger
   targets can spoof the field it trusts.
-- **A new `onCall` export is a TWO-FILE change**: the function AND
+- **A new `onCall` export is a THREE-FILE change**: the function, its
+  `test:*` script + `__tests__` suite in `package.json`, AND
   `app-check-enforcement.test.ts`'s classification. `ADMIN_EXEMPT` is
   justified iff the handler's FIRST statement is `requireAdmin(request)` (or
   `token.admin===true`) — App Check attests the app binary, the admin claim
   attests the caller; orthogonal threats. A callable reachable by an
   ordinary user belongs in `USER_FACING` with `enforceAppCheck:true`, never
   `ADMIN_EXEMPT`. (The guard's regex matches multi-line declarations, so a
-  miss is always a RED suite — but it still recurs.)
+  miss is always a RED suite — but it still recurs, most often on a new
+  `migrations/` backfill; `CI_EXCLUDE` is empty, so the miss reddens the real
+  CI lane. `check-test-registration.js` will NOT catch it: that script only
+  checks that EXISTING test files are registered, so a source file shipped
+  with no test at all passes it silently. Grep the new callable's name in
+  `app-check-enforcement.test.ts` + `package.json` as step one of any review
+  that adds an export to `index.ts`.)
 - A rules hard-deny paired with an Admin-SDK escape-hatch callable needs
   its CLIENT-SIDE SERIALIZER audited too — enumerate every call site of the
   model chokepoint (e.g. `toFirestore()`) that could re-trigger the deny'd
@@ -633,6 +726,25 @@ see "When to consult the archive" at the end.
 - Verify an index-to-query mapping stated in a commit message against the
   ACTUAL queries in the actual files — a commit has misattributed an index
   to the wrong file before.
+- **Prove a lefthook glob by RUNNING it:** `npx lefthook run <hook> --command
+  <name> --no-auto-install` (singular `--command`; `--commands` is not a flag).
+  Lefthook HIDES unstaged changes for `pre-commit`, so the job sees the STAGED
+  file set plus any UNTRACKED file still on disk — a parallel session's
+  untracked WIP test can redden a guard that scans the working tree, and that
+  is a real commit block, not a false alarm. `**/*.js` requires an intermediate
+  directory (misses `functions/scripts/x.js`); `functions/scripts/**` matches
+  both flat sources and `__tests__/`.
+- **A guard's own CI registration is usually outside the guard's universe.**
+  `check-test-registration.js` scans `functions/src/__tests__/` only, so
+  deleting `test:script-coverage-report` + `test:script-test-registration` from
+  `package.json` leaves it at exit 0 / "117 test files registered" while
+  `run-ci-unit-tests.js` silently drops from 78 to 76 suites — and the
+  `functions/scripts/**` pre-commit hook doesn't fire on a `package.json` edit.
+  When reviewing a self-checking guard, ask what deregisters it, not just what
+  it checks.
+- **To review the staged set free of a parallel session's worktree edits:**
+  `git archive $(git write-tree) | tar -x -C <scratch>` — `write-tree` touches
+  no ref and no index. Run the guards there and say so.
 - **Review the STAGED copy (`git show :<path>`), not only the worktree.** A
   `MM` file means the index is older than the fix under review, so `git commit`
   ships the version the review just rejected — `account-deletion-cascade.ts`

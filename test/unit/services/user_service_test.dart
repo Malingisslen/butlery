@@ -863,6 +863,82 @@ void main() {
       });
     });
 
+    // BUT-1705: the getter that decides which name is PERSISTED as attribution
+    // on documents other people read. `currentDisplayName` falls back to the
+    // Firebase Auth handle — the legal name on the user's Google/Apple account,
+    // never chosen for display, invisible to `on-profile-updated.ts` and not
+    // scrubbed by account deletion. `profileDisplayName` must not have that
+    // fallback. Without a discriminating test, respelling the new getter's body
+    // back to the old one is green across the whole suite.
+    group('profileDisplayName vs currentDisplayName (BUT-1705)', () {
+      Future<void> signInWithProfile(UserProfile? profile) async {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(() => mockAuthRepository.authStateChanges()).thenAnswer(
+          (_) => Stream.value(mockUser),
+        );
+        when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
+          (_) async => profile,
+        );
+        await userService.initialize();
+      }
+
+      test(
+        'an empty profile name never falls back to the auth handle',
+        () async {
+          // The auth handle here is the real name the OAuth provider supplied.
+          await signInWithProfile(
+            MockFactory.createUserProfile(
+              userId: 'test_user_123',
+              displayName: '',
+              email: 'test@example.com',
+            ),
+          );
+
+          expect(
+            userService.currentDisplayName,
+            equals('Test User'),
+            reason: 'display may still fall back — that is its whole purpose',
+          );
+          expect(
+            userService.profileDisplayName,
+            isNull,
+            reason:
+                'persisting the auth handle stamps an unconsented, un-erasable '
+                'real name onto a document other users read',
+          );
+        },
+      );
+
+      test(
+        'no profile at all still yields null, not the auth handle',
+        () async {
+          await signInWithProfile(null);
+
+          expect(userService.currentDisplayName, equals('Test User'));
+          expect(userService.profileDisplayName, isNull);
+        },
+      );
+
+      // Positive control: the test above cannot pass merely because the
+      // profile fixture is broken.
+      test('a real profile name is returned by BOTH getters', () async {
+        await signInWithProfile(
+          MockFactory.createUserProfile(
+            userId: 'test_user_123',
+            displayName: 'Malin M',
+            email: 'test@example.com',
+          ),
+        );
+
+        expect(userService.profileDisplayName, equals('Malin M'));
+        expect(userService.currentDisplayName, equals('Malin M'));
+      });
+    });
+
     group('FCM Token Management', () {
       setUp(() async {
         mockAuthRepository.setAuthState(

@@ -243,6 +243,54 @@ export async function probeResidualData(
     );
   }
 
+  // BUT-1705/BUT-1725: a removed member has no member key and owns nothing, so
+  // the legs above are blind to exactly the case that leaves a name on the items
+  // forever. These two count the handles the deleter now uses, and the deleter
+  // clears both — keeping it a strict superset of the probe.
+  //
+  // Each leg carries its OWN try/catch, and they are APPENDED rather than
+  // inserted: a leg dropped inside an existing `try` shortens every leg after
+  // it, so one transient error on this query would silently skip the
+  // sole-member-orphan scan above while the `residual += 1` masked the gap.
+  for (const [field, query] of [
+    [
+      "contributorUserIds",
+      db
+        .collection("unified_shared_shopping_lists")
+        .where("contributorUserIds", "array-contains", uid),
+    ],
+    [
+      "lastActivityByUserId",
+      db
+        .collection("unified_shared_shopping_lists")
+        .where("lastActivityByUserId", "==", uid),
+    ],
+  ] as const) {
+    try {
+      const snap = await query.count().get();
+      const count = snap.data().count ?? 0;
+      if (count > 0) {
+        residual += count;
+        logger.warn("[deletion-cascade] residual shared-list attribution", {
+          uid_prefix: uid.slice(0, 6),
+          field,
+          count,
+        });
+      }
+    } catch (err) {
+      residual += 1;
+      logger.error(
+        "[deletion-cascade] residual probe failed: shared-list attribution",
+        {
+          uid_prefix: uid.slice(0, 6),
+          field,
+          errCode: (err as { code?: number | string }).code ?? null,
+          errName: err instanceof Error ? err.name : typeof err,
+        },
+      );
+    }
+  }
+
   if (residual > 0 && !result.failedCollections.includes("residual_data_detected")) {
     result.failedCollections.push("residual_data_detected");
   }
@@ -465,19 +513,43 @@ export async function deleteShoppingLists(
   // list matched on `ownerId == uid`, and an owner may persist a
   // `memberPermissions` map without their own key (the rules place no
   // `cannotModify` guard on the owner), so a member-key query alone misses it.
-  // Union both queries and dedup by document id.
-  const [keyedShared, ownedShared] = await Promise.all([
-    db
-      .collection("unified_shared_shopping_lists")
-      .where(`memberPermissions.${uid}`, "!=", null)
-      .get(),
-    db
-      .collection("unified_shared_shopping_lists")
-      .where("ownerId", "==", uid)
-      .get(),
-  ]);
+  // Union all four queries and dedup by document id.
+  //
+  // BUT-1705/BUT-1725: membership and ownership are the WRONG handles on their
+  // own, because both are things a user can stop having while their name stays
+  // on the document. Leave a shared list — or get removed from one — and the
+  // `memberPermissions` key goes, but every item you added still carries
+  // `addedByDisplayName`, and the list may still carry `lastActivityByUserId`.
+  // Erasure then reported clean over a name that stays visible to the remaining
+  // members forever. `contributorUserIds` is the append-only trail the client
+  // unions on every item write precisely so this query can find those lists;
+  // `lastActivityByUserId` is queryable directly.
+  const [keyedShared, ownedShared, contributedShared, activeShared] =
+    await Promise.all([
+      db
+        .collection("unified_shared_shopping_lists")
+        .where(`memberPermissions.${uid}`, "!=", null)
+        .get(),
+      db
+        .collection("unified_shared_shopping_lists")
+        .where("ownerId", "==", uid)
+        .get(),
+      db
+        .collection("unified_shared_shopping_lists")
+        .where("contributorUserIds", "array-contains", uid)
+        .get(),
+      db
+        .collection("unified_shared_shopping_lists")
+        .where("lastActivityByUserId", "==", uid)
+        .get(),
+    ]);
   const sharedRefs = new Map<string, admin.firestore.DocumentReference>();
-  for (const doc of [...keyedShared.docs, ...ownedShared.docs]) {
+  for (const doc of [
+    ...keyedShared.docs,
+    ...ownedShared.docs,
+    ...contributedShared.docs,
+    ...activeShared.docs,
+  ]) {
     sharedRefs.set(doc.id, doc.ref);
   }
 
@@ -586,6 +658,16 @@ export async function deleteShoppingLists(
       if (Object.prototype.hasOwnProperty.call(perms, uid)) {
         update[`memberPermissions.${uid}`] =
           admin.firestore.FieldValue.delete();
+      }
+
+      // BUT-1725: the trail that FOUND this list is itself a raw uid on a
+      // document other people keep, so it goes in the same write. Like the
+      // member key above it doubles as this step's re-entry handle — removing
+      // it in a separate write would let a re-run skip an unscrubbed doc.
+      const contributors = data.contributorUserIds;
+      if (Array.isArray(contributors) && contributors.includes(uid)) {
+        update.contributorUserIds =
+          admin.firestore.FieldValue.arrayRemove(uid);
       }
 
       if (Object.keys(update).length > 0) {

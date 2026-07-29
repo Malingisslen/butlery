@@ -154,7 +154,41 @@ convert-collaborative-to-personal copies the items, deletes the source list, and
 empty on the next load (in-memory cache hides it until restart). When reviewing a
 collection with a nested child collection, ask which shape each writer and each reader uses —
 and note that the GDPR export is only complete because it dumps BOTH (parent doc data + child
-docs), which makes it a superset of what the app itself can read.
+docs), which makes it a superset of what the app itself can read. Fixed 2026-07-27 (BUT-1723):
+`create()` now fans the array out to the subcollection and the conversion only deletes the source
+after a SERVER-confirmed item count. Two lessons generalise. (a) A copy-then-delete needs a
+read-back that can distinguish "server has it" from "the local cache answered" —
+`metadata.isFromCache`, and `null`/unconfirmed must mean KEEP BOTH. (b) **Repairing a copy path
+that never actually persisted anything can ACTIVATE a dormant cross-user PII leak**: the
+collaborative→personal copy carries other members' `addedBy*`/`purchasedBy*`/`lastModifiedBy*`
+into `users/{me}/…/items`, a tree no OTHER user's cascade scans, so their name outlives their
+erasure. Strip foreign attribution at any cross-tree copy site. **Verified STILL UNSTRIPPED
+2026-07-27** now that the fan-out has landed: `ListLifecycleOperations.convertCollaborativeToPersonal`
+passes `collaborativeList.items` verbatim to `createPersonalList`. No widget renders those names
+today, which is the only reason it is High rather than Critical — a display accident, not a control. **CLOSED 2026-07-28**: the copy path now runs every row through
+a strip helper that keeps WHAT happened (name, amount, `bought`, timestamps) and drops WHO unless the
+uid equals the converting owner's — the shape to copy at any cross-tree copy site. Two things that
+made it safe rather than lossy: the strip rebuilds via the full CONSTRUCTOR, so verify the
+constructor's parameter list is exhaustive against the model's fields (a missing one silently resets
+to its default), and a nulled `addedByUserId` flips a derived `isCollaborative` getter — check that
+getter has no production consumer before nulling, or anonymize instead of nulling as the CF cascade does.
+**Two costs the fan-out repair carries, both worth checking on any "write the other shape too" fix
+(2026-07-28).** (a) It routes through a TYPE-ROUTING helper, and this repo's router probes the SHARED
+collection first: `create()` → `addItemsBatch` → `_requireList` → `read()` → a
+`sharedListsRef.doc(id).get()` that the rules DENY for every personal-list id (nonexistent doc ⇒
+`resource` is null ⇒ CEL error ⇒ `permission-denied`), caught and logged as a warning. So every
+personal create with items now bills a guaranteed-denied read plus a scary log line on the happy
+path — pass the already-known list/type into the batch writer instead of re-reading. (b) It makes a
+pre-existing orphan CERTAIN: the client's `delete()` removes the personal list document without
+sweeping its `items` subcollection, so the conversion's source delete now always strands a fully
+populated subcollection. Not a GDPR hole here only because the CF cascade sweeps
+`unified_shopping_lists/{id}/items` and the probe uses `listDocuments()` — check both before
+downgrading it.
+Second lesson from the same repair: a copy-confirmation gate that compares the SERVER count of the
+copy against a count read from LOCAL STATE of the source still deletes a source that had more rows
+than this device knew about (personal lists have no snapshot stream). Confirm both ends server-side,
+or say in the doc comment that the source count is trusted. **Still open 2026-07-28** on the
+personal→collaborative leg only (the collaborative leg's source IS stream-backed).
 
 ### Firestore rules & permission patterns
 - Full-doc `set()` collections: create pins `request.resource.data.userId==auth.uid`; update
@@ -169,6 +203,16 @@ docs), which makes it a superset of what the app itself can read.
   the rule lets write those fields (the owner) a queued tick RESURRECTS a member the owner
   removed from another device. A rules-denied non-owner replay is fail-safe; the owner's is not.
   Any write whose base can be older than the server needs a targeted field update, not a merge.
+  **The shipped shape to copy (BUT-1719, `ShoppingOfflineWriteModule.narrowUpdatePayload`):** diff
+  `proposed.toFirestore()` against `stored.toFirestore()` with `DeepCollectionEquality`, emit only
+  differing keys, emit a MAP field as per-key field paths (`memberPermissions.<uid>`, value or
+  `FieldValue.delete()`) so a removal lands under `update()` or `set(merge:)` alike, return an empty
+  map to mean "skip the write", and THROW when the narrowed payload touches a privileged key while
+  the base came from cache (`metadata.isFromCache`). Two things this quietly fixes beyond the
+  ticket: `merge:true` can never delete a map key, so member removal never stuck; and a
+  `fromFirestore` that normalises an unknown enum value no longer writes the normalised value back
+  over the server's. Prerequisite to verify before approving such a diff — `toFirestore()` must be
+  sentinel-free (no `FieldValue.serverTimestamp()`), or every key diffs on every call.
 - **A guard set is scoped to the callers a method had, and promoting it to a public
   repository INTERFACE invalidates that scope.** An internal module method may lean on "every
   caller is our own code, and our mutators only touch `items`"; the moment the same method is
@@ -177,6 +221,14 @@ docs), which makes it a superset of what the app itself can read.
   change: diff the new method's checks against the method it is replacing/paralleling and
   require parity (BUT-1665: `updateCollaborativeList` gained a privilege-escalation guard while
   `mutateCollaborativeList` — simultaneously promoted to the interface — did not).
+- **A module that receives `logPermissionCheck` as an injected callback silently loses the await.**
+  `PermissionValidationMixin.logPermissionCheck` returns `Future<void>`, but every shopping module
+  (and the new `ShoppingListPermissionGuards`) declares the field as `void Function({...})` — Dart's
+  return-type covariance to `void` accepts the assignment with no warning, so the audit write is
+  fire-and-forget and a failure inside it is an unhandled async error rather than a signal. Check
+  the declared callback type against the mixin's signature whenever a repository hands its audit
+  hook to a helper; only the repository's own call sites (`FirebaseShoppingRepository.delete`)
+  actually await it.
 - A write helper that calls `requireCurrentUserId()` and then `logPermissionCheck(granted:true)`
   with NO check in between forges the audit trail. Either run the real
   `validate*Permission` and log its verdict (see `FirebaseShoppingRepository.delete`), or don't
@@ -193,10 +245,16 @@ docs), which makes it a superset of what the app itself can read.
   triple — `ownerId==uid` AND `uid in memberPermissions` AND
   `hasRequiredFields(['ownerId','memberPermissions','items','createdAt'])` — so a create missing
   the membership key still logs `granted:true` and is still refused by the server. Half a mirror
-  is still a forged grant. (Status 2026-07-26: the `ownerId==uid` half landed and is tested;
-  `items`/`createdAt` are unconditional in `toFirestore()` and the one live caller
-  (`ShoppingListManagementModule.createCollaborativeList`) always seats the owner as `admin`, so
-  the membership conjunct is now an audit-only residual — downgrade it, don't drop it.) And a client check that is LOOSER
+  is still a forged grant. **CLOSED 2026-07-28**: `requireSelfOwnedCreate` now checks BOTH
+  `entity.ownerId == uid` AND `entity.memberPermissions.containsKey(uid)`, with a distinct message
+  and a distinct audit `details` per arm, and both arms are pinned by tests. The same round moved
+  all three mirrors out of the routing module into a dedicated
+  `ShoppingListPermissionGuards` (500-line pressure). **Review rule for such an extraction:** the
+  guards' scope is "every write path calls them", so re-derive that from the NEW module rather than
+  trusting the diff — grep the extracted method names in the caller and match them against the
+  collection's full write surface (here 4/4: create, whole-list update, transactional mutate,
+  cached-base offline mutate). A path that quietly kept an inlined check would read as a pure move.
+  And a client check that is LOOSER
   than the matching rule
   (repo accepts any `memberPermissions` key; rule demands `edit`/`admin`) still logs
   `granted:true` for a write the server then denies — mirror the rule's predicate exactly.
@@ -288,6 +346,63 @@ docs), which makes it a superset of what the app itself can read.
   `userShoppingLists` both client/CF readers the comment names are real
   (`friends_utility_operations.dart:146` root query → catch-all deny `firestore.rules:2526-2528`;
   `compute-feature-retention.ts:212`), and a denied QUERY surfaces as `permission-denied`, not empty.
+- **A denormalized ERASURE HANDLE is only as good as its weakest writer and its rule.** When a
+  cascade cannot query the field that actually carries the PII (Firestore cannot filter inside an
+  array of maps), the repair is a flat `array-contains`-queryable trail of everyone who has written
+  — Butlery's `contributorUserIds` on `unified_shared_shopping_lists` (BUT-1725), because
+  membership and ownership are both things a user can STOP having while their name stays on the
+  items. Three checks every time: (1) EVERY write path that stamps the attribution must extend the
+  handle — Butlery unions it in the transaction and the offline replay but NOT in
+  `updateCollaborativeList`, which is public interface and also writes `items`; (2) the handle must
+  be removed in the SAME per-doc write as the scrub (it is the step's re-entry query handle) and
+  must be added to the residual probe, keeping deleter ⊇ probe; (3) **`firestore.rules` must
+  constrain it append-only** (`request.resource.data.F.hasAll(resource.data.F)` + a size bound) —
+  otherwise any edit-level member can drop another user's uid and make that user's PII unreachable
+  to erasure. A pre-existing corpus needs a one-shot backfill reconstructing the handle from the
+  uids still visible on the doc (a documented LOWER bound), plus a stated removal condition.
+  **Status 2026-07-28 (BUT-1725), re-verified after the fix round:** (2) DONE. (3) DONE —
+  `keepsContributorTrail()` (append-only `hasAll` + `size() <= 200`) is now a conjunct of both create
+  and update, owner included. (1) is THREE-QUARTERS done: create seeds `[uid]`, the transaction
+  computes the union from the live array inline, and the offline replay queues
+  `_withContributor(...arrayUnion)` — but `updateCollaborativeList` still writes `items` through the
+  public interface with no union (`_withContributor` is wired to `_mutateFromCache` only). Today's
+  only live caller of that leg writes attribution-free generated rows, so nothing leaks yet; the
+  point is that the invariant is upheld by caller discipline rather than by construction. The cheap
+  enforcement is one line at the write site: union the handle whenever the narrowed payload
+  `containsKey('items')`. **Re-verified 2026-07-28, still open** — and note WHY the narrowing makes
+  it structural: the payload is diffed from `entity.toFirestore()`, whose key set never includes the
+  handle, so a denormalized erasure handle that lives OUTSIDE the model can never ride along on a
+  model-derived payload. Whenever such a handle is introduced, enumerate the write paths that build
+  their payload from `toFirestore()` and treat every one as a miss until it explicitly re-adds the
+  handle. Discharging the "no live caller leaks today" claim costs a full caller trace, not a
+  grep: repository `update()` → `ShoppingListManagementModule.updateList` →
+  `personal_shopping_operations` (preserves existing attribution), `list_member_operations`
+  (owner-only, no item attribution) and `menu_shopping_list_generator` (generated rows, no
+  attribution) — name all of them or the claim is unverified. A new field written by the client is not "covered" by a rule block merely
+  existing; grep the FIELD NAME in `firestore.rules`, not the collection. **And an append-only rule conjunct changes what the
+  WRITE SHAPE has to prove**: the offline replay queues the handle as `FieldValue.arrayUnion`, so the
+  rule passes only if `request.resource.data` reflects field transforms — assert that on the emulator
+  before shipping, because the failure mode is every queued shop-aisle tick denied on replay and
+  rolled back, visible only as a log line. A brand-new gating conjunct on a live collection with NO
+  `*-rules.test.ts` at all is a High finding on its own; hand it to `firestore-rules-tester`.
+  Do that grep as the routine check whenever a rules diff lands: a `*-rules.test.ts` merely EXISTING
+  in the repo says nothing about the collection under review. **And the grep is only half the check
+  — pair it with `git status --porcelain` (2026-07-28):** `shared-shopping-lists-rules.test.ts` now
+  answers the grep with 528 lines including the `arrayUnion` case, but it is `??` UNTRACKED while
+  the rule change itself is STAGED, and its `package.json` script + `firestore-rules.yml` path
+  triggers sit unstaged in the working tree. Committing the staged set alone ships a brand-new
+  gating conjunct with zero proof, and the CI new-block gate stays green because the match BLOCK is
+  not new — only the function inside it. On any rules diff, list the proof file's git state, not
+  just its existence.
+  And the one-shot backfill needs a REQUEST-LEVEL RESUME CURSOR (`startAfter`/`nextCursor`, as
+  `backfill-canonical-ratings.ts` has), not just a loop-local one: without it every invocation
+  restarts at the top of the collection, so past `MAX_BATCHES × BATCH_SIZE` docs the documented
+  `hasMore: false` removal gate is unreachable forever. **This RECURS on every new backfill file**
+  (2026-07-28: `backfill-shared-list-contributors.ts` shipped with a loop-local `lastDocId`, no
+  `startAfter` in its request type and no `nextCursor` in its response, ceiling 23×450). Make it a
+  fixed check on any `functions/src/migrations/*` diff: open the request/response interfaces and
+  confirm the cursor is on BOTH, before reading the loop. Note the idempotent-skip does not save it —
+  skipped docs still consume the `maxLists` budget, so a re-run cannot advance.
 - **Deleting a list/parent doc does NOT delete its subcollections.** `batchDeleteAll(db, docs)`
   over `users/{uid}/<lists>` leaves every `<listId>/items/*` doc alive and unreferenced. A
   cascade over any doc that owns a subcollection needs an explicit per-doc child sweep (or
@@ -446,19 +561,27 @@ docs), which makes it a superset of what the app itself can read.
   resolver: assert the wiring separately or the footgun rides back in through the default.
   Shipped state (BUT-1697): the repository writer stamps `resolveDisplayName() ?? ''` wired to
   `UserService.currentDisplayName` (profile-first, Auth-fallback — good enough, not exact), and
-  `activitySummary` treats empty as unknown. **The unfixed SIBLING writer is the one to name in
-  the next pass:** `UnifiedShoppingService.currentUserDisplayName` is
-  `authRepository.getCurrentUser()?.displayName ?? 'Du'` and feeds `ownerDisplayName` +
-  `lastActivityBy*` at collaborative-create time and the whole `ListItemOperations` facade — so a
-  household member can read another member's name as the literal `'Du'`. Fixing one writer of a
-  denormalized name and leaving a `?? '<pronoun>'` sibling is half a fix. **Third writer, same
-  family:** `PermissionService.currentUser` looks like a profile handle but SYNTHESIZES a
+  `activitySummary` treats empty as unknown. **Second writer CLOSED 2026-07-28 (BUT-1705)**:
+  `UnifiedShoppingService.currentUserDisplayName` now reads `UserService.profileDisplayName`, a NEW
+  getter that is the profile name or null with NO Auth fallback — the shape to reach for whenever a
+  name is about to be PERSISTED as attribution (`currentDisplayName`, which falls back to the Auth
+  handle, is display-only and now says so). Two lessons from that fix. A `?? '<placeholder>'` at a
+  PERSIST site is the same defect as the Auth fallback: it stores a fact nobody asserted, so stamp
+  EMPTY and teach the read side that empty means unknown — and when you do, sweep the render sites,
+  because a `?? unknownUser` there only catches an ABSENT key and renders a blank line for the empty
+  string (`shopping_sharing_status_dialog.dart` needed a `trim().isEmpty` arm in the same commit).
+  **Third writer, same family, STILL OPEN 2026-07-28:**
+  `PermissionService.currentUser` looks like a profile handle but SYNTHESIZES a
   `UserProfile` from the Auth user with `displayName ?? 'User'` — it is the auth-only side of the
   CLAUDE.md footgun wearing the user-data type. `shopping_social_share_module` /
   `social_menu_operations` stamp `sharedByDisplayName` + `sharedByAvatarUrl` from it into OTHER
   users' inbox trees, and `sharedBy*` is NOT in `on-profile-updated.ts`'s propagation pairs, so a
-  recipient can see the literal `'User'` permanently. Treat any `permissionService.currentUser.<
-  profile field>` as a finding on sight.
+  recipient can see the literal `'User'` permanently — and worse, the account's REAL Google/Apple
+  name plus `photoURL` whenever one exists. Treat any `permissionService.currentUser.<
+  profile field>` as a finding on sight. Corollary when reviewing the OTHER writers' fix commits: a
+  doc comment claiming "the Auth handle can no longer be stamped onto a document other people read"
+  is a REPO-WIDE claim — grep the whole field group before accepting it, or the comment retires a
+  finding the code did not fix.
 - A rollback that finally "says why" must not read a SHARED error field: Butlery's
   `UnifiedShoppingService._error` carries both list-load failures and mutation failures, and the
   early-return denial paths (`!canEditActiveList`, list/item not in local state) set nothing — so
@@ -651,7 +774,16 @@ docs), which makes it a superset of what the app itself can read.
 
 ### Testing / tooling gotchas
 - `fake_cloud_firestore`/`FakeFirebaseFirestore` enforce neither RULES nor INDEXES — a green
-  fake test proves query shape only; prove rule-allowed and index-exists separately.
+  fake test proves query shape only; prove rule-allowed and index-exists separately. **Sharpest
+  instance: a `get()` on a doc that does NOT exist in a rules-gated collection returns
+  `permission-denied`, not `exists == false`, whenever the read rule dereferences `resource.data`
+  (`resource` is null ⇒ CEL error ⇒ deny) — which is every Butlery shared collection. The fake
+  returns `exists == false`, so the miss branch is dead-tested.** Consequence for the common
+  "try the shared collection, else the personal one" probe: the first leg's `catch` must FALL
+  THROUGH to the second, never `return` the inconclusive value, or the personal case answers
+  "unknown" forever in production while every fake test passes (BUT-1723,
+  `shopping_repository_query_module.dart:confirmPersistedItemCount`). The same rule explains the
+  pre-existing `try/catch`-and-continue around the shared probe in `read()`/`delete()`.
 - Prefer real-repository + fake-Firestore + auth-state-fake tests over side-effect stubs that
   mock away the boundary under test.
 - Cascade unit tests against a fake Firestore must bridge the production `ServiceLocator` or

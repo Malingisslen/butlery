@@ -1,6 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
 import 'package:butlery/services/parsing/parsers/viterbi_context_processor.dart';
+import 'package:butlery/utils/text/ingredient_normalizer.dart';
+import 'package:butlery/utils/text/ingredient_parser.dart';
+import 'package:butlery/utils/text/ingredient_preprocessor.dart';
+import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 
 void main() {
   final classifier = SwedishLineClassifier.instance;
@@ -630,6 +634,237 @@ Vispa och stek.
               '"smör", "lök", "vitlök" should all be ingredients in context',
         );
       });
+    });
+
+    // BUT-1714 on the branch the detector tests cannot reach. The carve-out
+    // ("a lone gluten word stays an ingredient") is implemented as "return
+    // null", which only means "keep the line" for callers with an ingredient
+    // fallback. `LineType.sectionHeader` is exactly what the live ONNX
+    // classifier gives a colon-terminated lone word — and that branch used to
+    // read the same null as "clear the group", deleting the gluten row
+    // outright.
+    //
+    // Surviving is necessary but not sufficient: the row must also RESOLVE.
+    // The rescued text is re-inserted colon-STRIPPED, because ingredient
+    // lookup folds diacritics but strips no punctuation — see the lookup-key
+    // group at the end of this file for the pin on that.
+    group('gluten carve-out survives a sectionHeader classification', () {
+      ParsedRecipeStructure structureFor(List<ClassifiedLine> lines) =>
+          SwedishLineClassifier.extractStructureFromSections([
+            RecipeSection(type: LineSectionType.ingredients, lines: lines),
+          ]);
+
+      test('a sectionHeader-classified "Mjöl:" stays, colon stripped', () {
+        final structure = structureFor(const [
+          ClassifiedLine(
+            text: 'Mjöl:',
+            type: LineType.sectionHeader,
+            confidence: 0.9,
+          ),
+          ClassifiedLine(
+            text: '2 dl socker',
+            type: LineType.ingredient,
+            confidence: 0.9,
+          ),
+        ]);
+
+        expect(
+          structure.ingredients,
+          contains('Mjöl'),
+          reason: 'dropping it hides the gluten source from tagging',
+        );
+        expect(
+          structure.ingredients,
+          isNot(contains('Mjöl:')),
+          reason:
+              'the colon must not ride along — it makes the lookup key '
+              '`mjol:`, which matches no registry document',
+        );
+        expect(structure.ingredients, contains('2 dl socker'));
+        expect(
+          structure.ingredientSections,
+          everyElement(isNull),
+          reason: 'the refused line must not become a group label either',
+        );
+      });
+
+      test('a real component heading still sets the group', () {
+        final structure = structureFor(const [
+          ClassifiedLine(
+            text: 'Deg:',
+            type: LineType.sectionHeader,
+            confidence: 0.9,
+          ),
+          ClassifiedLine(
+            text: '2 dl socker',
+            type: LineType.ingredient,
+            confidence: 0.9,
+          ),
+        ]);
+
+        expect(structure.ingredients, ['2 dl socker']);
+        expect(structure.ingredientSections, ['Deg']);
+      });
+
+      test('a generic block marker still clears the group', () {
+        final structure = structureFor(const [
+          ClassifiedLine(
+            text: 'Deg:',
+            type: LineType.sectionHeader,
+            confidence: 0.9,
+          ),
+          ClassifiedLine(
+            text: 'Ingredienser:',
+            type: LineType.sectionHeader,
+            confidence: 0.9,
+          ),
+          ClassifiedLine(
+            text: '2 dl socker',
+            type: LineType.ingredient,
+            confidence: 0.9,
+          ),
+        ]);
+
+        expect(structure.ingredients, ['2 dl socker']);
+        expect(structure.ingredientSections, [null]);
+      });
+
+      // The kill switch is allowed to turn grouping off. It is NOT allowed to
+      // lose an allergen: with `ingredient_section_capture` OFF this tier must
+      // hand tagging exactly the pre-feature input, and "Mjöl:" is a gluten
+      // source. A carve-out gated on the flag would make OFF the unsafe
+      // position — worse than having no switch at all.
+      test('capture OFF still keeps "Mjöl:" in the flat list, stripped', () {
+        final structure = SwedishLineClassifier.extractStructureFromSections(
+          [
+            const RecipeSection(
+              type: LineSectionType.ingredients,
+              lines: [
+                ClassifiedLine(
+                  text: 'Mjöl:',
+                  type: LineType.sectionHeader,
+                  confidence: 0.9,
+                ),
+                ClassifiedLine(
+                  text: '2 dl socker',
+                  type: LineType.ingredient,
+                  confidence: 0.9,
+                ),
+              ],
+            ),
+          ],
+          captureSubHeadings: false,
+        );
+
+        expect(structure.ingredients, contains('Mjöl'));
+        expect(structure.ingredients, isNot(contains('Mjöl:')));
+        expect(structure.ingredients, contains('2 dl socker'));
+        expect(structure.ingredientSections, everyElement(isNull));
+      });
+
+      // The other half of the switch: with capture off a REAL component
+      // heading is still not a group (nothing is), and it is still dropped —
+      // exactly the pre-feature behaviour, no allergen involved.
+      test('capture OFF drops a real component heading, as before', () {
+        final structure = SwedishLineClassifier.extractStructureFromSections(
+          [
+            const RecipeSection(
+              type: LineSectionType.ingredients,
+              lines: [
+                ClassifiedLine(
+                  text: 'Deg:',
+                  type: LineType.sectionHeader,
+                  confidence: 0.9,
+                ),
+                ClassifiedLine(
+                  text: '2 dl socker',
+                  type: LineType.ingredient,
+                  confidence: 0.9,
+                ),
+              ],
+            ),
+          ],
+          captureSubHeadings: false,
+        );
+
+        expect(structure.ingredients, ['2 dl socker']);
+        expect(structure.ingredientSections, [null]);
+      });
+    });
+  });
+
+  // BUT-1714, the half that "the row survives" does not prove: the row must
+  // also RESOLVE against the ingredient registry, or the carve-out preserves a
+  // line that tags nothing.
+  //
+  // Measured through the real front end, not asserted from theory:
+  // IngredientPreprocessor → IngredientParser → IngredientNormalizer →
+  // SwedishCharacterNormalizer is exactly the chain that produces what
+  // `IngredientLookupService._cleanForLookup` queries with, and NONE of those
+  // four strips punctuation (`_cleanForLookup` folds å/ä/ö, strips a leading
+  // article and a trailing quantity — that is all). So a re-inserted "Mjöl:"
+  // queries `mjol:`, matches no registry document, and leaves the row
+  // UNMATCHED — which drops `IngredientLookupResult.coverage` below 1.0 and
+  // makes `getPropertyStatus` return UNKNOWN for every allergen on the recipe,
+  // gluten included. Reintroducing the colon at either re-insertion site
+  // (`swedish_line_classifier.dart`, `schema_org_tier.dart`) reddens here.
+  group('BUT-1714: the rescued gluten row resolves like any ingredient', () {
+    /// The literal key `IngredientLookupService` would query for [rawLine].
+    String lookupKeyFor(String rawLine) {
+      final pre = IngredientPreprocessor.preprocess(rawLine).cleaned;
+      final parsed = IngredientParser.parseIngredient(pre);
+      final normalized = IngredientNormalizer.normalize(parsed.name).normalized;
+      return SwedishCharacterNormalizer.normalize(normalized).trim();
+    }
+
+    ParsedRecipeStructure structureFor(String headerText) =>
+        SwedishLineClassifier.extractStructureFromSections([
+          RecipeSection(
+            type: LineSectionType.ingredients,
+            lines: [
+              ClassifiedLine(
+                text: headerText,
+                type: LineType.sectionHeader,
+                confidence: 0.9,
+              ),
+            ],
+          ),
+        ]);
+
+    test('"Mjöl:" reaches lookup as `mjol`, not `mjol:`', () {
+      final kept = structureFor('Mjöl:').ingredients.single;
+
+      expect(
+        lookupKeyFor(kept),
+        'mjol',
+        reason: 'this is the registry document id the row must hit',
+      );
+      expect(
+        lookupKeyFor(kept),
+        isNot(contains(':')),
+        reason: 'a colon in the key means UNKNOWN for every allergen',
+      );
+    });
+
+    test('the rescued row is indistinguishable from a plain flour row', () {
+      // The strongest available statement without a live registry: whatever
+      // key an ordinary "Mjöl" ingredient line resolves to, the rescued
+      // heading-shaped line resolves to the SAME key — so it tags identically.
+      for (final word in const ['Mjöl', 'Råg', 'Vetemjöl', 'Havregryn']) {
+        final kept = structureFor('$word:').ingredients.single;
+        expect(
+          lookupKeyFor(kept),
+          lookupKeyFor(word),
+          reason: '"$word:" must tag exactly as "$word" does',
+        );
+      }
+    });
+
+    test('control: the colon-carrying shape would NOT resolve', () {
+      // Pins the premise rather than leaving it as a comment — without this,
+      // the assertions above could be read as "any shape works".
+      expect(lookupKeyFor('Mjöl:'), 'mjol:');
+      expect(lookupKeyFor('Mjöl:'), isNot(lookupKeyFor('Mjöl')));
     });
   });
 }

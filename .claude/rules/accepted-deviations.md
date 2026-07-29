@@ -27,6 +27,10 @@ files in the same edit.
   The 2026-07-04 "deliberately ungated" entry was stale; both creates carry `isAgeCompliant()`
   (BUT-1418/ADR-0002) and four rules tests deny a missing or false claim. Malin resolved it in
   favour of the code on 2026-07-24. Never remove either gate citing the old entry. 2026-07-24
+- **A colon-terminated bare GLUTEN word stays an INGREDIENT; every other allergen
+  keeps colon-wins** — "Mjöl:"/"Råg:"/"Öl:" are as likely a quantity-less OCR row as
+  a heading, and a heading leaves the tagging input; "Mjölk:"/"Ägg:"/"Soja:" stay
+  headings. The asymmetry is the decision, not a gap. BUT-1714, 2026-07-27
 
 ## Engineering
 
