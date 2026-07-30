@@ -105,6 +105,69 @@ not a decided call. Before treating an entry as prior human approval, check `git
 deviation files, and check whether the entry it argues by analogy from actually records a human
 override of its own.
 
+### [Privacy/GDPR] The conversations export keeps other participants' display names but strips their avatar URLs (BUT-1772)
+**Decided by Malin, 2026-07-30.** The `messages` Article-15 section exports each conversation's
+whole document as `conversation_info`, which carries every other participant's raw UID, the
+`participantDisplayNames` map, `lastReadTimestamps`, and the embedded `lastMessage` (its
+`senderId`, `senderDisplayName` and `content`). What it now strips is every OTHER participant's
+`participantAvatarUrls` entry, and `lastMessage.senderAvatarUrl` when the sender is not the
+requester. The requester's own avatar stays — it is their data, and Art. 15 is a right to receive
+it.
+
+This is deliberately the OPPOSITE call to the shared-shopping-list entry above, which strips names
+and keeps ids. The asymmetry is the decision, not an oversight, and it was made with both
+sections on the table. A shopping row's cached `addedByDisplayName` is a denormalised copy of
+someone's profile that the paired `*UserId` makes redundant — dropping it costs the bundle
+nothing. A conversation is the opposite: strip the names and the section becomes a list of
+opaque UIDs with no way to tell who said what, which fails the "concise, intelligible" limb of
+Art. 12(1) while protecting a name the requester has seen in the app every time they opened the
+thread.
+
+**Why the avatar URL is the line, and the name is not.** A display name in a bundle the requester
+already reads on screen discloses nothing new. An avatar URL is different in kind: it is a
+durable, directly-dereferenceable pointer to another person's photograph, it survives outside the
+app in any file the bundle is forwarded to, and it keeps resolving after that person leaves the
+conversation or deletes their account. It also buys the requester nothing — nobody reads a JSON
+export to look at a thumbnail. That is a clean Art. 15(4) balance: real cost to the other data
+subject, no benefit to the requester.
+
+Do **not** file "third-party PII — must redact participant names/UIDs from the conversations
+export" against this path; that is the decided call. Do not file "strip the requester's own
+avatar" either — withholding the subject's own data is the opposite failure.
+
+**Scope note, so this entry does not read as broader than it is:** it governs `conversation_info`
+only, and as of 2026-07-30 it has NO production effect at all — it is proven at unit level and
+nowhere else. The export reads `conversations/{id}/messages`, a subcollection with no `match`
+block in `firestore.rules` (the `conversations` scope declares only `/userSettings/{uid}`), so the
+catch-all `match /{document=**} { allow read, write: if false }` DENIES the query. A denied query
+raises `permission-denied`; it does not return an empty snapshot. There is no local catch, so
+`exportMessages`' outer catch converts it to `_failed('Messages', 'messages-export-failed')` and
+**any user with at least one conversation loses the entire messages section** — their own
+conversation metadata included — surfacing only as one `export_metadata.warnings[]` line.
+Tracked as **BUT-1767**, which must repoint at the TOP-LEVEL `messages` collection and also remove
+a `recipientIds` filter that would otherwise drop every RECEIVED message once the path works.
+When it lands, each message row carries its own `senderDisplayName` and `senderAvatarUrl`; this
+rule applies there too and the redaction must be extended to cover it.
+
+**Fields this entry deliberately does NOT decide, listed so the record cannot be read as
+exhaustive:** the conversation document's key set is not `ConversationDto.toFirestore()` — the
+mutation module writes `perUserSettings.<uid>.<key>` by dot-path, and the DTO reads back only the
+current user's sub-map, so the raw export carries every other participant's `isMuted`, `isPinned`,
+`isArchived`, `pinnedAt` and `archivedAt`. That is third-party BEHAVIOURAL data and the keep
+argument above does not reach it — the client never renders another user's sub-map, so "you have
+already seen it in the app" is false for it. Escalated to Malin as **BUT-1774**, undecided.
+Also kept and not separately argued: `lastReadTimestamps`, `lastMessage.reactions` (emoji → uids)
+and poll `metadata.options[].voterIds` — all uids, so covered by the same balance as the
+participant ids, but named here rather than left implicit.
+
+**Fail-closed, by construction:** an unrecognised shape for either redacted field drops that field
+wholesale and sets `redaction_fell_back: true`, rather than falling through to the untouched copy.
+A redaction that silently no-ops on a schema it has not seen ships the data while the bundle's own
+`data_minimisation` line claims it was removed, and nothing surfaces it. The `data_minimisation`
+line states the DROP and does not enumerate the keeps, for the same reason the shared-list section
+learned the hard way: a positive list that must stay exhaustive to stay true will stop being true.
+— 2026-07-30
+
 ### [Tagging/Safety] Draft (AI-generated, unverified) ingredients may ground "fritt från X" verdicts
 The 2026-07-01 register audit recommended that draft-status ingredients (54% of the register,
 AI-generated, never human-verified) should not be able to prove FREE verdicts — only CONTAINS

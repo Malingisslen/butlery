@@ -26,6 +26,17 @@ files in the same edit.
   by analogy from BUT-1450, but that verdict is scoped to notification counterparty ids and
   records a human override, so the analogy did not transfer. Lists the user has LEFT stay out
   because the rules refuse the client that read (BUT-1747). BUT-1732, 2026-07-30
+- **The conversations GDPR section keeps other participants' DISPLAY NAMES and UIDs, and strips
+  their AVATAR URLs (own avatar kept)** — deliberately the opposite call to the shared-list entry
+  above, made with both on the table. A name the requester has seen on screen every time they
+  opened the thread discloses nothing new, and stripping it would leave opaque UIDs that fail
+  Art. 12(1); an avatar URL is a durable dereferenceable pointer to another person's photo that
+  outlives the app and buys the requester nothing. **Malin's explicit call, 2026-07-30.** Governs
+  `conversation_info` only, and has NO production effect yet — the section currently FAILS
+  (`messages-export-failed`, a rules deny on a phantom subcollection), it does not ship empty;
+  BUT-1767 must repoint it, and the per-message copies must then be covered too. `perUserSettings`
+  carries other participants' mute/pin/archive state and is NOT decided by this entry — BUT-1774.
+  BUT-1772, 2026-07-30
 - **A colon-terminated bare GLUTEN word rescued into the flat ingredient list must ALSO be
   exempted from `isValidIngredient`, `isGarbage` and the `_deduplicateIngredients` containment
   branch in BOTH directions** — refusing the heading is not sufficient on its own, and the

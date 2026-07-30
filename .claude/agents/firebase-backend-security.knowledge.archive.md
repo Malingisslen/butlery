@@ -1855,3 +1855,80 @@ the report.
 `update()` transform (emulator question, same owner); the second `MM` file
 (`functions/src/analytics/compute-feature-retention.ts` — the unstaged half is a doc-comment
 addition only, read and harmless, but it should be staged with the rest).
+
+### 2026-07-30 — BUT-1772 conversations-export avatar redaction: PASS, and the two things the review turned up
+
+Staged fileset: `lib/services/account/export/social_export_manager.dart` (+`_dropOtherPeoplesAvatars`,
+applied at the `conversation_info` construction), its test, `ACCEPTED_DEVIATIONS.md`,
+`.claude/rules/accepted-deviations.md`, `tasks/todo.md`. Malin's recorded call: keep other
+participants' display names and uids, strip their avatar URLs, keep the requester's own.
+
+**Verified clean.** Mutation-reproduced independently, whole test file each time (never
+`--plain-name`): early-return before the redaction → 2 reds; `if (false && …)` on the `lastMessage`
+leg ALONE → the same 2 reds (so the embedded copy is independently covered, not only the map);
+`copy.remove('participantDisplayNames')` → 1 red. `flutter analyze` clean on both files; the whole
+file's 22 tests green. `git status --porcelain` shows no `MM` on either code file (only
+`docs/onboarding/workflow-map.html` unstaged + an untracked `workflow-map.stale` naming this exact
+file as its trigger — the map text for BUT-1772 is written but NOT staged, so the commit as staged
+leaves the marker unresolved).
+
+**Aliasing: none, and the reason generalises.** `sanitizeForJson`
+(`export_pagination_helper.dart:9-24`) DEEP-rebuilds every Map (`value.map((k,v) =>
+MapEntry(k.toString(), sanitizeForJson(v)))`) and List, so the map handed to the redactor is owned by
+nobody else and `convoDoc.data()` is never touched. Independently, both mutations REPLACE a key on
+the shallow copy with a NEW map instead of mutating a nested one in place — the shape that stays
+correct even if the source were shared. Residual, informational: `Map<String,dynamic>.from(lastMessage)`
+is itself shallow, so the new `lastMessage`'s `metadata`/`reactions` sub-maps are shared with the
+throwaway; a future extension that reaches INTO them (`copy['lastMessage']['metadata'].remove(...)`)
+would break the invariant. Also note the `as Map<String, dynamic>` cast at the call site is safe only
+because `sanitizeForJson` rebuilds with `MapEntry(k.toString(), <dynamic>)`; a "don't copy when there
+are no Timestamps" optimisation there would make it throw on a `Map<String, Object>` and, because the
+cast sits inside the section's single try/catch, would fail the WHOLE messages section.
+
+**Finding 1 (Medium, the one the fileset missed): `perUserSettings`.** The conversation document's
+key set is NOT `ConversationDto.toFirestore()`. `ConversationMutationModule.updateConversationUserSettings`
+(`conversation_mutation_module.dart:416-441`) writes `perUserSettings.<uid>.<key>` by dot-path
+`set(mergeFields:)`, and `ConversationDto.fromFirestore:69-73` reads back only the CURRENT user's
+sub-map. The export dumps the raw doc, so every OTHER participant's `isMuted`/`isPinned`/`isArchived`
++ `pinnedAt`/`archivedAt` ship. It is not a media pointer, so the decision's avatar test does not
+reach it — but the decision's load-bearing justification for keeping names/uids ("the requester has
+already seen it on screen") does not hold either: the client never renders another user's sub-map.
+Neither the code nor the deviation entry accounts for it. **Rule this generalises:** enumerate a
+whole-doc export's third-party surface from EVERY WRITER, not from the DTO — a field written only by
+dot-path `set(mergeFields:)`/`update()` is invisible in `toFirestore()` and therefore invisible to
+the derived-key test BUT-1732 shipped. Same sweep found `lastMessage.reactions` (emoji → other
+participants' uids) and poll `metadata.options[].voterIds` also unenumerated; both are uids, so
+covered by the decision, but the record lists neither.
+
+**Finding 2 (High, against the RECORD): the scope note's failure mode is wrong.** Both the entry and
+BUT-1767 say the `messages` array "ships EMPTY for every user today". It does not: the export reads
+`conversations/{id}/messages` (`firebase_data_export_repository.dart:346-350`), that subcollection has
+NO rule block (`firestore.rules:1494-1546` matches only `/userSettings/{uid}` under conversations;
+production writes the TOP-LEVEL `messages` collection — `firebase_messaging_repository.dart:147-148`,
+and the rules say so in a comment at `:1550`), so the catch-all `match /{document=**} { allow read,
+write: if false }` (`:2548-2550`) DENIES the query. A denied query is `permission-denied`, not empty,
+the `.get()` has no local catch, and `exportMessages`'s outer catch converts it to
+`_failed('Messages','messages-export-failed')`. So for any user with ≥1 conversation the ENTIRE
+messages section is absent from the Art. 15 bundle — the requester's own conversation metadata as well
+as the messages — surfacing only as an `export_metadata.warnings[]` line, and this redaction has no
+production effect until BUT-1767 lands. Rules-derived, not emulator-run; hand the proof to
+`firestore-rules-tester`. The forward-looking half of the note is otherwise right —
+`MessageDto.toFirestore:116` really does persist `senderAvatarUrl` per message and
+`on-profile-updated.ts:95-96` keeps both it and `participantAvatarUrls.<uid>` fresh — but it should
+name the TOP-LEVEL `messages` collection as the destination, and note that the per-message redaction
+lands in the same loop as the dead `recipientIds` OR-arm.
+
+**Finding 3 (Low/Medium): the `data_minimisation` sentence.** Its DROP claim is exhaustive and true
+(avatars, both sites). Its positive clause — "Their names, user ids and messages are kept" — is an
+incomplete enumeration of what is kept (also: read timestamps, reactions, poll votes, `creatorId`,
+`perUserSettings`), and "messages are kept" sits next to a `messages` array that is structurally
+empty/failed today. A positive enumeration in a self-description invites exactly the BUT-1732 defect;
+prefer "everything else is kept as stored" over a list.
+
+**Also confirmed, adjacent (Medium, pre-existing, different ticket):** the SAME bundle still ships
+another person's avatar URL from a sibling section of the SAME manager — `shared_content` docs carry
+`sharedByAvatarUrl` (`recipe_sharing_manager.dart:586`, `social_menu_operations.dart:88`, both via the
+`permissionService.currentUser` footgun) and `exportSharedContent` exports them verbatim
+(`firebase_data_export_repository.dart:377-388`). Friend docs are clean (`addedAt` +
+`displayNameLower` only), `ConversationMembership` is clean, and no message-attached image/voice URL
+exists (`MessageType.image`/`voice` have no production writer that stores one).

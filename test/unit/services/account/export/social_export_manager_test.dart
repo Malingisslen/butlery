@@ -12,6 +12,8 @@
 /// `Fake` that returns canned rows per export method — no emulator.
 library;
 
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
@@ -288,6 +290,258 @@ void main() {
         expect(result[key], isEmpty);
       }
     });
+  });
+
+  /// BUT-1772 — Malin's call, 2026-07-30: the conversations section keeps other
+  /// participants' names and user ids and strips their AVATAR URLs. The
+  /// opposite redaction to the shared-list export, made with both on the table.
+  ///
+  /// Both halves are pinned here. "Strip the avatars" must not quietly become
+  /// "strip more" — a section reduced to opaque uids fails Art. 12(1) just as a
+  /// bundle carrying a durable pointer to someone else's photograph fails
+  /// Art. 15(4).
+  group('SocialExportManager conversation redaction (BUT-1772)', () {
+    const userId = 'user-uid';
+    const otherUid = 'other-uid';
+    const otherAvatar = 'https://example.test/avatars/other-uid.jpg';
+    const ownAvatar = 'https://example.test/avatars/user-uid.jpg';
+
+    SocialExportManager buildManager() => SocialExportManager(
+      dataExportRepository: _FakeDataExportRepository(
+        conversations: [
+          {
+            'id': 'conv1',
+            'data': {
+              'title': 'Middagsplaner',
+              'participantIds': [userId, otherUid],
+              'participantDisplayNames': {userId: 'Malin', otherUid: 'Anna'},
+              'participantAvatarUrls': {
+                userId: ownAvatar,
+                otherUid: otherAvatar,
+              },
+              'lastReadTimestamps': {userId: 1, otherUid: 2},
+              // The conversation document embeds its newest message for
+              // previews, so the sender's avatar rides along here even while
+              // `messages` is empty (BUT-1767).
+              'lastMessage': {
+                'senderId': otherUid,
+                'senderDisplayName': 'Anna',
+                'senderAvatarUrl': otherAvatar,
+                'content': 'Ses kl 18',
+              },
+            },
+            'messages': const <Map<String, dynamic>>[],
+          },
+        ],
+      ),
+    );
+
+    test(
+      'another participant s avatar URL appears NOWHERE in the bundle',
+      () async {
+        final result = await buildManager().exportMessages(userId);
+
+        // Asserted against the whole serialised section, not just the map: a copy
+        // hiding in `lastMessage` would pass a map-only assertion.
+        expect(
+          json.encode(result),
+          isNot(contains(otherAvatar)),
+          reason:
+              'an avatar URL is a durable pointer to another person s photograph '
+              'and keeps resolving after they leave the thread',
+        );
+      },
+    );
+
+    test('the requester s OWN avatar URL is kept', () async {
+      final result = await buildManager().exportMessages(userId);
+      final convo =
+          (result['conversations'] as List).single as Map<String, dynamic>;
+      final info = convo['conversation_info'] as Map<String, dynamic>;
+
+      expect(
+        (info['participantAvatarUrls'] as Map)[userId],
+        ownAvatar,
+        reason:
+            'withholding the subject s own data is the opposite failure to the '
+            'one this redaction guards against',
+      );
+    });
+
+    test(
+      'names, ids, read timestamps and message content are UNTOUCHED',
+      () async {
+        final result = await buildManager().exportMessages(userId);
+        final convo =
+            (result['conversations'] as List).single as Map<String, dynamic>;
+        final info = convo['conversation_info'] as Map<String, dynamic>;
+
+        expect(info['title'], 'Middagsplaner');
+        expect(info['participantIds'], [userId, otherUid]);
+        expect(info['participantDisplayNames'], {
+          userId: 'Malin',
+          otherUid: 'Anna',
+        });
+        expect(info['lastReadTimestamps'], {userId: 1, otherUid: 2});
+
+        final lastMessage = info['lastMessage'] as Map<String, dynamic>;
+        expect(lastMessage['senderId'], otherUid);
+        expect(
+          lastMessage['senderDisplayName'],
+          'Anna',
+          reason:
+              'the name is the decided keep — stripping it leaves opaque uids '
+              'and fails the "intelligible" limb of Art. 12(1)',
+        );
+        expect(lastMessage['content'], 'Ses kl 18');
+        expect(lastMessage.containsKey('senderAvatarUrl'), isFalse);
+      },
+    );
+
+    test(
+      'the section states what it dropped, and does not enumerate the keeps',
+      () async {
+        final result = await buildManager().exportMessages(userId);
+
+        final line = result['data_minimisation'] as String;
+        expect(
+          line,
+          contains('profile pictures'),
+          reason: 'a bundle that silently redacts states something false',
+        );
+        // The keep side must NOT be a list. The sibling section shipped one that
+        // named four of six fields; this document carries lastReadTimestamps,
+        // reactions, poll voterIds and perUserSettings on top of the obvious
+        // keeps, so any enumeration here starts out incomplete.
+        expect(
+          line,
+          isNot(contains('names, user ids')),
+          reason:
+              'an enumeration that must stay exhaustive to stay true will stop '
+              'being true',
+        );
+      },
+    );
+
+    /// The requester's OWN avatar on the `lastMessage` leg, which the map leg's
+    /// test does not reach. The guard is replicated across two fields and the
+    /// untested twin is the one the other fixtures omit: turning
+    /// `senderId != userId` into an unconditional strip reddened nothing, so a
+    /// conversation whose newest message the requester sent could lose their own
+    /// avatar silently.
+    test(
+      'the requester s own avatar survives on the embedded lastMessage',
+      () async {
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {
+                  'participantIds': [userId, otherUid],
+                  'lastMessage': {
+                    'senderId': userId,
+                    'senderDisplayName': 'Malin',
+                    'senderAvatarUrl': ownAvatar,
+                    'content': 'Jag fixar efterrätten',
+                  },
+                },
+                'messages': const <Map<String, dynamic>>[],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final convo =
+            (result['conversations'] as List).single as Map<String, dynamic>;
+        final info = convo['conversation_info'] as Map<String, dynamic>;
+        final lastMessage = info['lastMessage'] as Map<String, dynamic>;
+
+        expect(
+          lastMessage['senderAvatarUrl'],
+          ownAvatar,
+          reason:
+              'this is the requester s own message and their own picture — '
+              'withholding it is the opposite failure to the one guarded against',
+        );
+        expect(
+          info.containsKey('redaction_fell_back'),
+          isFalse,
+          reason:
+              'nothing was dropped wholesale, so the bundle must not say it was',
+        );
+      },
+    );
+
+    /// FAIL CLOSED. A redaction that silently no-ops on a shape it does not
+    /// recognise ships the data while the bundle claims it was removed — the
+    /// expensive direction, because nothing surfaces it.
+    test('an unexpected lastMessage shape drops the field entirely', () async {
+      final manager = SocialExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          conversations: [
+            {
+              'id': 'conv1',
+              'data': {
+                'participantIds': [userId, otherUid],
+                // A plausible legacy preview shape: a bare string rather than
+                // the embedded message map.
+                'lastMessage': 'Anna: $otherAvatar',
+              },
+              'messages': const <Map<String, dynamic>>[],
+            },
+          ],
+        ),
+      );
+
+      final result = await manager.exportMessages(userId);
+      final convo =
+          (result['conversations'] as List).single as Map<String, dynamic>;
+      final info = convo['conversation_info'] as Map<String, dynamic>;
+
+      expect(json.encode(result), isNot(contains(otherAvatar)));
+      expect(info.containsKey('lastMessage'), isFalse);
+      expect(info['redaction_fell_back'], isTrue);
+    });
+
+    test(
+      'an unexpected participantAvatarUrls shape drops the field entirely',
+      () async {
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {
+                  'participantIds': [userId, otherUid],
+                  // A future/legacy shape: a LIST of {uid, url} rather than a map.
+                  'participantAvatarUrls': [
+                    {'uid': otherUid, 'url': otherAvatar},
+                  ],
+                },
+                'messages': const <Map<String, dynamic>>[],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final convo =
+            (result['conversations'] as List).single as Map<String, dynamic>;
+        final info = convo['conversation_info'] as Map<String, dynamic>;
+
+        expect(json.encode(result), isNot(contains(otherAvatar)));
+        expect(info.containsKey('participantAvatarUrls'), isFalse);
+        expect(
+          info['redaction_fell_back'],
+          isTrue,
+          reason:
+              'the bundle must admit that a field was dropped wholesale rather '
+              'than silently losing it',
+        );
+      },
+    );
   });
 
   group('SocialExportManager.exportMessages (BUT-1438)', () {

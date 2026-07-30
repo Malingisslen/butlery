@@ -2835,7 +2835,7 @@
         {
           "from": "svc-data-export",
           "to": "vm-data-export",
-          "payload": "JSON-sträng (export_metadata + alla sektioner inkl. pooled_rating_events, version 2.0); export_metadata får truncated_collections/data_completeness och warnings[] efter det djupbegränsade svepet (BUT-1721). data_completeness sätts vid BÅDE trunkering och misslyckad sektion; en sektion som satt error_code UTAN error rapporteras som ofullständig, inte som misslyckad",
+          "payload": "JSON-sträng (export_metadata + alla sektioner inkl. pooled_rating_events, version 2.0); export_metadata får truncated_collections/data_completeness och warnings[] efter det djupbegränsade svepet (BUT-1721). data_completeness sätts vid BÅDE trunkering och misslyckad sektion; en sektion som satt error_code UTAN error rapporteras som ofullständig, inte som misslyckad. Samtalssektionen stryker andra deltagares avatar-URL:er (egen behålls) och behåller deras namn och uid — Malins beslut BUT-1772, motsatt kall mot delade listor. OBS: meddelandesektionen NEKAS i dag (fantomvag conversations/{id}/messages saknar regelblock) och misslyckas med messages-export-failed for varje anvandare med minst ett samtal — BUT-1767",
           "transport": "in-memory return",
           "verified": true
         },

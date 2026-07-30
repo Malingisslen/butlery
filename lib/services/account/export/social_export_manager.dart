@@ -121,6 +121,74 @@ class SocialExportManager {
     }
   }
 
+  /// [source] with every OTHER participant's avatar URL removed — the map entry
+  /// and the copy embedded in `lastMessage`. Names, user ids, read timestamps
+  /// and message content are deliberately kept.
+  ///
+  /// BUT-1772, Malin's call 2026-07-30. This is the OPPOSITE redaction to
+  /// [SharedShoppingListExport], which strips names and keeps ids, and the
+  /// asymmetry is the decision rather than an oversight: a shopping row's
+  /// cached `addedByDisplayName` is a denormalised copy of a profile that the
+  /// paired `*UserId` makes redundant, while a conversation stripped of names
+  /// is a list of opaque uids that fails Art. 12(1)'s "intelligible" limb. An
+  /// avatar URL is different in kind from a name — a durable, directly
+  /// dereferenceable pointer to another person's photograph, which survives in
+  /// any file this bundle is forwarded to and keeps resolving after they leave
+  /// the thread or delete their account — and it buys the requester nothing.
+  ///
+  /// The requester's OWN avatar stays. Withholding the subject's own data is
+  /// the opposite failure to the one this guards against.
+  ///
+  /// When BUT-1767 repoints the message query at the collection production
+  /// actually writes, each message row arrives carrying its own
+  /// `senderAvatarUrl`; this redaction must be extended to cover it then. The
+  /// `messages` array ships empty today, so there is nothing here to strip yet.
+  Map<String, dynamic> _dropOtherPeoplesAvatars(
+    Map<String, dynamic> source,
+    String userId,
+  ) {
+    final copy = Map<String, dynamic>.from(source);
+
+    // Both branches FAIL CLOSED on a shape they do not recognise: an unexpected
+    // shape drops the field entirely rather than falling through to the
+    // untouched copy. A redaction that silently no-ops on a schema it has not
+    // seen is the expensive failure — it ships the data while the
+    // `data_minimisation` line still claims it was removed. Neither drop loses
+    // anything the requester is owed: `participantAvatarUrls` holds nothing but
+    // avatars, and `lastMessage` is a denormalised PREVIEW of a row that also
+    // belongs in `messages`.
+    final avatars = copy['participantAvatarUrls'];
+    if (avatars != null) {
+      if (avatars is Map) {
+        copy['participantAvatarUrls'] = <String, dynamic>{
+          userId: ?avatars[userId],
+        };
+      } else {
+        copy.remove('participantAvatarUrls');
+        copy['redaction_fell_back'] = true;
+      }
+    }
+
+    // The conversation document embeds its most recent message for previews, so
+    // the sender's avatar rides along here even while `messages` carries nothing
+    // (BUT-1767).
+    final lastMessage = copy['lastMessage'];
+    if (lastMessage != null) {
+      if (lastMessage is Map) {
+        if (lastMessage['senderId'] != userId) {
+          copy['lastMessage'] = Map<String, dynamic>.from(
+            lastMessage.cast<String, dynamic>(),
+          )..remove('senderAvatarUrl');
+        }
+      } else {
+        copy.remove('lastMessage');
+        copy['redaction_fell_back'] = true;
+      }
+    }
+
+    return copy;
+  }
+
   /// Export all conversations and messages
   Future<Map<String, dynamic>> exportMessages(String userId) async {
     try {
@@ -163,7 +231,10 @@ class SocialExportManager {
 
         final conversationData = <String, dynamic>{
           'conversation_id': convo['id'],
-          'conversation_info': sanitizeForJson(convo['data']),
+          'conversation_info': _dropOtherPeoplesAvatars(
+            sanitizeForJson(convo['data']) as Map<String, dynamic>,
+            userId,
+          ),
           'messages': messagesList,
           'message_count': messagesList.length,
         };
@@ -176,6 +247,20 @@ class SocialExportManager {
 
       messagesData['total_conversations'] =
           messagesData['conversations'].length;
+
+      // Section level, matching SharedShoppingListExport, rather than duplicated
+      // into each of up to 100 conversations.
+      //
+      // It states the DROP and stops. The keep side is deliberately not
+      // enumerated: the sibling section shipped a positive list that named four
+      // of six fields and thereby made the bundle state something false about
+      // itself, and this document carries more than the obvious keeps —
+      // `lastReadTimestamps`, `reactions`, poll `voterIds` and `perUserSettings`
+      // among them (BUT-1774 asks Malin about the last of those). A list that
+      // must stay exhaustive to stay true is a list that will stop being true.
+      messagesData['data_minimisation'] =
+          "Other participants' profile pictures have been removed. Everything "
+          'else this conversation held is kept as it was stored.';
 
       return messagesData;
     } catch (e) {

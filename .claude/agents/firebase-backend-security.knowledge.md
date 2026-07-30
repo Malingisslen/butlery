@@ -385,6 +385,14 @@ personal→collaborative leg only.
   so the OR-arm is dead and the filter silently degrades to "sent only" — every RECEIVED message
   dropped from the Art. 15 bundle with no truncation or error flag. Masked today only because the
   query reads a phantom subcollection (BUT-1767); repointing that query lands the gap invisibly.
+  **Correct the failure mode before repeating it (2026-07-30): a phantom path with no rule block does
+  not read EMPTY, it reads `permission-denied`** — `conversations/{id}/messages` has no branch
+  (`firestore.rules:1494-1546`), so the catch-all `if false` (`:2548-2550`) denies the query, the
+  `.get()` has no local catch, and the manager's outer catch drops the WHOLE section into
+  `messages-export-failed`. So the requester loses their own conversation metadata too, not just the
+  messages, and any redaction added inside that section is unreachable in production until the path is
+  fixed. Whenever a ticket or deviation entry says a section "ships empty", check the rules for the
+  path before believing it.
   Whenever an export/cascade filter, redaction map or probe NAMES a field, grep the MODEL's
   `toFirestore()` for it — the same derived-key discipline the BUT-1732 redaction test uses, owed
   to filter predicates too, and a dead OR-arm fails toward under-export where a dead AND-arm would
@@ -521,7 +529,15 @@ personal→collaborative leg only.
   test on ANY hand-enumerated field group; it only works because `toFirestore()` emits nulls rather
   than omitting keys, so check that first. The matching `ACCEPTED_DEVIATIONS.md` entry must state
   the count and the reason, since the bundle's own `data_minimisation` string is a claim the export
-  makes about itself.
+  makes about itself. **And the DTO is not the document (2026-07-30, BUT-1772):** a whole-doc export's
+  third-party surface must be enumerated from EVERY WRITER, because a field written by dot-path
+  `set(mergeFields:)`/`update()` never appears in `toFirestore()` and so is invisible to the derived-key
+  test — `conversations.perUserSettings.<uid>.{isMuted,isPinned,isArchived,pinnedAt,archivedAt}`
+  (`conversation_mutation_module.dart:416-441`; the DTO reads back only the CURRENT user's sub-map)
+  ships every other participant's mute/archive behaviour, which the client never renders, so a
+  "they've already seen it on screen" justification cannot cover it. Prefer "everything else is kept
+  as stored" over a positive enumeration in the `data_minimisation` sentence: an incomplete KEEP list
+  is the same self-description defect as an incomplete DROP list.
 - Anonymize (don't hard-delete) a row that is also someone else's GDPR evidence.
 - Prefer read-modify-write list rewrites over `FieldValue.arrayRemove()` in scrubs — test fakes
   silently no-op `arrayRemove`, hiding a broken cascade.

@@ -10184,3 +10184,79 @@ warnings tests were scoped from `hasLength(1)` to a per-section filter, which is
 comment and is backed by the fully-wired happy-path `containsKey('warnings') isFalse`). Three
 findings, all "a changed production line has no test", none of which makes a shipped test lie
 about what it proves except Finding 2's comment.
+
+## 2026-07-30 — BUT-1772 conversation-avatar redaction review (`social_export_manager`)
+
+Trigger: review the test coverage of the BUT-1772 staged diff (`_dropOtherPeoplesAvatars`),
+under a founder decision (recorded in `.claude/rules/accepted-deviations.md`) that the Art. 15
+conversations export KEEPS other participants' names and uids and STRIPS their avatar URLs —
+the opposite redaction to the shared-shopping-list export.
+
+### Tree note — the brief's counts were measured on the staged bytes
+
+`git status` read `MM` on both files. The **staged** diff has a 4-test group and a plain
+`if (avatars is Map)` with no fail-closed arm and a PER-CONVERSATION `data_minimisation`; the
+**worktree** adds the fail-closed `else` branches, the `redaction_fell_back` flag, a 5th test,
+and moves `data_minimisation` to the section root. The brief describes the worktree, so every
+count below was measured against the worktree (the bytes `flutter test` compiles). Baseline
+23/23 green; `test/unit/services/account` 224/224 green; `flutter analyze` on both files clean.
+
+### Mutation matrix (each mutant applied, suite run, file restored in the same shell call;
+md5 `14200fb60fa73e646fd4e5ba44984e56` verified identical after all eleven restores)
+
+| # | mutant | red | which |
+|---|---|---|---|
+| M1 | `return source;` before any redaction | **3** | avatar-nowhere, untouched-keeps, fail-closed |
+| M2 | `lastMessage` leg neutralised (`&& userId.isEmpty`) | **2** | avatar-nowhere, untouched-keeps |
+| M3 | `copy.remove('participantDisplayNames')` (over-strip) | **1** | untouched-keeps |
+| M4 | delete the fail-closed `else` for `participantAvatarUrls` | **1** | fail-closed |
+| M8 | `copy.remove('participantAvatarUrls')` (over-strip own) | **1** | own-avatar-kept |
+| M9 | delete the section-root `data_minimisation` line | **1** | states-what-it-dropped |
+| M10 | avatars-MAP leg only neutralised | **1** | avatar-nowhere |
+| M11 | revert to the staged enumerating wording ("names, user ids…") | **1** | states-what-it-dropped |
+| **M5** | **delete the fail-closed `else` for `lastMessage`** | **0** | — |
+| **M6** | **`if (lastMessage['senderId'] != userId)` → `if (true)`** | **0** | — |
+| M7 | drop BOTH outer `!= null` guards (spurious `redaction_fell_back` on ordinary rows) | 1 | `exportMessages (BUT-1438) includes conversations…` — an unrelated legacy whole-map equality, not the new group |
+
+M1's 3 (not the brief's 2) and M2/M3/M4 reproducing exactly is what identified the staged-vs-worktree gap.
+
+### Non-vacuity of the four negative assertions
+
+All four stage the value first, and each reddens for its own reason:
+`json.encode(result) isNot contains(otherAvatar)` in test 1 is reddened INDEPENDENTLY by M10
+(map leg) and M2 (lastMessage leg), so it is not a single-leg alarm wearing a two-leg name;
+`lastMessage.containsKey('senderAvatarUrl') isFalse` by M2; the fail-closed test's
+`isNot(contains(otherAvatar))` + `containsKey isFalse` by M4 (its fixture stages the avatar
+inside a LIST-shaped `participantAvatarUrls`, so a no-op fall-through ships it verbatim);
+`isNot(contains('names, user ids'))` by M11, which restores the exact staged sentence it names
+— phrase-specific, but it names the regression it guards, so that is a fair scope.
+
+### Fixture realism — verified against production, not assumed
+
+`ConversationDto.toFirestore` writes `participantIds`, `participantDisplayNames`,
+`participantAvatarUrls`, `lastReadTimestamps`, `title`, `lastMessage` (via `MessageDto.toMap`);
+`MessageDto.toMap` writes `senderId`, `senderDisplayName`, `senderAvatarUrl`, `content`. Every
+key in the fixture is a real persisted key with the right spelling and nesting, and the embedded
+`lastMessage` really is where a second copy of the avatar lives. Two cosmetic simplifications,
+neither on the redaction path: `lastReadTimestamps` uses ints where production stores
+`Timestamp` (sanitizeForJson would ISO-string them), and the embedded `lastMessage` carries 4 of
+`toMap`'s 15 keys. Grepped `conversation_mutation_module.dart` for a third avatar site —
+`metadata` only ever carries `{'creatorId': …}`, so there is no missed field.
+
+### Findings
+
+1. (blocking-adjacent, "changed line with no test") M5 — the `lastMessage` fail-closed `else`
+   and its `redaction_fell_back` write are dead to the suite. The fail-closed fixture omits
+   `lastMessage` entirely, so the whole leg's `!= null` / `is Map` / `else` chain is unreachable.
+2. (blocking-adjacent) M6 — "the requester's OWN avatar stays" is pinned for
+   `participantAvatarUrls` (M8) but NOT for the embedded `lastMessage`; the group docstring
+   claims "both halves are pinned here". A conversation whose newest message the REQUESTER sent
+   can lose the requester's own avatar with no test reddening.
+3. (non-blocking) No happy-path assertion that `redaction_fell_back` is ABSENT. M7 is caught only
+   by an unrelated legacy whole-map equality in the BUT-1438 group.
+
+### Verdict
+
+PASS — no vacuous test and no unfalsifiable negative assertion among the five. Three gaps, all of
+the "a changed production line has no test that reddens" kind, two of them on the `lastMessage`
+leg. No shipped test says something it cannot prove.

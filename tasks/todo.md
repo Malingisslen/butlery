@@ -1,3 +1,79 @@
+# BUT-1772 — conversations export: strip other participants' avatar URLs
+
+**Founder decision, 2026-07-30.** Malin was shown the three options (strip names + avatars /
+keep names, strip avatars / keep both and record it) and chose **keep names, strip avatars**.
+Recorded in `docs/architecture/ACCEPTED_DEVIATIONS.md` and the always-on digest, in her name,
+with the reasoning: a name the requester has already seen on screen discloses nothing new and
+its removal would fail Art. 12(1)'s "intelligible" limb, while an avatar URL is a durable
+dereferenceable pointer to another person's photograph that outlives the app and buys the
+requester nothing.
+
+Sensitive domain (GDPR, `lib/services/account/export/`), so this is the written plan the
+threshold guard asks for, even at one production file.
+
+## Fileset
+
+- `lib/services/account/export/social_export_manager.dart` — the redaction, at the
+  `conversation_info` construction. NOT the repository: the repository returns the raw document
+  and the manager is the export-shaping layer, which is where the sibling shared-list redaction
+  already lives.
+- `test/unit/services/account/export/social_export_manager_test.dart` — pins it.
+- `docs/architecture/ACCEPTED_DEVIATIONS.md`, `.claude/rules/accepted-deviations.md` — the record.
+
+## What ships
+
+1. `participantAvatarUrls` keeps ONLY the requester's own entry; every other key is dropped. The
+   requester's own avatar is their data and Art. 15 is a right to receive it — dropping it would
+   be the opposite failure.
+2. The embedded `lastMessage.senderAvatarUrl` is dropped unless the sender is the requester.
+3. The section's `data_minimisation` line states what was dropped, so the bundle does not make a
+   false statement about itself. That line has to stay exhaustive — the shared-list version
+   shipped naming four of six fields once already.
+
+## Acceptance criteria
+
+1. Another participant's avatar URL appears nowhere in the exported bundle — asserted against the
+   whole serialised JSON, not just the map, so a copy hiding in `lastMessage` cannot pass.
+2. The requester's own avatar URL IS present.
+3. Every other `conversation_info` field is untouched — names, UIDs, read timestamps, last-message
+   content. A test pins this, because "strip the avatars" must not quietly become "strip more".
+4. Mutation-tested: removing the redaction reds the test.
+
+## Not in scope
+
+The `messages` array never returns anything today. The review corrected my own premise here:
+the section does not ship EMPTY, it **fails**. `conversations/{id}/messages` has no `match` block
+in `firestore.rules`, so the catch-all denies the query, `permission-denied` propagates to the
+section's outer catch, and any user with at least one conversation loses the whole messages
+section — their own conversation metadata included. So this redaction has no production effect
+until BUT-1767 lands; it is proven at unit level and nowhere else. Both BUT-1767 and the deviation
+entry now say so.
+
+## Outcome — graded 2026-07-30
+
+Shipped as specified, with three review findings folded in before commit:
+
+| Finding | Source | Disposition |
+| --- | --- | --- |
+| The redaction FAILED OPEN on an unrecognised shape — a list-shaped `participantAvatarUrls` would ship verbatim while `data_minimisation` claimed it was removed | `code-reviewer` | Fixed. Both branches now drop the field wholesale and set `redaction_fell_back: true`. Mutation-proven: deleting the fallback reds 1. |
+| The `data_minimisation` line enumerated the KEEPS, and the enumeration was already incomplete (`lastReadTimestamps`, `perUserSettings`, `reactions`, poll `voterIds`) — the bundle stated something false about itself | both reviewers | Fixed. It states the drop and stops. A test asserts the enumeration is gone, because a list that must stay exhaustive to stay true will stop being true. |
+| The scope note's failure mode was wrong — "ships empty" vs "fails with `messages-export-failed`" | `firebase-backend-security` | Corrected in the deviation entry, the digest and BUT-1767. |
+
+Also moved the notice from per-conversation (up to 100 copies) to section level, matching the
+sibling shared-list export.
+
+**Escalated to Malin rather than decided here:** `perUserSettings` carries every other
+participant's mute/pin/archive state and timestamps. Her keep-argument for names — "you have
+already seen them in the app" — is false for it, since the client never renders another user's
+sub-map. **BUT-1774**, undecided. Named explicitly in the deviation entry so the record cannot be
+read as exhaustive.
+
+**Follow-ups filed:** BUT-1774 (`perUserSettings`), BUT-1775 (`shared_content` still carries
+`sharedByAvatarUrl` — the same principle, three sections down, plus two more Auth-displayName
+persisters of the BUT-1736 class).
+
+---
+
 # Sprint 2026-07-30b — Selection
 
 Second sprint today. Backlog scanned: 122 Backlog + 4 Todo + 0 In Progress + 0 Triage, team
