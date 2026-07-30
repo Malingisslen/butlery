@@ -155,7 +155,15 @@ logger.info("descriptive event", { userId, recipeId, action });
   was kept for eyeballing. Swedish dish titles often lead with a given name
   ("Annas paj", "Mormors …"); if only inequality-across-events matters for
   detection, a hash gives that signal without the leak. `hashUid(uid)`
-  everywhere a raw uid would sit near other identifying fields.
+  everywhere a raw uid would sit near other identifying fields. Known OPEN
+  instance (re-confirmed 2026-07-30, THREE times, and survived the BUT-1724
+  edit to the same file): `compute-feature-retention.ts:193-197`'s
+  `feature_retention_probe_failed` warn logs a raw `userId` AND nests the Error
+  (`err: {}` — cause recorded nowhere), so a per-flag probe failure is
+  undiagnosable; fix = `hashUid(userId)` + `errCode`/`errName`. Don't argue it
+  from source alone — `npm run test:compute-feature-retention` PRINTS the
+  offending line (`{"flag":"cooked","userId":"uProbe","err":{}}`), which is the
+  cheapest possible proof and makes the finding unarguable.
 - **A raw uid interpolated into the MESSAGE string is the recurring form of
   this leak**, and it fails twice: it is cleartext PII (worst on the Art. 17
   erasure path, where the log outlives the account) and it gives every user a
@@ -254,6 +262,36 @@ see "When to consult the archive" at the end.
   nothing. Same for a `listDocuments()` returning `[]`. Answer with a throw
   naming the right lane ("seed the emulator suite"), and never let the stub's
   comment claim it protects a future fixture.
+- **Rules are not filters, so a client query built with NO condition is DENIED
+  wholesale on a member-scoped collection** — the symptom of a no-op client
+  filter (`isNotEqualTo: null` builds no condition: `cloud_firestore`
+  `query.dart` guards every operator with `if (arg != null)`; `isNull:
+  false/true` is the working spelling) is "the screen will not load", never an
+  over-share. That branch is provable ONLY on the emulator rules lane —
+  `fake_cloud_firestore` evaluates no rules, so a Dart unit test proves the
+  filter shape and says nothing about the server's verdict. Pin all three:
+  filtered query allowed + returns rows, UNFILTERED query denied, filtered
+  query by a non-member allowed-and-empty.
+- **The rules emulator KEEPS data across `npm run` invocations, so a later
+  test's seeded foreign doc leaks backwards into any actor-scoped
+  expect-empty assertion.** An "actor is a member of nothing" fixture must use
+  a uid no other test ever seeds (`list-nobody-uid`), not a `STRANGER`
+  constant another test makes an owner. Per-run doc-id tokens fix create
+  collisions only — and they are what makes the collection GROW ~3 docs a run.
+  So a QUERY deny test whose denial rests on one unreadable doc being inside
+  `.limit(N)` has a shelf life, and it is COMPUTABLE — enumerate the corpus,
+  find the unreadable fixture's `__name__` position, divide the remaining window
+  by the per-run growth. `unified_shared_shopping_lists` (still unfixed as of
+  2026-07-30): 56 docs after 9 runs, +3/run (`create-{seat,absent,at-cap}-<RUN>`;
+  the deny-side creates persist nothing), order `create-*` < `del-editor` <
+  `query-foreign` < `query-mine` < `read-*`, and every `create-*` doc IS readable
+  by the querying actor — so the sole unreadable doc sits at ~29 of a `.limit(200)`
+  window and SSL38's `assertFails` flips red in ~57 more runs (red, not a false
+  green). Give the unreadable fixture a doc id that sorts FIRST (`00-query-foreign`),
+  or drop the limit — never rely on `__name__` order against a growing corpus. Verify
+  the corpus with `curl -H "Authorization: Bearer owner"
+  "http://127.0.0.1:8080/v1/projects/<pid>/databases/(default)/documents/<col>"`
+  — without that header the REST read is rules-evaluated and 403s.
 - **A fix living in the I/O wrapper / handler-level gate can't be pinned by
   a pure-core unit suite.** Check which side of the pure-core/handler seam a
   fix landed on before crediting a suite with covering it. A test asserting
@@ -269,6 +307,25 @@ see "When to consult the archive" at the end.
   `sentinel.isEqual(FieldValue.arrayUnion(...expected))` assertion: field name,
   sentinel type and value set all pinned at once. Any hand-rolled
   batch/transaction double.
+- **Mutating a `Collections.x` reference to a bare literal to prove a test
+  non-vacuous can break the BUILD instead** (the import goes unused →
+  `noUnusedLocals` TSError, which reads as a red suite for the wrong reason).
+  Keep the symbol referenced: `.collection(Collections.x ? "old_name" : "y")`.
+  Verified on BUT-1724 — the first mutation attempt produced a TSError, the
+  reworked one reddened exactly the one targeted test.
+- **Refactoring a fan-out helper from a collection NAME to a
+  `CollectionReference` couples its legs inside any hand-rolled Firestore
+  double whose `.where()/.orderBy()/.limit()/.startAfter()` MUTATE and return
+  `this`** — real Firestore returns a fresh immutable `Query`, `db.collection(x)`
+  called twice did not. `paginatedDualUpdate` (BUT-1724) receives ONE ref and
+  calls `.where()` on it twice, so a mutating `makeFakeDb` had the second call
+  overwrite the first's predicate — passing only because `async get()` has no
+  `await` before it filters, so leg A's first page was captured synchronously
+  before leg B mutated; leg A's SECOND page would have used leg B's predicate.
+  CLOSED 2026-07-30: `on-profile-updated.test.ts`'s `makeQuery` now threads an
+  immutable `QueryState` and returns a NEW query from every builder call. Fix
+  the double, never the SUT. Residual: still no `>BATCH_LIMIT` dual-field
+  fixture, so the dual-field writer is proven CORRECT but not proven PAGED.
 - **A mutation applied by string-replace against a CRLF worktree file silently
   no-ops** — the replace returns the input, the suite stays green, and you
   write up "criterion unpinned" about a mutation that never happened. Every
@@ -282,6 +339,23 @@ see "When to consult the archive" at the end.
 ### PII scrubbing + GDPR cascade design
 - Cross-port heuristic vectors (TS↔Dart) live in one shared JSON fixture;
   the "Dart copies this" note goes in a `_header` field.
+- **PROMOTING a per-section field to the ROOT of an Art. 15 bundle changes its
+  blast radius, so the root value must be DERIVED, never copied.** A chokepoint
+  aggregator cannot tell an authored sentence from an `e.toString()`, and a raw
+  Firestore string carries another data subject's uid (composite doc ids like
+  `blocks/<uid>_<otherUid>`), a `create_composite` URL embedding the project id +
+  a `memberPermissions.<uid>` field path, or internal collection paths.
+  `data_export_service.dart` now builds `warnings[].message` itself and defaults
+  `error_code` to `'<section>-export-failed'`, which also stops a NEW manager
+  going silent at bundle level by forgetting the token. Two corollaries: an
+  aggregator keyed on `error_code` ALONE misses every section that fails with
+  `{'error': …}` (most of them), so a whole missing section reported the bundle
+  complete; and defending at the chokepoint does NOT clear the SECTION body —
+  `content_export_manager.dart` (12 sites) and `preferences_export_manager.dart`
+  (10) still `return {'error': e.toString()}` INSIDE the exported artifact
+  (open as of 2026-07-30). A completeness walk over the bundle must also handle
+  a flag nested in a LIST (`messages.conversations[i].messages_truncated`) —
+  iterating `value.values` and requiring each to be a Map silently skips it.
 - JS `\b` misfires before å/ä/ö — use `(?<=^|[^A-Za-zÅÄÖåäö])`, never lead a
   Swedish-letter regex with `\b`. Case-insensitive trigger words: per-letter
   classes (`[Mm]ormor`), not `/i`. Possessive titles ("Janssons frestelse")
@@ -315,10 +389,20 @@ see "When to consult the archive" at the end.
   not just "control survives." **Fixing a dead collection name in ONE consumer
   does not fix the rename** — sweep EVERY consumer in the same change
   (deleter, probe, Art. 15 export, denorm propagation, analytics/retention
-  probes, Dart repo constants). `users/{uid}/shopping_lists` still lives in
-  `analytics/compute-feature-retention.ts:212` (+ its docstring line 41), so
-  the `shopped` feature is structurally always false, after the cascade +
-  export legs were fixed.
+  probes, Dart repo constants). The `unified_shopping_lists` rename sweep is
+  CLOSED as of BUT-1724 (last two readers: the `shopped` probe in
+  `analytics/compute-feature-retention.ts` and `on-profile-updated.ts`'s
+  personal-list leg). `shopping_lists` now survives only as DELIBERATE legacy
+  safety nets (`account-deletion-cascade.ts`, `admin/reset-user-data.ts`) plus
+  one Dart negative-assertion test — don't re-file those as dead reads.
+  Corollary for any dead-read fix on an ANALYTICS probe: the stored history
+  keeps the structural zeros, so a rollup that ORs prior per-day flag docs
+  (`compute-feature-retention`'s wau7d/wau28d) ramps in over its whole window
+  after the fix; say so in the write-up instead of letting the dashboard read
+  as a launch. The shipped BUT-1724 docstring documents the two `shopped`
+  coverage gaps (collaborative lists BUT-1761, item ticks BUT-1762) but NOT the
+  28-day ramp-in, so the only warning a dashboard reader gets is this file —
+  add it to the docstring/deploy note the next time that file is open.
 - **One logical field can have TWO stores; only the READER decides which is
   authoritative.** Personal `unified_shopping_lists` keep items BOTH embedded
   in the list doc (written by `repository.update`) and in an `items`
@@ -393,11 +477,40 @@ see "When to consult the archive" at the end.
   count-only for PII and the log line MUST carry the error code, or the
   failure is diagnosable nowhere.
 - A denorm-name propagation step querying a name as a TOP-LEVEL collection
-  when it is a user SUBCOLLECTION updates zero docs, silently
-  (`on-profile-updated.ts:159` still passes `Collections.unifiedShoppingLists`
-  to `paginatedDualUpdate`, which does `db.collection(name)`). A
-  `collectionGroup` fix needs `fieldOverrides` with
-  `queryScope:"COLLECTION_GROUP"`.
+  when it is a user SUBCOLLECTION updates zero docs, silently — and still bills
+  a read per pass. **The shape that HIDES it is a shared fan-out helper
+  parameterized by collection NAME** (`db.collection(name)` inside), which
+  cannot express a subcollection at all; make such a helper take a
+  `CollectionReference` (BUT-1724 fixed `paginatedDualUpdate` that way) and the
+  bug becomes unwritable. A `collectionGroup` fix instead needs `fieldOverrides`
+  with `queryScope:"COLLECTION_GROUP"`; a per-user subcollection query does NOT
+  (auto single-field indexes cover equality + `__name__` ASC per collection ID —
+  verify no `fieldOverrides` exemption exists for that id).
+- **PROPAGATION coverage is not ERASURE coverage — they are two separate
+  tables, and a docstring that says "the CF maintains this copy and account
+  deletion scrubs it" is asserting BOTH.** Grep the collection in
+  `on-profile-updated.ts` AND in `account-deletion-cascade.ts` /
+  `request-account-deletion.ts`'s step table before letting such a sentence
+  stand (CLAUDE.md's "a decision record that asserts something about code has
+  an expiry"). Live asymmetry as of 2026-07-30: `on-profile-updated.ts:143`
+  propagates owner + last-editor names to BOTH `realtime_recipes` and
+  `realtime_menus`, while the cascade has only `deleteRealtimeRecipes`
+  (`ownerId == uid`) — `realtime_menus` appears nowhere in either account file,
+  and neither collection scrubs a `lastEditedBy*` stamp the deleted user left on
+  SOMEONE ELSE's doc. Fix shape: a `deleteRealtimeMenus` twin plus a
+  `lastEditedBy == uid → lastEditedByDisplayName: null` scrub leg on both, each
+  with its own `probeResidualData` leg. The asymmetry also runs the OTHER way,
+  and shopping lists are the live case (2026-07-30): the cascade scrubs
+  ITEM-level `addedByDisplayName`/`lastModifiedByDisplayName`
+  (`account-deletion-cascade.ts:624,629`) while `on-profile-updated.ts`'s
+  shopping legs update only the LIST-level `ownerDisplayName`/
+  `lastActivityByDisplayName` — so a rename leaves every "X la till mjölk" row
+  showing the old name forever, personal and shared alike. Whenever a leg
+  reasons about "which stamps must move", check the DOC MODEL's full
+  {uid, displayName} pair set, not the stamps the leg already knows about; a
+  fix needs `collectionGroup("items").where("addedByUserId","==",uid)` with a
+  `COLLECTION_GROUP` fieldOverride, and the embedded `items` ARRAY copy on the
+  list doc is not queryable at all (read-modify-write per matched list).
 - **`probeResidualData` must not be BROADER than the deleter** — a probe leg
   the cascade has no path to clear makes the canary permanently red. The
   shared-shopping-list orphan probe counts `ownerId == uid` with no other
@@ -503,15 +616,62 @@ see "When to consult the archive" at the end.
   every full-size batch is denied forever (`currentTokens` can never reach
   `tokensRequired`), with a retryAfter that never helps. The two constants
   sit in different files — derive one from the other or pin both in a test;
-  a comment is not enforcement. Also state the COMBINED ceiling when a
-  second bucket is split off an existing one: separate buckets are
-  ADDITIVE, so "same budget either way" is only true per-path.
+  a comment is not enforcement. The working shape (BUT-1692): `export` the
+  callable's cap (`MAX_BATCH_NOTIFICATIONS`) and assert it equals
+  `RATE_LIMIT_CONFIGS.<op>.maxTokens` in `rate-limiter-daily-cap.test.ts`,
+  alongside a second assertion that the split bucket's `refillRate`/
+  `refillIntervalMs` equal the single-item bucket's — else batching becomes
+  the cheap sustained path. Also state the COMBINED ceiling when a second
+  bucket is split off an existing one: separate buckets are ADDITIVE, so
+  "same budget either way" is only true per-path.
 - **Standalone callables use `enforceRateLimit`, not bare `checkRateLimit`**
   — only the former writes the `system_events` `rate_limit_violation` row
   via `logRateLimitViolation`. A bare `checkRateLimit` + hand-thrown
   `resource-exhausted` silently drops the abuse telemetry, which is usually
-  the whole point of the ticket adding the gate. (`notifications/` is the
-  existing outlier.)
+  the whole point of the ticket adding the gate. `notifications/` was the
+  outlier; BUT-1692 converted `sendNotificationBatch` (SHIPPED — the docstring
+  now names the remaining gap explicitly, so the earlier over-claim is
+  closed), so the remaining one is `sendNotification` single-send
+  (`send-notification.ts:91-97`, still bare `checkRateLimit` + local throw as
+  of 2026-07-30) — a diff that fixes one path must not claim in prose that the
+  family now leaves a trace. A seam typed
+  `enforce?: typeof enforceRateLimit` type-pins the production default: TS's
+  void-return bivariance does NOT reach through `Promise`, so
+  `Promise<RateLimitCheckResult>` is NOT assignable to `Promise<void>`
+  (verified with `tsc --strict`) and a silent revert to `checkRateLimit`
+  cannot compile. But the TYPE pin is not a BEHAVIOUR pin: a lambda that
+  calls `checkRateLimit` and throws `resource-exhausted` locally satisfies
+  the seam type, throws the SAME code, and drops the audit row — measured,
+  `thrown=resource-exhausted auditRows=0`. So every seam-injected case stays
+  green and only a case passing NO `enforce` catches it. Pin the default with
+  a case that asserts the ROW: drive the real enforcer against an exhausted
+  bucket via `__setFirestoreForTest` and assert exactly one
+  `system_events` doc with `type:"rate_limit_violation"` and the right
+  `operationType`. SHIPPED 2026-07-30 and green (19/19), but it needed
+  `logRateLimitViolation` switched from `admin.firestore()` to the seam's
+  `getFirestore()` first — the audit write was otherwise observable only on a
+  live emulator, which is exactly why the batch path first shipped unasserted.
+  **A deny asserted through a fake db cannot tell deny-by-bucket from
+  `checkRateLimit`'s fail-closed `catch`** (a fake that throws also yields
+  `allowed:false` → the same row, same `operationType`, so the case passes for
+  the wrong reason): disambiguate on the row's `retryAfterMs` —
+  `intervalsNeeded * refillIntervalMs` (60000 for a 10-token
+  `sendNotificationBatch` deny; measured `remainingTokens: 0.0005`) versus the
+  fail-closed 30000. The SHIPPED case does not assert `retryAfterMs`; it stays
+  honest only because its fixture is a well-formed zero-token bucket, so treat
+  "fake throws → same row, still green" as live technical debt. Reviewing the
+  `admin.firestore()`→`getFirestore()` swap itself: production is byte-identical
+  (`firestoreForTest` is null → `admin.firestore()`) and no non-test file calls
+  `__setFirestoreForTest` — grep that before rating the swap, it is the whole
+  question of whether an audit row can land in the wrong place. That seam covers
+  only the per-user bucket +
+  `logRateLimitViolation`; `getGlobalLimits`/`checkGlobalLimit`
+  (`rate_limiter.ts:516,563-564`) still call `admin.firestore()` directly, so
+  a fake db injected through it does NOT intercept them. `system_events` has
+  no TTL policy or cleanup job, so every newly-enforced callable adds an
+  unbounded write-per-denial stream — cheap, but say so, and note that
+  `retry_helper.dart:286` treats `resource-exhausted` as RETRYABLE, so a
+  future Dart caller multiplies the rows per denial.
 - Abuse/cost gates fail CLOSED on a Firestore error; some notification
   gates fail OPEN by design for their own domain — don't harmonize.
   `withRateLimit` wraps *callables*; the SDK does NOT auto-retry a thrown
@@ -574,17 +734,16 @@ see "When to consult the archive" at the end.
   response (`backfillCanonicalRatings` is the correct precedent;
   `backfillRecipeCommentsDenorm` and `backfillSharedListContributors` share the
   defect — don't copy either). A filter-mutating sweep is the only shape that
-  may skip the cursor. Measured on `backfillSharedListContributors`
-  (23×450 cap): corpus 20,000 → run 1 stamps 10,350, runs 2 and 3 re-read the
-  SAME 10,350 (`migrated 0, skipped 10350`) and docs 10,351+ are never reached,
-  while every run returns `success: true` — structurally unfinishable, not a
-  cosmetic nag. Two things get dropped when the shape is copied without
-  the cursor: (a) an explicit `reachedEnd` flag set at EVERY exhaustion break —
-  inferring completion from `batchesProcessed >= MAX` reports `hasMore: true`
-  when the final allowed batch was a SHORT page, i.e. exactly when the corpus
-  IS done (measured: corpus 10,000 fully migrated in one pass, still
-  `hasMore: true`), and a "delete this file once a run returns `hasMore:false`"
-  lifecycle gate then never opens; (b) NOT_FOUND handling on the 450-op
+  may skip the cursor. Measured (`backfillSharedListContributors`, 23×450 cap,
+  corpus 20,000): run 1 stamps 10,350, runs 2–3 re-read the SAME docs
+  (`migrated 0, skipped 10350`), 10,351+ never reached, every run still
+  `success: true` — structurally unfinishable, not a cosmetic nag. Two things get
+  dropped when the shape is copied without the cursor: (a) an explicit
+  `reachedEnd` flag set at EVERY exhaustion break — inferring completion from
+  `batchesProcessed >= MAX` reports `hasMore: true` exactly when the final
+  allowed batch was a SHORT page, i.e. when the corpus IS done, so a "delete this
+  file once a run returns `hasMore:false`" lifecycle gate never opens;
+  (b) NOT_FOUND handling on the 450-op
   `batch.update()` — one doc a client deleted between the page read and the
   commit aborts all 450 (catch grpc code 5, fall back per-doc). A
   `maxLists`-style cap tested only between batches is a SOFT cap: with
@@ -679,6 +838,12 @@ see "When to consult the archive" at the end.
 ### Ingredient sync, allergen data & admin exports/ETL (admin/ family)
 - `admin/` scripts run `admin.initializeApp()`+`main()` at import — extract
   pure cores for testing; idempotency/region/retry N/A (manual ts-node).
+- `reset-user-data.ts`'s `CollectionTarget.subcollections` is DOCUMENTATION
+  ONLY — `deleteDocRecursive` discovers every subcollection at every depth via
+  `listCollections()`, so a name absent from that list is still wiped. Never
+  file a "data survives the reset" finding from a gap in it (BUT-1724 was filed
+  on exactly that misreading); the list is still worth keeping honest as the
+  shape a reader greps.
 - List-split regexes must stay in lockstep across every field they're
   applied to — hoist to one shared const. Only the SWEDISH-derived alias
   list feeds allergen-lookup `normalizedNames`; other alias fields degrade
@@ -728,12 +893,33 @@ see "When to consult the archive" at the end.
   to the wrong file before.
 - **Prove a lefthook glob by RUNNING it:** `npx lefthook run <hook> --command
   <name> --no-auto-install` (singular `--command`; `--commands` is not a flag).
+  But in a LIVE worktree with dozens of unstaged files and nothing staged, that
+  hiding step would stash the whole tree — too dangerous next to a parallel
+  session. Read-only substitute that still proves the wiring: `npx lefthook
+  validate` (config parses) + `npx lefthook dump | grep -A5 <job>` (the job's
+  glob/run/priority as lefthook actually resolved them), then run the guard
+  SCRIPT directly with a positive fixture and a comment-only fixture and check
+  exit 1 / exit 0. That combination pins everything except the glob's file
+  matching, which a proven sibling job with the identical glob covers.
   Lefthook HIDES unstaged changes for `pre-commit`, so the job sees the STAGED
   file set plus any UNTRACKED file still on disk — a parallel session's
   untracked WIP test can redden a guard that scans the working tree, and that
   is a real commit block, not a false alarm. `**/*.js` requires an intermediate
   directory (misses `functions/scripts/x.js`); `functions/scripts/**` matches
   both flat sources and `__tests__/`.
+- **A new `tools/check_*.sh` lefthook guard is almost never wired into CI, so a
+  documented zero-arg "CI / manual" mode in its header is usually DEAD code** —
+  only 8 of them run in `architecture-validation.yml` (`check_null_filter.sh`,
+  BUT-1746, is not one). Grep `.github/workflows/` for the script name and say
+  whether the second mode has a caller: pre-commit-only means the guard never
+  sees an UNSTAGED violation, which is exactly the state a parallel session's
+  mutation leaves on disk. Second trap in the same script shape: a comment-skip
+  filter anchored `^[^:]*:[0-9]+:` against grep's `path:line:` prefix BREAKS on a
+  drive-letter path — measured, `check_null_filter.sh 'C:\...\x.dart'` reports all
+  three WHY-comment lines as violations (exit 1) where the same file by relative
+  path exits 0. Lefthook passes relative paths so it does not fire today; prove
+  any such filter with BOTH a relative and an absolute-path fixture, and prefer
+  an unanchored `:[0-9]+:[[:space:]]*(//|\*)`.
 - **A guard's own CI registration is usually outside the guard's universe.**
   `check-test-registration.js` scans `functions/src/__tests__/` only, so
   deleting `test:script-coverage-report` + `test:script-test-registration` from
@@ -750,6 +936,69 @@ see "When to consult the archive" at the end.
   ships the version the review just rejected — `account-deletion-cascade.ts`
   sat `MM` with the abort-early regression in the index while the worktree held
   the accepted fix. Diff both, and say which one you reviewed.
+- **A pass dispatched "re-review AFTER automated fixes" does NOT imply your
+  scoped files changed.** Hash all of them FIRST and compare against the
+  previous pass's recorded hashes (the archive entry carries them for exactly
+  this): the sprint's fixes usually landed in the OTHER files of the same
+  commit. BUT-1724's nine-file scope came back a third time byte-identical
+  (`compute-feature-retention.ts` md5 `c7c7760001a46bea8bb7eb6cbf4612b2`,
+  `on-profile-updated.ts` `7cc2acc50a2f35385526b66cefa5143c`). Say "nothing in
+  my scope moved; the prior findings are still open" rather than writing as if
+  a fix landed — and still re-derive every finding from the CURRENT bytes and
+  re-run the suites, because copying a verdict forward is how a stale claim
+  survives three passes.
+- **In a live sprint worktree the file can change UNDER the review: hash the
+  bytes immediately before and after EVERY suite you run, and report the
+  hash — but hash with `git hash-object`, not `md5sum`.** Raw-byte md5 also
+  moves on a pure LF→CRLF normalization (measured on
+  `send-notification.ts`: md5 changed, `git hash-object` and the `git diff`
+  index blob both identical), so md5 alone sends you hunting a content change
+  that never happened. A mid-review red is as likely someone else's MUTATION
+  PROOF as a defect: on 2026-07-30 both realtime services'
+  `_currentUserDisplayName` getters were reverted to the old source (twice in
+  one session, ~3 min each, and NOT simultaneously — my second run reddened
+  only the recipe file's 3 tests while the menu file was mutated too), with
+  docstring and new import left in place so the file read as
+  self-contradictory; the harness restored the exact original blobs and the
+  same suites went 52/52 green. So: poll on file CONTENT (grep the expected
+  line in a loop), never on a timer, never write up a finding from a run whose
+  before/after hashes differ — re-run, and treat the reds as free non-vacuity
+  evidence for the tests they hit. **Equal before/after hashes do NOT prove the
+  window never opened**: on a third pass the same day, a `grep` between two
+  IDENTICAL `git hash-object` readings of `realtime_menu_service.dart` returned
+  the reverted getter, because the mutate-and-restore cycle fitted entirely
+  between the two hashes. The tell is the self-contradictory read itself
+  (BUT-1736 docstring + `PermissionService` getter + an unused `user_service`
+  import) — when a grep contradicts a hash, re-read the LINES (`sed -n`), don't
+  trust either alone; a hash-stable grep hit is a window, not a finding. The change is not always a mutation proof:
+  later the same day `shopping_repository_routing_module_test.dart` moved under
+  a Dart review because a parallel session STRENGTHENED an assertion (added a
+  falsifiable `items isEmpty` beside a name-only one). Either way the response
+  is identical — re-`git diff` the file, re-run its suite, and report the verdict
+  against the NEW bytes. The cheapest detector is a `md5sum ... | tee
+  before.md5` before the run and `md5sum -c before.md5` after; it names the file
+  for you. **The mutated file is often OUTSIDE your fileset, and then the tell is a
+  newly-added GUARD SCRIPT reddening on the whole tree rather than a red test** —
+  2026-07-30, `check_null_filter.sh` reported `shopping_repository_query_module.dart`
+  still carrying `isNotEqualTo: null` three lines under a comment stating it uses
+  `isNull: false`, which reads exactly like "the fix was never applied, only its
+  comments were". Four disambiguators, ~60s, BEFORE writing that Critical: (a) RE-RUN
+  `git status --porcelain -- <file>` — the session-start snapshot is stale and had
+  shown it clean; (b) `git show HEAD:<file>` — HEAD held the CORRECT spelling, so the
+  worktree was an uncommitted REGRESSION against a good commit, which no unfinished
+  fix looks like; (c) `stat -c '%y'` vs `date` — seconds old; (d) poll on CONTENT,
+  restored on the first poll. Then re-run that file's suite against the restored
+  bytes and report THAT. Never restore another session's file yourself, and expect
+  the knowledge files themselves to move mid-session — re-`Read` before editing.
+  Second trap, same cause: the scratchpad
+  is SHARED between sessions, so a generically-named runner
+  (`_run_test.bat`) gets overwritten and you silently execute another
+  session's file list — name throwaway runners uniquely (`_cfs_<what>_$$.bat`)
+  and confirm the suite names in the output match what you asked for. Earlier
+  case, same rule: `tsconfig.json` has `include: ["src"]`, so `__tests__` IS
+  typechecked — a `tsc --noEmit` PASS that disagrees with a later `ts-node`
+  FAIL means the file moved (an intermediate save mid-review), not that the
+  lanes differ.
 
 ### When to consult the archive
 Grep `cloud-functions-specialist.knowledge.archive.md` (not this file) for:

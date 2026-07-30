@@ -10,6 +10,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
@@ -51,11 +53,25 @@ class TestRealtimeMenu extends RealtimeMenu {
        );
 }
 
+/// BUT-1736: keeps the two name sources apart so a test can prove WHICH one
+/// gets persisted. `profileName` is the name the user chose and the profile
+/// document stores; the Firebase Auth handle is modelled by
+/// `FakePermissionService.currentUser.displayName` (`'Auth Handle'` below),
+/// since production's `PermissionService.currentUser` is synthesized from
+/// `FirebaseAuth.currentUser`.
+class _FakeUserService extends Fake implements UserService {
+  String? profileName = 'Profil Malin';
+
+  @override
+  String? get profileDisplayName => profileName;
+}
+
 void main() {
   late RealtimeMenuService service;
   late MockRealtimeSyncService mockSyncService;
   late MockAuthService mockAuthService;
   late FakePermissionService mockPermissionService;
+  late _FakeUserService fakeUserService;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
@@ -83,10 +99,13 @@ void main() {
       isAuthenticated: true,
       currentUser: MockFactory.createMockUser(uid: 'test_user_123'),
     );
+    // 'Auth Handle' stands in for the Firebase Auth display name: this fake's
+    // `currentUser` is what production synthesizes from `FirebaseAuth`. A menu
+    // stamped with it would be the BUT-1736 regression.
     mockPermissionService.setPermissionState(
       currentUserId: 'test_user_123',
       defaultHasPermission: true,
-      userDisplayName: 'Test User',
+      userDisplayName: 'Auth Handle',
     );
     mockSyncService.setConnectionState(true);
     mockSyncService.setInitialized(true);
@@ -101,6 +120,13 @@ void main() {
       GetIt.instance.unregister<PermissionService>();
     }
     GetIt.instance.registerSingleton<PermissionService>(mockPermissionService);
+
+    // BUT-1736: the persisted display name now resolves through UserService.
+    fakeUserService = _FakeUserService();
+    if (GetIt.instance.isRegistered<UserService>()) {
+      GetIt.instance.unregister<UserService>();
+    }
+    GetIt.instance.registerSingleton<UserService>(fakeUserService);
 
     service = RealtimeMenuService(
       syncService: mockSyncService,
@@ -463,6 +489,88 @@ void main() {
         isFalse,
       );
     });
+  });
+
+  group('Persisted display name comes from the profile (BUT-1736)', () {
+    const testMenuId = 'menu_123';
+
+    test(
+      'createRealtimeMenu stamps the profile name, not the Auth handle',
+      () async {
+        RealtimeMenu? captured;
+        when(
+          () => mockSyncService.updateResource<RealtimeMenu>(any()),
+        ).thenAnswer((invocation) async {
+          captured = invocation.positionalArguments[0] as RealtimeMenu;
+        });
+
+        await service.createRealtimeMenu(
+          menuTitle: 'Veckomeny',
+          menuSnapshot: {'Monday': []},
+        );
+
+        expect(captured, isNotNull);
+        expect(captured!.ownerDisplayName, equals('Profil Malin'));
+        expect(captured!.lastEditedByDisplayName, equals('Profil Malin'));
+      },
+    );
+
+    test(
+      'an edit stamps the profile name as lastEditedByDisplayName',
+      () async {
+        mockSyncService.setCachedResource(
+          testMenuId,
+          TestRealtimeMenu(
+            id: testMenuId,
+            menuTitle: 'Test Menu',
+            ownerId: 'test_user_123',
+          ),
+        );
+
+        RealtimeMenu? captured;
+        when(
+          () => mockSyncService.updateResource<RealtimeMenu>(any()),
+        ).thenAnswer((invocation) async {
+          captured = invocation.positionalArguments[0] as RealtimeMenu;
+        });
+
+        await service.updateBasicInfo(
+          resourceId: testMenuId,
+          menuTitle: 'Uppdaterad',
+        );
+
+        expect(captured, isNotNull);
+        expect(captured!.lastEditedByDisplayName, equals('Profil Malin'));
+      },
+    );
+
+    test(
+      'an unloaded profile stamps the unknown-user label, never the Auth handle',
+      () async {
+        // Cold start: the profile document has not arrived yet, while the Auth
+        // handle IS available. Before BUT-1736 that stamped 'Auth Handle'.
+        fakeUserService.profileName = null;
+
+        RealtimeMenu? captured;
+        when(
+          () => mockSyncService.updateResource<RealtimeMenu>(any()),
+        ).thenAnswer((invocation) async {
+          captured = invocation.positionalArguments[0] as RealtimeMenu;
+        });
+
+        await service.createRealtimeMenu(
+          menuTitle: 'Veckomeny',
+          menuSnapshot: {'Monday': []},
+        );
+
+        expect(captured, isNotNull);
+        expect(captured!.ownerDisplayName, isNot(equals('Auth Handle')));
+        expect(
+          captured!.ownerDisplayName,
+          equals(AppLocale.current.displayUnknownUser),
+        );
+      },
+    );
   });
 
   group('Error Scenarios', () {

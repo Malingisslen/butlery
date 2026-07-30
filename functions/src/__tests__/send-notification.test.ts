@@ -24,7 +24,8 @@ import {
   preflightNotificationBatch,
 } from "../notifications/send-notification";
 import type { PreferenceAwarePushResult } from "../shared/preference-aware-push";
-import type { RateLimitCheckResult } from "../middleware/rate_limiter";
+import { HttpsError } from "firebase-functions/v2/https";
+import { __setFirestoreForTest } from "../middleware/rate_limiter";
 
 interface PrefAwareCall {
   userId: string;
@@ -330,7 +331,10 @@ async function runUnknownCategoryFallback(): Promise<number> {
 interface PreflightCase {
   name: string;
   notifications: unknown;
-  /** Verdict the stubbed bucket returns when it is reached. */
+  /**
+   * Verdict the stubbed limiter returns when it is reached. `false` means it
+   * throws `resource-exhausted`, exactly as `enforceRateLimit` does.
+   */
   allowed: boolean;
   /** Expected HttpsError code, or null when the call must succeed. */
   expectErrorCode: string | null;
@@ -396,13 +400,21 @@ async function runPreflightTests(): Promise<number> {
 
   for (const c of preflightCases) {
     const charges: { operationType: string; tokens: number }[] = [];
-    const rateLimit = async (
+    // BUT-1692: the seam is `enforceRateLimit`-shaped now (void, throws on
+    // denial) rather than `checkRateLimit`-shaped, because production must go
+    // through the enforcer to get the `system_events` audit row written.
+    const enforce = async (
       _userId: string,
       operationType: string,
       tokensRequired: number = 1
-    ): Promise<RateLimitCheckResult> => {
+    ): Promise<void> => {
       charges.push({ operationType, tokens: tokensRequired });
-      return { allowed: c.allowed, remainingTokens: 0 };
+      if (!c.allowed) {
+        throw new HttpsError(
+          "resource-exhausted",
+          `Rate limit exceeded for ${operationType}.`
+        );
+      }
     };
 
     let thrownCode: string | null = null;
@@ -410,7 +422,7 @@ async function runPreflightTests(): Promise<number> {
       await preflightNotificationBatch({
         callerUid: "caller-1",
         notifications: c.notifications,
-        rateLimit,
+        enforce,
       });
     } catch (err) {
       thrownCode = (err as { code?: string }).code ?? String(err);
@@ -454,6 +466,120 @@ async function runPreflightTests(): Promise<number> {
   }
 
   return failed;
+}
+
+/**
+ * BUT-1692 acceptance #2: the DEFAULT `enforce` must resolve to the real
+ * enforcer, and a rate-limit denial must leave a `system_events` audit row.
+ *
+ * Why this exists on top of the seam-injected cases above: those pass `enforce`
+ * explicitly, so they pin the seam's SIGNATURE and nothing else. The seam type
+ * is `typeof enforceRateLimit`, i.e. `(string, string, number?) =>
+ * Promise<void>` — so replacing the default with a lambda that calls
+ * `checkRateLimit` and throws locally (precisely the pre-BUT-1692 bug) still
+ * type-checks and keeps every injected case green, while silently dropping the
+ * audit row that is the entire reason for routing through the enforcer.
+ *
+ * This case passes NO `enforce`, drives the real `enforceRateLimit` against an
+ * exhausted bucket through the `__setFirestoreForTest` seam, and asserts the
+ * row itself rather than just the thrown code.
+ *
+ * Mutation test: put `checkRateLimit` + a local `throw new
+ * HttpsError("resource-exhausted", ...)` back into
+ * `preflightNotificationBatch` — this case reddens on the missing
+ * `system_events` write while the other 18 stay green.
+ */
+async function runDefaultEnforcerAuditTest(): Promise<number> {
+  const name =
+    "the default enforcer denies AND writes the system_events audit row";
+  const auditWrites: Record<string, unknown>[] = [];
+  const bucketDocRef = {}; // identity token; the fake tracks one bucket doc
+  // Bucket at zero with lastRefill = now: no refill interval has elapsed, so a
+  // 10-notification batch cannot be paid for and the deny path must run.
+  let bucket: Record<string, unknown> | undefined = {
+    tokens: 0,
+    lastRefill: admin.firestore.Timestamp.now(),
+    operationType: "sendNotificationBatch",
+    updatedAt: admin.firestore.Timestamp.now(),
+  };
+  const db = {
+    collection: (collectionName: string) => ({
+      doc: () => bucketDocRef,
+      add: async (data: Record<string, unknown>) => {
+        if (collectionName === "system_events") {
+          auditWrites.push(data);
+        }
+        return { id: "fake-event-id" };
+      },
+    }),
+    runTransaction: async <T>(fn: (tx: unknown) => Promise<T>): Promise<T> =>
+      fn({
+        get: async () => ({
+          exists: bucket !== undefined,
+          data: () => bucket,
+        }),
+        update: (_ref: unknown, data: Record<string, unknown>) => {
+          bucket = { ...bucket, ...data };
+        },
+        set: (_ref: unknown, data: Record<string, unknown>) => {
+          bucket = { ...data };
+        },
+      }),
+  } as unknown as admin.firestore.Firestore;
+
+  let thrownCode: string | null = null;
+  __setFirestoreForTest(db);
+  try {
+    await preflightNotificationBatch({
+      callerUid: "caller-audit",
+      notifications: makeNotifications(10),
+    });
+  } catch (err) {
+    thrownCode = (err as { code?: string }).code ?? String(err);
+  } finally {
+    __setFirestoreForTest(null);
+  }
+
+  const problems: string[] = [];
+  if (thrownCode !== "resource-exhausted") {
+    problems.push(`error=${thrownCode ?? "none"}/expected=resource-exhausted`);
+  }
+  const violations = auditWrites.filter(
+    (w) => w.type === "rate_limit_violation"
+  );
+  if (violations.length !== 1) {
+    problems.push(
+      `system_events rate_limit_violation rows=${violations.length}` +
+        "/expected=1 — the default `enforce` is not the audited enforcer, so" +
+        " batch abuse leaves no trace for monitoring"
+    );
+  } else if (violations[0].operationType !== "sendNotificationBatch") {
+    problems.push(
+      `audited operationType='${String(violations[0].operationType)}'` +
+        "/expected='sendNotificationBatch'"
+    );
+  } else if (
+    violations[0].userIdHash === "caller-audit" ||
+    typeof violations[0].userIdHash !== "string" ||
+    violations[0].userIdHash === ""
+  ) {
+    // The row lands in `system_events`, which is operator-readable. It must
+    // carry the HASH, never the raw uid — asserted as an absence, because
+    // "userIdHash is non-empty" alone stays green if someone assigns the uid
+    // straight into it.
+    problems.push(
+      `userIdHash='${String(violations[0].userIdHash)}' — the audit row must` +
+        " carry hashUid(uid), never the raw caller uid"
+    );
+  }
+
+  if (problems.length > 0) {
+    console.log(`  FAIL  ${name}`);
+    console.log(`        ${problems.join(", ")}`);
+    return 1;
+  }
+  console.log(`  PASS  ${name}`);
+  return 0;
 }
 
 /**
@@ -527,10 +653,15 @@ async function runTests(): Promise<void> {
   failed += await runScenarioTests();
   failed += await runUnknownCategoryFallback();
   failed += await runPreflightTests();
+  failed += await runDefaultEnforcerAuditTest();
   failed += runBatchValidationTests();
 
   const total =
-    scenarios.length + 1 + preflightCases.length + batchValidationCases.length;
+    scenarios.length +
+    1 +
+    preflightCases.length +
+    1 +
+    batchValidationCases.length;
   console.log(
     `\n${total - failed}/${total} passed` + (failed ? `, ${failed} failed` : "")
   );

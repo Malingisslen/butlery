@@ -8,11 +8,13 @@
  *
  * Safety: the genuinely-unbounded fan-out collections (messages, conversations,
  * recipe_comments, the `members` collection group, shared_recipes, realtime
- * resources, shopping lists) are paged with a per-collection documentId cursor
- * via `batchUpdateQueryPaginated` — the full result set is never held in memory
- * at once, so a prolific user can't OOM or blow the 540s timeout. Collections
- * bounded by the acting user's own subcollection (friends) or their own pending
- * outbox (group_invitations) keep the single-read + chunked-write path.
+ * resources, shared shopping lists) are paged with a per-collection documentId
+ * cursor via `batchUpdateQueryPaginated` — the full result set is never held in
+ * memory at once, so a prolific user can't OOM or blow the 540s timeout.
+ * Collections bounded by the acting user's own subcollection (friends, personal
+ * shopping lists) or their own pending outbox (group_invitations) do not need
+ * the cursor for safety; the personal shopping lists keep it only because they
+ * reuse the dual-field writer.
  * Steps run in parallel via Promise.all; each catches independently so one
  * failing collection can't abort the rest.
  */
@@ -140,7 +142,7 @@ export async function propagateProfileUpdate(
     // Realtime resources — owner + last-editor denorm names.
     for (const col of [Collections.realtimeRecipes, Collections.realtimeMenus]) {
       steps.push(
-        paginatedDualUpdate(db, col, userId,
+        paginatedDualUpdate(db, db.collection(col), userId,
           { queryField: "ownerId", updateField: "ownerDisplayName" },
           { queryField: "lastEditedBy", updateField: "lastEditedByDisplayName" },
           newName)
@@ -156,16 +158,37 @@ export async function propagateProfileUpdate(
       ).catch((e) => { logger.error(`Failed to update shared_recipes for ${userHash}`, e); return 0; })
     );
 
-    // Shopping lists — owner + last-activity denorm names.
-    for (const col of [Collections.unifiedShoppingLists, Collections.unifiedSharedShoppingLists]) {
-      steps.push(
-        paginatedDualUpdate(db, col, userId,
-          { queryField: "ownerId", updateField: "ownerDisplayName" },
-          { queryField: "lastActivityByUserId", updateField: "lastActivityByDisplayName" },
-          newName)
-          .catch((e) => { logger.error(`Failed to update ${col} for ${userHash}`, e); return 0; })
-      );
-    }
+    // Shared shopping lists — owner + last-activity denorm names. A real
+    // top-level collection with unbounded fan-out (the user can be a member of
+    // any number of other people's lists), so both legs stay paged.
+    steps.push(
+      paginatedDualUpdate(db, db.collection(Collections.unifiedSharedShoppingLists), userId,
+        { queryField: "ownerId", updateField: "ownerDisplayName" },
+        { queryField: "lastActivityByUserId", updateField: "lastActivityByDisplayName" },
+        newName)
+        .catch((e) => { logger.error(`Failed to update ${Collections.unifiedSharedShoppingLists} for ${userHash}`, e); return 0; })
+    );
+
+    // Personal shopping lists — BUT-1724: these are a SUBCOLLECTION of the
+    // acting user (`users/{uid}/unified_shopping_lists`, see
+    // `FirebaseShoppingRepository.collectionName` and the `firestore.rules`
+    // match under `users/{userId}`). There is no top-level collection of that
+    // name, so the top-level query this leg used to run matched zero documents
+    // forever while still billing two reads per rename. Bounded by the user's
+    // own list count, but kept on the same dual-field paged writer as the
+    // shared leg: `lastActivityByUserId` may name SOMEONE ELSE on a list copied
+    // out of a collaborative one, and that person's stamp must not be
+    // overwritten with this user's new name.
+    steps.push(
+      paginatedDualUpdate(
+        db,
+        db.collection(Collections.users).doc(userId).collection(Collections.unifiedShoppingLists),
+        userId,
+        { queryField: "ownerId", updateField: "ownerDisplayName" },
+        { queryField: "lastActivityByUserId", updateField: "lastActivityByDisplayName" },
+        newName)
+        .catch((e) => { logger.error(`Failed to update personal ${Collections.unifiedShoppingLists} for ${userHash}`, e); return 0; })
+    );
 
     // Group invitations — bounded by the acting user's OWN pending outbox
     // (fromUserId == userId, status == pending). Bounded and, being a
@@ -203,6 +226,10 @@ interface DualFieldPair {
  * with a documentId cursor via `batchUpdateQueryPaginated`, so neither result
  * set is ever fully held in memory.
  *
+ * Takes a `CollectionReference` rather than a collection NAME (BUT-1724): the
+ * personal-shopping-list caller needs a user subcollection, and passing a name
+ * silently produced a top-level query that matched nothing.
+ *
  * Unlike the previous merge-by-doc-id approach, a doc matching BOTH queries
  * (owner == last-editor, common) is written once per pass. That is a second
  * write to a DIFFERENT field, so the resulting document state is identical;
@@ -215,7 +242,7 @@ interface DualFieldPair {
  */
 async function paginatedDualUpdate(
   db: admin.firestore.Firestore,
-  collection: string,
+  collection: admin.firestore.CollectionReference,
   userId: string,
   primary: DualFieldPair,
   secondary: DualFieldPair,
@@ -223,12 +250,12 @@ async function paginatedDualUpdate(
 ): Promise<number> {
   const [primaryUpdated, secondaryUpdated] = await Promise.all([
     batchUpdateQueryPaginated(
-      db.collection(collection).where(primary.queryField, "==", userId),
+      collection.where(primary.queryField, "==", userId),
       { [primary.updateField]: newName },
       db
     ),
     batchUpdateQueryPaginated(
-      db.collection(collection).where(secondary.queryField, "==", userId),
+      collection.where(secondary.queryField, "==", userId),
       { [secondary.updateField]: newName },
       db
     ),

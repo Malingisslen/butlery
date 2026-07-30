@@ -113,6 +113,7 @@ class ShoppingRepositoryRoutingModule {
       ShoppingListPermissionGuards(
         logPermissionCheck: logPermissionCheck,
         validateUpdatePermission: validateUpdatePermission,
+        validateRequiredFields: validateRequiredFields,
       );
 
   ShoppingRepositoryRoutingModule({
@@ -133,21 +134,14 @@ class ShoppingRepositoryRoutingModule {
   ) async {
     final uid = requireCurrentUserId();
 
-    // Validate required fields for collaborative lists
-    validateRequiredFields(
-      data: entity.toFirestore(),
-      requiredFields: ['name', 'ownerId', 'memberPermissions'],
-      resourceType: 'collaborative_shopping_list',
-    );
-
-    // SECURITY (BUT-1696): mirror the create rule for
-    // /unified_shared_shopping_lists — `request.auth.uid ==
-    // request.resource.data.ownerId`. This was the one write path in the file
-    // that logged `granted: true` behind no client-side decision at all: the
-    // server refused a foreign-owner create anyway, but the audit row claimed
-    // a grant nobody made. Note this also fails
-    // `createCollaborativeListFromInvitation` locally instead of at the
-    // server — that path has always been dead against the same rule.
+    // SECURITY (BUT-1696): mirrors every conjunct of the create rule for
+    // /unified_shared_shopping_lists, required fields included (BUT-1706).
+    // This was the one write path in the file that logged `granted: true`
+    // behind no client-side decision at all: the server refused a
+    // foreign-owner create anyway, but the audit row claimed a grant nobody
+    // made. Note this also fails `createCollaborativeListFromInvitation`
+    // locally instead of at the server — that path has always been dead
+    // against the same rule.
     await _guards.requireSelfOwnedCreate(uid, entity);
 
     final docRef = sharedListsRef.doc();
@@ -449,6 +443,10 @@ class ShoppingRepositoryRoutingModule {
     // Same escalation bar as the transactional path — the cached base makes the
     // check weaker, not unnecessary.
     await _guards.requireNoPrivilegeEscalation(uid, mutated, live);
+
+    // BUT-1706: see [ShoppingOfflineWriteModule.requireOfflineWritableMutation]
+    // for why a non-item change the queued payload cannot carry is refused.
+    _offline.requireOfflineWritableMutation(live, mutated);
 
     final appended = _offline.appendedItems(live, mutated);
     // BUT-1725: an offline edit stamps the same per-item attribution an online

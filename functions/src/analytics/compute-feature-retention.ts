@@ -30,7 +30,7 @@
  *     dominant cost — at that scale switch to a daily counter doc per
  *     feature instead of per-user history.
  *
- * Feature → source mapping (verified against codebase 2026-05-01):
+ * Feature → source mapping (`shopped` re-verified 2026-07-30, BUT-1724):
  *
  *   | Flag         | Source                                                 |
  *   | cooked       | `cook_snaps` where userId == uid AND createdAt in day  |
@@ -38,18 +38,59 @@
  *   | shared       | `shared_recipes` where sharedByUserId == uid AND       |
  *   |              | sharedAt in day                                        |
  *   | mealPlanned  | `users/{uid}/menus` where createdAt in day             |
- *   | shopped      | `users/{uid}/shopping_lists` where updatedAt in day    |
+ *   | shopped      | `users/{uid}/unified_shopping_lists` where updatedAt   |
+ *   |              | in day — PERSONAL lists only, see gap 1 below          |
  *
  * Rationale for `shopped`: shopping lists are long-lived (created once,
  * updated as items get checked off). `createdAt` would dramatically
- * undercount actual usage. `updatedAt` better reflects the "did the user
- * touch a shopping list today" signal even though it conflates checking
- * off an item with editing the list metadata.
+ * undercount actual usage, so the probe filters on `updatedAt`.
+ *
+ * BUT-1724: this probe used to read `users/{uid}/shopping_lists`, the
+ * pre-rename name that nothing has written since BUT-1697 — so `shopped`
+ * was false for every user every day and every `shopped` number in the
+ * retention dashboard was structurally zero, not a real signal. The live
+ * personal-list path is `users/{uid}/unified_shopping_lists`
+ * (`FirebaseShoppingRepository.collectionName`); its documents carry both
+ * `createdAt` and `updatedAt` as Timestamps.
+ *
+ * KNOWN GAPS in `shopped` — read these before quoting the number:
+ *
+ *  1. COLLABORATIVE LISTS ARE NOT COVERED AT ALL. This probe reads only the
+ *     personal subcollection `users/{uid}/unified_shopping_lists`. A
+ *     collaborative list lives in the TOP-LEVEL
+ *     `unified_shared_shopping_lists` (`ListType.collaborative` is routed
+ *     there by `FirebaseShoppingRepository`), which nothing here queries. So a
+ *     household that shops exclusively on a shared list scores
+ *     `shopped: false` every day — the flagship collaborative flow is still
+ *     structurally zero, exactly like the whole flag was before BUT-1724.
+ *     Closing it means a sixth probe on that collection filtered by
+ *     `lastActivityByUserId == uid` plus an `updatedAt` day range; equality +
+ *     range needs a DECLARED COMPOSITE INDEX (unlike the equality-only
+ *     queries elsewhere in the app), so it carries an index-deploy cost and is
+ *     deliberately left to a follow-up rather than smuggled in here.
+ *
+ *  2. Personal-list item ticks are under-counted (accepted, not a bug in this
+ *     file): items live in an `items` subcollection and a tick or amend writes
+ *     only that subcollection — the parent list document's `updatedAt` is not
+ *     bumped. So `shopped` catches list creation and list-level edits, and
+ *     misses a session that only checked items off. Closing it means either
+ *     bumping the parent on every item write (an extra write per tick) or a
+ *     per-day counter doc; both are cost decisions beyond this probe.
+ *
+ *  3. THE ROLLUPS RAMP IN AFTER DEPLOY, AND THE RAMP LOOKS LIKE ADOPTION.
+ *     `wau7d` and `wau28d` OR together previously STORED per-day flag docs, and
+ *     every one of those written before this fix carries the structural zero
+ *     gap 1 describes. So `shopped` climbs for 7 and then 28 days after deploy
+ *     purely as the window refills with correct days — a dashboard artefact,
+ *     not behaviour change. The rollups only mean anything 28 days after the
+ *     deploy date; the DAU figure is trustworthy from day one.
  */
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { Collections } from "../shared/collections";
+import { hashUid } from "../shared/hash-uid";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const BATCH_LIMIT = 500;
@@ -157,10 +198,24 @@ async function probeUserFeatureFlags(
       const snap = await fn();
       return snap.size > 0;
     } catch (err) {
+      // Two separate defects lived on this line. `userId` in cleartext put a
+      // raw uid in an operator-readable log, against the family convention
+      // (`hashUid` everywhere else, e.g. on-profile-updated.ts:74). And `err`
+      // nested inside the payload object serialises to `{}` — firebase-functions
+      // only unwraps an Error passed POSITIONALLY — so the one field that was
+      // supposed to say WHY the probe failed said nothing at all. The suite's
+      // own passing output printed `{"flag":"cooked","userId":"uProbe","err":{}}`.
+      //
+      // `message` stays excluded ON PURPOSE, and that is not an oversight to
+      // helpfully repair: a Firestore error text carries `users/<raw uid>/...`
+      // paths and `create_composite` URLs, so adding it back would defeat the
+      // hash on the line below. `code`/`name` are enough to tell a missing
+      // index from a deadline, which is the whole operational question here.
       logger.warn("feature_retention_probe_failed", {
         flag: label,
-        userId,
-        err,
+        userIdHash: hashUid(userId),
+        errCode: (err as { code?: number | string }).code,
+        errName: (err as { name?: string }).name,
       });
       return false;
     }
@@ -209,7 +264,7 @@ async function probeUserFeatureFlags(
       db
         .collection("users")
         .doc(userId)
-        .collection("shopping_lists")
+        .collection(Collections.unifiedShoppingLists)
         .where("updatedAt", ">=", dayStart)
         .where("updatedAt", "<", dayEnd)
         .limit(1)

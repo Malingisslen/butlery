@@ -14,7 +14,7 @@
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { checkRateLimit } from "../middleware/rate_limiter";
+import { checkRateLimit, enforceRateLimit } from "../middleware/rate_limiter";
 import { isAllowedUrl } from "../shared/url-safety";
 import {
   getActiveTokensForUser,
@@ -463,8 +463,16 @@ function validateNotification(notification: NotificationRequest): string | null 
   return null;
 }
 
-/** Largest batch the callable accepts, and the unit the batch bucket is sized in. */
-const MAX_BATCH_NOTIFICATIONS = 100;
+/**
+ * Largest batch the callable accepts, and the unit the batch bucket is sized in.
+ *
+ * BUT-1692: exported so `RATE_LIMIT_CONFIGS.sendNotificationBatch.maxTokens`
+ * can be pinned to it by a test. The two numbers are one decision: the batch
+ * bucket is denominated in NOTIFICATIONS, so a bucket smaller than the cap
+ * would deny every full-size batch outright, and a bucket larger than the cap
+ * would hand out burst budget no caller can spend.
+ */
+export const MAX_BATCH_NOTIFICATIONS = 100;
 
 /**
  * BUT-1664: parse and bound the batch payload, THEN charge the dedicated
@@ -475,22 +483,39 @@ const MAX_BATCH_NOTIFICATIONS = 100;
  *   (and against the single-send bucket) let a caller push 100 notifications
  *   for the price of one, so the batch path was ~100x cheaper to abuse than
  *   sending the same pushes one at a time.
- * - Parse and size validation run BEFORE the charge, so a malformed or
- *   oversized payload is rejected as `invalid-argument` without consuming the
+ * - Only the NON-ARRAY and oversized rejections run before the charge, so
+ *   those two are rejected as `invalid-argument` without consuming the
  *   caller's budget — while the charge still lands before the per-target
  *   authorization loop, which costs a Firestore read per unique target.
+ *   BUT-1692: this used to claim "a malformed ... payload", which overstated
+ *   it. Per-ELEMENT malformation is NOT covered — `assertBatchValid` runs
+ *   after this function returns, so a poison-pill batch (e.g. a `null`
+ *   element) is charged for its full size before being rejected. That is the
+ *   deliberate trade: element validation costs a pass over the array, and the
+ *   caller who sent it should pay for the batch they claimed to send.
  *
  * An empty array still costs one token: a no-op spam loop must not be free.
  *
- * Exported as a test seam (`rateLimit`) — production resolves to
- * `checkRateLimit`.
+ * BUT-1692: the denial goes through `enforceRateLimit`, not a bare
+ * `checkRateLimit` + hand-rolled throw. `enforceRateLimit` writes the
+ * `system_events` `rate_limit_violation` audit row via
+ * `logRateLimitViolation`; the old local throw skipped it, so batch abuse left
+ * no trace for monitoring. The batch path is the one that mattered first
+ * because its bucket is charged per NOTIFICATION, so one denied call can
+ * represent up to `MAX_BATCH_NOTIFICATIONS` suppressed pushes. The single-send
+ * callable above still does `checkRateLimit` + a local throw and therefore
+ * still writes no audit row — a known follow-up, not a claim that this file is
+ * now uniformly audited.
+ *
+ * Exported as a test seam (`enforce`) — production resolves to
+ * `enforceRateLimit`.
  */
 export async function preflightNotificationBatch(opts: {
   callerUid: string;
   notifications: unknown;
-  rateLimit?: typeof checkRateLimit;
+  enforce?: typeof enforceRateLimit;
 }): Promise<NotificationRequest[]> {
-  const { callerUid, notifications, rateLimit = checkRateLimit } = opts;
+  const { callerUid, notifications, enforce = enforceRateLimit } = opts;
 
   if (!Array.isArray(notifications)) {
     throw new HttpsError(
@@ -506,17 +531,11 @@ export async function preflightNotificationBatch(opts: {
     );
   }
 
-  const rateLimitResult = await rateLimit(
+  await enforce(
     callerUid,
     "sendNotificationBatch",
     Math.max(1, notifications.length)
   );
-  if (!rateLimitResult.allowed) {
-    throw new HttpsError(
-      "resource-exhausted",
-      "Rate limit exceeded. Please try again later."
-    );
-  }
 
   return notifications as NotificationRequest[];
 }

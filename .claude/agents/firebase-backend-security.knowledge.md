@@ -170,23 +170,19 @@ via the full CONSTRUCTOR, so verify its parameter list is exhaustive against the
 missing one silently resets to its default), and a nulled `addedByUserId` flips a derived
 `isCollaborative` getter — check such a getter has no production consumer before nulling, or
 anonymize instead.
-**Two costs the fan-out repair carries, both worth checking on any "write the other shape too" fix
-(2026-07-28).** (a) It routes through a TYPE-ROUTING helper, and this repo's router probes the SHARED
-collection first: `create()` → `addItemsBatch` → `_requireList` → `read()` → a
-`sharedListsRef.doc(id).get()` that the rules DENY for every personal-list id (nonexistent doc ⇒
-`resource` is null ⇒ CEL error ⇒ `permission-denied`), caught and logged as a warning. So every
-personal create with items now bills a guaranteed-denied read plus a scary log line on the happy
-path — pass the already-known list/type into the batch writer instead of re-reading. (b) It makes a
-pre-existing orphan CERTAIN: the client's `delete()` removes the personal list document without
-sweeping its `items` subcollection, so the conversion's source delete now always strands a fully
-populated subcollection. Not a GDPR hole here only because the CF cascade sweeps
-`unified_shopping_lists/{id}/items` and the probe uses `listDocuments()` — check both before
-downgrading it.
-Second lesson from the same repair: a copy-confirmation gate that compares the SERVER count of the
-copy against a count read from LOCAL STATE of the source still deletes a source that had more rows
-than this device knew about (personal lists have no snapshot stream). Confirm both ends server-side,
-or say in the doc comment that the source count is trusted. **Still open 2026-07-28** on the
-personal→collaborative leg only (the collaborative leg's source IS stream-backed).
+**Three costs the fan-out repair carries, all worth checking on any "write the other shape too" fix
+(2026-07-28).** (a) The TYPE-ROUTING helper probes the SHARED collection first (`create()` →
+`addItemsBatch` → `_requireList` → `read()` → `sharedListsRef.doc(id).get()`), which the rules DENY
+for every personal-list id (nonexistent doc ⇒ null `resource` ⇒ CEL error ⇒ `permission-denied`),
+caught and logged — so every personal create with items bills a guaranteed-denied read on the happy
+path; pass the known list/type into the batch writer instead of re-reading. (b) It makes a
+pre-existing orphan CERTAIN: client `delete()` never sweeps the `items` subcollection, so the
+conversion's source delete always strands one. Not a GDPR hole only because the CF cascade sweeps
+`unified_shopping_lists/{id}/items` via `listDocuments()` — check both before downgrading it. (c) A
+copy-confirmation gate comparing the SERVER count of the copy against a LOCAL-STATE count of the
+source still deletes a source with more rows than this device knew (personal lists have no snapshot
+stream) — confirm both ends server-side or say the source count is trusted. **(c) still open** on the
+personal→collaborative leg only.
 
 ### Firestore rules & permission patterns
 - Full-doc `set()` collections: create pins `request.resource.data.userId==auth.uid`; update
@@ -253,7 +249,14 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   the membership key still logs `granted:true` and is still refused by the server. Half a mirror
   is still a forged grant. **CLOSED 2026-07-28**: `requireSelfOwnedCreate` now checks BOTH
   `entity.ownerId == uid` AND `entity.memberPermissions.containsKey(uid)`, with a distinct message
-  and a distinct audit `details` per arm, and both arms are pinned by tests. The same round moved
+  and a distinct audit `details` per arm, and both arms are pinned by tests. **All four conjuncts
+  mirrored 2026-07-30 (BUT-1706)**: `validateRequiredFields` gained `items` + `createdAt` and the
+  `contributorUserIds.size() <= 200` bound is unreachable (the client seats exactly `[uid]`). One
+  caveat that generalises to every `hasRequiredFields` mirror — ask whether the payload builder can
+  even OMIT the key before crediting the mirror: `UnifiedShoppingList.toFirestore()` emits a FIXED
+  key set, so the new client requirement can never fire and the WHY-comment's "a create lacking
+  either was refused by the SERVER" describes a path that does not exist. Harmless and correct as
+  documentation of the rule; not a closed hole. The same round moved
   all three mirrors out of the routing module into a dedicated
   `ShoppingListPermissionGuards` (500-line pressure). **Review rule for such an extraction:** the
   guards' scope is "every write path calls them", so re-derive that from the NEW module rather than
@@ -278,29 +281,21 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   restricted branch.** BUT-1726 added `updateCollaborativeList({UnifiedShoppingList?
   accessControlBase})` and made the no-declaration path STRIP `ownerId`/`memberPermissions`/
   `createdAt`; zero production callers pass it, so add/remove/demote-member, join-a-shared-list
-  and leave-a-list all silently no-op while the UI is told they worked (owner believes access was
-  revoked; the removed member keeps rules-granted write). Fixed check on any diff that adds a
-  parameter or flag a write path now depends on: `git grep <paramName> -- lib/` — hits only in
-  `test/` means the guarded capability is dead, not protected. Two corollaries. (a) The three
-  method-level tests pass precisely BECAUSE they pass the new argument, so a green suite is
-  evidence about the module, never about the app; trace the real chain (here dialog/coordinator →
-  `ListMemberOperations` → `UnifiedShoppingService.updateList` → `ShoppingListManagementModule`
-  → `repository.update`). (b) A silent STRIP must not report success: the same call logs a
-  `granted:false` "dropped memberPermissions" row and then a `granted:true` "Updated list" row for
-  one operation — refuse, or return the partial refusal to the caller. **CLOSED 2026-07-30
-  (BUT-1726 final).** The shape that closed it, and the one to demand on any "declare your intent"
-  guard: a NAMED public method (`updateCollaborativeListMembership(updated, base)`) on the
-  repository INTERFACE, so a forgotten optional argument cannot silently downgrade a removal to a
-  write of `updatedAt`; a dedicated service seam (`ListMemberOperations._updateMembership`)
-  replacing the generic `updateList`, so every add/remove/permission/leave is re-typed at compile
-  time rather than left to discipline; a distinct exception subtype
-  (`StaleAccessControlBaseException extends PermissionDeniedException`) so existing
-  `on PermissionDeniedException` handlers still catch it while the wording can differ — and its arm
-  MUST precede the parent arm in the message `switch`, since a switch takes the first match; and
-  the caller now honours the returned bool instead of assuming success. Two review demands that
-  follow: verify the whole chain by grep (dialog → member ops → service → module → repo), and
-  require a test that drives the ENTRY POINT rather than hand-passing the new argument —
-  hand-passing is exactly how the dead opt-in shipped green. **Residual, still open:** the strip
+  and leave-a-list all silently no-op while the UI is told they worked. Fixed check on any diff that
+  adds a parameter or flag a write path now depends on: `git grep <paramName> -- lib/` — hits only in
+  `test/` means the guarded capability is dead, not protected, because the method-level tests pass
+  precisely BECAUSE they hand-pass the new argument. Trace the real chain instead
+  (dialog/coordinator → `ListMemberOperations` → `UnifiedShoppingService.updateList` →
+  `ShoppingListManagementModule` → `repository.update`), and note a silent STRIP must not report
+  success (one op logged `granted:false` "dropped memberPermissions" then `granted:true` "Updated
+  list"). **CLOSED 2026-07-30; shipped shape + rationale in
+  `docs/architecture/ADR-002-collaborative-list-membership-guard.md`** (BUT-1752) — read it before
+  accepting any diff that folds `updateCollaborativeListMembership` back into an optional parameter.
+  Demands on any "declare your intent" guard: a NAMED method on the INTERFACE (never an optional
+  argument), a distinct exception subtype whose `switch` arm PRECEDES the parent's, a caller that
+  honours the returned bool, and a test driving the ENTRY POINT. Name the METHOD in the review
+  marker — one that exists and is never called looks identical to a working one at file level.
+  **Residual, still open:** the strip
   sits AFTER `requireNoPrivilegeEscalation`, so it only helps the owner — a non-owner's plain
   content edit carrying a stale member map still throws before reaching it, a false denial of a
   write the rule would have allowed. The real fix is to run the escalation guard against the
@@ -382,7 +377,18 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   doc comment on the legacy constant that enumerates "the only remaining reader" is a claim to
   re-grep, not evidence — and such an enumeration is systematically blind to ADMIN-SDK readers
   (`account-deletion-cascade.ts`'s legacy sweep, `admin/reset-user-data.ts`), which hard-code the
-  string, are rules-exempt, and are therefore empty rather than denied. Verified 2026-07-27: for
+  string, are rules-exempt, and are therefore empty rather than denied. **Fourth variant of the
+  same shape, found 2026-07-30: an in-memory FILTER predicate keyed on a field the model never
+  persists.** `social_export_manager.exportMessages` keeps a message when
+  `senderId == uid || messageData['recipientIds'].contains(uid)`, but `Message` has no
+  `recipientIds` (the rules' create requires only `senderId`/`conversationId`/`content`/`sentAt`),
+  so the OR-arm is dead and the filter silently degrades to "sent only" — every RECEIVED message
+  dropped from the Art. 15 bundle with no truncation or error flag. Masked today only because the
+  query reads a phantom subcollection (BUT-1767); repointing that query lands the gap invisibly.
+  Whenever an export/cascade filter, redaction map or probe NAMES a field, grep the MODEL's
+  `toFirestore()` for it — the same derived-key discipline the BUT-1732 redaction test uses, owed
+  to filter predicates too, and a dead OR-arm fails toward under-export where a dead AND-arm would
+  fail toward over-export. Verified 2026-07-27: for
   `userShoppingLists` both client/CF readers the comment names are real
   (`friends_utility_operations.dart:146` root query → catch-all deny `firestore.rules:2526-2528`;
   `compute-feature-retention.ts:212`), and a denied QUERY surfaces as `permission-denied`, not empty.
@@ -443,7 +449,13 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   triggers sit unstaged in the working tree. Committing the staged set alone ships a brand-new
   gating conjunct with zero proof, and the CI new-block gate stays green because the match BLOCK is
   not new — only the function inside it. On any rules diff, list the proof file's git state, not
-  just its existence.
+  just its existence. **Generalised 2026-07-30: `git diff --cached` is not the tree.** Run
+  `git status --porcelain` over the WHOLE commit fileset and diff the unstaged half of every `MM`
+  / `AM` file — a mutation-test mutant survives a review that only reads the index, is what
+  `flutter analyze` and every test run actually executes, and ships the moment anyone runs
+  `git add -A`. One was live during this review: `social_export_manager.dart`'s `_failed()`
+  replaced by `'error': 'MUTANT raw exception: PERMISSION_DENIED blocks/<foreign uid>'` with
+  `error_code` deleted.
   And the one-shot backfill needs a REQUEST-LEVEL RESUME CURSOR (`startAfter`/`nextCursor`, as
   `backfill-canonical-ratings.ts` has), not just a loop-local one: without it every invocation
   restarts at the top of the collection, so past `MAX_BATCHES × BATCH_SIZE` docs the documented
@@ -544,7 +556,31 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   convention exists to close. Pair every new "this section may be incomplete" flag with an
   `error_code`, and never return `e.toString()` from a section catch: raw Firestore text carries
   uids and doc paths into an artifact the data subject may forward to a supervisory authority
-  (BUT-1732; `activity_export_manager.dart` still does it).
+  (BUT-1732). **Half-closed 2026-07-30 (BUT-1721), and the unclosed half is the reviewable lesson.**
+  `DataExportService` now (a) lifts a section on `error` OR `error_code`, deriving
+  `'<section>-export-failed'` when the manager set none, so a new manager cannot go silent at bundle
+  level, and (b) replaces the one-level `messages_truncated` special case with ONE depth-bounded
+  walk flagging `truncated` or any `*_truncated` — the old walk iterated `value.values` and required
+  each to be a Map, so a flag inside a LIST of conversation maps was structurally invisible. Both
+  lifts are mutation-proven. BUT the same change AMPLIFIES the raw-text defect: the warning's
+  `message` is `value['error']`, so every site still returning `e.toString()` (10+ across
+  `social_export_manager`, `activity_export_manager`, `preferences_export_manager`) now promotes
+  that string from a buried section field to `export_metadata.warnings[].message` at the bundle
+  root. **Review rule: a change that widens which sections get LIFTED must be paired with sanitising
+  what gets lifted** — either a stable sentence per site (the shipped convention in
+  `family_export_manager.dart`, `shared_shopping_list_export.dart`, and since 2026-07-30
+  `social_export_manager.dart`/`activity_export_manager.dart`: `'error': '<Section> could not be
+  exported.'` + a stable `error_code`) or a chokepoint that never copies `value['error']` verbatim.
+  Adding `error_code` to a site while keeping `e.toString()` is half the fix and makes the exposure
+  worse. **CLOSED AT THE ROOT 2026-07-30, and the chokepoint shape is the reusable answer:** the
+  aggregator now DERIVES `message` (`'The "<section>" section could not be exported (error_code:
+  …).'`) instead of copying the section's field — a chokepoint cannot tell an authored sentence from
+  an exception string, so it must not gamble on one, and per-site sanitising then becomes
+  defence-in-depth rather than the only control. Residual (Medium, pre-existing): 21 sites in
+  `content_export_manager.dart` + `preferences_export_manager.dart` still put `e.toString()` in the
+  section BODY, which the data subject downloads. The bundle-level walk/lift is also mutation-proven
+  both ways — a fully-wired happy path asserts NO `warnings` key, which is what keeps the widened
+  `error != null` lift from crying wolf.
 - A roster/keep-set diff that DELETES user data must refuse to run when the keep-set is empty or
   implausibly small — an empty denormalized member list must not read as "everyone left"; guard
   `if (roster.size===0) return docs;` and prefer the authoritative membership list over a
@@ -646,15 +682,12 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   resolver: assert the wiring separately or the footgun rides back in through the default.
   Shipped state (BUT-1697): the repository writer stamps `resolveDisplayName() ?? ''` wired to
   `UserService.currentDisplayName` (profile-first, Auth-fallback — good enough, not exact), and
-  `activitySummary` treats empty as unknown. **Second writer CLOSED 2026-07-28 (BUT-1705)**:
-  `UnifiedShoppingService.currentUserDisplayName` now reads `UserService.profileDisplayName`, a NEW
-  getter that is the profile name or null with NO Auth fallback — the shape to reach for whenever a
-  name is about to be PERSISTED as attribution (`currentDisplayName`, which falls back to the Auth
-  handle, is display-only and now says so). Two lessons from that fix. A `?? '<placeholder>'` at a
-  PERSIST site is the same defect as the Auth fallback: it stores a fact nobody asserted, so stamp
-  EMPTY and teach the read side that empty means unknown — and when you do, sweep the render sites,
-  because a `?? unknownUser` there only catches an ABSENT key and renders a blank line for the empty
-  string (`shopping_sharing_status_dialog.dart` needed a `trim().isEmpty` arm in the same commit).
+  `activitySummary` treats empty as unknown. **Second writer CLOSED 2026-07-28 (BUT-1705)** via
+  `UserService.profileDisplayName` — profile name or null, NO Auth fallback, the shape to reach for
+  whenever a name is PERSISTED as attribution. Its two lessons: a `?? '<placeholder>'` at a PERSIST
+  site is the same defect as the Auth fallback (stamp EMPTY, teach the read side), and when you do,
+  sweep the render sites — a `?? unknownUser` there only catches an ABSENT key and renders a blank
+  line for the empty string.
   **Third writer, same family, STILL OPEN 2026-07-28:**
   `PermissionService.currentUser` looks like a profile handle but SYNTHESIZES a
   `UserProfile` from the Auth user with `displayName ?? 'User'` — it is the auth-only side of the
@@ -677,11 +710,10 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   that does NOT `notifyListeners()` (so report-before-rollback can no longer emit a frame carrying
   the optimistic value plus the error), read through a self-clearing `consumeMutationError()` the
   view calls BEFORE its `if (!mounted) return;` — read-once removes both the sticky full-screen
-  error and every "caller forgot to clear" path. Residual, still open: nothing clears the field at
-  the START of a mutation and the early-return `false`s (`!canEditActiveList`, no active list,
-  list/item absent from local state) still set nothing, so an unconsumed message from an earlier
-  failure can be shown as the reason for a later, different one. Clear-before-the-call is the last
-  mile; a per-branch message set can never cover an early return someone adds later.
+  error and every "caller forgot to clear" path. **Last mile CLOSED (verified in code 2026-07-30):**
+  `_beginMutation()` now nulls the field at the START of every mutation entry point, which is the
+  only shape that also covers an early-return `false` someone adds later — a per-branch message set
+  never could.
   **A NEW exception type thrown by a repository needs its own arm at that mapping seam in the same
   diff**, or it inherits a sibling's wording and asserts a cause nobody established: BUT-1697's
   row-level `ResourceNotFoundException(resourceType:'shopping_item')` maps to
@@ -718,6 +750,19 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
 - `where(equality)+orderBy(different field)` needs a composite; a lone single-field
   equality-or-range query does NOT (accepted-deviations) — only a SECOND field triggers one.
 - `where(...).limit(N)` without `orderBy` returns insertion order, not recency.
+- **`.where(f, isNotEqualTo: null)` / `isEqualTo: null` builds NO CONDITION** — the
+  cloud_firestore builder adds each operator only `if (arg != null)` (`query.dart:659`), so a
+  literal null compiles, reads as a filter, and leaves an UNFILTERED sweep of the collection.
+  `isNull: false` / `isNull: true` are the spellings that build it (`query.dart:676-682`). On a
+  member-scoped collection the symptom is NOT an over-share but "my data will not load": rules are
+  not filters, so the server refuses the whole unscoped query (emulator-proven, SSL37/SSL38 —
+  and a `!=`-on-`memberPermissions.<uid>` filter IS accepted for a rule gated on `uid in
+  resource.data.memberPermissions`). Four sites shipped (BUT-1719/1732: shared-list read + stream,
+  group-weekly participation probe, GDPR export gateway) before `tools/check_null_filter.sh` made
+  it a lefthook grep guard — staged-file scoped, comment lines skipped (the fixed sites document
+  the banned spelling), and like `check_swedish_boundary.sh` it is NOT in any CI workflow, so its
+  documented whole-repo mode has no caller. `fake_cloud_firestore` THROWS `Unsupported` on the bad
+  spelling, so a Dart unit test proves the filter shape and nothing about the rule (BUT-1746).
 - A per-doc visibility rule needs a SPLIT query (owner unfiltered, friend branch STRICT
   equality, no "field absent" allowance) — looseness re-opens the leak. Backfill the default
   BEFORE the strict rule ships.
@@ -770,13 +815,20 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   must exclude every key the rule forbids a non-owner from touching, and the whitelist is scoped
   to today's mutators — on a PUBLIC interface method a future mutator that appends a row *and*
   changes some other field loses that field silently while the method returns the full mutated
-  object. Require a fallback-to-full-write assertion, not a comment: **STILL OPEN after three
-  passes** — `_appendPayload`'s comment names the excluded keys correctly (Butlery's whitelist
-  `items` + `updatedAt`/`lastActivityAt`/`lastActivityBy{UserId,DisplayName}` exactly complements
-  the rule's forbidden `ownerId`/`memberPermissions`/`createdAt`), but nothing DETECTS a mutator
-  that also moves `name`/`description`/`settings`/`categoryIds`/`autoRemoveCompleted`. The cheap
-  enforcement is a serialized-doc diff (`mutated.toFirestore()` vs `live.toFirestore()`): any
-  differing key outside `items` + the whitelist ⇒ return null and take the full merge write.
+  object. Require an enforcement assertion, not a comment: **CLOSED 2026-07-30 (BUT-1706)** by
+  `ShoppingOfflineWriteModule.requireOfflineWritableMutation` — a `toFirestore()` diff that THROWS
+  on any differing key outside `items` + the activity whitelist
+  (`updatedAt`/`lastActivityAt`/`lastActivityBy{UserId,DisplayName}`, exactly complementing the
+  rule's forbidden `ownerId`/`memberPermissions`/`createdAt`). Three demands when copying it. (a)
+  REFUSE, not fall-back-to-full-write: the full write is what re-sends a stale ACL, so
+  `privilegedKeys` sit deliberately OUTSIDE the refusal (dropping those is the design) — say which
+  of the two you checked. (b) It belongs on the OFFLINE leg only; the online transaction merge-sets
+  the whole document and drops nothing. (c) It is unreachable by today's mutators (one shared
+  stamping helper touches items + activity only), so verify the caller trace, not the guard body.
+  **Mutation-test such a guard by running the WHOLE test file, never a `--plain-name`-scoped run**:
+  scoping the new refusal test alone reported GREEN with the guard commented out, while the same
+  test inside the full file reddened correctly — a single-test scoped run can silently lie about a
+  Dart async-throw assertion.
   `syncStatus` looks like an instance of this and is not — the model sets it in `addItem` but
   `toFirestore()` never emits it; the diff is also trivial to write because `toFirestore()` emits a
   FIXED key set. Two adjacent mechanics: a `Source.cache` MISS **throws**
@@ -871,6 +923,15 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   pre-existing `try/catch`-and-continue around the shared probe in `read()`/`delete()`.
 - Prefer real-repository + fake-Firestore + auth-state-fake tests over side-effect stubs that
   mock away the boundary under test.
+- **Widening a bundle/aggregate "this failed" lift exposes FIXTURE defects, and the fix is the
+  fixture, not the contract.** `MockUser` stubs `uid`/`email`/`displayName` only and mocktail throws
+  on any other non-nullable getter, so `currentUser?.metadata.creationTime` had been failing the
+  `profile` section of EVERY export test — invisible while the lift keyed on `error_code` alone
+  (2026-07-30). Same round: two suites had to stop asserting `warnings` has LENGTH 1 and filter by
+  `section` instead, because a partially-wired fixture legitimately fails a dozen sections. When a
+  new guard THROWS from a repository, also name where the throw LANDS: a bare `ArgumentError` from
+  `requireOfflineWritableMutation` is absorbed by `UnifiedShoppingService.mutateSharedList`'s generic
+  `catch` → `false` + a mutation-error message, not a crash — check that before shipping the guard.
 - Cascade unit tests against a fake Firestore must bridge the production `ServiceLocator` or
   `ServiceLocator.get<>()` throws, gets caught, and the step lands silently in
   `failedCollections` — a green test proving nothing.

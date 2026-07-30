@@ -19,6 +19,10 @@
  * and (7) the first-ever request seeds the counter at 1. Deleting the
  * `if (!dailyCap.allowed)` block in checkRateLimit turns these cases red.
  *
+ * BUT-1573/BUT-1692 tail: it also pins the production config values that are
+ * one decision shared with another file — the LLM daily caps, and the
+ * `sendNotificationBatch` bucket versus the batch callable's own size cap.
+ *
  * Run with: npx ts-node src/__tests__/rate-limiter-daily-cap.test.ts
  */
 
@@ -30,6 +34,7 @@ import {
   RATE_LIMIT_CONFIGS,
   RateLimitConfig,
 } from "../middleware/rate_limiter";
+import { MAX_BATCH_NOTIFICATIONS } from "../notifications/send-notification";
 import { assertEqual, runTests, UnitCase } from "./_unit-runner";
 
 const cappedConfig: RateLimitConfig = {
@@ -265,6 +270,49 @@ const cases: UnitCase[] = [
         RATE_LIMIT_CONFIGS.importRecipe.dailyLimit,
         100,
         "importRecipe.dailyLimit"
+      );
+    },
+  },
+
+  // ---- BUT-1692: the batch bucket is denominated in NOTIFICATIONS, so its
+  // maxTokens and the callable's batch cap are ONE decision held in two files.
+  // Raise the cap alone and every full-size batch is denied outright; raise the
+  // bucket alone and it hands out burst budget no caller can spend. Pin them to
+  // each other so the next edit to either has to touch this test. ----
+  {
+    name: "RATE_LIMIT_CONFIGS: sendNotificationBatch bucket equals the callable's batch cap",
+    fn: async () => {
+      assertEqual(
+        RATE_LIMIT_CONFIGS.sendNotificationBatch.maxTokens,
+        MAX_BATCH_NOTIFICATIONS,
+        "sendNotificationBatch.maxTokens == MAX_BATCH_NOTIFICATIONS"
+      );
+      // The relation alone stays green when BOTH numbers move together, which
+      // is exactly how the abuse budget would be raised by accident. One
+      // literal anchor, matching the daily-cap cases above, so a retune is a
+      // conscious edit.
+      assertEqual(
+        MAX_BATCH_NOTIFICATIONS,
+        100,
+        "MAX_BATCH_NOTIFICATIONS (the abuse budget per batch)"
+      );
+    },
+  },
+  {
+    name: "RATE_LIMIT_CONFIGS: sendNotificationBatch refills at sendNotification's rate",
+    fn: async () => {
+      // BUT-1664's other half: the sustained PER-NOTIFICATION budget must not
+      // depend on which path a caller uses, or batching becomes the cheap way
+      // to spam.
+      assertEqual(
+        RATE_LIMIT_CONFIGS.sendNotificationBatch.refillRate,
+        RATE_LIMIT_CONFIGS.sendNotification.refillRate,
+        "sendNotificationBatch.refillRate == sendNotification.refillRate"
+      );
+      assertEqual(
+        RATE_LIMIT_CONFIGS.sendNotificationBatch.refillIntervalMs,
+        RATE_LIMIT_CONFIGS.sendNotification.refillIntervalMs,
+        "sendNotificationBatch.refillIntervalMs == sendNotification's"
       );
     },
   },

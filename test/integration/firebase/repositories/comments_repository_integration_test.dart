@@ -4,6 +4,7 @@
 /// including comment creation, updates, and streaming.
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
@@ -98,6 +99,17 @@ void main() {
         );
       });
 
+      /// BUT-1756: `createdAt` and `editedAt` are both minted from
+      /// `clock.now()` (via [TestTimestampProvider]), and two wall-clock reads
+      /// separated only by a fake-Firestore round-trip routinely land inside the
+      /// same tick — the host clock's granularity, not the repository, then
+      /// decides whether a strict `isAfter` passes. Control the clock instead of
+      /// racing it: the assertion keeps its intent (the edit is stamped LATER
+      /// than the creation, not merely "not before") and becomes deterministic.
+      ///
+      /// A tolerance would have been the other option and is the wrong one here
+      /// — "within a second of each other" is exactly what a broken `editedAt`
+      /// that copies `createdAt` also satisfies.
       test('should update comment with editedAt timestamp', () async {
         // Arrange
         const recipeId = 'recipe_123';
@@ -105,38 +117,47 @@ void main() {
         const originalContent = 'Original comment';
         const updatedContent = 'Updated comment';
 
-        // Create comment
-        final comment = await repository.addComment(
-          recipeId: recipeId,
-          userId: userId,
-          content: originalContent,
-        );
+        var now = DateTime.utc(2026, 1, 1, 12);
 
-        // Act
-        await repository.updateComment(comment.id, updatedContent);
+        await withClock(Clock(() => now), () async {
+          // Create comment
+          final comment = await repository.addComment(
+            recipeId: recipeId,
+            userId: userId,
+            content: originalContent,
+          );
 
-        // Assert
-        final doc = await firestore
-            .collection('recipe_comments')
-            .doc(comment.id)
-            .get();
+          // The edit happens later than the creation. That gap is the whole
+          // subject of the assertion below, so it is staged rather than hoped
+          // for.
+          now = now.add(const Duration(seconds: 1));
 
-        expect(doc.data()?['text'], equals(updatedContent));
+          // Act
+          await repository.updateComment(comment.id, updatedContent);
 
-        // Handle both DateTime and Timestamp
-        final editedAtValue = doc.data()?['editedAt'];
-        final updatedAtValue = doc.data()?['updatedAt'];
-        expect(editedAtValue, anyOf(isA<DateTime>(), isA<Timestamp>()));
-        expect(updatedAtValue, anyOf(isA<DateTime>(), isA<Timestamp>()));
+          // Assert
+          final doc = await firestore
+              .collection('recipe_comments')
+              .doc(comment.id)
+              .get();
 
-        // Verify editedAt is after createdAt
-        final createdAt = TimestampTestHelper.toDateTime(
-          doc.data()?['createdAt'],
-        );
-        final editedAt = TimestampTestHelper.toDateTime(editedAtValue);
-        expect(createdAt, isNotNull);
-        expect(editedAt, isNotNull);
-        expect(editedAt!.isAfter(createdAt!), isTrue);
+          expect(doc.data()?['text'], equals(updatedContent));
+
+          // Handle both DateTime and Timestamp
+          final editedAtValue = doc.data()?['editedAt'];
+          final updatedAtValue = doc.data()?['updatedAt'];
+          expect(editedAtValue, anyOf(isA<DateTime>(), isA<Timestamp>()));
+          expect(updatedAtValue, anyOf(isA<DateTime>(), isA<Timestamp>()));
+
+          // Verify editedAt is after createdAt
+          final createdAt = TimestampTestHelper.toDateTime(
+            doc.data()?['createdAt'],
+          );
+          final editedAt = TimestampTestHelper.toDateTime(editedAtValue);
+          expect(createdAt, isNotNull);
+          expect(editedAt, isNotNull);
+          expect(editedAt!.isAfter(createdAt!), isTrue);
+        });
       });
 
       test('should stream comments with proper timestamp ordering', () async {
@@ -169,7 +190,11 @@ void main() {
         // Assert
         expect(comments.length, equals(3));
 
-        // Verify comments are ordered by createdAt ascending
+        // Verify comments are ordered by createdAt ascending. The
+        // `isAtSameMomentAs` arm is deliberate (BUT-1756): these three stamps
+        // come from real `DateTime.now()` reads, so equality is a legitimate
+        // outcome and tightening this to a strict `isBefore` reintroduces the
+        // same-tick coin flip.
         for (int i = 0; i < comments.length - 1; i++) {
           expect(
             comments[i].createdAt.isBefore(comments[i + 1].createdAt) ||

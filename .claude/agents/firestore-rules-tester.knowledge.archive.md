@@ -1383,3 +1383,167 @@ file never touched, probe deleted after):
   function's bound and the create rule's bound are byte-identical (`.size() <= 200;`) and
   a non-global `String.replace` patched only the first. `/g` fixed it. Always `/g` when
   mutating a literal that appears more than once in firestore.rules.
+
+### 2026-07-30 — BUT-1746: the read gate's LIST path was the untested branch
+
+Reviewing the shopping/account sprint diff (`shared-shopping-lists-rules.test.ts` +
+BUT-1746 client fixes). The diff added SSL26–SSL31, six `get()`-based read tests, and its
+own banner comment claimed "it is why an unfiltered collection query is refused outright
+rather than over-sharing (BUT-1746)" — an assertion about the QUERY path with no test
+behind it. Added SSL37–SSL39 (39/39 green):
+
+- SSL37 — `collection(COL).where('memberPermissions.<EDITOR>','!=',null).limit(200).get()`
+  by an edit member SUCCEEDS. Uses the compat API off `ctx.firestore()` (no modular cast
+  needed for a plain query — the cast is only required for `getCountFromServer`). Asserts
+  `!snap.empty` as a premise, because a query matching nothing would pass vacuously.
+- SSL38 — the same collection with NO `where()` is DENIED for the same actor. Seeds a
+  `query-foreign` doc owned by STRANGER inside the test so the fixture is load-bearing
+  and the suite is runnable standalone.
+- SSL39 — the filtered query by an actor who is a member of nothing SUCCEEDS and returns
+  empty. **First draft used `STRANGER` and would have failed**: SSL38 seeds a list
+  STRANGER owns, and the emulator persists it across runs. Switched to a
+  `list-nobody-uid` seated nowhere. Generalisable: an "allowed but empty" query test needs
+  an actor that no other test in the file ever puts in a `memberPermissions` map.
+
+Client-side premise verified directly against the pinned SDK
+(`cloud_firestore-6.6.0/lib/src/query.dart`): line 659 `if (isNotEqualTo != null)
+addCondition(field,'!=',isNotEqualTo)` — a literal null adds nothing; lines 676-682
+`isNull: false` → `addCondition(field,'!=',null)`. So `tools/check_null_filter.sh`'s
+rationale is exactly right, and `isNull: false` is the spelling to mirror in a rules test.
+
+Also confirmed on this run: `unified_shared_shopping_lists` create requires
+`hasRequiredFields(['ownerId','memberPermissions','items','createdAt'])` (L1631) and
+delete is `uid == resource.data.ownerId` (L1651) — SSL32–SSL36 pin both correctly, each
+one delta from the SSL1 baseline body. The `evaluation error at L1642:24` / `L1651:24`
+first-pass noise on every authenticated deny is the pre-existing two-pass artifact; read
+the second verdict.
+
+Cross-layer note worth keeping: none of this is provable from the Dart side.
+`fake_cloud_firestore` evaluates no rules, so
+`shopping_repository_query_module_test.dart` proves the filter SHAPE and says nothing
+about whether the server accepts it — the two suites are complements, not duplicates.
+Mutation-proof of the Dart half (spelling reverted in-place, restored and
+`git hash-object`-verified byte-identical to HEAD): 3 tests redden — the `readAll`
+positive and BOTH `collaborativeListsStream` tests. `readAll`'s "member of nothing" test
+does NOT redden, because `readAll` catches every error and returns `[]`; the diff's own
+comment says exactly that, and it is accurate.
+
+### 2026-07-30 — re-review addendum: `check_null_filter.sh`'s comment filter is path-shape dependent
+
+Re-review pass over the same sprint fileset. The rules suite re-ran green (39/39, emulator
+at 127.0.0.1:8080) and the three Dart suites re-ran green (112/112: query module, routing
+module, data export). `node functions/scripts/check-test-registration.js` → OK, 118 files,
+38 rules suites across both `paths:` blocks. `dart format --set-exit-if-changed` clean on
+all nine touched Dart files; `dart analyze` clean on all four touched directories.
+
+One NEW fact, established by exercising the new guard rather than reading it. The
+comment-skipping filter in `tools/check_null_filter.sh` is
+
+```
+| grep -vE '^[^:]*:[0-9]+:[[:space:]]*(//|\*)'
+```
+
+`[^:]*` for the path means the anchor only holds for a path with NO colon in it. Verified
+both ways on fixtures:
+
+- relative paths (`lib/...`, what lefthook's `{staged_files}` produces) and MSYS-style
+  absolute paths (`/c/Users/...`) → comments correctly skipped, exit 0;
+- a drive-letter absolute path (`C:/Users/.../ok.dart`) → the drive colon eats the anchor
+  and all three comment lines are reported as violations, exit 1.
+
+That matters here because the ban is *deliberately* named in prose at the fixed sites: 12
+comment lines across 6 files (`firebase_comments_repository`, `firebase_data_export_repository`,
+`firebase_group_weekly_menu_plan_repository`, `shopping_repository_query_module`, and two
+test files) contain the forbidden spelling. So the guard flags its own rationale the moment
+it is handed a `C:/`-shaped path. It fails CLOSED (noisy block, never a silent miss), and no
+current invocation shape produces such a path, so it is a robustness note, not a defect.
+`[^:]*` → `.*` with the line-number group carrying the anchor would remove the assumption.
+
+Also worth keeping for guard-writing generally: the script's no-argument mode is documented
+as "the CI / manual shape", but no workflow calls it — grep of `.github/workflows/` finds
+only `check_no_inline_adoption_pct.sh`. It is pre-commit-only, same as
+`swedish-boundary-guard`, so the precedent exists; the comment simply overstates the wiring.
+
+### 2026-07-30 — Re-review of the shopping/account sprint fixes: 39/39 green, guard probed
+
+Re-reviewed the working tree after automated fixes (BUT-1706 / BUT-1721 / BUT-1732 /
+BUT-1746 / BUT-1758). `npm run test:rules:shared-shopping-lists` → **39/39 passed**, up
+from 25: SSL26-SSL31 (read gate: owner / edit / view allow, revoked-member, non-member,
+unauthenticated deny), SSL32-SSL34 (create conjuncts: unseated `memberPermissions`,
+missing `items`, missing `createdAt`), SSL35-SSL36 (owner-only delete), SSL37-SSL39
+(the LIST/QUERY path: filtered-allow-non-empty, unfiltered-deny with a foreign doc
+seeded in the same test, member-of-nothing allowed-but-empty).
+
+**Mutation probe of the read rule** (in-memory `replace()` to `allow read: if
+isAuthenticated();`, fresh projectId, file byte-verified unchanged afterwards): SSL29,
+SSL30 and SSL38 all FLIPPED to allow — so none of the three is vacuous, and SSL38's
+unfiltered-query deny really is the `uid in resource.data.memberPermissions` predicate
+refusing the whole query rather than an index or shape error. Two probe mechanics cost a
+run each and are now in the principles: the probe file must live under `functions/src/`
+(module + tsconfig resolution), and `firestore.rules` is CRLF so a literal
+template-string match silently finds nothing — regex, and assert the match count.
+
+Also verified in the same pass (Dart side, all green): `flutter test` on the two shopping
+module suites → 76 passed; `data_export_service_test.dart` → 36 passed;
+`test/unit/services/account/export/` → 118 passed; `flutter analyze` on all eight changed
+Dart files → clean; `node functions/scripts/check-test-registration.js` → OK, 118 test
+files / 38 rules suites / 4 accepted-debt warnings.
+
+`tools/check_null_filter.sh` probed directly rather than read: relative-path arg mode is
+correct (flags a real construction site, skips `//` and `*` comment lines); the two
+residual false-positive shapes are a colon-containing path argument (`C:/...` flags the
+WHY-comments, because the comment-skip anchor is `^[^:]*:[0-9]+:`) and an unbounded `null`
+in the pattern (`isNotEqualTo: nullableVar` matches). Both fail CLOSED — noise, never a
+missed violation — and lefthook passes repo-relative paths, so pre-commit is unaffected.
+
+### 2026-07-30 — BUT-1706 rescue pass: proving SSL40 (revoked-member update deny) is not vacuous
+
+Reviewed the STAGED diff of `functions/src/__tests__/shared-shopping-lists-rules.test.ts`
+only; `git diff --cached -- firestore.rules` was empty (verified) and the file's md5
+(`3bda63152c0f3ae2a9a59f82961dfd4b`) was identical before and after every probe.
+
+Suite re-run against the already-listening emulator:
+`cd functions && FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 npm run test:rules:shared-shopping-lists`
+→ **40/40 passed**, twice, deterministically.
+
+**The claimed proof of SSL40's distinctness was wrong.** The sprint reported that SSL22
+(non-member) denies with `evaluation error at L1642:24` while SSL40 (revoked member)
+denies with a plain `false for 'update' @ L1642`. It does not — both print, byte for byte:
+
+    evaluation error at L1642:24 for 'update' @ L1642, false for 'update' @ L2549,
+    false for 'update' @ L1642, false for 'update' @ L2549
+
+Only SSL23 (unauthenticated) differs, and only because `isAuthenticated()` short-circuits
+before `resource` is dereferenced. The first-pass evaluation error fingerprints the RULE
+LINE, not the actor, so no verdict-string comparison can ever distinguish two deny tests.
+
+SSL40 is nevertheless genuinely non-vacuous — proved empirically instead (probe under
+`functions/src/`, deleted in the same shell call), 6/6 as predicted:
+
+| probe | outcome |
+|---|---|
+| SSL40 control — revoked member, items-only update | DENY |
+| fail-closed — identical doc/id/actor/payload, DEPARTED SEATED as `edit` | ALLOW |
+| the REAL replay payload (`items` + `arrayUnion(uid)` on the trail + activity stamp), revoked | DENY |
+| the same real payload, seated | ALLOW |
+| mutation (member branch granted by `contributorUserIds` instead of `memberPermissions`) — SSL40's actor | FLIPS to ALLOW |
+| same mutation — SSL22's actor (stranger, not in the trail) | stays DENY |
+
+The last two are what separates SSL40 from SSL22: the mutation flips one and not the
+other, so they are different tests. The third row matters because the client's actual
+queued write is `_withContributorTrail(cachedBasePayload/appendPayload)` — `{items,
+activity keys, contributorUserIds: arrayUnion(uid)}` — not the bare `update({items})`
+SSL40 sends; the richer real shape denies too, and is writable when seated.
+
+**Remaining uncovered branches, ground-truthed by a second probe (all as expected, none a
+rule defect — all are MISSING TESTS):** editor promotes self to admin DENY; editor
+reinstates a revoked member DENY; editor boots the view-only member DENY; editor seizes
+`ownerId` DENY; viewer promotes self DENY; **OWNER revokes a member ALLOW**; **OWNER grants
+a new member ALLOW**; stranger/unauth/revoked delete DENY; unauth create DENY; a revoked
+member's filtered query ALLOW-but-empty (correct, matches SSL39, not a leak).
+
+The two owner-ALLOW rows are the sharpest gap: SSL29 and SSL40 both need a document in the
+revoked state and both reach it only via `withSecurityRulesDisabled`, so nothing in the
+suite proves a client owner can perform the revoking write at all. ADR-002 (staged in the
+same commit) asserts the rules forbid a non-owner from touching `ownerId`/`memberPermissions`;
+of those three privileged keys only `createdAt` (SSL25) had a test.

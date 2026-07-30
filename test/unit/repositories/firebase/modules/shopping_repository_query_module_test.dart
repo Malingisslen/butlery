@@ -53,11 +53,12 @@ ShoppingRepositoryQueryModule _module(
   FakeFirebaseFirestore firestore, {
   Future<UnifiedShoppingList?> Function(String)? readList,
   CollectionReference<Map<String, dynamic>>? sharedListsRef,
+  String? currentUid,
 }) {
   return ShoppingRepositoryQueryModule(
     firestore: firestore,
     sharedListsRef: sharedListsRef ?? firestore.collection(_sharedPath),
-    requireCurrentUserId: () => _userId,
+    requireCurrentUserId: () => currentUid ?? _userId,
     getUserCollection: (uid) => _userLists(firestore, uid),
     fromFirestore: _fromFirestore,
     readList: readList ?? ((_) async => null),
@@ -163,6 +164,90 @@ void main() {
     });
   });
 
+  /// BUT-1746: the FILTER SHAPE of the shared-collection leg, which had no
+  /// coverage at all — only a smoke test that seeded no documents, so the
+  /// membership predicate was never evaluated.
+  ///
+  /// The predicate was first spelled `isNotEqualTo: null`. The cloud_firestore
+  /// builder adds a condition only when the argument is non-null
+  /// (`query.dart:659`), so a literal `null` added NO condition and this
+  /// "filter" became a 20-document sweep of every household's shared lists —
+  /// which the collection's read rule (`ownerId == uid || uid in
+  /// memberPermissions`) then refuses wholesale, so the symptom is a shopping
+  /// screen that will not load rather than an over-share.
+  ///
+  /// Three fixtures, because a conditionless query satisfies a positive
+  /// assertion on its own: the user's own membership, a foreign membership, and
+  /// a document with no `memberPermissions` map at all.
+  group('readAll (shared lists) — membership filter shape', () {
+    Future<FakeFirebaseFirestore> seededShared() async {
+      final firestore = FakeFirebaseFirestore();
+      final shared = firestore.collection(_sharedPath);
+      await shared.doc('mine').set({
+        'name': 'Hushållets lista',
+        'ownerId': 'bob',
+        'memberPermissions': {_userId: 'edit', 'bob': 'admin'},
+        'items': <Map<String, dynamic>>[],
+        'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 4)),
+        'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        'type': 'collaborative',
+      });
+      await shared.doc('theirs').set({
+        'name': 'Grannens lista',
+        'ownerId': 'bob',
+        'memberPermissions': {'bob': 'admin', 'cecilia': 'edit'},
+        'items': <Map<String, dynamic>>[],
+        'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 5)),
+        'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        'type': 'collaborative',
+      });
+      await shared.doc('no-members').set({
+        'name': 'Föräldralös lista',
+        'ownerId': 'bob',
+        'items': <Map<String, dynamic>>[],
+        'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 6)),
+        'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        'type': 'collaborative',
+      });
+      return firestore;
+    }
+
+    test('returns only the shared lists naming the user in '
+        'memberPermissions', () async {
+      final result = await _module(await seededShared()).readAll();
+
+      expect(result.map((l) => l.id), ['mine']);
+      expect(
+        result.map((l) => l.id),
+        isNot(contains('theirs')),
+        reason:
+            'a list whose memberPermissions names OTHER uids must not be '
+            'returned — a conditionless query returns it',
+      );
+      expect(
+        result.map((l) => l.id),
+        isNot(contains('no-members')),
+        reason:
+            'a document with no memberPermissions map at all must not be '
+            'returned either',
+      );
+    });
+
+    // Weaker than it looks, stated so nobody counts it twice: `readAll` catches
+    // every error and returns `[]`, so this test also passes when the filter is
+    // reverted to the spelling `fake_cloud_firestore` rejects. Mutation-tested
+    // — only the positive test above reddens on that revert. This one covers
+    // the other direction: a filter that silently matched everything.
+    test('a user who is a member of nothing gets no shared lists', () async {
+      final firestore = await seededShared();
+
+      expect(
+        await _module(firestore, currentUid: 'user-nobody').readAll(),
+        isEmpty,
+      );
+    });
+  });
+
   group('getActiveList', () {
     test('returns null when activeListId is null', () async {
       final firestore = FakeFirebaseFirestore();
@@ -235,18 +320,87 @@ void main() {
       // (that combination throws on real Firestore and silently empties the
       // stream).
       //
-      // The SCOPING half is untested and is testable: fake_cloud_firestore
-      // 4.1.1 honours `isNull: false` on a dotted map key, and the old
-      // spelling `isNotEqualTo: null` makes it throw `Unsupported` — the real
-      // SDK builds no condition from it at all, which is how that spelling
-      // turned this read into a sweep of every household's lists. A
-      // three-document fixture (own membership, foreign membership, no map at
-      // all) discriminates both ways. BUT-1746.
+      // The SCOPING half is covered by the two tests below (BUT-1746).
       final firestore = FakeFirebaseFirestore();
       final lists = await _module(firestore).collaborativeListsStream().first;
       expect(lists, isA<List<UnifiedShoppingList>>());
       expect(lists.length, lessThanOrEqualTo(20));
     });
+
+    // BUT-1746: the second of the two `memberPermissions.$uid` filter sites,
+    // and the one a real household actually reads through — the shopping view
+    // listens on this stream. Same defect as `readAll`'s leg and the same
+    // fixture shape: without the negative halves a conditionless query (the
+    // `isNotEqualTo: null` spelling) passes.
+    test('emits only the shared lists naming the user in '
+        'memberPermissions', () async {
+      final firestore = FakeFirebaseFirestore();
+      final shared = firestore.collection(_sharedPath);
+      await shared.doc('mine').set({
+        'name': 'Hushållets lista',
+        'ownerId': 'bob',
+        'memberPermissions': {_userId: 'edit'},
+        'items': <Map<String, dynamic>>[],
+        'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 4)),
+        'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        'type': 'collaborative',
+      });
+      await shared.doc('theirs').set({
+        'name': 'Grannens lista',
+        'ownerId': 'bob',
+        'memberPermissions': {'bob': 'admin'},
+        'items': <Map<String, dynamic>>[],
+        'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 5)),
+        'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        'type': 'collaborative',
+      });
+      await shared.doc('no-members').set({
+        'name': 'Föräldralös lista',
+        'ownerId': 'bob',
+        'items': <Map<String, dynamic>>[],
+        'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 6)),
+        'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        'type': 'collaborative',
+      });
+
+      final lists = await _module(firestore).collaborativeListsStream().first;
+
+      expect(lists.map((l) => l.id), ['mine']);
+      expect(
+        lists.map((l) => l.id),
+        isNot(contains('theirs')),
+        reason: "another household's list must never reach this stream",
+      );
+      expect(
+        lists.map((l) => l.id),
+        isNot(contains('no-members')),
+        reason: 'a document with no memberPermissions map must not match',
+      );
+    });
+
+    test(
+      'emits nothing for a user who is a member of no shared list',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await firestore.collection(_sharedPath).doc('theirs').set({
+          'name': 'Grannens lista',
+          'ownerId': 'bob',
+          'memberPermissions': {'bob': 'admin'},
+          'items': <Map<String, dynamic>>[],
+          'updatedAt': Timestamp.fromDate(DateTime.utc(2026, 1, 5)),
+          'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+          'type': 'collaborative',
+        });
+
+        expect(
+          await _module(
+            firestore,
+            currentUid: 'user-nobody',
+          ).collaborativeListsStream().first,
+          isEmpty,
+        );
+      },
+    );
   });
 
   // BUT-1723: the gate a conversion consults before deleting the original.

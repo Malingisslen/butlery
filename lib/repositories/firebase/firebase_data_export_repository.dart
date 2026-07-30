@@ -336,14 +336,27 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
 
     final results = <Map<String, dynamic>>[];
     for (final convoDoc in convoSnapshot.docs) {
-      final messages = <Map<String, dynamic>>[];
+      // BUT-1721: read ONE past the cap so a full page can be told apart from a
+      // clipped one. `docs.length >= cap` cannot: a conversation holding exactly
+      // `maxMessagesPerConversation` messages loses nothing yet reports itself
+      // truncated, and BUT-1721's new aggregator lifts that flag to the whole
+      // `messages` section — so the false positive now mislabels a complete
+      // Art. 15 bundle. Same probe-one-extra shape as
+      // [ExportPaginationHelper.fetchCapped].
       final messagesSnapshot = await convoDoc.reference
           .collection(FirestoreCollections.messages)
           .orderBy('timestamp', descending: false)
-          .limit(maxMessagesPerConversation)
+          .limit(maxMessagesPerConversation + 1)
           .get();
 
-      for (final msgDoc in messagesSnapshot.docs) {
+      final truncated =
+          messagesSnapshot.docs.length > maxMessagesPerConversation;
+      final kept = truncated
+          ? messagesSnapshot.docs.sublist(0, maxMessagesPerConversation)
+          : messagesSnapshot.docs;
+
+      final messages = <Map<String, dynamic>>[];
+      for (final msgDoc in kept) {
         messages.add(<String, dynamic>{
           'id': msgDoc.id,
           'data': msgDoc.data(),
@@ -353,8 +366,7 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         'id': convoDoc.id,
         'data': convoDoc.data(),
         'messages': messages,
-        'messages_truncated':
-            messagesSnapshot.docs.length >= maxMessagesPerConversation,
+        'messages_truncated': truncated,
       });
     }
     return results;

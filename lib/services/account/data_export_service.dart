@@ -246,35 +246,87 @@ class DataExportService extends BaseService {
     for (final entry in exportData.entries) {
       if (entry.key == 'export_metadata') continue;
       final value = entry.value;
-      if (value['truncated'] == true) {
+      // BUT-1721: ONE depth-bounded walk, replacing a section-root check plus a
+      // one-level `messages_truncated` special case. The per-conversation flag
+      // sits inside a LIST of maps (`messages.conversations[i]`), and
+      // `value.values` hands that list over as a single non-Map value — so the
+      // old nested check could never see it, and a bundle that had dropped a
+      // conversation's messages still reported itself complete.
+      if (_declaresTruncation(value)) {
         truncatedCollections.add(entry.key);
       }
-      // BUT-864: surface BUT-842 transient-error markers as top-level
-      // warnings so the consuming UI flags partial bundles prominently
-      // (vs. requiring the user to scan every section for an `error_code`).
-      if (value is Map && value['error_code'] != null) {
+      // BUT-864 / BUT-1721: surface a failed section as a top-level warning so
+      // the consuming UI flags a partial bundle instead of making the user scan
+      // every section. Keyed on `error` as well as `error_code`: only a few of
+      // the export managers' catch blocks set the second key, so a bundle whose
+      // friends / recipes / preferences section had failed outright still
+      // claimed to be complete. A manager's own token wins when it set one;
+      // otherwise the section name derives a stable one, so a NEW manager
+      // cannot go silent at bundle level by forgetting the second key.
+      if (value is Map &&
+          (value['error'] != null || value['error_code'] != null)) {
+        final code = value['error_code'] ?? '${entry.key}-export-failed';
+        // BUT-1732: the message is DERIVED here, never `value['error']` copied
+        // through. Lifting a section field to bundle level changes its blast
+        // radius: this string sits at the ROOT of an Art. 15 bundle the data
+        // subject downloads and may forward to a supervisory authority, and
+        // several managers still put a raw `e.toString()` in their section's
+        // `error` — which can carry ANOTHER user's uid (composite doc ids like
+        // `blocks/<uid>_<otherUid>`), a `create_composite` index URL embedding
+        // `memberPermissions.<uid>` and the project id, or internal collection
+        // paths. This chokepoint cannot tell an authored sentence from an
+        // exception string, so it does not gamble on one: `error_code` already
+        // names WHICH read failed, and the exception itself is in the logs.
+        //
+        // The two shapes are NOT the same claim, and asserting the stronger one
+        // for both would re-introduce this ticket's defect with the sign
+        // flipped. `error` means the section failed outright. `error_code`
+        // WITHOUT `error` is a partial: `shared_shopping_list_export.dart` sets
+        // it when one of three probes failed while the other two returned, so
+        // the section body still ships its lists and its own accurate note. A
+        // flat "could not be exported" would tell the data subject an exported
+        // section is missing — at the root of an Art. 15 artifact they may
+        // forward to a supervisory authority.
+        final failedOutright = value['error'] != null;
         warnings.add({
           'section': entry.key,
-          'error_code': value['error_code'],
-          'message': value['error'] ?? value['note'] ?? 'Unknown error',
+          'error_code': code,
+          'message': failedOutright
+              ? 'The "${entry.key}" section could not be exported '
+                    '(error_code: $code).'
+              : 'The "${entry.key}" section may be incomplete — one of its '
+                    'lookups did not complete (error_code: $code). See that '
+                    'section for details.',
         });
-      }
-      // Check nested maps (e.g., messages with per-conversation truncation)
-      for (final nested in value.values) {
-        if (nested is Map && nested['messages_truncated'] == true) {
-          if (!truncatedCollections.contains(entry.key)) {
-            truncatedCollections.add(entry.key);
-          }
-        }
       }
     }
     if (truncatedCollections.isNotEmpty) {
       (exportData['export_metadata']
               as Map<String, dynamic>)['truncated_collections'] =
           truncatedCollections;
+    }
+    // `data_completeness` is the one field literally named "is this complete?",
+    // and it must answer for BOTH ways a bundle can be incomplete. Keyed on
+    // truncation alone it stayed ABSENT when three sections failed and nothing
+    // was clipped — byte-identical in that field to a fully successful export —
+    // and when both happened it named size limits as the only cause. Nothing
+    // reads these fields; the audience is a human, possibly a supervisory
+    // authority.
+    final truncationSentence =
+        'Some collections were truncated due to size limits: '
+        '${truncatedCollections.join(', ')}.';
+    final warningSentence =
+        'Some sections could not be exported or are incomplete: '
+        '${warnings.map((w) => w['section']).join(', ')}. See warnings below.';
+    final completeness = <String>[
+      if (truncatedCollections.isNotEmpty) truncationSentence,
+      if (warnings.isNotEmpty) warningSentence,
+    ];
+    if (completeness.isNotEmpty) {
       (exportData['export_metadata']
-              as Map<String, dynamic>)['data_completeness'] =
-          'Some collections were truncated due to size limits: ${truncatedCollections.join(', ')}';
+          as Map<String, dynamic>)['data_completeness'] = completeness.join(
+        ' ',
+      );
     }
     if (warnings.isNotEmpty) {
       (exportData['export_metadata'] as Map<String, dynamic>)['warnings'] =
@@ -288,6 +340,43 @@ class DataExportService extends BaseService {
       '[$_logTag] Data export completed successfully',
     );
     return jsonString;
+  }
+
+  /// Whether [node] — or anything nested inside it — declares that rows were
+  /// clipped, i.e. carries `truncated` or a `*_truncated` flag set to true.
+  ///
+  /// A section states its own incompleteness in more than one shape: at its root
+  /// (`shopping_lists.truncated`) and per child (`messages.conversations[i]
+  /// .messages_truncated`). Only the first ever reached `truncated_collections`,
+  /// because the walk it replaced iterated `value.values` and required each one
+  /// to be a Map — a List of conversation maps failed that test silently. A GDPR
+  /// bundle that admits nothing is a bundle claiming completeness it does not
+  /// have, which is the whole defect (BUT-1721).
+  ///
+  /// Depth-bounded: the deepest real flag sits two levels in, and a section also
+  /// carries whole Firestore documents whose contents are none of this walk's
+  /// business.
+  static bool _declaresTruncation(Object? node, [int depth = 0]) {
+    if (depth > 4) return false;
+    if (node is Map) {
+      for (final entry in node.entries) {
+        final key = entry.key;
+        if (key is String &&
+            (key == 'truncated' || key.endsWith('_truncated')) &&
+            entry.value == true) {
+          return true;
+        }
+        if (_declaresTruncation(entry.value, depth + 1)) return true;
+      }
+      return false;
+    }
+    if (node is List) {
+      for (final item in node) {
+        if (_declaresTruncation(item, depth + 1)) return true;
+      }
+      return false;
+    }
+    return false;
   }
 
   /// Export user profile (kept in main service as it requires auth repository)

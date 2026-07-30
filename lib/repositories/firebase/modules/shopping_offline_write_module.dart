@@ -34,16 +34,86 @@ class ShoppingOfflineWriteModule {
 
   /// Document fields an offline write may carry alongside the items it changes.
   ///
-  /// Deliberately excludes `ownerId`, `memberPermissions` and `createdAt` — the
-  /// three keys the Firestore rule forbids a non-owner from touching, so a
-  /// narrowed write can never be the reason a replay is rejected, and an
-  /// owner's queued write can never re-send a stale access-control decision.
+  /// Excludes `ownerId`, `memberPermissions` and `createdAt` — the three keys the
+  /// Firestore rule forbids a non-owner from touching, so a narrowed write can
+  /// never be the reason a replay is rejected, and an owner's queued write can
+  /// never re-send a stale access-control decision. That exclusion is ENFORCED,
+  /// not merely stated: the payload builders read [_writableActivityKeys].
   static const List<String> _activityFieldKeys = [
     'updatedAt',
     'lastActivityAt',
     'lastActivityByUserId',
     'lastActivityByDisplayName',
   ];
+
+  /// The activity keys a queued write may actually carry.
+  ///
+  /// BUT-1706: the exclusion above used to live in the doc comment alone, i.e.
+  /// in whatever the literal happened to say. Filtering against
+  /// [privilegedKeys] here makes the whitelist unable to express an
+  /// access-control field at all: adding `ownerId` or `memberPermissions` to the
+  /// literal now changes nothing, instead of shipping a queued write that
+  /// re-sends a stale ACL (owner: silently overwrites a change made on another
+  /// device; non-owner: the rule counts the key as affected and denies the whole
+  /// replay, rolling the shopper's ticks back).
+  static final List<String> _writableActivityKeys = _activityFieldKeys
+      .where((key) => !privilegedKeys.contains(key))
+      .toList(growable: false);
+
+  /// Every key an offline payload can actually carry — the items array plus the
+  /// activity stamp. A change to anything else is DROPPED by both builders.
+  static final Set<String> offlineCarriableKeys = {
+    'items',
+    ..._writableActivityKeys,
+  };
+
+  /// Throws when [mutated] changes a field neither offline payload can carry.
+  ///
+  /// BUT-1706: this whitelist was documented and unenforced, and its failure
+  /// mode is silent. A mutator that appended a row AND renamed the list queued
+  /// only the row, handed the caller the renamed object back, and the rename was
+  /// gone on the next read — the caller was told the mutation applied. No live
+  /// mutator touches anything but items, so this cannot fire today; that is
+  /// precisely why it has to be mechanical instead of a comment aimed at
+  /// whoever widens `mutateCollaborativeList` next (it takes an arbitrary
+  /// mutator and sits on the public repository interface).
+  ///
+  /// [privilegedKeys] are deliberately NOT part of this refusal. Dropping those
+  /// is the designed behaviour, not an accident: a queued write must never
+  /// re-send a possibly-stale `ownerId` / `memberPermissions` / `createdAt`
+  /// (see [cachedBasePayload]), and two tests pin that strip. Only the fields
+  /// whose loss is BOTH silent and unintended land here.
+  void requireOfflineWritableMutation(
+    UnifiedShoppingList live,
+    UnifiedShoppingList mutated,
+  ) {
+    const equality = DeepCollectionEquality();
+    final before = live.toFirestore();
+    final after = mutated.toFirestore();
+    final dropped =
+        after.keys
+            .where(
+              (key) =>
+                  !offlineCarriableKeys.contains(key) &&
+                  !privilegedKeys.contains(key),
+            )
+            .where((key) => !equality.equals(after[key], before[key]))
+            .toList()
+          ..sort();
+    if (dropped.isEmpty) return;
+
+    AppLogger.error(
+      'Offline: refused a collaborative-list mutation that changed '
+      '${dropped.join(", ")} — the queued payload cannot carry those, so '
+      'applying it would report success and lose the change',
+    );
+    throw ArgumentError.value(
+      dropped.join(', '),
+      'mutate',
+      'An offline collaborative-list mutation can only carry items and the '
+          'activity stamp; these changes would be dropped silently',
+    );
+  }
 
   /// BUT-1741: the audit sink is asynchronous. Typed `void` this field still
   /// accepted the async implementation and then dropped its future, so a
@@ -128,7 +198,7 @@ class ShoppingOfflineWriteModule {
       ]),
       // Non-null only: a mutator that does not stamp activity would otherwise
       // queue three nulls and wipe another member's attribution on the server.
-      for (final key in _activityFieldKeys)
+      for (final key in _writableActivityKeys)
         if (serialized[key] != null) key: serialized[key],
     };
   }
@@ -163,7 +233,7 @@ class ShoppingOfflineWriteModule {
     return {
       'items': [for (final item in mutated.items) item.toFirestore()],
       // Non-null only — see the note on [appendPayload].
-      for (final key in _activityFieldKeys)
+      for (final key in _writableActivityKeys)
         if (serialized[key] != null) key: serialized[key],
     };
   }

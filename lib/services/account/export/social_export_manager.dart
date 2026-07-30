@@ -22,6 +22,26 @@ class SocialExportManager {
   FirebaseDataExportRepository get _exports =>
       _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
 
+  // BUT-1721: every section here used to fail with `{'error': ...}` alone.
+  // `DataExportService` lifts a failed section into `export_metadata.warnings`,
+  // and a precise token is what tells the reader (and a support session) WHICH
+  // read failed rather than "something did" — a whole social section can go
+  // missing from an Art. 15 bundle, so it must not go missing quietly.
+  //
+  // A stable sentence, never `e.toString()`: a raw Firestore/permission string
+  // carries ANOTHER user's uid (`blocks/<uid>_<otherUid>` doc ids), a
+  // `create_composite` URL embedding `memberPermissions.<uid>` and the project
+  // id, and internal collection paths — and the aggregator now promotes this
+  // value to `export_metadata.warnings[].message` at the ROOT of a bundle the
+  // data subject may forward to a supervisory authority. The exception is
+  // already in `AppLogger.error` above every call, so support loses nothing.
+  // Same convention as `shared_shopping_list_export.dart` and
+  // `family_export_manager.dart`.
+  Map<String, dynamic> _failed(String section, String code) => {
+    'error': '$section could not be exported.',
+    'error_code': code,
+  };
+
   /// Export friends, friend requests, and friend categories
   Future<Map<String, dynamic>> exportFriends(String userId) async {
     try {
@@ -97,7 +117,7 @@ class SocialExportManager {
       return friendsData;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export friends', e);
-      return {'error': e.toString()};
+      return _failed('Friends', 'friends-export-failed');
     }
   }
 
@@ -160,7 +180,7 @@ class SocialExportManager {
       return messagesData;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export messages', e);
-      return {'error': e.toString()};
+      return _failed('Messages', 'messages-export-failed');
     }
   }
 
@@ -211,7 +231,10 @@ class SocialExportManager {
         '[$_logTag] Failed to export shared content',
         e,
       );
-      return {'error': e.toString()};
+      return _failed(
+        'Shared content',
+        'shared-content-export-failed',
+      );
     }
   }
 
@@ -227,7 +250,7 @@ class SocialExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export blocks', e);
-      return {'error': e.toString()};
+      return _failed('Blocked users', 'blocks-export-failed');
     }
   }
 
@@ -245,7 +268,10 @@ class SocialExportManager {
         '[$_logTag] Failed to export conversation memberships',
         e,
       );
-      return {'error': e.toString()};
+      return _failed(
+        'Conversation memberships',
+        'conversation-memberships-export-failed',
+      );
     }
   }
 
@@ -269,7 +295,7 @@ class SocialExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export reports', e);
-      return {'error': e.toString()};
+      return _failed('Reports', 'reports-export-failed');
     }
   }
 
@@ -291,7 +317,7 @@ class SocialExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export pings', e);
-      return {'error': e.toString()};
+      return _failed('Pings', 'pings-export-failed');
     }
   }
 }

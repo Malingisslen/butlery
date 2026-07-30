@@ -15,6 +15,11 @@ import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:get_it/get_it.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -55,10 +60,24 @@ class TestRealtimeRecipe extends RealtimeRecipe {
   }
 }
 
+/// BUT-1736: keeps the two name sources apart so a test can prove WHICH one
+/// gets persisted. `profileName` is the name the user chose and the profile
+/// document stores; the Firebase Auth handle is modelled by
+/// `FakePermissionService.currentUser.displayName` (`'Auth Handle'` below),
+/// since production's `PermissionService.currentUser` is synthesized from
+/// `FirebaseAuth.currentUser`.
+class _FakeUserService extends Fake implements UserService {
+  String? profileName = 'Profil Malin';
+
+  @override
+  String? get profileDisplayName => profileName;
+}
+
 void main() {
   late RealtimeRecipeService service;
   late MockRealtimeSyncService mockSyncService;
   late FakePermissionService mockPermissionService;
+  late _FakeUserService fakeUserService;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
@@ -75,16 +94,29 @@ void main() {
   });
 
   setUp(() async {
+    // BUT-1736: the persisted display name resolves through the production
+    // ServiceLocator, so bridge it and register the UserService fake.
+    production.ServiceLocator.initialize(DIContainer());
+
     mockSyncService = MockRealtimeSyncService();
     mockPermissionService = FakePermissionService();
 
+    // 'Auth Handle' stands in for the Firebase Auth display name: this fake's
+    // `currentUser` is what production synthesizes from `FirebaseAuth`. A
+    // recipe stamped with it would be the BUT-1736 regression.
     mockPermissionService.setPermissionState(
       currentUserId: 'test_user_123',
       defaultHasPermission: true,
-      userDisplayName: 'Test User',
+      userDisplayName: 'Auth Handle',
     );
     mockSyncService.setConnectionState(true);
     mockSyncService.setInitialized(true);
+
+    fakeUserService = _FakeUserService();
+    if (GetIt.instance.isRegistered<UserService>()) {
+      GetIt.instance.unregister<UserService>();
+    }
+    GetIt.instance.registerSingleton<UserService>(fakeUserService);
 
     service = RealtimeRecipeService(
       syncService: mockSyncService,
@@ -546,6 +578,85 @@ void main() {
       );
       expect(service.lastError, isNotNull);
     });
+  });
+
+  group('Persisted display name comes from the profile (BUT-1736)', () {
+    const testRecipeId = 'recipe_123';
+
+    test(
+      'createRealtimeRecipe stamps the profile name, not the Auth handle',
+      () async {
+        RealtimeRecipe? captured;
+        when(
+          () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+        ).thenAnswer((invocation) async {
+          captured = invocation.positionalArguments[0] as RealtimeRecipe;
+        });
+
+        await service.createRealtimeRecipe(
+          recipe: RecipeFactory.build(id: testRecipeId, title: 'Kottbullar'),
+        );
+
+        expect(captured, isNotNull);
+        expect(captured!.ownerDisplayName, equals('Profil Malin'));
+        expect(captured!.lastEditedByDisplayName, equals('Profil Malin'));
+      },
+    );
+
+    test(
+      'an edit stamps the profile name as lastEditedByDisplayName',
+      () async {
+        mockSyncService.setCachedResource(
+          testRecipeId,
+          TestRealtimeRecipe.fromRecipe(
+            recipe: RecipeFactory.build(id: testRecipeId, title: 'Test'),
+            ownerId: 'test_user_123',
+          ),
+        );
+
+        RealtimeRecipe? captured;
+        when(
+          () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+        ).thenAnswer((invocation) async {
+          captured = invocation.positionalArguments[0] as RealtimeRecipe;
+        });
+
+        await service.updateBasicInfo(
+          resourceId: testRecipeId,
+          title: 'Uppdaterad',
+        );
+
+        expect(captured, isNotNull);
+        expect(captured!.lastEditedByDisplayName, equals('Profil Malin'));
+      },
+    );
+
+    test(
+      'an unloaded profile stamps the unknown-user label, never the Auth handle',
+      () async {
+        // Cold start: the profile document has not arrived yet, while the Auth
+        // handle IS available. Before BUT-1736 that stamped 'Auth Handle'.
+        fakeUserService.profileName = null;
+
+        RealtimeRecipe? captured;
+        when(
+          () => mockSyncService.updateResource<RealtimeRecipe>(any()),
+        ).thenAnswer((invocation) async {
+          captured = invocation.positionalArguments[0] as RealtimeRecipe;
+        });
+
+        await service.createRealtimeRecipe(
+          recipe: RecipeFactory.build(id: testRecipeId, title: 'Kottbullar'),
+        );
+
+        expect(captured, isNotNull);
+        expect(captured!.ownerDisplayName, isNot(equals('Auth Handle')));
+        expect(
+          captured!.ownerDisplayName,
+          equals(AppLocale.current.displayUnknownUser),
+        );
+      },
+    );
   });
 
   group('Dual-channel error forwarding (BUT-1112)', () {

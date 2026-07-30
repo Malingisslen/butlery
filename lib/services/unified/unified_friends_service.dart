@@ -578,10 +578,6 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   Future<List<UserProfile>> getRecentCollaborators() async =>
       await _utilityOps.getRecentCollaborators();
 
-  /// Get recent shopping collaborators
-  Future<List<UserProfile>> getRecentShoppingCollaborators() async =>
-      await _utilityOps.getRecentShoppingCollaborators();
-
   /// Clear error state (for ViewModels)
   void clearError() => _stateManager.clearError();
 

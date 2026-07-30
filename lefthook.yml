@@ -80,6 +80,19 @@ pre-commit:
       fail_text: "A Cloud Functions test file or rules trigger is not wired into CI (see above). Add the npm test:* script, or the functions/src/__tests__/... entry in BOTH paths: blocks of .github/workflows/firestore-rules.yml."
       priority: 6
 
+    # BUT-1746: `.where(f, isNotEqualTo: null)` builds NO condition (the SDK
+    # guards every operator with `if (<arg> != null)`), so the "filter" silently
+    # becomes an unfiltered read of the whole collection — four such sites
+    # shipped across the shared-shopping-list reads, the group-weekly
+    # participation probe and the GDPR export gateway. Grep-only, staged-file
+    # scoped, sub-second. Comment lines are skipped so the WHY-comments naming
+    # the forbidden spelling at the fixed sites don't flag themselves.
+    null-filter-guard:
+      glob: "*.dart"
+      run: bash tools/check_null_filter.sh {staged_files}
+      fail_text: "A Firestore filter passes a literal null (BUT-1746) — isNotEqualTo/isEqualTo: null adds NO condition and turns the query into an unfiltered collection read. Use isNull: false / isNull: true."
+      priority: 8
+
     # BUT-1709 / BUT-1707: the two CI-wiring guards are the only thing that
     # notices when a test file or a rules block stops being covered — so an
     # edit to a guard is exactly when its own fixtures must run. Glob-gated to

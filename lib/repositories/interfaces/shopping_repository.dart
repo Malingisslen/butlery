@@ -55,6 +55,12 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
   /// the user decide again against what the list actually says now.
   ///
   /// Only [ListType.collaborative] lists have members; a personal list throws.
+  ///
+  /// Why membership is a NAMED method rather than an optional argument on the
+  /// ordinary update — and why the first, smaller shape shipped green while
+  /// writing nothing — is recorded in
+  /// `docs/architecture/ADR-002-collaborative-list-membership-guard.md`
+  /// (BUT-1726/BUT-1752). Read it before widening this signature.
   Future<UnifiedShoppingList> updateCollaborativeListMembership(
     UnifiedShoppingList updated,
     UnifiedShoppingList base,

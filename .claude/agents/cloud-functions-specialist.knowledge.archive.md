@@ -6325,3 +6325,919 @@ The test file was written LF and normalised back to CRLF to match its siblings (
 `lefthook run pre-commit --command script-guard-tests` was NOT re-run: it stashes unstaged
 changes, and the parallel session was actively writing `lib/`. The guard scripts it invokes
 were run directly instead.
+
+### 2026-07-30 — BUT-1706/BUT-1721/BUT-1746 shopping+GDPR review pass [Pattern discovered]
+
+Reviewed the "shopping/account (GDPR export + rules coverage)" slice:
+`tools/check_null_filter.sh`, `lefthook.yml`,
+`functions/src/__tests__/shared-shopping-lists-rules.test.ts`, the two shopping
+repository modules and the three account-export files, plus their suites.
+
+What ran:
+- `functions/`: `node scripts/check-test-registration.js` → OK, 118 test files,
+  38 rules suites, 4 accepted-debt warnings. `npx tsc --noEmit -p tsconfig.json`
+  → clean.
+- `npm run test:rules:shared-shopping-lists` against the already-running
+  emulator (127.0.0.1:8080) → **39/39 passed** on md5
+  `cf0a9292ec55a5b0bb03a7089f585541`.
+- `flutter test` on the three Dart suites → 111 passed; the export suite alone
+  → 35 passed.
+- `bash tools/check_null_filter.sh` (whole tree) → exit 0 with 12 WHY-comment
+  hits correctly skipped; single-file mode on
+  `shopping_repository_query_module.dart` → exit 0 (proves the `-H` fix); a
+  synthetic `q.where("a", isNotEqualTo: null)` file → exit 1 (non-vacuous).
+- `npx lefthook run pre-commit --command null-filter-guard --no-auto-install`
+  → `(skip) no matching staged files`, i.e. the job name and glob resolve.
+  lefthook v2.0.12 has neither `--commands` nor `--files`.
+
+Premise verified rather than trusted: `cloud_firestore-6.6.0`
+`lib/src/query.dart:657-681` — `if (isEqualTo != null) addCondition(...)` /
+`if (isNotEqualTo != null) ...` versus `if (isNull != null) { ... addCondition(
+field, '!=', null) }`. So a literal null really does build no condition, and
+the guard's rationale is factually right (its cited line numbers are off by
+one or two, harmless).
+
+Rules claims in the diff all check out against `firestore.rules:1602-1653`:
+read = `ownerId == uid || uid in memberPermissions`; create requires
+`['ownerId','memberPermissions','items','createdAt']` plus self-owned,
+self-seated and the `<= 200` trail bound; delete = owner only. The widened
+client `validateRequiredFields` list is safe because
+`PermissionValidationMixin.validateRequiredFields` tests `containsKey` only —
+an empty `items` array still passes, exactly like `hasRequiredFields`.
+
+Three things worth carrying forward:
+1. The mid-review byte drift + non-compiling intermediate save (see the
+   principle added under "CI / test wiring / ops"). Also the SSL39 fixture
+   ordering trap: the first version used `STRANGER`, whom SSL38 seeds as the
+   OWNER of `query-foreign`, and the emulator persists that doc across runs —
+   an "actor is a member of nothing" test needs a uid nothing ever seeds.
+2. Rules-are-not-filters: the client's no-op filter caused a blanket DENY of
+   the whole collection query, not an over-share, and only the emulator lane
+   can prove either direction.
+3. `lib/repositories/firebase/modules/shopping_repository_routing_module.dart`
+   went 500 → 523 lines in this diff and is NOT in
+   `docs/architecture/ACCEPTED_LARGE_FILES.md`; the sibling
+   `shopping_offline_write_module.dart` doc comment still claims the split
+   keeps it "under the 500-line limit". The 500-line hook is a soft warning
+   (`.claude/hooks/file-size-guard.sh` exits 0), so nothing blocks on it.
+
+No Critical/High. Filed one Medium for the size overrun, one Medium for the
+live-edit hash caveat, and Lows/Infos for the guard's comment-skip regex
+(trailing WHY-comments would be flagged; the `^[^:]*:` prefix strip assumes a
+colon-free path) and the absence of any CI mirror for the guard (matching the
+`check_swedish_boundary.sh` precedent).
+
+### 2026-07-30 — BUT-1692/BUT-1736 review: batch rate-limit enforcer + a mutation harness firing mid-review
+[Pattern discovered] [Bug fixed — in the review process, not the code]
+
+Scope: `notifications/send-notification.ts`, `__tests__/rate-limiter-daily-cap.test.ts`,
+`__tests__/send-notification.test.ts`, plus the two Dart realtime services and
+their tests (`lib/services/realtime/realtime_{menu,recipe}_service.dart`).
+
+**TS half — verdict clean.** `preflightNotificationBatch` swapped its seam from
+`rateLimit?: typeof checkRateLimit` to `enforce?: typeof enforceRateLimit` and
+deleted the hand-rolled `resource-exhausted` throw, so batch denials now write
+the `system_events` `rate_limit_violation` row via `logRateLimitViolation`.
+Checked and confirmed:
+- `enforceRateLimit(userId, operationType, tokensRequired = 1): Promise<void>`
+  (`rate_limiter.ts:690`) — signature matches the seam exactly; it wraps
+  `checkRateLimit`, so the fail-CLOSED-on-Firestore-error behaviour
+  (`rate_limiter.ts:423-436`) is unchanged, and `logRateLimitViolation`
+  swallows its own write errors (`:456-459`), so no new failure mode.
+- `RATE_LIMIT_CONFIGS.sendNotificationBatch` = `{maxTokens: 100, refillRate: 30,
+  refillIntervalMs: 60000}` vs `MAX_BATCH_NOTIFICATIONS = 100` and
+  `sendNotification.refillRate = 30` — both new pins hold.
+- Ordering unchanged and still correct: non-array + oversize reject free, the
+  charge lands before the per-target authorization loop (up to 3 reads ×
+  100 targets), `assertBatchValid` still runs after the charge (documented
+  trade, and the doc comment was *narrowed* in this diff to stop overstating
+  it — the old "a malformed payload" claim did not cover per-ELEMENT
+  malformation).
+- `npx tsc --noEmit -p tsconfig.json` clean; `test:rate-limiter-daily-cap`
+  14/14; `test:send-notification` 18/18; `test:app-check-enforcement` 15/15;
+  `check-test-registration.js` OK (118 files, 4 accepted-debt warnings);
+  `CI_EXCLUDE` still empty, both suites already registered in `package.json`
+  (`:64`, `:131`), so no CI-wiring gap.
+
+Two residuals filed, neither blocking: (a) `sendNotification` single-send
+(`send-notification.ts:91-97`) still does bare `checkRateLimit` + local throw,
+so single-send abuse leaves no audit row — the diff's prose ("the one
+rate-limited path that left no trace") is now the inverse of the truth;
+(b) `system_events` has no TTL field or cleanup job anywhere
+(`cleanup-audit-logs.ts` only purges `deletion_audit_logs`/`audit_logs`), so
+each newly-enforced callable adds an unbounded write-per-denial stream. Also
+noted: no Dart caller of `sendNotificationBatch` exists at all, so this is
+purely an abuse-surface hardening.
+
+I checked whether the seam's production default is pinned by anything. It is —
+by the type, not a test: I ran a 6-line `tsc --strict` probe and
+`Promise<{allowed:boolean}>` is NOT assignable to `Promise<void>` (TS2322), so
+the void-return bivariance special case does not reach through `Promise` and a
+revert to `checkRateLimit` in the default cannot compile.
+
+**Dart half — the real lesson.** `_currentUserDisplayName` moved from
+`PermissionService.currentUser?.displayName` (synthesized from
+`FirebaseAuth.currentUser`) to `ServiceLocator.tryGet<UserService>()
+?.profileDisplayName` in both realtime services, matching BUT-1705's
+precedent in `firebase_shopping_repository.dart:115` and
+`recipe_share_request_module.dart:66`. Verified server-side that the stamp is
+maintainable: `on-profile-updated.ts:143-147` propagates
+`ownerDisplayName`/`lastEditedByDisplayName` over
+`Collections.realtimeRecipes` + `realtimeMenus` keyed on
+`ownerId`/`lastEditedBy`, and the model maps the services'
+`editedByDisplayName:` param onto the persisted `lastEditedByDisplayName`
+(`models/realtime/realtime_menu.dart:158-171`), so the CF's query field and
+the written field do line up. `DIContainer()` is a singleton over
+`GetIt.instance`, so the recipe test's `ServiceLocator.initialize(DIContainer())`
+bridge is idempotent and the `GetIt.instance.registerSingleton<UserService>`
+fakes are what `tryGet` resolves.
+
+Then the review itself went wrong twice, both from parallel-session
+interference:
+1. My first `git diff` read blob `d96300fae` (fix present). Minutes later
+   `Read` showed the OLD getter body with the NEW docstring above it and blob
+   `6707f1000` — the getter had been reverted under me. I ran the suites and
+   got exactly 6 reds (3 per file, `Actual: 'Auth Handle'`). Polling
+   `git hash-object` every 20s showed both files restored to the original
+   blobs (`d96300fae`, `930d977346`) within ~3 minutes: it was another
+   session's mutation harness, restoring byte-identically. Re-run against the
+   restored bytes: 52/52 green, `flutter analyze` on all four Dart files
+   "No issues found". So the 6 reds were free proof that all six new BUT-1736
+   tests are non-vacuous — and a review that had reported them as a defect
+   would have been flatly wrong.
+2. I wrote my flutter-test wrapper to the shared scratchpad as
+   `_run_test.bat`; a parallel session overwrote it with ITS OWN file list and
+   my next "verification" run actually executed
+   `shopping_repository_routing_module_test.dart` +
+   `data_export_service_test.dart` (`+110 -1`) while I believed I was running
+   the realtime suites. Caught it only because the printed test names did not
+   match. Fix: unique runner names (`_cfs_realtime_$$.bat`) and always check
+   the suite names in the output.
+
+Both are folded into the "CI / test wiring / ops" byte-drift principle.
+
+### 2026-07-30 — BUT-1724 retired-collection dead reads: review of the `shopped` probe, the personal-list denorm leg, and the reset-script false alarm [Pattern discovered]
+
+Reviewed diff (scoped files only): `functions/src/analytics/compute-feature-retention.ts`,
+`functions/src/__tests__/compute-feature-retention.test.ts`,
+`functions/src/social/on-profile-updated.ts`,
+`functions/src/__tests__/on-profile-updated.test.ts`,
+`functions/src/admin/reset-user-data.ts`, plus the Dart side
+`lib/services/unified/friends/friends_utility_operations.dart`,
+`lib/services/unified/unified_friends_service.dart`,
+`lib/core/constants/firestore_collections.dart`,
+`test/unit/services/unified/unified_friends_service_test.dart`.
+
+What the diff did, and what I verified rather than took on faith:
+
+1. **`shopped` probe repointed** from `users/{uid}/shopping_lists` (pre-rename,
+   nothing has written it since BUT-1697) to
+   `users/{uid}/unified_shopping_lists` via `Collections.unifiedShoppingLists`.
+   Verified: `functions/src/shared/collections.ts:17` = `"unified_shopping_lists"`;
+   `FirebaseShoppingRepository.collectionName` (line 131) = the same constant;
+   `firestore.rules:394` has the `match /unified_shopping_lists/{listId}` block
+   under `users/{userId}` (and `/items/{itemId}` inside it); the model writes
+   `'updatedAt': Timestamp.fromDate(updatedAt)`
+   (`lib/models/unified/unified_shopping_list.dart:602`) and the repository's
+   `toFirestore` (line 139-140) delegates to it — so the `>=`/`<` Timestamp range
+   actually matches rows. No `fieldOverrides`/exemption for that collection id in
+   `firestore.indexes.json`, so the equality-free `updatedAt` range is auto-indexed.
+2. **The docstring's accepted residual is TRUE**: a personal list keeps items in
+   an `items` subcollection and `shopping_item_operations_module.dart:168-172`
+   writes ONLY that subcollection on the personal branch (`_withItems`, which
+   stamps `updatedAt`, is applied only via `mutateCollaborativeList`). So `shopped`
+   catches creation + list-level edits and misses a tick-only session on a personal
+   list. Collaborative lists are inline and fully covered.
+3. **`paginatedDualUpdate` now takes a `CollectionReference` instead of a name.**
+   That is the real fix: the old signature did `db.collection(name)` internally, so
+   the personal-list leg could not be expressed at all and silently matched zero
+   docs while still billing a read per pass. All three call sites updated (realtime
+   ×2, shared, personal). `batchUpdateQueryPaginated` is collection-agnostic
+   (`Query` in, `orderBy(FieldPath.documentId())`), so the subcollection pages fine.
+4. **`reset-user-data.ts` is comment-only, and the comment is right.** BUT-1724 had
+   been filed believing `unified_shopping_lists/{listId}/items` survived a reset
+   because it is absent from the `users` entry's `subcollections` array. Read
+   `deleteDocRecursive` (lines 200-219): it recurses `docRef.listCollections()` at
+   every depth, and `subcollections` is never read by the deletion path at all. The
+   array is documentation. Nothing survives.
+5. **Dart deletions are clean.** `getRecentShoppingCollaborators()` (which queried a
+   ROOT `shopping_lists` with `collaborators array-contains`, a path `firestore.rules`
+   grants no match for) is gone from the ops class and the facade; a repo-wide grep
+   finds references only inside `.claude/worktrees/*` (other sessions' branches), none
+   in the live checkout. `Timestamp` is still used elsewhere in the test file so the
+   import survives. The retired `FirestoreCollections.userShoppingLists` constant now
+   has exactly one Dart reference —
+   `test/unit/repositories/firebase/firebase_data_export_repository_shopping_test.dart:152`,
+   a negative assertion — matching what the updated docstring claims.
+
+Commands run:
+- `cd functions && npm run build` → clean (`tsc`).
+- `npm run test:on-profile-updated` → 6/6 (new case: "personal shopping lists update
+  in the user's own subcollection, never a top-level one").
+- `npm run test:compute-feature-retention` → 6/6 (new case: "shopped probe reads
+  unified_shopping_lists, not the retired shopping_lists").
+- Both new tests MUTATION-PROVEN. `on-profile-updated`: reverting the personal leg to
+  `db.collection(Collections.unifiedShoppingLists)` → `5/6 passed, 1 failed`, exactly the
+  new test. `compute-feature-retention`: the first attempt replaced
+  `.collection(Collections.unifiedShoppingLists)` with a bare `"shopping_lists"` literal
+  and got a **TSError** (the `Collections` import went unused → `noUnusedLocals`), which
+  reads as a red suite for the wrong reason; reworked as
+  `.collection(Collections.unifiedShoppingLists ? "shopping_lists" : "x")` → `5/6 passed,
+  1 failed`, exactly the new test. Both files restored and md5-verified byte-identical.
+- `flutter analyze` on the four Dart files → "No issues found!".
+- `flutter test test/unit/services/unified/unified_friends_service_test.dart` → 20/20.
+- Both suites are registered in `functions/package.json` (`test:compute-feature-retention`
+  line 84, `test:on-profile-updated` line 136) — the recurring CI-wiring trap does not
+  apply here since neither file is new.
+
+Findings filed (nothing Critical/High):
+- Medium, pre-existing in `compute-feature-retention.ts:178-182`: the probe-failure warn
+  logs a RAW `userId` and nests the Error in the payload object. Confirmed empirically
+  from the test run's own output: `{"flag":"cooked","userId":"uProbe","err":{},...}` — the
+  cause is recorded NOWHERE, exactly as the logging principle predicts, and the uid is
+  cleartext next to a behavioural signal. Fix: `hashUid(userId)` + `errCode`/`errName`.
+- Low: the metric ramp. The WAU rollup ORs previously-STORED per-day flag docs
+  (`readUserDailyFlags`, days 1..27), so `shopped` in `wau7d`/`wau28d` stays depressed for
+  7/28 days after deploy while `dau.shopped` jumps on day 1. Not a code bug; it needs to be
+  said to whoever reads the dashboard, or the fix looks like a launch.
+- Low: mixed constant style in the same file — the `shopped` probe now uses
+  `Collections.unifiedShoppingLists` while `"users"`, `"cook_snaps"`, `"shared_recipes"`,
+  `"analytics"` stay string literals in the same function.
+- Info: `reset-user-data.ts:105-107` still declares a TOP-LEVEL
+  `unified_shopping_lists` target. Harmless in a manual script (a `listDocuments()` on a
+  non-existent collection is empty), but it is the same "keep the list honest" argument the
+  new comment makes.
+
+Folded into the principles file as: the rename-sweep entry (now CLOSED, with the
+analytics-history-ramp corollary), the subcollection-vs-top-level entry (rewritten around
+"a fan-out helper parameterized by NAME is the shape that hides it"), a new `admin/` entry
+about `subcollections` being documentation only, and a new mutation-harness entry about
+`noUnusedLocals` turning a mutation into a TSError.
+
+### 2026-07-30 — BUT-1692/BUT-1736 re-review: the audit-row pin, and the same two files mutated under me a second time
+[Pattern discovered] [Bug fixed — documentation] [Cost finding]
+
+Re-review pass over the "account security (Auth-displayName persistence + notification
+rate-limit pin)" fileset after automated fixes: `functions/src/notifications/send-notification.ts`,
+`functions/src/__tests__/{rate-limiter-daily-cap,send-notification}.test.ts`, plus the two
+Flutter realtime services and their suites (parent asked for them explicitly; they are
+Flutter, normally `firebase-backend-security`'s lane).
+
+**What the diff does (all correct).** `preflightNotificationBatch`'s seam flipped from
+`rateLimit?: typeof checkRateLimit` to `enforce?: typeof enforceRateLimit`, so the denial
+now goes through the enforcer and writes the `system_events` `rate_limit_violation` row.
+`MAX_BATCH_NOTIFICATIONS` (100) was exported and pinned in `rate-limiter-daily-cap.test.ts`
+against `RATE_LIMIT_CONFIGS.sendNotificationBatch.maxTokens` (100), plus a second case
+pinning the batch bucket's `refillRate`/`refillIntervalMs` (30/60000) to `sendNotification`'s.
+`logRateLimitViolation` switched `admin.firestore()` → `getFirestore()` so
+`__setFirestoreForTest` can observe the row. `index.ts:140` re-exports by NAME
+(`export { sendNotification, sendNotificationBatch }`), so the new const does not touch the
+deploy surface.
+
+**The measurement that mattered.** The suite's own docstring claims the new
+default-enforcer case is the only thing that catches a revert to
+`checkRateLimit` + a local throw. I proved it rather than trusting it: a throwaway
+`functions/src/__tests__/_cfs_tmp_mutproof_1736.ts` injected the pre-BUT-1692 shape through
+the seam against the same fake db and printed
+`OLD SHAPE: thrown=resource-exhausted auditRows=0`. Same thrown code, zero audit rows —
+so the seam's TYPE pin and all 18 injected cases are blind to the revert, and only the
+no-`enforce` case that asserts the ROW catches it. Deleted the probe immediately.
+
+**Prose defect filed (Medium).** The new docstring says the old local throw meant "batch
+abuse was the one rate-limited path that left no trace for monitoring". `sendNotification`
+single-send (`send-notification.ts:91-97`) is still bare `checkRateLimit` + local throw, so
+that is exactly the "a diff that fixes one path must not claim the family now leaves a
+trace" trap my own principles file warned about, hit by the very ticket the principle was
+written for. Also noted: `__setFirestoreForTest` does NOT cover
+`getGlobalLimits`/`checkGlobalLimit` (`rate_limiter.ts:516,563-564` still direct
+`admin.firestore()`), and `system_events` has no TTL — with
+`retry_helper.dart:286` treating `resource-exhausted` as retryable, a future Dart caller of
+the batch callable would multiply rows per denial. No Dart caller exists today
+(`grep sendNotificationBatch lib/` = 0 hits), so no client depends on the changed
+HttpsError message/details either.
+
+**The mutation-under-review hazard fired again, and taught two new things.**
+1. `md5sum` is the wrong hash. `send-notification.ts` changed md5
+   (`f89578d0…` → `729a8bd4…`) mid-review while `git hash-object` and the `git diff`
+   index blob stayed `572c4341…`: a pure LF→CRLF normalization (730 CRLF, 0 bare LF,
+   24920 bytes). I spent a cycle re-diffing a change that did not exist. Use
+   `git hash-object`.
+2. The two realtime services were mutated a SECOND time this session, and not
+   simultaneously. My run scored 3 reds — all three new BUT-1736 tests in
+   `realtime_recipe_service_test.dart` (`Expected: 'Profil Malin' Actual: 'Auth Handle'`,
+   and `Expected: not 'Auth Handle' Actual: 'Auth Handle'`) — while the menu suite's three
+   went green in the same run; reading the files afterwards showed BOTH reverted
+   (`realtime_recipe_service.dart:64` → `_permissionService.currentUser?.displayName`,
+   `realtime_menu_service.dart:66` → `ServiceLocator.get<PermissionService>().currentUser?.displayName`),
+   docstrings still describing `profileDisplayName`. I polled on file CONTENT (grep for the
+   expected line, 20s interval), got a restore after 5 polls to the exact original md5s,
+   re-ran and got 52/52 with identical hashes before and after. The reds are kept as free
+   non-vacuity evidence for the three recipe tests.
+
+**Flutter side, verified for the record.** `ServiceLocator.tryGet<UserService>()` exists
+(`application_provider.dart:358`, returns null on unregistered/uninitialized),
+`UserService.profileDisplayName` exists and is `String?` with no Auth fallback
+(`user_service.dart:99-102`), `DIContainer` is a singleton over `GetIt.instance` so the
+recipe suite's `production.ServiceLocator.initialize(DIContainer())` +
+`GetIt.registerSingleton<UserService>` bridge works, and
+`FakePermissionService.currentUser` synthesizes `displayName: _userDisplayName ?? 'Test User'`
+(`production_mocks.dart:1525-1530`) — so `'Auth Handle'` really is reachable through the old
+code path in BOTH suites and neither fixture is vacuous. `flutter analyze` on all four Dart
+files: no issues (the menu file's now-unused `permission_service.dart` import was correctly
+dropped; the recipe file keeps it because `_permissionService` is still used for auth).
+Ten other Auth-sourced `displayName` persistence sites remain outside this fileset
+(`firebase_menu_collaboration_repository.dart:108,184,225`,
+`shopping_template_operations_module.dart:75,279`,
+`recipe_sharing_manager.dart:585`, `unified_recipe_service.dart:520`,
+`firebase_comments_repository.dart:186`) — BUT-1705's sweep is not finished.
+
+**Commands + results.** `npx tsc --noEmit -p tsconfig.json` → exit 0.
+`npm run test:send-notification` → 19/19. `npm run test:rate-limiter-daily-cap` → 14/14.
+`node scripts/check-test-registration.js` → OK, 118 registered, 4 accepted-debt warnings.
+`npm run test:app-check-enforcement` → 15/15. `flutter test` on the two realtime suites →
+52/52 (after restore). `flutter analyze` on the four Dart files → no issues.
+
+**Also spotted:** an untracked `functions/src/__tests__/_probe_tmp.ts` (someone else's
+throwaway probe of the same audit path, with `console.log` tracing) sits in the working
+tree. Guards ignore it (`check-test-registration.js` filters `*.test.ts`) but lefthook's
+pre-commit sees untracked files on disk and `tsconfig` includes `src`, so it should be
+deleted before commit. Not mine to delete under the parallel-session rule.
+
+Folded into the principles file as: the `enforceRateLimit` entry (type pin ≠ behaviour pin,
+the audit-row assertion as the only real pin, the seam's global-limits blind spot, the
+`retry_helper` amplification note, and single-send still bare), and the mid-review-hash
+entry (rewritten around `git hash-object` over `md5sum`, and content-polling over timers).
+
+### 2026-07-30 — BUT-1724 RE-REVIEW after automated fixes: what actually changed, and a test-double aliasing hazard the CollectionReference refactor introduced [Pattern discovered]
+
+Second pass over the same scoped fileset as the entry above, re-read from the
+WORKING TREE (`git status` shows all nine files as ` M`, index and worktree agree).
+
+**What the "automated fixes" actually changed in my scope: one thing.**
+`compute-feature-retention.test.ts` grew a 7th case, `shoppedProbeFailureDegrades`
+("shopped probe failure (missing index) degrades to false, run completes"), plus the
+harness change that makes it possible: `failProbeFor` now matches on EITHER
+`args.source` OR a new `args.failFlag`, because a subcollection source's path is
+`users/{uid}/{sub}` and could never match on a feature-flag name alone. Both
+production files (`compute-feature-retention.ts` md5 `c7c7760001a46bea8bb7eb6cbf4612b2`,
+`on-profile-updated.ts` md5 `7cc2acc50a2f35385526b66cefa5143c`) and
+`on-profile-updated.test.ts` (`157593706a0206bd1de17a36fc800b57`) are byte-unchanged
+from the start of this pass to the end. The three Medium/Low findings from the first
+pass are all still OPEN — nothing was "fixed", a test was added.
+
+**The mid-review byte drift fired again, and the existing principle caught it.**
+I hashed the five functions files before running anything and again afterwards;
+`compute-feature-retention.test.ts` moved `f7bb93d7…` → `8f67bac2…` DURING the pass
+(the 6-case version was what I first diffed and ran at 6/6). Re-diffed, re-read the
+harness, re-typechecked, re-ran at 7/7, hashed before and after that run (stable).
+Also honoured the shared-scratchpad rule — the scratchpad already held
+`_run_test.bat`..`_run_test5.bat`, `rt.bat`, `mutate.js` from other sessions, so my
+runner was `_cfs_friends_$$.bat` and my harness `_cfs_mutate_1724.js`, and I checked
+the printed suite names matched what I asked for.
+
+**New hazard, and it is a consequence of the accepted fix.** `paginatedDualUpdate`
+now takes ONE `CollectionReference` and calls `.where()` on it twice. In
+`on-profile-updated.test.ts`'s `makeFakeDb`, `collectionRef(name)` builds a SINGLE
+mutable `q` (`makeQuery` closes over `predicate`/`ordered`/`limitN`/`afterKey` and
+every builder returns `q`), so the second `.where()` OVERWRITES the first's predicate
+— whereas the old name-based signature called `db.collection(name)` separately per leg
+and got two independent doubles. It passes today for a benign reason: `async get()`
+contains no `await` before it filters `activity`, so leg A's page-1 rows are captured
+synchronously during array-literal evaluation, before leg B's `.where()` runs. The
+break is on page 2 — leg A's `startAfter(...).limit().get()` would re-read with leg B's
+predicate. Consequence, and the reason this is worth a principle: the suite's headline
+claim ("neither result set is ever fully held in memory", "cursor neither skips nor
+revisits") is UNPROVEN for `paginatedDualUpdate`, because there is no `>BATCH_LIMIT`
+dual-field fixture and one could not be written against this double. Fix belongs in the
+double (return a fresh object from every builder call), not in the SUT.
+
+Verification I did that the first pass did not:
+- `npx tsc --noEmit` on `functions/` → exit 0 (twice, before and after the drift).
+- `npm run test:compute-feature-retention` → **7/7**; grepped the run's own output to
+  prove the new injection FIRES rather than passing on an empty fixture:
+  `{"flag":"shopped","userId":"uIdx","err":{},"severity":"WARNING","message":"feature_retention_probe_failed"}`.
+  The case is non-vacuous by construction too — it seeds
+  `users/uIdx/unified_shopping_lists` in-day so the probe WOULD answer true, and then
+  asserts `shopped === false` with `mealPlanned === true` alongside.
+- `npm run test:on-profile-updated` → 6/6, and re-mutation-proved BOTH new tests with
+  the CRLF-safe harness (occurrence count asserted == 1, `out !== s` asserted, md5
+  restore verified): reverting the personal leg to `db.collection(Collections.unifiedShoppingLists)`
+  → `4/6 passed, 2 failed`, i.e. the BUT-1724 case AND the positive control inside the
+  avatar-only case ("control: a name change DOES reach the same personal list:
+  expected \"Annika\", got \"Anna\""); reverting the probe to
+  `.collection(Collections.unifiedShoppingLists ? "shopping_lists" : "x")` →
+  `5/6 passed, 1 failed`, exactly the targeted case.
+- Premise re-checks the first pass asserted but I re-ran from source:
+  `firestore.rules:394` = `match /unified_shopping_lists/{listId}` under
+  `users/{userId}` and NO top-level match (grep of the whole rules file: only
+  `unified_shared_shopping_lists:1602` and `user_shared_shopping_lists:1685` are
+  top-level) — so both the SUT comment and the test's "ghost" fixture rest on a
+  verified fact. `firestore.indexes.json` `fieldOverrides` dumped in full: no entry for
+  `unified_shopping_lists` at all, so the equality+`__name__` ASC propagation legs and
+  the `updatedAt`-only range probe are auto-indexed; no index deploy is required by this
+  diff. `unified_shopping_list.dart:594-622` writes `ownerId`, `ownerDisplayName`,
+  `lastActivityByUserId`, `lastActivityByDisplayName` and `updatedAt` as a `Timestamp`,
+  so all three newly-live queries match real fields — this fix is not another dead read.
+- `node scripts/check-test-registration.js` → OK, 118 registered, 4 accepted-debt warns.
+  No new export in `index.ts`, so the `app-check-enforcement.test.ts` triple does not apply.
+- NUL/binary check on all five functions files → clean.
+- `flutter analyze` on the four Dart files → "No issues found!" (60s), which also proves
+  no import or private method was orphaned by deleting `getRecentShoppingCollaborators`.
+- `flutter test test/unit/services/unified/unified_friends_service_test.dart` → 20/20.
+- Repo-wide grep for `getRecentShoppingCollaborators`: live checkout clean; hits only in
+  `.claude/worktrees/*` (other sessions) and in agent knowledge archives.
+- `FirestoreCollections.userShoppingLists`: exactly one Dart reference,
+  `firebase_data_export_repository_shopping_test.dart:152`, and I READ it — it is the
+  negative assertion ("a list at the legacy path is not mistaken for the export"), so
+  the constant's updated docstring is accurate.
+- `functions/src` grep for the retired name: only the three deliberate sites
+  (`account-deletion-cascade.ts:463` legacy `listDocuments()` net,
+  `request-account-deletion.ts:190` step LABEL, `reset-user-data.ts:42` reset net).
+- Confirmed the docstring's accepted gap 2 again from source: the personal branches of
+  `addItem`/`addItemsBatch`/`updateItem` write ONLY
+  `users/{uid}/unified_shopping_lists/{id}/items/...`; `_withItems` (the only thing that
+  stamps `updatedAt`/`lastActivity*`) is reached solely via `mutateCollaborativeList`.
+
+New Low noted this pass: `failProbeFor.flag` is now overloaded — line 558 passes a
+SOURCE name (`"cook_snaps"`) and line 661 passes a FEATURE FLAG (`"shopped"`). Works,
+but a future case will guess the wrong one and get a silently-not-injected failure that
+looks like a passing test. Rename to `failProbeFor.match` or split the two fields.
+
+Folded into the principles file as: a new bullet in "Test seams, emulator infra &
+non-vacuity" about a name→`CollectionReference` refactor aliasing a mutable-builder
+double, and a named OPEN instance appended to the "Hash ALL PII" logging bullet
+(`feature_retention_probe_failed`).
+
+### 2026-07-30 — BUT-1706/1721/1732/1746 re-review: shopping/account GDPR export + shared-list rules coverage [Pattern discovered]
+
+Re-review of 11 files after automated fixes. Verdict PASS. What I actually ran:
+
+- `bash tools/check_null_filter.sh` (no args, whole `lib`+`test`) → exit 0, so all four
+  BUT-1746 sites are fixed. Then two scratch fixtures: a file whose only hit is a
+  CONSTRUCTION site → exit 1 with the remediation block; a file whose only hit is a
+  `//` COMMENT → exit 0. The `-H` comment on line 40-43 of the script is load-bearing and
+  correct: with one file argument grep drops the filename, and the comment filter anchors
+  past a `path:line:` prefix.
+- `npx lefthook validate` → "All good"; `npx lefthook dump | grep -A5 null-filter-guard`
+  → glob `*.dart`, priority 8 (unique; 1-8 all distinct). I deliberately did NOT run
+  `npx lefthook run pre-commit --command null-filter-guard`: nothing was staged and 39
+  files were unstaged, so lefthook's hide step would have stashed the whole live worktree
+  next to a parallel session.
+- `npx ts-node src/__tests__/shared-shopping-lists-rules.test.ts` against the running
+  emulator → **39/39 passed**, file md5 `cf0a9292…` identical before and after. The new
+  legs are SSL26-31 (read gate incl. the revoked-member deny), SSL32-34 (create
+  conjuncts), SSL35-36 (owner-only delete), SSL37-39 (query path). Cross-checked every
+  one against `firestore.rules:1602-1653` by hand.
+- `npx tsc --noEmit` in `functions/` → exit 0.
+- `flutter test` on the three Dart suites via a uniquely-named `_cfs_review_$$.bat`
+  → +112 all passed (query 20 + routing 55 + export 36 + 1 teardown line).
+- `dart analyze` on all 6 reviewed lib/test Dart files + `shopping_list_permission_guards.dart`
+  → "No issues found!".
+
+**Emulator-corpus shelf life on a limit()-scoped deny test (new).** SSL38 ("an edit member
+CANNOT run an UNFILTERED collection query") is denied only because `query-foreign`
+(owned by STRANGER, EDITOR absent from `memberPermissions`) is inside
+`.limit(200)`. I dumped the corpus with
+`curl -H "Authorization: Bearer owner" "http://127.0.0.1:8080/v1/projects/butlery-shared-shopping-lists-test/databases/(default)/documents/unified_shared_shopping_lists?pageSize=300"`
+— **47 docs after 6 runs**, of which 18 are `create-{seat,absent,at-cap}-<RUN>` (3 new per
+run, the per-run token being exactly what makes them accumulate). Those sort BEFORE
+`query-foreign` by `__name__`, so at ~200 docs the foreign doc leaves the window and
+`assertFails` starts FAILING. Direction is safe (red, not a false green) and CI restarts
+the emulator each job, so it is a local-dev slow burn — Low. Fix: name the unreadable
+fixture so it sorts first (`00-query-foreign`) or drop the limit on that one test.
+Without the `Authorization: Bearer owner` header the REST read is itself rules-evaluated
+and returns 403 `false for 'list' @ L1622` — which is incidentally a second, independent
+confirmation of the read rule.
+
+**The file moved under the review again, and this time it was an IMPROVEMENT.**
+`md5sum -c` after the Dart run flagged `shopping_repository_routing_module_test.dart`
+(`3e16801d…` → `b947a91c…`, mtime 13:54). Re-`git diff` showed a parallel session had
+strengthened the new BUT-1706 test: the old assertion was `name == 'Veckans handla'`
+only, which holds whether or not the guard exists (the offline payload never carries
+`name`); the new one adds `items isEmpty`, which is the falsifiable half (without the
+guard the append reaches `appendPayload`'s arrayUnion and the row lands). Re-ran the suite
+on the new bytes → **56/56 passed**, hash stable across that run. Lesson: a mid-review
+byte change is not automatically someone's mutation proof — re-diff, re-run, report
+against the new bytes either way. `md5sum ... | tee before.md5` + `md5sum -c before.md5`
+is the cheapest detector because it names the offending file.
+
+**Non-vacuity without mutating production.** I did not comment out
+`_offline.requireOfflineWritableMutation(live, mutated)` to prove the new test reddens —
+too dangerous with a parallel session in the same checkout. It is provable by
+construction instead: the test asserts `isA<ArgumentError>()` whose message
+`contains('dropped silently')`, and that literal exists nowhere but the new
+`requireOfflineWritableMutation`. A test asserting a NEW exception type + a NEW message
+literal cannot pass against the pre-fix code.
+
+**Verified the "no live mutator trips the new guard" claim rather than trusting it.**
+`requireOfflineWritableMutation` throws when a mutator changes any key outside
+`{items} ∪ _writableActivityKeys` (and outside `privilegedKeys`, which are dropped by
+design). Traced every mutator: `ShoppingItemOperationsModule._withItems` →
+`copyWith(items, updatedAt, lastActivityAt, lastActivityByUserId,
+lastActivityByDisplayName)`; the model's `addItem`/`removeItem`/`toggleItemBought` add
+`syncStatus`, which is in `toJson()` but NOT in `toFirestore()`, so it is invisible to the
+guard. `UnifiedShoppingList.toFirestore()` emits all 20 keys unconditionally (nulls
+included), which also closes the obvious hole in the guard — a key cleared to null still
+appears in `after.keys`, so no drop goes undetected. And the throw is contained:
+`UnifiedShoppingService.mutateSharedList` has a bare `catch (e)` tail that converts it to
+`false` + a `shoppingFailureMessage`, so it cannot escape to the UI uncaught.
+
+**The BUT-1706 required-fields mirror is unfalsifiable through the public API, and that
+is fine.** `validateRequiredFields` checks `containsKey` only (matching the rule's
+`hasRequiredFields`), and `toFirestore()` always emits all five keys — so the widened
+`collaborativeCreateRequiredFields` can never fire for a real `UnifiedShoppingList`. The
+routing test pins the LIST passed to the injected validator, not a refusal, which is the
+only honest thing it can do. Don't file it as vacuous; do not "strengthen" it into
+asserting a throw.
+
+**Residual PII in export SECTION bodies (Medium, pre-existing, out of the reviewed
+fileset).** BUT-1732 fixed the ROOT: `data_export_service.dart:266-287` now DERIVES
+`warnings[].message` and never copies `value['error']` through. `social_export_manager`
+and `activity_export_manager` were converted to stable sentences + `error_code`. But
+`content_export_manager.dart` (12 sites) and `preferences_export_manager.dart` (9 sites)
+still `return {'error': e.toString()}` inside their sections, so a raw Firestore string —
+`blocks/<uid>_<otherUid>`, a `create_composite` URL naming `memberPermissions.<uid>` and
+the project id — is still in the delivered bundle, one level down. The new code comments
+say so explicitly, and the test fixture `_LeakyPreferencesExportRepository` deliberately
+asserts that section-level leak as its PREMISE. Follow-up ticket, not a blocker for this
+diff.
+
+Also noted (Low): `tools/check_null_filter.sh` bans only `isNotEqualTo`/`isEqualTo`, but
+`cloud_firestore`'s `query.dart` guards EVERY operator with `if (arg != null)` — so
+`arrayContains: null`, `whereIn: null`, `isLessThan: null` are the same silent
+unfiltered-read footgun and pass the guard. Widening the alternation is a one-line change.
+
+Folded into the principles file as: the emulator-corpus/limit() shelf-life clause on the
+"emulator KEEPS data across runs" bullet, a read-only substitute (`lefthook validate` +
+`lefthook dump` + direct script fixtures) on the "prove a lefthook glob" bullet, and the
+"the mid-review change may be an improvement" clause + the `md5sum -c` detector on the
+"file can change UNDER the review" bullet.
+
+### 2026-07-30 — BUT-1724 THIRD pass: the scoped fileset was byte-identical to pass 2, so nothing was fixed [Pattern discovered]
+
+Same nine-file scope as the two entries above, dispatched again as "re-review AS THEY
+STAND NOW ... after automated fixes were applied". I hashed all nine before touching
+anything and every one matched the hashes pass 2 recorded, or the pass-2 diff's own blob
+ids: `compute-feature-retention.ts` md5 `c7c7760001a46bea8bb7eb6cbf4612b2`,
+`compute-feature-retention.test.ts` `8f67bac268e62ced486713f594207d79`,
+`on-profile-updated.ts` `7cc2acc50a2f35385526b66cefa5143c`,
+`on-profile-updated.test.ts` `157593706a0206bd1de17a36fc800b57`,
+`reset-user-data.ts` `9575e7d7cf3694a8da118b5f918867e5`,
+`friends_utility_operations.dart` `b7e9e1301345dc564495130f6e77302e`,
+`unified_friends_service.dart` `d113c9e72a53097ef1deb6753e87bdfb`,
+`firestore_collections.dart` `0eeef3ad4b3693ed75a6b256e3575dad`,
+`unified_friends_service_test.dart` `e05e756ea6097d357fc1e4803b730914`.
+All nine re-hashed identical at the END of the pass too (`md5sum -c`), so no drift and no
+parallel-session mutation this time. The sprint's automated fixes landed in the OTHER
+files of the same commit (`rate_limiter.ts`, `send-notification.ts`,
+`shared-shopping-lists-rules.test.ts`, the shopping/export Dart modules), none of which
+were in my scope. **Verdict: pass, same three findings still open, nothing new.**
+
+Rather than copy pass 2's verdict forward, I re-derived every premise from source:
+
+- `functions/src/shared/collections.ts` → `unifiedShoppingLists: "unified_shopping_lists"`;
+  `firebase_shopping_repository.dart:131` `collectionName` → the matching Dart constant
+  (`firestore_collections.dart:40`, same literal).
+- `firestore.rules:394` `match /unified_shopping_lists/{listId}` (+ `/items/{itemId}`) sits
+  INSIDE `match /users/{userId}`; grep of the whole rules file shows the only top-level
+  shopping matches are `unified_shared_shopping_lists:1602` and
+  `user_shared_shopping_lists:1685`. So both the SUT comment and the test's "ghost"
+  top-level fixture rest on a verified fact.
+- `firestore.indexes.json` `fieldOverrides` dumped in full (20 entries, listed by
+  collectionGroup+fieldPath): NO entry for `unified_shopping_lists`, so the two equality +
+  `orderBy(__name__)` propagation legs and the `updatedAt`-only range probe are all covered
+  by automatic single-field indexes. **This diff requires no index deploy.**
+- `unified_shopping_list.dart`: `toFirestore()` (line ~595-614) writes `ownerId`,
+  `ownerDisplayName`, `lastActivityByUserId`, `lastActivityByDisplayName` and
+  `'updatedAt': Timestamp.fromDate(...)`; `toJson()` (line ~630-647) is the ISO-string
+  CACHE shape and is not what the repository persists (`toFirestore(entity) =>
+  entity.toFirestore()`). Grepped the shopping modules for any other `'updatedAt'` writer:
+  only `shopping_template_operations_module.dart` (serverTimestamp) and an offline-write
+  ALLOWLIST entry. So the probe's Timestamp `>=`/`<` range matches real rows — the
+  ISO-vs-Timestamp trap does not bite here.
+- `reset-user-data.ts`: grepped for any read of `target.subcollections` — there is none
+  (the identifier appears only in the interface, the literals and two comments), and
+  `deleteDocRecursive` (line 200-219, reached from line 232) recurses
+  `docRef.listCollections()`. `deleteCollection` uses `listDocuments()` (line 228), so
+  phantom parents with live children are covered too. The comment-only change is accurate.
+- `getRecentShoppingCollaborators` repo-wide grep: three hits, all of them the new
+  tombstone COMMENTS. `FirestoreCollections.userShoppingLists`: exactly two hits — its own
+  declaration and `firebase_data_export_repository_shopping_test.dart:152`, which I READ
+  (lines 144-165): it is the negative regression guard asserting
+  `exportPersonalShoppingLists` returns empty for a doc at the legacy path. The constant's
+  updated docstring claim is therefore true.
+
+Commands run this pass (all from the live checkout, `git status` clean-index for these
+nine): `npx tsc --noEmit` in `functions/` → exit 0. `npm run
+test:compute-feature-retention` → **7/7**, and I grepped the run's own output to prove
+the injection fires: `{"flag":"shopped","userId":"uIdx","err":{},"severity":"WARNING",
+"message":"feature_retention_probe_failed"}`. `npm run test:on-profile-updated` → **6/6**
+(the BUT-1724 case reports "4 documents updated" = p-own×2 legs + p-copied ownerId +
+shared s1, which is exactly the arithmetic the fixture implies). `node
+scripts/check-test-registration.js` → OK, 118 registered, 4 accepted-debt warns; both
+suites present in `package.json` (lines 84 and 136). NUL/binary scan over
+`functions/src/**` → clean. `dart analyze` on the four Dart files → "No issues found!".
+`flutter test test/unit/services/unified/unified_friends_service_test.dart` → **20/20**
+(via a uniquely-named `_cfs3_ftest_$$.bat`, and I checked the printed test names were the
+friends suite and not another session's list).
+
+I also re-verified the pass-2 aliasing hazard by reading `makeFakeDb` myself instead of
+trusting the write-up: `makeQuery` (test line 123-176) closes over ONE mutable
+`predicate`/`ordered`/`limitN`/`afterKey` and every builder `return q`, and
+`collectionRef(name).doc(id).collection(sub)` builds a single `makeQuery([subKey])`. So
+`paginatedDualUpdate`'s two `collection.where(...)` calls now alias one object. Traced why
+the new test still gets the RIGHT answer: `async get()` has no `await` before it filters,
+so leg A's page 1 is computed synchronously during array-literal evaluation (predicate =
+`ownerId`, 2 rows) before leg B overwrites the predicate (`lastActivityByUserId`, 1 row);
+both fixtures are under `BATCH_LIMIT` so page 2 never runs. Still Medium: the file's
+headline claim #2 ("cursor neither skips nor revisits") is UNPROVEN for
+`paginatedDualUpdate`, and the first `>BATCH_LIMIT` dual-field fixture anyone writes will
+fail for a reason that is in the double, not the SUT.
+
+Findings re-filed unchanged (nothing Critical/High): (1) Medium, test double aliasing as
+above — fix `makeQuery` to return a fresh object from each builder; (2) Medium,
+pre-existing `compute-feature-retention.ts:192-196` logs a raw `userId` and nests the
+Error (`err:{}`, cause recorded nowhere) — now worth MORE than before, because the
+`shopped` probe is the one that newly reads a field it never queried, so
+`FAILED_PRECONDITION` is its likeliest prod failure and this is the only line that would
+report it; fix `hashUid(userId)` + `errCode`/`errName` (`hash-uid.ts` is already imported
+by `on-profile-updated.ts`, same directory tree); (3) Low, `FakeOpts.failProbeFor.flag`
+overloaded between a SOURCE path (`"cook_snaps"`, line 558) and a FEATURE FLAG
+(`"shopped"`, line 661). Plus a new Low: the docstring's KNOWN GAPS list is excellent but
+omits the RAMP — `wau7d`/`wau28d` OR previously-STORED per-day docs, which hold the
+structural zeros, so `shopped` climbs in over 28 days after deploy and must not be read
+as a launch spike.
+
+Folded into the principles file as one new bullet in "CI / test wiring / ops": a
+re-review dispatched "after automated fixes" does not imply the scoped files moved — hash
+first against the previous pass's recorded hashes, say so plainly, and still re-derive
+every finding from the current bytes.
+
+### 2026-07-30 — BUT-1706/1721/1732/1746 shopping+GDPR re-review: a live mutation faked a Critical [Pattern discovered]
+
+Scope handed over (11 files, "after automated fixes"): `tools/check_null_filter.sh` (new),
+`lefthook.yml`, `functions/src/__tests__/shared-shopping-lists-rules.test.ts`, the three
+GDPR export files (`data_export_service.dart`, `social_export_manager.dart`,
+`activity_export_manager.dart`) + its test, `shopping_repository_routing_module.dart`,
+`shopping_offline_write_module.dart`, and two shopping module tests.
+
+Verification actually run (all against recorded `git hash-object` blobs, identical before
+and after every suite):
+- `flutter test` on the three Dart suites (data-export + shopping query + shopping
+  routing) via a uniquely-named batch wrapper (`_cfs_shopgdpr_30152.bat`) → **112 passed**.
+- `npx ts-node src/__tests__/shared-shopping-lists-rules.test.ts` against the live
+  emulator → **39/39 passed** (the 13 new SSL26-SSL39 cases included).
+- `node functions/scripts/check-test-registration.js` → OK, 118 registered, 38 rules
+  suites; `npx tsc --noEmit` in `functions/` → clean.
+- `dart analyze --fatal-infos` on all 9 Dart files → "No issues found!".
+- `npx lefthook validate` → "All good"; `npx lefthook dump` resolves `null-filter-guard`
+  with `glob: '*.dart'`, `priority: 8`.
+- `bash tools/check_null_filter.sh` in three modes (whole tree, single positive fixture,
+  comment-only fixture).
+
+**The near-miss.** The whole-tree guard run printed two violations in
+`lib/repositories/firebase/modules/shopping_repository_query_module.dart:72,229` —
+`.where('memberPermissions.$uid', isNotEqualTo: null)`, i.e. the exact BUT-1746 defect the
+commit claims to fix, sitting three lines under a WHY-comment that says the code uses
+`isNull: false`. That file was NOT in the handed-over fileset and `git status` at session
+start showed it clean, so the natural write-up was a Critical ("the fix was never applied
+to the production file; only its test and comments were updated"). Disambiguators that
+settled it in ~60 seconds instead:
+- `git status --porcelain -- <file>` RE-RUN → ` M` (the session-start snapshot was stale).
+- `git show HEAD:<file> | grep -n` → HEAD holds `isNull: false` on both lines, i.e. the
+  worktree carried an UNCOMMITTED REGRESSION against a correct HEAD, which is the shape of
+  a mutation proof, not of an unfinished fix.
+- `stat -c '%y'` → modified 14:27:14 against a 14:28:03 clock: seconds old, mid-review.
+- Polling on CONTENT (`grep -q "isNull: false"` in a loop) → restored on the FIRST poll.
+Re-ran the query-module suite against the restored bytes (hash `eab424313…`) → 20/20 pass.
+So: a parallel session's non-vacuity proof for the BUT-1746 tests. Third instance in one
+day (both realtime services earlier), and the first where the mutated file was OUTSIDE the
+review's fileset and was surfaced by a newly-added GUARD SCRIPT rather than by a red test.
+
+**SSL38's measured shelf life.** REST-enumerated the emulator corpus with
+`curl -H "Authorization: Bearer owner" ".../unified_shared_shopping_lists?pageSize=300"`:
+56 docs, of which 27 are `create-{seat,absent,at-cap}-<RUN>` (9 runs x 3 persisted
+creates; the three new deny-side creates persist nothing). Ordered by `__name__`,
+`create-*` < `del-editor` < **`query-foreign`** < `query-mine` < `read-*`, so the ONE doc
+EDITOR cannot read sits at position ~29 of the `.limit(200)` window, and every `create-*`
+doc IS readable by EDITOR (`validListBody` seats them). At +3 docs/run the unreadable
+fixture leaves the window after ~57 more runs and SSL38's `assertFails` starts failing —
+red, not a false green, but a dated trap. Same defect the knowledge file already predicted
+for this exact doc id; it was not fixed in this pass.
+
+**GDPR export chokepoint.** `data_export_service.dart:266-287` now keys the bundle-level
+warning on `error` OR `error_code`, derives its own token
+(`'${entry.key}-export-failed'`) and DERIVES the message instead of copying
+`value['error']`. That is the right defence, and the diff's own comment is honest that
+`content_export_manager.dart` (12 sites) and `preferences_export_manager.dart` (10 sites)
+still `return {'error': e.toString()}` — those raw strings remain inside the exported
+SECTION body (not the root), so the residual is narrowed, not closed. `_declaresTruncation`
+was checked for false positives: no client Dart code writes a `truncated`/`*_truncated`
+field into any exported document, and `llm_response_samples` (which does carry one) is not
+an export section.
+
+**The offline whitelist enforcement was checked for the opposite failure.** A refusal
+computed from `mutated.toFirestore().keys` breaks every legitimate write if the model
+stamps a derived field. Read `UnifiedShoppingList.toFirestore()` (no derived/computed
+keys) and every live mutator: `_withItems` in `shopping_item_operations_module.dart:98-111`
+touches items + exactly the four `_activityFieldKeys`, and `contributorUserIds` is not in
+`toFirestore()` at all — so `requireOfflineWritableMutation` cannot fire on any current
+path, as its docstring claims. `validateRequiredFields` is `containsKey`-only
+(`permission_validation_mixin.dart:290-292`), so widening the create mirror to `items` +
+`createdAt` cannot refuse an empty-but-present array/map, i.e. it stays a superset of the
+rule's `hasRequiredFields` rather than becoming stricter.
+
+Findings filed: 4 Medium/Low, nothing Critical/High. (1) Medium — SSL38 shelf life above,
+fix = rename the unreadable fixture to sort first (`00-query-foreign`). (2) Medium —
+`check_null_filter.sh`'s documented zero-arg "CI / manual shape" is called by NO workflow;
+only 8 `tools/check_*.sh` run in `architecture-validation.yml` and this is not one, so the
+guard is pre-commit-only and never sees an UNSTAGED violation (precisely what was on disk
+during this review). (3) Medium — the two managers still emitting `e.toString()` into the
+section body. (4) Low — the guard's comment filter anchors on `^[^:]*:[0-9]+:`, which a
+drive-letter path breaks: measured, `bash tools/check_null_filter.sh
+'C:\Butlery\butlery\_nf_comment_probe.dart'` reports all three WHY-comment lines as
+violations (exit 1) while the same file by relative path exits 0. Lefthook passes relative
+paths so it does not fire today; fix = drop the `^[^:]*` anchor.
+
+### 2026-07-30 — BUT-1692 re-review: audit-row assertion shipped; BUT-1736 display-name source [Pattern discovered] [Bug fixed]
+
+Re-review of the working tree after automated fixes, scope: `functions/src/notifications/send-notification.ts`,
+`functions/src/__tests__/{send-notification,rate-limiter-daily-cap}.test.ts` plus the two
+Dart realtime services and their suites. Verdict: pass, no Critical/High.
+
+**What shipped and is now verified green.**
+- `preflightNotificationBatch`'s seam is `enforce?: typeof enforceRateLimit` and the default
+  resolves to the real `enforceRateLimit` (was `rateLimit?: typeof checkRateLimit` + a local
+  `resource-exhausted` throw that dropped the `system_events` audit row). Signature confirmed
+  against `rate_limiter.ts:695` — `(userId, operationType, tokensRequired = 1) => Promise<void>`,
+  throws `resource-exhausted` with `{retryAfterSeconds, remainingTokens}` details.
+- `logRateLimitViolation` (`rate_limiter.ts:453`) now calls the seam's `getFirestore()` instead of
+  `admin.firestore()`. THIS is what made the audit row assertable without an emulator, and it is
+  the reason the assertion could not be written when BUT-1664 first landed.
+- `MAX_BATCH_NOTIFICATIONS` is exported (100) and pinned to
+  `RATE_LIMIT_CONFIGS.sendNotificationBatch.maxTokens` in `rate-limiter-daily-cap.test.ts`, with a
+  second case pinning that bucket's `refillRate`/`refillIntervalMs` to `sendNotification`'s.
+  `index.ts:140` uses NAMED exports (`export { sendNotification, sendNotificationBatch }`), so the
+  new const is not exposed at deploy scope.
+- The old over-claiming docstring is fixed: it now states outright that single-send
+  (`send-notification.ts:91-97`) still does bare `checkRateLimit` + local throw and writes no row.
+
+**Measurements.**
+- `npx tsc --noEmit` exit 0. `npm run test:send-notification` 19/19 (was 18). `npm run
+  test:rate-limiter-daily-cap` 14/14 (was 12). Both scripts already registered in `package.json`
+  (lines 64, 131).
+- Probe (throwaway `functions/_cfs_probe_audit.ts`, deleted after): the new audit case's fake db
+  drives a REAL bucket deny, not `checkRateLimit`'s fail-closed catch —
+  `{"allowed":false,"remainingTokens":0.0005,"retryAfterMs":60000,"reason":"Rate limit exceeded for
+  sendNotificationBatch. Try again in 60 seconds."}`. Worth knowing because a fake that THREW would
+  also produce `allowed:false` and the same `system_events` row (`retryAfterMs: 30000`, reason
+  "unavailable"), so the case as written would pass for the wrong reason. Filed Low: assert
+  `retryAfterMs === 60000` on the row.
+- `git hash-object` before and after every suite, all 7 files identical:
+  send-notification.ts `745bd20f3`, send-notification.test.ts `494e4db50`,
+  rate-limiter-daily-cap.test.ts `ce4654991`, realtime_menu_service.dart `d96300fae`,
+  realtime_recipe_service.dart `930d97734`, menu test `eea773aaa`, recipe test `4930d1983`.
+
+**Mid-review mutation window, third instance today.** A `grep` for
+`_currentUserDisplayName` returned `realtime_recipe_service.dart:64:
+_permissionService.currentUser?.displayName` — the pre-fix line — while `git hash-object` read
+`930d97734` both BEFORE and AFTER that grep. A `sed -n '44,70p'` immediately after showed the
+fixed line at 64/65. Simultaneously `realtime_menu_service.dart` moved `d96300fae → 6707f1000`,
+whose diff is the BUT-1736 docstring + a NEW `user_service.dart` import while the getter still
+reads `ServiceLocator.get<PermissionService>().currentUser?.displayName` (an unused import, i.e.
+an analyzer-visible self-contradiction — the mutation-proof signature). A content poll
+(`grep -q tryGet<UserService>()?.profileDisplayName`, 5s interval) returned RESTORED on the first
+poll with both hashes back to the reviewed values. Conclusion added to the principles: equal
+before/after hashes do NOT prove the window never opened.
+
+**Dart side (reviewed on request, hand-off noted).** `_currentUserDisplayName` in both realtime
+services now reads `ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
+AppLocale.current.displayUnknownUser`. Verified `UserService.profileDisplayName`
+(`user_service.dart:99`) is Auth-free — it returns the profile doc's name or null, unlike
+`currentDisplayName` which falls back to `_authRepository.currentUser?.displayName`. So the stamp
+is genuinely consented now. `flutter analyze lib/services/realtime test/unit/services/realtime` →
+"No issues found!"; `flutter test` on both suites → 52/52. New tests are non-vacuous by
+construction: `FakePermissionService` is seeded with `'Auth Handle'` and `_FakeUserService` with
+`'Profil Malin'`, so a revert stamps a string the assertions reject, and the third case nulls the
+profile name and asserts `isNot('Auth Handle')` AND equality with the unknown-user label.
+
+**Real residual found (Medium, pre-existing, filed).** The new docstrings justify the change with
+"`on-profile-updated.ts` propagates the PROFILE name; account deletion scrubs what that CF wrote".
+Half of that is false: `on-profile-updated.ts:143` loops
+`[Collections.realtimeRecipes, Collections.realtimeMenus]` for owner + last-editor names, but the
+cascade has only `deleteRealtimeRecipes` (`account-deletion-cascade.ts:1161`, `ownerId == uid`) and
+`realtime_menus` appears in NEITHER `account-deletion-cascade.ts` nor `request-account-deletion.ts`
+(only in `admin/reset-user-data.ts:116`, `shared/collections.ts:13` and the rules test). Neither
+collection scrubs a `lastEditedByDisplayName` the deleted user left on someone else's doc. So a
+profile-sourced name on a realtime menu is propagated forever and erased never.
+
+**Also checked, no finding.** No Dart caller of `sendNotificationBatch` exists anywhere in `lib/`,
+so the reworded denial message and the new `system_events` write-per-denial are ~zero volume today
+(and `retry_helper.dart:286`'s retry-on-`resource-exhausted` amplification stays hypothetical).
+None of `shared/{fcm-tokens,preference-aware-push,notification-payload,notification-gate,
+notification-send-events}.ts` has a module-scope `admin.firestore()`, so the daily-cap suite's new
+`import { MAX_BATCH_NOTIFICATIONS } from "../notifications/send-notification"` is safe without
+`initializeApp()` — but it does couple the two suites to that property (Low).
+
+### 2026-07-30 — Sprint 2026-07-30b RESCUE pass: 5-file staged review (BUT-1724 + BUT-1692), no marker covered a byte of it [Pattern discovered]
+
+Dispatched as a FIRST review, not a re-check: the sprint held its own commit after its own
+outcome verification failed four tickets on data-safety, and the live
+`cloud-functions-done.marker` was from 2026-07-29 over a different fileset. Scope:
+`analytics/compute-feature-retention.ts`, `social/on-profile-updated.ts`,
+`admin/reset-user-data.ts`, `notifications/send-notification.ts`,
+`middleware/rate_limiter.ts`. **Verdict: pass** (two Mediums + two Lows, all pre-existing
+or out-of-diff; nothing Critical/High introduced).
+
+**Cross-pass hashing paid off again, and gave the opposite answer this time.** Passes 2-4
+of BUT-1724 recorded `on-profile-updated.ts` md5 `7cc2acc50a2f35385526b66cefa5143c` and
+`compute-feature-retention.ts` `c7c7760001a46bea8bb7eb6cbf4612b2`; both STILL match, and
+`reset-user-data.ts` still matches pass 3's `9575e7d7cf3694a8da118b5f918867e5` in the
+worktree. So the production SUTs have not moved in four passes. What DID move is the TEST:
+`on-profile-updated.test.ts` went `157593706a0206bd1de17a36fc800b57` ->
+`6c6691b54035329ffdc93cb9e9a4bcc0`. That is pass-3's Finding (1) — the mutable test double
+— actually being fixed. Lesson: hash the TESTS as well as the SUTs across passes, because a
+pass whose only movement is in a fixture reads as "nothing was fixed" if you only hash
+production files. `git status --porcelain` showed every scoped file `M ` (index == worktree),
+so there was no `MM` trap.
+
+**`on-profile-updated.ts` — the query-shape change is NOT a collectionGroup, and that is the
+finding worth recording.** The brief warned it might be one (a collectionGroup query is not
+user-scoped unless a rule or filter makes it so). It is not: the leg is
+`db.collection("users").doc(userId).collection(Collections.unifiedShoppingLists)` with
+`userId` bound to `event.params.userId`, i.e. the trigger's own doc-id path segment. Every
+read and write is inside that one user's subtree, so cross-user reach is structurally
+impossible, and no `fieldOverrides` entry is needed — `firestore.indexes.json` mentions
+neither `unified_shopping_lists` nor `unified_shared_shopping_lists` at all, so no
+single-field EXEMPTION exists either and the auto index covers equality + `__name__ ASC`.
+Verified the fields are real, not assumed: `UnifiedShoppingList.toFirestore()`
+(`lib/models/unified/unified_shopping_list.dart:595`) writes `ownerId`, `ownerDisplayName`,
+`lastActivityByUserId`, `lastActivityByDisplayName` and `updatedAt` as a `Timestamp` on the
+SAME model for personal and collaborative lists — which is also what makes the retention
+probe's `updatedAt` range filter type-correct (`shopping_template_operations_module.dart`
+uses `serverTimestamp()`, also a Timestamp; no ISO-string writer on that path).
+`firestore.rules:394` has the `users/{userId}/unified_shopping_lists/{listId}` match with an
+`items` child, confirming the path holds client-written data. Retry semantics: the trigger
+is `onDocumentUpdated` with no `retry: true`, every step is independently `.catch`ed, and
+the writes are same-value-idempotent, so a re-delivery is a no-op.
+
+**Real remaining gap on that same function (Medium, pre-existing, out of diff).** The
+shopping legs propagate only LIST-level names. `UnifiedShoppingItem` carries
+`addedByDisplayName` and `lastModifiedByDisplayName` (`unified_shopping_item.dart:212,236`),
+stored both in the per-list `items` subcollection and in the embedded `items` array on the
+list doc — and `account-deletion-cascade.ts:624,629` scrubs exactly those two on erasure.
+So erasure covers item-level stamps and propagation does not: after a rename, every
+"X la till ..." row keeps the old name forever, on personal and shared lists alike. This is
+the `PROPAGATION coverage is not ERASURE coverage` principle running in the reverse
+direction, and it is now folded in there with the fix shape
+(`collectionGroup("items").where("addedByUserId","==",uid)` + a `COLLECTION_GROUP`
+fieldOverride; the embedded array copy is not queryable and needs read-modify-write).
+
+**`rate_limiter.ts` — the file the plan called "(read-only reference)" and then modified.**
+One hunk: `logRateLimitViolation` now resolves its handle via `getFirestore()` instead of
+`admin.firestore()`. Production behaviour is byte-identical (`firestoreForTest` is `null`
+-> `admin.firestore()`), and grepping `__setFirestoreForTest` across `functions/src`
+excluding `__tests__` returns only the declaration — no production caller, so the audit row
+cannot land anywhere but `system_events`. The handle is resolved INSIDE the try and the
+helper is best-effort (`catch` -> `logger.warn`), so a Firestore failure still cannot turn a
+rate-limit denial into a 500. `getGlobalLimits`/`checkGlobalLimit` (lines 516, 563-564)
+remain on `admin.firestore()` — the seam is still partial, unchanged, fine.
+
+**`send-notification.ts`.** `preflightNotificationBatch`'s seam went `rateLimit?: typeof
+checkRateLimit` -> `enforce?: typeof enforceRateLimit`, and the hand-rolled
+`resource-exhausted` throw is gone, so the batch path now writes the `system_events`
+`rate_limit_violation` row. `MAX_BATCH_NOTIFICATIONS` exported and pinned to
+`RATE_LIMIT_CONFIGS.sendNotificationBatch.maxTokens` by `rate-limiter-daily-cap.test.ts`
+(14/14). `checkRateLimit` is still imported and still used by the single-send callable, so
+no unused-import build break. The docstrings now state the single-send hole (BUT-1763)
+explicitly instead of implying the family is uniformly audited — the over-claim flagged in
+an earlier pass is closed in prose as well as in code. Still true: no Dart caller of
+`sendNotificationBatch` exists in `lib/`, so the new write-per-denial stream into a
+TTL-less `system_events` is ~zero volume today.
+
+**`reset-user-data.ts` — comment-only, and the comment's claim about code checks out.**
+`deleteWithSubcollections` does `db.collection(name).listDocuments()` -> `deleteDocRecursive`
+per doc -> `listCollections()` at every depth, so "a subcollection missing from this list is
+still wiped" is true for TOP-LEVEL targets too, not only nested ones — worth checking,
+because the sibling NON-recursive `deleteCollection` lives in the same file and would have
+made the sentence false. `unified_shared_shopping_lists` IS present as its own top-level
+target; the top-level `unified_shopping_lists` entry is a harmless legacy no-op.
+
+**Suites run against the staged bytes, all green:** `test:on-profile-updated` 6/6 (incl. the
+new "personal shopping lists update in the user's own subcollection, never a top-level one",
+which seeds a decoy TOP-LEVEL `unified_shopping_lists` row and asserts it is never touched,
+plus a positive control on the avatar-only case so "no personal write" cannot pass
+vacuously), `test:compute-feature-retention` 7/7, `test:send-notification` 19/19,
+`test:rate-limiter-daily-cap` 14/14, `npm run build` clean.
+
+**Findings filed.** (1) Medium, pre-existing/out-of-diff: the item-level display-name
+propagation gap above. (2) High but pre-existing and now on its FOURTH report:
+`compute-feature-retention.ts:193-197` `feature_retention_probe_failed` logs a raw `userId`
+and nests the Error. New evidence this pass — `npm run test:compute-feature-retention`
+literally PRINTS `{"flag":"cooked","userId":"uProbe","err":{}}` in its own PASSING output,
+so the leak and the empty cause are observable without reading a line of source. That is the
+cheapest proof available and is how this should be argued from now on. (3) Low: the 28-day
+`wau7d`/`wau28d` ramp-in is still absent from the docstring's otherwise excellent KNOWN GAPS
+list. (4) Low: the new default-enforcer audit-row case does not assert `retryAfterMs`, so it
+cannot distinguish deny-by-bucket from `checkRateLimit`'s fail-closed `catch`; it is honest
+today only because its fixture is a well-formed zero-token bucket.

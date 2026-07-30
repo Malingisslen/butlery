@@ -22,6 +22,10 @@
  *      on an overlap doc after the merge→two-pass rewrite.
  *   6. The `members` collection group is paged across subcollections; the
  *      conversations map key stays keyed by the acting user.
+ *   7. BUT-1724 — personal shopping lists are updated in the acting user's OWN
+ *      `users/{uid}/unified_shopping_lists` subcollection; the non-existent
+ *      top-level collection of that name is never queried, and a last-activity
+ *      stamp naming another member is left alone.
  *
  * Run: npx ts-node src/__tests__/on-profile-updated.test.ts
  */
@@ -116,28 +120,49 @@ function makeFakeDb(seed: Record<string, FakeDoc[]>) {
     };
   }
 
-  function makeQuery(collectionKeys: string[]) {
-    let predicate: Predicate | null = null;
-    let ordered = false;
-    let limitN = Number.POSITIVE_INFINITY;
-    let afterKey: string | null = null;
+  interface QueryState {
+    predicate: Predicate | null;
+    ordered: boolean;
+    limitN: number;
+    afterKey: string | null;
+  }
 
-    const q = {
+  /**
+   * IMMUTABLE, like a real Firestore `Query`: every builder call returns a NEW
+   * query rather than mutating shared state. That matters since BUT-1724 made
+   * `paginatedDualUpdate` take a `CollectionReference` and call `.where()` on
+   * the SAME reference twice (once per denorm field). A mutable double would
+   * let the second leg's predicate leak into the first leg's later pages, so a
+   * dual-field fixture bigger than one page would silently assert the wrong
+   * thing — today's fixtures are single-page, which is exactly why the trap
+   * would go unnoticed.
+   */
+  function makeQuery(
+    collectionKeys: string[],
+    state: QueryState = {
+      predicate: null,
+      ordered: false,
+      limitN: Number.POSITIVE_INFINITY,
+      afterKey: null,
+    }
+  ) {
+    const { predicate, ordered, limitN, afterKey } = state;
+
+    return {
       where(field: string, op: string, value: unknown) {
-        predicate = { field, op, value };
-        return q;
+        return makeQuery(collectionKeys, {
+          ...state,
+          predicate: { field, op, value },
+        });
       },
       orderBy() {
-        ordered = true;
-        return q;
+        return makeQuery(collectionKeys, { ...state, ordered: true });
       },
       limit(n: number) {
-        limitN = n;
-        return q;
+        return makeQuery(collectionKeys, { ...state, limitN: n });
       },
       startAfter(snap: { _sortKey: string }) {
-        afterKey = snap._sortKey;
-        return q;
+        return makeQuery(collectionKeys, { ...state, afterKey: snap._sortKey });
       },
       async get() {
         let rows: ReturnType<typeof docSnap>[] = [];
@@ -168,7 +193,6 @@ function makeFakeDb(seed: Record<string, FakeDoc[]>) {
         };
       },
     };
-    return q;
   }
 
   function collectionRef(name: string) {
@@ -324,6 +348,22 @@ void (async () => {
           [`${Collections.users}/${UID}/friends`]: [
             { id: "friend-1", data: {} },
           ],
+          // BUT-1724: the personal-list leg is a name-only collection too, and
+          // it is the newest one — moving it out of the `nameChanged` guard
+          // would write `ownerDisplayName: undefined` (an Admin-SDK throw the
+          // per-step catch swallows) and bill two reads per avatar change for
+          // every user, with no other assertion here able to see it.
+          [`${Collections.users}/${UID}/${Collections.unifiedShoppingLists}`]: [
+            {
+              id: "p1",
+              data: {
+                ownerId: UID,
+                lastActivityByUserId: UID,
+                ownerDisplayName: "Anna",
+                lastActivityByDisplayName: "Anna",
+              },
+            },
+          ],
         });
 
         await propagateProfileUpdate(
@@ -357,6 +397,39 @@ void (async () => {
           fake.store[Collections.groupInvitations][0].data.fromUserName,
           "Anna",
           "group invitation untouched on avatar-only change"
+        );
+        const personal =
+          fake.store[
+            `${Collections.users}/${UID}/${Collections.unifiedShoppingLists}`
+          ][0];
+        assertEqual(
+          personal.data.ownerDisplayName,
+          "Anna",
+          "personal shopping list owner name untouched on avatar-only change"
+        );
+        assertEqual(
+          fake.writes.some((w) =>
+            w.collectionKey.endsWith(`/${Collections.unifiedShoppingLists}`)
+          ),
+          false,
+          "no write issued to the personal shopping lists at all"
+        );
+
+        // Positive control on the SAME fixture: without it, "no personal write"
+        // is also satisfied by a fixture the leg could never have matched, and
+        // the guard could be deleted with this test still green.
+        await propagateProfileUpdate(
+          fake.db,
+          UID,
+          "Anna",
+          "Annika",
+          "new-av",
+          "new-av"
+        );
+        assertEqual(
+          personal.data.ownerDisplayName,
+          "Annika",
+          "control: a name change DOES reach the same personal list"
         );
       },
     },
@@ -411,6 +484,82 @@ void (async () => {
           editorOnly.data.ownerDisplayName,
           undefined,
           "editor-only owner field left alone"
+        );
+      },
+    },
+    {
+      name: "personal shopping lists update in the user's own subcollection, never a top-level one",
+      fn: async () => {
+        const personalKey = `${Collections.users}/${UID}/${Collections.unifiedShoppingLists}`;
+        const fake = makeFakeDb({
+          [personalKey]: [
+            // Owner == last-activity == UID: both denorm names move.
+            {
+              id: "p-own",
+              data: {
+                ownerId: UID,
+                lastActivityByUserId: UID,
+                ownerDisplayName: "Old",
+                lastActivityByDisplayName: "Old",
+              },
+            },
+            // Copied out of a collaborative list: the last-activity stamp names
+            // someone else and must survive this user's rename.
+            {
+              id: "p-copied",
+              data: {
+                ownerId: UID,
+                lastActivityByUserId: OTHER,
+                ownerDisplayName: "Old",
+                lastActivityByDisplayName: "Keep",
+              },
+            },
+          ],
+          // A top-level `unified_shopping_lists` collection does not exist in
+          // production (firestore.rules grants no match). Seeding one here is
+          // the trap: if the function ever queries it again, this row changes.
+          [Collections.unifiedShoppingLists]: [
+            { id: "ghost", data: { ownerId: UID, ownerDisplayName: "Old" } },
+          ],
+          [Collections.unifiedSharedShoppingLists]: [
+            { id: "s1", data: { ownerId: UID, ownerDisplayName: "Old" } },
+          ],
+        });
+
+        await propagateProfileUpdate(fake.db, UID, "Old", "New", "av", "av");
+
+        const personal = fake.store[personalKey];
+        const own = personal.find((d) => d.id === "p-own")!;
+        assertEqual(own.data.ownerDisplayName, "New", "personal owner name");
+        assertEqual(
+          own.data.lastActivityByDisplayName,
+          "New",
+          "personal last-activity name"
+        );
+
+        const copied = personal.find((d) => d.id === "p-copied")!;
+        assertEqual(
+          copied.data.ownerDisplayName,
+          "New",
+          "copied list owner name"
+        );
+        assertEqual(
+          copied.data.lastActivityByDisplayName,
+          "Keep",
+          "another member's last-activity stamp untouched"
+        );
+
+        assertEqual(
+          fake.store[Collections.unifiedShoppingLists][0].data
+            .ownerDisplayName,
+          "Old",
+          "top-level unified_shopping_lists never read"
+        );
+        assertEqual(
+          fake.store[Collections.unifiedSharedShoppingLists][0].data
+            .ownerDisplayName,
+          "New",
+          "shared shopping list still updated"
         );
       },
     },

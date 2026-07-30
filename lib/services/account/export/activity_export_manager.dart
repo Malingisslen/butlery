@@ -100,7 +100,22 @@ class ActivityExportManager {
         '[$_logTag] Failed to export comments and ratings',
         e,
       );
-      return {'error': e.toString()};
+      // BUT-1721: `error_code` is what lifts a failed section into
+      // `export_metadata.warnings` with a token naming WHICH read failed. Every
+      // catch in this manager carries one, as the pooled-events catch already
+      // did — a comments-and-ratings section that vanished from an Art. 15
+      // bundle must not vanish quietly.
+      //
+      // `error` is a stable sentence, never `e.toString()`: the aggregator
+      // promotes it to `warnings[].message` at the ROOT of a bundle the data
+      // subject may forward to a supervisory authority, and a raw Firestore
+      // string carries foreign uids, index URLs and internal paths. The
+      // exception is already in `AppLogger.error` above. Same convention as
+      // `shared_shopping_list_export.dart`.
+      return {
+        'error': 'Comments and ratings could not be exported.',
+        'error_code': 'comments-and-ratings-export-failed',
+      };
     }
   }
 
@@ -142,7 +157,7 @@ class ActivityExportManager {
       // here would let an incomplete Art. 15 export look complete. Mirrors
       // family_export_manager's GDPR-section error token.
       return {
-        'error': e.toString(),
+        'error': 'Pooled rating events could not be exported.',
         'error_code': 'pooled-rating-events-export-failed',
       };
     }
@@ -168,7 +183,10 @@ class ActivityExportManager {
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export feedback', e);
-      return {'error': e.toString()};
+      return {
+        'error': 'Feedback could not be exported.',
+        'error_code': 'feedback-export-failed',
+      };
     }
   }
 }

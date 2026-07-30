@@ -23,6 +23,22 @@
  *
  * Create side: only the <= 200 bound applies (no prior array to preserve).
  *
+ * BUT-1706 extends the suite past the trail to the collection's OTHER rules,
+ * which had no coverage at all: the read gate (SSL26-SSL31, including the
+ * revoked-member deny that makes the Art. 15 contributor probe refusable), the
+ * two create conjuncts SSL1-SSL5 left unpinned (SSL32-SSL34), and owner-only
+ * delete (SSL35-SSL36).
+ *
+ * SSL40 closes the actor-gate hole the first BUT-1706 pass left: the revoked
+ * member was pinned on READ only, while the scenario the client's
+ * `_onReplayRejected` handler exists for is a revoked member's WRITE.
+ *
+ * SSL41-SSL43 cover the privileged-key conjunct, which had a deny test for one
+ * of its three anchors. The ADR added alongside this suite asserts that
+ * predicate, so leaving it unproven would let the record and the rules drift
+ * apart silently. SSL43 is its allow half — without it a blanket deny on
+ * `memberPermissions` passes every other test while breaking member removal.
+ *
  * Prerequisite: Firestore emulator running (127.0.0.1:8080).
  * Run: npx ts-node src/__tests__/shared-shopping-lists-rules.test.ts
  */
@@ -445,6 +461,25 @@ test("shared lists: a non-member CANNOT update the list", async () => {
   );
 });
 
+// SSL40: a REVOKED member — still in `contributorUserIds`, no longer in
+// `memberPermissions` — cannot UPDATE. Distinct from both neighbours and not
+// implied by either: SSL22 removes the actor from the document entirely, and
+// SSL29 pins the same actor on READ. This is the actor shape the client's
+// `_onReplayRejected` path exists for — a queued offline edit replayed by
+// someone whose access was revoked while they were offline — so leaving it
+// unpinned means the one scenario the handler was written for is the one the
+// rules were never proven to refuse.
+test("shared lists: a REVOKED member (trail only, no memberPermissions key) CANNOT update", async () => {
+  await seedList("upd-departed");
+  const ctx = env.authenticatedContext(DEPARTED);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/upd-departed`)
+      .update({ items: [{ id: "i9", name: "Mjölk" }] })
+  );
+});
+
 // SSL23: unauthenticated.
 test("shared lists: an unauthenticated caller CANNOT update the list", async () => {
   await seedList("upd-anon");
@@ -468,6 +503,62 @@ test("shared lists: an edit member CANNOT change createdAt on a whole-document w
       .firestore()
       .doc(`${COL}/upd-created-at`)
       .update(validListBody({ createdAt: new Date() }))
+  );
+});
+
+// ====================================================================
+// ACCESS CONTROL — the privileged-key conjunct (3 assertions)
+// ====================================================================
+//
+// `!diff(resource.data).affectedKeys().hasAny(['ownerId','memberPermissions',
+// 'createdAt'])` has THREE anchors and had a deny test for exactly one of them
+// (`createdAt`, SSL25). `ADR-002-collaborative-list-membership-guard.md`, added
+// in this same commit, asserts "firestore.rules forbids a non-owner from
+// touching either", and its whole threat model — "the removed member kept their
+// rules-granted write" — rests on that being true. An ADR asserting a predicate
+// the suite does not prove is exactly the shape that goes stale unnoticed.
+//
+// SSL43 is the ALLOW half and is load-bearing in the opposite direction: SSL29
+// and SSL40 both need a document already in the revoked state, and both reach it
+// through `withSecurityRulesDisabled`. Nothing proved a client owner can
+// actually perform the revocation, so a blanket-deny regression on
+// `memberPermissions` would keep every other test green while making member
+// removal impossible in the app.
+
+// SSL41: an edit member cannot promote themselves.
+test("shared lists: an edit member CANNOT raise their own permission level", async () => {
+  await seedList("upd-self-promote");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/upd-self-promote`)
+      .update({ [`memberPermissions.${EDITOR}`]: "admin" })
+  );
+});
+
+// SSL42: an edit member cannot seize ownership. Distinct anchor from SSL41 —
+// the conjunct is a `hasAny`, so one anchor passing says nothing about another.
+test("shared lists: an edit member CANNOT take over ownerId", async () => {
+  await seedList("upd-seize-owner");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(
+    ctx.firestore().doc(`${COL}/upd-seize-owner`).update({ ownerId: EDITOR })
+  );
+});
+
+// SSL43: the owner CAN revoke a member — the write that produces the state
+// SSL29 and SSL40 assert against.
+test("shared lists: the owner CAN revoke a member's permission", async () => {
+  await seedList("upd-owner-revoke");
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`${COL}/upd-owner-revoke`)
+      .update({
+        memberPermissions: { [OWNER]: "admin", [VIEWER]: "view" },
+      })
   );
 });
 
@@ -499,8 +590,225 @@ test("shared lists: the Admin SDK CAN still remove a uid from the trail (cascade
   }
 });
 
+// ====================================================================
+// READ — the actor gate that had NO coverage at all (6 assertions)
+// ====================================================================
+//
+// BUT-1706. Everything above tests writes, so the read rule
+//   `uid == resource.data.ownerId || uid in resource.data.memberPermissions`
+// was unpinned — and it is the rule the whole shopping feature depends on: it
+// decides whether a household sees its list, and it is why an unfiltered
+// collection query is refused outright rather than over-sharing (BUT-1746).
+
+// SSL26: the owner reads their own list.
+test("shared lists: the owner CAN read the list", async () => {
+  await seedList("read-owner");
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(ctx.firestore().doc(`${COL}/read-owner`).get());
+});
+
+// SSL27: an edit member reads it — the ordinary household case.
+test("shared lists: an edit member CAN read the list", async () => {
+  await seedList("read-editor");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertSucceeds(ctx.firestore().doc(`${COL}/read-editor`).get());
+});
+
+// SSL28: a VIEW-only member reads it. Load-bearing: read is gated on membership,
+// NOT on edit rights (SSL21 denies the same actor a write), so a rule change
+// that reused the edit predicate for reads would blank the list for every
+// view-only member.
+test("shared lists: a view-only member CAN read the list", async () => {
+  await seedList("read-viewer");
+  const ctx = env.authenticatedContext(VIEWER);
+  await assertSucceeds(ctx.firestore().doc(`${COL}/read-viewer`).get());
+});
+
+// SSL29: a REVOKED member — still in `contributorUserIds`, no longer in
+// `memberPermissions` — cannot read. This is the exact predicate that makes the
+// Art. 15 contributor probe refusable (BUT-1747): the trail can name a list the
+// requester may no longer read, which is why only the Admin-SDK cascade can
+// enumerate those.
+test("shared lists: a REVOKED member (trail only, no memberPermissions key) CANNOT read", async () => {
+  await seedList("read-departed");
+  const ctx = env.authenticatedContext(DEPARTED);
+  await assertFails(ctx.firestore().doc(`${COL}/read-departed`).get());
+});
+
+// SSL30: a non-member.
+test("shared lists: a non-member CANNOT read the list", async () => {
+  await seedList("read-stranger");
+  const ctx = env.authenticatedContext(STRANGER);
+  await assertFails(ctx.firestore().doc(`${COL}/read-stranger`).get());
+});
+
+// SSL31: unauthenticated.
+test("shared lists: an unauthenticated caller CANNOT read the list", async () => {
+  await seedList("read-anon");
+  const ctx = env.unauthenticatedContext();
+  await assertFails(ctx.firestore().doc(`${COL}/read-anon`).get());
+});
+
+// ====================================================================
+// CREATE — the two conjuncts SSL1-SSL5 left unpinned (3 assertions)
+// ====================================================================
+//
+// BUT-1706. SSL1 is the all-fields allow baseline, so each test below differs
+// from it in exactly ONE way and its denial can only be that conjunct. All three
+// are mirrored client-side in `ShoppingRepositoryRoutingModule` — an unmirrored
+// conjunct means the audit log records a grant the server then refuses.
+
+// SSL32: `request.auth.uid in request.resource.data.memberPermissions`. The
+// `UnifiedShoppingList.collaborative` factory always seats the owner; the plain
+// constructor does not, and it is on the public interface.
+test("shared lists: the owner CANNOT create a list without seating themselves in memberPermissions", async () => {
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`${COL}/create-unseated-${RUN}`)
+      .set(
+        validListBody({
+          memberPermissions: { [EDITOR]: "edit" },
+          contributorUserIds: [OWNER],
+        })
+      )
+  );
+});
+
+// SSL33: `hasRequiredFields([... 'items' ...])`. A conversion or a retry that
+// omits the array is refused, not silently accepted as an empty list.
+test("shared lists: the owner CANNOT create a list with no items field", async () => {
+  const body = validListBody({ contributorUserIds: [OWNER] });
+  delete body.items;
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx.firestore().doc(`${COL}/create-no-items-${RUN}`).set(body)
+  );
+});
+
+// SSL34: `hasRequiredFields([... 'createdAt' ...])`.
+test("shared lists: the owner CANNOT create a list with no createdAt field", async () => {
+  const body = validListBody({ contributorUserIds: [OWNER] });
+  delete body.createdAt;
+  const ctx = env.authenticatedContext(OWNER);
+  await assertFails(
+    ctx.firestore().doc(`${COL}/create-no-created-at-${RUN}`).set(body)
+  );
+});
+
+// ====================================================================
+// DELETE — owner-only, previously unpinned (2 assertions)
+// ====================================================================
+
+// SSL35: the owner deletes their list.
+test("shared lists: the owner CAN delete the list", async () => {
+  await seedList("del-owner");
+  const ctx = env.authenticatedContext(OWNER);
+  await assertSucceeds(ctx.firestore().doc(`${COL}/del-owner`).delete());
+});
+
+// SSL36: an edit member cannot. Deletion is destructive for the whole household
+// and is not part of "can edit items"; pairs with SSL35, whose only delta is the
+// actor.
+test("shared lists: an edit member CANNOT delete the list", async () => {
+  await seedList("del-editor");
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(ctx.firestore().doc(`${COL}/del-editor`).delete());
+});
+
+// ====================================================================
+// READ — the LIST/QUERY path (3 assertions)
+// ====================================================================
+//
+// BUT-1746. SSL26-SSL31 all exercise a single-document `get()`, which cannot
+// see the branch that actually broke: rules are not filters, so for a QUERY the
+// engine evaluates `uid in resource.data.memberPermissions` against every
+// candidate document and refuses the whole query if any one of them fails.
+// That is why `.where('memberPermissions.$uid', isNotEqualTo: null)` — which
+// builds NO condition (cloud_firestore query.dart:659) — did not over-share but
+// made the shopping screen refuse to load.
+//
+// So the client's fixed query shape needs a rules-layer ALLOW, and the
+// unfiltered shape needs a rules-layer DENY. `isNull: false` compiles to
+// `where(field, '!=', null)` (query.dart:676-682), which is the JS spelling
+// used below — pin the SDK-equivalent filter, not a hand-picked one.
+//
+// Neither direction is provable from the Dart side: `fake_cloud_firestore`
+// evaluates no rules at all, so the unit tests in
+// `shopping_repository_query_module_test.dart` prove the FILTER works and say
+// nothing about whether the server accepts it.
+
+// SSL37: the fixed query shape is accepted, and returns the member's list.
+test("shared lists: an edit member CAN run the client's membership-filtered query", async () => {
+  await seedList("query-mine");
+  const ctx = env.authenticatedContext(EDITOR);
+  const snap = await assertSucceeds(
+    ctx
+      .firestore()
+      .collection(COL)
+      .where(`memberPermissions.${EDITOR}`, "!=", null)
+      .limit(200)
+      .get()
+  );
+  // Premise: the query is not vacuously allowed by matching nothing.
+  if ((snap as { empty: boolean }).empty) {
+    throw new Error(
+      "fixture did not stage a readable list — an empty result would let a " +
+        "broken filter pass this test"
+    );
+  }
+});
+
+// SSL38: the UNFILTERED read of the same collection is refused outright, even
+// for a member of one of the lists. This is the BUT-1746 symptom, and the only
+// delta from SSL37 is the missing `where()`.
+test("shared lists: an edit member CANNOT run an UNFILTERED collection query", async () => {
+  await seedList("query-mine");
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx
+      .firestore()
+      .doc(`${COL}/query-foreign`)
+      .set(
+        validListBody({
+          ownerId: STRANGER,
+          memberPermissions: { [STRANGER]: "admin" },
+        })
+      );
+  });
+  const ctx = env.authenticatedContext(EDITOR);
+  await assertFails(ctx.firestore().collection(COL).limit(200).get());
+});
+
+// SSL39: a member of NOTHING gets an allowed-but-empty result rather than a
+// denial — the filtered query is safe for every actor, so a household with no
+// shared lists sees an empty screen, not an error.
+test("shared lists: a non-member CAN run the filtered query and gets nothing", async () => {
+  await seedList("query-mine");
+  // NOT `STRANGER`: SSL38 seeds a list STRANGER owns, and the emulator keeps it
+  // across runs — this actor must be a member of nothing, ever.
+  const ctx = env.authenticatedContext("list-nobody-uid");
+  const snap = await assertSucceeds(
+    ctx
+      .firestore()
+      .collection(COL)
+      .where("memberPermissions.list-nobody-uid", "!=", null)
+      .limit(200)
+      .get()
+  );
+  if (!(snap as { empty: boolean }).empty) {
+    throw new Error(
+      "a non-member's filtered query returned documents — the filter is not " +
+        "scoping to membership"
+    );
+  }
+});
+
 async function run(): Promise<void> {
-  console.log("unified_shared_shopping_lists rules tests (BUT-1725)\n");
+  console.log(
+    "unified_shared_shopping_lists rules tests " +
+      "(BUT-1725 trail, BUT-1706 read/create/delete, BUT-1746 query path)\n"
+  );
   console.log("=============================\n");
   await setup();
   let failed = 0;

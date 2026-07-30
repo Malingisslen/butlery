@@ -445,7 +445,12 @@ async function logRateLimitViolation(
   result: RateLimitCheckResult
 ): Promise<void> {
   try {
-    await admin.firestore().collection("system_events").add({
+    // BUT-1692: `getFirestore()`, not `admin.firestore()` directly. This row is
+    // the whole reason callers must go through `enforceRateLimit` rather than
+    // `checkRateLimit` + a local throw, so a test has to be able to observe it;
+    // bypassing the seam made the audit write assertable only against a live
+    // emulator, which is why the batch path shipped without that assertion.
+    await getFirestore().collection("system_events").add({
       type: "rate_limit_violation",
       userIdHash: hashUid(userId),
       operationType,

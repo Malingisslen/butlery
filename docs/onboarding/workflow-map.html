@@ -2788,7 +2788,7 @@
     {
       "id": "flow5",
       "label": "GDPR-dataexport",
-      "description": "Hela exporten byggs klientsidigt i ett anrop — ingen e-post, ingen serverfil. Enda serverhoppet är audit-loggarna, som är admin-läsbara och därför kräver en callable. Rå motparts-UID i notification_delivery exporteras medvetet (beslutad avvikelse). Increment 5: en ny sektion pooled_rating_events (users/{uid}/canonical_rating_events) exporteras nu också — pseudonyma poolade betygshändelser som raderingskaskaden tar bort, så Art. 15 kräver att de finns i exporten. BUT-1732 (2026-07-30): en ny sektion shared_shopping_lists (SharedShoppingListExport, delegerad från ContentExportManager) läser tre separata frågor — ägd, medlem, bidragit till — mot unified_shared_shopping_lists; tidigare täckte exporten bara den PERSONLIGA shopping_lists-subkollektionen medan raderingskaskaden redan skrubbade de delade listorna, så Art. 15 saknade det Art. 17 tog bort. Andra medlemmars cachade visningsnamn minimeras bort (BUT-1450-precedent), deras user-ID:n behålls.",
+      "description": "Hela exporten byggs klientsidigt i ett anrop — ingen e-post, ingen serverfil. Enda serverhoppet är audit-loggarna, som är admin-läsbara och därför kräver en callable. Rå motparts-UID i notification_delivery exporteras medvetet (beslutad avvikelse). Increment 5: en ny sektion pooled_rating_events (users/{uid}/canonical_rating_events) exporteras nu också — pseudonyma poolade betygshändelser som raderingskaskaden tar bort, så Art. 15 kräver att de finns i exporten. BUT-1732 (2026-07-30): en ny sektion shared_shopping_lists (SharedShoppingListExport, delegerad från ContentExportManager) läser tre separata frågor — ägd, medlem, bidragit till — mot unified_shared_shopping_lists; tidigare täckte exporten bara den PERSONLIGA shopping_lists-subkollektionen medan raderingskaskaden redan skrubbade de delade listorna, så Art. 15 saknade det Art. 17 tog bort. Andra medlemmars cachade visningsnamn minimeras bort (BUT-1450-precedent), deras user-ID:n behålls. BUT-1721 (2026-07-30): export_metadata sammanställs nu i ETT djupbegränsat svep över bundlen — truncated_collections hittar även flaggor som ligger i en LISTA av kartor (messages.conversations[i].messages_truncated), vilket den gamla ettnivåkontrollen aldrig kunde se, så en bundle som tappat en konversations meddelanden inte längre rapporterar sig komplett; och warnings utlöses av `error` och inte bara `error_code`, så en sektion som havererat helt (vänner, recept, preferenser) inte längre kan se komplett ut. Varningstexten HÄRLEDS ur sektionsnamnet och kopierar aldrig sektionens `error` upp till bundlens rot, eftersom ett rått undantag kan bära en annan användares uid, en create_composite-URL eller interna collection-vägar (BUT-1732).",
       "steps": [
         {
           "from": "v-data-export",
@@ -2835,7 +2835,7 @@
         {
           "from": "svc-data-export",
           "to": "vm-data-export",
-          "payload": "JSON-sträng (export_metadata + alla sektioner inkl. pooled_rating_events, version 2.0)",
+          "payload": "JSON-sträng (export_metadata + alla sektioner inkl. pooled_rating_events, version 2.0); export_metadata får truncated_collections/data_completeness och warnings[] efter det djupbegränsade svepet (BUT-1721). data_completeness sätts vid BÅDE trunkering och misslyckad sektion; en sektion som satt error_code UTAN error rapporteras som ofullständig, inte som misslyckad",
           "transport": "in-memory return",
           "verified": true
         },
@@ -4613,7 +4613,7 @@
     {
       "id": "flow-menu-3",
       "label": "Samarbeta om menyn",
-      "description": "Byggd men bara delvis hopkopplad: realtidsredigering av en delad meny och röstning per menyplats finns som fungerande kod, men ingen levande vy instansierar dem längre — importflödet kopplar en användare till en realtidsmeny, men landar sedan i den vanliga solo-vyn utan synk. Konfliktbannern fungerar generellt i appen men visar aldrig menyredigeringens egna konflikter eftersom den filtrerar på fel dokument-id för just menyer.",
+      "description": "Byggd men bara delvis hopkopplad: realtidsredigering av en delad meny och röstning per menyplats finns som fungerande kod, men ingen levande vy instansierar dem längre — importflödet kopplar en användare till en realtidsmeny, men landar sedan i den vanliga solo-vyn utan synk. Konfliktbannern fungerar generellt i appen men visar aldrig menyredigeringens egna konflikter eftersom den filtrerar på fel dokument-id för just menyer. BUT-1736 (2026-07-30): det visningsnamn som PERSISTERAS på menydokumentet (ownerDisplayName, lastEditedByDisplayName) och som alla deltagare läser hämtas nu från profilen (UserService.profileDisplayName) i stället för Auth-handtaget via PermissionService — Auth-namnet är det juridiska namnet på Google-/Apple-kontot, som användaren inte valt att visa och som varken profilpropageringen (on-profile-updated) eller raderingskaskaden når. Går namnet inte att lösa stämplas den lokaliserade okänd-användare-etiketten, aldrig ett Auth-namn.",
       "features": [
         "MENU-07",
         "MENU-08",
@@ -4632,6 +4632,13 @@
           "to": "svc-realtime-menu",
           "payload": "lägg till användaren som deltagare (redigerare) på realtidsmenyn",
           "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-realtime-menu",
+          "to": "svc-user",
+          "payload": "profileDisplayName → stämplas som ownerDisplayName/lastEditedByDisplayName på menydokumentet (BUT-1736; tidigare Auth-namnet via PermissionService)",
+          "transport": "ServiceLocator.tryGet<UserService>()",
           "verified": true
         },
         {
@@ -6529,7 +6536,7 @@
     {
       "id": "flow-set-2",
       "label": "Notiser",
-      "description": "Notisinkorg, deep-link-routing, klientinitierad social push via en delad sändningsspärr (Remote Config + tysta timmar + dagstak), samt schemalagd winback och veckodigest. BUT-1664 (2026-07-25): batch-utskick (sendNotificationBatch) debiteras nu ur en EGEN hink, en token per notis i stället för en platt token per anrop, vilket stänger ett läge där ett fåtal batch-anrop kunde skicka långt fler pushar per minut än enkelutskicken tillät.",
+      "description": "Notisinkorg, deep-link-routing, klientinitierad social push via en delad sändningsspärr (Remote Config + tysta timmar + dagstak), samt schemalagd winback och veckodigest. BUT-1664 (2026-07-25): batch-utskick (sendNotificationBatch) debiteras nu ur en EGEN hink, en token per notis i stället för en platt token per anrop, vilket stänger ett läge där ett fåtal batch-anrop kunde skicka långt fler pushar per minut än enkelutskicken tillät. BUT-1692 (2026-07-30): batch-nekandet går nu genom enforceRateLimit i stället för checkRateLimit + ett lokalt kast, så en spärrad batch också lämnar en rate_limit_violation-rad i system_events för övervakning; enkelutskicket (sendNotification) kastar fortfarande lokalt och skriver ingen sådan rad. Batch-taket (100 notiser) och batch-hinkens maxTokens är samma beslut och låses till samma tal av ett test.",
       "features": [
         "SET-07",
         "SET-08",

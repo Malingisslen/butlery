@@ -1,4 +1,447 @@
-# Sprint 2026-07-30 — Selection
+# Sprint 2026-07-30b — Selection
+
+Second sprint today. Backlog scanned: 122 Backlog + 4 Todo + 0 In Progress + 0 Triage, team
+Butlery (Linear MCP live). Two backlog items (BUT-677, BUT-722) carry `onboarding-reserved`
+and were excluded from scoring entirely, per instruction.
+
+**Ship-state check first.** `git log --since="7 days ago"` shows the morning's sprint
+(BUT-1741/1715/1729/1740/1739/1733/1726/1732/1727 + BUT-1677/1697 obsolete) shipped in
+`c17c4068e`, and a lessons-digest commit (`a14bb3a16`) landed on top. Working tree is clean.
+This sprint picks up its own follow-ups — 9 of the 10 selected tickets below were filed
+*during* that ship pass (BUT-1746 through BUT-1758).
+
+**Step-0 premise re-check against current `main`** (grep, not `git log`) for every ticket
+selected below:
+- `functions/src/notifications/send-notification.ts:467` — `const MAX_BATCH_NOTIFICATIONS =
+  100;` still has no `export`. BUT-1692 live.
+- `functions/src/analytics/compute-feature-retention.ts` still probes
+  `users/{uid}/shopping_lists`. BUT-1724 live.
+- `lib/services/realtime/realtime_menu_service.dart:52-53` and
+  `lib/services/realtime/realtime_recipe_service.dart:48-49` both still read
+  `.currentUser?.displayName` (the raw Firebase Auth handle) with no `profileDisplayName`
+  reference anywhere in either file. BUT-1736 live. **Correction to the ticket text:** the
+  ticket says "recipe_service" — the actual twin of `realtime_menu_service.dart` is
+  `lib/services/realtime/realtime_recipe_service.dart` (identical
+  `_currentUserDisplayName` getter, line-for-line), not `social_recipe_service.dart` (which
+  has no `displayName` reference at all). Implementer: fix the two `realtime/*` files.
+- `functions/src/notifications/send-notification.ts` has no `RATE_LIMIT_CONFIGS`-pinning
+  assertion anywhere in its test file. BUT-1692 live.
+- No `docs/architecture/ADR-0*` file mentions `updateCollaborativeListMembership` or
+  `StaleAccessControlBaseException`. BUT-1752 live.
+- `test/integration/firebase/repositories/comments_repository_integration_test.dart:139`
+  still uses strict `isAfter`. BUT-1756 live.
+- No file under `test/widget/shopping/` references `ShoppingMemberManagementDialog`.
+  BUT-1749 live.
+- `functions/src/__tests__/shared-shopping-lists-rules.test.ts` exists but (per BUT-1706's
+  own text, re-confirmed by reading it) has no create-conjunct or replay-denial coverage.
+  BUT-1706 live.
+- `firebase_data_export_repository.dart`'s query predicates still have no test that builds
+  the real repository (all current tests stub it behind a `Fake`, per the outcome note in
+  the prior sprint section below). BUT-1721/1746 live.
+
+Nothing here is already fixed.
+
+Every ticket below was Claude-authored (mostly the `firebase-backend-security`/
+`code-reviewer`/`testing-specialist` follow-up findings from the two 2026-07-30 ship review
+passes), never human-approved. The mandate column records why each is safe to build anyway.
+
+## Agent A — shopping + account (GDPR export completeness, rules coverage)
+Area: shopping / account. Router: **full-panel** (Security Architect, Software Architect,
+Privacy/DPO, Legal Counsel, Product Manager, FinOps, Performance Engineer, Data Analyst/BI,
+Trust & Safety, QA/Test Engineer, Vendor/Procurement — `firebase_data_export_repository.dart`
+and the shared-shopping-lists rules test are both high-stakes hits). Files (deliberately
+overlapping — one batch so sequential worktree patches don't conflict):
+`lib/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart`,
+`lib/repositories/firebase/modules/shopping_repository_query_module.dart`,
+`lib/repositories/firebase/firebase_data_export_repository.dart`,
+`lib/repositories/firebase/modules/shopping_repository_routing_module.dart`,
+`lib/services/account/export/social_export_manager.dart`,
+`lib/services/account/export/activity_export_manager.dart`,
+`lib/services/account/data_export_service.dart`,
+`functions/src/__tests__/shared-shopping-lists-rules.test.ts`, a new
+`tools/check_null_filter.sh` (or equivalent) + `lefthook.yml` wiring,
+`test/unit/repositories/firebase/firebase_group_weekly_menu_plan_repository_test.dart`,
+`test/unit/repositories/firebase/modules/shopping_repository_query_module_test.dart`,
+`test/unit/repositories/firebase/modules/shopping_repository_routing_module_test.dart`,
+`test/unit/services/account/data_export_service_test.dart`.
+
+- [ ] **BUT-1746** [Tier C][build] Firestore `isNotEqualTo: null` silently drops the filter —
+  the query degrades to an unfiltered collection read, which the security rules then refuse
+  outright, so the feature just stops working. The 2026-07-30 sprint fixed four sites to
+  `isNull: false` but shipped no test and no guard. **requiresPlanMode: true** (High + Bug +
+  `lib/repositories/`). Router: full-panel.
+  - Fix: pin the filter contract with a test at all four sites (assert the *emitted filter*,
+    not just the result — an in-memory fake can't catch this) —
+    `firebase_group_weekly_menu_plan_repository.dart:174`,
+    `shopping_repository_query_module.dart:66` and `:229`, plus the BUT-1732 export probes in
+    `firebase_data_export_repository.dart`. Add a mechanical grep-based guard or analyzer rule
+    that fails on `isNotEqualTo: null` / `isEqualTo: null` anywhere in the tree. Name
+    `firebase_group_weekly_menu_plan_repository.dart` in the security reviewer's marker (it
+    was outside the sprint that introduced the bug and got no review pass).
+  - Acceptance:
+    1. A test at each of the four sites asserts the emitted Firestore filter shape, not just
+       the query result.
+    2. A repo-wide mechanical guard (script or lint) fails the build on any
+       `isNotEqualTo: null` / `isEqualTo: null` construction — proven with a fixture, not a
+       clean run alone.
+    3. `firebase_group_weekly_menu_plan_repository.dart` is named in the
+       `firebase-backend-security` review marker.
+
+- [ ] **BUT-1721** [Tier C][build] GDPR export: two aggregator holes let a section that
+  failed or was clipped read as complete. (A) a per-conversation truncation flag lives inside
+  a List, not a Map, so `data_export_service.dart`'s walk never finds it — clipped messages
+  never reach `truncated_collections`. (B) `social_export_manager.dart` /
+  `activity_export_manager.dart` return a bare `{'error': ...}` with no `error_code`, so a
+  thrown section never reaches `warnings` either — the bundle looks clean while a whole
+  section is missing. **requiresPlanMode: true** (High + Bug + account/GDPR). Router:
+  full-panel.
+  - Fix: walk list elements too
+    (`value.values.whereType<List>().expand((l) => l).whereType<Map>()`); move
+    `firebase_data_export_repository.dart:353-354` off the retired `>=` rule onto the
+    `fetchCapped` N+1 shape; add an `error_code` to every catch in both export managers (one
+    token per catch, mirroring `exportPooledRatingEvents`, which already does it right).
+  - Acceptance:
+    1. A clipped message thread (list-nested truncation flag) appears in
+       `truncated_collections`.
+    2. A section that throws produces a `warnings` entry with a non-null `error_code`.
+    3. `data_export_service_test.dart` gets the aggregator-level lift test: seed one section
+       past its cap, assert both `truncated_collections` and `data_completeness`.
+    4. `firebase-backend-security` reviews the diff.
+
+- [ ] **BUT-1706** [Tier C][build] Shared shopping lists have zero emulator rules coverage,
+  and the client's `_requireSelfOwnedCreate` guard mirrors only 1 of the rule's 3 create
+  conjuncts — a create with `ownerId == uid` but `uid` absent from `memberPermissions` logs
+  `granted: true` client-side and is then server-denied. Third consecutive deferral of this
+  gap (BUT-1665 → BUT-1679 → now). **requiresPlanMode: true** (High + security +
+  `lib/repositories/`). Router: full-panel.
+  - Fix: emulator rules tests for `unified_shared_shopping_lists` (owner write, member-with-edit
+    write, revoked/non-member write denied — the `_onReplayRejected` path — and a create that
+    forges `ownerId` or omits itself from `memberPermissions`); widen
+    `_requireSelfOwnedCreate` to all three conjuncts with a test proving the omitted-member
+    case now logs `granted: false`; enforce (assert/throw, not comment) the `_appendPayload`
+    whitelist with a test for a mutator touching a non-whitelisted field; fix the stale doc
+    comment at `shopping_repository_routing_module.dart:232-235`.
+  - Acceptance:
+    1. Emulator rules tests cover all four named cases (owner allow, member-edit allow,
+       revoked/non-member deny, forged-create deny).
+    2. `_requireSelfOwnedCreate` checks all three create conjuncts; a test proves the
+       omitted-from-`memberPermissions` case is denied client-side before it ever reaches the
+       server.
+    3. The append whitelist is enforced in code (assert/throw), not just documented.
+    4. `firebase-backend-security` AND `firestore-rules-tester` both review the diff.
+
+- [ ] **BUT-1758** [Tier A][build] BUT-1733's AC2 shipped six hand-rolled inline assertions
+  instead of the one shared test helper the criterion asked for — a fourth write path added
+  later would have no guard and the suite would stay green. **requiresPlanMode: false**
+  (Medium, no security label, test-file-only). Router: single (QA/Test Engineer).
+  - Fix: extract `expectContributorTrailExtended(doc, writerUid)` (or similar) and use it at
+    all three write sites (create, chokepoint, update) in
+    `shopping_repository_routing_module_test.dart`; consider driving it from a registered list
+    of write paths so a new one must be added for the suite to compile.
+  - Acceptance:
+    1. One shared helper function asserts the contributor-union invariant, used at all three
+       write-site tests — no remaining hand-rolled inline `expect(contributorUserIds...)`.
+    2. The six existing assertions are replaced, not duplicated alongside the helper.
+
+## Agent B — backend cleanup: dead/wrong-path reads of a retired collection
+Area: backend. Router: single (Vendor/Procurement, Data Analyst/BI, Growth/ASO,
+Information Architect). Files: `functions/src/analytics/compute-feature-retention.ts`,
+`functions/src/social/on-profile-updated.ts`,
+`lib/services/unified/friends/friends_utility_operations.dart`,
+`admin/reset-user-data.ts`, `lib/core/constants/firestore_collections.dart`, plus updated
+tests under `functions/src/__tests__/compute-feature-retention.test.ts` and Dart/Jest
+equivalents for the other two sites (disjoint from every other batch).
+
+- [ ] **BUT-1724** [Tier A][build] Three dead or wrong-path reads of the retired
+  `shopping_lists` collection, found while verifying the BUT-1697 rename was complete.
+  **requiresPlanMode: false** (Medium, no security label). Router: single.
+  - Fix: (1) `compute-feature-retention.ts:206-216`'s `shopped` retention probe reads
+    `users/{uid}/shopping_lists`, which nothing writes → always false → route to
+    `Collections.unifiedShoppingLists`. (2) `on-profile-updated.ts:160-165` loops
+    `unifiedShoppingLists` as a top-level collection when personal lists are a user
+    subcollection → matches nothing, bills a query per rename → fix the path shape. (3)
+    `friends_utility_operations.dart:145-150` reads a top-level `shopping_lists` with
+    fields the live model doesn't have; the rules catch-all denies it and the caller
+    swallows the error, so `getRecentShoppingCollaborators()` is permanently empty — fix the
+    read or delete the feature (ticket calls for a decision, not silent deletion). Also:
+    `admin/reset-user-data.ts:46` deletes list docs but not their `items` subcollection —
+    orphans them on manual remediation the same way the cascade used to.
+  - Acceptance:
+    1. All three reads either hit the live path or are deleted; the retention/collaborator
+       features they power work or are explicitly removed (state which, in the commit body).
+    2. `admin/reset-user-data.ts` also removes the `items` subcollection per list.
+    3. `firestore_collections.dart`'s `userShoppingLists` doc comment names every remaining
+       reader accurately (today it names only one of three).
+    4. If `getRecentShoppingCollaborators()` is kept working, a test proves it returns real
+       collaborators; if deleted, no dead reference remains.
+
+## Agent C — account security: Auth-displayName persistence + notification rate-limit pin
+Area: account / backend. Router: single (Software Architect, Product Manager /
+FinOps, Vendor-Procurement). Files: `lib/services/realtime/realtime_menu_service.dart`,
+`lib/services/realtime/realtime_recipe_service.dart` (corrected target — see Step-0 note
+above), `functions/src/notifications/send-notification.ts`,
+`functions/src/middleware/rate_limiter.ts` (read-only reference), plus new/updated tests
+under `test/unit/services/realtime/` and `functions/src/__tests__/` (disjoint from every
+other batch).
+
+- [ ] **BUT-1736** [Tier A][build] `realtime_menu_service.dart` and
+  `realtime_recipe_service.dart` both persist the raw Firebase-Auth display name (via
+  `PermissionService.currentUser?.displayName`) instead of `UserService.profileDisplayName` —
+  the exact class of bug BUT-1705 fixed for the two shopping writers and recipe-share, scoped
+  out here at the time. **requiresPlanMode: true** (Medium + security label). Router: single.
+  - Fix: switch both `_currentUserDisplayName` getters to `UserService.profileDisplayName`
+    (no Auth fallback), matching BUT-1705's pattern exactly. Leave `currentDisplayName`
+    (display-only reads) alone.
+  - Acceptance:
+    1. Both sites persist `profileDisplayName`; a test with a real `UserService` and an empty
+       profile proves no Auth handle is written.
+    2. A grep proves no remaining *persisting* call site reads the raw Auth
+       `.displayName` — display-only reads are unaffected and stay.
+    3. If either site turns out to need a pre-profile-load fallback, that is stated in the
+       commit body, not silently kept.
+
+- [ ] **BUT-1692** [Tier A][build] The notification batch cap (`MAX_BATCH_NOTIFICATIONS =
+  100`) and its rate-limit bucket ceiling (`maxTokens: 100`) must stay in lockstep and
+  nothing enforces it — lowering `maxTokens` below the batch cap would make every full-size
+  batch permanently undeliverable, invisible to the current suite (it stubs the rate
+  limiter). **requiresPlanMode: true** (Medium + security label). Router: single.
+  - Fix: `export` the constant; add a `RATE_LIMIT_CONFIGS`-pinning assertion (precedent block
+    already exists in `rate-limiter-daily-cap.test.ts`). Also fold in two Medium findings
+    from the same review: route the batch rate-limit denial through `enforceRateLimit(...)`
+    so a hit actually writes the `system_events`/`rate_limit_violation` audit row (today it's
+    silent); narrow the preflight docstring's "malformed or oversized payload is rejected
+    without consuming budget" claim to "non-array" (element-level validation runs after the
+    charge, so a poison-pill element inside a valid-shaped batch IS charged first).
+  - Acceptance:
+    1. A test fails if `RATE_LIMIT_CONFIGS.sendNotificationBatch.maxTokens` is ever set below
+       `MAX_BATCH_NOTIFICATIONS`.
+    2. A batch rejected for rate-limit reasons writes an audit row (test asserts the
+       `system_events` write, not just the thrown error).
+    3. The preflight docstring's guarantee claim matches actual behaviour (narrowed to
+       non-array rejection, not all malformed payloads).
+
+## Agent D — housekeeping: ADR record, flaky test, member-dialog widget test
+Area: backend / shopping (docs + tests only, no production behaviour change). Router:
+skip/single (no security-sensitive production file touched). Files:
+`docs/architecture/ADR-002-collaborative-list-membership-guard.md` (new, number TBC at
+implementation — check the next free ADR number),
+`test/integration/firebase/repositories/comments_repository_integration_test.dart`,
+`lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart`
+(read-only, testability seam only if needed), new
+`test/widget/shopping/shopping_member_management_dialog_test.dart` (disjoint from every
+other batch).
+
+- [ ] **BUT-1752** [Tier A][build] BUT-1726 shipped a materially different (and larger)
+  design than its plan — a new public repository method
+  (`updateCollaborativeListMembership`), a new exception type
+  (`StaleAccessControlBaseException`), a new service/module method pair, and a retyped
+  `ListMemberOperations` seam — with no ADR and no specialist review naming the new method.
+  **requiresPlanMode: false** (High priority, but pure doc + review-marker record, no code
+  behaviour change). Router: skip.
+  - Fix: write a short ADR recording the design actually shipped and why it diverged from
+    the plan; ensure the `firebase-backend-security` marker for this commit explicitly names
+    `updateCollaborativeListMembership`.
+  - Acceptance:
+    1. An ADR file exists describing the shipped design (new repository method, exception
+       type, service/module seam) and the reason it diverged from BUT-1726's original plan.
+    2. The review marker for this commit names `updateCollaborativeListMembership`
+       explicitly, not just the file it lives in.
+
+- [ ] **BUT-1756** [Tier A][build] `comments_repository_integration_test.dart:139` compares
+  two wall-clock timestamps with strict `isAfter` — same-tick timestamps make it flaky
+  (measured: 2 of 3 red in a ~380-test batch, clean in isolation, clean on a HEAD control).
+  **requiresPlanMode: false** (Medium, test-file-only). Router: single.
+  - Fix: `!editedAt.isBefore(createdAt)` (tolerant of same-moment) or control the clock with
+    `withClock` and force a determined gap between the two writes. Also scan the same
+    integration suite for other strict-`isAfter` timestamp assertions of this shape.
+  - Acceptance:
+    1. The `editedAt`/`createdAt` assertion is same-tick-tolerant.
+    2. Any other strict-`isAfter` timestamp assertion found in the same suite during the scan
+       is either fixed the same way or explicitly left with a one-line reason.
+    3. Don't widen the fix into a general clock-injection framework — same-file, same-shape
+       fix only.
+
+- [ ] **BUT-1749** [Tier A][build] The user-visible payoff of BUT-1726 — "listan har ändrats
+  på en annan enhet, läs in den igen" vs. the generic permission-denied line — reaches the
+  user only through `ShoppingMemberManagementDialog`, and nothing under `test/` references
+  that dialog at all. **requiresPlanMode: false** (Medium, widget-test-only). Router: single.
+  - Fix: a widget test driving failed add-member, remove-member and change-permission through
+    the dialog, asserting the new Swedish message is shown (not the generic line) in each
+    case.
+  - Acceptance:
+    1. All three flows (add/remove/change-permission) are exercised in the test.
+    2. Each asserts the specific "changed on another device" message, not just "some error
+       shown".
+    3. No production file changes beyond a testability seam if one turns out to be needed —
+       state in the commit body if one was.
+
+## Deferred to capacity (clear mandate, held back — same reasoning as the last two sprints:
+adding a 5th ticket to Agent A or a 3rd non-doc ticket to Agent C risks the agent timeout
+the automation-proposals rule warns about, and several of these share a file family with
+tickets already selected this sprint)
+
+- **BUT-1743** — shopping repository hygiene (guaranteed-denied read on personal create,
+  orphaned items subcollection, unguarded delete twin). Same file
+  (`firebase_shopping_repository.dart`) as no ticket selected this sprint, but Agent A is
+  already at its 4-ticket cap and this is a distinct file from all four of Agent A's tickets
+  — held purely for agent-count capacity, next sprint's Agent A.
+- **BUT-1717** — Swedish-boundary lint can't catch the dynamic `RegExp(r'\b' + var + r'\b')`
+  form. Tooling-only, no file conflicts, held for capacity (would have been Agent B/C's 3rd).
+- **BUT-1754** — may a lone colon-terminated line become the recipe title? Explicitly a
+  product/title-quality call per the ticket itself ("no allergen-safety question; pure title
+  quality") — **build-review disposition if picked up**, not build; held this sprint for
+  capacity, not ambiguity, but flag for her either way when it is picked up.
+- **BUT-1738** — `ShoppingListPermissionGuards` has no test file of its own. Same file family
+  as this sprint's BUT-1706/1746 guard changes — a test written now would need rework the
+  moment those land. Next sprint's Agent A once this sprint's guard changes settle.
+- **BUT-1716** — the other shared-shopping repository stamps no "last changed by" at all.
+  Same file family as BUT-1746/1706. Held for the same reason as the last two sprints.
+- **BUT-1748** — ~50 remaining `logPermissionCheck` fire-and-forget call sites across the
+  whole repository (not just shopping, which BUT-1741 already fixed). Genuinely large
+  (spans `base_shared_content_repository.dart`, `firebase_comments_repository.dart`,
+  `firebase_friends_repository.dart`, `firebase_notifications_repository.dart`,
+  `firebase_ratings_repository.dart`, `firebase_shared_menu_repository.dart`,
+  `firebase_shared_recipe_repository.dart`, `firebase_shared_shopping_repository.dart`,
+  `firebase_social_request_repository.dart`, `firebase_user_repository.dart` (15 sites),
+  `friend_category_repository.dart` (8 sites), `user_root_deletion_mixin.dart`) — this is a
+  cross-module sweep (tierCTriggers match), not a single-batch fit. Recommend splitting into
+  2-3 tickets by repository cluster next sprint rather than one 13-file batch.
+- **BUT-1730** — build a real Firestore-emulator CI lane. Tier C, high-risk; BUT-1695 already
+  attempted this once and only landed the tag change (the real leg reproduced a
+  `PlatformException`). Needs a harness fix first, not another CI-YAML pass.
+- **BUT-1731** — deploy-day ops task (run the backfill, delete the export after the 30-day
+  soak). `need-malin` label, Tier D — not autonomous work.
+
+## Needs your call (not built this sprint)
+
+- **BUT-1747** — GDPR: shared shopping lists the user has LEFT are missing from the export
+  because the client can no longer read them and a new Cloud Function read path is needed.
+  High priority, real gap, but a new Cloud Function is a bigger and more ops-adjacent lift
+  than this sprint's batches — **my read: worth building, but wanted as its own dedicated
+  sprint slot (not squeezed into an already-full-panel batch) given it needs its own deploy
+  step.** Recommend: next sprint, alone or paired with BUT-1731's deploy-day step.
+- **BUT-1718** — a household member cannot leave a shared shopping list (rules deny
+  self-removal). This is a deliberate rule, not an obvious bug — whether self-removal should
+  be allowed is a product/permissions decision, not a correctness fix. **My read: needs your
+  call**, ideally alongside BUT-1706's rules-review pass once it's landed this sprint.
+- **BUT-1699** — enable the two Firestore TTL policies that were never turned on
+  (`notification_send_events`, `scheduled_notifications`). This changes real data-retention
+  behaviour on production data. **My read: needs your call** — not something to silently
+  auto-enable even though the code change itself is small.
+- **BUT-1693, BUT-1480, BUT-1323, BUT-1685, BUT-880, BUT-1502, BUT-1557, BUT-1179, BUT-1368,
+  BUT-863, BUT-1445, BUT-1649, BUT-1636, BUT-1361** — the standing `need-malin` manual-QA /
+  compliance-diagnosis / product-decision backlog, unchanged this sprint.
+
+## Post-sprint steps (to run after implementation)
+
+1. `dart analyze --fatal-infos` + `npx tsc --noEmit -p functions` on the full tree.
+2. File follow-up Linear tickets for every deferred sub-scope before commit.
+3. Commit through the gate: `code-reviewer` on all `.dart`, `firebase-backend-security` +
+   `firestore-rules-tester` on Agent A's diff (rules test file touched), `cloud-functions-specialist`
+   on Agent B/C's `functions/src` touches. Confirm `firestore.rules` itself is unchanged
+   (Agent A only adds *tests* against the existing rule) before deciding
+   `firestore-rules-tester` scope.
+4. Push (push does NOT trigger deploy in this repo — `pushTriggersDeploy: false`).
+5. Transition tickets: Tier A/C build + all-pass → Done. Any failed/unclear criterion → In
+   Review + plain-language comment + PushNotification.
+6. Re-check `docs/onboarding/workflow-map.stale` before commit — none of this sprint's flows
+   look map-relevant (repository/service internals, CI/tooling, docs), but verify rather than
+   assume.
+7. Grade each selected ticket against its OWN diff before any Done/In Review transition.
+
+## Deviation log — files changed that the plan did not declare
+
+The delivery digest requires a widened file to be recorded here **and** named in the
+reviewer marker. Two rounds widened this sprint: the parallel implementation itself, and
+the rescue pass Malin authorised after the engine held its own commit.
+
+**Round 1 — the parallel batches**
+
+| File | Batch | Why it was touched |
+| --- | --- | --- |
+| `lib/repositories/firebase/modules/shopping_list_permission_guards.dart` | A | The guard the routing module's declared-base check delegates to; the fix could not land in the caller alone. |
+| `lib/repositories/firebase/modules/shopping_offline_write_module.dart` | A | Owns `privilegedKeys`, the single enumeration ADR-002 is written about. |
+| `lib/services/unified/unified_friends_service.dart` | B | The dead-read at `friends_utility_operations.dart` is reached through this facade; deleting one without the other leaves a caller pointing at nothing. |
+| `lib/viewmodels/recipe_form/recipe_collaborative_manager.dart` | C | **Third** Auth-displayName persister, outside BUT-1736's declared `lib/services/realtime/*`. Found by grep during implementation; per the BUT-1691/1697 twin-class lesson, fixing one and leaving the sibling is the failure mode, not the fix. |
+| `functions/src/middleware/rate_limiter.ts` | C | The plan declared it "(read-only reference)". It was modified: how the audit row's Firestore handle is resolved. |
+
+**Round 2 — the rescue pass, 2026-07-30 (after four tickets failed outcome verification)**
+
+| File | Ticket | Why it was touched |
+| --- | --- | --- |
+| `lib/repositories/firebase/firebase_data_export_repository.dart` | BUT-1721 | The fix the ticket **named** and the sprint never made: `messages_truncated` used `>= cap` against a query limited to `cap`, so an exactly-full conversation reported itself clipped. Now probes `cap + 1`. |
+| `lib/repositories/interfaces/shopping_repository.dart` | BUT-1752 | ADR-002 had no inbound pointer anywhere in the repo — the doc rule's "something must point at it". |
+| `functions/src/__tests__/shared-shopping-lists-rules.test.ts` | BUT-1706 | SSL40: a revoked member's **write** deny. The first pass pinned only their read. |
+| `tools/check_null_filter.sh`, `.github/workflows/architecture-validation.yml` | BUT-1746 | AC2 asked for a guard that "fails the build"; it ran from lefthook only. Now CI-wired, with a `--self-test` that proves its own detection. |
+| `test/integration/firebase/repositories/recipe_repository_integration_test.dart` | BUT-1756 | AC2's scan was file-scoped, not suite-scoped; this is the identical strict-`isAfter` twin, and it also dropped a 100 ms real sleep. |
+| `test/unit/repositories/firebase/firebase_data_export_repository_conversations_test.dart` (new) | BUT-1721 | Boundary coverage at exactly-cap. Mutation-tested: 1 red with the old `>=`, 3 green with the fix. |
+| `test/unit/viewmodels/recipe_form/recipe_collaborative_manager_display_name_test.dart` (new) | BUT-1736 | Closes AC1 for the third persister, including the 30-second presence heartbeat. Mutation-tested: 3 red when the Auth handle is restored. |
+
+## Outcome — graded 2026-07-30 against each ticket's own diff
+
+| Ticket | Disposition | What actually shipped |
+| --- | --- | --- |
+| BUT-1746 | **In Review** `[!]` AC1 | Four literal-null filters fixed; the mechanical guard is now CI-wired **and self-testing**. AC1's "assert the emitted filter, not the result" is **not** met — the existing tests are result-based and redden only because the fake throws. Graded openly; the remaining half is BUT-1765. |
+| BUT-1721 | **Done** | Both aggregator holes closed, **and** the named `>=` fix in the export repository that the first pass missed. Exactly-at-cap boundary test added and mutation-proven. The two untouched export managers (21 bare catches) are BUT-1760. |
+| BUT-1706 | **Done** | Rules coverage for read gate, create conjuncts and owner-only delete, plus SSL40 — the revoked member's **write** deny, the actual `_onReplayRejected` scenario. 40/40 green on the emulator. |
+| BUT-1752 | **Done** | ADR-002 written **and** pointed at, from the interface declaration of the method it documents. |
+| BUT-1758 | **Done** | Shared contributor-union test helper across all three write sites. |
+| BUT-1724 | **Done** | Three dead/wrong-path reads of the retired collection fixed; the `shopped` retention probe now reads a collection something actually writes. Two structural gaps it exposed are BUT-1761/BUT-1762. |
+| BUT-1736 | **Done** | Both declared realtime persisters **and** the third one found by grep, each now covered — create stamp, and the presence heartbeat. |
+| BUT-1692 | **Done** | Notification batch cap and its rate-limit bucket pinned to each other in code. The single-send callable's separate hole is BUT-1763. |
+| BUT-1756 | **Done** | The flaky `editedAt` assertion is clock-controlled, and AC2's suite-wide scan reached its twin in the recipe suite. |
+| BUT-1749 | **Done** | Widget test for the "listan ändrades på en annan enhet" state. |
+
+**Why this sprint held its own commit:** the engine's outcome verification failed four
+tickets on data-safety, then could not withdraw the two batches holding them — a later
+automated fix had rewritten the same lines, so no clean patch reversal existed. It stopped
+rather than half-withdraw, which was the right call. Malin chose rescue-in-two-steps over
+ship-as-is or discard, 2026-07-30.
+
+## What the rescue-pass review round found
+
+Five commit-gate specialists ran against the staged diff — none of them had ever seen a
+byte of it, since every marker in `.claude/state/` was the previous sprint's. Verdicts:
+`code-reviewer` fail on the export services and on the repository layer, pass on the
+display-name persisters; `cloud-functions-specialist` pass; `firestore-rules-tester` pass
+with three required additions; `firebase-backend-security` pass on its five files;
+`testing-specialist` pass with three coverage gaps.
+
+Every blocking finding was verified against the code by hand before being acted on — the
+digest's rule that a verifier's `fail` is a hypothesis, not a fact. Three were real and are
+fixed in this commit:
+
+1. **The aggregator asserted total failure for a partially-successful section.** The new
+   derived warning said "could not be exported" for `shared_shopping_lists` when one of its
+   three probes failed and the other two returned — a false incompleteness claim at the root
+   of an Art. 15 bundle. This is the ticket's own defect with the sign flipped.
+2. **`data_completeness` was silent about failures**, only about truncation: three failed
+   sections with nothing clipped left the field absent, byte-identical to a clean bundle.
+3. **A raw uid and an empty error object in a Cloud Functions warn log** — `err` nested in
+   the payload serialises to `{}`, so the field meant to say WHY a probe failed said nothing.
+
+Plus three coverage gaps closed (`data_completeness`'s warnings arm, and the failure-envelope
+tokens in both export managers), all mutation-proven, and three rules assertions (SSL41-43).
+
+**The reviewers also found eight defects OLDER than this sprint.** Two are serious enough to
+name here: account deletion has never deleted a chat message, and the Art. 15 export has
+never returned one — both because the code reads a Firestore subcollection that nothing
+writes to. Each needs a new index and its own deploy, so neither was squeezed into this
+commit. Verified by hand against the code before filing.
+
+One reviewer's own claim was wrong and is recorded so it is not repeated: two Firestore deny
+verdicts CANNOT be told apart by their `PERMISSION_DENIED` string — the evaluation error
+fingerprints the rule LINE, not the actor. SSL40's non-vacuity was proven with a fail-closed
+probe and a discriminating mutation instead.
+
+**Follow-ups filed 2026-07-30:** BUT-1759 (the decision itself), BUT-1760, BUT-1761,
+BUT-1762, BUT-1763, BUT-1764, BUT-1765, BUT-1766, BUT-1767, BUT-1768, BUT-1769, BUT-1770,
+BUT-1771, BUT-1772 (`need-malin`), BUT-1773.
+
+---
+
+# Archived — 2026-07-30 sprint (10 tickets, shipped 2026-07-30 in `c17c4068e`, ship
+remediation in the same commit; lessons in `a14bb3a16`)
 
 Backlog scanned: 106 Backlog + 6 Todo + 0 In Progress + 0 Triage, team Butlery (Linear MCP
 live). Two backlog items (BUT-677, BUT-722) carry `onboarding-reserved` and were excluded
@@ -49,466 +492,47 @@ findings (F2, F5) from the `e14455ceb` review pass, plus verification-reproduced
 tooling that same sprint built — never human-approved. The mandate column records why each
 is safe to build anyway.
 
-## Agent A — shopping + account (trust & safety, GDPR)
-Area: shopping / account. Router: **full-panel** (Trust & Safety, Security Architect,
-Software Architect, Performance Engineer, Data Analyst/BI, Database Administrator/Data-layer
-Engineer, Privacy/DPO, Legal Counsel, Product Manager, FinOps, Vendor/Procurement —
-`functions/src/account/account-deletion-cascade.ts` is a high-stakes hit). Files
-(deliberately overlapping — kept in one batch so all four land sequentially without
-cross-worktree conflicts, same reasoning as the last two sprints):
-`lib/repositories/firebase/modules/shopping_repository_routing_module.dart`,
-`lib/repositories/firebase/modules/shopping_list_permission_guards.dart`,
-`lib/repositories/firebase/modules/shopping_offline_write_module.dart`,
-`lib/repositories/firebase/modules/shopping_item_operations_module.dart`,
-`lib/repositories/firebase/firebase_shopping_repository.dart`,
-`lib/repositories/mixins/permission_validation_mixin.dart`,
-`lib/services/account/export/content_export_manager.dart`,
-`lib/services/account/data_export_service.dart`,
-`docs/architecture/ACCEPTED_DEVIATIONS.md`, `.claude/rules/accepted-deviations.md`,
-`test/unit/repositories/firebase/modules/shopping_repository_routing_module_test.dart`,
-`test/unit/services/account/export/*.dart`.
+*(Full per-ticket bodies, outcome table and deviation log from this sprint trimmed here for
+length — see git history of this file for the complete 2026-07-30 record, or `c17c4068e`'s
+commit body.)*
 
-- [ ] **BUT-1726** [Tier C][build] Shared shopping list: a stale in-memory base can still
-  resurrect or silently revoke a member. **requiresPlanMode: true** (Urgent + security label
-  + `lib/repositories/`). Router: full-panel.
-  - Fix: `updateCollaborativeList`'s `baseIsCached` check compares the wrong copy —
-    `proposed` always comes from an in-memory snapshot, `stored` is always a fresh
-    `docRef.get()`, so the guard never fires. Compare the *proposed* entity's provenance to
-    the fresh read, not the fresh read against itself. A rename must never emit
-    `memberPermissions` field paths (including `FieldValue.delete()`) unless membership
-    change was the explicit intent.
-  - Acceptance:
-    1. A stale-`proposed`-vs-fresh-`stored` test proves a removed member is not resurrected
-       and a concurrently-added member is not deleted by an unrelated rename.
-    2. A rename call never emits a `memberPermissions` field path (delete or otherwise).
-    3. Owner-initiated writes are covered too — not just the non-owner escalation path.
-    4. `firebase-backend-security` reviews the diff.
-
-- [ ] **BUT-1733** [Tier A][build] `updateCollaborativeList` writes an `items` payload
-  without unioning the writer's uid into `contributorUserIds` — the one write site BUT-1725
-  didn't cover, so an item added through it is unreachable to the erasure cascade and the
-  residual probe reports clean. **requiresPlanMode: true** (Medium + security label +
-  `lib/repositories/`). Router: full-panel.
-  - Fix: union the writer's uid whenever the `updateCollaborativeList` payload includes
-    `items`; use one shared assertion helper across all three write sites (chokepoint,
-    create, update) so a fourth path added later fails loudly if it skips the union.
-  - Acceptance:
-    1. `updateCollaborativeList` unions the writer's uid into `contributorUserIds` whenever
-       its payload includes `items`.
-    2. One shared test helper asserts the invariant at all three write sites, not three
-       separate ad hoc assertions.
-    3. The union happens inside the transaction on the online path and via
-       `FieldValue.arrayUnion` on the offline leg (same split BUT-1725 established).
-
-- [ ] **BUT-1741** [Tier A][build] Audit rows from the shopping modules are fire-and-forget
-  — every module (including the new `shopping_list_permission_guards.dart`) declares the
-  injected `logPermissionCheck` as `void Function(...)` when the real implementation returns
-  `Future<void>`, so Dart's return-type covariance silently drops the await. A failure inside
-  becomes an unhandled async error nobody sees. **requiresPlanMode: true** (Medium + security
-  label + `lib/repositories/`). Router: full-panel.
-  - Fix: correct the callback type to `Future<void> Function(...)` everywhere it's injected
-    (grep by callback name, not just the new file — this is pre-existing across the class of
-    shopping modules). Call sites either await it or `unawaited(...)` with a stated WHY.
-  - Acceptance:
-    1. The callback type matches the implementation's return type at every injection site,
-       not only the new guards file.
-    2. Every call site either awaits the audit write or explicitly `unawaited(...)`s it with
-       a comment stating why — no silent covariance opt-out.
-    3. A test proves a throwing audit write surfaces rather than vanishing.
-
-- [ ] **BUT-1732** [Tier C][build] GDPR Art. 15 export has no shared-shopping-list section —
-  `ownerId`, `memberPermissions`, `contributorUserIds`, `lastActivityByUserId`/
-  `DisplayName`, and per-item `addedByUserId`/`purchasedByUserId` are all stored but never
-  exported, even though the erasure side of the same data was hardened this cycle.
-  **requiresPlanMode: true** (High + account/GDPR sensitive domain). Router: full-panel.
-  - Fix: add a section covering every shared list the user owns, is a member of, or appears
-    in via `contributorUserIds`/`lastActivityByUserId`; per list, only the user's own
-    membership/permission entry, last-activity record and attributed items — not other
-    members' rows (data minimisation, consistent with the existing export). Record the
-    redaction call for shared-list counterparty ids explicitly (follow the BUT-1450
-    precedent rather than inventing a new policy).
-  - Acceptance:
-    1. The export includes every shared list the user owns, is a member of, or has a
-       `contributorUserIds`/`lastActivityByUserId` match on.
-    2. Per list, only the user's own attribution rows appear — a test asserts a non-member's
-       list does not appear and another member's rows are excluded.
-    3. The counterparty-id redaction call is recorded in `docs/architecture/ACCEPTED_DEVIATIONS.md`
-       (+ digest), consistent with BUT-1450, not decided silently.
-
-## Agent B — parsing (Swedish import path, remaining twin-class + boundary bugs)
-Area: parsing / import. Router: single (Data/Integrations Engineer, FinOps, Monetization).
-Files: `lib/services/import/text_import_strategy.dart`,
-`lib/services/import/parsers/heading_word_lists.dart`,
-`lib/utils/text/ingredient_preprocessor.dart`, `lib/utils/text/swedish_word_boundary.dart`
-(read-only reference), `docs/architecture/ACCEPTED_DEVIATIONS.md`,
-`.claude/rules/accepted-deviations.md`, plus new/updated tests under
-`test/unit/services/import/` and `test/unit/utils/text/` (disjoint from every other batch —
-note the two `ACCEPTED_DEVIATIONS.md` touches from Agent A and Agent B land in the same
-file; both are additive dated entries, not edits to each other's text, so sequential
-application is safe).
-
-- [ ] **BUT-1727** [Tier A][build] Gluten carve-out never reaches the real import path —
-  `TextImportStrategy._ingredientSubHeading` (what photo/OCR, pasted-text and voice imports
-  actually run through) is the twin of `RecipeSectionDetector.componentSubHeadingLabel`
-  (what BUT-1714 fixed) and was never touched, so `Råg:`/`Öl:`/`Mjöl:` still strip out of a
-  real import while `Mjölk:` correctly stays. **requiresPlanMode: true** (High priority).
-  Router: single.
-  - Fix: `_ingredientSubHeading` consults the same shared `HeadingWordLists.bareGlutenWords`
-    + `endsWith('mjöl')` carve-out BUT-1714 added — do not duplicate the word list. Keep the
-    carve-out gluten-only (do not silently widen to all 14 EU allergens); state that decision
-    explicitly rather than assuming it.
-  - Acceptance:
-    1. A real `TextImportStrategy.parse()` of a block containing `Råg:`/`Öl:`/`Vete:`/
-       `Havre:`/`Mjöl:` keeps all five as ingredient lines, not section headings.
-    2. One agreement test asserts `TextImportStrategy` and `RecipeSectionDetector` classify
-       the same bare-gluten set AND `Mjölk:`/`Ägg:`/`Soja:` (must stay headings) identically.
-    3. `docs/architecture/ACCEPTED_DEVIATIONS.md` is corrected to name both hinges, not just
-       `componentSubHeadingLabel`.
-    4. The carve-out stays gluten-only; the scope decision is stated in the commit body, not
-       silently widened or narrowed.
-
-- [ ] **BUT-1739** [Tier A][build] `"ca 2 dl grädde"` normalizes to `"2 grädde"` — the
-  amount-strip regex is anchored at `^`, so once the leading approximate word (`ca`,
-  `cirka`, `ungefär`) is removed the anchor no longer matches and the quantity survives.
-  **requiresPlanMode: false** (Low, no security label). Router: single.
-  - Fix in `recipe_text_normalizer.dart`: strip the amount regardless of whether an
-    approximate word preceded it (re-anchor per-token or strip amount before approximate
-    word). Remove the "pre-existing quirk" comment once fixed.
-  - Acceptance:
-    1. `"ca 2 dl grädde"`, `"cirka 2 dl grädde"`, `"ungefär 2 dl grädde"` all normalize to
-       `"grädde"`.
-    2. The golden fingerprint test is re-pinned in the same commit; the cache-invalidation
-       consequence is stated in the commit body.
-    3. The "pre-existing quirk" comment is removed, not left contradicting the fixed code.
-
-- [ ] **BUT-1715** [Tier A][build] `"ca. 2 dl"` leaves an orphaned period — both dotted-form
-  lookups in `ingredient_preprocessor.dart` (lines ~169, ~234) build `RegExp('\\b$escaped\\b')`,
-  and the *trailing* `\b` can't match between `.` and a space (both non-word chars), so the
-  dotted form never matches and the bare form matches instead, leaving `". 2 dl"`.
-  **requiresPlanMode: false** (Medium, no security label). Router: single.
-  - Fix at both sites: a lookaround/right-hand-side guard instead of a trailing `\b` (the
-    period is itself non-word); prefer `SwedishWordBoundary` over hand-rolled boundaries.
-  - Acceptance:
-    1. `"ca. 2 dl mjöl"` → `"2 dl mjöl"`, no leading `.`, at both call sites.
-    2. Tests cover every dotted form in both lists, plus one bare-form-mid-sentence case that
-       must still match.
-    3. No regression to the existing (already-passing) non-dotted boundary cases.
-
-## Agent C — backend / CI (rules-coverage gate correctness, guard-of-the-guard)
-Area: backend (tooling/CI, not `lib/` or `functions/src/` production code). Router: single
-(DevOps/SRE, QA/Test Engineer, Release/App-Store Compliance, Vendor/Procurement). Files:
-`functions/scripts/rules-coverage-report.js`, `functions/scripts/check-test-registration.js`,
-`functions/package.json`, `lefthook.yml`, `.github/workflows/cloud-functions-unit.yml`, new/
-updated `.test.js` files under `functions/scripts/__tests__/` (disjoint from every other
-batch).
-
-- [ ] **BUT-1729** [Tier A][build] `rules-coverage-report.js` gate: three reproduced holes
-  let a world-open block through — constant-allow isn't caught once `exprHit > 0` (a
-  partially-exercised `if true` block passes clean), compact single-line parent+child
-  formatting drops the parent's own `allow` from `ownBodyText` (misclassified as
-  `container`), and `stripComments` is not string-literal-aware so a `/*`-looking substring
-  inside a rules string silently deletes every block after it. **requiresPlanMode: true**
-  (High + security label). Router: single.
-  - Fix all three per the ticket's fixture-first spec; also extract and unit-test the
-    base-vs-head path set-diff (currently inline in `main`, never exercised — a re-indented/
-    moved block must still produce an empty `newPaths`).
-  - Acceptance:
-    1. A constant-allow fixture with `exprHit > 0` still fails the gate (mutation: revert the
-       fix, fixture reddens).
-    2. A compact single-line parent+child fixture still attributes the parent's own `allow`
-       to the parent (mutation-tested).
-    3. A `stripComments` fixture with a `/*`-looking substring inside a string literal does
-       not lose the blocks after it (mutation-tested).
-    4. The base-vs-head path-diff is exported and unit-tested with a moved/re-indented block
-       producing empty `newPaths`.
-
-- [ ] **BUT-1740** [Tier A][build] CI guard suites can be silently deregistered —
-  `check-test-registration.js` scans `functions/src/__tests__/` but never checks that its
-  OWN self-test scripts (`test:script-coverage-report`, `test:script-test-registration`) stay
-  named in `functions/package.json`; deleting both entries leaves the guard reporting clean
-  while its own tests run zero times, and the `script-guard-tests` pre-commit hook's glob
-  (`functions/scripts/**`) doesn't catch a `package.json` edit either.
-  **requiresPlanMode: false** (Medium, no security label). Router: single.
-  - Fix: add the `GUARD_SELF` assertion specified in the ticket (both guard self-test files
-    must be named by some `test:*` script); add `functions/package.json` to the
-    `script-guard-tests` glob in `lefthook.yml`; correct the `cloud-functions-unit.yml:66-72`
-    comment if it still overclaims coverage after the fix.
-  - Acceptance:
-    1. Deleting either guard's `test:*` script from `package.json` makes
-       `check-test-registration.js` exit non-zero with code `GUARD_SELF`.
-    2. The same deletion trips the `script-guard-tests` pre-commit hook.
-    3. A mutation test proves both (remove the script, count the reds, restore
-       byte-identical) — not just a green happy path.
-
-## Deferred to capacity (not selected this sprint — clear mandate, held back only because
-their files overlap an already-large batch and a 5th ticket risks the agent timeout the
-automation-proposals rule warns about)
-
-- **BUT-1738** — `ShoppingListPermissionGuards` has no test file of its own. Same file
-  family as Agent A's BUT-1726/1741 (which change the guard's behaviour this sprint) — a
-  test written against pre-change behaviour would need rework the moment Agent A lands.
-  Next sprint's Agent A, once this sprint's guard changes are settled.
-- **BUT-1716** — the other shared-shopping repository stamps no "last changed by" at all.
-  Same file family as BUT-1732/1733. Held for the same reason as last sprint.
-- **BUT-1706** — shared shopping lists have zero rules-test coverage; the client guard
-  mirrors only 1 of 3 create conjuncts. Same `firestore.rules`/routing-module family.
-- **BUT-1718** — a household member cannot leave a shared list (rules deny self-removal) —
-  build-review, product call, needs the rules change reviewed alongside BUT-1706.
-- **BUT-1730** — build a real Firestore-emulator CI lane. Tier C, high-risk: BUT-1695
-  already attempted this once this cycle and only landed the `dart_test.yaml` tag change
-  (the actual CI leg reproduced a `PlatformException` and would have reddened, not covered).
-  Re-attempting immediately without new information risks repeating the same partial result;
-  needs a harness fix first, not just another CI-YAML pass.
-- **BUT-1737** — `GlobalRecipeCache` has no parser version, so a parser fix doesn't
-  invalidate old cached parses. Touches `content_module.dart` (DI wiring) in addition to the
-  cache file — held for capacity, not ambiguity.
-- **BUT-1731** — deploy-day ops task (run the backfill, delete the export after the 30-day
-  soak). `need-malin` label, Tier D — not autonomous work.
-
-## Needs your call (not built this sprint — carried forward, comments already on file)
-
-- **BUT-1693** — Let a household member share their allergy list (BUT-1663 Part 2).
-  `need-malin`, real feature with a consent/UX layer.
-- **BUT-1480** — Unify the two URL import pipelines. `need-malin`, carried forward.
-- **BUT-1323** — "Who's eating" per-day presence EPIC (DIFFERENTIATOR). Too large/speculative
-  for an autonomous pick; recommend an `/interview` pass.
-- **BUT-1685** — the "we couldn't read everyone's allergies" state is recorded but never
-  shown to the user. `need-malin`, UX call on how/where to surface it.
-- **BUT-880, BUT-1502, BUT-1557, BUT-1179, BUT-1368, BUT-863, BUT-1445, BUT-1649, BUT-1636,
-  BUT-1361** — the standing `need-malin` manual-QA / compliance-diagnosis backlog, unchanged
-  this sprint.
-
-## Post-sprint steps (to run after implementation)
-
-1. `dart analyze --fatal-infos` + `npx tsc --noEmit -p functions` on the full tree.
-2. File follow-up Linear tickets for every deferred sub-scope before commit.
-3. Commit through the gate: code-reviewer on all `.dart`, firebase-backend-security on
-   Agent A's repository/service files, cloud-functions-specialist if any `functions/src`
-   touch lands (none planned this sprint — Agent C only touches `functions/scripts`/CI
-   config), firestore-rules-tester only if `firestore.rules` itself changes (not planned —
-   confirm at commit time, the last two sprints both widened past their declared fileset).
-4. Push (push does NOT trigger deploy in this repo per `shared-plugin.json` —
-   `pushTriggersDeploy: false` — but still the release record).
-5. Transition tickets: Tier A build + all-pass → Done. Tier C or any failed/unclear
-   criterion → In Review + plain-language comment + PushNotification.
-6. Close BUT-1677 and BUT-1697 as obsolete, citing `e14455ceb`.
-7. Re-check `docs/onboarding/workflow-map.stale` before commit per CLAUDE.md — none of this
-   sprint's flows look map-relevant (shopping/account internals, parsing internals, CI
-   tooling), but verify rather than assume.
-8. Grade each selected ticket against its OWN diff before any Done/In Review transition —
-   per the delivery digest, a batch "N landed" summary hides silent drops.
-
-## Ship phase — held, then resumed 2026-07-30 (approved plan for the remaining work)
-
-The unattended run finished Implement → Review → Fix → Final review → Verify, then **held its
-own commit** at the Drop phase: three tickets failed outcome verification, the engine tried to
-reverse two batches, and the reversal conflicted because later fixes reached into files outside
-those batches (`StaleAccessControlBaseException` is defined and consumed outside batch-0 but
-thrown only inside it — reversing would have left the unreviewed half-state the STOP rule
-exists to prevent). Nothing was mutated. Malin reviewed the situation and chose **finish it
-forward**: re-review the actual bytes, fix what the reviewers flag, then commit.
-
-**Why a fresh review was mandatory, not ceremony.** Every marker in `.claude/state/` was dated
-2026-07-29 and pinned the previous commit's blob shas. `firebase_data_export_repository.dart`,
-`firebase_group_weekly_menu_plan_repository.dart` and the new 196-line
-`shared_shopping_list_export.dart` appeared in NO marker at all. BUT-1726's acceptance
-criterion 4 is literally "firebase-backend-security reviews the diff".
-
-**Review executed 2026-07-30** — six specialists over the full changed fileset in four area
-batches (shopping repository layer, GDPR export, service/UI/l10n, parsing), recomputed from
-`git status`, not from the plan's declared filesets. Gate mapping recomputed the same way:
-`cloud-functions-specialist` and `firestore-rules-tester` do NOT fire (Agent C touched
-`functions/scripts/`, not `functions/src/`; `firestore.rules` is byte-unchanged).
-
-### Fix scope authorised by this section (blocking + safety findings only)
-
-Everything else the reviewers raised is ticketed, not fixed here.
-
-1. **`text_import_strategy.dart` — allergen safety.** `_bareGlutenIngredient` was added to the
-   headerless fallback title loop only; the primary `_extractTitleFromText` path had no guard,
-   so any colon-terminated gluten word of 5+ characters (`Mjöl:`, `Havregryn:`, every `*mjöl:`
-   compound) became the recipe title and was then skipped in STAGE 3 — leaving the tagging
-   input entirely. The shipped test used `"Råg:"` (4 chars), which never reaches that path, so
-   it read as coverage without being any. Guard added, test re-pointed at `"Havregryn:"`.
-   **Narrowed after re-review:** the first attempt also mirrored the fallback loop's
-   `_ingredientSubHeading` skip, which matches any colon-terminated label of <=4 digit-free
-   words — most Swedish dish names. `"Kladdkaka:"` as a caption's first line would have lost
-   its title entirely and then been promoted to a component section, putting every ingredient
-   in a false group named after the dish. Only the bare-gluten half — the allergen-safety
-   half — is guarded; the title question is BUT-1754.
-2. **`ingredient_preprocessor_test.dart` — two vacuous tests.** `'paprika. 2 st'` and
-   `'2 tsk kanel'` contain no `ca` substring at all, so neither could fail with the boundary
-   deleted. Re-fixtured onto `'tapioca. 2 st'`, `'2 dl pecannötter'`, `'1 st focaccia'`.
-3. **`ACCEPTED_DEVIATIONS.md` + a test comment — a false claim about code.** Both said `"Mjöl:"`
-   used to ride through as `mjöl:` pre-carve-out. It did not: `isValidIngredient` dropped it as
-   an orphan fragment (5 chars, single token, no digit). Corrected in place with a dated
-   supersede note rather than a silent delete.
-4. **`shared_shopping_list_export.dart` — GDPR bundle integrity.** A total section failure
-   returned `{'error': e.toString()}`: raw Firestore text (which can carry uids and doc paths)
-   into a file the data subject may forward to IMY, and with no `error_code` the section never
-   reached `export_metadata.warnings`, so the bundle claimed to be clean while a household's
-   whole shared-shopping history was missing. Generic message + `error_code`, per the
-   convention `family_export_manager.dart` already states. The contributor-probe catch also
-   asserted one cause for every failure; now branched on `permission-denied`.
-5. **`firebase_data_export_repository.dart` — cost.** The contributor probe is
-   redundant-on-success (its result set is provably a subset of the owner and member probes
-   under the read rule) and its only unique product is the failure signal, so it ran up to 501
-   duplicate document reads per export. Capped at 1.
-6. **`shopping_list_permission_guards.dart` — permanent lockout.** The new drift check compared
-   `createdAt` with `DateTime.==`, and `SerializationUtils.safeRequiredDateTime` falls back to
-   `clock.now()` for a missing/unparseable field — so a legacy shared list yields a different
-   value on every read and every membership change is refused forever, with advice ("reload the
-   list") that can never succeed. **Two attempts; the first was rejected by re-review and is
-   worth recording.** A "both values look freshly synthesised" time window FAILED, because the
-   base's value is anchored to the last snapshot emission, which is unbounded — a member dialog
-   open for four minutes falls through it, while unit tests build both sides milliseconds apart
-   and show it as fully fixed. It also left the fabricated `createdAt` in the write payload, and
-   the owner branch of the update rule carries no field constraints, so the server would have
-   persisted "created at the moment someone changed a member". What shipped instead: `createdAt`
-   is dropped from the drift set entirely (`ownerId` and `memberPermissions` carry the whole
-   access-control statement, and both comparisons are untouched), and the field is stripped from
-   the declared-base payload so a membership write can never move it. The deterministic fix
-   belongs at the parse seam — BUT-1755, which also covers the same premise still live on the
-   non-owner path at `:74` (pre-existing, from BUT-1683).
-7. **Sharing dialog — a fabricated error cause.** `consumeMutationError()` is read at three
-   dialog branches, but the clearing (`_beginMutation`) happens inside the service, below early
-   `return false` branches that never reach it. A parked message from an unrelated earlier
-   failure was shown as the cause. Cleared at the true entry points; the read also hoisted
-   above the `mounted` guard (the read is what clears it, so bailing first strands it), and
-   `_removeMember`'s missing `mounted` check added. A partial multi-member add no longer reports
-   plain success. **Two follow-on defects re-review caught inside that fix:** the partial-failure
-   reason was read AFTER the loop, but every iteration clears the slot on entry, so only the last
-   friend's outcome survived — usually null, i.e. the cause-free fallback in every case except
-   when the failing friend happened to be last; it is now captured at the moment of failure. And
-   the new `if (!mounted) return;` routed straight into the `catch`/`finally` blocks' unguarded
-   `setState` (a `return` inside `try` still runs `finally`, and the dialog is barrier-
-   dismissible), so both are now mounted-guarded. The add loop also iterates a COPY of the
-   selection, since a checkbox tapped mid-flight would mutate the set under the iterator.
-8. **`collaborative_shopping_operations_test.dart` — the mapping had no test.** Nothing asserted
-   that `StaleAccessControlBaseException` maps to `shoppingListChangedElsewhere` rather than the
-   generic permission line; the "this arm MUST precede `PermissionDeniedException`" invariant was
-   enforced by a code comment only, and a switch-arm reorder would have silently reverted the
-   whole ticket with every test green.
-
-### Founder decision recorded 2026-07-30
-
-**The shared-shopping-list GDPR export ships with other members' raw user ids, their permission
-levels, and the full `contributorUserIds` array (which by design includes people who have LEFT
-the list), unredacted — Malin's explicit call, made 2026-07-30.** The security reviewer escalated
-it rather than filing it, on the grounds that the BUT-1732 deviation authorising it was written
-*inside this same uncommitted change* and argued by analogy from BUT-1450, whose own text records
-a human override. That analogy did not transfer; this is now decided on its own terms. Rationale
-Malin accepted: the requesting user's own client can already read every one of these documents
-under `firestore.rules`, so the export packages data they can already see rather than disclosing
-anything new, and the export's selectors deliberately mirror the deletion cascade's — the Art. 15
-"show me" side matching the Art. 17 "erase me" side. Display names ARE stripped (all six keys,
-pinned by a derived-key test). Recorded in `ACCEPTED_DEVIATIONS.md` and the always-on digest.
-
-### Knowingly shipped without a test (ticketed, not fixed here)
-
-The three export query predicates and the group-menu-plan predicate have no test that builds the
-real repository — every current test stubs the repository away behind a `Fake`. Someone
-"tidying" `isNull: false` back to `isNotEqualTo: null` reverts the fix silently: the SDK drops a
-literal-null condition entirely, the query degrades to an unfiltered collection read, the server
-refuses it, and the section ships `{'error': …}` with nothing red. That is how the original bug
-survived. The shipped code is correct — verified against `cloud_firestore 6.6.0` `query.dart:659`
-and `:676-683` by two independent reviewers — so this is a durability gap, not a defect, and it
-does not justify holding the fix. Tracked on BUT-1746.
-
-## Outcome — graded 2026-07-30
-
-Legend: `[x]` verified clean at ship · `[!]` code landed, a criterion is unmet, ticket stays open.
+## Outcome — graded 2026-07-30, shipped in `c17c4068e`
 
 | Ticket | Disposition | What actually shipped |
 | --- | --- | --- |
-| BUT-1741 | **Done** | All four shopping-module audit callbacks retyped `Future<void>`; all 17 call sites await, the one fire-and-forget is an explicit `unawaited()` with a stated why. Load-bearing tests (mutation-stripping the awaits reddens 4). |
-| BUT-1715 | **Done** | Swedish word boundaries for dotted abbreviations; verified by execution, not by reading. Two vacuous boundary tests found and re-fixtured at ship. |
-| BUT-1729 | **Done** | Four rules-coverage gate holes, each independently mutation-confirmed. |
-| BUT-1740 | **Done** | CI guard suites can no longer be silently deregistered; mutation-tested end-to-end, `package.json` restored byte-identical. |
-| BUT-1739 | **Done** | Qualifier stripped before the leading-quantity regex, so `"ca 2 dl grädde"` → `"grädde"`. The outcome verifier claimed this never landed and that 7 golden tests were red; both claims were false — the reorder is at `recipe_text_normalizer.dart:168-169` and the suite is 24/24 green (run at ship, output pasted). No ticket filed. |
-| BUT-1733 | **Done** `[!]` AC2 | Contributor trail extended on the whole-list update via rule-compatible `arrayUnion`; correctness and data-safety both verified. AC2 asked for ONE shared test helper asserting the invariant at all three write sites; six hand-rolled inline assertions landed instead, so a fourth write path added later would not fail loudly. Behaviour is right, the guard-rail is not. Follow-up filed. |
-| BUT-1726 | **In Review** | The round-1 Critical (the ACL guard was opt-in with no production caller, so every membership write silently no-opped) is genuinely closed — full chain traced by three reviewers. AC4 (security review) is now met and passed. Still open because the declared `base` is taken from the stream-fresh service copy, not the copy the human is looking at, so the guard is weaker than the ticket promised and a member removed on another device can still be re-granted. That specific hole is pre-existing on `main`, not introduced here. |
-| BUT-1732 | **In Review** | Three of the deletion cascade's four shared-list selectors ship (owner, member, contributor); `lastActivityByUserId` does not, so a list found only by that handle is still missing from the export. Needs a Cloud Function path — BUT-1747. |
-| BUT-1727 | **In Review** | The gluten rescue reaches the real import path and the title-path hole found at ship is now closed. AC2's cross-class agreement test against `RecipeSectionDetector` was never written, and a shipped test asserts the two paths diverge on `"Mjölk:"` — safe direction (the row stays in the flat list; a registry miss degrades to UNKNOWN, never a false FREE), but undocumented against the criterion. |
+| BUT-1741 | **Done** | All four shopping-module audit callbacks retyped `Future<void>`; all 17 call sites await, one explicit `unawaited()` with a stated why. |
+| BUT-1715 | **Done** | Swedish word boundaries for dotted abbreviations fixed at both call sites. |
+| BUT-1729 | **Done** | Four rules-coverage gate holes, each mutation-confirmed. |
+| BUT-1740 | **Done** | CI guard suites can no longer be silently deregistered. |
+| BUT-1739 | **Done** | `"ca 2 dl grädde"` → `"grädde"`, 24/24 golden tests green. |
+| BUT-1733 | **Done** `[!]` AC2 | Contributor trail extended; AC2's shared-test-helper ask unmet (six inline assertions instead) — now BUT-1758. |
+| BUT-1726 | **In Review** | Round-1 Critical closed; a device-staleness gap is pre-existing, not introduced here. Design diverged from plan with no ADR — now BUT-1752. |
+| BUT-1732 | **In Review** | 3 of 4 selectors ship; `lastActivityByUserId` needs a Cloud Function — now BUT-1747. |
+| BUT-1727 | **In Review** | Gluten rescue reaches the real import path; cross-class agreement test (AC2) undocumented. |
 | BUT-1677 | **Closed — obsolete** | Every criterion met by `22e960af3` + `e14455ceb`. |
-| BUT-1697 | **Closed — obsolete** | All three defects fixed in `e14455ceb`; the one remaining thread is BUT-1718. |
+| BUT-1697 | **Closed — obsolete** | All three defects fixed in `e14455ceb`; remaining thread is BUT-1718. |
 
-**Follow-ups filed 2026-07-30:** BUT-1745 (this ship decision — closed by this commit), BUT-1746
-(forbid `isNotEqualTo: null` + the missing query-shape tests), BUT-1747 (GDPR: lists the user has
-left), BUT-1748 (~50 remaining bare `logPermissionCheck` calls), BUT-1749 (member-dialog widget
-test), BUT-1750 (workflow map — done in this commit), BUT-1751 (doc hygiene — done in this
-commit), BUT-1752 (ADR for the unplanned repository-interface method).
-**Filed during the ship review itself:** BUT-1753 (contributor-probe read amplification, and the
-rules trap hiding in the obvious `.limit(1)` fix), BUT-1754 (may a lone colon line be a title —
-the two title paths disagree), BUT-1755 (`createdAt` synthesised per read; fix at the parse seam),
-BUT-1756 (pre-existing flaky comments test: strict `isAfter` on two same-tick timestamps).
+**Founder decision recorded 2026-07-30:** the shared-shopping-list GDPR export ships with
+other members' raw user ids, permission levels and the full `contributorUserIds` array
+unredacted — Malin's explicit call. Display names ARE stripped. Recorded in
+`ACCEPTED_DEVIATIONS.md` and the always-on digest.
 
-**One measurement worth keeping honest.** The comments integration test failed twice during ship
-verification while a clean HEAD worktree passed twice, which read as "this sprint caused it". More
-samples killed that: the same tree then passed, the test passes in isolation, and nothing in this
-diff touches the comments path. It is a pre-existing same-tick timing flake (BUT-1756). Two samples
-are not enough to attribute a NONDETERMINISTIC failure — the worktree control was the right
-instinct applied to too little data.
+**Follow-ups filed 2026-07-30:** BUT-1745 (closed by the ship commit), BUT-1746, BUT-1747,
+BUT-1748, BUT-1749, BUT-1750 (done in commit), BUT-1751 (done in commit), BUT-1752, BUT-1753,
+BUT-1754, BUT-1755, BUT-1756, BUT-1758 (filed after ship, from BUT-1733's own AC2 gap).
 
 ---
 
 # Archived — 2026-07-27 sprint (10 tickets, shipped 2026-07-29 in `e14455ceb`)
 
-Backlog scanned: 118 Backlog + 6 Todo + 0 In Progress + 0 Triage, team Butlery (Linear MCP
-live). Two backlog items (BUT-677, BUT-722) carry `onboarding-reserved` and were excluded
-from scoring entirely, per instruction.
-
-**Ship-state check first.** The 2026-07-26 sprint's own todo.md ended "STAGED AND
-UNCOMMITTED" with all Linear transitions HELD. That work has since shipped: commit
-`22e960af3` ran nine specialist review passes over the real diff, fixed 12 blocking defects,
-and closed BUT-1675/1681/1683/1686/1691/1696/1698 as Done.
-
-**Obsolete:** BUT-1703 ("SHIP BLOCKER: no specialist has reviewed the 2026-07-26 sprint
-diff") — closed citing `22e960af3`; then found live again on this sprint's own diff and
-re-closed citing `e14455ceb` (see outcome table below).
-
 Selected: BUT-1723, BUT-1719, BUT-1705, BUT-1725 (Agent A — shopping/account, full-panel),
 BUT-1713, BUT-1714 (Agent B — parsing, single), BUT-1707, BUT-1709, BUT-1708, BUT-1695
-(Agent C — backend/CI, single).
-
-## Outcome — graded 2026-07-28, shipped 2026-07-29 in `e14455ceb`
-
-Legend: `[x]` verified clean at ship · `[!]` code landed but a criterion failed or needed a
-second pass.
-
-| Ticket | Ship-day disposition | What actually shipped |
-| --- | --- | --- |
-| BUT-1713 | **Done** | Swedish letters survive the unit-regex strip; golden fingerprint re-pinned. |
-| BUT-1709 | **Done** | `check-test-registration.test.js` + registered in the unit lane. |
-| BUT-1723 | **Done** (fixed at ship) | Items fan out to the subcollection on create; source delete gated on non-cache readback. The 2026-07-28 marker-coverage gap was closed by the `e14455ceb` full re-review. |
-| BUT-1719 | **Done** (fixed at ship) | Narrowed `update()` + per-key `FieldValue.delete()`. The `baseIsCached`-wrong-copy gap is now BUT-1726 (selected above, still open). |
-| BUT-1705 | **Done** (fixed at ship) | `profileDisplayName`, no Auth fallback, at both call sites; cascade + residual probe widened. |
-| BUT-1725 | **Done** (fixed at ship) | Contributor trail landed; two NEW blocking defects found and fixed during the `e14455ceb` review pass: an erased-owner uid the backfill was re-creating into an append-only field, and a migration that silently stalled at ~10,350/20,000 docs while reporting success. The `updateCollaborativeList`-doesn't-union gap is now BUT-1733 (selected above). |
-| BUT-1714 | **Done** (fixed at ship), product call recorded | Gluten carve-out rescues bare `Mjöl:`/`Råg:`/`Öl:` as ingredients, colon-stripped (an additional bug found and fixed at ship: the colon-inclusive form broke the lookup key and forced every allergen UNKNOWN). The twin-hinge gap (`TextImportStrategy`) is now BUT-1727 (selected above). |
-| BUT-1707 | **Done** (fixed at ship) | Rules-coverage gate hardened, first test suite. Three reproduced holes are now BUT-1729 (selected above). |
-| BUT-1708 | **Done**, report-only per Malin's default | Untested-block count printed + persisted per run. |
-| BUT-1695 | **In Review → superseded** | Only the `dart_test.yaml` tag change landed; the real emulator CI leg reproduced a `PlatformException`. Successor BUT-1730 (deferred to capacity above, needs a harness fix first). |
-| BUT-1703 | **Re-closed** | Found live again on this diff (stale markers), then closed for real once `e14455ceb`'s five specialists reviewed the actual committed bytes. |
-
-**Follow-ups filed 2026-07-28, most now processed above:** BUT-1726, BUT-1727, BUT-1728
-(shipped — rules test suite for `keepsContributorTrail()`), BUT-1729, BUT-1730, BUT-1731,
-BUT-1732, BUT-1733, BUT-1734, BUT-1735, BUT-1736, BUT-1737, BUT-1738, BUT-1739.
-**Follow-ups filed 2026-07-29 (`e14455ceb` review pass):** BUT-1740, BUT-1741, BUT-1742,
-BUT-1743, BUT-1744.
-
-*(Full per-ticket bodies and deviation log from this sprint trimmed here for length — see
-git history of this file for the complete 2026-07-27 record.)*
+(Agent C — backend/CI, single). All shipped Done except BUT-1695 (superseded by BUT-1730)
+and BUT-1703 (re-closed). Full detail trimmed — see prior git history of this file.
 
 ---
 
-# Archived — 2026-07-26 sprint (10 tickets, shipped 2026-07-27 in `22e960af3`)
+# Archived — 2026-07-26 sprint and earlier
 
-Trimmed for length — fully shipped. See prior git history of this file for the complete
+Trimmed for length — all fully shipped. See prior git history of this file for the complete
 record if needed.
-
----
-
-# Archived — 2026-07-25 sprint (10 tickets + BUT-1679 ship remediation) and 2026-07-23 sprint (BUT-1655)
-
-Trimmed for length — both fully shipped (`38d3a715e`, `c0989a3a3`, `d057b6c2d`). See prior
-git history of this file for the complete record if needed.

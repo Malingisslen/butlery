@@ -4,6 +4,8 @@
 library;
 
 import 'package:cloud_functions/cloud_functions.dart';
+// `UserMetadata` only — `User` would clash with the project's own models.
+import 'package:firebase_auth/firebase_auth.dart' show UserMetadata;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -33,6 +35,22 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 
 // Mocks
 class MockFirestoreRepository extends Mock implements FirestoreRepository {}
+
+/// BUT-1721: `MockUser` (production_mocks) stubs `uid` and `email` but NOT
+/// `metadata`, and mocktail throws on an unstubbed non-nullable getter — so
+/// `_exportUserProfile`'s `currentUser?.metadata.creationTime` threw and the
+/// `profile` section of EVERY bundle in this file came back as
+/// `{'error': 'Failed to export user profile'}`. That stayed invisible while
+/// `export_metadata.warnings` keyed on `error_code` alone. It is a fixture
+/// defect, not a production one (a real `User` always carries metadata), so the
+/// fix is to stub it rather than to relax the warning contract.
+class _FakeUserMetadata extends Fake implements UserMetadata {
+  @override
+  DateTime? get creationTime => DateTime.utc(2026, 1, 1);
+
+  @override
+  DateTime? get lastSignInTime => DateTime.utc(2026, 5, 1);
+}
 
 // BUT-1449: the GDPR export's family section (FamilyExportManager) resolves
 // HouseholdRepository via the production ServiceLocator, which this test does
@@ -155,6 +173,110 @@ class _SuccessThenTransientHttpsCallable extends Fake implements HttpsCallable {
   }
 }
 
+/// BUT-1721: a gateway whose conversation probe reports a CLIPPED conversation.
+///
+/// The flag it returns is exactly what the real probe sets when a conversation
+/// holds more messages than the per-conversation cap. Seeding 1001 messages into
+/// the fake would prove the same thing at a hundred times the runtime, and what
+/// is under test here is the AGGREGATOR: whether a flag nested inside a LIST of
+/// conversation maps reaches `export_metadata.truncated_collections`.
+class _ClippedConversationsExportRepository
+    extends FirebaseDataExportRepository {
+  _ClippedConversationsExportRepository({
+    required super.firestore,
+    required super.authRepository,
+  });
+
+  @override
+  Future<List<Map<String, dynamic>>> exportConversationsAndMessages(
+    String userId, {
+    int maxConversations = 100,
+    int maxMessagesPerConversation = 500,
+  }) async => [
+    <String, dynamic>{
+      'id': 'convo-1',
+      'data': <String, dynamic>{
+        'participantIds': [userId],
+      },
+      'messages': [
+        <String, dynamic>{
+          'id': 'msg-1',
+          'data': <String, dynamic>{'senderId': userId, 'text': 'Hej'},
+        },
+      ],
+      'messages_truncated': true,
+    },
+  ];
+}
+
+/// BUT-1721: a gateway whose profile read fails. `_exportUserProfile` catches it
+/// and returns `{'error': ...}` with NO `error_code` — the shape most export
+/// sections still use, and the one that was invisible in
+/// `export_metadata.warnings`.
+class _FailingProfileExportRepository extends FirebaseDataExportRepository {
+  _FailingProfileExportRepository({
+    required super.firestore,
+    required super.authRepository,
+  });
+
+  @override
+  Future<Map<String, dynamic>?> exportPrivateProfile(String userId) async =>
+      throw StateError('profile read failed');
+}
+
+/// BUT-1732: fails the `preferences` section with an exception whose text
+/// carries exactly what must never reach the bundle ROOT — ANOTHER data
+/// subject's uid inside a composite doc id, plus a `create_composite` index URL
+/// naming a member field path and the project id.
+///
+/// `PreferencesExportManager.exportPreferences` still returns
+/// `{'error': e.toString()}`, so this is a REAL leak path, not a contrived one:
+/// the suppression under test is the aggregator's, which is the single place
+/// that decides what gets promoted to `export_metadata.warnings[].message`.
+class _LeakyPreferencesExportRepository extends FirebaseDataExportRepository {
+  _LeakyPreferencesExportRepository({
+    required super.firestore,
+    required super.authRepository,
+  });
+
+  static const String foreignUid = 'uid-of-another-person-9f2e45';
+  static const String indexUrl =
+      'https://console.firebase.google.com/project/butlery-prod-42/firestore/'
+      'indexes?create_composite=memberPermissions.$foreignUid';
+
+  @override
+  Future<Map<String, dynamic>?> exportSettingsPreferences(
+    String userId,
+  ) async => throw StateError(
+    'PERMISSION_DENIED reading blocks/${userId}_$foreignUid; $indexUrl',
+  );
+}
+
+/// BUT-1721 (fix round): the PARTIAL shape — a section that sets `error_code`
+/// but NOT `error`.
+///
+/// `SharedShoppingListExport` is the one section that does this, deliberately:
+/// its contributor probe is the only one a rules refusal can stop, so a
+/// transient failure there leaves the owner and member probes' lists in the
+/// section body along with an accurate note. The section WAS exported; one of
+/// its three lookups was not.
+///
+/// A non-`permission-denied` exception is what makes it a warning rather than
+/// the documented rules-refusal note, so the throw below is a `StateError`.
+class _TransientContributorProbeRepository
+    extends FirebaseDataExportRepository {
+  _TransientContributorProbeRepository({
+    required super.firestore,
+    required super.authRepository,
+  });
+
+  @override
+  Future<List<Map<String, dynamic>>> exportSharedShoppingListsAsContributor(
+    String userId, {
+    int maxDocuments = 500,
+  }) async => throw StateError('deadline exceeded on the contributor probe');
+}
+
 class _SuccessThenTransientFirebaseFunctions extends Fake
     implements FirebaseFunctions {
   final _SuccessThenTransientHttpsCallable _callable =
@@ -189,6 +311,13 @@ void main() {
       mockFirestoreRepository = MockFirestoreRepository();
 
       mockUser.setUserState(uid: testUserId, email: testEmail);
+      // See [_FakeUserMetadata]: without these two stubs the profile section
+      // fails in every test in this file. `MockUser` covers `uid`, `email` and
+      // `displayName` only, and mocktail throws on any other non-nullable
+      // getter — `emailVerified` and `metadata` are both read by
+      // `_exportUserProfile`.
+      when(() => mockUser.emailVerified).thenReturn(true);
+      when(() => mockUser.metadata).thenReturn(_FakeUserMetadata());
       mockAuthRepository.setAuthState(
         user: mockUser,
         userId: testUserId,
@@ -977,7 +1106,6 @@ void main() {
 
           final jsonString = await transientService.exportUserData();
           final data = json.decode(jsonString) as Map<String, dynamic>;
-
           // The audit_logs section itself still carries the transient envelope.
           expect(data['audit_logs']['error_code'], 'unavailable');
 
@@ -992,9 +1120,19 @@ void main() {
                 'warning entry so the consuming UI can flag the partial '
                 'bundle without scanning every section.',
           );
-          expect(warnings, hasLength(1));
-          final entry = warnings!.single as Map<String, dynamic>;
-          expect(entry['section'], 'audit_logs');
+          // Scoped to audit_logs rather than asserting the whole array's
+          // length. This fixture wires ONLY the compliance manager and the
+          // export gateway, so eleven other sections legitimately fail with
+          // "ServiceLocator not initialized" — they always did, and BUT-1721
+          // is precisely the change that stopped those failures being invisible
+          // at bundle level. The over-warning direction is guarded by the
+          // fully-wired happy-path test below, which asserts NO warnings key.
+          final auditEntries = warnings!
+              .cast<Map<String, dynamic>>()
+              .where((w) => w['section'] == 'audit_logs')
+              .toList();
+          expect(auditEntries, hasLength(1));
+          final entry = auditEntries.single;
           expect(entry['error_code'], 'unavailable');
           expect(entry['message'], isNotEmpty);
         });
@@ -1005,7 +1143,6 @@ void main() {
           // which returns empty audit-log pages — no error_code anywhere.
           final jsonString = await service.exportUserData();
           final data = json.decode(jsonString) as Map<String, dynamic>;
-
           expect(
             data['export_metadata'].containsKey('warnings'),
             isFalse,
@@ -1014,9 +1151,335 @@ void main() {
                 'reports an error_code; happy-path bundles must not carry '
                 'an empty array.',
           );
+          // BUT-1721, the OVER-claiming direction. `_declaresTruncation` walks
+          // every nested map and list of a section, whole Firestore documents
+          // included, and matches any key `truncated` / `*_truncated` whose
+          // value is `true`. Its only remaining failure mode is therefore a
+          // bundle that admits incompleteness it does not have — an Art. 15
+          // artifact telling the data subject rows were dropped when none were.
+          // The nested-flag test below covers the under-claiming direction; this
+          // is the pair to it. Measured, not assumed: it kills a walk capped at
+          // the section root, and a walk that lifted every section. It CANNOT
+          // kill a lost `== true` test, because no emitter under
+          // `lib/services/account/export/` ever writes the flag false — every
+          // one sits behind an `if`. Don't restore that claim.
+          expect(
+            data['export_metadata'].containsKey('truncated_collections'),
+            isFalse,
+            reason:
+                'nothing in a fully-wired happy-path bundle is truncated, so '
+                'the deep walk must find no flag to lift',
+          );
+          expect(
+            data['export_metadata'].containsKey('data_completeness'),
+            isFalse,
+          );
         });
       },
     );
+
+    /// BUT-1721: the AGGREGATOR's own two lifts, which had zero coverage — every
+    /// existing truncation test asserts a manager's section-root flag, and the
+    /// warnings tests above only cover a section that already sets `error_code`.
+    /// Both lifts are the only thing standing between a partial GDPR bundle and
+    /// a bundle that silently claims to be complete.
+    group('BUT-1721: bundle-level completeness metadata', () {
+      test('a truncation flag nested inside a LIST reaches '
+          'truncated_collections', () async {
+        // `messages` states truncation per conversation, and `conversations` is
+        // a LIST — so the pre-fix walk (`for (final nested in value.values)`
+        // with an `is Map` test) could never see it: the list itself is not a
+        // Map, and the flag is one level further down.
+        final clippedService = DataExportService(
+          authRepository: mockAuthRepository,
+          firestoreRepository: mockFirestoreRepository,
+          householdRepository: _emptyFamilyHouseholdRepo(),
+          complianceExportManager: ComplianceExportManager(
+            functions: _FakeFirebaseFunctions(),
+            dataExportRepository: FirebaseDataExportRepository(
+              firestore: fakeFirestore,
+              authRepository: mockAuthRepository,
+            ),
+          ),
+          dataExportRepository: _ClippedConversationsExportRepository(
+            firestore: fakeFirestore,
+            authRepository: mockAuthRepository,
+          ),
+        );
+
+        final data =
+            json.decode(await clippedService.exportUserData())
+                as Map<String, dynamic>;
+
+        // Premise: the section really does carry the flag, nested in the list.
+        final conversations =
+            (data['messages'] as Map<String, dynamic>)['conversations']
+                as List<dynamic>;
+        expect(
+          (conversations.single as Map<String, dynamic>)['messages_truncated'],
+          isTrue,
+          reason: 'fixture must stage the nested flag the walk has to find',
+        );
+
+        expect(
+          data['export_metadata']['truncated_collections'],
+          contains('messages'),
+          reason:
+              'a bundle that dropped messages must say so at bundle level; '
+              'nobody reads 30 sections looking for a nested flag',
+        );
+        expect(
+          data['export_metadata']['data_completeness'],
+          contains('messages'),
+        );
+        // And ONLY messages. This is the falsifiable half of the over-claiming
+        // direction: `contains` above stays green for a walk that lifted every
+        // section (or that matched `truncated_collections` itself once the
+        // metadata map grew a nested one), and a bundle claiming rows were
+        // dropped from sections that shipped whole is as wrong an Art. 15
+        // answer as one that hides a real gap. Every other manager emits
+        // `'truncated': true` conditionally, so no section here can carry the
+        // flag by accident.
+        expect(
+          (data['export_metadata']['truncated_collections'] as List<dynamic>)
+              .cast<String>(),
+          ['messages'],
+        );
+      });
+
+      test('a section that fails WITHOUT an error_code still surfaces as a '
+          'warning', () async {
+        // Most export sections still fail with `{'error': ...}` alone; keying
+        // the lift on `error_code` meant a whole Art. 15 section could be
+        // missing while the metadata claimed the bundle was complete.
+        final failingService = DataExportService(
+          authRepository: mockAuthRepository,
+          firestoreRepository: mockFirestoreRepository,
+          householdRepository: _emptyFamilyHouseholdRepo(),
+          complianceExportManager: ComplianceExportManager(
+            functions: _FakeFirebaseFunctions(),
+            dataExportRepository: FirebaseDataExportRepository(
+              firestore: fakeFirestore,
+              authRepository: mockAuthRepository,
+            ),
+          ),
+          dataExportRepository: _FailingProfileExportRepository(
+            firestore: fakeFirestore,
+            authRepository: mockAuthRepository,
+          ),
+        );
+
+        final data =
+            json.decode(await failingService.exportUserData())
+                as Map<String, dynamic>;
+
+        // Premise: the section failed, and it did so WITHOUT an error_code.
+        expect((data['profile'] as Map<String, dynamic>)['error'], isNotNull);
+        expect(
+          (data['profile'] as Map<String, dynamic>).containsKey('error_code'),
+          isFalse,
+          reason:
+              'this test is about the codeless shape; if the profile section '
+              'starts setting its own token, point this at another one',
+        );
+
+        final warnings =
+            data['export_metadata']['warnings'] as List<dynamic>? ??
+            const <dynamic>[];
+        final profileWarning = warnings
+            .cast<Map<String, dynamic>>()
+            .where((w) => w['section'] == 'profile')
+            .toList();
+        expect(
+          profileWarning,
+          hasLength(1),
+          reason: 'a failed section is one top-level warning, named',
+        );
+        expect(profileWarning.single['error_code'], 'profile-export-failed');
+        expect(profileWarning.single['message'], isNotEmpty);
+
+        // The OUTRIGHT-failure arm of the message branch, and the higher-stakes
+        // one. Its sibling test pins the partial shape; without this line the
+        // branch could be inverted or dropped and the bundle root would tell the
+        // data subject "may be incomplete — one of its lookups did not complete"
+        // about a section that shipped NOTHING but an error envelope. That is an
+        // Art. 15 UNDER-claim, and a reader who is told a lookup was slow does
+        // not re-request.
+        expect(
+          profileWarning.single['message'],
+          contains('could not be exported'),
+        );
+
+        // `data_completeness` has TWO arms and this fixture exercises only one
+        // of them: a section failed, nothing was clipped. Without these the
+        // warnings arm could be deleted outright and the whole suite would stay
+        // green — which is the exact defect the aggregator was changed to close
+        // (the field stayed ABSENT when sections failed, byte-identical to a
+        // fully successful bundle).
+        final completeness =
+            data['export_metadata']['data_completeness'] as String;
+        expect(
+          completeness,
+          contains('could not be exported or are incomplete'),
+        );
+        expect(
+          completeness,
+          isNot(contains('size limits')),
+          reason: 'nothing was clipped — the two arms must not be confused',
+        );
+      });
+
+      /// The mirror of the test above, and the one that was missing: a section
+      /// that sets `error_code` but NOT `error` did not fail — it PARTIALLY
+      /// succeeded. Lifting it with a flat "could not be exported" is the same
+      /// class of defect BUT-1721 exists to close, with the sign flipped: an
+      /// Art. 15 bundle telling the data subject a section is missing when it
+      /// shipped whole. The subject may forward that artifact to a supervisory
+      /// authority, so an over-claim costs as much as an under-claim.
+      test('a section that sets error_code WITHOUT error is reported as '
+          'incomplete, not as failed', () async {
+        final partialService = DataExportService(
+          authRepository: mockAuthRepository,
+          firestoreRepository: mockFirestoreRepository,
+          householdRepository: _emptyFamilyHouseholdRepo(),
+          complianceExportManager: ComplianceExportManager(
+            functions: _FakeFirebaseFunctions(),
+            dataExportRepository: FirebaseDataExportRepository(
+              firestore: fakeFirestore,
+              authRepository: mockAuthRepository,
+            ),
+          ),
+          dataExportRepository: _TransientContributorProbeRepository(
+            firestore: fakeFirestore,
+            authRepository: mockAuthRepository,
+          ),
+        );
+
+        final data =
+            json.decode(await partialService.exportUserData())
+                as Map<String, dynamic>;
+
+        // Premise: the section really is in the partial shape. Without this the
+        // assertions below would pass against any section that simply succeeded.
+        final section =
+            data['shared_shopping_lists'] as Map<String, dynamic>? ??
+            const <String, dynamic>{};
+        expect(
+          section['error_code'],
+          'shared-shopping-lists-contributor-probe-failed',
+          reason: 'fixture must stage the error_code-without-error shape',
+        );
+        expect(
+          section.containsKey('error'),
+          isFalse,
+          reason: 'the section did not fail outright — that is the whole point',
+        );
+
+        final warnings =
+            data['export_metadata']['warnings'] as List<dynamic>? ??
+            const <dynamic>[];
+        final listWarning = warnings
+            .cast<Map<String, dynamic>>()
+            .where((w) => w['section'] == 'shared_shopping_lists')
+            .toList();
+        expect(listWarning, hasLength(1));
+        expect(
+          listWarning.single['message'],
+          isNot(contains('could not be exported')),
+          reason:
+              'the section WAS exported; claiming otherwise at bundle root is '
+              'the over-claiming half of this ticket',
+        );
+        expect(listWarning.single['message'], contains('may be incomplete'));
+      });
+
+      test(
+        'BUT-1732: a lifted warning message is DERIVED, never the raw exception '
+        '— no foreign uid and no index URL at the bundle root',
+        () async {
+          // Lifting a section field to bundle level changes its blast radius:
+          // `export_metadata.warnings[].message` sits at the ROOT of the Art. 15
+          // bundle the data subject downloads and may forward to a supervisory
+          // authority. Copying `value['error']` through put raw Firestore text
+          // there. Mutation test: restore
+          // `'message': value['error'] ?? value['note'] ?? 'Unknown error'` in
+          // `data_export_service.dart` and both isNot(contains(...)) assertions
+          // below redden.
+          final leakyService = DataExportService(
+            authRepository: mockAuthRepository,
+            firestoreRepository: mockFirestoreRepository,
+            householdRepository: _emptyFamilyHouseholdRepo(),
+            complianceExportManager: ComplianceExportManager(
+              functions: _FakeFirebaseFunctions(),
+              dataExportRepository: FirebaseDataExportRepository(
+                firestore: fakeFirestore,
+                authRepository: mockAuthRepository,
+              ),
+            ),
+            dataExportRepository: _LeakyPreferencesExportRepository(
+              firestore: fakeFirestore,
+              authRepository: mockAuthRepository,
+            ),
+          );
+
+          final data =
+              json.decode(await leakyService.exportUserData())
+                  as Map<String, dynamic>;
+
+          // Premise: the section really did fail, and its own `error` field
+          // really does carry the leaky text — so the assertions below are
+          // about the aggregator suppressing it, not about an empty bundle.
+          // (That buried section field is the pre-existing half of BUT-1732;
+          // this test pins the ROOT, which is what this commit amplified.)
+          final section = data['preferences'] as Map<String, dynamic>;
+          expect(
+            section['error'],
+            contains(_LeakyPreferencesExportRepository.foreignUid),
+            reason:
+                'premise: preferences failed with the raw exception text. If '
+                'this fails because PreferencesExportManager started returning '
+                'a stable sentence, point this test at another manager that '
+                'still returns e.toString() — or delete it once none do.',
+          );
+
+          final warnings =
+              (data['export_metadata']['warnings'] as List<dynamic>? ??
+                      const <dynamic>[])
+                  .cast<Map<String, dynamic>>();
+          final prefWarning = warnings
+              .where((w) => w['section'] == 'preferences')
+              .toList();
+          expect(
+            prefWarning,
+            hasLength(1),
+            reason: 'the failed section must still surface as one warning',
+          );
+
+          final message = prefWarning.single['message'] as String;
+          expect(
+            message,
+            isNot(contains(_LeakyPreferencesExportRepository.foreignUid)),
+            reason:
+                'Art. 15(4): the requester\'s own bundle must not name another '
+                'data subject at its root',
+          );
+          expect(
+            message,
+            isNot(contains('create_composite')),
+            reason:
+                'an index URL embeds the project id and a memberPermissions '
+                'field path — internal topology, not the requester\'s data',
+          );
+          expect(
+            message,
+            contains('preferences-export-failed'),
+            reason:
+                'suppression must not cost the reader WHICH read failed; the '
+                'derived message still names the section and its code',
+          );
+        },
+      );
+    });
 
     group('BUT-865: partial-recovery contract (page #1 success + page #2 '
         'transient throw)', () {
@@ -1066,10 +1529,15 @@ void main() {
         // see the partial-bundle signal without scanning every section.
         final warnings = data['export_metadata']['warnings'] as List<dynamic>?;
         expect(warnings, isNotNull);
-        expect(warnings, hasLength(1));
-        final entry = warnings!.single as Map<String, dynamic>;
-        expect(entry['section'], 'audit_logs');
-        expect(entry['error_code'], 'unavailable');
+        // Scoped to audit_logs — same reason as the BUT-864 test above: this
+        // fixture wires only the compliance manager, so the sections that fall
+        // through to an uninitialised ServiceLocator now warn too (BUT-1721).
+        final auditEntries = warnings!
+            .cast<Map<String, dynamic>>()
+            .where((w) => w['section'] == 'audit_logs')
+            .toList();
+        expect(auditEntries, hasLength(1));
+        expect(auditEntries.single['error_code'], 'unavailable');
       });
     });
 

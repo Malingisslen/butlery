@@ -105,6 +105,26 @@ ActivityExportManager _manager({
   );
 }
 
+/// BUT-1721: a comments repository whose capped read throws, carrying exactly
+/// the text that must never reach the data subject.
+///
+/// The aggregator's leak test is a CONTROL, not coverage of this: it derives
+/// the bundle-root message, so it passes with the leak still present in the
+/// section body — and the section body is what the user downloads.
+class _ThrowingCommentsRepository extends Fake implements CommentsRepository {
+  static const String foreignUid = 'uid-of-another-person-9f2e45';
+
+  @override
+  Future<List<Map<String, dynamic>>> exportCommentsByAuthor(
+    String userId, {
+    int maxDocuments = -1,
+  }) async => throw StateError(
+    'PERMISSION_DENIED reading recipe_comments/me_$foreignUid; '
+    'https://console.firebase.google.com/project/butlery-prod-42/firestore/'
+    'indexes?create_composite=memberPermissions.$foreignUid',
+  );
+}
+
 /// A row with a stable, per-index id so a trimmed payload can be told apart
 /// from a re-ordered one.
 Map<String, dynamic> _row(String prefix, int i) => {
@@ -113,6 +133,46 @@ Map<String, dynamic> _row(String prefix, int i) => {
 };
 
 void main() {
+  group('ActivityExportManager failure envelope (BUT-1721)', () {
+    test('a failed comments-and-ratings read carries a stable token and never '
+        'the raw exception', () async {
+      final manager = ActivityExportManager(
+        commentsRepository: _ThrowingCommentsRepository(),
+        ratingsRepository: _FakeRatingsRepository(const []),
+        feedbackRepository: _FakeFeedbackRepository(const []),
+      );
+
+      final result = await manager.exportCommentsAndRatings('u1');
+
+      expect(
+        result['error_code'],
+        'comments-and-ratings-export-failed',
+        reason:
+            'the token is what DataExportService lifts to bundle level; '
+            'without it the section can fail while the bundle reads complete',
+      );
+      expect(
+        result['error'] as String,
+        isNot(contains(_ThrowingCommentsRepository.foreignUid)),
+        reason:
+            'another data subject`s uid must not ship inside the requester`s '
+            'Art. 15 bundle',
+      );
+      expect(
+        result['error'] as String,
+        isNot(contains('create_composite')),
+        reason: 'an index URL names the project and a member field path',
+      );
+      expect(
+        result['error'],
+        'Comments and ratings could not be exported.',
+        reason:
+            'the sentence is authored and stable — pinning it is what makes '
+            'the two assertions above non-vacuous',
+      );
+    });
+  });
+
   group('ActivityExportManager.exportCommentsAndRatings (BUT-1438)', () {
     test('includes and reshapes both comments and ratings', () async {
       final manager = _manager(

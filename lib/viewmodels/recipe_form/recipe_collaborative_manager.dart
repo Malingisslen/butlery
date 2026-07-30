@@ -12,6 +12,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -66,6 +67,30 @@ class RecipeCollaborativeManager extends ChangeNotifier
   bool get canView => _editMode == EditMode.view || canEdit;
   bool get hasPermissions => _editMode != null;
 
+  /// BUT-1736, applying BUT-1705: `profileDisplayName`, NOT the Auth handle.
+  ///
+  /// This is the LIVE writer of a realtime recipe's `ownerDisplayName` and of
+  /// `realtime_recipes/{id}/presence/{uid}.displayName`, which is rewritten
+  /// every 30s and which every co-editor reads. It used to come from
+  /// `PermissionService.currentUser`, synthesized from
+  /// `FirebaseAuth.currentUser` — the legal name on the user's Google/Apple
+  /// account, never a name they chose to expose, and invisible to the systems
+  /// that maintain such copies. `on-profile-updated.ts` propagates the PROFILE
+  /// name to `ownerDisplayName` and `lastEditedByDisplayName` on BOTH realtime
+  /// collections; the deletion cascade currently removes only the
+  /// `realtime_recipes` a user OWNS (`deleteRealtimeRecipes`) — `realtime_menus`
+  /// is in no tier, and `lastEditedByDisplayName` is scrubbed nowhere (BUT-1768).
+  /// So a profile-sourced name is reachable by at least one maintenance system;
+  /// an Auth-sourced one is reachable by the rename propagator not at all, and
+  /// by the deletion cascade only on a `realtime_recipes` doc the user owns.
+  ///
+  /// `tryGet` keeps a manager built before/without the service graph working;
+  /// an unresolved name stamps the localized unknown-user label, never an
+  /// Auth-sourced one.
+  String get _persistableDisplayName =>
+      ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
+      AppLocale.current.displayUnknownUser;
+
   Future<void> enableCollaborativeMode(Recipe recipe) async {
     if (_isCollaborative) return;
 
@@ -75,8 +100,7 @@ class RecipeCollaborativeManager extends ChangeNotifier
       );
 
       final userId = _permissionService.currentUserId;
-      final userDisplayName =
-          _permissionService.currentUser?.displayName ?? '?';
+      final userDisplayName = _persistableDisplayName;
       if (userId == null) {
         throw Exception(AppLocale.current.errorNoUserLoggedIn);
       }
@@ -279,7 +303,7 @@ class RecipeCollaborativeManager extends ChangeNotifier
     if (!_isCollaborative || _realtimeRecipe == null) return;
 
     final userId = _permissionService.currentUserId;
-    final userDisplayName = _permissionService.currentUser?.displayName ?? '?';
+    final userDisplayName = _persistableDisplayName;
 
     if (userId == null) return;
 

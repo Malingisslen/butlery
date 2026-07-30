@@ -13,6 +13,11 @@
  *   5. Probe failure graceful degradation — when a feature query throws
  *      (e.g. missing index), that flag falls back to false and the run
  *      completes.
+ *   6. BUT-1724 — the `shopped` probe reads the live
+ *      `users/{uid}/unified_shopping_lists` path and ignores the retired
+ *      `users/{uid}/shopping_lists` name.
+ *   7. BUT-1724 — a throwing `shopped` probe (missing index on that newly-read
+ *      subcollection field) degrades to false without taking the run down.
  *
  * Run with: npx ts-node src/__tests__/compute-feature-retention.test.ts
  */
@@ -202,11 +207,15 @@ function makeFakeDb(args: {
         return this;
       },
       async get() {
-        // Inject failure if requested.
+        // Inject failure if requested. Matched on EITHER the source path or the
+        // feature flag: a subcollection source's path is
+        // `users/{uid}/{sub}`, so a caller asking to fail `shopped` /
+        // `mealPlanned` / `imported` would never match on `source` alone.
         if (
           opts?.failProbeFor &&
           opts.failProbeFor.userId === args.userId &&
-          opts.failProbeFor.flag === args.source
+          (opts.failProbeFor.flag === args.source ||
+            opts.failProbeFor.flag === args.failFlag)
         ) {
           throw new Error(`simulated probe failure for ${args.source}`);
         }
@@ -228,23 +237,21 @@ function makeFakeDb(args: {
         // sub-collection on a user → activity source.
         // The SUT binds `where("core.createdAt"...)` on recipes,
         // `where("createdAt"...)` on menus,
-        // `where("updatedAt"...)` on shopping_lists.
+        // `where("updatedAt"...)` on unified_shopping_lists.
         // We model all three as activity records keyed by source name.
-        const sourceKey =
-          sub === "recipes"
-            ? `users/${uid}/recipes`
-            : sub === "menus"
-            ? `users/${uid}/menus`
-            : sub === "shopping_lists"
-            ? `users/${uid}/shopping_lists`
-            : `users/${uid}/${sub}`;
+        //
+        // The default branch keeps `users/{uid}/{sub}` addressable on
+        // purpose: it is what lets `shoppedProbeUsesLivePath` seed the
+        // RETIRED `shopping_lists` name and prove the SUT never reads it
+        // (BUT-1724). Do not narrow it to a throw.
+        const sourceKey = `users/${uid}/${sub}`;
         // Track which feature this corresponds to for failure injection.
         const flag =
           sub === "recipes"
             ? "imported"
             : sub === "menus"
             ? "mealPlanned"
-            : sub === "shopping_lists"
+            : sub === "unified_shopping_lists"
             ? "shopped"
             : sub;
         return makeActivityQuery({
@@ -575,6 +582,108 @@ async function probeFailureGracefulDegrade(): Promise<void> {
   );
 }
 
+/**
+ * BUT-1724: `shopped` must come from the LIVE personal-list path
+ * `users/{uid}/unified_shopping_lists`, never from the retired
+ * `users/{uid}/shopping_lists` name that nothing has written since
+ * BUT-1697. Two users, one seeded on each path — the live one flips
+ * `shopped`, the retired one must not.
+ */
+async function shoppedProbeUsesLivePath(): Promise<void> {
+  const now = new Date("2026-04-30T08:00:00Z");
+  const todayStartMs = Date.UTC(2026, 3, 30);
+  const inDay = todayStartMs + 6 * 60 * 60 * 1000;
+
+  const store: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+  const users: FakeUser[] = [
+    { id: "uLive", lastActiveDaysAgo: 0 },
+    { id: "uRetired", lastActiveDaysAgo: 0 },
+  ];
+  const activity: ActivityRecord[] = [
+    { source: "users/uLive/unified_shopping_lists", userId: "uLive", ts: inDay },
+    { source: "users/uRetired/shopping_lists", userId: "uRetired", ts: inDay },
+  ];
+  const db = makeFakeDb({ users, activity, flagDocs: [], store, now });
+
+  await runComputeFeatureRetention({ db: db as never, now });
+
+  const today = formatUtcDate(todayStartMs);
+  const liveFlags = store.data.get(
+    `analytics/feature_retention/users/uLive_${today}`,
+  ) as Record<string, unknown> | undefined;
+  const retiredFlags = store.data.get(
+    `analytics/feature_retention/users/uRetired_${today}`,
+  ) as Record<string, unknown> | undefined;
+  const aggregate = store.data.get(
+    `analytics/feature_retention/daily/${today}`,
+  ) as Record<string, unknown> | undefined;
+  const dau = aggregate?.dau as Record<string, number> | undefined;
+
+  const ok =
+    liveFlags?.shopped === true &&
+    retiredFlags?.shopped === false &&
+    dau?.shopped === 1;
+  record(
+    "shopped probe reads unified_shopping_lists, not the retired shopping_lists",
+    ok,
+    `live=${JSON.stringify(liveFlags)} retired=${JSON.stringify(retiredFlags)} dau=${JSON.stringify(dau)}`,
+  );
+}
+
+/**
+ * BUT-1724 risk half: the `shopped` probe is the only one that started reading a
+ * subcollection field it never queried before (`updatedAt` on
+ * `users/{uid}/unified_shopping_lists`), so a `FAILED_PRECONDITION` from a
+ * missing index is its most likely production failure. When that probe throws,
+ * `shopped` must degrade to false for that user and the rest of the run — the
+ * other four flags, the flag doc and the daily aggregate — must still land. The
+ * previous degradation case only exercised a top-level collection.
+ */
+async function shoppedProbeFailureDegrades(): Promise<void> {
+  const now = new Date("2026-04-30T08:00:00Z");
+  const todayStartMs = Date.UTC(2026, 3, 30);
+  const inDay = todayStartMs + 6 * 60 * 60 * 1000;
+
+  const store: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+  const users: FakeUser[] = [{ id: "uIdx", lastActiveDaysAgo: 0 }];
+  // Seeded so the probe WOULD have answered true — the false below can only
+  // come from the injected throw, not from an empty fixture.
+  const activity: ActivityRecord[] = [
+    { source: "users/uIdx/unified_shopping_lists", userId: "uIdx", ts: inDay },
+    { source: "users/uIdx/menus", userId: "uIdx", ts: inDay },
+  ];
+  const db = makeFakeDb({
+    users,
+    activity,
+    flagDocs: [],
+    store,
+    now,
+    opts: { failProbeFor: { userId: "uIdx", flag: "shopped" } },
+  });
+
+  await runComputeFeatureRetention({ db: db as never, now });
+
+  const today = formatUtcDate(todayStartMs);
+  const flagDoc = store.data.get(
+    `analytics/feature_retention/users/uIdx_${today}`,
+  ) as Record<string, unknown> | undefined;
+  const aggregate = store.data.get(
+    `analytics/feature_retention/daily/${today}`,
+  ) as Record<string, unknown> | undefined;
+  const dau = aggregate?.dau as Record<string, number> | undefined;
+
+  const ok =
+    flagDoc?.shopped === false &&
+    flagDoc?.mealPlanned === true &&
+    dau?.shopped === 0 &&
+    dau?.mealPlanned === 1;
+  record(
+    "shopped probe failure (missing index) degrades to false, run completes",
+    ok,
+    `flag=${JSON.stringify(flagDoc)} dau=${JSON.stringify(dau)}`,
+  );
+}
+
 async function runAll(): Promise<void> {
   console.log("BUT-599: Feature-level retention tests\n");
   console.log("==============================================\n");
@@ -583,6 +692,8 @@ async function runAll(): Promise<void> {
   await wau7dRollup();
   await inactiveUserSkipped();
   await probeFailureGracefulDegrade();
+  await shoppedProbeUsesLivePath();
+  await shoppedProbeFailureDegrades();
 
   console.log(
     `\n${totalRun - totalFailed}/${totalRun} passed` +

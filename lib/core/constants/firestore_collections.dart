@@ -85,19 +85,18 @@ abstract final class FirestoreCollections {
   /// name at all. Two constants for one concept is what broke the GDPR export
   /// and the erasure cascade (BUT-1697) — do not reintroduce it as a live path.
   ///
-  /// The remaining readers are all broken rather than merely empty, and are
-  /// tracked in BUT-1724: `friends_utility_operations.dart:146` queries a ROOT
-  /// `shopping_lists` (not this subcollection), which the catch-all deny turns
-  /// into `permission-denied` on every call, so "senaste inköpssamarbeten" is
-  /// permanently empty; `functions/src/analytics/compute-feature-retention.ts`
-  /// probes this subcollection for its `shopped` flag, which is therefore false
-  /// for every user every day.
+  /// BUT-1724 cleared the two broken readers this comment used to list:
+  /// `getRecentShoppingCollaborators()` (which queried a ROOT `shopping_lists`
+  /// and was denied on every call) is deleted, and the `shopped` probe in
+  /// `functions/src/analytics/compute-feature-retention.ts` now reads
+  /// [unifiedShoppingLists]. No client code reads this name any more.
   ///
   /// Two Admin-SDK readers sweep it DELIBERATELY and correctly no-op:
   /// `functions/src/account/account-deletion-cascade.ts` (a legacy safety net
   /// for accounts predating the rename) and `functions/src/admin/
   /// reset-user-data.ts`. Both hard-code the string, so a grep for this
-  /// constant does not find them.
+  /// constant does not find them. The one remaining Dart reference is a test
+  /// asserting the GDPR export does NOT read this path.
   static const String userShoppingLists = 'shopping_lists';
   static const String userFriends = 'friends';
   static const String userFriendCategories = 'friend_categories';

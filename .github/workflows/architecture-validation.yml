@@ -113,6 +113,19 @@ jobs:
     - name: Forbid raw favourite/bookmark glyphs outside AdaptiveIcons
       run: bash tools/check_icon_convention.sh
 
+    # BUT-1746: a literal null in a Firestore `.where()` builds NO condition —
+    # the call compiles, reads as a filter, and degrades the query into an
+    # unfiltered read of the whole collection. Four such sites shipped. The
+    # guard first landed wired to lefthook only, so anything arriving by a
+    # non-hook path never failed a build; this is the repo-wide half. The
+    # self-test runs FIRST and proves the guard still detects what it claims,
+    # so a silently-stopped-matching regex cannot read as a clean repo.
+    - name: Forbid literal-null Firestore filters
+      run: |
+        set -e
+        bash tools/check_null_filter.sh --self-test
+        bash tools/check_null_filter.sh
+
     # BUT-758: closes the BUT-572 theme migration. Forbid AppColors.X in
     # views/widgets except the legitimate-keep set established by the
     # pilot + Waves A-D. Keep-set rationale:

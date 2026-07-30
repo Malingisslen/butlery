@@ -263,55 +263,11 @@ void main() {
     });
   });
 
-  group('getRecentShoppingCollaborators', () {
-    late FakeFirebaseFirestore fakeFirestore;
-    late FriendsUtilityOperations utilityOps;
-
-    setUp(() {
-      fakeFirestore = FakeFirebaseFirestore();
-      utilityOps = FriendsUtilityOperations(
-        firestore: fakeFirestore,
-        getCurrentUserId: () => 'test-user-id',
-        getBlockedUsers: () => <String>{},
-        getIncomingRequests: () => <FriendRequest>[],
-        getOutgoingRequests: () => <FriendRequest>[],
-      );
-    });
-
-    test('should return recent shopping list collaborators', () async {
-      const collaborator1 = 'shop-collab-1';
-      const collaborator2 = 'shop-collab-2';
-
-      await fakeFirestore.collection('shopping_lists').add({
-        'ownerId': collaborator1,
-        'collaborators': ['test-user-id', collaborator2],
-        'lastModified': Timestamp.now(),
-      });
-
-      await fakeFirestore.collection('users').doc(collaborator1).set({
-        'displayName': 'Shopping Collab 1',
-        'email': 's1@example.com',
-      });
-
-      await fakeFirestore.collection('users').doc(collaborator2).set({
-        'displayName': 'Shopping Collab 2',
-        'email': 's2@example.com',
-      });
-
-      final collaborators = await utilityOps.getRecentShoppingCollaborators();
-
-      expect(collaborators.length, equals(2));
-      expect(
-        collaborators.map((c) => c.uid),
-        containsAll([collaborator1, collaborator2]),
-      );
-    });
-
-    test('should return empty list when no shopping collaborators', () async {
-      final collaborators = await utilityOps.getRecentShoppingCollaborators();
-      expect(collaborators, isEmpty);
-    });
-  });
+  // BUT-1724: the `getRecentShoppingCollaborators` group lived here. It passed
+  // only because FakeFirebaseFirestore has no security rules — it seeded a ROOT
+  // `shopping_lists` collection that `firestore.rules` denies outright, so the
+  // production method it "covered" returned an empty list for every real user.
+  // Method and tests deleted together.
 
   // -----------------------------------------------------------------------
   // Part 3: FriendsFirebaseSyncOperations — sync logic with FakeFirestore

@@ -6,6 +6,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -44,9 +46,27 @@ class RealtimeRecipeService with StreamManagementMixin, ErrorHandlingMixin {
   /// to the sync service directly. BUT-1112.
   Stream<SyncError> get errorStream => _syncService.errorStream;
 
-  /// Current user display name
+  /// BUT-1736, applying BUT-1705: `profileDisplayName`, NOT the Auth handle.
+  ///
+  /// This name is PERSISTED as `ownerDisplayName` and `lastEditedByDisplayName`
+  /// on a realtime recipe that every participant reads. It used to come from
+  /// `PermissionService.currentUser`, which is synthesized from
+  /// `FirebaseAuth.currentUser` — the legal name on the user's Google/Apple
+  /// account, never a name they chose to expose, and invisible to the systems
+  /// that maintain such copies. `on-profile-updated.ts` propagates the PROFILE
+  /// name to `ownerDisplayName` and `lastEditedByDisplayName` on BOTH realtime
+  /// collections; the deletion cascade currently removes only the
+  /// `realtime_recipes` a user OWNS (`deleteRealtimeRecipes`) — `realtime_menus`
+  /// is in no tier, and `lastEditedByDisplayName` is scrubbed nowhere (BUT-1768).
+  /// So a profile-sourced name is reachable by at least one maintenance system;
+  /// an Auth-sourced one is reachable by the rename propagator not at all, and
+  /// by the deletion cascade only on a `realtime_recipes` doc the user owns.
+  ///
+  /// `tryGet` keeps a service built before/without the service graph working;
+  /// an unresolved name stamps the localized unknown-user label, never an
+  /// Auth-sourced one.
   String get _currentUserDisplayName =>
-      _permissionService.currentUser?.displayName ??
+      ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
       AppLocale.current.displayUnknownUser;
 
   /// Create realtime recipe from existing recipe

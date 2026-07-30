@@ -18,6 +18,15 @@ import { initializeAdminApp } from "./admin-init";
 
 interface CollectionTarget {
   name: string;
+  /**
+   * Reader's inventory of the subcollections a document in [name] is expected
+   * to own — it does NOT drive the deletion. `deleteDocRecursive` discovers
+   * every subcollection at every depth via `listCollections()`, so a
+   * subcollection missing from this list is still wiped (BUT-1724 was filed
+   * believing `unified_shopping_lists/{listId}/items` survived a reset because
+   * it is absent from the `users` entry below; it does not survive). Keep the
+   * list honest anyway — it is what a future reader greps to learn the shape.
+   */
   subcollections?: string[];
 }
 
@@ -27,6 +36,9 @@ const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
     subcollections: [
       "recipes",
       "menus",
+      // Pre-rename name (BUT-1697). Normally empty — the client has written
+      // nothing here since the rename; swept as a safety net for accounts that
+      // predate it.
       "shopping_lists",
       "friends",
       "friend_categories",
@@ -43,6 +55,9 @@ const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
       "connection_tests",
       "unified_recipes",
       "conversations",
+      // The LIVE personal shopping-list path (BUT-1697). Each list document
+      // owns an `items` subcollection, reached one level deeper by the
+      // recursive delete; this flat list cannot express that nesting.
       "unified_shopping_lists",
     ],
   },

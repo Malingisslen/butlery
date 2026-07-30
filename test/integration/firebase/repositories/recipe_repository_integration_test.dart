@@ -5,6 +5,7 @@
 @Tags(['integration'])
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart' as auth_mocks;
@@ -117,46 +118,61 @@ void main() {
               .withCreatedBy(testUserId)
               .build();
 
-          // Create recipe
-          await repository.create(recipe);
+          // BUT-1756 (AC2, twin site): `created` and `lastModified` both come
+          // from `TestTimestampProvider.serverTimestamp()`, which is
+          // `clock.now()`. A strict `isAfter` between two wall-clock reads is a
+          // coin flip whenever they land in the same tick — the 100 ms sleep
+          // this test used to carry only made the coin heavily weighted, and
+          // paid 100 ms of real time per run for it. Staging the gap on a fake
+          // clock keeps the assertion's intent (the edit is stamped LATER, not
+          // merely "not before") and makes it deterministic.
+          var now = DateTime.utc(2026, 1, 1, 12);
 
-          // Get original timestamps
-          final originalDoc = await fakeFirestore
-              .collection('users')
-              .doc(testUserId)
-              .collection('recipes')
-              .doc('recipe-1')
-              .get();
-          final originalCreated =
-              originalDoc.data()?['timestamps']?['created'] as Timestamp;
+          await withClock(Clock(() => now), () async {
+            // Create recipe
+            await repository.create(recipe);
 
-          // Wait a bit to ensure different timestamp
-          await Future.delayed(const Duration(milliseconds: 100));
+            // Get original timestamps
+            final originalDoc = await fakeFirestore
+                .collection('users')
+                .doc(testUserId)
+                .collection('recipes')
+                .doc('recipe-1')
+                .get();
+            final originalCreated =
+                originalDoc.data()?['timestamps']?['created'] as Timestamp;
 
-          // Act - Update recipe
-          final updated = recipe.copyWith(title: 'Updated Title');
-          await repository.update(updated);
+            // The edit happens later than the creation. That gap is the whole
+            // subject of the assertion below, so it is staged rather than hoped
+            // for.
+            now = now.add(const Duration(seconds: 1));
 
-          // Assert
-          final doc = await fakeFirestore
-              .collection('users')
-              .doc(testUserId)
-              .collection('recipes')
-              .doc('recipe-1')
-              .get();
+            // Act - Update recipe
+            final updated = recipe.copyWith(title: 'Updated Title');
+            await repository.update(updated);
 
-          expect(doc.data()?['core']?['title'], equals('Updated Title'));
+            // Assert
+            final doc = await fakeFirestore
+                .collection('users')
+                .doc(testUserId)
+                .collection('recipes')
+                .doc('recipe-1')
+                .get();
 
-          final timestamps = doc.data()?['timestamps'];
-          expect(
-            timestamps?['created'],
-            equals(originalCreated),
-          ); // Created unchanged
-          expect(timestamps?['lastModified'], isA<Timestamp>());
+            expect(doc.data()?['core']?['title'], equals('Updated Title'));
 
-          // Verify modified is after created
-          final modified = (timestamps?['lastModified'] as Timestamp).toDate();
-          expect(modified.isAfter(originalCreated.toDate()), isTrue);
+            final timestamps = doc.data()?['timestamps'];
+            expect(
+              timestamps?['created'],
+              equals(originalCreated),
+            ); // Created unchanged
+            expect(timestamps?['lastModified'], isA<Timestamp>());
+
+            // Verify modified is after created
+            final modified = (timestamps?['lastModified'] as Timestamp)
+                .toDate();
+            expect(modified.isAfter(originalCreated.toDate()), isTrue);
+          });
         });
       },
     );

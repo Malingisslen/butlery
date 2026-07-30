@@ -15,7 +15,6 @@ import 'package:butlery/core/extensions/iterable_extensions.dart';
 /// - Blocked users synchronization
 /// - User search and friend queries
 /// - Recent collaborators detection
-/// - Shopping collaborators tracking
 class FriendsUtilityOperations {
   final FirebaseFirestore firestore;
   final String? Function() getCurrentUserId;
@@ -126,68 +125,16 @@ class FriendsUtilityOperations {
     }
   }
 
-  /// Get recent shopping collaborators
-  Future<List<UserProfile>> getRecentShoppingCollaborators() async {
-    try {
-      final userId = getCurrentUserId();
-      if (userId == null) {
-        AppLogger.warning(
-          'Cannot get recent shopping collaborators: No authenticated user',
-        );
-        return [];
-      }
-
-      AppLogger.debug(
-        'Fetching recent shopping collaborators for user: ${userId.maskedUserId}',
-      );
-
-      // Get recent shopping lists where user is a collaborator
-      final recentShoppingLists = await firestore
-          .collection(FirestoreCollections.userShoppingLists)
-          .where('collaborators', arrayContains: userId)
-          .orderBy('lastModified', descending: true)
-          .limit(20)
-          .get();
-
-      // Collect unique collaborator IDs
-      final collaboratorIds = <String>{};
-
-      for (final doc in recentShoppingLists.docs) {
-        final data = doc.data();
-        final ownerId = data['ownerId'] as String?;
-        final collaborators = List<String>.from(data['collaborators'] ?? []);
-
-        // Add owner if not the current user
-        if (ownerId != null && ownerId != userId) {
-          collaboratorIds.add(ownerId);
-        }
-
-        // Add all collaborators except current user
-        for (final collaboratorId in collaborators) {
-          if (collaboratorId != userId) {
-            collaboratorIds.add(collaboratorId);
-          }
-        }
-      }
-
-      if (collaboratorIds.isEmpty) {
-        AppLogger.debug('No recent shopping collaborators found');
-        return [];
-      }
-
-      final collaborators = await _batchFetchUserProfiles(
-        collaboratorIds.take(10).toList(),
-      );
-
-      AppLogger.success(
-        'Found ${collaborators.length} recent shopping collaborators',
-      );
-      return collaborators;
-    } catch (e) {
-      AppLogger.error('Failed to get recent shopping collaborators', e);
-      return [];
-    }
-  }
+  // BUT-1724: `getRecentShoppingCollaborators()` used to live here. It queried
+  // a ROOT `shopping_lists` collection for `collaborators array-contains <uid>`
+  // — a collection `firestore.rules` grants no match for, so every call hit the
+  // catch-all deny, logged a permission error and returned an empty list. It
+  // was also unreachable: nothing outside its own facade and unit test ever
+  // called it. Deleted rather than re-pointed at
+  // `unified_shared_shopping_lists`, because a live version would need a
+  // composite index and a product decision about where such a list is shown;
+  // the collaborator surface the UI actually uses is
+  // [getRecentCollaborators], which reads the `members` collection group.
 
   Future<List<UserProfile>> _batchFetchUserProfiles(
     List<String> userIds,

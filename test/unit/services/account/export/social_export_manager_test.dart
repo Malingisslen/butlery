@@ -142,7 +142,70 @@ class _FakeDataExportRepository extends Fake
   }) async => memberships;
 }
 
+/// BUT-1721: a repository whose first capped read throws, carrying exactly the
+/// text that must never reach the data subject — another person's uid inside a
+/// composite doc id, and a `create_composite` index URL naming a member field
+/// path and the project id.
+///
+/// The aggregator's own leak test in `data_export_service_test.dart` is a
+/// CONTROL, not coverage of this: because it derives the bundle-root message
+/// rather than copying the section's, it passes with the leak still present in
+/// every section body. The section body is the part the user downloads, so it
+/// needs its own assertion here.
+class _ThrowingFriendsRepository extends Fake
+    implements FirebaseDataExportRepository {
+  static const String foreignUid = 'uid-of-another-person-9f2e45';
+  static const String leakyText =
+      'PERMISSION_DENIED reading blocks/me_$foreignUid; '
+      'https://console.firebase.google.com/project/butlery-prod-42/firestore/'
+      'indexes?create_composite=memberPermissions.$foreignUid';
+
+  @override
+  Future<List<Map<String, dynamic>>> exportFriendsSubcollection(
+    String userId, {
+    int maxDocuments = 500,
+  }) async => throw StateError(leakyText);
+}
+
 void main() {
+  group('SocialExportManager failure envelope (BUT-1721)', () {
+    test('a failed friends read carries a stable token and never the raw '
+        'exception', () async {
+      final manager = SocialExportManager(
+        dataExportRepository: _ThrowingFriendsRepository(),
+      );
+
+      final result = await manager.exportFriends('u1');
+
+      expect(
+        result['error_code'],
+        'friends-export-failed',
+        reason:
+            'the token is what DataExportService lifts to bundle level; '
+            'without it the section can fail while the bundle reads complete',
+      );
+      expect(
+        result['error'] as String,
+        isNot(contains(_ThrowingFriendsRepository.foreignUid)),
+        reason:
+            'another data subject`s uid must not ship inside the requester`s '
+            'Art. 15 bundle',
+      );
+      expect(
+        result['error'] as String,
+        isNot(contains('create_composite')),
+        reason: 'an index URL names the project and a member field path',
+      );
+      expect(
+        result.containsKey('friends'),
+        isFalse,
+        reason:
+            'a failed section must not also present an empty list, which reads '
+            'as "you have no friends" rather than "this could not be read"',
+      );
+    });
+  });
+
   group('SocialExportManager.exportFriends (BUT-1438)', () {
     test(
       'includes all four friend record types, reshaped, with totals',

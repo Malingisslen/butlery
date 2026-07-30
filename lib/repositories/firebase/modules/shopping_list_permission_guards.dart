@@ -38,9 +38,20 @@ class ShoppingListPermissionGuards {
   )
   validateUpdatePermission;
 
+  /// Throws [SecurityViolationException] when [data] lacks a required key.
+  /// Injected rather than mixed in so the audit-free field check and the
+  /// audited conjuncts stay in one guard.
+  final void Function({
+    required Map<String, dynamic> data,
+    required List<String> requiredFields,
+    required String resourceType,
+  })
+  validateRequiredFields;
+
   ShoppingListPermissionGuards({
     required this.logPermissionCheck,
     required this.validateUpdatePermission,
+    required this.validateRequiredFields,
   });
 
   /// Throws [PermissionDeniedException] if a non-owner's whole-list write would
@@ -184,18 +195,47 @@ class ShoppingListPermissionGuards {
     );
   }
 
-  /// Throws [PermissionDeniedException] unless [uid] is creating a list it
-  /// owns itself, mirroring the create rule.
+  /// The create rule's `hasRequiredFields` conjunct, plus the client-side extra
+  /// `name` the rule does not ask for. A superset of the rule's list is safe;
+  /// a subset is not (BUT-1706).
+  static const List<String> collaborativeCreateRequiredFields = [
+    'name',
+    'ownerId',
+    'memberPermissions',
+    'items',
+    'createdAt',
+  ];
+
+  /// Throws unless [uid] is creating a list it owns itself, mirroring all THREE
+  /// conjuncts of the create rule beyond `isAuthenticated()`.
+  ///
+  /// BUT-1706: the third conjunct
+  /// (`hasRequiredFields(['ownerId', 'memberPermissions', 'items', 'createdAt'])`)
+  /// used to be checked by the caller and was missing `items` and `createdAt`,
+  /// so a create lacking either was refused by the SERVER after the audit row
+  /// had already recorded a grant. All three now live together, so a fourth
+  /// conjunct cannot be mirrored in only one of two places again.
+  ///
+  /// The rule's remaining bound — `contributorUserIds.size() <= 200` — cannot
+  /// fail on create: the caller seats exactly `[uid]`.
   Future<void> requireSelfOwnedCreate(
     String uid,
     UnifiedShoppingList entity,
   ) async {
+    // Before any audit row: a missing-field refusal is not a permission
+    // decision, so it must not log a check either way.
+    validateRequiredFields(
+      data: entity.toFirestore(),
+      requiredFields: collaborativeCreateRequiredFields,
+      resourceType: 'collaborative_shopping_list',
+    );
+
     final ownsIt = entity.ownerId == uid;
-    // The create rule has TWO conjuncts, and mirroring only the first one is
-    // how an audit row ends up claiming a grant the server then refuses: it
-    // also requires the creator's own key in `memberPermissions`. The
-    // `UnifiedShoppingList.collaborative` factory always seats the owner, but
-    // the plain constructor does not, and it is on the public interface.
+    // Mirroring only `ownerId == uid` is how an audit row ends up claiming a
+    // grant the server then refuses: the rule also requires the creator's own
+    // key in `memberPermissions`. The `UnifiedShoppingList.collaborative`
+    // factory always seats the owner, but the plain constructor does not, and
+    // it is on the public interface.
     final seatedAsMember = entity.memberPermissions.containsKey(uid);
     if (ownsIt && seatedAsMember) return;
 

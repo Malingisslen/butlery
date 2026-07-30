@@ -1559,3 +1559,299 @@ Nothing in the round weakens scoping: the three probes, the redaction map and th
 unchanged; fix (3) only drops the internal ticket reference from the user-facing
 `data_minimisation` string, which still describes the shipped behaviour accurately (names dropped,
 uids retained — the latter now a recorded founder call, 2026-07-30).
+
+### 2026-07-30 — BUT-1706/1721/1746 review: offline whitelist enforced, export completeness metadata, null-filter guard
+
+**Scope reviewed** (11 files, sprint area "shopping/account — GDPR export + rules coverage"):
+`tools/check_null_filter.sh` (new), `lefthook.yml`, `lib/services/account/data_export_service.dart`,
+`lib/services/account/export/{social,activity}_export_manager.dart`,
+`lib/repositories/firebase/modules/{shopping_repository_routing_module,shopping_offline_write_module}.dart`,
+plus four test files (`shopping_repository_{query,routing}_module_test.dart`,
+`data_export_service_test.dart`, `functions/src/__tests__/shared-shopping-lists-rules.test.ts`).
+`firestore.rules` itself is UNCHANGED this round — the rules-test diff is pure added coverage, so the
+"a new gating conjunct with no proof file" hazard does not apply.
+
+**Verified by running, not reading.** `flutter test` on the three Dart suites → 111 passed.
+`dart analyze --fatal-infos` on all six lib files → clean. `bash tools/check_null_filter.sh` with no
+args → exit 0 repo-wide; single-file and multi-file modes exit 0 on the three files whose
+WHY-comments name the banned spelling; a synthetic `.where("a", isEqualTo: null)` exits 1 (positive
+control). Three mutation tests, each restored and stat-verified afterwards:
+(1) `value['error'] != null ||` removed → the new "codeless section warns" test reddens;
+(2) `_declaresTruncation`'s List branch stubbed to `return false` → the new nested-list truncation
+test reddens; (3) `_offline.requireOfflineWritableMutation(live, mutated);` commented out → the new
+"offline rename is REFUSED" test reddens (see the anomaly below);
+(4) `isNull: false` → `isNotEqualTo: null` in `shopping_repository_query_module.dart` → 3 of the 4
+new membership-filter tests redden, matching the diff's own honest note that `readAll`'s negative
+test cannot discriminate (its `catch`-all returns `[]`).
+
+**Anomaly worth remembering (now a principle).** Mutation (3) run as
+`flutter test <file> --plain-name "REFUSED"` reported `+1: All tests passed!` WITH the guard
+commented out. Re-running the same mutated tree over the whole file gave the correct red with
+`Expected: throws <Instance of 'ArgumentError'> ... Actual: <Instance of 'Future<...>>`. So a
+`--plain-name`-scoped run is not a trustworthy mutation harness for an async-throw assertion here;
+always mutation-test with the full file.
+
+**Findings filed.** High: `social_export_manager._failed(e, code)` (8 sites) and
+`activity_export_manager` (2 sites) add `error_code` while keeping `'error': e.toString()`, and the
+same commit's aggregator change makes `export_metadata.warnings[].message` = `value['error']` — so
+raw Firestore/permission text (foreign uids in composite doc ids, `memberPermissions.<uid>` index
+URLs, project paths) is promoted from a buried section field to the bundle ROOT of an Art. 15
+artifact. The repo already ships the right shape 20 lines away in
+`shared_shopping_list_export.dart` and `family_export_manager.dart` (stable sentence + stable
+`error_code`, with a comment saying exactly why). `preferences_export_manager.dart` (2 sites, out of
+scope) is now amplified too. Medium: `tools/check_null_filter.sh` is UNTRACKED while its `lefthook.yml`
+gate is modified — committing the gate without the script fails every commit on a fresh clone; stage
+both in one call. Low: the guard's comment filter is anchored `^[^:]*:[0-9]+:`, which cannot span a
+Windows drive colon — verified that `bash tools/check_null_filter.sh C:/Butlery/butlery/x.dart`
+flags a pure `// isEqualTo: null` comment line; lefthook passes repo-relative paths so it is dormant,
+fix is to drop the `^[^:]*` anchor. Low: `_declaresTruncation` walks whole exported Firestore
+documents to depth 4 keying on `key.endsWith('_truncated')`, so a future user-data field with that
+suffix would mislabel a section as clipped (no such field today; the only real nested flag is
+`messages.conversations[i].messages_truncated`, at depth 2). Low: `createCollaborativeList`'s
+`listToSave` rebuild is still non-exhaustive against the model — `collaborativeOrigin`,
+`generatedForWeek` and `schemaVersion` are dropped; pre-existing, and the only writer of
+`collaborativeOrigin` (`shopping_list_management_module.createCollaborativeListFromInvitation`) is a
+path already dead against the create rule, and the menu generator only ever writes PERSONAL lists,
+so no live loss.
+
+**Cleared, so don't re-file.** `contributor_probe_failed` DOES pair an `error_code` now
+(`shared_shopping_list_export.dart:176-179`) — the Medium filed on 2026-07-28 is closed.
+`validateRequiredFields` is `containsKey`-only, so adding `items` to the mirror cannot reject a
+legitimately empty shared list. The rules-test additions match `firestore.rules:1622-1652`
+conjunct-for-conjunct (read = owner OR `memberPermissions` key; create = the triple + the 200 bound;
+delete = owner only), each deny differs from the SSL1 allow baseline in exactly one way, and
+`validListBody` seats OWNER/EDITOR/VIEWER while `contributorUserIds` alone carries DEPARTED, which is
+what makes SSL29's revoked-member deny non-vacuous. Not run: the emulator suite itself (no emulator
+in this session) — handed to `firestore-rules-tester`.
+
+### 2026-07-30 — BUT-1746 null-filter guard, BUT-1721/1732 export-warning chokepoint, BUT-1706 offline-mutation refusal (re-review, working tree)
+
+Re-review of the automated-fix pass on: `tools/check_null_filter.sh`, `lefthook.yml`,
+`lib/services/account/data_export_service.dart`,
+`lib/services/account/export/{social,activity}_export_manager.dart`,
+`lib/repositories/firebase/modules/{shopping_repository_routing_module,shopping_offline_write_module}.dart`,
+plus four test files and `functions/src/__tests__/shared-shopping-lists-rules.test.ts`. Also read
+`shopping_list_permission_guards.dart` (staged, needed to judge the routing diff),
+`permission_validation_mixin.validateRequiredFields`, `unified_shopping_list.toFirestore()` and the
+five live mutators. **Verdict: pass.**
+
+**BUT-1746 — the new grep guard.** `tools/check_null_filter.sh` bans literal
+`isNotEqualTo: null` / `isEqualTo: null` in `*.dart`. Verified the premise rather than trusting the
+header comment: the four previously-broken sites now all spell `isNull: false`
+(`shopping_repository_query_module.dart:72,229`, `firebase_data_export_repository.dart:661`,
+`firebase_group_weekly_menu_plan_repository.dart:174`) — that fix landed in c17c4068e; today's diff is
+the guard plus tests. Ran the script three ways: whole repo → exit 0; a scratch fixture with three
+comment lines naming the banned spelling plus one construction line → flagged only line 4, exit 1;
+each of the three real files carrying a WHY-comment, passed individually as the lefthook shape does →
+exit 0 each. So the load-bearing `-H` (single-file grep otherwise omits the path prefix the comment
+filter anchors past) genuinely works. Two residual notes: the comment filter's `^[^:]*:[0-9]+:`
+anchor would break on a Windows drive-letter path, which is safe only because lefthook's
+`{staged_files}` are repo-relative; and the regex is line-based, so an `isNotEqualTo:` / `null` split
+across two lines is missed. Wiring: lefthook `null-filter-guard`, `glob: "*.dart"`, priority 8. NOT
+in any `.github/workflows/` job, so the script's own documented no-arg "CI / manual shape" has no
+caller — same precedent as `check_swedish_boundary.sh` (also lefthook-only), which is why this is
+filed Low rather than High. Priority 8 sits textually above the priority-7 job; cosmetic only.
+
+**Rules suite ran for real.** The emulator happened to be up on 127.0.0.1:8080, so
+`npx ts-node src/__tests__/shared-shopping-lists-rules.test.ts` → **39/39 passed**, including the 14
+new assertions (SSL26-SSL31 read gate, SSL32-SSL34 create conjuncts, SSL35-SSL36 owner-only delete,
+SSL37-SSL39 the query path). SSL37 settles a claim that was previously unproven: a
+`where('memberPermissions.<uid>', '!=', null)` filter IS accepted by the rules engine for a rule
+gated on `uid in resource.data.memberPermissions`, and SSL38 shows the unfiltered query on the same
+collection is refused outright — i.e. the BUT-1746 symptom was "the shopping screen will not load",
+never an over-share. SSL37/SSL39 both carry an emptiness premise so neither can pass vacuously. CI
+wiring confirmed present: `functions/package.json` `test:rules:shared-shopping-lists` +
+`test:rules:all`, and both `paths:` blocks of `.github/workflows/firestore-rules.yml` (lines 47 and
+99) — the exact gap this archive recorded as untracked on 2026-07-28 is closed.
+`npx tsc --noEmit` on `functions/` clean.
+
+**BUT-1721/1732 — the export aggregator.** `data_export_service.dart` replaces the section-root
+`value['truncated']` check plus the one-level `messages_truncated` special case with one
+depth-bounded (`depth > 4`) walk over Maps AND Lists, and widens the warning lift from `error_code`
+to `error || error_code` with a derived code `<section>-export-failed`. The important half is that
+`message` is now DERIVED (`The "<section>" section could not be exported (error_code: ...).`) instead
+of copying `value['error']`: that closes the amplification this archive flagged on 2026-07-28, where
+widening the lift promoted 10+ sites' raw `e.toString()` to the bundle ROOT. Checked the walk cannot
+false-positive: every `truncated` / `*_truncated` key in `lib/` is export-manager-generated (grep,
+26 hits, all in `lib/services/account/export/` + `firebase_data_export_repository.dart:356`), none
+comes from user data. `social_export_manager.dart:170` already propagated `messages_truncated` into
+the conversations LIST, which is exactly the shape the old walk could not see. Also note the old code
+would have THROWN on a section whose value is a List (`value['truncated']` on a List); the new
+`is Map` / `is List` dispatch removes that.
+Mutation-tested rather than trusting the comment: replaced the List branch with
+`if (node is List) return false;` → exactly 1 red (the nested-flag test), restored, diffstat verified
+back to 70+/15-. `flutter test data_export_service_test.dart` → 36 pass;
+`activity_export_manager_test.dart` + `social_export_manager_test.dart` → 36 pass;
+`flutter analyze lib/services/account lib/repositories/firebase/modules` → no issues.
+Two things I liked in the test diff: the two legacy warning tests stopped asserting
+`warnings.hasLength(1)` and now filter by `section` (a partially-wired fixture legitimately fails a
+dozen sections once the lift widens), and the fully-wired happy path still asserts NO `warnings` key,
+which is the over-warning guard. The `_LeakyPreferencesExportRepository` fixture is a real leak path,
+not a contrived one — `preferences_export_manager` still returns `e.toString()`.
+Residual carried forward (Medium, pre-existing, NOT introduced here): 21 sites across
+`content_export_manager.dart` (12) and `preferences_export_manager.dart` (9) still put raw exception
+text in the section BODY of the downloaded bundle. The chokepoint keeps it off the root; the body is
+still an Art. 15 artifact the data subject may forward.
+Fixture lesson worth its own principle: `MockUser` stubs `uid`/`email`/`displayName` only, mocktail
+throws on any other non-nullable getter, and `_exportUserProfile` reads `emailVerified` and
+`metadata.creationTime` — so the `profile` section of EVERY test in that file had been failing
+silently, and only widening the lift surfaced it. The fix stubs the fixture (`_FakeUserMetadata`)
+rather than relaxing the contract, which is the right call.
+
+**BUT-1706 — `requireOfflineWritableMutation`.** New guard in `shopping_offline_write_module.dart`,
+called from `_mutateFromCache` after `requireEditRights`/`requireNoPrivilegeEscalation`. Diffs
+`mutated.toFirestore()` against `live.toFirestore()` and THROWS on any differing key outside
+`items` + the activity whitelist, with `privilegedKeys` deliberately excluded from the refusal
+(dropping those is the design). Checked the three things the principle demands. (a) The refusal, not
+a fall-back-to-full-write — confirmed, it throws. (b) Offline leg only — confirmed, the transactional
+path merge-sets the whole document. (c) Unreachable by today's mutators — verified by caller trace,
+not by grep: `ShoppingItemOperationsModule._withItems` and the model's
+`addItem`/`removeItem`/`updateItem`/`toggleItemBought`/`clearBoughtItems` all touch only
+`items` + `updatedAt`/`lastActivityAt`/`lastActivityBy{UserId,DisplayName}` + `syncStatus` (which
+`toFirestore()` never emits), and `list_item_operations.dart` passes those model methods straight
+through. `UnifiedShoppingList.toFirestore()` emits a FIXED, count-free key set (no derived
+`itemCount`), so the diff cannot fire spuriously — this was the Critical I went looking for and it
+is not there. Where the throw LANDS matters and is fine: a bare `ArgumentError` is absorbed by
+`UnifiedShoppingService.mutateSharedList`'s generic `catch` -> `_failMutation(...)` + `false`, not a
+crash. `_writableActivityKeys` filtering `privilegedKeys` out of the whitelist literal is a no-op
+today by construction and is the right kind of no-op (the literal can no longer express an ACL
+field).
+Mutation-tested per the standing warning about `--plain-name` scoped runs: commented out the guard
+call, ran the WHOLE file → exactly 1 red (the new refusal test), restored, diffstat verified back to
+13+/15-. Full file green: 76 tests across the routing + query module suites.
+
+**BUT-1706 create mirror.** `validateRequiredFields` moved from the routing module into
+`ShoppingListPermissionGuards.requireSelfOwnedCreate` and widened to
+`['name','ownerId','memberPermissions','items','createdAt']`. Read the mixin: it checks
+`containsKey` only, so `items: []` and a null `name` both pass — no risk of refusing a legitimate
+empty new list, and (as the principles already say) the new keys can never fire because
+`toFirestore()` emits them unconditionally. Parity with the rule holds for the same reason
+(`hasRequiredFields` is also key-presence, and Firestore stores explicit nulls). Documentation value
+only; harmless. The guard correctly runs the field check BEFORE any audit row, since a missing-field
+refusal is not a permission decision.
+
+**Also verified in passing:** `_beginMutation()` really does null `_lastMutationError` at the start
+of every mutation entry point, which closes the "nothing clears the field at the START" residual this
+archive recorded on 2026-07-26 — corrected in the principles file. File sizes all under the 500-line
+limit (routing module 498, tight).
+
+**Not verified:** the four out-of-scope staged files (`firestore_collections.dart`,
+`friends_utility_operations.dart`, the two realtime services, `recipe_collaborative_manager.dart`)
+and the whole `functions/src` half of the working tree; whether `content_export_manager` /
+`preferences_export_manager` will get the sentence+token treatment; SSL39's actor `list-nobody-uid`
+staying a member of nothing on a long-lived shared emulator (true today, only convention protects
+it).
+
+### 2026-07-30 — Sprint 2026-07-30b rescue pass: the five staged repository/export files (first review, no marker covered them)
+
+Scope: `firebase_data_export_repository.dart` (truncation probe), `shopping_list_permission_guards.dart`
+(`validateRequiredFields` folded into `requireSelfOwnedCreate`), `shopping_offline_write_module.dart`
+(`requireOfflineWritableMutation` + `_writableActivityKeys`), `shopping_repository_routing_module.dart`
+(guard wiring + the new offline refusal call), `shopping_repository.dart` (doc comment only).
+**Verdict: PASS on all five.** Pre-ticketed and deliberately not re-filed: BUT-1767, BUT-1766,
+BUT-1768, BUT-1769, BUT-1760.
+
+**Verified clean, with the evidence, so a later pass need not redo it.**
+
+*Truncation probe (Q4 — can the probe doc leak?).* No. `limit(cap + 1)`, `truncated =
+docs.length > cap`, `kept = truncated ? docs.sublist(0, cap) : docs`, and `kept` is the ONLY thing
+read into `messages`. `messagesSnapshot.docs` appears exactly twice in the method (the length test
+and the sublist) — read the whole method, not the hunk, to establish that. Cost: +1 document read
+per conversation, <=100 per bundle. `sublist` cannot throw because `truncated` guards it, and
+`cap == 0` degrades safely to `limit(1)` / `sublist(0,0)`.
+
+*Create mirror (Q3).* All five conjuncts of the create rule (`firestore.rules`, match
+`/unified_shared_shopping_lists`) are now mirrored in one place: `isAuthenticated()` becomes
+`requireCurrentUserId()`; `ownerId == uid`; `uid in memberPermissions` (CEL `in` on a map is a KEY
+test, and `containsKey` matches); `hasRequiredFields([...])` becomes `validateRequiredFields` with a
+superset (`name` extra); `contributorUserIds.size() <= 200` holds because the client seats exactly
+`[uid]`. The field check is still structurally unfirable (`UnifiedShoppingList.toFirestore()` emits a
+fixed 20-key set including all five), so it documents the rule rather than gating anything —
+harmless, already in the principles. Also confirmed the doc-comment claim is checkable: the payload
+actually written is `listToSave.toFirestore()`, a field-for-field copy of `entity` for every
+required key.
+
+*Update mirror (Q3).* Owner branch: rule grants with no field constraints; client `requireEditRights`
+adds `validateUpdatePermission`, which returns `true` immediately for the owner
+(`firebase_shopping_repository.dart:179`), so the `isCollaborative` trap is non-owner-only
+(pre-existing, fail-closed). Non-owner branch: `perm in ['edit','admin']` mirrored exactly, and the
+`affectedKeys().hasAny([ownerId, memberPermissions, createdAt])` conjunct mirrored VALUE-wise by
+`requireNoPrivilegeEscalation` — correct, because `diff()` is value-based too, so re-sending an
+identical value is not "affected" on either side. `keepsContributorTrail()` has no client mirror and
+needs none: `_withContributorTrail` only ever unions. Its `size() <= 200` bound has no client mirror
+on UPDATE (unlike create) — a list that ever reached 200 contributors would be denied server-side
+forever while the client logged `granted: true`. Left unfiled: 200 distinct writers on one household
+shopping list is not a real state, and filing it would be noise.
+
+*The new offline refusal is inert — caller trace, not a grep (Q3, "does it refuse what the server
+grants").* `requireOfflineWritableMutation` throws when a non-carriable, non-privileged key differs.
+Eight live mutators reach `mutateCollaborativeList`: six in `shopping_item_operations_module`
+(`addItem`, `addItemsBatch`, `updateItem`, `updateItemsBatch`, `removeItem`, `removeItemsBatch`) all
+via `_withItems` (items + `updatedAt` + `lastActivityAt` + `lastActivityBy{UserId,DisplayName}`), and
+`list_item_operations` add/toggle/remove via the model mutators, which additionally set `syncStatus`
+— NOT emitted by `toFirestore()`, which is exactly why they do not trip the guard. So nothing
+legitimate regresses. The refusal test in `shopping_repository_routing_module_test.dart` is
+falsifiable on the right half (it asserts `items` is EMPTY; the `name` assertion holds with or
+without the guard, and the test says so).
+
+*Audit honesty in both directions (Q1), shopping paths.* Every changed path ends with exactly one
+row and no forged grant. `requireSelfOwnedCreate` logs only `granted:false` and only after a real
+check; the `granted:true` row in `createCollaborativeList` follows an awaited `set()`, so a rules
+denial throws first. The two new no-audit throws are correctly audit-free: a missing-field refusal
+and `requireOfflineWritableMutation`'s `ArgumentError` are payload-shape refusals, not permission
+decisions, and both sit AFTER the audited guards on the offline leg, so no `granted:true` can
+precede them.
+
+**Filed (all outside the five staged files, all in the same commit's fileset).**
+
+1. *HIGH — a mutation-test mutant was live in the working tree during the review.*
+`git status --porcelain` showed `MM` on `lib/services/account/export/social_export_manager.dart`;
+the unstaged half replaced the `_failed()` body with `'error': 'MUTANT raw exception:
+PERMISSION_DENIED blocks/me_uid-of-another-person'` and DELETED `error_code`. The staged bytes are
+correct, so the commit as staged is clean — but this is what `flutter analyze` and every test run
+executes, it would red the manager's own `error_code` assertions on unrelated grounds, and `git add
+-A` ships a foreign uid into the section body of an Art. 15 bundle. Note the BUT-1732 chokepoint
+holds even under the mutant (`data_export_service` DERIVES `warnings[].message`), which is a real
+defence-in-depth datapoint: the root stayed clean, only the downloadable section body was poisoned.
+Generalised into the principles as "`git diff --cached` is not the tree".
+
+2. *HIGH — dead OR-arm in the message export filter, a fourth fault on BUT-1767's path.*
+`social_export_manager.dart:154-156` keeps a message when `senderId == uid ||
+messageData['recipientIds'].contains(uid)`. `Message` has no `recipientIds` field (model:
+`id/conversationId/senderId/senderDisplayName/senderAvatarUrl/content/type/status/sentAt/...`; the
+rules' create requires only `senderId`, `conversationId`, `content`, `sentAt`). The OR-arm is
+therefore always false and the filter is "sent only" — so BUT-1767's fix, which only repoints the
+query, would land an Art. 15 bundle silently missing every RECEIVED message, with no truncation or
+error flag to say so. Masked today because the query reads a phantom subcollection. Generalised into
+the wrong-field-shape principle.
+
+3. *MEDIUM (pre-existing, outside the hunk) — the conversations section diverges from the
+shared-shopping-list Art. 15(4) verdict with no deviation entry.* `exportConversationsAndMessages`
+returns `convoDoc.data()` verbatim as `conversation_info`, carrying every other participant's uid,
+`participantDisplayNames`, `participantAvatarUrls`, `lastReadTimestamps` and the embedded
+`lastMessage` (sender id, sender display name, content). The 2026-07-30 shared-list entry in
+`ACCEPTED_DEVIATIONS.md` decided the opposite shape for the sibling case — keep uids and permission
+levels, DROP display names — and conversations has no matching entry. This ships today regardless of
+BUT-1767, and BUT-1767's fix adds the counterparty's message content plus `senderDisplayName` and
+`senderAvatarUrl` on top. Needs Malin's call recorded, not a reviewer's.
+
+4. *LOW (pre-existing, gateway-wide) — the Art. 15 export writes no audit row at all.*
+`_guardSelfExport` (`firebase_data_export_repository.dart:139-148`) delegates to the mixin's
+`validateOwnership`, which emits `AppLogger.warning` on denial and NOTHING on grant, and never calls
+`logPermissionCheck`. So a bulk read of a user's entire dataset leaves no trail in either direction.
+Nothing is forged; the record is simply absent. Cheapest fix is ONE row at the service level per
+export rather than ~30 per bundle at the gateway.
+
+**Deliberately not filed.** `createCollaborativeList` rebuilds `listToSave` field-by-field and drops
+`collaborativeOrigin`, `generatedForWeek` and `schemaVersion` — traced all three to no live
+consumer (`collaborativeOrigin` is set only by `createCollaborativeListFromInvitation`, a path the
+create rule has always refused; `generatedForWeek` is stamped by a later `updateList` on a PERSONAL
+list; `schemaVersion` defaults to 1). Non-security, no live impact, so it stays out rather than pad
+the report.
+
+**Not verified:** `functions/src` (rules tests belong to `firestore-rules-tester`, and
+`shared-shopping-lists-rules.test.ts` is staged with 310 changed lines); whether the queued
+`FieldValue.arrayUnion` on `contributorUserIds` satisfies `keepsContributorTrail()` under a real
+`update()` transform (emulator question, same owner); the second `MM` file
+(`functions/src/analytics/compute-feature-retention.ts` — the unstaged half is a doc-comment
+addition only, read and harmless, but it should be staged with the rest).

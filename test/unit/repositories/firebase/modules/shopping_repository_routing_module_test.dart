@@ -117,6 +117,43 @@ UnifiedShoppingItem _item(String id, {bool bought = false}) =>
       bought: bought,
     );
 
+/// BUT-1758 (BUT-1733 AC2): the contributor-union invariant, asserted in ONE
+/// place.
+///
+/// Every write path that persists `items` owes the erasure trail
+/// (`contributorUserIds`), and each of the four write-site tests used to
+/// hand-roll the same read-then-compare. Four copies is four places for a fifth
+/// write path to be added with no assertion at all — which is exactly how
+/// `updateCollaborativeList` became a trail-less fourth path (BUT-1733). One
+/// helper makes the invariant a single named thing to reuse.
+///
+/// Set semantics, not list equality: the transactional path builds the array
+/// from a Dart Set, so element order is not stable across writes. [because] is
+/// required so a failure names the write path that skipped the union rather than
+/// just printing two sets.
+Future<void> _expectContributorTrail(
+  FakeFirebaseFirestore firestore,
+  String listId,
+  Set<String> expected, {
+  required String because,
+}) async {
+  final data = (await firestore.collection(_sharedPath).doc(listId).get())
+      .data();
+  final trail = data?[ShoppingRepositoryRoutingModule.contributorsField];
+  expect(
+    trail,
+    isA<List<dynamic>>(),
+    reason:
+        'no contributorUserIds array on the stored list at all — $because '
+        '(account erasure cannot FIND this list once the writer leaves it)',
+  );
+  expect(
+    (trail as List).whereType<String>().toSet(),
+    expected,
+    reason: because,
+  );
+}
+
 UnifiedShoppingList _collabList({
   String name = 'Veckans handla',
   List<UnifiedShoppingItem>? items,
@@ -245,9 +282,32 @@ void main() {
       await module.createCollaborativeList(_collabList());
 
       final call = validationCalls.single;
-      expect(call.requiredFields, ['name', 'ownerId', 'memberPermissions']);
+      // BUT-1706: `items` and `createdAt` are here because the create RULE
+      // requires them — `hasRequiredFields(['ownerId', 'memberPermissions',
+      // 'items', 'createdAt'])`. Without them the client granted a create the
+      // server then refused, and the audit row recorded the grant. Keep this
+      // list a superset of the rule's; `name` is a client-side extra.
+      expect(call.requiredFields, [
+        'name',
+        'ownerId',
+        'memberPermissions',
+        'items',
+        'createdAt',
+      ]);
       expect(call.resourceType, 'collaborative_shopping_list');
       expect(call.data['name'], isNotNull);
+      expect(
+        call.data.keys,
+        containsAll(<String>[
+          'ownerId',
+          'memberPermissions',
+          'items',
+          'createdAt',
+        ]),
+        reason:
+            'the payload must actually carry every field the rule requires, or '
+            'the widened guard would reject every legitimate create',
+      );
     });
 
     test('logs successful permission check on create', () async {
@@ -785,8 +845,14 @@ void main() {
         firestore,
       ).createCollaborativeList(_collabList());
 
-      final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
-      expect(snap.data()!['contributorUserIds'], [_userId]);
+      await _expectContributorTrail(
+        firestore,
+        saved.id,
+        {_userId},
+        because:
+            'a list created from a conversion arrives with items already '
+            'stamped addedByUserId, and those never pass the mutate path',
+      );
     });
 
     test('unions an item-writing member who is not the owner', () async {
@@ -801,11 +867,12 @@ void main() {
         (live) => live.copyWith(items: [...live.items, _item('mjolk')]),
       );
 
-      final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
-      expect((snap.data()!['contributorUserIds'] as List).toSet(), {
-        _userId,
-        'bob',
-      });
+      await _expectContributorTrail(
+        firestore,
+        saved.id,
+        {_userId, 'bob'},
+        because: 'the transactional item path must union the writer in',
+      );
     });
 
     // BUT-1733: `updateCollaborativeList` is the fourth write path, and it
@@ -823,11 +890,14 @@ void main() {
         saved.copyWith(items: [_item('mjölk')]),
       );
 
-      final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
-      expect((snap.data()!['contributorUserIds'] as List).toSet(), {
-        _userId,
-        'bob',
-      });
+      await _expectContributorTrail(
+        firestore,
+        saved.id,
+        {_userId, 'bob'},
+        because:
+            'the whole-list path persists the items array, so it owes the '
+            'trail exactly as the transactional path does (BUT-1733)',
+      );
     });
 
     // The discriminator: the trail records who touched the ROWS, because it
@@ -845,7 +915,16 @@ void main() {
 
       final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
       expect(snap.data()!['name'], 'Söndagshandel');
-      expect((snap.data()!['contributorUserIds'] as List), [_userId]);
+      // Same helper as the positive sites, so the negative case is stated in
+      // the same terms: bob must be ABSENT, not merely "the set is short".
+      await _expectContributorTrail(
+        firestore,
+        saved.id,
+        {_userId},
+        because:
+            'a rename persists no items, so it must not stamp the writer — '
+            'the trail records who touched the ROWS',
+      );
     });
 
     // The OFFLINE leg. Every test above drives an ONLINE write — the create,
@@ -880,11 +959,14 @@ void main() {
             live.copyWith(items: [live.items.single.copyWith(bought: true)]),
       );
 
-      final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
-      expect((snap.data()!['contributorUserIds'] as List).toSet(), {
-        _userId,
-        'bob',
-      });
+      await _expectContributorTrail(
+        firestore,
+        saved.id,
+        {_userId, 'bob'},
+        because:
+            'the offline cached-base payload must carry the trail too — a '
+            'shop-aisle tick is how a member touches a list they later leave',
+      );
     });
 
     test('an offline append still extends the trail', () async {
@@ -906,11 +988,71 @@ void main() {
         (live) => live.copyWith(items: [...live.items, _item('bröd')]),
       );
 
+      await _expectContributorTrail(
+        firestore,
+        saved.id,
+        {_userId, 'bob'},
+        because:
+            "the append fast path (BUT-1683's arrayUnion) is a DIFFERENT "
+            'payload builder from the cached-base one, and owes the same trail',
+      );
+    });
+
+    // BUT-1706: the offline payload carries `items` plus the activity stamp and
+    // NOTHING else, and that used to be a comment. A mutator that appended a row
+    // and renamed the list queued only the row, returned the renamed object to
+    // the caller, and the rename was gone on the next read — success reported,
+    // change lost. No live mutator does this; the guard exists for the next one.
+    test('an offline mutation that also renames the list is REFUSED, not '
+        'silently stripped', () async {
+      final firestore = FakeFirebaseFirestore();
+      final saved = await _routing(
+        firestore,
+      ).createCollaborativeList(_collabList());
+
+      final bob = _routing(
+        firestore,
+        currentUid: 'bob',
+        transactionRunner: (_) async => throw FirebaseException(
+          plugin: 'cloud_firestore',
+          code: 'unavailable',
+        ),
+      );
+
+      await expectLater(
+        bob.mutateCollaborativeList(
+          saved.id,
+          (live) => live.copyWith(
+            items: [...live.items, _item('bröd')],
+            name: 'Söndagshandel',
+          ),
+        ),
+        throwsA(
+          isA<ArgumentError>().having(
+            (e) => e.message.toString(),
+            'message',
+            contains('dropped silently'),
+          ),
+        ),
+      );
+
       final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
-      expect((snap.data()!['contributorUserIds'] as List).toSet(), {
-        _userId,
-        'bob',
-      });
+      // `items` is the FALSIFIABLE half: without the guard the append reaches
+      // the arrayUnion payload and this row lands, so 0-vs-1 discriminates.
+      // `name` alone cannot — the offline payload never carries it in either
+      // world, so that assertion holds whether the guard exists or not.
+      expect(
+        snap.data()!['items'],
+        isEmpty,
+        reason:
+            'a refused mutation must not half-apply: the appended row must NOT '
+            'have been queued',
+      );
+      expect(
+        snap.data()!['name'],
+        'Veckans handla',
+        reason: 'and the rename it was refused for must not be stored either',
+      );
     });
   });
 
