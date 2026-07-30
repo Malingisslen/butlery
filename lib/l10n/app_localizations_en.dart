@@ -6766,6 +6766,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'You do not have permission to edit this shopping list';
 
   @override
+  String get shoppingListChangedElsewhere =>
+      'This list changed on another device — reload it and try again';
+
+  @override
   String get shoppingNoEditPermissionShared =>
       'You do not have permission to edit this shared shopping list';
 

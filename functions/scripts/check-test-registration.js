@@ -7,7 +7,7 @@
  * trigger and the whole rules gate stays dark for that change. Nothing goes red,
  * so nobody notices. This guard turns each hand-typed list into a checked one.
  *
- * Five assertions, all fatal:
+ * Six assertions, all fatal:
  *   1. REGISTERED        — every functions/src/__tests__/**\/*.test.ts is named by
  *                          at least one `test*` script in functions/package.json.
  *   2. NO_STALE_SCRIPT   — every test file a `test*` script names actually exists.
@@ -21,6 +21,17 @@
  *                          trigger block of .github/workflows/firestore-rules.yml,
  *                          so editing that suite actually fires the rules job.
  *   5. NO_STALE_TRIGGER  — every test path listed in those blocks matches a file.
+ *   6. GUARD_SELF        — the guards' OWN suites (functions/scripts/__tests__/
+ *                          *.test.js) exist and sit on a unit CI lane.
+ *
+ * BUT-1740: criterion 6 closes the guard-of-the-guard gap. Criteria 1–5 read
+ * `functions/src/__tests__/` only, so the guards' own tests — registered in
+ * package.json as `test:script-*` — were outside the universe the guard checks.
+ * Deleting both script entries measurably printed "OK — 117 test files
+ * registered", exit 0, while CI quietly stopped running either guard's tests;
+ * the `script-guard-tests` pre-commit hook did not fire either, because its
+ * glob covered `functions/scripts/**` and the deletion is a package.json edit
+ * (widened in the same ticket).
  *
  * BUT-1709: the guard is itself the thing nothing else checks, so its criteria are
  * expressed as `runCheck(options)` over an injectable tree and exercised against
@@ -87,6 +98,19 @@ const KNOWN_UNREACHABLE = new Map([
     "BUT-1702 — emulator suite, unverified in CI",
   ],
 ]);
+
+/**
+ * The guard suites that must exist, by name.
+ *
+ * Discovery alone (whatever `*.test.js` happens to sit in scripts/__tests__)
+ * would pass vacuously the moment someone deletes the test FILE rather than the
+ * script entry — the same shape of hole this whole guard exists to close. These
+ * two names are the floor; discovery below covers anything added later.
+ */
+const REQUIRED_GUARD_TESTS = [
+  "check-test-registration.test.js",
+  "rules-coverage-report.test.js",
+];
 
 const TEST_PATH_RE = /src\/__tests__\/([A-Za-z0-9_.@\-*]+\.test\.ts)/g;
 
@@ -163,6 +187,7 @@ function runCheck({
   rulesWorkflow = null,
   unregisteredOk = UNREGISTERED_OK,
   knownUnreachable = KNOWN_UNREACHABLE,
+  requiredGuardTests = REQUIRED_GUARD_TESTS,
 } = {}) {
   const testsDir = path.join(functionsDir, "src", "__tests__");
   const workflowPath =
@@ -321,16 +346,54 @@ function runCheck({
     }
   }
 
+  // 6. GUARD_SELF — the guards' own suites.
+  //
+  // Deliberately checked against the UNIT lane specifically: run-ci-unit-tests
+  // discovers `test:*` minus the emulator prefixes, so a guard suite renamed to
+  // `test:rules:…` would be registered, look wired, and run nowhere.
+  const guardTestsDir = path.join(functionsDir, "scripts", "__tests__");
+  const guardTests = fs.existsSync(guardTestsDir)
+    ? fs
+        .readdirSync(guardTestsDir)
+        .filter((name) => name.endsWith(".test.js"))
+        .sort()
+    : [];
+
+  for (const required of requiredGuardTests) {
+    if (!guardTests.includes(required)) {
+      fail(
+        "GUARD_SELF",
+        `functions/scripts/__tests__/${required} is missing — that file is the only proof a CI-wiring guard still works. Restore it rather than dropping the requirement.`,
+      );
+    }
+  }
+
+  for (const file of guardTests) {
+    const named = scripts.some(
+      ([name, command]) =>
+        name.startsWith("test:") &&
+        !NON_UNIT_PREFIXES.some((prefix) => name.startsWith(prefix)) &&
+        command.includes(`scripts/__tests__/${file}`),
+    );
+    if (named) continue;
+    fail(
+      "GUARD_SELF",
+      `functions/scripts/__tests__/${file} is named by no unit-lane test:* script in functions/package.json — the CI-wiring guards would silently stop being verified. Add e.g. "test:script-${file.replace(/\.test\.js$/, "")}": "node scripts/__tests__/${file}".`,
+    );
+  }
+
   return {
     failures,
     warnings,
     testFiles,
-    summary: `${testFiles.length} test files registered, ${rulesChain.size} rules suites triggered by ${blocks.length} paths blocks`,
+    guardTests,
+    summary: `${testFiles.length} test files registered, ${rulesChain.size} rules suites triggered by ${blocks.length} paths blocks, ${guardTests.length} guard suites on the unit lane`,
   };
 }
 
 module.exports = {
   runCheck,
+  REQUIRED_GUARD_TESTS,
   referencedTestFiles,
   workflowPathBlocks,
   globToRegExp,

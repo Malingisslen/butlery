@@ -159,6 +159,211 @@ void main() {
           expect(sections, isNot(contains('Method')));
         },
       );
+
+      // BUT-1727. The BUT-1714 gluten carve-out was wired into the URL/OCR
+      // tiers only; this path ran its own heading heuristic and still ate the
+      // line. A heading is dropped from the flat list allergen tagging reads,
+      // so eating "Råg:" silently removes the gluten from the recipe.
+      group('BUT-1727 bare gluten carve-out on the real import path', () {
+        Future<List<String>> flatIngredients(String text) async {
+          final result = await strategy.import(text);
+          return result.recipe!.ingredients
+              .map((e) => e.toLowerCase())
+              .toList();
+        }
+
+        for (final word in ['Råg', 'Öl', 'Havregryn', 'Dinkel', 'Vetemjöl']) {
+          test('keeps "$word:" as an ingredient, colon-stripped', () async {
+            final flat = await flatIngredients(
+              'Surdegsbröd\n'
+              'Ingredienser:\n'
+              '5 dl vatten\n'
+              '$word:\n'
+              '1 tsk salt\n'
+              'Gör så här:\n'
+              'Blanda och grädda i ugnen.',
+            );
+
+            // Colon-stripped: lookup strips no punctuation, so "råg:" would
+            // match no registry document and take the whole recipe to UNKNOWN.
+            expect(flat, contains(word.toLowerCase()));
+            expect(flat, isNot(contains('${word.toLowerCase()}:')));
+          });
+        }
+
+        test('the ticket\'s own repro block keeps every gluten line', () async {
+          final flat = await flatIngredients(
+            'Bröd\n'
+            'Ingredienser:\n'
+            'Råg:\n'
+            'Öl:\n'
+            'Vete:\n'
+            'Havre:\n'
+            'Mjöl:\n'
+            '2 dl socker\n'
+            'Gör så här:\n'
+            'Blanda och grädda i ugnen.',
+          );
+
+          // Every rescued row survives, "öl" included. The first version of
+          // this fix let the substring-containment rule in
+          // _deduplicateIngredients swallow "Öl" into "Mjöl", and the comment
+          // here called that an accepted no-op because both rows are gluten.
+          // That reasoning only held for this fixture: the same rule let
+          // gluten-FREE names swallow the rescued row on a real recipe (see
+          // the collider group below), which is a false-negative FREE verdict
+          // on a coeliac path. Containment is now skipped for rescued rows.
+          expect(
+            flat,
+            containsAll(<String>['råg', 'öl', 'vete', 'havre', 'mjöl']),
+          );
+        });
+
+        // BUT-1727 review: the rescue was undone one stage later. A rescued row
+        // is a bare stem, so any longer ingredient name CONTAINING it replaced
+        // it — and the swallowers here are all gluten-FREE, so the recipe lost
+        // its only gluten row and could resolve FREE. Note "Mjöl:" was NOT a
+        // regression: before the carve-out it was already dropped here, by
+        // isValidIngredient's orphan-fragment rule (5 chars, single token, no
+        // digit). The 6-character "Mjölk:" is the row that rides through with
+        // its colon; that asymmetry is the decided BUT-1714 call.
+        group('a gluten-free collider cannot swallow the rescued row', () {
+          const colliders = {
+            'Mjöl': '1 msk potatismjöl',
+            'Vete': '2 dl bovetemjöl',
+            'Korn': '2 dl majskorn',
+            'Öl': '2 dl majsmjöl',
+          };
+
+          colliders.forEach((rescued, collider) {
+            test('"$rescued:" survives "$collider"', () async {
+              final flat = await flatIngredients(
+                'Bröd\n'
+                'Ingredienser:\n'
+                '$rescued:\n'
+                '$collider\n'
+                '1 tsk salt\n'
+                'Gör så här:\n'
+                'Blanda och grädda i ugnen.',
+              );
+
+              // Both rows reach allergen tagging: the gluten stem AND the
+              // gluten-free row that used to delete it.
+              expect(flat, contains(rescued.toLowerCase()));
+              expect(flat, contains(collider.toLowerCase()));
+            });
+          });
+
+          test('a plain collider pair is still deduplicated by '
+              'containment', () async {
+            // The containment rule is untouched for every non-rescued row —
+            // narrowing it to "skip when either side was rescued" must not
+            // quietly disable it for the rest of the import.
+            final flat = await flatIngredients(
+              'Bröd\n'
+              'Ingredienser:\n'
+              '2 dl socker\n'
+              '2 dl florsocker\n'
+              'Gör så här:\n'
+              'Blanda och grädda i ugnen.',
+            );
+
+            expect(flat.where((e) => e.contains('socker')).length, 1);
+          });
+        });
+
+        test('the rescue is gluten-scoped — a dairy word is not routed '
+            'through it', () async {
+          final flat = await flatIngredients(
+            'Kaka\n'
+            'Ingredienser:\n'
+            '2 dl socker\n'
+            'Mjölk:\n'
+            '1 tsk salt\n'
+            'Gör så här:\n'
+            'Blanda och grädda i ugnen.',
+          );
+
+          // Measured, not assumed (2026-07-30): on THIS path "Mjölk:" never
+          // reached the heading heuristic at all — `looksLikeIngredient` lists
+          // "mjölk" as an ingredient word, so the line has always ridden
+          // through as a plain row, colon and all. That predates the carve-out
+          // and is untouched by it; the assertion that matters here is that the
+          // gluten rescue did not claim it, and colon-stripping — the rescue's
+          // signature — is exactly what distinguishes the two.
+          expect(flat, isNot(contains('mjölk')));
+          expect(flat, contains('mjölk:'));
+        });
+
+        test('a real component heading is still a heading, not an '
+            'ingredient', () async {
+          final result = await strategy.import(
+            'Kladdkaka\n'
+            'Deg:\n'
+            '2 dl socker\n'
+            'Gör så här:\n'
+            'Blanda och grädda.',
+          );
+          final flat = result.recipe!.ingredients.map((e) => e.toLowerCase());
+
+          expect(flat, isNot(contains('deg')));
+          expect(
+            bySubstring(result.recipe!.structuredIngredients, 'socker').section,
+            'Deg',
+          );
+        });
+
+        test('the rescued row does not become the recipe title', () async {
+          final result = await strategy.import(
+            'Råg:\n'
+            '5 dl vatten\n'
+            'Gör så här:\n'
+            'Blanda och grädda i ugnen.',
+          );
+
+          expect(result.recipe!.title.toLowerCase(), isNot('råg:'));
+          expect(result.recipe!.title.toLowerCase(), isNot('råg'));
+        });
+
+        // "Råg:" is 4 characters, so _extractTitleFromText rejects it on length
+        // alone and only the headerless fallback loop is exercised above. A
+        // word of 5+ characters reaches the primary title path, where nothing
+        // caught it before this guard — and being consumed as the title also
+        // skips the row in STAGE 3, so the gluten left the tagging input.
+        test(
+          'a 5+ character rescued row does not become the title, and survives '
+          'into the flat list',
+          () async {
+            final result = await strategy.import(
+              'Havregryn:\n'
+              '5 dl vatten\n'
+              'Gör så här:\n'
+              'Blanda och grädda i ugnen.',
+            );
+
+            expect(result.recipe!.title.toLowerCase(), isNot('havregryn:'));
+            expect(result.recipe!.title.toLowerCase(), isNot('havregryn'));
+            expect(
+              result.recipe!.ingredients.map((e) => e.toLowerCase()),
+              contains('havregryn'),
+            );
+          },
+        );
+
+        test('a fuller row for the same word still wins dedup', () async {
+          final flat = await flatIngredients(
+            'Bröd\n'
+            'Ingredienser:\n'
+            '2 dl råg\n'
+            'Råg:\n'
+            'Gör så här:\n'
+            'Blanda och grädda i ugnen.',
+          );
+
+          expect(flat.where((e) => e.contains('råg')).length, 1);
+          expect(flat, contains('2 dl råg'));
+        });
+      });
     });
 
     group('Cookbook title guards (corpus-found)', () {

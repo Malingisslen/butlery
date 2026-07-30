@@ -160,6 +160,12 @@ class DataExportService extends BaseService {
       'recipes': _contentManager.exportRecipes(userId),
       'menus': _contentManager.exportMenus(userId),
       'shopping_lists': _contentManager.exportShoppingLists(userId),
+      // BUT-1732: `shopping_lists` is the PERSONAL subcollection only. A
+      // household that shops from a shared list had its whole shopping history
+      // missing from the Art. 15 bundle while Art. 17 erased it.
+      'shared_shopping_lists': _contentManager.exportSharedShoppingLists(
+        userId,
+      ),
       'personal_tags': _contentManager.exportPersonalTags(userId),
       'personal_tag_groups': _contentManager.exportPersonalTagGroups(userId),
       'cook_snaps': _contentManager.exportCookSnaps(userId),

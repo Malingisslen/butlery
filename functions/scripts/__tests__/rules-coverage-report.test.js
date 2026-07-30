@@ -22,6 +22,8 @@ const {
   evaluateGate,
   collectExprNodes,
   innermostBlock,
+  newBlockPaths,
+  stripCommentsAndStrings,
   UNTESTED_BLOCK_POLICY,
 } = require("../rules-coverage-report.js");
 
@@ -212,6 +214,78 @@ test("a stray `match` word does not consume the rest of the file", () => {
   ]);
 });
 
+// ── string literals (BUT-1729) ────────────────────────────────────────────
+//
+// The scan keys on `/`, `*`, `{` and `}`, every one of which a rules string may
+// legally contain. Each case below made the world-open block that follows it
+// VANISH from the parse — so it was never in the new-block set, and the gate
+// printed OK on a path that grants everything to everyone.
+
+test("a `/*` inside a string literal does not swallow the rest of the file", () => {
+  const source = wrap(
+    [
+      "    match /a/{id} {",
+      '      allow read: if resource.data.pattern == "/*";',
+      "    }",
+      "    match /leaky/{id} { allow read, write: if true; }",
+    ].join("\n"),
+  );
+  assert.deepStrictEqual(paths(parseMatchBlocks(source)), [
+    "/databases/{database}/documents",
+    "/databases/{database}/documents/a/{id}",
+    "/databases/{database}/documents/leaky/{id}",
+  ]);
+  assert.strictEqual(kindOf(source, "/leaky/{id}"), "constant-allow");
+});
+
+test("a `//` inside a string literal does not blank the rest of the line", () => {
+  const source = wrap(
+    [
+      '    match /a/{id} { allow read: if resource.data.url == "https://x"; }',
+      "    match /leaky/{id} { allow read, write: if true; }",
+    ].join("\n"),
+  );
+  assert.deepStrictEqual(paths(parseMatchBlocks(source)), [
+    "/databases/{database}/documents",
+    "/databases/{database}/documents/a/{id}",
+    "/databases/{database}/documents/leaky/{id}",
+  ]);
+  assert.strictEqual(kindOf(source, "/a/{id}"), "conditional");
+});
+
+test("a brace inside a string literal does not close a block early", () => {
+  const source = wrap(
+    [
+      "    match /a/{id} {",
+      '      allow read: if resource.data.template == "}";',
+      "    }",
+      "    match /leaky/{id} { allow read, write: if true; }",
+    ].join("\n"),
+  );
+  assert.deepStrictEqual(paths(parseMatchBlocks(source)), [
+    "/databases/{database}/documents",
+    "/databases/{database}/documents/a/{id}",
+    "/databases/{database}/documents/leaky/{id}",
+  ]);
+});
+
+test("the code-only view stays aligned with the source, line and column", () => {
+  // ownBodyText subtracts a nested block by OFFSET, so a view that shifted by
+  // even one character would cut the wrong text out of the parent's body.
+  const source = [
+    'let a = "x/*y"; // trailing',
+    "/* block */ let b = 1;",
+    "plain",
+  ].join("\n");
+  const view = stripCommentsAndStrings(source);
+  const raw = source.split("\n");
+  assert.strictEqual(view.length, raw.length);
+  view.forEach((line, i) => assert.strictEqual(line.length, raw[i].length));
+  assert.strictEqual(view[0], `let a = "    "; ${" ".repeat(11)}`);
+  assert.strictEqual(view[1], "            let b = 1;");
+  assert.strictEqual(view[2], "plain");
+});
+
 // ── classifyBlockBody ─────────────────────────────────────────────────────
 
 test("classifies `if true` as constant-allow and `if false` as constant-deny", () => {
@@ -253,6 +327,29 @@ test("a parent's own allow is not attributed to its child, or vice versa", () =>
   );
   assert.strictEqual(kindOf(source, "/parent/{pid}"), "constant-deny");
   assert.strictEqual(kindOf(source, "/child/{cid}"), "constant-allow");
+});
+
+test("a parent's own allow survives a child that shares its line (BUT-1729)", () => {
+  // Line-based subtraction dropped the whole line the child sat on, taking the
+  // parent's `if true` with it: the parent read as a harmless `container` and
+  // the gate reported OK on a world-open path.
+  const source = wrap(
+    [
+      "    match /p/{pid} {",
+      "      match /c/{cid} { allow read: if request.auth != null; } allow read, write: if true;",
+      "    }",
+    ].join("\n"),
+  );
+  assert.strictEqual(kindOf(source, "/p/{pid}"), "constant-allow");
+  assert.strictEqual(kindOf(source, "/c/{cid}"), "conditional");
+});
+
+test("a child on the parent's own line does not donate its allow to the parent", () => {
+  const source = wrap(
+    "    match /p/{pid} { match /c/{cid} { allow read, write: if true; } }",
+  );
+  assert.strictEqual(kindOf(source, "/p/{pid}"), "container");
+  assert.strictEqual(kindOf(source, "/c/{cid}"), "constant-allow");
 });
 
 // ── evaluateGate ──────────────────────────────────────────────────────────
@@ -354,8 +451,117 @@ test("with no base revision (newPaths null) nothing fails but the count still la
   assert.strictEqual(gate.untestedAll.length, 1);
 });
 
+test("a NEW constant-allow block fails even when its expressions WERE hit (BUT-1729)", () => {
+  // The world-open `read` has no expression of its own; the coverage the
+  // emulator reports belongs to the sibling `write` condition. Requiring
+  // exprHit === 0 let that sibling's single test sign off on the open grant.
+  const source = wrap(
+    "    match /leaky/{id} { allow read: if true; allow write: if request.auth != null; }",
+  );
+  const gate = gateOver(
+    source,
+    [["/leaky/{id}", { exprTotal: 3, exprHit: 2 }]],
+    ["/leaky/{id}"],
+  );
+  assert.strictEqual(gate.failures.length, 1);
+  assert.strictEqual(gate.failures[0].kind, "constant-allow");
+  assert.match(gate.failures[0].reason, /unconditionally/);
+  assert.strictEqual(gate.exempt.length, 0);
+});
+
+test("a NEW compact parent whose allow shares a line with a child fails the gate", () => {
+  const source = wrap(
+    [
+      "    match /p/{pid} {",
+      "      match /c/{cid} { allow read: if request.auth != null; } allow read, write: if true;",
+      "    }",
+    ].join("\n"),
+  );
+  const gate = gateOver(
+    source,
+    [["/p/{pid}", { exprTotal: 2, exprHit: 2 }]],
+    ["/p/{pid}"],
+  );
+  assert.strictEqual(gate.failures.length, 1);
+  assert.match(gate.failures[0].path, /\/p\/\{pid\}$/);
+});
+
 test("the untested-block number is report-only by decision (BUT-1708)", () => {
   assert.strictEqual(UNTESTED_BLOCK_POLICY, "report-only");
+});
+
+// ── newBlockPaths (the base-vs-head diff the whole gate stands on) ─────────
+//
+// Every gate test above hand-feeds `newPaths`. This is where that set is
+// actually computed — and where a false positive would fail an author for a
+// block they only re-indented, which is how a gate gets disabled.
+
+const diffOver = (baseBody, headBody, base = "abc123") =>
+  newBlockPaths({
+    base,
+    baseSource: baseBody === null ? null : wrap(baseBody),
+    blocks: parseMatchBlocks(wrap(headBody)),
+  });
+
+test("a re-indented, moved and reformatted block is NOT new", () => {
+  const before = [
+    "    match /a/{id} {",
+    "      allow read: if request.auth != null;",
+    "    }",
+    "    match /b/{id} {",
+    "      allow read: if request.auth != null;",
+    "    }",
+  ].join("\n");
+  const after = [
+    "        match /b/{id} { allow read: if request.auth != null; }",
+    "        match",
+    "          /a/{id}",
+    "        {",
+    "          allow read: if request.auth != null;",
+    "        }",
+  ].join("\n");
+  const { newPaths, note } = diffOver(before, after);
+  assert.deepStrictEqual([...newPaths], []);
+  assert.match(note, /Gate active against base `abc123`: 0 new match block\(s\)/);
+});
+
+test("a genuinely added block is the only entry in the diff", () => {
+  const before = "    match /a/{id} { allow read: if request.auth != null; }";
+  const after = [
+    "    match /a/{id} { allow read: if request.auth != null; }",
+    "    match /leaky/{id} { allow read, write: if true; }",
+  ].join("\n");
+  const { newPaths } = diffOver(before, after);
+  assert.deepStrictEqual(
+    [...newPaths],
+    ["/databases/{database}/documents/leaky/{id}"],
+  );
+});
+
+test("a renamed path counts as new (the old path simply disappears)", () => {
+  const { newPaths } = diffOver(
+    "    match /old/{id} { allow read: if request.auth != null; }",
+    "    match /renamed/{id} { allow read: if request.auth != null; }",
+  );
+  assert.deepStrictEqual(
+    [...newPaths],
+    ["/databases/{database}/documents/renamed/{id}"],
+  );
+});
+
+test("no base, and an unreadable base, SKIP the gate rather than diff against nothing", () => {
+  const body = "    match /a/{id} { allow read: if request.auth != null; }";
+  const noBase = newBlockPaths({
+    base: null,
+    baseSource: null,
+    blocks: parseMatchBlocks(wrap(body)),
+  });
+  assert.strictEqual(noBase.newPaths, null);
+  assert.match(noBase.note, /no --base revision supplied/);
+
+  const unreadable = diffOver(null, body);
+  assert.strictEqual(unreadable.newPaths, null, "null must not read as 'nothing new'");
+  assert.match(unreadable.note, /could not read firestore\.rules at base/);
 });
 
 // ── coverage payload walker ───────────────────────────────────────────────

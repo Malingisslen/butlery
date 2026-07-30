@@ -62,9 +62,14 @@ class ShoppingRepositoryQueryModule {
         );
       }
 
-      // Get shared/collaborative lists where user is a member
+      // Get shared/collaborative lists where user is a member.
+      // `isNull: false`, NOT `isNotEqualTo: null` — the SDK only adds the
+      // condition when the argument is non-null (`if (isNotEqualTo != null)`,
+      // query.dart:659), so passing a literal null filtered NOTHING and this
+      // read was an unfiltered sweep of every household's shared lists, which
+      // the read rule then refuses wholesale. See [collaborativeListsStream].
       final sharedSnapshot = await sharedListsRef
-          .where('memberPermissions.$uid', isNotEqualTo: null)
+          .where('memberPermissions.$uid', isNull: false)
           .limit(20) // Most users won't have more than 20 shared lists
           .get();
 
@@ -205,17 +210,23 @@ class ShoppingRepositoryQueryModule {
   Stream<List<UnifiedShoppingList>> collaborativeListsStream() {
     try {
       final uid = requireCurrentUserId();
-      // Firestore forbids combining an inequality filter (memberPermissions.$uid
-      // isNotEqualTo null) with an orderBy on a *different* field — it throws and
-      // the stream silently emits nothing. The membership key is also per-user
-      // dynamic, so it can't be the first orderBy. Filter server-side, then sort
-      // by updatedAt client-side (mirrors readAll()). A small limit(20) without
-      // the orderBy would truncate arbitrary docs, so we sort+take(20) for
-      // display — but still cap server-side reads at 200 (in Firestore's natural
-      // doc order) so the listener can never stream an unbounded set. No real
-      // household approaches 200 collaborative lists.
+      // Firestore forbids combining an inequality filter
+      // (memberPermissions.$uid != null) with an orderBy on a *different* field
+      // — it throws and the stream silently emits nothing. The membership key is
+      // also per-user dynamic, so it can't be the first orderBy. Filter
+      // server-side, then sort by updatedAt client-side (mirrors readAll()). A
+      // small limit(20) without the orderBy would truncate arbitrary docs, so we
+      // sort+take(20) for display — but still cap server-side reads at 200 (in
+      // Firestore's natural doc order) so the listener can never stream an
+      // unbounded set. No real household approaches 200 collaborative lists.
+      //
+      // `isNull: false` is the SDK's spelling of that inequality.
+      // `isNotEqualTo: null` looks equivalent and is not: the builder guards
+      // every operator with `if (<arg> != null)` (query.dart:659), so a literal
+      // null adds no condition and the "filter" became a 200-document sweep of
+      // every household's lists — an unfiltered list read the rules refuse.
       return sharedListsRef
-          .where('memberPermissions.$uid', isNotEqualTo: null)
+          .where('memberPermissions.$uid', isNull: false)
           .limit(200)
           .snapshots()
           .map((snap) {

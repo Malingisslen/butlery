@@ -60,6 +60,10 @@ class ShoppingRepositoryRoutingModule {
   /// user had left. Unioned on each write: leaving cannot erase the trail.
   static const String contributorsField = 'contributorUserIds';
 
+  /// The one key whose presence in a payload means item attribution was
+  /// written, so the erasure trail is owed. See [_withContributorTrail].
+  static const String itemsField = 'items';
+
   final FirebaseFirestore firestore;
   final AuthRepository authRepository;
   final CollectionReference<Map<String, dynamic>> sharedListsRef;
@@ -70,7 +74,13 @@ class ShoppingRepositoryRoutingModule {
     required String resourceType,
   })
   validateRequiredFields;
-  final void Function({
+
+  /// BUT-1741: `Future<void>`, not `void`. The injected implementation
+  /// (`PermissionValidationMixin.logPermissionCheck`) is async, and a `void`
+  /// parameter type accepts it while silently discarding the future — an audit
+  /// write that fails then surfaces as an unhandled async error nobody
+  /// attributes to the shopping list. Every call site awaits.
+  final Future<void> Function({
     required String userId,
     required String resource,
     required String operation,
@@ -138,7 +148,7 @@ class ShoppingRepositoryRoutingModule {
     // a grant nobody made. Note this also fails
     // `createCollaborativeListFromInvitation` locally instead of at the
     // server — that path has always been dead against the same rule.
-    _guards.requireSelfOwnedCreate(uid, entity);
+    await _guards.requireSelfOwnedCreate(uid, entity);
 
     final docRef = sharedListsRef.doc();
     final listToSave = UnifiedShoppingList(
@@ -166,12 +176,17 @@ class ShoppingRepositoryRoutingModule {
     // BUT-1725: seat the creator immediately. A list created from a conversion
     // arrives with items already stamped `addedByUserId: <creator>`, and those
     // never pass through the mutate path that would otherwise union the uid in.
-    await docRef.set({
-      ...listToSave.toFirestore(),
-      contributorsField: [uid],
-    });
+    // BUT-1733: through the same helper as every other write, so "this write
+    // carries items, therefore it owes the trail" is decided in one place.
+    await docRef.set(
+      _withContributorTrail(
+        listToSave.toFirestore(),
+        uid,
+        knownContributors: const <String>[],
+      ),
+    );
 
-    logPermissionCheck(
+    await logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'create',
@@ -186,10 +201,19 @@ class ShoppingRepositoryRoutingModule {
     return listToSave;
   }
 
-  /// Update collaborative list in shared collection
+  /// Update collaborative list in shared collection.
+  ///
+  /// [accessControlBase] is how a caller states that it is deliberately
+  /// managing membership, handing over the copy it computed that change from.
+  /// Null for ordinary content edits — a rename, a settings flag — and the ACL
+  /// is not moved at all, however stale the entity's copy of it is. Reached in
+  /// production only via [updateCollaborativeListMembership]; the reasoning is
+  /// in [ShoppingListPermissionGuards.restrictAccessControlToDeclaredBase]
+  /// (BUT-1726).
   Future<UnifiedShoppingList> updateCollaborativeList(
-    UnifiedShoppingList entity,
-  ) async {
+    UnifiedShoppingList entity, {
+    UnifiedShoppingList? accessControlBase,
+  }) async {
     final uid = requireCurrentUserId();
 
     // Validate entity exists
@@ -213,19 +237,34 @@ class ShoppingRepositoryRoutingModule {
     // accepts any member key including a view-only one, and this method writes
     // the WHOLE list, so it must not be the weaker of the two gates.
     await _guards.requireEditRights(uid, entity.id, stored);
-    _guards.requireNoPrivilegeEscalation(uid, entity, stored);
+    await _guards.requireNoPrivilegeEscalation(uid, entity, stored);
 
     // BUT-1719: write only what the caller actually changed, and never let a
     // cached base carry an access-control change. See [narrowUpdatePayload].
-    final payload = _offline.narrowUpdatePayload(
+    // BUT-1726: that cached-base refusal only bites once a privileged key can
+    // survive the narrowing at all — i.e. only when the caller declared its
+    // base. Undeclared, those keys are stripped below, so asking would just
+    // fail an offline rename that was never going to touch the ACL.
+    final payload = await _offline.narrowUpdatePayload(
       uid,
       entity,
       stored,
-      baseIsCached: docSnapshot.metadata.isFromCache,
+      baseIsCached:
+          accessControlBase != null && docSnapshot.metadata.isFromCache,
     );
-    if (payload.isNotEmpty) await docRef.update(payload);
+    final write = _withContributorTrail(
+      await _guards.restrictAccessControlToDeclaredBase(
+        uid,
+        entity.id,
+        payload,
+        declaredBase: accessControlBase,
+        stored: stored,
+      ),
+      uid,
+    );
+    if (write.isNotEmpty) await docRef.update(write);
 
-    logPermissionCheck(
+    await logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'update',
@@ -237,6 +276,25 @@ class ShoppingRepositoryRoutingModule {
       'Updated collaborative list "${entity.name}" with ${entity.items.length} items in shared collection',
     );
     return entity;
+  }
+
+  /// BUT-1726: the one production caller that declares an [accessControlBase] —
+  /// a named method, because a forgotten optional argument silently turns
+  /// "remove this member" into a write of `updatedAt` alone.
+  Future<UnifiedShoppingList> updateCollaborativeListMembership(
+    UnifiedShoppingList updated,
+    UnifiedShoppingList base,
+  ) {
+    // A personal list has no members, and routing one through here would write
+    // it into the SHARED collection. Fail loudly rather than duplicate it.
+    if (updated.type != ListType.collaborative) {
+      throw ArgumentError.value(
+        updated.type,
+        'updated.type',
+        'Membership can only be changed on a collaborative list',
+      );
+    }
+    return updateCollaborativeList(updated, accessControlBase: base);
   }
 
   /// BUT-1665: apply [mutate] to a collaborative list inside a Firestore
@@ -287,26 +345,29 @@ class ShoppingRepositoryRoutingModule {
         // on ShoppingRepository, so it needs the same escalation bar as the
         // whole-list path — a mutator returning a list that names itself owner
         // or admin must not be written, and must not be audited as a grant.
-        _guards.requireNoPrivilegeEscalation(uid, mutated, live);
+        await _guards.requireNoPrivilegeEscalation(uid, mutated, live);
         // BUT-1725: the one chokepoint every collaborative item write passes
         // through, so the erasure trail is extended here. The union is computed
         // explicitly rather than via `FieldValue.arrayUnion`: the transaction
         // already holds the live array and retries on conflict, so this is
         // exactly as concurrency-safe and does not depend on how a merge-set
         // treats a sentinel.
-        final contributors = {
-          ...?(snapshot.data()?[contributorsField] as List?)
-              ?.whereType<String>(),
-          uid,
-        };
-        transaction.set(docRef, {
-          ...mutated.toFirestore(),
-          contributorsField: contributors.toList(),
-        }, SetOptions(merge: true));
+        transaction.set(
+          docRef,
+          _withContributorTrail(
+            mutated.toFirestore(),
+            uid,
+            knownContributors:
+                (snapshot.data()?[contributorsField] as List?)
+                    ?.whereType<String>() ??
+                const <String>[],
+          ),
+          SetOptions(merge: true),
+        );
         return mutated;
       });
 
-      logPermissionCheck(
+      await logPermissionCheck(
         userId: uid,
         resource: 'collaborative_shopping_list',
         operation: 'update',
@@ -325,14 +386,35 @@ class ShoppingRepositoryRoutingModule {
     }
   }
 
-  /// BUT-1725: [payload] with the writer unioned into [contributorsField].
-  Map<String, Object?> _withContributor(
+  /// BUT-1725/BUT-1733: [payload] with the writer unioned into
+  /// [contributorsField] — but only when the payload actually persists
+  /// [itemsField].
+  ///
+  /// The trail exists to make a list findable after the writer has LEFT it,
+  /// because their name stays inside the rows they added
+  /// (`addedByDisplayName`, `assignedToDisplayName`). So the condition that
+  /// obliges a write to extend it is exactly "this write persists item rows",
+  /// and asserting that in ONE helper is what stops a fourth write path being
+  /// added without it — `updateCollaborativeList` was already that fourth path.
+  /// A payload without `items` (a rename, a settings flag) stamps nothing, so
+  /// the array records who touched the list, not who opened its settings.
+  Map<String, Object?> _withContributorTrail(
     Map<String, Object?> payload,
-    String uid,
-  ) => {
-    ...payload,
-    contributorsField: FieldValue.arrayUnion([uid]),
-  };
+    String uid, {
+    Iterable<String>? knownContributors,
+  }) {
+    if (!payload.containsKey(itemsField)) return payload;
+    return {
+      ...payload,
+      // A caller inside a transaction passes the array the transaction already
+      // holds, because `fake_cloud_firestore` (and a merge-set generally) will
+      // not honour a sentinel there; everyone else gets the sentinel, which is
+      // what makes an offline replay merge instead of overwrite.
+      contributorsField: knownContributors == null
+          ? FieldValue.arrayUnion([uid])
+          : {...knownContributors, uid}.toList(),
+    };
+  }
 
   Future<UnifiedShoppingList> _runTransactionOnBudget(
     Future<UnifiedShoppingList> Function(Transaction transaction) handler,
@@ -366,13 +448,13 @@ class ShoppingRepositoryRoutingModule {
     final mutated = mutate(live);
     // Same escalation bar as the transactional path — the cached base makes the
     // check weaker, not unnecessary.
-    _guards.requireNoPrivilegeEscalation(uid, mutated, live);
+    await _guards.requireNoPrivilegeEscalation(uid, mutated, live);
 
     final appended = _offline.appendedItems(live, mutated);
     // BUT-1725: an offline edit stamps the same per-item attribution an online
     // one does, so it owes the same erasure trail; arrayUnion replays as a
     // merge, so it is safe on the cached-base path too.
-    final payload = _withContributor(
+    final payload = _withContributorTrail(
       appended != null
           ? _offline.appendPayload(mutated, appended)
           : _offline.cachedBasePayload(mutated),
@@ -388,7 +470,7 @@ class ShoppingRepositoryRoutingModule {
           .catchError((Object e) => _offline.onReplayRejected(uid, listId, e)),
     );
 
-    logPermissionCheck(
+    await logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'update',

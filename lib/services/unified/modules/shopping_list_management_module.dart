@@ -225,6 +225,33 @@ class ShoppingListManagementModule {
     }
   }
 
+  /// BUT-1726: persist a membership change on a collaborative list.
+  ///
+  /// [base] is the copy the change was computed from — see
+  /// [ShoppingRepository.updateCollaborativeListMembership]. Rethrows rather
+  /// than swallowing: the caller has to be able to tell "removed" from "the
+  /// list moved under you", and local state must NOT be updated when the write
+  /// was refused. That mismatch is the whole defect this replaced — the member
+  /// disappeared from the screen while the server still had them.
+  Future<UnifiedShoppingList> updateListMembership(
+    UnifiedShoppingList updated,
+    UnifiedShoppingList base,
+  ) async {
+    final saved = await repository.updateCollaborativeListMembership(
+      updated,
+      base,
+    );
+
+    final listIndex = lists.indexWhere((l) => l.id == saved.id);
+    if (listIndex >= 0) {
+      lists[listIndex] = saved;
+      notifyListeners();
+    }
+
+    AppLogger.success('Updated membership on list: ${saved.name}');
+    return saved;
+  }
+
   Future<bool> deleteList(String listId) async {
     try {
       // Find the list to delete

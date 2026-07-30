@@ -92,13 +92,29 @@ void main() {
   // lookups are unaffected, and a content miss re-extracts once. Accepted.
   // 'flygande_jakob' is unchanged, which is the sanity check that this moved
   // only the Swedish-letter cases.
+  //
+  // RE-PINNED A SECOND TIME, DELIBERATELY (BUT-1739, 2026-07-30). The amount
+  // regex is `^`-anchored and ran BEFORE the approximate-word strip, so
+  // "ca 2 dl grädde" normalized to "2 grädde": no leading digit existed while
+  // the regex looked, and removing "ca" afterwards stranded the amount. The
+  // same ingredient therefore hashed differently depending on whether the
+  // writer typed "ca" — which is precisely the duplicate-extraction the
+  // fingerprint exists to prevent. The two steps are now ordered qualifier-
+  // first. Cost is the same one-time cost as the BUT-1713 re-pin: content-
+  // fingerprint rows for qualifier-carrying recipes stop matching and
+  // re-extract once; URL-hash lookups are unaffected. That cost is accepted
+  // here rather than solved: the cache still has no parser-version key to bump
+  // (BUT-1737), so a re-pin IS the invalidation mechanism. ONE fixture moved —
+  // 'parenthetical_and_approx', the only one containing "ca"/"ungefär" — and
+  // the other five are byte-identical, which is the sanity check that this
+  // change reached nothing else.
   const golden = <String, String>{
     'kottbullar': '8417771176dd49fe',
     'kladdkaka': '4da56fe5e263025c',
     'pannkakor': 'ab69349a9c697c8b',
     'flygande_jakob': 'f9df56ab08f511a2',
     'artsoppa': 'acdd392bd5294ccb',
-    'parenthetical_and_approx': 'a4e4acce3fadb916',
+    'parenthetical_and_approx': '95ab8dd71e014dd7',
   };
 
   // BUT-1713. The hash pins above only prove "no drift"; they cannot say WHICH
@@ -129,16 +145,74 @@ void main() {
       '1 påse socker': 'socker',
       '3 skivor bacon': 'bacon',
       '2 dl grädde': 'grädde',
-      // Pre-existing ordering quirk, pinned so it is not mistaken for this
-      // fix: the amount regex is anchored at `^`, so an "ca"-prefixed line
-      // keeps its digit once the approximate word is removed.
-      'ca 2 dl grädde': '2 grädde',
+      // BUT-1739: was the pinned quirk '2 grädde'. The amount regex is
+      // anchored at `^`, so on a qualifier-prefixed line it saw no leading
+      // digit and the stripped "ca" left the amount stranded — the same
+      // ingredient fingerprinted two different ways depending on whether the
+      // writer typed "ca". The qualifier is now removed first.
+      'ca 2 dl grädde': 'grädde',
+      'cirka 2 dl grädde': 'grädde',
+      'ungefär 2 dl grädde': 'grädde',
+      'ungefär 500 g potatis': 'potatis',
+      'ca 1 kg högrev': 'högrev',
+      // The qualifier is not required to be leading, and a line without one
+      // is unaffected by the reordering.
+      '2 dl ca grädde': 'grädde',
     };
 
     cases.forEach((input, expected) {
       test('"$input" → "$expected"', () {
         expect(RecipeTextNormalizer.normalizeIngredientName(input), expected);
       });
+    });
+  });
+
+  // BUT-1739 review addition. The pins above prove the normalized NAME and the
+  // hash of one fixture; neither states the invariant the reorder exists for —
+  // that a writer typing "ca" does not create a second cache entry for a recipe
+  // the cache already holds, which is a duplicate LLM extraction per import.
+  // Asserted at the level GlobalRecipeCache actually keys on.
+  group('qualifier-invariance of the fingerprint (the cache-hit contract)', () {
+    const bare = ['1 kg högrev', '2 st lök', '3 dl buljong', '500 g potatis'];
+    const qualified = [
+      'ca 1 kg högrev',
+      '2 st lök',
+      'ungefär 3 dl buljong',
+      'cirka 500 g potatis',
+    ];
+
+    test('the same recipe written with and without "ca/cirka/ungefär" '
+        'fingerprints identically', () {
+      final a = fp.generate(
+        title: 'Långkok på högrev',
+        ingredients: bare,
+        instructionCount: 7,
+      );
+      final b = fp.generate(
+        title: 'Långkok på högrev',
+        ingredients: qualified,
+        instructionCount: 7,
+      );
+
+      expect(a, isNotNull);
+      expect(b, a);
+    });
+
+    test('a genuinely different ingredient still fingerprints differently', () {
+      // Recall control: the equality above must come from qualifier-stripping,
+      // not from the fingerprint having gone blind to the ingredient list.
+      final a = fp.generate(
+        title: 'Långkok på högrev',
+        ingredients: bare,
+        instructionCount: 7,
+      );
+      final c = fp.generate(
+        title: 'Långkok på högrev',
+        ingredients: [...bare.take(3), '500 g rotselleri'],
+        instructionCount: 7,
+      );
+
+      expect(c, isNot(a));
     });
   });
 

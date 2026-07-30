@@ -216,6 +216,10 @@ class ExportPaginationHelper {
     'user_notifications': 500,
     // Increment 5: pooled-rating events (one per pool the user voted in).
     'canonical_rating_events': 1000,
+    // BUT-1732: pinned at the value the section already resolved to via the
+    // defaultBatchSize fallback, so its three truncation probes key off a
+    // declared contract rather than a coincidence. Behaviour is unchanged.
+    'shared_shopping_lists': 500,
   };
 
   /// Get export limit for content type

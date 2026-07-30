@@ -36,6 +36,13 @@ void main() {
     /// created copy. Null models "could not be confirmed" (offline).
     late int? confirmedItemCount;
 
+    /// Counts the clear-on-entry hook. BUT-1726 review: every member operation
+    /// has early `return false` branches that never reach the service, and the
+    /// dialog reads `consumeMutationError()` on exactly those branches — so an
+    /// unrelated earlier failure's sentence was shown as the cause. The clear
+    /// has to happen HERE, at the entry point, not inside the service.
+    late int beginMutationCalls;
+
     setUpAll(() async {
       // Register fallback values for mocktail
       registerFallbackValue(SharedListPermission.view);
@@ -225,6 +232,13 @@ void main() {
       when(
         () => mockParentService.updateList(any()),
       ).thenAnswer((_) async => true);
+      // BUT-1726: membership no longer rides on updateList. It has its own
+      // seam that also carries the BASE the change was computed from, so the
+      // repository can refuse a change computed against a list the server has
+      // already moved past instead of silently writing nothing.
+      when(
+        () => mockParentService.updateSharedListMembership(any(), any()),
+      ).thenAnswer((_) async => true);
       when(
         () => mockParentService.deleteList(any()),
       ).thenAnswer((_) async => true);
@@ -250,6 +264,7 @@ void main() {
       // the pre-existing happy-path tests still exercise the delete; the tests
       // that care set it explicitly.
       confirmedItemCount = 99;
+      beginMutationCalls = 0;
       final lifecycleOps = ListLifecycleOperations(
         getCollaborativeLists: () => mockParentService.collaborativeLists,
         getPersonalLists: () => mockParentService.personalLists,
@@ -261,7 +276,8 @@ void main() {
 
       final memberOps = ListMemberOperations(
         getCurrentUserId: () => mockParentService.currentUserId,
-        updateList: mockParentService.updateList,
+        updateMembership: mockParentService.updateSharedListMembership,
+        beginMutation: () => beginMutationCalls++,
         lifecycleOps: lifecycleOps,
       );
 
@@ -559,6 +575,39 @@ void main() {
     });
 
     group('Member Management', () {
+      /// BUT-1726 review: the dialog reads `consumeMutationError()` after every
+      /// member operation, but the clear used to live inside the service —
+      /// BELOW the early `return false` branches here, which never reach it.
+      /// A parked sentence from an unrelated earlier failure ("du saknar
+      /// behörighet att redigera denna delade inköpslista", from a failed row
+      /// edit) was then shown as the reason a member could not be added. The
+      /// early-return path is precisely the one that must clear, so pin it
+      /// there rather than on the happy path.
+      test(
+        'an early refusal still clears any parked failure reason',
+        () async {
+          // "already a member" — returns false without touching the service.
+          final result = await operations.addMember(
+            listId: 'collab_list_1',
+            userId: 'user_456',
+            userDisplayName: 'Existing User',
+            permission: SharedListPermission.edit,
+          );
+
+          expect(result, isFalse);
+          verifyNever(
+            () => mockParentService.updateSharedListMembership(any(), any()),
+          );
+          expect(
+            beginMutationCalls,
+            1,
+            reason:
+                'the clear must run on the branch that never reaches the '
+                'service, or the dialog reports a stale, unrelated cause',
+          );
+        },
+      );
+
       test('should add member to list', () async {
         // Act
         final result = await operations.addMember(
@@ -570,7 +619,9 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockParentService.updateList(any())).called(1);
+        verify(
+          () => mockParentService.updateSharedListMembership(any(), any()),
+        ).called(1);
       });
 
       test('should not add existing member', () async {
@@ -584,7 +635,9 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockParentService.updateList(any()));
+        verifyNever(
+          () => mockParentService.updateSharedListMembership(any(), any()),
+        );
       });
 
       test('should not add member without permission', () async {
@@ -598,7 +651,9 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockParentService.updateList(any()));
+        verifyNever(
+          () => mockParentService.updateSharedListMembership(any(), any()),
+        );
       });
 
       test('should remove member from list', () async {
@@ -610,7 +665,9 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockParentService.updateList(any())).called(1);
+        verify(
+          () => mockParentService.updateSharedListMembership(any(), any()),
+        ).called(1);
       });
 
       test('should update member permission', () async {
@@ -623,7 +680,137 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(() => mockParentService.updateList(any())).called(1);
+        verify(
+          () => mockParentService.updateSharedListMembership(any(), any()),
+        ).called(1);
+      });
+
+      // BUT-1726 regression. The access-control guard shipped as an OPT-IN
+      // argument on the whole-list update, and nothing opted in: every add,
+      // remove and permission change wrote only `updatedAt` while these
+      // operations returned true and the dialog reported success. A removed
+      // member kept read+edit rights on the server.
+      //
+      // These tests are at the PRODUCTION call shape — no test-only argument —
+      // and assert on the payload the seam is handed, not merely that it was
+      // called, so widening the strip again cannot leave them green.
+      group('BUT-1726 the membership write states its intent', () {
+        late List<List<UnifiedShoppingList>> membershipCalls;
+
+        setUp(() {
+          membershipCalls = [];
+          when(
+            () => mockParentService.updateSharedListMembership(any(), any()),
+          ).thenAnswer((invocation) async {
+            membershipCalls.add([
+              invocation.positionalArguments[0] as UnifiedShoppingList,
+              invocation.positionalArguments[1] as UnifiedShoppingList,
+            ]);
+            return true;
+          });
+        });
+
+        test('removing a member actually drops the key it is asked to '
+            'drop', () async {
+          await operations.removeMember(
+            listId: 'collab_list_1',
+            userId: 'user_456',
+          );
+
+          final [updated, base] = membershipCalls.single;
+          expect(
+            updated.memberPermissions.keys,
+            isNot(contains('user_456')),
+            reason: 'the entity handed down must express the removal',
+          );
+          expect(
+            base.memberPermissions.keys,
+            contains('user_456'),
+            reason:
+                'the base is the copy the change was computed FROM, so the '
+                'repository can tell staleness from intent',
+          );
+          expect(base.id, updated.id);
+        });
+
+        test('adding a member carries the new key and the pre-change '
+            'base', () async {
+          await operations.addMember(
+            listId: 'collab_list_1',
+            userId: 'user_999',
+            userDisplayName: 'New User',
+            permission: SharedListPermission.view,
+          );
+
+          final [updated, base] = membershipCalls.single;
+          expect(
+            updated.memberPermissions['user_999'],
+            SharedListPermission.view,
+          );
+          expect(base.memberPermissions.keys, isNot(contains('user_999')));
+        });
+
+        test('a permission change carries the new value', () async {
+          await operations.updateMemberPermission(
+            listId: 'collab_list_1',
+            userId: 'user_456',
+            permission: SharedListPermission.admin,
+          );
+
+          final [updated, base] = membershipCalls.single;
+          expect(
+            updated.memberPermissions['user_456'],
+            SharedListPermission.admin,
+          );
+          expect(
+            base.memberPermissions['user_456'],
+            SharedListPermission.edit,
+          );
+        });
+
+        test('a refused write is reported as failure, not success', () async {
+          // The write's own verdict has to reach the dialog. Returning true
+          // over a refused write is what let an owner believe a member had
+          // been removed while the server still had them.
+          when(
+            () => mockParentService.updateSharedListMembership(any(), any()),
+          ).thenAnswer((_) async => false);
+
+          expect(
+            await operations.removeMember(
+              listId: 'collab_list_1',
+              userId: 'user_456',
+            ),
+            isFalse,
+          );
+          expect(
+            await operations.addMember(
+              listId: 'collab_list_1',
+              userId: 'user_999',
+              userDisplayName: 'New User',
+            ),
+            isFalse,
+          );
+          expect(
+            await operations.updateMemberPermission(
+              listId: 'collab_list_1',
+              userId: 'user_456',
+              permission: SharedListPermission.admin,
+            ),
+            isFalse,
+          );
+        });
+
+        test('membership never goes through the content-edit path', () async {
+          // updateList declares no access-control base, so anything it carries
+          // in memberPermissions is dropped before the write. A membership
+          // operation routed there is a silent no-op by construction.
+          await operations.removeMember(
+            listId: 'collab_list_1',
+            userId: 'user_456',
+          );
+          verifyNever(() => mockParentService.updateList(any()));
+        });
       });
 
       test('should get list members', () {
@@ -667,7 +854,9 @@ void main() {
         // FIXED: Users can now leave collaborative lists regardless of permission level
         // (as long as they're not the owner)
         expect(result, isTrue);
-        verify(() => mockParentService.updateList(any())).called(1);
+        verify(
+          () => mockParentService.updateSharedListMembership(any(), any()),
+        ).called(1);
       });
 
       test('should not allow owner to leave list', () async {
@@ -676,7 +865,9 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockParentService.updateList(any()));
+        verifyNever(
+          () => mockParentService.updateSharedListMembership(any(), any()),
+        );
       });
     });
 

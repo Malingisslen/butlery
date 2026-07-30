@@ -115,9 +115,18 @@ class _ShoppingMemberManagementDialogState
           );
         }
       } else {
+        // Consume BEFORE the mounted check: the READ is what clears the
+        // reason, so bailing out first strands it for the next unrelated
+        // reader to display as their cause. Same order as
+        // unified_shopping_view.dart:239/:534.
+        final reason = shoppingService.consumeMutationError();
         if (!mounted) return;
         setState(() {
-          _error = context.l10n.shoppingCouldNotUpdatePermission;
+          // BUT-1726: the service knows WHY. "Listan har ändrats på en
+          // annan enhet" and "du saknar behörighet" are different problems
+          // with different fixes, and only the first one is solved by
+          // reloading; the generic line is the fallback, not the answer.
+          _error = reason ?? context.l10n.shoppingCouldNotUpdatePermission;
         });
       }
     } catch (e) {
@@ -187,18 +196,26 @@ class _ShoppingMemberManagementDialogState
           );
         }
       } else {
+        final reason = shoppingService.consumeMutationError();
+        if (!mounted) return;
         setState(() {
-          _error = context.l10n.shoppingCouldNotRemoveMember;
+          _error = reason ?? context.l10n.shoppingCouldNotRemoveMember;
         });
       }
     } catch (e) {
-      setState(() {
-        _error = context.l10n.shoppingErrorRemoving(e.toString());
-      });
+      if (mounted) {
+        setState(() {
+          _error = context.l10n.shoppingErrorRemoving(e.toString());
+        });
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      // `return` inside the try still runs this. The dialog is barrier-
+      // dismissible, so it can be gone before the round-trip lands.
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -213,8 +230,21 @@ class _ShoppingMemberManagementDialogState
     try {
       final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
       final addedMembers = <String>[];
+      // Read before the loop: _selectedFriends is cleared on success below.
+      // Iterate a COPY — a checkbox tapped mid-flight would otherwise mutate
+      // the set under the iterator.
+      final selected = _selectedFriends.toList();
+      final attempted = selected.length;
 
-      for (final friendId in _selectedFriends) {
+      // The reason slot holds ONE message and every iteration clears it on the
+      // way in, so reading it after the loop yields only the LAST friend's
+      // outcome — usually null, because a later success wiped the earlier
+      // failure's reason. Capture at the moment of failure instead, or a
+      // partial failure reports the cause-free fallback in every case except
+      // the one where the failing friend happened to be last.
+      String? firstFailureReason;
+
+      for (final friendId in selected) {
         final friend = widget.availableFriends.firstWhere(
           (f) => f.uid == friendId,
         );
@@ -227,6 +257,8 @@ class _ShoppingMemberManagementDialogState
 
         if (success) {
           addedMembers.add(friendId);
+        } else {
+          firstFailureReason ??= shoppingService.consumeMutationError();
         }
       }
 
@@ -241,6 +273,10 @@ class _ShoppingMemberManagementDialogState
         });
       }
 
+      // Drain the slot regardless, so nothing stays parked for an unrelated
+      // later reader to display as its own cause.
+      final reason =
+          firstFailureReason ?? shoppingService.consumeMutationError();
       if (mounted) {
         if (addedMembers.isNotEmpty) {
           final cs = Theme.of(context).colorScheme;
@@ -253,20 +289,34 @@ class _ShoppingMemberManagementDialogState
               duration: const Duration(seconds: 2),
             ),
           );
+          // Some selected friends were NOT added. Reporting only the
+          // successes reads as "all done" while _selectedFriends.clear()
+          // above has already dropped the failures out of the selection.
+          if (addedMembers.length < attempted) {
+            setState(() {
+              _error = reason ?? context.l10n.shoppingCouldNotAddMembers;
+            });
+          }
         } else {
           setState(() {
-            _error = context.l10n.shoppingCouldNotAddMembers;
+            _error = reason ?? context.l10n.shoppingCouldNotAddMembers;
           });
         }
       }
     } catch (e) {
-      setState(() {
-        _error = context.l10n.shoppingErrorAdding(e.toString());
-      });
+      if (mounted) {
+        setState(() {
+          _error = context.l10n.shoppingErrorAdding(e.toString());
+        });
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      // `return` inside the try still runs this. The dialog is barrier-
+      // dismissible, so it can be gone before the round-trip lands.
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

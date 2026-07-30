@@ -59,20 +59,84 @@ void main() {
         expect(result.hadApproximation, isTrue);
       });
 
-      test('should remove ca. with period', () {
-        // The regex uses \b word boundary which matches "ca" but not the
-        // trailing period. The period is left behind but cleaned by
-        // whitespace normalization. The "ca." entry in the approximations
-        // list has the period escaped in the pattern, resulting in the
-        // period being removed as well via the separate "ca." pattern.
+      // BUT-1715: the dotted form takes the period with it. A trailing `\b`
+      // cannot follow a '.', so `\bca\.\b` never matched and the bare "ca"
+      // alternative ran first, orphaning the period into ". 3 dl mjölk" — a
+      // leading period the quantity parser then had to read past.
+      test('should remove ca. with its period', () {
         final result = IngredientPreprocessor.preprocess('ca. 3 dl mjölk');
-        // "ca." pattern matches via \bca.\b where . is regex any-char,
-        // matching "ca." followed by space (word boundary).
-        // In practice "ca" is matched first, leaving ". 3 dl mjölk"
         expect(result.hadApproximation, isTrue);
-        // The cleaned result still has the trailing period from "ca."
-        // since \b doesn't work perfectly with punctuation
-        expect(result.cleaned, contains('3 dl mjölk'));
+        expect(result.cleaned, '3 dl mjölk');
+      });
+
+      test('should remove cirka. with its period', () {
+        final result = IngredientPreprocessor.preprocess('cirka. 2 dl grädde');
+        expect(result.hadApproximation, isTrue);
+        expect(result.cleaned, '2 dl grädde');
+      });
+
+      test('should remove ungefär. with its period', () {
+        final result = IngredientPreprocessor.preprocess('ungefär. 500 g ris');
+        expect(result.hadApproximation, isTrue);
+        expect(result.cleaned, '500 g ris');
+      });
+
+      // BUT-1715 review: the first version of the two-sided boundary was
+      // NARROWER than the ASCII `\b` it replaced. `\bca\.\b` did match
+      // "ca.3" (a period followed by a word character is an ASCII boundary),
+      // while a trailing Swedish lookahead refuses it because '3' is in the
+      // letter class — so the bare "ca" alternative fired and orphaned the
+      // period all over again, on the exact defect this ticket set out to
+      // remove. A dotted form is bounded on its left side only.
+      test('should remove ca. when the digit is glued to the period', () {
+        final result = IngredientPreprocessor.preprocess('ca.3 dl mjölk');
+        expect(result.hadApproximation, isTrue);
+        expect(result.cleaned, '3 dl mjölk');
+      });
+
+      test('should remove ev. when the digit is glued to the period', () {
+        final result = IngredientPreprocessor.preprocess('ev.1 dl grädde');
+        expect(result.cleaned, '1 dl grädde');
+        expect(result.hadOptionalMarker, isTrue);
+      });
+
+      test('a left boundary still guards the dotted form', () {
+        // The fixture MUST actually contain "ca" or the test cannot fail:
+        // "tapioca." ends in the literal "ca." the pattern looks for, and only
+        // the left lookbehind stops it matching there. (An earlier version used
+        // "paprika.", which has no "ca" in it at all, so it passed with the
+        // boundary deleted.)
+        final result = IngredientPreprocessor.preprocess('tapioca. 2 st');
+        expect(result.cleaned, startsWith('tapioca'));
+        expect(result.hadApproximation, isFalse);
+      });
+
+      test('should still remove a bare form mid-line', () {
+        // The dotted-form fix must not cost the bare form its reach: "ca" is
+        // routinely written after the ingredient, not before it.
+        final result = IngredientPreprocessor.preprocess('mjölk ca 3 dl');
+        expect(result.cleaned, 'mjölk 3 dl');
+        expect(result.hadApproximation, isTrue);
+      });
+
+      test('should not match ca inside a longer Swedish word', () {
+        // Same rule as above: the fixture has to contain "ca". "pecannötter"
+        // and "focaccia" do; "kanel"/"kakao" (used here before) do not, so
+        // they could never have exercised the two-sided boundary.
+        expect(
+          IngredientPreprocessor.preprocess('2 dl pecannötter').cleaned,
+          '2 dl pecannötter',
+        );
+        expect(
+          IngredientPreprocessor.preprocess('1 st focaccia').cleaned,
+          '1 st focaccia',
+        );
+        expect(
+          IngredientPreprocessor.preprocess(
+            '2 dl pecannötter',
+          ).hadApproximation,
+          isFalse,
+        );
       });
 
       test('should remove cirka', () {
@@ -183,6 +247,19 @@ void main() {
         );
         expect(result.cleaned, '2 msk socker');
         expect(result.hadOptionalMarker, isTrue);
+      });
+
+      // BUT-1715, the twin of the "ca." case: the same trailing-`\b` bug sits
+      // at this dotted-forms list too, so "ev." orphaned its period.
+      test('should remove ev. with its period', () {
+        final result = IngredientPreprocessor.preprocess('ev. 1 dl grädde');
+        expect(result.cleaned, '1 dl grädde');
+        expect(result.hadOptionalMarker, isTrue);
+      });
+
+      test('should not match ev inside a longer word', () {
+        final result = IngredientPreprocessor.preprocess('2 dl eventuellt');
+        expect(result.cleaned, isNot(contains('entuellt')));
       });
 
       test('should not set hadOptionalMarker when none present', () {

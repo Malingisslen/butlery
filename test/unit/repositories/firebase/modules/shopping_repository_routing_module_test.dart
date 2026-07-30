@@ -54,6 +54,7 @@ ShoppingRepositoryRoutingModule _routing(
   List<_PermissionCall>? permissionCalls,
   List<_RequiredFieldsCall>? validationCalls,
   bool requiredFieldsThrows = false,
+  Object? logPermissionCheckThrows,
   String? currentUid,
   CollaborativeListTransactionRunner? transactionRunner,
   CollectionReference<Map<String, dynamic>>? sharedListsRef,
@@ -85,6 +86,8 @@ ShoppingRepositoryRoutingModule _routing(
             throw SecurityViolationException('missing required field');
           }
         },
+    // BUT-1741: the module's callback is `Future<void> Function(...)`, so a
+    // plain `void` closure no longer type-checks here.
     logPermissionCheck:
         ({
           required String userId,
@@ -92,10 +95,13 @@ ShoppingRepositoryRoutingModule _routing(
           required String operation,
           required bool granted,
           String? details,
-        }) {
+        }) async {
           permissionCalls?.add(
             _PermissionCall(userId, resource, operation, granted, details),
           );
+          if (logPermissionCheckThrows != null) {
+            throw logPermissionCheckThrows;
+          }
         },
     fromFirestore: fromFirestore ?? UnifiedShoppingList.fromFirestore,
   );
@@ -125,6 +131,88 @@ UnifiedShoppingList _collabList({
 }
 
 void main() {
+  // BUT-1741 acceptance 3. The injected audit sink is async, and a `void`
+  // parameter type ACCEPTED the async implementation while dropping its
+  // future — so a failing audit write escaped as an unhandled async error
+  // nobody could attribute to a shopping list, and the call reported success.
+  // Now the callback is `Future<void> Function(...)` and every call site
+  // awaits, so a throwing sink surfaces at the caller. Written per write path,
+  // because the covariance opt-out was per call site.
+  group('a throwing audit write surfaces rather than vanishing', () {
+    Object failingSink() => StateError('audit sink is down');
+
+    test('on the create path', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = _routing(
+        firestore,
+        logPermissionCheckThrows: failingSink(),
+      );
+
+      await expectLater(
+        () => module.createCollaborativeList(_collabList()),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('on the whole-list update path', () async {
+      final firestore = FakeFirebaseFirestore();
+      final saved = await _routing(
+        firestore,
+      ).createCollaborativeList(_collabList());
+
+      final module = _routing(
+        firestore,
+        logPermissionCheckThrows: failingSink(),
+      );
+      await expectLater(
+        () => module.updateCollaborativeList(saved.copyWith(name: 'Ny')),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('on the transactional mutate path', () async {
+      final firestore = FakeFirebaseFirestore();
+      final saved = await _routing(
+        firestore,
+      ).createCollaborativeList(_collabList());
+
+      final module = _routing(
+        firestore,
+        logPermissionCheckThrows: failingSink(),
+      );
+      await expectLater(
+        () => module.mutateCollaborativeList(
+          saved.id,
+          (live) => live.copyWith(name: 'Ny'),
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('on a guard DENIAL, where the row is the only record of the '
+        'refusal', () async {
+      // The denial audit row is the one an operator reads after the fact. If
+      // it fails silently the refusal still happens but leaves no trace, which
+      // is the worst of the four cases and the reason this is not folded into
+      // the three above.
+      final firestore = FakeFirebaseFirestore();
+      final saved = await _routing(
+        firestore,
+      ).createCollaborativeList(_collabList());
+
+      // Cecilia is not a member at all, so requireEditRights refuses.
+      final stranger = _routing(
+        firestore,
+        currentUid: 'cecilia',
+        logPermissionCheckThrows: failingSink(),
+      );
+      await expectLater(
+        () => stranger.updateCollaborativeList(saved.copyWith(name: 'Ny')),
+        throwsA(isA<StateError>()),
+      );
+    });
+  });
+
   group('createCollaborativeList', () {
     test('writes to shared collection with generated id', () async {
       final firestore = FakeFirebaseFirestore();
@@ -388,20 +476,25 @@ void main() {
       expect(snap.data()!['name'], 'Söndagshandel');
     });
 
-    // The owner is the only role the Firestore rule lets touch the member map,
-    // and member management (add/remove/leave) routes through this method.
+    // The owner is the only role the Firestore rule lets touch the member map.
+    // BUT-1726: member management (add/remove/permission/leave) now goes
+    // through [updateCollaborativeListMembership], which is where the intent is
+    // declared. Driven through THAT method, not by hand-passing the named
+    // argument — the argument existing is not the same as production reaching
+    // it, and hand-passing it here is exactly how the strip shipped unnoticed.
     test('the owner may still rewrite memberPermissions', () async {
       final firestore = FakeFirebaseFirestore();
       final owner = _routing(firestore);
       final saved = await owner.createCollaborativeList(_collabList());
 
-      await owner.updateCollaborativeList(
+      await owner.updateCollaborativeListMembership(
         saved.copyWith(
           memberPermissions: {
             ...saved.memberPermissions,
             'cecilia': SharedListPermission.view,
           },
         ),
+        saved,
       );
 
       final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
@@ -428,10 +521,11 @@ void main() {
         final owner = _routing(firestore);
         final saved = await owner.createCollaborativeList(_collabList());
 
-        await owner.updateCollaborativeList(
+        await owner.updateCollaborativeListMembership(
           saved.copyWith(
             memberPermissions: {_userId: SharedListPermission.admin},
           ),
+          saved,
         );
 
         final snap = await firestore
@@ -483,6 +577,202 @@ void main() {
     });
   });
 
+  // BUT-1726. `updateCollaborativeList` takes a WHOLE entity and works out
+  // "what the caller changed" by diffing it against a fresh server read. The
+  // caller's entity is an in-memory copy the view has been holding, so
+  // anything that moved on the server since then reads as a deliberate edit —
+  // and for `memberPermissions` that turns pure staleness into an ACL rewrite.
+  // Nothing caught it: the escalation guard returns early for the owner, and
+  // `baseIsCached` asked whether the FRESH READ came from cache, which is a
+  // question about the side that is never stale.
+  //
+  // `fake_cloud_firestore.update()` deep-merges nested maps, so "another
+  // device changed the membership" has to be staged with `set()`.
+  group('a stale in-memory base', () {
+    Future<void> rewriteMembers(
+      FakeFirebaseFirestore firestore,
+      String listId,
+      Map<String, String> members,
+    ) async {
+      final ref = firestore.collection(_sharedPath).doc(listId);
+      final data = (await ref.get()).data()!;
+      await ref.set({...data, 'memberPermissions': members});
+    }
+
+    test('a rename does not resurrect a member removed elsewhere', () async {
+      final firestore = FakeFirebaseFirestore();
+      final owner = _routing(firestore);
+      // `saved` is the copy Alice's tablet is holding: it still lists Bob.
+      final saved = await owner.createCollaborativeList(_collabList());
+      // Alice removed Bob from her phone.
+      await rewriteMembers(firestore, saved.id, {_userId: 'admin'});
+
+      await owner.updateCollaborativeList(
+        saved.copyWith(name: 'Söndagshandel'),
+      );
+
+      final data = (await firestore.collection(_sharedPath).doc(saved.id).get())
+          .data()!;
+      expect(data['name'], 'Söndagshandel', reason: 'the rename must land');
+      expect(
+        (data['memberPermissions'] as Map).keys,
+        isNot(contains('bob')),
+        reason:
+            'the tablet never touched the member map; its stale copy of it '
+            'must not be replayed as an ACL change',
+      );
+    });
+
+    test('a rename does not revoke a member added elsewhere', () async {
+      final firestore = FakeFirebaseFirestore();
+      final owner = _routing(firestore);
+      final saved = await owner.createCollaborativeList(_collabList());
+      await rewriteMembers(firestore, saved.id, {
+        _userId: 'admin',
+        'bob': 'edit',
+        'cecilia': 'view',
+      });
+
+      await owner.updateCollaborativeList(
+        saved.copyWith(name: 'Söndagshandel'),
+      );
+
+      final data = (await firestore.collection(_sharedPath).doc(saved.id).get())
+          .data()!;
+      expect(
+        (data['memberPermissions'] as Map).keys,
+        contains('cecilia'),
+        reason:
+            'the mirror image: the stale copy lacks Cecilia, and a rename must '
+            'not emit the FieldValue.delete() that absence looks like',
+      );
+    });
+
+    // BUT-1726 review: the guard shipped opt-in and NOTHING opted in, so every
+    // membership operation wrote `updatedAt` alone and reported success. The
+    // suite stayed green because its ACL tests hand-passed the named argument.
+    // These two pin the split from the other side: the membership entry point
+    // must LAND an ACL edit with no test-only argument in sight, and the plain
+    // update must not, so widening the strip reddens something.
+    test('the membership entry point lands the ACL edit', () async {
+      final firestore = FakeFirebaseFirestore();
+      final owner = _routing(firestore);
+      final saved = await owner.createCollaborativeList(_collabList());
+
+      await owner.updateCollaborativeListMembership(
+        saved.copyWith(
+          memberPermissions: {_userId: SharedListPermission.admin},
+        ),
+        saved,
+      );
+
+      final data = (await firestore.collection(_sharedPath).doc(saved.id).get())
+          .data()!;
+      expect(
+        (data['memberPermissions'] as Map).keys,
+        isNot(contains('bob')),
+        reason:
+            'a household member removed in the UI must be removed on the '
+            'server, not merely from the copy the caller holds',
+      );
+    });
+
+    test('the content path leaves the ACL exactly as it found it', () async {
+      final firestore = FakeFirebaseFirestore();
+      final owner = _routing(firestore);
+      final saved = await owner.createCollaborativeList(_collabList());
+
+      // The same removal, submitted as a content edit. The rename lands; the
+      // ACL does not move, because this path cannot tell a removal from a
+      // stale copy.
+      await owner.updateCollaborativeList(
+        saved.copyWith(
+          name: 'Söndagshandel',
+          memberPermissions: {_userId: SharedListPermission.admin},
+        ),
+      );
+
+      final data = (await firestore.collection(_sharedPath).doc(saved.id).get())
+          .data()!;
+      expect(data['name'], 'Söndagshandel');
+      expect((data['memberPermissions'] as Map).keys, contains('bob'));
+    });
+
+    test('a personal list cannot be routed through membership', () async {
+      final firestore = FakeFirebaseFirestore();
+      final owner = _routing(firestore);
+      final saved = await owner.createCollaborativeList(_collabList());
+      final personal = UnifiedShoppingList(
+        id: saved.id,
+        name: saved.name,
+        ownerId: saved.ownerId,
+        ownerDisplayName: saved.ownerDisplayName,
+        items: saved.items,
+        type: ListType.personal,
+        memberPermissions: saved.memberPermissions,
+      );
+
+      expect(
+        () => owner.updateCollaborativeListMembership(personal, saved),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test('the dropped access-control paths are audited', () async {
+      final firestore = FakeFirebaseFirestore();
+      final permissionCalls = <_PermissionCall>[];
+      final owner = _routing(firestore, permissionCalls: permissionCalls);
+      final saved = await owner.createCollaborativeList(_collabList());
+      await rewriteMembers(firestore, saved.id, {_userId: 'admin'});
+      permissionCalls.clear();
+
+      await owner.updateCollaborativeList(saved.copyWith(name: 'Ny lista'));
+
+      final dropped = permissionCalls.where((c) => !c.granted);
+      expect(dropped, hasLength(1));
+      expect(dropped.single.details, contains('memberPermissions'));
+      expect(dropped.single.details, contains('dropped'));
+    });
+
+    // The declared-intent leg. A caller that IS managing membership hands over
+    // the base it computed the change from; if the server has moved past that
+    // base, the answer being replayed was computed against state that no
+    // longer exists, so it is refused rather than applied.
+    test('a declared membership change on a stale base is refused', () async {
+      final firestore = FakeFirebaseFirestore();
+      final permissionCalls = <_PermissionCall>[];
+      final owner = _routing(firestore, permissionCalls: permissionCalls);
+      final saved = await owner.createCollaborativeList(_collabList());
+      await rewriteMembers(firestore, saved.id, {_userId: 'admin'});
+      permissionCalls.clear();
+
+      await expectLater(
+        () => owner.updateCollaborativeListMembership(
+          saved.copyWith(
+            memberPermissions: {
+              ...saved.memberPermissions,
+              'cecilia': SharedListPermission.view,
+            },
+          ),
+          saved,
+        ),
+        // The specific subtype, because the WORDING turns on it: the owner is
+        // not missing a right, their copy is old, and only that story tells
+        // them to reload. `shoppingFailureMessage` switches on this type.
+        throwsA(isA<StaleAccessControlBaseException>()),
+      );
+
+      final data = (await firestore.collection(_sharedPath).doc(saved.id).get())
+          .data()!;
+      expect((data['memberPermissions'] as Map).keys, isNot(contains('bob')));
+      expect(
+        (data['memberPermissions'] as Map).keys,
+        isNot(contains('cecilia')),
+      );
+      expect(permissionCalls.last.granted, isFalse);
+    });
+  });
+
   // BUT-1725: the erasure trail. Account deletion finds a user's shared lists
   // by membership or ownership, and a user who LEFT a list has neither — while
   // their name stays on every item they added. `contributorUserIds` is the
@@ -518,9 +808,50 @@ void main() {
       });
     });
 
-    // The OFFLINE leg. Both tests above drive the online transaction, so
-    // `_withContributor` on the queued payload was unasserted — deleting it
-    // left the whole group green. A shop-aisle edit is the likeliest way a
+    // BUT-1733: `updateCollaborativeList` is the fourth write path, and it
+    // persisted the whole `items` array while contributing nothing to the
+    // trail — so a member whose only edits went through the whole-list path
+    // (a converted list, a bulk item rewrite) stayed invisible to erasure.
+    test('a whole-list update that writes items extends the trail', () async {
+      final firestore = FakeFirebaseFirestore();
+      final saved = await _routing(
+        firestore,
+      ).createCollaborativeList(_collabList());
+
+      final bob = _routing(firestore, currentUid: 'bob');
+      await bob.updateCollaborativeList(
+        saved.copyWith(items: [_item('mjölk')]),
+      );
+
+      final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
+      expect((snap.data()!['contributorUserIds'] as List).toSet(), {
+        _userId,
+        'bob',
+      });
+    });
+
+    // The discriminator: the trail records who touched the ROWS, because it
+    // exists to find a list whose items still carry someone's name. Opening
+    // the settings is not that, and stamping it would grow an array the rule
+    // caps at 200 entries.
+    test('a rename alone does not extend the trail', () async {
+      final firestore = FakeFirebaseFirestore();
+      final saved = await _routing(
+        firestore,
+      ).createCollaborativeList(_collabList());
+
+      final bob = _routing(firestore, currentUid: 'bob');
+      await bob.updateCollaborativeList(saved.copyWith(name: 'Söndagshandel'));
+
+      final snap = await firestore.collection(_sharedPath).doc(saved.id).get();
+      expect(snap.data()!['name'], 'Söndagshandel');
+      expect((snap.data()!['contributorUserIds'] as List), [_userId]);
+    });
+
+    // The OFFLINE leg. Every test above drives an ONLINE write — the create,
+    // the transaction, and the whole-list update — so `_withContributorTrail`
+    // on the QUEUED payload was unasserted, and deleting it there left the
+    // whole group green. A shop-aisle edit is the likeliest way a
     // member ever touches a list they later leave, so it is precisely the case
     // where the erasure handle must still be written: without it, that user's
     // name stays on the row and account deletion can no longer find the list.

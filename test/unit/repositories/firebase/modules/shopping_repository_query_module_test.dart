@@ -4,9 +4,11 @@
 /// `readAll` loads personal lists plus their `items` subcollection,
 /// `personalListsStream` is a simple ordered snapshot stream, and
 /// `getActiveList` delegates to the injected readList callback. The
-/// collaborative-list paths use `where('memberPermissions.$uid',
-/// isNotEqualTo: null)` which fake_cloud_firestore does not honour with
-/// map-path keys, so those are exercised only as smoke tests.
+/// collaborative-list paths are exercised only as smoke tests — but NOT
+/// because the fake cannot express their filter. It can: both of them use
+/// `where('memberPermissions.$uid', isNull: false)`, and fake_cloud_firestore
+/// 4.1.1 resolves dotted map keys and implements `isNull`, so a real scoping
+/// fixture works here today. Writing one is BUT-1746.
 library;
 
 // The BUT-1723 permission-denied test mocks two sealed cloud_firestore types;
@@ -224,13 +226,22 @@ void main() {
 
   group('collaborativeListsStream', () {
     test('emits a (possibly empty) list and does not throw', () async {
-      // We can't reliably exercise the memberPermissions.$uid != null path
-      // through fake_cloud_firestore — it doesn't index nested map keys for
-      // isNotEqualTo, so the filter yields no docs here. The behavioural point
-      // of the fix is that the query no longer pairs an inequality filter with
-      // an orderBy on a *different* field (which throws on real Firestore and
-      // silently empties the stream). Awaiting .first proves the stream builds
-      // its first event end-to-end (client-side sort + take(20)) without error.
+      // A smoke test, and deliberately a weak one: this fixture seeds NO
+      // documents, so the membership filter is never evaluated and nothing
+      // below can see what it does. Awaiting .first proves only that the
+      // stream builds its first event end-to-end (client-side sort +
+      // take(20)) without error — the BUT-1719 point, that the query no longer
+      // pairs an inequality filter with an orderBy on a *different* field
+      // (that combination throws on real Firestore and silently empties the
+      // stream).
+      //
+      // The SCOPING half is untested and is testable: fake_cloud_firestore
+      // 4.1.1 honours `isNull: false` on a dotted map key, and the old
+      // spelling `isNotEqualTo: null` makes it throw `Unsupported` — the real
+      // SDK builds no condition from it at all, which is how that spelling
+      // turned this read into a sweep of every household's lists. A
+      // three-document fixture (own membership, foreign membership, no map at
+      // all) discriminates both ways. BUT-1746.
       final firestore = FakeFirebaseFirestore();
       final lists = await _module(firestore).collaborativeListsStream().first;
       expect(lists, isA<List<UnifiedShoppingList>>());

@@ -2788,7 +2788,7 @@
     {
       "id": "flow5",
       "label": "GDPR-dataexport",
-      "description": "Hela exporten byggs klientsidigt i ett anrop — ingen e-post, ingen serverfil. Enda serverhoppet är audit-loggarna, som är admin-läsbara och därför kräver en callable. Rå motparts-UID i notification_delivery exporteras medvetet (beslutad avvikelse). Increment 5: en ny sektion pooled_rating_events (users/{uid}/canonical_rating_events) exporteras nu också — pseudonyma poolade betygshändelser som raderingskaskaden tar bort, så Art. 15 kräver att de finns i exporten.",
+      "description": "Hela exporten byggs klientsidigt i ett anrop — ingen e-post, ingen serverfil. Enda serverhoppet är audit-loggarna, som är admin-läsbara och därför kräver en callable. Rå motparts-UID i notification_delivery exporteras medvetet (beslutad avvikelse). Increment 5: en ny sektion pooled_rating_events (users/{uid}/canonical_rating_events) exporteras nu också — pseudonyma poolade betygshändelser som raderingskaskaden tar bort, så Art. 15 kräver att de finns i exporten. BUT-1732 (2026-07-30): en ny sektion shared_shopping_lists (SharedShoppingListExport, delegerad från ContentExportManager) läser tre separata frågor — ägd, medlem, bidragit till — mot unified_shared_shopping_lists; tidigare täckte exporten bara den PERSONLIGA shopping_lists-subkollektionen medan raderingskaskaden redan skrubbade de delade listorna, så Art. 15 saknade det Art. 17 tog bort. Andra medlemmars cachade visningsnamn minimeras bort (BUT-1450-precedent), deras user-ID:n behålls.",
       "steps": [
         {
           "from": "v-data-export",
@@ -2807,14 +2807,14 @@
         {
           "from": "svc-data-export",
           "to": "svc-export-managers",
-          "payload": "Future.wait över ~35 namngivna sektioner (Increment 5 lade till pooled_rating_events)",
+          "payload": "Future.wait över ~36 namngivna sektioner (Increment 5 lade till pooled_rating_events; BUT-1732 lade till shared_shopping_lists)",
           "transport": "method call",
           "verified": true
         },
         {
           "from": "svc-export-managers",
           "to": "ds-users",
-          "payload": "~35 collections/subcollections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records, users/{uid}/canonical_rating_events (nytt, Increment 5) m.fl.",
+          "payload": "~36 collections/subcollections läses direkt klientsidigt (regelstyrt): recept, menyer, notiser, consent_records, users/{uid}/canonical_rating_events (Increment 5), unified_shared_shopping_lists (BUT-1732, tre frågor: ägd/medlem/bidragit till) m.fl.",
           "transport": "Firestore reads",
           "verified": true
         },
@@ -4802,7 +4802,7 @@
         {
           "from": "svc-unified-shopping",
           "to": "repo-shopping",
-          "payload": "createPersonalList/updateList/deleteList för egna listor. BUT-1665 (2026-07-26): en enskild varuändring på en DELAD lista går inte längre den vägen — den går via mutateCollaborativeList, som läser om det LIVE-dokumentet inne i en Firestore-transaktion och applicerar ändringen där. Tidigare byggdes hela items-arrayen om från klientens cache och skrevs över, vilket tyst raderade det en annan hushållsmedlem hunnit bocka av. Rättigheterna prövas mot serverns dokument (owner/admin/edit — en view-only-medlem nekas) och en icke-ägare kan inte skriva om ownerId/memberPermissions. Offline finns en medvetet svagare reservväg: efter 8 s utan serversvar appliceras ändringen på cachen och skrivningen köas till återanslutning, vilket återinför den gamla risken att tappa en samtidig ändring — men bara offline, där ingen säkrare skrivning finns",
+          "payload": "createPersonalList/updateList/deleteList för egna listor. BUT-1665 (2026-07-26): en enskild varuändring på en DELAD lista går inte längre den vägen — den går via mutateCollaborativeList, som läser om det LIVE-dokumentet inne i en Firestore-transaktion och applicerar ändringen där. Tidigare byggdes hela items-arrayen om från klientens cache och skrevs över, vilket tyst raderade det en annan hushållsmedlem hunnit bocka av. Rättigheterna prövas mot serverns dokument (owner/admin/edit — en view-only-medlem nekas) och en icke-ägare kan inte skriva om ownerId/memberPermissions. Offline finns en medvetet svagare reservväg: efter 8 s utan serversvar appliceras ändringen på cachen och skrivningen köas till återanslutning, vilket återinför den gamla risken att tappa en samtidig ändring — men bara offline, där ingen säkrare skrivning finns. BUT-1726 (2026-07-30): lägga till/ta bort/ändra behörighet för en medlem eller lämna listan går VARKEN via update() eller mutateCollaborativeList, utan via en egen updateCollaborativeListMembership(updated, base) — tidigare skrev den vanliga update()-vägen ingen åtkomstkontroll alls (kunde inte skilja en avsiktlig ACL-ändring från en gammal medlemskarta som bara följde med en omdöpning), så dialogen sa \"klart\" medan servern inte hade ändrat något. Anropas från ListMemberOperations (addMember/removeMember/updateMemberPermission/leaveList, nått via shopping_member_management_dialog.dart) → unified_shopping_service.updateSharedListMembership → shopping_list_management_module.updateListMembership. Refuserar skrivningen om serverns dokument gått om [base] sedan klienten läste det.",
           "transport": "method call",
           "verified": true
         },

@@ -9,15 +9,48 @@ import 'package:clock/clock.dart';
 /// Handles collaborative shopping list member operations (add, remove, permissions).
 class ListMemberOperations {
   final String? Function() _getCurrentUserId;
-  final Future<bool> Function(UnifiedShoppingList list) _updateList;
+
+  /// BUT-1726: membership does NOT go through the ordinary list update.
+  ///
+  /// That path takes a whole entity and cannot tell a deliberate ACL change
+  /// from a stale member map riding along on a rename, so it writes no access
+  /// control at all — every add, remove, permission change and leave persisted
+  /// nothing while this class returned `true` and the dialog said it worked.
+  /// This seam states the intent explicitly and carries the base the change was
+  /// computed from, so the server can refuse a change computed against a list
+  /// that has since moved instead of silently replaying it.
+  final Future<bool> Function(
+    UnifiedShoppingList updated,
+    UnifiedShoppingList base,
+  )
+  _updateMembership;
+
+  /// Clears any parked failure reason, so a caller reading
+  /// `consumeMutationError()` after one of these operations can only ever see a
+  /// reason describing THIS operation.
+  ///
+  /// Every early `return false` below (list gone, may not manage members,
+  /// already a member, cannot remove the owner) exits before the service is
+  /// reached, so without this the dialog reports whatever sentence an earlier,
+  /// unrelated failure left behind — "du saknar behörighet att redigera denna
+  /// delade inköpslista" shown as the cause of a member add. That is the exact
+  /// wrong-cause class BUT-1696 exists to prevent.
+  final void Function() _beginMutation;
+
   final ListLifecycleOperations _lifecycleOps;
 
   ListMemberOperations({
     required String? Function() getCurrentUserId,
-    required Future<bool> Function(UnifiedShoppingList list) updateList,
+    required Future<bool> Function(
+      UnifiedShoppingList updated,
+      UnifiedShoppingList base,
+    )
+    updateMembership,
+    required void Function() beginMutation,
     required ListLifecycleOperations lifecycleOps,
   }) : _getCurrentUserId = getCurrentUserId,
-       _updateList = updateList,
+       _updateMembership = updateMembership,
+       _beginMutation = beginMutation,
        _lifecycleOps = lifecycleOps;
 
   Future<bool> addMember({
@@ -26,6 +59,7 @@ class ListMemberOperations {
     required String userDisplayName,
     SharedListPermission permission = SharedListPermission.edit,
   }) async {
+    _beginMutation();
     final list = _lifecycleOps.getListById(listId);
     if (list == null) {
       AppLogger.error('Cannot add member: Collaborative list not found');
@@ -53,7 +87,12 @@ class ListMemberOperations {
         updatedAt: clock.now(),
       );
 
-      await _updateList(updatedList);
+      // The write's own verdict, not an assumed one: returning `true` over a
+      // refused write is what told an owner the member had been added.
+      if (!await _updateMembership(updatedList, list)) {
+        AppLogger.error('Add member rejected for ${list.name}');
+        return false;
+      }
 
       AppLogger.success(
         'Added member ${userDisplayName.maskedName} to ${list.name}',
@@ -69,6 +108,7 @@ class ListMemberOperations {
     required String listId,
     required String userId,
   }) async {
+    _beginMutation();
     final list = _lifecycleOps.getListById(listId);
     if (list == null) {
       AppLogger.error('Cannot remove member: Collaborative list not found');
@@ -98,7 +138,10 @@ class ListMemberOperations {
         updatedAt: clock.now(),
       );
 
-      await _updateList(updatedList);
+      if (!await _updateMembership(updatedList, list)) {
+        AppLogger.error('Remove member rejected for ${list.name}');
+        return false;
+      }
 
       AppLogger.success('Removed member from ${list.name}');
       return true;
@@ -113,6 +156,7 @@ class ListMemberOperations {
     required String userId,
     required SharedListPermission permission,
   }) async {
+    _beginMutation();
     final list = _lifecycleOps.getListById(listId);
     if (list == null) {
       AppLogger.error('Cannot update permission: Collaborative list not found');
@@ -143,7 +187,10 @@ class ListMemberOperations {
         updatedAt: clock.now(),
       );
 
-      await _updateList(updatedList);
+      if (!await _updateMembership(updatedList, list)) {
+        AppLogger.error('Permission change rejected for ${list.name}');
+        return false;
+      }
 
       AppLogger.success('Updated member permission in ${list.name}');
       return true;
@@ -159,6 +206,7 @@ class ListMemberOperations {
   }
 
   Future<bool> leaveList(String listId) async {
+    _beginMutation();
     final list = _lifecycleOps.getListById(listId);
     if (list == null) {
       AppLogger.error('Cannot leave: Collaborative list not found');

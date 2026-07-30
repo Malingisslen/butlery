@@ -21,6 +21,13 @@ String shoppingFailureMessage(Object error, {required bool shared}) {
       ? AppLocale.current.shoppingNoEditPermissionShared
       : AppLocale.current.shoppingNoEditPermission;
   return switch (error) {
+    // BUT-1726: MUST precede the PermissionDeniedException arm — it is a
+    // subtype, and a switch takes the first match. "Du har inte behörighet" is
+    // the invented cause this mapping exists to remove: the member manager DOES
+    // have the right, their copy of the list is simply older than the server's,
+    // and the fix is to reload rather than to ask someone for access.
+    StaleAccessControlBaseException() =>
+      AppLocale.current.shoppingListChangedElsewhere,
     PermissionDeniedException() => noPermission,
     // A row that vanished is NOT a missing list. Saying "Lista hittades inte"
     // about a list the shopper is looking at is the invented cause this whole

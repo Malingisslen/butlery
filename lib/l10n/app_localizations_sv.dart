@@ -6772,6 +6772,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Du har inte behörighet att redigera denna inköpslista';
 
   @override
+  String get shoppingListChangedElsewhere =>
+      'Listan har ändrats på en annan enhet — läs in den igen och försök på nytt';
+
+  @override
   String get shoppingNoEditPermissionShared =>
       'Du har inte behörighet att redigera denna delade inköpslista';
 

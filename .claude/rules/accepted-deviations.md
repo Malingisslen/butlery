@@ -18,6 +18,19 @@ files in the same edit.
   allergens for a member who might still eat. Safe version deferred to BUT-1625. 2026-07-17
 - **GDPR export includes the raw notification counterparty id, unredacted** — Art. 15(4)
   is a balancing test; Malin overrode the panel's redaction recommendation. BUT-1450, 2026-06-30
+- **The shared-shopping-list GDPR section keeps other members' UIDs, their permission levels
+  and the full `contributorUserIds` array (which includes people who have LEFT), and drops
+  their display names** — Art. 15(4) balance; the requester's own client can already read
+  every one of these documents under `firestore.rules`, and the export's selectors mirror the
+  deletion cascade's. **Malin's explicit call, 2026-07-30** — the entry first shipped arguing
+  by analogy from BUT-1450, but that verdict is scoped to notification counterparty ids and
+  records a human override, so the analogy did not transfer. Lists the user has LEFT stay out
+  because the rules refuse the client that read (BUT-1747). BUT-1732, 2026-07-30
+- **A colon-terminated bare GLUTEN word rescued into the flat ingredient list must ALSO be
+  exempted from `isValidIngredient`, `isGarbage` and the `_deduplicateIngredients` containment
+  branch in BOTH directions** — refusing the heading is not sufficient on its own, and the
+  rescue is colon-terminated-only. Do not "simplify" the three exemptions back into one flag;
+  each one drops the gluten row on its own. BUT-1727, 2026-07-30
 - **`socialFeatures` consent gates nothing, by design** — social runs on the GDPR contract
   basis, not consent; wiring it would be consent theatre and would fail closed for every
   existing user. BUT-1523, 2026-07-12

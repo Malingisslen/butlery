@@ -37,6 +37,29 @@ abstract class ShoppingRepository extends Repository<UnifiedShoppingList> {
     UnifiedShoppingList Function(UnifiedShoppingList live) mutate,
   );
 
+  /// BUT-1726: the ONE way to change who may see or edit a collaborative list —
+  /// add a member, remove one, change a permission, leave the list.
+  ///
+  /// Separate from [update] on purpose. `update` takes a whole entity and can
+  /// only guess whether the `memberPermissions` map it carries is a deliberate
+  /// change or a stale copy riding along on a rename; guessing wrong either
+  /// reinstates a member the owner removed elsewhere or drops one they added.
+  /// So `update` never writes access control at all, and a caller that means to
+  /// says so here by handing over [base] — the exact copy of the list it
+  /// computed [updated] from.
+  ///
+  /// [base] is compared against the server's current copy. A disagreement means
+  /// the answer being replayed was computed about state that no longer exists,
+  /// and the write is refused with a [StaleAccessControlBaseException] rather
+  /// than applied. This is NOT a merge point: the caller must re-read and let
+  /// the user decide again against what the list actually says now.
+  ///
+  /// Only [ListType.collaborative] lists have members; a personal list throws.
+  Future<UnifiedShoppingList> updateCollaborativeListMembership(
+    UnifiedShoppingList updated,
+    UnifiedShoppingList base,
+  );
+
   /// BUT-1723: how many items the SERVER holds for [listId], or null when that
   /// could not be confirmed (cached read, missing list, failed read). Callers
   /// deleting an original after copying it MUST treat null as "keep it".

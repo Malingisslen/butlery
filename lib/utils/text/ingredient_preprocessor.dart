@@ -1,3 +1,5 @@
+import 'package:butlery/utils/text/swedish_word_boundary.dart';
+
 /// Result of preprocessing with metadata
 class PreprocessingResult {
   /// Cleaned text ready for parser
@@ -146,6 +148,30 @@ class IngredientPreprocessor {
     return (text: text, modified: false);
   }
 
+  /// [word] escaped and bounded so it can only match as a whole token.
+  ///
+  /// BUT-1715: the right-hand side must be a LOOKAHEAD, never `\b`. A dotted
+  /// abbreviation ends in '.', which is itself a non-word character, so
+  /// `\bca\.\b` demanded a word character immediately after the period and
+  /// never matched "ca. 2 dl". That silently killed the "dotted forms FIRST"
+  /// ordering below — the bare "ca" alternative matched instead and left the
+  /// period behind as ". 2 dl". [SwedishWordBoundary] supplies both sides, so
+  /// å/ä/ö can't open a phantom boundary either.
+  ///
+  /// A word that ALREADY ends in punctuation gets no right-hand boundary at
+  /// all, and that asymmetry is the point. The trailing '.' is itself the token
+  /// terminator, so a lookahead there only asks a second question — "and is the
+  /// next character also a non-letter?" — which "ca.3 dl mjölk" answers no. That
+  /// is exactly the glued-digit form ASCII `\b` used to handle, so bounding
+  /// both sides would have swapped one orphaned period for another rather than
+  /// removing the class.
+  static String _boundedWord(String word) {
+    final escaped = RegExp.escape(word);
+    return RegExp('[${SwedishWordBoundary.letters}]\$').hasMatch(word)
+        ? SwedishWordBoundary.bounded(escaped)
+        : '${SwedishWordBoundary.before}(?:$escaped)';
+  }
+
   /// Remove approximation words (ca, cirka, drygt, knappt, ungefär).
   static ({String text, bool modified}) _removeApproximations(String text) {
     // Dotted forms FIRST to prevent orphaned periods (ca. before ca)
@@ -164,9 +190,8 @@ class IngredientPreprocessor {
     var result = text;
 
     for (final word in approximations) {
-      // Use RegExp.escape for safe interpolation of dotted forms
-      final escaped = RegExp.escape(word);
-      final pattern = RegExp('\\b$escaped\\b', caseSensitive: false);
+      // [_boundedWord] escapes the dotted forms for safe interpolation.
+      final pattern = RegExp(_boundedWord(word), caseSensitive: false);
       if (result.contains(pattern)) {
         result = result.replaceAll(pattern, '').trim();
         modified = true;
@@ -230,8 +255,7 @@ class IngredientPreprocessor {
     var result = text;
 
     for (final word in optionals) {
-      final escaped = RegExp.escape(word);
-      final pattern = RegExp('\\b$escaped\\b', caseSensitive: false);
+      final pattern = RegExp(_boundedWord(word), caseSensitive: false);
       if (result.contains(pattern)) {
         result = result.replaceAll(pattern, '').trim();
         modified = true;

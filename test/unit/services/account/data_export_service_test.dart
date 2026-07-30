@@ -319,6 +319,21 @@ void main() {
         expect(data['recipes'], isNotNull);
         expect(data['menus'], isNotNull);
         expect(data['shopping_lists'], isNotNull);
+        // BUT-1732: `shopping_lists` is the PERSONAL subcollection only, and
+        // the shared-list section is wired in as its own bundle key. That one
+        // map entry is deletable with every section test still green — the
+        // manager's own suite drives `exportSharedShoppingLists` directly and
+        // never sees the bundle — so a household that shops from a shared list
+        // could silently lose its whole shopping history from the Art. 15
+        // export again. Assert the section is PRESENT and is not an error
+        // envelope: "we could not give you this" is a different Art. 15
+        // answer from "there is nothing".
+        expect(data['shared_shopping_lists'], isNotNull);
+        expect(data['shared_shopping_lists']['total_count'], 0);
+        expect(
+          (data['shared_shopping_lists'] as Map).containsKey('error'),
+          isFalse,
+        );
         expect(data['personal_tags'], isNotNull);
         // Social data
         expect(data['friends'], isNotNull);

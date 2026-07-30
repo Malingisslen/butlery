@@ -15,6 +15,7 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson;
+import 'package:butlery/services/account/export/shared_shopping_list_export.dart';
 
 /// Handles export of user content: recipes, menus, shopping lists.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -226,6 +227,14 @@ class ContentExportManager {
       return {'error': e.toString()};
     }
   }
+
+  /// BUT-1732: shared shopping lists (`unified_shared_shopping_lists`) the user
+  /// owns, is a member of, or has contributed rows to — the Art. 15 half of
+  /// what the deletion cascade scrubs under Art. 17. Delegated so this manager
+  /// stays under the 500-line limit; the minimisation rules and the reason for
+  /// each live with the code that applies them.
+  Future<Map<String, dynamic>> exportSharedShoppingLists(String userId) =>
+      SharedShoppingListExport(_exports).export(userId);
 
   /// Export all personal tags with embedded rules (GDPR Article 20).
   Future<Map<String, dynamic>> exportPersonalTags(String userId) async {

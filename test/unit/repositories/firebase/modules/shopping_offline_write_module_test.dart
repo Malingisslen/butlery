@@ -78,6 +78,8 @@ void main() {
   setUp(() {
     calls = [];
     module = ShoppingOfflineWriteModule(
+      // BUT-1741: `async` because the module's callback type is
+      // `Future<void> Function(...)` — a `void` closure no longer type-checks.
       logPermissionCheck:
           ({
             required String userId,
@@ -85,7 +87,7 @@ void main() {
             required String operation,
             required bool granted,
             String? details,
-          }) => calls.add(
+          }) async => calls.add(
             _PermissionCall(userId, resource, operation, granted, details),
           ),
     );
@@ -97,34 +99,40 @@ void main() {
     // ONLY place that claim gets retracted — Firestore rolls the local cache
     // back silently either way. Without this test the whole `if (denied)`
     // branch is deletable with the suite green.
-    test('a permission-denied replay records a granted:false correction', () {
-      module.onReplayRejected(
-        'alice',
-        'list-1',
-        FirebaseException(plugin: 'cloud_firestore', code: 'permission-denied'),
-      );
+    test(
+      'a permission-denied replay records a granted:false correction',
+      () async {
+        await module.onReplayRejected(
+          'alice',
+          'list-1',
+          FirebaseException(
+            plugin: 'cloud_firestore',
+            code: 'permission-denied',
+          ),
+        );
 
-      expect(calls, hasLength(1));
-      final call = calls.single;
-      expect(call.userId, 'alice');
-      expect(call.resource, 'collaborative_shopping_list');
-      expect(call.operation, 'update');
-      expect(call.granted, isFalse);
-      expect(call.details, contains('list-1'));
-      expect(call.details, contains('REJECTED'));
-    });
+        expect(calls, hasLength(1));
+        final call = calls.single;
+        expect(call.userId, 'alice');
+        expect(call.resource, 'collaborative_shopping_list');
+        expect(call.operation, 'update');
+        expect(call.granted, isFalse);
+        expect(call.details, contains('list-1'));
+        expect(call.details, contains('REJECTED'));
+      },
+    );
 
     // The discriminator. A replay that failed because the phone is still in a
     // basement is not an access decision, and writing an audit row for it would
     // make the trail unreadable — every offline session would look like a
     // denial.
-    test('a transport failure records no audit row', () {
-      module.onReplayRejected(
+    test('a transport failure records no audit row', () async {
+      await module.onReplayRejected(
         'alice',
         'list-1',
         FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
       );
-      module.onReplayRejected('alice', 'list-1', StateError('boom'));
+      await module.onReplayRejected('alice', 'list-1', StateError('boom'));
 
       expect(calls, isEmpty);
     });
@@ -192,9 +200,9 @@ void main() {
   // predated a removal handed the removed member their edit rights back — and
   // `merge` can never delete a key, so removing a member never stuck either.
   group('narrowUpdatePayload', () {
-    test('a rename carries the name and nothing about membership', () {
+    test('a rename carries the name and nothing about membership', () async {
       final stored = _list();
-      final payload = module.narrowUpdatePayload(
+      final payload = await module.narrowUpdatePayload(
         'alice',
         stored.copyWith(name: 'Söndagshandel'),
         stored,
@@ -210,51 +218,57 @@ void main() {
       expect(payload.keys, isNot(contains('createdAt')));
     });
 
-    test('an offline rename against a stale cached base still goes through', () {
-      // The ticket's exact scenario: this device has been offline since before
-      // Bob was removed, so BOTH the cached base and the caller's copy still
-      // list him. Nothing about membership differs, so nothing about
-      // membership is written — the rename is not the moment to replay a
-      // months-old access-control decision.
-      final staleCache = _list();
-      final payload = module.narrowUpdatePayload(
-        'alice',
-        staleCache.copyWith(name: 'Söndagshandel'),
-        staleCache,
-        baseIsCached: true,
-      );
+    test(
+      'an offline rename against a stale cached base still goes through',
+      () async {
+        // The ticket's exact scenario: this device has been offline since before
+        // Bob was removed, so BOTH the cached base and the caller's copy still
+        // list him. Nothing about membership differs, so nothing about
+        // membership is written — the rename is not the moment to replay a
+        // months-old access-control decision.
+        final staleCache = _list();
+        final payload = await module.narrowUpdatePayload(
+          'alice',
+          staleCache.copyWith(name: 'Söndagshandel'),
+          staleCache,
+          baseIsCached: true,
+        );
 
-      expect(payload['name'], 'Söndagshandel');
-      expect(
-        payload.keys.where((k) => k.startsWith('memberPermissions')),
-        isEmpty,
-      );
-    });
+        expect(payload['name'], 'Söndagshandel');
+        expect(
+          payload.keys.where((k) => k.startsWith('memberPermissions')),
+          isEmpty,
+        );
+      },
+    );
 
-    test('removing a member emits a targeted delete, not a shrunken map', () {
+    test(
+      'removing a member emits a targeted delete, not a shrunken map',
+      () async {
+        final stored = _list();
+        final payload = await module.narrowUpdatePayload(
+          'alice',
+          stored.copyWith(
+            memberPermissions: const {'alice': SharedListPermission.admin},
+          ),
+          stored,
+          baseIsCached: false,
+        );
+
+        expect(payload['memberPermissions.bob'], isA<FieldValue>());
+        expect(
+          payload.keys,
+          isNot(contains('memberPermissions')),
+          reason:
+              'a whole-map value merges or replaces depending on the call '
+              'used to write it; a field path does not',
+        );
+      },
+    );
+
+    test('adding a member emits only that key', () async {
       final stored = _list();
-      final payload = module.narrowUpdatePayload(
-        'alice',
-        stored.copyWith(
-          memberPermissions: const {'alice': SharedListPermission.admin},
-        ),
-        stored,
-        baseIsCached: false,
-      );
-
-      expect(payload['memberPermissions.bob'], isA<FieldValue>());
-      expect(
-        payload.keys,
-        isNot(contains('memberPermissions')),
-        reason:
-            'a whole-map value merges or replaces depending on the call '
-            'used to write it; a field path does not',
-      );
-    });
-
-    test('adding a member emits only that key', () {
-      final stored = _list();
-      final payload = module.narrowUpdatePayload(
+      final payload = await module.narrowUpdatePayload(
         'alice',
         stored.copyWith(
           memberPermissions: const {
@@ -271,14 +285,14 @@ void main() {
       expect(payload.keys, isNot(contains('memberPermissions.bob')));
     });
 
-    test('refuses a membership change made against a cached base', () {
+    test('refuses a membership change made against a cached base', () async {
       // Offline, "the caller changed memberPermissions" and "someone else
       // changed it while we were offline" look identical. Replaying the local
       // answer is how a removed member comes back, so this one waits for a
       // server read.
       final stored = _list();
 
-      expect(
+      await expectLater(
         () => module.narrowUpdatePayload(
           'alice',
           stored.copyWith(
@@ -310,10 +324,10 @@ void main() {
             (l) => _rebuilt(l, createdAt: DateTime.utc(2020, 1, 1)),
           ),
         ]) {
-      test('refuses a $name change made against a cached base', () {
+      test('refuses a $name change made against a cached base', () async {
         final stored = _list();
 
-        expect(
+        await expectLater(
           () => module.narrowUpdatePayload(
             'alice',
             mutate(stored),
@@ -331,12 +345,12 @@ void main() {
         expect(calls.single.granted, isFalse);
       });
 
-      test('allows the same $name change against a SERVER base', () {
+      test('allows the same $name change against a SERVER base', () async {
         // The recall control: the refusal is about the BASE being cached, not
         // about the field being untouchable. Without this a blanket "never
         // write these keys" regression reads as a passing safety test.
         final stored = _list();
-        final payload = module.narrowUpdatePayload(
+        final payload = await module.narrowUpdatePayload(
           'alice',
           mutate(stored),
           stored,
@@ -347,10 +361,10 @@ void main() {
       });
     }
 
-    test('an identical entity produces no write at all', () {
+    test('an identical entity produces no write at all', () async {
       final stored = _list();
       expect(
-        module.narrowUpdatePayload(
+        await module.narrowUpdatePayload(
           'alice',
           stored,
           stored,

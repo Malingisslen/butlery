@@ -159,8 +159,14 @@ class RecipeTextNormalizer {
   static String normalizeIngredientName(String ingredient) {
     var normalized = ingredient.toLowerCase().trim();
 
-    normalized = normalized.replaceAll(leadingNumbersRe, '');
+    // BUT-1739: the approximate word goes FIRST. [leadingNumbersRe] is anchored
+    // at `^`, so on "ca 2 dl grädde" it found no leading digit (the line starts
+    // with "ca"), and stripping "ca" afterwards left the amount stranded —
+    // "2 grädde". Removing the qualifier first exposes the amount to the same
+    // anchored regex, so the quantity is stripped whether or not a qualifier
+    // preceded it. Order is the whole fix; neither regex changed.
     normalized = normalized.replaceAll(approximateWordsRe, '');
+    normalized = normalized.replaceAll(leadingNumbersRe, '');
     normalized = normalized.replaceAll(_allUnitsRe, '');
     normalized = normalized.replaceAll(parentheticalRe, '');
     normalized = normalized.replaceAll(multiSpaceRe, ' ').trim();

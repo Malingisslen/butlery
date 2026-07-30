@@ -50,6 +50,8 @@
 /// }
 /// ```
 
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -426,22 +428,29 @@ mixin PermissionValidationMixin {
         };
 
         // Fire-and-forget persistent logging (GDPR Article 30 compliance)
-        // Note: We don't await this to avoid blocking application operations
-        auditRepository
-            .logPermissionCheck(
-              userId: userId,
-              operation: operation,
-              resourceType: resourceType,
-              resourceId: resourceId,
-              granted: granted,
-              metadata: auditMetadata.isNotEmpty ? auditMetadata : null,
-            )
-            .catchError((error) {
-              // Audit logging failures are logged but never block operations
-              AppLogger.error(
-                '⚠️ Failed to persist audit log (non-blocking): $error',
-              );
-            });
+        // Note: We don't await this to avoid blocking application operations.
+        // BUT-1741: `unawaited` says so out loud. A bare expression statement
+        // discarding a future reads identically to the bug this ticket fixed
+        // in the shopping modules — a dropped future whose rejection escapes as
+        // an unhandled async error — and the only thing separating the two is
+        // the `catchError` below, which is easy to delete by accident.
+        unawaited(
+          auditRepository
+              .logPermissionCheck(
+                userId: userId,
+                operation: operation,
+                resourceType: resourceType,
+                resourceId: resourceId,
+                granted: granted,
+                metadata: auditMetadata.isNotEmpty ? auditMetadata : null,
+              )
+              .catchError((error) {
+                // Audit logging failures are logged but never block operations
+                AppLogger.error(
+                  '⚠️ Failed to persist audit log (non-blocking): $error',
+                );
+              }),
+        );
       } catch (e) {
         // Catch parsing errors - audit logging must never break operations
         AppLogger.error('⚠️ Failed to parse audit log data (non-blocking): $e');

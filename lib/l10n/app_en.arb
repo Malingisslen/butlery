@@ -4377,6 +4377,7 @@
     }
   },
   "shoppingNoEditPermission": "You do not have permission to edit this shopping list",
+  "shoppingListChangedElsewhere": "This list changed on another device — reload it and try again",
   "shoppingNoEditPermissionShared": "You do not have permission to edit this shared shopping list",
   "shoppingNoIngredientsToAdd": "The recipe has no ingredients to add",
   "shoppingSelectList": "Select shopping list",

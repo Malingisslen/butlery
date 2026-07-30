@@ -1358,3 +1358,204 @@ FINDINGS FILED:
 New mechanic learned: modules receiving `logPermissionCheck` as a `void Function({...})` callback
 silently drop the `Future<void>` the mixin returns (Dart return-type covariance to `void`), so every
 audit row written from the shopping modules — including the new guards class — is fire-and-forget.
+
+### 2026-07-30 — BUT-1726/1732/1733/1741 shopping + account review: an intent parameter with no callers, and an under-enumerated export field group
+
+Scope: `shopping_repository_routing_module.dart`, `shopping_list_permission_guards.dart`,
+`shopping_offline_write_module.dart`, `shopping_item_operations_module.dart`,
+`permission_validation_mixin.dart`, `shared_shopping_list_export.dart`,
+`content_export_manager.dart`, `data_export_service.dart`,
+`firebase_data_export_repository.dart`, the two deviation files, and the five touched test files.
+Verdict: FAIL.
+
+1. CRITICAL — BUT-1726 added an OPT-IN parameter (`updateCollaborativeList({UnifiedShoppingList?
+   accessControlBase})`) and made the default branch STRIP `ownerId`/`memberPermissions`/`createdAt`
+   from the payload. `grep -rn accessControlBase --include=*.dart .` returns three hits, all in
+   `shopping_repository_routing_module_test.dart`. The production chain that manages membership —
+   `shopping_member_management_dialog.dart` / `social_shopping_coordinator.joinSharedShoppingList`
+   → `ListMemberOperations.addMember|removeMember|updateMemberPermission|leaveList` →
+   `UnifiedShoppingService.updateList` → `ShoppingListManagementModule.updateList` (line 211,
+   `repository.update(list)`) → `FirebaseShoppingRepository.update` (line 253) — passes nothing.
+   Proved with a scratch test driving the real module against `FakeFirebaseFirestore`: after an
+   addMember-shaped call the persisted map is still `{alice: admin, bob: edit}` (no `cecilia`), and
+   after a removeMember-shaped call `bob` is still there. So joining a shared list, adding,
+   demoting, removing a member and leaving a list all silently no-op; the owner believes access was
+   revoked and the removed member keeps rules-granted read+write. The caller is told it worked:
+   `updateCollaborativeList` logs `granted:true` "Updated list …" and returns the entity, and
+   `updateList` writes the caller's copy into `lists[i]` and returns `true`.
+2. HIGH — `SharedShoppingListExport.nameKeysByOwnerIdKey` enumerates four name/id pairs
+   (`ownerDisplayName`, `lastActivityByDisplayName`, `addedByDisplayName`,
+   `assignedToDisplayName`) but `UnifiedShoppingItem.toFirestore()` (lines 749-777) persists SIX:
+   `purchasedByDisplayName`/`purchasedByUserId` and
+   `lastModifiedByDisplayName`/`lastModifiedByUserId` are missing. Both are stamped on every tick
+   of a shared list (`list_item_operations.toggleItemBought` → `UnifiedShoppingItem.markAsBought`,
+   `userDisplayName: _getCurrentUserDisplayName().orEmpty()`), so they are the most common
+   attribution fields on the collection. The bundle therefore ships other household members' names
+   while its own `data_minimisation` string and the new `ACCEPTED_DEVIATIONS.md` entry both state
+   the opposite — a false self-description in an Art. 15 bundle, and outside the deviation's
+   protection because the deviation decides names are dropped. The new test fixture
+   (`content_export_manager_test.dart` `sharedDoc`) contains neither field, so the gap is unpinned.
+3. MEDIUM — the strip branch's audit is self-contradictory: `restrictAccessControlToDeclaredBase`
+   writes a `granted:false` "dropped memberPermissions" row and then `updateCollaborativeList`
+   writes a `granted:true` "Updated list" row for the SAME operation. Same forged-grant family as
+   BUT-1696: report the partial refusal to the caller (or refuse), don't audit it both ways.
+4. MEDIUM — the strip runs AFTER `requireNoPrivilegeEscalation`, so it only ever helps the OWNER.
+   A non-owner edit member whose cached `memberPermissions` is stale still throws
+   `PermissionDeniedException` on a plain rename — the exact scenario the new doc comment describes
+   as the bug being fixed. Order the strip first, or run the escalation check on the narrowed
+   payload.
+5. LOW — `shared_shopping_lists` has no `exportLimits` entry (falls back to `defaultBatchSize` 500),
+   against the BUT-1662/BUT-1698 convention of pinning the cap explicitly; and
+   `contributed.truncated` is discarded while `owned`/`member` are ORed into the section flag.
+
+Verified clean: BUT-1741's `void` → `Future<void>` callback retyping across all four shopping
+modules with every call site awaited (analyze clean on `lib/repositories/**`,
+`lib/services/account`), the `unawaited(...)` in the mixin, BUT-1733's `_withContributorTrail`
+gating the erasure trail on `payload.containsKey('items')` (`toFirestore()` always emits `items`,
+so create still seeds `[uid]`; the trail is now extended on the whole-list path, closing the
+BUT-1725 (1) gap), the three export probes matching the cascade's own query shapes on
+`unified_shared_shopping_lists`, and the contributor probe's refusal degrading to a note rather
+than an error. `firestore.rules` unchanged, so no new rules proof was owed.
+
+New mechanic learned: a security fix delivered as an OPT-IN named parameter defaults every existing
+caller into the restricted branch. `git grep` the parameter name across `lib/` before approving —
+zero production hits means the feature the parameter guards is now dead, not protected.
+
+### 2026-07-30 — BUT-1741/1726/1733/1732 re-review after automated fixes: all four land, one ordering residual
+
+Re-review of the shopping + account (trust & safety, GDPR) working tree after the fix round.
+Ran `flutter analyze` on all 16 changed lib files (clean) and four test files
+(`shopping_repository_routing_module_test`, `shopping_offline_write_module_test`,
+`shopping_item_operations_module_test`, `content_export_manager_test` → 124 passed;
+`collaborative_shopping_operations_test` → 42 passed; `data_export_service_test` +
+`unified_shopping_service_test` + `shopping_item_management_module_test` → 108 passed).
+
+**BUT-1741 (async audit callback).** All four shopping seams now declare
+`Future<void> Function({...})` and await every call; `PermissionValidationMixin` wraps its
+fire-and-forget persist in `unawaited(...)`. The four new tests are per WRITE PATH (create,
+whole-list update, transactional mutate, guard denial), which is right — the `void` covariance
+opt-out was per call site, so one sampled path would not have proved the family. The cost the fix
+takes on is that the audit sink is now on the operation's failure path: a throwing sink aborts a
+write that already landed. Verified safe here because the mixin's implementation cannot throw
+(console log, then the persist inside `unawaited(...).catchError` inside a `try`) — that check is
+the price of this pattern, not an optional extra. Awaiting inside the `runTransaction` handler is
+also fine: the guards only await the sink on the DENIAL arm, which throws and aborts anyway, and
+the sink issues no Firestore read.
+
+**BUT-1726 (declared access-control base).** The dead opt-in is gone. Chain verified by grep end to
+end: `shopping_member_management_dialog` → `ListMemberOperations._updateMembership` →
+`UnifiedShoppingService.updateSharedListMembership` → `ShoppingListManagementModule.updateListMembership`
+→ `ShoppingRepository.updateCollaborativeListMembership` (now on the INTERFACE) →
+`ShoppingRepositoryRoutingModule`. The generic `updateList` seam was REPLACED in
+`ListMemberOperations`, so the compiler now enforces the split rather than discipline; the callers
+honour the returned bool; the dialog reads `consumeMutationError()`; and
+`StaleAccessControlBaseException` (a `PermissionDeniedException` subtype) is matched BEFORE the
+parent arm in `shoppingFailureMessage`'s switch, with `shoppingListChangedElsewhere` present in
+both arb files and both generated localizations. The routing-module tests now drive the entry
+point rather than hand-passing the argument, which is the check that would have caught the dead
+opt-in.
+
+Residual, filed as Medium: `requireNoPrivilegeEscalation` still runs BEFORE
+`restrictAccessControlToDeclaredBase` (routing module lines 240 vs 255-264). For the OWNER the
+escalation guard returns early, so the strip does its job. For a NON-OWNER edit-level member whose
+in-memory member map has drifted, a plain rename still throws `PermissionDeniedException` — a
+false denial of a write the rule would have accepted (`{name, updatedAt}` affects none of
+`ownerId`/`memberPermissions`/`createdAt`). Window is narrow because shared lists are
+snapshot-stream-backed. Correct fix: evaluate escalation against the payload that will actually be
+written, not the raw entity.
+
+Adjacent product gap this round EXPOSED rather than caused (Medium, ticket not code):
+`ShoppingPermissionModule.canManageShoppingList` grants a non-owner `admin` member management, and
+`ListMemberOperations.leaveList` is offered to any member — but the `unified_shared_shopping_lists`
+update rule lets NO non-owner touch `memberPermissions` at all, and the client guard now mirrors
+that. So member management for a non-owner admin, and leave-a-list for everyone, are dead UI. They
+were dead before too; the difference is that `ListMemberOperations` used to ignore the write's
+verdict and return `true`, so the user was told it worked. Failing loudly is the improvement; the
+UI still needs to stop offering it (or the rule needs a self-removal branch, the
+`removeAll()`-both-directions shape already used for `user_shared_menus`).
+
+**BUT-1733 (erasure trail on the fourth write path).** `_withContributorTrail` now decides the
+obligation from the payload — `if (!payload.containsKey('items')) return payload;` — so create,
+whole-list update, transactional mutate and the offline cached-base replay all extend
+`contributorUserIds` by construction, and a rename correctly stamps nothing. Verified
+`UnifiedShoppingList.toFirestore()` emits a FIXED key set always containing `items`, which is what
+makes the `containsKey` invariant sound; verified the helper offers both spellings (sentinel
+`arrayUnion` for ordinary/offline writes, explicit union inside the transaction, where a merge-set
+will not honour a sentinel). Two tests pin the discriminator from both sides (items-carrying update
+extends the trail; rename alone does not). `firestore.rules` is unchanged in this working tree, and
+`functions/src/__tests__/shared-shopping-lists-rules.test.ts` is now TRACKED and committed — the
+2026-07-28 "untracked proof file" gap is closed.
+
+**BUT-1732 (Art. 15 shared-list export).** `SharedShoppingListExport` runs the same three probes as
+the cascade (`ownerId ==`, `memberPermissions.<uid> isNull:false`, `contributorUserIds
+array-contains`), merges by doc id with a role set, and ORs the truncation flag across all three —
+correct per BUT-1662. `isNull: false` rather than `isNotEqualTo: null` is the right spelling and
+the doc comment explains why (a literal `null` adds no condition and degrades to an unfiltered
+collection read). The contributor probe's refusal degrades to a plain-language `note`, not an
+error, which is right: the read rule cannot see a list the user has LEFT. `shared_shopping_lists`
+is declared in `exportLimits` (500) so `fetchCapped`'s N+1 probe keys off a contract.
+The redaction map now covers all SIX persisted `*DisplayName` keys, and — the durable part — a test
+DERIVES the key set from the two models' `toFirestore()` and asserts the map covers every
+`endsWith('DisplayName')` key plus that each paired `*UserId` is itself persisted. Verified both
+serializers emit nulls rather than omitting keys, which is what makes that derivation meaningful
+rather than vacuously green. Both deviation files carry the entry, naming the UID-retention balance
+(BUT-1450 precedent) and the left-lists gap.
+
+Two smaller notes, filed Low/Info: the section's outer `catch` returns `{'error': e.toString()}`,
+putting a raw Firestore error string inside a GDPR bundle (consistent with every other section of
+`ContentExportManager`, so a sweep not a one-off); and
+`updateCollaborativeListMembership` does not assert `base.id == updated.id` — harmless today
+because the drift check then refuses, and the write is still gated on `stored` by
+`requireEditRights`.
+
+### 2026-07-30 — BUT-1732 fix round: GDPR export error tokens, branch logging, item-id fallback
+
+Re-review of the fixes applied on top of the BUT-1732 shared-list export review. Files:
+`lib/services/account/export/shared_shopping_list_export.dart` (all code changes),
+`lib/repositories/firebase/firebase_data_export_repository.dart` (comment only — diff confirms no
+code change; the three probes are byte-identical to the reviewed version).
+
+**Verified good.** (a) The outer catch's `{'error': <stable token>, 'error_code':
+'shared-shopping-lists-export-failed'}` DOES reach `export_metadata.warnings`:
+`data_export_service.dart:255` tests `value is Map && value['error_code'] != null` and
+`shared_shopping_lists` is a TOP-LEVEL key in the `futures` map (line 166), so it is scanned by the
+top-level loop; the warning `message` falls back through `error` ?? `note`. Key name and shape
+match, and it follows `family_export_manager.dart`'s convention. (b) No map-literal collision:
+`'note'` (null-aware element `?contributorNote`), `contributor_probe_failed` and `truncated` are
+three distinct keys, and conditional entries in a Dart map literal do not shadow. `directives_ordering`
+is off in `analysis_options.yaml`, so the interleaved import is not a lint. (c) `FirebaseException`
+is the right type — `cloud_firestore` throws firebase_core's `FirebaseException` with
+`code == 'permission-denied'` on a rules refusal, and `firebase_core: ^4.7.0` is a direct dependency,
+so importing the symbol from `firebase_core` (rather than pulling all of `cloud_firestore` into a
+service file) resolves to the same class; the repo has no architecture guard on it (only ViewModels
+are barred from `cloud_firestore`). (d) `AppLogger.error`'s signature is
+`(String, [Object?, String?, StackTrace?])` — the two-arg call is correct. (e) Item ids are
+`Uuid().v4()` (`unified_shopping_item.dart:314`), so `row_$index` cannot collide with a real id.
+
+**New durable facts, folded into the principles file.** The `error_code` roll-up is TOP-LEVEL-only
+and keys off that exact string — a bespoke completeness flag next to a `note` never reaches
+`export_metadata`. And `AppLogger.error` is not device-local: it forwards the raw error object to
+Crashlytics `recordError` and to the analytics callback; `_sanitizeForCrashlytics` masks uids in the
+MESSAGE only. Consent-gated in `main.dart`, so acceptable here, but the premise "logging stays on
+the device" is false in this repo.
+
+**Findings filed.** Medium: `contributor_probe_failed: true` carries no `error_code`, so a
+transient failure of the contributor probe leaves `export_metadata` claiming a complete bundle —
+the same defect one branch over from the one fix (1) closed; remedy is one added key, whose warning
+message then resolves via the existing `note`. Medium: the new non-`permission-denied` branch has no
+test, and the existing `'a refused contributor probe degrades to a note'` test asserts
+`contains('left')` — a substring present in BOTH branch messages, so deleting the
+`e is FirebaseException && e.code == 'permission-denied'` predicate leaves the suite green
+(repo lesson: a test pinning a fix is a hypothesis until the fix is reverted and it reddens).
+Low: the `.limit(1)` cost note on `exportSharedShoppingListsAsContributor` is accurate on cost and
+on the read rule, but its claim that `.limit(1)` "would prove the refusal just as well" is wrong —
+rules are evaluated over the documents the query actually returns, so with `limit(1)` a user whose
+first index-ordered contributor row is still readable gets a SUCCESS where the uncapped query is
+refused, silently converting the documented gap into a false completeness claim. Low: the id
+fallback covers a missing/null `id` but not an empty-string one (`'' ?? x` is `''`), so several
+legacy rows would export as the same blank `item_id`.
+
+Nothing in the round weakens scoping: the three probes, the redaction map and the merge are
+unchanged; fix (3) only drops the internal ticket reference from the user-facing
+`data_minimisation` string, which still describes the shipped behaviour accurately (names dropped,
+uids retained — the latter now a recorded founder call, 2026-07-30).

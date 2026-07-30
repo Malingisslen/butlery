@@ -137,6 +137,37 @@ class PermissionDeniedException implements Exception {
   }
 }
 
+/// BUT-1726: a membership change was computed against a copy of the resource
+/// the server has already moved past, so applying it would replay a decision
+/// made about state that no longer exists — reinstating a member removed on
+/// another device, or dropping one added there.
+///
+/// A [PermissionDeniedException] subtype so every existing `on
+/// PermissionDeniedException` handler keeps catching it, but distinguishable
+/// where the wording matters: "you may not do this" and "this moved under you,
+/// look again" are different things to tell someone, and the second one is
+/// fixed by reloading.
+class StaleAccessControlBaseException extends PermissionDeniedException {
+  StaleAccessControlBaseException(
+    super.message, {
+    super.resource,
+    super.operation,
+    super.userId,
+    this.driftedFields = const [],
+  });
+
+  /// The access-control fields that disagree between the caller's base and the
+  /// server's copy — for the audit trail, never for the user-facing message.
+  final List<String> driftedFields;
+
+  @override
+  String toString() =>
+      'StaleAccessControlBaseException: $message'
+      '${driftedFields.isEmpty ? '' : ', Drifted: ${driftedFields.join(", ")}'}'
+      '${resource == null ? '' : ', Resource: $resource'}'
+      '${userId == null ? '' : ', User: $userId'}';
+}
+
 /// Exception thrown when attempting to access a resource that doesn't exist
 class ResourceNotFoundException implements Exception {
   final String message;

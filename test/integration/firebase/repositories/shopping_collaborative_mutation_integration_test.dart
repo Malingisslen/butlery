@@ -74,7 +74,7 @@ ShoppingRepositoryRoutingModule _routing(
           required String operation,
           required bool granted,
           String? details,
-        }) {},
+        }) async {},
     fromFirestore: UnifiedShoppingList.fromFirestore,
     validateUpdatePermission: (userId, resourceId, entity) async =>
         entity.ownerId == userId ||

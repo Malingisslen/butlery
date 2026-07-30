@@ -143,7 +143,13 @@ class UnifiedShoppingService
 
     final memberOps = ListMemberOperations(
       getCurrentUserId: () => currentUserId,
-      updateList: updateList,
+      updateMembership: updateSharedListMembership,
+      // The clear must happen HERE, at the true entry point, not inside
+      // [updateSharedListMembership]: every member operation has early
+      // `return false` branches (list gone, may not manage, already a member,
+      // cannot remove the owner) that never reach the service, and those are
+      // exactly the branches whose caller reads [consumeMutationError].
+      beginMutation: _beginMutation,
       lifecycleOps: lifecycleOps,
     );
 
@@ -436,6 +442,34 @@ class UnifiedShoppingService
 
   Future<bool> updateList(UnifiedShoppingList list) async {
     return await _listManagement.updateList(list);
+  }
+
+  /// BUT-1726: persist a membership change on a shared list — add, remove,
+  /// change permission, leave.
+  ///
+  /// [base] is the copy the caller computed [updated] from; the repository
+  /// refuses the write if the server's access control has moved past it, so a
+  /// removal can never be replayed against a member list the user never saw.
+  /// Failures are reported the same way [mutateSharedList] reports them — a
+  /// Swedish sentence read back through [consumeMutationError], not a
+  /// full-screen error state, and NOT a bare `false` that made a refused
+  /// removal look like a member who simply would not disappear.
+  Future<bool> updateSharedListMembership(
+    UnifiedShoppingList updated,
+    UnifiedShoppingList base,
+  ) async {
+    _beginMutation();
+    try {
+      await _listManagement.updateListMembership(updated, base);
+      return true;
+    } catch (e) {
+      AppLogger.warning(
+        'Membership change on shared list ${updated.id} failed: $e',
+        'ShoppingService',
+      );
+      _failMutation(shoppingFailureMessage(e, shared: true));
+      return false;
+    }
   }
 
   /// BUT-1665: single-item mutation of a SHARED list, applied server-side.

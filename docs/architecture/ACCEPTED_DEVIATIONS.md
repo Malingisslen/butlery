@@ -55,6 +55,56 @@ finding against the notification-export path — it is a decided product+legal c
 exception the panel flagged — a counterparty in a notification the user never saw — does not
 apply: all exported notification categories are user-facing.) — 2026-06-30
 
+### [Privacy/GDPR] Shared shopping lists export other members' UIDs but not their display names (BUT-1732)
+The `shared_shopping_lists` Article-15 section (`SharedShoppingListExport`) exports a shared list
+the requester owns, is a member of, or contributed rows to — including the whole `items` array,
+`memberPermissions` and `contributorUserIds`, so every other household member's raw UID appears.
+What it strips is the CACHED DISPLAY NAME of anyone other than the requester — all SIX that the
+two models persist: `ownerDisplayName`, `lastActivityByDisplayName`, and each row's
+`addedByDisplayName`, `purchasedByDisplayName`, `lastModifiedByDisplayName` and
+`assignedToDisplayName`. The section states this in a `data_minimisation` field, so the count has
+to be exhaustive or the bundle makes a false statement about itself; the first version enumerated
+four and shipped the two that every tick of a shared list writes. `nameKeysByOwnerIdKey` is now
+pinned against the models' own key sets by a test, so a new attribution field cannot be added
+without appearing there.
+**Why:** this is the BUT-1450 balancing call applied to a second surface, and it lands the same
+way. A shared list is joint household data the requester can already read byte for byte inside
+the app, so withholding the list or pseudonymising the counterparty would protect nobody and
+would gut the subject's own shopping history; Art. 15(4) is a case-by-case balance, not a blanket
+redaction rule. The cached display name is the one field that is purely another data subject's
+profile rather than a record of the requester's own activity, and dropping it costs the bundle
+nothing — the paired `*UserId` keeps every row attributable. Do **not** file "third-party PII —
+must redact member UIDs from the shared-list export" against this path; and do not file "the
+export should resolve UIDs to names for readability" either — that is the same bulk UID→name
+resolution BUT-1450 declined on cost.
+**Known gap, deliberate:** lists the requester has LEFT are NOT in the export. The
+`contributorUserIds` probe that finds them is refused by `firestore.rules` (read requires
+`ownerId == uid || uid in memberPermissions`), so only the Admin-SDK deletion cascade can reach
+them. The section carries a plain-language `note` when the probe is refused — and only on an
+actual `permission-denied`; any other failure gets neutral wording plus a
+`contributor_probe_failed` flag, because an Art. 15 bundle may say it is incomplete but must not
+invent WHY. Closing the gap itself needs a Cloud Function export path, not a client change —
+tracked as **BUT-1747**. — 2026-07-30
+
+**Decided by Malin, 2026-07-30 — this is a founder call, not an inherited one.** The paragraph
+above originally justified itself by analogy from BUT-1450. The security review at ship refused
+that analogy and escalated instead, on two grounds worth keeping: BUT-1450's verdict is scoped to
+"the raw notification counterparty id" and records a HUMAN override, and this entry was authored
+inside the very change it authorised — a deviation written by the same uncommitted diff it
+permits is not prior approval. Malin was shown what leaves the device (every other member's raw
+UID **and permission level**, the full `contributorUserIds` array — which by design names people
+who have LEFT the list — and the per-row `addedBy`/`purchasedBy`/`lastModifiedBy`/`assignedTo`
+UIDs, in a file the requester can forward anywhere) and chose to ship it unredacted. Accepted
+rationale: the requester's own client can already read every one of those documents under
+`firestore.rules`, so the export packages data they can already see rather than disclosing
+anything new, and the export's four selectors deliberately mirror the deletion cascade's — the
+Art. 15 "show me" side matching the Art. 17 "erase me" side. Display names are still stripped.
+
+**Process lesson this produced:** a deviation entry authored inside the change it authorises is
+not a decided call. Before treating an entry as prior human approval, check `git status` on the
+deviation files, and check whether the entry it argues by analogy from actually records a human
+override of its own.
+
 ### [Tagging/Safety] Draft (AI-generated, unverified) ingredients may ground "fritt från X" verdicts
 The 2026-07-01 register audit recommended that draft-status ingredients (54% of the register,
 AI-generated, never human-verified) should not be able to prove FREE verdicts — only CONTAINS
@@ -239,3 +289,28 @@ on the recipe to UNKNOWN instead of resolving gluten to YES. Measured end-to-end
 (raw: coverage 0.5, gluten UNKNOWN; stripped: coverage 1.0, gluten CONTAINS) and pinned in
 `swedish_line_classifier_test.dart`. Re-inserting the raw line looks harmless and is not; this
 sentence is here because the code cannot say it out loud.
+**Third re-insertion site added (BUT-1727, 2026-07-30):** the decision was only ever wired into the
+URL/OCR tiers. `TextImportStrategy` — the pasted-caption / photo / voice path — ran its OWN
+`_ingredientSubHeading` heuristic, which never consulted the shared list, so "Råg:", "Öl:" and
+"Havregryn:" were still pulled out of the flat list on the real import path. It now calls
+`HeadingWordLists.isBareGlutenWord` and re-inserts the row colon-stripped like the other two sites.
+Two extra facts that path forced and that a future reader will otherwise re-discover the hard way:
+refusing the heading is NOT sufficient there (the rescued word is short enough that
+`isValidIngredient` drops it as an orphan fragment and `isGarbage` reads it as a section header, so
+the row must be added explicitly and exempted from those two filters), and the rescue is
+colon-terminated-only — a colon-less bare "Mjöl" keeps its long-standing orphan-fragment handling,
+because the decision above is about the colon form. **Corrected in review, 2026-07-30 —** an
+earlier draft of this paragraph said "Mjöl:" was "already surviving by accident on this path". That
+is true of the HEADING heuristic only and false of the outcome: `looksLikeIngredient` does list
+"mjöl", so `_ingredientSubHeading` already refused it as a heading — but the row was then dropped
+anyway by `isValidIngredient`'s orphan-fragment rule (`recipe_section_detector.dart:308-312`:
+"Mjöl:" is 5 characters, single token, no digit). It never reached the flat list. The carve-out is
+therefore a strict improvement here, not the replacement of a working accident. The row that does
+ride through colon-and-all is the 6-character "Mjölk:", which is the decided BUT-1714 asymmetry.
+**Third filter the rescue must survive (added in review, 2026-07-30):** `_deduplicateIngredients`
+also replaces a shorter ingredient NAME with any longer one CONTAINING it. A rescued row is a bare
+stem, so "potatismjöl" swallowed "Mjöl", "bovetemjöl" swallowed "Vete" and "majskorn" swallowed
+"Korn" — every swallower gluten-FREE, so the recipe lost its only gluten row and could resolve
+FREE. Rescued rows are therefore exempt from the CONTAINMENT branch in both directions, but not
+from exact-name dedup ("Råg:" still collapses into "2 dl råg"). Do not "simplify" that back to one
+exemption flag covering the whole loop.

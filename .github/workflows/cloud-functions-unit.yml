@@ -68,8 +68,13 @@ jobs:
       # `test:script-test-registration` (and the rules-coverage gate's by
       # `test:script-coverage-report`), which the DI-seam step below discovers
       # like any other unit suite — deliberately the same lane the guard's
-      # CI_REACHABLE criterion models, so a guard that stops running is caught
-      # by the mechanism it protects.
+      # CI_REACHABLE criterion models.
+      #
+      # BUT-1740: and that only holds because the guard's GUARD_SELF criterion
+      # now checks those two script entries. Before it existed, deleting both
+      # from functions/package.json left this step printing OK, exit 0, with
+      # neither guard suite running — the claim above was true of the intent and
+      # false of the mechanism.
       - name: Check test registration
         working-directory: functions
         run: node scripts/check-test-registration.js

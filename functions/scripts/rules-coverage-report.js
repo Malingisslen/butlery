@@ -100,39 +100,85 @@ function normalize(source) {
 }
 
 /**
- * Comment-free view of [source], LINE-ALIGNED with the original.
+ * Code-only view of [source], aligned with the original CHARACTER FOR
+ * CHARACTER: every comment character, and every character inside a string
+ * literal, becomes a space. Nothing is dropped and nothing shifts, so a line
+ * and column here still point at the real file — which is what lets
+ * [ownBodyText] subtract a nested block by offset instead of by whole lines.
  *
- * `//` AND `/* … *\/` are both blanked, and blanking (rather than dropping)
- * keeps every reported line number pointing at the real file. The block form is
- * not exotic — the Firebase console's own default `firestore.rules` ships with
- * one — and it must be removed BEFORE the character scan: a comment such as
- * `/* legacy: match /ghost/{id} was removed *\/` otherwise reads as a real
- * match header and swallows the block underneath it.
+ * Comments must go before the character scan below. The block form is not
+ * exotic — the Firebase console's own default `firestore.rules` ships with one
+ * — and a comment such as `/* legacy: match /ghost/{id} was removed *\/`
+ * otherwise reads as a real match header and swallows the block underneath it.
+ *
+ * BUT-1729: string CONTENTS go too. The scan is a character scan, and a rules
+ * string may legally contain every character it keys on: `"https://x"` starts a
+ * line comment, `"/*"` opens a block comment that silently deletes every match
+ * block after it, and a `"}"` closes a block early — each of which makes a
+ * brand-new world-open block disappear from the parse while the gate prints OK.
+ * Blanking the contents (never the quotes) makes all three impossible, and
+ * nothing downstream reads inside a string literal.
  */
-function stripComments(source) {
+function stripCommentsAndStrings(source) {
   const out = [];
   let inBlock = false;
   for (const raw of source.split(/\r?\n/)) {
     let line = "";
+    // The rules language has no multi-line string, so an unterminated quote
+    // dies with its own line rather than blanking the rest of the file.
+    let quote = null;
     for (let c = 0; c < raw.length; c++) {
+      const ch = raw[c];
       if (inBlock) {
-        if (raw[c] === "*" && raw[c + 1] === "/") {
+        line += " ";
+        if (ch === "*" && raw[c + 1] === "/") {
+          line += " ";
           inBlock = false;
           c++;
         }
         continue;
       }
-      if (raw[c] === "/" && raw[c + 1] === "/") break;
-      if (raw[c] === "/" && raw[c + 1] === "*") {
+      if (quote) {
+        if (ch === "\\" && c + 1 < raw.length) {
+          line += "  ";
+          c++;
+          continue;
+        }
+        line += ch === quote ? ch : " ";
+        if (ch === quote) quote = null;
+        continue;
+      }
+      if (ch === '"' || ch === "'") {
+        quote = ch;
+        line += ch;
+        continue;
+      }
+      if (ch === "/" && raw[c + 1] === "/") {
+        line += " ".repeat(raw.length - c);
+        break;
+      }
+      if (ch === "/" && raw[c + 1] === "*") {
         inBlock = true;
+        line += "  ";
         c++;
         continue;
       }
-      line += raw[c];
+      line += ch;
     }
     out.push(line);
   }
   return out;
+}
+
+/** Absolute offset of each line's first character in `lines.join("\n")`. */
+function lineStartOffsets(lines) {
+  const offsets = new Array(lines.length);
+  let total = 0;
+  for (let i = 0; i < lines.length; i++) {
+    offsets[i] = total;
+    total += lines[i].length + 1;
+  }
+  return offsets;
 }
 
 const WORD_CHAR = /[A-Za-z0-9_$]/;
@@ -165,7 +211,7 @@ const MAX_HEADER_LINES = 3;
  * stray `}`, or once it has run past [MAX_HEADER_LINES].
  */
 function parseMatchBlocks(source) {
-  const lines = stripComments(source);
+  const lines = stripCommentsAndStrings(source);
   const stack = [];
   const blocks = [];
   let depth = 0;
@@ -183,6 +229,7 @@ function parseMatchBlocks(source) {
           pending = {
             text: "",
             startLine: i + 1,
+            startCol: c,
             pathDepth: 0,
             sawPath: false,
           };
@@ -218,6 +265,11 @@ function parseMatchBlocks(source) {
             path: (parent ? parent.path : "") + segment,
             segment,
             startLine: pending.startLine,
+            startCol: pending.startCol,
+            // Where the BODY starts, i.e. this very brace. Everything a block
+            // owns lies between it and the matching close.
+            bodyLine: i + 1,
+            bodyCol: c,
             openDepth: depth,
             indent: stack.length,
           });
@@ -239,7 +291,7 @@ function parseMatchBlocks(source) {
         const top = stack[stack.length - 1];
         if (top && top.openDepth === depth) {
           stack.pop();
-          blocks.push({ ...top, endLine: i + 1 });
+          blocks.push({ ...top, endLine: i + 1, endCol: c });
         }
         depth--;
       }
@@ -249,39 +301,54 @@ function parseMatchBlocks(source) {
     if (pending && i + 1 - pending.startLine >= MAX_HEADER_LINES) pending = null;
   }
 
+  const lastLine = lines[lines.length - 1] ?? "";
   for (const unclosed of stack) {
-    blocks.push({ ...unclosed, endLine: lines.length });
+    blocks.push({
+      ...unclosed,
+      endLine: Math.max(lines.length, 1),
+      endCol: lastLine.length,
+    });
   }
   return blocks.sort((a, b) => a.startLine - b.startLine);
 }
 
 /**
- * The block's OWN body text — nested match blocks removed, comments stripped.
- * A parent's `allow` statements are its own; a child's belong to the child.
+ * The block's OWN body text — nested match blocks blanked out, comments and
+ * string contents already blank. A parent's `allow` statements are its own; a
+ * child's belong to the child.
+ *
+ * BUT-1729: the subtraction is by CHARACTER OFFSET, not by whole lines. Rules
+ * files are hand-formatted, and a parent's own allow may share a line with a
+ * single-line child —
+ *
+ *   match /p/{id} { match /c/{cid} { allow read: if isOwner(); } allow read, write: if true; }
+ *
+ * Dropping every line the child touches took the parent's world-open grant with
+ * it, demoted the parent to a harmless `container`, and the gate reported OK on
+ * a path that grants everything to everyone. Offsets cut exactly the child.
  */
 function ownBodyText(source, blocks, block) {
-  const lines = stripComments(source);
-  const children = blocks.filter(
-    (other) =>
-      other !== block &&
-      other.startLine >= block.startLine &&
-      other.endLine <= block.endLine &&
-      !(other.startLine === block.startLine && other.endLine === block.endLine),
-  );
-  const kept = [];
-  for (let line = block.startLine; line <= block.endLine; line++) {
-    const inChild = children.some(
-      (child) => line >= child.startLine && line <= child.endLine,
-    );
-    if (inChild) continue;
-    kept.push(lines[line - 1] ?? "");
+  const lines = stripCommentsAndStrings(source);
+  const offsets = lineStartOffsets(lines);
+  const at = (line, col) => offsets[line - 1] + col;
+
+  const start = at(block.bodyLine, block.bodyCol) + 1; // just past the `{`
+  const end = at(block.endLine, block.endCol); // just before the `}`
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+    return "";
   }
-  // Drop the header line's `match ... {` prefix and the closing brace so a
-  // one-liner body is read the same way as a multi-line one.
-  return kept
-    .join("\n")
-    .replace(/^[\s\S]*?\{/, "")
-    .replace(/\}\s*$/, "");
+
+  const chars = lines.join("\n").slice(start, end).split("");
+  for (const other of blocks) {
+    if (other === block) continue;
+    const otherStart = at(other.startLine, other.startCol);
+    const otherEnd = at(other.endLine, other.endCol) + 1; // past its `}`
+    if (!Number.isFinite(otherStart) || otherStart < start || otherEnd > end) {
+      continue; // not nested inside this block's body
+    }
+    for (let i = otherStart; i < otherEnd; i++) chars[i - start] = " ";
+  }
+  return chars.join("");
 }
 
 /**
@@ -340,7 +407,16 @@ function evaluateGate({ source, blocks, statsByPath, newPaths }) {
     const stat = statsByPath.get(block.path) ?? { exprTotal: 0, exprHit: 0 };
     const { kind } = classifyBlockBody(source, blocks, block);
     const measurable = kind === "constant-allow" || kind === "conditional";
-    const untested = measurable && stat.exprHit === 0;
+    // BUT-1729: coverage can vouch for a CONDITIONAL block — some expression of
+    // it ran. It can never vouch for a constant grant: `if true` has no
+    // expression to hit, so any hit elsewhere in the block (a sibling
+    // conditional allow, a helper call on the same line) would otherwise sign
+    // off on the unconditional one. `match /leaky/{id} { allow read: if true;
+    // allow write: if request.auth != null; }` with one test on the write rule
+    // passed the gate. A constant-allow block is untested by definition,
+    // whatever exprHit says.
+    const untested =
+      kind === "constant-allow" || (measurable && stat.exprHit === 0);
     if (untested) untestedAll.push({ path: block.path, kind, block });
     if (!newPaths || !newPaths.has(block.path)) continue;
     if (!untested) continue;
@@ -361,6 +437,44 @@ function evaluateGate({ source, blocks, statsByPath, newPaths }) {
   }
 
   return { failures, untestedAll, exempt };
+}
+
+/**
+ * Which of HEAD's block paths did not exist at the base revision.
+ *
+ * BUT-1729: extracted from `main` so the diff the whole gate stands on can be
+ * exercised without a git history. The comparison is a set-diff of fully
+ * qualified block PATHS, so re-indenting a block, moving it, or reformatting
+ * its header — the common shape of a rules edit — produces an EMPTY diff and
+ * cannot fail the gate; only a genuinely new path is new.
+ *
+ * Returns `{ newPaths, note }`. A null `newPaths` means the gate is SKIPPED,
+ * which is deliberately not the same value as an empty set: "nothing new" and
+ * "could not tell" must never print the same.
+ */
+function newBlockPaths({ base, baseSource, blocks }) {
+  if (!base) {
+    return {
+      newPaths: null,
+      note: "Gate skipped: no --base revision supplied.",
+    };
+  }
+  if (typeof baseSource !== "string") {
+    return {
+      newPaths: null,
+      note: `Gate skipped: could not read firestore.rules at base \`${base}\` (shallow clone, or the file is new).`,
+    };
+  }
+  const basePaths = new Set(
+    parseMatchBlocks(baseSource).map((block) => block.path),
+  );
+  const newPaths = new Set(
+    blocks.map((block) => block.path).filter((p) => !basePaths.has(p)),
+  );
+  return {
+    newPaths,
+    note: `Gate active against base \`${base}\`: ${newPaths.size} new match block(s).`,
+  };
 }
 
 /** Project ids used by the rules suites — coverage is scoped per project. */
@@ -558,26 +672,11 @@ async function main() {
     if (node.count > 0) stat.exprHit++;
   }
 
-  // Newly-added blocks: set-diff of block PATHS against the base revision, so a
-  // block that merely moved lines is not mistaken for a new one.
-  let newPaths = null;
-  let gateNote = "";
-  if (args.base) {
-    const baseSource = gitShow(args.base, "firestore.rules");
-    if (baseSource === null) {
-      gateNote = `Gate skipped: could not read firestore.rules at base \`${args.base}\` (shallow clone, or the file is new).`;
-    } else {
-      const basePaths = new Set(
-        parseMatchBlocks(baseSource).map((block) => block.path),
-      );
-      newPaths = new Set(
-        blocks.map((b) => b.path).filter((p) => !basePaths.has(p)),
-      );
-      gateNote = `Gate active against base \`${args.base}\`: ${newPaths.size} new match block(s).`;
-    }
-  } else {
-    gateNote = "Gate skipped: no --base revision supplied.";
-  }
+  const { newPaths, note: gateNote } = newBlockPaths({
+    base: args.base,
+    baseSource: args.base ? gitShow(args.base, "firestore.rules") : null,
+    blocks,
+  });
 
   const totalExpr = merged.size;
   const hitExpr = [...merged.values()].filter((n) => n.count > 0).length;
@@ -703,7 +802,9 @@ module.exports = {
   innermostBlock,
   classifyBlockBody,
   evaluateGate,
+  newBlockPaths,
   ownBodyText,
+  stripCommentsAndStrings,
   UNTESTED_BLOCK_POLICY,
 };
 

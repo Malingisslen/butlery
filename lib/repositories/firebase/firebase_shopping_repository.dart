@@ -242,7 +242,11 @@ class FirebaseShoppingRepository
   Future<int?> confirmPersistedItemCount(String listId) async =>
       _queryModule.confirmPersistedItemCount(listId);
 
-  /// Override update method to route collaborative lists to correct collection
+  /// Override update method to route collaborative lists to correct collection.
+  ///
+  /// BUT-1726: declares NO access-control base, so a content edit can never
+  /// move the ACL however stale its copy is — see
+  /// [updateCollaborativeListMembership] for the path that may.
   @override
   Future<UnifiedShoppingList> update(UnifiedShoppingList entity) async {
     if (entity.type == ListType.collaborative) {
@@ -256,6 +260,12 @@ class FirebaseShoppingRepository
       return entity;
     }
   }
+
+  @override
+  Future<UnifiedShoppingList> updateCollaborativeListMembership(
+    UnifiedShoppingList updated,
+    UnifiedShoppingList base,
+  ) => _routingModule.updateCollaborativeListMembership(updated, base);
 
   /// Override read method to search both collaborative and personal collections
   @override

@@ -12,6 +12,7 @@ import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
+import 'package:butlery/services/import/parsers/heading_word_lists.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
@@ -236,6 +237,26 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       }
     }
 
+    // BUT-1727: a RESCUED GLUTEN ROW is never the recipe title. The headerless
+    // fallback loop below already skips these, but THIS path runs first and
+    // every heuristic here misses them: isSectionHeader's word regex breaks on
+    // the trailing colon, and the gluten carve-out deliberately stops "Mjöl:"
+    // being a sub-heading. Any such word of 5+ characters ("Mjöl:",
+    // "Havregryn:", every *mjöl: compound) would otherwise be consumed as the
+    // title AND skipped in STAGE 3, so the gluten row never reaches the flat
+    // list the allergen tagging reads.
+    //
+    // Deliberately NOT also skipping `_ingredientSubHeading` here, even though
+    // the fallback loop does. That predicate matches any colon-terminated
+    // label of ≤4 digit-free words, which most Swedish dish names satisfy —
+    // "Kladdkaka:" as a caption's first line would lose its title entirely and
+    // then be promoted to a component section instead. Whether a lone "Deg:"
+    // may be a title is a separate, pre-existing question (BUT-1754); it is
+    // not an allergen-safety one, so it is not settled at ship time.
+    if (_bareGlutenIngredient(firstLine) != null) {
+      return '';
+    }
+
     // Validate: reasonable length, not a section header
     if (firstLine.length >= 5 &&
         firstLine.length <= 100 &&
@@ -380,6 +401,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         // regex), so without this skip a headerless caption whose real title
         // was rejected above would accept "Deg:" as the title at the guard below.
         if (_ingredientSubHeading(line) != null) continue;
+        // BUT-1727: the gluten carve-out makes "Råg:" stop being a sub-heading,
+        // but it is an INGREDIENT row — never the recipe title. Skip it here
+        // too, so refusing the heading can't promote it to a title.
+        if (_bareGlutenIngredient(line) != null) continue;
 
         if (line.length > 2 &&
             line.length < 100 &&
@@ -402,6 +427,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // the flat `ingredients` list that allergen tagging reads (safety invariant).
     String? currentSection;
     final sectionByKey = <String, String>{};
+    // BUT-1727: lowercased rows kept by the bare-gluten carve-out, so STAGE 4's
+    // orphan-fragment filter doesn't discard what STAGE 3 deliberately rescued.
+    final rescuedGluten = <String>{};
 
     // The title now comes from the un-mangled `titleSource`, but the body still
     // carries the preprocessed title — possibly split into fragments
@@ -465,6 +493,24 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         final subHeading = _ingredientSubHeading(line);
         if (subHeading != null) {
           currentSection = subHeading;
+          continue;
+        }
+
+        // BUT-1727: the carve-out's other half — keep the refused gluten line
+        // as an ingredient instead of letting the garbage/orphan-fragment
+        // filters below swallow it. Guessing "ingredient" only adds a noisy
+        // row; guessing "heading" loses the gluten from the tagging input.
+        final glutenIngredient = _bareGlutenIngredient(line);
+        if (glutenIngredient != null) {
+          final key = glutenIngredient.toLowerCase();
+          if (!capturedAsIngredient.contains(key)) {
+            ingredients.add(glutenIngredient);
+            capturedAsIngredient.add(key);
+            rescuedGluten.add(key);
+          }
+          if (currentSection != null) {
+            sectionByKey.putIfAbsent(key, () => currentSection!);
+          }
           continue;
         }
       }
@@ -560,7 +606,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
 
     // STAGE 4: FINAL CLEANUP
-    final cleanedIngredients = _deduplicateIngredients(ingredients);
+    final cleanedIngredients = _deduplicateIngredients(
+      ingredients,
+      exemptFromFilters: rescuedGluten,
+    );
     final cleanedInstructions = instructions
         .where((i) => !RecipeSectionDetector.isGarbage(i) && i.length > 10)
         .toList();
@@ -615,14 +664,28 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     );
   }
 
-  /// Deduplicate ingredients, keeping the most complete version
-  List<String> _deduplicateIngredients(List<String> ingredients) {
+  /// Deduplicate ingredients, keeping the most complete version.
+  /// [exemptFromFilters] holds lowercased entries that skip the garbage /
+  /// orphan-fragment filters AND the substring-containment rule below, but are
+  /// still deduplicated by exact name.
+  List<String> _deduplicateIngredients(
+    List<String> ingredients, {
+    Set<String> exemptFromFilters = const {},
+  }) {
     final cleanedIngredients = <String>[];
     final seenNames = <String>[];
+    // Index-aligned with [seenNames]: whether that kept row was rescued.
+    final seenRescued = <bool>[];
 
     for (final ing in ingredients) {
-      if (RecipeSectionDetector.isGarbage(ing) ||
-          !RecipeSectionDetector.isValidIngredient(ing)) {
+      // BUT-1727: a rescued bare gluten row ("Råg") is a single short word, so
+      // both filters below read it as an orphan fragment and would undo the
+      // carve-out one stage after it fired. It is exempt from them — but not
+      // from exact-name dedup, so a fuller "2 dl råg" row still wins.
+      final isRescuedGluten = exemptFromFilters.contains(ing.toLowerCase());
+      if (!isRescuedGluten &&
+          (RecipeSectionDetector.isGarbage(ing) ||
+              !RecipeSectionDetector.isValidIngredient(ing))) {
         continue;
       }
 
@@ -640,6 +703,18 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
           break;
         }
 
+        // BUT-1727 review: containment was the second half of the swallow the
+        // rescue exists to stop. The rescued row is a bare stem, so ANY longer
+        // ingredient name containing it — "potatismjöl" over "Mjöl",
+        // "bovetemjöl" over "Vete", "majskorn" over "Korn" — deleted the gluten
+        // row while the swallower is itself gluten-FREE, moving the recipe from
+        // UNKNOWN to a false-negative FREE. Skipping the branch in BOTH
+        // directions (the rescued row can be either side, since STAGE 3 rows
+        // interleave with STAGE 1 rows) is the whole fix; exact-name dedup
+        // above still collapses "Råg:" into "2 dl råg". Scanning continues
+        // rather than breaking, so a later exact match is still found.
+        if (isRescuedGluten || seenRescued[i]) continue;
+
         if (existingName.contains(ingName) || ingName.contains(existingName)) {
           if (ingName.length > existingName.length) {
             replaceIndex = i;
@@ -654,9 +729,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         if (replaceIndex >= 0) {
           cleanedIngredients[replaceIndex] = ing;
           seenNames[replaceIndex] = ingName;
+          seenRescued[replaceIndex] = isRescuedGluten;
         } else {
           cleanedIngredients.add(ing);
           seenNames.add(ingName);
+          seenRescued.add(isRescuedGluten);
         }
       }
     }
@@ -677,6 +754,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     if (label.isEmpty || label.length > 30) return null;
     if (label.split(RegExp(r'\s+')).length > 4) return null;
     if (RegExp(r'\d').hasMatch(label)) return null;
+    // BUT-1727: the SAME carve-out RecipeSectionDetector applies (BUT-1714) —
+    // a lone gluten word plus a colon ("Råg:", "Havregryn:") is as likely an
+    // OCR'd ingredient row whose quantity landed in another column as it is a
+    // component heading, and a heading is pulled OUT of the flat list allergen
+    // tagging reads. The shared list is the single source of truth so the
+    // pasted/photo/voice path can never drift from the detector's.
+    if (HeadingWordLists.isBareGlutenWord(label)) return null;
     final lower = label.toLowerCase();
     // A top-level marker, an instruction cue, or a real ingredient is not a
     // sub-group heading.
@@ -685,6 +769,24 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     if (RecipeSectionDetector.isInstructionHeader(lower)) return null;
     if (RecipeSectionDetector.looksLikeIngredient(label)) return null;
     return label;
+  }
+
+  /// BUT-1727: the ingredient text to KEEP for a colon-terminated line the
+  /// carve-out in [_ingredientSubHeading] refuses ("Råg:" → "Råg"), or null
+  /// when [line] is not one.
+  ///
+  /// Refusing the heading is not enough on its own: "Råg:" is four characters,
+  /// so `isValidIngredient` drops it as an orphan fragment and the gluten is
+  /// lost anyway. This re-injects it directly, colon-STRIPPED — lookup folds
+  /// diacritics but strips no punctuation, so "Mjöl:" would query `mjol:`,
+  /// match no registry document and take every allergen verdict on the recipe
+  /// to UNKNOWN. Colon-only by design: the accepted deviation covers the
+  /// colon-terminated form, and a colon-less bare word keeps the long-standing
+  /// orphan-fragment handling.
+  String? _bareGlutenIngredient(String line) {
+    final trimmed = line.trim();
+    if (!trimmed.endsWith(':')) return null;
+    return RecipeSectionDetector.bareGlutenIngredientLabel(trimmed);
   }
 
   /// Section labels index-aligned with [ingredients] for

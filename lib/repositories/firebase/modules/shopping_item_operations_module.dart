@@ -49,7 +49,11 @@ class ShoppingItemOperationsModule {
     required String resourceType,
   })
   validateRequiredFields;
-  final void Function({
+
+  /// BUT-1741: `Future<void>`, not `void`. The injected implementation is
+  /// async; a `void` parameter type accepts it and then drops the future, so a
+  /// failing audit write becomes an unhandled async error. Every call awaits.
+  final Future<void> Function({
     required String userId,
     required String resource,
     required String operation,
@@ -168,7 +172,7 @@ class ShoppingItemOperationsModule {
           .set(item.toFirestore());
     }
 
-    logPermissionCheck(
+    await logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'add',
@@ -255,7 +259,7 @@ class ShoppingItemOperationsModule {
       await batch.commit();
     }
 
-    logPermissionCheck(
+    await logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'batch_add',
@@ -300,7 +304,7 @@ class ShoppingItemOperationsModule {
           .update(item.toFirestore());
     }
 
-    logPermissionCheck(
+    await logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'update',
@@ -398,7 +402,7 @@ class ShoppingItemOperationsModule {
       }
     }
 
-    logPermissionCheck(
+    await logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'batch_update',
@@ -448,7 +452,7 @@ class ShoppingItemOperationsModule {
       ).doc(listId).collection(FirestoreCollections.items).doc(itemId).delete();
     }
 
-    logPermissionCheck(
+    await logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'remove',
@@ -497,7 +501,7 @@ class ShoppingItemOperationsModule {
       }
     }
 
-    logPermissionCheck(
+    await logPermissionCheck(
       userId: uid,
       resource: 'shopping_item',
       operation: 'batch_remove',

@@ -65,6 +65,7 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
+import 'package:butlery/services/unified/shopping_failure_message.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -938,6 +939,52 @@ void main() {
       expect(denied, AppLocale.current.shoppingNoEditPermissionShared);
       expect(gone, AppLocale.current.shoppingListNotFound);
     });
+
+    /// BUT-1726 shipped a FOURTH failure class, and nothing pinned it.
+    ///
+    /// `StaleAccessControlBaseException` is a SUBTYPE of
+    /// `PermissionDeniedException`, and `shoppingFailureMessage` is a `switch`
+    /// that takes the first matching arm — so the whole ticket depends on an
+    /// arm ORDER that only a code comment defended. Reordering the two arms,
+    /// or rewriting the seam as `on PermissionDeniedException catch`, silently
+    /// reverts the member manager to "du saknar behörighet" (an invented cause:
+    /// the manager DOES have the right, their copy is just older) with every
+    /// other test still green.
+    test(
+      'a stale access-control base is worded as a stale copy, not a denial',
+      () {
+        final stale = StaleAccessControlBaseException(
+          'base drifted',
+          resource: 'collaborative_list:abc',
+          driftedFields: const ['memberPermissions'],
+        );
+
+        // The subtype relationship is the hazard, so assert it rather than
+        // assuming it: if it ever stops being one, this test's reason to
+        // exist changes and the reader should be told here.
+        expect(stale, isA<PermissionDeniedException>());
+
+        final staleMessage = shoppingFailureMessage(stale, shared: true);
+        final deniedMessage = shoppingFailureMessage(
+          PermissionDeniedException(
+            'nope',
+            resource: 'collaborative_list:abc',
+            userId: 'u',
+          ),
+          shared: true,
+        );
+
+        expect(staleMessage, AppLocale.current.shoppingListChangedElsewhere);
+        expect(
+          staleMessage,
+          isNot(deniedMessage),
+          reason:
+              'telling the owner they lack permission, when the real answer '
+              'is "reload the list", sends them to ask someone for access '
+              'they already have',
+        );
+      },
+    );
 
     /// A denial decided by the RULES rather than by a client-side guard
     /// arrives as a RAW FirebaseException — every other test throws a typed

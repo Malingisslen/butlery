@@ -11383,6 +11383,12 @@ abstract class AppLocalizations {
   /// **'Du har inte behörighet att redigera denna inköpslista'**
   String get shoppingNoEditPermission;
 
+  /// No description provided for @shoppingListChangedElsewhere.
+  ///
+  /// In sv, this message translates to:
+  /// **'Listan har ändrats på en annan enhet — läs in den igen och försök på nytt'**
+  String get shoppingListChangedElsewhere;
+
   /// No description provided for @shoppingNoEditPermissionShared.
   ///
   /// In sv, this message translates to:

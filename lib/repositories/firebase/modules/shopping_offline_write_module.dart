@@ -45,7 +45,11 @@ class ShoppingOfflineWriteModule {
     'lastActivityByDisplayName',
   ];
 
-  final void Function({
+  /// BUT-1741: the audit sink is asynchronous. Typed `void` this field still
+  /// accepted the async implementation and then dropped its future, so a
+  /// failing audit write escaped as an unhandled async error rather than one
+  /// this module could observe. Each call below is awaited.
+  final Future<void> Function({
     required String userId,
     required String resource,
     required String operation,
@@ -194,12 +198,12 @@ class ShoppingOfflineWriteModule {
   /// and replaying the local answer is exactly how a removed member gets their
   /// edit rights back. Renames and item edits still queue offline; only
   /// membership and ownership wait for a server read.
-  Map<String, Object?> narrowUpdatePayload(
+  Future<Map<String, Object?>> narrowUpdatePayload(
     String uid,
     UnifiedShoppingList proposed,
     UnifiedShoppingList stored, {
     required bool baseIsCached,
-  }) {
+  }) async {
     const equality = DeepCollectionEquality();
     final next = proposed.toFirestore();
     final current = stored.toFirestore();
@@ -222,7 +226,7 @@ class ShoppingOfflineWriteModule {
         .toList();
     if (privileged.isEmpty || !baseIsCached) return payload;
 
-    logPermissionCheck(
+    await logPermissionCheck(
       userId: uid,
       resource: 'collaborative_shopping_list',
       operation: 'update',
@@ -269,11 +273,11 @@ class ShoppingOfflineWriteModule {
   /// the queued write, so a replay that happens after the app is killed and
   /// reopened denies with no audit row. Closing that needs a local pending-write
   /// journal reconciled at startup, which is tracked separately.
-  void onReplayRejected(String uid, String listId, Object error) {
+  Future<void> onReplayRejected(String uid, String listId, Object error) async {
     final denied =
         error is FirebaseException && error.code == 'permission-denied';
     if (denied) {
-      logPermissionCheck(
+      await logPermissionCheck(
         userId: uid,
         resource: 'collaborative_shopping_list',
         operation: 'update',

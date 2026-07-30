@@ -165,8 +165,13 @@ class FirebaseGroupWeeklyMenuPlanRepository
       resourceType: collectionName,
     );
 
+    // `isNull: false`, not `isNotEqualTo: null` — the SDK adds a condition only
+    // when the argument is non-null (query.dart:659), so a literal null made
+    // this an unfiltered read of every group's plans rather than the
+    // requester's participation. Same defect, same fix as the shared-shopping
+    // -list probes (BUT-1732).
     final snapshot = await collection
-        .where('memberPermissions.$userId', isNotEqualTo: null)
+        .where('memberPermissions.$userId', isNull: false)
         .limit(maxDocuments)
         .get();
 

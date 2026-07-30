@@ -19,7 +19,11 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
-const { runCheck, workflowPathBlocks } = require("../check-test-registration.js");
+const {
+  runCheck,
+  workflowPathBlocks,
+  REQUIRED_GUARD_TESTS,
+} = require("../check-test-registration.js");
 
 const results = [];
 function test(name, fn) {
@@ -60,14 +64,20 @@ function workflowYaml(entriesByTrigger) {
  *
  * `tests` are basenames created under src/__tests__; `scripts` is the
  * package.json test-script map; `triggers` overrides the workflow entries
- * (defaults to exactly the test:rules:all chain, i.e. a correct workflow).
+ * (defaults to exactly the test:rules:all chain, i.e. a correct workflow);
+ * `guardTests` are basenames created under scripts/__tests__ (BUT-1740).
  */
-function makeTree({ tests, scripts, triggers }) {
+function makeTree({ tests, scripts, triggers, guardTests = [] }) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "cf-guard-fixture-"));
   const testsDir = path.join(root, "functions", "src", "__tests__");
   fs.mkdirSync(testsDir, { recursive: true });
   for (const name of tests) {
     fs.writeFileSync(path.join(testsDir, name), "// fixture\n");
+  }
+  const guardDir = path.join(root, "functions", "scripts", "__tests__");
+  fs.mkdirSync(guardDir, { recursive: true });
+  for (const name of guardTests) {
+    fs.writeFileSync(path.join(guardDir, name), "// fixture guard\n");
   }
   fs.writeFileSync(
     path.join(root, "functions", "package.json"),
@@ -89,11 +99,14 @@ function makeTree({ tests, scripts, triggers }) {
   };
 }
 
+// `requiredGuardTests: []` by default so the criterion-by-criterion fixtures
+// below stay about the criterion they name; GUARD_SELF gets its own section.
 const check = (tree, extra = {}) =>
   runCheck({
     ...tree,
     unregisteredOk: new Map(),
     knownUnreachable: new Map(),
+    requiredGuardTests: [],
     ...extra,
   });
 
@@ -301,6 +314,97 @@ test("an allowlist entry downgrades a failure to a warning — but only with a t
     unregisteredOk: new Map([["orphan.test.ts", "because reasons"]]),
   });
   assert.deepStrictEqual(codesOf(untickted.failures), ["ALLOWLIST"]);
+});
+
+// ── GUARD_SELF: the guard-of-the-guard (BUT-1740) ─────────────────────────
+//
+// Criteria 1–5 read src/__tests__ only, so the guards' OWN suites — registered
+// as `test:script-*` — sat outside the universe the guard checks. Deleting both
+// script entries printed "OK … exit 0" while CI stopped running either guard.
+
+const guardTree = (scripts, guardTests = [...REQUIRED_GUARD_TESTS]) =>
+  makeTree({
+    tests: ["alpha.test.ts", "beta-rules.test.ts"],
+    scripts: {
+      "test:alpha": "ts-node src/__tests__/alpha.test.ts",
+      "test:rules:all": "ts-node src/__tests__/beta-rules.test.ts",
+      ...scripts,
+    },
+    guardTests,
+  });
+
+const wiredGuardScripts = {
+  "test:script-test-registration":
+    "node scripts/__tests__/check-test-registration.test.js",
+  "test:script-coverage-report":
+    "node scripts/__tests__/rules-coverage-report.test.js",
+};
+
+test("a tree with both guard suites wired stays silent", () => {
+  const result = check(guardTree(wiredGuardScripts), {
+    requiredGuardTests: REQUIRED_GUARD_TESTS,
+  });
+  assert.deepStrictEqual(result.failures, []);
+  assert.match(result.summary, /2 guard suites on the unit lane/);
+});
+
+test("GUARD_SELF fires when a guard's test:* script is deleted", () => {
+  const { "test:script-coverage-report": _dropped, ...rest } =
+    wiredGuardScripts;
+  const result = check(guardTree(rest), {
+    requiredGuardTests: REQUIRED_GUARD_TESTS,
+  });
+  assert.deepStrictEqual(codesOf(result.failures), ["GUARD_SELF"]);
+  assert.match(result.failures[0], /rules-coverage-report\.test\.js/);
+  assert.match(result.failures[0], /named by no unit-lane test:\* script/);
+});
+
+test("GUARD_SELF fires when BOTH guard scripts are deleted — the measured case", () => {
+  const result = check(guardTree({}), {
+    requiredGuardTests: REQUIRED_GUARD_TESTS,
+  });
+  assert.deepStrictEqual(codesOf(result.failures), [
+    "GUARD_SELF",
+    "GUARD_SELF",
+  ]);
+});
+
+test("a guard suite renamed onto an emulator prefix is NOT a CI lane", () => {
+  // run-ci-unit-tests skips test:rules*/test:integration:*, so this name is
+  // registered, looks wired, and runs nowhere.
+  const result = check(
+    guardTree({
+      ...wiredGuardScripts,
+      "test:script-coverage-report": undefined,
+      "test:rules:script-coverage-report":
+        "node scripts/__tests__/rules-coverage-report.test.js",
+    }),
+    { requiredGuardTests: REQUIRED_GUARD_TESTS },
+  );
+  assert.deepStrictEqual(codesOf(result.failures), ["GUARD_SELF"]);
+  assert.match(result.failures[0], /rules-coverage-report\.test\.js/);
+});
+
+test("GUARD_SELF fires when the guard's TEST FILE itself is deleted", () => {
+  // Discovery alone would pass vacuously here — nothing to discover.
+  const result = check(
+    guardTree(wiredGuardScripts, ["check-test-registration.test.js"]),
+    { requiredGuardTests: REQUIRED_GUARD_TESTS },
+  );
+  assert.deepStrictEqual(codesOf(result.failures), ["GUARD_SELF"]);
+  assert.match(result.failures[0], /rules-coverage-report\.test\.js is missing/);
+});
+
+test("a NEW guard suite is covered without editing the required list", () => {
+  const result = check(
+    guardTree(wiredGuardScripts, [
+      ...REQUIRED_GUARD_TESTS,
+      "future-guard.test.js",
+    ]),
+    { requiredGuardTests: REQUIRED_GUARD_TESTS },
+  );
+  assert.deepStrictEqual(codesOf(result.failures), ["GUARD_SELF"]);
+  assert.match(result.failures[0], /future-guard\.test\.js/);
 });
 
 // ── the workflow parser the criteria stand on ─────────────────────────────

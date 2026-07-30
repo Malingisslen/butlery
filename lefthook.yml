@@ -91,8 +91,13 @@ pre-commit:
     # `functions/scripts/check-test-registration.js` — the guard's own source,
     # i.e. precisely the file this hook exists to gate. `functions/scripts/**`
     # matches both the flat sources and the `__tests__/` fixtures.
+    # BUT-1740: `functions/package.json` is in the glob because deleting a
+    # guard's `test:*` script deregisters it from CI without touching a single
+    # file under functions/scripts — measured: the hook did not fire at all.
     script-guard-tests:
-      glob: "functions/scripts/**"
+      glob:
+        - "functions/scripts/**"
+        - "functions/package.json"
       run: node functions/scripts/__tests__/check-test-registration.test.js && node functions/scripts/__tests__/rules-coverage-report.test.js
       fail_text: "A CI-wiring guard's own tests failed (see above). The guards decide what CI runs — fix the guard or the fixture before committing, never the assertion."
       priority: 7

@@ -162,16 +162,14 @@ read-back that can distinguish "server has it" from "the local cache answered" �
 that never actually persisted anything can ACTIVATE a dormant cross-user PII leak**: the
 collaborative→personal copy carries other members' `addedBy*`/`purchasedBy*`/`lastModifiedBy*`
 into `users/{me}/…/items`, a tree no OTHER user's cascade scans, so their name outlives their
-erasure. Strip foreign attribution at any cross-tree copy site. **Verified STILL UNSTRIPPED
-2026-07-27** now that the fan-out has landed: `ListLifecycleOperations.convertCollaborativeToPersonal`
-passes `collaborativeList.items` verbatim to `createPersonalList`. No widget renders those names
-today, which is the only reason it is High rather than Critical — a display accident, not a control. **CLOSED 2026-07-28**: the copy path now runs every row through
-a strip helper that keeps WHAT happened (name, amount, `bought`, timestamps) and drops WHO unless the
-uid equals the converting owner's — the shape to copy at any cross-tree copy site. Two things that
-made it safe rather than lossy: the strip rebuilds via the full CONSTRUCTOR, so verify the
-constructor's parameter list is exhaustive against the model's fields (a missing one silently resets
-to its default), and a nulled `addedByUserId` flips a derived `isCollaborative` getter — check that
-getter has no production consumer before nulling, or anonymize instead of nulling as the CF cascade does.
+erasure. Strip foreign attribution at any cross-tree copy site. **CLOSED 2026-07-28** (raw record in
+the archive): the copy path runs every row through a strip helper that keeps WHAT happened (name,
+amount, `bought`, timestamps) and drops WHO unless the uid is the converting owner's — the shape to
+copy at any cross-tree copy site. Two things that made it safe rather than lossy: the strip rebuilds
+via the full CONSTRUCTOR, so verify its parameter list is exhaustive against the model's fields (a
+missing one silently resets to its default), and a nulled `addedByUserId` flips a derived
+`isCollaborative` getter — check such a getter has no production consumer before nulling, or
+anonymize instead.
 **Two costs the fan-out repair carries, both worth checking on any "write the other shape too" fix
 (2026-07-28).** (a) It routes through a TYPE-ROUTING helper, and this repo's router probes the SHARED
 collection first: `create()` → `addItemsBatch` → `_requireList` → `read()` → a
@@ -222,13 +220,21 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   require parity (BUT-1665: `updateCollaborativeList` gained a privilege-escalation guard while
   `mutateCollaborativeList` — simultaneously promoted to the interface — did not).
 - **A module that receives `logPermissionCheck` as an injected callback silently loses the await.**
-  `PermissionValidationMixin.logPermissionCheck` returns `Future<void>`, but every shopping module
-  (and the new `ShoppingListPermissionGuards`) declares the field as `void Function({...})` — Dart's
-  return-type covariance to `void` accepts the assignment with no warning, so the audit write is
-  fire-and-forget and a failure inside it is an unhandled async error rather than a signal. Check
-  the declared callback type against the mixin's signature whenever a repository hands its audit
-  hook to a helper; only the repository's own call sites (`FirebaseShoppingRepository.delete`)
-  actually await it.
+  `PermissionValidationMixin.logPermissionCheck` returns `Future<void>`, but a field declared
+  `void Function({...})` still ACCEPTS it — Dart's return-type covariance to `void` — so the audit
+  write is fire-and-forget and a failure inside it is an unhandled async error rather than a signal.
+  Check the declared callback type against the mixin's signature whenever a repository hands its
+  audit hook to a helper. **CLOSED for shopping 2026-07-30 (BUT-1741)**: all four seams
+  (`ShoppingRepositoryRoutingModule`, `ShoppingOfflineWriteModule`, `ShoppingItemOperationsModule`,
+  `ShoppingListPermissionGuards`) now declare `Future<void> Function({...})` and await every call,
+  and the mixin's own fire-and-forget persist is spelled `unawaited(...)`. Two review rules the fix
+  generalises. (a) Promoting a fire-and-forget hook to `await` puts the SINK on the operation's
+  failure path — a throwing sink now aborts a write that already landed — so it is only safe once
+  you have re-read the sink and confirmed it cannot throw (here: console log, then the persist
+  wrapped in `unawaited(...).catchError` inside a `try`). Say which of those two facts you checked.
+  (b) Fix the whole family in one pass: the covariance opt-out is PER CALL SITE, so a module that
+  keeps one un-awaited call still drops that row, and the tests must therefore be per write path
+  (create / whole-list update / transactional mutate / guard denial), not one sample.
 - A write helper that calls `requireCurrentUserId()` and then `logPermissionCheck(granted:true)`
   with NO check in between forges the audit trail. Either run the real
   `validate*Permission` and log its verdict (see `FirebaseShoppingRepository.delete`), or don't
@@ -268,6 +274,40 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   `validateUpdatePermission`'s `isCollaborative` test, so a shared doc whose `type` field is
   missing parses as `personal` (enum `orElse`) and locks out every non-owner member. Fail-closed,
   but enumerate every writer of the collection before accepting it.
+- **A guard delivered as an OPT-IN named parameter defaults every existing caller into the
+  restricted branch.** BUT-1726 added `updateCollaborativeList({UnifiedShoppingList?
+  accessControlBase})` and made the no-declaration path STRIP `ownerId`/`memberPermissions`/
+  `createdAt`; zero production callers pass it, so add/remove/demote-member, join-a-shared-list
+  and leave-a-list all silently no-op while the UI is told they worked (owner believes access was
+  revoked; the removed member keeps rules-granted write). Fixed check on any diff that adds a
+  parameter or flag a write path now depends on: `git grep <paramName> -- lib/` — hits only in
+  `test/` means the guarded capability is dead, not protected. Two corollaries. (a) The three
+  method-level tests pass precisely BECAUSE they pass the new argument, so a green suite is
+  evidence about the module, never about the app; trace the real chain (here dialog/coordinator →
+  `ListMemberOperations` → `UnifiedShoppingService.updateList` → `ShoppingListManagementModule`
+  → `repository.update`). (b) A silent STRIP must not report success: the same call logs a
+  `granted:false` "dropped memberPermissions" row and then a `granted:true` "Updated list" row for
+  one operation — refuse, or return the partial refusal to the caller. **CLOSED 2026-07-30
+  (BUT-1726 final).** The shape that closed it, and the one to demand on any "declare your intent"
+  guard: a NAMED public method (`updateCollaborativeListMembership(updated, base)`) on the
+  repository INTERFACE, so a forgotten optional argument cannot silently downgrade a removal to a
+  write of `updatedAt`; a dedicated service seam (`ListMemberOperations._updateMembership`)
+  replacing the generic `updateList`, so every add/remove/permission/leave is re-typed at compile
+  time rather than left to discipline; a distinct exception subtype
+  (`StaleAccessControlBaseException extends PermissionDeniedException`) so existing
+  `on PermissionDeniedException` handlers still catch it while the wording can differ — and its arm
+  MUST precede the parent arm in the message `switch`, since a switch takes the first match; and
+  the caller now honours the returned bool instead of assuming success. Two review demands that
+  follow: verify the whole chain by grep (dialog → member ops → service → module → repo), and
+  require a test that drives the ENTRY POINT rather than hand-passing the new argument —
+  hand-passing is exactly how the dead opt-in shipped green. **Residual, still open:** the strip
+  sits AFTER `requireNoPrivilegeEscalation`, so it only helps the owner — a non-owner's plain
+  content edit carrying a stale member map still throws before reaching it, a false denial of a
+  write the rule would have allowed. The real fix is to run the escalation guard against the
+  payload that will actually be WRITTEN, not against the raw entity. Related product gap this
+  strictening EXPOSED rather than caused: `canManageShoppingList` grants a non-owner `admin`
+  member management and `leaveList` is offered to every member, but the update rule lets NO
+  non-owner touch `memberPermissions` — so that UI is dead and now says so out loud.
 - A collection with no rule block silently default-denies
   (`match /{document=**}{allow read,write:if false}`) — writes look implemented but are
   rejected. Grep `firestore.rules` for every new collection path in a diff first.
@@ -374,7 +414,17 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   handle, so a denormalized erasure handle that lives OUTSIDE the model can never ride along on a
   model-derived payload. Whenever such a handle is introduced, enumerate the write paths that build
   their payload from `toFirestore()` and treat every one as a miss until it explicitly re-adds the
-  handle. Discharging the "no live caller leaks today" claim costs a full caller trace, not a
+  handle. **CLOSED 2026-07-30 (BUT-1733), and the fix shape is the generalisable part:** rather
+  than adding the union at the fourth call site, ONE helper (`_withContributorTrail`) now decides
+  the obligation from the payload itself — `if (!payload.containsKey('items')) return payload;` —
+  so a fifth write path inherits it by construction, and a rename correctly stamps nothing (the
+  trail records who touched the ROWS that carry names, and the rule caps it at 200 entries). Two
+  details to check when copying it: the helper must offer BOTH spellings, `FieldValue.arrayUnion`
+  for ordinary writes (what makes an offline replay merge) and an explicitly-computed union for a
+  transaction (which already holds the live array, and where a merge-set will not honour the
+  sentinel); and the "does this payload persist the field" test only works because
+  `toFirestore()` emits a FIXED key set — verify that before keying an invariant off
+  `containsKey`. Discharging the "no live caller leaks today" claim costs a full caller trace, not a
   grep: repository `update()` → `ShoppingListManagementModule.updateList` →
   `personal_shopping_operations` (preserves existing attribution), `list_member_operations`
   (owner-only, no item attribution) and `menu_shopping_list_generator` (generated rows, no
@@ -442,6 +492,24 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   survives account deletion unless the cascade names it too. Diff that list against
   `account-deletion-cascade.ts` — `unified_shared_shopping_lists.lastActivityBy{UserId,DisplayName}`
   and `ownerDisplayName` are propagated on rename but NOT scrubbed on erasure (open, BUT-1665 review).
+- **An export that REDACTS a field group must enumerate the group from the model's
+  `toFirestore()`, not from memory.** BUT-1732's `SharedShoppingListExport.nameKeysByOwnerIdKey`
+  lists four name/id pairs; `UnifiedShoppingItem.toFirestore()` persists six —
+  `purchasedByDisplayName` and `lastModifiedByDisplayName` (stamped on EVERY tick via
+  `markAsBought`) ship other members' names raw, while the bundle's own `data_minimisation` string
+  and the matching `ACCEPTED_DEVIATIONS.md` entry claim they are dropped. A false self-description
+  in an Art. 15 bundle is its own defect, and an under-enumerated group is NOT covered by the
+  deviation that decided the redaction. Open the serializer, diff its key set against the redaction
+  map, and check the new test fixture actually contains the missing keys (this one did not).
+  **CLOSED 2026-07-30, and the closure is the reusable part**: the map is no longer trusted to be
+  exhaustive — a test derives the key set from the MODELS (`{...List.toFirestore().keys,
+  ...Item.toFirestore().keys}`), filters `endsWith('DisplayName')`, and asserts the difference
+  against the map is empty, plus that every paired `*UserId` is itself persisted (otherwise the
+  "keep it when it is yours" branch silently becomes "drop it always"). Demand that derived-key
+  test on ANY hand-enumerated field group; it only works because `toFirestore()` emits nulls rather
+  than omitting keys, so check that first. The matching `ACCEPTED_DEVIATIONS.md` entry must state
+  the count and the reason, since the bundle's own `data_minimisation` string is a claim the export
+  makes about itself.
 - Anonymize (don't hard-delete) a row that is also someone else's GDPR evidence.
 - Prefer read-modify-write list rewrites over `FieldValue.arrayRemove()` in scrubs — test fakes
   silently no-op `arrayRemove`, hiding a broken cascade.
@@ -467,7 +535,16 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
   per-conversation cap are enforced with a bare `.limit()`, and only the latter emits a flag. A
   swallowed child-collection read is the same defect — a `catch` that logs at debug and returns
   `items: []` makes "read failed" indistinguishable from "no items", so the section must carry an
-  error/truncation marker, not a log line.
+  error/truncation marker, not a log line. **And the marker only counts if it is spelled
+  `error_code`**: `DataExportService` rolls a section into `export_metadata.warnings` on
+  `value['error_code'] != null` alone (message = `error` ?? `note` ?? 'Unknown error'), and only for
+  TOP-LEVEL sections — a nested map is scanned for `messages_truncated` and nothing else. A bespoke
+  per-section flag (`contributor_probe_failed`, a lone `note`) therefore admits incompleteness
+  inside the section while the bundle's own metadata still reads complete — the exact defect the
+  convention exists to close. Pair every new "this section may be incomplete" flag with an
+  `error_code`, and never return `e.toString()` from a section catch: raw Firestore text carries
+  uids and doc paths into an artifact the data subject may forward to a supervisory authority
+  (BUT-1732; `activity_export_manager.dart` still does it).
 - A roster/keep-set diff that DELETES user data must refuse to run when the keep-set is empty or
   implausibly small — an empty denormalized member list must not read as "everyone left"; guard
   `if (roster.size===0) return docs;` and prefer the authoritative membership list over a
@@ -543,6 +620,14 @@ personal→collaborative leg only (the collaborative leg's source IS stream-back
 - Bounded enum/numeric telemetry (error codes, token counts, model IDs, `schemaVersion`,
   variant strings) is safe to log — the leak surface is the adjacent free-text field. Bound raw
   length even for "should be small" fields.
+- **`AppLogger.error(msg, e)` is not device-local, and only the MESSAGE is redacted.** It forwards
+  the raw `e` object to `FirebaseCrashlytics.recordError` and to the analytics callback as
+  `error.toString()`; `_sanitizeForCrashlytics` (the 20–28-char alnum uid masker) is applied to the
+  message string only. Consent-gated (`setCrashlyticsCollectionEnabled(hasConsent && !kDebugMode)`,
+  `main.dart`), so it is acceptable for bounded Firestore error text — but never justify logging an
+  exception on "it stays on the device", and think before logging an error whose text embeds a
+  query the app built from a uid (a `memberPermissions.<uid>` FAILED_PRECONDITION index URL is the
+  realistic shape).
 - A field on a world-readable doc must be audited individually for exposure — a boolean gating a
   SEARCH QUERY does not gate DIRECT-FETCH visibility.
 - **A nullable actor-NAME field stamped through `copyWith` misattributes on a multi-user doc.**

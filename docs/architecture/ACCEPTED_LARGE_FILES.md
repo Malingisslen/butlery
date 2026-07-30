@@ -72,7 +72,7 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | `firebase_user_repository.dart` | 874 | User profile CRUD + settings + GDPR cascade methods (BUT-498). Row refreshed 2026-07-25 (was recorded at 791). |
 | `firebase_ingredient_repository.dart` | 562 | Ingredient CRUD + batch operations |
 | `firebase_friends_repository.dart` | 507 | Explicit facade coordinating three focused sub-repositories |
-| `firebase_data_export_repository.dart` | 690 | Read-only GDPR export gateway — funnels ~30 residual-collection reads through one ownership-guarded query helper (`_guardSelfExport`/`_queryList`). Transitional-by-design per BUT-501 (shrinks as typed `exportXxxByUser` repos grow); cohesive one-method-per-collection, splitting would scatter the single ownership choke-point. +80 from BUT-1450 notification analytics. |
+| `firebase_data_export_repository.dart` | 783 | Read-only GDPR export gateway — funnels ~30 residual-collection reads through one ownership-guarded query helper (`_guardSelfExport`/`_queryList`). Transitional-by-design per BUT-501 (shrinks as typed `exportXxxByUser` repos grow); cohesive one-method-per-collection, splitting would scatter the single ownership choke-point. +80 from BUT-1450 notification analytics. |
 | `firebase_social_request_repository.dart` | 520 | Single unified social-request collection; clean extension of base repo class |
 | `firebase_analytics_repository.dart` | 608 | Analytics writes with per-install salted SHA-256 PII hashing (GDPR Art.7); single-concern repository |
 | `algolia_search_repository.dart` | 515 | Single search backend; deliberate Algolia bypass rationale documented in code |
@@ -96,7 +96,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `realtime_recipe_operations.dart` | 630 | Realtime recipe collaboration ops |
 | `user_service.dart` | 1032 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
 | `messaging_service.dart` | 903 | Chat/messaging service |
-| `text_import_strategy.dart` | 795 | Text-based recipe import strategy |
+| `text_import_strategy.dart` | 1006 | Text-based recipe import strategy |
 | `friends_management_operations.dart` | 675 | Add/remove/block friends operations |
 | `collaboration_management_module.dart` | 626 | Realtime collaboration session management |
 | `intelligent_cache_manager.dart` | 601 | Adaptive caching based on usage patterns |
@@ -111,7 +111,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `fcm_token_manager.dart` | 652 | FCM token lifecycle management |
 | `deep_link_service.dart` | 559 | Deep link routing service |
 | `llm_tier.dart` | 707 | LLM-based recipe parsing tier |
-| `unified_shopping_service.dart` | 766 | Shopping service facade |
+| `unified_shopping_service.dart` | 794 | Shopping service facade |
 | `realtime_recipe_service.dart` | 525 | Explicit facade; delegates to RecipeContentOperations + RecipeParticipants |
 | `realtime_menu_service.dart` | 512 | Explicit facade; delegates to MenuOperations + MenuParticipants modules |
 | `file_import_strategy.dart` | 599 | File-format (CSV/Excel) import strategy; coherent single-platform pipeline |

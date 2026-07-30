@@ -46,7 +46,10 @@ enum ExportResourceType {
   notificationDelivery('notification_delivery'),
   // Increment 5 (decision 12): pooled-rating events the deletion cascade
   // erases but the export previously omitted (Art. 15 ⊇ Art. 17).
-  canonicalRatingEvents('canonical_rating_events')
+  canonicalRatingEvents('canonical_rating_events'),
+  // BUT-1732: shared shopping lists the deletion cascade scrubs but the
+  // export omitted entirely (Art. 15 ⊇ Art. 17).
+  sharedShoppingLists('shared_shopping_lists')
   ;
 
   const ExportResourceType(this.tag);
@@ -617,6 +620,78 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .where('ownerId', isEqualTo: userId),
     userId,
     ExportResourceType.realtimeRecipes,
+    limit: maxDocuments,
+  );
+
+  // ── BUT-1732: shared shopping lists (Art. 15 ⊇ erased) ──
+
+  /// Top-level `unified_shared_shopping_lists` where `ownerId == userId`.
+  ///
+  /// The three probes below mirror the ones
+  /// `functions/src/account/account-deletion-cascade.ts` runs to FIND a user's
+  /// shared lists, because Art. 15 has to cover at least what Art. 17 erases.
+  Future<List<Map<String, dynamic>>> exportSharedShoppingListsOwned(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.unifiedSharedShoppingLists)
+        .where('ownerId', isEqualTo: userId),
+    userId,
+    ExportResourceType.sharedShoppingLists,
+    limit: maxDocuments,
+  );
+
+  /// Shared lists carrying a `memberPermissions.<uid>` key — the lists the user
+  /// has been given access to but does not own.
+  ///
+  /// `isNull: false`, NOT `isNotEqualTo: null`: the SDK builds its conditions
+  /// with `if (isNotEqualTo != null) addCondition(...)` (query.dart:659), so a
+  /// literal `null` argument adds NO condition at all and the probe degrades
+  /// into an unfiltered read of the whole collection — refused outright by the
+  /// read rule here, which would collapse this entire Art. 15 section into an
+  /// error. `isNull: false` is the supported spelling of the same intent and
+  /// maps to the `!= null` condition (query.dart:676-682).
+  Future<List<Map<String, dynamic>>> exportSharedShoppingListsAsMember(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.unifiedSharedShoppingLists)
+        .where('memberPermissions.$userId', isNull: false),
+    userId,
+    ExportResourceType.sharedShoppingLists,
+    limit: maxDocuments,
+  );
+
+  /// Shared lists whose `contributorUserIds` names the user (BUT-1725).
+  ///
+  /// Best-effort by construction, and the caller must treat a failure as a
+  /// documented gap rather than an error: the read rule for this collection is
+  /// `ownerId == uid || uid in memberPermissions`, so the moment this query
+  /// matches a list the user has LEFT — the case the trail exists for — the
+  /// server refuses the whole query. Only an Admin-SDK context can enumerate
+  /// those, which is exactly why the cascade runs there.
+  ///
+  /// COST, known and deliberately not optimised here (BUT-1753): under that
+  /// same read rule every list this probe can legally return is already
+  /// returned by the owner or member probe, so on the happy path its rows are
+  /// pure duplicates — each carrying a whole embedded `items` array — while
+  /// billing a read apiece, up to `cap + 1`. Its only unique product is the
+  /// all-or-nothing refusal signal, which `.limit(1)` would prove just as well.
+  /// Not changed at ship because the caller derives `truncated` from the row
+  /// count it gets back, so narrowing the limit silently disables this probe's
+  /// half of the bundle's own incompleteness flag — a correctness change that
+  /// needs its own review pass, not a drive-by.
+  Future<List<Map<String, dynamic>>> exportSharedShoppingListsAsContributor(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.unifiedSharedShoppingLists)
+        .where('contributorUserIds', arrayContains: userId),
+    userId,
+    ExportResourceType.sharedShoppingLists,
     limit: maxDocuments,
   );
 

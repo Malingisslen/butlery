@@ -6,6 +6,7 @@ library;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart';
@@ -276,6 +277,96 @@ void main() {
           .first;
       expect(first, isNotNull);
       expect(first!.id, plan.id);
+    });
+  });
+
+  /// GDPR Article 15/20 — the participation probe, which had zero coverage.
+  ///
+  /// It was spelled `.where('memberPermissions.$userId', isNotEqualTo: null)`.
+  /// The cloud_firestore SDK adds a condition only when the argument is
+  /// non-null (`query.dart:659`), so a literal `null` added NO condition at all
+  /// and this became an unfiltered read of EVERY group's menu plans instead of
+  /// the requester's participation. The `group_weekly_menu_plans` read rule is
+  /// scoped to participants, so the server refuses that query outright — the
+  /// user-visible symptom is not an over-share but "my shared data mysteriously
+  /// will not load", with a whole export section collapsing into an error.
+  /// `isNull: false` is the supported spelling of the same intent, and it is
+  /// the identical fix the three BUT-1732 shared-shopping-list probes carry.
+  ///
+  /// Both halves are asserted — own participation returned, another group's
+  /// plan absent — because a conditionless query satisfies the first alone.
+  /// `FakeFirebaseFirestore` throws `Unsupported` on `isNotEqualTo: null`
+  /// rather than silently degrading, so reverting the spelling reddens loudly.
+  group('exportPlansForParticipant (BUT-1732)', () {
+    Future<FakeFirebaseFirestore> seeded() async {
+      final firestore = FakeFirebaseFirestore();
+      final plans = firestore.collection('group_weekly_menu_plans');
+      await plans.doc('group-1_2026-01-15').set(<String, dynamic>{
+        'groupId': 'group-1',
+        'memberPermissions': <String, dynamic>{_alice: 'edit'},
+      });
+      await plans.doc('group-2_2026-01-15').set(<String, dynamic>{
+        'groupId': 'group-2',
+        'memberPermissions': <String, dynamic>{_bob: 'admin'},
+      });
+      return firestore;
+    }
+
+    test('returns only the plans naming the requester', () async {
+      final repo = _repo(await seeded());
+
+      final result = await repo.exportPlansForParticipant(_alice);
+
+      expect(result.map((row) => row['id']), <String>['group-1_2026-01-15']);
+      expect(
+        result.map((row) => row['id']),
+        isNot(contains('group-2_2026-01-15')),
+        reason:
+            "another group's plan names a different uid under "
+            'memberPermissions, so only a per-uid key filter excludes it',
+      );
+      expect(
+        (result.single['data'] as Map)['groupId'],
+        'group-1',
+        reason: 'Art. 15 requires the document, not just its id',
+      );
+    });
+
+    test('a user who participates in nothing gets an empty list', () async {
+      final firestore = await seeded();
+      final repo = _repo(firestore, authedUserId: 'user-nobody');
+
+      expect(await repo.exportPlansForParticipant('user-nobody'), isEmpty);
+    });
+
+    test('respects maxDocuments', () async {
+      final firestore = await seeded();
+      for (var i = 0; i < 3; i++) {
+        await firestore
+            .collection('group_weekly_menu_plans')
+            .doc('group-extra-$i')
+            .set(<String, dynamic>{
+              'groupId': 'group-extra-$i',
+              'memberPermissions': <String, dynamic>{_alice: 'edit'},
+            });
+      }
+
+      final result = await _repo(
+        firestore,
+      ).exportPlansForParticipant(_alice, maxDocuments: 2);
+
+      expect(result, hasLength(2));
+    });
+
+    /// Defence-in-depth: the ownership guard still refuses somebody else's
+    /// participation record even though the predicate is now correct.
+    test('refuses to export another user id', () async {
+      final repo = _repo(await seeded());
+
+      await expectLater(
+        repo.exportPlansForParticipant(_bob),
+        throwsA(isA<PermissionDeniedException>()),
+      );
     });
   });
 }
