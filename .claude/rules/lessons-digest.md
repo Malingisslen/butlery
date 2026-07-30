@@ -38,6 +38,10 @@ lessons that only matter while writing or running tests.
 
 - A decision record that ASSERTS SOMETHING ABOUT CODE (a gate's presence, a predicate, a field's absence) has an expiry it cannot see — grep the code before relying on one, and always before citing it to justify REMOVING a control. Code wins on facts; only the founder decides which document changes. Supersede the stale entry with a dated one quoting the verified code, never delete it silently.
 
+- A verifier's RED COUNT fingerprints the bytes it READ — when a claimed defect contradicts the code, revert the fix and check whether the claimed signature reproduces exactly; a match proves the reporter sampled stale content (and indicts every other claim from that run), which beats "the claim is false".
+- Two samples cannot attribute a NONDETERMINISTIC failure: establish determinism first (does it fail in isolation? every time?), then run N>=5 per tree and compare RATES. A strict `isAfter` between two wall-clock stamps is a same-tick coin flip — recognisable before running anything.
+- A test fixture must CONTAIN the pattern it claims to guard, and must clear every length/shape precondition on the path it means to exercise — three vacuous tests shipped as coverage in one sprint ('paprika.' and 'kanel' have no "ca" in them; "Råg:" is too short to reach the guarded branch). Always mutation-test a negative assertion.
+
 ## Architecture
 
 - `BaseViewModel.executeAsync` fails LOUD (throws `StateError`) on a disposed VM BY DESIGN — its non-nullable `Future<T>` can't return a fake `null`; the fail-silent siblings differ only because their return types allow it. Don't "harmonise" it; guard callers with `if (isDisposed) return;` (BUT-1462, sweep in BUT-1628).
