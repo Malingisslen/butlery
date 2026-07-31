@@ -59,6 +59,7 @@ import {
   deleteNotifications,
   deleteNotificationAnalytics,
   deleteRealtimeRecipes,
+  deleteRealtimeMenus,
   deleteUserPreferences,
   deleteConsentRecords,
   deleteUserSubcollections,
@@ -209,6 +210,9 @@ export async function runAccountDeletionWithDeps(
     ["notifications", () => deleteNotifications(database, uid)],
     ["notification_analytics", () => deleteNotificationAnalytics(database, uid)],
     ["realtime_recipes", () => deleteRealtimeRecipes(database, uid)],
+    // BUT-1768: `realtime_menus` had no tier entry at all — the sibling
+    // collection was cascaded, this one survived every erasure.
+    ["realtime_menus", () => deleteRealtimeMenus(database, uid)],
     ["storage_files", () => deleteUserStorageFiles(storage, uid)],
   ];
   await Promise.all(tier1.map(([name, fn]) => runStep(name, result, fn)));

@@ -372,36 +372,61 @@ void main() {
       );
     });
 
+    /// Seeds a conversation plus the messages it holds — in the TOP-LEVEL
+    /// `messages` collection with a `conversationId` FIELD, which is where
+    /// `MessageMutationModule.sendMessage` actually writes them and the only
+    /// path `firestore.rules` grants.
+    ///
+    /// BUT-1766: the fixture this replaces wrote
+    /// `conversations/{id}/messages`, a subcollection nothing has ever
+    /// written, and then asserted the deleted count matched what it had
+    /// seeded. Fixture and implementation shared the same wrong path, so the
+    /// suite stayed green over a cascade that erased no message in production.
     Future<void> seedConversation({
       required String convoId,
       required List<String> participantIds,
-      required int messageCount,
+      required Map<String, int> messagesBySender,
+      bool createConversationDoc = true,
     }) async {
-      await fakeFirestore.collection('conversations').doc(convoId).set({
-        'participantIds': participantIds,
-        'createdAt': DateTime(2026, 4, 1),
-      });
-      for (var i = 0; i < messageCount; i++) {
-        await fakeFirestore
-            .collection('conversations')
-            .doc(convoId)
-            .collection('messages')
-            .add({'senderId': participantIds.first, 'text': 'msg-$i'});
+      if (createConversationDoc) {
+        await fakeFirestore.collection('conversations').doc(convoId).set({
+          'participantIds': participantIds,
+          'createdAt': DateTime(2026, 4, 1),
+        });
+      }
+      for (final entry in messagesBySender.entries) {
+        for (var i = 0; i < entry.value; i++) {
+          await fakeFirestore.collection('messages').add({
+            'conversationId': convoId,
+            'senderId': entry.key,
+            'content': 'msg-$i',
+          });
+        }
       }
     }
 
+    Future<int> messageCountFor(String senderId) async {
+      final snap = await fakeFirestore
+          .collection('messages')
+          .where('senderId', isEqualTo: senderId)
+          .get();
+      return snap.docs.length;
+    }
+
     test(
-      '1:1 conversation — messages deleted + conversation removed',
+      "1:1 conversation — the user's own messages are deleted and the "
+      'conversation removed',
       () async {
         await seedConversation(
           convoId: 'convo-direct',
           participantIds: [_ownerUid, _strangerUid],
-          messageCount: 3,
+          messagesBySender: {_ownerUid: 3, _strangerUid: 2},
         );
 
         final count = await repo.deleteAllMessagesForUser(_ownerUid);
 
         expect(count, equals(3));
+        expect(await messageCountFor(_ownerUid), isZero);
         final convoAfter = await fakeFirestore
             .collection('conversations')
             .doc('convo-direct')
@@ -411,21 +436,42 @@ void main() {
           isFalse,
           reason: '1:1 conversation should be deleted entirely',
         );
+        expect(
+          await messageCountFor(_strangerUid),
+          equals(2),
+          reason:
+              'firestore.rules only grants a client `delete` on its OWN '
+              'messages, so the counterparty half of a 1:1 is out of reach '
+              'here — the Admin-SDK cascade in account-deletion-cascade.ts is '
+              'what clears it. Pinned so the split is deliberate, not silent.',
+        );
       },
     );
 
     test(
-      'group conversation (>2 participants) — messages deleted + user removed from participantIds',
+      'group conversation (>2 participants) — own messages deleted, others '
+      'kept, participantIds left UNTOUCHED (a client cannot write it)',
       () async {
+        // Pinning a LIMIT, not a capability. `firestore.rules` refuses every
+        // client update to `conversations/{id}` whose diff touches
+        // `participantIds` — there is no rules-legal client-side group leave.
+        // An earlier version of this test asserted the participant WAS
+        // removed, which only passed because FakeFirebaseFirestore enforces
+        // no rules; in production that update() would return
+        // permission-denied. `deleteMessages` in
+        // functions/src/account/account-deletion-cascade.ts, via the Admin
+        // SDK, is the production owner of group departure.
         await seedConversation(
           convoId: 'convo-group',
           participantIds: [_ownerUid, _strangerUid, 'third-uid'],
-          messageCount: 4,
+          messagesBySender: {_ownerUid: 4, 'third-uid': 1},
         );
 
         final count = await repo.deleteAllMessagesForUser(_ownerUid);
 
         expect(count, equals(4));
+        expect(await messageCountFor(_ownerUid), isZero);
+        expect(await messageCountFor('third-uid'), equals(1));
         final convoAfter = await fakeFirestore
             .collection('conversations')
             .doc('convo-group')
@@ -437,13 +483,77 @@ void main() {
         );
         expect(
           List<String>.from(convoAfter.data()!['participantIds'] ?? []),
-          equals([_strangerUid, 'third-uid']),
-          reason: 'leaving user removed from participantIds',
+          equals([_ownerUid, _strangerUid, 'third-uid']),
+          reason:
+              'participantIds is untouched — the client made no write to it',
         );
       },
     );
 
-    test('no conversations — returns 0', () async {
+    test(
+      'messages in a conversation the user already LEFT are NOT reached from '
+      'a client — that case belongs to the Cloud Function',
+      () async {
+        // Deliberately pinning a LIMIT, not a capability. An earlier version of
+        // this suite asserted the opposite ("still deleted") on the strength of
+        // a bare `messages.where('senderId', ==, uid)` sweep. `firestore.rules`
+        // resolves the `messages` read rule through
+        // `get(conversations/$(conversationId)).data.participantIds`, so that
+        // sweep is denied outright the moment one matched row sits in a
+        // conversation the user has left — and FakeFirebaseFirestore evaluates
+        // no rules, so the old assertion was green against a query the server
+        // refuses. The client now keys every read to one conversationId it is
+        // still a participant of; left conversations are `deleteMessages` in
+        // functions/src/account/account-deletion-cascade.ts (covered there by
+        // scenario_messagesInLeftConversationsAreReached).
+        await seedConversation(
+          convoId: 'convo-left',
+          participantIds: [_strangerUid, 'third-uid'],
+          messagesBySender: {_ownerUid: 2, _strangerUid: 1},
+        );
+
+        final count = await repo.deleteAllMessagesForUser(_ownerUid);
+
+        expect(count, equals(0));
+        expect(
+          await messageCountFor(_ownerUid),
+          equals(2),
+          reason:
+              'out of client reach by design — asserting these survive is what '
+              'keeps the Admin-SDK cascade the named owner of the case',
+        );
+        expect(await messageCountFor(_strangerUid), equals(1));
+      },
+    );
+
+    test(
+      "only the user's own messages in the conversation being left are swept — "
+      'a sibling conversation is untouched until its own turn',
+      () async {
+        // Proves the per-conversation scoping is real rather than incidental:
+        // both conversations are ones the user participates in, so a bare
+        // senderId sweep and the scoped one both end at zero — the difference
+        // is that the scoped one issues its reads keyed on conversationId.
+        await seedConversation(
+          convoId: 'convo-a',
+          participantIds: [_ownerUid, _strangerUid, 'third-uid'],
+          messagesBySender: {_ownerUid: 2, 'third-uid': 1},
+        );
+        await seedConversation(
+          convoId: 'convo-b',
+          participantIds: [_ownerUid, _strangerUid, 'third-uid'],
+          messagesBySender: {_ownerUid: 3},
+        );
+
+        final count = await repo.deleteAllMessagesForUser(_ownerUid);
+
+        expect(count, equals(5));
+        expect(await messageCountFor(_ownerUid), isZero);
+        expect(await messageCountFor('third-uid'), equals(1));
+      },
+    );
+
+    test('no conversations and no messages — returns 0', () async {
       final count = await repo.deleteAllMessagesForUser(_ownerUid);
       expect(count, equals(0));
     });

@@ -10260,3 +10260,328 @@ neither on the redaction path: `lastReadTimestamps` uses ints where production s
 PASS — no vacuous test and no unfalsifiable negative assertion among the five. Three gaps, all of
 the "a changed production line has no test that reddens" kind, two of them on the `lastMessage`
 leg. No shipped test says something it cannot prove.
+
+## 2026-07-30 — BUT-1760 / BUT-1773 export failure envelopes + audit trail (trigger: review of content/preferences export managers + their suites)
+
+Scope: `lib/services/account/export/content_export_manager.dart`,
+`lib/services/account/export/preferences_export_manager.dart`,
+`test/unit/services/account/export/content_export_manager_test.dart`,
+`test/unit/services/account/export/preferences_export_manager_test.dart`,
+`test/unit/services/account/data_export_service_test.dart`.
+
+### What the diff does
+
+BUT-1760 replaced twenty-one `catch (e) { AppLogger.error(...); return {'error': e.toString()}; }`
+blocks (12 in `ContentExportManager`, 9 in `PreferencesExportManager`) with one private
+`_failed(section, code, e)` per manager, returning
+`{'error': 'Could not export $section.', 'error_code': code}` and keeping the raw exception in
+`AppLogger.error`. Two sections (`exportNotifications`, `exportNotificationPreferences`) spread
+`_failed(...)` and re-add their human-readable `note`.
+
+BUT-1773 (in `data_export_service.dart`, out of the named scope but driven by the in-scope suite)
+adds one `audit_logs` row per export REQUEST with three outcome literals: `granted`,
+`denied_unauthenticated`, `failed`.
+
+### Runs
+
+- `flutter test` on the three suites: **118/118 green** (~6 s).
+- `flutter analyze --no-fatal-infos` on all five files: **No issues found** (133 s).
+- Mutation A — `_failed` → `{'error': e.toString(), 'error_code': code}` in BOTH managers:
+  **+96 -22**. Restored, md5 `fb196736…` / `63a3d0bb…` exact. Non-vacuous.
+- Mutation B — deleted the whole `catch { await _logExportAudit(outcome:'failed'); rethrow; }`
+  body's audit call in `data_export_service.dart`: **118/118 still green**. Restored, md5
+  `bdd66d6e…` exact. That arm has zero coverage.
+- Enumeration: `_failed` call sites 12 (content) / 9 (preferences) vs the suites' `cases` lists
+  12 / 9. Complete today; nothing guards a future 13th.
+- `grep -rn "e.toString()\|'error':" lib/services/account/export/` → the only remaining
+  backend-authored string in a section body is `compliance_export_manager.dart:162`
+  (`'error': e.message ?? e.code` on the transient `FirebaseFunctionsException` arm).
+
+### Findings
+
+1. (Medium) `data_export_service_test.dart:1550-1565` asserts, as a PREMISE, that
+   `audit_logs.error` contains a foreign uid and a `create_composite` URL — using the one
+   un-swept manager as its leak fixture, and its comment calls that "a REAL leak path rather
+   than a contrived one". Sixty lines later the BUT-1760 test asserts the opposite standard for
+   `preferences` ("another person's uid must not survive even one level down"). The section body
+   ships to the data subject; only the bundle ROOT is suppressed. Same commit, two standards.
+   Fix: author the sentence in `compliance_export_manager.dart:161-166`
+   (`'error': 'Could not export audit logs.', 'error_code': e.code`, drop `e.message`), then
+   repoint the aggregator test at a locally-authored fixture; or ticket it and say so in the
+   comment instead of endorsing the leak.
+2. (Medium) BUT-1773's `failed` outcome is untested — mutation B above. The only test that makes
+   `exportUserData` throw is the unauthenticated one, which throws ABOVE the `try`.
+3. (Low) `'a REFUSED export writes a denied row'` (line 518) overstates: `firestore.rules` binds
+   `audit_logs.userId` to `request.auth.uid`, and `_unauthenticatedActor` is the literal
+   `'unauthenticated'`, so the row is refused server-side and `logPermissionCheck` swallows it.
+   The spy proves the CALL. Retitle to "records a denied audit attempt" and keep the production
+   comment's disclosure.
+4. (Info) Neither manager suite has a guard that a NEWLY added section gets a failure-envelope
+   case; the `cases` lists are hand-maintained. Cheapest guard is a comment on `_failed`'s
+   doc block naming the suite, since Dart has no reflection here.
+
+### Verdict
+
+PASS. The BUT-1760 half is a model of the "each emitter owes a direct test in ITS OWN manager
+suite" principle — mutation-proved at 22 reds, full enumeration, sentinel Fake defaults, and the
+leak assertion made over `jsonEncode(result)` rather than just the `error` field. The two Mediums
+are one un-swept sibling and one uncovered outcome arm; neither is in the two files the ticket
+names.
+
+## 2026-07-30 — BUT-1766/1767/1768/1772/1773 account-area review (messages cascade, message export, export audit trail)
+
+Trigger: review round over 17 files (CF cascade + client messaging deletion + Art. 15 message
+export + Art. 30 export audit). Verdict FAIL on one High.
+
+Ran (all on the worktree, not the index):
+- `npx ts-node functions/src/__tests__/account-deletion-cascade.test.ts` → 12/12.
+- `node functions/scripts/check-test-registration.js` → OK, 119 registered (new `test:account-deletion-cascade` script picked up).
+- `flutter analyze` on the 5 changed `lib/` files → clean; on the edited test file → clean.
+- `flutter test` on `firebase_notification_deletion_test.dart` + `firebase_data_export_repository_conversations_test.dart` + `social_export_manager_test.dart` → 55 green; `data_export_service_test.dart` → 40 green; `social_export_manager_test.dart` alone after my addition → 27 green.
+
+Mutation attempt and what it cost. Backed up `account-deletion-cascade.ts` with `cp -p`, mutated
+leg 1 of `deleteMessages` to `if (false && own.docs.length > 0)` with the Edit tool, then BOTH
+`npx ts-node …` and `npm run test:account-deletion-cascade` were REFUSED by the auto-mode
+classifier — the same command had run fine minutes earlier on the unmutated tree and ran fine again
+after restore. So the classifier is content-sensitive, not command-sensitive: a mutated production
+file appears to poison any subsequent test invocation in that directory. Restored via the reverse
+Edit, `md5sum` back to `f0e2361a…` matching the `cp -p` backup, re-ran → 12/12. Lesson: on
+`functions/src` the mutation ladder is now as constrained as on `lib/`; prefer analytic
+discrimination first. Analytic result, which was sufficient here: removing leg 1 must redden
+`scenario_groupThreadIsAnonymizedNotGutted` (asserts `mine.senderId === "deleted"`) and
+`scenario_messagesInLeftConversationsAreReached`; removing leg 2's thread delete must redden
+`scenario_directConversationIsErasedWhole` (`idsIn("messages").length === 0`, and both m1 and m2
+would survive). Both legs are genuinely pinned.
+
+**High — the new `deleteRealtimeMenus` step orphans a rule-blessed subcollection.**
+`batchDeleteAll` (cascade:343) is a plain `batch.delete(doc.ref)`; Firestore never cascades, and
+`realtime_menus/{menuId}/votes/{voteId}` is a real client-written path (`firestore.rules:1070`
+has an explicit `match /votes/{voteId}` block, `FirebaseMenuVotingRepository._votesRef` writes it).
+`MenuSlotVote` carries `votes: Map<String,String> // userId -> optionId`, so the deleted user's uid
+sits in a doc whose parent is now gone — unreadable by any client (the vote rule resolves
+participation through the parent), unreachable by any later erasure, and invisible to the very
+`probeResidualData` block this diff extended, because that probe counts TOP-LEVEL docs only. Same
+for a menu the user does NOT own: `scrubLastEditor` scrubs `lastEditedBy` but nothing touches the
+uid key inside `votes`. Net effect: the cascade now records `realtime_menus` in
+`deletedCollections` and the audit row still says `gdprCompliant: true`. Strictly better than
+before (the menu doc itself used to survive too), but it is a false certification, and it is the
+same "structurally blind handle" disease the sprint is treating.
+
+**Medium — `realtime_recipes.ownerId` has no residual probe** while `realtime_menus.ownerId` got
+one in the same block. The generic loop probes `userId`, which the file's own `deleteRealtimeRecipes`
+docstring calls the BUT-1396 wrong-field trap. The recipe half of the fix therefore has no canary.
+
+**Medium — Art. 15 ⊂ Art. 17 now.** `data_export_service._buildExportBundle` exports
+`realtime_recipes` and has no `realtime_menus` section, while the cascade now erases owned
+`realtime_menus`. The bundle map's own BUT-1396 comment states the ⊇ invariant.
+
+**Medium — `scenario_readsTopLevelNotSubcollection` (account-deletion-cascade.test.ts:241) is a
+duplicate with a false docstring.** The stub's matcher skips any path whose
+`split("/").length !== 2` (line 120), so `conversations/c-direct/messages/phantom` is invisible to
+it; and `FakeRef` (87-97) exposes only `path/delete/update`, so the pre-fix
+`convoDoc.ref.collection("messages")` would throw `is not a function` and crash the whole run
+rather than "delete the subcollection doc" as the docstring claims. Its one check
+(`!db.has("messages/live")`) is already made by scenario 1. A hand-rolled CF stub keyed on flat
+2-segment paths cannot represent a subcollection at all — that is the general point.
+
+**Medium — the `denied_unauthenticated` Art. 30 row can never land.** `firestore.rules:1886-1888`
+gates `audit_logs` create on `isAuthenticated() && request.auth.uid == request.resource.data.userId`,
+and `DataExportService._unauthenticatedActor` is the literal `'unauthenticated'`. Production code
+says so; the test's `reason` ("A refusal is a processing activity too, and it is the case a data
+subject later disputes") does not, so the suite reads as though refusals are audited server-side.
+Also: the granted-row `hasLength(1)` reason claims it guards the ~30-rows-per-bundle regression,
+but the spy is the SERVICE's own repository instance — wiring an audit repo into
+`FirebaseDataExportRepository` would be entirely invisible to it. And the third outcome arm
+(`'failed'`, reachable because `Future.wait(..., eagerError: true)`) plus `bundle_bytes`/`article`
+have no assertion at all.
+
+**Low** — the export's `orderBy('sentAt')` silently drops any message doc lacking the field, while
+`MessageDto.fromFirestore` tolerates its absence (`?? clock.now()`); no fixture covers it.
+`MessageDeletionModule.deleteAllMessagesForUser` has ZERO production callers (interface + tests
+only), so its `StateError` fail-loud guard and its four new tests cover client code nothing invokes.
+`scrubLastEditor`'s `notOwned` filter is dead in every scenario (owned docs are deleted first, so
+the query cannot return them).
+
+**Test-only fix applied by me** (zero-risk, per the re-review-economics principle):
+`social_export_manager_test.dart` gained "a message row with NO recognisable senderId still loses
+its avatar (fail-closed)". `_dropOtherSenderAvatar`'s docstring claims fail-closed behaviour and
+the two conversation-DOCUMENT halves of the same BUT-1772 decision each have such a fixture; the
+per-ROW half shipped without one — the identical omission that made the `lastMessage` fail-closed
+branch redden 0 of 23 on the previous round. The mutant it kills is
+`if (senderId == null || senderId == userId) return message;`. Paired with a positive control
+(`content` still present) so a dropped row cannot be what passes. 27/27 green, analyze clean.
+
+Non-vacuity of the shipped tests, all by construction rather than by mutation: the conversations
+repository test asserts `['msg-0','msg-1','msg-2']` where both the old collection and the old sort
+field yield an empty list; the received-messages test asserts `hasLength(3)` where the old
+`recipientIds` filter gives 2; the audit spy records calls so zero calls fails `hasLength(1)`.
+
+## 2026-07-30 — BUT-1755 / BUT-1722 / BUT-1770 shopping review (trigger: commit-gate review, 11 files)
+
+Scope: `unified_shopping_list.dart`, `shopping_list_permission_guards.dart`,
+`shopping_item_operations_manager.dart`, `collaborative_shopping_viewmodel.dart`,
+`collaborative_shopping_view.dart`, their three suites, `on-profile-updated.ts` +
+its suite, `firestore.indexes.json`.
+
+Baseline: `flutter analyze --no-fatal-infos` clean over all 8 Dart files (161s);
+60/60 Dart across the three suites; 10/10 on `npx ts-node
+src/__tests__/on-profile-updated.test.ts`; `npx tsc --noEmit` clean.
+
+### Mutation ledger (all restored, `cmp`-verified byte-identical)
+
+| Mutant | Reds |
+|---|---|
+| `fromMap` `defaultValue: unknownCreatedAt` → `defaultValue: null` (pre-fix `clock.now()`) | **4** — the 2 new model tests + guards `'non-owner content edit … allowed'` + `'the two parses agree on createdAt'`. The other 3 guards tests are unaffected by construction (owner early-return; `rewritesMembers` is checked before `rewritesCreatedAt`; the "really does move createdAt" fixture differs under both versions). |
+| view `_showFailureReason`: `_vm.consumeItemOperationError() ?? _vm.error` → `_vm.error` | **2** — the two positive BUT-1722 tests. The third ("does NOT replace the list with a full-screen error") stays GREEN: it is a recall control, not the guard. |
+| `renameItemsOnList`: drop `item.lastModifiedByUserId === userId &&` | **1** — `'the embedded items array … row by row'`. Both attribution pairs are covered in both directions by the two-row fixture (row a: addedBy=UID/lastModifiedBy=OTHER, row b: reverse), which is exactly the per-FIELD coverage BUT-1772 got wrong. |
+| drop the `lastModifiedByUserId` entry from the collection-group `for (const pair …)` | **1** — `'item subcollections are swept … on both attribution fields'`. |
+
+### The finding a mutation could not produce: a UTC sentinel that never round-trips
+
+`UnifiedShoppingList.unknownCreatedAt = DateTime.utc(1970)`. Throwaway probe under
+`test/unit/models/` (deleted after):
+
+```
+sentinel.isUtc=true   rt.isUtc=false
+sentinel == Timestamp.fromDate(sentinel).toDate()  -> false
+sentinel.isAtSameMomentAs(same)                    -> true
+fromMap({createdAt: Timestamp.fromDate(sentinel)}).createdAt
+  == fromMap({/* no createdAt */}).createdAt       -> false
+```
+
+Dart's `DateTime ==` compares `isUtc` as well as the instant, and
+`SerializationUtils.parseDateTimeValue` returns `Timestamp.toDate()`, which is
+LOCAL. So the moment the sentinel is persisted, the next parse is `!=`
+`unknownCreatedAt` — and `requireNoPrivilegeEscalation` compares
+`proposed.createdAt != stored.createdAt` exactly. Narrow (needs a proposed/stored
+pair straddling the first persist) and it fails CLOSED, but it is the same
+disagree-forever shape the ticket set out to remove. The three new model tests all
+drive the field-MISSING direction only, which is why none of them can see it.
+
+### Other verification done
+
+- Both new composite indexes have matching live call sites, checked field-for-field:
+  `unified_shared_shopping_lists lastActivityByUserId ASC + updatedAt ASC` serves
+  `compute-feature-retention.ts:316-320` (equality + range on a different field →
+  composite required); `messages conversationId ASC + sentAt ASC` serves
+  `firebase_data_export_repository.dart:370-375` (`orderBy('sentAt')` ascending,
+  where the pre-existing entry is `sentAt DESCENDING`).
+- The two new `items` fieldOverrides declare ASCENDING only, matching the
+  `engagements.userId` house style; grep confirmed nothing orders those fields
+  descending or uses array-contains on them, so narrowing away the automatic
+  DESC/ARRAY indexes is safe. JSON parses; no duplicate composites or overrides;
+  all 13 TTL entries still declared.
+- The `items` SUBCOLLECTION leg is a real path, not a phantom (the wrong-path
+  bug class): `shopping_item_operations_module.dart:170/250-255/302/360/399/452/491`
+  writes `users/{uid}/unified_shopping_lists/{listId}/items`, and `firestore.rules`
+  has `match /items/{itemId}` at both 398 and 788 (`shared_content`). The embedded
+  ARRAY leg is equally real — `UnifiedShoppingList.toFirestore():615` emits `items`
+  as an array.
+- `MockUnifiedShoppingService extends Mock` with no concrete `consumeMutationError`
+  body, so the unstubbed nullable return is `null` — the "no specific reason"
+  fixture is genuinely unstubbed, not accidentally defaulted.
+
+### Residual gaps filed
+
+1. `ShoppingItemOperationsManager.toggleItemCompletion:111` and `addItem:68` return
+   `false` on `!canEdit` WITHOUT `setError`, so the locally-denied case is still
+   silent — while the checkbox is enabled for `canView`
+   (`collaborative_shopping_items.dart:469`) and both new doc comments name that
+   exact scenario as the bug fixed. What actually shipped covers the
+   service-refusal case only.
+2. `_showFailureReason` serves two call sites (`_addItem:118`, `_toggleItem:127`);
+   only toggle is tested. The add site's branch changed shape in this diff.
+3. The guards suite's `'the owner is exempt regardless of createdAt'` passes on
+   both pre- and post-fix code (the `stored.ownerId == uid` early return fires
+   first, and its two parses agree anyway) — a recall control, not a ticket guard.
+
+## 2026-07-31 — crash-salvage re-review, Sprint 2026-07-30c (9 tickets: BUT-1755/
+1722/1766/1767/1768/1770/1760/1773/1772-extension), no edits made (report-only,
+parallel specialists in flight)
+
+Re-ran the whole fileset cold (no memory of the round above was assumed true
+without re-derivation) since the brief claimed "testing-specialist never ran a
+single pass" — that claim is FALSE for BUT-1755/1722/1770: the round-2 entry
+above already reviewed the identical tickets against materially the same code.
+Treat this as confirmation + a status check on its residuals, not a fresh find.
+
+**Independently reproduced the UTC-sentinel round-trip bug from scratch**
+(own throwaway `test/unit/_zz_probe_datetime_test.dart`, deleted after) before
+reading the entry above — same numbers: `DateTime.utc(1970) !=
+Timestamp.fromDate(...).toDate()`, `isAtSameMomentAs` true. Went one step
+further and named the live production trigger the round-2 entry left as "narrow
+(needs a proposed/stored pair straddling the first persist)": it is not
+hypothetical. `ShoppingRepositoryRoutingModule.mutateCollaborativeList`'s
+transaction success path does `transaction.set(docRef,
+_withContributorTrail(mutated.toFirestore(), uid, ...), SetOptions(merge:
+true))` — this WRITES `createdAt` (via `toFirestore()`) on every item
+mutation, including the first one a legacy/no-createdAt list ever receives.
+That first write persists `unknownCreatedAt` as a real Firestore `Timestamp`;
+every read after it parses via `.toDate()` (LOCAL zone), which is `!=` the
+UTC-typed compile-time constant. So: user A holds a pre-stamp read (`createdAt
+== unknownCreatedAt`, UTC), user B ticks an item (stamps the doc for the first
+time via `mutateCollaborativeList`), user A renames the list
+(`updateCollaborativeList`, entity = their stale pre-stamp copy) →
+`requireNoPrivilegeEscalation` compares stale-UTC `proposed.createdAt` against
+fresh-local `stored.createdAt`, disagrees, refuses A's rename as an escalation
+attempt — the exact "permanent denial, unfixable by reload" symptom BUT-1755
+was written to remove, reopened by its own fix, self-healing after the first
+stamp (both sides then read local consistently). No test in the current diff
+drives `toFirestore()` on the sentinel at all — the three new model tests are
+all field-MISSING-direction only, exactly as the round-2 entry already noted.
+**Severity: Critical-but-narrow** (needs the specific stale-read/first-stamp
+interleaving; self-heals per document after one hit) — flagged, not fixed
+(report-only pass).
+
+**Residual gap #1 from the round-2 entry is CLOSED**: current
+`shopping_item_operations_manager.dart` calls `setError(...)` on both
+`addItem`'s and `toggleItemCompletion`'s local `!canEdit` branch, and the
+widget suite's 4th BUT-1722 test drives the view-only case with
+`verifyNever(toggleItemBought)` — non-vacuous, confirmed by inspection (no
+production edits available this round to live-mutate).
+
+**Residual gap #2 is STILL OPEN, byte-for-byte**: all 4 new BUT-1722 widget
+tests call `tapItemCheckbox` (the toggle call site of `_showFailureReason`);
+none exercise `_addItem`'s call site. `addItem` and `toggleItemCompletion` are
+separate methods with separate `_beginOperation`/`setError` bodies in
+`ShoppingItemOperationsManager` — a regression isolated to `addItem`'s local
+denial branch (e.g. a typo dropping its `setError` call) would go undetected
+by every test in the suite. Cheapest fix: type into the field, tap "Lägg
+till" as a view-only member, assert the same sentence.
+
+**Residual gap #3 (owner-exempt test is a recall control) still stands, Low.**
+
+**New gap this round, distinct ticket**: `DataExportService.exportUserData`'s
+three-outcome audit contract (BUT-1773: `granted` / `denied_unauthenticated` /
+`failed`) has its `failed` arm — the `catch (e) { _logExportAudit(outcome:
+'failed'); rethrow; }` wrapping `_buildExportBundle` — completely untested.
+Confirmed the arm is reachable in principle: `_buildExportBundle`'s last line
+is `const JsonEncoder.withIndent('  ').convert(exportData)`, unwrapped by any
+section-level try/catch, so a non-JSON-encodable value surfacing from any of
+the ~30 fanned-out reads reaches this catch. `grep "'failed'" -r
+test/unit/services/account/data_export_service_test.dart` → zero hits. This
+exact gap is already a named principle in `testing-specialist.md` §142
+("BUT-1773 ... deleting the whole catch leaves 118/118 green ... Stage it by
+making a section throw OUT of the bundle") — recorded here only to confirm it
+is STILL live in this diff, not fixed by BUT-1760's otherwise-thorough
+failure-envelope sweep on the two managers it targeted.
+
+**Everything else reviewed this round (BUT-1766/1767/1768/1760/1772-extension)
+was non-vacuous on inspection**: `message_deletion_module.dart`'s fixture/impl
+pair both moved off the phantom subcollection together (verified by diff, not
+just claim); `firebase_data_export_repository.dart`'s conversations fix has a
+matching `firestore.indexes.json` composite (`messages` `conversationId ASC +
+sentAt ASC`) and a discriminator test whose docstring names exactly what the
+old collection+field would have returned (empty); `content_export_manager` /
+`preferences_export_manager`'s BUT-1760 sweep is table-driven and enumerates
+12/12 and 9/9 catch sites respectively (counted via `grep -c "_failed("`, not
+assumed); `social_export_manager`'s new `_dropOtherSenderAvatar` per-row
+redaction ships WITH its own fail-closed fixture this time (the sibling
+`lastMessage` fail-closed gap that reddened 0/23 in the BUT-1772 round is
+explicitly cited in the new test's comment as the shape being avoided).
+`realtime_menu_service.dart` / `realtime_recipe_service.dart` /
+`recipe_collaborative_manager.dart` are comment-only (BUT-1768 doc-comment
+sync); the collection scrub itself lives in
+`functions/src/account/account-deletion-cascade.ts`, out of Dart scope —
+sanity-grepped `lastMessage`/`participantAvatarUrls` there and both exist,
+consistent with the ticket's own description.

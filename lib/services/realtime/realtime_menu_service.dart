@@ -57,12 +57,17 @@ class RealtimeMenuService extends ChangeNotifier
   /// account, never a name they chose to expose, and invisible to the systems
   /// that maintain such copies. `on-profile-updated.ts` propagates the PROFILE
   /// name to `ownerDisplayName` and `lastEditedByDisplayName` on BOTH realtime
-  /// collections; the deletion cascade currently removes only the
-  /// `realtime_recipes` a user OWNS (`deleteRealtimeRecipes`) — `realtime_menus`
-  /// is in no tier, and `lastEditedByDisplayName` is scrubbed nowhere (BUT-1768).
-  /// So a profile-sourced name is reachable by at least one maintenance system;
-  /// an Auth-sourced one is reachable by the rename propagator not at all, and
-  /// by the deletion cascade only on a `realtime_recipes` doc the user owns.
+  /// collections, and since BUT-1768 the deletion cascade reaches both too:
+  /// `deleteRealtimeRecipes` / `deleteRealtimeMenus` delete the documents a
+  /// user OWNS together with their `presence` and `votes` subcollections,
+  /// `scrubLastEditor` anonymizes `lastEditedByDisplayName` on the ones they
+  /// only edited, and `removeRealtimeParticipation` drops their `presence` doc,
+  /// `participants` map key and `participantIds` entry from the rest. One gap
+  /// is deliberate and named rather than papered over: the `displayName` inside
+  /// a `presence` document is ERASED but never RENAMED — the rename propagator
+  /// does not walk that subcollection, and a presence row is transient. So a
+  /// profile-sourced name is reachable by erasure everywhere and by rename on
+  /// every durable field; an Auth-sourced one would be reachable by neither.
   ///
   /// `tryGet` keeps a service built before/without the service graph working;
   /// an unresolved name stamps the localized unknown-user label, never an

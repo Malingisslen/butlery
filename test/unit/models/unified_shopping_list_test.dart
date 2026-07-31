@@ -717,6 +717,67 @@ void main() {
         expect(restored.generatedForWeek, equals('2026-W24'));
       });
 
+      test('BUT-1755: a missing createdAt parses to the stable sentinel', () {
+        // The seam used to fall back to `clock.now()`, so a legacy or imported
+        // document reported a DIFFERENT creation time on every read — which is
+        // what made the escalation guard's exact `createdAt != createdAt`
+        // comparison refuse every non-owner edit of such a list.
+        final legacyMap = {
+          'name': 'Importerad lista',
+          'ownerId': 'owner_123',
+          'ownerDisplayName': 'Owner Name',
+          'items': <dynamic>[],
+          'updatedAt': Timestamp.fromDate(testDate),
+        };
+
+        final first = UnifiedShoppingList.fromMap('legacy_id', legacyMap);
+        final second = UnifiedShoppingList.fromMap('legacy_id', legacyMap);
+
+        expect(first.createdAt, equals(UnifiedShoppingList.unknownCreatedAt));
+        expect(first.createdAt, equals(DateTime.utc(1970)));
+        // The property the guard depends on: two reads agree.
+        expect(first.createdAt, equals(second.createdAt));
+      });
+
+      test('BUT-1755: an unparseable createdAt also parses to the '
+          'sentinel', () {
+        final corruptMap = {
+          'name': 'Trasig lista',
+          'ownerId': 'owner_123',
+          'ownerDisplayName': 'Owner Name',
+          'items': <dynamic>[],
+          'createdAt': 'inte ett datum',
+          'updatedAt': Timestamp.fromDate(testDate),
+        };
+
+        expect(
+          UnifiedShoppingList.fromMap('corrupt_id', corruptMap).createdAt,
+          equals(UnifiedShoppingList.unknownCreatedAt),
+        );
+      });
+
+      test('BUT-1755: updatedAt keeps the now() fallback (not the '
+          'sentinel)', () {
+        // Explicit ticket constraint: the sentinel is createdAt-only. A stored
+        // createdAt must also survive untouched.
+        final map = {
+          'name': 'Lista utan updatedAt',
+          'ownerId': 'owner_123',
+          'ownerDisplayName': 'Owner Name',
+          'items': <dynamic>[],
+          'createdAt': Timestamp.fromDate(testDate),
+        };
+
+        final list = UnifiedShoppingList.fromMap('id', map);
+
+        expect(list.createdAt, equals(testDate));
+        expect(
+          list.updatedAt,
+          isNot(equals(UnifiedShoppingList.unknownCreatedAt)),
+        );
+        expect(list.updatedAt.isAfter(testDate), isTrue);
+      });
+
       test('legacy docs without the field deserialize to null', () {
         // Pre-BUT-1234 Firestore docs and cached JSON have no
         // generatedForWeek key — they must load as unmarked lists, never

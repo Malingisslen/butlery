@@ -82,7 +82,27 @@ class ShoppingListPermissionGuards {
     // BUT-1683 review: the rule's forbidden-key set is a triple, not a pair.
     // `copyWith` cannot move createdAt so the mutate path never trips this,
     // but a caller can hand updateCollaborativeList a rebuilt entity.
-    final rewritesCreatedAt = proposed.createdAt != stored.createdAt;
+    //
+    // BUT-1755: this exact comparison is only safe because the parse seam now
+    // hands a legacy document a FIXED sentinel
+    // (`UnifiedShoppingList.unknownCreatedAt`) rather than `clock.now()`. While
+    // it synthesised a fresh value per read, `proposed` and `stored` — two
+    // separate parses of the same document — could never agree, so every
+    // non-owner edit of a list with no stored `createdAt` was refused as an
+    // escalation attempt. Do not reintroduce a now-based fallback there.
+    //
+    // `isAtSameMomentAs`, not `!=`/`==`: the sentinel is UTC
+    // (`DateTime.utc(1970)`), but once it round-trips through Firestore
+    // (`Timestamp.fromDate` then `.toDate()`), it comes back LOCAL — same
+    // instant, different `isUtc`. Dart's `==`/`!=` compares `isUtc` too, so a
+    // client holding the pre-persist UTC sentinel while `stored` now reflects
+    // the post-persist local value would reopen the exact permanent-denial
+    // bug this ticket exists to close, just retriggered by a Firestore
+    // round-trip instead of a fresh-clock read. Confirmed live: the same
+    // sentinel value is `!=` itself after one write-then-read cycle.
+    final rewritesCreatedAt = !proposed.createdAt.isAtSameMomentAs(
+      stored.createdAt,
+    );
     if (!rewritesOwner && !rewritesMembers && !rewritesCreatedAt) return;
 
     final field = rewritesOwner
@@ -163,13 +183,17 @@ class ShoppingListPermissionGuards {
     final drifted = _accessControlDrift(declaredBase, stored);
     if (drifted.isEmpty) {
       // A declared-base write states an intent about membership, never about
-      // the creation time — and `narrowUpdatePayload` diffs `toFirestore()`,
-      // so on a legacy document whose `createdAt` is synthesised fresh on each
-      // read the two sides differ and the key rides along. The owner branch of
-      // the update rule carries no field constraints, so the server WOULD
-      // accept it, permanently stamping the list's creation time as "the
-      // moment someone changed a member". Strip it: the caller demonstrably
-      // did not ask to change it.
+      // the creation time, so the key is stripped unconditionally: the caller
+      // demonstrably did not ask to change it, and the owner branch of the
+      // update rule carries no field constraints, so the server WOULD accept
+      // whatever rode along.
+      //
+      // BUT-1755 removed the way it used to ride along (a legacy document's
+      // `createdAt` was re-synthesised per read, so `narrowUpdatePayload`'s
+      // `toFirestore()` diff always saw it change, permanently stamping the
+      // list's creation time as "the moment someone changed a member"). The
+      // strip stays anyway — it is the statement about intent, not a patch for
+      // that one seam.
       return {
         for (final entry in payload.entries)
           if (entry.key.split('.').first != 'createdAt') entry.key: entry.value,
@@ -307,24 +331,16 @@ class ShoppingListPermissionGuards {
     // `createdAt` is deliberately NOT a drift signal, though it IS one of the
     // three keys the rules treat as privileged.
     //
-    // `SerializationUtils.safeRequiredDateTime` falls back to `clock.now()`
-    // when the stored field is missing or unparseable, and
-    // `UnifiedShoppingList.fromMap` passes no `defaultValue` — so a legacy or
-    // imported list synthesises a DIFFERENT value on every read. Comparing it
-    // would mean base never equals stored, every add / remove / permission
-    // change refused forever, and a refusal whose own advice ("reload the
-    // list") can never succeed. A freshness WINDOW does not rescue it either:
-    // the base's value is anchored to the last snapshot emission, which is
-    // unbounded, so a dialog open for four minutes fails just the same.
-    //
-    // Dropping it costs nothing, because it was never carrying the statement:
-    // `ownerId` and `memberPermissions` ARE the access-control claim, and both
-    // are compared exactly as before. `createdAt` is also immutable in
-    // practice — the payload strip below removes it outright — so the only
-    // case it could uniquely catch is a document deleted and re-created under
-    // the same id with byte-identical membership. Fixing the non-determinism
-    // properly belongs at the parse seam (a stable sentinel default), not
-    // here: BUT-1755.
+    // The original reason was that the parse seam re-synthesised the field on
+    // every read, so base could never equal stored. BUT-1755 fixed that seam —
+    // `UnifiedShoppingList.fromMap` now defaults to a fixed sentinel — but the
+    // exclusion STAYS, on its own merits: `ownerId` and `memberPermissions` ARE
+    // the access-control claim, and both are compared exactly as before.
+    // `createdAt` is immutable in practice — the payload strip above removes it
+    // outright — so the only case it could uniquely catch is a document deleted
+    // and re-created under the same id with byte-identical membership.
+    // Re-adding it would only buy a new class of refusal whose advice ("reload
+    // the list") the user cannot act on.
   ];
 
   bool _sameMembers(

@@ -245,6 +245,43 @@ function makeFakeDb(seed: Record<string, FakeDoc[]>) {
         },
       };
     },
+    /**
+     * BUT-1770: a PASSTHROUGH, exactly like `FakeFirebaseFirestore` on the Dart
+     * side — the handler runs once, staged writes apply on return, and there is
+     * no isolation, abort or retry. It models the READ/REWRITE shape of the
+     * embedded-items leg, which is what these cases assert; it proves nothing
+     * about concurrency, and no test below claims otherwise.
+     */
+    runTransaction: async <T>(
+      handler: (tx: {
+        get: (ref: { _ck: string; _id: string }) => Promise<{
+          exists: boolean;
+          data: () => Record<string, unknown> | undefined;
+        }>;
+        update: (ref: { _ck: string; _id: string }, data: Record<string, unknown>) => void;
+      }) => Promise<T>
+    ): Promise<T> => {
+      const staged: Array<{ ref: { _ck: string; _id: string }; data: Record<string, unknown> }> = [];
+      const result = await handler({
+        async get(ref) {
+          const doc = (store[ref._ck] || []).find((d) => d.id === ref._id);
+          return { exists: !!doc, data: () => doc?.data };
+        },
+        update(ref, data) {
+          staged.push({ ref, data });
+        },
+      });
+      for (const { ref, data } of staged) {
+        const arr = store[ref._ck] || (store[ref._ck] = []);
+        const doc = arr.find((d) => d.id === ref._id);
+        if (!doc) continue;
+        for (const [key, value] of Object.entries(data)) {
+          setPath(doc.data, key, value);
+        }
+        writes.push({ collectionKey: ref._ck, id: ref._id, data });
+      }
+      return result;
+    },
   } as unknown as admin.firestore.Firestore;
 
   return { db, store, pages, writes };
@@ -608,6 +645,355 @@ void (async () => {
           .participantDisplayNames as Record<string, string>;
         assertEqual(conv[UID], "New", "conversation name keyed by acting user");
         assertEqual(conv[OTHER], "Keep", "other participant name untouched");
+      },
+    },
+    {
+      name: "BUT-1770: item subcollections are swept by collection group on both attribution fields",
+      fn: async () => {
+        const fake = makeFakeDb({
+          // Personal-list items live in a subcollection of the list document.
+          [`${Collections.users}/${UID}/${Collections.unifiedShoppingLists}/l1/items`]: [
+            {
+              id: "i1",
+              data: {
+                addedByUserId: UID,
+                addedByDisplayName: "Old",
+                lastModifiedByUserId: UID,
+                lastModifiedByDisplayName: "Old",
+              },
+            },
+            {
+              id: "i2",
+              data: {
+                addedByUserId: OTHER,
+                addedByDisplayName: "Keep",
+                lastModifiedByUserId: UID,
+                lastModifiedByDisplayName: "Old",
+              },
+            },
+          ],
+          // shared_content keeps its own `items` subcollection with the same
+          // two attribution pairs — the collection group must reach it too.
+          "shared_content/A/items": [
+            {
+              id: "i3",
+              data: {
+                addedByUserId: UID,
+                addedByDisplayName: "Old",
+                lastModifiedByUserId: OTHER,
+                lastModifiedByDisplayName: "Keep",
+              },
+            },
+          ],
+        });
+
+        await propagateProfileUpdate(fake.db, UID, "Old", "New", "av", "av");
+
+        const personal =
+          fake.store[
+            `${Collections.users}/${UID}/${Collections.unifiedShoppingLists}/l1/items`
+          ];
+        const i1 = personal.find((d) => d.id === "i1")!.data;
+        assertEqual(i1.addedByDisplayName, "New", "own added-by name renamed");
+        assertEqual(
+          i1.lastModifiedByDisplayName,
+          "New",
+          "own last-modified name renamed"
+        );
+
+        const i2 = personal.find((d) => d.id === "i2")!.data;
+        assertEqual(
+          i2.addedByDisplayName,
+          "Keep",
+          "another person's added-by name untouched"
+        );
+        assertEqual(
+          i2.lastModifiedByDisplayName,
+          "New",
+          "the same row's last-modified name is still renamed (independent pair)"
+        );
+
+        assertEqual(
+          fake.store["shared_content/A/items"][0].data.addedByDisplayName,
+          "New",
+          "shared_content items subcollection reached by the collection group"
+        );
+        assertEqual(
+          fake.store["shared_content/A/items"][0].data
+            .lastModifiedByDisplayName,
+          "Keep",
+          "another person's last-modified name untouched"
+        );
+
+        // The cursor fields must never be rewritten, or paging could skip docs.
+        const rewroteFilterField = fake.writes.some(
+          (w) => "addedByUserId" in w.data || "lastModifiedByUserId" in w.data
+        );
+        assertEqual(rewroteFilterField, false, "filter fields never written");
+      },
+    },
+    {
+      name: "BUT-1770: the claim chip and the purchase attribution are renamed too",
+      fn: async () => {
+        // `assignedToDisplayName` is the only item name the UI actually renders
+        // (the BUT-238 "Tar jag" chip and the "Annas del" heading), and
+        // `purchasedByDisplayName` ships in the Art. 15 bundle. A version of
+        // this leg covering only addedBy/lastModifiedBy renamed two fields with
+        // no reader and left both of these stale — the exact symptom the ticket
+        // describes. Both storage shapes in one scenario.
+        const fake = makeFakeDb({
+          "shared_content/A/items": [
+            {
+              id: "i1",
+              data: {
+                assignedToUserId: UID,
+                assignedToDisplayName: "Old",
+                purchasedByUserId: UID,
+                purchasedByDisplayName: "Old",
+              },
+            },
+            {
+              id: "i2",
+              data: {
+                assignedToUserId: OTHER,
+                assignedToDisplayName: "Keep",
+                purchasedByUserId: OTHER,
+                purchasedByDisplayName: "Keep",
+              },
+            },
+          ],
+          [Collections.unifiedSharedShoppingLists]: [
+            {
+              id: "sl1",
+              data: {
+                ownerId: OTHER,
+                contributorUserIds: [OTHER, UID],
+                items: [
+                  {
+                    id: "a",
+                    name: "Mjölk",
+                    assignedToUserId: UID,
+                    assignedToDisplayName: "Old",
+                    purchasedByUserId: OTHER,
+                    purchasedByDisplayName: "Keep",
+                  },
+                ],
+              },
+            },
+          ],
+        });
+
+        await propagateProfileUpdate(fake.db, UID, "Old", "New", "av", "av");
+
+        const sub = fake.store["shared_content/A/items"];
+        assertEqual(
+          sub.find((d) => d.id === "i1")!.data.assignedToDisplayName,
+          "New",
+          "own claim-chip name renamed in the items subcollection"
+        );
+        assertEqual(
+          sub.find((d) => d.id === "i1")!.data.purchasedByDisplayName,
+          "New",
+          "own purchased-by name renamed in the items subcollection"
+        );
+        assertEqual(
+          sub.find((d) => d.id === "i2")!.data.assignedToDisplayName,
+          "Keep",
+          "another person's claim-chip name untouched"
+        );
+
+        const items = fake.store[Collections.unifiedSharedShoppingLists]
+          .find((d) => d.id === "sl1")!.data.items as Array<
+          Record<string, unknown>
+        >;
+        assertEqual(
+          items[0].assignedToDisplayName,
+          "New",
+          "own claim-chip name renamed in the embedded array"
+        );
+        assertEqual(
+          items[0].purchasedByDisplayName,
+          "Keep",
+          "someone else's purchase on the same row is untouched"
+        );
+
+        const rewroteFilterField = fake.writes.some(
+          (w) => "assignedToUserId" in w.data || "purchasedByUserId" in w.data
+        );
+        assertEqual(rewroteFilterField, false, "filter fields never written");
+      },
+    },
+    {
+      name: "BUT-1770: the embedded items array on a shared list is rewritten row by row",
+      fn: async () => {
+        const fake = makeFakeDb({
+          [Collections.unifiedSharedShoppingLists]: [
+            {
+              id: "sl1",
+              data: {
+                ownerId: OTHER,
+                ownerDisplayName: "Keep",
+                contributorUserIds: [OTHER, UID],
+                items: [
+                  {
+                    id: "a",
+                    name: "Mjölk",
+                    addedByUserId: UID,
+                    addedByDisplayName: "Old",
+                    lastModifiedByUserId: OTHER,
+                    lastModifiedByDisplayName: "Keep",
+                  },
+                  {
+                    id: "b",
+                    name: "Bröd",
+                    addedByUserId: OTHER,
+                    addedByDisplayName: "Keep",
+                    lastModifiedByUserId: UID,
+                    lastModifiedByDisplayName: "Old",
+                  },
+                ],
+              },
+            },
+            {
+              // No contributor trail for UID → not this user's rows to touch.
+              id: "sl2",
+              data: {
+                ownerId: OTHER,
+                contributorUserIds: [OTHER],
+                items: [
+                  {
+                    id: "c",
+                    addedByUserId: OTHER,
+                    addedByDisplayName: "Keep",
+                  },
+                ],
+              },
+            },
+          ],
+        });
+
+        await propagateProfileUpdate(fake.db, UID, "Old", "New", "av", "av");
+
+        const items = fake.store[Collections.unifiedSharedShoppingLists]
+          .find((d) => d.id === "sl1")!.data.items as Array<
+          Record<string, unknown>
+        >;
+        assertEqual(items[0].addedByDisplayName, "New", "row a added-by renamed");
+        assertEqual(
+          items[0].lastModifiedByDisplayName,
+          "Keep",
+          "row a last-modified belongs to someone else"
+        );
+        assertEqual(
+          items[1].addedByDisplayName,
+          "Keep",
+          "row b added-by belongs to someone else"
+        );
+        assertEqual(
+          items[1].lastModifiedByDisplayName,
+          "New",
+          "row b last-modified renamed"
+        );
+        assertEqual(items[0].name, "Mjölk", "unrelated item fields preserved");
+
+        const untouched = fake.store[Collections.unifiedSharedShoppingLists]
+          .find((d) => d.id === "sl2")!.data.items as Array<
+          Record<string, unknown>
+        >;
+        assertEqual(
+          untouched[0].addedByDisplayName,
+          "Keep",
+          "a list without the contributor trail is never rewritten"
+        );
+
+        // `contributorUserIds` is the outer cursor's filter field — writing it
+        // would let paging skip or revisit a list.
+        const rewroteTrail = fake.writes.some(
+          (w) => "contributorUserIds" in w.data
+        );
+        assertEqual(rewroteTrail, false, "contributor trail never written");
+      },
+    },
+    {
+      name: "BUT-1770: an avatar-only change leaves item attribution alone",
+      fn: async () => {
+        const fake = makeFakeDb({
+          "shared_content/A/items": [
+            { id: "i1", data: { addedByUserId: UID, addedByDisplayName: "Old" } },
+          ],
+          [Collections.unifiedSharedShoppingLists]: [
+            {
+              id: "sl1",
+              data: {
+                contributorUserIds: [UID],
+                items: [{ id: "a", addedByUserId: UID, addedByDisplayName: "Old" }],
+              },
+            },
+          ],
+        });
+
+        await propagateProfileUpdate(fake.db, UID, "Same", "Same", "old", "new");
+
+        assertEqual(
+          fake.store["shared_content/A/items"][0].data.addedByDisplayName,
+          "Old",
+          "item subcollection untouched on an avatar-only change"
+        );
+        const items = fake.store[Collections.unifiedSharedShoppingLists][0].data
+          .items as Array<Record<string, unknown>>;
+        assertEqual(
+          items[0].addedByDisplayName,
+          "Old",
+          "embedded items untouched on an avatar-only change"
+        );
+      },
+    },
+    {
+      name: "BUT-1770: the collection-group index for every item attribution field is declared",
+      fn: async () => {
+        // The fake models DATA, not Firestore's index layer. A collection-group
+        // equality query needs an explicit COLLECTION_GROUP single-field index:
+        // the automatic ones are collection-scoped, so without these the sweep
+        // throws FAILED_PRECONDITION in production and the fake would never say
+        // so.
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const fs = require("fs");
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const path = require("path");
+        const config = JSON.parse(
+          fs.readFileSync(
+            path.join(__dirname, "..", "..", "..", "firestore.indexes.json"),
+            "utf8"
+          )
+        ) as {
+          fieldOverrides: Array<{
+            collectionGroup: string;
+            fieldPath: string;
+            indexes: Array<{ order?: string; queryScope: string }>;
+          }>;
+        };
+
+        // All four pairs `UnifiedShoppingItem.toFirestore()` persists — the
+        // same group `account-deletion-cascade.ts` scrubs. A missing override
+        // here is a FAILED_PRECONDITION on the rename path in production.
+        for (const fieldPath of [
+          "addedByUserId",
+          "lastModifiedByUserId",
+          "assignedToUserId",
+          "purchasedByUserId",
+        ]) {
+          const override = config.fieldOverrides.find(
+            (f) => f.collectionGroup === "items" && f.fieldPath === fieldPath
+          );
+          assertEqual(
+            !!override?.indexes.some(
+              (ix) =>
+                ix.queryScope === "COLLECTION_GROUP" && ix.order === "ASCENDING"
+            ),
+            true,
+            `items.${fieldPath} declares an ASCENDING COLLECTION_GROUP index`
+          );
+        }
       },
     },
   ]);

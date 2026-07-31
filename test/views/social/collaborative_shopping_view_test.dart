@@ -43,6 +43,8 @@ import 'package:butlery/views/social/collaborative_shopping_view.dart';
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_items.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
@@ -592,5 +594,196 @@ void main() {
         reason: 'a failed toggle must not announce a state change',
       );
     });
+  });
+
+  group('CollaborativeShoppingView — a refused edit says why (BUT-1722)', () {
+    // The collaborative ShoppingItemOperationsManager captured the service's
+    // specific refusal (`consumeMutationError`) into its own `error` field —
+    // and nothing read it. The view checked the ViewModel's `error`, which only
+    // ever carries a LOAD failure, so a member without edit rights tapped a
+    // checkbox, watched it flick back, and was told nothing at all.
+
+    Future<void> pumpFullView(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(420, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      await tester.pumpWidget(
+        localize(const CollaborativeShoppingView(listId: _testListId)),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    Future<void> tapItemCheckbox(WidgetTester tester, String itemId) async {
+      final checkbox = find.descendant(
+        of: find.byKey(ValueKey('collab-item-$itemId')),
+        matching: find.byType(Checkbox),
+      );
+      expect(checkbox, findsOneWidget);
+      await tester.tap(checkbox);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    void seedRefusedToggle(String itemId, {String? reason}) {
+      shoppingService.setShoppingState(
+        lists: [
+          listWith([item('Ägg', id: itemId)]),
+        ],
+        isInitialized: true,
+      );
+      when(
+        () => shoppingService.toggleItemBought(itemId),
+      ).thenAnswer((_) async => false);
+      if (reason != null) {
+        when(() => shoppingService.consumeMutationError()).thenReturn(reason);
+      }
+    }
+
+    testWidgets("the service's specific reason reaches the shopper", (
+      tester,
+    ) async {
+      const denied = 'Du har inte behörighet att ändra i den här listan.';
+      seedRefusedToggle('item-eggs', reason: denied);
+
+      await pumpFullView(tester);
+      await tapItemCheckbox(tester, 'item-eggs');
+
+      expect(
+        find.text(denied),
+        findsOneWidget,
+        reason: 'the permission-denied sentence must be shown, not swallowed',
+      );
+    });
+
+    testWidgets('with no specific reason the generic Swedish sentence is '
+        'shown', (tester) async {
+      seedRefusedToggle('item-eggs');
+
+      await pumpFullView(tester);
+      await tapItemCheckbox(tester, 'item-eggs');
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+      expect(find.text(l10n.errorCouldNotUpdateItem), findsOneWidget);
+    });
+
+    testWidgets('a refused edit does NOT replace the list with a full-screen '
+        'error', (tester) async {
+      // The reason must never travel through the ViewModel's `error`: that slot
+      // drives the body's LoadingStateBuilder, and BUT-1696 established that a
+      // failed mutation keeps the loaded list on screen.
+      const denied = 'Du har inte behörighet att ändra i den här listan.';
+      seedRefusedToggle('item-eggs', reason: denied);
+
+      await pumpFullView(tester);
+      await tapItemCheckbox(tester, 'item-eggs');
+
+      expect(
+        find.text('Ägg'),
+        findsOneWidget,
+        reason: 'the shopping list itself must still be on screen',
+      );
+      expect(find.text(_sanitizedError), findsNothing);
+    });
+
+    testWidgets('a VIEW-ONLY member who ticks the box is told they lack '
+        'permission — the case the fix is named after', (tester) async {
+      // The three tests above all run as the list OWNER and stage a SERVER
+      // refusal, so they only cover the stale-rights path where the service
+      // supplies the sentence. The scenario BUT-1722 was written for is local:
+      // `collaborative_shopping_items.dart` gates the Checkbox and the row
+      // `onTap` on `canView`, while the mutation is gated on `canEdit`, so a
+      // member holding `view` CAN tap and never reaches the service at all.
+      // Before the manager set a reason on its own `!canEdit` branch this tap
+      // produced no snackbar whatsoever.
+      final viewOnly = FakePermissionService();
+      viewOnly.setPermissionState(
+        currentUserId: 'test-user-123',
+        userDisplayName: 'Test User',
+        defaultHasPermission: false,
+        permissions: {
+          _testListId: {
+            ResourcePermission.viewer: true,
+            ResourcePermission.editor: false,
+          },
+        },
+      );
+      TestServiceLocator.registerMock<PermissionService>(viewOnly);
+
+      shoppingService.setShoppingState(
+        lists: [
+          listWith([item('Ägg', id: 'item-eggs')]),
+        ],
+        isInitialized: true,
+      );
+
+      await pumpFullView(tester);
+      await tapItemCheckbox(tester, 'item-eggs');
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CollaborativeShoppingView)),
+      );
+      expect(
+        find.text(l10n.shoppingNoEditPermissionShared),
+        findsOneWidget,
+        reason:
+            'a view-only member must be told why the tick did not stay — this '
+            'is the exact sentence the doc comments promise',
+      );
+      verifyNever(() => shoppingService.toggleItemBought(any()));
+    });
+
+    testWidgets(
+      'a failed ADD is told why, through the sibling call site to the '
+      'checkbox fix above',
+      (tester) async {
+        // The five tests above all drive `_toggleItem` → `toggleItemCompletion`.
+        // `_addItem` → `addItem` has its own separate `setError` call in
+        // `ShoppingItemOperationsManager`, and nothing here proved
+        // `_showFailureReason()` fires from THAT call site.
+        //
+        // Not a view-only scenario: `CollaborativeShoppingActions
+        // .buildAddItemSection` replaces the whole input row with a read-only
+        // banner when `!canEdit` — there is no TextField in the tree for a
+        // viewer to reach, so that permission case is enforced at the UI
+        // layer and cannot drive `addItem`'s local `!canEdit` branch from a
+        // widget test. This test instead covers the editor whose add is
+        // refused by the SERVICE — the other branch through the same reader.
+        shoppingService.setShoppingState(
+          lists: [listWith(const [])],
+          isInitialized: true,
+        );
+        when(
+          () => shoppingService.addItemToActiveList(
+            name: any(named: 'name'),
+            amount: any(named: 'amount'),
+            unit: any(named: 'unit'),
+            category: any(named: 'category'),
+          ),
+        ).thenAnswer((_) async => false);
+
+        await pumpFullView(tester);
+        await tester.enterText(find.byType(TextField), 'Havregryn');
+        await tester.tap(find.text('Lägg till'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(CollaborativeShoppingView)),
+        );
+        expect(
+          find.text(l10n.errorCouldNotAddItem),
+          findsOneWidget,
+          reason:
+              'a refused add must say why, the same as the checkbox case — '
+              'this call site was untested before',
+        );
+      },
+    );
   });
 }

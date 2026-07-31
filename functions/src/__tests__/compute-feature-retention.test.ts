@@ -18,16 +18,38 @@
  *      `users/{uid}/shopping_lists` name.
  *   7. BUT-1724 — a throwing `shopped` probe (missing index on that newly-read
  *      subcollection field) degrades to false without taking the run down.
+ *   8. BUT-1761 — activity on a COLLABORATIVE list
+ *      (`unified_shared_shopping_lists`, `lastActivityByUserId == uid`) sets
+ *      `shopped`; a list touched today by someone else does not, and neither
+ *      does the same user's own activity from yesterday.
+ *   9. BUT-1761 — the two `shopped` legs fail independently: a throwing shared
+ *      probe degrades to false on its own, and does not suppress a personal
+ *      list that did flip.
+ *  10. BUT-1761 — `firestore.indexes.json` declares the composite the shared
+ *      leg needs. Without it the probe throws FAILED_PRECONDITION in
+ *      production, `safeProbe` swallows it and the leg is a silent zero again
+ *      — a fake db cannot catch that, so the declaration is asserted directly.
  *
  * Run with: npx ts-node src/__tests__/compute-feature-retention.test.ts
  */
 
+import * as fs from "fs";
+import * as path from "path";
 import {
   runComputeFeatureRetention,
   formatUtcDate,
 } from "../analytics/compute-feature-retention";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+// functions/src/__tests__ → up 3 → repo root.
+const INDEXES_PATH = path.resolve(
+  __dirname,
+  "..",
+  "..",
+  "..",
+  "firestore.indexes.json",
+);
 
 let totalRun = 0;
 let totalFailed = 0;
@@ -334,6 +356,22 @@ function makeFakeDb(args: {
           startMs: null,
           endMs: null,
           failFlag: "shared_recipes",
+        });
+      }
+      // BUT-1761: the collaborative leg of `shopped`. Top-level collection
+      // whose user filter is `lastActivityByUserId == uid`, which lands on the
+      // same `op === "=="` branch as `cook_snaps`/`shared_recipes`, so the
+      // generic activity query models it unchanged. `failFlag` is
+      // `shoppedShared`, NOT `shopped` — the two legs must be failable
+      // independently or a degradation test cannot tell them apart.
+      if (name === "unified_shared_shopping_lists") {
+        return makeActivityQuery({
+          source: "unified_shared_shopping_lists",
+          userId: "",
+          timeField: "",
+          startMs: null,
+          endMs: null,
+          failFlag: "shoppedShared",
         });
       }
       if (name === "analytics") {
@@ -684,6 +722,226 @@ async function shoppedProbeFailureDegrades(): Promise<void> {
   );
 }
 
+/**
+ * BUT-1761: a collaborative list lives in the TOP-LEVEL
+ * `unified_shared_shopping_lists`, never under `users/{uid}`, so before this
+ * fix a household that shops only on a shared list scored `shopped: false`
+ * every single day. Three users pin the whole contract of the new leg:
+ *
+ *   uShared     — only shared-list activity today   → shopped TRUE (the fix)
+ *   uPersonal   — only personal-list activity today → shopped TRUE (unbroken)
+ *   uBystander  — a shared list carrying SOMEONE ELSE'S `lastActivityByUserId`
+ *                 today, plus their OWN activity YESTERDAY → shopped FALSE
+ *
+ * The bystander row is the non-vacuity guard: it proves the leg filters on
+ * both the user field and the day range rather than answering true whenever
+ * the collection is non-empty.
+ */
+async function sharedListShoppingCountsAsShopped(): Promise<void> {
+  const now = new Date("2026-04-30T08:00:00Z");
+  const todayStartMs = Date.UTC(2026, 3, 30);
+  const inDay = todayStartMs + 6 * 60 * 60 * 1000;
+  const yesterday = todayStartMs - 6 * 60 * 60 * 1000;
+
+  const store: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+  const users: FakeUser[] = [
+    { id: "uShared", lastActiveDaysAgo: 0 },
+    { id: "uPersonal", lastActiveDaysAgo: 0 },
+    { id: "uBystander", lastActiveDaysAgo: 0 },
+  ];
+  const activity: ActivityRecord[] = [
+    { source: "unified_shared_shopping_lists", userId: "uShared", ts: inDay },
+    {
+      source: "users/uPersonal/unified_shopping_lists",
+      userId: "uPersonal",
+      ts: inDay,
+    },
+    // Same shared collection, stamped by a member who is not uBystander.
+    {
+      source: "unified_shared_shopping_lists",
+      userId: "uHouseholdMate",
+      ts: inDay,
+    },
+    // uBystander's own shared activity, but outside the run-day window.
+    {
+      source: "unified_shared_shopping_lists",
+      userId: "uBystander",
+      ts: yesterday,
+    },
+  ];
+  const db = makeFakeDb({ users, activity, flagDocs: [], store, now });
+
+  await runComputeFeatureRetention({ db: db as never, now });
+
+  const today = formatUtcDate(todayStartMs);
+  const flags = (uid: string) =>
+    store.data.get(`analytics/feature_retention/users/${uid}_${today}`) as
+      | Record<string, unknown>
+      | undefined;
+  const aggregate = store.data.get(
+    `analytics/feature_retention/daily/${today}`,
+  ) as Record<string, unknown> | undefined;
+  const dau = aggregate?.dau as Record<string, number> | undefined;
+
+  const ok =
+    flags("uShared")?.shopped === true &&
+    flags("uPersonal")?.shopped === true &&
+    flags("uBystander")?.shopped === false &&
+    dau?.shopped === 2;
+  record(
+    "shared-list activity sets shopped; another member's stamp and a prior day do not",
+    ok,
+    `shared=${JSON.stringify(flags("uShared"))} personal=${JSON.stringify(
+      flags("uPersonal"),
+    )} bystander=${JSON.stringify(flags("uBystander"))} dau=${JSON.stringify(dau)}`,
+  );
+}
+
+/**
+ * BUT-1761: `shopped` is now an OR over two probes, and the shared one is the
+ * probe most likely to fail in production (it is the only query in this file
+ * needing a DECLARED composite index, so a missing//still-building index
+ * throws FAILED_PRECONDITION). Two properties have to hold:
+ *
+ *   A. a throwing shared probe degrades that leg to false and the run still
+ *      writes the flag doc and the aggregate;
+ *   B. it does NOT drag down the personal leg — a user whose personal list DID
+ *      flip still scores `shopped: true` while the shared probe is throwing.
+ *
+ * Without B, an unbuilt index would silently re-zero the whole flag, which is
+ * exactly the failure mode BUT-1724 and BUT-1761 each shipped to remove.
+ */
+async function sharedShoppedProbeFailureDegrades(): Promise<void> {
+  const now = new Date("2026-04-30T08:00:00Z");
+  const todayStartMs = Date.UTC(2026, 3, 30);
+  const inDay = todayStartMs + 6 * 60 * 60 * 1000;
+  const today = formatUtcDate(todayStartMs);
+
+  // A — shared-only user, shared probe throws.
+  const storeA: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+  const dbA = makeFakeDb({
+    users: [{ id: "uIdxShared", lastActiveDaysAgo: 0 }],
+    // Seeded so the probe WOULD have answered true — the false below can only
+    // come from the injected throw, not from an empty fixture.
+    activity: [
+      {
+        source: "unified_shared_shopping_lists",
+        userId: "uIdxShared",
+        ts: inDay,
+      },
+      { source: "users/uIdxShared/menus", userId: "uIdxShared", ts: inDay },
+    ],
+    flagDocs: [],
+    store: storeA,
+    now,
+    opts: { failProbeFor: { userId: "uIdxShared", flag: "shoppedShared" } },
+  });
+  await runComputeFeatureRetention({ db: dbA as never, now });
+
+  const flagA = storeA.data.get(
+    `analytics/feature_retention/users/uIdxShared_${today}`,
+  ) as Record<string, unknown> | undefined;
+  const dauA = (
+    storeA.data.get(`analytics/feature_retention/daily/${today}`) as
+      | Record<string, unknown>
+      | undefined
+  )?.dau as Record<string, number> | undefined;
+
+  // B — same failing shared probe, but this user also has a personal list.
+  const storeB: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+  const dbB = makeFakeDb({
+    users: [{ id: "uIdxBoth", lastActiveDaysAgo: 0 }],
+    activity: [
+      {
+        source: "unified_shared_shopping_lists",
+        userId: "uIdxBoth",
+        ts: inDay,
+      },
+      {
+        source: "users/uIdxBoth/unified_shopping_lists",
+        userId: "uIdxBoth",
+        ts: inDay,
+      },
+    ],
+    flagDocs: [],
+    store: storeB,
+    now,
+    opts: { failProbeFor: { userId: "uIdxBoth", flag: "shoppedShared" } },
+  });
+  await runComputeFeatureRetention({ db: dbB as never, now });
+
+  const flagB = storeB.data.get(
+    `analytics/feature_retention/users/uIdxBoth_${today}`,
+  ) as Record<string, unknown> | undefined;
+
+  const ok =
+    flagA?.shopped === false &&
+    flagA?.mealPlanned === true &&
+    dauA?.shopped === 0 &&
+    dauA?.mealPlanned === 1 &&
+    flagB?.shopped === true;
+  record(
+    "shared probe failure degrades its own leg only; personal leg still flips shopped",
+    ok,
+    `A=${JSON.stringify(flagA)} dauA=${JSON.stringify(dauA)} B=${JSON.stringify(flagB)}`,
+  );
+}
+
+interface IndexField {
+  fieldPath: string;
+  order?: string;
+  arrayConfig?: string;
+}
+
+interface CompositeIndex {
+  collectionGroup: string;
+  queryScope: string;
+  fields: IndexField[];
+}
+
+/**
+ * BUT-1761: the shared leg is `lastActivityByUserId == uid` AND an `updatedAt`
+ * range — equality plus range on two different fields, which Firestore refuses
+ * to serve without a declared composite. The fake db in this file happily
+ * answers the query, so only an assertion against the real
+ * `firestore.indexes.json` can catch a probe that would throw
+ * FAILED_PRECONDITION on every run in production and be swallowed by
+ * `safeProbe` back into a structural zero.
+ */
+function sharedShoppingListCompositeDeclared(): void {
+  const parsed = JSON.parse(fs.readFileSync(INDEXES_PATH, "utf8"));
+  if (!Array.isArray(parsed.indexes)) {
+    throw new Error("firestore.indexes.json has no `indexes` array");
+  }
+  const indexes = parsed.indexes as CompositeIndex[];
+
+  const match = indexes.find(
+    (idx) =>
+      idx.collectionGroup === "unified_shared_shopping_lists" &&
+      idx.fields.length === 2 &&
+      idx.fields[0].fieldPath === "lastActivityByUserId" &&
+      idx.fields[0].order === "ASCENDING" &&
+      idx.fields[1].fieldPath === "updatedAt" &&
+      idx.fields[1].order === "ASCENDING",
+  );
+
+  record(
+    "firestore.indexes.json declares unified_shared_shopping_lists (lastActivityByUserId ASC, updatedAt ASC)",
+    match !== undefined,
+    match === undefined
+      ? "no such composite found — the shared `shopped` leg would throw FAILED_PRECONDITION in production"
+      : `queryScope=${match.queryScope}`,
+  );
+
+  // The probe is a plain collection query, not a collectionGroup query, so a
+  // COLLECTION_GROUP-scoped index would not serve it.
+  record(
+    "that composite is COLLECTION-scoped, matching the probe's plain collection query",
+    match?.queryScope === "COLLECTION",
+    `queryScope=${match?.queryScope}`,
+  );
+}
+
 async function runAll(): Promise<void> {
   console.log("BUT-599: Feature-level retention tests\n");
   console.log("==============================================\n");
@@ -694,6 +952,9 @@ async function runAll(): Promise<void> {
   await probeFailureGracefulDegrade();
   await shoppedProbeUsesLivePath();
   await shoppedProbeFailureDegrades();
+  await sharedListShoppingCountsAsShopped();
+  await sharedShoppedProbeFailureDegrades();
+  sharedShoppingListCompositeDeclared();
 
   console.log(
     `\n${totalRun - totalFailed}/${totalRun} passed` +

@@ -114,8 +114,8 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
 
     if (success) {
       _newItemController.clear();
-    } else if (_vm.hasError) {
-      SnackBarUtils.showError(context, _vm.error!);
+    } else {
+      _showFailureReason();
     }
   }
 
@@ -124,9 +124,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     if (!mounted) return;
 
     if (!success) {
-      if (_vm.hasError) {
-        SnackBarUtils.showError(context, _vm.error!);
-      }
+      _showFailureReason();
       return;
     }
 
@@ -138,6 +136,20 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
       nowBought ? context.l10n.a11yItemBought : context.l10n.a11yItemUnbought,
       TextDirection.ltr,
     );
+  }
+
+  /// BUT-1722: tell the shopper WHY the edit did not land.
+  ///
+  /// The item-operation reason comes first and is consumed: it is the specific
+  /// one ("du har inte behörighet…", "listan finns inte längre", "ingen
+  /// anslutning"), and on a shared list that distinction is the whole answer.
+  /// Before this it had no reader, so a refused edit produced a row that
+  /// flicked back and said nothing. The ViewModel's own [error] is the
+  /// load-failure fallback.
+  void _showFailureReason() {
+    final reason = _vm.consumeItemOperationError() ?? _vm.error;
+    if (reason == null || reason.isEmpty) return;
+    SnackBarUtils.showError(context, reason);
   }
 
   void _shareList() {

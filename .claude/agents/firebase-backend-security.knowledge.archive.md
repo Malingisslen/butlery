@@ -1932,3 +1932,155 @@ another person's avatar URL from a sibling section of the SAME manager — `shar
 (`firebase_data_export_repository.dart:377-388`). Friend docs are clean (`addedAt` +
 `displayNameLower` only), `ConversationMembership` is clean, and no message-attached image/voice URL
 exists (`MessageType.image`/`voice` have no production writer that stores one).
+
+### 2026-07-30 — BUT-1770 rename propagation reaches shopping ITEM attribution, but only two of four pairs
+
+`functions/src/social/on-profile-updated.ts` gained three legs inside the `nameChanged` block: two
+`db.collectionGroup("items").where(<queryField>,"==",userId)` sweeps via `batchUpdateQueryPaginated`
+(covering `users/{uid}/unified_shopping_lists/{listId}/items` and `shared_content/{id}/items`), plus
+`renameEmbeddedShoppingItems`, which pages `unified_shared_shopping_lists` by
+`contributorUserIds array-contains uid` ordered by `documentId()` and runs one `runTransaction` per
+list to rewrite the embedded `items` array row by row. Matching COLLECTION + COLLECTION_GROUP
+ASCENDING field overrides for `items.addedByUserId` and `items.lastModifiedByUserId` were added to
+`firestore.indexes.json`, and the CF suite asserts them straight out of the JSON (the fake models
+data, never the index layer). 10/10 green via `npm run test:on-profile-updated`.
+
+Verified clean: cursor fields are never written (`contributorUserIds` and the two query fields are
+excluded, asserted by the tests); the per-row guard `item.addedByUserId === userId` prevents putting
+the acting user's name on someone else's row; the array-contains + `orderBy(__name__ ASC)` outer
+query is served by the automatic array index (no fieldOverride exists for `contributorUserIds`); no
+production query orders either overridden field DESCENDING, so replacing the automatic config with
+ASC-only is safe; `renameItemsOnList` returning `false` on `!snap.exists` avoids the NOT_FOUND abort.
+
+**The defect: the inventory is short by two pairs.** `UnifiedShoppingItem.toFirestore()` persists
+`assignedTo{UserId,DisplayName}`, `purchasedBy{UserId,DisplayName}`, `addedBy{…}` and
+`lastModifiedBy{…}`, and `account-deletion-cascade.ts:634-676` scrubs all four. The new leg covers
+two, while its doc comment states "The deletion cascade has covered both pairs since BUT-1697",
+which misdescribes a cascade that covers four. Worse, the two propagated fields have NO view
+reader anywhere in `lib/views` or `lib/widgets`; the only item name field a household member
+actually sees is `assignedToDisplayName` (the BUT-238 claim chip —
+`collaborative_shopping_items.dart:136` and `:509`), written by
+`UnifiedShoppingItem.assign(displayName:)` from `PermissionService.currentUser.displayName`. So the
+user-visible stale-name symptom the ticket describes survives the fix.
+`purchasedByDisplayName` additionally ships in the Art. 15 bundle
+(`shared_shopping_list_export.dart:69`), so its staleness is an accuracy issue on an exported
+artifact, not only on screen.
+
+Cost residual (Medium): the outer page snapshot already carries every list's full `items` array,
+yet `renameItemsOnList` re-reads the same document inside its transaction unconditionally —
+two reads per contributed list per rename, where pre-filtering the page on "does any row match this
+uid" would open a transaction only for the lists that need one.
+
+### 2026-07-30 — BUT-1755 stable `createdAt` sentinel, and BUT-1722 the refusal sentence that still has no set-side
+
+BUT-1755 (clean). `UnifiedShoppingList.unknownCreatedAt = DateTime.utc(1970)` is now
+`fromMap`'s `defaultValue` for `createdAt`, replacing `SerializationUtils.safeRequiredDateTime`'s
+`clock.now()` fallback. That makes `ShoppingListPermissionGuards.requireNoPrivilegeEscalation`'s
+exact `proposed.createdAt != stored.createdAt` comparison meaningful for a legacy/imported document
+— two parses of the same doc now agree, where before every non-owner edit of such a list was
+refused forever with advice ("reload") that could not clear it. The new
+`test/unit/repositories/firebase/modules/shopping_list_permission_guards_test.dart` (165 lines,
+5/5 green) drives the guard THROUGH `fromMap` under a clock that advances a minute per reading —
+deliberately non-vacuous, since building both lists with an explicit `createdAt` would pass on the
+broken code, and two back-to-back `clock.now()` calls are a same-tick coin flip. The
+`_accessControlDrift` exclusion of `createdAt` and the unconditional `createdAt` strip in
+`restrictAccessControlToDeclaredBase` both correctly STAY, re-justified on intent rather than on
+the seam. Residual (Low): `fromJson` (`unified_shopping_list.dart:697`) still takes the `clock.now()`
+fallback; the model's doc comment scopes the sentinel to `fromMap` honestly, and the JSON cache
+seam always round-trips a written `createdAt`, so nothing reads it today.
+
+BUT-1722 (incomplete). `CollaborativeShoppingViewModel.consumeItemOperationError()` finally gives
+`ShoppingItemOperationsManager.error` a reader, and `collaborative_shopping_view._showFailureReason()`
+prefers it over the VM's load-scoped `error` (which would have been routed into
+`LoadingStateBuilder` and replaced the whole list — the BUT-1696 regression). Three widget tests
+green. But the manager's SET side is unchanged: `toggleItemCompletion` returns `false` from
+`if (!canEdit)` and from `item == null` without calling `setError`, and `addItem` does the same for
+`!canEdit`. Meanwhile the checkbox and the row `onTap` are gated on `viewModel.canView`
+(`collaborative_shopping_items.dart:425,469`), so a view-only member CAN tap and still gets an
+empty snackbar path — precisely the scenario the new doc comment and the new test group narrative
+name as the bug being fixed. The tests stub `toggleItemBought → false` with `canEdit` true, i.e.
+the offline/list-gone path only. Locale keys for the missing sentence already exist
+(`shoppingNoEditPermissionShared`, `shoppingNoEditPermission`). Also, the manager never clears
+`_error` at the start of an operation, so the doc comment's claim that self-clearing-on-read
+prevents a stranded reason is wrong in principle (a caller bailing on `if (!mounted) return;`
+never performs the read); the BUT-1696 `_beginMutation()` clear-at-entry shape is the one that
+holds.
+
+### 2026-07-30 — BUT-1766/1767/1768/1773 review: the phantom-subcollection round closes chat erasure and Art. 15, and opens two residual field groups
+
+Reviewed fileset (account sprint): `functions/src/account/account-deletion-cascade.ts`,
+`functions/src/account/request-account-deletion.ts`, `functions/src/__tests__/account-deletion-cascade.test.ts`,
+`functions/package.json`, `lib/repositories/firebase/firebase_messaging_repository.dart`,
+`lib/repositories/firebase/modules/message_deletion_module.dart`,
+`lib/repositories/firebase/firebase_data_export_repository.dart`,
+`lib/services/account/export/social_export_manager.dart`, `lib/services/account/data_export_service.dart`,
+`lib/services/realtime/realtime_{menu,recipe}_service.dart`,
+`lib/viewmodels/recipe_form/recipe_collaborative_manager.dart`, `firestore.indexes.json`, + 4 test files.
+
+**What the round genuinely fixes.** The `conversations/{id}/messages` phantom subcollection — the
+exact bug class the principles file already carried — is repointed to the top-level `messages`
+collection keyed by a `conversationId` FIELD, on BOTH the erasure side (`deleteMessages` now
+anonymizes `senderId == uid` anywhere, including conversations the user has LEFT, then deletes 1:1
+threads whole) and the Art. 15 side (`exportConversationsAndMessages` had THREE independent faults:
+wrong collection, `orderBy('timestamp')` on a field `MessageDto.toFirestore` never writes, and an
+in-memory filter on `recipientIds`, a field no message doc has ever carried, which silently dropped
+every RECEIVED message). `realtime_menus` gained a cascade tier for the first time; `scrubLastEditor`
+anonymizes the `lastEditedBy`/`lastEditedByDisplayName` pair on docs the user edited but does not own
+(non-nullable `String` in `RealtimeResource`, hence anonymize-not-null). `probeResidualData` grew four
+owner-keyed probes, deleter ⊇ probe verified per leg. Verified green: `npx ts-node
+src/__tests__/account-deletion-cascade.test.ts` → 12/12; `flutter test` over the three Dart suites →
+55 passing; `data_export_service_test.dart` → 40 passing; `flutter analyze` on 8 lib files clean;
+`npx tsc --noEmit` clean. The new CF suite is auto-discovered by `functions/scripts/run-all-tests.js`
+(any `test:*` script except `test:rules*`/`test:integration:*`), so no hand-typed CI list to drift.
+
+**Residual 1 (High, open).** `deleteMessages`' group branch does `arrayRemove` on `participantIds`
+and nothing else. `on-profile-updated.ts:96-97` — the propagation inventory — writes
+`participantDisplayNames.${uid}` and `participantAvatarUrls.${uid}` on the same collection, and the
+conversation doc also holds `lastReadTimestamps.${uid}`, `perUserSettings.${uid}`
+(`conversation_mutation_module.dart:416-441`) and an embedded `lastMessage` map carrying the
+sender's name, avatar and content — none of which anonymizing the top-level `messages` row touches.
+`functions/src/cleanup/on-user-deleted.ts` does not cover conversations either (grepped: zero
+matches). The correct removal shape is three lines away in the same repo:
+`functions/src/messaging/enforce-group-minor-membership.ts:247-252`. Cheap probe addition:
+`conversations where participantIds array-contains uid` must be 0 after the cascade.
+
+**Residual 2 (High, open).** `deleteRealtimeMenus`/`deleteRealtimeRecipes` `batchDeleteAll` parent
+docs bare. `firestore.rules:1052-1076` declares `realtime_menus/{id}/presence/{userId}` and
+`/votes/{voteId}`; `collaborative_recipe_repository.setPresence` (called from
+`realtime_editor_tracker.dart:28-32`) writes `realtime_recipes/{id}/presence/{uid}` with
+`{displayName, isActive, lastSeen}`. So the parent delete orphans a uid-keyed doc carrying a display
+name, and on docs the user does NOT own that presence doc plus their `participants` map key and
+`participantIds` entry are never removed at all.
+
+**Residual 3 (Medium, decided-calls drift).** `.claude/rules/accepted-deviations.md`'s BUT-1772 entry
+still reads "has NO production effect yet — the section currently FAILS (`messages-export-failed`)".
+This diff makes it live, and with it the `perUserSettings` question the same entry explicitly defers
+to BUT-1774: `firebase_data_export_repository.dart:392` ships `convoDoc.data()` whole, so every other
+participant's mute/pin/archive state now reaches a real bundle. Undecided third-party data going live
+needs the entry updated in the same commit, in both files.
+
+**Residual 4 (Medium, false factual claim).** BUT-1773's one-row-per-export decision is argued in
+`firebase_data_export_repository.dart:139-145`, `data_export_service.dart` (`_logExportAudit` doc) and
+a test `reason:` string from "`firestore.rules` caps `audit_logs` creates at
+`rateLimitWrite('audit_logs', 2)` — rows 3..30 would be rejected". Grepped: nothing anywhere writes
+`users/{uid}/rate_limits/{collection}.lastWrite`, so the conjunct is inert and the claim is false.
+The Art. 30 argument alone is correct and sufficient. (Promoted to a principle bullet.)
+
+**Cost note.** With the message query finally returning rows, `exportConversationsAndMessages` runs
+`ExportPaginationHelper` caps of 500 conversations × (1000+1) messages as 500 SEQUENTIAL client
+queries — up to ~500k document reads and minutes of wall time per export. Previously the inner query
+was denied and returned instantly. Not a defect, but the nested cap product is now real.
+
+**Smaller.** `commitInChunks(..., strict:false)` on `anonymizeOwnMessages` can silently leave a
+450-doc chunk carrying live name/avatar/content, with no retry (`auth.deleteUser` runs
+unconditionally) — mitigated only by the new probe, and consistent with `deleteCommentsAndRatings`.
+Leg ordering double-writes every 1:1 message (anonymize, then delete) — deliberate, because a
+`batch.update` on an already-deleted doc would fail the whole chunk under `strict:false`. The new
+`messages` composite `(conversationId ASC, sentAt ASC)` is very likely redundant with the existing
+`(conversationId ASC, sentAt DESC)` — an equality-filtered composite serves both scan directions —
+so it may be pure write amplification on the app's highest-volume collection. `bundle_bytes` is
+`String.length`, i.e. UTF-16 code units. `ACCEPTED_LARGE_FILES.md:75` still records
+`firebase_data_export_repository.dart` at 783 lines; it is 831. `MessageDeletionModule` has zero
+production callers (interface + tests only) — the CF is the live erasure path, and the module's own
+test correctly pins that a client can never delete the counterparty half of a 1:1
+(`firestore.rules:1578` grants delete on own `senderId` only).

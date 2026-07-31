@@ -320,6 +320,12 @@ void main() {
                 otherUid: otherAvatar,
               },
               'lastReadTimestamps': {userId: 1, otherUid: 2},
+              // NOT covered by the BUT-1772 verdict — left to BUT-1774, so it
+              // must not ship for third parties in the meantime.
+              'perUserSettings': {
+                userId: {'isMuted': true},
+                otherUid: {'isMuted': false, 'isPinned': true},
+              },
               // The conversation document embeds its newest message for
               // previews, so the sender's avatar rides along here even while
               // `messages` is empty (BUT-1767).
@@ -369,6 +375,28 @@ void main() {
     });
 
     test(
+      "another participant's perUserSettings do NOT ship; the requester's do",
+      () async {
+        // BUT-1772 decided names and avatars and said, in the same breath, that
+        // `perUserSettings` is undecided (BUT-1774). BUT-1767 turned this whole
+        // section from a hard failure into a shipping one, so "undecided" would
+        // otherwise have become "shipped" without anyone deciding it. Another
+        // member's mute/pin state says nothing about the requester.
+        final result = await buildManager().exportMessages(userId);
+        final convo =
+            (result['conversations'] as List).single as Map<String, dynamic>;
+        final info = convo['conversation_info'] as Map<String, dynamic>;
+
+        expect(
+          (info['perUserSettings'] as Map).containsKey(otherUid),
+          isFalse,
+          reason: 'undecided third-party data must not ship by default',
+        );
+        expect((info['perUserSettings'] as Map)[userId], {'isMuted': true});
+      },
+    );
+
+    test(
       'names, ids, read timestamps and message content are UNTOUCHED',
       () async {
         final result = await buildManager().exportMessages(userId);
@@ -395,6 +423,130 @@ void main() {
         );
         expect(lastMessage['content'], 'Ses kl 18');
         expect(lastMessage.containsKey('senderAvatarUrl'), isFalse);
+      },
+    );
+
+    test(
+      'a MESSAGE ROW senderAvatarUrl is stripped for other people and kept '
+      'for the requester (BUT-1772 x BUT-1767)',
+      () async {
+        // The BUT-1772 decision governs the conversation SECTION, not just the
+        // conversation document. It shipped while `messages` was always empty
+        // (BUT-1767), so the per-row copy of the same field was unreachable —
+        // repointing the query at the collection production writes is exactly
+        // what makes it reachable, and a redaction covering only the preview
+        // would now leak the field the section claims to have removed.
+        const userId = 'user-uid';
+        const otherUid = 'other-uid';
+        const otherAvatar = 'https://example.test/avatars/other-uid.jpg';
+        const ownAvatar = 'https://example.test/avatars/user-uid.jpg';
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {'title': 'Middagsplaner'},
+                'messages': [
+                  {
+                    'id': 'm-own',
+                    'data': {
+                      'senderId': userId,
+                      'senderDisplayName': 'Malin',
+                      'senderAvatarUrl': ownAvatar,
+                      'content': 'Jag fixar efterratt',
+                    },
+                  },
+                  {
+                    'id': 'm-other',
+                    'data': {
+                      'senderId': otherUid,
+                      'senderDisplayName': 'Anna',
+                      'senderAvatarUrl': otherAvatar,
+                      'content': 'Ses kl 18',
+                    },
+                  },
+                ],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final rows =
+            ((result['conversations'] as List).single
+                    as Map<String, dynamic>)['messages']
+                as List;
+        final byId = {
+          for (final row in rows.cast<Map<String, dynamic>>())
+            row['message_id'] as String: row['data'] as Map<String, dynamic>,
+        };
+
+        expect(byId['m-other']!.containsKey('senderAvatarUrl'), isFalse);
+        expect(
+          byId['m-other']!['senderDisplayName'],
+          'Anna',
+          reason: 'the name is the decided keep, on rows as on the document',
+        );
+        expect(byId['m-own']!['senderAvatarUrl'], ownAvatar);
+        expect(json.encode(result), isNot(contains(otherAvatar)));
+      },
+    );
+
+    test(
+      'a message row with NO recognisable senderId still loses its avatar '
+      '(fail-closed, BUT-1772 x BUT-1767)',
+      () async {
+        // `_dropOtherSenderAvatar`'s docstring claims it fails closed on an
+        // unrecognised row shape, and the conversation-DOCUMENT halves of the
+        // same decision each have such a fixture. The per-row half shipped
+        // without one, which is the shape that already cost this file once:
+        // the sibling `lastMessage` fail-closed branch reddened 0 of 23 for
+        // exactly the same reason (no fixture staged the field it guards).
+        //
+        // This is the mutant it kills: relaxing the guard to
+        // `if (senderId == null || senderId == userId) return message;` — a
+        // legacy or partially-written row would then keep another person's
+        // avatar URL while `data_minimisation` says it was removed.
+        const userId = 'user-uid';
+        const strayAvatar = 'https://example.test/avatars/unknown.jpg';
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {'title': 'Middagsplaner'},
+                'messages': [
+                  {
+                    'id': 'm-shapeless',
+                    'data': {
+                      'senderAvatarUrl': strayAvatar,
+                      'content': 'Ses kl 18',
+                    },
+                  },
+                ],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final row =
+            ((((result['conversations'] as List).single
+                                as Map<String, dynamic>)['messages']
+                            as List)
+                        .single
+                    as Map<String, dynamic>)['data']
+                as Map<String, dynamic>;
+
+        expect(row.containsKey('senderAvatarUrl'), isFalse);
+        expect(
+          row['content'],
+          'Ses kl 18',
+          reason:
+              'positive control: the row itself is still exported, so the '
+              'absence above is the redaction and not a dropped row',
+        );
+        expect(json.encode(result), isNot(contains(strayAvatar)));
       },
     );
 
@@ -546,8 +698,20 @@ void main() {
 
   group('SocialExportManager.exportMessages (BUT-1438)', () {
     test(
-      'includes conversations and only messages involving the user',
+      'includes every message of a conversation the user participates in '
+      '(BUT-1767)',
       () async {
+        // The filter this replaces kept a row only when `senderId == userId`
+        // OR `recipientIds` contained them. No message document has ever
+        // carried `recipientIds` — `MessageDto.toFirestore` writes sender +
+        // `conversationId`, and recipients are derived from the conversation's
+        // `participantIds` — so the second limb was permanently false and
+        // every RECEIVED message was silently dropped from the Art. 15 bundle.
+        //
+        // `m3` is the decisive row: sent by someone else, and under the old
+        // filter it was the "not mine" case. The gateway only ever returns
+        // threads the requester participates in, so there is no such thing as
+        // a message in the bundle that is not part of their record.
         const userId = 'user-uid';
         final manager = SocialExportManager(
           dataExportRepository: _FakeDataExportRepository(
@@ -562,19 +726,11 @@ void main() {
                   },
                   {
                     'id': 'm2',
-                    'data': {
-                      'senderId': 'other',
-                      'recipientIds': [userId],
-                      'text': 'to me',
-                    },
+                    'data': {'senderId': 'other', 'text': 'to me'},
                   },
                   {
                     'id': 'm3',
-                    'data': {
-                      'senderId': 'other',
-                      'recipientIds': ['someone-else'],
-                      'text': 'not mine',
-                    },
+                    'data': {'senderId': 'other', 'text': 'also in my thread'},
                   },
                 ],
               },
@@ -590,15 +746,14 @@ void main() {
         expect(convo['conversation_id'], 'conv1');
         expect(convo['conversation_info'], {'title': 'Dinner plans'});
         final messages = convo['messages'] as List;
-        // m3 (neither sent by nor addressed to the user) is excluded.
-        expect(messages, hasLength(2));
+        expect(messages, hasLength(3));
         expect(
           messages.map((m) => (m as Map)['message_id']),
-          containsAll(<String>['m1', 'm2']),
+          containsAll(<String>['m1', 'm2', 'm3']),
         );
-        expect(convo['message_count'], 2);
+        expect(convo['message_count'], 3);
         expect(result['total_conversations'], 1);
-        expect(result['total_messages'], 2);
+        expect(result['total_messages'], 3);
       },
     );
 

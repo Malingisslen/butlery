@@ -10,6 +10,9 @@
 /// a full 3-notification export from a silently-clipped 5000-notification one.
 library;
 
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
@@ -105,6 +108,19 @@ class _FakeDataExportRepository extends Fake
     capturedMax['exportNotificationDeliveryReceived'] = maxDocuments;
     return _seeded(deliveryReceivedRows, 'exportNotificationDeliveryReceived');
   }
+}
+
+/// BUT-1760: every export read raises [error], so each section's catch block is
+/// the only thing that can shape the result. `Fake.noSuchMethod` would raise a
+/// bare `UnimplementedError` — useless here, because the defect under test is
+/// what happens to an exception whose STRING carries other people's identifiers.
+class _ThrowingDataExportRepository extends Fake
+    implements FirebaseDataExportRepository {
+  _ThrowingDataExportRepository(this.error);
+  final Object error;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => Future<Never>.error(error);
 }
 
 class _FakeFcmTokenRepository extends Fake
@@ -559,6 +575,152 @@ void main() {
         'exportNotificationDeliveryReceived':
             capOf('notification_delivery') + 1,
       });
+    });
+  });
+
+  /// BUT-1760: all nine sections used to fail with `{'error': e.toString()}`.
+  ///
+  /// Two defects in one line. The raw string lands in an Article-15 artifact
+  /// the data subject downloads and may forward to a supervisory authority,
+  /// and a Firestore refusal string routinely names ANOTHER person's uid (a
+  /// notification counterparty ends up in composite doc ids), an internal
+  /// document path, or a `create_composite` URL embedding field paths and the
+  /// project id. And with no `error_code`, the section could only be named at
+  /// bundle level by `DataExportService`'s derived fallback — the manager
+  /// itself said nothing about WHICH read failed.
+  group('PreferencesExportManager failure envelopes (BUT-1760)', () {
+    // A realistic refusal, not a bare Exception: the message is the payload
+    // under test. `uid-bob` is a second data subject, so its presence anywhere
+    // in the returned map is the leak itself.
+    final leaky = FirebaseException(
+      plugin: 'cloud_firestore',
+      code: 'permission-denied',
+      message:
+          'Missing or insufficient permissions: '
+          'users/uid-alice/notification_delivery/uid-alice_uid-bob',
+    );
+
+    // (section phrase used in the authored sentence, error_code, call).
+    final cases =
+        <
+          (
+            String,
+            String,
+            Future<Map<String, dynamic>> Function(PreferencesExportManager),
+          )
+        >[
+          (
+            'preferences',
+            'preferences-export-failed',
+            (m) => m.exportPreferences('alice'),
+          ),
+          (
+            'notifications',
+            'notifications-export-failed',
+            (m) => m.exportNotifications('alice'),
+          ),
+          (
+            'notification preferences',
+            'notification-preferences-export-failed',
+            (m) => m.exportNotificationPreferences('alice'),
+          ),
+          (
+            'FCM tokens',
+            'fcm-tokens-export-failed',
+            (m) => m.exportFcmTokens('alice'),
+          ),
+          (
+            'category preferences',
+            'category-preferences-export-failed',
+            (m) => m.exportCategoryPreferences('alice'),
+          ),
+          (
+            'notification history',
+            'notification-history-export-failed',
+            (m) => m.exportNotificationHistory('alice'),
+          ),
+          (
+            'notification batches',
+            'notification-batches-export-failed',
+            (m) => m.exportNotificationBatches('alice'),
+          ),
+          (
+            'notification engagement',
+            'notification-engagement-export-failed',
+            (m) => m.exportNotificationEngagement('alice'),
+          ),
+          (
+            'notification delivery',
+            'notification-delivery-export-failed',
+            (m) => m.exportNotificationDelivery('alice'),
+          ),
+        ];
+
+    for (final (section, code, call) in cases) {
+      test('$section returns an authored sentence + $code, never the raw '
+          'exception', () async {
+        final result = await call(
+          PreferencesExportManager(
+            dataExportRepository: _ThrowingDataExportRepository(leaky),
+          ),
+        );
+
+        expect(
+          result['error'],
+          'Could not export $section.',
+          reason: 'an authored sentence, not e.toString()',
+        );
+        expect(
+          result['error_code'],
+          code,
+          reason:
+              'the token DataExportService names the failing section by in '
+              'export_metadata.warnings',
+        );
+        // The whole map, not just `error`: a leak anywhere in the section is
+        // still a leak in the bundle.
+        final encoded = jsonEncode(result);
+        expect(
+          encoded,
+          isNot(contains('uid-bob')),
+          reason: "another data subject's uid must never reach the bundle",
+        );
+        expect(
+          encoded,
+          isNot(contains('users/uid-alice/notification_delivery')),
+          reason: 'internal document paths must never reach the bundle',
+        );
+        expect(encoded, isNot(contains('permission-denied')));
+      });
+    }
+
+    // The two sections that also carry a human-readable `note` must keep it —
+    // replacing the envelope must not silently drop the sentence the data
+    // subject actually reads.
+    test('the notification sections keep their explanatory note', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _ThrowingDataExportRepository(leaky),
+      );
+
+      expect(
+        (await manager.exportNotifications('alice'))['note'],
+        'Notifications may not be available',
+      );
+      expect(
+        (await manager.exportNotificationPreferences('alice'))['note'],
+        'Notification preferences may not be available',
+      );
+    });
+
+    test('every section carries its OWN token', () {
+      final codes = cases.map((c) => c.$2).toList();
+      expect(
+        codes.toSet(),
+        hasLength(codes.length),
+        reason:
+            'a shared token would make the bundle-level warning unable to say '
+            'which read failed — the reason the codes are authored at all',
+      );
     });
   });
 }

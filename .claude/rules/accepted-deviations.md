@@ -32,11 +32,12 @@ files in the same edit.
   opened the thread discloses nothing new, and stripping it would leave opaque UIDs that fail
   Art. 12(1); an avatar URL is a durable dereferenceable pointer to another person's photo that
   outlives the app and buys the requester nothing. **Malin's explicit call, 2026-07-30.** Governs
-  `conversation_info` only, and has NO production effect yet — the section currently FAILS
-  (`messages-export-failed`, a rules deny on a phantom subcollection), it does not ship empty;
-  BUT-1767 must repoint it, and the per-message copies must then be covered too. `perUserSettings`
-  carries other participants' mute/pin/archive state and is NOT decided by this entry — BUT-1774.
-  BUT-1772, 2026-07-30
+  `conversation_info` and the message rows under it. **Now LIVE:** BUT-1767 repointed the query at
+  the top-level `messages` collection the same day, so the section ships instead of failing
+  (`messages-export-failed`), and the per-row avatar strip is covered too. `perUserSettings` carries
+  other participants' mute/pin/archive state and is still NOT decided by this entry — pending
+  BUT-1774 the export narrows it to the requester's own entry, which is a conservative default, not
+  a verdict. BUT-1772/BUT-1767, 2026-07-30
 - **A colon-terminated bare GLUTEN word rescued into the flat ingredient list must ALSO be
   exempted from `isValidIngredient`, `isGarbage` and the `_deduplicateIngredients` containment
   branch in BOTH directions** — refusing the heading is not sufficient on its own, and the

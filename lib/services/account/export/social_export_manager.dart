@@ -139,10 +139,20 @@ class SocialExportManager {
   /// The requester's OWN avatar stays. Withholding the subject's own data is
   /// the opposite failure to the one this guards against.
   ///
-  /// When BUT-1767 repoints the message query at the collection production
-  /// actually writes, each message row arrives carrying its own
-  /// `senderAvatarUrl`; this redaction must be extended to cover it then. The
-  /// `messages` array ships empty today, so there is nothing here to strip yet.
+  /// BUT-1767 repointed the message query at the collection production actually
+  /// writes, so each message row now arrives carrying its own
+  /// `senderAvatarUrl`. [_dropOtherSenderAvatar] applies the same rule to every
+  /// row; this method covers the conversation document only.
+  ///
+  /// `perUserSettings` is narrowed to the requester's OWN entry, and that is
+  /// NOT the BUT-1772 decision — BUT-1772 governs names and avatars only, and
+  /// explicitly leaves this field to BUT-1774. Until that verdict exists the
+  /// default has to be the conservative one: while the section was failing
+  /// (`messages-export-failed`) nothing shipped, and BUT-1767 making it succeed
+  /// must not silently promote undecided third-party data into a downloadable
+  /// file. Another member's mute / pin / archive state says nothing about the
+  /// requester, so nothing is withheld that Art. 15 owes them. Reversible in
+  /// one line if BUT-1774 decides the other way.
   Map<String, dynamic> _dropOtherPeoplesAvatars(
     Map<String, dynamic> source,
     String userId,
@@ -169,6 +179,20 @@ class SocialExportManager {
       }
     }
 
+    // Same fail-closed shape, for the field BUT-1772 deliberately did NOT
+    // decide (BUT-1774).
+    final settings = copy['perUserSettings'];
+    if (settings != null) {
+      if (settings is Map) {
+        copy['perUserSettings'] = <String, dynamic>{
+          userId: ?settings[userId],
+        };
+      } else {
+        copy.remove('perUserSettings');
+        copy['redaction_fell_back'] = true;
+      }
+    }
+
     // The conversation document embeds its most recent message for previews, so
     // the sender's avatar rides along here even while `messages` carries nothing
     // (BUT-1767).
@@ -187,6 +211,26 @@ class SocialExportManager {
     }
 
     return copy;
+  }
+
+  /// One message row with ANOTHER participant's `senderAvatarUrl` removed.
+  ///
+  /// The per-row half of the BUT-1772 decision, which governs the whole
+  /// conversation section and not just the conversation document: names and
+  /// uids stay (a thread of opaque ids fails Art. 12(1)'s "intelligible"
+  /// limb), the durable pointer to someone else's photograph goes. The
+  /// requester's own rows keep their own avatar — withholding the subject's
+  /// own data is the opposite failure.
+  ///
+  /// FAILS CLOSED on a row with no recognisable `senderId`: an unrecognised
+  /// shape is treated as somebody else's and stripped, never passed through
+  /// while the section's `data_minimisation` line claims otherwise.
+  Map<String, dynamic> _dropOtherSenderAvatar(
+    Map<String, dynamic> message,
+    String userId,
+  ) {
+    if (message['senderId'] == userId) return message;
+    return Map<String, dynamic>.from(message)..remove('senderAvatarUrl');
   }
 
   /// Export all conversations and messages
@@ -216,17 +260,26 @@ class SocialExportManager {
             .cast<Map<String, dynamic>>();
 
         for (final msg in rawMessages) {
-          // Only include messages sent by this user or received by this user.
-          final messageData =
-              sanitizeForJson(msg['data']) as Map<String, dynamic>;
-          final recipientIds = messageData['recipientIds'] as List?;
-          if (messageData['senderId'] == userId ||
-              (recipientIds != null && recipientIds.contains(userId))) {
-            messagesList.add({
-              'message_id': msg['id'],
-              'data': messageData,
-            });
-          }
+          // BUT-1767: every message in a conversation the requester
+          // participates in belongs in their Art. 15 bundle — the ones they
+          // received as much as the ones they sent; a chat is a two-sided
+          // record and half of it is not the record.
+          //
+          // The filter this replaces kept a row only if `senderId == userId`
+          // OR `recipientIds` contained them. `recipientIds` is not a field any
+          // message document has ever carried (`MessageDto.toFirestore` writes
+          // sender + `conversationId`; recipients are derived from the
+          // conversation's `participantIds`), so the second limb was always
+          // false and every received message was dropped — a filter on a
+          // non-existent field throws nothing and reads as deliberate scoping.
+          final messageData = _dropOtherSenderAvatar(
+            sanitizeForJson(msg['data']) as Map<String, dynamic>,
+            userId,
+          );
+          messagesList.add({
+            'message_id': msg['id'],
+            'data': messageData,
+          });
         }
 
         final conversationData = <String, dynamic>{

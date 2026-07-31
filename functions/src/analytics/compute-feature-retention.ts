@@ -3,7 +3,7 @@
  *
  * Scheduled daily at 04:30 UTC — 30 minutes after `track-retention.ts` so
  * the two user-iteration jobs do not collide. For every user with
- * `lastActiveAt` in the trailing 28 days the function checks five feature
+ * `lastActiveAt` in the trailing 28 days the function checks six feature
  * activity sources for the run-day (UTC) and writes:
  *
  *   /analytics/feature_retention/users/{uid}_{yyyy-mm-dd}
@@ -22,15 +22,16 @@
  *
  * **Read budget (per run, ~1k active users)**:
  *   - 1 paginated user scan (`lastActiveAt >= now - 28d`) → ≤1k reads
- *   - 5 per-user per-day activity queries → up to 5k reads (today's flags)
+ *   - 6 per-user per-day activity queries → up to 6k reads (today's flags)
  *   - 28 per-user historical flag-doc reads for WAU rollup → up to 28k reads
- *   - = ~34k reads/day at 1k active users ≈ $0.012/day on the Firestore
+ *   - = ~35k reads/day at 1k active users ≈ $0.013/day on the Firestore
  *     read price tier as of 2026. Acceptable for a daily aggregator. If
  *     active users grow past ~10k, the historical-flag scan becomes the
  *     dominant cost — at that scale switch to a daily counter doc per
  *     feature instead of per-user history.
  *
- * Feature → source mapping (`shopped` re-verified 2026-07-30, BUT-1724):
+ * Feature → source mapping (`shopped` re-verified 2026-07-30, BUT-1724 +
+ * BUT-1761):
  *
  *   | Flag         | Source                                                 |
  *   | cooked       | `cook_snaps` where userId == uid AND createdAt in day  |
@@ -38,12 +39,15 @@
  *   | shared       | `shared_recipes` where sharedByUserId == uid AND       |
  *   |              | sharedAt in day                                        |
  *   | mealPlanned  | `users/{uid}/menus` where createdAt in day             |
- *   | shopped      | `users/{uid}/unified_shopping_lists` where updatedAt   |
- *   |              | in day — PERSONAL lists only, see gap 1 below          |
+ *   | shopped      | EITHER leg true: (a) `users/{uid}/unified_shopping_    |
+ *   |              | lists` where updatedAt in day — the PERSONAL leg;      |
+ *   |              | (b) `unified_shared_shopping_lists` where              |
+ *   |              | lastActivityByUserId == uid AND updatedAt in day —     |
+ *   |              | the COLLABORATIVE leg (BUT-1761)                       |
  *
  * Rationale for `shopped`: shopping lists are long-lived (created once,
  * updated as items get checked off). `createdAt` would dramatically
- * undercount actual usage, so the probe filters on `updatedAt`.
+ * undercount actual usage, so both legs filter on `updatedAt`.
  *
  * BUT-1724: this probe used to read `users/{uid}/shopping_lists`, the
  * pre-rename name that nothing has written since BUT-1697 — so `shopped`
@@ -53,37 +57,55 @@
  * (`FirebaseShoppingRepository.collectionName`); its documents carry both
  * `createdAt` and `updatedAt` as Timestamps.
  *
+ * BUT-1761: BUT-1724 fixed only the PERSONAL leg, and a collaborative list
+ * never lived under `users/{uid}` at all — `ListType.collaborative` is routed
+ * to the top-level `unified_shared_shopping_lists` by
+ * `ShoppingRepositoryRoutingModule`. So a household that shops exclusively on
+ * a shared list still scored `shopped: false` every day: the flagship
+ * collaborative flow was structurally zero for exactly the same reason the
+ * whole flag was before BUT-1724, just one collection over. The second leg
+ * below closes that. It matches on `lastActivityByUserId`, the same stamp
+ * `account-deletion-cascade.ts` queries to find a user's shared-list activity,
+ * and every list mutator on `UnifiedShoppingList` (add / tick / amend /
+ * remove) rewrites it together with `updatedAt`. Equality + range on two
+ * different fields needs a DECLARED COMPOSITE INDEX (`lastActivityByUserId`
+ * ASC, `updatedAt` ASC) — unlike the equality-only queries elsewhere in the
+ * app; it is in `firestore.indexes.json` and a test pins it there, because
+ * without it the probe throws FAILED_PRECONDITION, `safeProbe` swallows it,
+ * and the leg reads as a silent zero again.
+ *
  * KNOWN GAPS in `shopped` — read these before quoting the number:
  *
- *  1. COLLABORATIVE LISTS ARE NOT COVERED AT ALL. This probe reads only the
- *     personal subcollection `users/{uid}/unified_shopping_lists`. A
- *     collaborative list lives in the TOP-LEVEL
- *     `unified_shared_shopping_lists` (`ListType.collaborative` is routed
- *     there by `FirebaseShoppingRepository`), which nothing here queries. So a
- *     household that shops exclusively on a shared list scores
- *     `shopped: false` every day — the flagship collaborative flow is still
- *     structurally zero, exactly like the whole flag was before BUT-1724.
- *     Closing it means a sixth probe on that collection filtered by
- *     `lastActivityByUserId == uid` plus an `updatedAt` day range; equality +
- *     range needs a DECLARED COMPOSITE INDEX (unlike the equality-only
- *     queries elsewhere in the app), so it carries an index-deploy cost and is
- *     deliberately left to a follow-up rather than smuggled in here.
+ *  1. THE COLLABORATIVE LEG IS LAST-WRITER-ONLY, SO IT IS A LOWER BOUND
+ *     (BUT-1761 residual). `lastActivityByUserId` is a single stamp the list
+ *     document overwrites on every mutation. When two household members both
+ *     shop off the same list on the same day, only the one who wrote LAST
+ *     scores `shopped` for it. The obvious alternative is worse in the other
+ *     direction: `contributorUserIds` is append-only and never cleared
+ *     (BUT-1725 makes that a rule), so `array-contains` would credit every
+ *     member who has EVER touched the list with shopping on any day anyone
+ *     touched it. A per-day-exact answer needs a per-member activity stamp the
+ *     document does not carry, which is a schema change, not a probe change.
  *
  *  2. Personal-list item ticks are under-counted (accepted, not a bug in this
  *     file): items live in an `items` subcollection and a tick or amend writes
  *     only that subcollection — the parent list document's `updatedAt` is not
- *     bumped. So `shopped` catches list creation and list-level edits, and
- *     misses a session that only checked items off. Closing it means either
- *     bumping the parent on every item write (an extra write per tick) or a
- *     per-day counter doc; both are cost decisions beyond this probe.
+ *     bumped. So the PERSONAL leg catches list creation and list-level edits,
+ *     and misses a session that only checked items off. Closing it means
+ *     either bumping the parent on every item write (an extra write per tick)
+ *     or a per-day counter doc; both are cost decisions beyond this probe.
+ *     The collaborative leg does not share this gap — a shared list embeds its
+ *     `items` array in the list document, so a tick rewrites that document.
  *
  *  3. THE ROLLUPS RAMP IN AFTER DEPLOY, AND THE RAMP LOOKS LIKE ADOPTION.
  *     `wau7d` and `wau28d` OR together previously STORED per-day flag docs, and
- *     every one of those written before this fix carries the structural zero
- *     gap 1 describes. So `shopped` climbs for 7 and then 28 days after deploy
- *     purely as the window refills with correct days — a dashboard artefact,
- *     not behaviour change. The rollups only mean anything 28 days after the
- *     deploy date; the DAU figure is trustworthy from day one.
+ *     every one of those written before a `shopped` fix carries whichever
+ *     structural zero that fix removed — BUT-1724 for the personal leg,
+ *     BUT-1761 for the collaborative one. So `shopped` climbs for 7 and then
+ *     28 days after each deploy purely as the window refills with correct
+ *     days — a dashboard artefact, not behaviour change. The rollups only mean
+ *     anything 28 days after the latest of those deploy dates; the DAU figure
+ *     is trustworthy from day one.
  */
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
@@ -177,7 +199,16 @@ function emptyCounters(): Record<FeatureFlag, number> {
 }
 
 /**
- * Probe the five feature sources for a single user on a single day.
+ * Probe log labels. `shopped` has TWO probes behind one flag, so the labels
+ * name the leg rather than the flag: an operator reading
+ * `feature_retention_probe_failed` has to be able to tell a missing composite
+ * index on the shared collection from a failure on the personal
+ * subcollection, and both would otherwise print `"flag":"shopped"`.
+ */
+type ProbeLabel = FeatureFlag | "shoppedShared";
+
+/**
+ * Probe the six feature sources for a single user on a single day.
  * Each probe is `limit(1)` — we only care whether ANY activity exists,
  * not the exact count. If a probe throws (collection missing, index
  * missing), the flag falls back to `false` and we log once at warn so
@@ -191,7 +222,7 @@ async function probeUserFeatureFlags(
   dayEnd: admin.firestore.Timestamp,
 ): Promise<Omit<UserDailyFlags, "userId" | "date">> {
   const safeProbe = async (
-    label: FeatureFlag,
+    label: ProbeLabel,
     fn: () => Promise<FirebaseFirestore.QuerySnapshot>,
   ): Promise<boolean> => {
     try {
@@ -221,7 +252,14 @@ async function probeUserFeatureFlags(
     }
   };
 
-  const [cooked, imported, shared, mealPlanned, shopped] = await Promise.all([
+  const [
+    cooked,
+    imported,
+    shared,
+    mealPlanned,
+    shoppedPersonal,
+    shoppedShared,
+  ] = await Promise.all([
     safeProbe("cooked", () =>
       db
         .collection("cook_snaps")
@@ -270,9 +308,31 @@ async function probeUserFeatureFlags(
         .limit(1)
         .get(),
     ),
+    // BUT-1761: the collaborative leg. Top-level collection, so membership has
+    // to come from a field — `lastActivityByUserId` is the one the document
+    // actually carries per-user activity in. Needs the declared composite; see
+    // the header note and `sharedShoppingListCompositeDeclared` in the test.
+    safeProbe("shoppedShared", () =>
+      db
+        .collection(Collections.unifiedSharedShoppingLists)
+        .where("lastActivityByUserId", "==", userId)
+        .where("updatedAt", ">=", dayStart)
+        .where("updatedAt", "<", dayEnd)
+        .limit(1)
+        .get(),
+    ),
   ]);
 
-  return { cooked, imported, shared, mealPlanned, shopped };
+  // One flag, two sources: the dashboard question is "did this person shop
+  // today", not "on which kind of list". Splitting it would change the stored
+  // document schema and every historical row's meaning.
+  return {
+    cooked,
+    imported,
+    shared,
+    mealPlanned,
+    shopped: shoppedPersonal || shoppedShared,
+  };
 }
 
 /** Read a previously-written per-user-per-day flag doc, if any. */

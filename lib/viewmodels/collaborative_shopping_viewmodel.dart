@@ -209,6 +209,34 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
     return await _shoppingService.clearCompletedItems();
   }
 
+  /// BUT-1722: reads and clears why the last item operation failed — the
+  /// permission-denied / list-gone / offline sentence
+  /// [ShoppingItemOperationsManager] captured from the service.
+  ///
+  /// Deliberately NOT folded into [error]. That slot feeds the body's
+  /// `LoadingStateBuilder`, so routing a refused tick through it would replace
+  /// the whole shared list with a full-screen error — the regression
+  /// `UnifiedShoppingService.consumeMutationError` was designed around in
+  /// BUT-1696. Until this existed the manager's error field had no reader at
+  /// all: on the collaborative screen a refused edit set it, notified, and the
+  /// sentence went nowhere. The reader alone was not enough either — the
+  /// view-only case never SET a reason, so the member whose checkbox refused to
+  /// stay ticked was still told nothing; the manager's local `!canEdit`
+  /// branches now supply the sentence themselves.
+  ///
+  /// Self-clearing on read, for the same reason the service's slot is. Read is
+  /// only half the guarantee, though: a caller that bails on
+  /// `if (!mounted) return;` never performs it, so the manager also clears at
+  /// the START of every operation (`_beginOperation`) — that is what stops a
+  /// stranded reason from being mis-reported as the next action's cause
+  /// (BUT-1696's finding, applied here).
+  String? consumeItemOperationError() {
+    if (isDisposed || !_itemOperationsManager.hasError) return null;
+    final message = _itemOperationsManager.error;
+    _itemOperationsManager.clearError();
+    return message;
+  }
+
   // --- BUT-238: claim / unclaim ------------------------------------------
 
   /// Claim an item ("Tar jag"). UI caller inspects [ClaimResult.outcome]:

@@ -83,6 +83,26 @@ class ContentExportManager {
   FirebaseDataExportRepository get _exports =>
       _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
 
+  // BUT-1760: logs the real exception and returns the section's failure
+  // envelope. Every section here used to return `{'error': e.toString()}`.
+  //
+  // A stable authored sentence, never `e.toString()`: a raw Firestore /
+  // permission string carries another user's uid (composite doc ids), a
+  // `create_composite` index URL embedding field paths and the project id, and
+  // internal collection paths — into an Art. 15 artifact the data subject may
+  // forward to a supervisory authority. The exception itself stays in
+  // `AppLogger.error`, so support loses nothing.
+  //
+  // `error_code` is not decoration: `DataExportService` names the failing
+  // section in `export_metadata.warnings` from it, and a precise token says
+  // WHICH read failed rather than "something did". Same convention as
+  // `social_export_manager.dart`, `shared_shopping_list_export.dart` and
+  // `family_export_manager.dart`.
+  Map<String, dynamic> _failed(String section, String code, Object e) {
+    app_logger.AppLogger.error('[$_logTag] Failed to export $section', e);
+    return {'error': 'Could not export $section.', 'error_code': code};
+  }
+
   /// Export all user recipes (personal subcollection + top-level legacy shape).
   Future<Map<String, dynamic>> exportRecipes(String userId) async {
     try {
@@ -136,8 +156,7 @@ class ContentExportManager {
         if (truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export recipes', e);
-      return {'error': e.toString()};
+      return _failed('recipes', 'recipes-export-failed', e);
     }
   }
 
@@ -179,8 +198,7 @@ class ContentExportManager {
         if (personal.truncated || shared.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export menus', e);
-      return {'error': e.toString()};
+      return _failed('menus', 'menus-export-failed', e);
     }
   }
 
@@ -220,11 +238,7 @@ class ContentExportManager {
         if (results.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export shopping lists',
-        e,
-      );
-      return {'error': e.toString()};
+      return _failed('shopping lists', 'shopping-lists-export-failed', e);
     }
   }
 
@@ -258,11 +272,7 @@ class ContentExportManager {
         if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export personal tags',
-        e,
-      );
-      return {'error': e.toString()};
+      return _failed('personal tags', 'personal-tags-export-failed', e);
     }
   }
 
@@ -288,11 +298,11 @@ class ContentExportManager {
         if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export personal tag groups',
+      return _failed(
+        'personal tag groups',
+        'personal-tag-groups-export-failed',
         e,
       );
-      return {'error': e.toString()};
     }
   }
 
@@ -319,8 +329,7 @@ class ContentExportManager {
         if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export cook snaps', e);
-      return {'error': e.toString()};
+      return _failed('cook snaps', 'cook-snaps-export-failed', e);
     }
   }
 
@@ -346,8 +355,7 @@ class ContentExportManager {
         if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export cook events', e);
-      return {'error': e.toString()};
+      return _failed('cook events', 'recipe-cook-events-export-failed', e);
     }
   }
 
@@ -373,8 +381,7 @@ class ContentExportManager {
         if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export pantry items', e);
-      return {'error': e.toString()};
+      return _failed('pantry items', 'pantry-items-export-failed', e);
     }
   }
 
@@ -401,11 +408,7 @@ class ContentExportManager {
         if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export activity events',
-        e,
-      );
-      return {'error': e.toString()};
+      return _failed('activity events', 'activity-events-export-failed', e);
     }
   }
 
@@ -431,11 +434,11 @@ class ContentExportManager {
         if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export weekly menu plans',
+      return _failed(
+        'weekly menu plans',
+        'weekly-menu-plans-export-failed',
         e,
       );
-      return {'error': e.toString()};
     }
   }
 
@@ -462,11 +465,11 @@ class ContentExportManager {
         if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export group weekly menu plans',
+      return _failed(
+        'group weekly menu plans',
+        'group-weekly-menu-plans-export-failed',
         e,
       );
-      return {'error': e.toString()};
     }
   }
 
@@ -488,11 +491,7 @@ class ContentExportManager {
         'total_count': recipes.length,
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export realtime recipes',
-        e,
-      );
-      return {'error': e.toString()};
+      return _failed('realtime recipes', 'realtime-recipes-export-failed', e);
     }
   }
 }

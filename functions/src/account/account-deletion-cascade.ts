@@ -133,6 +133,60 @@ export async function probeResidualData(
       );
     }
   }
+  // BUT-1766/BUT-1768: more collections whose owner handle is NOT `userId`, so
+  // the loop above is structurally blind to them. Each pair is exactly what the
+  // matching deleter now clears, keeping the deleter a strict superset of the
+  // probe:
+  //   messages.senderId          — anonymized (or deleted with a 1:1 thread)
+  //   realtime_menus/recipes.ownerId       — deleted, subcollections included
+  //   realtime_menus/recipes.lastEditedBy  — anonymized
+  //   realtime_menus/recipes.participantIds — membership dropped on docs the
+  //                                           user does not own
+  //   conversations.participantIds — 1:1 deleted, group departed
+  // `messages` is the highest-value leg here: the collection this probe could
+  // not see is the one the cascade never touched for two years. The
+  // `participantIds` legs are the only map-shaped residual Firestore can
+  // actually query — a uid used as a MAP KEY (`participants.<uid>`,
+  // `perUserSettings.<uid>`, a `votes` map entry) is unqueryable, so those are
+  // covered by the deleter and by the emulator lane, never by a count here.
+  for (const [col, field, op] of [
+    [Collections.messages, "senderId", "=="],
+    [Collections.realtimeMenus, "ownerId", "=="],
+    [Collections.realtimeMenus, "lastEditedBy", "=="],
+    [Collections.realtimeMenus, "participantIds", "array-contains"],
+    [Collections.realtimeRecipes, "ownerId", "=="],
+    [Collections.realtimeRecipes, "lastEditedBy", "=="],
+    [Collections.realtimeRecipes, "participantIds", "array-contains"],
+    [Collections.conversations, "participantIds", "array-contains"],
+  ] as const) {
+    try {
+      const snap = await db
+        .collection(col)
+        .where(field, op, uid)
+        .count()
+        .get();
+      const count = snap.data().count ?? 0;
+      if (count > 0) {
+        residual += count;
+        logger.warn("[deletion-cascade] residual owner-keyed docs", {
+          uid_prefix: uid.slice(0, 6),
+          collection: col,
+          field,
+          count,
+        });
+      }
+    } catch (err) {
+      residual += 1;
+      logger.error("[deletion-cascade] residual probe failed", {
+        uid_prefix: uid.slice(0, 6),
+        collection: col,
+        field,
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      });
+    }
+  }
+
   // Subcollections under users/{uid}. These are NOT top-level userId-scoped
   // collections, so a where("userId","==",uid) probe would silently match zero
   // (the realtime_recipes wrong-field trap). Probe each one directly.
@@ -957,12 +1011,74 @@ export async function deleteFamilyData(
 
 // ─── Tier 1: social-self (own writes on cross-user surfaces) ─────────────
 
+/**
+ * BUT-1766: chat messages live in the TOP-LEVEL `messages` collection, keyed by
+ * a `conversationId` FIELD — `firestore.rules` grants `match /messages/{id}`
+ * and nothing else, and the client writes there
+ * (`FirebaseMessagingRepository._messagesRef`). The
+ * `conversations/{id}/messages` SUBCOLLECTION this step used to sweep has no
+ * rule block, no writer and therefore no documents: every account erased since
+ * BUT-788 kept its entire chat history while the cascade reported `messages`
+ * deleted. A path with no `match` block is denied, not merely undocumented.
+ *
+ * Three legs, in this order for a reason:
+ *
+ *  1. **Own messages anywhere** (`senderId == uid`) are ANONYMIZED in place —
+ *     identity fields replaced and the content tombstoned, the same treatment
+ *     `deleteCommentsAndRatings` gives `recipe_comments`. Membership is NOT the
+ *     handle: a user who left a group keeps every message they wrote in it
+ *     (the BUT-1725 lesson), and `senderId` is the only field that finds those.
+ *     Anonymizing rather than deleting preserves the thread other members keep
+ *     — `Message.replyToMessageId` points at ids that would otherwise dangle —
+ *     while erasing the personal data (name, avatar, content, uid).
+ *  2. **1:1 conversations** (≤2 participants) are deleted whole, and with them
+ *     EVERY message on that `conversationId`, both directions. The read rule
+ *     resolves participation through `get(conversations/$(conversationId))`, so
+ *     once the conversation doc is gone no client can read those messages and
+ *     no later erasure can find them — leaving them would strand unreachable
+ *     PII forever. Running after leg 1 also means no `update` can hit a doc
+ *     this leg already deleted.
+ *  3. **Group conversations** keep running for the remaining members; the user
+ *     leaves AND their per-user carriers on the conversation DOCUMENT go with
+ *     them. Anonymizing the message rows is not enough on its own:
+ *     `ConversationDto.toFirestore` denormalises `participantDisplayNames`,
+ *     `participantAvatarUrls`, `lastReadTimestamps` and `perUserSettings` as
+ *     uid-keyed maps, plus a full `lastMessage` copy (sender uid, name, avatar
+ *     URL and content). Every remaining member reads that document — the
+ *     conversations read rule is participant-gated — and nothing renames or
+ *     erases it once the account is gone, because `on-profile-updated.ts`
+ *     stops firing. `participantDisplayNames` / `participantAvatarUrls` are
+ *     precisely the two fields that propagator maintains, i.e. the rename CF is
+ *     the inventory and this collection is on it. Shape mirrors
+ *     `enforce-group-minor-membership.ts`, which already removes three of the
+ *     four in one `update()`.
+ */
 export async function deleteMessages(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
+  const own = await db
+    .collection(Collections.messages)
+    .where("senderId", "==", uid)
+    .get();
+  if (own.docs.length > 0) {
+    await commitInChunks(
+      db,
+      own.docs,
+      (batch, doc) => {
+        batch.update(doc.ref, {
+          senderId: "deleted",
+          senderDisplayName: "[Raderad användare]",
+          senderAvatarUrl: null,
+          content: "[Borttaget meddelande]",
+        });
+      },
+      { label: "anonymizeOwnMessages", strict: false },
+    );
+  }
+
   const convos = await db
-    .collection("conversations")
+    .collection(Collections.conversations)
     .where("participantIds", "array-contains", uid)
     .get();
 
@@ -972,16 +1088,27 @@ export async function deleteMessages(
     const chunk = convos.docs.slice(i, i + chunkSize);
     await Promise.all(
       chunk.map(async (convoDoc) => {
-        const messages = await convoDoc.ref.collection("messages").get();
-        await batchDeleteAll(db, messages.docs);
         const participants = Array.isArray(convoDoc.data().participantIds)
           ? (convoDoc.data().participantIds as string[])
           : [];
         if (participants.length <= 2) {
+          const thread = await db
+            .collection(Collections.messages)
+            .where("conversationId", "==", convoDoc.id)
+            .get();
+          await batchDeleteAll(db, thread.docs);
           await convoDoc.ref.delete();
         } else {
-          await convoDoc.ref.update({
-            participantIds: admin.firestore.FieldValue.arrayRemove(uid),
+          // Transactional re-read: the outer query snapshot can be stale by
+          // the time this specific doc's write runs, and a group chat is
+          // exactly where a NEW message between query and write is likely. A
+          // blind update() would stamp the tombstone from the stale snapshot
+          // and silently overwrite that new message's lastMessage copy back
+          // to "[Raderad användare]".
+          await db.runTransaction(async (tx) => {
+            const fresh = await tx.get(convoDoc.ref);
+            if (!fresh.exists) return;
+            tx.update(convoDoc.ref, buildGroupDepartureUpdate(fresh, uid));
           });
         }
       }),
@@ -989,6 +1116,54 @@ export async function deleteMessages(
   }
   return true;
 }
+
+/**
+ * The single `update()` that removes a departing user from a SURVIVING group
+ * conversation document.
+ *
+ * One write, not five: a group thread can be large, and the four map-key
+ * deletions plus the `lastMessage` tombstone are one logical erasure — a
+ * partial application would leave a name on a document the probe cannot see.
+ *
+ * `lastMessage` is a denormalised COPY of the last message row, so anonymizing
+ * the row in `messages` does not touch it. It is rewritten to the same
+ * tombstone that row gets, and only when the departing user is its sender.
+ */
+function buildGroupDepartureUpdate(
+  convoDoc: admin.firestore.DocumentSnapshot,
+  uid: string,
+): Record<string, unknown> {
+  const update: Record<string, unknown> = {
+    participantIds: admin.firestore.FieldValue.arrayRemove(uid),
+  };
+  for (const map of PER_USER_CONVERSATION_MAPS) {
+    update[`${map}.${uid}`] = admin.firestore.FieldValue.delete();
+  }
+
+  const last = (convoDoc.data() ?? {}).lastMessage as
+    | Record<string, unknown>
+    | undefined;
+  if (last && last.senderId === uid) {
+    update["lastMessage.senderId"] = "deleted";
+    update["lastMessage.senderDisplayName"] = "[Raderad användare]";
+    update["lastMessage.senderAvatarUrl"] = null;
+    update["lastMessage.content"] = "[Borttaget meddelande]";
+  }
+  return update;
+}
+
+/**
+ * The uid-keyed maps `ConversationDto.toFirestore` writes onto a conversation
+ * document. `perUserSettings` carries the departing user's mute/pin/archive
+ * state, which is theirs and has no purpose once the account is gone —
+ * `enforce-group-minor-membership.ts` does not yet clear it, and should.
+ */
+const PER_USER_CONVERSATION_MAPS = [
+  "participantDisplayNames",
+  "participantAvatarUrls",
+  "lastReadTimestamps",
+  "perUserSettings",
+] as const;
 
 export async function removeFromSharedContent(
   db: admin.firestore.Firestore,
@@ -1168,11 +1343,269 @@ export async function deleteRealtimeRecipes(
   // recipes were exported (Art. 15) but never erased (Art. 17). Filter on
   // `ownerId` so deletion mirrors the export.
   const snap = await db
-    .collection("realtime_recipes")
+    .collection(Collections.realtimeRecipes)
     .where("ownerId", "==", uid)
     .get();
-  await batchDeleteAll(db, snap.docs);
+  await deleteRealtimeDocsWithChildren(db, snap.docs);
+
+  // BUT-1768: the same last-editor pair the menus step scrubs. Deleting only
+  // the recipes the user OWNS leaves their name on every collaborative recipe
+  // they last touched but do not own.
+  await scrubLastEditor(db, Collections.realtimeRecipes, uid);
+  await removeRealtimeParticipation(db, Collections.realtimeRecipes, uid);
   return true;
+}
+
+/**
+ * BUT-1768: `realtime_menus` was in no tier at all — a collaborative menu the
+ * user owns survived an Article 17 erasure intact, readable by every
+ * participant, and no residual probe looked at it.
+ *
+ * `ownerId` is the owner field, NOT `userId`. That is the BUT-1396 trap this
+ * step is written to avoid: the model writes `ownerId`, the `realtime_menus`
+ * rule gates read/update/delete on it, and `on-profile-updated.ts` renames on
+ * it — a `where("userId", "==", uid)` filter is syntactically perfect, throws
+ * nothing and matches zero documents forever.
+ *
+ * Menus the user does NOT own are the other half (see [scrubLastEditor] and
+ * [removeRealtimeParticipation]).
+ */
+export async function deleteRealtimeMenus(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const owned = await db
+    .collection(Collections.realtimeMenus)
+    .where("ownerId", "==", uid)
+    .get();
+  await deleteRealtimeDocsWithChildren(db, owned.docs);
+
+  await scrubLastEditor(db, Collections.realtimeMenus, uid);
+  const stillJoined = await removeRealtimeParticipation(
+    db,
+    Collections.realtimeMenus,
+    uid,
+  );
+  await removeVoteEntries(db, stillJoined, uid);
+  return true;
+}
+
+/**
+ * Strip `votes.<uid>` from every vote document under menus the user took part
+ * in but does not own.
+ *
+ * `realtime_menus/{menuId}/votes/{voteId}` is NOT uid-keyed by document id
+ * despite what the rules comment suggests: the doc id is the slot's vote id and
+ * the ballot is a MAP, `votes: {userId -> optionId}`, written by
+ * `FirebaseMenuVotingRepository.castVote` as `votes.$userId`. So the deleted
+ * user's uid survives one level below the document the participation sweep
+ * cleans, on a menu that continues to exist for its owner.
+ *
+ * Scoped to the menus the participation sweep just found, which is the only
+ * bounded handle there is: a map KEY cannot be queried, so a menu the user
+ * voted in and later LEFT is out of reach here (the same class as messages in
+ * a left conversation) and would need a full `collectionGroup("votes")` scan.
+ * Recorded rather than silently skipped.
+ */
+async function removeVoteEntries(
+  db: admin.firestore.Firestore,
+  menus: admin.firestore.QueryDocumentSnapshot[],
+  uid: string,
+): Promise<void> {
+  for (const menu of menus) {
+    const votes = await menu.ref.collection("votes").get();
+    const carrying = votes.docs.filter((v) => {
+      const ballot = v.data().votes;
+      return (
+        !!ballot && typeof ballot === "object" && uid in (ballot as object)
+      );
+    });
+    if (carrying.length === 0) continue;
+    await commitInChunks(
+      db,
+      carrying,
+      (batch, voteDoc) => {
+        batch.update(voteDoc.ref, {
+          [`votes.${uid}`]: admin.firestore.FieldValue.delete(),
+        });
+      },
+      { label: "removeVoteEntries", strict: false },
+    );
+  }
+}
+
+/**
+ * The rule-blessed child collections of a realtime document.
+ *
+ * `firestore.rules` declares `realtime_menus/{id}/presence/{userId}` and
+ * `/votes/{voteId}`, and `realtime_recipes/{id}/presence/{uid}`. Both are
+ * uid-keyed and both carry personal data: a presence doc holds
+ * `{displayName, isActive, lastSeen}`, and a vote document's `votes` map is
+ * keyed `userId -> optionId`.
+ */
+const REALTIME_CHILD_COLLECTIONS = ["presence", "votes"] as const;
+
+/**
+ * Delete realtime parent documents AND their child subcollections.
+ *
+ * Firestore never cascades: `batch.delete(parentRef)` leaves every document
+ * under `parent/presence` and `parent/votes` in place, orphaned. An orphan here
+ * is the worst possible residual — unreadable by any client (both child rules
+ * resolve participation through the parent, which no longer exists), unfindable
+ * by any later erasure, and invisible to `probeResidualData`, which counts
+ * TOP-LEVEL documents only. The cascade would push `realtime_menus` into
+ * `deletedCollections` and the audit row would certify `gdprCompliant: true`
+ * over a document still holding the deleted user's uid.
+ *
+ * Children first and STRICT, parent best-effort: if the child sweep cannot
+ * complete, the parent must stay so a retry can still find the children through
+ * it. The reverse order is precisely how an orphan is created.
+ */
+async function deleteRealtimeDocsWithChildren(
+  db: admin.firestore.Firestore,
+  docs: admin.firestore.QueryDocumentSnapshot[],
+): Promise<void> {
+  if (docs.length === 0) return;
+  for (const doc of docs) {
+    for (const child of REALTIME_CHILD_COLLECTIONS) {
+      const kids = await doc.ref.collection(child).get();
+      if (kids.docs.length === 0) continue;
+      await commitInChunks(
+        db,
+        kids.docs,
+        (batch, kid) => batch.delete(kid.ref),
+        { label: `deleteRealtimeChildren:${child}`, strict: true },
+      );
+    }
+  }
+  await batchDeleteAll(db, docs);
+}
+
+/**
+ * Drop the deleted user from realtime documents they PARTICIPATE in but do not
+ * own — the third residual on this surface, and the one nothing covered.
+ *
+ * `scrubLastEditor` only reaches documents where they happened to be the last
+ * editor. A collaborator who joined, was seen, voted and never made the final
+ * edit left three things behind on someone else's document, all of them visible
+ * to the remaining collaborators: the `presence/{uid}` child document (which
+ * carries a `displayName`), the `participants` MAP KEY, and their
+ * `participantIds` entry. The map key is also live authorization —
+ * `firestore.rules` grants update to `request.auth.uid in
+ * resource.data.participantIds` — so leaving it is a dangling grant for an
+ * account that no longer exists.
+ *
+ * Owned documents are excluded: the sibling leg has already deleted them, and
+ * an update against a deleted document throws NOT_FOUND.
+ *
+ * Returns the non-owned documents it cleaned, so a caller can reach one level
+ * further down (see [removeVoteEntries]).
+ */
+async function removeRealtimeParticipation(
+  db: admin.firestore.Firestore,
+  collection: string,
+  uid: string,
+): Promise<admin.firestore.QueryDocumentSnapshot[]> {
+  const joined = await db
+    .collection(collection)
+    .where("participantIds", "array-contains", uid)
+    .get();
+  const notOwned = joined.docs.filter((doc) => doc.data().ownerId !== uid);
+  if (notOwned.length === 0) return notOwned;
+
+  for (const doc of notOwned) {
+    const presence = doc.ref.collection("presence").doc(uid);
+    try {
+      await presence.delete();
+    } catch (err) {
+      logger.warn("[deletion-cascade] realtime presence delete failed", {
+        uid_prefix: uid.slice(0, 6),
+        path: presence.path,
+        errName: err instanceof Error ? err.name : typeof err,
+      });
+    }
+  }
+
+  await commitInChunks(
+    db,
+    notOwned,
+    (batch, doc) => {
+      batch.update(doc.ref, {
+        participantIds: admin.firestore.FieldValue.arrayRemove(uid),
+        [`participants.${uid}`]: admin.firestore.FieldValue.delete(),
+      });
+    },
+    { label: `removeRealtimeParticipation:${collection}`, strict: false },
+  );
+  return notOwned;
+}
+
+/**
+ * Anonymize the `lastEditedBy` / `lastEditedByDisplayName` pair on realtime
+ * documents in [collection] that the deleted user last edited but does NOT own.
+ *
+ * The decision this encodes: the document itself stays. It belongs to its
+ * owner, and the other participants are still collaborating on it — deleting
+ * someone else's menu because a departing member touched it last would be
+ * erasure of THEIR data, not of the deleted user's. What must go is the
+ * identity pair, which `on-profile-updated.ts` maintains as a denormalised copy
+ * of the user's profile name: without this it survives on a document other
+ * people keep open indefinitely, and the rename propagator that used to keep it
+ * current stops running the moment the account is gone.
+ *
+ * Anonymized rather than nulled, mirroring `deleteCommentsAndRatings` and the
+ * shared-shopping-list item scrub: the fields are non-nullable in the client
+ * model (`RealtimeResource`), so a null would fail the `as String` cast on read
+ * for every remaining participant.
+ *
+ * Owned documents are excluded because the sibling leg has already deleted
+ * them; a scrub of a deleted document throws NOT_FOUND.
+ */
+async function scrubLastEditor(
+  db: admin.firestore.Firestore,
+  collection: string,
+  uid: string,
+): Promise<void> {
+  const edited = await db
+    .collection(collection)
+    .where("lastEditedBy", "==", uid)
+    .get();
+  const notOwned = edited.docs.filter((doc) => doc.data().ownerId !== uid);
+  if (notOwned.length === 0) return;
+
+  // Per-doc transaction, not a blind batch.update() from the query snapshot:
+  // this is a REALTIME collection, so a different collaborator editing the
+  // same doc between the query and the write is the expected case, not the
+  // edge case. Re-checking lastEditedBy inside the transaction means a fresh
+  // edit wins and is never reverted back to "deleted"; a stale write would
+  // silently stamp someone else's just-made edit with the departed user's
+  // tombstone. Best-effort per doc, mirroring the swallowed commitInChunks
+  // failures this replaces.
+  const chunkSize = 10;
+  for (let i = 0; i < notOwned.length; i += chunkSize) {
+    const chunk = notOwned.slice(i, i + chunkSize);
+    await Promise.all(
+      chunk.map(async (doc) => {
+        try {
+          await db.runTransaction(async (tx) => {
+            const fresh = await tx.get(doc.ref);
+            if (!fresh.exists) return;
+            if (fresh.data()?.lastEditedBy !== uid) return;
+            tx.update(doc.ref, {
+              lastEditedBy: "deleted",
+              lastEditedByDisplayName: "[Raderad användare]",
+            });
+          });
+        } catch (err) {
+          logger.warn(`scrubLastEditor:${collection}: doc write failed`, {
+            uid_prefix: uid.slice(0, 6),
+            docId: doc.id,
+            errName: err instanceof Error ? err.name : typeof err,
+          });
+        }
+      }),
+    );
+  }
 }
 
 // ─── Tier 2: user subcollections ─────────────────────────────────────────

@@ -205,6 +205,21 @@ class UnifiedShoppingList {
   /// Default 1 — old docs without this field are treated as v1.
   final int schemaVersion;
 
+  /// BUT-1755: the value [fromMap] parks in [createdAt] when the stored
+  /// document has no readable one.
+  ///
+  /// The seam's fallback used to be `clock.now()`, so a legacy or imported
+  /// list was born again on EVERY read — two reads of the same document
+  /// disagreed about when it was created. That non-determinism is what made
+  /// `ShoppingListPermissionGuards.requireNoPrivilegeEscalation`'s exact
+  /// `createdAt != createdAt` comparison refuse every non-owner edit on such a
+  /// list, with advice ("reload") that could never succeed. A fixed sentinel
+  /// costs the same and compares equal to itself.
+  ///
+  /// Epoch UTC rather than a null-like guess: it sorts unambiguously before any
+  /// real creation time and reads as "unknown, and old" wherever it surfaces.
+  static final DateTime unknownCreatedAt = DateTime.utc(1970);
+
   /// Creates a new unified shopping list with comprehensive metadata and automatic ID generation.
   /// This constructor provides complete shopping list initialization with support for personal,
   /// collaborative, and template shopping lists. All collaborative features are optional and
@@ -749,9 +764,17 @@ class UnifiedShoppingList {
         'items',
         (item) => UnifiedShoppingItem.fromFirestore(item),
       ),
+      // BUT-1755: deterministic sentinel, NOT `clock.now()` — see
+      // [unknownCreatedAt]. Deliberately not applied to `updatedAt`: a missing
+      // update stamp meaning "as of now" is harmless, and nothing compares it
+      // for exact equality across two reads.
       createdAt: data['createdAt'] is DateTime
           ? data['createdAt'] as DateTime
-          : SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
+          : SerializationUtils.safeRequiredDateTime(
+              data,
+              'createdAt',
+              defaultValue: unknownCreatedAt,
+            ),
       updatedAt: data['updatedAt'] is DateTime
           ? data['updatedAt'] as DateTime
           : SerializationUtils.safeRequiredDateTime(data, 'updatedAt'),

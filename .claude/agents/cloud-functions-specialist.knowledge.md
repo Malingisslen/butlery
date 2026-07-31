@@ -31,7 +31,7 @@ The raw ticket-by-ticket narrative goes to
 |---|---|---|---|
 | `llm/` (Gemini/Vertex) | Paid-LLM cost, latency, prompt safety | callable | `test:ocr-retry` |
 | `cleanup/` | Idempotent deletion cascades, batch limits | scheduled + onDocumentDeleted | `test:cleanup-*` |
-| `social/` | Profile propagation across user trees | onDocumentUpdated | `test:profile-updated`, `test:set-profile-searchability` |
+| `social/` | Profile propagation across user trees | onDocumentUpdated | `test:on-profile-updated` (verified 2026-07-30; NOT `test:profile-updated`), `test:set-profile-searchability` |
 | `events/` | Telemetry append-only | onCall | `test:parse-correction`, `test:parse-tier-vocabulary` |
 | `admin/` | One-shot scripts, ts-node only, never deployed | manual | idempotency/region/retry N/A |
 | `notifications/` | FCM push, batched, rate-limited | onCall + scheduled | `test:send-notification`, `test:activity-digest` |
@@ -155,15 +155,15 @@ logger.info("descriptive event", { userId, recipeId, action });
   was kept for eyeballing. Swedish dish titles often lead with a given name
   ("Annas paj", "Mormors …"); if only inequality-across-events matters for
   detection, a hash gives that signal without the leak. `hashUid(uid)`
-  everywhere a raw uid would sit near other identifying fields. Known OPEN
-  instance (re-confirmed 2026-07-30, THREE times, and survived the BUT-1724
-  edit to the same file): `compute-feature-retention.ts:193-197`'s
-  `feature_retention_probe_failed` warn logs a raw `userId` AND nests the Error
-  (`err: {}` — cause recorded nowhere), so a per-flag probe failure is
-  undiagnosable; fix = `hashUid(userId)` + `errCode`/`errName`. Don't argue it
-  from source alone — `npm run test:compute-feature-retention` PRINTS the
-  offending line (`{"flag":"cooked","userId":"uProbe","err":{}}`), which is the
-  cheapest possible proof and makes the finding unarguable.
+  everywhere a raw uid would sit near other identifying fields. CLOSED
+  2026-07-30 after FOUR reports: `compute-feature-retention.ts`'s
+  `feature_retention_probe_failed` now emits
+  `{flag, userIdHash, errCode, errName}` and its comment forbids re-adding
+  `err.message` (Firestore error text carries `users/<raw uid>/…` paths and
+  `create_composite` URLs). That is the canonical shape for any probe warn —
+  and the way to ARGUE such a finding is to run the suite, because
+  `npm run test:compute-feature-retention` PRINTS the log line in its own
+  PASSING output. Never argue a log-shape finding from source alone.
 - **A raw uid interpolated into the MESSAGE string is the recurring form of
   this leak**, and it fails twice: it is cleartext PII (worst on the Art. 17
   erasure path, where the log outlives the account) and it gives every user a
@@ -312,7 +312,22 @@ see "When to consult the archive" at the end.
   `noUnusedLocals` TSError, which reads as a red suite for the wrong reason).
   Keep the symbol referenced: `.collection(Collections.x ? "old_name" : "y")`.
   Verified on BUT-1724 — the first mutation attempt produced a TSError, the
-  reworked one reddened exactly the one targeted test.
+  reworked one reddened exactly the one targeted test. Same trap on a
+  destructured `Promise.all` result: deleting a leg from the OR it feeds
+  (`shopped: a || b` → `a`) orphans `b` and yields the same TSError; neutralise
+  instead (`[b].length > 99 ? true : a`).
+- **A fake query whose `.where()` ignores the FIELD ARGUMENT pins the
+  collection but not the field, and a paired "the composite is declared in
+  `firestore.indexes.json`" test does NOT close the gap** — it pins the INDEX
+  side of the pair while the QUERY side stays free to drift, which is the
+  silent-zero bug class itself. Measured on BUT-1761: swapping the new probe's
+  `.where("lastActivityByUserId","==",uid)` for `ownerId` left
+  `compute-feature-retention` 11/11 GREEN, though in production it matches no
+  declared composite → FAILED_PRECONDITION → swallowed by `safeProbe` → the
+  flag re-zeroes. (The COLLECTION name IS pinned when the fake's
+  `collection()` throws on an unmodelled name — keep that branch.) Fix the
+  fake: record the equality/range field names on the query object and throw on
+  an unexpected one, or assert them in the index test alongside the JSON.
 - **Refactoring a fan-out helper from a collection NAME to a
   `CollectionReference` couples its legs inside any hand-rolled Firestore
   double whose `.where()/.orderBy()/.limit()/.startAfter()` MUTATE and return
@@ -444,6 +459,73 @@ see "When to consult the archive" at the end.
   `memberPermissions.{uid}` key like `deleteWeeklyMenuPlans`/
   `deleteFamilyData` do — in the SAME atomic per-doc `update()`, since that
   key is the step's re-entry query handle.
+- **Anonymizing a CHILD collection is not done until the PARENT's
+  denormalised preview copy and its per-uid MAP fields are scrubbed too, and
+  the cheapest way to enumerate them is to read what the Art. 15 EXPORT
+  already redacts about OTHER people.** Whatever the export must hide about a
+  third party on a doc, the cascade must erase about the departing user on the
+  same doc. CLOSED 2026-07-30 (BUT-1766/BUT-1768, 26/26 green): the GROUP leg
+  now does one `update()` per conversation covering `participantIds`,
+  `participantDisplayNames.{uid}`, `participantAvatarUrls.{uid}`,
+  `lastReadTimestamps.{uid}`, `perUserSettings.{uid}` AND a `lastMessage.*`
+  tombstone (only when `lastMessage.senderId === uid`) — `messages.metadata`
+  and `reactions` are still open gaps, not covered by this pass.
+  `deleteRealtimeMenus`/`deleteRealtimeRecipes` got the same treatment
+  (`scrubLastEditor` + `removeRealtimeParticipation` + child-subcollection
+  sweep via `deleteRealtimeDocsWithChildren`) and `realtime_menus` got a tier
+  entry for the first time ever.
+- **A cascade write built from a QUERY-TIME snapshot and applied via a plain
+  (non-transactional) `.update()` is a lost-update hazard against the exact
+  thing a "realtime"/collaborative surface exists to do: a concurrent edit by
+  a DIFFERENT, non-deleted user.** A literal-value field overwrite decided from
+  a stale read is the tell; an atomic op (`arrayRemove`, `FieldValue.delete()`)
+  needs no fix, since Firestore applies those against the live document
+  regardless of what was read. CLOSED 2026-07-30/31 for both instances found in
+  the BUT-1766/1768 diff: `buildGroupDepartureUpdate` (the `lastMessage.*`
+  tombstone) and `scrubLastEditor` (`lastEditedBy`/`lastEditedByDisplayName`)
+  now each wrap their write in `db.runTransaction`, `tx.get()` the doc fresh,
+  skip on `!fresh.exists`, and derive every literal-value field from `fresh`
+  only — the outer query's `convoDoc`/`doc` snapshot is used for `.ref` alone,
+  never `.data()`, which is the structural proof the fix is real (grep for a
+  literal-value field sourced from the outer snapshot inside a
+  post-transactional-rewrite step; finding one is the regression). `scrubLastEditor`
+  additionally re-checks `lastEditedBy === uid` inside the transaction before
+  writing — the query-time membership can go stale the same way `lastMessage`
+  did. Real Firestore transaction semantics (auto-retry on a conflicting write
+  to a doc read inside the transaction) close the race for both; this is proven
+  by code inspection against documented SDK behaviour, not by the test suite —
+  **the hand-rolled `FakeFirestore.runTransaction` passthrough (`get`/`update`
+  hit the same in-memory store as everywhere else, no isolation, no retry,
+  single-threaded so nothing can interleave) cannot simulate an actual
+  concurrent writer, and says so in its own docstring.** The 26/26 green suite
+  is real evidence for a different, still-valuable property — that the
+  transaction-wrapped code computes the SAME correct scrub/tombstone values as
+  before (no regression in the field-path/FieldValue-marker logic) — not for
+  concurrency-safety itself. Don't let a green suite substitute for the code-read
+  when reviewing a *future* transactional fix in this file; check `fresh` vs the
+  outer snapshot by eye every time.
+- A batch built from a query snapshot that reaches `batch.update()` on a doc a
+  DIFFERENT actor concurrently deleted fails the WHOLE chunk (up to 500 docs)
+  with NOT_FOUND, silently, under `commitInChunks({strict:false})` — the
+  merged-batch abort rule applies to a uniform batch of updates, not only a
+  mixed delete+update batch. `probeResidualData` is the backstop IF the
+  scrubbed field is itself probed (`realtime_menus.lastEditedBy`/
+  `.participantIds` are; the `participants.{uid}` MAP KEY is not, by design —
+  unqueryable). Low real risk here specifically (a user's realtime-doc
+  participation count is small), but the failure mode is silent, so say so in
+  review rather than assuming the probe always catches it.
+- **Rules are not filters on the DELETE path either: a CLIENT-side cascade can
+  only query on the field the read rule authorizes.** `match /messages` grants
+  read via `get(conversations/$(resource.data.conversationId)).data
+  .participantIds`, so a client `where("senderId","==",uid)` list over the whole
+  collection (a) is denied wholesale the moment one matched doc sits in a
+  conversation the user has LEFT, and (b) blows the rules limit of **10
+  `get()`/`exists()` access calls per query request** as soon as the matches
+  span >10 distinct conversations (identical paths are cached, so a
+  `where("conversationId","==",x)` read costs exactly 1 and is fine).
+  `fake_cloud_firestore` evaluates no rules, so a Dart unit test asserting
+  "messages in a conversation the user already LEFT are still deleted" is green
+  and meaningless. Only the Admin SDK can key an erasure on the sender.
 - **A cascade step that read-then-rewrites a whole embedded array via a
   serial `ref.update()` loop has two defects at once**: NOT_FOUND on a
   concurrently deleted doc aborts every remaining doc in the loop, and the
@@ -500,17 +582,36 @@ see "When to consult the archive" at the end.
   SOMEONE ELSE's doc. Fix shape: a `deleteRealtimeMenus` twin plus a
   `lastEditedBy == uid → lastEditedByDisplayName: null` scrub leg on both, each
   with its own `probeResidualData` leg. The asymmetry also runs the OTHER way,
-  and shopping lists are the live case (2026-07-30): the cascade scrubs
-  ITEM-level `addedByDisplayName`/`lastModifiedByDisplayName`
-  (`account-deletion-cascade.ts:624,629`) while `on-profile-updated.ts`'s
-  shopping legs update only the LIST-level `ownerDisplayName`/
-  `lastActivityByDisplayName` — so a rename leaves every "X la till mjölk" row
-  showing the old name forever, personal and shared alike. Whenever a leg
-  reasons about "which stamps must move", check the DOC MODEL's full
-  {uid, displayName} pair set, not the stamps the leg already knows about; a
-  fix needs `collectionGroup("items").where("addedByUserId","==",uid)` with a
-  `COLLECTION_GROUP` fieldOverride, and the embedded `items` ARRAY copy on the
-  list doc is not queryable at all (read-modify-write per matched list).
+  and shopping lists were the live case: the cascade scrubbed ITEM-level
+  `addedByDisplayName`/`lastModifiedByDisplayName` while `on-profile-updated.ts`
+  updated only the LIST-level `ownerDisplayName`/`lastActivityByDisplayName`, so
+  a rename left every "X la till mjölk" row showing the old name forever.
+  BUT-1770 closed it (2026-07-30) and the CLOSING SHAPE is the reusable part:
+  `collectionGroup("items").where("addedByUserId"|"lastModifiedByUserId","==",uid)`
+  through `batchUpdateQueryPaginated`, plus a per-list transaction for the
+  EMBEDDED `items` ARRAY on `unified_shared_shopping_lists` (an array element's
+  field is neither queryable nor patchable — read-modify-write, and rewrite only
+  the rows whose own `*ByUserId` is this uid, or you stamp your name on someone
+  else's row). `items` is a shopping-only collection id — the ONLY `match /items`
+  blocks in `firestore.rules` are `users/{uid}/unified_shopping_lists/{listId}/items`
+  and `shared_content/{contentId}/items` — so the collection group has no
+  cross-feature blast radius; re-verify that before adding a third leg. Whenever
+  a leg reasons about "which stamps must move", check the DOC MODEL's full
+  {uid, displayName} pair set, not the stamps the leg already knows about.
+  **The residual, and the general rule: a rename leg and an erasure leg over the
+  same docs must use the SAME scoping union, and a docstring claiming they do is
+  checkable in 60 seconds.** BUT-1770's embedded-array leg scopes on
+  `contributorUserIds` array-contains ALONE while `deleteShoppingLists`
+  (`account-deletion-cascade.ts:571-588`) unions FOUR queries over that same
+  collection — `memberPermissions.{uid}`, `ownerId == uid`,
+  `contributorUserIds array-contains uid`, `lastActivityByUserId == uid` — dedup'd
+  into one `Map<docId, ref>`, precisely because membership/ownership/activity are
+  each things a user can stop having while their name stays on the doc. The
+  rename leg's own docstring asserts "the deletion cascade uses the same handle
+  for the same reason", which is false; the gap is pre-BUT-1725 rows on lists
+  never touched since (the trail is unioned by the client on every item write,
+  and `backfillSharedListContributors` is the shape that cannot finish above its
+  scan cap). Copy the cascade's four-query union + dedup, don't re-derive.
 - **`probeResidualData` must not be BROADER than the deleter** — a probe leg
   the cascade has no path to clear makes the canary permanently red. The
   shared-shopping-list orphan probe counts `ownerId == uid` with no other
@@ -814,6 +915,21 @@ see "When to consult the archive" at the end.
 - Shared word/heuristic lists: compiled-in consts pinned by JSON-fixture
   parity tests on BOTH sides — never a runtime JSON load (tsc doesn't copy
   `.json` under `src/` into `lib/`; a runtime read crashes the deployed fn).
+- **A sentinel default that fixes a non-determinism must be ROUND-TRIP STABLE
+  through Firestore, or the fix only narrows the window.** Dart's
+  `DateTime.==` compares `isUtc` as well as the instant (measured:
+  `DateTime.utc(1970) == DateTime.fromMillisecondsSinceEpoch(0)` is **false**
+  while `isAtSameMomentAs` is true), and `Timestamp.toDate()` returns a LOCAL
+  `DateTime` — so a UTC sentinel written by `toFirestore()` comes back
+  non-equal to itself. BUT-1755 (`UnifiedShoppingList.unknownCreatedAt =
+  DateTime.utc(1970)`) hits this: the value IS persisted, by
+  `mutateCollaborativeList`'s `transaction.set(mutated.toFirestore(),
+  merge:true)`, which ships every field. Any client-side equality gate over a
+  parsed timestamp (`ShoppingListPermissionGuards.requireNoPrivilegeEscalation`)
+  must use `isAtSameMomentAs`, never `!=`. Same class: a second parse entry
+  point left on the old fallback (`fromJson` still defaults to `clock.now()`
+  where `fromMap` now uses the sentinel) — grep EVERY factory, not just the one
+  the ticket names.
 
 ### LLM prompts & prompts-config
 - Compiled-in prompt edits are INERT while a valid Firestore `system/
@@ -885,6 +1001,21 @@ see "When to consult the archive" at the end.
   `DEPLOY_FAILED`); only a control-plane query after deploy does.
 - A Firestore TTL field is INERT without the matching `gcloud firestore
   fields ttls update` policy actually applied — demand the runbook entry.
+- **Before approving a new composite index, check for an EXISTING composite on
+  the same two fields in the opposite orderBy direction — Firestore serves a
+  query by scanning that index in reverse, so the "opposite direction" variant
+  is usually redundant.** Caught on the BUT-1766/1768 diff:
+  `firestore.indexes.json` already declared `messages` (conversationId ASC,
+  sentAt DESCENDING) for `sync-conversation-last-message.ts`'s
+  `.orderBy("sentAt","desc")`; the diff added a second entry, same two fields,
+  sentAt ASCENDING — no query in the codebase orders that way, so it's a
+  standing write-cost tax with zero query benefit. Contrast with a GENUINELY
+  new requirement in the same diff: `unified_shared_shopping_lists`
+  (lastActivityByUserId ASC, updatedAt ASC) for the new
+  `compute-feature-retention.ts` collaborative-shopping probe — that one is
+  correctly the collection's ONLY composite, so nothing to reverse-check
+  against. Always grep the collection name in `firestore.indexes.json` for
+  existing entries before rating a new composite as required.
 - Data-writing/deleting CFs get an adversarial multi-finder review before
   commit — a single-specialist gate has endorsed a dead-on-arrival
   collection path before; necessary but not sufficient alone.

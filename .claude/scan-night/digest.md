@@ -1,95 +1,100 @@
-# Scan Night Digest — Butlery, 2026-07-24
+# scan night — Butlery, 2026-07-31
 
-Real overnight run (the previous digest here was a 10-minute mechanics smoke test from
-2026-07-09 and is superseded). Six scoped area scanners plus the deterministic hygiene
-gates. Nothing was filed without being re-verified against the code in the main session.
+Ran as repo 1 of 3 in the overnight tri-repo scheduled sweep, with a per-repo token slice.
+One full pass. Focus rotated onto the areas the 2026-07-24 run named as uncovered.
+(Previous digest archived as `digest-2026-07-24.md`.)
 
 ## 1. Census
 
-**14 distinct verified issues filed.** All 14 were confirmed by opening the cited file and
-reading the code — none are inferred.
-
-By severity: 1 Urgent, 3 High, 6 Medium, 4 Low.
+**Distinct verified issues found: 11.** All 11 were filed, batched into 9 tickets.
 
 By class:
-- **Measured** (a deterministic tool produced the finding): 2 — the large-file inventory
-  drift (`tools/count_large_files.sh`) and the dependency lag (`flutter pub outdated`).
-- **Confirmed at file:line** (read and reasoned, failure path stated): 12.
-- **Anchored-but-judged** (feature gaps needing product sign-off): 0. No new unticketed
-  roadmap anchors were found — every unchecked item in
-  `PIPELINE_IMPROVEMENT_ROADMAP.md` already carries a BUT- id except the GlobalRecipeCache
-  write-back, which is an explicitly accepted deferral in that document.
+- Defects, measured or read directly off the code: **11**
+- Feature gaps (anchored, "Proposed — needs sign-off"): **0** — no candidate cleared the
+  anchor gate this run.
 
-By area: shopping 4, recipe 3, backend 3, menu 2, account 2, analytics 2, import 1,
-parsing 1, tagging 1, social 2 (tickets carry multiple area labels, so these overlap).
+By severity: 1 Urgent, 6 High, 1 Medium, 3 Low (the three Lows batched into one ticket).
 
-Clean gates: `dart analyze --fatal-infos` — no issues. Cloud Functions `npm test` — passed.
+By area: recipe 5, settings 3, social 3, backend 3, import 2, tagging 2, shopping 1,
+performance 1.
+
+Two of the eleven are the same root cause found independently by two agents in two trees
+(code targeting a top-level `recipes` collection that does not exist) and were merged into
+one ticket listing all five sites.
 
 ## 2. Tickets filed, worst first
 
-### Verified — safe to fix without a product decision
+### Verified — safe to fix
 
-| Ticket | Sev | What |
+| Ticket | Sev | What breaks |
 |---|---|---|
-| BUT-1663 | Urgent | Household allergen union silently drops a member whose profile read fails — the weekly menu can under-filter an allergen with no signal to anyone |
-| BUT-1661 | High | `looksLikeIngredient` can never match `ägg` (Dart's ASCII word boundary) — headerless text imports silently drop unitless egg lines, producing a false "fritt från ägg" |
-| BUT-1664 | High | `sendNotificationBatch` charges the wrong rate-limit bucket and 1 token per 100 pushes — its dedicated stricter config is dead code |
-| BUT-1665 | High | Collaborative shopping-list edits overwrite the whole items array from a stale local cache — concurrent household ticks are silently lost |
-| BUT-1662 | Medium | GDPR export falsely stamps `truncated: true` on ~15 sections; the BUT-1562 fix was applied to one call site only |
-| BUT-1666 | Medium | `IngredientCategorizer` substring collisions: nuts → meat, "rostad" → dairy, paprika and coconut milk in the wrong aisle |
-| BUT-1667 | Medium | `RecipeFormState.dispose()` no longer disposes its three `FormFieldsManager`s — text controllers leak on every recipe form close |
-| BUT-1668 | Medium | Weekday pins ignore the today-anchor and can place a recipe on a day that has already passed |
-| BUT-1669 | Medium | A queued concurrent recipe save double-completes its `Completer` and throws `StateError` out of `saveRecipe` |
-| BUT-1670 | Medium | Shopping analytics: the menu-generated flow fires nothing, recipe bulk-adds log as "manual", unchecks log as checks |
-| BUT-1671 | Low | Two scheduled sweeps can silently strand work at scale — family purge has no persisted cursor, lapsed-user detection has no query limit |
-| BUT-1672 | Low | `addItemsFromRecipe`'s dedup-and-merge branch is unreachable — bulk recipe adds always duplicate |
-| BUT-1673 | Low | Large-file inventory drifted to 8 unlisted files; `lib/app/butlery_app.dart` at 861 lines never had a rationale row |
-| BUT-1674 | Low | Five direct dependencies a full major behind with no pin rationale (the documented pins are fine and were excluded) |
+| BUT-1779 | Urgent | Saving a hand-written recipe lands the user on a full-screen error — a bare id is passed to a route that only accepts a `Recipe` object. 4 sites. The recipe IS saved; the screen says it failed. |
+| BUT-1780 | High | Allergen badges never render on any recipe card. The setting defaults ON and promises them; the flag is never threaded through `ContentCard`, so `RecipeCard`'s default `false` always wins. |
+| BUT-1781 | High | Five call sites read/write a top-level `recipes` collection that has no rules match block and holds no user recipes. The ingredient-change retag cascade is therefore completely dead, the counter that would have shown it reports 0 forever, and rating a shared recipe throws. |
+| BUT-1782 | High | The notification-preferences local cache is a stub (`toJson` returns `'{}'`, `fromJson` returns defaults). One failed Firestore read silently restores every preference to default, including re-enabling push the user turned off. |
+| BUT-1783 | High | The notification sound and vibration switches control nothing — zero consumers anywhere in either tree. Marked `need-malin`: wiring it is real work, removing the switches is the honest cheap option. |
+| BUT-1784 | High | "Listan skapad" fires unconditionally; the create-list dialog discards the success bool and the service swallows the error without logging. A failed write looks like a successful one. |
+| BUT-1785 | High | Revoking a shared *group's* recipe access always fails — the group id is passed to a member API keyed by user id. The per-group revoke control can never succeed. |
+| BUT-1786 | Medium | `cleanupExpiredCache` reads the whole `globalRecipeCache` with no `limit()` — the only sweep in that directory that does not paginate. |
+| BUT-1787 | Low | Three dead code paths that read as working: a duplicate draft-recovery dialog with zero references, a `dispose()` on a `StatelessWidget`, and a comment helper that discards its text and reports success. |
 
 ### Proposed — needs your call
 
-None this run. Both anti-fabrication gates were applied and no feature-gap candidate
-cleared the anchor requirement, so nothing speculative was filed.
+Only BUT-1783, and it is a small one: wire the sound/vibration switches, or delete them.
+Recommendation is in the ticket (delete them).
+
+No speculative feature gaps were filed. Both anti-fabrication gates were applied and no
+gap candidate produced a code, roadmap or benchmark anchor.
 
 ## 3. Rejected, and why
 
-- **NFC vs NFD normalization in the voice→text→parse pipeline** — no normalization step
-  exists anywhere in that chain, which is suspicious, but the scanner could not confirm
-  that the on-device transcriber actually emits decomposed Swedish characters. Unconfirmable
-  → discarded rather than filed as a guess.
-- **A second and third interpolated `\b` word-boundary site** (`recipe_text_normalizer.dart`,
-  `ingredient_line_detector.dart`) — checked every word in both lists; all begin and end with
-  ASCII characters, so the ASCII-boundary bug does not apply. Only `ägg` is affected. Filed
-  the one real site, not the pattern.
-- **GlobalRecipeCache retag write-back** — an unchecked roadmap item with no ticket, but the
-  roadmap records it as a conscious "accepted for now, revisit before user growth" decision
-  under a documented no-pre-filed-tickets convention. Not a gap.
-- **Everything listed in `.claude/rules/accepted-deviations.md`** — pooled-ratings edge cases,
-  the no-edit-detachment design, presence not scoping menu generation, draft-ingredient FREE
-  authority, `socialFeatures` consent, parse_events retention, cook_snaps age gating. Each
-  scanner was briefed on these and none re-flagged them.
+- **`dart analyze` findings — the gate could not be run at all.** The machine had 0.94 GB
+  free of 15.8 GB; the analysis server needs roughly 2 GB of headroom. Per
+  `docs/ops/analyzer-recovery.md` step 1 that is a starved server, not findings, and no
+  cache surgery helps. `dart analyze` exited 1 with the truncated
+  "Analyzing butlery..." signature the runbook describes. **Nothing was filed from it.**
+  This gate is genuinely unrun for this pass.
+- **File-size hygiene** — ran, produced no new information; every finding is already
+  covered by BUT-1673.
+- **Dependency lag** — not re-run; BUT-1674 already covers it.
+- **`flutter test`** — deliberately skipped, same reasoning as the 2026-07-24 run: it is
+  compile-bound at roughly twelve minutes and CI already runs it.
+- **Several singleton-dispose candidates in the social/menu/shopping views** — the
+  scanning agent traced each back to `registerFactory` and killed them itself.
+- **Two more interpolated-`\b` word-boundary candidates** — checked; both word lists are
+  ASCII-bounded, so the Swedish-boundary bug does not apply.
+- **Everything in `.claude/rules/accepted-deviations.md`** — every agent was briefed on the
+  list and none re-flagged an entry.
+- **Findings inside the parallel session's uncommitted work** — the agents were told to
+  treat that fileset with extra suspicion. Nothing was filed from it.
 
 ## 4. Where it stopped
 
-Stopped on **budget**, not dryness — this run is one repo of a three-repo scheduled sweep
-with a per-repo token slice, and Butlery's slice was spent after one full pass.
+Stopped on **budget**, not dryness. This is one repo of a three-repo scheduled sweep with a
+per-repo slice, and Butlery's slice was spent after one pass. Dryness is unproven — the
+skill's stop condition is two consecutive nothing-new passes and only one pass ran.
 
-Coverage of that pass was complete across all eleven area labels: every area was scanned by
-one of the six agents, plus the four hygiene checks. What a further pass would add:
+What this pass DID cover, and had never been covered systematically before:
+- `lib/views/` recipe, import, tagging, social, menu and shopping screens
+- `lib/views/settings/`, `lib/views/account/`, notification preferences end to end
+  (settings was the backlog's biggest blind spot — one open ticket going in)
+- `lib/widgets/` as a pattern sweep (dispose / mounted / context-across-await / twin classes)
+- `functions/src/social/`, `notifications/`, `storage/`, `cleanup/`
 
-- A second pass over the same areas (the stop condition in the skill is two consecutive
-  nothing-new passes; only one pass ran, so dryness is unproven).
-- `lib/widgets/` and `lib/views/` beyond the specific screens each agent covered — the
-  scanners were pointed at services, viewmodels and repositories.
-- The full `flutter test` suite as a hygiene gate. It was deliberately skipped: it is
-  compile-bound at roughly twelve minutes per invocation and CI already runs it. `dart
-  analyze` and the Cloud Functions suite were run and both passed.
-- `functions/src/` families the backend agent did not reach: parts of `social/`,
-  `notifications/` beyond `send-notification.ts`, and `storage/`.
+What remains unscanned:
+- A second pass over **shopping and analytics**. The 2026-07-24 run's resume pointer asked
+  for this and it was deprioritised in favour of the never-covered UI layer. Ten open
+  shopping tickets suggest that seam is well mined, but it is not proven dry.
+- `lib/services/` and `lib/repositories/` were entered only to verify a call found in a
+  view — no systematic pass this run (the 2026-07-24 run covered them).
+- `dart analyze`, for the machine reason above.
 
 ## 5. Resume pointer
 
-A resumed run should start with a **second pass over shopping and analytics** — they were
-the backlog blind spots going in and produced six of the fourteen findings, which suggests
-the seam is not exhausted. Then `lib/widgets/` and `lib/views/`, which no agent covered
-systematically this pass.
+Start with **`dart analyze` once the machine has headroom** — it is the cheapest gate and
+it has now been unrun for a full cycle.
+
+Then the **second pass over shopping and analytics** that this run deferred, followed by a
+second pass over `lib/widgets/`: this run swept it by grep pattern rather than by reading
+files, which is strong for dispose/mounted classes of bug and weak for logic bugs inside
+individual widgets.

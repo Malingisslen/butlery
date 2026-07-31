@@ -7241,3 +7241,412 @@ cheapest proof available and is how this should be argued from now on. (3) Low: 
 list. (4) Low: the new default-enforcer audit-row case does not assert `retryAfterMs`, so it
 cannot distinguish deny-by-bucket from `checkRateLimit`'s fail-closed `catch`; it is honest
 today only because its fixture is a well-formed zero-token bucket.
+
+### 2026-07-30 — BUT-1766/1767/1768/1773 account-area review (messages cascade + Art. 15 messages export)
+
+[Pattern discovered] [Bug fixed] Scope: `functions/src/account/account-deletion-cascade.ts`,
+`request-account-deletion.ts`, `functions/package.json`, the new
+`functions/src/__tests__/account-deletion-cascade.test.ts`, `firestore.indexes.json`, and the
+Dart account/export side (`message_deletion_module.dart` (new), `firebase_messaging_repository.dart`,
+`firebase_data_export_repository.dart`, `social_export_manager.dart`, `data_export_service.dart`,
+the two realtime services, `recipe_collaborative_manager.dart`, and four test files).
+
+**What the diff fixes, and it is real.** `deleteMessages` swept
+`conversations/{id}/messages` — a subcollection with no `match` block, no writer and no
+documents — so every account erased since BUT-788 kept its whole chat history while the
+cascade reported `messages` deleted and the audit row said `gdprCompliant: true`. Same class
+on the Art. 15 side: the export read the same phantom subcollection AND sorted on `timestamp`,
+a field `MessageDto.toFirestore` has never written, so the bundle has never contained a
+message. `realtime_menus` had no tier entry at all. All three are the BUT-1724 disease
+("syntactically perfect query, throws nothing, matches zero") and the fixes are correct:
+top-level `messages` keyed on a `conversationId` FIELD, `sentAt` ASC (new composite index
+`conversationId ASC + sentAt ASC` declared; the pre-existing entry is `sentAt DESCENDING` for
+the chat UI and does not serve it), plus `deleteRealtimeMenus` + a shared `scrubLastEditor`
+for the `lastEditedBy/lastEditedByDisplayName` pair on docs the user edited but does not own.
+Probe legs were added for all four new handles and each is cleared by a deleter, so the
+superset property holds for what the probe covers.
+
+**Verification run.** `npm run test:account-deletion-cascade` 12/12; `npx tsc --noEmit -p
+functions/tsconfig.json` exit 0; `node functions/scripts/check-test-registration.js` OK, 119
+files registered (the new `test:*` script is present — the usual wiring trap was NOT hit);
+`flutter test` over `firebase_notification_deletion_test.dart`,
+`firebase_data_export_repository_conversations_test.dart`, `social_export_manager_test.dart`
+and `data_export_service_test.dart` → +95 all passed; `dart analyze` over the eight changed
+`lib/` files → No issues found.
+
+**Mid-review mutation, again, and a new spelling of it.** The first `test:account-deletion-cascade`
+run came back 10/12 with the two anonymization scenarios red, and `tsc` reported a TS6133 in
+`compute-feature-retention.ts` (out of scope). Cause was a parallel session's mutation proof:
+`account-deletion-cascade.ts:1041` read `if (false && own.docs.length > 0)`. Polling on
+CONTENT found it restored on the first poll; `git hash-object` then matched the `git diff`
+index blob `e9cdaa25e`, the suite went 12/12 and `tsc` went clean. The `if (false && …)`
+short-circuit is a new spelling to recognise — it does not change any identifier, so a grep
+for the changed symbol finds nothing, and it type-checks. Free non-vacuity evidence: the two
+anonymization checks DO redden when the leg is disabled.
+
+**Findings filed (none of them regressions introduced by this diff, all in files under review).**
+1. High — the parent `conversations/{id}` doc is never scrubbed. The GROUP leg only
+   `arrayRemove`s `participantIds`, leaving `lastMessage` (a full `MessageDto.toMap` copy:
+   uid, display name, avatar URL, message content), `participantDisplayNames.{uid}`,
+   `participantAvatarUrls.{uid}` and `lastReadTimestamps.{uid}` on a document every remaining
+   member reads. `social_export_manager._dropOtherPeoplesAvatars` redacts exactly
+   `participantAvatarUrls` and `lastMessage.senderAvatarUrl` for third parties, which is the
+   cheapest enumeration of what the cascade owes. The new `messages.senderId` probe cannot
+   see any of it.
+2. High — `MessageDeletionModule.deleteAllMessagesForUser` (new file) cannot work under
+   `firestore.rules`. Its `messages.where(senderId==uid)` list is authorized per-doc via
+   `get(conversations/$(resource.data.conversationId))`, so it is denied wholesale for any
+   message in a conversation the user has LEFT — the exact case its new test
+   `'messages in a conversation the user already LEFT are still deleted'` claims to prove —
+   and it exceeds the rules limit of 10 access calls per query request once the matches span
+   >10 conversations. `fake_cloud_firestore` evaluates no rules. Mitigating: grep finds no
+   production caller (interface + repository only); the CF is the erasure path.
+3. Medium — `messages.metadata` (`recipeTitle`/`menuTitle`/`listTitle`) and the `reactions`
+   map (deleted uid on OTHER people's messages) survive the anonymization.
+4. Medium — leg 1 and `scrubLastEditor` do unbounded `.get()`s on the highest-volume
+   collection in the app inside a callable; and `commitInChunks(strict:false)` means a chunk
+   failure is warn-only while `deleteMessages` still returns `true`.
+5. Low — `data_export_service._logExportAudit` records `bundle_bytes: jsonString.length`,
+   which is UTF-16 code units; åäö make it under-count.
+
+### 2026-07-30 — BUT-1761 review: the `shopped` collaborative leg (analytics/) [Pattern discovered]
+
+Reviewed `functions/src/analytics/compute-feature-retention.ts`,
+`functions/src/__tests__/compute-feature-retention.test.ts`, `firestore.indexes.json`.
+The change adds a SIXTH probe behind the existing `shopped` flag:
+`unified_shared_shopping_lists` where `lastActivityByUserId == uid` AND an `updatedAt`
+day range, OR-ed with the personal-subcollection leg. Declares the composite
+(`lastActivityByUserId` ASC, `updatedAt` ASC, COLLECTION scope) and a test that asserts
+that declaration against the real `firestore.indexes.json`.
+
+Verified the premise end-to-end rather than from the docstring: `Collections
+.unifiedSharedShoppingLists === "unified_shared_shopping_lists"`;
+`UnifiedShoppingList.toFirestore()` writes `updatedAt` as a real `Timestamp` (not an ISO
+string) and `lastActivityByUserId` alongside it; every model mutator (`addItem`,
+`removeItem`, `updateItem`/`toggleItemBought`, `clearBoughtItems`, `uncheckAllItems`)
+bumps both in one `copyWith`; the transactional tick path
+(`ShoppingRepositoryRoutingModule.mutateCollaborativeList` → `transaction.set(...,
+merge:true)` of `mutated.toFirestore()`) persists both, and
+`ListItemOperations.toggleItemBought` passes a non-null `userId`. Offline replay keeps
+them too — `ShoppingOfflineWriteModule._writableActivityKeys` includes `updatedAt` and
+`lastActivityByUserId`. So the leg really does fire on a shop-aisle tick.
+
+Ran `npm run test:compute-feature-retention` → 11/11 PASS. `npm run build` → clean.
+`test:compute-feature-retention` is registered in `package.json` and `CI_EXCLUDE` is empty,
+so the suite runs in the real CI lane.
+
+**Mutation testing (the finding).** Two mutations, each restored and the diffstat
+re-checked (93 insertions / 33 deletions, byte-identical to the staged file):
+
+1. Delete the shared leg from the OR (`shopped: shoppedPersonal || shoppedShared` →
+   `shopped: shoppedPersonal`). First attempt produced `TS6133: 'shoppedShared' is
+   declared but its value is never read` — the same `noUnusedLocals` trap already logged
+   for `Collections.x`, here on a destructured `Promise.all` result. Neutralised instead
+   (`[shoppedShared].length > 99 ? true : shoppedPersonal`) → exactly ONE red:
+   `shared-list activity sets shopped; another member's stamp and a prior day do not`.
+   The new behaviour test is non-vacuous.
+2. Swap the equality FIELD (`.where("lastActivityByUserId","==",userId)` →
+   `.where("ownerId","==",userId)`) → **11/11 still green.** The fake's
+   `makeActivityQuery.where()` maps any `op === "=="` to `userId` regardless of the field
+   name, and stores `timeField` for the range ops without ever filtering on it. So the
+   suite pins the collection (the fake's `collection()` throws on an unmodelled name, so a
+   wrong collection reddens test 8) and the day window, but NOT the field names. The new
+   `sharedShoppingListCompositeDeclared` test reads only the JSON, so it pins the INDEX
+   side of the pair while the QUERY side drifts freely — and a query on `ownerId` matches
+   no declared composite, throws FAILED_PRECONDITION, is swallowed by `safeProbe`, and
+   re-zeroes exactly the flag BUT-1724/BUT-1761 each shipped to un-zero. Filed Medium
+   (the SHIPPED query is correct — this is a coverage hole, not a live defect).
+   Remediation: have the fake record the equality/range field names and throw on an
+   unexpected one for the shared collection, or assert them in the index test.
+
+Weaker point, filed Low: `sharedShoppedProbeFailureDegrades` case A stayed PASS under
+mutation 1 — `flagA.shopped === false` holds trivially if the leg does not exist at all.
+Case B (`flagB.shopped === true`) is what carries that test.
+
+`firestore.indexes.json` also gained, in the same working tree but from other tickets, a
+`messages` (conversationId ASC, sentAt ASC) composite and `items` fieldOverrides for
+`addedByUserId` / `lastModifiedByUserId` (COLLECTION + COLLECTION_GROUP ASC) serving
+`on-profile-updated.ts:217-220`. Noted but not owned by this review: a `fieldOverrides`
+entry REPLACES the automatic single-field config for that field, so declaring only
+ASCENDING drops the automatic DESCENDING and ARRAY_CONTAINS indexes for those two item
+fields — grepped `lib/` for `orderBy`/descending/`arrayContains` on them and found none,
+so it is safe today.
+
+Closed out the long-running logging finding: the raw-`userId` + nested-`Error` leak in
+`feature_retention_probe_failed` is FIXED on main — the suite now prints
+`{"flag":"shoppedShared","userIdHash":"30897b24242d","errName":"Error", ...}`. The
+knowledge file's OPEN-instance note is superseded accordingly. The docstring's KNOWN GAPS
+also now carry the 28-day rollup ramp-in warning the previous pass asked for, plus a new
+honest gap 1 (the collaborative leg is last-writer-only via a single
+`lastActivityByUserId` stamp, so it is a lower bound; `contributorUserIds` would be worse
+because BUT-1725 makes it append-only).
+
+**Verdict: pass.** No Critical/High. Cost: +1 `limit(1)` query per user per run, issued
+inside the existing `Promise.all`, so ~+1k reads/day at 1k active users and no added
+wall-clock latency; the read-budget comment was updated 5→6 probes and 34k→35k reads.
+Idempotency unchanged (deterministic doc ids, `set()` overwrite).
+
+### 2026-07-30 — BUT-1770 item-level rename propagation + BUT-1755 createdAt sentinel + BUT-1722 refused-edit reason [Pattern discovered] [Bug fixed]
+
+Scope handed to me (11 files, mostly Dart): `lib/models/unified/unified_shopping_list.dart`,
+`lib/repositories/firebase/modules/shopping_list_permission_guards.dart`,
+`lib/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart`,
+`lib/viewmodels/collaborative_shopping_viewmodel.dart`,
+`lib/views/social/collaborative_shopping_view.dart`,
+`functions/src/social/on-profile-updated.ts`, `firestore.indexes.json`, plus four test files.
+
+**What shipped.** `on-profile-updated.ts` gained three legs under `if (nameChanged)`:
+two `batchUpdateQueryPaginated(db.collectionGroup("items").where(<addedByUserId |
+lastModifiedByUserId>, "==", userId), {<pairedDisplayName>: newName})`, and
+`renameEmbeddedShoppingItems` — a `__name__`-cursor page loop (`EMBEDDED_ITEMS_PAGE_SIZE
+= 50`) over `unified_shared_shopping_lists` `where("contributorUserIds","array-contains",
+userId)`, running one `runTransaction` per list that re-reads, maps the `items` array,
+rewrites only rows whose own `*ByUserId === userId`, and skips the write when nothing
+changed. `firestore.indexes.json` gained COLLECTION + COLLECTION_GROUP ASC fieldOverrides
+for `items.addedByUserId` and `items.lastModifiedByUserId`.
+
+**Verified, not assumed:**
+- `items` is shopping-only. The ONLY `match /items/{itemId}` blocks in `firestore.rules`
+  are under `users/{userId}/unified_shopping_lists/{listId}` (line ~398) and
+  `shared_content/{contentId}` (line ~788). No cross-feature blast radius for the
+  collection group.
+- No client query anywhere in `lib/` filters or orders on `addedByUserId` /
+  `lastModifiedByUserId`, so declaring ASC-only fieldOverrides (which REPLACE automatic
+  single-field indexing, dropping the automatic DESCENDING collection-scope entry) breaks
+  nothing.
+- The two other new index entries map to real queries in the same commit:
+  `messages` (`conversationId` ASC + `sentAt` ASC) →
+  `firebase_data_export_repository.dart:372`; `unified_shared_shopping_lists`
+  (`lastActivityByUserId` ASC + `updatedAt` ASC) → `compute-feature-retention.ts:318`.
+  Neither is needed by `on-profile-updated.ts`, whose legs all order by `__name__`.
+- `npm run build` (tsc) clean. `npm run test:on-profile-updated` **10/10 PASS** (script
+  name is `test:on-profile-updated`, NOT `test:profile-updated` as the family table's
+  test-command column says — the table is wrong, npm suggested the right one).
+
+**Finding (Medium) — rename scoping is a strict SUBSET of erasure scoping.**
+`renameEmbeddedShoppingItems` uses `contributorUserIds array-contains` ALONE.
+`deleteShoppingLists` (`account-deletion-cascade.ts:571-588`) unions FOUR queries over the
+same collection — `memberPermissions.{uid} != null`, `ownerId == uid`,
+`contributorUserIds array-contains uid`, `lastActivityByUserId == uid` — into one
+`Map<docId, ref>`, with an in-file comment explaining exactly why one handle is not enough
+("membership and ownership are the WRONG handles on their own, because both are things a
+user can stop having while their name stays on the document"). The new function's own
+docstring nevertheless says "The deletion cascade uses the same handle for the same
+reason", which is false. Practical gap: rows added BEFORE BUT-1725 shipped, on lists never
+touched since (the client unions the trail on every item write via `_withContributorTrail`
+in `shopping_repository_routing_module.dart:352`), and not reached by
+`backfillSharedListContributors` — which this file already records as structurally
+unfinishable above its scan cap. Remediation: copy the cascade's four-query union + dedup.
+
+**Finding (Medium) — the BUT-1755 sentinel is not round-trip stable.** Measured with a
+throwaway `dart run` script:
+```
+utc=1970-01-01 00:00:00.000Z isUtc=true ms=0
+local=1970-01-01 01:00:00.000 isUtc=false ms=0
+utc == local -> false ; isAtSameMomentAs -> true
+```
+Dart's `DateTime.==` compares `isUtc` as well as the instant. `UnifiedShoppingList.
+unknownCreatedAt = DateTime.utc(1970)` is written by `toFirestore()` as
+`Timestamp.fromDate(...)` and read back through `SerializationUtils.parseDateTimeValue` →
+`Timestamp.toDate()` → a LOCAL `DateTime`, so sentinel != round-tripped sentinel. It DOES
+get persisted: `mutateCollaborativeList` does `transaction.set(_withContributorTrail(
+mutated.toFirestore(), ...), SetOptions(merge:true))` on every collaborative item write,
+and `toFirestore()` always includes `createdAt`. The owner branch of the
+`unified_shared_shopping_lists` update rule carries no field constraints, so an owner's
+tick stamps a legacy list's `createdAt` to epoch. A non-owner still holding a pre-stamp
+in-memory entity then trips `proposed.createdAt != stored.createdAt` in
+`requireNoPrivilegeEscalation` — the exact deadlock BUT-1755 set out to remove, in a
+narrower window, complete with a false audit row. One-line fix:
+`!proposed.createdAt.isAtSameMomentAs(stored.createdAt)`. Related: `fromJson` (model line
+697) still defaults to `clock.now()` — the sentinel was applied to `fromMap` only.
+(`fromJson` has no production caller today, tests only.)
+
+**Non-vacuity, free.** `flutter test` on the new guard suite first came back 3 pass / 2
+fail, and a rerun ~1 min later came back 5/5 with `git hash-object` identical on all three
+files. The two reds were exactly the BUT-1755 tests ("a non-owner content edit on a list
+with no stored createdAt is allowed", "the two parses agree on createdAt"). That is the
+parallel-session mutate-and-restore window this file already documents — and it doubles as
+proof those two tests DO redden when the sentinel default is reverted. Combined
+model+guard run: 47 pass. `test/views/social/collaborative_shopping_view_test.dart`: 13
+pass, including the three new BUT-1722 cases.
+
+**BUT-1722 (Dart, no defect found).** `CollaborativeShoppingViewModel.
+consumeItemOperationError()` reads-and-clears `ShoppingItemOperationsManager._error`
+(guarded by `isDisposed`), and `_showFailureReason()` in the view falls back to `_vm.error`.
+Correctly kept OUT of `_vm.error`, which drives the body's `LoadingStateBuilder` — routing
+a refused tick there would blank the list (the BUT-1696 regression). The generic-fallback
+widget test passes because the manager itself substitutes
+`AppLocale.current.errorCouldNotUpdateItem` when `consumeMutationError()` returns null.
+
+**Verdict: pass.** No Critical/High. Cost note for the deploy: the two COLLECTION_GROUP
+fieldOverrides add an index entry per shopping-item write forever (small, but permanent),
+and the embedded leg costs one transaction per contributed list per rename — sequential
+within a page of 50, so a user on ~1000 shared lists spends ~100s of the 540s budget in
+that leg alone; a concurrency pool is the upgrade if that ever becomes real.
+
+### 2026-07-30/31 — Crash-salvage review: BUT-1766/1767/1768/1770/1761 (account-deletion-cascade, on-profile-updated, compute-feature-retention) [Bug fixed] [Cost finding]
+
+Sprint 2026-07-30c was cut off by an infra outage before this gate ever ran; nothing was
+committed. First-and-only pass against the uncommitted worktree. Scope: 8 files
+(account-deletion-cascade.ts +416, request-account-deletion.ts +4, on-profile-updated.ts
++173, compute-feature-retention.ts +126/-42, three test files, firestore.indexes.json
++48, functions/package.json +1). `npx tsc --noEmit -p tsconfig.json` clean.
+`test:account-deletion-cascade` 26/26 (new file, correctly registered in package.json —
+the recurring wiring trap was NOT hit this time), `test:on-profile-updated` 11/11,
+`test:compute-feature-retention` 11/11, `node scripts/check-test-registration.js` clean
+(119 files, only the four already-accepted-debt integration warnings).
+
+Two High findings, both new code, both a lost-update race against a concurrent edit by a
+DIFFERENT, non-deleted user — the class the task brief specifically asked about:
+
+1. `buildGroupDepartureUpdate` (account-deletion-cascade.ts) decides its `lastMessage.*`
+   tombstone from `convoDoc.data()` captured by the OUTER
+   `.where("participantIds","array-contains",uid).get()` query, then applies it via a plain
+   `convoDoc.ref.update(...)` inside a bounded-10 `Promise.all`. A real message sent to that
+   group between the query and this specific doc's write gets silently overwritten back to
+   "[Raderad anvandare]" — and nothing re-fixes it until the NEXT message, since
+   `sync-conversation-last-message.ts` only fires on a `messages/{id}` write, not a
+   `conversations/{id}` write.
+2. `scrubLastEditor` (same file, used by both `deleteRealtimeMenus` and
+   `deleteRealtimeRecipes`) matches docs on `lastEditedBy == uid` at query time, then
+   blind-overwrites `lastEditedBy`/`lastEditedByDisplayName` via `commitInChunks`'s plain
+   `batch.update()`. A different collaborator editing the SAME realtime menu/recipe in that
+   window (the whole point of "realtime") has their fresh `lastEditedBy` stamp reverted to
+   "deleted".
+
+Neither is caught by the 26/26 suite — its hand-rolled FakeFirestore has no concurrency
+model at all (confirmed: no `runTransaction` implementation in that file; the two
+`lastMessage` assertions — "the embedded lastMessage copy is tombstoned" /
+"another member's lastMessage preview is left alone" — are both static, single-write
+fixtures). The fix pattern already exists in the SAME file:
+`deleteShoppingLists`'s per-list `runTransaction` (re-read inside, recompute, write) —
+neither new call site uses it. Remediation given to the sprint: wrap each write in
+`db.runTransaction`, re-read the doc, recompute the update (or skip) from the FRESH read.
+Full reasoning archived as a principle in the main file (PII scrubbing section).
+
+Everything else checked GOOD:
+- firestore.indexes.json: the `items` collectionGroup fieldOverrides (4 fields:
+  addedByUserId/lastModifiedByUserId/assignedToUserId/purchasedByUserId, each COLLECTION +
+  COLLECTION_GROUP) exactly mirror the pre-existing `members`/`userId` precedent and are
+  genuinely required by on-profile-updated.ts's new `collectionGroup("items")` legs — a
+  dedicated test ("the collection-group index for every item attribution field is declared")
+  pins it. `unified_shared_shopping_lists` (lastActivityByUserId ASC, updatedAt ASC) is
+  correctly required by compute-feature-retention.ts's new `shoppedShared` probe (equality
+  + range on different fields) and is the collection's only composite, so no
+  reverse-direction check needed. ONE Medium/Low cost finding: the new `messages`
+  (conversationId ASC, sentAt ASCENDING) composite is likely redundant —
+  sync-conversation-last-message.ts:119 already needs (and the file already declares)
+  (conversationId ASC, sentAt DESCENDING), and Firestore serves the opposite orderBy
+  direction by scanning that same index in reverse; no query anywhere orders `sentAt` ASC.
+  Recommend dropping it unless a specific future query needs it. Folded into a general
+  principle (CI/ops section): always grep the collection name in firestore.indexes.json
+  for an existing composite in the OPPOSITE orderBy direction before approving a new one.
+- renameEmbeddedShoppingItems/renameItemsOnList (on-profile-updated.ts, BUT-1770): the
+  per-list runTransaction IS the correct shape (re-reads `items` fresh inside the
+  transaction, Firestore's optimistic-concurrency retry handles a genuine concurrent household
+  edit) — this one does NOT have the bug above. Its test file is explicit and honest about the
+  limit of its own fake: a code comment on the fake runTransaction
+  ("BUT-1770: a PASSTHROUGH, exactly like FakeFirebaseFirestore on the Dart side... proves
+  nothing about concurrency, and no test below claims otherwise") — exactly the discipline
+  lessons-digest-testing.md asks for. One Medium note: renameEmbeddedShoppingItems's
+  outer `for` loop has no try/catch around each renameItemsOnList call, so ONE list hitting
+  ABORTED after Firestore's transaction retry budget is exhausted (real risk on a busy
+  shared list) throws out of the whole pagination and skips every later page/list in that
+  invocation — inconsistent with deleteShoppingLists's per-list try/catch-and-accumulate in
+  the SAME sprint's other file. Self-heals on the next profile-name change, so not urgent, but
+  worth fixing to match the established pattern.
+- deleteRealtimeDocsWithChildren/removeRealtimeParticipation/removeVoteEntries: children
+  strict-then-parent-best-effort ordering is correct (mirrors the deleteFamilyData
+  household precedent), retry-safe (a partial run just re-scans on the next attempt), and the
+  new probeResidualData legs (realtime_menus/realtime_recipes x ownerId/
+  lastEditedBy/participantIds) are a strict superset of what the deleters actually clear —
+  verified by reading both, not just the docstring's claim. Cost note: the child sweep is a
+  fully SERIAL `for` loop (2 sequential reads per realtime doc, no Promise.all batching)
+  unlike the messages leg's bounded-10 concurrency — low real risk given typical
+  collaborative-menu/recipe fan-out per user is small, but flagged as a Medium
+  cold-start/cost inconsistency worth a chunked-parallel upgrade if usage grows.
+- probeResidualData's new legs correctly use uid_prefix/errCode/errName, never raw uid
+  or err.message — the family convention holds.
+- Wiring: realtime_menus step correctly added to request-account-deletion.ts's tier1
+  array (BUT-1768's stated purpose — it previously had no tier entry at all). Auth-deletion
+  ordering unchanged (cascade -> storage -> auth.deleteUser last), so the callable's own
+  idempotency story (client retry re-runs the whole cascade UNTIL auth.deleteUser
+  succeeds, after which only the admin remediation script can re-enter) is intact.
+
+Tangential discovery, OUT OF SCOPE (functions/src only) — handed off, not deep-reviewed:
+while verifying removeVoteEntries's docstring claim ("the doc id is the slot's vote id...
+despite what the rules comment suggests"), traced it end-to-end: MenuSlotVote.create mints
+`id: const Uuid().v4()` (lib/models/realtime/menu_slot_vote.dart), confirming the CF's
+claim — but firestore.rules:1074-1093 gates `votes/{voteId}` create/update/delete on
+`request.auth.uid == voteId`, which can never be true for a random UUID doc id written by any
+real user. If this reads correctly, EVERY createVote/castVote call in the live
+menu-voting feature is denied by rules for every user, which would mean the whole
+collaborative-voting feature is currently non-functional in production. Not verified against
+a running emulator/client — flagged for firestore-rules-tester (rules) and
+firebase-backend-security/flutter-developer (feature-level) to confirm and file; if real,
+it also means the account-deletion cascade's `votes.<uid>` residual concern is currently moot
+(no live vote map entries to leave behind), which doesn't change the cascade's correctness
+grade but is worth knowing when triaging severity.
+
+Verdict on the crash-salvage diff itself: not a blocking Critical, but the two lost-update
+findings are real, concrete, self-consistent with an established fix pattern already in the
+same file, and should be fixed before this ships — recommend the sprint apply the
+runTransaction re-read fix to both call sites (and the try/catch-per-list fix to
+renameEmbeddedShoppingItems) rather than reopening the whole diff.
+
+### 2026-07-30/31 — BUT-1766/1768 re-review: transaction-wrapping fix verified [Bug fixed] [Pattern discovered]
+
+Follow-up to the 2026-07-30 crash-salvage review above (which found the two lost-update
+findings in `buildGroupDepartureUpdate` and `scrubLastEditor`). Re-reviewed the fix diff
+(`git diff HEAD -- functions/src/account/account-deletion-cascade.ts
+functions/src/__tests__/account-deletion-cascade.test.ts`) after the sprint applied it.
+
+Verified findings:
+- `deleteMessages`'s group branch now does `await db.runTransaction(async (tx) => { const
+  fresh = await tx.get(convoDoc.ref); if (!fresh.exists) return; tx.update(convoDoc.ref,
+  buildGroupDepartureUpdate(fresh, uid)); })`. `buildGroupDepartureUpdate`'s param type
+  changed `QueryDocumentSnapshot` -> `DocumentSnapshot` to accept `tx.get`'s result; grepped
+  the whole `functions/src` tree and this is the ONLY call site, so the widened type breaks
+  nothing else. The function's `lastMessage` branch already null-safes with `(convoDoc.data()
+  ?? {})`, correct for a snapshot that can now be non-existent.
+- `scrubLastEditor` rewritten to one `db.runTransaction` per doc, bounded to 10 concurrent via
+  the same `chunkSize=10`/`Promise.all` shape `deleteMessages` already uses, re-checking
+  `fresh.data()?.lastEditedBy !== uid` (return early if stale) before `tx.update`, each
+  transaction wrapped in its own try/catch (best-effort, matches the `commitInChunks({strict:
+  false})` semantics it replaces). Checked the bounded-10 loop for a race AGAINST ITSELF (part
+  of the review brief): each of the 10 concurrent transactions in a wave targets a DISTINCT
+  doc ref (`notOwned` is a deduped query result) — no two transactions in the same wave can
+  ever touch the same document, so there is no such race.
+- Both fixes derive every literal-value field from the FRESH transactional read only, never
+  from the outer query snapshot's `.data()` (only `.ref` survives from the outer snapshot) —
+  confirmed by reading, not just trusting the docstring. That is what makes real Firestore's
+  transaction semantics (auto-retry on a conflicting write to a doc read inside the
+  transaction) actually apply here; a fix that re-read fresh but still computed from the OLD
+  object would not be fixed at all, and that's the exact bug shape to check for on any future
+  transactional-fix review in this file.
+
+Test-suite honesty check (the recurring "unsimulated fake stub must THROW, not answer"
+concern, but the opposite finding this time): the new `FakeFirestore.runTransaction` added to
+`account-deletion-cascade.test.ts` is a bare passthrough — `tx.get` reads the same in-memory
+`docs` map `.update()`/`.get()` use, `tx.update`/`tx.delete` apply immediately via the same
+`applyUpdate` helper the batch path uses, single-threaded so nothing can interleave — and its
+own docstring says so ("nothing here proves the code resists an ACTUAL concurrent writer").
+Grepped the suite for `race`/`concurrent`/`stale` — no scenario injects a concurrent write
+between the outer query and the transactional re-read; all 26 checks (ran `npm run
+test:account-deletion-cascade`, confirmed 26/26 live, not from the report) assert
+NO-CONCURRENCY correctness (right fields scrubbed, right tombstone values, membership/lastMessage
+logic right). That is real and valuable coverage for a DIFFERENT property (no regression in the
+value-computation logic during the rewrite) — it is not, and structurally cannot be, coverage of
+the concurrency-safety property the fix exists for. Concurrency-safety here is proven by code
+inspection against documented Firestore Admin SDK transaction semantics, not by this suite.
+Did not attempt to write a concurrency-injecting test or mutate the production file to
+mutation-test the suite, per the reviewing user's explicit "do not edit files, report findings
+only" instruction for this pass.
+
+Also ran `npx tsc --noEmit` clean (no output) confirming the `DocumentSnapshot` type widening
+compiles.
+
+Verdict: PASS on both fixes — (a) no remaining stale-read path in either function, (b) the
+FakeFirestore transaction stub is faithful for what it tests (field/value correctness) and
+honestly does not claim more, (c) no new bug — grep-confirmed single call site for
+`buildGroupDepartureUpdate`, no self-race in the bounded-10 `scrubLastEditor` loop.

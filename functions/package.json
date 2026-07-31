@@ -113,6 +113,7 @@
     "test:pii-scrubber": "ts-node src/__tests__/pii-scrubber.test.ts",
     "test:rate-limiter-global-limits": "ts-node src/__tests__/rate-limiter-global-limits.test.ts",
     "test:request-account-deletion": "ts-node src/__tests__/request-account-deletion.test.ts",
+    "test:account-deletion-cascade": "ts-node src/__tests__/account-deletion-cascade.test.ts",
     "test:cleanup-expired-social-requests": "ts-node src/__tests__/cleanup-expired-social-requests.test.ts",
     "test:cleanup-old-notifications": "ts-node src/__tests__/cleanup-old-notifications.test.ts",
     "test:verify-signup-age": "ts-node src/__tests__/verify-signup-age.test.ts",

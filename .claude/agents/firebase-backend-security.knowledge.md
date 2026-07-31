@@ -315,7 +315,14 @@ personal→collaborative leg only.
   + `affectedKeys().hasOnly([...])`. Self-leave-a-shared-doc needs `removeAll()` both directions
   or a recipient can grief by dropping others while leaving.
 - `rateLimitWrite(collection, seconds)` is only live if a write path stamps
-  `users/{uid}/rate_limits/{collection}.lastWrite` — else it's a permanent no-op.
+  `users/{uid}/rate_limits/{collection}.lastWrite` — else it's a permanent no-op. **Verified
+  2026-07-30: NOTHING in the repo writes that path** (only the unused constant
+  `FirestoreCollections.userRateLimits`; real buckets live in top-level `system_rate_limits`, see
+  `account-deletion-cascade.ts:1408`), so EVERY `rateLimitWrite` conjunct in `firestore.rules` is
+  currently inert. Never let a design comment cite one as a live constraint — BUT-1773's
+  one-audit-row-per-export decision is argued in three places from "rows 3..30 would be rejected by
+  `rateLimitWrite('audit_logs', 2)`", which is false. The Art. 30 argument (the processing activity
+  is the REQUEST, not each read) stands on its own; the rules claim must go.
 - Cross-user point-reads rely on rules alone (a client pre-check needs the same read); still
   call `logPermissionCheck` on both branches — `validateReadPermission` would be circular.
 - Accepting a social/share request must verify `caller==request.toUserId` at the accept
@@ -481,6 +488,15 @@ personal→collaborative leg only.
   When the step sweeps SEVERAL name variants of the same collection (live + legacy), the child
   sweep must cover every variant; Butlery's fixed `deleteShoppingLists` sweeps
   `unified_shopping_lists/{id}/items` but still bulk-deletes legacy `shopping_lists` parents bare.
+  **Same defect in the realtime tier, open 2026-07-30:** `deleteRealtimeRecipes` /
+  `deleteRealtimeMenus` (BUT-1768) `batchDeleteAll` the parent and never touch
+  `realtime_recipes/{id}/presence/{uid}` — a doc keyed BY uid carrying `displayName`
+  (`realtime_editor_tracker.dart:28-32` → `collaborative_recipe_repository.setPresence`) — or
+  `/votes/{uid}`. Both have `firestore.rules` blocks, so both paths are live. And on a doc the user
+  does NOT own, `scrubLastEditor` anonymizes the `lastEditedBy*` pair but leaves their
+  `presence/{uid}` doc, their `participants` MAP KEY and their `participantIds` entry. Whenever a
+  step adds a scrub for one denormalized pair, enumerate that collection's subcollections from
+  `firestore.rules` in the same pass — a rule block is the cheapest proof a child path is written.
 - "Export ⊇ erasure" is a field-PAIR property: export filter and deletion filter must target the
   identical field on the identical collection. Every new user-data collection needs BOTH
   cascades checked in the same review (deletion AND export) — one wired, one forgotten recurs.
@@ -512,6 +528,31 @@ personal→collaborative leg only.
   survives account deletion unless the cascade names it too. Diff that list against
   `account-deletion-cascade.ts` — `unified_shared_shopping_lists.lastActivityBy{UserId,DisplayName}`
   and `ownerDisplayName` are propagated on rename but NOT scrubbed on erasure (open, BUT-1665 review).
+  **Second live instance, found 2026-07-30 (BUT-1766 review):** `on-profile-updated.ts:96-97`
+  propagates `conversations.participantDisplayNames.<uid>` + `participantAvatarUrls.<uid>`, and
+  `deleteMessages`' group branch removes ONLY the `participantIds` array entry — so a deleted
+  user's name and avatar URL stay on every group conversation the remaining members read, along
+  with `lastReadTimestamps.<uid>`, `perUserSettings.<uid>` and the embedded `lastMessage` copy
+  (name + avatar + content) that anonymizing the top-level `messages` row does not touch. The
+  correct removal shape already exists in the same repo —
+  `functions/src/messaging/enforce-group-minor-membership.ts:247-252` deletes all three dot-paths in
+  one `update()`. **General rule: when a cascade leg's ONLY action is `arrayRemove` on a membership
+  array, treat it as incomplete until you have grepped the propagation CF for `<map>.${userId}`
+  keys on the same collection**, and add `participantIds array-contains uid` to the residual probe
+  (a membership array is the one map-shaped residual Firestore CAN query).
+  **The diff runs BOTH ways, and the rename side is the one that under-enumerates (2026-07-30,
+  BUT-1770).** The cascade scrubs FOUR item-level pairs on `UnifiedShoppingItem`
+  (`assignedTo*`, `purchasedBy*`, `addedBy*`, `lastModifiedBy*`); the rename CF added only
+  `addedBy*` + `lastModifiedBy*` while its own doc comment claimed cascade parity. Two checks
+  whenever a propagation leg is added: (a) enumerate the group from the MODEL's `toFirestore()`
+  and from the cascade's scrub block, never from the ticket; (b) ask which member of the group a
+  VIEW actually renders — here the two propagated fields have zero UI readers and the missed
+  `assignedToDisplayName` is the one on screen (`collaborative_shopping_items.dart:136,509`), so
+  the fix shipped without touching the symptom it was written for. Cost/index corollary that WAS
+  done right: a `collectionGroup("items")` equality sweep needs an explicit COLLECTION_GROUP
+  single-field override in `firestore.indexes.json` (automatic ones are collection-scoped), and a
+  fake-Firestore CF test cannot see that — assert the declared override from the JSON in the same
+  suite.
 - **An export that REDACTS a field group must enumerate the group from the model's
   `toFirestore()`, not from memory.** BUT-1732's `SharedShoppingListExport.nameKeysByOwnerIdKey`
   lists four name/id pairs; `UnifiedShoppingItem.toFirestore()` persists six —
@@ -730,6 +771,17 @@ personal→collaborative leg only.
   `_beginMutation()` now nulls the field at the START of every mutation entry point, which is the
   only shape that also covers an early-return `false` someone adds later — a per-branch message set
   never could.
+  **The same slot pattern one layer up (VM/manager) gets it wrong in a way worth naming
+  (2026-07-30, BUT-1722).** `ShoppingItemOperationsManager` captures the service's sentence but
+  (a) never clears `_error` at the start of an op, and (b) returns `false` from
+  `if (!canEdit)` / `item == null` WITHOUT setting one — so the new
+  `consumeItemOperationError()` reader shows nothing for exactly the case its doc comment names
+  (a view-only member). Two review rules: a read-once consume slot is only as good as the set
+  side, so walk EVERY `return false` in the method and require a message on each; and check that
+  the CONTROL's enabled-ness matches the guard the mutation uses — the checkbox is gated on
+  `canView` while the mutation is gated on `canEdit`, which is what manufactures a tappable
+  control that can only ever fail. "Self-clearing on read cannot strand a stale reason" is false
+  when the read is behind `if (!mounted) return;`; only a clear-at-entry makes that claim true.
   **A NEW exception type thrown by a repository needs its own arm at that mapping seam in the same
   diff**, or it inherits a sibling's wording and asserts a cause nobody established: BUT-1697's
   row-level `ResourceNotFoundException(resourceType:'shopping_item')` maps to

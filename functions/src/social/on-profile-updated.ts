@@ -4,7 +4,8 @@
  * Triggered when a public_profiles/{userId} document is updated.
  * Updates denormalized copies in messages, conversations, recipe_comments,
  * friends subcollections, shared content members, realtime resources,
- * shared recipes, shopping lists, and group invitations.
+ * shared recipes, shopping lists (list level AND item level), and group
+ * invitations.
  *
  * Safety: the genuinely-unbounded fan-out collections (messages, conversations,
  * recipe_comments, the `members` collection group, shared_recipes, realtime
@@ -190,6 +191,51 @@ export async function propagateProfileUpdate(
         .catch((e) => { logger.error(`Failed to update personal ${Collections.unifiedShoppingLists} for ${userHash}`, e); return 0; })
     );
 
+    // BUT-1770: ITEM-level attribution. The inventory is
+    // `UnifiedShoppingItem.toFirestore()`, not the ticket text: it persists
+    // FOUR denormalised name/id pairs — `addedBy*`, `lastModifiedBy*`,
+    // `assignedTo*` and `purchasedBy*` — and `account-deletion-cascade.ts`
+    // scrubs all four. Nothing propagated a rename down to any of them, so a
+    // household kept reading the old name on every row while the list header
+    // already showed the new one.
+    //
+    // `assignedToDisplayName` is the one that is actually ON SCREEN: it is the
+    // BUT-238 "Tar jag" claim chip (`collaborative_shopping_items.dart`,
+    // `_AssigneeBadge` + the "Annas del" section heading). A version of this
+    // leg that covered only `addedBy*`/`lastModifiedBy*` propagated the two
+    // pairs with no UI reader at all and left the visible one stale — i.e. it
+    // did not change what anyone sees. `purchasedByDisplayName` additionally
+    // ships in the Art. 15 bundle (`shared_shopping_list_export.dart`), so its
+    // staleness is an accuracy problem on a downloadable artifact too.
+    //
+    // TWO storage shapes, and a fix that covers one leaves the other stale:
+    //
+    //   * a SUBCOLLECTION — `users/{uid}/unified_shopping_lists/{listId}/items`
+    //     (the path `firestore.rules` grants and the deletion cascade sweeps)
+    //     and `shared_content/{contentId}/items`. A collection-group query
+    //     reaches both wherever they are nested; it needs the declared
+    //     COLLECTION_GROUP field overrides in `firestore.indexes.json`, since
+    //     Firestore's automatic single-field indexes are collection-scoped.
+    //
+    //   * an EMBEDDED ARRAY on the shared list document — `firestore.rules`
+    //     says it outright ("items are embedded in the list doc"). No query can
+    //     filter on a field inside an array element and no update can patch one
+    //     in place, so that leg reads the document and rewrites the array.
+    for (const pair of ITEM_ATTRIBUTION_PAIRS) {
+      steps.push(
+        batchUpdateQueryPaginated(
+          db.collectionGroup("items").where(pair.queryField, "==", userId),
+          { [pair.updateField]: newName },
+          db
+        ).catch((e) => { logger.error(`Failed to update ${pair.updateField} on items for ${userHash}`, e); return 0; })
+      );
+    }
+
+    steps.push(
+      renameEmbeddedShoppingItems(db, userId, newName)
+        .catch((e) => { logger.error(`Failed to update embedded shopping items for ${userHash}`, e); return 0; })
+    );
+
     // Group invitations — bounded by the acting user's OWN pending outbox
     // (fromUserId == userId, status == pending). Bounded and, being a
     // two-equality filter, kept on the plain reader so no orderBy(__name__) +
@@ -215,10 +261,135 @@ export async function propagateProfileUpdate(
   return totalUpdated;
 }
 
+/**
+ * BUT-1770: rewrite the acting user's denormalized name inside the `items`
+ * ARRAY embedded on every shared shopping list they have contributed to.
+ *
+ * `contributorUserIds` is the handle, not membership or ownership. It is the
+ * append-only trail the client unions on every item write, and the rules
+ * (BUT-1725) exist to keep it that way precisely so a query can find the lists
+ * whose ITEMS carry a given person's name — including lists that person has
+ * since left, where a membership query would find nothing while their name sat
+ * on every row they ever added. The deletion cascade uses the same handle for
+ * the same reason.
+ *
+ * One transaction per list, re-reading inside it. Both reasons are real and
+ * both come from the cascade's experience with this same array: rewriting the
+ * whole `items` array would silently drop a household member's concurrent tick
+ * (the client moved every shared-list mutation into a transaction in BUT-1665
+ * for exactly this), and a bare `update()` on a list deleted meanwhile throws
+ * NOT_FOUND, which in a shared batch would take every other list down with it.
+ *
+ * The outer read is paged with a documentId cursor like every other unbounded
+ * leg here: a user can contribute to any number of other people's lists, and
+ * the whole result set must never sit in memory at once. The cursor is stable
+ * because the write touches `items`, never `contributorUserIds`.
+ *
+ * Returns the number of list documents actually rewritten.
+ */
+async function renameEmbeddedShoppingItems(
+  db: admin.firestore.Firestore,
+  userId: string,
+  newName: string | undefined
+): Promise<number> {
+  const ordered = db
+    .collection(Collections.unifiedSharedShoppingLists)
+    .where("contributorUserIds", "array-contains", userId)
+    .orderBy(admin.firestore.FieldPath.documentId());
+
+  let lastDoc: admin.firestore.QueryDocumentSnapshot | undefined;
+  let updated = 0;
+
+  for (;;) {
+    let page = ordered.limit(EMBEDDED_ITEMS_PAGE_SIZE);
+    if (lastDoc) {
+      page = page.startAfter(lastDoc);
+    }
+    const snapshot = await page.get();
+    if (snapshot.empty) break;
+
+    for (const doc of snapshot.docs) {
+      if (await renameItemsOnList(db, doc.ref, userId, newName)) updated++;
+    }
+
+    lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    if (snapshot.size < EMBEDDED_ITEMS_PAGE_SIZE) break;
+  }
+
+  return updated;
+}
+
+/**
+ * Page size for the embedded-items rewrite. Deliberately far below the write
+ * batch limit: each page costs one TRANSACTION per document, not one batched
+ * op, so a large page buys nothing and just holds more list documents (items
+ * included) in memory at once.
+ */
+const EMBEDDED_ITEMS_PAGE_SIZE = 50;
+
+/** Returns true when the list's item array actually changed. */
+async function renameItemsOnList(
+  db: admin.firestore.Firestore,
+  listRef: admin.firestore.DocumentReference,
+  userId: string,
+  newName: string | undefined
+): Promise<boolean> {
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(listRef);
+    if (!snap.exists) return false;
+
+    const items = snap.data()?.items;
+    if (!Array.isArray(items)) return false;
+
+    let changed = false;
+    const renamed = items.map((raw) => {
+      if (!raw || typeof raw !== "object") return raw;
+      const item = { ...(raw as Record<string, unknown>) };
+      // Only the rows this user is stamped on, and the same four pairs the
+      // subcollection leg queries. A shared list carries several people's
+      // names, and rewriting a row whose `addedByUserId` names someone else
+      // would put THIS user's name on THEIR item — the mirror of the bug the
+      // personal-list leg above guards against.
+      for (const { queryField, updateField } of ITEM_ATTRIBUTION_PAIRS) {
+        if (item[queryField] === userId && item[updateField] !== newName) {
+          item[updateField] = newName ?? null;
+          changed = true;
+        }
+      }
+      return item;
+    });
+
+    if (!changed) return false;
+    tx.update(listRef, { items: renamed });
+    return true;
+  });
+}
+
 interface DualFieldPair {
   queryField: string;
   updateField: string;
 }
+
+/**
+ * Every denormalised name/id pair `UnifiedShoppingItem.toFirestore()` persists.
+ *
+ * Enumerated from the model, not from a ticket: this is the same group
+ * `account-deletion-cascade.ts` scrubs, and the two lists must stay equal —
+ * an erasure that clears a field a rename does not maintain is a field with
+ * two different owners and no single source of truth. Both the collection-group
+ * leg and the embedded-array rewrite iterate this constant, so adding a fifth
+ * pair to the model means one edit here (plus its `firestore.indexes.json`
+ * COLLECTION_GROUP override, which the index-assertion test pins).
+ */
+const ITEM_ATTRIBUTION_PAIRS: readonly DualFieldPair[] = [
+  { queryField: "addedByUserId", updateField: "addedByDisplayName" },
+  {
+    queryField: "lastModifiedByUserId",
+    updateField: "lastModifiedByDisplayName",
+  },
+  { queryField: "assignedToUserId", updateField: "assignedToDisplayName" },
+  { queryField: "purchasedByUserId", updateField: "purchasedByDisplayName" },
+];
 
 /**
  * Update a collection that denormalizes the user's name under two independent

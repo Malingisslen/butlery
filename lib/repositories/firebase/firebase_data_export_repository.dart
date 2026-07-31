@@ -136,6 +136,15 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
 
   /// Guard helper: confirm the authenticated caller is exporting their
   /// own data. Every public method funnels through this.
+  ///
+  /// BUT-1773: this gateway is constructed WITHOUT a `FirebaseAuditRepository`
+  /// on purpose, so [validateOwnership]'s `logPermissionCheck` stays a local
+  /// log line here. One bundle makes ~30 guarded reads; persisting each would
+  /// write ~30 near-identical Art. 30 rows per export, and `firestore.rules`
+  /// caps `audit_logs` creates at `rateLimitWrite('audit_logs', 2)` — rows
+  /// 3..30 would be rejected, leaving an arbitrarily partial trail. The single
+  /// row per REQUEST is written one layer up, in
+  /// [DataExportService._logExportAudit]. Do not pass an audit repository in.
   Future<void> _guardSelfExport(
     String userId,
     ExportResourceType resource,
@@ -320,8 +329,23 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     limit: maxDocuments,
   );
 
-  /// `conversations` where `participantIds arrayContains userId`,
-  /// each carrying its `messages` subcollection (limited).
+  /// `conversations` where `participantIds arrayContains userId`, each carrying
+  /// the top-level `messages` written against that conversation (limited).
+  ///
+  /// BUT-1767: this read had three independent faults, each of which alone
+  /// returned an empty message list, so the Art. 15 export has never contained
+  /// a single message. The collection was the `conversations/{id}/messages`
+  /// SUBCOLLECTION — a path with no `match` block in `firestore.rules`, i.e.
+  /// denied rather than merely empty, which is what surfaced the whole section
+  /// as `messages-export-failed`. The sort field was `timestamp`, which no
+  /// message document carries (`MessageDto.toFirestore` writes `sentAt`), so
+  /// even against the right collection the query would have matched nothing.
+  /// Messages are top-level, keyed by a `conversationId` FIELD, exactly as
+  /// [MessageQueryModule] reads them for the chat UI.
+  ///
+  /// The `conversationId ASC + sentAt ASC` composite is declared in
+  /// `firestore.indexes.json`; the existing entry is `sentAt DESCENDING` (the
+  /// chat UI's newest-first order) and does not serve this ascending read.
   Future<List<Map<String, dynamic>>> exportConversationsAndMessages(
     String userId, {
     int maxConversations = 100,
@@ -343,9 +367,10 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
       // `messages` section — so the false positive now mislabels a complete
       // Art. 15 bundle. Same probe-one-extra shape as
       // [ExportPaginationHelper.fetchCapped].
-      final messagesSnapshot = await convoDoc.reference
+      final messagesSnapshot = await firestore
           .collection(FirestoreCollections.messages)
-          .orderBy('timestamp', descending: false)
+          .where('conversationId', isEqualTo: convoDoc.id)
+          .orderBy('sentAt')
           .limit(maxMessagesPerConversation + 1)
           .get();
 

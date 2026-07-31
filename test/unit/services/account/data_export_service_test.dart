@@ -23,6 +23,7 @@ import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
@@ -224,31 +225,64 @@ class _FailingProfileExportRepository extends FirebaseDataExportRepository {
       throw StateError('profile read failed');
 }
 
-/// BUT-1732: fails the `preferences` section with an exception whose text
-/// carries exactly what must never reach the bundle ROOT — ANOTHER data
-/// subject's uid inside a composite doc id, plus a `create_composite` index URL
-/// naming a member field path and the project id.
+/// BUT-1732: fails a section with backend text carrying exactly what must never
+/// reach the bundle ROOT — ANOTHER data subject's uid inside a composite doc id,
+/// plus a `create_composite` index URL naming a member field path and the
+/// project id.
 ///
-/// `PreferencesExportManager.exportPreferences` still returns
-/// `{'error': e.toString()}`, so this is a REAL leak path, not a contrived one:
-/// the suppression under test is the aggregator's, which is the single place
-/// that decides what gets promoted to `export_metadata.warnings[].message`.
-class _LeakyPreferencesExportRepository extends FirebaseDataExportRepository {
-  _LeakyPreferencesExportRepository({
-    required super.firestore,
-    required super.authRepository,
-  });
-
+/// BUT-1760 repointed this from `preferences` to `audit_logs`. The original
+/// fixture leaned on `PreferencesExportManager.exportPreferences` returning
+/// `{'error': e.toString()}`; that manager (and the eleven sections in
+/// `ContentExportManager`) now return authored sentences, so the premise it
+/// asserted no longer exists there. `ComplianceExportManager`'s transient
+/// branch still puts `e.message` — a string the BACKEND wrote — into the
+/// section's `error`, which keeps this a REAL leak path rather than a contrived
+/// one. The suppression under test is the aggregator's: the single place that
+/// decides what gets promoted to `export_metadata.warnings[].message`.
+class _LeakyAuditLogHttpsCallable extends Fake implements HttpsCallable {
   static const String foreignUid = 'uid-of-another-person-9f2e45';
   static const String indexUrl =
       'https://console.firebase.google.com/project/butlery-prod-42/firestore/'
       'indexes?create_composite=memberPermissions.$foreignUid';
 
   @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async => throw FirebaseFunctionsException(
+    // Transient, so the manager returns an envelope instead of aborting the
+    // whole bundle — the aggregator only ever sees sections that returned.
+    code: 'unavailable',
+    message:
+        'PERMISSION_DENIED reading blocks/uid-alice_$foreignUid; $indexUrl',
+  );
+}
+
+class _LeakyAuditLogFirebaseFunctions extends Fake
+    implements FirebaseFunctions {
+  @override
+  HttpsCallable httpsCallable(
+    String name, {
+    HttpsCallableOptions? options,
+  }) => _LeakyAuditLogHttpsCallable();
+}
+
+/// BUT-1760: fails the `preferences` read with an exception whose text names
+/// another data subject. Proves the SECTION body — not just the bundle root —
+/// is now authored, which is what stops the leak one level before the
+/// aggregator ever sees it.
+class _LeakySettingsExportRepository extends FirebaseDataExportRepository {
+  _LeakySettingsExportRepository({
+    required super.firestore,
+    required super.authRepository,
+  });
+
+  static const String foreignUid = 'uid-of-another-person-9f2e45';
+
+  @override
   Future<Map<String, dynamic>?> exportSettingsPreferences(
     String userId,
   ) async => throw StateError(
-    'PERMISSION_DENIED reading blocks/${userId}_$foreignUid; $indexUrl',
+    'PERMISSION_DENIED reading blocks/${userId}_$foreignUid',
   );
 }
 
@@ -420,6 +454,93 @@ void main() {
           isAuthenticated: false,
         );
         expect(() => service.exportUserData(), throwsA(isA<Exception>()));
+      });
+    });
+
+    /// BUT-1773: the Art. 15 export wrote no Art. 30 record at all — neither
+    /// for a bundle it produced nor for a request it refused. A right-of-access
+    /// pipeline that leaves no trace of having run is unauditable: nothing can
+    /// answer "did this user export their data, and when".
+    ///
+    /// Asserted through a spy rather than by reading `audit_logs` out of the
+    /// fake: `AuditLog.toFirestore` embeds `FieldValue.serverTimestamp()`,
+    /// which throws `MethodChannelFieldValue is not a subtype of
+    /// MockFieldValuePlatform` under the test platform bindings, and
+    /// `logPermissionCheck` swallows that by design (fire-and-forget). A
+    /// fake-collection assertion would therefore be vacuous — it would read
+    /// zero rows whether or not the call was made.
+    group('Export audit trail (BUT-1773)', () {
+      late _SpyAuditRepository spyAudit;
+      late DataExportService auditedService;
+
+      setUp(() {
+        spyAudit = _SpyAuditRepository(fakeFirestore);
+        auditedService = DataExportService(
+          authRepository: mockAuthRepository,
+          firestoreRepository: mockFirestoreRepository,
+          householdRepository: _emptyFamilyHouseholdRepo(),
+          complianceExportManager: ComplianceExportManager(
+            functions: _FakeFirebaseFunctions(),
+            dataExportRepository: FirebaseDataExportRepository(
+              firestore: fakeFirestore,
+              authRepository: mockAuthRepository,
+            ),
+          ),
+          dataExportRepository: FirebaseDataExportRepository(
+            firestore: fakeFirestore,
+            authRepository: mockAuthRepository,
+          ),
+          auditRepository: spyAudit,
+        );
+      });
+
+      test('a granted export writes exactly ONE row', () async {
+        await auditedService.exportUserData();
+
+        expect(
+          spyAudit.calls,
+          hasLength(1),
+          reason:
+              'One row per REQUEST, not per read. The gateway makes ~30 '
+              'ownership-guarded reads per bundle, and firestore.rules caps '
+              'audit_logs creates at rateLimitWrite(audit_logs, 2) — a row per '
+              'read would be rejected from the third one on and leave an '
+              'arbitrarily partial trail.',
+        );
+        final row = spyAudit.calls.single;
+        expect(row['userId'], testUserId);
+        expect(row['operation'], 'gdpr_export');
+        expect(row['resourceType'], 'data_export');
+        expect(row['granted'], isTrue);
+        expect((row['metadata'] as Map)['outcome'], 'granted');
+      });
+
+      test('a REFUSED export writes a denied row', () async {
+        mockAuthRepository.setAuthState(
+          user: null,
+          userId: null,
+          isAuthenticated: false,
+        );
+
+        await expectLater(
+          auditedService.exportUserData(),
+          throwsA(isA<Exception>()),
+        );
+
+        expect(
+          spyAudit.calls,
+          hasLength(1),
+          reason:
+              'A refusal is a processing activity too, and it is the case a '
+              'data subject later disputes.',
+        );
+        final row = spyAudit.calls.single;
+        expect(row['operation'], 'gdpr_export');
+        expect(row['granted'], isFalse);
+        expect(
+          (row['metadata'] as Map)['outcome'],
+          'denied_unauthenticated',
+        );
       });
     });
 
@@ -1410,13 +1531,13 @@ void main() {
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
             complianceExportManager: ComplianceExportManager(
-              functions: _FakeFirebaseFunctions(),
+              functions: _LeakyAuditLogFirebaseFunctions(),
               dataExportRepository: FirebaseDataExportRepository(
                 firestore: fakeFirestore,
                 authRepository: mockAuthRepository,
               ),
             ),
-            dataExportRepository: _LeakyPreferencesExportRepository(
+            dataExportRepository: FirebaseDataExportRepository(
               firestore: fakeFirestore,
               authRepository: mockAuthRepository,
             ),
@@ -1431,34 +1552,35 @@ void main() {
           // about the aggregator suppressing it, not about an empty bundle.
           // (That buried section field is the pre-existing half of BUT-1732;
           // this test pins the ROOT, which is what this commit amplified.)
-          final section = data['preferences'] as Map<String, dynamic>;
+          final section = data['audit_logs'] as Map<String, dynamic>;
           expect(
             section['error'],
-            contains(_LeakyPreferencesExportRepository.foreignUid),
+            contains(_LeakyAuditLogHttpsCallable.foreignUid),
             reason:
-                'premise: preferences failed with the raw exception text. If '
-                'this fails because PreferencesExportManager started returning '
-                'a stable sentence, point this test at another manager that '
-                'still returns e.toString() — or delete it once none do.',
+                'premise: audit_logs failed with backend-authored text. If this '
+                'fails because ComplianceExportManager stopped putting '
+                'e.message in `error`, point this test at another section '
+                'whose `error` is not authored locally — or delete it once '
+                'none are.',
           );
 
           final warnings =
               (data['export_metadata']['warnings'] as List<dynamic>? ??
                       const <dynamic>[])
                   .cast<Map<String, dynamic>>();
-          final prefWarning = warnings
-              .where((w) => w['section'] == 'preferences')
+          final auditWarning = warnings
+              .where((w) => w['section'] == 'audit_logs')
               .toList();
           expect(
-            prefWarning,
+            auditWarning,
             hasLength(1),
             reason: 'the failed section must still surface as one warning',
           );
 
-          final message = prefWarning.single['message'] as String;
+          final message = auditWarning.single['message'] as String;
           expect(
             message,
-            isNot(contains(_LeakyPreferencesExportRepository.foreignUid)),
+            isNot(contains(_LeakyAuditLogHttpsCallable.foreignUid)),
             reason:
                 'Art. 15(4): the requester\'s own bundle must not name another '
                 'data subject at its root',
@@ -1472,10 +1594,57 @@ void main() {
           );
           expect(
             message,
-            contains('preferences-export-failed'),
+            contains('unavailable'),
             reason:
                 'suppression must not cost the reader WHICH read failed; the '
                 'derived message still names the section and its code',
+          );
+        },
+      );
+
+      // BUT-1760: the two managers this ticket touched are no longer a leak
+      // path, and that is now a pinned property rather than an accident. A
+      // section-level `error` reaches the bundle in full, so an authored
+      // sentence there is the FIRST line of defence and the aggregator's
+      // derivation is the second.
+      test(
+        'BUT-1760: a failed content/preferences section carries an authored '
+        'sentence, so no raw exception text exists to suppress',
+        () async {
+          final service = DataExportService(
+            authRepository: mockAuthRepository,
+            firestoreRepository: mockFirestoreRepository,
+            householdRepository: _emptyFamilyHouseholdRepo(),
+            complianceExportManager: ComplianceExportManager(
+              functions: _FakeFirebaseFunctions(),
+              dataExportRepository: FirebaseDataExportRepository(
+                firestore: fakeFirestore,
+                authRepository: mockAuthRepository,
+              ),
+            ),
+            dataExportRepository: _LeakySettingsExportRepository(
+              firestore: fakeFirestore,
+              authRepository: mockAuthRepository,
+            ),
+          );
+
+          final data =
+              json.decode(await service.exportUserData())
+                  as Map<String, dynamic>;
+
+          final section = data['preferences'] as Map<String, dynamic>;
+          expect(
+            section['error'],
+            'Could not export preferences.',
+            reason: 'an authored sentence, not e.toString()',
+          );
+          expect(section['error_code'], 'preferences-export-failed');
+          expect(
+            json.encode(section),
+            isNot(contains(_LeakySettingsExportRepository.foreignUid)),
+            reason:
+                'the section itself ships to the data subject — another '
+                "person's uid must not survive even one level down",
           );
         },
       );
@@ -1578,4 +1747,31 @@ void main() {
       );
     });
   });
+}
+
+/// Records `logPermissionCheck` calls instead of writing them. See the
+/// BUT-1773 group for why the fake collection cannot be asserted against.
+class _SpyAuditRepository extends FirebaseAuditRepository {
+  _SpyAuditRepository(super.firestore);
+
+  final List<Map<String, dynamic>> calls = <Map<String, dynamic>>[];
+
+  @override
+  Future<void> logPermissionCheck({
+    required String userId,
+    required String operation,
+    required String resourceType,
+    String? resourceId,
+    required bool granted,
+    Map<String, dynamic>? metadata,
+  }) async {
+    calls.add(<String, dynamic>{
+      'userId': userId,
+      'operation': operation,
+      'resourceType': resourceType,
+      'resourceId': resourceId,
+      'granted': granted,
+      'metadata': metadata,
+    });
+  }
 }

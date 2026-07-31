@@ -23,6 +23,26 @@ class PreferencesExportManager {
   FirebaseDataExportRepository get _exports =>
       _exportRepo ?? ServiceLocator.get<FirebaseDataExportRepository>();
 
+  // BUT-1760: logs the real exception and returns the section's failure
+  // envelope. Every section here used to return `{'error': e.toString()}`.
+  //
+  // A stable authored sentence, never `e.toString()`: a raw Firestore /
+  // permission string carries another user's uid (a notification counterparty
+  // lands in composite doc ids), a `create_composite` index URL embedding field
+  // paths and the project id, and internal collection paths — into an Art. 15
+  // artifact the data subject may forward to a supervisory authority. The
+  // exception itself stays in `AppLogger.error`, so support loses nothing.
+  //
+  // `error_code` is not decoration: `DataExportService` names the failing
+  // section in `export_metadata.warnings` from it, and a precise token says
+  // WHICH read failed rather than "something did". Same convention as
+  // `social_export_manager.dart`, `shared_shopping_list_export.dart` and
+  // `family_export_manager.dart`.
+  Map<String, dynamic> _failed(String section, String code, Object e) {
+    app_logger.AppLogger.error('[$_logTag] Failed to export $section', e);
+    return {'error': 'Could not export $section.', 'error_code': code};
+  }
+
   /// Export user preferences and settings
   Future<Map<String, dynamic>> exportPreferences(String userId) async {
     try {
@@ -32,8 +52,7 @@ class PreferencesExportManager {
         'preferences_exist': prefs != null,
       };
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export preferences', e);
-      return {'error': e.toString()};
+      return _failed('preferences', 'preferences-export-failed', e);
     }
   }
 
@@ -83,12 +102,8 @@ class PreferencesExportManager {
         },
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export notifications',
-        e,
-      );
       return {
-        'error': e.toString(),
+        ..._failed('notifications', 'notifications-export-failed', e),
         'note': 'Notifications may not be available',
       };
     }
@@ -131,12 +146,12 @@ class PreferencesExportManager {
         'note': 'FCM token is not included for security reasons',
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export notification preferences',
-        e,
-      );
       return {
-        'error': e.toString(),
+        ..._failed(
+          'notification preferences',
+          'notification-preferences-export-failed',
+          e,
+        ),
         'note': 'Notification preferences may not be available',
       };
     }
@@ -159,8 +174,7 @@ class PreferencesExportManager {
         }).toList(),
       };
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export FCM tokens', e);
-      return {'error': e.toString()};
+      return _failed('FCM tokens', 'fcm-tokens-export-failed', e);
     }
   }
 
@@ -175,11 +189,11 @@ class PreferencesExportManager {
         'list_category_orders': listOrders.map(sanitizeForJson).toList(),
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export category preferences',
+      return _failed(
+        'category preferences',
+        'category-preferences-export-failed',
         e,
       );
-      return {'error': e.toString()};
     }
   }
 
@@ -206,11 +220,11 @@ class PreferencesExportManager {
           'note': 'Limited to the $limit most recent records',
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export notification history',
+      return _failed(
+        'notification history',
+        'notification-history-export-failed',
         e,
       );
-      return {'error': e.toString()};
     }
   }
 
@@ -230,11 +244,11 @@ class PreferencesExportManager {
         if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export notification batches',
+      return _failed(
+        'notification batches',
+        'notification-batches-export-failed',
         e,
       );
-      return {'error': e.toString()};
     }
   }
 
@@ -256,11 +270,11 @@ class PreferencesExportManager {
         if (entries.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export notification engagement',
+      return _failed(
+        'notification engagement',
+        'notification-engagement-export-failed',
         e,
       );
-      return {'error': e.toString()};
     }
   }
 
@@ -307,11 +321,11 @@ class PreferencesExportManager {
         if (sent.truncated || received.truncated) 'truncated': true,
       };
     } catch (e) {
-      app_logger.AppLogger.error(
-        '[$_logTag] Failed to export notification delivery',
+      return _failed(
+        'notification delivery',
+        'notification-delivery-export-failed',
         e,
       );
-      return {'error': e.toString()};
     }
   }
 }

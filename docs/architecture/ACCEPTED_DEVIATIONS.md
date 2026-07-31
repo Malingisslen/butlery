@@ -136,26 +136,32 @@ export" against this path; that is the decided call. Do not file "strip the requ
 avatar" either — withholding the subject's own data is the opposite failure.
 
 **Scope note, so this entry does not read as broader than it is:** it governs `conversation_info`
-only, and as of 2026-07-30 it has NO production effect at all — it is proven at unit level and
-nowhere else. The export reads `conversations/{id}/messages`, a subcollection with no `match`
-block in `firestore.rules` (the `conversations` scope declares only `/userSettings/{uid}`), so the
-catch-all `match /{document=**} { allow read, write: if false }` DENIES the query. A denied query
-raises `permission-denied`; it does not return an empty snapshot. There is no local catch, so
-`exportMessages`' outer catch converts it to `_failed('Messages', 'messages-export-failed')` and
-**any user with at least one conversation loses the entire messages section** — their own
-conversation metadata included — surfacing only as one `export_metadata.warnings[]` line.
-Tracked as **BUT-1767**, which must repoint at the TOP-LEVEL `messages` collection and also remove
-a `recipientIds` filter that would otherwise drop every RECEIVED message once the path works.
-When it lands, each message row carries its own `senderDisplayName` and `senderAvatarUrl`; this
-rule applies there too and the redaction must be extended to cover it.
+and the message rows under it, and nothing else.
+
+**Status changed 2026-07-30 (same day):** when this entry was first written the section had NO
+production effect — the export read `conversations/{id}/messages`, a subcollection with no `match`
+block in `firestore.rules`, so the catch-all `match /{document=**} { allow read, write: if false }`
+DENIED the query and `exportMessages` failed the whole section as `messages-export-failed`.
+**BUT-1767 repointed it** at the TOP-LEVEL `messages` collection keyed on `conversationId`,
+removed the `recipientIds` filter that dropped every RECEIVED message, and fixed the
+`orderBy('timestamp')` on a field no message document carries. The section now SHIPS, so this
+verdict is live rather than unit-level only. Each message row carries its own
+`senderDisplayName` and `senderAvatarUrl`, and the rule applies there too: `_dropOtherSenderAvatar`
+strips another sender's avatar from every row and fails closed on an unrecognised shape.
 
 **Fields this entry deliberately does NOT decide, listed so the record cannot be read as
 exhaustive:** the conversation document's key set is not `ConversationDto.toFirestore()` — the
 mutation module writes `perUserSettings.<uid>.<key>` by dot-path, and the DTO reads back only the
-current user's sub-map, so the raw export carries every other participant's `isMuted`, `isPinned`,
-`isArchived`, `pinnedAt` and `archivedAt`. That is third-party BEHAVIOURAL data and the keep
-argument above does not reach it — the client never renders another user's sub-map, so "you have
-already seen it in the app" is false for it. Escalated to Malin as **BUT-1774**, undecided.
+current user's sub-map, so the raw export would carry every other participant's `isMuted`,
+`isPinned`, `isArchived`, `pinnedAt` and `archivedAt`. That is third-party BEHAVIOURAL data and the
+keep argument above does not reach it — the client never renders another user's sub-map, so "you
+have already seen it in the app" is false for it. Escalated to Malin as **BUT-1774**, undecided.
+
+Because BUT-1767 turned this section from a hard failure into a shipping one, "undecided" would
+otherwise have silently become "shipped". **Pending BUT-1774 the export narrows `perUserSettings`
+to the requester's OWN entry** — the conservative default, not a verdict, and reversible in one
+line. Nothing Art. 15 owes the requester is withheld: another member's mute/pin/archive state says
+nothing about the requester. Pinned by a unit test in `social_export_manager_test.dart`.
 Also kept and not separately argued: `lastReadTimestamps`, `lastMessage.reactions` (emoji → uids)
 and poll `metadata.options[].voterIds` — all uids, so covered by the same balance as the
 participant ids, but named here rather than left implicit.

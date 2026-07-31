@@ -1,3 +1,360 @@
+# Sprint 2026-07-30c — Selection
+
+Third sprint today. Backlog scanned: 130 Backlog + 4 Todo + 0 In Progress + 0 Triage, team
+Butlery (Linear MCP live, confirmed via `list_issues`). Two backlog items (BUT-677, BUT-722)
+carry `onboarding-reserved` and were excluded from scoring entirely, per instruction.
+
+**Ship-state check first.** `git log --since="7 days ago"` shows two commits since the last
+sprint write-up: `eaca99e46` (the 2026-07-30b rescue pass — BUT-1746/1721/1706/1752/1758/
+1724/1736/1692/1756/1749, four fixed on top of the held commit) and `af797f046` (BUT-1772,
+the conversations-export avatar redaction Malin decided that same day). Working tree is
+clean. This sprint's candidates are almost entirely follow-ups filed *during* that rescue
+pass's review round (BUT-1755, BUT-1760–1775).
+
+**Step-0 premise re-check against current `main`** (grep, not `git log`) for every ticket
+selected below:
+- `functions/src/analytics/compute-feature-retention.ts:263-272` — the `shopped` probe still
+  reads only `Collections.unifiedShoppingLists` under `users/{uid}`, never
+  `unified_shared_shopping_lists`. BUT-1761 live.
+- `lib/repositories/firebase/firebase_data_export_repository.dart:346-350` — still
+  `convoDoc.reference.collection(FirestoreCollections.messages).orderBy('timestamp', ...)`.
+  BUT-1767 live (wrong collection, wrong sort field, confirmed byte-for-byte against the
+  ticket's own quote).
+- `functions/src/account/account-deletion-cascade.ts:975` — still
+  `convoDoc.ref.collection("messages").get()`, the same phantom subcollection. BUT-1766 live.
+- `grep realtime_menus functions/src/account/` — zero hits (only
+  `admin/reset-user-data.ts`, `functions/src/shared/collections.ts` and a rules-test file
+  reference it outside the account tier). BUT-1768 live.
+- `content_export_manager.dart` and `preferences_export_manager.dart` — zero occurrences of
+  `error_code` in either file (grep count 0/0). BUT-1760 live.
+- `functions/src/social/on-profile-updated.ts` — zero occurrences of `addedByDisplayName` /
+  `lastModifiedByDisplayName`. BUT-1770 live.
+- `lib/models/unified/unified_shopping_list.dart:682,754` — both `safeRequiredDateTime(json,
+  'createdAt')` calls still pass no `defaultValue`. BUT-1755 live.
+- `lib/viewmodels/collaborative_shopping/` — only
+  `shopping_item_operations_manager.dart` references `_error`/`hasError`; the ViewModel and
+  view still don't read it. BUT-1722 live.
+- `_guardSelfExport` in `firebase_data_export_repository.dart` still delegates to
+  `validateOwnership` with no `logPermissionCheck` call anywhere in the export path.
+  BUT-1773 live.
+
+Nothing here is already fixed.
+
+Every ticket below was Claude-authored — `code-reviewer`/`firebase-backend-security`/
+`cloud-functions-specialist` follow-up findings from the 2026-07-30b rescue-pass review round
+(named explicitly in each ticket body as "existing, not introduced by the sprint") — never
+human-approved. The mandate column records why each is safe to build anyway.
+
+**Priority note from Malin, read directly off BUT-1774/1775's own text:** she has already
+set build order across two tickets not in this sprint's batches — BUT-1766 and BUT-1767 are
+to be built *before* BUT-1774 (merged with BUT-1775, the `perUserSettings`/`shared_content`
+avatar redaction — already **BESLUTAT**, decided 2026-07-30, not a re-litigation). Both
+1766 and 1767 are selected below; 1774/1775 is held this sprint (see Deferred) precisely
+*because* it edits the same `social_export_manager.dart` method BUT-1767 must also touch
+(AC4 extends the avatar-strip to message rows) — building it in parallel this sprint would
+be the exact cross-batch file collision the clustering rule exists to prevent. Next sprint,
+after this one lands.
+
+## Agent A — account: chat messages never leave the phantom subcollection (Art. 17 + Art. 15)
+Area: account. Router: **full-panel** (Security Architect, Software Architect, Privacy/DPO,
+Legal Counsel, Product Manager, FinOps, Performance Engineer, Trust & Safety, Data
+Analyst/BI, Vendor/Procurement — `firestore.rules`, `account-deletion-cascade.ts` and
+`social_export_manager.dart` are all high-stakes hits). Files (deliberately overlapping —
+one batch, sequential-within-agent, so worktree patches don't conflict):
+`lib/repositories/firebase/modules/message_mutation_module.dart`,
+`lib/repositories/firebase/modules/message_query_module.dart`,
+`lib/repositories/firebase/firebase_messaging_repository.dart`,
+`functions/src/account/account-deletion-cascade.ts`,
+`functions/src/account/request-account-deletion.ts`,
+`lib/repositories/firebase/firebase_data_export_repository.dart`,
+`lib/services/account/export/social_export_manager.dart`,
+`lib/services/account/data_export_service.dart`, `firestore.indexes.json`, plus new/updated
+tests under `test/unit/repositories/firebase/`, `test/unit/services/account/export/`,
+`functions/src/__tests__/`.
+
+- [ ] **BUT-1766** [Tier C][build] Both account-deletion cascades (client + Cloud Function)
+  sweep `conversations/{id}/messages`, a subcollection nothing writes to — production writes
+  land in the top-level `messages` collection instead. A deleted user's chat messages,
+  including message text and `senderId`, stay in Firestore indefinitely, and
+  `deleteAllMessagesForUser` returns 0 and logs success, so nothing alarms. Art. 17 gap,
+  pre-existing. **requiresPlanMode: true** (Urgent + Bug + security + account/GDPR). Router:
+  full-panel.
+  - Fix: sweep top-level `messages` on `senderId == uid` in both cascades (needs an index);
+    decide and implement what happens to messages the deleted user only *received*
+    (delete, or anonymize the sender name to "[Raderad användare]" the same way comments
+    already do — the ticket names this as the established precedent, not an open product
+    question); make `deleteAllMessagesForUser`'s zero-return path alarm rather than report
+    success.
+  - Acceptance:
+    1. After account deletion, zero documents remain in top-level `messages` with
+       `senderId == uid` — proven by an emulator/integration test seeded on the production
+       path (the real `messages` collection), not the phantom subcollection.
+    2. The decision on received-message handling is implemented and stated in the commit
+       body (anonymize sender per the comments precedent, or delete — pick one, don't leave
+       it open).
+    3. A mutation test reds if the sweep is removed.
+
+- [ ] **BUT-1767** [Tier C][build] The Art. 15 export's message query has three independent
+  defects on the same phantom path as BUT-1766: wrong collection
+  (`conversations/{id}/messages` instead of top-level `messages`), wrong sort field
+  (`timestamp` instead of `sentAt`), and a `recipientIds` filter that doesn't exist on a
+  message document at all (it's a shared-menu field) — so even with path and sort fixed,
+  every *received* message would still silently drop. The query is denied outright by
+  `firestore.rules`'s catch-all, so every user with at least one conversation loses the
+  entire messages section (their own conversation metadata included), visible only as one
+  `export_metadata.warnings[]` line. **requiresPlanMode: true** (Urgent + Bug + security +
+  account/GDPR). Router: full-panel.
+  - Fix: query top-level `messages` on `conversationId == id`, `orderBy('sentAt')`, drop the
+    `recipientIds` filter (membership is already proven upstream by the conversation
+    selection); declare the composite index (`conversationId` ASC + `sentAt` ASC) in
+    `firestore.indexes.json` — deploying it is a separate ops step, flag it, don't assume
+    push deploys it (`pushTriggersDeploy: false`); extend BUT-1772's avatar-strip (keep
+    names, strip avatars — Malin's decision) to each message row's own
+    `senderDisplayName`/`senderAvatarUrl`, since it has zero production effect today.
+  - Acceptance:
+    1. The export returns both sent and received messages for a seeded conversation, seeded
+       on the production path.
+    2. The composite index is declared in `firestore.indexes.json` and verified against the
+       emulator (deploying it to production is called out as a post-sprint ops step, not
+       assumed done).
+    3. BUT-1721's boundary test (`cap + 1` truncation probe) is re-seeded on the production
+       path and still reds against the retired `>=` variant.
+    4. BUT-1772's avatar-strip is extended to every message row's `senderAvatarUrl`,
+       mutation-tested; other `conversation_info` fields (names, UIDs, timestamps) stay
+       untouched.
+
+- [ ] **BUT-1768** [Tier B][build] `realtime_menus` is in neither deletion tier at all
+  (only `deleteRealtimeRecipes` runs), and `lastEditedByDisplayName` is scrubbed nowhere in
+  `functions/src/account/` — so a deleted user's realtime menus survive, and their name can
+  persist on someone else's realtime recipe indefinitely. Found while reviewing BUT-1736's
+  fix, which assumed both maintenance paths already covered this. **requiresPlanMode: true**
+  (High + Bug + security + account/GDPR). Router: full-panel.
+  - Fix: add `realtime_menus` (owned docs, `ownerId == uid`) to the cascade — watch the
+    BUT-1396 trap of filtering on the wrong field name; decide and implement what happens to
+    `lastEditedByDisplayName` on documents the deleted user doesn't own (anonymize per the
+    comments precedent, or null the field).
+  - Acceptance:
+    1. After account deletion, zero `realtime_menus` remain with `ownerId == uid`.
+    2. No `lastEditedByDisplayName` anywhere still carries the deleted user's name.
+    3. Tests seed on the production path and are mutation-tested.
+
+- [ ] **BUT-1773** [Tier A][build] The Art. 15 export gateway (`_guardSelfExport` in
+  `firebase_data_export_repository.dart`) writes an audit row on denial but **nothing** on a
+  granted export — a mass read of a user's entire dataset leaves no trail either way. The
+  only gap found in an otherwise-clean repository-wide audit-logging review.
+  **requiresPlanMode: true** (Medium + tech-debt + security). Router: full-panel (shares
+  `firebase_data_export_repository.dart` with BUT-1766/1767 above).
+  - Fix: write exactly **one** audit row per export at the `DataExportService` level (not
+    ~30 per bundle at the gateway level, which is called once per section) carrying
+    user id, timestamp, `operation: 'gdpr_export'`, and outcome.
+  - Acceptance:
+    1. A granted export writes exactly one audit row.
+    2. A denied export writes exactly one row with `granted: false`.
+    3. A mutation test reds if the row is removed.
+
+## Agent B — account: GDPR export raw-text leak in the two remaining managers
+Area: account. Router: **full-panel** (Privacy/DPO, Legal Counsel, Security Architect,
+Software Architect, Product Manager, FinOps). Files (file-disjoint from Agent A — no shared
+files, safe to run in parallel): `lib/services/account/export/content_export_manager.dart`,
+`lib/services/account/export/preferences_export_manager.dart`, plus new/updated tests under
+`test/unit/services/account/export/`.
+
+- [ ] **BUT-1760** [Tier A][build] Two of four GDPR export managers still leak raw Firestore
+  exception text into the exported bundle on failure (12 and 9 bare `{'error':
+  e.toString()}` catches) — `social_export_manager.dart` and `activity_export_manager.dart`
+  were fixed to stable `error_code` tokens in the 2026-07-30b sprint; these two were not.
+  The raw text can contain another user's id (embedded in composite document ids), internal
+  Firebase project links, and `memberPermissions.<uid>` paths. **requiresPlanMode: true**
+  (High + security label). Router: full-panel.
+  - Fix: give both managers the same treatment `shared_shopping_list_export.dart` already
+    has — one stable, authored sentence + one `error_code` token per catch, no
+    `e.toString()` reaching the export payload.
+  - Acceptance:
+    1. `grep -c "e.toString()"` in both files returns 0 for anything landing in the export
+       payload.
+    2. Every catch block has a unique, stable `error_code` token following the
+       `shared_shopping_list_export.dart` convention.
+    3. One test per manager injects a failure and asserts the export body contains the
+       authored sentence + code, not the exception's own text.
+
+## Agent C — shopping: three independent bug fixes, disjoint files
+Area: shopping. Router: **single** for BUT-1722/1770 (Trust & Safety, Performance,
+Data Analyst/BI, Vendor/Procurement, DB Administrator), promoted to **requiresPlanMode**
+by BUT-1755's High priority. Files (disjoint from Agents A/B; internal overlap is fine —
+same batch): `lib/models/unified/unified_shopping_list.dart`,
+`lib/repositories/firebase/modules/shopping_list_permission_guards.dart`,
+`lib/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart`,
+`lib/viewmodels/collaborative_shopping/collaborative_shopping_viewmodel.dart`,
+`functions/src/social/on-profile-updated.ts`, `firestore.indexes.json` (collection-group
+override — **note:** BUT-1767 in Agent A also touches this file for a different index;
+same-file cross-batch touch, flagged in the deviation-watch below), plus updated tests
+under `test/unit/models/unified/`, `test/unit/repositories/firebase/modules/`,
+`test/views/social/collaborative_shopping_view_test.dart`,
+`functions/src/__tests__/`.
+
+- [ ] **BUT-1755** [Tier A][build] `UnifiedShoppingList.fromMap` calls
+  `safeRequiredDateTime(json, 'createdAt')` with no `defaultValue`, so a document with a
+  missing/unreadable `createdAt` gets a FRESH value on every read. This is what made
+  BUT-1726's drift check (`base.createdAt != stored.createdAt`) permanently deny every edit
+  on an older/imported shared list — already worked around at ship time by dropping
+  `createdAt` from the drift set entirely, but the underlying synthesis bug is unfixed and a
+  second site (`requireNoPrivilegeEscalation`'s strict `!=` check, pre-dating this sprint)
+  still hits it on the non-owner edit path. **requiresPlanMode: true** (High + Bug,
+  `lib/repositories/`). Router: single, promoted.
+  - Fix: give the field a deterministic `defaultValue` at the parse seam (e.g.
+    `DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)`) in `UnifiedShoppingList.fromMap`.
+    Do NOT apply the same fix to `updatedAt` (it would diff on every write, per the ticket's
+    explicit warning).
+  - Acceptance:
+    1. A document with missing/unreadable `createdAt` returns the same sentinel value on
+       every read (test proves no `clock.now()` fallback fires).
+    2. `requireNoPrivilegeEscalation`'s strict `createdAt != createdAt` check on the
+       non-owner path is closed by the same sentinel — a test proves an edit/admin member on
+       an older list is no longer permanently denied.
+    3. `updatedAt` is explicitly NOT given the same treatment — stated in the commit body.
+
+- [ ] **BUT-1722** [Tier A][build] The collaborative shopping screen's failed-edit message
+  is silently destroyed: `ShoppingItemOperationsManager` (collaborative variant) writes the
+  permission-denied reason into its own `_error` field, which nothing in `lib/` reads — the
+  ViewModel never delegates to it and the view reads only `BaseViewModel._error`. A
+  view-only member's tick silently un-ticks with zero explanation, on the one screen this
+  matters most (found while verifying BUT-1696's fix, which fixed only the unified screen).
+  **requiresPlanMode: false** (Medium, shopping, no security label). Router: single.
+  - Fix: mirror the manager's error into `CollaborativeShoppingViewModel` (either delegate
+    `error`/`hasError` to the manager, or set it explicitly after a failed toggle).
+  - Acceptance:
+    1. A view-only member tapping a checkbox on a shared list sees the permission sentence,
+       not silence.
+    2. `test/views/social/collaborative_shopping_view_test.dart:574` ("a failed toggle
+       announces nothing") is updated to assert the message.
+    3. Only the `collaborative_shopping/` `ShoppingItemOperationsManager` is touched — the
+       ticket explicitly flags a second same-named class under `viewmodels/shopping/` that
+       is NOT this one; don't touch it by mistake.
+
+- [ ] **BUT-1770** [Tier B][build] A display-name change never reaches shopping-item row
+  level: `on-profile-updated.ts` updates list-level `ownerDisplayName` /
+  `lastActivityByDisplayName`, but `addedByDisplayName` / `lastModifiedByDisplayName` on
+  individual items (both the `items` subcollection and the embedded `items` array) are never
+  touched — so "Anna added milk" keeps saying Anna forever after she renames to Annika. The
+  deletion cascade already scrubs these exact two fields, so propagation and deletion
+  disagree about which fields count. **requiresPlanMode: false** (Medium + security label,
+  but a scoped, well-specified fix). Router: single.
+  - Fix: a `db.collectionGroup("items").where("addedByUserId", "==", userId)` pass (and the
+    same for `lastModifiedByUserId`) — requires a `fieldOverrides` entry with
+    `queryScope: "COLLECTION_GROUP"` in `firestore.indexes.json`. The embedded array copy on
+    the list document isn't queryable and needs a per-matched-list read-modify-write.
+    Rename changes are rare, so the collection-group sweep's cost should be negligible — say
+    so with a number in the commit body, per the cost-principles rule.
+  - Acceptance:
+    1. After a rename, no `addedByDisplayName`/`lastModifiedByDisplayName` anywhere still
+       carries the old name, in either storage shape.
+    2. The index is declared and verified against the emulator.
+    3. A test seeds both storage shapes and reds if the sweep is removed.
+
+## Agent D — analytics: shared-list activity undercounted in feature retention
+Area: analytics. Router: **single** (Data Analyst/BI, Growth/ASO, Vendor/Procurement — no
+high-stakes hits). File-disjoint from every other batch:
+`functions/src/analytics/compute-feature-retention.ts`, plus updated tests under
+`functions/src/__tests__/compute-feature-retention.test.ts`.
+
+- [ ] **BUT-1761** [Tier A][build] The `shopped` feature-retention probe only queries
+  personal shopping lists — shared lists, the flagship feature the product is built around,
+  are never probed at all, so the metric for shared shopping activity is structurally always
+  zero. The code carries an unticketed `KNOWN GAP 1` comment; this is that ticket.
+  **requiresPlanMode: false** (Medium, analytics, no security label). Router: single.
+  - Fix: extend the `shopped` probe to also query `unified_shared_shopping_lists`; replace
+    the unticketed `KNOWN GAP 1` comment with this ticket's number in the same change.
+  - Acceptance:
+    1. `shopped` is true for a user whose only activity is on a shared list (no personal
+       activity).
+    2. A test pins exactly that case.
+    3. The `KNOWN GAP 1` comment is removed or replaced with BUT-1761's number.
+    4. No added Firestore read per user per day beyond what's already budgeted in the
+       comment — state the cost explicitly if the fix changes it.
+
+## Deferred to capacity (clear mandate, held back — file overlap or observed agent-count cap)
+
+- **BUT-1774** (merged with BUT-1775) — Malin's own decided redaction
+  (strip `perUserSettings` for others, keep `lastReadTimestamps`; strip `sharedByAvatarUrl`
+  in `shared_content`) touches `social_export_manager.dart`'s avatar-strip helper — the exact
+  method BUT-1767 (Agent A, this sprint) also extends. Building both in the same sprint
+  across two parallel batches is the cross-batch file collision the clustering rule exists
+  to prevent, and Malin's own ticket text says build order is 1766/1767 first anyway. Next
+  sprint's Agent A, once this sprint's Agent A has landed.
+- **BUT-1762** — feature-retention `KNOWN GAP 2` (personal-list check-only sessions don't
+  bump `updatedAt`, so a shop-and-tick-only session isn't counted). The ticket itself offers
+  two cost-tradeoff fixes (bump `updatedAt` on every item write vs. a new per-day counter
+  doc) or "leave the gap documented" as a legitimate third option — a genuine
+  running-cost decision, not a mechanical fix. Flagged in Needs your call below rather than
+  built.
+- **BUT-1716** — the second shared-shopping repository's missing attribution stamp. Held a
+  third sprint: its own AC3 (verify the deletion cascade scrubs the subcollection shape)
+  plausibly touches `account-deletion-cascade.ts`, the same file Agent A is already deep in
+  this sprint for BUT-1766/1768. Next sprint's Agent A, after this sprint's cascade work
+  settles, to avoid guessing at a collision on a file already at capacity.
+- **BUT-1730** — build a real Firestore-emulator CI lane. Failed twice already (BUT-1695,
+  then this ticket's own reproduction of a `PlatformException` under `flutter test
+  --dart-define=USE_EMULATOR=true`). The ticket itself asks to "pick one deliberately"
+  between two different test-harness architectures — an engineering-direction call, not a
+  ticket with one obvious fix. Recommend deciding the harness approach with Malin before a
+  third autonomous attempt (see Needs your call).
+- **BUT-1747** — GDPR: shared lists the user has LEFT are missing from the export (needs a
+  new Cloud Function; unblocked now that BUT-1732 has landed). Real gap, clear mandate, but
+  a new Cloud Function plus its own deploy step is a bigger, more ops-adjacent lift than any
+  batch above — same read as the last two sprints: worth its own dedicated slot, ideally
+  paired with BUT-1731's deploy-day step, not squeezed in alongside two Urgent tickets.
+
+## Needs your call (not built this sprint)
+
+- **BUT-1762** — see Deferred above: pick a cost tradeoff (extra per-tick write vs. a new
+  per-day counter doc) or accept the documented gap. My read: option 2 (counter doc) if the
+  metric matters enough to fix precisely; otherwise leave it — this is a BI-accuracy gap,
+  not a safety one, so "leave it documented" is a legitimate answer.
+- **BUT-1730** — decide the emulator-lane architecture direction (an `integration_test` host
+  that loads FlutterFire plugins, vs. a pure-Dart Firestore client for these three suites)
+  before a third autonomous attempt. My read: worth doing, but needs an explicit direction
+  first, not another CI-YAML pass.
+- **BUT-1718** — a household member cannot leave a shared shopping list (rules deny
+  self-removal) — deliberate rule, product/permissions call. Carried from the last two
+  sprints, unchanged.
+- **BUT-1699** — enable the two Firestore TTL policies that were never turned on
+  (`notification_send_events`, `scheduled_notifications`) — real data-retention behaviour
+  change. Carried, unchanged.
+- **BUT-1731** — deploy-day ops task (run `backfillSharedListContributors`, delete the export
+  after the 30-day soak). `need-malin` label, Tier D. Carried, unchanged.
+- **BUT-1693, BUT-1480, BUT-1323, BUT-1685, BUT-880, BUT-1502, BUT-1557, BUT-1179, BUT-1368,
+  BUT-863, BUT-1445, BUT-1649, BUT-1636, BUT-1361** — the standing `need-malin` manual-QA /
+  compliance-diagnosis / product-decision backlog, unchanged this sprint.
+
+## Cross-batch file-collision watch (declared at selection, not discovered at ship)
+
+`firestore.indexes.json` is touched by **both** Agent A (BUT-1767's `conversationId`+`sentAt`
+composite) and Agent C (BUT-1770's `items` collection-group override) — two different index
+entries in the same config file. Per the delivery digest's worktree lesson, serialize these
+two batches' writes to this one file rather than trusting an automatic merge: apply Agent A's
+patch, let it land, then re-diff Agent C's before applying. Flag explicitly at ship if either
+batch's patch to this file needed a manual re-apply.
+
+## Post-sprint steps (to run after implementation)
+
+1. `dart analyze --fatal-infos` + `npx tsc --noEmit -p functions` on the full tree.
+2. File follow-up Linear tickets for every deferred sub-scope before commit.
+3. Commit through the gate: `code-reviewer` on all `.dart`, `firebase-backend-security` on
+   Agents A/B/C's repository and export-manager touches, `cloud-functions-specialist` on
+   Agents A/C/D's `functions/src` touches, `firestore-rules-tester` only if `firestore.rules`
+   itself changes (expected: it does not — Agent A adds a query + index, not a rule).
+4. Push (push does NOT trigger deploy in this repo — `pushTriggersDeploy: false`). The two
+   new `firestore.indexes.json` entries (BUT-1767, BUT-1770) need an explicit
+   `firebase deploy --only firestore:indexes` — call this out as a Needs You step, don't
+   assume push covers it.
+5. Transition tickets: Tier A/B/C build + all-pass → Done. Any failed/unclear criterion → In
+   Review + plain-language comment + PushNotification.
+6. Re-check `docs/onboarding/workflow-map.stale` before commit — none of this sprint's flows
+   look map-relevant (export/deletion internals, analytics), but verify rather than assume.
+7. Grade each selected ticket against its OWN diff before any Done/In Review transition.
+
+---
+
 # BUT-1772 — conversations export: strip other participants' avatar URLs
 
 **Founder decision, 2026-07-30.** Malin was shown the three options (strip names + avatars /

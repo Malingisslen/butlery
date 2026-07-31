@@ -235,6 +235,110 @@ class _FakeGroupWeeklyMenuPlanRepository extends Fake
   }) async => rows;
 }
 
+/// BUT-1760: every export read raises [error], so each section's catch block
+/// is the only thing that can shape the result. `Fake.noSuchMethod` would raise
+/// a bare `UnimplementedError` — useless here, because the defect under test is
+/// what happens to an exception whose STRING carries other people's identifiers.
+mixin _AlwaysThrows on Fake {
+  Object get error;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => Future<Never>.error(error);
+}
+
+class _ThrowingRecipeRepository extends Fake
+    with _AlwaysThrows
+    implements FirebaseRecipeRepository {
+  _ThrowingRecipeRepository(this.error);
+  @override
+  final Object error;
+}
+
+class _ThrowingDataExportRepository extends Fake
+    with _AlwaysThrows
+    implements FirebaseDataExportRepository {
+  _ThrowingDataExportRepository(this.error);
+  @override
+  final Object error;
+}
+
+class _ThrowingPersonalTagRepository extends Fake
+    with _AlwaysThrows
+    implements FirebasePersonalTagRepository {
+  _ThrowingPersonalTagRepository(this.error);
+  @override
+  final Object error;
+}
+
+class _ThrowingPersonalTagGroupRepository extends Fake
+    with _AlwaysThrows
+    implements FirebasePersonalTagGroupRepository {
+  _ThrowingPersonalTagGroupRepository(this.error);
+  @override
+  final Object error;
+}
+
+class _ThrowingCookSnapRepository extends Fake
+    with _AlwaysThrows
+    implements CookSnapRepository {
+  _ThrowingCookSnapRepository(this.error);
+  @override
+  final Object error;
+}
+
+class _ThrowingCookEventRepository extends Fake
+    with _AlwaysThrows
+    implements CookEventRepository {
+  _ThrowingCookEventRepository(this.error);
+  @override
+  final Object error;
+}
+
+class _ThrowingPantryRepository extends Fake
+    with _AlwaysThrows
+    implements PantryRepository {
+  _ThrowingPantryRepository(this.error);
+  @override
+  final Object error;
+}
+
+class _ThrowingActivityEventRepository extends Fake
+    with _AlwaysThrows
+    implements ActivityEventRepository {
+  _ThrowingActivityEventRepository(this.error);
+  @override
+  final Object error;
+}
+
+class _ThrowingWeeklyMenuPlanRepository extends Fake
+    with _AlwaysThrows
+    implements WeeklyMenuPlanRepository {
+  _ThrowingWeeklyMenuPlanRepository(this.error);
+  @override
+  final Object error;
+}
+
+class _ThrowingGroupWeeklyMenuPlanRepository extends Fake
+    with _AlwaysThrows
+    implements GroupWeeklyMenuPlanRepository {
+  _ThrowingGroupWeeklyMenuPlanRepository(this.error);
+  @override
+  final Object error;
+}
+
+ContentExportManager _explodingManager(Object error) => ContentExportManager(
+  recipeRepository: _ThrowingRecipeRepository(error),
+  dataExportRepository: _ThrowingDataExportRepository(error),
+  personalTagRepository: _ThrowingPersonalTagRepository(error),
+  personalTagGroupRepository: _ThrowingPersonalTagGroupRepository(error),
+  cookSnapRepository: _ThrowingCookSnapRepository(error),
+  cookEventRepository: _ThrowingCookEventRepository(error),
+  pantryRepository: _ThrowingPantryRepository(error),
+  activityEventRepository: _ThrowingActivityEventRepository(error),
+  weeklyMenuPlanRepository: _ThrowingWeeklyMenuPlanRepository(error),
+  groupWeeklyMenuPlanRepository: _ThrowingGroupWeeklyMenuPlanRepository(error),
+);
+
 Map<String, dynamic> _recipeRow(String prefix, int i) => {
   'id': '$prefix$i',
   'data': {'title': 'r$i'},
@@ -1274,6 +1378,138 @@ void main() {
         reason:
             'two id-less rows must not collapse to the same identifier — that '
             'is the whole point of the position fallback',
+      );
+    });
+  });
+
+  /// BUT-1760: all twelve sections used to fail with `{'error': e.toString()}`.
+  ///
+  /// Two defects in one line. The raw string lands in an Article-15 artifact
+  /// the data subject downloads and may forward to a supervisory authority,
+  /// and a Firestore refusal string routinely names ANOTHER person's uid, an
+  /// internal document path, or a `create_composite` URL embedding field paths
+  /// and the project id. And with no `error_code`, the section could only be
+  /// named at bundle level by `DataExportService`'s derived fallback — the
+  /// manager itself said nothing about WHICH read failed.
+  group('ContentExportManager failure envelopes (BUT-1760)', () {
+    // A realistic refusal, not a bare Exception: the message is the payload
+    // under test. `uid-bob` is a second data subject, so its presence anywhere
+    // in the returned map is the leak itself.
+    final leaky = FirebaseException(
+      plugin: 'cloud_firestore',
+      code: 'permission-denied',
+      message:
+          'Missing or insufficient permissions: '
+          'users/uid-alice/blocks/uid-alice_uid-bob',
+    );
+
+    // (section phrase used in the authored sentence, error_code, call).
+    final cases =
+        <
+          (
+            String,
+            String,
+            Future<Map<String, dynamic>> Function(
+              ContentExportManager,
+            ),
+          )
+        >[
+          ('recipes', 'recipes-export-failed', (m) => m.exportRecipes('alice')),
+          ('menus', 'menus-export-failed', (m) => m.exportMenus('alice')),
+          (
+            'shopping lists',
+            'shopping-lists-export-failed',
+            (m) => m.exportShoppingLists('alice'),
+          ),
+          (
+            'personal tags',
+            'personal-tags-export-failed',
+            (m) => m.exportPersonalTags('alice'),
+          ),
+          (
+            'personal tag groups',
+            'personal-tag-groups-export-failed',
+            (m) => m.exportPersonalTagGroups('alice'),
+          ),
+          (
+            'cook snaps',
+            'cook-snaps-export-failed',
+            (m) => m.exportCookSnaps('alice'),
+          ),
+          (
+            'cook events',
+            'recipe-cook-events-export-failed',
+            (m) => m.exportCookEvents('alice'),
+          ),
+          (
+            'pantry items',
+            'pantry-items-export-failed',
+            (m) => m.exportPantryItems('alice'),
+          ),
+          (
+            'activity events',
+            'activity-events-export-failed',
+            (m) => m.exportActivityEvents('alice'),
+          ),
+          (
+            'weekly menu plans',
+            'weekly-menu-plans-export-failed',
+            (m) => m.exportWeeklyMenuPlans('alice'),
+          ),
+          (
+            'group weekly menu plans',
+            'group-weekly-menu-plans-export-failed',
+            (m) => m.exportGroupWeeklyMenuPlans('alice'),
+          ),
+          (
+            'realtime recipes',
+            'realtime-recipes-export-failed',
+            (m) => m.exportRealtimeRecipes('alice'),
+          ),
+        ];
+
+    for (final (section, code, call) in cases) {
+      test('$section returns an authored sentence + $code, never the raw '
+          'exception', () async {
+        final result = await call(_explodingManager(leaky));
+
+        expect(
+          result['error'],
+          'Could not export $section.',
+          reason: 'an authored sentence, not e.toString()',
+        );
+        expect(
+          result['error_code'],
+          code,
+          reason:
+              'the token DataExportService names the failing section by in '
+              'export_metadata.warnings',
+        );
+        // The whole map, not just `error`: a leak anywhere in the section is
+        // still a leak in the bundle.
+        final encoded = jsonEncode(result);
+        expect(
+          encoded,
+          isNot(contains('uid-bob')),
+          reason: "another data subject's uid must never reach the bundle",
+        );
+        expect(
+          encoded,
+          isNot(contains('users/uid-alice/blocks')),
+          reason: 'internal document paths must never reach the bundle',
+        );
+        expect(encoded, isNot(contains('permission-denied')));
+      });
+    }
+
+    test('every section carries its OWN token', () {
+      final codes = cases.map((c) => c.$2).toList();
+      expect(
+        codes.toSet(),
+        hasLength(codes.length),
+        reason:
+            'a shared token would make the bundle-level warning unable to say '
+            'which read failed — the reason the codes are authored at all',
       );
     });
   });

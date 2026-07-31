@@ -14,6 +14,13 @@
 /// [ExportPaginationHelper.fetchCapped]. The decisive test is therefore the
 /// EXACTLY-AT-CAP case: below-cap passes under both the old and the new
 /// implementation and proves nothing on its own.
+///
+/// BUT-1767: every case here used to seed `conversations/{id}/messages` with a
+/// `timestamp` field — the same wrong collection AND the same non-existent sort
+/// field the implementation used, so the caps were exercised over a query that
+/// in production matched nothing (and, having no rule block, was denied
+/// outright). The fixture now writes what `MessageDto.toFirestore` writes: a
+/// TOP-LEVEL `messages` doc carrying `conversationId` and `sentAt`.
 library;
 
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -59,27 +66,32 @@ void main() {
     });
 
     /// Seeds one conversation the user participates in, carrying [messageCount]
-    /// messages ordered by an increasing `timestamp` so the repository's
+    /// top-level messages with an increasing `sentAt` so the repository's
     /// `orderBy` is deterministic.
-    Future<void> seedConversation(int messageCount) async {
-      final convo = firestore
+    Future<void> seedConversation(
+      int messageCount, {
+      String senderId = userId,
+    }) async {
+      await firestore
           .collection(FirestoreCollections.conversations)
-          .doc(conversationId);
-      await convo.set(<String, dynamic>{
-        'participantIds': <String>[userId, 'other-user'],
-      });
+          .doc(conversationId)
+          .set(<String, dynamic>{
+            'participantIds': <String>[userId, 'other-user'],
+          });
       for (var i = 0; i < messageCount; i++) {
-        await convo.collection(FirestoreCollections.messages).doc('msg-$i').set(
-          <String, dynamic>{
-            'text': 'message $i',
-            'senderId': userId,
-            'timestamp': Timestamp.fromDate(
-              DateTime.utc(2026, 1, 1).add(
-                Duration(seconds: i),
+        await firestore
+            .collection(FirestoreCollections.messages)
+            .doc('msg-$i')
+            .set(<String, dynamic>{
+              'conversationId': conversationId,
+              'content': 'message $i',
+              'senderId': senderId,
+              'sentAt': Timestamp.fromDate(
+                DateTime.utc(2026, 1, 1).add(
+                  Duration(seconds: i),
+                ),
               ),
-            ),
-          },
-        );
+            });
       }
     }
 
@@ -138,6 +150,47 @@ void main() {
         expect(result, hasLength(1));
         expect(result.single['messages_truncated'], isFalse);
         expect(result.single['messages'] as List<dynamic>, hasLength(2));
+      },
+    );
+
+    test(
+      'BUT-1767: messages are read from the top-level collection, oldest first',
+      () async {
+        await seedConversation(3);
+
+        final result = await repository.exportConversationsAndMessages(userId);
+
+        final messages = (result.single['messages'] as List<dynamic>)
+            .cast<Map<String, dynamic>>();
+        expect(
+          messages.map((m) => m['id']),
+          equals(<String>['msg-0', 'msg-1', 'msg-2']),
+          reason:
+              'Reading `conversations/{id}/messages` or sorting on `timestamp` '
+              'both yield an EMPTY list — this is the assertion that separates '
+              'the fix from the defect.',
+        );
+        expect(
+          (messages.first['data'] as Map<String, dynamic>)['conversationId'],
+          equals(conversationId),
+        );
+      },
+    );
+
+    test(
+      'BUT-1767: messages the user RECEIVED are exported too',
+      () async {
+        await seedConversation(2, senderId: 'other-user');
+
+        final result = await repository.exportConversationsAndMessages(userId);
+
+        expect(
+          result.single['messages'] as List<dynamic>,
+          hasLength(2),
+          reason:
+              'The gateway returns the whole thread; the requester participates '
+              'in it, so both halves are their Art. 15 record.',
+        );
       },
     );
   });

@@ -41,6 +41,11 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
   ShoppingItemOperationsManager(this._shoppingService, this.listId);
 
   bool get isAddingItem => _isAddingItem;
+
+  /// Why the last add / toggle failed, in Swedish. Read through
+  /// `CollaborativeShoppingViewModel.consumeItemOperationError` — never
+  /// through the ViewModel's own `error`, which drives a full-screen error
+  /// state (BUT-1696/BUT-1722).
   String get error => _error;
   bool get hasError => _error.isNotEmpty;
 
@@ -54,13 +59,36 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Clear the reason at the START of every operation.
+  ///
+  /// BUT-1696 settled that self-clearing on read is not enough on its own: a
+  /// caller that bails on `if (!mounted) return;` never performs the read, so
+  /// the next action would inherit a reason that has nothing to do with it.
+  /// Clearing here is what makes an early `return false` unambiguous — either
+  /// this operation set a reason or there is none.
+  void _beginOperation() {
+    if (_error.isEmpty) return;
+    _error = '';
+    notifyListeners();
+  }
+
   Future<bool> addItem(
     String itemName,
     bool canEdit,
     Future<void> Function() onListRefresh,
     void Function(String activity, DateTime time) onActivityUpdate,
   ) async {
-    if (itemName.trim().isEmpty || !canEdit) return false;
+    _beginOperation();
+    // An empty field is not a refusal — the shopper simply hasn't typed
+    // anything, and a snackbar would be noise. A LOCAL permission refusal is a
+    // refusal and must say so (BUT-1722): the row's controls are gated on
+    // `canView`, so a view-only member can reach this call and, without a
+    // reason set here, would get silence.
+    if (itemName.trim().isEmpty) return false;
+    if (!canEdit) {
+      setError(AppLocale.current.shoppingNoEditPermissionShared);
+      return false;
+    }
 
     _setAddingItem(true);
 
@@ -103,13 +131,26 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
     Future<void> Function() onListRefresh,
     void Function(String activity, DateTime time) onActivityUpdate,
   ) async {
-    if (!canEdit) return false;
+    _beginOperation();
+    // BUT-1722: the checkbox and the row `onTap` are gated on `canView`
+    // (collaborative_shopping_items.dart), so a member with `view` permission
+    // CAN tap and lands here. Refusing without a reason is exactly the
+    // "checkbox that silently refused to stay ticked" this work exists to
+    // remove — the stale-rights case is covered further down by the server's
+    // own sentence, this is the local half.
+    if (!canEdit) {
+      setError(AppLocale.current.shoppingNoEditPermissionShared);
+      return false;
+    }
 
     try {
       AppLogger.info('🔄 Växlar artikel status: $itemId');
 
       final item = currentList?.items.firstWhere((i) => i.id == itemId);
-      if (item == null) return false;
+      if (item == null) {
+        setError(AppLocale.current.shoppingListNotFound);
+        return false;
+      }
 
       final success = await _shoppingService.toggleItemBought(itemId);
 

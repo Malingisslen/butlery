@@ -10,11 +10,8 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
-import 'package:butlery/core/extensions/iterable_extensions.dart';
-import 'package:butlery/repositories/firebase/firestore_batch_utils.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/log_sanitizer.dart';
 
 // Module imports
 import 'package:butlery/repositories/firebase/modules/conversation_query_module.dart';
@@ -22,6 +19,7 @@ import 'package:butlery/repositories/firebase/modules/conversation_mutation_modu
 import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
 import 'package:butlery/repositories/firebase/modules/message_query_module.dart';
 import 'package:butlery/repositories/firebase/modules/message_mutation_module.dart';
+import 'package:butlery/repositories/firebase/modules/message_deletion_module.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Firebase messaging repository using modular architecture.
@@ -37,6 +35,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   late final ConversationParticipantModule? _participantModule;
   late final MessageQueryModule _messageQueryModule;
   late final MessageMutationModule _messageMutationModule;
+  late final MessageDeletionModule _messageDeletionModule;
 
   FirebaseMessagingRepository({
     super.firestore,
@@ -84,6 +83,8 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
       readConversation: read,
       timestampProvider: timestampProvider,
     );
+
+    _messageDeletionModule = MessageDeletionModule(firestore: firestore);
   }
   @override
   String get collectionName => FirestoreCollections.conversations;
@@ -407,88 +408,16 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     AppLogger.debug('FirebaseMessagingRepository disposed');
   }
 
-  /// Cascade-delete [userId]'s message participation. GDPR Art. 17.
-  ///
-  /// For each conversation [userId] participates in:
-  /// - All messages in the conversation's `messages` subcollection are
-  ///   deleted (irrespective of sender — the user's read receipts and
-  ///   conversation context are also their data).
-  /// - 1:1 conversations (≤2 participants) are deleted entirely.
-  /// - Group conversations (>2 participants) have [userId] removed from
-  ///   `participantIds` so the remaining group continues. The user
-  ///   "leaves" without nuking the others' chat history.
-  ///
-  /// More involved than other repos' `deleteAllByUser` because messages
-  /// live in subcollections under each conversation, and ownership is on
-  /// the conversation's `participantIds` array — not a flat field on the
-  /// message doc.
-  ///
-  /// Returns the total number of message docs deleted (conversation docs
-  /// and participant-list updates are NOT counted in the return value —
-  /// matches the prior `social_deletion_operations.deleteMessages`
-  /// behaviour this replaces).
+  /// Cascade-delete [userId]'s own messages and conversation membership
+  /// (GDPR Art. 17). Delegates to [MessageDeletionModule]; the ownership guard
+  /// stays here because this class owns the auth context.
   @override
   Future<int> deleteAllMessagesForUser(String userId) async {
-    // GDPR cascade: caller must be deleting their own data.
     await validateOwnership(
       currentUserId: requireCurrentUserId(),
       resourceOwnerId: userId,
       resourceType: FirestoreCollections.conversations,
     );
-
-    final conversationsSnapshot = await firestore
-        .collection(FirestoreCollections.conversations)
-        .where('participantIds', arrayContains: userId)
-        .get();
-
-    // Bounded parallelism: 10 conversations at a time keeps us well under
-    // Firestore's per-client write quota while collapsing the
-    // round-trip-per-conversation latency that account-deletion otherwise
-    // accumulates linearly. A power-user in 100 chats goes from ~100
-    // sequential RTTs to ~10 parallel waves.
-    var totalMessagesDeleted = 0;
-    for (final chunk in conversationsSnapshot.docs.chunked(10)) {
-      final perChunkCounts = await Future.wait(
-        chunk.map((convoDoc) => _deleteOneConversation(convoDoc, userId)),
-      );
-      totalMessagesDeleted += perChunkCounts.fold<int>(0, (a, b) => a + b);
-    }
-
-    AppLogger.info(
-      'Deleted $totalMessagesDeleted messages across ${conversationsSnapshot.docs.length} conversations for user ${userId.maskedUserId}',
-    );
-    return totalMessagesDeleted;
-  }
-
-  Future<int> _deleteOneConversation(
-    QueryDocumentSnapshot<Map<String, dynamic>> convoDoc,
-    String userId,
-  ) async {
-    final messagesSnapshot = await convoDoc.reference
-        .collection(FirestoreCollections.messages)
-        .get();
-    var deleted = 0;
-    if (messagesSnapshot.docs.isNotEmpty) {
-      await batchDeleteDocs(firestore, messagesSnapshot.docs);
-      deleted = messagesSnapshot.docs.length;
-    }
-
-    final participants = List<String>.from(
-      convoDoc.data()['participantIds'] ?? const [],
-    );
-    if (participants.length <= 2) {
-      // 1:1 conversation (or solo) — delete the conversation doc itself.
-      await convoDoc.reference.delete();
-    } else {
-      // Group: read-modify-write. `FieldValue.arrayRemove` would be more
-      // race-safe in production but FakeFirebaseFirestore can't test it
-      // (MockFieldValuePlatform cast error — see firebase_shared_recipe_repository_test
-      // for the documented limitation). The race window is negligible on
-      // an account-deletion path: the deleting user can't concurrently
-      // mutate their own conversations.
-      participants.remove(userId);
-      await convoDoc.reference.update({'participantIds': participants});
-    }
-    return deleted;
+    return _messageDeletionModule.deleteAllMessagesForUser(userId);
   }
 }

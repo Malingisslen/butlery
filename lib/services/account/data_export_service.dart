@@ -2,6 +2,7 @@
 
 import 'package:clock/clock.dart';
 import 'dart:convert';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_group_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
@@ -65,6 +66,10 @@ class DataExportService extends BaseService {
   // profile read can use it directly.
   late final FirebaseDataExportRepository _exportRepo;
 
+  // BUT-1773: the Art. 30 record of the Art. 15 request itself. Held HERE and
+  // deliberately not handed to [_exportRepo] — see [_logExportAudit].
+  late final FirebaseAuditRepository _auditRepository;
+
   DataExportService({
     required auth_repo.AuthRepository authRepository,
     required FirestoreRepository firestoreRepository,
@@ -93,6 +98,8 @@ class DataExportService extends BaseService {
     // Tests inject a pre-built manager with a mocked FirebaseFunctions
     // to bypass the Firebase.app dependency.
     ComplianceExportManager? complianceExportManager,
+    // BUT-1773: test seam for the one-row-per-export audit trail.
+    FirebaseAuditRepository? auditRepository,
   }) : _authRepository = authRepository,
        _firestoreRepository = firestoreRepository {
     _exportRepo =
@@ -101,6 +108,9 @@ class DataExportService extends BaseService {
           firestore: _firestoreRepository.firestore,
           authRepository: authRepository,
         );
+    _auditRepository =
+        auditRepository ??
+        FirebaseAuditRepository(_firestoreRepository.firestore);
     _contentManager = ContentExportManager(
       cookSnapRepository: cookSnapRepository,
       cookEventRepository: cookEventRepository,
@@ -143,6 +153,14 @@ class DataExportService extends BaseService {
   Future<String> exportUserData() async {
     final user = _authRepository.currentUser;
     if (user == null) {
+      // A refused request is a processing activity too — Art. 30 records the
+      // attempt, not just the successes, and a bundle that was never produced
+      // is exactly the case a data subject later disputes.
+      await _logExportAudit(
+        userId: _unauthenticatedActor,
+        granted: false,
+        outcome: 'denied_unauthenticated',
+      );
       throw Exception('No authenticated user found');
     }
 
@@ -150,7 +168,67 @@ class DataExportService extends BaseService {
     app_logger.AppLogger.info(
       '[$_logTag] Starting data export for user: ${userId.maskedUserId}',
     );
+    try {
+      final jsonString = await _buildExportBundle(userId);
+      await _logExportAudit(
+        userId: userId,
+        granted: true,
+        outcome: 'granted',
+        bytes: jsonString.length,
+      );
+      return jsonString;
+    } catch (e) {
+      await _logExportAudit(
+        userId: userId,
+        granted: false,
+        outcome: 'failed',
+      );
+      rethrow;
+    }
+  }
 
+  /// Placeholder actor id for a request with no authenticated user. The
+  /// `audit_logs` rule binds `userId` to `request.auth.uid`, so this row cannot
+  /// land server-side — the write is best-effort by design and the local log
+  /// still carries the refusal.
+  static const String _unauthenticatedActor = 'unauthenticated';
+
+  /// Exactly ONE audit row per export request, written HERE rather than in
+  /// [FirebaseDataExportRepository].
+  ///
+  /// The gateway would be the obvious home — it already guards every read with
+  /// `validateOwnership` — but a bundle makes ~30 of those calls, so wiring an
+  /// audit repository into it would write ~30 near-identical rows per export.
+  /// That is both noise in the one collection an auditor reads and a fight with
+  /// `firestore.rules`, which caps `audit_logs` creates at
+  /// `rateLimitWrite('audit_logs', 2)` per minute: rows 3..30 would be rejected
+  /// and the trail would be arbitrarily partial. One row per REQUEST is what
+  /// Art. 30 asks for anyway — the processing activity is "the user exported
+  /// their data", not "the export read `friend_categories`".
+  ///
+  /// Fire-and-forget by contract ([FirebaseAuditRepository.logPermissionCheck]
+  /// swallows its own failures): a failed audit write must never turn a
+  /// successful Art. 15 export into an error the data subject sees.
+  Future<void> _logExportAudit({
+    required String userId,
+    required bool granted,
+    required String outcome,
+    int? bytes,
+  }) async {
+    await _auditRepository.logPermissionCheck(
+      userId: userId,
+      operation: 'gdpr_export',
+      resourceType: 'data_export',
+      granted: granted,
+      metadata: <String, dynamic>{
+        'outcome': outcome,
+        'article': '15',
+        'bundle_bytes': ?bytes,
+      },
+    );
+  }
+
+  Future<String> _buildExportBundle(String userId) async {
     // Fan out all collection reads in parallel — wall time becomes max(t)
     // instead of sum(t). Each manager method is read-only, stateless, takes
     // only userId, and returns Map<String, dynamic>. Mirrors the pattern in
