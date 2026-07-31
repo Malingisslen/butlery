@@ -10585,3 +10585,103 @@ sync); the collection scrub itself lives in
 `functions/src/account/account-deletion-cascade.ts`, out of Dart scope —
 sanity-grepped `lastMessage`/`participantAvatarUrls` there and both exist,
 consistent with the ticket's own description.
+
+## 2026-07-31 — BUT-1762 review: the day-coalesced personal-list stamp
+
+Reviewed `lib/repositories/firebase/modules/shopping_item_operations_module.dart`
+(`_touchPersonalListDay`, six personal call sites) against the new group in
+`test/unit/repositories/firebase/modules/shopping_item_operations_module_test.dart`.
+Baseline 41/41 green, md5 `b5f3740a…` on the module, `7d8ec0db…` on the suite.
+NOTE for anyone re-reading this: a parallel session was editing the module's
+DOC COMMENT throughout the round (three separate rewrites, md5 moved
+`b5f3740a`→`f13d6bbb`→…); the CODE BODY never moved, verified each time with
+`diff <(sed -n '/_touchPersonalListDay/,/^  }$/p' backup) <(… worktree)`.
+On a file another session is live-editing, `cp -p` + whole-file md5 is the
+WRONG restore check — extract the method body and diff that instead.
+
+### The brief's four mutation claims: verified where it mattered
+- **Mutation B (delete the same-day guard) → exactly 1 red.** Reproduced:
+  `+40 -1`, the cost-guarantee test, `Expected: 2026-03-14 09:30:00.000Z /
+  Actual: 2026-03-14 10:30:00.000Z`. The fixture is correctly staged — clock is
+  an hour ahead of the stored stamp, so "wrote the same value" and "skipped the
+  write" produce DIFFERENT observables, which is the thing that usually makes a
+  no-write assertion unfalsifiable. Non-vacuous, and it fails for the right
+  reason.
+- **Per-branch independence (the brief's open question).** Analytic first: each
+  of the six tests calls exactly one public method, no method delegates to
+  another (read all six bodies), and the personal arm's ONLY parent-document
+  write is the stamp — so a branch test cannot be satisfied by a sibling's call
+  site. Spot-checked empirically by deleting the `removeItemsBatch` site alone:
+  `+40 -1`, and the red is `removeItemsBatch stamps the activity day`. Six
+  distinct sites, six discriminating tests.
+- **Mutation C's premise holds on the fake.** `fake_cloud_firestore-4.1.1`
+  `mock_document_reference.dart:99-110` returns
+  `Future.error(FirebaseException(code:'not-found'))` when `_exists()` is false
+  — so the "failing parent stamp" test's missing-parent staging really does
+  enter the catch; it is not a silent no-op dressed as a failure. Honest, and
+  the comment says what it does. Caveat worth stating in the test: the
+  production trigger is `permission-denied`/`unavailable`, which the fake
+  cannot fire; missing-doc is the reachable stand-in.
+
+### Two live gaps found, both proved by mutants the existing suite could not kill
+1. **`known.toUtc()` is unasserted.** Every fixture passes `DateTime.utc(...)`,
+   so the normalisation is a no-op in the tests — while production's `known`
+   comes from `read()` → `fromFirestore` → `SerializationUtils.parseDateTimeValue`
+   → `Timestamp.toDate()`, which is LOCAL-flagged. Mutant `final last = known;`
+   → **41/41 green**, on a machine at UTC+0200. In production, dropping it makes
+   the comparison a LOCAL-day one, and a shopper in Sweden ticking between
+   00:00 and 02:00 local gets the metric-broken direction (a new UTC day that
+   the local comparison calls "already stamped").
+2. **The calendar-day rule is indistinguishable from an elapsed-time budget.**
+   Nearest fixtures sit 1 h and 15.5 h from any midnight. Mutant
+   `if (now.difference(last) < const Duration(hours: 12)) return;`
+   → **41/41 green**. That variant roughly doubles the write cost and stops
+   aligning with the nightly probe's daily buckets — i.e. it silently damages
+   the exact property the founder approved this on.
+
+### Fixes applied (test-only, zero-risk)
+Added to the BUT-1762 group, all four verified against the mutants above:
+- `personalListAt(DateTime)` fixture builder (+ `staleList()` delegates to it)
+  and `asFirestoreReturnsIt(instant) => Timestamp.fromDate(instant).toDate()`,
+  so a fixture can arrive in the production ZONE SHAPE.
+- `two seconds past midnight UTC is a new day, not a recent write`
+  (23:59:59Z → 00:00:01Z, must stamp). Kills BOTH mutants above at UTC+2;
+  kills the 12 h one at every offset.
+- `a tap 23 hours later on the SAME UTC day still does not write`
+  (00:00:01Z → 23:59:59Z, must not stamp). Kills the 12 h mutant everywhere and
+  the zone mutant at negative offsets. Both pass TZ-independently on correct
+  code — they only vary in mutation STRENGTH by offset, so neither is flaky.
+- `a whole shopping trip costs ONE stamp write, not one per tap`: the
+  founder-facing cost promise is CROSS-CALL and was completely unpinned,
+  because the harness's `readList` returns a constant. Added an optional
+  `readListOverride` to `_Harness` (null default — the other 40 tests are
+  byte-unaffected) modelling `FirebaseShoppingRepository.read`'s real
+  `.doc(id).get()`, then three ticks on a clock advancing an hour each and
+  `expect(storedUpdatedAt, _now)` + `expect(readListCalls, 3)`. Verified the
+  chain is sound: `readList: read` → `read()` → `super.read()` →
+  `ref.doc(id).get()` (`base_firebase_repository.dart:129-133`), a real read
+  each call, so real Firestore's write-through local cache carries the stamp
+  into the next tap's `known`. If `readList` is ever swapped for a memoised or
+  snapshot-pinned source, this test reddens instead of the fix silently
+  degrading into the per-write variant.
+- Positive control on the cost-guarantee test: assert the tick's `bought` flag
+  actually landed on the item row, so "no new stamp" cannot be satisfied by the
+  write never happening.
+
+Suite now 44/44; `flutter analyze --fatal-infos` clean on both files.
+
+### Not filed (checked and dismissed)
+- Nothing in the group asserts anything `fake_cloud_firestore` cannot model:
+  the stamp is a plain `update()` with a client-side `Timestamp`, no
+  `runTransaction`, no `serverTimestamp`, no `GetOptions(source:)`. The one
+  fake-dependent behaviour on the path is `snapshot.metadata.isFromCache` in
+  `updateItemsBatch` (always false on the fake, per the standing lesson), which
+  is pre-existing and steers the failure test onto the correct leg — and the
+  offline leg reaches the same outcome, because a failing batch commit throws
+  before the stamp line either way.
+- "A mid-chunk batch failure leaves the day unstamped" is untested, but it is
+  the same statement ordering the `present.isEmpty` throw already pins, and the
+  fake gives no clean way to fail a commit. Ordering is covered.
+- The collaborative leg cannot reach `_touchPersonalListDay` structurally
+  (it is called only from the four personal `else` arms), so no "collaborative
+  writes must not bill a personal stamp" test is owed.

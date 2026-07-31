@@ -500,6 +500,14 @@ personal→collaborative leg only.
 - "Export ⊇ erasure" is a field-PAIR property: export filter and deletion filter must target the
   identical field on the identical collection. Every new user-data collection needs BOTH
   cascades checked in the same review (deletion AND export) — one wired, one forgotten recurs.
+  **And a fix that makes an ANALYTICS PROBE start returning true is a GDPR change even when its
+  own diff only touches a private owner-scoped field** (BUT-1762: a per-day `updatedAt` stamp so
+  the nightly `shopped` probe stops reading structurally false). The probe's SINK is the new
+  personal-data surface — `analytics/feature_retention/users/{uid}_{yyyy-mm-dd}` carries a RAW uid
+  in both the doc id and a `userId` field plus five behavioural booleans, one doc per user per day,
+  and as of 2026-07-31 it is in NO cascade step, NO `probeResidualData` entry, NO TTL job and NO
+  deviation entry (OPEN). Whenever a diff flips a metric from structurally-zero to real signal,
+  grep the sink collection in `account-deletion-cascade.ts` before passing it.
 - A pure `users/{uid}/*` subcollection is cheapest to get right: erase = one entry in a generic
   subcollection sweep, export = one whole-doc read of the same subcollection, nothing to
   keep in sync field-by-field. A residual probe that `count()`s the PARENT collection is blind to
@@ -839,6 +847,13 @@ personal→collaborative leg only.
   swallowing fail-safe; permissive-default would make it Critical.
 - A parser/lookup that can turn 1 input into N reads needs a cap at the split site — same
   "bound the worst case" rule as `.snapshots()` limits.
+- **A write-coalescing guard ("stamp at most once per day") keyed off a MODEL field is inert for
+  every doc whose parser DEFAULTS that field to now.** Butlery's `safeRequiredDateTime(data,
+  'updatedAt')` falls back to `clock.now()` (no sentinel, unlike `createdAt`'s
+  `unknownCreatedAt` — BUT-1755), so a parent doc missing `updatedAt` reads as "touched today"
+  and `_touchPersonalListDay` skips it forever, silently, on the exact docs the fix targets.
+  Whenever a guard compares a stored timestamp to `now`, open the parser and ask what ABSENT
+  parses to; a coalescing guard must fail toward one extra write, never toward never writing.
 - **A pre-write EXISTENCE read that filters rows out** (so one stale id can't fail a whole
   `batch.update` chunk with `not-found`) is a sound repair, but judge three things. (a) It is not an
   authorization TOCTOU when the path is derived from `requireCurrentUserId()` on both the read and

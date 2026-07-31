@@ -7650,3 +7650,148 @@ Verdict: PASS on both fixes — (a) no remaining stale-read path in either funct
 FakeFirestore transaction stub is faithful for what it tests (field/value correctness) and
 honestly does not claim more, (c) no new bug — grep-confirmed single call site for
 `buildGroupDepartureUpdate`, no self-race in the bounded-10 `scrubLastEditor` loop.
+
+### 2026-07-31 — BUT-1762 review: comment-only docstring change to `compute-feature-retention.ts` [Pattern discovered]
+
+Reviewed a COMMENT-ONLY diff (40 insertions / 14 deletions, one file) rewriting KNOWN GAP 2
+of `functions/src/analytics/compute-feature-retention.ts` from "accepted gap" to "closed by
+BUT-1762", restating what `shopped` measures, and adding BUT-1762 to GAP 3's ramp-in list.
+The logic fix itself is Dart-side (`ShoppingItemOperationsModule._touchPersonalListDay`),
+outside the CF gate — but the docstring asserts things ABOUT that code and about
+`detect-anomalies.ts`, which is exactly the "a doc that asserts something about code has an
+expiry it cannot see" class. Verdict: PASS, no Critical/High/Medium.
+
+Comment-only, proven mechanically, not by eye:
+`git diff HEAD -U0 -- <file> | grep -E '^[+-]' | grep -vE '^(\+\+\+|---)' | grep -vE '^[+-] \*'`
+→ empty (every changed line is a ` *` docstring continuation), and `git diff HEAD --numstat
+-- functions/src/` lists only that one file. The changed hunk (`@@ -87,25 +87,51 @@`) sits
+wholly inside the header block that closes at line 135; the first executable line is the
+`onSchedule` import at 137. Already-run evidence accepted from the caller and not re-run:
+`npx tsc --noEmit` exit 0, `npm run test:compute-feature-retention` 11/11 (a comment-only
+diff cannot change either).
+
+Claim-by-claim verification:
+1. `shopped` absent from `MONITORED_SERIES` — TRUE. `detect-anomalies.ts:72-102` declares
+   exactly five entries: `import_health_totalFailure`, `recipes_total`,
+   `parsing_corrections_total`, `ops_totalEvents`, `feedback_total`, each with
+   `DEFAULT_ABSOLUTE_FLOOR`; the run loop (`:240`) iterates that constant and nothing else.
+   No feature-retention group is watched at all, so the post-deploy step change in `shopped`
+   genuinely cannot raise a false z-score alert.
+2. GAP 1 (collaborative leg last-writer-only) — STILL TRUE. `lastActivityByUserId` is a
+   single nullable scalar on `UnifiedShoppingList` (`unified_shopping_list.dart:163`), and
+   `_withItems` (`shopping_item_operations_module.dart:104-110`) overwrites it with the
+   acting uid alongside `updatedAt` on every collaborative mutation. Nothing per-member.
+3. The probe really reads the parent's `updatedAt` on the named path — TRUE.
+   `compute-feature-retention.ts:327-336`: `db.collection("users").doc(userId)
+   .collection(Collections.unifiedShoppingLists).where("updatedAt",">=",dayStart)
+   .where("updatedAt","<",dayEnd).limit(1)`, and `Collections.unifiedShoppingLists ===
+   "unified_shopping_lists"` (`shared/collections.ts:17`). `_touchPersonalListDay` writes
+   `{'updatedAt': Timestamp.fromDate(now)}` on `getUserCollection(uid).doc(listId)` — same
+   document, same field. Premise holds.
+4. Read budget — UNCHANGED and still accurate: six `safeProbe` calls in the one
+   `Promise.all` (cooked, imported, shared, mealPlanned, shopped, shoppedShared), matching
+   the header's "6 per-user per-day activity queries"; no probe added or removed.
+5. "All six write branches, after the write succeeds" — TRUE. Six call sites
+   (`:228, 317, 364, 466, 518, 571`) against exactly six public write methods (`addItem`,
+   `addItemsBatch`, `updateItem`, `updateItemsBatch`, `removeItem`, `removeItemsBatch`), each
+   inside the personal branch and each after the `await set/commit`, with in-code comments
+   naming the reason ("After the chunks, not before"). No other writer reaches the personal
+   `items` subcollection: grepping `FirestoreCollections.items` shows writes only from the
+   item-ops module; the 12 sites in `firebase_shared_shopping_repository.dart` are
+   `shared_content/{id}/items`, a different feature, and `shopping_offline_write_module.dart`
+   is collaborative-only.
+6. "A unit test pins the day guard" — TRUE and non-vacuous by construction. The
+   `BUT-1762: personal lists stamp an activity day` group in
+   `test/unit/repositories/firebase/modules/shopping_item_operations_module_test.dart:711+`
+   has: stamp-happens, same-day-does-NOT-write-again (seeds `updatedAt: _now`, acts at
+   `_now + 1h`, asserts the stored stamp is still `_now` — removing the guard writes
+   `_now+1h` and reddens it), failed-write-leaves-day-unstamped, and failing-stamp-still-lets-
+   the-item-write-succeed. Not mutation-tested by me (Dart lane, outside this gate).
+
+Low-severity notes reported, no remediation required:
+- The docstring says "fire-and-forget"; the Dart code `await`s the stamp inside a try/catch.
+  Substance is right (a failure never fails the tick) but the first write of a UTC day pays
+  one extra awaited round trip. Every sibling write in that method is already awaited, so no
+  regression.
+- The stamp is CLIENT-clocked (`clock.now().toUtc()` → `Timestamp.fromDate`), while the
+  probe's day window is server-side UTC — "accurate per-day boolean" is modulo device clock.
+  Pre-existing for this leg (list creation/edits are client-stamped too).
+- The header's "`shopped` re-verified 2026-07-30, BUT-1724 + BUT-1761" line above the
+  feature→source table was not extended with BUT-1762. The table row itself is still true.
+
+Hand-offs: none needed — no rules, no Dart production change inside this diff.
+
+### 2026-07-31 — BUT-1699: TTL policies for `notification_send_events` + `scheduled_notifications` [Pattern discovered] [Bug fixed]
+
+Reviewed the change that declares both collections as `"ttl": true` `fieldOverrides` in
+`firestore.indexes.json` (+ a new `firestore-ttl-policies.test.ts`, a package.json script,
+two comment-only header rewrites, three doc corrections). Verdict: PASS, ship it.
+
+**The load-bearing question was whether the mechanism works at all**, since two repo docs
+asserted TTL is gcloud-only and the change's stated evidence was "13 policies are already
+declared this way". That evidence is CIRCULAR and I had to discard it: `git show 9cd5b53c2`
+says in its own commit body that the 13 were "staged by a parallel session; they mirror
+policies that already exist in production" — i.e. synced DOWN from prod, never created by a
+file deploy. So the file has never once created a TTL policy in this project, and this deploy
+will be the first.
+
+Proved the mechanism from the installed CLI instead (`firebase-tools@14.27.0`,
+`C:/Users/malla/AppData/Roaming/npm/node_modules/firebase-tools/lib/firestore/api.js`):
+- `deploy()` (l.140-149): for each spec, `exists = existingFieldOverrides.some(fieldMatchesSpec)`;
+  not found → `patchField(project, field, databaseId)`.
+- `patchField()` (l.296-330): PATCHes
+  `/projects/{p}/databases/{db}/collectionGroups/{group}/fields/{fieldPath}` with
+  `indexConfig.indexes`, and `if (spec.ttl) data = {...data, ttlConfig: {}}`. When
+  `typeof spec.ttl !== "undefined"` it sends the patch WITHOUT an `updateMask`, so
+  `ttlConfig` is applied; when ttl is undefined it patches with
+  `updateMask: "indexConfig"`, which is what leaves an existing live policy untouched.
+- `fieldMatchesSpec()` (l.408-421): `booleanXOR(!!field.ttlConfig, spec.ttl)` → mismatch
+  re-patches; live ttlConfig + undefined spec.ttl only logs a bullet.
+- Corollary nobody had written down: an explicit `"ttl": false` DISABLES a live policy with
+  no `--force`, because the mask is dropped and `ttlConfig` is simply absent from the body.
+- `--force` (l.117-155) is the separate danger: `fieldOverridesToDelete` matches by
+  collectionGroup+fieldPath only, so every live override absent from the file is deleted.
+  `.github/workflows/deploy-firebase.yml` `deploy_one()` runs `--non-interactive`, no
+  `--force` (verified) — the RUNBOOK's new warning is accurate.
+
+Verified independently that the ticket's PREMISE is true (nothing was ever deleting rows):
+neither collection appears in the 13 live cloud-only overrides recorded in the 2026-07-26
+memory `reference_firestore_index_force_deploy` (parse_events, audit_logs,
+deletion_audit_logs, rate_limits, dismissals, globalRecipeCache, ingredients,
+llm_response_samples, views, engagements, notification_delivery/_engagement/_history).
+
+Shape/JSON: both new entries are byte-identical in shape to the 13
+(`collectionGroup`/`fieldPath`/`ttl`/`indexes` with the default ASC+DESC+CONTAINS
+COLLECTION triple); `node` parse gives 52 indexes / 26 fieldOverrides / 15 ttl:true. File
+order is irrelevant — `deploy()` sorts with `sort.compareFieldOverride` first.
+
+Field-name check: `notification-send-events.ts:70` and `scheduled-notifications.ts:120` both
+stamp `expireAt`; the presence runbook's field is `expiresAt` on `activeUsers`, a different
+policy, and the doc edit calls that distinction out explicitly rather than conflating it.
+Anchor check: `scheduled_notifications.expireAt = now + 7d` while `deliverAt` comes from
+`nextWindowEndUtc` (≤24h out) — no risk of deleting an undelivered push. Consumer check:
+`suppress-low-performers.ts` reads a 30-day window over `notification_send_events` and TTL
+never deletes BEFORE expiry, so the aggregation window is unaffected (its docstring's "both
+have 30-day TTLs" becomes true only after the deploy).
+
+**Mutation result (the one real defect):** the suite's
+`src.includes("expireAt")` writer assertion is VACUOUS. Renaming the written key to
+`expiresAt` in `notification-send-events.ts` — the exact drift that silently inerts the
+policy — left it 5/5 GREEN, because the file's own docstring says "expireAt" five times and
+the local `const expireAt` survives. Restored md5-identical (`f9c24d70115c045a7a1b63f146bbfa3f`).
+The count assertion (15) reddens on a prune (user-verified) but not on a swap.
+
+**Sweep gap found (High):** the change fixed 2 of 5 instances of its own disease.
+`notification_opened_events` (`notifications/record-notification-opened.ts`) stamps
+`expireAt = openedAt + 30d`, holds `userId` + `route`, is the only file in `functions/src`
+still carrying the exact "Manual setup required … `gcloud firestore fields ttls update`"
+header this ticket declared stale everywhere else, and has no declared policy. Same for
+`report_processing_markers` (180d, `feedback/on-report-created.ts`), `system_ip_audit_caps`
+(2h, `account/verify-signup-age.ts`, one doc per hashed-IP per hour, unbounded) and
+`activeUsers.expiresAt` (presence runbook — recommends the file route but does not itself
+declare an entry, and is not among the 13 live, so presence TTL looks never activated
+either). `functions/RUNBOOK.md` already lists the first three as needing policies.
+
+CI wiring: `test:firestore-ttl-policies` lands in the CI unit lane (80 suites; neither
+`test:rules*` nor `test:integration:*`), `check-test-registration.js` OK at 120 files.
+Both `.ts` diffs proven comment-only (`git diff -U0 | grep -vE '^[+-] \*'` empty; 17/7 each).

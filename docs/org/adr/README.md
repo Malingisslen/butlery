@@ -46,5 +46,6 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
+- [ADR-0004](ADR-0004-shared-list-self-removal-rule-allowlist.md) — Shared-list self-removal allowlists exactly `memberPermissions` + `updatedAt`; Security's blocklist objection was correct and the synthesizer's three-key override rested on a false verification the cold audit caught (2026-07-31).
 - [ADR-0002](ADR-0002-age-enforcement-mechanism.md) — Age enforcement = signup Cloud Function (authoritative) + Firestore rule (gate); CTO ruled security/correctness > cost (2026-06-27).
 - [ADR-0001](ADR-0001-minimum-age-floor.md) — Butlery's single minimum age is **15**; escalated to Malin (interpretive Swedish-law split, 13 vs 15) → she chose 15 (2026-06-27).

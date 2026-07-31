@@ -2084,3 +2084,77 @@ so it may be pure write amplification on the app's highest-volume collection. `b
 production callers (interface + tests only) — the CF is the live erasure path, and the module's own
 test correctly pins that a client can never delete the counterparty half of a 1:1
 (`firestore.rules:1578` grants delete on own `senderId` only).
+
+### 2026-07-31 — BUT-1762 personal-list activity-day stamp: PASS, with one inert-guard risk and one downstream GDPR residual
+
+Reviewed `lib/repositories/firebase/modules/shopping_item_operations_module.dart` (new private
+`_touchPersonalListDay`), its test file, and the comment-only
+`functions/src/analytics/compute-feature-retention.ts`. Verdict: PASS, no blocker.
+
+**Rules (concern 1) — permitted, no rules change, no rules-tester handoff.**
+`firestore.rules:393-401`: `match /users/{userId}/unified_shopping_lists/{listId} { allow read,
+write: if isOwner(userId); }` — unconditional owner read/write, no `affectedKeys`, no field-shape
+conjunct, no `hasRequiredFields`. The helper writes `getUserCollection(uid).doc(listId).update({
+'updatedAt': Timestamp.fromDate(now) })`, and `base_firebase_repository.dart:86-92` builds that as
+`users/{uid}/unified_shopping_lists` from `requireCurrentUserId()`. Note the stamp is STRICTLY
+narrower than the item write it follows: the six personal branches call `validateOwnership(uid,
+list.ownerId, ...)`, but the stamp's path is derived from `uid` on both ends, so it cannot reach
+another user's tree even if `ownerId` disagreed. `firestore.rules` and `firestore.indexes.json` are
+unmodified vs HEAD (`git status --porcelain -- firestore.rules` empty).
+
+**Swallowed catch (concern 2) — not hiding a denial.** With an unconditional owner-write rule the
+only realistic errors are `not-found` (the documented conversion orphan: items subcollection alive,
+parent deleted) and transient/offline. The sink is `AppLogger.warning`, which is
+`developer.log` ONLY (logger.dart:157-163) — no Crashlytics, no analytics forward, unlike
+`AppLogger.error(msg, e)` — so the interpolated `$e` (which can carry the raw uid inside a Firestore
+doc path, even though the message masks `uid.maskedUserId` separately) never leaves the device.
+Low recommendation only: branch on `permission-denied` so a future tightening of the rule cannot
+fail silently forever.
+
+**The real inertness path (Medium, new principle).** `UnifiedShoppingList.fromMap:778-780` resolves
+`updatedAt` via `SerializationUtils.safeRequiredDateTime(data,'updatedAt')`, which is
+`parseDateTimeValue(map[key]) ?? defaultValue ?? clock.now()` (serialization_utils.dart:142-148) —
+and the BUT-1755 comment at :767-770 says the deterministic sentinel was DELIBERATELY not applied to
+`updatedAt`. So a parent doc missing/unparseable `updatedAt` reads as "touched today", the same-day
+guard short-circuits, and that list is never stamped again. Today's corpus should be clean
+(`toFirestore():617` always emits it), but the guard fails toward NEVER WRITING, which is the exact
+failure the ticket exists to remove. Cheap fix: pass the raw stored value / a nullable, treat
+unknown as stamp-worthy.
+
+**GDPR (concern 3).** The field itself is fully covered and needs nothing: `updatedAt` already
+existed on the user's own private doc; the Art. 15/20 export dumps the whole parent doc
+(`firebase_data_export_repository.dart:231-272`, `'data': listDoc.data()` + the items
+subcollection); Art. 17 erasure is the BUT-1697 `unified_shopping_lists` sweep (parent + items). Day
+granularity, no new field, no new key — data minimisation fine.
+The NEW surface is downstream, and it is PRE-EXISTING but AMPLIFIED:
+`compute-feature-retention.ts` writes `analytics/feature_retention/users/${userId}_${dateStr}` with
+`{ userId, date, cooked, imported, shared, mealPlanned, shopped }` — raw uid in the doc id AND in a
+field, one doc per user per day. Greps: no `analytics`/`feature_retention` step in
+`account-deletion-cascade.ts` (its only "analytics" hit is BUT-1450 notification analytics at :86),
+no entry in `probeResidualData`, no TTL/purge job anywhere in `functions/src` (only the compute file
+and two test files mention the path), no entry in `ACCEPTED_DEVIATIONS.md`. Before this ticket the
+`shopped` bit was a structural false for personal-only users; after it, it is a truthful per-day
+record that this person shopped. Follow-up ticket, not a blocker: sweep it in the cascade (doc ids
+are uid-prefixed, so a `documentId()` prefix range works — remember the `_` separator AND the
+U+F8FF upper bound, spelled as an escape) + add it to the residual probe, or ship a TTL plus a dated
+deviation entry in the shape of the `parse_events` one.
+
+**Collaborative path (concern 4) — unreachable, confirmed by reading all six call sites.** Lines
+228, 317, 364, 466, 518, 571 are each inside the `else` (non-collaborative) branch; the
+collaborative branches all go through `mutateCollaborativeList` + `_withItems`, which stamps
+`updatedAt`/`lastActivityAt`/`lastActivityBy*` inside the transaction. The helper never touches
+`unified_shared_shopping_lists`, never touches `contributorUserIds`, never writes a
+`lastActivityBy*` pair. Even in the known `type`-missing degenerate case (enum `orElse` ⇒ parses as
+`personal`), the helper still writes only in the caller's own tree and 404s harmlessly.
+
+**Other notes.** (a) Product-visible side effect, Low: personal lists are ordered `updatedAt desc`
+in both `readAll()` (`shopping_repository_query_module.dart:118`) and `personalListsStream()`
+(:200, `.limit(20)`), so a list shopped today jumps to the top once per day and can push the 20th
+list out of the stream window — consistent with what `updatedAt` means, but a visible reorder.
+(b) Offline, Low, metric-only: the personal legs already await real writes, so nothing regresses;
+but a shop done offline reaches the stamp only when the item write's future resolves, and an app
+killed before that replays the item write from the queue while the day is never stamped.
+(c) No forged audit grant — the helper logs nothing, and the branch's `validateOwnership` already
+ran (contrast the `logPermissionCheck(granted:true)`-with-no-check anti-pattern).
+(d) Cost: +1 write per personal list per user per day, bounded; the day guard reads no extra doc
+because `known` comes from the `_requireList` read the branch already performs.

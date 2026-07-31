@@ -292,6 +292,19 @@ see "When to consult the archive" at the end.
   the corpus with `curl -H "Authorization: Bearer owner"
   "http://127.0.0.1:8080/v1/projects/<pid>/databases/(default)/documents/<col>"`
   — without that header the REST read is rules-evaluated and 403s.
+- **A `src.includes("<fieldName>")` assertion over a source file is vacuous
+  whenever that file's own DOCSTRING names the field** — and a header
+  documenting the schema always does. Mutation-proven on BUT-1699: renaming
+  the written field to `expiresAt` in `notification-send-events.ts` (the exact
+  drift that silently inerts a TTL policy) left the suite 5/5 GREEN. Assert the
+  WRITE, not the mention: match the payload spelling (`/expireAt:\s*admin\./`)
+  or, better, call the exported writer against a fake db and assert the key on
+  the recorded payload. Same trap for any "the writer still stamps X" or "the
+  file still calls Y" file-text guard.
+- **A COUNT-of-entries tripwire over a config file catches a net LOSS, not a
+  SWAP** (one entry deleted + one added in the same edit stays green). Where
+  the entries are named — TTL `fieldOverrides`, index specs, allowlists — assert
+  the exact SET, then the count is implied.
 - **A fix living in the I/O wrapper / handler-level gate can't be pinned by
   a pure-core unit suite.** Check which side of the pure-core/handler seam a
   fix landed on before crediting a suite with covering it. A test asserting
@@ -414,10 +427,21 @@ see "When to consult the archive" at the end.
   keeps the structural zeros, so a rollup that ORs prior per-day flag docs
   (`compute-feature-retention`'s wau7d/wau28d) ramps in over its whole window
   after the fix; say so in the write-up instead of letting the dashboard read
-  as a launch. The shipped BUT-1724 docstring documents the two `shopped`
-  coverage gaps (collaborative lists BUT-1761, item ticks BUT-1762) but NOT the
-  28-day ramp-in, so the only warning a dashboard reader gets is this file —
-  add it to the docstring/deploy note the next time that file is open.
+  as a launch. CLOSED 2026-07-31: the `compute-feature-retention.ts` header now
+  carries the ramp-in as KNOWN GAP 3, naming every ramp-triggering deploy
+  (BUT-1724 personal, BUT-1761 collaborative, BUT-1762 personal item activity —
+  the latest sets the 28-day clock) in dashboard-reader language. Before
+  worrying that such a step change trips the anomaly job, check the list: the
+  five `MONITORED_SERIES` in `detect-anomalies.ts` are
+  `import_health_totalFailure`, `recipes_total`, `parsing_corrections_total`,
+  `ops_totalEvents`, `feedback_total` — NO feature-retention flag is watched, so
+  a `shopped`/`cooked`/etc. step change cannot raise a z-score alert (verified
+  2026-07-31; re-grep before repeating the claim, it is a one-line list).
+  `shopped`'s remaining gap is GAP 1 only: the COLLABORATIVE leg is
+  last-writer-only, because `lastActivityByUserId` on `UnifiedShoppingList` is a
+  single scalar every mutation overwrites (`_withItems`,
+  `shopping_item_operations_module.dart`) — still a lower bound for shared-list
+  participants, no longer one for personal-only users.
 - **One logical field can have TWO stores; only the READER decides which is
   authoritative.** Personal `unified_shopping_lists` keep items BOTH embedded
   in the list doc (written by `repository.update`) and in an `items`
@@ -655,6 +679,28 @@ see "When to consult the archive" at the end.
 - A test fake's auto-doc-id keyed off a write COUNTER that only increments
   on `commit()` can collide across docs created inside one uncommitted
   batch — bump the counter at `.doc()` time.
+- **When a probe's signal depends on a CLIENT-side stamp, the probe's docstring
+  is asserting Dart behaviour it cannot enforce — verify the claim, don't
+  review the prose.** A COMMENT-ONLY diff is still reviewable and still gets a
+  verdict: confirm comment-only mechanically (`git diff -U0 | grep -vE '^[+-]
+  \*'` must be empty, plus `--numstat` for the file set), then check every
+  factual claim against code. BUT-1762's shape is the reusable one: personal
+  `unified_shopping_lists` items live in a subcollection, so
+  `ShoppingItemOperationsModule._touchPersonalListDay` stamps the PARENT's
+  `updatedAt` — the exact field the probe filters — at most once per UTC day,
+  from all six write branches (add/update/remove ×single+batch), AFTER the write
+  succeeds, guarded by comparing the parent `updatedAt` the caller already read
+  (so the coalescing costs no extra read; a 30-item shop bills 1 write, not 30).
+  Four things to verify on any such claim: (a) the named method/class exists and
+  the call-site count matches "all N branches"; (b) each call is after the
+  write's `await`, not after the pre-read; (c) no OTHER writer reaches the same
+  subcollection outside the stamped module (grep the collection constant — for
+  personal lists only the item-ops module writes, the shared repo's
+  `items` sites are `shared_content`, a different feature); (d) the day guard has
+  a non-vacuous test (a same-day case whose stamp must be UNCHANGED). Residual
+  worth stating in review: the stamp is client-clocked (`Timestamp.fromDate`, not
+  `serverTimestamp()`) and its failure is swallowed with a warn nobody alerts on,
+  so "accurate per-day" is modulo device clock and silent degradation.
 
 ### Fan-out pagination & denormalization (shared/batch-update.ts family)
 - **Self-advancing bounded loop** (`query.limit(N).get()` → mutate → repeat
@@ -999,8 +1045,37 @@ see "When to consult the archive" at the end.
   grep of stable representative function names — `firebase deploy` exiting
   0 does NOT prove functions are callable (a function can land
   `DEPLOY_FAILED`); only a control-plane query after deploy does.
-- A Firestore TTL field is INERT without the matching `gcloud firestore
-  fields ttls update` policy actually applied — demand the runbook entry.
+- A Firestore TTL field is INERT without a policy, but gcloud is NOT the only
+  way to create one: a `fieldOverrides` entry with `"ttl": true` +
+  `firebase deploy --only firestore:indexes` creates it. VERIFIED in the
+  installed CLI's source, not inferred (`firebase-tools@14.27.0`
+  `lib/firestore/api.js`): `deploy()` calls `patchField()` for any spec not
+  matching a live field; `patchField` adds `ttlConfig:{}` when `spec.ttl` is
+  true and omits the `updateMask` so it lands. `ttl` UNDEFINED → patch with
+  `updateMask:"indexConfig"`, i.e. a live policy is left alone; `"ttl": false`
+  → the mask is dropped and the policy is REMOVED, with no `--force` needed.
+  `--force` separately deletes every live override ABSENT from the file
+  (`.github/workflows/deploy-firebase.yml` uses `--non-interactive`, never
+  `--force` — re-grep before repeating that). Two traps: (a) an entry's
+  PRESENCE in `firestore.indexes.json` is NOT evidence the file created it —
+  Butlery's 13 pre-existing ttl entries were synced DOWN from prod in
+  `9cd5b53c2`, so "13 already work this way" is circular; prove the mechanism
+  from CLI source. (b) Nothing round-trips, so a green repo test only proves
+  DECLARED; only `gcloud firestore fields ttls list` proves ACTIVE — never let
+  a doc/comment write "declared" as "active".
+- **A field stamped `expireAt`/`expiresAt` is a retention CLAIM, not retention.
+  Sweep ALL of them at once** (`grep -rn expireAt functions/src lib`), map each
+  to the `fieldOverrides` ttl set, and treat any writer still carrying a
+  "manual one-off gcloud command" header as unenabled — those commands do not
+  get run. Open as of 2026-07-31 (BUT-1699 fixed only the first two):
+  `notification_opened_events` (30d, `record-notification-opened.ts`, still has
+  the stale header), `report_processing_markers` (180d),
+  `system_ip_audit_caps` (2h, unbounded one-doc-per-IP-hour growth), and
+  `activeUsers.expiresAt` (`docs/ops/presence-ttl-runbook.md`). Anchor check
+  while you are there: `expireAt` computed from NOW must exceed the doc's own
+  functional lifetime (`scheduled_notifications` is now+7d against a
+  quiet-hours `deliverAt` ≤24h out — safe; a >7d deferral would be deleted
+  before delivery).
 - **Before approving a new composite index, check for an EXISTING composite on
   the same two fields in the opposite orderBy direction — Firestore serves a
   query by scanning that index in reverse, so the "opposite direction" variant
