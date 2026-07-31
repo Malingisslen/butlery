@@ -22,6 +22,7 @@
 library;
 
 import 'package:clock/clock.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -100,6 +101,14 @@ class _Harness {
   final String? profileName;
   final bool requiredFieldsThrows;
 
+  /// BUT-1762: models the REPOSITORY's real `readList`, which re-reads the
+  /// parent document on every call (`FirebaseShoppingRepository.read` →
+  /// `.doc(id).get()`). The day-coalescing cost promise is a CROSS-CALL
+  /// property — the second tap only skips because its `known` already carries
+  /// the stamp the first tap landed — and that is unobservable while
+  /// `readList` hands back one constant.
+  final Future<UnifiedShoppingList?> Function(String id)? readListOverride;
+
   late final FakeAuthRepository auth;
   late final ShoppingRepositoryRoutingModule routing;
   late final ShoppingItemOperationsModule module;
@@ -110,6 +119,7 @@ class _Harness {
     this.displayName = 'Alice Andersson',
     this.profileName = 'Alice Andersson',
     this.requiredFieldsThrows = false,
+    this.readListOverride,
   }) {
     auth = FakeAuthRepository()
       ..setAuthState(
@@ -139,7 +149,8 @@ class _Harness {
       requireCurrentUserId: () => uid,
       readList: (id) async {
         readListCalls++;
-        return cached;
+        final override = readListOverride;
+        return override == null ? cached : await override(id);
       },
       mutateCollaborativeList: (id, mutate) {
         mutateCalls++;
@@ -694,6 +705,289 @@ void main() {
       expect(await h.personalItemIds(), isEmpty);
       expect(h.mutateCalls, 0);
     });
+  });
+
+  /// BUT-1762 — the day-coalesced parent stamp on PERSONAL lists.
+  ///
+  /// Personal items live in a subcollection, so every write here used to touch
+  /// only the item document. The nightly `shopped` retention probe filters
+  /// personal lists on the PARENT's `updatedAt`, so a whole shopping trip was
+  /// invisible — not just ticking, but every one of the six write branches.
+  ///
+  /// Two properties are load-bearing and each has its own mutation test: the
+  /// stamp must happen (or the metric stays broken), and it must happen at
+  /// most ONCE PER UTC DAY (or the fix silently becomes the ~18x-dearer
+  /// per-write variant the cost decision rejected).
+  group('BUT-1762: personal lists stamp an activity day', () {
+    /// The parent list document, which the existing personal fixtures never
+    /// seed — they only write the items subcollection.
+    DocumentReference<Map<String, dynamic>> parentRef(_Harness h) => h.firestore
+        .collection(FirestoreCollections.users)
+        .doc(h.uid)
+        .collection(FirestoreCollections.unifiedShoppingLists)
+        .doc(_listId);
+
+    Future<void> seedParent(_Harness h, UnifiedShoppingList list) =>
+        parentRef(h).set(list.toFirestore());
+
+    /// `update()` on a missing item row throws, so any test driving an
+    /// update/remove branch must seed the row it acts on.
+    Future<void> seedItem(_Harness h, String id) => parentRef(h)
+        .collection(FirestoreCollections.items)
+        .doc(id)
+        .set(_item(id).toFirestore());
+
+    Future<DateTime?> storedUpdatedAt(_Harness h) async {
+      final snap = await parentRef(h).get();
+      final raw = snap.data()?['updatedAt'];
+      return raw is Timestamp ? raw.toDate().toUtc() : null;
+    }
+
+    UnifiedShoppingList personalListAt(DateTime updatedAt) =>
+        UnifiedShoppingList(
+          id: _listId,
+          name: 'Min lista',
+          ownerId: _alice,
+          ownerDisplayName: 'Alice Andersson',
+          items: [_item('ägg')],
+          updatedAt: updatedAt,
+        );
+
+    /// A personal list last touched on 13 March; `_now` is 14 March.
+    UnifiedShoppingList staleList() => personalListAt(_earlier);
+
+    /// The shape `known` ACTUALLY arrives in: `UnifiedShoppingList.fromMap`
+    /// resolves `updatedAt` through `Timestamp.toDate()`, which returns a
+    /// LOCAL-zone DateTime. A `DateTime.utc(...)` fixture makes the helper's
+    /// `known.toUtc()` a no-op, so only a locally-flagged fixture can tell a
+    /// UTC-day comparison from a local-day one.
+    DateTime asFirestoreReturnsIt(DateTime instant) =>
+        Timestamp.fromDate(instant).toDate();
+
+    test('one tick on a list last touched yesterday stamps today', () async {
+      final h = _Harness(cached: staleList());
+      await seedParent(h, staleList());
+      await seedItem(h, 'ägg');
+
+      await withClock(Clock.fixed(_now), () async {
+        await h.module.updateItem(_listId, _item('ägg', bought: true));
+      });
+
+      expect(
+        await storedUpdatedAt(h),
+        _now,
+        reason:
+            'without this the nightly shopped probe never sees a personal '
+            'shopping trip — the whole point of BUT-1762',
+      );
+    });
+
+    test('a second write the same day does NOT write again', () async {
+      // The cost guarantee. `known` already carries today, so the guard must
+      // short-circuit before touching Firestore. A 30-item shop costs ONE
+      // write, not thirty.
+      final today = UnifiedShoppingList(
+        id: _listId,
+        name: 'Min lista',
+        ownerId: _alice,
+        ownerDisplayName: 'Alice Andersson',
+        items: [_item('ägg')],
+        updatedAt: _now,
+      );
+      final h = _Harness(cached: today);
+      await seedParent(h, today);
+      await seedItem(h, 'ägg');
+
+      // An hour later, same UTC day.
+      await withClock(
+        Clock.fixed(_now.add(const Duration(hours: 1))),
+        () async {
+          await h.module.updateItem(_listId, _item('ägg', bought: true));
+        },
+      );
+
+      expect(
+        await storedUpdatedAt(h),
+        _now,
+        reason:
+            'the stamp must be unchanged — a later timestamp means the '
+            'same-day guard was bypassed and every tick now bills a write',
+      );
+      expect(
+        (await parentRef(
+              h,
+            ).collection(FirestoreCollections.items).doc('ägg').get())
+            .data()?['bought'],
+        isTrue,
+        reason:
+            'control: the tick itself has to have landed, or "no new stamp" '
+            'is equally satisfied by the write never happening at all',
+      );
+    });
+
+    // The two cases below straddle the exact flip point of the guard. Without
+    // them the nearest fixtures sit 1 h and 15.5 h from a day boundary, so
+    // rewriting the rule as an elapsed-time budget ("skip if less than 12 h
+    // since the last stamp") passes the whole group while doubling the write
+    // cost and de-aligning the stamp from the probe's daily buckets.
+    test(
+      'two seconds past midnight UTC is a new day, not a recent write',
+      () async {
+        final lastNight = DateTime.utc(2026, 3, 13, 23, 59, 59);
+        final justAfterMidnight = DateTime.utc(2026, 3, 14, 0, 0, 1);
+        final list = personalListAt(asFirestoreReturnsIt(lastNight));
+        final h = _Harness(cached: list);
+        await seedParent(h, list);
+        await seedItem(h, 'ägg');
+
+        await withClock(
+          Clock.fixed(justAfterMidnight),
+          () => h.module.updateItem(_listId, _item('ägg', bought: true)),
+        );
+
+        expect(
+          await storedUpdatedAt(h),
+          justAfterMidnight,
+          reason:
+              'two seconds is a new UTC day: the probe buckets by day, so the '
+              'guard must be a calendar comparison and not an elapsed budget',
+        );
+      },
+    );
+
+    test(
+      'a tap 23 hours later on the SAME UTC day still does not write',
+      () async {
+        final justAfterMidnight = DateTime.utc(2026, 3, 14, 0, 0, 1);
+        final justBeforeNextMidnight = DateTime.utc(2026, 3, 14, 23, 59, 59);
+        final list = personalListAt(asFirestoreReturnsIt(justAfterMidnight));
+        final h = _Harness(cached: list);
+        await seedParent(h, list);
+        await seedItem(h, 'ägg');
+
+        await withClock(
+          Clock.fixed(justBeforeNextMidnight),
+          () => h.module.updateItem(_listId, _item('ägg', bought: true)),
+        );
+
+        expect(
+          await storedUpdatedAt(h),
+          justAfterMidnight,
+          reason:
+              'nearly 24 h apart but the same UTC day — one stamp, one write',
+        );
+      },
+    );
+
+    test(
+      'a whole shopping trip costs ONE stamp write, not one per tap',
+      () async {
+        // The cost promise is CROSS-CALL, and no fixture with a constant
+        // `readList` can see it: the second tap short-circuits only because the
+        // repository re-reads the parent document and therefore already holds
+        // the stamp the first tap landed. Modelled with the real read, so
+        // switching `readList` to anything that does NOT reflect the stamp
+        // reddens here instead of quietly restoring the per-write variant.
+        late _Harness h;
+        h = _Harness(
+          cached: staleList(),
+          readListOverride: (_) async =>
+              UnifiedShoppingList.fromFirestore(await parentRef(h).get()),
+        );
+        await seedParent(h, staleList());
+        await seedItem(h, 'ägg');
+
+        for (var tap = 0; tap < 3; tap++) {
+          await withClock(
+            Clock.fixed(_now.add(Duration(hours: tap))),
+            () =>
+                h.module.updateItem(_listId, _item('ägg', bought: tap.isEven)),
+          );
+        }
+
+        expect(
+          await storedUpdatedAt(h),
+          _now,
+          reason:
+              'three taps, one stamp — a later timestamp means each tap billed '
+              'its own parent write, which is the variant the cost decision '
+              'rejected',
+        );
+        expect(h.readListCalls, 3);
+      },
+    );
+
+    test('a failed item write leaves the day unstamped', () async {
+      // updateItemsBatch throws when every requested row is already gone. The
+      // stamp is called AFTER the write for exactly this reason: a list that
+      // was not written must not read as "shopped".
+      final h = _Harness(cached: staleList());
+      await seedParent(h, staleList());
+
+      await expectLater(
+        () => withClock(
+          Clock.fixed(_now),
+          () => h.module.updateItemsBatch(_listId, [_item('borta')]),
+        ),
+        throwsA(isA<ResourceNotFoundException>()),
+      );
+
+      expect(
+        await storedUpdatedAt(h),
+        _earlier,
+        reason:
+            'the write failed, so the day must NOT be stamped — otherwise a '
+            'failed session counts as a shopping trip',
+      );
+    });
+
+    test('a failing parent stamp still lets the item write succeed', () async {
+      // The parent document is deliberately NOT seeded, so `update()` has
+      // nothing to write to. The item write must still land: the metric is
+      // worth less than the shopper's tick.
+      final h = _Harness(cached: staleList());
+
+      await withClock(Clock.fixed(_now), () async {
+        await h.module.addItem(_listId, _item('kaffe'));
+      });
+
+      expect(await h.personalItemIds(), ['kaffe']);
+      expect(await storedUpdatedAt(h), isNull);
+    });
+
+    /// One case per write branch, so a future branch that forgets the helper
+    /// reddens instead of silently going unmeasured.
+    final branches =
+        <String, Future<void> Function(ShoppingItemOperationsModule m)>{
+          'addItem': (m) => m.addItem(_listId, _item('kaffe')),
+          'addItemsBatch': (m) => m.addItemsBatch(_listId, [_item('kaffe')]),
+          'updateItem': (m) =>
+              m.updateItem(_listId, _item('ägg', bought: true)),
+          'updateItemsBatch': (m) =>
+              m.updateItemsBatch(_listId, [_item('ägg', bought: true)]),
+          'removeItem': (m) => m.removeItem(_listId, 'ägg'),
+          'removeItemsBatch': (m) => m.removeItemsBatch(_listId, ['ägg']),
+        };
+
+    for (final entry in branches.entries) {
+      test('${entry.key} stamps the activity day', () async {
+        final h = _Harness(cached: staleList());
+        await seedParent(h, staleList());
+        // updateItemsBatch/removeItem need the row to exist on the server.
+        await h.firestore
+            .collection(FirestoreCollections.users)
+            .doc(h.uid)
+            .collection(FirestoreCollections.unifiedShoppingLists)
+            .doc(_listId)
+            .collection(FirestoreCollections.items)
+            .doc('ägg')
+            .set(_item('ägg').toFirestore());
+
+        await withClock(Clock.fixed(_now), () => entry.value(h.module));
+
+        expect(await storedUpdatedAt(h), _now);
+      });
+    }
   });
 
   group('guards', () {

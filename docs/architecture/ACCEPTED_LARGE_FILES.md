@@ -78,6 +78,7 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | `algolia_search_repository.dart` | 515 | Single search backend; deliberate Algolia bypass rationale documented in code |
 | `friend_category_repository.dart` | 504 | Clean single-collection repo; user-scoped friend category CRUD only |
 | `message_mutation_module.dart` | 523 | Focused module for atomic message send; single complex operation |
+| `shopping_item_operations_module.dart` | 595 | Six item-write operations (add/update/remove × single+batch), each fanning to a personal-subcollection leg and a collaborative-inline leg. The dual-storage split IS the module's reason to exist, so splitting by operation would duplicate that fork six times and splitting by storage would put one caller's two halves in different files. Was already 512 and undeclared when BUT-1762 added the day-coalesced parent stamp; row added then rather than left silent. |
 
 ## Service Modules / Facades
 

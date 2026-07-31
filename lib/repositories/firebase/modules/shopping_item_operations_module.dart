@@ -126,6 +126,73 @@ class ShoppingItemOperationsModule {
     return list;
   }
 
+  /// Stamp `updatedAt` on a PERSONAL list's parent document, at most once per
+  /// list per UTC day (BUT-1762).
+  ///
+  /// Personal items live in a subcollection, so every item write here touches
+  /// only the item document and the parent's `updatedAt` never moved — which is
+  /// the field the nightly retention probe filters personal lists on. WHAT the
+  /// metric then means, and what it still does not, is documented once where it
+  /// lives: the `KNOWN GAP` block in
+  /// `functions/src/analytics/compute-feature-retention.ts`. Do not restate it
+  /// here; two copies drift.
+  ///
+  /// The caller contract, which is this file's business:
+  ///
+  /// 1. **At most once per list per UTC day.** [known] is the `updatedAt` the
+  ///    caller already holds from [_requireList], which reads the parent
+  ///    document anyway, so the same-day check costs no extra read. One
+  ///    shopping trip bills ONE write instead of one per item. That coalescing
+  ///    is the entire reason this is affordable, and a test pins it — deleting
+  ///    the day guard reddens exactly that test.
+  /// 2. **Call it AFTER the write succeeds**, never straight after
+  ///    [_requireList]: a failed write that still bumped the parent would mark
+  ///    the list "shopped" on a day nothing was written. Also pinned.
+  /// 3. **Errors are swallowed, never rethrown** — a failure here must not fail
+  ///    the item write the shopper actually asked for. (The call is still
+  ///    awaited, so the first write of a day pays one extra round trip.) The
+  ///    cost of swallowing: a systematic failure degrades the metric quietly,
+  ///    and nothing alerts on this warning today. Stated, not assumed covered.
+  ///
+  /// KNOWN EDGE, not fixed here: a parent document that is MISSING `updatedAt`
+  /// parses as `clock.now()` — `UnifiedShoppingList.fromMap` resolves it via
+  /// `safeRequiredDateTime` with no `defaultValue`, and BUT-1755 deliberately
+  /// gave the deterministic sentinel to `createdAt` only. So [known] reads as
+  /// "today", this short-circuits, and such a list is never stamped. The guard
+  /// fails toward NOT writing, which is the failure this ticket exists to
+  /// remove. It is narrow — `toFirestore()` always emits the field, so only a
+  /// legacy or hand-written document can be missing it, and such a document is
+  /// already invisible to the probe's range query — and the fix belongs at the
+  /// parse seam rather than behind a fuzzy "is this timestamp suspiciously
+  /// close to now" heuristic here, which would re-bill a write on every rapid
+  /// successive tick. Tracked as BUT-1790 rather than widened into BUT-1755's
+  /// deliberately-scoped decision.
+  Future<void> _touchPersonalListDay(
+    String uid,
+    String listId,
+    DateTime known,
+  ) async {
+    final now = clock.now().toUtc();
+    final last = known.toUtc();
+    if (last.year == now.year &&
+        last.month == now.month &&
+        last.day == now.day) {
+      return;
+    }
+
+    try {
+      await getUserCollection(uid).doc(listId).update({
+        'updatedAt': Timestamp.fromDate(now),
+      });
+    } catch (e) {
+      AppLogger.warning(
+        'Could not stamp activity day on personal list $listId for '
+            '${uid.maskedUserId}: $e',
+        'ShoppingRepository',
+      );
+    }
+  }
+
   /// Add item to shopping list (handles both personal and collaborative)
   Future<void> addItem(String listId, UnifiedShoppingItem item) async {
     final uid = requireCurrentUserId();
@@ -170,6 +237,8 @@ class ShoppingItemOperationsModule {
           .collection(FirestoreCollections.items)
           .doc(item.id)
           .set(item.toFirestore());
+
+      await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
 
     await logPermissionCheck(
@@ -257,6 +326,8 @@ class ShoppingItemOperationsModule {
 
       // Execute batch operation
       await batch.commit();
+
+      await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
 
     await logPermissionCheck(
@@ -302,6 +373,8 @@ class ShoppingItemOperationsModule {
           .collection(FirestoreCollections.items)
           .doc(item.id)
           .update(item.toFirestore());
+
+      await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
 
     await logPermissionCheck(
@@ -400,6 +473,10 @@ class ShoppingItemOperationsModule {
         }
         await batch.commit();
       }
+
+      // After the chunks, not before: the `present.isEmpty` throw above and a
+      // mid-chunk failure must both leave the day unstamped.
+      await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
 
     await logPermissionCheck(
@@ -450,6 +527,8 @@ class ShoppingItemOperationsModule {
       await getUserCollection(
         uid,
       ).doc(listId).collection(FirestoreCollections.items).doc(itemId).delete();
+
+      await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
 
     await logPermissionCheck(
@@ -499,6 +578,10 @@ class ShoppingItemOperationsModule {
         }
         await batch.commit();
       }
+
+      // "Rensa klart" is a real shopping session — the one the collection-group
+      // alternative could never see, because it deletes its own evidence.
+      await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
 
     await logPermissionCheck(

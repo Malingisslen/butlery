@@ -87,25 +87,87 @@
  *     touched it. A per-day-exact answer needs a per-member activity stamp the
  *     document does not carry, which is a schema change, not a probe change.
  *
- *  2. Personal-list item ticks are under-counted (accepted, not a bug in this
- *     file): items live in an `items` subcollection and a tick or amend writes
- *     only that subcollection — the parent list document's `updatedAt` is not
- *     bumped. So the PERSONAL leg catches list creation and list-level edits,
- *     and misses a session that only checked items off. Closing it means
- *     either bumping the parent on every item write (an extra write per tick)
- *     or a per-day counter doc; both are cost decisions beyond this probe.
- *     The collaborative leg does not share this gap — a shared list embeds its
- *     `items` array in the list document, so a tick rewrites that document.
+ *  2. CLOSED by BUT-1762 (2026-07-31) — kept here because the shape of the fix
+ *     is what the numbers mean. Personal items live in an `items`
+ *     subcollection, and every item write touched only that subcollection, so
+ *     the parent's `updatedAt` never moved. The gap was WIDER than "tick-only":
+ *     add, amend, remove and both bulk paths were all invisible, so the
+ *     PERSONAL leg saw list creation and list-level edits and nothing else.
+ *     `ShoppingItemOperationsModule._touchPersonalListDay` now stamps the
+ *     parent — at most ONCE PER UTC DAY, from all six write branches, and only
+ *     after the item write succeeds. Day-coalescing is the cost decision: a
+ *     30-item shop bills one extra write instead of thirty, and a unit test
+ *     pins it (removing the day guard reddens exactly that test), because
+ *     without the guard this silently degrades into the ~18x-dearer variant
+ *     that was rejected. The collaborative leg never shared this gap — a shared
+ *     list embeds `items` in the list document.
+ *
+ *     WHAT `shopped` MEANS NOW, stated once so it is not re-derived: the
+ *     personal leg now STAMPS every shopping day, "Rensa klart" included —
+ *     but see gap 4 before reading it as an accurate per-day boolean, because
+ *     this job only ever queries a few hours of each day. The collaborative
+ *     leg is additionally LAST-WRITER-ONLY (gap 1) — `lastActivityByUserId` is
+ *     a single stamp, so when two household members shop the same shared list
+ *     on the same day, only the last writer scores. Every flag this job writes
+ *     therefore remains a LOWER BOUND, for the gap-4 reason if no other.
+ *
+ *     Residual, accepted: the parent stamp is fire-and-forget with a swallowed
+ *     warning — it must never fail a shopper's tick — and there is no alerting
+ *     on that warning today, so a systematic failure would degrade this metric
+ *     quietly. Recorded rather than assumed covered.
  *
  *  3. THE ROLLUPS RAMP IN AFTER DEPLOY, AND THE RAMP LOOKS LIKE ADOPTION.
  *     `wau7d` and `wau28d` OR together previously STORED per-day flag docs, and
  *     every one of those written before a `shopped` fix carries whichever
  *     structural zero that fix removed — BUT-1724 for the personal leg,
- *     BUT-1761 for the collaborative one. So `shopped` climbs for 7 and then
- *     28 days after each deploy purely as the window refills with correct
- *     days — a dashboard artefact, not behaviour change. The rollups only mean
- *     anything 28 days after the latest of those deploy dates; the DAU figure
- *     is trustworthy from day one.
+ *     BUT-1761 for the collaborative one, and BUT-1762 (2026-07-31) for
+ *     personal item activity, which is the latest and therefore the one that
+ *     sets the clock. So `shopped` climbs for 7 and then 28 days after each
+ *     deploy purely as the window refills with correct days — a dashboard
+ *     artefact, not behaviour change. The rollups only mean anything 28 days
+ *     after the latest of those deploy dates; the DAU figure is trustworthy
+ *     from day one.
+ *
+ *     Said plainly for whoever reads the dashboard: each of those deploys makes
+ *     the numbers rise on their own for up to a month afterwards, and that rise
+ *     is the measurement catching up, not growth.
+ *
+ *     BUT EXPECT NO SUCH RAMP FROM BUT-1762 ON ITS OWN — gap 4 caps the
+ *     personal leg to a shopping trip whose FIRST item write of the day lands
+ *     before 04:30 UTC, which is almost nobody. Day-coalescing neither causes
+ *     nor rescues that: the first write of a day always stamps, and that is
+ *     precisely the one inside the window. So the personal leg stays close to
+ *     flat until BUT-1791 lands, and the two ramps only compound once it does.
+ *     Do not read the missing ramp as "the fix did not deploy".
+ *
+ *     (`shopped` is NOT one of `detect-anomalies.ts`'s five MONITORED_SERIES,
+ *     so neither step change can trip a false z-score alert — checked
+ *     2026-07-31.)
+ *
+ *  4. THIS JOB ONLY EVER SEES THE FIRST 4.5 HOURS OF EACH UTC DAY, AND THAT
+ *     CAPS EVERY FLAG ABOVE. Found 2026-07-31 by `code-reviewer` during the
+ *     BUT-1762 review, verified against this file: the schedule is
+ *     `30 4 * * *` UTC (below), and the run probes `startOfUtcDay(now)` — the
+ *     CURRENT day — so its window is 00:00–04:30 UTC of the run day: 02:00–
+ *     06:30 Swedish summer time, 01:00–05:30 in winter. Activity later that day
+ *     is written after the run, and the next run asks about the following day
+ *     instead. It is never queried.
+ *
+ *     So every flag here — `cooked`, `imported`, `shared`, `mealPlanned` and
+ *     `shopped` alike — measures roughly the small hours, not the day. This
+ *     is the same disease as BUT-1724/BUT-1761: a metric that reads as a
+ *     signal while being structurally near-zero.
+ *
+ *     The suite cannot catch it: every case runs `now = 08:00Z` against
+ *     activity at `06:00Z`, i.e. a run AFTER the activity, which production
+ *     never does. Any fix needs a test whose activity lands after the run
+ *     hour.
+ *
+ *     NOT fixed by BUT-1762 — deliberately. The fix is small (probe the
+ *     PREVIOUS UTC day, `startOfUtcDay(now) - MS_PER_DAY`, with `dateStr` to
+ *     match; or move the schedule to 23:55 UTC) but it re-bases what every
+ *     stored flag doc and both rollups mean, so it is its own change with its
+ *     own ramp. Tracked as BUT-1791.
  */
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
