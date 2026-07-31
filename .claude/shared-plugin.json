@@ -78,11 +78,6 @@
       }
     ]
   },
-  "codeReviewGate": {
-    "filePattern": "\\.dart$",
-    "marker": ".claude/state/simplify-done.marker",
-    "instructions": "Effort: /code-review high for Dart diffs; /code-review xhigh when the diff touches lib/repositories/, lib/services/{firebase|firestore|auth|user|gdpr}, functions/src/, or firestore.rules; bare /code-review only for a trivial single-file diff. Then record the reviewed .dart paths into the marker (the gate names them) and retry."
-  },
   "reviewGates": [
     {
       "agent": "code-reviewer",
@@ -121,6 +116,14 @@
       ],
       "exact": [
         "firestore.rules"
+      ]
+    },
+    {
+      "_note": "The whole-diff, cross-file pass. Was `codeReviewGate` until 2026-07-31, i.e. gated on the /code-review BUILTIN — a command only a human can start, so every unattended run (sprint-parallel, /commit, any resume) dead-ended asking Malin to type it. Same filePattern and same marker as before; the only change is that a spawnable agent now owns it. /code-review stays available and is still the deeper pass — it is simply no longer the ONLY way to earn this marker. NOTE the pattern is bare `\\.dart$` on purpose: unlike the code-reviewer gate it does NOT exclude *.g.dart/*.freezed.dart, so a generated-only diff still meets a gate. Do not 'tidy' that exclusion in.",
+      "agent": "integration-reviewer",
+      "marker": "simplify-done.marker",
+      "patterns": [
+        "\\.dart$"
       ]
     }
   ],
