@@ -46,13 +46,23 @@
  * to auto-delete past that. 7d covers worst-case retry headroom
  * (5 attempts × 5-min cadence = 25 min) plus generous slack.
  *
- * **Manual setup required (one-shot, per environment)**: the TTL
- * policy itself is configured in the GCP console (or via gcloud):
- *   `gcloud firestore fields ttls update expireAt \
- *      --collection-group=scheduled_notifications --enable-ttl`
- * Until that's run, docs accumulate forever — `on-user-deleted.ts`
- * cascades on account deletion, but we still want passive expiry for
- * the tombstone-after-delivery case.
+ * **TTL policy (BUT-1699, 2026-07-31)**: DECLARED in
+ * `firestore.indexes.json` as a `fieldOverrides` entry with
+ * `"ttl": true` on `expireAt`, and pinned by
+ * `src/__tests__/firestore-ttl-policies.test.ts`. It is applied by
+ * `firebase deploy --only firestore:indexes`.
+ *
+ * This comment previously said the policy needed a manual one-off
+ * gcloud command. It was never run, so docs DID accumulate forever —
+ * from the day this shipped until 2026-07-31. That matters more here
+ * than for its sibling: `payload` carries notification title and body,
+ * i.e. comment snippets, recipe titles and friends' display names.
+ *
+ * Declaring is not activating: Firestore offers no round-trip, so
+ * nothing in this repo can prove the policy is live. After a deploy,
+ * confirm with `gcloud firestore fields ttls list`. `on-user-deleted.ts`
+ * still cascades on account deletion; this is the passive expiry for
+ * the tombstone-after-delivery case and for still-active accounts.
  *
  * Idempotency: drainer flips `status` from `pending` → `delivered` via
  * a transaction. A retry that re-runs the drainer skips already-delivered

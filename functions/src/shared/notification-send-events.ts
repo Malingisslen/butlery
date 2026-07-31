@@ -14,13 +14,23 @@
  *     expireAt: Timestamp,        // sentAt + 30 days
  *   }
  *
- * **Manual setup required (one-shot, per environment)**: the TTL
- * policy itself is configured in the GCP console (or via gcloud):
- *   `gcloud firestore fields ttls update expireAt \
- *      --collection-group=notification_send_events --enable-ttl`
- * This module guarantees `expireAt` is written, but the policy that
- * actually deletes expired docs has to be enabled separately. GDPR
- * cascade on account deletion is handled by `on-user-deleted.ts`.
+ * **TTL policy (BUT-1699, 2026-07-31)**: DECLARED in
+ * `firestore.indexes.json` as a `fieldOverrides` entry with
+ * `"ttl": true` on `expireAt`, and pinned by
+ * `src/__tests__/firestore-ttl-policies.test.ts`. It is applied by
+ * `firebase deploy --only firestore:indexes`.
+ *
+ * This comment previously said the policy needed a manual one-off
+ * gcloud command. That was true only because nobody had declared it
+ * here — and the command was never run, so from the day this shipped
+ * until 2026-07-31 NOTHING deleted these rows.
+ *
+ * Declaring is not activating: Firestore offers no round-trip, so
+ * nothing in this repo can prove the policy is live. After a deploy,
+ * confirm with `gcloud firestore fields ttls list`. GDPR cascade on
+ * account deletion is separate and already handled by
+ * `on-user-deleted.ts`; this TTL is the retention backstop for
+ * still-active accounts (Art. 5(1)(e)).
  */
 
 import { logger } from "firebase-functions/logger";

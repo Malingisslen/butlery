@@ -38,9 +38,25 @@ device dropping (see `firebase_cooking_session_repository.dart`).
 
 ## One-time activation
 
-Firebase TTL policies are not configured via `firestore.indexes.json` — they
-are deployed via the Firestore Admin API (gcloud CLI). Run these once per
-environment (dev + prod) under an account with `roles/datastore.owner`:
+> **Corrected 2026-07-31 (BUT-1699).** This section used to state that TTL
+> policies "are not configured via `firestore.indexes.json`". That is wrong, and
+> has been for a while: 15 policies are declared there today as `fieldOverrides`
+> carrying `"ttl": true`, and `firebase deploy --only firestore:indexes` is what
+> applies them. Prefer declaring a policy in that file — it is reviewable, it is
+> version-controlled, and `functions/src/__tests__/firestore-ttl-policies.test.ts`
+> can then pin it.
+>
+> The gcloud route below still works and is still the way to inspect state.
+> **Declaring is not activating:** Firestore offers no round-trip, so nothing in
+> the repo can prove a policy is live. After any deploy, confirm with
+> `gcloud firestore fields ttls list --project=butlery-app-1`.
+>
+> Note this runbook's own field is spelled `expiresAt`, not `expireAt` — a TTL
+> policy names one exact field, so do not copy an `expireAt` command here.
+
+Either declare the policy in `firestore.indexes.json` and deploy indexes, or run
+the Admin API (gcloud CLI) commands below once per environment (dev + prod)
+under an account with `roles/datastore.owner`:
 
 ```bash
 # Activate TTL on activeUsers.expiresAt across both presence surfaces.

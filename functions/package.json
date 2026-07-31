@@ -82,6 +82,7 @@
     "test:backfill-shared-list-contributors": "ts-node src/__tests__/backfill-shared-list-contributors.test.ts",
     "test:track-retention": "ts-node src/__tests__/track-retention.test.ts",
     "test:compute-feature-retention": "ts-node src/__tests__/compute-feature-retention.test.ts",
+    "test:firestore-ttl-policies": "ts-node src/__tests__/firestore-ttl-policies.test.ts",
     "test:detect-anomalies": "ts-node src/__tests__/detect-anomalies.test.ts",
     "test:winback-variant": "ts-node src/__tests__/winback-variant.test.ts",
     "test:purge-audit-logs": "ts-node src/__tests__/purge-audit-logs.test.ts",
