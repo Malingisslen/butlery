@@ -84,3 +84,24 @@ Match the existing style in `firestore-rules.test.ts`:
 - **Low** — code-style or builder-extraction opportunity
 
 End every report with a one-line decision: `READY TO MERGE` (all changed branches covered, all tests pass) or `BLOCKED` (with the smallest set of next actions).
+
+## Proof of review (mechanical — 2026-08-01)
+
+Two rules. The commit gate depends on both, and neither is a formality.
+
+1. **Open every file you review with `Read`.** A `git diff`, a `git status`, a Grep
+   excerpt or a `--name-only` listing does NOT count as having read a file. A hook
+   records what you actually opened and pins the exact bytes; a file you did not `Read`
+   is a file the gate treats as unreviewed, whatever your report says about it.
+2. **End your final message with exactly this line, on its own:**
+
+   `REVIEW-VERDICT: pass (0 blocking)`  — or —  `REVIEW-VERDICT: fail (N blocking)`
+
+   Nothing else records your verdict. Without the line, your review does not open the
+   gate. `pass` requires zero blocking findings; a "pass" that also reports blocking
+   findings is read as `fail`, because that contradiction previously shipped bugs.
+
+You never write proof yourself. There is no marker file to create, and writing the
+ledger is refused outright. The evidence is a by-product of reading — which is exactly
+why it cannot be forged, and why a later fix silently un-proves the file it touched
+(re-read it, don't re-stamp anything).

@@ -78,6 +78,9 @@
       }
     ]
   },
+  "_reviewProof": "2026-08-01: proof of review moved from hand-written marker files to the RECORDED ledger. A marker was a separate act of writing performed by the party being audited — twelve were flagged as forged in one morning, and five of the six agents below never had a marker instruction at all, so the gate's own block message ('the agent writes it itself') taught blocked sessions to hand-write one. In ledger mode a PostToolUse hook records which reviewer read which bytes and a SubagentStop hook records the verdict it ended on; nothing is hand-writable and a later fix silently un-proves the file it touched. Reviewer agents MUST open files with Read and end on `REVIEW-VERDICT: pass|fail (N blocking)` — both are in each agent below. Do not set this in binge/webbkollen until their agents carry the same two rules; flipping first blocks every commit there.",
+  "reviewProof": "ledger",
+  "pushGate": { "agent": "integration-reviewer" },
   "reviewGates": [
     {
       "agent": "code-reviewer",
