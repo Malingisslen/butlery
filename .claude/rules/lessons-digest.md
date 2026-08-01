@@ -18,6 +18,7 @@ lessons that only matter while writing or running tests.
 - Never prune a young system for inactivity — the observation window must exceed its natural cycle (tune now; keep/cut only after 2–3 cycles).
 - Don't hand the user judgment/labor you can derive yourself; defer only product intent, irreversible actions, or external facts.
 - Bash `cd` persists across calls — use absolute paths.
+- A hook registered with a RELATIVE path stops firing the moment the Bash cwd drifts into a subdirectory, and a PreToolUse failure is NON-BLOCKING — so the safety firewall silently lets destructive commands through. Wrap every hook command with `cd "$(git rev-parse --show-toplevel)"`, and diagnose contradictory hook errors from the transcript's `cwd` field, not the filesystem. The firewall also matches commit-message prose quoting a blocked pattern — reword, never weaken it.
 - Verify Edits actually landed (`git diff`) before committing — never trust the commit-message claim.
 - "Unreferenced" must be proven against the WHOLE repo, never a hand-picked subset.
 - Run arch gates locally before committing UI widgets.
