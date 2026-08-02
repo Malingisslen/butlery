@@ -1,0 +1,127 @@
+name: verify
+on: [push, pull_request]
+# Reporot = specpaketets rot (katalogen som bär tools/, fas0/ och dokumenten).
+#
+# TVÅ JOBB, med skilda ansvar (Fas 0.12):
+#   fas0-gate      · avgör om FAS 0-GRINDEN passerar. Innehållsfynd och GEN-01-drift
+#                    får INTE fälla det här jobbet.
+#   content-baseline · rapporterar totalen och driften. Får vara rött.
+# Fas 0.11 hade ett jobb, och ett obligatoriskt git diff fällde det på GEN-01-drift
+# trots att drift ligger utanför grinden.
+jobs:
+  fas0-gate:
+    name: Fas 0-grinden
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+
+      # CI-kontext: bevisar VAR och MOT VAD kedjan körs. Ingen slutsats om utfall.
+      - name: CI-kontext för CHK-CI-01
+        run: |
+          node -e "
+            const fs=require('fs'), crypto=require('crypto');
+            const mf = fs.existsSync('fas0/andrade-filer.md')
+              ? crypto.createHash('sha256').update(fs.readFileSync('fas0/andrade-filer.md')).digest('hex') : null;
+            fs.mkdirSync('fas0',{recursive:true});
+            fs.writeFileSync('fas0/ci-evidence.json', JSON.stringify({
+              schema: 'butlery-ci-evidence/2',
+              ciProvider: 'github-actions',
+              githubActions: process.env.GITHUB_ACTIONS || null,
+              runId: process.env.GITHUB_RUN_ID || null,
+              runAttempt: process.env.GITHUB_RUN_ATTEMPT || null,
+              runnerOs: process.env.RUNNER_OS || null,
+              repository: process.env.GITHUB_REPOSITORY || null,
+              commit: process.env.GITHUB_SHA || null,
+              workflow: process.env.GITHUB_WORKFLOW || null,
+              manifestSha256: mf,
+              startedAt: new Date().toISOString()
+            }, null, 2));
+          "
+
+      # EN körning av generatorer och lint. Får vara röd.
+      - name: Verifieringskedjan (manifest + kedja)
+        id: chain
+        continue-on-error: true
+        env:
+          BUTLERY_MANIFEST_MODE: repo
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: bash fas0/run-verify.sh
+
+      # Körningens FAKTISKA exitkod in i beviset.
+      - name: Komplettera CI-beviset
+        if: always()
+        run: |
+          node -e "
+            const fs=require('fs');
+            const p='fas0/ci-evidence.json';
+            if (!fs.existsSync(p)) process.exit(0);
+            const e=JSON.parse(fs.readFileSync(p,'utf8'));
+            e.verifyExitCode = fs.existsSync('fas0/verify-exit') ? Number(fs.readFileSync('fas0/verify-exit','utf8').trim()) : null;
+            e.completedAt = new Date().toISOString();
+            fs.writeFileSync(p, JSON.stringify(e,null,2));
+            console.log('CI-bevis komplett · exit ' + e.verifyExitCode);
+          "
+
+      # FINALISERING: rent, icke-muterande. Läser det kompletta beviset, reducerar
+      # om CI-kontrollen och totalerna, skriver atomiskt om båda rapportfilerna.
+      # Generatorerna körs INTE igen.
+      - name: Finalisera rapporten
+        if: always()
+        continue-on-error: true
+        env:
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: node tools/finalize.mjs
+
+      # GRINDEN avgör det här jobbet.
+      # Grinden körs ALLTID, även när finaliseringen avbröts — den ska dokumentera
+      # avslaget, inte hoppas över.
+      - name: Fas 0-grinden
+        if: always()
+        run: node tools/gate.mjs --phase=0
+
+      - name: Rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fas0-gate-report
+          path: |
+            fas0/verify.log
+            fas0/manifest.log
+            fas0/verify-report.json
+            fas0/kontrollstatus.md
+            fas0/ci-evidence.json
+
+  content-baseline:
+    name: Innehållsbaslinje (får vara röd)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+      # Kedjan ger avsiktligt exit 1 på den röda innehållsbaslinjen. Utan
+      # continue-on-error hoppades diffsteget över helt. Fas 0.13.
+      - name: Verifieringskedjan
+        continue-on-error: true
+        env:
+          BUTLERY_MANIFEST_MODE: repo
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: bash fas0/run-verify.sh
+      - name: Genererade filer är incheckade (GEN-01)
+        continue-on-error: true
+        run: |
+          git diff --exit-code -- . \
+            ':!fas0/ci-evidence.json' ':!fas0/verify-report.json' ':!fas0/kontrollstatus.md' \
+            ':!fas0/verify.log' ':!fas0/manifest.log' ':!fas0/verify-exit' ':!fas0/verify-chain-exit' \
+            || (echo "◐ generatorerna ändrade incheckade filer — committa dem (GEN-01, utanför Fas 0-grinden)" && exit 1)
+      - name: Rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-baseline-report
+          path: |
+            fas0/verify.log
+            fas0/verify-report.json
+            fas0/kontrollstatus.md
