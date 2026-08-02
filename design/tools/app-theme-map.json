@@ -1,0 +1,311 @@
+{
+  "$note": "GENERERAD-INDATA · vilken token varje befintlig AppColors-medlem hämtar sitt värde ur. Ändra här, kör tools/gen-app-theme.mjs.",
+  "brandExceptionNote": "brand*-färgerna är externa varumärkesidentiteter (YouTube, ICA, Arla …). De får INTE tokeniseras — de är citat, inte design.",
+  "colors": {
+    "forestGreen": [
+      "semantic",
+      "surface.ink",
+      "Rubrikyta och primär åtgärd"
+    ],
+    "forestGreenDark": [
+      "palette",
+      "inkDeep",
+      "Nedtryckt / betoning"
+    ],
+    "forestGreenLight": [
+      "palette",
+      "greenLight",
+      "Ljus variant"
+    ],
+    "rust": [
+      "palette",
+      "saffron",
+      "Dekorativ accent"
+    ],
+    "rustLight": [
+      "semantic",
+      "border.statusWarning",
+      "Kortens underkant"
+    ],
+    "cream": [
+      "semantic",
+      "surface.base",
+      ""
+    ],
+    "creamDark": [
+      "semantic",
+      "surface.raised",
+      ""
+    ],
+    "creamDarker": [
+      "semantic",
+      "border.subtle",
+      "Navigering"
+    ],
+    "greenPale": [
+      "semantic",
+      "surface.raised",
+      ""
+    ],
+    "greenMuted": [
+      "semantic",
+      "text.secondary",
+      "Nav ovald"
+    ],
+    "cardWhite": [
+      "semantic",
+      "surface.base",
+      "Systemet har inget rent vitt"
+    ],
+    "cardWhite54": [
+      "raw",
+      "rgba(245,244,237,0.54)",
+      ""
+    ],
+    "textDark": [
+      "semantic",
+      "text.primary",
+      ""
+    ],
+    "textMedium": [
+      "semantic",
+      "text.secondary",
+      ""
+    ],
+    "placeholderIcon": [
+      "semantic",
+      "border.control",
+      ""
+    ],
+    "textLight": [
+      "semantic",
+      "text.disabled",
+      ""
+    ],
+    "textTertiary": [
+      "palette",
+      "sagePale",
+      ""
+    ],
+    "textOnPrimary": [
+      "semantic",
+      "control.checked.foreground",
+      ""
+    ],
+    "textOnCream": [
+      "semantic",
+      "text.body",
+      ""
+    ],
+    "success": [
+      "semantic",
+      "text.success",
+      ""
+    ],
+    "warning": [
+      "semantic",
+      "border.statusWarning",
+      "Endast ytor och ikoner, aldrig text"
+    ],
+    "error": [
+      "semantic",
+      "text.danger",
+      ""
+    ],
+    "errorContainer": [
+      "semantic",
+      "surface.raised",
+      ""
+    ],
+    "onErrorContainer": [
+      "semantic",
+      "text.danger.onRaised",
+      ""
+    ],
+    "successContainer": [
+      "semantic",
+      "surface.raised",
+      ""
+    ],
+    "onSuccessContainer": [
+      "semantic",
+      "text.success.onRaised",
+      ""
+    ],
+    "warningContainer": [
+      "semantic",
+      "surface.raised",
+      ""
+    ],
+    "onWarningContainer": [
+      "semantic",
+      "text.accent.onRaised",
+      ""
+    ],
+    "infoContainer": [
+      "semantic",
+      "surface.raised",
+      ""
+    ],
+    "onInfoContainer": [
+      "semantic",
+      "text.primary",
+      ""
+    ],
+    "info": [
+      "palette",
+      "saffronLink",
+      "Systemet har ingen blå — info bär saffranslänken"
+    ],
+    "divider": [
+      "semantic",
+      "border.subtle",
+      ""
+    ],
+    "recipeMeta": [
+      "semantic",
+      "text.secondary",
+      ""
+    ],
+    "sectionHeader": [
+      "semantic",
+      "text.body",
+      ""
+    ],
+    "starGold": [
+      "palette",
+      "saffron",
+      ""
+    ],
+    "categoryDairy": [
+      "palette",
+      "wheat",
+      ""
+    ],
+    "categoryVegetables": [
+      "palette",
+      "green",
+      ""
+    ],
+    "categoryFruit": [
+      "palette",
+      "greenLight",
+      ""
+    ],
+    "categoryBreadGrains": [
+      "palette",
+      "saffronPale",
+      ""
+    ],
+    "categoryFrozen": [
+      "palette",
+      "sage",
+      ""
+    ],
+    "categoryDryGoods": [
+      "palette",
+      "saffronDeep",
+      ""
+    ],
+    "categoryOther": [
+      "palette",
+      "sageMuted",
+      ""
+    ],
+    "backgroundTint": [
+      "semantic",
+      "surface.raised",
+      ""
+    ],
+    "illustrationBrown": [
+      "palette",
+      "saffronDeep",
+      ""
+    ],
+    "illustrationOrange": [
+      "palette",
+      "saffron",
+      ""
+    ],
+    "illustrationPurpleRed": [
+      "palette",
+      "clay",
+      ""
+    ],
+    "overlay": [
+      "semantic",
+      "scrim",
+      ""
+    ],
+    "neutralLight": [
+      "semantic",
+      "surface.base",
+      ""
+    ],
+    "neutralMedium": [
+      "palette",
+      "sageMuted",
+      ""
+    ],
+    "neutralDark": [
+      "palette",
+      "inkDeep",
+      ""
+    ],
+    "sharedRecipeText": [
+      "semantic",
+      "text.secondary",
+      ""
+    ],
+    "sharedRecipeIcon": [
+      "palette",
+      "sagePale",
+      ""
+    ],
+    "sharedRecipeBackground": [
+      "semantic",
+      "surface.raised",
+      ""
+    ],
+    "shadowColor": [
+      "raw",
+      "rgba(23,37,29,0.10)",
+      ""
+    ],
+    "secondaryPurple": [
+      "palette",
+      "clay",
+      "Lila fanns inte i systemet — närmaste avsikt är clay"
+    ],
+    "surfaceDark": [
+      "palette",
+      "inkRaised",
+      ""
+    ],
+    "overlayWhite40": [
+      "raw",
+      "rgba(245,244,237,0.40)",
+      ""
+    ],
+    "overlayBlack10": [
+      "raw",
+      "rgba(23,37,29,0.10)",
+      ""
+    ],
+    "overlayBlack20": [
+      "raw",
+      "rgba(23,37,29,0.20)",
+      ""
+    ],
+    "overlayBlack40": [
+      "raw",
+      "rgba(23,37,29,0.40)",
+      ""
+    ],
+    "overlayBlack60": [
+      "raw",
+      "rgba(23,37,29,0.60)",
+      ""
+    ]
+  }
+}
