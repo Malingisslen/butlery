@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><title>Butlery — Skärmar v12 · etapp 3 · första gången</title>
+<style>
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Regular.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Italic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Semibold.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Semibold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-SemiboldItalic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-SemiboldItalic.ttf') format('truetype');font-weight:600;font-style:italic;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Bold.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-BoldItalic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:swap}
+body{margin:0;font-synthesis:none;background:#F5F4ED;font-variant-numeric:proportional-nums}
+a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:underline}
+/* länk på upphöjd yta */
+.sc-id,.sc-note a,[style*="background:#e6ead9"] a,[style*="background:#E6EAD9"] a,[style*="background:#f0eee2"] a,[style*="background:#F0EEE2"] a,[style*="background:#f7e8d2"] a,[style*="background:#F7E8D2"] a{color:#8A5212}
+</style>
+<style>
+.sc-wrap{padding:40px 44px 60px}
+.sc-title{font:600 13px/1.5 'Butlery Sans',sans-serif;color:#24382c;margin:0 0 24px;max-width:900px;font-variant-numeric:proportional-nums}
+.sc-row{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start;font-variant-numeric:proportional-nums}
+.sc-item{display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.sc-label{display:block;font:400 11.5px/1.6 'Butlery Sans',sans-serif;color:#627061;max-width:412px;text-wrap:pretty}
+.sc-label b,.sc-label i,.sc-label code{color:#37453a}
+.sc-id{display:inline-block;margin-right:7px;font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:#e6ead9;color:#24382C;border-radius:4px;text-decoration:none;vertical-align:2px}
+.sc-phone{position:relative;background:#F5F4ED;border:1px solid #ccd1c2;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382c}
+.sc-phone::before{content:"19:26";display:flex;align-items:center;justify-content:space-between;flex:none;padding:8px 24px 4px;font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:.3px}
+.sc-phone::after{content:"";position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:64px;height:3px;border-radius:999px;background:rgba(36,56,44,.25);pointer-events:none}
+.sc-skeleton{background:#e6ead9 !important}
+.sc-loader{width:120px;height:4px;border-radius:2px;background:#e6ead9;position:relative;overflow:hidden}
+.sc-loader::after{content:"";position:absolute;left:0;top:0;bottom:0;width:40%;border-radius:2px;background:#ce7c1e}
+</style>
+</helmet>
+<section style="font-variant-numeric:proportional-nums;font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382c;padding:48px 56px 0">
+  <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#a15a0a">Butlery · Skärmar v12 — etapp 3 · första gången</div>
+  <div style="display:flex;align-items:center;gap:14px;margin:12px 0 8px"><span style="width:22px;height:4px;background:#ce7c1e;border-radius:2px"></span><span style="flex:1;max-width:760px;height:1px;background:#24382c"></span></div>
+  <div style="font-size:13px;color:#37453a;max-width:780px;line-height:1.65"><b>Kort väg in. Profileringen skjuts till efter första menygenereringen.</b> Ritat efter <code>onboarding_view.dart</code>, <code>onboarding_viewmodel.dart</code>, <code>onboarding_age_gate_page.dart</code>, <code>onboarding_age_gate_blocked_view.dart</code>, <code>onboarding_welcome_page.dart</code>, <code>onboarding_allergen_page.dart</code> och <code>onboarding_import_page.dart</code>. Innehållsförteckning: <a href="Butlery Skarmar v12.dc.html">Skärmar v12</a>.</div>
+</section>
+<section class="sc-wrap" data-screen-label="v12 etapp 3 — första gången">
+<div class="sc-title">Etapp 3 · <b>MINIMAL</b>. Guiden har i dag <b>fem sidor</b> i ordningen <i>åldersgrind → välkomst → allergener → kost → import</i> — inte välkomst först, som arbetsplanen påstod. MINIMAL behåller <b>fyra</b>: åldersgrinden (den är juridik, inte ett steg), en välkomst som säger vad appen gör, allergenerna (säkerhet, och de propageras till allt annat) och första importen. <b>Kostpreferenserna flyttas ut</b> och ställs när de första gången betyder något: efter första menygenereringen. Den enda frågan i planen var <i>hur lite kan vi fråga innan första receptet</i> — svaret är två frågor, varav en är obligatorisk av lag.<br><br>Tre saker i koden gör den korta vägen möjlig utan att lova något falskt: <b>att hoppa över slutför guiden</b> (den skriver <code>onboardingSkippedAt</code>, den avbryter inte), <b>appen såddas</b> med startrecept <i>och</i> en exempelvecka med inköpslista (BUT-926, BUT-930), och <b>framstegen sparas per steg</b> (BUT-675) så en avbruten guide återupptas där den slutade. Reglerna i <code>produktregler.md</code> § 13.<br><br><b>Före guiden ligger auth.</b> Sex ramar: inloggning, kontoskapande, glömt lösenord, e-postverifieringens mjuka spärr och dess bekräftelse — plus <b>MFA-utmaningen, som inte finns i koden alls</b>. Tjänsten kan lösa en utmaning och inställningarna kan slå på tvåstegsverifiering, men ingen vy tar emot den: den som aktiverar MFA kan låsa sig ut. Den ramen är ett kravunderlag, inte en avbild.</div>
+<div class="sc-row">
+
+<div class="sc-item" id="authlogga" data-screen-label="Auth — logga in">
+  <div class="sc-label"><a class="sc-id" href="#authlogga">logga in</a><b>Ritad efter <code>auth_view.dart</code>. Vyn är <i>ett</i> formulär i två lägen</b> — inte två skärmar — och läget växlas av en konturknapp under en <i>eller</i>-avdelare. Två saker koden gör som ritningen måste bära: <b>lösenord och namn rensas vid växling</b> (inget släpper igenom mellan lägena), och <b>inloggning navigerar direkt</b> till skalet på flik 1, medan registrering <i>inte</i> navigerar alls — auth-tillståndet driver <code>AuthWrapper</code> vidare till e-postverifiering, åldersgrind och guide. Det som ändras mot koden: gröna huvudets ordmärke ritas som <b>låst vektor</b>, inte som text i vikt 400 med 38 px och 1 px spärr, och broccolibilden utgår — illustrationssystemet har egna motiv. Fältradien följer <code>radius.control</code> 8; koden har <code>BorderRadius.zero</code>, vilket är en <b>ändring i koden</b>.</div>
+  <div class="sc-phone" style="width:412px;height:860px;display:flex;flex-direction:column">
+    <div style="flex:none;background:#24382c;padding:32px 24px 28px;display:flex;flex-direction:column;align-items:center;gap:16px">
+      <img src="Butlery-lockup-family-L4-3/Butlery-wordmark-reversed-L4-3-outlined.svg" alt="Butlery" style="display:block;height:34px;width:auto">
+      <div style="font-size:13px;font-weight:400;color:#c9d3c4;line-height:1.55;text-align:center">Recepten du redan lagar — och veckan planerad ur dem.</div>
+    </div>
+    <div style="flex:none;height:4px;background:#ce7c1e"></div>
+    <div style="flex:1;padding:24px;overflow:hidden">
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px">Logga in</div>
+      <div style="margin-top:24px">
+        <div style="font-size:12.5px;font-weight:600;color:#627061">E-post</div>
+        <span style="display:flex;align-items:center;min-height:48px;padding:0 12px;margin-top:6px;background:#e6ead9;border:1px solid #7d897c;border-radius:8px;box-sizing:border-box;font-size:16px;font-weight:400;color:#24382c" data-a11y-name="E-post" data-a11y-role="textbox" data-hit="fältet 48">malin@exempel.se</span>
+      </div>
+      <div style="margin-top:16px">
+        <div style="font-size:12.5px;font-weight:600;color:#627061">Lösenord</div>
+        <span style="display:flex;align-items:center;gap:8px;min-height:48px;padding:0 4px 0 12px;margin-top:6px;background:#e6ead9;border:1.5px solid #24382c;border-radius:8px;box-sizing:border-box"><span style="flex:1;min-width:0;min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:400;letter-spacing:2px" data-a11y-name="Lösenord" data-a11y-role="textbox" data-hit="fältet 48">••••••••••</span><span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Visa lösenordet" data-a11y-role="button" data-hit="48"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="eye"><path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.6"></circle></svg></span></span>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:4px"><span style="min-height:48px;display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;color:#a15a0a;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Glömt lösenordet" data-a11y-role="button" data-hit="48">Glömt lösenordet?</span></div>
+      <span style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:16px;background:#ce7c1e;color:#17251d;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Logga in" data-a11y-role="button">Logga in</span>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:24px"><span style="flex:1;height:1px;background:#ccd1c2"></span><span style="font-size:12px;font-weight:400;color:#627061">eller</span><span style="flex:1;height:1px;background:#ccd1c2"></span></div>
+      <span style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:24px;border:1.5px solid #24382c;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Skapa konto" data-a11y-role="button">Skapa konto</span>
+    </div>
+    <div style="flex:none;padding:12px 24px 28px;display:flex;justify-content:center;gap:8px;align-items:center">
+      <a href="#authlogga" style="min-height:48px;display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;color:#8A5212;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Användarvillkor" data-a11y-role="link">Användarvillkor</a>
+      <span style="font-size:12.5px;color:#627061">·</span>
+      <a href="#authlogga" style="min-height:48px;display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;color:#8A5212;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Integritetspolicy" data-a11y-role="link">Integritetspolicy</a>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="authskapa" data-screen-label="Auth — skapa konto">
+  <div class="sc-label"><a class="sc-id" href="#authskapa">skapa konto</a><b>Här ligger etappens allvarligaste fynd: <i>åldern frågas två gånger, och den första frågan betyder ingenting.</i></b> Registreringen har en kryssruta där användaren själv intygar 15 år — och <b>samma ålder kontrolleras strax efter</b> av <code>verifySignupAge</code> i guiden, som är den enda auktoriteten och den enda som skriver <code>birthYear</code>. Självintyget stängdes uttryckligen som kringgående väg (BUT-1384); att låta det stå kvar som en ruta ber om ett svar vi inte tror på, och två frågor om samma sak lär användaren att ingen av dem spelar roll. <b>Ramen tar bort åldersrutan</b> och behåller villkorsrutan, som är ett verkligt samtycke. Kvar som ändring i koden: samtyckena bekräftas i dag <i>efter</i> tryck med en varningssnackbar — ritningen håller knappen avstängd i stället, för ett krav som syns före är inte ett fel som kommer efter. Villkorslänkarna finns dessutom <b>två gånger</b> i vyn (i raden och i foten); ramen behåller foten.</div>
+  <div class="sc-phone" style="width:412px;height:860px;display:flex;flex-direction:column">
+    <div style="flex:none;background:#24382c;padding:24px;display:flex;justify-content:center">
+      <img src="Butlery-lockup-family-L4-3/Butlery-wordmark-reversed-L4-3-outlined.svg" alt="Butlery" style="display:block;height:28px;width:auto">
+    </div>
+    <div style="flex:none;height:4px;background:#ce7c1e"></div>
+    <div style="flex:1;padding:20px 24px;overflow:hidden">
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px">Skapa konto</div>
+      <div style="margin-top:18px">
+        <div style="font-size:12.5px;font-weight:600;color:#627061">Ditt namn</div>
+        <span style="display:flex;align-items:center;min-height:48px;padding:0 12px;margin-top:6px;background:#e6ead9;border:1px solid #7d897c;border-radius:8px;box-sizing:border-box;font-size:16px;font-weight:400;color:#5B6959" data-a11y-name="Ditt namn" data-a11y-role="textbox" data-hit="fältet 48">Vad ska jag kalla dig?</span>
+      </div>
+      <div style="margin-top:14px">
+        <div style="font-size:12.5px;font-weight:600;color:#627061">E-post</div>
+        <span style="display:flex;align-items:center;min-height:48px;padding:0 12px;margin-top:6px;background:#e6ead9;border:1px solid #7d897c;border-radius:8px;box-sizing:border-box;font-size:16px;font-weight:400;color:#24382c" data-a11y-name="E-post" data-a11y-role="textbox" data-hit="fältet 48">malin@exempel.se</span>
+      </div>
+      <div style="margin-top:14px">
+        <div style="font-size:12.5px;font-weight:600;color:#627061">Lösenord</div>
+        <span style="display:flex;align-items:center;gap:8px;min-height:48px;padding:0 4px 0 12px;margin-top:6px;background:#e6ead9;border:1px solid #7d897c;border-radius:8px;box-sizing:border-box"><span style="flex:1;min-width:0;min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:400;color:#5B6959" data-a11y-name="Lösenord" data-a11y-role="textbox" data-hit="fältet 48">Välj ett starkt lösenord</span><span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Visa lösenordet" data-a11y-role="button" data-hit="48"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="eye"><path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.6"></circle></svg></span></span>
+        <div style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.5;margin-top:6px">Minst tolv tecken, eller tre ord du minns. Kravet står här — inte som ett fel efter att du skrivit.</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-top:16px;min-height:48px;box-sizing:border-box" data-a11y-name="Jag godkänner användarvillkoren och integritetspolicyn" data-a11y-role="checkbox" data-hit="raden 48">
+        <span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none;margin-left:-12px"><span data-component="checkbox" style="width:24px;height:24px;border:1.5px solid #24382c;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;background:#24382c"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M5.5 12.5l4 4 9-9"></path></svg></span></span>
+        <span style="flex:1;font-size:12.5px;font-weight:600;color:#24382c;line-height:1.55">Jag godkänner <a href="#authskapa" style="color:#8A5212;text-decoration:underline;text-underline-offset:.16em">användarvillkoren</a> och <a href="#authskapa" style="color:#8A5212;text-decoration:underline;text-underline-offset:.16em">integritetspolicyn</a></span>
+      </div>
+      <div style="margin-top:12px;background:#e6ead9;border-radius:8px;padding:12px;font-size:12px;color:#37453a;line-height:1.5"><b>Åldersrutan är borta.</b> Åldern frågas i nästa steg, av den kontroll som faktiskt avgör den — ett intyg vi inte kan lita på är sämre än ingen fråga.</div>
+      <span style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:16px;background:#ce7c1e;color:#17251d;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Skapa konto" data-a11y-role="button">Skapa konto</span>
+    </div>
+    <div style="flex:none;padding:8px 24px 28px;display:flex;justify-content:center;gap:8px;align-items:center">
+      <a href="#authskapa" style="min-height:48px;display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;color:#8A5212;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Användarvillkor" data-a11y-role="link">Användarvillkor</a>
+      <span style="font-size:12.5px;color:#627061">·</span>
+      <a href="#authskapa" style="min-height:48px;display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;color:#8A5212;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Integritetspolicy" data-a11y-role="link">Integritetspolicy</a>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="authglomt" data-screen-label="Auth — glömt lösenordet">
+  <div class="sc-label"><a class="sc-id" href="#authglomt">glömt lösenordet</a><b>En dialog, inte en vy — och kvittot är medvetet intetsägande.</b> Adressen valideras <i>inne i</i> dialogen innan något skickas (<code>ValidationUtils.validateEmail</code>), så ett stavfel fångas där i stället för att belönas med ett falskt &quot;skickat&quot;. Därefter säger snackbaren <b>samma sak oavsett om kontot finns</b> — det är kontouppräkningsskyddet, och copyn får därför inte lova att ett brev är på väg till just den adressen. Formuleringen är alltså inte otydlig av slarv: den är otydlig med avsikt, och ramen skriver ut varför så att ingen &quot;förbättrar&quot; den senare.</div>
+  <div class="sc-phone" style="width:412px;height:560px;display:flex;flex-direction:column;justify-content:center">
+    <div style="position:absolute;inset:0;background:rgba(36,56,44,.35)"></div>
+    <div style="position:relative;margin:24px;background:#F5F4ED;border-radius:12px;padding:24px;box-shadow:0 8px 32px rgba(36,56,44,.18)">
+      <div style="font-size:17px;font-weight:700;letter-spacing:-.2px">Återställ lösenordet</div>
+      <div style="font-size:13px;font-weight:400;color:#37453a;line-height:1.55;margin-top:10px">Skriv adressen du registrerade dig med. Finns ett konto skickar jag en återställningslänk dit.</div>
+      <div style="margin-top:18px">
+        <div style="font-size:12.5px;font-weight:600;color:#627061">E-post</div>
+        <span style="display:flex;align-items:center;min-height:48px;padding:0 12px;margin-top:6px;background:#e6ead9;border:1.5px solid #9C3B23;border-radius:8px;box-sizing:border-box;font-size:16px;font-weight:400;color:#24382c" data-a11y-name="E-post" data-a11y-role="textbox" data-a11y-state="invalid" data-hit="fältet 48">malin@exempel</span>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9C3B23" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="triangle-alert"><path d="M12 4.5L20.5 19.5H3.5z"></path><path d="M12 10v4"></path><path d="M12 16.6v.4"></path></svg><span style="font-size:12.5px;font-weight:600;color:#9C3B23">Adressen ser inte komplett ut.</span></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #24382c;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Avbryt" data-a11y-role="button">Avbryt</span>
+        <span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;background:#ce7c1e;color:#17251d;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Skicka återställningslänk" data-a11y-role="button">Skicka</span>
+      </div>
+      <div style="margin-top:16px;background:#e6ead9;border-radius:8px;padding:12px;font-size:12px;color:#37453a;line-height:1.5">Efter sändning: <i>&quot;Finns ett konto på adressen är länken på väg.&quot;</i> — samma text i båda fallen. Att avslöja vilka adresser som har konto är en läcka, inte en hjälp.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="authepost" data-screen-label="Auth — e-postverifiering">
+  <div class="sc-label"><a class="sc-id" href="#authepost">e-postverifiering</a><b>En <i>mjuk</i> spärr, och det är ett medvetet val i koden — inte en lucka.</b> Vyn kan lämnas med <i>Fortsätt ändå</i>; det som stoppas utan verifierad adress avgörs längre in. Tre mekanismer ritningen måste visa: skärmen <b>frågar av sig själv var femte sekund</b> och går vidare i samma ögonblick adressen bekräftas (ingen knapp att trycka på — därför står det utskrivet att jag håller koll), pollningen <b>pausar i bakgrunden</b> och återupptas när appen kommer fram, och <b>omsändning har 60 sekunders karens</b> med tiden kvar <i>i knappens etikett</i>. Ramen flyttar nedräkningen till en rad under knappen: en knapp vars namn ändras varje sekund är en knapp skärmläsaren aldrig hinner läsa upp. Det är en <b>ändring i koden</b>.</div>
+  <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column;justify-content:center;padding:0 24px">
+    <div style="text-align:center"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto" data-icon="mail"><rect x="3" y="5.5" width="18" height="13" rx="1.5"></rect><path d="M3.5 6.5L12 13l8.5-6.5"></path></svg></div>
+    <div style="font-size:22px;font-weight:700;letter-spacing:-.3px;line-height:1.3;text-align:center;margin-top:24px">Bekräfta din adress</div>
+    <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.55;text-align:center;margin-top:12px">Jag har skickat en länk till <b>malin@exempel.se</b>. Öppna den och kom tillbaka — jag håller koll och släpper in dig automatiskt.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:32px">
+      <span style="display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #7d897c;color:#7d897c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Skicka länken igen" data-a11y-role="button" data-a11y-state="disabled">Skicka igen</span>
+      <div style="font-size:12.5px;font-weight:600;color:#627061;text-align:center;font-variant-numeric:tabular-nums" aria-live="polite">Går att skicka igen om 47 s</div>
+      <span style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:8px;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Fortsätt utan att bekräfta adressen" data-a11y-role="button">Fortsätt ändå</span>
+    </div>
+    <div style="margin-top:24px;background:#e6ead9;border-radius:8px;padding:12px;font-size:12px;color:#37453a;line-height:1.5">Hittar du inget brev: kolla skräpposten, och kontrollera att adressen stämmer. Är den fel skapar du kontot igen — jag kan inte byta adress innan den är bekräftad.</div>
+  </div>
+</div>
+
+<div class="sc-item" id="authepostklar" data-screen-label="Auth — adressen bekräftad">
+  <div class="sc-label"><a class="sc-id" href="#authepostklar">adressen bekräftad</a><b>Den kortaste vyn i systemet, och den enda ingen trycker på.</b> Tillståndet visas när pollningen upptäcker bekräftelsen och varar bara till nästa navigering — därför bär den en glyf, en rad, och ingenting annat. Två regler gäller ändå: bekräftelsen är <code>text.success</code>, inte saffran (saffran betyder handling, och här finns ingen), och den får <b>inte</b> vara enda beskedet om vad som händer sedan — raden under säger vart användaren är på väg, för en skärm som byts av sig själv utan att ha sagt vart är ett hopp, inte ett steg.</div>
+  <div class="sc-phone" style="width:412px;height:420px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 24px">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#3f6b4f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block" data-icon="circle-check"><circle cx="12" cy="12" r="7.5"></circle><path d="M8.5 12.3l2.4 2.4 4.6-4.6"></path></svg>
+    <div style="font-size:17px;font-weight:600;line-height:1.35;text-align:center;margin-top:16px">Adressen är bekräftad</div>
+    <div style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.55;text-align:center;margin-top:8px">Jag tar dig vidare till åldersfrågan.</div>
+  </div>
+</div>
+
+<div class="sc-item" id="authmfa" data-screen-label="Auth — MFA-utmaning (finns inte i koden)">
+  <div class="sc-label"><a class="sc-id" href="#authmfa">MFA-utmaningen</a><b>⚠ Fyndet som gör den här ramen brådskande: utmaningen finns inte.</b> <code>auth_mfa_service.dart</code> har hela kedjan — <code>createMfaResolver</code>, <code>startMfaSignIn</code>, <code>completeMfaSignIn</code> — och <code>mfa_settings_view.dart</code> låter användaren <b>slå på</b> tvåstegsverifiering. Men <code>MfaResolverInfo</code> nämns ingen annanstans i <code>lib/</code> än i sin egen fil: <b>ingen vy och ingen viewmodel tar emot en utmaning</b>, och <code>AuthViewModel.signIn</code> har ingen väg att lämna den vidare. Den som aktiverar MFA i inställningarna kan därför <b>låsa sig ut ur sin egen app</b>. Ramen är alltså inte en avbild — den är ett <b>kravspecifikationsunderlag</b>. Måtten som är kodens: SMS med <b>60 sekunders</b> timeout, numret kommer som <b>maskerad ledtråd</b> ur resolvern (appen känner inte hela numret), och <b>automatisk verifiering</b> kan lösa utmaningen utan att någon skriver något — därför måste fältet tåla att fyllas i av sig själv och skärmen att bytas mitt i en inmatning. Sex rutor, <b>en kontroll</b>: T-06 säger att koden läses som <i>ett</i> fält, och rutorna är därför bara geometri utan egen roll — sex fält skulle läsas upp sex gånger och ta emot autofyllen i den första.</div>
+  <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none"><span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Avbryt inloggningen" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span><span style="flex:1;font-size:14px;font-weight:700;min-width:0">Tvåstegsverifiering</span></div>
+    <div style="flex:1;padding:24px">
+      <div style="display:flex;align-items:center;gap:12px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="shield-check"><path d="M12 3.5l7 2.5v5.5c0 4-3 7.2-7 9-4-1.8-7-5-7-9V6z"></path><path d="M9 12l2.2 2.2L15.5 10"></path></svg><span style="font-size:22px;font-weight:700;letter-spacing:-.3px">Skriv koden</span></div>
+      <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.55;margin-top:12px">Jag skickade en sexsiffrig kod till numret som slutar på <b>•• 47</b>. Fyller telefonen i den själv släpper jag in dig utan att du gör något.</div>
+      <div style="display:flex;gap:8px;margin-top:24px;min-height:56px;box-sizing:border-box" data-a11y-name="Sexsiffrig kod" data-a11y-role="textbox" data-hit="fältet 56">
+        <span style="flex:1;min-height:56px;border:1.5px solid #24382c;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;font-variant-numeric:tabular-nums" aria-hidden="true">4</span><span style="flex:1;min-height:56px;border:1.5px solid #24382c;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;font-variant-numeric:tabular-nums" aria-hidden="true">1</span><span style="flex:1;min-height:56px;border:1.5px solid #24382c;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;font-variant-numeric:tabular-nums" aria-hidden="true">9</span><span style="flex:1;min-height:56px;border:1px solid #7d897c;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;font-variant-numeric:tabular-nums" aria-hidden="true"></span><span style="flex:1;min-height:56px;border:1px solid #7d897c;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;font-variant-numeric:tabular-nums" aria-hidden="true"></span><span style="flex:1;min-height:56px;border:1px solid #7d897c;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;font-variant-numeric:tabular-nums" aria-hidden="true"></span>
+      </div>
+      <div style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.55;margin-top:12px;font-variant-numeric:tabular-nums" aria-live="polite">Koden gäller i 60 sekunder. 38 s kvar.</div>
+      <span style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:24px;border:1.5px solid #7d897c;color:#7d897c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Verifiera, avstängd till dess sex siffror är ifyllda" data-a11y-role="button" data-a11y-state="disabled">Verifiera</span>
+      <span style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:8px;color:#24382c;font-size:14px;font-weight:600;box-sizing:border-box;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Skicka en ny kod" data-a11y-role="button">Skicka en ny kod</span>
+      <div style="margin-top:24px;background:#e6ead9;border-radius:8px;padding:12px;font-size:12px;color:#37453a;line-height:1.5"><b>Kvar att lösa i backend, inte i ritningen:</b> vad som händer när telefonen är borta. Koden har ingen reservväg — ingen återställningskod, inget andra faktorsalternativ. Utan en sådan är <i>Skicka en ny kod</i> hela nödutgången, och det räcker inte för ett konto som bär hushållets recept.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbalder" data-screen-label="Onboarding — åldersgrind">
+  <div class="sc-label"><a class="sc-id" href="#onbalder">åldersgrinden</a><b>Sida 0 och den enda sidan utan <i>Hoppa över</i>.</b> Grinden är <code>Dataskyddslag 2 kap. 4 §</code>, inte GDPR art. 8 — svensk golv för tjänster med socialt inslag är <b>15</b>, och det är appens enda åldersgräns (<code>minAgeYears = 15</code>, ADR-0001). Bara <b>födelseår</b> samlas in: årsgranularitet räcker enligt DI:s vägledning och samlar minst möjliga personuppgift. <b>Inget år är förvalt</b> — ett förvalt vuxenår skulle låta vem som helst trycka <i>Nästa</i> utan att uppge sin ålder, så <i>Nästa</i> är avstängd till dess användaren väljer. Listan erbjuder ned till <b>13</b>, medvetet under golvet: en trettonåring ska kunna uppge sin verkliga ålder och få det vänliga nejet i stället för att luras att ljuga.</div>
+  <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none;min-height:48px;align-items:center"><span style="font-size:12px;font-weight:400;color:#627061">Åldersgrinden går inte att hoppa över</span></div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 24px">
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.25;text-align:center;color:#24382c">Vilket år är du född?</div>
+      <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.55;text-align:center;margin-top:12px">Butlery är för dig som är 15 år eller äldre. Jag frågar bara efter året — inte datum.</div>
+      <div style="margin-top:24px">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Födelseår</div>
+        <span style="display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:0 14px;border:1.5px solid #24382c;border-radius:8px;box-sizing:border-box;background:#F5F4ED" data-a11y-name="Födelseår, välj ett år" data-a11y-role="combobox" data-hit="fältet 48"><span style="font-size:16px;font-weight:400;color:#627061">Välj ett år</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-down"><path d="M5.5 9.5L12 16l6.5-6.5"></path></svg></span>
+        <div style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.55;margin-top:12px;text-align:center">Året sparas på ditt konto. Det används för åldersgränsen och syns inte för någon annan.</div>
+      </div>
+    </div>
+    <div style="flex:none;padding:24px 24px 32px">
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:24px"><span style="width:24px;height:8px;background:#24382c"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span></div>
+      <span style="display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #7d897c;color:#7d897c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Nästa, avstängd till dess ett år är valt" data-a11y-role="button" data-a11y-state="disabled">Nästa</span>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbalderblock" data-screen-label="Onboarding — under 15">
+  <div class="sc-label"><a class="sc-id" href="#onbalderblock">under 15</a><b>Två vägar leder hit, och de betyder olika saker.</b> Väljer användaren ett år som ger under 15 kortsluter vyn <i>före varje skrivning</i> (<code>_OnboardingContentState.build</code>) — inget har hänt, kontot finns kvar. Passerar hon klientgrinden men nekas av <code>verifySignupAge</code> har servern <b>redan raderat auth-kontot</b>; då är detta ett besked, inte en fråga. Ramen ritar det första fallet. <b>Utloggningen är inte det enda erbjudandet:</b> BUT-946 lade en föräldraväg — en upplysning om att en vuxen kan skapa ett eget konto och lägga barnet som matgäst i hushållet, vilket är den funktion som redan finns (<code>diner_profile.dart</code>). Låset är 72 px, den enda ikonen i systemet i den storleken, och den bär hela beskedet.</div>
+  <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px;text-align:center">
+      <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-icon="lock"><rect x="4.5" y="10.5" width="15" height="9" rx="1.5"></rect><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"></path></svg>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.3px;line-height:1.3;margin-top:24px">Butlery är för 15 år och uppåt</div>
+      <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.55;margin-top:12px">Det är inget vi valt själva. Svensk lag sätter gränsen för tjänster med ett socialt inslag, och Butlery har det.</div>
+      <div style="width:100%;margin-top:32px;display:flex;flex-direction:column;gap:12px">
+        <span style="display:flex;align-items:center;justify-content:center;min-height:48px;background:#24382c;color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Logga ut" data-a11y-role="button">Logga ut</span>
+        <span style="display:flex;align-items:center;justify-content:center;min-height:48px;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="En vuxen i hushållet kan skapa kontot" data-a11y-role="button">En vuxen kan skapa kontot</span>
+      </div>
+      <div style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.55;margin-top:24px">Kontot du började skapa tas bort. Inget sparas.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbaldrefel" data-screen-label="Onboarding — grinden nås inte">
+  <div class="sc-label"><a class="sc-id" href="#onbaldrefel">grinden nås inte</a><b>Tredje utfallet, och det som glöms.</b> <code>verifyAgeGate</code> har tre svar: <code>compliant</code>, <code>rejected</code> och <code>error</code> — det sista är infrastruktur, inte ålder (timeout på <b>20 s</b>, funktionen onåbar). Då <b>passeras inte grinden</b>: användaren står kvar på sida 0 med sitt val kvar och kan försöka igen. Det är därför beskedet är en snackbar och inte en vy: ingenting har gått sönder, och året behöver inte väljas om. Att förväxla detta med ett nej vore det värsta felet i hela guiden — vi skulle spärra en vuxen för att nätet fladdrade.</div>
+  <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none;min-height:48px;align-items:center"><span style="font-size:12px;font-weight:400;color:#627061">Åldersgrinden går inte att hoppa över</span></div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 24px">
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.25;text-align:center;color:#24382c">Vilket år är du född?</div>
+      <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.55;text-align:center;margin-top:12px">Butlery är för dig som är 15 år eller äldre. Jag frågar bara efter året — inte datum.</div>
+      <div style="margin-top:24px">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Födelseår</div>
+        <span style="display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:0 14px;border:1.5px solid #24382c;border-radius:8px;box-sizing:border-box;background:#F5F4ED" data-a11y-name="Födelseår 1988" data-a11y-role="combobox" data-hit="fältet 48"><span style="font-size:16px;font-weight:400;color:#24382c;font-variant-numeric:tabular-nums">1988</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-down"><path d="M5.5 9.5L12 16l6.5-6.5"></path></svg></span>
+        <div style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.55;margin-top:12px;text-align:center">Året sparas på ditt konto. Det används för åldersgränsen och syns inte för någon annan.</div>
+      </div>
+    </div>
+    <div style="flex:none;padding:0 24px 12px"><div style="display:flex;align-items:flex-start;gap:10px;background:#24382c;border-radius:8px;padding:14px 16px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px" data-icon="triangle-alert"><path d="M12 4.5L20.5 19.5H3.5z"></path><path d="M12 10v4"></path><path d="M12 16.6v.4"></path></svg><span style="flex:1;font-size:13px;font-weight:600;color:#F5F4ED;line-height:1.5">Jag kunde inte kontrollera åldern just nu. Ditt år står kvar — försök igen.</span><span style="flex:none;font-size:13px;font-weight:600;color:#DCA968;min-height:48px;display:inline-flex;align-items:center" data-a11y-name="Försök igen" data-a11y-role="button">Försök igen</span></div></div>
+    <div style="flex:none;padding:12px 24px 32px">
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:24px"><span style="width:24px;height:8px;background:#24382c"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span></div>
+      <span style="display:flex;align-items:center;justify-content:center;min-height:48px;background:#24382c;color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Nästa" data-a11y-role="button">Nästa</span>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbvalkommen" data-screen-label="Onboarding — välkomst">
+  <div class="sc-label"><a class="sc-id" href="#onbvalkommen">välkomsten</a><b>Sida 1, och den enda sidan som inte frågar något.</b> Koden har en broccoli-illustration på 120 px och tre textblock; MINIMAL byter illustrationen mot systemets egen (<code>butlery-ill-cookbook</code>) och kortar de tre blocken till <b>ett löfte och en förväntan</b>. <i>Hoppa över</i> dyker upp här — från och med nu går guiden att lämna, och att lämna den <b>slutför</b> den (se <a href="#onbhoppa">onbhoppa</a>). Sidan bär också det enda stället i appen där vi får säga vad Butlery är innan användaren vet det: att den planerar veckan, inte bara sparar recept.</div>
+  <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none"><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 8px;font-size:14px;font-weight:600;color:#627061" data-a11y-name="Hoppa över" data-a11y-role="button" data-hit="48">Hoppa över</span></div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px;text-align:center">
+      <img src="assets/illustrations/butlery-ill-cookbook.svg" alt="" width="120" height="120" style="display:block">
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.25;margin-top:24px">Välkommen. Jag sköter veckan.</div>
+      <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.55;margin-top:12px">Samla recepten du redan lagar, och låt mig lägga veckomenyn och inköpslistan utifrån dem.</div>
+      <div style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.55;margin-top:16px">Två frågor kvar. Sedan är du inne.</div>
+    </div>
+    <div style="flex:none;padding:24px 24px 32px">
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:24px"><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:24px;height:8px;background:#24382c"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span></div>
+      <div style="display:flex;gap:8px"><span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #24382c;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Tillbaka" data-a11y-role="button">Tillbaka</span><span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;background:#24382c;color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Nästa" data-a11y-role="button">Nästa</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="onballergi" data-screen-label="Onboarding — allergener">
+  <div class="sc-label"><a class="sc-id" href="#onballergi">allergenerna</a><b>Sida 2 — den fråga MINIMAL behåller, för den är den enda som gör resten säker.</b> Koden visar <b>åtta</b> vanliga och veckar ut till <b>sjutton</b> (EU:s fjorton plus laktos, jordnötter och trädnötter som egna rader) via en toggle som ligger som sista cell i rutnätet. Valen propageras framåt till importens allergenbanner, receptets märken och menygenereringens filter — och i ett allergihushåll blockeras <b>okänt</b> allergentillstånd från automatisk planering (<code>produktregler.md</code> § 1). Kortet är därför en <b>kryssruta i kortform</b>, inte ett chip: den bär tillståndet <i>valt</i>, inte en filtrering. Träffytan är hela kortet, 56 px, och markeringen har både ram, ton och bock — aldrig färg enbart. <b>Kodens åtta Material-glyfer utgår</b>: Butlery har inga mat- eller kostikoner (beslut B-07), och åtta dekorativa märken som inte skiljer gluten från sesam är täthet utan information.</div>
+  <div class="sc-phone" style="width:412px;height:800px;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none"><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 8px;font-size:14px;font-weight:600;color:#627061" data-a11y-name="Hoppa över" data-a11y-role="button" data-hit="48">Hoppa över</span></div>
+    <div style="flex:1;padding:12px 24px 0;overflow:hidden">
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.25">Något du inte tål?</div>
+      <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.5;margin-top:8px">Då håller jag det borta överallt — i recept, i menyn och i inköpslistan. Du kan ändra det när som helst.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:24px">
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#e6ead9;border:1.5px solid #24382c;box-sizing:border-box" data-a11y-name="Gluten, valt" data-a11y-role="checkbox" data-hit="48" data-a11y-state="checked"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#24382c">Gluten</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="check"><path d="M5.5 12.5l4 4 9-9"></path></svg></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#F5F4ED;border:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Mjölk" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#24382c">Mjölk</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#e6ead9;border:1.5px solid #24382c;box-sizing:border-box" data-a11y-name="Nötter, valt" data-a11y-role="checkbox" data-hit="48" data-a11y-state="checked"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#24382c">Nötter</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="check"><path d="M5.5 12.5l4 4 9-9"></path></svg></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#F5F4ED;border:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Ägg" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#24382c">Ägg</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#F5F4ED;border:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Soja" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#24382c">Soja</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#F5F4ED;border:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Fisk" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#24382c">Fisk</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#F5F4ED;border:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Skaldjur" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#24382c">Skaldjur</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#F5F4ED;border:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Sesam" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#24382c">Sesam</span></span>
+        <span style="grid-column:span 2;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:1px solid #ccd1c2;box-sizing:border-box;font-size:14px;font-weight:600;color:#24382c" data-a11y-name="Visa alla sjutton allergener" data-a11y-role="button" data-hit="48"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-down"><path d="M5.5 9.5L12 16l6.5-6.5"></path></svg>Visa alla nio till</span>
+      </div>
+      <div style="margin-top:16px;background:#e6ead9;border-radius:8px;padding:12px;font-size:12px;color:#37453a;line-height:1.5"><b>2 valda.</b> Ingen dosgräns, inget &quot;spår av&quot;-läge här — det avgörs per recept, och recept med okänt allergeninnehåll planeras aldrig in automatiskt i ett allergihushåll.</div>
+    </div>
+    <div style="flex:none;padding:16px 24px 32px">
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:24px"><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:24px;height:8px;background:#24382c"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span></div>
+      <div style="display:flex;gap:8px"><span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #24382c;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Tillbaka" data-a11y-role="button">Tillbaka</span><span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;background:#24382c;color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Nästa" data-a11y-role="button">Nästa</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbimport" data-screen-label="Onboarding — första receptet">
+  <div class="sc-label"><a class="sc-id" href="#onbimport">första receptet</a><b>Sida 3, sista sidan, och den enda som gör något irreversibelt bra.</b> Koden gör två saker specen inte kände till: fältet <b>fylls i förväg från urklipp</b> om det ligger en länk där (<code>checkClipboardForUrl</code> i första framen efter montering), och en lyckad import <b>öppnar recepteditorn</b> med det tolkade receptet i stället för att spara tyst — med <code>navigateToDetailOnSave:false</code>, så att spara lämnar dig kvar i guiden. Fotovägen navigerar bort ur guiden; MINIMAL behåller den som <i>ett</i> alternativ, inte som ett rutnät av fyra. Knappen är avstängd tills fältet håller något importerbart (<code>canImport</code>), och under den står vad som händer om man inte vill: <b>inget dåligt</b>.</div>
+  <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none"><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 8px;font-size:14px;font-weight:600;color:#627061" data-a11y-name="Hoppa över" data-a11y-role="button" data-hit="48">Hoppa över</span></div>
+    <div style="flex:1;padding:12px 24px 0">
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.25">Ta med ett recept du redan lagar</div>
+      <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.5;margin-top:8px">Klistra in en länk. Jag läser den och du får granska innan något sparas.</div>
+      <div style="margin-top:24px">
+        <span style="display:flex;align-items:center;gap:10px;min-height:48px;padding:0 12px;border:1.5px solid #24382c;border-radius:8px;box-sizing:border-box;background:#F5F4ED"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#627061" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="link"><path d="M9.5 12h5"></path><path d="M10 8.3H8.8a3.7 3.7 0 0 0 0 7.4H10"></path><path d="M14 8.3h1.2a3.7 3.7 0 0 1 0 7.4H14"></path></svg><span style="flex:1;min-width:0;min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:400;color:#24382c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-a11y-name="Länk till recept" data-a11y-role="textbox" data-hit="fältet 48">koket.se/recept/krämig-svamppasta</span><span style="width:48px;height:48px;margin-right:-8px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Klistra in" data-a11y-role="button" data-hit="48"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="copy"><rect x="8.5" y="8.5" width="11" height="11" rx="1.5"></rect><path d="M15.5 5.5H6.1A1.6 1.6 0 0 0 4.5 7.1v9.4"></path></svg></span></span>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#627061" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="info"><circle cx="12" cy="12" r="7.5"></circle><path d="M12 11v5"></path><path d="M12 8.2v.3"></path></svg><span style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.5">Hämtad ur ditt urklipp. Byt om det var fel länk.</span></div>
+        <span style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;background:#24382c;color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box;margin-top:16px" data-a11y-name="Hämta receptet" data-a11y-role="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="download"><path d="M12 4.5v10"></path><path d="M7.5 10.5L12 15l4.5-4.5"></path><path d="M4.5 19.5h15"></path></svg>Hämta receptet</span>
+      </div>
+      <div style="margin-top:24px;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Eller</div>
+      <span style="display:flex;align-items:center;gap:12px;min-height:56px;padding:12px;background:#e6ead9;box-sizing:border-box;margin-top:8px" data-a11y-name="Fotografera ett recept" data-a11y-role="button" data-hit="kortet 56"><span style="width:48px;height:48px;background:rgba(36,56,44,.18);display:inline-flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="camera"><path d="M4.5 8.5h3l1.5-2h6l1.5 2h3v9h-15z"></path><circle cx="12" cy="13" r="3"></circle></svg></span><span style="flex:1;min-width:0"><span style="display:block;font-size:15px;font-weight:600;color:#24382c">Fotografera en sida</span><span style="display:block;font-size:12.5px;font-weight:600;color:#5B6959">Ur en kokbok eller en handskriven lapp</span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7D897C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="chevron-right"><path d="M9.5 5.5L16 12l-6.5 6.5"></path></svg></span>
+      <div style="margin-top:24px;font-size:12.5px;font-weight:600;color:#627061;line-height:1.55;text-align:center">Hoppar du över får du fem startrecept och en färdig exempelvecka. Du börjar aldrig i en tom app.</div>
+    </div>
+    <div style="flex:none;padding:16px 24px 32px">
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:24px"><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:24px;height:8px;background:#24382c"></span></div>
+      <div style="display:flex;gap:8px"><span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #24382c;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Tillbaka" data-a11y-role="button">Tillbaka</span><span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;background:#24382c;color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Klar" data-a11y-role="button">Klar</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbimportklar" data-screen-label="Onboarding — importen landade">
+  <div class="sc-label"><a class="sc-id" href="#onbimportklar">importen landade</a><b>Utfallet är inte en bekräftelse — det är en editor.</b> <code>ImportSucceeded</code> skickar receptet vidare till <code>Routes.manualEntry</code> med <code>initialRecipe</code>, alltså <b>samma granskningssteg som etapp 4:s mönster</b> (<a href="Butlery Skarmar v12 etapp 4 import.dc.html">etapp 4</a>). Det är rätt: en tolkning ska granskas, och första receptet är det sämsta tillfället att bryta den regeln. Två saker skiljer från etapp 4: rubriken säger att detta är <i>ditt</i> första recept, och <i>Spara</i> går tillbaka in i guiden i stället för till receptdetaljen (<code>navigateToDetailOnSave:false</code>). Trycket loggas som <code>onboarding_import_succeeded</code>, vilket är det enda mått som skiljer en aktiverad användare från en registrerad.</div>
+  <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none;background:#24382c"><span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka till guiden" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span><span style="flex:1;font-size:14px;font-weight:700;color:#F5F4ED;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ditt första recept</span></div>
+    <div style="flex:1;padding:16px 24px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;background:#e6ead9;padding:12px 14px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="circle-check"><circle cx="12" cy="12" r="7.5"></circle><path d="M8.5 12.3l2.4 2.4 4.6-4.6"></path></svg><span style="flex:1;font-size:13px;font-weight:600;color:#24382c;line-height:1.5">Läst från koket.se. Granska och spara.</span></div>
+      <div style="margin-top:20px;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Titel</div>
+      <span style="display:flex;align-items:center;min-height:48px;padding:0 12px;border:1px solid #ccd1c2;border-radius:8px;box-sizing:border-box;margin-top:6px;font-size:16px;font-weight:400" data-a11y-name="Titel" data-a11y-role="textbox" data-hit="fältet 48">Krämig svamppasta</span>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <span style="flex:1"><span style="display:block;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Tid</span><span style="display:flex;align-items:center;min-height:48px;padding:0 12px;border:1px solid #ccd1c2;border-radius:8px;box-sizing:border-box;margin-top:6px;font-size:16px;font-weight:400;font-variant-numeric:tabular-nums" data-a11y-name="Tid i minuter" data-a11y-role="textbox" data-hit="fältet 48">25 min</span></span>
+        <span style="flex:1"><span style="display:block;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Portioner</span><span style="display:flex;align-items:center;min-height:48px;padding:0 12px;border:1px solid #ccd1c2;border-radius:8px;box-sizing:border-box;margin-top:6px;font-size:16px;font-weight:400;font-variant-numeric:tabular-nums" data-a11y-name="Portioner" data-a11y-role="textbox" data-hit="fältet 48">4</span></span>
+      </div>
+      <div style="margin-top:20px;display:flex;align-items:baseline;justify-content:space-between"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Ingredienser</span><span style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">9 rader</span></div>
+      <div style="margin-top:6px">
+        <span style="display:flex;align-items:center;gap:10px;min-height:48px;border-bottom:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Ingrediens: pasta 400 g" data-a11y-role="textbox" data-hit="raden 48"><span style="flex:1;font-size:13px;font-weight:600">Pasta</span><span style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">400 g</span></span>
+        <span style="display:flex;align-items:center;gap:10px;min-height:48px;border-bottom:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Ingrediens: karljohansvamp 300 g" data-a11y-role="textbox" data-hit="raden 48"><span style="flex:1;font-size:13px;font-weight:600">Karljohansvamp</span><span style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">300 g</span></span>
+        <span style="display:flex;align-items:center;gap:10px;min-height:48px;border-bottom:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Ingrediens: grädde 3 deciliter" data-a11y-role="textbox" data-hit="raden 48"><span style="flex:1;font-size:13px;font-weight:600">Grädde</span><span style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">3 dl</span></span>
+      </div>
+      <div style="margin-top:14px;background:#e6ead9;border-radius:8px;padding:12px;font-size:12px;color:#37453a;line-height:1.5">Innehåller <b>mjölk</b> och <b>gluten</b> — du har inte markerat något av dem. Hade du gjort det stod varningen här, inte som en färg på raden.</div>
+    </div>
+    <div style="flex:none;padding:12px 24px 32px"><span style="display:flex;align-items:center;justify-content:center;min-height:48px;background:#24382c;color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Spara receptet och fortsätt i guiden" data-a11y-role="button">Spara och fortsätt</span></div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbhoppa" data-screen-label="Onboarding — hoppa över">
+  <div class="sc-label"><a class="sc-id" href="#onbhoppa">hoppa över</a><b>Ett fynd i koden som ändrar copyn helt: <i>Hoppa över</i> slutför guiden.</b> <code>_skipOnboarding</code> kallar samma <code>completeOnboarding</code> som <i>Klar</i>, med <code>onboardingSkippedAt</code> satt och händelsen <code>onboarding_skipped</code> loggad. Guiden återkommer alltså <b>inte</b> — och därför får dialogen inte antyda &quot;senare&quot;. Bekräftelsen finns för att det som hoppas över har en <b>säkerhetskonsekvens</b>: utan allergener planerar jag utan att veta. Den säger vad som går förlorat och var det finns i stället, och den destruktiva formuleringen ligger på handlingen — inte på avbryt.</div>
+  <div class="sc-phone" style="width:412px;height:620px;display:flex;flex-direction:column;justify-content:flex-end">
+    <div style="position:absolute;inset:0;background:rgba(36,56,44,.35)"></div>
+    <div style="position:relative;margin:24px;background:#F5F4ED;border-radius:12px;padding:24px;box-shadow:0 8px 32px rgba(36,56,44,.18)">
+      <div style="font-size:17px;font-weight:700;letter-spacing:-.2px;line-height:1.3">Hoppa över allergenerna?</div>
+      <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.55;margin-top:12px">Guiden avslutas då — den kommer inte tillbaka. Jag planerar veckan utan att veta vad ni inte tål.</div>
+      <div style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.55;margin-top:12px">Du ställer in det när du vill under <b>Mer › Allergener och kost</b>.</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:24px">
+        <span style="display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #24382c;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Fortsätt guiden" data-a11y-role="button">Fortsätt guiden</span>
+        <span style="display:flex;align-items:center;justify-content:center;min-height:48px;color:#9C3B23;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Avsluta guiden utan allergener" data-a11y-role="button">Avsluta utan allergener</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbklar" data-screen-label="Onboarding — förbereder appen">
+  <div class="sc-label"><a class="sc-id" href="#onbklar">väntan som betyder något</a><b>Den enda väntan i Butlery som får vara lång — och koden gör den ärlig.</b> BUT-926 gjorde såddningen <i>inväntad</i> i stället för avfyrad-och-glömd, just för att användare annars landade i en tom app medan skrivningarna pågick. BUT-930 lade till en exempelvecka och dess inköpslista. Slutförandeskrivningen har ett <b>tak på 20 sekunder</b> (<code>_completionTimeout</code>); per-recept-fel tolereras tyst och sänker bara antalet. Därför är detta inget spinnerläge utan en <b>kvittolista</b>: tre rader som fylls i tur och ordning, med sitt slut synligt. En förlopplinje utan slut är en lögn; den här har ett.</div>
+  <div class="sc-phone" style="width:412px;height:620px;display:flex;flex-direction:column;justify-content:center;padding:0 24px">
+    <div style="text-align:center"><img src="assets/illustrations/butlery-ill-grocery-bag.svg" alt="" width="96" height="96" style="display:block;margin:0 auto"></div>
+    <div style="font-size:22px;font-weight:700;letter-spacing:-.3px;line-height:1.3;text-align:center;margin-top:24px">Jag dukar upp</div>
+    <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.55;text-align:center;margin-top:8px">Ett par sekunder. Sedan har du en app med innehåll i.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:32px">
+      <div style="display:flex;align-items:center;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="circle-check"><circle cx="12" cy="12" r="7.5"></circle><path d="M8.5 12.3l2.4 2.4 4.6-4.6"></path></svg><span style="flex:1;font-size:13px;font-weight:600;color:#24382c">Allergenerna sparade</span></div>
+      <div style="display:flex;align-items:center;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="circle-check"><circle cx="12" cy="12" r="7.5"></circle><path d="M8.5 12.3l2.4 2.4 4.6-4.6"></path></svg><span style="flex:1;font-size:13px;font-weight:600;color:#24382c">Sex startrecept lagda i Mina recept</span></div>
+      <div style="display:flex;align-items:center;gap:12px"><span style="width:20px;height:20px;flex:none;display:inline-flex;align-items:center;justify-content:center"><span style="width:12px;height:12px;border-radius:999px;background:#ce7c1e"></span></span><span style="flex:1;font-size:13px;font-weight:600;color:#37453a">Lägger en exempelvecka och dess inköpslista</span></div>
+    </div>
+    <div style="margin-top:24px;display:flex;justify-content:center"><span class="sc-loader" role="presentation"></span></div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbfel" data-screen-label="Onboarding — slutförandet gick inte">
+  <div class="sc-label"><a class="sc-id" href="#onbfel">slutförandet gick inte</a><b>Tre utfall delar i dag en enda generisk snackbar — och det är fel.</b> <code>completeOnboarding</code> returnerar <code>false</code> vid infrastrukturfel, vid <b>timeout på 20 s</b> och vid åldersavslag; bara det sista har en egen väg (<code>ageRejected</code>). Ramen skiljer de två återstående: allt användaren <i>valt</i> ligger kvar i minnet och behöver inte väljas om, så åtgärden är <b>Försök igen</b>, inte <i>Börja om</i>. Framstegsdokumentet är dessutom redan skrivet per steg (BUT-675), så en användare som stänger appen här återupptas — hon förlorar ingenting utom tid. Såddningen är oberoende och kan ha lyckats; därför lovar texten inte att appen är tom.</div>
+  <div class="sc-phone" style="width:412px;height:620px;display:flex;flex-direction:column;justify-content:center;padding:0 24px">
+    <div style="text-align:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9C3B23" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto" data-icon="triangle-alert"><path d="M12 4.5L20.5 19.5H3.5z"></path><path d="M12 10v4"></path><path d="M12 16.6v.4"></path></svg></div>
+    <div style="font-size:22px;font-weight:700;letter-spacing:-.3px;line-height:1.3;text-align:center;margin-top:20px">Jag fick inte spara dina val</div>
+    <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.55;text-align:center;margin-top:12px">Anslutningen tog för lång tid. Dina val ligger kvar — jag försöker igen på ditt tecken.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:32px">
+      <span style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;background:#24382c;color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Försök igen" data-a11y-role="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="refresh-cw"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"></path><path d="M19.5 5v4h-4"></path></svg>Försök igen</span>
+      <span style="display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #24382c;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Fortsätt utan att spara nu" data-a11y-role="button">Fortsätt — spara senare</span>
+    </div>
+    <div style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.55;margin-top:20px;text-align:center">Stänger du appen står du kvar på samma steg nästa gång.</div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbateruppta" data-screen-label="Onboarding — återupptagen">
+  <div class="sc-label"><a class="sc-id" href="#onbateruppta">återupptagen guide</a><b>Ritad därför att koden har den och specen inte hade den.</b> <code>OnboardingProgressService</code> skriver <code>users/{uid}/onboarding/progress</code> vid varje framåtsteg (BUT-675), och <code>AuthWrapper</code> öppnar guiden på det sparade steget. Två konsekvenser gränssnittet måste bära: användaren återkommer <b>bakom åldersgrinden</b> — anspråket <code>ageCompliant</code> präglades redan i den session som passerade den, och året finns inte kvar i minnet — och den återupptagna sidan räknas som <i>anländ</i>, inte <i>avklarad</i>, så stegräkningen inte hoppar. Raden överst är därför en orientering, inte ett fel: <b>vi säger var hon är</b>, inte att hon avbröt.</div>
+  <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none"><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 8px;font-size:14px;font-weight:600;color:#627061" data-a11y-name="Hoppa över" data-a11y-role="button" data-hit="48">Hoppa över</span></div>
+    <div style="flex:1;padding:0 24px">
+      <div style="display:flex;align-items:center;gap:10px;background:#e6ead9;padding:12px 14px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="pin"><path d="M12 20.5V13"></path><path d="M8.5 4.5h7l-1 5.5h1.5v3h-8v-3H10z"></path></svg><span style="flex:1;font-size:13px;font-weight:600;color:#24382c;line-height:1.5">Vi var här: <b>allergenerna</b>. Åldern är redan klar.</span></div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.25;margin-top:24px">Något du inte tål?</div>
+      <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.5;margin-top:8px">Då håller jag det borta överallt — i recept, i menyn och i inköpslistan.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:24px">
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#F5F4ED;border:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Gluten" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#24382c">Gluten</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#F5F4ED;border:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Mjölk" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#24382c">Mjölk</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#F5F4ED;border:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Nötter" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#24382c">Nötter</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#F5F4ED;border:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Ägg" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#24382c">Ägg</span></span>
+      </div>
+    </div>
+    <div style="flex:none;padding:16px 24px 32px">
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:24px"><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span><span style="width:24px;height:8px;background:#24382c"></span><span style="width:8px;height:8px;background:rgba(36,56,44,.18)"></span></div>
+      <div style="display:flex;gap:8px"><span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #24382c;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Tillbaka" data-a11y-role="button">Tillbaka</span><span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;background:#24382c;color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Nästa" data-a11y-role="button">Nästa</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbsenare" data-screen-label="Onboarding — den uppskjutna frågan">
+  <div class="sc-label"><a class="sc-id" href="#onbsenare">den uppskjutna frågan</a><b>Det här är hela MINIMAL-beslutet, ritat.</b> Kostsidan lyfts ur guiden och ställs efter <b>första menygenereringen</b> — det första ögonblick där svaret får en synlig konsekvens användaren kan bedöma. Fältet finns redan i modellen (<code>trackedDietary</code> i <code>UserAllergenPreferences</code>) och sparas via samma väg som från inställningarna, så ingen backend-ändring krävs; det som ändras är <b>när</b> vi frågar. Kortet ligger i menyresultatet, inte som en dialog: en fråga som avbryter är en fråga som avvisas. Att avstå har en egen, jämnvärdig knapp — inte ett kryss i hörnet.</div>
+  <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none;background:#24382c"><span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span><span style="flex:1;font-size:14px;font-weight:700;color:#F5F4ED;min-width:0">Veckomeny</span><span style="font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#F5F4ED;border:1px solid rgba(245,244,237,.4);padding:3px 9px;border-radius:999px;flex:none;font-variant-numeric:tabular-nums">v31 · 5 rätter</span></div>
+    <div style="flex:1;padding:16px 20px;overflow:hidden">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Din första vecka</div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+        <span style="display:flex;align-items:center;gap:10px;min-height:56px;padding:0 12px;background:#e6ead9;box-sizing:border-box" data-a11y-name="Måndag middag: Krämig svamppasta" data-a11y-role="button" data-hit="raden 56"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959;width:34px;flex:none">mån</span><span style="flex:1;min-width:0;font-size:13px;font-weight:600">Krämig svamppasta</span><span style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">25 min</span></span>
+        <span style="display:flex;align-items:center;gap:10px;min-height:56px;padding:0 12px;background:#e6ead9;box-sizing:border-box" data-a11y-name="Tisdag middag: Ärtsoppa" data-a11y-role="button" data-hit="raden 56"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959;width:34px;flex:none">tis</span><span style="flex:1;min-width:0;font-size:13px;font-weight:600">Ärtsoppa med pannkakor</span><span style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">40 min</span></span>
+        <span style="display:flex;align-items:center;gap:10px;min-height:56px;padding:0 12px;background:#e6ead9;box-sizing:border-box" data-a11y-name="Onsdag middag: Fiskgratäng" data-a11y-role="button" data-hit="raden 56"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959;width:34px;flex:none">ons</span><span style="flex:1;min-width:0;font-size:13px;font-weight:600">Fiskgratäng</span><span style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">35 min</span></span>
+      </div>
+      <div style="margin-top:20px;border:1px solid #ccd1c2;border-radius:12px;padding:16px">
+        <div style="font-size:15px;font-weight:600;line-height:1.35">Ska jag ta hänsyn till hur ni äter?</div>
+        <div style="font-size:13px;font-weight:400;color:#37453a;line-height:1.55;margin-top:8px">Nu när du sett en vecka vet du vad frågan påverkar. Vegetariskt, glutenfritt, laktosfritt — jag väljer efter det i stället för att du väljer bort efteråt.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+          <span data-component="chip" style="display:inline-flex;align-items:center;min-height:48px;padding:7px 13px;border:1px solid #ccd1c2;border-radius:999px;font-size:12px;font-weight:600;box-sizing:border-box" data-a11y-name="Vegetariskt" data-a11y-role="checkbox" data-hit="48">Vegetariskt</span>
+          <span data-component="chip" style="display:inline-flex;align-items:center;min-height:48px;padding:7px 13px;border:1px solid #ccd1c2;border-radius:999px;font-size:12px;font-weight:600;box-sizing:border-box" data-a11y-name="Veganskt" data-a11y-role="checkbox" data-hit="48">Veganskt</span>
+          <span data-component="chip" style="display:inline-flex;align-items:center;min-height:48px;padding:7px 13px;border:1px solid #ccd1c2;border-radius:999px;font-size:12px;font-weight:600;box-sizing:border-box" data-a11y-name="Glutenfritt" data-a11y-role="checkbox" data-hit="48">Glutenfritt</span>
+          <span data-component="chip" style="display:inline-flex;align-items:center;min-height:48px;padding:7px 13px;border:1px solid #ccd1c2;border-radius:999px;font-size:12px;font-weight:600;box-sizing:border-box" data-a11y-name="Laktosfritt" data-a11y-role="checkbox" data-hit="48">Laktosfritt</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;background:#24382c;color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Spara kostpreferenser" data-a11y-role="button">Spara</span>
+          <span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #24382c;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Ingen särskild kost" data-a11y-role="button">Vi äter allt</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbaldermorkt" data-screen-label="Onboarding — åldersgrinden, mörkt läge">
+  <div class="sc-label"><a class="sc-id" href="#onbaldermorkt">åldersgrinden mörkt</a><b>Guiden är den enda vy i appen som möter en användare utan sparad temainställning</b> — läget kommer från systemet, och första gången är därför lika ofta mörk som ljus. Tre ting bevisas här: fältet i vila bär <code>border.control</code> (<code>rgba(245,244,237,.35)</code>), <b>inte</b> <code>border.subtle</code> — en kant som går att trycka på ska synas; platshållaren är <code>text.secondary</code> #93A48D på papper, aldrig <code>text.disabled</code>, för ett tomt fält är inte avstängt; och <b>den avstängda knappen</b> är ritad ur det deklarerade paret <code>text.disabled</code> mot papper (3,04:1 i mörkt, 3,32:1 i ljust) med <code>border.control</code> som kant — ingen rå opacitet, ingen fylld yta. Golvet för inaktiverad text är eget: 3:1, så att den går att läsa men inte inbjuder. Punkterna behåller radie 0 i båda lägena.</div>
+  <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column;background:#17251d;color:#F5F4ED">
+    <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none;min-height:48px;align-items:center"><span style="font-size:12px;font-weight:400;color:#93a48d">Åldersgrinden går inte att hoppa över</span></div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 24px">
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.25;text-align:center;color:#F5F4ED">Vilket år är du född?</div>
+      <div style="font-size:16px;font-weight:400;color:#c9d3c4;line-height:1.55;text-align:center;margin-top:12px">Butlery är för dig som är 15 år eller äldre. Jag frågar bara efter året — inte datum.</div>
+      <div style="margin-top:24px">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#93a48d;margin-bottom:8px">Födelseår</div>
+        <span style="display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:0 14px;border:1.5px solid rgba(245,244,237,.35);border-radius:8px;box-sizing:border-box;background:#17251d" data-a11y-name="Födelseår, välj ett år" data-a11y-role="combobox" data-hit="fältet 48"><span style="font-size:16px;font-weight:400;color:#93a48d">Välj ett år</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-down"><path d="M5.5 9.5L12 16l6.5-6.5"></path></svg></span>
+        <div style="font-size:12.5px;font-weight:600;color:#93a48d;line-height:1.55;margin-top:12px;text-align:center">Året sparas på ditt konto. Det används för åldersgränsen och syns inte för någon annan.</div>
+      </div>
+    </div>
+    <div style="flex:none;padding:24px 24px 32px">
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:24px"><span style="width:24px;height:8px;background:#F5F4ED"></span><span style="width:8px;height:8px;background:rgba(245,244,237,.18)"></span><span style="width:8px;height:8px;background:rgba(245,244,237,.18)"></span><span style="width:8px;height:8px;background:rgba(245,244,237,.18)"></span></div>
+      <span style="display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid rgba(245,244,237,.35);color:#93A48D;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Nästa, avstängd till dess ett år är valt" data-a11y-role="button" data-a11y-state="disabled">Nästa</span>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="onballergimorkt" data-screen-label="Onboarding — allergenerna, mörkt läge">
+  <div class="sc-label"><a class="sc-id" href="#onballergimorkt">allergenerna mörkt</a><b>Markeringen är hela provet.</b> I ljust läge skiljs valt från ovalt av ton, ram <i>och</i> bock; i mörkt läge räcker tonen sämre — <code>surface.selected</code> är #2F4437 mot papperets #17251D, alltså under ett halvt steg. Därför bär det valda kortet en <b>1,5 px saffranspale kant</b> (#DCA968) och bocken i samma ton, och ovalda kort en 1 px <code>border.subtle</code>. Två regler följer med: texten på det valda kortet ligger på en upphöjd yta och använder <code>text.secondary.onRaised</code> #A9B2A0 — #93A48D ger 3,96:1 där och underkänns — och <b>saffran är kant och glyf, aldrig text</b>. Etiketterna står i #F5F4ED i båda tillstånden.</div>
+  <div class="sc-phone" style="width:412px;height:800px;display:flex;flex-direction:column;background:#17251d;color:#F5F4ED">
+    <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none"><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 8px;font-size:14px;font-weight:600;color:#93a48d" data-a11y-name="Hoppa över" data-a11y-role="button" data-hit="48">Hoppa över</span></div>
+    <div style="flex:1;padding:12px 24px 0;overflow:hidden">
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.25">Något du inte tål?</div>
+      <div style="font-size:16px;font-weight:400;color:#c9d3c4;line-height:1.5;margin-top:8px">Då håller jag det borta överallt — i recept, i menyn och i inköpslistan. Du kan ändra det när som helst.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:24px">
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#2f4437;border:1.5px solid #dca968;box-sizing:border-box" data-a11y-name="Gluten, valt" data-a11y-role="checkbox" data-hit="48" data-a11y-state="checked"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#F5F4ED">Gluten</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dca968" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="check"><path d="M5.5 12.5l4 4 9-9"></path></svg></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;border:1px solid rgba(245,244,237,.18);box-sizing:border-box" data-a11y-name="Mjölk" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#F5F4ED">Mjölk</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;background:#2f4437;border:1.5px solid #dca968;box-sizing:border-box" data-a11y-name="Nötter, valt" data-a11y-role="checkbox" data-hit="48" data-a11y-state="checked"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#F5F4ED">Nötter</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dca968" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="check"><path d="M5.5 12.5l4 4 9-9"></path></svg></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;border:1px solid rgba(245,244,237,.18);box-sizing:border-box" data-a11y-name="Ägg" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#F5F4ED">Ägg</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;border:1px solid rgba(245,244,237,.18);box-sizing:border-box" data-a11y-name="Soja" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#F5F4ED">Soja</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;border:1px solid rgba(245,244,237,.18);box-sizing:border-box" data-a11y-name="Fisk" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#F5F4ED">Fisk</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;border:1px solid rgba(245,244,237,.18);box-sizing:border-box" data-a11y-name="Skaldjur" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#F5F4ED">Skaldjur</span></span>
+        <span style="display:flex;align-items:center;gap:8px;min-height:56px;padding:0 12px;border:1px solid rgba(245,244,237,.18);box-sizing:border-box" data-a11y-name="Sesam" data-a11y-role="checkbox" data-hit="kortet 56"><span style="flex:1;min-width:0;font-size:14px;font-weight:600;color:#F5F4ED">Sesam</span></span>
+        <span style="grid-column:span 2;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:1px solid rgba(245,244,237,.35);box-sizing:border-box;font-size:14px;font-weight:600;color:#F5F4ED" data-a11y-name="Visa alla sjutton allergener" data-a11y-role="button" data-hit="48"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-down"><path d="M5.5 9.5L12 16l6.5-6.5"></path></svg>Visa alla nio till</span>
+      </div>
+      <div style="margin-top:16px;background:#2f4437;border-radius:8px;padding:12px;font-size:12px;color:#c9d3c4;line-height:1.5"><b style="color:#F5F4ED">2 valda.</b> Ingen dosgräns, inget &quot;spår av&quot;-läge här — det avgörs per recept, och recept med okänt allergeninnehåll planeras aldrig in automatiskt i ett allergihushåll.</div>
+    </div>
+    <div style="flex:none;padding:16px 24px 32px">
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:24px"><span style="width:8px;height:8px;background:rgba(245,244,237,.18)"></span><span style="width:8px;height:8px;background:rgba(245,244,237,.18)"></span><span style="width:24px;height:8px;background:#F5F4ED"></span><span style="width:8px;height:8px;background:rgba(245,244,237,.18)"></span></div>
+      <div style="display:flex;gap:8px"><span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid rgba(245,244,237,.35);color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Tillbaka" data-a11y-role="button">Tillbaka</span><span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;background:#ce7c1e;color:#17251d;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Nästa" data-a11y-role="button">Nästa</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbfelmorkt" data-screen-label="Onboarding — slutförandet gick inte, mörkt läge">
+  <div class="sc-label"><a class="sc-id" href="#onbfelmorkt">felet mörkt</a><b>Det svåraste kontrastparet i hela guiden.</b> <code>text.danger</code> är #DE9078 i mörkt läge och gäller <b>endast på papper</b> #17251D — på en upphöjd yta ger den 4,18:1 och ersätts av #E5A08A. Ramen visar båda: rubriken ligger på papper, den upphöjda rutan med rådet under bär <code>.onRaised</code>-varianten. Varningsglyfen är 48 px och står i danger, inte i saffran: saffran betyder <i>handling</i> i det här systemet, aldrig <i>fara</i>. Primärknappen är saffran med ink-text i båda lägena — den enda färgen som inte byter roll när läget byter.</div>
+  <div class="sc-phone" style="width:412px;height:620px;display:flex;flex-direction:column;justify-content:center;padding:0 24px;background:#17251d;color:#F5F4ED">
+    <div style="text-align:center"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#de9078" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto" data-icon="triangle-alert"><path d="M12 4.5L20.5 19.5H3.5z"></path><path d="M12 10v4"></path><path d="M12 16.6v.4"></path></svg></div>
+    <div style="font-size:22px;font-weight:700;letter-spacing:-.3px;line-height:1.3;text-align:center;margin-top:20px">Jag fick inte spara dina val</div>
+    <div style="font-size:16px;font-weight:400;color:#c9d3c4;line-height:1.55;text-align:center;margin-top:12px">Anslutningen tog för lång tid. Dina val ligger kvar — jag försöker igen på ditt tecken.</div>
+    <div style="margin-top:20px;background:#2f4437;border-radius:8px;padding:14px;display:flex;align-items:flex-start;gap:10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e5a08a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px" data-icon="info"><circle cx="12" cy="12" r="7.5"></circle><path d="M12 11v5"></path><path d="M12 8.2v.3"></path></svg><span style="flex:1;font-size:12.5px;font-weight:600;color:#e5a08a;line-height:1.5">Väntar du på svagt nät kan startrecepten redan ha lagts in. Ingenting dubbleras när jag försöker igen.</span></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:24px">
+      <span style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;background:#ce7c1e;color:#17251d;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Försök igen" data-a11y-role="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#17251d" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="refresh-cw"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"></path><path d="M19.5 5v4h-4"></path></svg>Försök igen</span>
+      <span style="display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid rgba(245,244,237,.35);color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Fortsätt utan att spara nu" data-a11y-role="button">Fortsätt — spara senare</span>
+    </div>
+    <div style="font-size:12.5px;font-weight:600;color:#93A48D;line-height:1.55;margin-top:20px;text-align:center">Stänger du appen står du kvar på samma steg nästa gång.</div>
+  </div>
+</div>
+
+<div class="sc-item" id="onbjamforelse" data-screen-label="Onboarding — MINIMAL mot koden">
+  <div class="sc-label"><a class="sc-id" href="#onbjamforelse">MINIMAL mot koden</a><b>Vad ändringen kostar och vad den ger.</b> Inte en ram utan en räkning: de fem sidorna i dag mot de fyra i MINIMAL, med vad som händer med den femte. Ingen av raderna kräver ett backend-arbete — kostfältet skrivs redan från två håll — men <b>tre</b> kräver ny copy och <b>en</b> kräver en ny plats i veckomenyn (<a href="#onbsenare">onbsenare</a>). Sidordningen i tabellens vänsterkolumn är kodens verkliga, hämtad ur <code>onboarding_view.dart</code>: åldersgrinden ligger <b>först</b>, inte välkomsten.</div>
+  <div style="width:412px;border:1px solid #ccd1c2;border-radius:12px;padding:20px;background:#F5F4ED;box-sizing:border-box">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Fem sidor blir fyra</div>
+    <div style="margin-top:14px;border-top:1px solid #24382c">
+      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #ccd1c2"><span style="flex:none;width:20px;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums">0</span><span style="flex:1"><span style="display:block;font-size:13px;font-weight:600">Åldersgrind</span><span style="display:block;font-size:12px;color:#37453a;line-height:1.5;margin-top:2px">Kvar. Juridik, inget steg — och den enda sidan utan <i>Hoppa över</i>.</span></span><span style="flex:none;font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#24382c;background:#e6ead9;padding:3px 9px;border-radius:999px;align-self:flex-start">KVAR</span></div>
+      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #ccd1c2"><span style="flex:none;width:20px;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums">1</span><span style="flex:1"><span style="display:block;font-size:13px;font-weight:600">Välkomst</span><span style="display:block;font-size:12px;color:#37453a;line-height:1.5;margin-top:2px">Kvar, men kortad: ett löfte, en förväntan. Tre textblock blir två.</span></span><span style="flex:none;font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#24382c;background:#e6ead9;padding:3px 9px;border-radius:999px;align-self:flex-start">KORTAD</span></div>
+      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #ccd1c2"><span style="flex:none;width:20px;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums">2</span><span style="flex:1"><span style="display:block;font-size:13px;font-weight:600">Allergener</span><span style="display:block;font-size:12px;color:#37453a;line-height:1.5;margin-top:2px">Kvar. Säkerhet, och det enda valet som blockerar automatisk planering.</span></span><span style="flex:none;font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#24382c;background:#e6ead9;padding:3px 9px;border-radius:999px;align-self:flex-start">KVAR</span></div>
+      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #ccd1c2"><span style="flex:none;width:20px;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums">3</span><span style="flex:1"><span style="display:block;font-size:13px;font-weight:600">Kost</span><span style="display:block;font-size:12px;color:#37453a;line-height:1.5;margin-top:2px">Flyttas till efter första menygenereringen. Samma fält, samma skrivväg.</span></span><span style="flex:none;font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#8a5212;border:1px solid #a15a0a;padding:3px 9px;border-radius:999px;align-self:flex-start">FLYTTAD</span></div>
+      <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #ccd1c2"><span style="flex:none;width:20px;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums">4</span><span style="flex:1"><span style="display:block;font-size:13px;font-weight:600">Första importen</span><span style="display:block;font-size:12px;color:#37453a;line-height:1.5;margin-top:2px">Kvar. Ett alternativ (foto) i stället för fyra plattor.</span></span><span style="flex:none;font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#24382c;background:#e6ead9;padding:3px 9px;border-radius:999px;align-self:flex-start">KVAR</span></div>
+    </div>
+    <div style="margin-top:16px;background:#e6ead9;border-radius:8px;padding:14px;font-size:12px;color:#37453a;line-height:1.55">Kvar i planen, <b>inte ritat här</b>: hushållets storlek (<code>household_size_view.dart</code> — MINIMAL frågar inte, portionerna följer närvaron per måltid). Auth och e-postverifiering är ritade (<a href="#authlogga">authlogga</a> …), liksom behörighetsförklaringarna (<a href="#behkamera">behkamera</a> …) — de senare hör till de flöden som utlöser dem, inte till första gången, men de <b>möts</b> första gången och ligger därför i den här filen.</div>
+  </div>
+</div>
+
+<div class="sc-item" id="behkamera" data-screen-label="Behörighet — kamera, förklaring före frågan">
+  <div class="sc-label"><a class="sc-id" href="#behkamera">kameran · förklaringen före frågan</a><b>Ritad efter <code>os_permission_helper.dart</code>, som är appens uttalade behörighetskontrakt:</b> <i>förklaring → OS-frågan → inställningslänk vid permanent nej → aldrig hårt spärrad funktion</i>. Det viktigaste i koden är <b>varför</b> förklaringen kommer först: systemets fråga har en budget — säger användaren nej två gånger får appen aldrig fråga igen — och därför anropas OS:et <b>bara om användaren tryckt Tillåt här</b>. Vår dialog bränner ingenting; systemets gör det. Andra nej ger <b>tyst hopp</b>, inte ett fel: funktionen finns kvar, den kan bara inte göra just det här. Ramen ändrar två saker mot koden: dialogen får kortradien 12 och ordentliga knappar i stället för två textknappar i höger hörn, och texten säger vad kameran används <i>till</i> — inte att behörighet krävs.</div>
+  <div class="sc-phone" style="width:412px;height:560px;display:flex;flex-direction:column;justify-content:center">
+    <div style="position:absolute;inset:0;background:rgba(36,56,44,.35)"></div>
+    <div style="position:relative;margin:24px;background:#F5F4ED;border-radius:12px;padding:24px;box-shadow:0 8px 32px rgba(36,56,44,.18)">
+      <div style="display:flex;align-items:center;gap:12px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="camera"><path d="M4.5 8.5h3l1.5-2h6l1.5 2h3v9h-15z"></path><circle cx="12" cy="13" r="3"></circle></svg><span style="font-size:17px;font-weight:700;letter-spacing:-.2px">Fotografera receptet</span></div>
+      <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.55;margin-top:12px">Jag läser texten ur bilden och fyller i receptet åt dig. Bilden stannar på telefonen om du inte själv delar den.</div>
+      <div style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.55;margin-top:12px">Säger du nej går det fortfarande att skriva in receptet eller klistra in en länk.</div>
+      <div style="display:flex;gap:8px;margin-top:24px">
+        <span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #24382c;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Inte nu" data-a11y-role="button">Inte nu</span>
+        <span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;background:#ce7c1e;color:#17251d;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Tillåt kameran" data-a11y-role="button">Tillåt</span>
+      </div>
+      <div style="margin-top:16px;background:#e6ead9;border-radius:8px;padding:12px;font-size:12px;color:#37453a;line-height:1.5">Efter <i>Tillåt</i> kommer systemets egen fråga. Den här dialogen är alltså inte samma fråga två gånger — den är <b>skälet</b>, innan frågan som inte går att ta tillbaka.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="behfoton" data-screen-label="Behörighet — foton, valda bilder">
+  <div class="sc-label"><a class="sc-id" href="#behfoton">fotona · &quot;bara de valda&quot;</a><b>Två fynd, och det andra är en bugg.</b> Kontraktet räknar tre statusar som beviljade — <code>granted</code>, <b><code>limited</code></b> (iOS: användaren delade bara <i>några</i> bilder) och <code>provisional</code> (iOS push) — och kommentaren i koden säger uttryckligen att <code>limited</code> finns med &quot;så att fotobiblioteksflöden fungerar&quot;. <b>Men fotoimporten går inte genom kontraktet.</b> <code>image_picker_service.dart</code> har en egen, naken väg (<code>PermissionProvider</code>: bara <code>status</code> och <code>request</code>) utan förklaring, utan inställningslänk och utan <code>limited</code>. Den som delar tre bilder på iOS behandlas alltså som om hon sagt nej. Ramen ritar det tillstånd som saknas: <b>begränsad åtkomst är ett eget läge</b>, med en väg att välja fler bilder — inte ett fel, och inte en tigande tom lista.</div>
+  <div class="sc-phone" style="width:412px;height:640px;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none;background:#24382c"><span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span><span style="flex:1;font-size:14px;font-weight:700;color:#F5F4ED;min-width:0">Välj en bild</span></div>
+    <div style="flex:1;padding:16px 20px">
+      <div style="display:flex;align-items:flex-start;gap:10px;background:#e6ead9;padding:12px 14px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px" data-icon="image"><rect x="4" y="5.5" width="16" height="13" rx="1.5"></rect><circle cx="9" cy="10" r="1.6"></circle><path d="M4.5 16l4.5-4 4 3.5 3-2.5 3.5 3"></path></svg><span style="flex:1;font-size:13px;font-weight:600;color:#24382c;line-height:1.5">Du har delat <b>tre bilder</b> med Butlery. Jag ser bara dem.</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px">
+        <span class="sc-skeleton" style="aspect-ratio:1;display:block" data-a11y-name="Delad bild 1" data-a11y-role="button" data-hit="rutan 112"></span>
+        <span class="sc-skeleton" style="aspect-ratio:1;display:block" data-a11y-name="Delad bild 2" data-a11y-role="button" data-hit="rutan 112"></span>
+        <span class="sc-skeleton" style="aspect-ratio:1;display:block" data-a11y-name="Delad bild 3" data-a11y-role="button" data-hit="rutan 112"></span>
+      </div>
+      <span style="display:flex;align-items:center;gap:10px;min-height:56px;padding:0 14px;margin-top:14px;border:1.5px solid #24382c;box-sizing:border-box" data-a11y-name="Välj fler bilder att dela" data-a11y-role="button" data-hit="raden 56"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="plus"><path d="M12 5.5v13"></path><path d="M5.5 12h13"></path></svg><span style="flex:1;font-size:14px;font-weight:600">Välj fler bilder</span></span>
+      <div style="margin-top:14px;font-size:12.5px;font-weight:600;color:#627061;line-height:1.55">Hittar du inte bilden är det urvalet som saknar den, inte biblioteket. Du kan lägga till fler utan att ge mig hela biblioteket.</div>
+      <div style="margin-top:20px;background:#e6ead9;border-radius:8px;padding:12px;font-size:12px;color:#37453a;line-height:1.5"><b>Kvar i koden:</b> fotoimporten måste läggas på <code>OsPermissionHelper</code> som notiserna redan är. I dag behandlas begränsad åtkomst som ett nej, och det är ett nej användaren aldrig sagt.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="behnotiser" data-screen-label="Behörighet — notiser, permanent nej">
+  <div class="sc-label"><a class="sc-id" href="#behnotiser">notiserna · permanent nej</a><b>Den enda behörighet som i dag följer kontraktet — och den enda som är plattformsberoende ända in i frågan.</b> På iOS och Android 12 eller lägre frågas inte alls (behörigheten är implicit eller ges vid installation); <b>bara Android 13+</b> har en körningsfråga, och tjänsten kortsluter till <i>ja</i> för allt annat. Vid <b>permanent nej</b> finns ingen väg tillbaka i appen: kontraktet visar en snackbar med <i>Öppna inställningar</i>, för det är enda stället beslutet går att ändra. Ramen behåller den formen men skriver konsekvensen i klartext ovanför reglagen — <b>en avstängd inställning som ser påslagbar ut är ett löfte som bryts vid varje tryck</b>. Reglagen är därför inaktiverade, inte gömda: användaren ska se vad hon får tillbaka om hon ändrar sig.</div>
+  <div class="sc-phone" style="width:412px;height:640px;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none;background:#24382c"><span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span><span style="flex:1;font-size:14px;font-weight:700;color:#F5F4ED;min-width:0">Notiser</span></div>
+    <div style="flex:1;padding:16px 20px">
+      <div style="display:flex;align-items:flex-start;gap:10px;border:1.5px solid #9C3B23;border-radius:8px;padding:12px 14px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9C3B23" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px" data-icon="triangle-alert"><path d="M12 4.5L20.5 19.5H3.5z"></path><path d="M12 10v4"></path><path d="M12 16.6v.4"></path></svg><span style="flex:1;font-size:12.5px;font-weight:600;color:#9C3B23;line-height:1.5">Notiser är avstängda för Butlery i systemets inställningar. Inget nedan kan slås på förrän du ändrar det där.</span></div>
+      <div style="margin-top:16px;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Vad du missar</div>
+      <div style="margin-top:6px">
+        <div style="display:flex;align-items:center;gap:12px;min-height:48px;border-bottom:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Timern i matlagningsläget, avstängd i systemet" data-a11y-role="switch" data-hit="48" data-a11y-state="disabled"><span style="flex:1;font-size:13px;font-weight:600;color:#627061">Timern i matlagningsläget</span><span data-component="toggle" style="width:34px;height:20px;border-radius:999px;background:#a9b2a0;position:relative;flex:none"><span style="position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:999px;background:#F5F4ED"></span></span></div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:48px;border-bottom:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Någon delar en lista med dig, avstängd i systemet" data-a11y-role="switch" data-hit="48" data-a11y-state="disabled"><span style="flex:1;font-size:13px;font-weight:600;color:#627061">Någon delar en lista med dig</span><span data-component="toggle" style="width:34px;height:20px;border-radius:999px;background:#a9b2a0;position:relative;flex:none"><span style="position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:999px;background:#F5F4ED"></span></span></div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:48px;border-bottom:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Veckans meny är klar, avstängd i systemet" data-a11y-role="switch" data-hit="48" data-a11y-state="disabled"><span style="flex:1;font-size:13px;font-weight:600;color:#627061">Veckans meny är klar</span><span data-component="toggle" style="width:34px;height:20px;border-radius:999px;background:#a9b2a0;position:relative;flex:none"><span style="position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:999px;background:#F5F4ED"></span></span></div>
+      </div>
+      <div style="margin-top:20px;background:#e6ead9;border-radius:8px;padding:12px;font-size:12px;color:#37453a;line-height:1.5">På iOS och Android 12 och äldre ställs den här frågan aldrig — behörigheten är implicit eller given vid installation. Vyn ser alltså olika ut på två telefoner i samma hushåll, och det är kodens verklighet, inte ett ritfel.</div>
+    </div>
+    <div style="flex:none;padding:12px 16px 24px"><div style="display:flex;align-items:center;gap:12px;background:#24382c;border-radius:8px;padding:12px 14px"><span style="flex:1;font-size:13px;font-weight:600;color:#F5F4ED;line-height:1.5">Notiser är avstängda i systemet.</span><span style="flex:none;min-height:48px;display:inline-flex;align-items:center;font-size:13px;font-weight:600;color:#DCA968" data-a11y-name="Öppna systeminställningarna" data-a11y-role="button" data-hit="48">Öppna inställningar</span></div></div>
+  </div>
+</div>
+
+<div class="sc-item" id="behlarm" data-screen-label="Behörighet — exakta larm (finns inte)">
+  <div class="sc-label"><a class="sc-id" href="#behlarm">exakta larm · finns inte</a><b>⚠ Arbetsplanen räknade fyra behörigheter. Den fjärde ber appen aldrig om.</b> Ingen sökning i <code>lib/</code> hittar <code>scheduleExactAlarm</code> eller <code>Permission.scheduleExactAlarm</code> — och på Android 13 och senare får en app <b>inte</b> lägga ett exakt larm utan den behörigheten. Konsekvensen är inte teoretisk: timern i matlagningsläget (<a href="Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html">se <code>#lagatimers</code></a>) kan då fyra på minuten <i>när systemet råkar vakna</i>, inte när pastan är klar. En timer som ringer när som helst är ingen timer. Ramen är därför ett <b>krav</b>, inte en avbild — och den ställer frågan där konsekvensen är begriplig: när användaren startar sin första timer, inte i guiden.<br><br><b>Uppdaterat 2026-07-30 (T-06).</b> Det här är <b>väg A</b> av tre, och den svåraste: för appar som riktar sig mot <b>Android 14+</b> är behörigheten <b>nekad som standard</b>, så knappen leder ut i en systeminställning. Systerbehörigheten <code>USE_EXACT_ALARM</code> ges automatiskt men bara till appar vars kärnfunktion är larm eller kalender, och Play granskar anspråket. De tre vägarna är ritade: <a href="#behlarmnekat">A · nekat</a>, <a href="#lagatimerlofte">B · sänkt löfte</a>, <a href="#lagatimernotis">C · förgrundstjänst</a> och <a href="#lagatimerutgangen">C · kvittering</a>. <b>Nej-vägen måste finnas i alla tre.</b></div>
+  <div class="sc-phone" style="width:412px;height:560px;display:flex;flex-direction:column;justify-content:center">
+    <div style="position:absolute;inset:0;background:rgba(36,56,44,.35)"></div>
+    <div style="position:relative;margin:24px;background:#F5F4ED;border-radius:12px;padding:24px;box-shadow:0 8px 32px rgba(36,56,44,.18)">
+      <div style="display:flex;align-items:center;gap:12px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="clock"><circle cx="12" cy="12" r="7.5"></circle><path d="M12 8v4.3l3 1.8"></path></svg><span style="font-size:17px;font-weight:700;letter-spacing:-.2px">Ska timern ringa på sekunden?</span></div>
+      <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.55;margin-top:12px">Android låter mig bara väcka telefonen på exakt tid om du tillåter det. Utan tillåtelse ringer timern <b>någon gång efter</b> — ibland flera minuter senare.</div>
+      <div style="margin-top:16px;background:#e6ead9;border-radius:8px;padding:12px;font-size:12.5px;font-weight:600;color:#37453a;line-height:1.55">Det gäller bara larm som väcker telefonen. Har du appen framme räknar timern rätt oavsett.</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:24px">
+        <span style="display:flex;align-items:center;justify-content:center;min-height:48px;background:#ce7c1e;color:#17251d;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Tillåt exakta larm" data-a11y-role="button">Tillåt exakta larm</span>
+        <span style="display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #24382c;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Använd ungefärlig tid" data-a11y-role="button">Ungefärlig tid räcker</span>
+      </div>
+      <div style="margin-top:16px;font-size:12px;color:#37453a;line-height:1.5"><b>Kvar att bygga:</b> behörigheten finns inte i appen i dag. Fram till dess ska matlagningsläget <b>inte</b> lova exakta timers — och det gör det i dag.</div>
+    </div>
+  </div>
+</div>
+</div>
+</section>
+
+<section class="sc-wrap" data-screen-label="v12 · timerns exakta tid — tre vägar">
+<div class="sc-title" style="margin-top:24px"><b>Timerns exakta tid · tre vägar, alla ritade (T-06).</b> Matlagningslägets timer lovar en ringning på sekunden, men appen ber aldrig om <code>SCHEDULE_EXACT_ALARM</code> — och på Android 13+ får den då inte lägga ett exakt larm. Frågan är inte teknisk utan ett löfte: <i>vad säger vi att timern gör</i>.<br><br><b>Varför tre och inte två.</b> Utöver behörigheten (A) och det sänkta löftet (B) finns en tredje väg vi förbisåg: en <b>förgrundstjänst</b> medan matlagningsläget är aktivt. Den ger exakt tid <i>utan</i> behörighetsdialog, och den matchar bruket — användaren står i köket, sessionen är minuter till en timme, och skärmen hålls redan vaken. Notisen är i det läget en funktion: tiden syns från andra sidan köket.<br><br><b>Designens hållning:</b> C som förstahandsval, med B:s copy som fallback när tjänsten inte kan startas. A bara om ni ändå söker <code>USE_EXACT_ALARM</code>. Men <b>nej-vägen är obligatorisk i alla tre</b> — en timer får aldrig lova en tid den inte kan hålla, och det är hela kravet.<br><br>Krav <b>BH-08…BH-12</b>, regler i <code>produktregler.md</code> § 22.21.</div>
+<div class="sc-row">
+
+<div class="sc-item" id="behlarmnekat" data-screen-label="Väg A — behörigheten nekad">
+  <div class="sc-label"><a class="sc-id" href="#behlarmnekat">väg A · nekat</a><b>Det läge väg A alltid hamnar i för någon.</b> På Android 14+ är behörigheten nekad som standard, och dialogens knapp leder till en systeminställning — alltså ut ur appen, mitt i en matlagning. Ramen visar vad timern säger <i>efteråt</i>: löftet sänks på plats, vägen tillbaka finns kvar som en <b>rad, inte en påminnelse</b>. Butlery frågar <b>en gång</b>. En app som ber om samma behörighet vid varje timer har inte accepterat svaret.</div>
+  <div class="sc-phone" style="width:412px;height:420px;display:flex;flex-direction:column">
+    <div style="flex:none;display:flex;align-items:center;gap:4px;padding:8px 8px 8px 4px;border-bottom:1px solid #ccd1c2">
+      <span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka" data-a11y-role="button" data-hit="48"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span>
+      <span style="flex:1;min-width:0;font-size:17px;font-weight:700;letter-spacing:-.3px">Timrar</span>
+    </div>
+    <div style="flex:1;padding:16px 20px 0">
+      <div style="border:1.5px solid #24382c;padding:14px">
+        <div style="display:flex;align-items:baseline;gap:10px"><span style="flex:1;font-size:15px;font-weight:600">Koka pastan</span><span style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px">08:00</span></div>
+        <div style="font-size:12.5px;font-weight:600;color:#627061;margin-top:4px">Steg 3 av 6</div>
+        <div style="display:flex;align-items:flex-start;gap:9px;margin-top:12px;background:#e6ead9;padding:10px 12px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#37453a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px" data-icon="info"><circle cx="12" cy="12" r="7.5"></circle><path d="M12 11v5"></path><path d="M12 8.4h.01"></path></svg>
+          <span style="flex:1;font-size:12.5px;font-weight:600;color:#37453a;line-height:1.5">Med låst telefon ringer den <b>inom en minut</b> efter tiden. Har du appen framme räknar den rätt.</span>
+        </div>
+      </div>
+      <span style="display:flex;align-items:center;gap:10px;min-height:48px;margin-top:12px;padding:0 12px;border:1px solid #ccd1c2;box-sizing:border-box" data-a11y-name="Tillåt exakt tid i systeminställningarna" data-a11y-role="button" data-hit="48"><span style="flex:1;font-size:14px;font-weight:600;color:#8a5212">Tillåt exakt tid</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8a5212" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-right"><path d="M9.5 5.5L16 12l-6.5 6.5"></path></svg></span>
+      <div style="font-size:12px;color:#627061;line-height:1.5;margin-top:8px">Raden öppnar Androids inställning. Den står kvar utan att tjata — och försvinner när tillåtelsen finns.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="lagatimerlofte" data-screen-label="Väg B — det sänkta löftet">
+  <div class="sc-label"><a class="sc-id" href="#lagatimerlofte">väg B · sänkt löfte</a><b>Ingen behörighet, ingen dialog, ingen tjänst — bara ett ärligt löfte.</b> Timern säger vad den faktiskt gör och slutar utlova sekunden. Billigast att bygga och underhålla, och det enda alternativet som inte kan gå sönder av en OS-uppdatering.<br><br><b>Kostnaden, uttalad:</b> en kokningstimer som är en minut sen har misslyckats med sitt enda jobb. Pasta är sextio sekunder från <i>al dente</i> till välling. Därför står tiden i <b>ord</b> och inte som en exakt siffra i vilan — <i>ringer strax efter</i> är en förväntan, <i>08:00</i> är ett kontrakt.</div>
+  <div class="sc-phone" style="width:412px;height:420px;display:flex;flex-direction:column">
+    <div style="flex:none;display:flex;align-items:center;gap:4px;padding:8px 8px 8px 4px;border-bottom:1px solid #ccd1c2">
+      <span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka" data-a11y-role="button" data-hit="48"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span>
+      <span style="flex:1;min-width:0;font-size:17px;font-weight:700;letter-spacing:-.3px">Timrar</span>
+    </div>
+    <div style="flex:1;padding:16px 20px 0">
+      <div style="border:1.5px solid #24382c;padding:14px">
+        <div style="display:flex;align-items:baseline;gap:10px"><span style="flex:1;font-size:15px;font-weight:600">Koka pastan</span><span style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px">08:00</span></div>
+        <div style="font-size:12.5px;font-weight:600;color:#627061;margin-top:4px">Steg 3 av 6 · ringer strax efter om telefonen är låst</div>
+      </div>
+      <div style="border:1px solid #ccd1c2;padding:14px;margin-top:10px">
+        <div style="display:flex;align-items:baseline;gap:10px"><span style="flex:1;font-size:15px;font-weight:600">Vila köttet</span><span style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;color:#627061">05:00</span></div>
+        <div style="font-size:12.5px;font-weight:600;color:#627061;margin-top:4px">Steg 5 av 6</div>
+      </div>
+      <div style="margin-top:14px;background:#e6ead9;padding:12px;font-size:12.5px;color:#37453a;line-height:1.55"><b>Regeln:</b> när appen är framme räknar timern på sekunden och får visa siffror. Är telefonen låst är löftet <i>strax efter</i> — och den formuleringen står i vyn, inte i ett hjälpavsnitt.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="lagatimernotis" data-screen-label="Väg C — förgrundstjänsten">
+  <div class="sc-label"><a class="sc-id" href="#lagatimernotis">väg C · förgrundstjänsten</a><b>Designens förstahandsval.</b> En förgrundstjänst medan matlagningsläget är aktivt ger <b>exakt tid utan behörighetsdialog</b> — och notisen är inte ett pris utan poängen: tiden syns från andra sidan köket, på en låst telefon, utan att någon torkar av händerna.<br><br><b>Fyra regler ramen visar.</b> Notisen finns <b>bara medan en timer går</b> och försvinner med den sista · den visar <b>vilket steg</b> timern hör till, aldrig bara en siffra · handlingarna är <i>+1 min</i> och <i>Pausa</i>, för det är vad man gör med en hand · och <b>flera timrar samlas i en notis</b> med den närmaste först — tre notiser för tre timrar är tre larm att sortera.<br><br>Kvar för dev: <code>foregroundServiceType</code> ska deklareras, tjänsten stoppas när sista timern kvitterats, och Play behöver en motivering. Om tjänsten inte kan startas gäller <a href="#lagatimerlofte">väg B</a>:s copy — det är fallbacken, inte ett fel.</div>
+  <div class="sc-phone" style="width:412px;height:420px;display:flex;flex-direction:column;background:#17251D">
+    <div style="flex:none;padding:18px 20px 0;text-align:center">
+      <div style="font-size:13px;font-weight:600;color:rgba(245,244,237,.60);font-variant-numeric:tabular-nums">torsdag 9 juli</div>
+      <div style="font-size:44px;font-weight:700;color:#F5F4ED;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;line-height:1.1">19:24</div>
+    </div>
+    <div style="flex:1;padding:20px 12px 0">
+      <div style="background:#F5F4ED;border-radius:12px;padding:14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:18px;height:18px;border-radius:4px;background:#24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"><span style="font-size:10px;font-weight:700;color:#F5F4ED">B</span></span>
+          <span style="font-size:12px;font-weight:600;color:#627061">Butlery · Pannbiffar med lök</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:10px;margin-top:10px">
+          <span style="flex:1;min-width:0;font-size:15px;font-weight:600">Koka pastan</span>
+          <span style="font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.8px">07:42</span>
+        </div>
+        <div style="font-size:12.5px;font-weight:600;color:#627061;margin-top:2px">Steg 3 av 6 · nästa: vila köttet 05:00</div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Lägg en minut till koka pastan" data-a11y-role="button" data-hit="48">+1 min</span>
+          <span style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid #24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Pausa koka pastan" data-a11y-role="button" data-hit="48">Pausa</span>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:rgba(245,244,237,.60);line-height:1.5;padding:0 4px">En notis för alla timrar, närmast först. Den går inte att svepa bort medan en timer räknar — men den försvinner av sig själv med den sista.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="lagatimerutgangen" data-screen-label="Väg C — den utgångna timern kvitteras">
+  <div class="sc-label"><a class="sc-id" href="#lagatimerutgangen">väg C · kvitteringen</a><b>Den utgångna timern står kvar tills den kvitteras</b> — i notisen <i>och</i> i listen i appen (§ 22.21). En snackbar är fel kanal för något man ska höra tvärs över ett kök, och en timer som tystar sig själv efter tio sekunder har inte sagt något till den som stod vid diskbänken.<br><br><b>Tre saker skiljer den från en vanlig notis.</b> Den säger <b>vad</b> som är klart, inte att en timer gick ut · den bär <i>Kvittera</i> som enda handling, för det finns inget annat att göra · och den <b>namnger steget</b> så att den som kommer tillbaka till telefonen vet var i receptet hon var. Med reducerad rörelse pulserar ingenting; texten och ljudet bär.</div>
+  <div class="sc-phone" style="width:412px;height:420px;display:flex;flex-direction:column;background:#17251D">
+    <div style="flex:none;padding:18px 20px 0;text-align:center">
+      <div style="font-size:13px;font-weight:600;color:rgba(245,244,237,.60);font-variant-numeric:tabular-nums">torsdag 9 juli</div>
+      <div style="font-size:44px;font-weight:700;color:#F5F4ED;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;line-height:1.1">19:32</div>
+    </div>
+    <div style="flex:1;padding:20px 12px 0">
+      <div style="background:#F5F4ED;border-radius:12px;padding:14px;border-left:4px solid #9c3b23">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:18px;height:18px;border-radius:4px;background:#24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"><span style="font-size:10px;font-weight:700;color:#F5F4ED">B</span></span>
+          <span style="font-size:12px;font-weight:600;color:#627061">Butlery · Pannbiffar med lök</span>
+        </div>
+        <div style="font-size:17px;font-weight:700;letter-spacing:-.3px;margin-top:10px">Pastan är klar</div>
+        <div style="font-size:12.5px;font-weight:600;color:#627061;margin-top:2px">Steg 3 av 6 · gick ut 19:32</div>
+        <div style="margin-top:12px">
+          <span style="display:flex;align-items:center;justify-content:center;min-height:48px;background:#ce7c1e;color:#17251d;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Kvittera att pastan är klar" data-a11y-role="button" data-hit="48">Kvittera</span>
+        </div>
+      </div>
+      <div style="margin-top:12px;background:rgba(245,244,237,.18);border-radius:8px;padding:12px">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(245,244,237,.60)">Samtidigt i appen</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;min-height:48px;background:#F5F4ED;padding:0 12px;box-sizing:border-box">
+          <span style="width:8px;height:8px;border-radius:4px;background:#9c3b23;flex:none"></span>
+          <span style="flex:1;font-size:13.5px;font-weight:600;color:#24382c">Koka pastan · klar</span>
+          <span style="font-size:13px;font-weight:600;color:#8a5212">Kvittera</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</section>
+
+</x-dc>
+</body>
+</html>

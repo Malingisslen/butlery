@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><title>Butlery — Skärmar v12 · innehåll</title>
+<style>
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Regular.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Italic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Semibold.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Semibold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-SemiboldItalic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-SemiboldItalic.ttf') format('truetype');font-weight:600;font-style:italic;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Bold.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-BoldItalic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:swap}
+body{margin:0;font-synthesis:none;background:#F5F4ED;font-variant-numeric:proportional-nums}
+a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:underline}
+/* länk på upphöjd yta */
+.sc-id,.sc-note a,[style*="background:#e6ead9"] a,[style*="background:#E6EAD9"] a,[style*="background:#f0eee2"] a,[style*="background:#F0EEE2"] a,[style*="background:#f7e8d2"] a,[style*="background:#F7E8D2"] a{color:#8A5212}
+</style>
+<style>
+.sc-wrap{padding:40px 44px 60px}
+.sc-title{font:600 13px/1.5 'Butlery Sans',sans-serif;color:#24382c;margin:0 0 24px;max-width:900px;font-variant-numeric:proportional-nums}
+.sc-row{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start;font-variant-numeric:proportional-nums}
+.sc-item{display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.sc-label{display:block;font:400 11.5px/1.6 'Butlery Sans',sans-serif;color:#627061;max-width:412px;text-wrap:pretty}
+.sc-label b,.sc-label i,.sc-label code{color:#37453a}
+.sc-id{display:inline-block;margin-right:7px;font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:#e6ead9;color:#24382C;border-radius:4px;text-decoration:none;vertical-align:2px}
+.sc-phone{position:relative;background:#F5F4ED;border:1px solid #ccd1c2;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382c}
+.sc-phone::before{content:"19:26";display:flex;align-items:center;justify-content:space-between;flex:none;padding:8px 22px 4px;font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:.3px}
+.sc-phone::after{content:"";position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:64px;height:3px;border-radius:999px;background:rgba(36,56,44,.25);pointer-events:none}
+.sc-phone[style*="width: 924px"]::before,.sc-phone[style*="width: 924px"]::after,.sc-phone[style*="width:924px"]::before,.sc-phone[style*="width:924px"]::after{display:none}
+.sc-skeleton{background:#e6ead9 !important}/* stillastående platshållare — ingen animation, ingen shimmer */
+.sc-loader{width:120px;height:4px;border-radius:2px;background:#e6ead9;position:relative;overflow:hidden}
+.sc-loader::after{content:"";position:absolute;left:0;top:0;bottom:0;width:40%;border-radius:2px;background:#ce7c1e}
+.sc-spin{animation:none}
+@keyframes clocheCover{0%,14%{transform:rotate(0) translate(0,0);opacity:1}46%{transform:rotate(20deg) translate(-5px,-34px);opacity:1}56%{transform:rotate(34deg) translate(-12px,-64px);opacity:0}86%{transform:rotate(34deg) translate(-12px,-64px);opacity:0}91%{transform:rotate(23deg) translate(-8px,-43px);opacity:1}100%{transform:rotate(0) translate(0,0);opacity:1}}
+@keyframes clocheDish{0%,56%{opacity:0}60%{opacity:1}78%{opacity:1}86%,100%{opacity:0}}
+@keyframes clocheSteam{0%,60%{opacity:0;transform:translateY(3px)}68%{opacity:.5;transform:translateY(-4px)}74%{opacity:.32;transform:translateY(-9px)}78%,100%{opacity:0;transform:translateY(-15px)}}
+.start-cover{transform-box:view-box;transform-origin:43px 104px;animation:clocheCover 5s cubic-bezier(.33,0,.2,1) infinite}
+.start-dish{animation:clocheDish 5s ease infinite}
+.start-steam{transform-box:view-box;transform-origin:80px 82px;animation:clocheSteam 5s ease infinite}
+@media (prefers-reduced-motion:reduce){.sc-skeleton,.sc-loader::after{animation:none}.start-cover{animation:none;opacity:0}.start-dish{animation:none;opacity:1}.start-steam{animation:none;opacity:0}}
+</style>
+</helmet>
+<section style="font-variant-numeric:proportional-nums;font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382c;padding:56px 56px 72px;max-width:900px">
+  <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#a15a0a">Butlery · Skärmar v12 — samtliga vyer</div>
+  <div style="display:flex;align-items:center;gap:14px;margin:12px 0 10px"><span style="width:22px;height:4px;background:#ce7c1e;border-radius:2px"></span><span style="flex:1;max-width:760px;height:1px;background:#24382c"></span></div>
+  <div style="font-size:26px;font-weight:700;letter-spacing:-.6px;line-height:1.2">326 ramar i fjorton delfiler</div>
+  <div style="font-size:13px;color:#37453a;max-width:780px;line-height:1.65;margin-top:12px">Specen låg i <b>en</b> fil till den passerade en megabyte och slutade gå att öppna — då är den inte längre en spec, bara en påstådd sådan. Innehållet är oförändrat: samma ramar, samma id:n, samma etikettext. Bara filgränsen är ny.<br><br>Räkningen görs av <code>tools/gen-counts.mjs</code>, som nu läser alla tio filerna.</div>
+  <div style="margin-top:26px;border-top:1px solid #24382c">
+  <a href="Butlery Skarmar v12 del 1 recept och veckomeny.dc.html" style="display:flex;align-items:flex-start;gap:18px;padding:18px 0;border-bottom:1px solid #ccd1c2;text-decoration:none;color:#24382c">
+    <span style="flex:none;width:64px;font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;padding-top:3px">del 1</span>
+    <span style="flex:1;min-width:0">
+      <span style="display:block;font-size:17px;font-weight:700;letter-spacing:-.2px">Recept, import, skafferi, veckomeny</span>
+      <span style="display:block;font-size:12.5px;color:#37453a;line-height:1.6;margin-top:4px">Receptdetaljen som referensvy · fyra importvägar · skafferi och familj · veckomenyns kärnvy och processlägen</span>
+    </span>
+    <span style="flex:none;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums;padding-top:4px">15 ramar</span>
+  </a>
+  <a href="Butlery Skarmar v12 del 2 familj och socialt.dc.html" style="display:flex;align-items:flex-start;gap:18px;padding:18px 0;border-bottom:1px solid #ccd1c2;text-decoration:none;color:#24382c">
+    <span style="flex:none;width:64px;font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;padding-top:3px">del 2</span>
+    <span style="flex:1;min-width:0">
+      <span style="display:block;font-size:17px;font-weight:700;letter-spacing:-.2px">Familj, socialt, inköp, konto</span>
+      <span style="display:block;font-size:12.5px;color:#37453a;line-height:1.6;margin-top:4px">Familjeflödet och menyplacering · Mer-fliken och det sociala lagret · inköpets kärnvy · chatt, kontosäkerhet, gruppdetalj</span>
+    </span>
+    <span style="flex:none;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums;padding-top:4px">30 ramar</span>
+  </a>
+  <a href="Butlery Skarmar v12 del 3 sok och skalbevis.dc.html" style="display:flex;align-items:flex-start;gap:18px;padding:18px 0;border-bottom:1px solid #ccd1c2;text-decoration:none;color:#24382c">
+    <span style="flex:none;width:64px;font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;padding-top:3px">del 3</span>
+    <span style="flex:1;min-width:0">
+      <span style="display:block;font-size:17px;font-weight:700;letter-spacing:-.2px">Sök, notiser, skalbevis</span>
+      <span style="display:block;font-size:12.5px;color:#37453a;line-height:1.6;margin-top:4px">Ingredienssök · notisinställningar och FAQ · responsiv- och skalbevis: 360 dp, 2,0× systemtext, tangentbord, landskap</span>
+    </span>
+    <span style="flex:none;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums;padding-top:4px">48 ramar</span>
+  </a>
+  <a href="Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html" style="display:flex;align-items:flex-start;gap:18px;padding:18px 0;border-bottom:1px solid #ccd1c2;text-decoration:none;color:#24382c">
+    <span style="flex:none;width:64px;font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;padding-top:3px">del 4</span>
+    <span style="flex:1;min-width:0">
+      <span style="display:block;font-size:17px;font-weight:700;letter-spacing:-.2px">Mörkt läge, säkerhet, etapp 0–1</span>
+      <span style="display:block;font-size:12.5px;color:#37453a;line-height:1.6;margin-top:4px">Mörkt läge för formulär och ark · säkerhet och kö · etapp 0:s tre saknade ritningar · etapp 1: Hem och resten av flöde A</span>
+    </span>
+    <span style="flex:none;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums;padding-top:4px">28 ramar</span>
+  </a>
+  <a href="Butlery Skarmar v12 etapp 2.dc.html" style="display:flex;align-items:flex-start;gap:18px;padding:18px 0;border-bottom:1px solid #ccd1c2;text-decoration:none;color:#24382c">
+    <span style="flex:none;width:64px;font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;padding-top:3px">etapp 2</span>
+    <span style="flex:1;min-width:0">
+      <span style="display:block;font-size:17px;font-weight:700;letter-spacing:-.2px">Delade listor och veckomeny</span>
+      <span style="display:block;font-size:12.5px;color:#37453a;line-height:1.6;margin-top:4px">Delade inköpslistor med tre vylägen, närvaro och claim · veckomeny och generering: prompt, tolkning, placering, kalender · röstningen med oavgjort, utgången tid och historik</span>
+    </span>
+    <span style="flex:none;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums;padding-top:4px">32 ramar</span>
+  </a>
+  </div>
+  <a href="Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html" style="display:flex;align-items:flex-start;gap:18px;padding:18px 0;border-bottom:1px solid #ccd1c2;text-decoration:none;color:#24382c">
+    <span style="flex:none;width:64px;font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;padding-top:3px">etapp 2b</span>
+    <span style="flex:1;min-width:0">
+      <span style="display:block;font-size:17px;font-weight:700;letter-spacing:-.2px">Inköp och skafferi</span>
+      <span style="display:block;font-size:12.5px;color:#37453a;line-height:1.6;margin-top:4px">Kategoriordningen per person · flervalet och dess saknade handling · bockningens väg in i skafferiet · skafferiet i fyra platser · den genererade listans kontrakt — och basvaran som inte går att sätta</span>
+    </span>
+    <span style="flex:none;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums;padding-top:4px">10 ramar</span>
+  </a>
+  <a href="Butlery Skarmar v12 etapp 3 onboarding.dc.html" style="display:flex;align-items:flex-start;gap:18px;padding:18px 0;border-bottom:1px solid #ccd1c2;text-decoration:none;color:#24382c">
+    <span style="flex:none;width:64px;font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;padding-top:3px">etapp 3</span>
+    <span style="flex:1;min-width:0">
+      <span style="display:block;font-size:17px;font-weight:700;letter-spacing:-.2px">Första gången — MINIMAL</span>
+      <span style="display:block;font-size:12.5px;color:#37453a;line-height:1.6;margin-top:4px">Fyra sidor i stället för fem: åldersgrinden som juridik, allergenerna som säkerhet, första importen — och kostfrågan flyttad till efter första menygenereringen. Auth och e-postverifiering · behörighetsförklaringarna · tre ramar i mörkt läge</span>
+    </span>
+    <span style="flex:none;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums;padding-top:4px">25 ramar</span>
+  </a>
+  <a href="Butlery Skarmar v12 etapp 4 import.dc.html" style="display:flex;align-items:flex-start;gap:18px;padding:18px 0;border-bottom:1px solid #ccd1c2;text-decoration:none;color:#24382c">
+    <span style="flex:none;width:64px;font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;padding-top:3px">etapp 4</span>
+    <span style="flex:1;min-width:0">
+      <span style="display:block;font-size:17px;font-weight:700;letter-spacing:-.2px">Import av recept</span>
+      <span style="display:block;font-size:12.5px;color:#37453a;line-height:1.6;margin-top:4px">Nio källor till ett mönster · assisterad tolkning i tre steg · konfidensgranskning · kvoter, dubbletter, cache och felvägar · recepteditorns utkast och den kontextuella felmodellen</span>
+    </span>
+    <span style="flex:none;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums;padding-top:4px">23 ramar</span>
+  </a>
+  </div>
+  <a href="Butlery Skarmar v12 etapp 5-7.dc.html" style="display:flex;align-items:flex-start;gap:18px;padding:18px 0;border-bottom:1px solid #ccd1c2;text-decoration:none;color:#24382c">
+    <span style="flex:none;width:64px;font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;padding-top:3px">etapp 5–7</span>
+    <span style="flex:1;min-width:0">
+      <span style="display:block;font-size:17px;font-weight:700;letter-spacing:-.2px">Taggregler, konto och moderering</span>
+      <span style="display:block;font-size:12.5px;color:#37453a;line-height:1.6;margin-top:4px">Regelbyggaren med tretton villkorstyper · taggens ursprung och exklusiva grupper · kontoborttagning utan ångerperiod · adminskal och moderering med minderårigskydd · cook snaps publik och galleri · vänprofilens delningslager</span>
+    </span>
+    <span style="flex:none;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums;padding-top:4px">18 ramar</span>
+  </a>
+  </div>
+  <a href="Butlery Skarmar v12 etapp 6 konto och integritet.dc.html" style="display:flex;align-items:flex-start;gap:18px;padding:18px 0;border-bottom:1px solid #ccd1c2;text-decoration:none;color:#24382c">
+    <span style="flex:none;width:64px;font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;padding-top:3px">etapp 6</span>
+    <span style="flex:1;min-width:0">
+      <span style="display:block;font-size:17px;font-weight:700;letter-spacing:-.2px">Konto och integritet</span>
+      <span style="display:block;font-size:12.5px;color:#37453a;line-height:1.6;margin-top:4px">Sju samtyckesändamål varav två är villkor · ändamålet som tappas vid varje sparning · förnyelse som visar skillnaden · dataexporten som bara finns i minnet · kontosäkerheten · notiskategorier och den dolda typmatrisen · tvåstegsverifieringen utan reservväg · notiscentralen · mina anmälningar · villkoren som visas som källkod · samlingsstatistiken</span>
+    </span>
+    <span style="flex:none;font:600 12.5px 'Butlery Sans',sans-serif;color:#627061;font-variant-numeric:tabular-nums;padding-top:4px">16 ramar</span>
+  </a>
+  <div style="margin-top:26px;font-size:12.5px;color:#627061;line-height:1.7">Systemets övriga dokument: <a href="Butlery Grafisk manual v6.dc.html">Grafisk manual v6</a> · <a href="Butlery Komponentark v1.dc.html">Komponentark v1</a> · <a href="Butlery tillganglighetshandoff.dc.html">Tillgänglighetshandoff</a> · <a href="Butlery ceremonier rorelsereferens.dc.html">Ceremonier och rörelse</a></div>
+</section>
+</x-dc>
+</body>
+</html>

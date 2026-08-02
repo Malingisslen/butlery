@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><title>Butlery — beslut · kalenderns två mått</title>
+<style>
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Regular.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Italic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Semibold.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Semibold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Bold.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+body{margin:0;font-synthesis:none;background:#F5F4ED;font-variant-numeric:proportional-nums}
+a{color:#a15a0a;text-decoration:none}a:hover{color:#a15a0a;text-decoration:underline}
+</style>
+</helmet>
+<section style="font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382c;padding:56px 56px 24px;max-width:1000px">
+  <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#a15a0a">Butlery · beslut — kalenderns två mått</div>
+  <div style="display:flex;align-items:center;gap:14px;margin:12px 0 10px"><span style="width:22px;height:4px;background:#ce7c1e;border-radius:2px"></span><span style="flex:1;max-width:800px;height:1px;background:#24382c"></span></div>
+  <div style="font-size:26px;font-weight:700;letter-spacing:-.6px;line-height:1.2">Avgjort: kalenderns två mått</div>
+  <div style="font-size:13px;color:#37453a;max-width:800px;line-height:1.65;margin-top:14px">V-22 och V-23 i <code>evidensmatris.md</code> är de enda två av veckomenyns tjugotre krav som står som <b>avvikelser mot koden</b>. Båda kommer ur <code>calendar_cells.dart</code>, och båda handlar om samma sak: kalendercellen är den tätaste ytan i appen, och där tar specens golv slut.<br><br>De går inte att rätta i tysthet. Ett undantag måste stå i <code>tokens.json</code> för att <code>lint-controls.mjs</code> och <code>spec-lint.mjs</code> ska kunna mäta det — annars glider måtten tillbaka nästa gång någon ritar en cell, vilket är precis vad grundgranskningen visade att som hänt. Alternativet är att rita om, och det kostar något verkligt i båda fallen.<br><br><b>Avgjort 2026-07-28.</b> Uppdragsgivaren valde <b>C i båda frågorna</b>, med en skärpning i den första: ansiktena behålls så länge de ryms, och degraderingen till <i>en avatar plus antalet</i> är en <b>fallback</b> — inte utgångsläget. Ritningen visade nämligen att kostnaden i alternativ C var påhittad: raden ligger under cellen som eget syskon, så cellen behåller sina 80 dp. Besluten står som <b>B-40</b> och <b>B-41</b> i <code>beslutslogg.md</code>, måtten i <code>tokens.json</code> <b>1.5</b> (<code>controls.calendarPresenceRow</code> och typrollen <code>calendarCell</code>), och de mäts av <code>lint-controls.mjs</code> på <code>data-presence-row</code> och rollskalan. Dokumentet står kvar som underlag — alternativen som valdes bort är skälet till att beslutet går att förstå senare.</div>
+</section>
+
+<section style="font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382c;padding:24px 56px 24px;max-width:1000px">
+  <div style="border-top:1px solid #24382c;padding-top:24px">
+    <div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#a15a0a">AVGJORD 2026-07-28 · V-22</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Närvaro-raden i cellen</span></div>
+    <div style="font-size:13px;color:#37453a;max-width:820px;line-height:1.65;margin-top:12px">BUT-1611 lade närvaro <b>per måltid</b> — en egen rad med ansikten under varje lunch- och middagsplats, eftersom närvaron styr portionerna och en person kan vara hemma till middag men borta till lunch samma dag. Raden ligger inuti en cell med <code>_kSlotMinHeight = 80</code> och är <b>ett</b> tryckområde som öppnar närvaroarket.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:32px;margin-top:24px;align-items:flex-start">
+      <div style="width:300px">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Kodens mått</div>
+        <div style="margin-top:10px;border:1px solid #ccd1c2;background:#F5F4ED;padding:12px">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">middag</div>
+          <div style="font-size:13px;font-weight:600;margin-top:4px">Krämig svamppasta</div>
+          <div style="display:flex;align-items:center;gap:4px;margin-top:6px;padding-top:6px;border-top:1px solid #ccd1c2">
+            <span style="width:16px;height:16px;border-radius:999px;background:#24382c;color:#F5F4ED;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">A</span>
+            <span style="width:16px;height:16px;border-radius:999px;background:#4A5D45;color:#F5F4ED;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">S</span>
+            <span style="width:16px;height:16px;border-radius:999px;background:#627061;color:#F5F4ED;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">M</span>
+            <span style="font-size:8px;font-weight:700;color:#627061;margin-left:2px">3 port.</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7D897C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 9.5L12 16l6.5-6.5"></path></svg>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#37453a;line-height:1.6;margin-top:10px">Ansikten <b>16 dp</b> · initialer <b>9 px</b> · portionstext <b>8 px</b> · chevron 12 dp. Hela raden är tryckytan; den är cirka <b>24 dp</b> hög.</div>
+      </div>
+      <div style="width:300px">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Specens golv</div>
+        <div style="margin-top:10px;border:1px solid #ccd1c2;background:#F5F4ED;padding:12px">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">middag</div>
+          <div style="font-size:13px;font-weight:600;margin-top:4px">Krämig svamppasta</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid #ccd1c2;min-height:48px;box-sizing:border-box">
+            <span style="width:26px;height:26px;border-radius:999px;background:#24382c;color:#F5F4ED;font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">A</span>
+            <span style="width:26px;height:26px;border-radius:999px;background:#4A5D45;color:#F5F4ED;font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">S</span>
+            <span style="width:26px;height:26px;border-radius:999px;background:#627061;color:#F5F4ED;font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center">M</span>
+            <span style="font-size:12px;font-weight:600;color:#627061">3 port.</span>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#37453a;line-height:1.6;margin-top:10px">Avatarskalans minsta steg är <b>26</b>. Träffytan är <b>48</b> med 8 dp grannavstånd. Minsta 400-text är <b>12 px</b>, och 10,5 px endast i vikt 700.</div>
+        <div style="font-size:12px;color:#9C3B23;font-weight:600;line-height:1.6;margin-top:8px">Cellen växer från 80 till ~104 dp. Sju dagar × två platser = <b>+336 dp</b> i veckovyn.</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:28px">
+      <div style="flex:1;min-width:280px;border:1px solid #ccd1c2;border-radius:12px;padding:18px;background:#F5F4ED">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#a15a0a">ALTERNATIV A</div>
+        <div style="font-size:15px;font-weight:600;margin-top:6px;line-height:1.35">Undantag i tokens, med namngiven omfattning</div>
+        <div style="font-size:12.5px;color:#37453a;line-height:1.6;margin-top:10px"><code>controls.avatarScale.exceptions.calendarPresence = 16</code> plus en deklarerad radhitbox. Måttet blir mätbart och kan inte glida — men undantaget finns, och avatarer under 26 dp blir citerbara som prejudikat nästa gång någon vill spara plats.</div>
+        <div style="font-size:12px;font-weight:600;color:#627061;line-height:1.6;margin-top:10px">Kostnad: noll ritning. Risk: ett undantag som lever vidare.</div>
+      </div>
+      <div style="flex:1;min-width:280px;border:1px solid #ccd1c2;border-radius:12px;padding:18px;background:#F5F4ED">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#a15a0a">ALTERNATIV B</div>
+        <div style="font-size:15px;font-weight:600;margin-top:6px;line-height:1.35">Närvaron ut ur cellen, en rad per dag</div>
+        <div style="font-size:12.5px;color:#37453a;line-height:1.6;margin-top:10px">26 dp-avatarer i en egen 48 dp-rad ovanför dagens tre platser. Golvet hålls överallt — men <b>närvaro per måltid går förlorad</b>, och det var hela poängen med BUT-1611. Kräver dessutom en backend-ändring: <code>presenceBySlot</code> blir <code>presenceByDay</code>.</div>
+        <div style="font-size:12px;font-weight:600;color:#9C3B23;line-height:1.6;margin-top:10px">Kostnad: en funktion tas bort. Rekommenderas inte.</div>
+      </div>
+      <div style="flex:1;min-width:280px;border:1.5px solid #24382c;border-radius:12px;padding:18px;background:#e6ead9">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#8a5212">ALTERNATIV C · min rekommendation</div>
+        <div style="font-size:15px;font-weight:600;margin-top:6px;line-height:1.35">Ingen avatar under skalan — en siffra i stället</div>
+        <div style="font-size:12.5px;color:#37453a;line-height:1.6;margin-top:10px">Raden bär <b>en</b> avatar i 26 dp och en text: <i>3 hemma</i>. Vid avvikelse namnges den som är borta. Ett tryckområde på 48 dp, ingen text under 12 px, närvaron kvar per måltid, och cellen växer bara till ~92 dp.</div>
+        <div style="margin-top:12px;border:1px solid #ccd1c2;background:#F5F4ED;padding:10px">
+          <div style="display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box"><span style="width:26px;height:26px;border-radius:999px;background:#24382c;color:#F5F4ED;font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;flex:none">A</span><span style="flex:1;font-size:12px;font-weight:600;color:#37453a">3 hemma · Malin borta</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7D897C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5L16 12l-6.5 6.5"></path></svg></div>
+        </div>
+        <div style="font-size:12px;font-weight:600;color:#627061;line-height:1.6;margin-top:10px">Kostnad: ansiktena försvinner ur cellen. De finns kvar i närvaroarket, där de går att träffa.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382c;padding:24px 56px 72px;max-width:1000px">
+  <div style="border-top:1px solid #24382c;padding-top:24px">
+    <div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#a15a0a">AVGJORD 2026-07-28 · V-23</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Kalendertexten i 8 och 9 px</span></div>
+    <div style="font-size:13px;color:#37453a;max-width:820px;line-height:1.65;margin-top:12px"><code>calendar_cells.dart</code> använder <b>8 px</b> på fyra ställen (platsetikett, &quot;ingen hemma&quot;, portionsräkning, överskottsbrickans text) och <b>9 px</b> på tre (initialer, rättens namn i den smala cellen, plusrutans etikett). Specens golv är <b>12 px i vikt 400</b> och <b>10,5 px endast i vikt 700</b>. Sju kolumner på 412 dp ger 52 dp per dag — det är där siffrorna kommer ifrån, inte ur slarv.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:32px;margin-top:24px;align-items:flex-start">
+      <div style="width:300px">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Kodens mått · 52 dp kolumn</div>
+        <div style="margin-top:10px;display:flex;gap:2px">
+          <div style="width:52px;border:1px solid #ccd1c2;background:#F5F4ED;padding:4px;box-sizing:border-box"><div style="font-size:8px;font-weight:700;color:#627061;letter-spacing:.5px">LUNCH</div><div style="font-size:9px;font-weight:600;line-height:1.15;margin-top:3px">Linssoppa</div><div style="display:flex;gap:1px;margin-top:4px"><span style="width:16px;height:16px;border-radius:999px;background:#24382c;color:#F5F4ED;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">A</span><span style="font-size:8px;font-weight:700;color:#627061;align-self:center">2</span></div></div>
+          <div style="width:52px;border:1px solid #ccd1c2;background:#F5F4ED;padding:4px;box-sizing:border-box"><div style="font-size:8px;font-weight:700;color:#627061;letter-spacing:.5px">MIDDAG</div><div style="font-size:9px;font-weight:600;line-height:1.15;margin-top:3px">Krämig svamppasta</div><div style="font-size:8px;font-weight:700;color:#627061;margin-top:4px">ingen hemma</div></div>
+        </div>
+        <div style="font-size:12px;color:#9C3B23;font-weight:600;line-height:1.6;margin-top:10px">8 px i 700 är 2,5 steg under golvet. I 2,0× systemtext klipper cellen i stället för att växa — kolumnbredden är fast.</div>
+      </div>
+      <div style="width:300px">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Golvet i samma bredd</div>
+        <div style="margin-top:10px;display:flex;gap:2px">
+          <div style="width:52px;border:1px solid #ccd1c2;background:#F5F4ED;padding:4px;box-sizing:border-box"><div style="font-size:10.5px;font-weight:700;color:#627061;letter-spacing:.5px">LUN</div><div style="font-size:12px;font-weight:600;line-height:1.25;margin-top:3px">Lins&shy;soppa</div></div>
+          <div style="width:52px;border:1px solid #ccd1c2;background:#F5F4ED;padding:4px;box-sizing:border-box"><div style="font-size:10.5px;font-weight:700;color:#627061;letter-spacing:.5px">MID</div><div style="font-size:12px;font-weight:600;line-height:1.25;margin-top:3px">Kräm…</div></div>
+        </div>
+        <div style="font-size:12px;color:#37453a;line-height:1.6;margin-top:10px">Golvet håller — men platsnamnen måste kortas till tre tecken och rättens namn klipps efter fem. En kalender där inget namn går att läsa är ingen kalender.</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:28px">
+      <div style="flex:1;min-width:280px;border:1px solid #ccd1c2;border-radius:12px;padding:18px;background:#F5F4ED">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#a15a0a">ALTERNATIV A</div>
+        <div style="font-size:15px;font-weight:600;margin-top:6px;line-height:1.35">Höj allt till 10,5 / 700</div>
+        <div style="font-size:12.5px;color:#37453a;line-height:1.6;margin-top:10px">Inget nytt golv införs — 10,5 finns redan som överradens storlek. Men <i>allt</i> i cellen blir versalt fet metatext, inklusive rättens namn, och ett receptnamn i 700 läser som en varning.</div>
+        <div style="font-size:12px;font-weight:600;color:#627061;line-height:1.6;margin-top:10px">Kostnad: cellen tappar sin hierarki.</div>
+      </div>
+      <div style="flex:1;min-width:280px;border:1px solid #ccd1c2;border-radius:12px;padding:18px;background:#F5F4ED">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#a15a0a">ALTERNATIV B</div>
+        <div style="font-size:15px;font-weight:600;margin-top:6px;line-height:1.35">Fem kolumner i stället för sju</div>
+        <div style="font-size:12.5px;color:#37453a;line-height:1.6;margin-top:10px">73 dp per dag ger plats för 12/600 rakt igenom, med veckan horisontellt rullbar. Golvet hålls utan undantag — men <b>veckoöversikten slutar vara en översikt</b>, och det var skälet till att kalenderläget finns vid sidan av listläget.</div>
+        <div style="font-size:12px;font-weight:600;color:#9C3B23;line-height:1.6;margin-top:10px">Kostnad: vylägets syfte. Rekommenderas inte.</div>
+      </div>
+      <div style="flex:1;min-width:280px;border:1.5px solid #24382c;border-radius:12px;padding:18px;background:#e6ead9">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#8a5212">ALTERNATIV C · min rekommendation</div>
+        <div style="font-size:15px;font-weight:600;margin-top:6px;line-height:1.35">Undantag med en regel som går att mäta</div>
+        <div style="font-size:12.5px;color:#37453a;line-height:1.6;margin-top:10px">Ett deklarerat undantag <code>type.calendarCell.min = 10.5</code>, och <b>allt under 12 px får endast bära information som finns i klartext någon annanstans i samma vy</b> — portionssiffran, &quot;ingen hemma&quot;, initialen. Rättens namn, platsen och varje varning är <b>unik</b> information och ligger därför på 12/600 eller över. Det gör undantaget begränsat i stället för generellt, och <code>lint-controls.mjs</code> kan mäta det: en cell-text under 12 px måste ha attributet <code>data-echo-of</code> som pekar på sin klartextkälla.</div>
+        <div style="font-size:12px;font-weight:600;color:#627061;line-height:1.6;margin-top:10px">Kostnad: en ny lintregel och ett attribut per liten text. Vinsten: sju dagar kvar i vyn, och ingen unik uppgift på 8 px.</div>
+      </div>
+    </div>
+    <div style="margin-top:32px;background:#e6ead9;border-radius:12px;padding:20px;max-width:820px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a5212">Vad som händer efter ditt svar</div>
+      <div style="font-size:12.5px;color:#37453a;line-height:1.7;margin-top:10px"><b>Utfört:</b> <code>tokens.json</code> är <b>1.5</b> med <code>controls.calendarPresenceRow</code> (48 · 26 · högst tre ansikten · degradering) och typrollen <code>calendarCell</code> 11/600 plus golvregeln; <code>lint-controls.mjs</code> mäter båda; närvarorna i <code>#veckonarvaro</code> är märkta med <code>data-presence-row</code> och måndagens fjärde ansikte är degraderat till ett tal. Manualens tre 9 px-etiketter höjda till 10,5, och sexton mellansteg (18 och 20 px) i etapp 2b och 3 rättade till rollskalan — de var mina egna, och lintet hade aldrig körts över dem.<br><br>Därefter körs <code>lint-controls.mjs</code> och <code>verify.mjs</code> över samtliga åtta skärmfiler innan etappen stängs, och V-22 och V-23 står nu som <b>implementerad</b> i <code>evidensmatris.md</code> — kvar är kodändringen och protokollet på enhet. Ingenting av detta stryks för att det ser åtgärdat ut.</div>
+    </div>
+  </div>
+</section>
+</x-dc>
+</body>
+</html>

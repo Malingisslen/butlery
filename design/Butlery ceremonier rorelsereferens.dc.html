@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><title>Butlery — ceremonier, rörelsereferens</title>
+<style>
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Semibold.ttf') format('truetype');font-weight:600;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
+body{margin:0;background:#F5F4ED}
+a{color:#a15a0a;text-decoration:none}a:hover{color:#a15a0a;text-decoration:underline}
+</style>
+<script>window.OM_SCENES = '[{"name":"Uppdukning","dur":5},{"name":"Clochelyft","dur":2.4}]';</script>
+<script>window.OM_PLAYBACK = '{"mode":"loop"}';</script>
+</helmet>
+<x-import component-from-global-scope="SceneStage" from="./animations-v2.jsx ./ceremonier-scener.jsx" width="{{ w }}" height="{{ h }}" scenes="{{ scenes }}" playback="{{ playback }}" bg="#F5F4ED" dc-props="{{ scenmap }}" hint-size="1280px,720px"></x-import>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      w: 1280, h: 720,
+      scenes: window.OM_SCENES,
+      playback: window.OM_PLAYBACK,
+      scenmap: { children: { Uppdukning: window.Uppdukning, Clochelyft: window.Clochelyft } },
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><title>Butlery — tillgänglighetshandoff</title>
+<style>
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Regular.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Italic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Semibold.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Semibold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-SemiboldItalic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-SemiboldItalic.ttf') format('truetype');font-weight:600;font-style:italic;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Bold.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-BoldItalic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:swap}
+body{margin:0;font-synthesis:none;background:#F5F4ED;font-variant-numeric:proportional-nums}
+a{color:#a15a0a;text-decoration:none}a:hover{color:#a15a0a;text-decoration:underline}
+</style>
+</helmet>
+<div style="font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382c;background:#F5F4ED;padding:56px 64px 90px;max-width:1320px">
+
+  <div style="display:flex;justify-content:space-between;align-items:baseline">
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#a15a0a">Butlery · tillgänglighetshandoff</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#627061">Komplement till manual v6 kap 10 · skärmar v12</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;margin:14px 0 22px"><span style="width:22px;height:4px;background:#ce7c1e;border-radius:2px"></span><span style="flex:1;height:1px;background:#24382c"></span></div>
+  <div style="font-size:30px;font-weight:700;letter-spacing:-.6px;line-height:1.1;max-width:820px">En rad per kontroll. Namn, roll, tillstånd — innan koden skrivs.</div>
+  <div style="font-size:13px;color:#37453a;line-height:1.7;max-width:860px;margin-top:14px">Manualen sätter reglerna; det här arket är listan utvecklaren arbetar ur. <b>Tillgängligt namn</b> är det som läses upp — det innehåller alltid samma ord som en synlig etikett. <b>Tillstånd</b> ska vara maskinläsbart, aldrig bara färg eller opacitet. Dekorativa SVG:er döljs för hjälpmedel.</div>
+
+  <div style="margin-top:26px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
+    <div style="border-top:1px solid #24382c;padding-top:10px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Gäller alla rader</div>
+      <div style="font-size:12.5px;color:#37453a;line-height:1.8;margin-top:6px">Träffyta ≥ 48 × 48 dp (Android-golv; iOS 44 pt uppfylls därmed) · fokusring 2 px med 3 px offset · fokus får aldrig döljas av sticky lager · text aldrig 400 under 12 px.</div>
+    </div>
+    <div style="border-top:1px solid #24382c;padding-top:10px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Lager</div>
+      <div style="font-size:12.5px;color:#37453a;line-height:1.8;margin-top:6px">Ark, dialog och meny: fokus in i lagret, hålls kvar, stängs med Escape/bakåt, återgår till utlösaren. Bakgrunden är inte navigerbar.</div>
+    </div>
+    <div style="border-top:1px solid #24382c;padding-top:10px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Status</div>
+      <div style="font-size:12.5px;color:#37453a;line-height:1.8;margin-top:6px">Annonseras utan att flytta fokus. Nedräkningar annonseras när åtgärden blir tillgänglig — inte varje sekund.</div>
+    </div>
+  </div>
+
+  <div style="margin-top:22px;border:1px solid #24382c;padding:16px 20px;max-width:1180px">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Hur arket kopplas till skärmfilen</div>
+    <div style="font-size:12.5px;color:#37453a;line-height:1.85;margin-top:8px">Varje interaktiv kontroll i skärmfilernas fem delar (<code>Butlery Skarmar v12 del 1–4</code> och <code>etapp 2</code>) bär tre attribut, så att raden här går att hitta i ritningen och tvärtom:<br>
+    <code>data-a11y-name</code> — det tillgängliga namnet, ord för ord som det ska läsas.<br>
+    <code>data-a11y-role</code> — exakt ett av sex värden: <code>button</code> · <code>tab</code> · <code>switch</code> · <code>radio</code> · <code>checkbox</code> · <code>textbox</code>. Vokabulären är stängd och kontrolleras av T-08; svensk prosa i attributet fäller bygget.<br>
+    <code>data-hit</code> — var hitboxen ligger när den är större än det man ser, t.ex. <code>wrapper 48</code> eller <code>row 56</code>.<br>
+    <b>Täckning i skärmfilen: <!--n:controls-->1372<!--/n--> märkta kontroller i <!--n:frames-->279<!--/n--> ramar, samtliga med roll, ingen under 48 dp.</b> Siffrorna genereras av <code>tools/gen-counts.mjs</code> — de skrivs aldrig för hand. Måttet är mätt i renderad geometri, inte läst ur källkoden — och <code>data-a11y-name</code> på ett <code>span</code> är en <i>anvisning</i>, inte ett bevis. Beviset är TalkBack och VoiceOver på enhet, protokollrad i <code>testmatris.md</code> § 4.<br>
+    Roll, namn och tillstånd i den här filen vinner över allt annat. Krockar en rad med en skärm är det skärmen som ska rättas.</div>
+  </div>
+
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="6">
+    <div style="margin-top:46px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+      <span style="font-size:15px;font-weight:700;color:#a15a0a">{{ g.num }}</span>
+      <span style="font-size:20px;font-weight:700;letter-spacing:-.3px">{{ g.title }}</span>
+      <span style="margin-left:auto;font-size:12px;color:#627061;font-variant-numeric:tabular-nums">{{ g.count }} kontroller</span>
+    </div>
+    <div style="margin-top:12px">
+      <div style="display:grid;grid-template-columns:1.15fr .8fr 1.35fr 1.35fr 1.5fr;gap:16px;padding:8px 0;border-bottom:1px solid #24382c;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061">
+        <span>Komponent</span><span>Roll</span><span>Tillgängligt namn</span><span>Tillstånd som exponeras</span><span>Noter · läsordning</span>
+      </div>
+      <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="6">
+        <div style="display:grid;grid-template-columns:1.15fr .8fr 1.35fr 1.35fr 1.5fr;gap:16px;padding:11px 0;border-bottom:1px solid #ccd1c2;font-size:12.5px;line-height:1.55;align-items:start">
+          <span style="font-weight:600;color:#24382c">{{ r.name }}</span>
+          <span style="color:#627061">{{ r.role }}</span>
+          <span style="color:#37453a">{{ r.label }}</span>
+          <span style="color:#37453a">{{ r.state }}</span>
+          <span style="color:#627061">{{ r.note }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-for>
+
+  <div style="margin-top:46px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">↳</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Godkännandeprov</span>
+  </div>
+  <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:32px">
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Mäts per vy</div>
+      <div style="font-size:12.5px;color:#37453a;line-height:1.9;margin-top:6px">412 · 360 · 320 CSS-px utan dubbelriktad scroll · 200 % text utan förlorat innehåll · användarstyrd textrytm (1,5× rad · 2× stycke · 0,12× tecken · 0,16× ord) · stående och liggande · tangentbord hela vägen · skärmläsare läser i logisk ordning.</div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Underkänt om</div>
+      <div style="font-size:12.5px;color:#37453a;line-height:1.9;margin-top:6px">Fokus försvinner bakom sticky lager · dragning saknar knappalternativ · status syns bara som färg · ikonknapp saknar namn · disabled uttrycks med opacitet · nedräkning annonseras varje sekund · OTP kräver sex separata fokuslägen.</div>
+    </div>
+  </div>
+
+  <div style="margin-top:46px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">↳</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Per-skärm-annotering · status 2026-07-30</span>
+  </div>
+  <div style="font-size:13px;color:#37453a;line-height:1.7;margin-top:12px;max-width:900px">P1-11 stod som <b>delvis</b> i fyra dagar: chipraden och ingrediensbytet var omskrivna, men ingen hade gått igenom skärmfilerna på jakt efter <b>interaktiva <code style="font-family:ui-monospace,monospace;font-size:.9em">div</code> och <code style="font-family:ui-monospace,monospace;font-size:.9em">span</code> utan roll</b>. Genomgången är gjord maskinellt över alla fjorton delfiler: element med kontrollhöjd (48 eller 56 px) och en handlingsetikett, men utan <code style="font-family:ui-monospace,monospace;font-size:.9em">data-a11y-role</code>.</div>
+  <div style="font-size:13px;color:#37453a;line-height:1.7;margin-top:10px;max-width:900px"><b>Fyndet: 22 omärkta kontroller, alla i de två äldsta filerna.</b> Elva i <i>del 1</i> (menygenereringens <i>Generera</i>, <i>Avbryt planeringen</i>, <i>Fortsätt i bakgrunden</i>, <i>Spara veckan</i>, <i>Börja laga</i> …) och elva i <i>del 2</i> (sammanfogningens <i>Avbryt</i> och <i>Lägg till 18 varor</i>, vännernas <i>Öppna receptet</i>, inköpslistans <i>Rensa köpta</i> …). Samtliga har nu roll, namn ur sin egen etikett, och deklarerad träffyta. <b>De tolv filer som ritades efter att märkningsregeln infördes hade noll.</b></div>
+  <div style="margin-top:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#ccd1c2;border:1px solid #ccd1c2">
+    <div style="background:#e6ead9;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#37453a">Fil</span><span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#37453a">Roller</span></div>
+    <div style="background:#e6ead9;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#37453a">Fil</span><span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#37453a">Roller</span></div>
+    <div style="background:#e6ead9;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#37453a">Fil</span><span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#37453a">Roller</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">del 1 recept och veckomeny</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">39</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">del 2 familj och socialt</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">28</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">del 3 sök och skalbevis</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">40</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">del 4 mörkt läge och etapp 0–1</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">201</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">etapp 2 veckomeny</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">259</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">etapp 2 inköp och skafferi</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">63</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">etapp 3 onboarding</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">119</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">etapp 4 import</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">115</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">etapp 5–7</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">95</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">etapp 6 konto och integritet</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">76</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">etapp 9 globala och flerval</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">105</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">etapp 9 socialt och komponenter</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">100</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">etapp 10 bred layout</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">30</span></div>
+    <div style="background:#F5F4ED;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;color:#37453a">etapp 11 breda vyer</span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">102</span></div>
+    <div style="background:#e6ead9;padding:8px 12px;display:flex;gap:10px"><span style="flex:1;font-size:12.5px;font-weight:700;color:#24382c">Summa</span><span style="font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums">1 372</span></div>
+  </div>
+
+  <div style="margin-top:20px;background:#f7e8d2;padding:16px 18px;max-width:900px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a5212">Om data-hit — läs det här innan T-08 körs</div>
+    <div style="font-size:13px;color:#37453a;line-height:1.7;margin-top:8px"><b><!--n:hits-->526<!--/n--> av <!--n:controls-->1372<!--/n--> roller bär <code style="font-family:ui-monospace,monospace;font-size:.9em">data-hit</code>. Det är avsiktligt, inte en lucka.</b> Attributet är en <i>deklaration</i> som ritaren skriver för hand, och att fylla i 846 tal utan att mäta dem hade gjort märkningen sämre — inte bättre. Ett handskrivet mått som ingen mätt är precis den felklass som gav <!--n:frames-->279<!--/n--> ramar där det fanns 322.</div>
+    <div style="font-size:13px;color:#37453a;line-height:1.7;margin-top:8px"><b>T-08 ska därför mäta renderad höjd</b>, inte söka efter attributet. Den regeln står redan i spec-indexets P0-2 (<i>”Kvar för CI: T-08 måste mäta renderad höjd, inte söka <code style="font-family:ui-monospace,monospace;font-size:.9em">44px</code> i källan”</i>) och den här raden är kvittot på att den fortfarande gäller. <code style="font-family:ui-monospace,monospace;font-size:.9em">data-hit</code> behålls där måttet är avsiktligt annat än elementets egen höjd — <i>raden 56</i>, en wrappad kryssruta — alltså där en människa behöver förklara något som mätningen inte kan gissa.</div>
+    <div style="font-size:13px;color:#37453a;line-height:1.7;margin-top:8px">Browserproben i <code style="font-family:ui-monospace,monospace;font-size:.9em">testmatris.md</code> § 4 är den som gäller: <code style="font-family:ui-monospace,monospace;font-size:.9em">[data-a11y-role]</code> under 48 px ska ge <b>0</b>, och <code style="font-family:ui-monospace,monospace;font-size:.9em">[data-a11y-role] [data-a11y-role]</code> ska ge <b>0</b> (ingen nästlad kontroll — ett lint kan inte se nästling, det gav 89 falska träffar när vi försökte).</div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320}}">
+const GROUPS = [
+  { num:'01', title:'Navigation & toppfält', rows:[
+    { name:'Bottennavigation', role:'tablist med 4 tabs + separat knapp', label:'Hem · Meny · Inköp · Mer', state:'vald tab exponeras (selected), inte bara saffranslinjen', note:'Etiketten är "Meny", inte "Veckomeny" (beslut B-17) — och det tillgängliga namnet är samma ord som det synliga. Central plus ligger utanför tablisten: egen knapp "Lägg till", eget fokusläge. Tablisten läses sist i vyn.' },
+    { name:'Bakåt', role:'knapp', label:'Tillbaka till {föregående vy}', state:'—', note:'Aldrig bara "Tillbaka" när målet är känt. Läses först.' },
+    { name:'Stäng (X)', role:'knapp', label:'Stäng {vyns namn}', state:'—', note:'Endast i modal/ark — aldrig i samma vy som bakåtpil.' },
+    { name:'Kebab', role:'knapp som öppnar meny', label:'Fler åtgärder för {objekt}', state:'expanded true/false', note:'Öppnar meny; fokus till första menyvalet.' },
+    { name:'Sidtitel', role:'rubrik nivå 1', label:'= synlig titel', state:'—', note:'En per vy. Trunkeras aldrig till obegriplighet.' },
+    { name:'Textstorlek (A+)', role:'knapp', label:'Öka textstorlek', state:'aktuellt läge exponeras som värde', note:'Ikontexten A+ är dekorativ; namnet bär betydelsen.' }
+  ]},
+  { num:'02', title:'Recept & matlagning', rows:[
+    { name:'Favorit', role:'växlingsknapp', label:'Spara som favorit / Ta bort från favoriter', state:'pressed true/false', note:'Namnet byts med läget — hjärtat är dekorativt.' },
+    { name:'Ladda ned', role:'knapp', label:'Spara receptet offline', state:'busy under nedladdning, sedan status "Sparat offline"', note:'Statusen annonseras utan fokusbyte.' },
+    { name:'Portionsväljare', role:'spinbutton', label:'Portioner', state:'värde · min 1 · max 12', note:'Ordet "Portioner" är synligt; − och + är egna knappar med namn "Färre/Fler portioner".' },
+    { name:'Flikar Ingredienser / Gör så här', role:'tablist', label:'Ingredienser · Gör så här', state:'selected', note:'Panelen knyts till fliken; linjen är dekorativ.' },
+    { name:'Skafferistatus per rad', role:'text', label:'Finns 5 dl / Delvis 200 g / Saknas', state:'—', note:'Ordet bär statusen, färgen är förstärkning. Läses efter mängd och namn.' },
+    { name:'Lägg N varor i inköpslistan', role:'knapp', label:'= synlig text inklusive antal', state:'busy → status "N varor tillagda"', note:'Antalet uppdateras i namnet när listan ändras.' },
+    { name:'Steg framåt / bakåt', role:'knapp', label:'Nästa steg · Föregående steg', state:'disabled på första/sista', note:'Stegräknaren "Steg 2 av 6" läses som status vid byte.' },
+    { name:'Timerchip', role:'knapp', label:'Starta timer 15 minuter', state:'running · paused · aktuell återstående tid', note:'Tid annonseras vid start, halvtid och slut — inte löpande.' },
+    { name:'Ingrediensbyte', role:'knapp per rad', label:'Byt ut {ingrediens}', state:'—', note:'Ersätter långtryck. Ritad som synlig 48 dp-ikonknapp sist på varje ingrediensrad i receptdetaljen (glyf arrow-up-down).' }
+  ]},
+  { num:'03', title:'Listor, val och formulär', rows:[
+    { name:'Kryssruta i lista', role:'checkbox', label:'= radens text', state:'checked', note:'Hela raden är träffytan; texten läses en gång, inte två.' },
+    { name:'Krysslista allergener', role:'group med checkboxar', label:'Allergener vi håller koll på', state:'checked per val', note:'Gruppens rubrik läses först; danger används aldrig som valfärg.' },
+    { name:'Chip / filter', role:'växlingsknapp', label:'Filtrera på {namn}', state:'pressed', note:'Hitboxen är 48 dp — chippet sätts med min-height, inte med padding (padding-satta chips slank igenom den första 48 dp-migrationen). Bocken visar valt läge.' },
+    { name:'Segment (Kan redigera / Endast läsa)', role:'radiogroup', label:'Behörighet', state:'checked', note:'Samma komponent i alla binära val.' },
+    { name:'Toggle', role:'switch', label:'= radens etikett', state:'checked', note:'Ink = på. Hela raden är träffyta.' },
+    { name:'Stepper (mängd)', role:'spinbutton', label:'Antal {vara}', state:'värde · min · max', note:'Tabulära siffror; − och + har egna namn.' },
+    { name:'Textfält', role:'textbox', label:'= synlig etikett', state:'invalid + felmeddelande kopplat', note:'Fel beskrivs i text; ikonen är dekorativ.' },
+    { name:'Lösenordsfält', role:'textbox', label:'Lösenord', state:'—', note:'Inklistring och lösenordshanterare måste fungera. Ingen egen tangentbordslogik.' },
+    { name:'Visa/dölj lösenord', role:'växlingsknapp', label:'Visa lösenord / Dölj lösenord', state:'pressed', note:'Namnet byts med läget.' },
+    { name:'OTP-kod', role:'ett textfält', label:'Verifieringskod, sex siffror', state:'ifyllda siffror · fel', note:'Rutorna är visuella. Hela koden kan klistras in eller autofyllas; en siffra kan rättas.' },
+    { name:'Stjärnbetyg (inmatning)', role:'radiogroup', label:'Betyg för {person}', state:'checked 1–5', note:'Varje stjärna 48 dp. I visningsläge är betyget text: "4,0 av 5".' },
+    { name:'Sortering', role:'knapp som öppnar ark', label:'Sortera listan, nu {aktuell ordning}', state:'expanded', note:'Vald ordning exponeras som checked i arket.' }
+  ]},
+  { num:'04', title:'Omordning & dragning', rows:[
+    { name:'Draghandtag (ingrediens, steg, bildsida)', role:'knapp', label:'Flytta {rad}', state:'grabbed under drag', note:'Genväg — aldrig enda vägen.' },
+    { name:'Radens åtgärdsmeny', role:'meny', label:'Åtgärder för {rad}', state:'expanded', note:'Innehåller Flytta upp, Flytta ned, Flytta till position …, Ta bort. Fungerar med tangentbord.' },
+    { name:'Flytta upp / ned', role:'knapp', label:'Flytta {rad} upp · Flytta {rad} ned', state:'disabled i topp/botten', note:'Ny position annonseras: "{rad}, position 3 av 7".' }
+  ]},
+  { num:'05', title:'Lager: ark, dialog, meny, snackbar', rows:[
+    { name:'Bottom sheet', role:'dialog (modal)', label:'= arkets rubrik', state:'—', note:'Fokus till första kontrollen, fälla, retur till utlösaren. Handtaget är dekorativt.' },
+    { name:'Dialog', role:'alertdialog vid bekräftelse', label:'= dialogrubrik', state:'—', note:'Konsekvenstexten kopplas som beskrivning. Destruktiv knapp är inte förvald.' },
+    { name:'Kontextmeny', role:'menu', label:'Åtgärder för {objekt}', state:'—', note:'Piltangenter mellan val, Escape stänger, fokus tillbaka till kebaben.' },
+    { name:'Snackbar', role:'status (fel: alert)', label:'—', state:'—', note:'Läses upp utan fokusbyte. Åtgärden är ett riktigt fokuserbart mål och benämns efter vad den gör — Ångra, Försök igen, Visa receptet. Aldrig enbart "OK" på ett fel som går att åtgärda.' },
+    { name:'Scrim', role:'dekor', label:'—', state:'—', note:'Döljs för hjälpmedel; stänger lagret vid tryck.' }
+  ]},
+  { num:'06', title:'Status, laddning och tomlägen', rows:[
+    { name:'Sparat-status', role:'status', label:'—', state:'—', note:'"Sparat 20:12" annonseras en gång per sparning.' },
+    { name:'Offlinebanner', role:'status', label:'—', state:'—', note:'Annonseras vid övergång, inte löpande. Ikonen är dekorativ.' },
+    { name:'Importsteg', role:'status + progressbar', label:'Importerar recept', state:'steg 2 av 3 · obestämd/bestämd', note:'Ett meddelande per steg (Hämtar → Analyserar → Skapar), inte per bildruta.' },
+    { name:'Tallrikslinje-progress', role:'progressbar', label:'= vad som laddas', state:'värde eller obestämd', note:'Ersätter spinner. Pulsen döljs vid reducerad rörelse.' },
+    { name:'Skelettrader', role:'dekor', label:'—', state:'—', note:'Döljs för hjälpmedel; laddningen bärs av statusmeddelandet.' },
+    { name:'Nedräkning (Skicka igen 42 s)', role:'knapp + status', label:'Skicka koden igen', state:'disabled tills 0', note:'Annonseras när knappen blir tillgänglig — aldrig varje sekund.' },
+    { name:'Tomläge', role:'—', label:'—', state:'—', note:'Illustrationen döljs. Rubrik + förklaring + primär åtgärd läses i den ordningen.' }
+  ]},
+  { num:'07', title:'Personer, bilder och media', rows:[
+    { name:'Avatar med namn intill', role:'dekor', label:'—', state:'—', note:'Namnet läses en gång. Initialen är inte innehåll.' },
+    { name:'Avatar utan namn', role:'bild', label:'{personens namn}', state:'—', note:'"Du" markeras med saffransring + ordet "du" i namnet.' },
+    { name:'Receptbild', role:'bild eller dekor', label:'Kort beskrivning om bilden hjälper igenkänning, annars tomt', state:'—', note:'Aldrig "bild av recept". Saknad bild ritas inte alls — mediaytan kollapsar (B-04) — så det finns inget att dölja.' },
+    { name:'Bild kunde inte laddas', role:'status', label:'Bilden kunde inte visas', state:'—', note:'Eget läge, skilt från saknad bild: ytan behålls så layouten inte hoppar, texten läses en gång, omförsöket sker tyst. Glyfen är dekor.' },
+    { name:'Fotograferad receptsida', role:'bild + text', label:'Sida {n} av {m}, {vald}', state:'selected', note:'Tolkad recepttext måste finnas som text efter import.' },
+    { name:'Kamera / ladda upp', role:'knapp', label:'Fota receptet · Välj bild från biblioteket', state:'—', note:'Textetikett krävs, ikon räcker inte.' },
+    { name:'Logotyp och cloche', role:'dekor', label:'—', state:'—', note:'Döljs för hjälpmedel utom när lockupen är enda identifikationen (inloggning).' }
+  ]}
+];
+
+class Component extends DCLogic {
+  renderVals(){
+    return { groups: GROUPS.map(g=>({ num:g.num, title:g.title, count:g.rows.length, rows:g.rows })) };
+  }
+}
+
+</script>
+</body>
+</html>

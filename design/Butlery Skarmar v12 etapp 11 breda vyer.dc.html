@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><title>Butlery — Skärmar v12 · etapp 11 · breda vyer</title>
+<style>
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Regular.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Italic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Semibold.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Semibold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-SemiboldItalic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-SemiboldItalic.ttf') format('truetype');font-weight:600;font-style:italic;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Bold.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-BoldItalic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:swap}
+body{margin:0;font-synthesis:none;background:#F5F4ED;font-variant-numeric:proportional-nums}
+a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:underline}
+/* länk på upphöjd yta */
+.sc-id,.sc-note a,[style*="background:#e6ead9"] a,[style*="background:#E6EAD9"] a,[style*="background:#f0eee2"] a,[style*="background:#F0EEE2"] a,[style*="background:#f7e8d2"] a,[style*="background:#F7E8D2"] a{color:#8A5212}
+</style>
+<style>
+.sc-wrap{padding:40px 44px 60px}
+.sc-title{font:600 13px/1.5 'Butlery Sans',sans-serif;color:#24382c;margin:0 0 24px;max-width:900px;font-variant-numeric:proportional-nums}
+.sc-col{display:flex;flex-direction:column;gap:44px;align-items:flex-start;font-variant-numeric:proportional-nums}
+.sc-item{display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}
+.sc-label{display:block;font:400 11.5px/1.6 'Butlery Sans',sans-serif;color:#5B6959;max-width:840px;text-wrap:pretty}
+.sc-label b,.sc-label i,.sc-label code{color:#37453a}
+.sc-id{display:inline-block;margin-right:7px;font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:#e6ead9;color:#24382C;border-radius:4px;text-decoration:none;vertical-align:2px}
+.sc-tab{position:relative;background:#F5F4ED;border:1px solid #ccd1c2;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382c}
+.sc-cap{font:600 10.5px 'Butlery Sans',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959}
+.sc-note{background:#f0eee2;border-left:3px solid #8A5212;padding:12px 14px;font:400 12px/1.5 'Butlery Sans',sans-serif;color:#37453a;max-width:1024px;box-sizing:border-box}
+.sc-note b{color:#24382c}
+.g7{display:grid;grid-template-columns:60px repeat(7,1fr);gap:6px}
+.dh{font:700 11px 'Butlery Sans',sans-serif;letter-spacing:1px;text-transform:uppercase;color:#5B6959;text-align:center}
+.rl{font:700 11px 'Butlery Sans',sans-serif;letter-spacing:1px;text-transform:uppercase;color:#8A5212;padding-top:10px}
+.cell{min-height:116px;border:1px solid #ccd1c2;padding:8px;box-sizing:border-box;display:flex;flex-direction:column;gap:5px}
+.ct{font:600 12px/1.3 'Butlery Sans',sans-serif}
+.cm{font:400 10.5px 'Butlery Sans',sans-serif;color:#5B6959}
+.empty{min-height:116px;border:1px dashed #ccd1c2;box-sizing:border-box;display:flex;align-items:center;justify-content:center}
+.plus{width:44px;height:44px;border-radius:999px;background:#e6ead9;display:inline-flex;align-items:center;justify-content:center}
+.av{width:26px;height:26px;border-radius:999px;background:#ccd1c2;font:700 10.5px 'Butlery Sans',sans-serif;display:inline-flex;align-items:center;justify-content:center;color:#37453a}
+.pr{display:flex;gap:3px;align-items:center;min-height:48px}
+</style>
+</helmet>
+<section style="font-variant-numeric:proportional-nums;font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382c;padding:48px 56px 0">
+  <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8A5212">Butlery · Skärmar v12 — etapp 11.1 · veckomenyns rutnät</div>
+  <div style="display:flex;align-items:center;gap:14px;margin:12px 0 8px"><span style="width:22px;height:4px;background:#ce7c1e;border-radius:2px"></span><span style="flex:1;max-width:760px;height:1px;background:#24382c"></span></div>
+  <div style="font-size:13px;color:#37453a;max-width:820px;line-height:1.65"><b>Åtta ramar.</b> Läst mot <code>veckomeny_view.dart</code> och <code>realtime/conflict_diff_view.dart</code>. Övriga menyfiler (<code>calendar_weekly_menu_widget.dart</code>, <code>menu_placement_view.dart</code>, <code>placement_widgets.dart</code>, <code>weekly_menu_plan_service.dart</code>, <code>menu_slot_vote.dart</code>) är lästa i tidigare etapper — se etapp 2 och 8. Plan: <a href="etapp11-plan.md">etapp11-plan.md</a>. Systemreglerna: <a href="Butlery Skarmar v12 etapp 10 bred layout.dc.html">etapp 10</a> § 21. Krav <b>BV-01…BV-13</b>, regler i <code>produktregler.md</code> § 22.<br><br><b>Standardsvaren körda:</b> matlagningsläget brett ligger sist (11.4, får strykas), <b>dragning tillåts som genväg med synliga mål</b>, och 1280 får bara mer luft.</div>
+</section>
+<section class="sc-wrap" data-screen-label="v11.1 — veckomenyns rutnät">
+<div class="sc-title"><b>Två fynd innan ramarna, och båda ändrar layouten.</b><br><br><b>Ett: vyn är redan bredbegränsad till 900 px</b> (<code>LayoutComponents.valueFor</code>: mobil <code>infinity</code>, tablet 900, desktop 1200). Sju kolumner i 900 px blir 118 px styck — smalare än receptkortets golv och nästan smalare än närvarorutan. <b>Regeln blir: kalenderläget lyder inte under textbredden.</b> Maxbredden finns för radlängd, och ett rutnät är inte löptext. Listläget (prompten och den genererade menyn) behåller sina 900.<br><br><b>Två: prompten ligger kvar ovanför kalendern.</b> <code>_buildBody</code> ritar alltid promptfältet och genereringsknappen, och lägger kalendern i en <code>Expanded</code> under. På en telefon är det en skroll; brett äter det översta tredjedelen av skärmen för ett fält man använder en gång i veckan. <b>Brett flyttar prompten till en egen smal spalt till vänster</b> — samma plats varje gång, aldrig ovanpå veckan.<br><br>Och en tredje sak som är ett rent fel: <code>_confirmOverwrite</code> är en dialog med <b>bara en rubrik</b> och knapparna Avbryt / Fortsätt. Den skriver över en <i>hel vecka</i> utan att säga vad som försvinner. Brett har vi veckan framför oss — se <a href="#vmbgenererar">vmbgenererar</a>.</div>
+<div class="sc-col">
+
+<div class="sc-item" id="vmbnormal" data-screen-label="Veckan brett — normalläget">
+  <div class="sc-label"><a class="sc-id" href="#vmbnormal">normalläget</a><b>Referensramen, färdigritad ur skissen i etapp 10.</b> Sju dagkolumner, måltiderna som rader, prompten i en egen spalt till vänster. <b>NY-brickan</b> finns i koden (<code>recentlyPlacedEntryIds</code> från senaste placeringen) och får en plats här: den säger vilka rätter som kom av den senaste genereringen, vilket är exakt vad man vill veta när man tittar på veckan igen.<br><br><b>Närvaron per måltid</b> (BUT-1611) ligger i cellen, som i koden — inte i en separat remsa. Tre ansikten är taket (B-40/41); fler blir <i>en avatar plus antal</i>, och det gäller i den smala kolumnen lika strikt som på telefonen. Ansiktena är en <b>kontroll</b> på 48 px, inte dekor: man trycker där för att ändra vem som äter.<br><br><b>En regel som bara syns brett:</b> dagens kolumn markeras, men <b>markeringen för <i>i dag</i> och markeringen för <i>osparat</i> får aldrig se likadana ut</b> — den ena är en plats i tiden, den andra ett tillstånd i nätet. I dag bär saffranskant, osparat bär streckad kant (se <a href="#vmboffline">vmboffline</a>).</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid #ccd1c2"><span style="flex:1;font-size:24px;font-weight:700;letter-spacing:-.5px">Vecka 31</span><span style="font-size:13px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">27 juli – 2 aug · 6 rätter</span><span style="display:inline-flex;border:1px solid #24382c"><span style="min-height:44px;display:inline-flex;align-items:center;padding:0 14px;font-size:13px;font-weight:600;color:#5B6959" data-a11y-name="Visa som lista" data-a11y-role="tab">Lista</span><span style="min-height:44px;display:inline-flex;align-items:center;padding:0 14px;font-size:13px;font-weight:700;background:#24382c;color:#F5F4ED" data-a11y-name="Visa som vecka" data-a11y-role="tab" data-a11y-state="selected">Vecka</span></span></div>
+    <div style="display:flex;min-height:0">
+      <div style="width:236px;flex:none;border-right:1px solid #ccd1c2;padding:16px;box-sizing:border-box">
+        <div class="sc-cap">Be om en meny</div>
+        <span style="display:block;min-height:76px;padding:10px 12px;margin-top:8px;border:1px solid #788477;box-sizing:border-box;font-size:13.5px;line-height:1.5;color:#5B6959" data-a11y-name="Beskriv veckan du vill ha" data-a11y-role="textbox">Snabbt på vardagar, något med fisk …</span>
+        <span style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;margin-top:10px;background:#ce7c1e;color:#17251d;font-size:13.5px;font-weight:600;box-sizing:border-box" data-a11y-name="Föreslå en vecka" data-a11y-role="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#17251d" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="zap"><path d="M12 4.5v5"></path><path d="M12 14.5v5"></path><path d="M4.5 12h5"></path><path d="M14.5 12h5"></path></svg>Föreslå</span>
+        <div style="font-size:11.5px;color:#37453a;line-height:1.5;margin-top:10px">Förslaget hamnar i veckan — du flyttar det du vill.</div>
+        <div style="height:1px;background:#ccd1c2;margin:16px 0"></div>
+        <div class="sc-cap">Hemma i veckan</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+          <span style="display:flex;align-items:center;gap:8px;min-height:44px;font-size:13px;font-weight:600"><span class="av">M</span>Malin · 7 middagar</span>
+          <span style="display:flex;align-items:center;gap:8px;min-height:44px;font-size:13px;font-weight:600"><span class="av">N</span>Nils · 5 middagar</span>
+          <span style="display:flex;align-items:center;gap:8px;min-height:44px;font-size:13px;font-weight:600"><span class="av">I</span>Ida · 7 middagar</span>
+        </div>
+      </div>
+      <div style="flex:1;min-width:0;padding:16px 20px">
+        <div class="g7">
+          <span></span><span class="dh">Mån</span><span class="dh">Tis</span><span class="dh" style="color:#24382c">Ons</span><span class="dh">Tor</span><span class="dh">Fre</span><span class="dh">Lör</span><span class="dh">Sön</span>
+        </div>
+        <div class="g7" style="margin-top:8px">
+          <span class="rl">Middag</span>
+          <span class="cell"><span class="ct">Fisksoppa</span><span style="font-variant-numeric:tabular-nums" class="cm">35 min</span><span style="flex:1"></span><span class="pr"><span class="av">M</span><span class="av">N</span><span class="av">I</span></span></span>
+          <span class="cell"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:#8A5212">NY</span><span class="ct">Ugnspannkaka</span><span style="font-variant-numeric:tabular-nums" class="cm">40 min</span><span style="flex:1"></span><span class="pr"><span class="av">M</span><span class="av">I</span></span></span>
+          <span class="cell" style="border:1.5px solid #ce7c1e;background:#f7e8d2"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8A5212">I dag</span><span class="ct" style="font-weight:700">Pannbiffar med lök</span><span class="cm" style="font-variant-numeric:tabular-nums;color:#37453a">35 min</span><span style="flex:1"></span><span class="pr"><span class="av" style="background:#e6ead9">M</span><span class="av" style="background:#e6ead9">N</span><span style="font-size:10.5px;font-weight:700">+2</span></span></span>
+          <span class="cell"><span class="ct">Linsgryta</span><span style="font-variant-numeric:tabular-nums" class="cm">25 min</span><span style="flex:1"></span><span class="pr"><span class="av">M</span><span style="font-size:11px;font-weight:600;color:#5B6959">Nils hos pappa</span></span></span>
+          <span class="empty" data-a11y-name="Fredag middag är tom. Lägg något här" data-a11y-role="button"><span class="plus"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B6959" stroke-width="1.9" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span></span>
+          <span class="cell"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:#8A5212">NY</span><span class="ct">Ärtsoppa</span><span style="font-variant-numeric:tabular-nums" class="cm">90 min</span><span style="flex:1"></span><span class="pr"><span class="av">M</span><span class="av">N</span><span class="av">I</span></span></span>
+          <span class="cell"><span class="ct">Rotsakslåda</span><span style="font-variant-numeric:tabular-nums" class="cm">55 min</span><span style="flex:1"></span><span class="pr"><span class="av">M</span><span class="av">I</span></span></span>
+        </div>
+        <div class="g7" style="margin-top:8px">
+          <span class="rl" style="color:#5B6959">Lunch</span>
+          <span class="empty" style="min-height:60px" data-a11y-name="Måndag lunch är tom" data-a11y-role="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#788477" stroke-width="1.9" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span>
+          <span class="cell" style="min-height:60px"><span class="ct" style="font-size:11.5px">Rester: fisksoppa</span></span>
+          <span class="empty" style="min-height:60px" data-a11y-name="Onsdag lunch är tom" data-a11y-role="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#788477" stroke-width="1.9" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span>
+          <span class="empty" style="min-height:60px" data-a11y-name="Torsdag lunch är tom" data-a11y-role="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#788477" stroke-width="1.9" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span>
+          <span class="empty" style="min-height:60px" data-a11y-name="Fredag lunch är tom" data-a11y-role="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#788477" stroke-width="1.9" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span>
+          <span class="cell" style="min-height:60px"><span class="ct" style="font-size:11.5px">Pannkakor</span></span>
+          <span class="empty" style="min-height:60px" data-a11y-name="Söndag lunch är tom" data-a11y-role="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#788477" stroke-width="1.9" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Kalenderläget lyder inte under textbredden.</b> Maxbredden 900 finns för radlängd; ett rutnät är inte löptext. Prompten flyttas till en egen spalt — den ligger i dag ovanför kalendern och äter en tredjedel av höjden för ett fält man använder en gång i veckan.</div>
+</div>
+
+<div class="sc-item" id="vmbtom" data-screen-label="Veckan brett — tom">
+  <div class="sc-label"><a class="sc-id" href="#vmbtom">den tomma veckan</a><b>Ett rutnät kan inte ha ett tomt läge i mitten.</b> Telefonens tomma vy är en illustration, en rubrik och en knapp — men här <i>är</i> ytan fjorton knappar, och att lägga en overlay över dem gör dem oåtkomliga för den som redan vet vad hon vill.<br><br>Svaret: <b>rutnätet står kvar och är fullt användbart</b>, och det tomma läget flyttar in i promptspalten till vänster, där handlingen ändå bor. Kolumnerna får en svagare, jämn dager (inga fjorton likadana plusknappar som skriker) och <b>en enda</b> tydlig ingång — dagens ruta, eftersom det är den man oftast fyller först.<br><br><b>Och tomheten skiljs från <i>ny</i>.</b> En ny användare får en mening om vad veckan är till för; en van användare som rensat veckan får ingen förklaring — bara en tom vecka och prompten. Koden vet redan skillnaden: förstagångsläget öppnar i listläge, och ett sparat veckoplan öppnar i kalenderläge (<code>_loadViewModePreference</code>). Det är ett ovanligt eftertänksamt val som ramen bara ska bevara.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid #ccd1c2"><span style="flex:1;font-size:24px;font-weight:700;letter-spacing:-.5px">Vecka 31</span><span style="font-size:13px;font-weight:600;color:#5B6959">inget planerat än</span></div>
+    <div style="display:flex;min-height:0">
+      <div style="width:236px;flex:none;border-right:1px solid #ccd1c2;padding:16px;box-sizing:border-box;background:#e6ead9">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#3f6b4f" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" data-icon="nav-week"><rect x="4" y="5.5" width="16" height="14" rx="1.5"></rect><path d="M4 10h16"></path></svg>
+        <div style="font-size:17px;font-weight:700;letter-spacing:-.2px;margin-top:12px;line-height:1.3">Veckan är öppen</div>
+        <div style="font-size:13px;color:#37453a;line-height:1.55;margin-top:8px">Säg vad ni är på humör för, så föreslår jag ur dina egna recept. Eller tryck i en ruta och välj själv.</div>
+        <span style="display:block;min-height:76px;padding:10px 12px;margin-top:12px;border:1.5px solid #24382c;background:#F5F4ED;box-sizing:border-box;font-size:13.5px;line-height:1.5;color:#5B6959" data-a11y-name="Beskriv veckan du vill ha" data-a11y-role="textbox">Snabbt på vardagar, något med fisk …</span>
+        <span style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:10px;background:#ce7c1e;color:#17251d;font-size:13.5px;font-weight:600;box-sizing:border-box" data-a11y-name="Föreslå en vecka" data-a11y-role="button">Föreslå en vecka</span>
+      </div>
+      <div style="flex:1;min-width:0;padding:16px 20px">
+        <div class="g7">
+          <span></span><span class="dh">Mån</span><span class="dh">Tis</span><span class="dh" style="color:#24382c">Ons</span><span class="dh">Tor</span><span class="dh">Fre</span><span class="dh">Lör</span><span class="dh">Sön</span>
+        </div>
+        <div class="g7" style="margin-top:8px">
+          <span class="rl">Middag</span>
+          <span class="empty" style="border-color:#e6ead9" data-a11y-name="Måndag middag är tom" data-a11y-role="button"></span>
+          <span class="empty" style="border-color:#e6ead9" data-a11y-name="Tisdag middag är tom" data-a11y-role="button"></span>
+          <span class="empty" style="border:1.5px solid #ce7c1e;background:#f7e8d2;flex-direction:column;gap:6px" data-a11y-name="I dag, onsdag middag. Lägg något här" data-a11y-role="button"><span class="plus" style="background:#F5F4ED"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A5212" stroke-width="2" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span><span style="font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#8A5212">BÖRJA HÄR</span></span>
+          <span class="empty" style="border-color:#e6ead9" data-a11y-name="Torsdag middag är tom" data-a11y-role="button"></span>
+          <span class="empty" style="border-color:#e6ead9" data-a11y-name="Fredag middag är tom" data-a11y-role="button"></span>
+          <span class="empty" style="border-color:#e6ead9" data-a11y-name="Lördag middag är tom" data-a11y-role="button"></span>
+          <span class="empty" style="border-color:#e6ead9" data-a11y-name="Söndag middag är tom" data-a11y-role="button"></span>
+        </div>
+        <div class="g7" style="margin-top:8px">
+          <span class="rl" style="color:#5B6959">Lunch</span>
+          <span class="empty" style="min-height:60px;border-color:#e6ead9"></span><span class="empty" style="min-height:60px;border-color:#e6ead9"></span><span class="empty" style="min-height:60px;border-color:#e6ead9"></span><span class="empty" style="min-height:60px;border-color:#e6ead9"></span><span class="empty" style="min-height:60px;border-color:#e6ead9"></span><span class="empty" style="min-height:60px;border-color:#e6ead9"></span><span class="empty" style="min-height:60px;border-color:#e6ead9"></span>
+        </div>
+        <div style="font-size:11.5px;color:#5B6959;line-height:1.5;margin-top:10px;font-style:italic">Alla rutor går att trycka på — men bara en är framhävd. Fjorton lika starka uppmaningar är ingen uppmaning.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="vmbgenererar" data-screen-label="Veckan brett — genererar och skriver över">
+  <div class="sc-label"><a class="sc-id" href="#vmbgenererar">genereringen</a><b>Här ligger buntens allvarligaste fynd, och det är en dialog med en enda rad.</b> <code>_confirmOverwrite</code> visar bara rubriken <i>Skriv över veckan?</i> och knapparna Avbryt / Fortsätt. Den skriver över <b>hela veckan</b> — och säger inte hur många rätter som försvinner, vilka, eller att bara vissa dagar berörs. På en telefon är det illa. Brett är det absurt: <b>veckan ligger framför användaren medan hon ombeds gissa vad som ska hända med den.</b><br><br>Ramen gör bekräftelsen till en <b>markering i rutnätet</b>: de rutor som skrivs över ramas in i rost och räknas i en rad över nätet. Man ser exakt vad man förlorar innan man förlorar det. Det är samma princip som taggsammanslagningen (§ 17.5) — <i>visa vad som försvinner innan det försvinner</i> — men här kunde vi göra det utan en enda ny yta.<br><br><b>Och overlayen tas bort.</b> <code>VeckomenyGeneratingOverlay</code> lägger sig över hela vyn under generering. Brett betyder det att man inte får se det enda som är intressant: <b>veckan som fylls</b>. Ramen fyller rutorna i ordning i stället — samma information, ingen blockering, och man förstår vilken logik som placerar (dag för dag, hoppar över det upptagna).<br><br>Fortskridandet visas som <b>hårstreck per ruta</b>, aldrig som spinner (K-06). Med reducerad rörelse fylls rutorna direkt, utan animering, och raden över nätet säger antalet.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid #ccd1c2;background:#f0eee2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9C3B23" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="triangle-alert"><path d="M12 4.5L20.5 19.5H3.5z"></path><path d="M12 10v4"></path><path d="M12 16.6v.4"></path></svg><span style="flex:1;font-size:14px;font-weight:600;color:#37453a"><b style="color:#24382c">Fyra rätter skrivs över</b> — Fisksoppa, Linsgryta, Ärtsoppa och Rotsakslåda. Tre dagar rörs inte.</span><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 12px;font-size:13.5px;font-weight:600;flex:none" data-a11y-name="Avbryt" data-a11y-role="button">Avbryt</span><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 16px;background:#ce7c1e;color:#17251d;font-size:13.5px;font-weight:600;flex:none" data-a11y-name="Skriv över de fyra" data-a11y-role="button">Skriv över fyra</span></div>
+    <div style="display:flex;min-height:0">
+      <div style="width:236px;flex:none;border-right:1px solid #ccd1c2;padding:16px;box-sizing:border-box">
+        <div class="sc-cap">Föreslår ur ditt kök</div>
+        <div style="font-size:13px;font-weight:600;color:#37453a;line-height:1.5;margin-top:8px">”Snabbt på vardagar, något med fisk”</div>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+          <span style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M6 12.5l4 4 8-9"></path></svg>Läste 96 recept</span>
+          <span style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M6 12.5l4 4 8-9"></path></svg>Tog bort nötter och gluten</span>
+          <span style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#24382c">Lägger ut · 4 av 7</span>
+        </div>
+        <div style="width:100%;height:2px;background:#ccd1c2;margin-top:10px"><span style="display:block;width:57%;height:2px;background:#24382c"></span></div>
+        <div style="font-size:11.5px;color:#37453a;line-height:1.5;margin-top:10px">Ingen overlay: du ser veckan fyllas. <b>Avbryt</b> stannar där den är, och det som lagts ligger kvar.</div>
+        <span style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:10px;border:1.5px solid #24382c;font-size:13.5px;font-weight:600;box-sizing:border-box" data-a11y-name="Avbryt genereringen" data-a11y-role="button">Avbryt</span>
+      </div>
+      <div style="flex:1;min-width:0;padding:16px 20px">
+        <div class="g7">
+          <span></span><span class="dh">Mån</span><span class="dh">Tis</span><span class="dh" style="color:#24382c">Ons</span><span class="dh">Tor</span><span class="dh">Fre</span><span class="dh">Lör</span><span class="dh">Sön</span>
+        </div>
+        <div class="g7" style="margin-top:8px">
+          <span class="rl">Middag</span>
+          <span class="cell" style="border:1.5px solid #24382c;background:#e6ead9"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:#8A5212">NY</span><span class="ct">Torsk med potatis</span><span style="font-variant-numeric:tabular-nums" class="cm">30 min</span></span>
+          <span class="cell" style="border:1.5px solid #24382c;background:#e6ead9"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:#8A5212">NY</span><span class="ct">Kikärtsgryta</span><span style="font-variant-numeric:tabular-nums" class="cm">25 min</span></span>
+          <span class="cell" style="border:1.5px solid #24382c;background:#e6ead9"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:#8A5212">NY</span><span class="ct">Pannbiffar</span><span style="font-variant-numeric:tabular-nums" class="cm">35 min</span></span>
+          <span class="cell" style="border:1.5px solid #ce7c1e;background:#F5F4ED;align-items:stretch"><span style="height:2px;background:#ccd1c2"><span style="display:block;width:60%;height:2px;background:#ce7c1e"></span></span><span class="cm" style="margin-top:4px">lägger ut …</span></span>
+          <span class="cell" style="border:1.5px solid #9C3B23;background:#f0eee2"><span class="ct" style="color:#5B6959;text-decoration:line-through">Linsgryta</span><span class="cm" style="color:#9C3B23;font-weight:700">skrivs över</span></span>
+          <span class="cell" style="border:1.5px solid #9C3B23;background:#f0eee2"><span class="ct" style="color:#5B6959;text-decoration:line-through">Ärtsoppa</span><span class="cm" style="color:#9C3B23;font-weight:700">skrivs över</span></span>
+          <span class="cell"><span class="ct">Rotsakslåda</span><span style="font-variant-numeric:tabular-nums" class="cm">55 min</span><span style="flex:1"></span><span class="cm" style="font-weight:700;color:#3f6b4f">rörs inte</span></span>
+        </div>
+        <div style="font-size:11.5px;color:#37453a;line-height:1.5;margin-top:10px"><b>Rost betyder att något försvinner</b>, ink att något nytt lagts, saffran att det pågår. Tre tillstånd, tre färger, inga ord som behöver läsas för att förstå formen.</div>
+      </div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Bekräftelsen är en markering, inte en dialog.</b> <code>_confirmOverwrite</code> ber i dag om ett <i>Fortsätt</i> utan att säga vad som förloras. Brett kan vi visa det i rutnätet — samma princip som § 17.5, men utan en ny yta. <b>Och overlayen utgår:</b> under generering ska man se veckan fyllas, inte hindras från det.</div>
+</div>
+
+<div class="sc-item" id="vmbomrostning" data-screen-label="Veckan brett — aktiv omröstning">
+  <div class="sc-label"><a class="sc-id" href="#vmbomrostning">omröstningen i en cell</a><b>Röstkortet är byggt för en chattbubbla på 280 px och ska nu in i en kolumn på 130.</b> Det går inte, och därför är degraderingen det ramen faktiskt handlar om: <b>cellen visar att en röstning pågår, vad som leder och när den stänger — men inte alternativen.</b> Alternativen finns ett tryck bort, i det ark som redan är ritat.<br><br>Det är rätt prioritering: i rutnätet är frågan <i>är torsdagen avgjord?</i> Inuti arket är frågan <i>vad ska jag rösta på?</i> En cell som försöker svara på båda blir oläslig i båda.<br><br><b>Tre saker som måste stå i cellen.</b> <b>Ett:</b> att det <i>är</i> en röstning och inte en planerad rätt — annars läser man ledaren som beslutet. <b>Två:</b> <b>om du har röstat</b>, för det är den enda handlingen du kan ha kvar att göra. <b>Tre:</b> när den stänger — MR-07:s öppna fråga blir akut här, för <b>en utgången oavgjord röst har ingen plats i ett rutnät</b>: rutan skulle stå tom utan spår. § 22.4 kräver därför att en stängd röstning alltid lämnar <i>något</i> i cellen, även när ingen vann.<br><br><b>Och en gräns:</b> högst <b>en</b> röstning per cell. Två samtidiga röstningar om samma middag är ett tillstånd vi inte ritar — det är en bugg, och koden ska hindra det.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid #ccd1c2"><span style="flex:1;font-size:24px;font-weight:700;letter-spacing:-.5px">Vecka 31</span><span style="font-size:13px;font-weight:600;color:#8A5212">2 röstningar pågår</span></div>
+    <div style="padding:16px 20px">
+      <div class="g7">
+        <span></span><span class="dh">Mån</span><span class="dh">Tis</span><span class="dh" style="color:#24382c">Ons</span><span class="dh">Tor</span><span class="dh">Fre</span><span class="dh">Lör</span><span class="dh">Sön</span>
+      </div>
+      <div class="g7" style="margin-top:8px">
+        <span class="rl">Middag</span>
+        <span class="cell"><span class="ct">Fisksoppa</span><span style="font-variant-numeric:tabular-nums" class="cm">35 min</span></span>
+        <span class="cell" style="border-left:4px solid #ce7c1e"><span style="display:flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#8A5212"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8A5212" stroke-width="2.4" stroke-linecap="round" data-icon="vote"><path d="M6.5 19V13"></path><path d="M12 19V6.5"></path><path d="M17.5 19v-8.5"></path></svg>RÖSTNING</span><span class="ct">Ugnspannkaka leder</span><span class="cm">3 av 5 röster</span><span style="flex:1"></span><span style="font-size:10.5px;font-weight:700;color:#3f6b4f">du har röstat</span><span class="cm">stänger 17:00</span></span>
+        <span class="cell" style="border:1.5px solid #ce7c1e;background:#f7e8d2"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8A5212">I dag</span><span class="ct" style="font-weight:700">Pannbiffar med lök</span><span class="cm" style="font-variant-numeric:tabular-nums;color:#37453a">35 min</span></span>
+        <span class="cell" style="border-left:4px solid #ce7c1e;background:#e6ead9"><span style="display:flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#8A5212"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8A5212" stroke-width="2.4" stroke-linecap="round" data-icon="vote"><path d="M6.5 19V13"></path><path d="M12 19V6.5"></path><path d="M17.5 19v-8.5"></path></svg>RÖSTNING</span><span class="ct">Oavgjort · 2–2</span><span class="cm">Ärtsoppa · Tacos</span><span style="flex:1"></span><span style="min-height:44px;display:inline-flex;align-items:center;font-size:11px;font-weight:700;color:#8A5212;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Rösta på torsdag middag" data-a11y-role="button">Rösta</span></span>
+        <span class="cell"><span class="ct" style="color:#5B6959">Röstningen gick ut</span><span class="cm">ingen vann · 1–1</span><span style="flex:1"></span><span style="min-height:44px;display:inline-flex;align-items:center;font-size:11px;font-weight:700;color:#8A5212;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Avgör fredag middag" data-a11y-role="button">Avgör</span></span>
+        <span class="cell"><span class="ct">Ärtsoppa</span><span style="font-variant-numeric:tabular-nums" class="cm">90 min</span></span>
+        <span class="empty" data-a11y-name="Söndag middag är tom" data-a11y-role="button"><span class="plus"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B6959" stroke-width="1.9" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span></span>
+      </div>
+      <div style="font-size:11.5px;color:#37453a;line-height:1.5;margin-top:10px">Cellen svarar på <b>är dagen avgjord</b>. Alternativen ligger ett tryck bort, i röstningsarket. <b>Fredag är MR-07:</b> en utgången oavgjord röst måste lämna något i cellen — annars står rutan tom utan spår.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="vmbkonflikt" data-screen-label="Veckan brett — konflikt i en cell">
+  <div class="sc-label"><a class="sc-id" href="#vmbkonflikt">konflikten</a><b>Här kan bredden göra något telefonen inte kan: visa konflikten <i>där den hände</i>.</b> <code>ConflictDiffView</code> är en helskärm som listar fält med lokal och fjärran version, och <i>Behåll min version</i> bara när ens egen förlorade. Den är välbyggd — men den rycker användaren ur veckan, och konflikten handlar om <b>en ruta</b>.<br><br>Ramen visar båda versionerna i cellen: <b>din</b> och <b>Johans</b>, med samma färgspråk koden redan använder (framgång för min version, varning för den andras) och <i>Behåll min</i> som en knapp i rutan. Helskärmsdiffen finns kvar som väg för konflikter i själva receptet — det här gäller placeringen.<br><br><b>Ett fynd som följer av att rita det:</b> sist-skriver-vinner är tyst i koden, och konfliktbanderollen är det enda som säger att något hänt. I ett rutnät med fjorton rutor räcker inte en banderoll — <b>man måste se vilken ruta</b>. Därför bär cellen markeringen, och banderollen bara antalet.<br><br><b>Och en gräns värd att skriva:</b> vi ritar inte sammanslagning. Två personer som lagt olika rätter på torsdag har inte gjort en halv middag var — en av dem gäller, och den andra ska kunna räddas med ett tryck. Ett diff-läge som erbjuder att kombinera vore att uppfinna ett problem.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid #ccd1c2;background:#e6ead9"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A5212" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="info"><circle cx="12" cy="12" r="7.5"></circle><path d="M12 11v5.2"></path><path d="M12 8.3v.4"></path></svg><span style="flex:1;font-size:13.5px;font-weight:600;color:#37453a"><b style="color:#24382c">En ruta ändrades av två personer.</b> Johans ändring gäller just nu — din finns kvar och går att ta tillbaka.</span></div>
+    <div style="padding:16px 20px">
+      <div class="g7">
+        <span></span><span class="dh">Mån</span><span class="dh">Tis</span><span class="dh" style="color:#24382c">Ons</span><span class="dh">Tor</span><span class="dh">Fre</span><span class="dh">Lör</span><span class="dh">Sön</span>
+      </div>
+      <div class="g7" style="margin-top:8px;align-items:start">
+        <span class="rl">Middag</span>
+        <span class="cell"><span class="ct">Fisksoppa</span><span style="font-variant-numeric:tabular-nums" class="cm">35 min</span></span>
+        <span class="cell"><span class="ct">Ugnspannkaka</span><span style="font-variant-numeric:tabular-nums" class="cm">40 min</span></span>
+        <span class="cell" style="border:1.5px solid #ce7c1e;background:#f7e8d2"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8A5212">I dag</span><span class="ct" style="font-weight:700">Pannbiffar</span><span class="cm" style="font-variant-numeric:tabular-nums;color:#37453a">35 min</span></span>
+        <span style="grid-column:span 2;min-height:116px;border:1.5px solid #8A5212;background:#F5F4ED;padding:8px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#8A5212">TVÅ ÄNDRINGAR</span>
+          <span style="display:flex;gap:6px">
+            <span style="flex:1;border-left:3px solid #3f6b4f;background:#e6ead9;padding:5px 6px"><span style="display:block;font-size:10.5px;font-weight:700;color:#3f6b4f">DIN</span><span style="display:block;font-size:11px;font-weight:600;line-height:1.3;margin-top:2px">Ärtsoppa</span></span>
+            <span style="flex:1;border-left:3px solid #ce7c1e;background:#f0eee2;padding:5px 6px"><span style="display:block;font-size:10.5px;font-weight:700;color:#8A5212">JOHANS · GÄLLER</span><span style="display:block;font-size:11px;font-weight:600;line-height:1.3;margin-top:2px">Tacos</span></span>
+          </span>
+          <span style="flex:1"></span>
+          <span style="min-height:44px;display:inline-flex;align-items:center;justify-content:center;border:1.5px solid #24382c;font-size:11px;font-weight:700" data-a11y-name="Behåll min version, Ärtsoppa" data-a11y-role="button">Behåll min</span>
+        </span>
+        <span class="cell"><span class="ct">Rotsakslåda</span><span style="font-variant-numeric:tabular-nums" class="cm">55 min</span></span>
+        <span class="empty" data-a11y-name="Söndag middag är tom" data-a11y-role="button"><span class="plus"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B6959" stroke-width="1.9" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span></span>
+      </div>
+      <div style="font-size:11.5px;color:#37453a;line-height:1.5;margin-top:10px">Cellen breddar sig över två kolumner medan konflikten står öppen — <b>den enda plats i systemet där en cell får byta storlek</b>, och bara så länge något kräver ett svar. Fältdiffen i helskärm finns kvar för konflikter i receptet självt.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="vmbdelvis" data-screen-label="Veckan brett — delvis utfall">
+  <div class="sc-label"><a class="sc-id" href="#vmbdelvis">delvis utfall</a><b>I-29 i rutnätsform, och den formen är bättre än telefonens.</b> Nio recept valda, sex platser lediga: telefonen kan bara räkna upp resultatet i ord (<a href="Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html#flermeny">flermeny</a>). Brett <b>syns</b> det — sex rutor fyllda, tre recept kvar i en <b>bricka</b> ovanför nätet, som man kan dra eller trycka in.<br><br>Koden har redan en <i>overflow tray</i> i kalendern (nämnd i <code>_onPlaceAutomatically</code>: den förklarar utfallet bättre än en snackbar). Ramen ger den en form och en regel: <b>brickan är inte en notis, den är ett arbetsförråd</b>. Den ligger kvar tills den är tom eller tömd med avsikt, den överlever en omladdning, och den säger <i>varför</i> resten inte fick plats — inte bara att den inte fick.<br><br><b>Det gör också FL-11 onödig här.</b> Snackbaren som skrev en hel vecka behövs inte om resterna har någonstans att vara: nästa vecka blir ett <i>val</i> i brickan i stället för en handling i en snackbar som försvinner.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:flex-start;gap:14px;padding:14px 24px;border-bottom:1px solid #ccd1c2;background:#e6ead9">
+      <span style="flex:1;min-width:0"><span style="display:block;font-size:14px;font-weight:700">Tre fick inte plats</span><span style="display:block;font-size:12.5px;font-weight:600;color:#37453a;line-height:1.5;margin-top:4px">Sex platser var lediga i vecka 31. De här ligger kvar tills du placerar dem — eller lägger dem i vecka 32.</span>
+      <span style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+        <span style="min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #788477;background:#F5F4ED;font-size:12.5px;font-weight:600" data-a11y-name="Ugnspannkaka, placera" data-a11y-role="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B6959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="drag"><path d="M9 7h.01"></path><path d="M15 7h.01"></path><path d="M9 12h.01"></path><path d="M15 12h.01"></path><path d="M9 17h.01"></path><path d="M15 17h.01"></path></svg>Ugnspannkaka</span>
+        <span style="min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #788477;background:#F5F4ED;font-size:12.5px;font-weight:600" data-a11y-name="Ärtsoppa, placera" data-a11y-role="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B6959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="drag"><path d="M9 7h.01"></path><path d="M15 7h.01"></path><path d="M9 12h.01"></path><path d="M15 12h.01"></path><path d="M9 17h.01"></path><path d="M15 17h.01"></path></svg>Ärtsoppa</span>
+        <span style="min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #788477;background:#F5F4ED;font-size:12.5px;font-weight:600" data-a11y-name="Rotsakslåda, placera" data-a11y-role="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B6959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="drag"><path d="M9 7h.01"></path><path d="M15 7h.01"></path><path d="M9 12h.01"></path><path d="M15 12h.01"></path><path d="M9 17h.01"></path><path d="M15 17h.01"></path></svg>Rotsakslåda</span>
+      </span></span>
+      <span style="min-height:48px;display:inline-flex;align-items:center;padding:0 14px;border:1.5px solid #24382c;font-size:13px;font-weight:600;flex:none" data-a11y-name="Lägg de tre i vecka 32" data-a11y-role="button">Lägg i v. 32</span>
+    </div>
+    <div style="padding:16px 20px">
+      <div class="g7">
+        <span></span><span class="dh">Mån</span><span class="dh">Tis</span><span class="dh" style="color:#24382c">Ons</span><span class="dh">Tor</span><span class="dh">Fre</span><span class="dh">Lör</span><span class="dh">Sön</span>
+      </div>
+      <div class="g7" style="margin-top:8px">
+        <span class="rl">Middag</span>
+        <span class="cell" style="background:#e6ead9"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:#8A5212">1</span><span class="ct">Torsk</span><span style="font-variant-numeric:tabular-nums" class="cm">30 min</span></span>
+        <span class="cell" style="background:#e6ead9"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:#8A5212">2</span><span class="ct">Kikärtsgryta</span><span style="font-variant-numeric:tabular-nums" class="cm">25 min</span></span>
+        <span class="cell" style="border:1.5px solid #ce7c1e;background:#f7e8d2"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8A5212">I dag · 3</span><span class="ct" style="font-weight:700">Pannbiffar</span><span class="cm" style="font-variant-numeric:tabular-nums;color:#37453a">35 min</span></span>
+        <span class="cell" style="background:#e6ead9"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:#8A5212">4</span><span class="ct">Linsgryta</span><span style="font-variant-numeric:tabular-nums" class="cm">25 min</span></span>
+        <span class="cell" style="background:#e6ead9"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:#8A5212">5</span><span class="ct">Fisksoppa</span><span style="font-variant-numeric:tabular-nums" class="cm">35 min</span></span>
+        <span class="cell" style="background:#e6ead9"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:#8A5212">6</span><span class="ct">Tacos</span><span style="font-variant-numeric:tabular-nums" class="cm">20 min</span></span>
+        <span class="empty" style="border:1.5px dashed #8A5212;background:#f0eee2;flex-direction:column;gap:4px" data-a11y-name="Söndag middag är upptagen av något du lagt själv" data-a11y-role="button"><span style="font-size:10.5px;font-weight:700;color:#8A5212;text-align:center;line-height:1.3">upptagen<br>rörs inte</span></span>
+      </div>
+      <div style="font-size:11.5px;color:#37453a;line-height:1.5;margin-top:10px"><b>Siffrorna visar ordningen</b> som placeringen följde, så resultatet inte är en gissning. Söndagen hoppades över eftersom du lagt något där själv — <b>generering skriver aldrig över en manuell placering utan att säga det</b>.</div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Brickan är ett arbetsförråd, inte en notis.</b> Den överlever omladdning, ligger kvar tills den töms, och säger varför resten inte fick plats. Med den blir FL-11:s snackbar-som-skriver-en-vecka onödig: nästa vecka blir ett val i brickan.</div>
+</div>
+
+<div class="sc-item" id="vmboffline" data-screen-label="Veckan brett — frånkopplat">
+  <div class="sc-label"><a class="sc-id" href="#vmboffline">frånkopplat</a><b>Fjorton rutor är fjorton chanser att tappa något, och det är därför den här ramen finns.</b> Telefonens offlineläge markerar rader; ett rutnät måste markera <b>celler</b> — och markeringen får inte likna någon av de andra cellmarkeringarna. <i>I dag</i> är saffranskant, <i>skrivs över</i> är rostkant, <b><i>osparat</i> är streckad kant plus en klocka</b>. Tre tillstånd, tre former, ingen färg som bär betydelsen ensam.<br><br><b>Kön räknas i huvudet, inte i en snackbar.</b> <code>#utloggningko</code> och GL-07 kräver att osparade ändringar går att räkna; här är de synliga på plats, vilket är bättre än en siffra. Raden säger antalet, cellerna säger vilka.<br><br><b>Och en regel som gäller hela etappen:</b> offline får inte <b>låsa</b> rutnätet. Man ska kunna fortsätta planera veckan i en tunnelbana — det är just den situationen där man har tid att göra det. Vad som inte går är <b>generering</b>, som kräver servern, och den knappen är den enda som stängs av (med skälet skrivet, inte bara grå).</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid #ccd1c2;background:#e6ead9;border-bottom:1px solid #ccd1c2;color:#37453a"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A5212" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="wifi-off"><path d="M4 8.5a12 12 0 0116 0"></path><path d="M7 12a8 8 0 0110 0"></path><path d="M12 17.5h.01"></path><path d="M4.5 19.5l15-15"></path></svg><span style="flex:1;font-size:13.5px;font-weight:600"><b>Ingen uppkoppling.</b> Du kan planera vidare — <b>tre ändringar</b> väntar på att skickas.</span><span style="font-size:12.5px;font-weight:600;color:#5B6959">senast synkat 18:40</span></div>
+    <div style="display:flex;min-height:0">
+      <div style="width:236px;flex:none;border-right:1px solid #ccd1c2;padding:16px;box-sizing:border-box">
+        <div class="sc-cap">Be om en meny</div>
+        <span style="display:block;min-height:60px;padding:10px 12px;margin-top:8px;border:1px solid #ccd1c2;background:#e6ead9;box-sizing:border-box;font-size:13px;line-height:1.5;color:#5B6959">Snabbt på vardagar …</span>
+        <span style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:10px;background:#A9B2A0;color:#37453a;font-size:13.5px;font-weight:600;box-sizing:border-box" data-a11y-name="Föreslå en vecka, går inte utan uppkoppling" data-a11y-role="button" data-a11y-disabled="true">Föreslå</span>
+        <div style="font-size:11.5px;color:#37453a;line-height:1.5;margin-top:8px"><b>Förslag kräver uppkoppling</b> — jag läser dina recept i molnet. Att flytta och lägga rätter fungerar som vanligt.</div>
+      </div>
+      <div style="flex:1;min-width:0;padding:16px 20px">
+        <div class="g7">
+          <span></span><span class="dh">Mån</span><span class="dh">Tis</span><span class="dh" style="color:#24382c">Ons</span><span class="dh">Tor</span><span class="dh">Fre</span><span class="dh">Lör</span><span class="dh">Sön</span>
+        </div>
+        <div class="g7" style="margin-top:8px">
+          <span class="rl">Middag</span>
+          <span class="cell"><span class="ct">Fisksoppa</span><span style="font-variant-numeric:tabular-nums" class="cm">35 min</span></span>
+          <span class="cell" style="border:1.5px dashed #788477"><span style="display:flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:#37453a"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#37453a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" data-icon="clock"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path></svg>VÄNTAR</span><span class="ct">Ugnspannkaka</span><span style="font-variant-numeric:tabular-nums" class="cm">40 min</span></span>
+          <span class="cell" style="border:1.5px solid #ce7c1e;background:#f7e8d2"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8A5212">I dag</span><span class="ct" style="font-weight:700">Pannbiffar</span><span class="cm" style="font-variant-numeric:tabular-nums;color:#37453a">35 min</span></span>
+          <span class="cell" style="border:1.5px dashed #788477"><span style="display:flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:#37453a"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#37453a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" data-icon="clock"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path></svg>VÄNTAR</span><span class="ct">Linsgryta</span><span style="font-variant-numeric:tabular-nums" class="cm">25 min</span></span>
+          <span class="empty" style="border-style:dashed;border-color:#5B6959;flex-direction:column;gap:3px" data-a11y-name="Fredag middag, borttagning väntar" data-a11y-role="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#37453a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-icon="clock"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path></svg><span style="font-size:10.5px;font-weight:700;color:#37453a;text-align:center;line-height:1.2">tömd<br>väntar</span></span>
+          <span class="cell"><span class="ct">Ärtsoppa</span><span style="font-variant-numeric:tabular-nums" class="cm">90 min</span></span>
+          <span class="cell"><span class="ct">Rotsakslåda</span><span style="font-variant-numeric:tabular-nums" class="cm">55 min</span></span>
+        </div>
+        <div style="font-size:11.5px;color:#37453a;line-height:1.5;margin-top:10px"><b>Streckad kant och klocka = väntar på att skickas.</b> Aldrig samma form som <i>i dag</i> (saffranskant) eller <i>skrivs över</i> (rostkant). Även en <b>tömd</b> ruta väntar — borttagningen är också en ändring.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="vmbflytta" data-screen-label="Veckan brett — flytta en måltid">
+  <div class="sc-label"><a class="sc-id" href="#vmbflytta">flytten</a><b>Standardsvaret är kört: dragning tillåts som genväg, med synliga mål.</b> Och det är värt att säga varför, för vi tog bort tre svep-gester i § 16.5 med rakt motsatt argument.<br><br>Skillnaden är att <b>målet syns</b>. Ett svep på en receptrad har ett osynligt resultat — man drar och hoppas. En dragning i ett veckorutnät har fjorton synliga mål på samma skärm som handen: gesten <i>är</i> sin egen förklaring, och den kräver ingen banner som lär ut den. Det var precis det argumentet som saknades för svepen.<br><br><b>Fyra krav på dragningen.</b> <b>Ett:</b> lediga mål markeras medan man drar; upptagna mål säger vad som händer (<i>byter plats</i>, inte <i>skriver över</i> — två måltider som byter dag är den vanligaste flytten i ett hushåll). <b>Två:</b> passerade dagar är inte mål, och de säger det. <b>Tre:</b> en dragning som släpps utanför nätet <b>gör ingenting</b> — den tar inte bort. <b>Fyra:</b> flytten har alltid en synlig, likvärdig väg i cellens kebab (<i>Flytta till …</i>), och den vägen fungerar med tangentbord och skärmläsare, där dragning inte finns.<br><br><b>Tangentbordsvägen är inte en eftergift, den är den precisa vägen:</b> markera cellen, <i>Flytta</i>, pilarna, Enter. Den som planerar en hel vecka på en surfplatta med tangentbord gör det snabbare än med fingret.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid #ccd1c2"><span style="flex:1;font-size:15px;font-weight:600;color:#37453a">Flyttar <b>Ärtsoppa</b> — släpp i en ruta</span><span style="font-size:12.5px;font-weight:600;color:#5B6959">Esc avbryter</span></div>
+    <div style="padding:16px 20px">
+      <div class="g7">
+        <span></span><span class="dh" style="color:#5B6959">Mån</span><span class="dh" style="color:#5B6959">Tis</span><span class="dh" style="color:#24382c">Ons</span><span class="dh">Tor</span><span class="dh">Fre</span><span class="dh">Lör</span><span class="dh">Sön</span>
+      </div>
+      <div class="g7" style="margin-top:8px">
+        <span class="rl">Middag</span>
+        <span class="cell" style="background:#e6ead9;border-color:#e6ead9"><span class="ct" style="color:#5B6959">Fisksoppa</span><span class="cm">passerad</span></span>
+        <span class="cell" style="background:#e6ead9;border-color:#e6ead9"><span class="ct" style="color:#5B6959">Ugnspannkaka</span><span class="cm">passerad</span></span>
+        <span class="cell" style="border:1.5px solid #ce7c1e;background:#f7e8d2"><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8A5212">I dag</span><span class="ct" style="font-weight:700">Pannbiffar</span><span class="cm" style="color:#37453a">byter plats</span></span>
+        <span class="empty" style="border:2px solid #24382c;background:#e6ead9;flex-direction:column;gap:4px" data-a11y-name="Torsdag middag, ledig. Släpp här" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="drop"><path d="M12 5v10"></path><path d="M8 11l4 4 4-4"></path><path d="M5 19h14"></path></svg><span style="font-size:10.5px;font-weight:700">ledig</span></span>
+        <span class="empty" style="border:2px solid #24382c;background:#e6ead9;flex-direction:column;gap:4px" data-a11y-name="Fredag middag, ledig. Släpp här" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="drop"><path d="M12 5v10"></path><path d="M8 11l4 4 4-4"></path><path d="M5 19h14"></path></svg><span style="font-size:10.5px;font-weight:700">ledig</span></span>
+        <span class="cell" style="border:2px dashed #24382c;background:#F5F4ED"><span class="ct" style="color:#5B6959">Ärtsoppa</span><span class="cm" style="font-style:italic">flyttas härifrån</span></span>
+        <span class="cell" style="border:1.5px solid #788477"><span class="ct">Rotsakslåda</span><span class="cm" style="font-weight:700;color:#37453a">byter plats med</span></span>
+      </div>
+      <div style="display:flex;gap:16px;align-items:center;margin-top:12px;flex-wrap:wrap">
+        <span style="font-size:11.5px;color:#37453a;line-height:1.5;flex:1;min-width:280px"><b>Upptagna rutor byter plats</b> — de skriver inte över. Passerade dagar är inte mål. Släpper du utanför nätet händer ingenting.</span>
+        <span style="min-height:48px;display:inline-flex;align-items:center;gap:8px;padding:0 14px;border:1.5px solid #24382c;font-size:13px;font-weight:600;flex:none" data-a11y-name="Flytta till, via menyn" data-a11y-role="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="move"><path d="M12 5v14"></path><path d="M5 12h14"></path><path d="M9 8l3-3 3 3"></path><path d="M9 16l3 3 3-3"></path></svg>Flytta till …</span>
+      </div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Varför dragning här men inte svep där:</b> målet syns. Fjorton mål ligger på samma skärm som handen, alltså förklarar gesten sig själv och behöver ingen banner (§ 16.5). Kebabvägen <i>Flytta till …</i> är alltid likvärdig, och tangentbordsvägen — markera, <i>Flytta</i>, pilar, Enter — är den snabbaste för den som planerar en hel vecka.</div>
+</div>
+
+</div>
+</section>
+
+<section class="sc-wrap" data-screen-label="v11.2 — receptet brett">
+<div class="sc-title" style="margin-top:24px"><b>Etapp 11.2 · receptet brett.</b> Sju ramar ur <code>recipe_detail_tablet_content.dart</code> och <code>input/portion_scaler.dart</code>. Krav <b>BV-14…BV-20</b>, § 22.9–22.15.<br><br><b>Och ett fynd som styrker hela etapp 10:</b> <code>cooking_mode_view.dart</code> är <b>redan</b> en tvåkolumnsvy — ingredienser till vänster (35 %), steg till höger (65 %), tvingat liggande läge och skärmen vaken. Delningen jag föreslog för receptet brett fanns alltså redan i appen, oberoende upptäckt, i den vy där den betyder mest. Det är det bästa argumentet för <a href="Butlery Skarmar v12 etapp 10 bred layout.dc.html#bredrecept">BR-10</a> som finns: <b>koden kom fram till samma delning på egen hand.</b> Matlagningsläget behandlas i 11.4 — därför flyttas <code>rcblaga</code> dit, och 11.2 får i stället portionsskalningen som egen ram.</div>
+<div class="sc-col">
+
+<div class="sc-item" id="rcbnormal" data-screen-label="Receptet brett — normalläget">
+  <div class="sc-label"><a class="sc-id" href="#rcbnormal">normalläget</a><b>Färdigritad ur skissen, och med de tre mekaniska kraven synliga.</b> Ingredienserna står i en <b>klistrad</b> smal spalt med skalaren överst; stegen ligger brett; kommentarer, delning och relaterade recept i ett fullbrett band under (BR-10). <b>En</b> sidskroll — koden har i dag två oberoende (BR-11).<br><br><b>Bilden är bredare än textspalten, och det är avsiktligt.</b> Omslaget hör till receptet, inte till stegen: det sträcker sig över båda spalterna, som en rubrik gör. Under 900 px faller det tillbaka till en kolumn, oförändrat.<br><br><b>Två saker som bara går brett.</b> Ingredienslistan behöver ingen skroll för de flesta recept, alltså kan man <b>läsa och laga samtidigt</b> — det är hela poängen med bredden. Och stegen får en <b>vilolinje</b> till vänster: det aktiva steget markeras som i matlagningsläget (3 px kant i papper), så vokabulären är densamma i båda vyerna.<br><br><b>Titeln skrivs som den heter.</b> Både flödeskortet och matlagningsläget kör <code>toLowerCase()</code> på receptets titel — nu på två ställen, alltså en vana och inte ett misstag. SO-02 gäller här också: form ändrar inte ett egennamn.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid #ccd1c2"><span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka" data-a11y-role="button" data-hit="48"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-left"><path d="M14.5 6.5L9 12l5.5 5.5"></path></svg></span><span style="flex:1;font-size:15px;font-weight:600;color:#5B6959">Dina recept</span><span style="min-height:48px;display:inline-flex;align-items:center;gap:8px;padding:0 16px;background:#ce7c1e;color:#17251d;font-size:13.5px;font-weight:600" data-a11y-name="Börja laga" data-a11y-role="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#17251d" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="utensils"><path d="M5 11h14"></path><path d="M6 11a6 6 0 0112 0"></path><path d="M4.5 15.5h15"></path><path d="M6 19h12"></path></svg>Laga</span><span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Fler åtgärder" data-a11y-role="button" data-hit="48"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.9" stroke-linecap="round" data-icon="more-vertical"><circle cx="12" cy="6.2" r="1.3"></circle><circle cx="12" cy="12" r="1.3"></circle><circle cx="12" cy="17.8" r="1.3"></circle></svg></span></div>
+    <div style="flex:none;height:180px;background:#ccd1c2;display:flex;align-items:flex-end;padding:18px 24px"><span style="font-size:32px;font-weight:700;letter-spacing:-.8px;background:#F5F4ED;padding:6px 12px">Mormors köttbullar</span></div>
+    <div style="display:flex;min-height:0">
+      <div style="width:296px;flex:none;border-right:1px solid #ccd1c2;padding:18px;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:10px;border:1px solid #ccd1c2;padding:8px"><span style="width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Färre portioner" data-a11y-role="button" data-hit="44"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2.2" stroke-linecap="round" data-icon="minus"><path d="M6 12h12"></path></svg></span><span style="flex:1;text-align:center"><b style="display:block;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">6</b><span style="display:block;font-size:11px;font-weight:600;color:#5B6959">portioner · skrivet för 4</span></span><span style="width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Fler portioner" data-a11y-role="button" data-hit="44"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2.2" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span></div>
+        <div class="sc-cap" style="margin-top:16px">Ingredienser</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;font-size:13.5px">
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">900 g</b><span style="flex:1">blandfärs</span></span>
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">1,5 st</b><span style="flex:1">gul lök</span></span>
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">1,5 dl</b><span style="flex:1">ströbröd</span></span>
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">2¼ dl</b><span style="flex:1">mjölk</span></span>
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">1,5 st</b><span style="flex:1">ägg</span></span>
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">1½ tsk</b><span style="flex:1">salt</span></span>
+        </div>
+        <span style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;margin-top:16px;border:1.5px solid #24382c;font-size:13.5px;font-weight:600;box-sizing:border-box" data-a11y-name="Lägg allt i inköpslistan" data-a11y-role="button">Till inköpslistan</span>
+        <div style="font-size:11px;font-weight:600;color:#5B6959;line-height:1.5;margin-top:10px;font-style:italic">Spalten står kvar när stegen rullar.</div>
+      </div>
+      <div style="flex:1;min-width:0;padding:18px 24px">
+        <div class="sc-cap">Gör så här</div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:10px;max-width:560px">
+          <span style="display:flex;gap:12px;border-left:3px solid #24382c;padding-left:10px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums">1</b><span style="flex:1;font-size:14.5px;line-height:1.6">Blanda ströbröd och mjölk i en bunke. Låt svälla i <span style="border-bottom:1.5px solid #ce7c1e;font-weight:600">tio minuter</span> — det är det som gör bullarna mjuka.</span></span>
+          <span style="display:flex;gap:12px;padding-left:13px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums;color:#5B6959">2</b><span style="flex:1;font-size:14.5px;line-height:1.6;color:#37453a">Finhacka löken och fräs den mjuk i smör. Låt svalna.</span></span>
+          <span style="display:flex;gap:12px;padding-left:13px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums;color:#5B6959">3</b><span style="flex:1;font-size:14.5px;line-height:1.6;color:#37453a">Rör ihop färs, lök och ströbrödsblandning. Salta och peppra ordentligt.</span></span>
+          <span style="display:flex;gap:12px;padding-left:13px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums;color:#5B6959">4</b><span style="flex:1;font-size:14.5px;line-height:1.6;color:#37453a">Rulla bullar med blöta händer och stek dem runda i rikligt med smör.</span></span>
+        </div>
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid #ccd1c2;font-size:12px;color:#5B6959;line-height:1.5"><b style="color:#37453a">Under stegen, fullbrett:</b> kommentarer · delningsstatus · relaterade recept. <b style="color:#37453a">Tidsfrasen är en knapp</b> (den finns redan som <code>InlineTimerText</code>) — samma kontroll som i matlagningsläget.</div>
+      </div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Omslaget sträcker sig över båda spalterna</b> — det hör till receptet, inte till stegen. Det aktiva steget bär samma 3 px vilolinje som i matlagningsläget, så vokabulären är gemensam. <b>Titeln skrivs som den heter</b> (SO-02 gäller här också).</div>
+</div>
+
+<div class="sc-item" id="rcbportion" data-screen-label="Receptet brett — skalningen syns">
+  <div class="sc-label"><a class="sc-id" href="#rcbportion">skalningen syns</a><b>Första gången portionsskalningen är begriplig som handling.</b> På telefonen står skalaren ovanför ingredienserna och man <i>tror</i> att mängderna ändrades. Brett står listan kvar i sin spalt medan man trycker — <b>siffrorna ändras framför ögonen</b>, och tvivlet försvinner.<br><br>Ramen lägger till det enda som fortfarande saknas: <b>vad som inte ändras</b>. Stegen skalas aldrig (<i>stek fyra minuter per sida</i> gäller oavsett antal), och det är en fråga varje användare ställer sig tyst. Raden under skalaren säger det en gång: <i>tiderna i stegen ändras inte</i>.<br><br><b>Och att skalning inte är en sparning</b> (§ 20.2) blir tydligare här, inte otydligare: <i>skrivet för 4</i> står kvar under den nya siffran, och en <i>Återställ</i> dyker upp så snart man avvikit. En vy som visar 6 portioner utan att säga att receptet säger 4 är en vy som ljuger stilla.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="display:flex;min-height:0">
+      <div style="width:296px;flex:none;border-right:1px solid #ccd1c2;padding:18px;box-sizing:border-box;background:#e6ead9">
+        <div style="display:flex;align-items:center;gap:10px;border:1.5px solid #24382c;background:#F5F4ED;padding:8px"><span style="width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Färre portioner" data-a11y-role="button" data-hit="44"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2.2" stroke-linecap="round" data-icon="minus"><path d="M6 12h12"></path></svg></span><span style="flex:1;text-align:center"><b style="display:block;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums">6</b><span style="display:block;font-size:11px;font-weight:600;color:#5B6959">portioner</span></span><span style="width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Fler portioner" data-a11y-role="button" data-hit="44"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2.2" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px"><span style="flex:1;font-size:11.5px;font-weight:600;color:#37453a">Receptet är skrivet för <b>4</b></span><span style="min-height:44px;display:inline-flex;align-items:center;font-size:12px;font-weight:600;color:#8A5212;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Återställ till fyra portioner" data-a11y-role="button">Återställ</span></div>
+        <div class="sc-cap" style="margin-top:16px">Ingredienser · uppräknade</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;font-size:13.5px">
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums;background:#f7e8d2">900 g</b><span style="flex:1">blandfärs <span style="color:#5B6959;font-size:11.5px">(600)</span></span></span>
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums;background:#f7e8d2">1,5 st</b><span style="flex:1">gul lök <span style="color:#5B6959;font-size:11.5px">(1)</span></span></span>
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums;background:#f7e8d2">2¼ dl</b><span style="flex:1">mjölk <span style="color:#5B6959;font-size:11.5px">(1,5)</span></span></span>
+        </div>
+        <div style="margin-top:14px;background:#F5F4ED;border:1px solid #ccd1c2;padding:10px;font-size:11.5px;color:#37453a;line-height:1.5"><b>Tiderna i stegen ändras inte.</b> Fyra minuter per sida gäller oavsett hur många bullar du rullar.</div>
+      </div>
+      <div style="flex:1;min-width:0;padding:18px 24px">
+        <div class="sc-cap">Gör så här · oförändrat</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:10px;max-width:520px">
+          <span style="display:flex;gap:12px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums">1</b><span style="flex:1;font-size:14px;line-height:1.6;color:#37453a">Blanda ströbröd och mjölk. Låt svälla tio minuter.</span></span>
+          <span style="display:flex;gap:12px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums">2</b><span style="flex:1;font-size:14px;line-height:1.6;color:#37453a">Finhacka löken och fräs den mjuk.</span></span>
+        </div>
+        <div style="margin-top:16px;background:#e6ead9;padding:12px 14px;font-size:12px;color:#37453a;line-height:1.5;max-width:520px"><b>Grå tal i parentes är receptets egna.</b> De står kvar tills du återställer — så syns skillnaden mellan <i>vad receptet säger</i> och <i>vad du lagar i dag</i>. Ingenting sparas.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="rcbofullstandigt" data-screen-label="Receptet brett — ofullständigt">
+  <div class="sc-label"><a class="sc-id" href="#rcbofullstandigt">det ofullständiga</a><b>Banderollen ligger i dag i höger spalt, ovanför stegen</b> (<code>buildCompletenessBanner</code> inne i högerkolumnen). Det är fel plats brett: den gäller <b>receptet</b>, inte instruktionerna — och den viktigaste bristen är nästan alltid i vänsterspalten, i ingredienserna.<br><br>Ramen flyttar den <b>över båda spalterna, under omslaget</b>, och gör den <i>pekande</i> i stället för allmän: den säger vad som saknas och länkar till fältet. En banderoll som säger <i>receptet är ofullständigt</i> utan att säga vad som fattas är en påminnelse om ett arbete man inte vet hur man börjar.<br><br><b>Och tomma platser i listorna får egen form.</b> Brett finns utrymme att visa <i>var</i> hålet är: en ingrediens utan mängd står med en tydlig, tryckbar lucka i mängdkolumnen — inte som en tom rad man inte förstår. Det är samma princip som den avsiktliga nollan i tabeller: <b>det som saknas ska gå att skilja från det som är noll.</b></div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;height:120px;background:#ccd1c2;display:flex;align-items:flex-end;padding:14px 24px"><span style="font-size:26px;font-weight:700;letter-spacing:-.6px;background:#F5F4ED;padding:5px 10px">Farmors äppelkaka</span></div>
+    <div style="flex:none;display:flex;align-items:flex-start;gap:12px;padding:14px 24px;background:#f0eee2;border-bottom:1px solid #ccd1c2;border-left:3px solid #8A5212">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A5212" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px" data-icon="pencil"><path d="M5 19l1-4 9-9 3 3-9 9z"></path></svg>
+      <span style="flex:1;min-width:0"><span style="display:block;font-size:14px;font-weight:700">Tre saker saknas i receptet</span><span style="display:block;font-size:12.5px;font-weight:600;color:#37453a;line-height:1.5;margin-top:3px">Mängd på <a href="#rcbofullstandigt">smör</a> och <a href="#rcbofullstandigt">kanel</a>, och <a href="#rcbofullstandigt">tid i ugnen</a>. Utan tid kan jag inte föreslå kakan när du har bråttom.</span></span>
+      <span style="min-height:48px;display:inline-flex;align-items:center;padding:0 14px;border:1.5px solid #24382c;font-size:13px;font-weight:600;flex:none" data-a11y-name="Fyll i det som saknas" data-a11y-role="button">Fyll i</span>
+    </div>
+    <div style="display:flex;min-height:0">
+      <div style="width:296px;flex:none;border-right:1px solid #ccd1c2;padding:18px;box-sizing:border-box">
+        <div class="sc-cap">Ingredienser</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;font-size:13.5px">
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">6 st</b><span style="flex:1">äpplen</span></span>
+          <span style="display:flex;gap:8px;align-items:center"><span style="width:62px;flex:none;min-height:44px;display:inline-flex;align-items:center;justify-content:center;border:1.5px dashed #8A5212;background:#f0eee2;font-size:11px;font-weight:700;color:#8A5212" data-a11y-name="Mängd smör saknas. Fyll i" data-a11y-role="button">mängd?</span><span style="flex:1">smör</span></span>
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">2 dl</b><span style="flex:1">socker</span></span>
+          <span style="display:flex;gap:8px;align-items:center"><span style="width:62px;flex:none;min-height:44px;display:inline-flex;align-items:center;justify-content:center;border:1.5px dashed #8A5212;background:#f0eee2;font-size:11px;font-weight:700;color:#8A5212" data-a11y-name="Mängd kanel saknas. Fyll i" data-a11y-role="button">mängd?</span><span style="flex:1">kanel</span></span>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:#37453a;line-height:1.5;margin-top:12px;font-style:italic">Luckan är tryckbar och står <b>i</b> listan — det som saknas syns där det saknas.</div>
+      </div>
+      <div style="flex:1;min-width:0;padding:18px 24px">
+        <div class="sc-cap">Gör så här</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:10px;max-width:520px">
+          <span style="display:flex;gap:12px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums">1</b><span style="flex:1;font-size:14px;line-height:1.6;color:#37453a">Skala och skiva äpplena. Lägg dem i en smord form.</span></span>
+          <span style="display:flex;gap:12px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums">2</b><span style="flex:1;font-size:14px;line-height:1.6;color:#37453a">Blanda smör, socker och mjöl till ett smul. Fördela över.</span></span>
+          <span style="display:flex;gap:12px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums">3</b><span style="flex:1;font-size:14px;line-height:1.6;color:#37453a">Grädda i 200° <span style="border:1.5px dashed #8A5212;background:#f0eee2;padding:1px 6px;font-size:12px;font-weight:700;color:#8A5212">hur länge?</span></span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Banderollen gäller receptet, inte stegen</b> — den flyttas över båda spalterna och pekar på fälten. Och <b>det som saknas ska gå att skilja från det som är noll</b>: luckan står i listan, tryckbar, med 44 px mål.</div>
+</div>
+
+<div class="sc-item" id="rcblaser" data-screen-label="Receptet brett — någon annans">
+  <div class="sc-label"><a class="sc-id" href="#rcblaser">någon annans recept</a><b>Läsläget (<code>readOnly</code>) är den ram som är lättast att göra fel brett:</b> tar man bort redigeringen blir det tomrum där kontrollerna låg, och tomrum brett ser ut som ett fel. Regeln blir: <b>läsläget tar inte bort, det byter ut.</b><br><br>Det som försvinner är redigering, radering och taggning. Det som kommer i stället är det man faktiskt vill när man tittar på någon annans recept: <b>vem det kommer från</b>, <b>spara till mitt kök</b>, och — om det inte är delat med dig — <b>be om det</b> (SO-07). Vänsterspalten behåller ingredienser och skalning, för de fungerar oavsett vem som äger receptet.<br><br><b>En regel om ägarskap i klartext:</b> ett sparat exemplar blir ditt, och <b>ändringar i ditt exemplar syns inte hos ägaren</b>. Det är den vanligaste missuppfattningen i alla delade system, och den kostar ingenting att förebygga med en rad.<br><br>Kommentarerna finns kvar i bandet under — men <b>reaktionerna hör till den som lagat</b>, inte till betraktaren: du kan reagera, du kan inte redigera.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid #ccd1c2;background:#e6ead9"><span style="width:34px;height:34px;border-radius:999px;background:#ccd1c2;display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:12px;font-weight:700;color:#37453a">SE</span><span style="flex:1;min-width:0;font-size:13.5px;font-weight:600;color:#37453a"><b style="color:#24382c">Sara Eks recept.</b> Du kan läsa och laga — inte ändra.</span><span style="min-height:48px;display:inline-flex;align-items:center;gap:8px;padding:0 16px;background:#ce7c1e;color:#17251d;font-size:13.5px;font-weight:600;flex:none" data-a11y-name="Spara till mitt kök" data-a11y-role="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#17251d" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="download"><path d="M12 5v10"></path><path d="M8 11l4 4 4-4"></path><path d="M5 19h14"></path></svg>Spara till mitt kök</span></div>
+    <div style="display:flex;min-height:0">
+      <div style="width:296px;flex:none;border-right:1px solid #ccd1c2;padding:18px;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:10px;border:1px solid #ccd1c2;padding:8px"><span style="width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Färre portioner" data-a11y-role="button" data-hit="44"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2.2" stroke-linecap="round" data-icon="minus"><path d="M6 12h12"></path></svg></span><span style="flex:1;text-align:center"><b style="display:block;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">4</b><span style="display:block;font-size:11px;font-weight:600;color:#5B6959">portioner</span></span><span style="width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Fler portioner" data-a11y-role="button" data-hit="44"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2.2" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span></div>
+        <div class="sc-cap" style="margin-top:16px">Ingredienser</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;font-size:13.5px">
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">4 dl</b><span style="flex:1">mjöl</span></span>
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">6 dl</b><span style="flex:1">mjölk</span></span>
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">3 st</b><span style="flex:1">ägg</span></span>
+        </div>
+        <span style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;margin-top:16px;border:1.5px solid #24382c;font-size:13.5px;font-weight:600;box-sizing:border-box" data-a11y-name="Lägg allt i inköpslistan" data-a11y-role="button">Till inköpslistan</span>
+      </div>
+      <div style="flex:1;min-width:0;padding:18px 24px">
+        <div class="sc-cap">Gör så här</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:10px;max-width:520px">
+          <span style="display:flex;gap:12px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums">1</b><span style="flex:1;font-size:14px;line-height:1.6;color:#37453a">Vispa ihop mjöl och hälften av mjölken till en slät smet.</span></span>
+          <span style="display:flex;gap:12px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums">2</b><span style="flex:1;font-size:14px;line-height:1.6;color:#37453a">Tillsätt resten av mjölken och äggen. Låt stå en halvtimme.</span></span>
+        </div>
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid #ccd1c2;background:#f0eee2;border-left:3px solid #8A5212;padding:12px 14px;font-size:12px;color:#37453a;line-height:1.5;max-width:520px"><b>Sparar du den blir kopian din.</b> Dina ändringar syns inte hos Sara, och hennes ändringar kommer inte till dig. Vill du följa hennes version — läs den här i stället.</div>
+      </div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Läsläget byter ut, det tar inte bort.</b> Redigering, radering och taggning ersätts av härkomst, <i>spara till mitt kök</i> och — när receptet inte är delat — <i>be om det</i> (SO-07). Tomrum där kontroller låg är brett ett synligt fel.</div>
+</div>
+
+<div class="sc-item" id="rcbarvegods" data-screen-label="Receptet brett — arvegods">
+  <div class="sc-label"><a class="sc-id" href="#rcbarvegods">arvegodset</a><b>Den enda ramen i etapp 11 där bredden ger något vi <i>inte kan göra alls</i> smalt:</b> handskriften och avskriften sida vid sida. Koden lägger skanningen i den smala vänsterspalten med <code>maxHeight: 420</code> — alltså i den spalt som är för trång för att läsa en handskrift i, och ovanför delningsstatusen.<br><br>§ 20.14 säger att <b>originalbilden är receptet</b> och texten en avskrift. Ramen följer det bokstavligt: <b>bilden överst, brett, där omslaget annars ligger</b> — och under den två spalter där man kan <b>jämföra rad för rad</b>. Det är så man rättar en tolkning: med originalet i syne, inte med minnet av det.<br><br><b>Flersidiga kort får sin remsa under bilden</b> (§ 20.14: ordningen ska gå att rätta även efter tolkning). Brett ryms alla tre sidorna som miniatyrer samtidigt, vilket gör en felaktig ordning uppenbar i stället för upptäckt av misstag.<br><br><b>Och en rättelse som är ren omsorg:</b> zoom. En handskrift man inte kan tyda ska kunna förstoras utan att man lämnar vyn — bilden är tryckbar och öppnar helskärmsvisaren som redan finns (<code>fullscreen_image_viewer.dart</code>).</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:stretch;gap:0;border-bottom:1px solid #ccd1c2">
+      <div style="flex:1;min-width:0;background:#e6ead9;padding:16px 24px;display:flex;gap:16px;align-items:flex-start">
+        <span style="width:240px;height:200px;background:#ccd1c2;flex:none;display:flex;align-items:center;justify-content:center" data-a11y-name="Förstora sidan 1 av mormors kort" data-a11y-role="button"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5B6959" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" data-icon="search"><circle cx="11" cy="11" r="6"></circle><path d="M15.5 15.5L20 20"></path><path d="M9 11h4"></path><path d="M11 9v4"></path></svg></span>
+        <span style="flex:1;min-width:0">
+          <span style="display:block;font-size:22px;font-weight:700;letter-spacing:-.5px">Mormors köttbullar</span>
+          <span style="display:block;font-size:12.5px;font-weight:600;color:#37453a;line-height:1.5;margin-top:6px">Fotograferat kort · tre sidor · tolkat 2 mars</span>
+          <span style="display:flex;gap:6px;margin-top:12px">
+            <span style="width:56px;height:72px;background:#ccd1c2;border:1.5px solid #24382c;flex:none;display:flex;align-items:flex-end;justify-content:flex-start"><span style="background:#24382c;color:#F5F4ED;font-size:10.5px;font-weight:700;padding:2px 5px;margin:4px">1</span></span>
+            <span style="width:56px;height:72px;background:#ccd1c2;flex:none;display:flex;align-items:flex-end;justify-content:flex-start" data-a11y-name="Sida 2" data-a11y-role="button"><span style="background:#24382c;color:#F5F4ED;font-size:10.5px;font-weight:700;padding:2px 5px;margin:4px">2</span></span>
+            <span style="width:56px;height:72px;background:#ccd1c2;flex:none;display:flex;align-items:flex-end;justify-content:flex-start" data-a11y-name="Sida 3" data-a11y-role="button"><span style="background:#24382c;color:#F5F4ED;font-size:10.5px;font-weight:700;padding:2px 5px;margin:4px">3</span></span>
+            <span style="min-height:44px;display:inline-flex;align-items:center;padding:0 10px;font-size:12px;font-weight:600;color:#8A5212;text-decoration:underline;text-underline-offset:.16em;align-self:flex-end" data-a11y-name="Ändra sidordningen" data-a11y-role="button">Ändra ordning</span>
+          </span>
+        </span>
+      </div>
+    </div>
+    <div style="display:flex;min-height:0">
+      <div style="width:420px;flex:none;border-right:1px solid #ccd1c2;padding:18px;box-sizing:border-box;background:#f0eee2">
+        <div class="sc-cap">Så står det på kortet</div>
+        <div style="border:1px solid #ccd1c2;background:#F5F4ED;padding:12px;margin-top:8px;font:400 11.5px/1.7 ui-monospace,Menlo,monospace;color:#37453a">600 g blandfärs<br>1 gul lök, riven<br>1 dl ströbröd<br>1½ dl mjölk<br>1 ägg<br>salt, vitpeppar, allspice<br><br>Blanda ströbröd o mjölk, låt svälla.<br>Rulla små bullar. Stek i smör.</div>
+        <div style="font-size:11.5px;color:#37453a;line-height:1.5;margin-top:10px"><b>Bilden är receptet.</b> Texten här är min avskrift — hittar du fel rättar du dem till höger, och kortet ligger kvar.</div>
+      </div>
+      <div style="flex:1;min-width:0;padding:18px;box-sizing:border-box">
+        <div class="sc-cap">Så tolkade jag det</div>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-top:8px;font-size:13.5px">
+          <span style="display:flex;gap:8px"><b style="width:58px;flex:none;font-variant-numeric:tabular-nums">600 g</b><span style="flex:1">blandfärs</span></span>
+          <span style="display:flex;gap:8px"><b style="width:58px;flex:none;font-variant-numeric:tabular-nums">1 st</b><span style="flex:1">gul lök, riven</span></span>
+          <span style="display:flex;gap:8px"><b style="width:58px;flex:none;font-variant-numeric:tabular-nums">1 dl</b><span style="flex:1">ströbröd</span></span>
+          <span style="display:flex;gap:8px;align-items:center"><b style="width:58px;flex:none;font-variant-numeric:tabular-nums">1,5 dl</b><span style="flex:1">mjölk</span></span>
+          <span style="display:flex;gap:8px;align-items:center"><b style="width:58px;flex:none;font-variant-numeric:tabular-nums">1 st</b><span style="flex:1">ägg</span></span>
+          <span style="display:flex;gap:8px;align-items:center;background:#f7e8d2;padding:2px 0"><span style="width:58px;flex:none;font-size:11px;font-weight:700;color:#8A5212;text-align:center">?</span><span style="flex:1">salt, vitpeppar, <b>allspice</b> <span style="font-size:11.5px;color:#8A5212;font-weight:600">— kryddmått saknas</span></span></span>
+        </div>
+        <span style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:14px;border:1.5px solid #24382c;font-size:13.5px;font-weight:600;box-sizing:border-box" data-a11y-name="Rätta avskriften" data-a11y-role="button">Rätta avskriften</span>
+      </div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Handskriften och avskriften sida vid sida</b> — det enda i etapp 11 som är omöjligt smalt. Bilden ligger där omslaget ligger, inte i den trånga spalten med <code>maxHeight: 420</code>, och den går att förstora utan att lämna vyn.</div>
+</div>
+
+<div class="sc-item" id="rcbkommentar" data-screen-label="Receptet brett — kommentarsbandet">
+  <div class="sc-label"><a class="sc-id" href="#rcbkommentar">bandet under</a><b>Fullbrett, under stegen — och det är ett medvetet nej till en tredje spalt.</b> Koden lägger kommentarerna i den smala vänsterspalten, bredvid stegen. Brett betyder det att en tråd om hur någon annan lyckades ligger i syne medan man steker, vilket är precis det man inte vill.<br><br>Bandet har tre saker och de ligger i den här ordningen: <b>kommentarer</b> (med de sex låsta reaktionerna, § 19.5), <b>delningsstatus</b> (vem ser receptet), <b>relaterade recept</b> (§ 20.9: kopplingen går båda vägarna). Ordningen är efter hur ofta de används, som allt annat.<br><br><b>Bredden går till luft, inte till fler kolumner.</b> En kommentar är löptext och lyder under 72 tecken (§ 21.1) — alltså blir bandet en spalt på 600 px i ett fullbrett fält, med resten som marginal. Det är samma regel som editorn (§ 21.5), och den ser slösaktig ut på pappret men är rätt i ögat.<br><br><b>Cook snaps är undantaget.</b> Bilder tål bredd: karusellen från flödet får ligga fullbrett, för ett foto av någons resultat är det enda i bandet som blir <i>bättre</i> av att vara stort.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;padding:16px 24px;border-bottom:1px solid #ccd1c2;font-size:13px;font-weight:600;color:#5B6959">… stegen slutar här</div>
+    <div style="padding:20px 24px">
+      <div style="max-width:600px">
+        <div class="sc-cap">Fyra har lagat den</div>
+        <div style="display:flex;gap:12px;margin-top:12px">
+          <span style="width:36px;height:36px;border-radius:999px;background:#ccd1c2;display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:12.5px;font-weight:700;color:#37453a">SE</span>
+          <span style="flex:1;min-width:0"><span style="display:block;font-size:13.5px;font-weight:600">Sara Ek <span style="font-weight:400;color:#5B6959">· i går</span></span><span style="display:block;font-size:14px;font-weight:400;line-height:1.55;margin-top:3px">Vi tog dubbel lök och det blev mycket bättre 😄 rekommenderar!</span>
+          <span style="display:flex;gap:6px;margin-top:10px"><span style="min-height:44px;display:inline-flex;align-items:center;gap:6px;padding:0 12px;border:1.5px solid #24382c;background:#e6ead9;box-sizing:border-box" data-a11y-name="Gillar, 3, du har reagerat" data-a11y-role="button" data-a11y-state="selected"><span style="font-size:15px">👍</span><span style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">3</span></span><span style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:1px dashed #ccd1c2;box-sizing:border-box" data-a11y-name="Reagera" data-a11y-role="button"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5B6959" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="reaction-add"><circle cx="12" cy="12" r="7.5"></circle><path d="M9 10.2h.01"></path><path d="M15 10.2h.01"></path><path d="M9 14.4c.8.9 1.8 1.3 3 1.3s2.2-.4 3-1.3"></path></svg></span></span></span>
+        </div>
+      </div>
+      <div class="sc-cap" style="margin-top:20px">Bilder från era kök</div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <span style="flex:1;height:128px;background:#ccd1c2"></span><span style="flex:1;height:128px;background:#ccd1c2"></span><span style="flex:1;height:128px;background:#ccd1c2"></span><span style="flex:1;height:128px;background:#ccd1c2"></span><span style="width:80px;height:128px;background:#e6ead9;border:1px dashed #ccd1c2;display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:11px;font-weight:700;color:#5B6959">+3</span>
+      </div>
+      <div style="display:flex;gap:20px;margin-top:20px;padding-top:16px;border-top:1px solid #ccd1c2;flex-wrap:wrap">
+        <div style="flex:1;min-width:280px;max-width:400px"><div class="sc-cap">Delat med</div><div style="font-size:13px;color:#37453a;line-height:1.6;margin-top:6px"><b>Matlaget</b> (4 personer) och <b>Johan Lind</b>. <a href="#rcbkommentar">Ändra</a></div></div>
+        <div style="flex:1;min-width:280px;max-width:400px"><div class="sc-cap">Hör ihop med</div><div style="font-size:13px;color:#37453a;line-height:1.6;margin-top:6px">Brunsås · Rårörda lingon <span style="color:#5B6959">— kopplingen går båda vägarna</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Ett medvetet nej till en tredje spalt.</b> Kommentarer bredvid stegen betyder en tråd i syne medan man steker. Bandet är en 600 px spalt i ett fullbrett fält — samma regel som editorn (§ 21.5) — <b>utom cook snaps</b>, som är det enda innehållet som blir bättre av bredd.</div>
+</div>
+
+<div class="sc-item" id="rcboffline" data-screen-label="Receptet brett — frånkopplat">
+  <div class="sc-label"><a class="sc-id" href="#rcboffline">frånkopplat</a><b>Receptet är den vy som ska fungera sämst utan uppkoppling och gör det bäst</b> — och brett måste man kunna se <i>varför</i>. Ingredienser, steg och skalning är lokala och opåverkade. Det som inte går är bilder som inte hunnit cachas, kommentarer, delningsstatus och byten av ingredienser (lexikonet ligger i molnet, vilket koden redan vet: en tom lista offline betyder <i>kunde inte läsa</i>, inte <i>finns inga</i>).<br><br>Ramen delar därför skärmen efter <b>vad som är sant</b> i stället för att lägga en varning över allt: vänster och steg står orörda, och bandet under får en rad som säger vad som saknas där. <b>Ett grått fält som inte förklarar sig är värre än ett tomt.</b><br><br><b>Och det viktigaste: laga-knappen fungerar.</b> Matlagningsläget är helt lokalt när receptet är hämtat, och offline är dess vanligaste läge (BUT-1360 kallar det <i>the marquee scenario</i>). Att stänga av den knappen vore att stänga av appen i det ögonblick den behövs mest.<br><br>Osparade ändringar räknas i huvudet, som i rutnätet — samma vokabulär, samma klocka, samma streckade form (BV-04).</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:12px 24px;background:#e6ead9;border-bottom:1px solid #ccd1c2;color:#37453a"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A5212" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="wifi-off"><path d="M4 8.5a12 12 0 0116 0"></path><path d="M7 12a8 8 0 0110 0"></path><path d="M12 17.5h.01"></path><path d="M4.5 19.5l15-15"></path></svg><span style="flex:1;font-size:13.5px;font-weight:600"><b>Ingen uppkoppling.</b> Receptet och stegen finns i telefonen — <b>en ändring</b> väntar på att skickas.</span><span style="min-height:44px;display:inline-flex;align-items:center;padding:0 14px;background:#ce7c1e;color:#17251d;font-size:13px;font-weight:600;flex:none" data-a11y-name="Börja laga" data-a11y-role="button">Laga</span></div>
+    <div style="display:flex;min-height:0">
+      <div style="width:296px;flex:none;border-right:1px solid #ccd1c2;padding:18px;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:10px;border:1px solid #ccd1c2;padding:8px"><span style="width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Färre portioner" data-a11y-role="button" data-hit="44"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2.2" stroke-linecap="round" data-icon="minus"><path d="M6 12h12"></path></svg></span><span style="flex:1;text-align:center"><b style="display:block;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">6</b><span style="display:block;font-size:11px;font-weight:600;color:#5B6959">portioner</span></span><span style="width:44px;height:44px;border:1.5px solid #24382c;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Fler portioner" data-a11y-role="button" data-hit="44"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2.2" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span></div>
+        <div class="sc-cap" style="margin-top:16px">Ingredienser</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;font-size:13.5px">
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">900 g</b><span style="flex:1">blandfärs</span></span>
+          <span style="display:flex;gap:8px;border:1.5px dashed #788477;padding:3px 4px"><b style="width:56px;flex:none;font-variant-numeric:tabular-nums">2 st</b><span style="flex:1">gul lök <span style="display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;color:#37453a"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#37453a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" data-icon="clock"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path></svg>VÄNTAR</span></span></span>
+          <span style="display:flex;gap:8px"><b style="width:62px;flex:none;font-variant-numeric:tabular-nums">1,5 dl</b><span style="flex:1">ströbröd</span></span>
+        </div>
+        <div style="margin-top:14px;background:#e6ead9;padding:10px;font-size:11.5px;color:#37453a;line-height:1.5"><b>Byta ingrediens går inte nu</b> — förslagen ligger i molnet. Det du redan öppnat finns kvar.</div>
+      </div>
+      <div style="flex:1;min-width:0;padding:18px 24px">
+        <div class="sc-cap">Gör så här · fungerar helt</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:10px;max-width:520px">
+          <span style="display:flex;gap:12px;border-left:3px solid #24382c;padding-left:10px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums">1</b><span style="flex:1;font-size:14px;line-height:1.6">Blanda ströbröd och mjölk. Låt svälla tio minuter.</span></span>
+          <span style="display:flex;gap:12px;padding-left:13px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums;color:#5B6959">2</b><span style="flex:1;font-size:14px;line-height:1.6;color:#37453a">Finhacka löken och fräs den mjuk i smör.</span></span>
+        </div>
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid #ccd1c2;max-width:520px">
+          <div class="sc-cap">Under stegen</div>
+          <div style="display:flex;gap:10px;margin-top:8px;background:#e6ead9;padding:12px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A5212" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px" data-icon="info"><circle cx="12" cy="12" r="7.5"></circle><path d="M12 11v5.2"></path><path d="M12 8.3v.4"></path></svg><span style="flex:1;font-size:12.5px;font-weight:600;color:#37453a;line-height:1.5"><b>Kommentarer och bilder syns när du är uppkopplad igen.</b> De fyra som lagat receptet finns kvar — jag kan bara inte hämta vad de skrev just nu.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Dela skärmen efter vad som är sant</b>, inte efter en varning över allt. <b>Laga-knappen fungerar offline</b> — matlagningsläget är lokalt, och offline är dess vanligaste läge (BUT-1360). Ett grått fält som inte förklarar sig är värre än ett tomt.</div>
+</div>
+
+</div>
+</section>
+<section class="sc-wrap" data-screen-label="v11.3 — inköpslistan brett">
+<div class="sc-title" style="margin-top:24px"><b>Etapp 11.3 · inköpslistan brett.</b> Fyra ramar. Krav <b>BV-21…BV-24</b>, § 22.16–22.18.<br><br><b>Hållningen från etapp 10 gäller:</b> den breda skärmen är den <i>fel</i> skärmen för den här ytan — listan används i affären, med en telefon i handen. På en surfplatta används den bara <b>hemma, när listan görs</b>, och då är frågan inte <i>vad ska jag köpa</i> utan <b>varför står det här på listan</b>. Bredden går därför till <b>härkomst</b>, aldrig till fler varukolumner.</div>
+<div class="sc-col">
+
+<div class="sc-item" id="ikbnormal" data-screen-label="Inköpslistan brett — normalläget">
+  <div class="sc-label"><a class="sc-id" href="#ikbnormal">normalläget</a><b>Varorna i en kolumn, härkomsten i den andra</b> (BR-13). Bockningen får aldrig bli tvåspaltig: när en rad försvinner ur en tvåspaltig lista tappar ögat sin plats, och en bockad vara som flyttar sig i sidled läses som ett fel.<br><br><b>Bredden ger mer information per rad, inte fler rader per bredd.</b> Varje vara kan därför bära vad telefonen bara antyder: mängden <i>och</i> vilket recept den kommer ur, direkt i raden. Det är samma data som redan finns (BUT-1613 skalar mängderna efter närvaro) — den behöver bara inte längre tryckas fram.<br><br><b>Skafferiet ligger i högerspalten och är fortfarande opt-in.</b> Det utesluter ingenting automatiskt; det står där för att man ska se det <b>innan</b> man går. Att flytta det till en egen kolumn gör inte beslutet åt användaren — det gör bara beslutet möjligt.<br><br><b>Flervalsbaren sitter i listans kolumn</b>, inte över hela skärmen (§ 17.1: baren hör till listan den styr). Det gäller även här, där det vore lockande att lägga den i sidhuvudet.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid #ccd1c2"><span style="flex:1;font-size:24px;font-weight:700;letter-spacing:-.5px">Inköpslista</span><span style="font-size:13px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">18 varor · 4 bockade</span><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 14px;border:1.5px solid #24382c;font-size:13px;font-weight:600" data-a11y-name="Lägg till en vara" data-a11y-role="button">Lägg till</span></div>
+    <div style="display:flex;min-height:0">
+      <div style="width:456px;flex:none;border-right:1px solid #ccd1c2;padding:16px 20px;box-sizing:border-box">
+        <div class="sc-cap">Frukt och grönt</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+          <span style="display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px"><span style="width:24px;height:24px;border:1.5px solid #788477;border-radius:4px;flex:none" data-a11y-name="Gul lök, inte bockad" data-a11y-role="checkbox" data-hit="48" data-a11y-state="unchecked"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:600">Gul lök</b><span style="font-variant-numeric:tabular-nums;display:block;font-size:11.5px;font-weight:600;color:#5B6959;margin-top:1px">4 st · Mormors köttbullar, Linsgryta</span></span></span>
+          <span style="display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px"><span style="width:24px;height:24px;border:1.5px solid #788477;border-radius:4px;flex:none" data-a11y-name="Potatis, inte bockad" data-a11y-role="checkbox" data-hit="48" data-a11y-state="unchecked"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:600">Potatis</b><span style="font-variant-numeric:tabular-nums;display:block;font-size:11.5px;font-weight:600;color:#5B6959;margin-top:1px">1,5 kg · skalat för sex</span></span></span>
+          <span style="display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px;background:#e6ead9"><span style="width:24px;height:24px;background:#24382c;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Spetskål, bockad" data-a11y-role="checkbox" data-hit="48" data-a11y-state="checked"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M6 12.5l4 4 8-9"></path></svg></span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:600;text-decoration:line-through;color:#37453a">Spetskål</b></span></span>
+        </div>
+        <div class="sc-cap" style="margin-top:16px">Kött och fisk</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+          <span style="display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px"><span style="width:24px;height:24px;border:1.5px solid #788477;border-radius:4px;flex:none" data-a11y-name="Blandfärs, inte bockad" data-a11y-role="checkbox" data-hit="48" data-a11y-state="unchecked"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:600">Blandfärs</b><span style="font-variant-numeric:tabular-nums;display:block;font-size:11.5px;font-weight:600;color:#5B6959;margin-top:1px">900 g · Mormors köttbullar</span></span></span>
+          <span style="display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px"><span style="width:24px;height:24px;border:1.5px solid #788477;border-radius:4px;flex:none" data-a11y-name="Torskrygg, inte bockad" data-a11y-role="checkbox" data-hit="48" data-a11y-state="unchecked"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:600">Torskrygg</b><span style="font-variant-numeric:tabular-nums;display:block;font-size:11.5px;font-weight:600;color:#5B6959;margin-top:1px">600 g · Fisksoppa</span></span></span>
+        </div>
+      </div>
+      <div style="flex:1;min-width:0;padding:16px 20px">
+        <div class="sc-cap">Varifrån varorna kommer</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+          <div style="border:1px solid #ccd1c2;padding:10px 12px;display:flex;gap:12px;align-items:center"><span style="width:40px;height:40px;background:#ccd1c2;flex:none"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:13.5px;font-weight:600">Mormors köttbullar</b><span style="display:block;font-size:11.5px;font-weight:600;color:#5B6959;margin-top:1px">onsdag middag · 6 port · 5 varor</span></span></div>
+          <div style="border:1px solid #ccd1c2;padding:10px 12px;display:flex;gap:12px;align-items:center"><span style="width:40px;height:40px;background:#ccd1c2;flex:none"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:13.5px;font-weight:600">Fisksoppa</b><span style="display:block;font-size:11.5px;font-weight:600;color:#5B6959;margin-top:1px">måndag middag · 3 port · 4 varor</span></span></div>
+          <div style="border:1px solid #ccd1c2;padding:10px 12px;display:flex;gap:12px;align-items:center"><span style="width:40px;height:40px;background:#e6ead9;display:inline-flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6959" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" data-icon="pencil"><path d="M5 19l1-4 9-9 3 3-9 9z"></path></svg></span><span style="flex:1;min-width:0"><b style="display:block;font-size:13.5px;font-weight:600">Du la till själv</b><span style="font-variant-numeric:tabular-nums;display:block;font-size:11.5px;font-weight:600;color:#5B6959;margin-top:1px">3 varor · försvinner inte vid ny generering</span></span></div>
+        </div>
+        <div class="sc-cap" style="margin-top:18px">Redan i skafferiet</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+          <span style="min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;background:#e6ead9;font-size:12.5px;font-weight:600">Ströbröd</span>
+          <span style="min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;background:#e6ead9;font-size:12.5px;font-weight:600">Mjölk · 1 l</span>
+          <span style="min-height:44px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;background:#e6ead9;font-size:12.5px;font-weight:600">Salt</span>
+        </div>
+        <div style="font-size:11.5px;font-weight:600;color:#37453a;line-height:1.5;margin-top:10px">Skafferiet är <b>opt-in</b> och utesluter inget automatiskt — det står här så att du ser det <i>innan</i> du går.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="ikbtom" data-screen-label="Inköpslistan brett — två tomma lägen">
+  <div class="sc-label"><a class="sc-id" href="#ikbtom">två tomma sida vid sida</a><b>Det svåraste tomma läget i hela systemet, för det är två samtidigt.</b> Ingen lista <b>och</b> ingen härkomst att visa — alltså två tomma spalter, vilket är den sortens skärm som får en app att verka trasig.<br><br>Svaret är att <b>inte behandla dem som två</b>. Vänsterspalten bär det tomma läget och handlingen; högerspalten <b>finns inte</b> förrän det finns något att förklara. Ingen rubrik, ingen tom ram, ingen platshållare — <b>en tom marginal är vila</b> (§ 21.5), och det gäller starkast här.<br><br>Och handlingen är den rätta: veckans meny är den vanligaste källan till en lista, så knappen säger det i stället för <i>lägg till vara</i>. En tom inköpslista med en <i>lägg till</i>-knapp ber användaren göra generatorns jobb för hand.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid #ccd1c2"><span style="flex:1;font-size:24px;font-weight:700;letter-spacing:-.5px">Inköpslista</span><span style="font-size:13px;font-weight:600;color:#5B6959">tom</span></div>
+    <div style="display:flex;min-height:0">
+      <div style="width:456px;flex:none;padding:32px 28px;box-sizing:border-box">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#788477" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" data-icon="nav-shopping"><path d="M4.5 6.2h2l2.7 8.9h8l2-6.2H7.2"></path><circle cx="9.6" cy="18.2" r="1.5"></circle><circle cx="16.4" cy="18.2" r="1.5"></circle></svg>
+        <div style="font-size:19px;font-weight:700;letter-spacing:-.3px;margin-top:14px">Inget att handla än</div>
+        <div style="font-size:14px;color:#37453a;line-height:1.55;margin-top:8px;max-width:360px">Har du planerat veckan skriver jag listan ur den — mängderna räknas efter hur många som äter.</div>
+        <span style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;margin-top:18px;max-width:300px;background:#ce7c1e;color:#17251d;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Skriv listan ur veckans meny" data-a11y-role="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#17251d" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="nav-week"><rect x="4" y="5.5" width="16" height="14" rx="1.5"></rect><path d="M4 10h16"></path></svg>Skriv listan ur veckan</span>
+        <span style="display:inline-flex;align-items:center;min-height:48px;margin-top:6px;font-size:13.5px;font-weight:600;color:#8A5212;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Lägg till en vara för hand" data-a11y-role="button">Eller lägg till en vara</span>
+      </div>
+      <div style="flex:1;min-width:0"></div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Högerspalten finns inte förrän det finns något att förklara.</b> Ingen rubrik, ingen tom ram, ingen platshållare. Och handlingen är veckans meny — en tom lista med <i>lägg till vara</i> ber användaren göra generatorns jobb för hand.</div>
+</div>
+
+<div class="sc-item" id="ikbdelad" data-screen-label="Inköpslistan brett — delad lista">
+  <div class="sc-label"><a class="sc-id" href="#ikbdelad">den delade listan</a><b>Här får härkomstspalten en andra uppgift: <i>vem</i>.</b> I en delad lista är den vanligaste frågan inte varför en vara står där utan <b>vem som lagt den och vem som redan tagit den</b> — och den frågan har telefonen bara plats att svara på per rad, ett tryck bort.<br><br>Ramen visar anspråken där de hör: <b>i raden, som ett namn</b>, inte som en färg. En vara någon annan tagit är inte <i>bockad</i> — den är <i>tagen</i>, och skillnaden är hela poängen med en delad lista i en affär.<br><br><b>Tre regler ärvda och en ny.</b> Behörighetsnivåerna gäller (se · redigera · admin) och en <i>se</i>-medlem ser samma vy men utan bockrutor — <b>inte</b> en gråtonad kopia. Närvaron i huvudet är samma kontroll som i veckomenyn. Ägaren är låst. <b>Och den nya:</b> ett anspråk som är äldre än ett dygn förfaller och släpps tillbaka — annars blockerar en glömd markering listan för alla andra, vilket är ett tystare fel än det ser ut.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid #ccd1c2;background:#e6ead9"><span style="flex:1;min-width:0"><span style="display:block;font-size:20px;font-weight:700;letter-spacing:-.4px">Hemma</span><span style="display:block;font-size:12px;font-weight:600;color:#37453a;margin-top:2px">Delad med Johan och Sara · du kan redigera</span></span><span style="display:flex;gap:4px;align-items:center"><span class="av">J</span><span class="av">S</span><span style="font-size:11.5px;font-weight:600;color:#37453a;margin-left:4px">Johan är i affären</span></span></div>
+    <div style="display:flex;min-height:0">
+      <div style="width:456px;flex:none;border-right:1px solid #ccd1c2;padding:16px 20px;box-sizing:border-box">
+        <div class="sc-cap">Frukt och grönt</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+          <span style="display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px"><span style="width:24px;height:24px;border:1.5px solid #788477;border-radius:4px;flex:none" data-a11y-name="Gul lök, inte bockad" data-a11y-role="checkbox" data-hit="48" data-a11y-state="unchecked"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:600">Gul lök</b><span style="font-variant-numeric:tabular-nums;display:block;font-size:11.5px;font-weight:600;color:#5B6959;margin-top:1px">4 st · Mormors köttbullar</span></span><span style="min-height:44px;min-width:48px;display:inline-flex;align-items:center;justify-content:center;padding:0 10px;border:1px solid #24382c;font-size:12px;font-weight:600;flex:none" data-a11y-name="Ta gul lök" data-a11y-role="button">Ta</span></span>
+          <span style="display:flex;align-items:center;gap:12px;border:1.5px solid #8A5212;background:#f0eee2;padding:10px 12px"><span style="width:24px;height:24px;border:1.5px solid #788477;border-radius:4px;flex:none" data-a11y-name="Potatis, inte bockad" data-a11y-role="checkbox" data-hit="48" data-a11y-state="unchecked"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:600">Potatis</b><span style="display:block;font-size:11.5px;font-weight:700;color:#8A5212;margin-top:1px">Johan tar den · 18:41</span></span></span>
+          <span style="display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px;background:#e6ead9"><span style="width:24px;height:24px;background:#24382c;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Spetskål, bockad av Sara" data-a11y-role="checkbox" data-hit="48" data-a11y-state="checked"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M6 12.5l4 4 8-9"></path></svg></span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:600;text-decoration:line-through;color:#37453a">Spetskål</b><span style="display:block;font-size:11.5px;font-weight:600;color:#5B6959;margin-top:1px">Sara köpte den · i går</span></span></span>
+        </div>
+      </div>
+      <div style="flex:1;min-width:0;padding:16px 20px">
+        <div class="sc-cap">Vem gjorde vad</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+          <div style="border:1px solid #ccd1c2;padding:10px 12px;display:flex;gap:10px;align-items:center"><span class="av">J</span><span style="flex:1;min-width:0"><b style="display:block;font-size:13px;font-weight:600">Johan</b><span style="display:block;font-size:11.5px;font-weight:600;color:#5B6959">tog 3 varor · är i affären nu</span></span></div>
+          <div style="border:1px solid #ccd1c2;padding:10px 12px;display:flex;gap:10px;align-items:center"><span class="av">S</span><span style="flex:1;min-width:0"><b style="display:block;font-size:13px;font-weight:600">Sara</b><span style="display:block;font-size:11.5px;font-weight:600;color:#5B6959">köpte 4 varor i går · la till 2</span></span></div>
+        </div>
+        <div class="sc-cap" style="margin-top:18px">Varifrån varorna kommer</div>
+        <div style="border:1px solid #ccd1c2;padding:10px 12px;margin-top:8px;display:flex;gap:12px;align-items:center"><span style="width:40px;height:40px;background:#ccd1c2;flex:none"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:13.5px;font-weight:600">Mormors köttbullar</b><span style="display:block;font-size:11.5px;font-weight:600;color:#5B6959;margin-top:1px">onsdag · lades av dig</span></span></div>
+        <div style="margin-top:14px;background:#f0eee2;border-left:3px solid #8A5212;padding:12px 14px;font-size:12px;color:#37453a;line-height:1.5"><b>Nytt krav:</b> ett anspråk förfaller efter ett dygn och släpps tillbaka. En glömd markering får inte blockera varan för alla andra.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-item" id="ikboffline" data-screen-label="Inköpslistan brett — frånkopplat i affären">
+  <div class="sc-label"><a class="sc-id" href="#ikboffline">frånkopplat i affären</a><b>Den här ramen finns för att bevisa en gräns, inte för att lägga till något.</b> En delad lista offline är det enda tillstånd i systemet där <b>två personer kan bocka samma vara utan att veta om det</b> — och det går inte att designa bort, bara att hantera ärligt.<br><br>Därför säger huvudet <b>när</b> listan senast var uppdaterad, inte bara att uppkopplingen är borta. <i>Senast synkad 18:40</i> är den enda upplysning som faktiskt hjälper: den låter användaren själv avgöra om hon vågar lita på anspråken.<br><br><b>Och anspråken märks som osäkra.</b> <i>Johan tar den</i> blir <i>Johan tog den 18:41 — kan ha ändrats</i>. Ett anspråk från före tystnaden är ett minne, inte ett faktum, och att låta det stå som faktum är precis den tysta felklassen vi jagat genom hela projektet.<br><br>Bockningar köas som allt annat (streckad kant, klocka, BV-04) och skickas när täckningen kommer. <b>Ingen bockning tappas</b> — men två personer kan ha bockat samma vara, och då är det <b>listan som ska säga det</b> när den synkar, inte användaren som ska räkna ut det i kassan.</div>
+  <div class="sc-tab" style="width:1024px">
+    <div style="flex:none;display:flex;align-items:center;gap:12px;padding:12px 24px;background:#e6ead9;border-bottom:1px solid #ccd1c2;color:#37453a"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A5212" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="wifi-off"><path d="M4 8.5a12 12 0 0116 0"></path><path d="M7 12a8 8 0 0110 0"></path><path d="M12 17.5h.01"></path><path d="M4.5 19.5l15-15"></path></svg><span style="flex:1;font-size:13.5px;font-weight:600"><b>Ingen uppkoppling.</b> Listan är som den var <b>18:40</b> — bocka på, allt skickas sedan.</span><span style="font-size:12.5px;font-weight:600;color:#5B6959">2 bockningar väntar</span></div>
+    <div style="display:flex;min-height:0">
+      <div style="width:456px;flex:none;border-right:1px solid #ccd1c2;padding:16px 20px;box-sizing:border-box">
+        <div class="sc-cap">Frukt och grönt</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+          <span style="display:flex;align-items:center;gap:12px;border:1.5px dashed #788477;padding:10px 12px"><span style="width:24px;height:24px;background:#24382c;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Gul lök, bockad, väntar på att skickas" data-a11y-role="checkbox" data-hit="48" data-a11y-state="checked"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M6 12.5l4 4 8-9"></path></svg></span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:600;text-decoration:line-through;color:#37453a">Gul lök</b><span style="display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;color:#37453a;margin-top:2px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#37453a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" data-icon="clock"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path></svg>VÄNTAR</span></span></span>
+          <span style="display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px"><span style="width:24px;height:24px;border:1.5px solid #788477;border-radius:4px;flex:none" data-a11y-name="Potatis, inte bockad" data-a11y-role="checkbox" data-hit="48" data-a11y-state="unchecked"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:600">Potatis</b><span style="display:block;font-size:11.5px;font-weight:600;color:#8A5212;margin-top:1px">Johan tog den 18:41 — <i>kan ha ändrats</i></span></span></span>
+          <span style="display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px"><span style="width:24px;height:24px;border:1.5px solid #788477;border-radius:4px;flex:none" data-a11y-name="Blandfärs, inte bockad" data-a11y-role="checkbox" data-hit="48" data-a11y-state="unchecked"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:600">Blandfärs</b><span style="font-variant-numeric:tabular-nums;display:block;font-size:11.5px;font-weight:600;color:#5B6959;margin-top:1px">900 g · Mormors köttbullar</span></span></span>
+        </div>
+      </div>
+      <div style="flex:1;min-width:0;padding:16px 20px">
+        <div class="sc-cap">Varifrån varorna kommer</div>
+        <div style="border:1px solid #ccd1c2;padding:10px 12px;margin-top:8px;display:flex;gap:12px;align-items:center"><span style="width:40px;height:40px;background:#e6ead9;flex:none"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:13.5px;font-weight:600">Mormors köttbullar</b><span style="display:block;font-size:11.5px;font-weight:600;color:#5B6959;margin-top:1px">onsdag middag · 6 port</span></span></div>
+        <div style="margin-top:14px;background:#e6ead9;padding:12px;font-size:12.5px;color:#37453a;line-height:1.55"><b>Vad som inte går just nu:</b> se vad Johan och Sara gör i realtid, och lägga varor som de ser direkt. Allt du bockar och lägger sparas och skickas när täckningen kommer.</div>
+        <div style="margin-top:12px;background:#f0eee2;border-left:3px solid #8A5212;padding:12px 14px;font-size:12px;color:#37453a;line-height:1.5"><b>Kvar för dev:</b> när listan synkar och två personer bockat samma vara ska <b>listan säga det</b> — en rad om vad som slogs samman. Ingen ska behöva räkna ut det i kassan.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</section>
+<section class="sc-wrap" data-screen-label="v11.4 — matlagningsläget">
+<div class="sc-title" style="margin-top:24px"><b>Etapp 11.4 · matlagningsläget.</b> Fyra ramar ur <code>cooking_mode_view.dart</code> och <code>voice_assist_button.dart</code>. Krav <b>BV-25…BV-28</b>, § 22.19–22.21.<br><br><b>Bunten visade sig vara något annat än planerad.</b> Matlagningsläget skulle bli <i>en bred variant av en smal vy</i>. Men vyn är <b>redan bred</b>: den tvingar liggande läge, håller skärmen vaken, och delar 35/65 i ingredienser och steg. Alltså finns här ingen ny layout att rita — det finns <b>tre fel att rätta</b>, och alla tre är sådana som bara syns när man ställer vyn mot etapp 10 och 11.<br><br><b>Ett:</b> tvingad rotation är fel på en surfplatta. <b>Två:</b> vyn använder fortfarande <code>SwipeHintBanner</code> för timergesten — trots att den <b>synliga kontrollen redan finns</b> (<code>InlineTimerText</code> gör tidsfrasen till en knapp), vilket betyder att § 16.5:s strykning kan göras i dag utan att något går förlorat. <b>Tre:</b> ingrediensbyte ligger bakom ett långtryck utan någon synlig väg alls.</div>
+<div class="sc-col">
+
+<div class="sc-item" id="lgbrotation" data-screen-label="Matlagningsläget — rotation och skala">
+  <div class="sc-label"><a class="sc-id" href="#lgbrotation">rotationen</a><b>Vyn tvingar liggande läge på varje enhet.</b> På en telefon är det rätt: 35/65 i porträtt vore två oläsliga remsor. På en <b>surfplatta</b> är det fel — en surfplatta i porträtt är 768 px bred, alltså bredare än en liggande telefon, och den står redan i ett stativ eller lutad mot en hylla. Att vrida bilden 90° i handen på någon som just ställt ifrån sig plattan är den sortens hjälpsamhet som ingen ber om.<br><br><b>Regeln:</b> tvinga rotation endast under 768 px kortaste sida. Över det <b>följer vyn enheten</b> — porträtt ger ingredienserna överst i ett band och stegen under (samma innehåll, staplat), liggande ger 35/65.<br><br><b>Textskalan är vyns egen och ska så förbli.</b> <code>fontScale</code> (A · A+ · A++) skalar titel, steg och siffror tillsammans (BUT-898). Det är rätt byggt: den som lagar står 70 cm från skärmen, inte 30. Brett höjs bara <b>utgångsläget</b> — på en surfplatta är A+ rimligare start än A, eftersom avståndet är större.<br><br><b>Och en detalj som är ren omsorg:</b> skärmen hålls vaken (<code>WakelockPlus</code>) men <b>bara medan vyn lever</b> — <code>dispose</code> släpper den. Det ska stå i regeln, för det är lätt att bryta och dyrt i batteri.</div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+    <div>
+      <div class="sc-cap" style="margin-bottom:6px">Surfplatta i porträtt · 768</div>
+      <div class="sc-tab" style="width:384px;height:420px;background:#24382c;color:#F5F4ED;border-color:#3f5145">
+        <div style="flex:none;display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #3f5145"><span style="flex:1;font-size:15px;font-weight:700;letter-spacing:.5px">Mormors köttbullar</span><span style="min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;background:#F5F4ED;color:#24382c;font-size:13px;font-weight:700;flex:none" data-a11y-name="Ändra textstorlek" data-a11y-role="button">A+</span></div>
+        <div style="flex:none;padding:10px 14px;border-bottom:1px solid #3f5145;background:#2f4437">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#c9d3c4">INGREDIENSER · 6 PORT</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:6px;font-size:12.5px">
+            <span style="font-variant-numeric:tabular-nums">900 g blandfärs</span><span style="font-variant-numeric:tabular-nums">1,5 st lök</span><span style="font-variant-numeric:tabular-nums">1,5 dl ströbröd</span><span>2¼ dl mjölk</span>
+          </div>
+        </div>
+        <div style="flex:1;padding:14px;min-height:0">
+          <div style="display:flex;gap:10px"><span style="width:44px;height:44px;background:#F5F4ED;color:#24382c;display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:17px;font-weight:700">1</span><span style="flex:1;font-size:17px;line-height:1.6">Blanda ströbröd och mjölk. Låt svälla <span style="border-bottom:2px solid #DCA968;font-weight:600">tio minuter</span>.</span></div>
+        </div>
+        <div style="flex:none;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid #3f5145"><span style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center" data-a11y-name="Föregående steg" data-a11y-role="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#93a48d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg></span><span style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">Steg 1 av 7</span><span style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center" data-a11y-name="Nästa steg" data-a11y-role="button"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-right"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg></span></div>
+      </div>
+    </div>
+    <div>
+      <div class="sc-cap" style="margin-bottom:6px">Liggande · 35/65 som i dag</div>
+      <div class="sc-tab" style="width:600px;height:420px;background:#24382c;color:#F5F4ED;border-color:#3f5145">
+        <div style="flex:none;display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #3f5145"><span style="flex:1;font-size:15px;font-weight:700;letter-spacing:.5px">Mormors köttbullar</span><span style="min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;background:#F5F4ED;color:#24382c;font-size:13px;font-weight:700;flex:none" data-a11y-name="Ändra textstorlek" data-a11y-role="button">A+</span><span style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;background:#F5F4ED;flex:none" data-a11y-name="Stäng matlagningsläget" data-a11y-role="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2" stroke-linecap="round" data-icon="x"><path d="M6.5 6.5l11 11"></path><path d="M17.5 6.5l-11 11"></path></svg></span></div>
+        <div style="flex:1;display:flex;min-height:0">
+          <div style="width:210px;flex:none;border-right:1px solid #3f5145;padding:12px;box-sizing:border-box">
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;font-weight:600;color:#c9d3c4">Portioner</span><span style="width:44px;height:44px;border:2px solid #F5F4ED;display:inline-flex;align-items:center;justify-content:center" data-a11y-name="Färre" data-a11y-role="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.4" stroke-linecap="round" data-icon="minus"><path d="M6 12h12"></path></svg></span><b style="font-size:17px;font-variant-numeric:tabular-nums">6</b><span style="width:44px;height:44px;border:2px solid #F5F4ED;display:inline-flex;align-items:center;justify-content:center" data-a11y-name="Fler" data-a11y-role="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.4" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span></div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;font-size:13px">
+              <span style="display:flex;gap:8px"><span style="width:6px;height:6px;background:#F5F4ED;flex:none;margin-top:6px"></span><span style="font-variant-numeric:tabular-nums;flex:1">900 g blandfärs</span></span>
+              <span style="display:flex;gap:8px"><span style="width:6px;height:6px;background:#F5F4ED;flex:none;margin-top:6px"></span><span style="font-variant-numeric:tabular-nums;flex:1">1,5 st gul lök</span></span>
+              <span style="display:flex;gap:8px"><span style="width:6px;height:6px;background:#F5F4ED;flex:none;margin-top:6px"></span><span style="font-variant-numeric:tabular-nums;flex:1">1,5 dl ströbröd</span></span>
+            </div>
+          </div>
+          <div style="flex:1;min-width:0;padding:14px;background:#2f4437">
+            <div style="display:flex;gap:10px;border-left:3px solid #F5F4ED;padding-left:10px"><span style="width:44px;height:44px;background:#F5F4ED;color:#24382c;display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:17px;font-weight:700">1</span><span style="flex:1;font-size:17px;line-height:1.65">Blanda ströbröd och mjölk. Låt svälla <span style="border-bottom:2px solid #DCA968;font-weight:600">tio minuter</span>.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Tvinga rotation bara under 768 px kortaste sida.</b> En surfplatta i porträtt står redan i ett stativ — porträtt ger ingredienserna som ett band överst, stegen under. Textskalan är vyns egen (BUT-898) och startar på <b>A+</b> brett. Skärmen hålls vaken bara medan vyn lever.</div>
+</div>
+
+<div class="sc-item" id="lgbgester" data-screen-label="Matlagningsläget — de två gesterna">
+  <div class="sc-label"><a class="sc-id" href="#lgbgester">de två gesterna</a><b>Här stängs § 16.5 helt, och det visar sig gå att göra i dag.</b> Matlagningsläget har två långtryck: <b>steg → timer</b> (BUT-406) och <b>ingrediens → byt ut</b> (BUT-202). Båda är markerade i koden som medvetna undantag från flervalsregeln — men ingen av dem har fått frågan om den behöver en <i>synlig</i> väg.<br><br><b>Timern har redan sin.</b> <code>InlineTimerText</code> gör tidsfrasen i steget till en tryckbar chip (BUT-604) — och det är en bättre kontroll än ett långtryck, eftersom den pekar på <i>vilken</i> tid som menas. Alltså kan <code>SwipeHintBanner</code> tas bort ur den här vyn <b>utan att något försvinner</b>: gesten blir genväg, chippen är vägen. Det är den enda av § 16.5:s tre strykningar som kostar noll att göra.<br><br><b>Ingrediensbytet har ingen.</b> Ett långtryck på en ingrediens öppnar förslag på ersättning — en av appens mest användbara funktioner, helt osynlig. Ramen ger raden en liten bytesikon som visas <b>alltid</b>, inte vid hovring: i ett kök finns ingen hovring.<br><br><b>Och en sak om bytet som är viktigare än ikonen:</b> valet <b>sparas i receptet</b> (<code>updateIngredient</code>). Man tror man byter för i kväll, men man ändrar receptet för alltid. Ramen frågar därför en gång: <i>bara i dag</i> eller <i>ändra receptet</i> — och <i>bara i dag</i> är förvalt, för det är vad man menar när man står med mjöliga händer och inte har filmjölk hemma.</div>
+  <div class="sc-tab" style="width:1024px;background:#24382c;color:#F5F4ED;border-color:#3f5145">
+    <div style="display:flex;min-height:0">
+      <div style="width:340px;flex:none;border-right:1px solid #3f5145;padding:16px;box-sizing:border-box">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#c9d3c4">INGREDIENSER</div>
+        <div style="display:flex;flex-direction:column;gap:4px;margin-top:10px">
+          <span style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px"><span style="width:6px;height:6px;background:#F5F4ED;flex:none"></span><span style="font-variant-numeric:tabular-nums;flex:1">900 g blandfärs</span><span style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;flex:none;border:1px solid #3f5145" data-a11y-name="Byt ut blandfärs" data-a11y-role="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c9d3c4" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="swap-horizontal"><path d="M6 9h11l-3-3"></path><path d="M18 15H7l3 3"></path></svg></span></span>
+          <span style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px;background:#2f4437"><span style="width:6px;height:6px;background:#F5F4ED;flex:none"></span><span style="flex:1">2¼ dl mjölk</span><span style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;flex:none;border:1.5px solid #DCA968" data-a11y-name="Byt ut mjölk" data-a11y-role="button" data-a11y-state="expanded"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#DCA968" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="swap-horizontal"><path d="M6 9h11l-3-3"></path><path d="M18 15H7l3 3"></path></svg></span></span>
+          <span style="display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px"><span style="width:6px;height:6px;background:#F5F4ED;flex:none"></span><span style="font-variant-numeric:tabular-nums;flex:1">1,5 dl ströbröd</span><span style="width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;flex:none;border:1px solid #3f5145" data-a11y-name="Byt ut ströbröd" data-a11y-role="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c9d3c4" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="swap-horizontal"><path d="M6 9h11l-3-3"></path><path d="M18 15H7l3 3"></path></svg></span></span>
+        </div>
+        <div style="font-size:11px;color:#c9d3c4;line-height:1.5;margin-top:12px">Ikonen syns <b style="color:#F5F4ED">alltid</b> — i ett kök finns ingen hovring.</div>
+      </div>
+      <div style="flex:1;min-width:0;padding:16px;background:#2f4437">
+        <div style="display:flex;gap:10px;border-left:3px solid #F5F4ED;padding-left:10px"><span style="width:44px;height:44px;background:#F5F4ED;color:#24382c;display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:17px;font-weight:700">1</span><span style="flex:1;font-size:17px;line-height:1.65">Blanda ströbröd och mjölk. Låt svälla <span style="display:inline-flex;align-items:center;gap:5px;border:1.5px solid #DCA968;padding:1px 8px;font-weight:600;font-size:15px" data-a11y-name="Starta timer tio minuter" data-a11y-role="button" data-hit="44"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DCA968" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-icon="clock"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path></svg>tio minuter</span>.</span></div>
+        <div style="margin-top:16px;background:#F5F4ED;color:#24382c;padding:14px;max-width:420px">
+          <div style="font-size:15px;font-weight:700">Byt ut mjölk</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+            <span style="min-height:48px;display:flex;align-items:center;padding:0 12px;border:1.5px solid #24382c;background:#e6ead9;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Byt till filmjölk" data-a11y-role="button">Filmjölk · samma mängd</span>
+            <span style="min-height:48px;display:flex;align-items:center;padding:0 12px;border:1px solid #ccd1c2;font-size:14px;box-sizing:border-box" data-a11y-name="Byt till havredryck" data-a11y-role="button">Havredryck · samma mängd</span>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:12px">
+            <span style="flex:1;min-height:48px;display:inline-flex;align-items:center;justify-content:center;border:1.5px solid #24382c;background:#e6ead9;font-size:13px;font-weight:700;box-sizing:border-box" data-a11y-name="Bara i dag" data-a11y-role="radio" data-a11y-state="checked">Bara i dag</span>
+            <span style="flex:1;min-height:48px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ccd1c2;font-size:13px;font-weight:600;box-sizing:border-box" data-a11y-name="Ändra receptet för alltid" data-a11y-role="radio" data-a11y-state="unchecked">Ändra receptet</span>
+          </div>
+          <div style="font-size:11.5px;color:#37453a;line-height:1.5;margin-top:8px"><b>Bara i dag</b> rör inte receptet. Koden sparar i dag alltid i receptet — det är det som ska ändras.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sc-note"><b>§ 16.5 kan stängas här i dag:</b> tidsfrasen är redan en tryckbar chip (<code>InlineTimerText</code>), alltså kan <code>SwipeHintBanner</code> tas bort ur matlagningsläget utan att något försvinner. <b>Ingrediensbytet får en alltid synlig ikon</b> — och en fråga om bytet gäller i dag eller receptet, med <i>bara i dag</i> som förval.</div>
+</div>
+
+<div class="sc-item" id="lgbtimer" data-screen-label="Matlagningsläget — timrar och röst">
+  <div class="sc-label"><a class="sc-id" href="#lgbtimer">timrar och röst</a><b>Två system som konkurrerar om samma hörn, och koden vet redan om det</b> — röstknappen ligger på <code>bottom: 72</code> just för att inte täcka nästa-steg-pilen. Det är en lapp på ett layoutproblem: <b>tre saker (timerremsa, röstknapp, stegnavigering) vill ligga i samma nedre högra kvadrant.</b><br><br>Brett finns plats att lösa det i stället för att stapla: <b>timrarna får en egen list längst ned över hela bredden</b>, röstknappen sitter i stegspaltens hörn, och stegnavigeringen flyttar till <b>ingrediensspaltens</b> fot — där handen redan vilar när man håller plattan.<br><br><b>Flera timrar samtidigt är rätt byggt</b> (BUT-1242, en per steg) och listen visar dem alla. Ramen lägger till det som saknas: <b>vilket steg</b> varje timer hör till, inte bara hur lång tid som återstår. Tre timrar som bara visar siffror är tre frågor.<br><br><b>Rösten har fyra tillstånd med fyra ord</b> (§ 20.11), och en sak som bara syns här: <b>talsvaret kan stängas av</b> (<code>muted</code>), och knappen finns <i>bara</i> om en svensk röst är tillgänglig — att erbjuda att tysta en röst som inte kan tala vore en död kontroll. Det är omsorgsfullt, och regeln bevarar det.<br><br><b>Och en varning i klartext:</b> en utgången timer ger haptik och en snackbar i <i>starGold</i>. En snackbar är fel kanal för något man ska höra från andra sidan köket — regeln kräver att en utgången timer visas <b>i timerlisten tills den kvitteras</b>, inte bara som en notis som glider bort.</div>
+  <div class="sc-tab" style="width:1024px;background:#24382c;color:#F5F4ED;border-color:#3f5145">
+    <div style="flex:1;display:flex;min-height:0">
+      <div style="width:340px;flex:none;border-right:1px solid #3f5145;display:flex;flex-direction:column">
+        <div style="flex:1;padding:16px">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#c9d3c4">INGREDIENSER · 6 PORT</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;font-size:14px">
+            <span style="display:flex;gap:8px"><span style="width:6px;height:6px;background:#F5F4ED;flex:none;margin-top:6px"></span><span style="font-variant-numeric:tabular-nums;flex:1">900 g blandfärs</span></span>
+            <span style="display:flex;gap:8px"><span style="width:6px;height:6px;background:#F5F4ED;flex:none;margin-top:6px"></span><span style="font-variant-numeric:tabular-nums;flex:1">1,5 st gul lök</span></span>
+            <span style="display:flex;gap:8px"><span style="width:6px;height:6px;background:#F5F4ED;flex:none;margin-top:6px"></span><span style="flex:1">2¼ dl mjölk</span></span>
+          </div>
+        </div>
+        <div style="flex:none;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #3f5145"><span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;border:1.5px solid #3f5145" data-a11y-name="Föregående steg" data-a11y-role="button" data-hit="48"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#93a48d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg></span><span style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">Steg 3 av 7</span><span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;background:#F5F4ED" data-a11y-name="Nästa steg" data-a11y-role="button" data-hit="48"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-right"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg></span></div>
+      </div>
+      <div style="flex:1;min-width:0;position:relative;padding:16px;background:#2f4437">
+        <div style="display:flex;gap:10px;border-left:3px solid #F5F4ED;padding-left:10px"><span style="width:44px;height:44px;background:#F5F4ED;color:#24382c;display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:17px;font-weight:700">3</span><span style="flex:1;font-size:17px;line-height:1.65;max-width:460px">Rör ihop färs, lök och ströbrödsblandning. Salta och peppra ordentligt.</span></div>
+        <div style="position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <span style="background:#F5F4ED;color:#24382c;font-size:12px;font-weight:700;padding:6px 10px">hör dig …</span>
+          <span style="width:56px;height:56px;background:#9C3B23;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Klar, tolka det jag sa" data-a11y-role="button" data-hit="56"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="stop"><rect x="7.5" y="7.5" width="9" height="9"></rect></svg></span>
+        </div>
+      </div>
+    </div>
+    <div style="flex:none;display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid #3f5145;background:#24382c">
+      <span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#c9d3c4;flex:none">TIMRAR</span>
+      <span style="min-height:48px;display:inline-flex;align-items:center;gap:8px;padding:0 12px;border:1.5px solid #DCA968;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums" data-a11y-name="Timer steg 1, 4 minuter 12 sekunder kvar" data-a11y-role="button">Steg 1 · 4:12</span>
+      <span style="min-height:48px;display:inline-flex;align-items:center;gap:8px;padding:0 12px;border:1px solid #3f5145;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:#c9d3c4" data-a11y-name="Timer steg 4, 12 minuter kvar" data-a11y-role="button">Steg 4 · 12:00</span>
+      <span style="min-height:48px;display:inline-flex;align-items:center;gap:8px;padding:0 14px;background:#9C3B23;color:#F5F4ED;font-size:13px;font-weight:700" data-a11y-name="Timern för steg 2 är klar. Kvittera" data-a11y-role="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-icon="bell"><path d="M12 4.5a5 5 0 015 5v3l1.5 3h-13L7 12.5v-3a5 5 0 015-5z"></path><path d="M10.5 19.5h3"></path></svg>Steg 2 klar</span>
+      <span style="flex:1"></span>
+      <span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #3f5145;flex:none" data-a11y-name="Tysta uppläsningen" data-a11y-role="button" data-hit="48"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9d3c4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" data-icon="volume"><path d="M11 6.5L7 10H4v4h3l4 3.5z"></path><path d="M15.5 9.5a4 4 0 010 5"></path></svg></span>
+    </div>
+  </div>
+  <div class="sc-note"><b>Tre saker slutar konkurrera om samma hörn:</b> timrarna får en egen list över hela bredden, röstknappen sitter i stegspalten, stegnavigeringen flyttar till ingrediensspaltens fot där handen vilar. <b>Varje timer säger vilket steg den hör till</b>, och en utgången timer står kvar i listen tills den kvitteras — inte som en snackbar som glider bort.</div>
+</div>
+
+<div class="sc-item" id="lgbutan" data-screen-label="Matlagningsläget — receptet utan steg">
+  <div class="sc-label"><a class="sc-id" href="#lgbutan">receptet utan steg</a><b>Koden gör det här redan rätt, och det är värt en ram just därför.</b> Ett recept utan instruktioner skulle rendera <i>Steg 1 av 0</i>; i stället visas ett tomt läge med en väg ut. Det är exakt vår hållning (K-09), oombedd, i en vy ingen granskat.<br><br>Ramen skärper bara två saker. <b>Ett:</b> vägen ut ska vara <i>till redigeringen</i>, inte bara <i>stäng</i> — den som öppnar matlagningsläget vill laga, och det saknade är åtgärdbart. <b>Två:</b> ingredienserna finns ofta ändå, och då är de värda något: ett recept med ingredienser men utan steg är en <b>inköpslista med en gissning</b>, och det ska vyn erbjuda i stället för en tom skärm.<br><br><b>Och det som inte ska hända:</b> ingen tvingad rotation, ingen vakenhållen skärm, ingen <i>lagar just nu</i>-signal till vänner (<code>onEnter</code> broadcastar i dag oavsett). <b>Att öppna en tom vy är inte att laga</b> — och en signal om något som inte händer är en liten lögn i ett socialt flöde.</div>
+  <div class="sc-tab" style="width:600px;height:340px;background:#24382c;color:#F5F4ED;border-color:#3f5145;align-items:center;justify-content:center">
+    <div style="padding:0 40px;text-align:center;display:flex;flex-direction:column;align-items:center">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#93a48d" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" data-icon="file"><rect x="4.5" y="4.5" width="15" height="15" rx="1.5"></rect><path d="M8.5 10h7"></path><path d="M8.5 14h4"></path></svg>
+      <div style="font-size:20px;font-weight:700;letter-spacing:-.3px;margin-top:14px">Receptet har inga steg än</div>
+      <div style="font-size:14px;color:#c9d3c4;line-height:1.55;margin-top:8px;max-width:400px">Ingredienserna finns — men ingen har skrivit hur man gör. Skriv stegen, eller ta ingredienserna till inköpslistan.</div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <span style="min-height:48px;display:inline-flex;align-items:center;padding:0 18px;background:#F5F4ED;color:#24382c;font-size:13.5px;font-weight:600" data-a11y-name="Skriv stegen" data-a11y-role="button">Skriv stegen</span>
+        <span style="min-height:48px;display:inline-flex;align-items:center;padding:0 18px;border:1.5px solid #93a48d;font-size:13.5px;font-weight:600" data-a11y-name="Till inköpslistan" data-a11y-role="button">Till inköpslistan</span>
+      </div>
+    </div>
+  </div>
+  <div class="sc-note"><b>Vägen ut går till redigeringen</b>, inte bara till <i>stäng</i>. Och en tom vy ska inte tvinga rotation, hålla skärmen vaken eller <b>broadcasta <i>lagar just nu</i></b> — <code>onEnter</code> gör det i dag oavsett, och en signal om något som inte händer är en liten lögn i ett socialt flöde.</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+</body>
+</html>
