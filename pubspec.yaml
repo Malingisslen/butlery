@@ -20,19 +20,19 @@ dependencies:
   meta: ^1.16.0                # @visibleForTesting etc. — pure-Dart annotations, safe under the Dart VM (used by lib/services/rating/canonical_pool_key.dart, which is imported by the dart-run tools/ harness, so it must NOT depend on Flutter)
 
   # ==================== FIREBASE & BACKEND ====================
-  firebase_core: ^4.7.0        # Updated for CVE-2025-0838 fix
-  firebase_auth: ^6.4.0        # Updated for security patches
-  cloud_firestore: ^6.3.0      # Updated for CVE-2024-7254 fix
-  firebase_database: ^12.3.0   # Realtime Database for presence onDisconnect
-  firebase_storage: ^13.3.0    # Updated for bug fixes
-  firebase_analytics: ^12.3.0  # Updated for tracking improvements
-  firebase_app_check: 0.4.5        # PINNED — security primitive (BUT-793). Bump explicitly, never via `pub upgrade`. 0.4.3→0.4.5 reviewed BUT-1367 (2026-06-30): deliberate bump to free firebase_core_platform_interface 7.x for the within-major suite refresh; enforcement not yet flipped on (BUT-760) so no live attestation gate affected.
-  firebase_messaging: ^16.2.0  # Updated for FCM improvements
-  firebase_performance: ^0.11.3  # For performance monitoring
-  firebase_crashlytics: ^5.2.0  # Updated for reporting improvements
-  firebase_remote_config: ^6.4.0  # Feature flags and A/B testing
-  flutter_local_notifications: ^21.0.0  # Android notification channels (BUT-435: bumped to 21.x with Dart 3.10)
-  timezone: ^0.11.0  # BUT-1242: zonedSchedule needs an explicit tz dependency. BUT-435: bumped to 0.11.x to match flutter_local_notifications 21.x
+  firebase_core: ^4.13.0        # Updated for CVE-2025-0838 fix
+  firebase_auth: ^6.5.7        # Updated for security patches
+  cloud_firestore: ^6.8.0      # Updated for CVE-2024-7254 fix
+  firebase_database: ^12.4.7   # Realtime Database for presence onDisconnect
+  firebase_storage: ^13.4.6    # Updated for bug fixes
+  firebase_analytics: ^12.4.6  # Updated for tracking improvements
+  firebase_app_check: 0.4.6        # PINNED — security primitive (BUT-793). Bump explicitly, never via `pub upgrade`. 0.4.3→0.4.5 reviewed BUT-1367 (2026-06-30): deliberate bump to free firebase_core_platform_interface 7.x for the within-major suite refresh; enforcement not yet flipped on (BUT-760) so no live attestation gate affected.
+  firebase_messaging: ^16.5.0  # Updated for FCM improvements
+  firebase_performance: ^0.11.4+6  # For performance monitoring
+  firebase_crashlytics: ^5.2.7  # Updated for reporting improvements
+  firebase_remote_config: ^6.5.6  # Feature flags and A/B testing
+  flutter_local_notifications: ^22.2.0  # Android notification channels (BUT-435: bumped to 21.x with Dart 3.10)
+  timezone: ^0.11.1  # BUT-1242: zonedSchedule needs an explicit tz dependency. BUT-435: bumped to 0.11.x to match flutter_local_notifications 21.x
   device_info_plus: 12.3.0  # PINNED — 12.4.0+ ships a broken isiOSAppOnVision call gated on iOS 26.1 (a non-existent SDK), failing iOS Build Validation. Sibling pin connectivity_plus had the IDENTICAL speculative iOS-26 API confirmed STILL present on re-test 2026-06-24 (BUT-1367), so this pin is very likely still required too — and 13.x additionally forces win32 6.x → package_info_plus 10.x. Don't re-lift without expecting the same iOS failure.
   freerasp: 8.0.0  # PINNED — RASP rules / Frida detection (BUT-793). Bump explicitly; minor versions can change tampering thresholds. 8.0.0 reviewed (BUT-1218): its 5 breaking changes (onAllChecksDone→onAllChecksFinished, installerStore, reasons-list, blocklist, SuspiciousAppDetectionConfig) are all on surfaces we don't use; root/hook/tamper callbacks unchanged.
 
@@ -42,38 +42,38 @@ dependencies:
 
   # ==================== LOCAL STORAGE ====================
   shared_preferences: ^2.5.5
-  drift: ^2.29.0               # NOT SDK-blocked (Dart 3.10 satisfies current drift). Held at 2.29 by BUT-820: newer drift changed the encryption substrate, so drift + drift_dev + build_runner must move in lockstep only after the sqlcipher→sqlite3 migration lands. Bumping build_runner to 2.8.0+ then also sheds the discontinued build_resolvers/build_runner_core (BUT-554).
-  sqlcipher_flutter_libs: ^0.6.8  # Encrypted SQLite for Drift (replaces sqlite3_flutter_libs)
-  flutter_secure_storage: ^10.0.0  # Platform-secure storage for sensitive data
+  drift: ^2.31.0               # NOT SDK-blocked (Dart 3.10 satisfies current drift). Held at 2.29 by BUT-820: newer drift changed the encryption substrate, so drift + drift_dev + build_runner must move in lockstep only after the sqlcipher→sqlite3 migration lands. Bumping build_runner to 2.8.0+ then also sheds the discontinued build_resolvers/build_runner_core (BUT-554).
+  sqlcipher_flutter_libs: ^0.7.0+eol  # Encrypted SQLite for Drift (replaces sqlite3_flutter_libs)
+  flutter_secure_storage: ^10.3.1  # Platform-secure storage for sensitive data
 
   # ==================== NAVIGATION & UI ====================
-  wakelock_plus: ^1.4.0  # Keep screen awake during cooking mode
+  wakelock_plus: ^1.5.2  # Keep screen awake during cooking mode
 
   # ==================== NETWORKING ====================
   http: ^1.6.0
   connectivity_plus: 7.0.0  # PINNED — 7.1.0+ ships a NWPath.isUltraConstrained call gated on iOS 26.0 (a non-existent SDK), same speculative-API gambit as device_info_plus 12.4.0. Fails iOS Build Validation. RE-TESTED 2026-06-24 (BUT-1367, PR #188): 7.1.1 STILL has the isUltraConstrained call → iOS lane red (PathMonitorConnectivityProvider.swift:28). Pin confirmed required; do not re-lift until upstream drops the speculative iOS-26 API.
 
   # ==================== IMAGE HANDLING ====================
-  image_picker: ^1.2.2
+  image_picker: ^1.2.3
   image_cropper: ^12.2.1
   cached_network_image: ^3.4.1
   permission_handler: ^12.0.1
-  flutter_image_compress: ^2.4.0
-  image: ">=4.8.0 <4.9.0"     # OCR image processing (EXIF/resize/JPEG). 4.9+ needs xml 7.x → Dart 3.11; 4.8.x is the newest archive-4.x build on Dart 3.10. Lift the ceiling at the next Dart bump.
+  flutter_image_compress: ^2.5.1
+  image: ^4.9.1     # OCR image processing (EXIF/resize/JPEG). 4.9+ needs xml 7.x → Dart 3.11; 4.8.x is the newest archive-4.x build on Dart 3.10. Lift the ceiling at the next Dart bump.
 
   # ==================== PLATFORM INFO ====================
   package_info_plus: ^9.0.1
 
   # ==================== UTILITIES ====================
-  uuid: ^4.5.3
+  uuid: ^4.6.0
   intl: ^0.20.2
   collection: ^1.19.1
   rxdart: ^0.28.0
   url_launcher: ^6.3.2
   clock: ^1.1.2  # For testable time-dependent code
   share_plus: ^12.0.2        # För utgående sharing (skicka till andra appar)
-  path_provider: ^2.1.5
-  file_picker: ^11.0.2
+  path_provider: ^2.1.6
+  file_picker: ^11.0.3
   path: ^1.9.1
   crypto: ^3.0.7             # För OCR service image hashing och caching
 
@@ -81,8 +81,8 @@ dependencies:
   html: ^0.15.6
   flutter_inappwebview: ^6.1.5
   csv: ^8.0.0                 # BUT-435: bumped to 8.x with Dart 3.10
-  xml: ">=6.5.0 <7.0.0"       # .xlsx import parsing (XlsxReader) — replaces excel (BUT-503); 7.x needs Dart 3.11
-  flutter_onnxruntime: ^1.7.0  # On-device BERT NER inference (MIT licensed)
+  xml: ^7.0.1       # .xlsx import parsing (XlsxReader) — replaces excel (BUT-503); 7.x needs Dart 3.11
+  flutter_onnxruntime: ^1.8.3  # On-device BERT NER inference (MIT licensed)
   # Free on-device OCR (tier 0 before the paid OCR.space/Vision/Tesseract
   # chain). MIT. Caret-pinned like flutter_tts: an OS-bridge plugin, not a
   # bundled inference engine, so the exact-pin discipline that governs
@@ -109,19 +109,19 @@ dependencies:
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.7.1
   app_links: ^6.4.1          # BUT-434: Deep-link / share-intent handler. Replaces receive_intent (unverified publisher, single maintainer, Android-only). Cross-platform (iOS, Android, web, desktop).
-  cloud_functions: ^6.2.0
+  cloud_functions: ^6.3.6
 
   # ==================== SEARCH (Algolia - migration-ready) ====================
-  algoliasearch: ^1.46.2     # Official Algolia SDK (can migrate to Meilisearch/Typesense later)
+  algoliasearch: ^1.49.2     # Official Algolia SDK (can migrate to Meilisearch/Typesense later)
   html_unescape: ^2.0.0
   sqlite3: ^2.9.4
   web: ^1.1.1
-  sembast_web: ^2.4.2          # Web-platform CacheDao backend (lib/core/cache/cache_dao_stub.dart)
+  sembast_web: ^2.4.5+1          # Web-platform CacheDao backend (lib/core/cache/cache_dao_stub.dart)
   archive: ^4.0.0            # Zip handling for Paprika import + our own XlsxReader (BUT-503: decoupled from excel)
-  http_certificate_pinning: 3.0.1  # PINNED — pin enforcement semantics (BUT-793). Bump explicitly with cert-rotation review.
-  in_app_review: ^2.0.11            # BUT-678: prompt happy users for store reviews
+  http_certificate_pinning: 3.0.2  # PINNED — pin enforcement semantics (BUT-793). Bump explicitly with cert-rotation review.
+  in_app_review: ^2.0.12            # BUT-678: prompt happy users for store reviews
   fl_chart: ^1.2.0
-  dio: ^5.9.2  # Algolia SDK's HTTP client; imported directly by algolia_pinning_interceptor
+  dio: ^5.11.0  # Algolia SDK's HTTP client; imported directly by algolia_pinning_interceptor
 
 dev_dependencies:
   flutter_test:
@@ -132,15 +132,15 @@ dev_dependencies:
   test: ^1.26.2
   integration_test:
     sdk: flutter
-  coverage: ^1.15.0
+  coverage: ^1.15.1
   
   # ==================== MOCKING (Mocktail preferred over Mockito) ====================
   mocktail: ^1.0.5
-  build_runner: ^2.7.1  # Pinned to match drift_dev 2.29.0 — bump together (codegen breaks otherwise).
+  build_runner: ^2.15.1  # Pinned to match drift_dev 2.29.0 — bump together (codegen breaks otherwise).
   drift_dev: ^2.29.0    # Code generator for Drift — stays in lockstep with build_runner 2.7.1 above.
   
   # ==================== FIREBASE MOCKING ====================
-  fake_cloud_firestore: ^4.1.0+1
+  fake_cloud_firestore: ^4.2.0
   firebase_auth_mocks: ^0.15.1
   firebase_storage_mocks: ^0.8.0+1
   # ==================== TEST DATA GENERATION ====================
@@ -149,7 +149,7 @@ dev_dependencies:
   # ==================== INTEGRATION TESTING FRAMEWORK ====================
   
   # ==================== CODE QUALITY ====================
-  very_good_analysis: ^10.0.0
+  very_good_analysis: ^10.3.0
 
   # ==================== PERFORMANCE & ACCESSIBILITY ====================
   flutter_driver:
@@ -161,12 +161,12 @@ dev_dependencies:
   # sembast: needed by test/unit/core/cache/cache_dao_web_test.dart for the
   # in-memory factory (sembast/sembast_memory.dart) used to drive the web
   # CacheDao under test (BUT-555 audit 2026-05-04 — kept).
-  sembast: ^3.8.5+2
+  sembast: ^3.8.9+1
 
   # Test-only platform interfaces imported directly by unit tests
   # (depend_on_referenced_packages enforcement).
   plugin_platform_interface: ^2.1.8
-  firebase_core_platform_interface: ^7.0.0  # BUT-1367: bumped 6→7 (with firebase_app_check 0.4.5) so the within-major firebase_* suite refresh resolves
+  firebase_core_platform_interface: ^8.1.0  # BUT-1367: bumped 6→7 (with firebase_app_check 0.4.5) so the within-major firebase_* suite refresh resolves
   # Mocked directly to assert tapped links call launchUrl without opening a
   # browser (linkified_text + markdown_body link tests, BUT-1446).
   url_launcher_platform_interface: ^2.3.2
