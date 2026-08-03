@@ -110,7 +110,7 @@ jobs:
         fetch-depth: 0
 
     - name: Run TruffleHog secret scanner
-      uses: trufflesecurity/trufflehog@17456f8c7d042d8c82c9a8ca9e937231f9f42e26 # v3.95.2 — BUT-790 SHA-pin
+      uses: trufflesecurity/trufflehog@6f3c981e7b77f235fd2702dd74af25fc4b72bf11 # v3.95.2 — BUT-790 SHA-pin
       with:
         extra_args: --only-verified
 

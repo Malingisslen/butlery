@@ -75,7 +75,7 @@ jobs:
           printf '%s' "$KEY" > "$RUNNER_TEMP/sa-key.json"
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/setup-gcloud@77e7a554d41e2ee56fc945c52dfd3f33d12def9a # v2.1.4 — BUT-790 SHA-pin
+        uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f # v2.1.4 — BUT-790 SHA-pin
 
       - name: Activate service account
         run: |
