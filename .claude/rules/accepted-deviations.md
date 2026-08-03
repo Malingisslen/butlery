@@ -104,9 +104,10 @@ files in the same edit.
 
 - **The free on-device OCR tier ships ON despite losing the measured comparison** — the
   corrected eval (harness preprocessing like production) scores on-device 96.1 vs the paid
-  chain 96.4 over 27 verified recipes, so the plan's "at least as good" gate is NOT met.
-  **Malin's explicit call, 2026-08-03:** 0.3 points is inside the noise of a 27-recipe sample
-  and is not worth paying per image for. Do NOT flip `enable_on_device_ocr` off citing the
+  chain 96.6 over 39 verified recipes across 21 pages, so the plan's "at least as good" gate
+  is NOT met — and on a LARGER corpus the gap widened (0.3 -> 0.5) rather than averaging out,
+  across three consecutive runs.
+  **Malin's explicit call, 2026-08-03:** half a point is not worth paying per image for. Do NOT flip `enable_on_device_ocr` off citing the
   gate — the gate was overridden knowingly, and the paid chain still runs behind the tier for
   anything it reads poorly. Revisit if a larger corpus shows a real gap. 2026-08-03
 

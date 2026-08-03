@@ -508,14 +508,17 @@ a TTL must not be proposed as a "simpler" substitute. — 2026-08-01
 **Verdict.** `enable_on_device_ocr` is TRUE in production even though the corrected corpus
 eval scores the free on-device reader BELOW the paid chain. Malin's explicit call.
 
-**The numbers.** 27 verified recipes across 15 cookbook pages, gold-token recall, both arms
-given identical production preprocessing: on-device **96.1**, paid chain **96.4**. The plan
+**The numbers.** 39 verified recipes across 21 cookbook pages, gold-token recall, both arms
+given identical production preprocessing: on-device **96.1**, paid chain **96.6**. Measured
+again after the corpus grew from 27 recipes to 39 — and the gap WIDENED, 0.3 -> 0.5. Three
+consecutive runs all put the on-device reader behind (-0.3, -0.3, -0.5), so this is a small
+consistent deficit, not noise waiting to average out. That is a stronger reason to keep the
+paid chain behind the tier than the first, thinner measurement gave. The plan
 (`tasks/butlery-ocr-sites-plan.md`, step A3) set the gate at "at least as good as the paid
 chain on the same pages". 96.1 < 96.4, so the gate is **not met**.
 
-**Why it ships anyway.** 0.3 points on a 27-recipe sample is inside the noise — the on-device
-reader wins outright on several pages and loses on others, and an earlier run of the same
-comparison landed +0.2 the other way. Against that, every photo import currently costs a paid
+**Why it ships anyway.** Half a point of recall, on a metric where both arms sit above 96.
+The on-device reader still wins outright on several pages and loses on others. Against that, every photo import currently costs a paid
 call, the free tier works offline, and the image never leaves the phone. Malin judged the
 quality difference not worth paying for. That is a product call about an economics/quality
 tradeoff, which is hers to make; the engineering position (the gate as written) is recorded
