@@ -13,6 +13,7 @@
     "sync-ingredients:dry-run": "ts-node src/admin/sync-ingredients.ts --dry-run --verbose",
     "export-ingredients": "ts-node src/admin/export-ingredients.ts",
     "seed-tag-configs": "ts-node src/admin/seed-tag-configs.ts",
+    "test:cleanup-cache": "ts-node src/__tests__/cleanup-cache.test.ts",
     "test:maintenance-dispatchers": "ts-node src/__tests__/maintenance-dispatchers.test.ts",
     "test:parity": "ts-node src/__tests__/normalization-parity.test.ts",
     "test:parity:poolkey": "ts-node src/__tests__/pool-key-parity.test.ts",
