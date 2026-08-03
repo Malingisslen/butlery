@@ -102,6 +102,15 @@ files in the same edit.
 
 ## Engineering
 
+- **The free on-device OCR tier ships ON despite losing the measured comparison** — the
+  corrected eval (harness preprocessing like production) scores on-device 96.1 vs the paid
+  chain 96.4 over 27 verified recipes, so the plan's "at least as good" gate is NOT met.
+  **Malin's explicit call, 2026-08-03:** 0.3 points is inside the noise of a 27-recipe sample
+  and is not worth paying per image for. Do NOT flip `enable_on_device_ocr` off citing the
+  gate — the gate was overridden knowingly, and the paid chain still runs behind the tier for
+  anything it reads poorly. Revisit if a larger corpus shows a real gap. 2026-08-03
+
+
 - **Equality-only Firestore filters need no composite index** — automatic single-field
   indexes merge them; only `orderBy`/range combinations need a composite. 2026-06-22
 - **The 500-line limit is waived for every file in `ACCEPTED_LARGE_FILES.md`** — read the

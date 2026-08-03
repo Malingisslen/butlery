@@ -500,3 +500,41 @@ to a person. The residual is deliberate, not a gap in the cascade.
 top-level profile collection — so a TTL fieldOverride on that collectionGroup would arm a
 delete policy over real user documents. The cascade step is the only safe erasure route here;
 a TTL must not be proposed as a "simpler" substitute. — 2026-08-01
+
+---
+
+## The free on-device OCR tier ships ON despite losing the measured comparison — 2026-08-03
+
+**Verdict.** `enable_on_device_ocr` is TRUE in production even though the corrected corpus
+eval scores the free on-device reader BELOW the paid chain. Malin's explicit call.
+
+**The numbers.** 27 verified recipes across 15 cookbook pages, gold-token recall, both arms
+given identical production preprocessing: on-device **96.1**, paid chain **96.4**. The plan
+(`tasks/butlery-ocr-sites-plan.md`, step A3) set the gate at "at least as good as the paid
+chain on the same pages". 96.1 < 96.4, so the gate is **not met**.
+
+**Why it ships anyway.** 0.3 points on a 27-recipe sample is inside the noise — the on-device
+reader wins outright on several pages and loses on others, and an earlier run of the same
+comparison landed +0.2 the other way. Against that, every photo import currently costs a paid
+call, the free tier works offline, and the image never leaves the phone. Malin judged the
+quality difference not worth paying for. That is a product call about an economics/quality
+tradeoff, which is hers to make; the engineering position (the gate as written) is recorded
+above so the override is visible rather than implied.
+
+**What protects the user anyway.** The tier is not a replacement, it is a first pass. A read
+that fails either accept gate — the recipe heuristic or the same `confidence >= 0.6` bar every
+paid provider must clear — falls straight through to OCR.space → Vision → Tesseract exactly as
+before. So the failure mode of a bad on-device read is a paid call, not a bad recipe.
+
+**Do not flip it off citing the gate.** The gate was overridden knowingly, with the numbers on
+the table. A future session that finds 96.1 < 96.4 and "fixes" it would be re-litigating a
+decided call. Legitimate reasons to revisit: a materially larger gold corpus showing a real
+gap (75 more prelabelled pages are available), a user-visible regression in photo import, or
+a new ML Kit version worth re-measuring. The re-measure is
+`integration_test/ocr_engine_comparison_test.dart` on a device and takes minutes.
+
+**History worth keeping.** The first measurement of this same comparison reported 96.6 vs 96.4
+and was used to switch the flag on. It was wrong: the harness fed the recognizer raw photos
+while production preprocesses first, and the paid arm it compared against had been captured
+through that preprocessing. The artifact was larger than the margin. The harness was fixed and
+the eval re-run before this decision was taken.
