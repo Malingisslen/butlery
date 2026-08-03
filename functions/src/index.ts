@@ -14,14 +14,9 @@
 
 import { setGlobalOptions } from "firebase-functions/v2/options";
 import { onDocumentCreated, onDocumentUpdated, onDocumentDeleted, onDocumentWritten } from "firebase-functions/v2/firestore";
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import {
-  scheduleRatingAggregation,
-  drainRatingAggregationQueue,
-} from "./ratings/rating-aggregation";
-import { updateRecipeRatingStats } from "./ratings/update-recipe-rating-stats";
+import { scheduleRatingAggregation } from "./ratings/rating-aggregation";
 import {
   mirrorRatingToPool,
   POOL_MIRROR_TRIGGER_PATH,
@@ -29,10 +24,8 @@ import {
 } from "./ratings/canonical-rating-aggregation";
 import {
   schedulePoolAggregation,
-  drainPoolAggregationQueue,
   POOL_EVENT_TRIGGER_PATH,
 } from "./ratings/pool-aggregation";
-import { updatePooledRatingStats } from "./ratings/update-pooled-rating-stats";
 import {
   isProfileRating,
   shouldRecomputeOnFamilyRatingUpdate,
@@ -67,6 +60,11 @@ export { syncConversationLastMessage } from "./messaging/sync-conversation-last-
 // was added to a group by a non-friend — the group backstop for the 1:1 DM gate
 // that firestore.rules enforces (rules can't iterate a group participant list).
 export { enforceGroupMinorMembership } from "./messaging/enforce-group-minor-membership";
+
+// BUT-1788: server-side leave-group / remove-member. firestore.rules denies any
+// client update touching `participantIds`, so both operations failed 100% of the
+// time; the write moves here under the Admin SDK and the rule stays closed.
+export { leaveGroupConversation } from "./messaging/leave-group-conversation";
 
 // Cleanup Functions - Event-triggered
 export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
@@ -151,30 +149,28 @@ export { onSuggestionCreated, onSuggestionStatusChanged } from "./ingredients/on
 // Analytics Functions - Ingredient tracking
 export { trackUnmatchedIngredients, getUnmatchedIngredientStats } from "./analytics/track-unmatched-ingredients";
 
-// Analytics Functions - Scheduled engagement
-export { detectLapsedUsers } from "./analytics/detect-lapsed-users";
-export { sendWeeklyActivityDigest } from "./analytics/send-activity-digest";
-export { trackDayNRetention } from "./analytics/track-retention";
-export { computeFeatureRetention } from "./analytics/compute-feature-retention";
-
-// Analytics Functions - Daily snapshot aggregates for dashboard delta/anomaly
-// series on the non-time-series tabs (staggered 05:00–05:40 UTC).
-export {
-  snapshotImportHealthDaily,
-  snapshotRecipesDaily,
-  snapshotParsingCorrectionsDaily,
-  snapshotOpsDaily,
-  snapshotFeedbackDaily,
-} from "./analytics/daily-snapshots";
-
-// Analytics Functions - Nightly anomaly detector over the daily snapshot series
-// (06:00 UTC, after the 05:00–05:40 snapshot jobs).
-export { detectAnomalies } from "./analytics/detect-anomalies";
-export { correlateNotificationEffectiveness } from "./analytics/correlate-notifications";
+// Analytics Functions - the ten daily analytics jobs and the two weekly
+// reports no longer own a Cloud Scheduler job each. They run as tasks inside
+// `dailyAnalytics` (06:00 UTC) and `weeklyReports` (Mon 08:00 UTC) — see
+// `./scheduled/maintenance-dispatchers`. Their `runX(deps)` seams are
+// unchanged and remain the contract for tests.
 export { suppressLowPerformers } from "./analytics/suppress-low-performers";
 
-// Scheduled Aggregations - North Star metrics
-export { northStarWeekly } from "./scheduled/north-star-weekly";
+// Maintenance dispatchers — one Cloud Scheduler job per chain. Cloud Scheduler
+// bills per JOB per month (3 free per billing account), not per run, so the
+// analytics jobs above are merged into these three.
+//
+// DO NOT hoist this into a top-of-file `import`. `onSchedule` reads
+// `getGlobalOptions()` EAGERLY at module-eval time (firebase-functions 7.2.5),
+// and `export … from` compiles to a `require` at this source position — i.e.
+// AFTER the `setGlobalOptions({ region: "europe-west1" })` call above. Moving
+// it above that line silently deploys all three dispatchers to us-central1.
+// Verify against `functions/lib/index.js`, not the TypeScript source.
+export {
+  dailyAnalytics,
+  weeklyReports,
+  drainAggregations,
+} from "./scheduled/maintenance-dispatchers";
 
 // BUT-627: Ping moderation
 export { pingSweeper } from "./scheduled/ping_sweeper";
@@ -350,29 +346,14 @@ export const onFamilyRatingDeleted = onDocumentDeleted(
 );
 
 /**
- * BUT-482: Drain pending rating-aggregation markers every minute.
+ * BUT-482: pending rating-aggregation markers are drained every minute by
+ * `drainAggregations` in `./scheduled/maintenance-dispatchers`, which runs this
+ * queue and the pooled-rating queue CONCURRENTLY under one Cloud Scheduler job.
  *
- * The trigger handlers above only WRITE markers; this scheduler is the
- * single producer of `recipe_social_stats` writes. Per-recipe latency is
- * 0..60s after the rate-burst settles, which is acceptable for rating
- * stats display (was: synchronous, throttled at ~1/sec on hot recipes).
- *
- * Region pinned via `setGlobalOptions` above.
+ * The trigger handlers above only WRITE markers; that drainer is the single
+ * producer of `recipe_social_stats` writes. Per-recipe latency is unchanged at
+ * 0..60s after the rate-burst settles.
  */
-export const drainRatingAggregations = onSchedule(
-  { schedule: "every 1 minutes", timeoutSeconds: 120 },
-  async () => {
-    const result = await drainRatingAggregationQueue({
-      aggregate: updateRecipeRatingStats,
-    });
-    logger.info("rating_aggregation.drain_complete", {
-      event: "rating_aggregation.drain_complete",
-      processed: result.processed,
-      failed: result.failed,
-      durationMs: result.durationMs,
-    });
-  }
-);
 
 // ─── Pooled ratings (Butlery-betyget) — Stage A: server-authoritative mirror ──
 //
@@ -444,23 +425,10 @@ export const onPooledRatingEventWritten = onDocumentWritten(
 );
 
 /**
- * Drain pending pool-aggregation markers every minute — the single producer of
- * canonical_recipe_stats writes. Per-pool latency is 0..60s after the write
- * burst settles (same trade-off as the rating drainer above). The aggregator is
- * wired here explicitly; the shared drainer has no default and would throw if it
- * were omitted (so a wiring mistake fails loudly, never silently no-ops).
+ * Pending pool-aggregation markers are drained every minute by
+ * `drainAggregations` in `./scheduled/maintenance-dispatchers` — the single
+ * producer of canonical_recipe_stats writes. Per-pool latency is unchanged at
+ * 0..60s after the write burst settles. The aggregator is wired there
+ * explicitly; the shared drainer has no default and throws if it is omitted, so
+ * a wiring mistake fails loudly rather than silently no-opping.
  */
-export const drainPooledRatingAggregations = onSchedule(
-  { schedule: "every 1 minutes", timeoutSeconds: 120 },
-  async () => {
-    const result = await drainPoolAggregationQueue({
-      aggregate: updatePooledRatingStats,
-    });
-    logger.info("pool_aggregation.drain_complete", {
-      event: "pool_aggregation.drain_complete",
-      processed: result.processed,
-      failed: result.failed,
-      durationMs: result.durationMs,
-    });
-  }
-);

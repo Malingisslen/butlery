@@ -1,6 +1,7 @@
 // lib/services/unified/operations/modules/rating_statistics.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -163,10 +164,40 @@ class RatingStatistics {
 
   // RATING AGGREGATION
 
-  /// Update aggregated rating for recipe
+  /// Firestore map keys are STRINGS. `calculateRatingStatistics` works in
+  /// `Map<int, int>` because every in-memory consumer (`analyzeRatingDistribution`,
+  /// the UI histogram) wants int stars, but handing that map to the SDK throws:
+  /// `_CodecUtility.replaceValueWithDelegatesInMap` casts every nested key with
+  /// `key as String` before the value leaves Dart, so an int key is a `TypeError`
+  /// on every platform — and `fake_cloud_firestore` bypasses that codec, so no
+  /// fake-backed test can catch it. Both readers accept string keys
+  /// (`SerializationUtils.safeIntKeyIntMap` parses them back).
+  static Map<String, int> distributionForFirestore(Object? distribution) {
+    if (distribution is! Map) return const {};
+    return distribution.map(
+      (stars, tally) => MapEntry('$stars', (tally as num).toInt()),
+    );
+  }
+
+  /// Update aggregated rating for recipe.
+  ///
+  /// [recipeOwnerId] is the uid whose recipe collection holds the document —
+  /// recipes live at `users/{uid}/recipes/{recipeId}`, never in a top-level
+  /// `recipes` collection (BUT-1781). Pass null when the owner is unknown; the
+  /// denormalization is then skipped and this is a no-op.
+  ///
+  /// **This does NOT write `recipe_social_stats`.** That collection is
+  /// server-only — `firestore.rules` says `allow create, update, delete: if
+  /// false` on it, and `drainRatingAggregations` (functions/src/index.ts) is
+  /// documented as "the single producer of recipe_social_stats writes". A
+  /// client write there is permission-denied in production, and if it ever were
+  /// permitted it would CLOBBER a richer server aggregate: the CF also folds
+  /// `family_ratings` rows with `memberType == "profile"` into the same
+  /// document, which this account-only count knows nothing about.
   static Future<void> updateRecipeRatingAggregate({
     required FirebaseFirestore firestore,
     required String recipeId,
+    required String? recipeOwnerId,
   }) async {
     try {
       AppLogger.debug('Updating rating aggregate for recipe $recipeId');
@@ -176,48 +207,92 @@ class RatingStatistics {
           .where('recipeId', isEqualTo: recipeId)
           .get();
 
-      final batch = firestore.batch();
-      final recipeRef = firestore.collection('recipes').doc(recipeId);
-
       if (ratingsSnapshot.docs.isEmpty) {
-        batch.delete(
-          firestore.collection(_socialStatsCollection).doc(recipeId),
+        await _denormalizeOntoRecipe(
+          firestore: firestore,
+          recipeId: recipeId,
+          recipeOwnerId: recipeOwnerId,
+          updates: {
+            'core.ratingCount': 0,
+            'core.averageRating': null,
+            'core.ratingDistribution': FieldValue.delete(),
+          },
         );
-        batch.update(recipeRef, {
-          'ratingCount': 0,
-          'averageRating': null,
-          'ratingDistribution': FieldValue.delete(),
-        });
-        await batch.commit();
         return;
       }
 
       final ratings = ratingsSnapshot.docs.map((doc) => doc.data()).toList();
       final stats = calculateRatingStatistics(ratings);
 
-      batch.set(
-        firestore.collection(_socialStatsCollection).doc(recipeId),
-        {
-          'recipeId': recipeId,
-          'ratingCount': stats['count'],
-          'averageRating': stats['average'],
-          'ratingDistribution': stats['distribution'],
-          'reviewCount': stats['review_count'],
-          'lastUpdated': FieldValue.serverTimestamp(),
+      await _denormalizeOntoRecipe(
+        firestore: firestore,
+        recipeId: recipeId,
+        recipeOwnerId: recipeOwnerId,
+        updates: {
+          'core.ratingCount': stats['count'],
+          'core.averageRating': stats['average'],
+          'core.ratingDistribution': distributionForFirestore(
+            stats['distribution'],
+          ),
         },
-        SetOptions(merge: true),
       );
-      batch.update(recipeRef, {
-        'ratingCount': stats['count'],
-        'averageRating': stats['average'],
-        'ratingDistribution': stats['distribution'],
-      });
-      await batch.commit();
 
-      AppLogger.debug('Updated rating aggregate + recipe denormalized fields');
+      AppLogger.debug('Updated recipe denormalized rating fields');
     } catch (e) {
       AppLogger.error('Failed to update rating aggregate', e);
       rethrow;
+    }
+  }
+
+  /// Mirror the aggregate onto the owner's recipe document so the O(1) read in
+  /// [getRecipeStatistics] has something to find.
+  ///
+  /// Best-effort on purpose: `firestore.rules` lets only the OWNER update
+  /// `users/{uid}/recipes/{recipeId}`, so a collaborator rating a shared recipe
+  /// gets permission-denied here. That must not discard their rating, so the
+  /// failure is logged, not rethrown — the shared `recipe_social_stats`
+  /// aggregate the UI falls back to is produced server-side either way.
+  ///
+  /// Only the two EXPECTED refusals are demoted to a warning. Anything else is
+  /// logged as an error, because a blanket "everything here is fine" is how a
+  /// wrong path or a wrong field name stays invisible for a year
+  /// (lessons-digest: the wrong-path-read class).
+  static Future<void> _denormalizeOntoRecipe({
+    required FirebaseFirestore firestore,
+    required String recipeId,
+    required String? recipeOwnerId,
+    required Map<String, dynamic> updates,
+  }) async {
+    if (recipeOwnerId == null || recipeOwnerId.isEmpty) {
+      AppLogger.warning(
+        'Skipping recipe rating denormalization for $recipeId: unknown owner',
+      );
+      return;
+    }
+    try {
+      await firestore
+          .collection(FirestoreCollections.users)
+          .doc(recipeOwnerId)
+          .collection(FirestoreCollections.recipes)
+          .doc(recipeId)
+          .update(updates);
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied' || e.code == 'not-found') {
+        AppLogger.warning(
+          'Recipe rating denormalization skipped for $recipeId '
+          '(not the owner, or recipe gone): ${e.code}',
+        );
+        return;
+      }
+      AppLogger.error(
+        'Recipe rating denormalization FAILED unexpectedly for $recipeId',
+        e,
+      );
+    } catch (e) {
+      AppLogger.error(
+        'Recipe rating denormalization FAILED unexpectedly for $recipeId',
+        e,
+      );
     }
   }
 
@@ -546,10 +621,15 @@ class RatingStatistics {
     return results;
   }
 
-  /// Update multiple recipe rating aggregates
+  /// Update multiple recipe rating aggregates.
+  ///
+  /// [recipeOwnerIds] maps recipe id → owning uid (see
+  /// [updateRecipeRatingAggregate]); a missing entry means the owner is
+  /// unknown and only the shared aggregate is refreshed.
   static Future<void> updateMultipleRatingAggregates({
     required FirebaseFirestore firestore,
     required List<String> recipeIds,
+    required Map<String, String?> recipeOwnerIds,
   }) async {
     try {
       AppLogger.info('Updating ${recipeIds.length} rating aggregates');
@@ -558,6 +638,7 @@ class RatingStatistics {
         (recipeId) => updateRecipeRatingAggregate(
           firestore: firestore,
           recipeId: recipeId,
+          recipeOwnerId: recipeOwnerIds[recipeId],
         ),
       );
 

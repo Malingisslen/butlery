@@ -407,7 +407,21 @@ class UnifiedRecipeService
     getCurrentUserId: _userIdGetter,
     getCurrentUserDisplayName: _displayNameGetter,
     getRecipes: _recipesGetter,
-    updateRecipe: updateRecipe,
+    // BUT-1785 root cause. This seam is handed to exactly one consumer,
+    // `RecipeMemberManager` (social_recipe_operations.dart:62-67), and EVERY
+    // entry point there filters `r.isCollaborative` (:42, :117, :228, :308,
+    // :395, :444, :460) and rebuilds with `type: recipe.type`. Bound to
+    // `updateRecipe` it reached `PersonalRecipeCrud.updateRecipe` →
+    // `personal_recipe_module.dart:242`, which is
+    // `if (!updatedRecipe.isPersonal) return false;` — and personal and
+    // collaborative are mutually exclusive (recipe_unified.dart:1474-1476).
+    // So add-member, remove-member and remove-group have never once written:
+    // each returned false and surfaced as a generic error.
+    //
+    // `saveRecipeForSocialModule` exists for precisely this and says so on its
+    // own doc comment; `SocialRecipeModule` already uses it two bindings up.
+    // The member-manager tests missed it by stubbing this seam to `true`.
+    updateRecipe: saveRecipeForSocialModule,
     createCollaborativeRecipe: createCollaborativeRecipe,
     createPersonalRecipe: createPersonalRecipe,
     // BUT-1056: surface share-cap rejection from the RecipeSharingManager

@@ -1,7 +1,9 @@
 /**
  * Track Day-N Retention (BUT-605 extends BUT prior).
  *
- * Scheduled daily at 4 AM UTC. For each user, computes days since signup
+ * Runs as the first task in the `dailyAnalytics` chain (06:00 UTC — see
+ * `scheduled/maintenance-dispatchers.ts`); it no longer owns a Cloud
+ * Scheduler job. For each user, computes days since signup
  * and writes a retention event when the user hits day 1, 7, 14, 30, 90,
  * or 180. Each event is sliced by `lifecycleStage` so cohort dashboards
  * can filter `new_/activated/habitual/dormant/churned`.
@@ -26,7 +28,6 @@
  * drive re-engagement filtering.
  */
 
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
@@ -101,8 +102,8 @@ export interface RunDeps {
 const getDb = () => admin.firestore();
 
 /**
- * Test-seam entrypoint. Production schedule wrapper just calls
- * `runTrackRetention()` with no overrides; tests pass `{db, now}` to
+ * Test-seam entrypoint, and the production entrypoint: the `dailyAnalytics`
+ * dispatcher calls it with no overrides; tests pass `{db, now}` to
  * pin time and inject a fake Firestore.
  */
 export async function runTrackRetention(deps: RunDeps = {}): Promise<{
@@ -204,15 +205,3 @@ export async function runTrackRetention(deps: RunDeps = {}): Promise<{
 
   return { processedUsers, eventsWritten };
 }
-
-export const trackDayNRetention = onSchedule(
-  { schedule: "0 4 * * *", timeZone: "UTC" },
-  async () => {
-    try {
-      await runTrackRetention();
-    } catch (error) {
-      logger.error("track_retention_failed", { err: error });
-      throw error;
-    }
-  }
-);

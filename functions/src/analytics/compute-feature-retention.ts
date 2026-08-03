@@ -1,10 +1,15 @@
 /**
  * Per-feature DAU + rolling 7d/28d WAU/MAU (BUT-599).
  *
- * Scheduled daily at 04:30 UTC — 30 minutes after `track-retention.ts` so
- * the two user-iteration jobs do not collide. For every user with
+ * Runs as the second task in the `dailyAnalytics` chain (06:00 UTC — see
+ * `scheduled/maintenance-dispatchers.ts`); it no longer owns a Cloud
+ * Scheduler job. It shares a process with `trackDayNRetention` and runs
+ * strictly after it, so the two user-iteration scans can no longer overlap
+ * AT ALL — the old 30-minute stagger is obsolete, not merely moved. Do not
+ * "restore" it by re-adding an `onSchedule`: that re-introduces the
+ * per-job Cloud Scheduler charge this merge exists to remove. For every user with
  * `lastActiveAt` in the trailing 28 days the function checks six feature
- * activity sources for the run-day (UTC) and writes:
+ * activity sources for the PREVIOUS, COMPLETED UTC day and writes:
  *
  *   /analytics/feature_retention/users/{uid}_{yyyy-mm-dd}
  *     — { userId, date, cooked, imported, shared, mealPlanned, shopped }
@@ -16,13 +21,37 @@
  * pass with different boundaries. The ticket says "WAU/MAU"; the field
  * name pins the actual semantics.
  *
+ * **Which day is probed, and why it is not the run day (BUT-1791)**: the job
+ * runs at 06:00 UTC, so `startOfUtcDay(now)` — the day it is currently
+ * standing in — is only 6 hours old when it is asked about. Every activity
+ * later that day lands after the run, and the next run used to ask about the
+ * NEXT day instead, so it was never queried by anyone: all five flags measured
+ * the small hours (02:00–06:30 Swedish summer time) while reading as a whole
+ * day. The window is therefore `startOfUtcDay(now) - MS_PER_DAY`, a day that
+ * has finished, and `dateStr` labels the row with the day it actually
+ * measures. Two consequences a reader should expect rather than file: the
+ * newest `daily/{date}` document is dated YESTERDAY (one-day dashboard lag,
+ * the price of a complete day), and every row written before this deploy
+ * carries the truncated meaning — see KNOWN GAP 3.
+ *
  * **Idempotency**: deterministic doc ids → re-run on the same UTC day
  * overwrites both the per-user-per-day rows and the daily aggregate.
  * Mirrors the BUT-605 retention idempotency contract.
  *
+ * **Retention of the per-user rows (BUT-1789)**: `users/{uid}_{date}` is
+ * personal data keyed by a live uid, so account deletion erases it —
+ * `deleteFeatureRetentionFlags` in `account/account-deletion-cascade.ts`
+ * sweeps `userId == uid` and `probeResidualData` counts the same handle
+ * afterwards. There is deliberately NO TTL on this subcollection: its
+ * collectionGroup id is `users`, the same id as the top-level profile
+ * collection, so a TTL fieldOverride here would arm a delete policy over real
+ * user documents. The `daily/{date}` aggregates hold integer counts and no
+ * uid, and are not rewritten when an account goes (accepted deviation,
+ * BUT-1789).
+ *
  * **Read budget (per run, ~1k active users)**:
  *   - 1 paginated user scan (`lastActiveAt >= now - 28d`) → ≤1k reads
- *   - 6 per-user per-day activity queries → up to 6k reads (today's flags)
+ *   - 6 per-user per-day activity queries → up to 6k reads (probed day's flags)
  *   - 28 per-user historical flag-doc reads for WAU rollup → up to 28k reads
  *   - = ~35k reads/day at 1k active users ≈ $0.013/day on the Firestore
  *     read price tier as of 2026. Acceptable for a daily aggregator. If
@@ -103,9 +132,9 @@
  *     list embeds `items` in the list document.
  *
  *     WHAT `shopped` MEANS NOW, stated once so it is not re-derived: the
- *     personal leg now STAMPS every shopping day, "Rensa klart" included —
- *     but see gap 4 before reading it as an accurate per-day boolean, because
- *     this job only ever queries a few hours of each day. The collaborative
+ *     personal leg STAMPS every shopping day, "Rensa klart" included, and
+ *     since BUT-1791 the job asks about a day that has finished, so the stamp
+ *     is actually inside the queried window. The collaborative
  *     leg is additionally LAST-WRITER-ONLY (gap 1) — `lastActivityByUserId` is
  *     a single stamp, so when two household members shop the same shared list
  *     on the same day, only the last writer scores. Every flag this job writes
@@ -118,59 +147,43 @@
  *
  *  3. THE ROLLUPS RAMP IN AFTER DEPLOY, AND THE RAMP LOOKS LIKE ADOPTION.
  *     `wau7d` and `wau28d` OR together previously STORED per-day flag docs, and
- *     every one of those written before a `shopped` fix carries whichever
- *     structural zero that fix removed — BUT-1724 for the personal leg,
- *     BUT-1761 for the collaborative one, and BUT-1762 (2026-07-31) for
- *     personal item activity, which is the latest and therefore the one that
- *     sets the clock. So `shopped` climbs for 7 and then 28 days after each
- *     deploy purely as the window refills with correct days — a dashboard
+ *     every one of those written before a fix carries whichever structural
+ *     zero that fix removed. The ramp triggers, oldest to newest:
+ *       - BUT-1724 — the personal `shopped` leg read a retired collection;
+ *       - BUT-1761 — the collaborative `shopped` leg did not exist;
+ *       - BUT-1762 (2026-07-31) — personal ITEM activity never moved the
+ *         parent list's `updatedAt`;
+ *       - BUT-1791 (2026-08-01) — the job probed the day it was standing in
+ *         and so saw only its first 4.5 hours. This one is the latest AND the
+ *         widest: it caps every flag, not just `shopped`, so it is the entry
+ *         that sets the clock for all five series.
+ *     So each series climbs for 7 and then 28 days after the latest of those
+ *     deploys, purely as the window refills with correct days — a dashboard
  *     artefact, not behaviour change. The rollups only mean anything 28 days
- *     after the latest of those deploy dates; the DAU figure is trustworthy
- *     from day one.
+ *     after 2026-08-01. The DAU figure is trustworthy from the first run
+ *     AFTER that deploy, not from the rows already on disk.
  *
  *     Said plainly for whoever reads the dashboard: each of those deploys makes
  *     the numbers rise on their own for up to a month afterwards, and that rise
  *     is the measurement catching up, not growth.
  *
- *     BUT EXPECT NO SUCH RAMP FROM BUT-1762 ON ITS OWN — gap 4 caps the
- *     personal leg to a shopping trip whose FIRST item write of the day lands
- *     before 04:30 UTC, which is almost nobody. Day-coalescing neither causes
- *     nor rescues that: the first write of a day always stamps, and that is
- *     precisely the one inside the window. So the personal leg stays close to
- *     flat until BUT-1791 lands, and the two ramps only compound once it does.
- *     Do not read the missing ramp as "the fix did not deploy".
+ *     BUT-1762 produced almost no ramp of its own, and that was expected
+ *     rather than a failed deploy: until BUT-1791 the queried window ended at
+ *     04:30 UTC, so the personal leg only caught a shopping trip whose FIRST
+ *     item write of the day landed before then — almost nobody. Day-coalescing
+ *     neither caused nor rescued that (the first write of a day always stamps,
+ *     and that is precisely the one inside the old window). The two fixes
+ *     compound from BUT-1791 onward.
  *
- *     (`shopped` is NOT one of `detect-anomalies.ts`'s five MONITORED_SERIES,
- *     so neither step change can trip a false z-score alert — checked
- *     2026-07-31.)
- *
- *  4. THIS JOB ONLY EVER SEES THE FIRST 4.5 HOURS OF EACH UTC DAY, AND THAT
- *     CAPS EVERY FLAG ABOVE. Found 2026-07-31 by `code-reviewer` during the
- *     BUT-1762 review, verified against this file: the schedule is
- *     `30 4 * * *` UTC (below), and the run probes `startOfUtcDay(now)` — the
- *     CURRENT day — so its window is 00:00–04:30 UTC of the run day: 02:00–
- *     06:30 Swedish summer time, 01:00–05:30 in winter. Activity later that day
- *     is written after the run, and the next run asks about the following day
- *     instead. It is never queried.
- *
- *     So every flag here — `cooked`, `imported`, `shared`, `mealPlanned` and
- *     `shopped` alike — measures roughly the small hours, not the day. This
- *     is the same disease as BUT-1724/BUT-1761: a metric that reads as a
- *     signal while being structurally near-zero.
- *
- *     The suite cannot catch it: every case runs `now = 08:00Z` against
- *     activity at `06:00Z`, i.e. a run AFTER the activity, which production
- *     never does. Any fix needs a test whose activity lands after the run
- *     hour.
- *
- *     NOT fixed by BUT-1762 — deliberately. The fix is small (probe the
- *     PREVIOUS UTC day, `startOfUtcDay(now) - MS_PER_DAY`, with `dateStr` to
- *     match; or move the schedule to 23:55 UTC) but it re-bases what every
- *     stored flag doc and both rollups mean, so it is its own change with its
- *     own ramp. Tracked as BUT-1791.
+ *     (NO series this job writes is one of `detect-anomalies.ts`'s five
+ *     MONITORED_SERIES — those read `import_health`, `recipes`,
+ *     `parsing_corrections`, `ops` and `feedback`, all written by
+ *     `daily-snapshots.ts`. So none of these step changes, BUT-1791's
+ *     across-the-board one included, can trip a false z-score alert. Checked
+ *     2026-07-31 for `shopped`, re-checked against the whole flag set
+ *     2026-08-01.)
  */
 
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
@@ -421,8 +434,8 @@ async function readUserDailyFlags(
 }
 
 /**
- * Test-seam entrypoint. Production schedule wrapper just calls
- * `runComputeFeatureRetention()`; tests pin `db` and `now`.
+ * Test-seam entrypoint, and the production entrypoint: the `dailyAnalytics`
+ * dispatcher calls it with no overrides; tests pin `db` and `now`.
  */
 export async function runComputeFeatureRetention(
   deps: RunDeps = {},
@@ -433,21 +446,25 @@ export async function runComputeFeatureRetention(
 }> {
   const db = deps.db ?? getDb();
   const nowMs = deps.now != null ? deps.now.getTime() : Date.now();
-  const todayStartMs = startOfUtcDay(nowMs);
-  const todayEndMs = todayStartMs + MS_PER_DAY;
-  const dateStr = formatUtcDate(todayStartMs);
+  // BUT-1791: the PREVIOUS UTC day, not the one the 06:00 run is standing in.
+  // Everything downstream — `dateStr`, the probe window, the WAU offsets and
+  // the active-user cutoff — is derived from this one base so the row, the
+  // window it measures and the rollup that reads it can never disagree.
+  const probeStartMs = startOfUtcDay(nowMs) - MS_PER_DAY;
+  const probeEndMs = probeStartMs + MS_PER_DAY;
+  const dateStr = formatUtcDate(probeStartMs);
 
-  const dayStart = admin.firestore.Timestamp.fromMillis(todayStartMs);
-  const dayEnd = admin.firestore.Timestamp.fromMillis(todayEndMs);
-  const wau28StartMs = todayStartMs - (WAU_28D - 1) * MS_PER_DAY;
+  const dayStart = admin.firestore.Timestamp.fromMillis(probeStartMs);
+  const dayEnd = admin.firestore.Timestamp.fromMillis(probeEndMs);
+  const wau28StartMs = probeStartMs - (WAU_28D - 1) * MS_PER_DAY;
   const activeCutoff = admin.firestore.Timestamp.fromMillis(wau28StartMs);
 
   logger.info("compute_feature_retention_start", { date: dateStr });
 
   // ── 1. DAU pass: scan every user with activity in the last 28d, probe
-  //      feature sources for the run-day, write per-user flag docs.
+  //      feature sources for the probed day, write per-user flag docs.
   const dau = emptyCounters();
-  const todayUserFlags = new Map<string, Pick<UserDailyFlags, FeatureFlag>>();
+  const probeDayUserFlags = new Map<string, Pick<UserDailyFlags, FeatureFlag>>();
 
   let usersScanned = 0;
   let featureFlagsWritten = 0;
@@ -484,9 +501,9 @@ export async function runComputeFeatureRetention(
       batchCount++;
       featureFlagsWritten++;
       usersScanned++;
-      todayUserFlags.set(userId, flags);
+      probeDayUserFlags.set(userId, flags);
 
-      // DAU = users with at least one TRUE today.
+      // DAU = users with at least one TRUE on the probed day.
       if (flags.cooked) dau.cooked++;
       if (flags.imported) dau.imported++;
       if (flags.shared) dau.shared++;
@@ -511,18 +528,18 @@ export async function runComputeFeatureRetention(
 
   // ── 2. WAU rollup: for each scanned user, fetch the prior 27 days of
   //      flag docs (deterministic ids), OR-reduce per flag inside the
-  //      7d / 28d windows. Today is included from the in-memory map so
-  //      we don't read what we just wrote.
+  //      7d / 28d windows. The probed day itself is included from the
+  //      in-memory map so we don't read what we just wrote.
   const wau7d = emptyCounters();
   const wau28d = emptyCounters();
 
-  for (const [userId, todayFlags] of todayUserFlags.entries()) {
+  for (const [userId, probeDayFlags] of probeDayUserFlags.entries()) {
     const seenAnyIn7 = emptyCounters();
     const seenAnyIn28 = emptyCounters();
 
-    // Day 0 = today; reuse in-memory result.
-    accumulateInto(seenAnyIn7, todayFlags);
-    accumulateInto(seenAnyIn28, todayFlags);
+    // Day 0 = the probed day; reuse in-memory result.
+    accumulateInto(seenAnyIn7, probeDayFlags);
+    accumulateInto(seenAnyIn28, probeDayFlags);
 
     // Days 1..27 (UTC midnight backwards). Parallelize the 27 reads
     // for THIS user — Firestore SDK trivially handles 27 concurrent
@@ -535,7 +552,7 @@ export async function runComputeFeatureRetention(
     }
     const priorReads = await Promise.all(
       dayOffsets.map((offset) => {
-        const day = formatUtcDate(todayStartMs - offset * MS_PER_DAY);
+        const day = formatUtcDate(probeStartMs - offset * MS_PER_DAY);
         return readUserDailyFlags(db, userId, day).then((prior) => ({
           offset,
           prior,
@@ -601,15 +618,3 @@ function bumpAggregate(
     if (perUser[f] > 0) total[f]++;
   }
 }
-
-export const computeFeatureRetention = onSchedule(
-  { schedule: "30 4 * * *", timeZone: "UTC" },
-  async () => {
-    try {
-      await runComputeFeatureRetention();
-    } catch (err) {
-      logger.error("compute_feature_retention_failed", { err });
-      throw err;
-    }
-  },
-);

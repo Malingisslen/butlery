@@ -2158,3 +2158,243 @@ killed before that replays the item write from the queue while the day is never 
 ran (contrast the `logPermissionCheck(granted:true)`-with-no-check anti-pattern).
 (d) Cost: +1 write per personal list per user per day, bounded; the day guard reads no extra doc
 because `known` comes from the `_requireList` read the branch already performs.
+
+### 2026-08-01 — BUT-1788: leave-group / remove-member moved to a Cloud Function (`leaveGroupConversation`)
+
+**Reviewed fileset:** `functions/src/messaging/leave-group-conversation.ts` (new),
+`functions/src/__tests__/leave-group-conversation.test.ts` (new),
+`functions/src/__tests__/app-check-enforcement.test.ts`, `functions/src/index.ts`,
+`functions/package.json`, `lib/repositories/firebase/modules/conversation_mutation_module.dart`,
+`lib/repositories/firebase/firebase_messaging_repository.dart`,
+`test/unit/repositories/firebase/modules/conversation_mutation_module_test.dart`.
+
+**Verified good.** The ticket's premise checks out at the rules layer: `firestore.rules:1533-1535`
+denies any client update whose diff touches `participantIds`, and `:1561-1568` denies a create with
+`senderId != auth.uid`, so both the old membership write and its "X har lämnat gruppen" system
+message were dead. `authorizeDeparture` fails closed on a missing `metadata.creatorId` (and that
+field is bound to the creating client by the create rule, BUT-1626), the client's `isAdmin`
+(`group_detail_viewmodel.dart:99-103`) uses the same `creatorId == currentUserId` predicate so no
+legitimate UI path regresses, `buildDepartureUpdate` mirrors `buildGroupDepartureUpdate` in
+`account-deletion-cascade.ts` (all four uid-keyed maps + `arrayRemove`), the uid is
+`isValidDocId`-checked BEFORE being spliced into dot-paths, `enforceAppCheck: true` matches the
+sibling user-facing callables, the client resolves `FirebaseFunctions` lazily exactly like
+`friend_relationship_repository.dart`, and the Swedish string matches `chatParticipantLeft` in
+`app_sv.arb:9415`. Ran: `npx tsc --noEmit` (clean), `npm run test:leave-group-conversation` (13/13),
+`npm run test:app-check-enforcement` (16/16), `dart analyze` on the three Dart files (clean),
+`flutter test .../conversation_mutation_module_test.dart` (15 pass, 1 pre-existing skip).
+
+**Finding 1 (High, GDPR).** `writeDepartureSystemMessage` is the first system message in this app
+that actually LANDS (the client-side ones were always rules-denied), and it embeds the departing
+member's display name in `content` under `senderId: "system"`. `deleteMessages`
+(`account-deletion-cascade.ts:1133-1155`) anonymizes only `where senderId == uid`, and
+`buildGroupDepartureUpdate` tombstones `lastMessage` only when `lastMessage.senderId == uid` — so
+after that person deletes their account the name survives both in the `messages` row and in the
+`conversations/{id}.lastMessage.content` copy that `syncConversationLastMessage` writes, readable
+by every remaining member, unreachable by the cascade and absent from `probeResidualData`. Fix
+shape: stamp `metadata: {systemEvent:"participant_left", subjectUserId: targetUid}` on the row and
+add a cascade step querying it (equality on a nested field needs no declared index) that rewrites
+`content` and the matching `lastMessage.content`, plus a probe entry — or drop the name from the
+text. Also note the cascade never visits the conversation at all once the person has left
+(`participantIds array-contains uid` no longer matches), so the message row is the only handle.
+
+**Finding 2 (Medium, information disclosure).** `authorizeDeparture` evaluates
+`targetUid === callerUid` before the membership test, so a non-member self-leave returns
+`{success:true, removed:false, remainingParticipants:N}` while a missing doc throws `not-found` and
+a 1:1 doc throws `failed-precondition`. Since direct-conversation ids are deterministic
+(`direct_${sorted uids}`, `conversation_mutation_module.dart:57`), any authenticated user who knows
+two uids can test whether those two have a DM, and can read the member count of any group id they
+hold. Suggested: return `remainingParticipants: 0` on the no-op branch, and collapse "caller is not
+a participant" into `not-found` (costs a benign error on a genuine retry after a dropped response).
+
+**Finding 3 (Medium, pre-existing but it may make the fix inert).**
+`FirebaseMessagingRepository` mixes in `UserScopedFirebaseRepository`, so `createFn`/`readFn`/
+`updateFn` resolve to `users/{uid}/conversations/{id}` (`base_firebase_repository.dart:86-92,
+428-432`), while `createDirectConversation` (:105), `deleteConversation` (:372),
+`updateConversationUserSettings` (:399), the `arrayContains` stream
+(`conversation_query_module.dart:33`) and the new CF all use TOP-LEVEL `conversations/{id}`.
+Consequences: a group created by `createGroupConversation` lands only in the creator's private
+subtree (so it can never appear in anyone's conversation stream, and the CF answers `not-found` for
+it); `addParticipants` reads null from the subtree and throws `ResourceNotFoundException`, i.e. the
+add-member counterpart of this ticket is still dead. Could not verify against production data
+whether existing groups also exist top-level (created before the mixin, or by a path not in the
+repo). Recommended as a follow-up ticket covering the whole module, not a patch here.
+
+**Notes, no action.** No audit-log row is written for an admin removing another member, but no
+sibling messaging CF writes one either (`enforce-group-minor-membership.ts`,
+`accept-friend-request.ts` are both silent), so this is a repo-wide convention rather than a gap in
+this diff. `removeGroupParticipantWithDeps` is documented as "exposed for tests with a fake
+Firestore" but no test drives it — only the two pure cores are covered. The Dart integration test
+`messaging_repository_integration_test.dart:150-184` still asserts the old client-side write, but
+the whole file is `@Skip`ped (BUT-369), so nothing reds.
+
+### 2026-08-01 — BUT-1788 re-review: the no-oracle gate landed; the admin identity it trusts did not
+
+Re-reviewed the working tree after automated fixes: `functions/src/messaging/leave-group-conversation.ts`,
+its unit test, `functions/src/index.ts`, `functions/package.json`,
+`functions/src/__tests__/app-check-enforcement.test.ts`,
+`lib/repositories/firebase/modules/conversation_mutation_module.dart`,
+`lib/repositories/firebase/firebase_messaging_repository.dart` and the Dart module test.
+
+**What the fixes closed, verified by running the suites.** (a) The response-oracle flagged in the
+previous round is gone: `removeGroupParticipantWithDeps` now runs
+`if (!snap.exists || !participantIds.includes(callerUid)) return {removed:false, remaining:0, …}`
+BEFORE the group-ness test and before `authorizeDeparture`, so a missing conversation, a group the
+caller is not in and a DM the caller is not in are byte-identical replies carrying no count — and a
+paired positive case ("a real participant still gets the real remaining count") keeps that test from
+passing on a function that always returns 0. (b) `removeGroupParticipantWithDeps` is now driven by
+tests (the previous round's "documented for tests but no test drives it"): 8 orchestration cases over
+a hand-rolled fake db cover the single write, both mirrors, the idempotent no-write retry, the padded
+participant list, a failing mirror cleanup, the denial, the oracle set, and the Art. 17 handle.
+`npm run test:leave-group-conversation` → 22/22. `app-check-enforcement.test.ts` → 16/16 with the new
+`leaveGroupConversation` entry. `flutter test .../conversation_mutation_module_test.dart` → 15 pass,
+1 pre-existing skip. `dart analyze` on the three Dart files → clean.
+
+**The open High.** `authorizeDeparture` treats `metadata.creatorId` as the group admin, and the file
+comment argues it is "bound to the creating client by the conversation create rule (BUT-1626), so it
+is a trustworthy admin identity". The binding at `firestore.rules:1525-1529` is on CREATE only. The
+UPDATE rule (`:1532-1535`) is `isAuthenticated() && uid in resource.data.participantIds &&
+!diff.affectedKeys().hasAny(['participantIds','createdAt'])` — `metadata` is not in that list and
+`affectedKeys()` is top-level, so ANY participant may `update({metadata:{creatorId: myUid}})` and
+then call the callable to remove the real creator and everyone else. That is the group-takeover
+primitive the file's own header says it refused to trade the broken feature for. `metadata.creatorId`
+is unreachable from the shipped client (the mutation module's `updateConversation` goes through
+`updateFn` → `UserScopedFirebaseRepository` → `users/{uid}/conversations`), but a tampered client is
+the stated threat model of the whole function. Fix: add a `metadata.creatorId` immutability conjunct
+to the conversations update rule and hand it to `firestore-rules-tester`; or resolve the admin
+identity from a path clients cannot write. Note `enforceGroupMinorMembership` is NOT affected — it is
+an onDocumentCreated trigger, so it reads the field while the create binding still holds.
+
+**Verified sound, so future rounds need not re-derive.** The client chain reaches the callable for
+real (`group_detail_viewmodel.leaveGroup`/`removeMember` and `conversations_viewmodel.leaveGroup` →
+`MessagingService.removeParticipantFromGroup` → `MessageManagementOperations` →
+`FirebaseMessagingRepository.removeParticipant` → mutation module → `httpsCallable`), i.e. not a dead
+twin. The Art. 17 handle is wired end to end: `metadata.subjectUserId` is written here, queried by
+`anonymizeSystemMessagesAboutUser` (`account-deletion-cascade.ts:1229`), which also rewrites the
+`conversations/{id}.lastMessage` copy and clears the handle, and the field is in `probeResidualData`
+(`:156`); `messages` has no field override in `firestore.indexes.json`, so the automatic single-field
+index on the nested path exists. A departed user's own messages stay erasable because `deleteMessages`
+queries `messages where senderId == uid` globally, not per-conversation. Module-level
+`const db = admin.firestore()` matches 12 existing production CF files. The system-message payload
+matches `MessageDto.toFirestore` field-for-field.
+
+**Lesser, left as notes.** When the LAST participant leaves, the doc is left with
+`participantIds: []` — unreadable and undeletable by everyone (the read/delete rules both require
+membership) and invisible to the cascade's `array-contains` query; PII is still covered by the two
+senderId/subjectUserId legs, so it is orphaned storage rather than a GDPR hole. The client discards
+the `removed` flag, so the deliberate non-member no-op reports success and fires `logGroupLeft`. The
+callable has no rate limit: each probe costs one document read (no information, but billable).
+
+### 2026-08-01 — BUT-1788 re-review: the leave callable reads a path client-created groups do not occupy
+
+Re-review of the fixed working tree (`functions/src/messaging/leave-group-conversation.ts`, its unit
+suite, `index.ts`, `functions/package.json`, `app-check-enforcement.test.ts`,
+`conversation_mutation_module.dart` + test, `firebase_messaging_repository.dart`). The two fixes from
+the previous round are correct and proven: the no-oracle gate sits before every shape-revealing
+branch and has its paired positive test ("a real participant still gets the real remaining count",
+22/22 green), and the `metadata.creatorId` immutability conjunct is now in the conversations update
+rule. `npx tsc --noEmit` clean, `dart analyze` clean on the three Dart files, the module's Dart suite
+15 passed / 1 pre-existing skip, `check-test-registration` OK (124 files), `CI_EXCLUDE` is now empty
+so both the new unit suite and `app-check-enforcement` actually run on the CF unit lane, and the
+integration suite is in `test:rules:all` + both `paths:` blocks of `firestore-rules.yml`.
+
+**What the round missed, and it is the headline claim of the ticket.** The callable reads top-level
+`conversations/{conversationId}` (`Collections.conversations`). `FirebaseMessagingRepository` mixes in
+`UserScopedFirebaseRepository`, so `createGroupConversation`'s `createFn` writes the group doc to
+`users/{creatorUid}/conversations/{id}`; nothing in `lib/` writes a top-level group doc except
+`MessageMutationModule.sendMessage`, which merge-sets the conversation it read (again the private
+subtree copy) alongside the message. And `createGroupConversation` never reaches that: it ends with
+`sendMessageFn(Message.system(...))`, whose `senderId:'system'` fails `sendMessage`'s own
+`conversation.isParticipant(senderId)` check and throws `PermissionDeniedException` — the same
+"KNOWN BROKEN" note this diff adds to `addParticipants`. So for a group where the creator has not yet
+sent a normal chat message there is no top-level doc at all, only the creator's subtree copy and the
+`conversations/{id}/participants/{uid}` + `users/{uid}/conversation_memberships/{id}` mirrors.
+
+Combined with the new no-oracle gate, `!snap.exists` returns `{success:true, removed:false,
+remaining:0}`; `ConversationMutationModule.removeParticipant` discards the response,
+`ConversationsViewModel.leaveGroup` returns `true` and fires `logGroupLeft`. Before this change the
+same call threw (`readFn` → subtree → null → `ResourceNotFoundException`). Net: a loud failure became
+a silent false success plus a false analytics event, on what looks like the common production shape.
+Filed High. Suggested remedies, in order: (a) unify the conversation path (own ticket — the mixed
+nesting is the root cause and also strands `enforceGroupMinorMembership`); (b) meanwhile, on the
+no-op branch of a SELF-leave, still delete the caller's OWN two mirror docs — it discloses nothing
+new (the caller learns only about their own membership), it is the only part a wrong-path call can
+still get right, and it makes leave effective in the mirror-only world.
+
+Also noted this round: an admin removing ANOTHER member is a cross-user privileged mutation with no
+`audit_logs` row — only `logger.info`. The repository leg used to have no genuine check either (so
+nothing was forged), but the trail is now console-only. Medium.
+
+### 2026-08-01 — BUT-1781 fileset review: `shared_content` two-spelling repair, the leave-group client half, and the notification-cache residual
+
+Reviewed uncommitted: `firebase_data_export_repository.dart`, `firebase_messaging_repository.dart`,
+`modules/conversation_mutation_module.dart`, `services/offline/offline_user_storage.dart`.
+
+**1. `shared_content` membership spellings — export/rules now agree, erasure does not.**
+Verified: `firestore.rules:720-728` grants `list`/`get` on `sharedByUserId` or
+`request.auth.uid in resource.data.sharedToUserIds` and knows nothing of `sharedWithUserIds`; the
+three direct writers (`recipe_sharing_manager._writeToSharedRecipesCollection`,
+`social_menu_operations`, `shopping_social_share_module`) now emit both arrays; the new
+`_sharedContentReceivedQuery` filters `contentType == X` + `sharedToUserIds arrayContains uid`.
+So the recipe leg (previously filtered on `sharedWithUserIds`) had been `permission-denied` — the
+whole `shared_content` section failed, not merely returned empty — and the menu leg read top-level
+`menus`, which `SharedMenu.toFirestore()` (→ `base_shared_content_model.getCommonFirestoreFields`)
+never stamps with `sharedToUserIds` or `sharedByAvatarUrl`. Both claims in the new doc comments
+check out.
+
+What does NOT hold: `account-deletion-cascade.ts:1369-1392` (`removeFromSharedContent`) discovers
+its docs with `collectionGroup("members").where("userId","==",uid)` and only `arrayRemove`s
+`sharedToUserIds`. The three direct writers write the parent doc alone — no `members/{uid}` — so
+the deleted user's uid survives in BOTH arrays on every doc they were shared into, and
+`probeResidualData` (cascade lines 82-190) has no `shared_content` entry in any of its three probe
+loops. The compatibility duplicate doubled the residual instead of retiring it.
+
+Also open in the same collection: `contentType: 'shopping_list'` docs (written by
+`shopping_social_share_module`, carrying `listData` — a whole list snapshot — plus
+`sharedByAvatarUrl`) are read by no export leg. `SharedShoppingListExport` looks like coverage but
+queries `unified_shared_shopping_lists`.
+
+Index: `firestore.indexes.json` declares `shared_content(contentType ASC, sharedToUserIds CONTAINS,
+sharedAt DESC)` for `FirebaseGroupSharedContentRepository`'s ordered query. The export's two-filter
+query has no `orderBy`, so it relies on Firestore prefix index selection — NOT verified against a
+live backend here. Adding `.orderBy('sharedAt', descending: true)` would match the declared index
+exactly and make the 1000/500 cap take the newest rows rather than an arbitrary set (today the cap
+is applied with no ordering at all).
+
+**2. leave-group: the CF is careful, the client throws the answer away.**
+`conversation_mutation_module.removeParticipant` now calls `leaveGroupConversation` and is still
+`Future<void>`: it `await`s `callable.call<Map<String,dynamic>>` and never reads `removed`. The CF's
+no-oracle gate (`leave-group-conversation.ts:271`) returns `{removed:false, remaining:0}` +
+`success:true` for missing doc / non-member / already-left, so all of those surface as
+`AppLogger.success('✅ Removed participant …')`, `MessageManagementOperations` logs success,
+`ConversationsViewModel.leaveGroup` returns `true` and fires `logGroupLeft`. And the missing-doc
+branch is reachable by construction: `createGroupConversation` writes through `createFn`
+(`UserScopedFirebaseRepository` → `users/{uid}/conversations`) while the CF reads top-level
+`conversations/{id}`, which is only born in `MessageMutationModule.sendMessage`
+(`batch.set(firestore.collection(collectionName).doc(conversationId), …)`, module line 191) — and
+that module's own `isParticipant` check (line 69) rejects `senderId: 'system'`, so the creation
+system message never creates it either. A group nobody has chatted in reports a successful leave
+and stays.
+
+Rules half is right: the new `conversations` update conjunct pins
+`metadata.creatorId` (`firestore.rules:1546-1548`), which is what makes `authorizeDeparture`'s
+admin check trustworthy — `affectedKeys()` is top-level, so `metadata` was previously rewritable
+wholesale by any participant.
+
+**3. `offline_user_storage.dart` is not the BUT-1799 file.** Its only change adds
+`'stale-properties'` to `_needsRetagging`'s marker set — allergen-freshness correctness, no
+Firestore, no PII, fine. The notification-settings hole lives in
+`notification_preference_manager.getPreferences` (fixed: read error no longer seeds + persists
+defaults, and no longer clobbers the local cache before reading it) and
+`NotificationPreferences.fromJson`/`toJson` (previously `'{}'` and `defaults()` stubs). Residual:
+`fromJson` returns `defaults()` for an unusable payload, `_loadPreferencesLocally` returns that as
+a non-null cache hit, and the legacy `'{}'` the old stub wrote is in every existing user's
+`SharedPreferences` — so the first failed read after upgrade serves and caches factory settings,
+and `notification_preferences_view._savePreferences` writes the whole object back on the next
+toggle. Fail toward null.
+
+**4. Mixin coverage.** `BaseFirebaseRepository` carries `PermissionValidationMixin`
+(base_firebase_repository.dart:17-19), so both repositories in the fileset inherit it;
+`FirebaseDataExportRepository` funnels every read through `_guardSelfExport → validateOwnership`
+and throws from all four CRUD hooks. `removeParticipant` has no `logPermissionCheck` on either
+branch — the admin-removes-another-member path is a cross-user privileged mutation whose only trail
+is the CF's `logger.info` (same Medium as the previous round's note).

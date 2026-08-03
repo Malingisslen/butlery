@@ -51,6 +51,7 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "verifySignupAge", // account/verify-signup-age.ts — signup age gate (enforceAppCheck: true)
   "acceptFriendRequest", // social/accept-friend-request.ts — friend accept (enforceAppCheck: true)
   "setProfileSearchability", // social/set-profile-searchability.ts — minor search opt-in (enforceAppCheck: true)
+  "leaveGroupConversation", // messaging/leave-group-conversation.ts — leave/remove group member (enforceAppCheck: true)
 ]);
 
 /**

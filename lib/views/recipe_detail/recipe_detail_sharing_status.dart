@@ -121,8 +121,12 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
               return _ShareeRow(
                 name: displayName,
                 icon: Icons.person_outline,
-                onRevoke: () =>
-                    _confirmRevokeMember(context, userId, displayName),
+                onRevoke: () => _confirmRevokeMember(
+                  context,
+                  userId,
+                  displayName,
+                  isGroup: false,
+                ),
               );
             }),
           ],
@@ -146,8 +150,12 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
               return _ShareeRow(
                 name: displayName,
                 icon: Icons.group_outlined,
-                onRevoke: () =>
-                    _confirmRevokeMember(context, groupId, displayName),
+                onRevoke: () => _confirmRevokeMember(
+                  context,
+                  groupId,
+                  displayName,
+                  isGroup: true,
+                ),
               );
             }),
           ],
@@ -186,32 +194,65 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
     }
   }
 
+  /// Revokes one sharee's access. [isGroup] picks the API that can actually
+  /// find it: friends live in `socialData.memberPermissions`, groups in
+  /// `socialData.categoryIds` (BUT-1785 — sending a group id to the user-keyed
+  /// `removeMember` failed every time).
+  ///
+  /// The two branches do NOT do the same thing, and the copy says so. Only the
+  /// friend branch actually revokes access; the group branch removes a label.
+  /// See [RecipeMemberManager.removeGroup].
   Future<void> _confirmRevokeMember(
     BuildContext context,
     String memberId,
-    String displayName,
-  ) async {
+    String displayName, {
+    required bool isGroup,
+  }) async {
     final confirmed = await CommonDialogActions.showActionConfirmation(
       context: context,
-      title: context.l10n.recipeSharingRevoke,
-      message: context.l10n.recipeSharingRevokeConfirm(displayName),
-      confirmText: context.l10n.recipeSharingRevoke,
+      // The TITLE and the confirm button are what the user reads at the moment
+      // of deciding; a transient snackbar afterwards does not undo a promise
+      // made twice on the dialog. "Ta bort delning" over a group action would
+      // promise exactly the revocation the body copy then denies.
+      title: isGroup
+          ? context.l10n.recipeSharingRemoveGroup
+          : context.l10n.recipeSharingRevoke,
+      // BUT-1785: a GROUP row gets its own copy, because it does something
+      // different. Access is granted by `socialData.memberPermissions`, which a
+      // group share expanded into individual member entries; removing the group
+      // id from `socialData.categoryIds` drops the LABEL and revokes nothing.
+      // Asking "Sluta dela med X?" and then reporting "Delning med X avslutad"
+      // over that would be a privacy action that silently lies — worse than the
+      // error snackbar this replaced, because the user would stop looking.
+      message: isGroup
+          ? context.l10n.recipeSharingRevokeGroupConfirm(displayName)
+          : context.l10n.recipeSharingRevokeConfirm(displayName),
+      confirmText: isGroup
+          ? context.l10n.recipeSharingRemoveGroup
+          : context.l10n.recipeSharingRevoke,
       isDangerous: true,
     );
     if (confirmed != true || !context.mounted) return;
 
     try {
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      final success = await recipeService.social.removeMember(
-        recipeId: recipe.id,
-        userId: memberId,
-      );
+      final success = isGroup
+          ? await recipeService.social.removeGroup(
+              recipeId: recipe.id,
+              groupId: memberId,
+            )
+          : await recipeService.social.removeMember(
+              recipeId: recipe.id,
+              userId: memberId,
+            );
 
       if (!context.mounted) return;
       if (success) {
         SnackBarUtils.showSuccess(
           context,
-          context.l10n.recipeSharingRevokeSuccess(displayName),
+          isGroup
+              ? context.l10n.recipeSharingRevokeGroupSuccess(displayName)
+              : context.l10n.recipeSharingRevokeSuccess(displayName),
         );
         onSharingChanged();
       } else {

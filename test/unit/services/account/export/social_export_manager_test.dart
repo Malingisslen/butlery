@@ -30,6 +30,7 @@ class _FakeDataExportRepository extends Fake
     this.conversations = const [],
     this.sharedRecipes = const [],
     this.sharedMenus = const [],
+    this.sharedShoppingLists = const [],
     this.outgoingBlocks = const [],
     this.incomingBlocks = const [],
     this.memberships = const [],
@@ -42,6 +43,7 @@ class _FakeDataExportRepository extends Fake
   final List<Map<String, dynamic>> conversations;
   final List<Map<String, dynamic>> sharedRecipes;
   final List<Map<String, dynamic>> sharedMenus;
+  final List<Map<String, dynamic>> sharedShoppingLists;
   final List<Map<String, dynamic>> outgoingBlocks;
   final List<Map<String, dynamic>> incomingBlocks;
   final List<Map<String, dynamic>> memberships;
@@ -123,6 +125,15 @@ class _FakeDataExportRepository extends Fake
   }) async {
     capturedMax['exportSharedMenusReceived'] = maxDocuments;
     return sharedMenus;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> exportSharedShoppingListsReceived(
+    String userId, {
+    int maxDocuments = -1,
+  }) async {
+    capturedMax['exportSharedShoppingListsReceived'] = maxDocuments;
+    return sharedShoppingLists;
   }
 
   @override
@@ -305,6 +316,7 @@ void main() {
     const otherUid = 'other-uid';
     const otherAvatar = 'https://example.test/avatars/other-uid.jpg';
     const ownAvatar = 'https://example.test/avatars/user-uid.jpg';
+    const otherSettingsSentinel = 'ANNAS-ARKIVERING-2026-07-30T10:00:00Z';
 
     SocialExportManager buildManager() => SocialExportManager(
       dataExportRepository: _FakeDataExportRepository(
@@ -320,11 +332,16 @@ void main() {
                 otherUid: otherAvatar,
               },
               'lastReadTimestamps': {userId: 1, otherUid: 2},
-              // NOT covered by the BUT-1772 verdict — left to BUT-1774, so it
-              // must not ship for third parties in the meantime.
+              // BUT-1774 decided this one goes. The sentinel is a value no
+              // other fixture field carries, so the whole-JSON assertion below
+              // cannot pass by accident.
               'perUserSettings': {
                 userId: {'isMuted': true},
-                otherUid: {'isMuted': false, 'isPinned': true},
+                otherUid: {
+                  'isMuted': false,
+                  'isPinned': true,
+                  'archivedAt': otherSettingsSentinel,
+                },
               },
               // The conversation document embeds its newest message for
               // previews, so the sender's avatar rides along here even while
@@ -377,22 +394,58 @@ void main() {
     test(
       "another participant's perUserSettings do NOT ship; the requester's do",
       () async {
-        // BUT-1772 decided names and avatars and said, in the same breath, that
-        // `perUserSettings` is undecided (BUT-1774). BUT-1767 turned this whole
-        // section from a hard failure into a shipping one, so "undecided" would
-        // otherwise have become "shipped" without anyone deciding it. Another
-        // member's mute/pin state says nothing about the requester.
+        // BUT-1774, Malin 2026-07-30: another member's mute/pin/archive state
+        // is pure third-party behaviour the client never renders for anyone but
+        // yourself, so "you have already seen it in the app" — the argument
+        // that saved the display names — is false for it.
+        final result = await buildManager().exportMessages(userId);
+        final convo =
+            (result['conversations'] as List).single as Map<String, dynamic>;
+        final info = convo['conversation_info'] as Map<String, dynamic>;
+
+        // Whole serialised section, not just the map: a copy nested anywhere
+        // else would pass a map-only assertion.
+        expect(
+          json.encode(result),
+          isNot(contains(otherSettingsSentinel)),
+          reason: 'third-party behavioural data must not ship anywhere',
+        );
+        expect(
+          (info['perUserSettings'] as Map).containsKey(otherUid),
+          isFalse,
+        );
+        expect(
+          (info['perUserSettings'] as Map)[userId],
+          {'isMuted': true},
+          reason:
+              'withholding the subject s OWN settings is the opposite failure '
+              'to the one this redaction guards against',
+        );
+      },
+    );
+
+    /// The other half of the BUT-1774 verdict, and the one a later "strip more
+    /// for consistency" sweep would quietly break. `lastReadTimestamps` is not
+    /// rendered anywhere either, but the app already shows THAT a message was
+    /// read (`MessageStatus.read`) — just not when — and the timestamp is as
+    /// much about the thread's progression as about the other person. Malin
+    /// drew the line between the two fields deliberately.
+    test(
+      'other participants  lastReadTimestamps are KEPT (decided, not an '
+      'oversight)',
+      () async {
         final result = await buildManager().exportMessages(userId);
         final convo =
             (result['conversations'] as List).single as Map<String, dynamic>;
         final info = convo['conversation_info'] as Map<String, dynamic>;
 
         expect(
-          (info['perUserSettings'] as Map).containsKey(otherUid),
-          isFalse,
-          reason: 'undecided third-party data must not ship by default',
+          info['lastReadTimestamps'],
+          {userId: 1, otherUid: 2},
+          reason:
+              'BUT-1774 kept this field on purpose; the asymmetry with '
+              'perUserSettings IS the verdict',
         );
-        expect((info['perUserSettings'] as Map)[userId], {'isMuted': true});
       },
     );
 
@@ -888,6 +941,126 @@ void main() {
     });
   });
 
+  /// BUT-1775 — the SAME verdict as BUT-1772, three sections further down.
+  /// `shared_content` documents carry `sharedByAvatarUrl`, so when a friend
+  /// shared a recipe or a menu with you their profile-picture URL landed
+  /// verbatim in your bundle while the conversations section had just stopped
+  /// shipping exactly that. Both now go through one helper.
+  group('SocialExportManager shared-content redaction (BUT-1775)', () {
+    const userId = 'user-uid';
+    const otherUid = 'other-uid';
+    const otherAvatar = 'https://example.test/avatars/other-uid.jpg';
+    const ownAvatar = 'https://example.test/avatars/user-uid.jpg';
+
+    SocialExportManager buildManager() => SocialExportManager(
+      dataExportRepository: _FakeDataExportRepository(
+        sharedRecipes: [
+          {
+            'id': 'sr1',
+            'data': {
+              'title': 'Pasta',
+              'sharedByUserId': otherUid,
+              'sharedByDisplayName': 'Anna',
+              'sharedByAvatarUrl': otherAvatar,
+            },
+          },
+          {
+            'id': 'sr2',
+            'data': {
+              'title': 'Pannkakor',
+              'sharedByUserId': userId,
+              'sharedByDisplayName': 'Malin',
+              'sharedByAvatarUrl': ownAvatar,
+            },
+          },
+        ],
+        sharedMenus: [
+          {
+            'id': 'sm1',
+            'data': {
+              'title': 'Veckans meny',
+              'sharedByUserId': otherUid,
+              'sharedByDisplayName': 'Anna',
+              'sharedByAvatarUrl': otherAvatar,
+            },
+          },
+        ],
+      ),
+    );
+
+    test(
+      'another person s avatar URL appears NOWHERE in the section',
+      () async {
+        final result = await buildManager().exportSharedContent(userId);
+
+        expect(
+          json.encode(result),
+          isNot(contains(otherAvatar)),
+          reason:
+              'an avatar URL keeps resolving long after the sharer leaves the '
+              'app, and the recipient of the export gains nothing from it',
+        );
+      },
+    );
+
+    test('the requester s OWN avatar URL is kept', () async {
+      final result = await buildManager().exportSharedContent(userId);
+      final own =
+          (result['shared_recipes_received'] as List)[1]
+              as Map<String, dynamic>;
+
+      expect(
+        (own['data'] as Map)['sharedByAvatarUrl'],
+        ownAvatar,
+        reason: 'withholding the subject s own data is the opposite failure',
+      );
+    });
+
+    test('the sharer s NAME and id are kept — only the picture goes', () async {
+      final result = await buildManager().exportSharedContent(userId);
+      final row =
+          (result['shared_menus_received'] as List).single
+              as Map<String, dynamic>;
+      final data = row['data'] as Map<String, dynamic>;
+
+      expect(data['sharedByDisplayName'], 'Anna');
+      expect(data['sharedByUserId'], otherUid);
+      expect(data['title'], 'Veckans meny');
+      expect(data.containsKey('sharedByAvatarUrl'), isFalse);
+    });
+
+    /// FAIL CLOSED, same rule as the conversations section: a row whose owner
+    /// id is missing or of an unexpected type is treated as somebody else's.
+    /// Passing it through would ship the URL while the section's
+    /// `data_minimisation` line claims it was removed.
+    test('a row with no recognisable sharedByUserId is stripped', () async {
+      final manager = SocialExportManager(
+        dataExportRepository: _FakeDataExportRepository(
+          sharedRecipes: [
+            {
+              'id': 'sr1',
+              'data': {'title': 'Pasta', 'sharedByAvatarUrl': otherAvatar},
+            },
+          ],
+        ),
+      );
+
+      final result = await manager.exportSharedContent(userId);
+
+      expect(json.encode(result), isNot(contains(otherAvatar)));
+    });
+
+    test('the section states what it dropped', () async {
+      final result = await buildManager().exportSharedContent(userId);
+
+      expect(
+        result['data_minimisation'] as String,
+        contains('profile picture'),
+        reason: 'a bundle that silently redacts states something false',
+      );
+    });
+  });
+
   group('SocialExportManager.exportBlocks (BUT-1438)', () {
     test('includes blocks in both directions, sanitized for JSON', () async {
       // Unlike other record types, blocks pass the whole raw map through
@@ -1049,6 +1222,146 @@ void main() {
     });
   });
 
+  // BUT-1798. A shopping-list share embeds a whole COPY of the sender's list,
+  // and the section's top-level avatar strip never reaches inside it:
+  // `memberPermissions` is keyed by uid, and every item carries three
+  // uid + displayName pairs. Malin's explicit call, 2026-08-01 — other members'
+  // UIDs and permission levels stay, their display names go, matching her
+  // BUT-1732 decision for `unified_shared_shopping_lists`. Her own name is kept.
+  group('exportSharedContent — shared shopping lists (BUT-1798)', () {
+    const userId = 'user-uid';
+    const otherUid = 'other-uid';
+
+    SocialExportManager buildManager() => SocialExportManager(
+      dataExportRepository: _FakeDataExportRepository(
+        sharedShoppingLists: [
+          {
+            'id': 'sl1',
+            'data': {
+              'contentType': 'shopping_list',
+              'title': 'Helghandling',
+              'sharedByUserId': otherUid,
+              'sharedByDisplayName': 'Anna',
+              // Production writes this on every shopping-list share. Without it
+              // here, deleting the avatar strip from this one leg leaves the
+              // suite green while another person's photo URL ships — the same
+              // shape as the menu-avatar strip that was dead code for a year.
+              'sharedByAvatarUrl': 'https://example.test/anna.jpg',
+              'sharedToUserIds': [userId, otherUid],
+              'listData': {
+                'name': 'Helghandling',
+                'ownerId': otherUid,
+                'ownerDisplayName': 'Anna',
+                'lastActivityByUserId': otherUid,
+                'lastActivityByDisplayName': 'Anna',
+                'memberPermissions': {otherUid: 'editor', userId: 'viewer'},
+                'items': [
+                  {
+                    'name': 'Mjölk',
+                    'addedByUserId': otherUid,
+                    'addedByDisplayName': 'Anna',
+                    'purchasedByUserId': userId,
+                    'purchasedByDisplayName': 'Malin',
+                    // The sixth name field. It was missing from both the walk
+                    // and this fixture on day one, so the "Anna appears
+                    // nowhere" assertion passed vacuously while a third
+                    // party's name shipped.
+                    'assignedToUserId': otherUid,
+                    'assignedToDisplayName': 'Anna',
+                    'lastModifiedByUserId': otherUid,
+                    'lastModifiedByDisplayName': 'Anna',
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      ),
+    );
+
+    test('the section ships at all — it never has before', () async {
+      final result = await buildManager().exportSharedContent(userId);
+      expect((result['shared_shopping_lists_received'] as List), hasLength(1));
+      expect(result['total_shared_shopping_lists'], 1);
+    });
+
+    test('another member s name is gone from the nested list copy', () async {
+      final result = await buildManager().exportSharedContent(userId);
+      final row =
+          (result['shared_shopping_lists_received'] as List).single
+              as Map<String, dynamic>;
+      final listData =
+          (row['data'] as Map<String, dynamic>)['listData']
+              as Map<String, dynamic>;
+
+      expect(
+        json.encode(listData),
+        isNot(contains('Anna')),
+        reason:
+            'the nested listData copy is the whole point — a top-level strip '
+            'leaves the owner name, the activity name and every per-item name',
+      );
+      expect(listData.containsKey('ownerDisplayName'), isFalse);
+      expect(listData.containsKey('lastActivityByDisplayName'), isFalse);
+      // Key ABSENCE, not a null value — a present-but-null key would satisfy
+      // the weaker assertion while the field still rode along in the payload.
+      final item = (listData['items'] as List).single as Map;
+      expect(item.containsKey('addedByDisplayName'), isFalse);
+      expect(item.containsKey('assignedToDisplayName'), isFalse);
+      expect(item.containsKey('lastModifiedByDisplayName'), isFalse);
+      expect(
+        item.containsKey('purchasedByDisplayName'),
+        isTrue,
+        reason: 'the requester bought it — their own name is deliberately kept',
+      );
+    });
+
+    test('the sharer s AVATAR is stripped on this leg too', () async {
+      final result = await buildManager().exportSharedContent(userId);
+      expect(
+        json.encode(result['shared_shopping_lists_received']),
+        isNot(contains('anna.jpg')),
+        reason:
+            'the deviation entry claims the avatar strip covers the '
+            'shopping-list rows; without a fixture that carries one, that '
+            'claim is unpinned',
+      );
+    });
+
+    test(
+      'the SHARER s own name on the wrapper is kept (her 2026-08-01 call)',
+      () async {
+        final result = await buildManager().exportSharedContent(userId);
+        final row =
+            (result['shared_shopping_lists_received'] as List).single
+                as Map<String, dynamic>;
+
+        expect(
+          (row['data'] as Map)['sharedByDisplayName'],
+          'Anna',
+          reason:
+              'the wrapper name is the decided keep; only the nested roster goes',
+        );
+      },
+    );
+
+    test('their UIDs and permission levels are KEPT', () async {
+      final result = await buildManager().exportSharedContent(userId);
+      final encoded = json.encode(result['shared_shopping_lists_received']);
+      expect(encoded, contains(otherUid));
+      expect(encoded, contains('editor'));
+    });
+
+    test('the requester s OWN name survives', () async {
+      final result = await buildManager().exportSharedContent(userId);
+      expect(
+        json.encode(result['shared_shopping_lists_received']),
+        contains('Malin'),
+        reason: 'withholding the subject s own data is the opposite failure',
+      );
+    });
+  });
+
   group('SocialExportManager.exportSharedContent truncation (BUT-1698)', () {
     final recipeCap = ExportPaginationHelper.getLimitForType('recipes');
     final menuCap = ExportPaginationHelper.getLimitForType('menus');
@@ -1109,6 +1422,9 @@ void main() {
       expect(repo.capturedMax, {
         'exportSharedRecipesReceived': recipeCap + 1,
         'exportSharedMenusReceived': menuCap + 1,
+        // BUT-1798: the third leg forwards its own cap like the other two.
+        'exportSharedShoppingListsReceived':
+            ExportPaginationHelper.getLimitForType('shopping_lists') + 1,
       });
     });
   });

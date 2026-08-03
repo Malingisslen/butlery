@@ -199,6 +199,42 @@ jobs:
       # NOT hosting (hosting needs a web build and deploys separately). The `all`
       # path deploys sub-targets sequentially and records each one it COMPLETES in
       # reached-targets.txt, so the rollback step knows exactly how far it got.
+      # Merging the analytics onSchedule jobs into three dispatcher
+      # chains REMOVES 14 exports that are live in butlery-app-1. firebase-tools
+      # `promptForFunctionDeletion` throws when `nonInteractive && !force` and the
+      # plan holds functions to delete, and it is called from `release/index.js`
+      # BEFORE any endpoint is created or updated — so the functions deploy would
+      # abort having applied nothing, `set -euo pipefail` would fail the step, and
+      # the rollback path would fire on a perfectly good build.
+      #
+      # Deliberately NOT solved with a blanket `--force` on the deploy itself:
+      # that would turn every future accidental export removal into a silent
+      # production deletion. This list is explicit, named and one-shot.
+      #
+      # Order matters for a reason beyond the abort. `sendWeeklyActivityDigest`
+      # and the new `weeklyReports` chain both run Mon 08:00 UTC and both send
+      # the weekly digest push, with no dedup handle — so if both are live for a
+      # day, users get it twice. Delete first, deploy second.
+      #
+      # `|| true` keeps it idempotent: after the first successful run every name
+      # is already gone and `functions:delete` exits non-zero on a miss.
+      - name: Retire the merged scheduler functions (one-shot, idempotent)
+        if: env.DEPLOY_TARGET == 'functions' || env.DEPLOY_TARGET == 'all'
+        run: |
+          set -uo pipefail
+          for f in detectLapsedUsers sendWeeklyActivityDigest trackDayNRetention \
+                   computeFeatureRetention snapshotImportHealthDaily \
+                   snapshotRecipesDaily snapshotParsingCorrectionsDaily \
+                   snapshotOpsDaily snapshotFeedbackDaily detectAnomalies \
+                   correlateNotificationEffectiveness northStarWeekly \
+                   drainRatingAggregations drainPooledRatingAggregations; do
+            echo "Retiring $f (no-op if already gone)"
+            firebase functions:delete "$f" \
+              --region europe-west1 \
+              --project butlery-app-1 \
+              --force || true
+          done
+
       - name: Deploy
         id: deploy
         run: |
@@ -288,7 +324,13 @@ jobs:
             "verifySignupAge"
             "requestAccountDeletion"
             "cleanupExpiredCache"
-            "drainRatingAggregations"
+            # Was "drainRatingAggregations" until the scheduler merge: the two
+            # rating drains and the ten daily analytics jobs now run inside
+            # `drainAggregations` / `dailyAnalytics` (one Cloud Scheduler job per
+            # chain instead of one per job). A stale name here fails the smoke
+            # gate and triggers the BUT-1424 auto-rollback of a good deploy.
+            "drainAggregations"
+            "dailyAnalytics"
           )
 
           # Control-plane lag: a freshly-deployed function can take 15-30s to appear

@@ -1,4 +1,5 @@
-/// OCR service with multi-provider fallback (OCR.space → Google Vision → Tesseract), Swedish optimization, and smart caching.
+/// OCR service with multi-provider fallback (free on-device ML Kit → OCR.space
+/// → Google Vision → Tesseract), Swedish optimization, and smart caching.
 
 import 'package:clock/clock.dart';
 import 'dart:async';
@@ -15,7 +16,16 @@ import 'package:butlery/core/constants/upload_constants.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/ocr/device_text_recognizer.dart';
+// Compile-time platform select: google_mlkit_text_recognition has no web
+// implementation, so it must never reach the web compile path (a runtime
+// kIsWeb guard can't help — imports resolve at compile time).
+import 'package:butlery/services/ocr/device_text_recognizer_stub.dart'
+    if (dart.library.io) 'package:butlery/services/ocr/device_text_recognizer_mlkit.dart';
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
+import 'package:butlery/services/parsing/recipe_text_heuristic.dart';
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
 import 'package:butlery/services/security/pinned_http_client_factory.dart';
 
@@ -150,6 +160,8 @@ class OCRExtractionService extends BaseService {
   final String? _testGoogleVisionKey;
   final String? _testTesseractApiUrl;
   final DateTime Function()? _testTimeProvider;
+  final DeviceTextRecognizer? _testDeviceRecognizer;
+  final bool Function()? _testOnDeviceEnabled;
 
   OCRExtractionService._({
     http.Client? testHttpClient,
@@ -157,11 +169,16 @@ class OCRExtractionService extends BaseService {
     String? testGoogleVisionKey,
     String? testTesseractApiUrl,
     DateTime Function()? testTimeProvider,
+    DeviceTextRecognizer? testDeviceRecognizer,
+    bool Function()? testOnDeviceEnabled,
   }) : _testHttpClient = testHttpClient,
        _testOcrApiKey = testOcrApiKey,
        _testGoogleVisionKey = testGoogleVisionKey,
        _testTesseractApiUrl = testTesseractApiUrl,
-       _testTimeProvider = testTimeProvider {
+       _testTimeProvider = testTimeProvider,
+       _testDeviceRecognizer = testDeviceRecognizer,
+       _testOnDeviceEnabled = testOnDeviceEnabled {
+    _onDeviceCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
     // Initialize circuit breakers with time provider
     _ocrSpaceCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
     _googleVisionCircuitBreaker = CircuitBreaker(
@@ -187,6 +204,8 @@ class OCRExtractionService extends BaseService {
     String? testGoogleVisionKey,
     String? testTesseractApiUrl,
     DateTime Function()? testTimeProvider,
+    DeviceTextRecognizer? testDeviceRecognizer,
+    bool Function()? testOnDeviceEnabled,
     bool registerAsInstance = false,
   }) {
     final service = OCRExtractionService._(
@@ -195,6 +214,8 @@ class OCRExtractionService extends BaseService {
       testGoogleVisionKey: testGoogleVisionKey,
       testTesseractApiUrl: testTesseractApiUrl,
       testTimeProvider: testTimeProvider,
+      testDeviceRecognizer: testDeviceRecognizer,
+      testOnDeviceEnabled: testOnDeviceEnabled,
     );
     if (registerAsInstance) {
       _instance = service;
@@ -216,10 +237,13 @@ class OCRExtractionService extends BaseService {
   Future<void> onDispose() async {
     _cachedHttpClient?.close();
     _cachedHttpClient = null;
+    await _deviceRecognizer?.dispose();
+    _deviceRecognizer = null;
     await super.onDispose();
   }
 
   // Circuit breakers (late initialized with time provider)
+  late final CircuitBreaker _onDeviceCircuitBreaker;
   late final CircuitBreaker _ocrSpaceCircuitBreaker;
   late final CircuitBreaker _googleVisionCircuitBreaker;
   late final CircuitBreaker _tesseractCircuitBreaker;
@@ -250,6 +274,27 @@ class OCRExtractionService extends BaseService {
   static const Duration _cacheExpiry = Duration(hours: 24);
   static const int _maxImageSize = UploadConstants.maxOcrImageBytes;
   static const double _minConfidenceThreshold = 0.6;
+
+  /// Upper bound on the on-device recognizer, mirroring the paid tiers'
+  /// timeouts. Measured cost is ~400 ms/page, so this only ever fires on a
+  /// genuinely stuck platform channel.
+  static const Duration _onDeviceTimeout = Duration(seconds: 15);
+
+  /// Tier 0: the platform's own recognizer. Free, offline, and the image
+  /// never leaves the device. Created lazily so the web build (which gets the
+  /// stub) and unit tests never touch a platform channel unless the tier runs.
+  DeviceTextRecognizer? _deviceRecognizer;
+  DeviceTextRecognizer get _onDeviceRecognizer =>
+      _testDeviceRecognizer ??
+      (_deviceRecognizer ??= createDeviceTextRecognizer());
+
+  /// Remote Config gate. Defaults to OFF when the flag service isn't
+  /// registered (unit tests, early startup) so the tier can never sneak on.
+  bool get _onDeviceEnabled {
+    if (_testOnDeviceEnabled != null) return _testOnDeviceEnabled();
+    final flags = ServiceLocator.tryGet<FeatureFlagService>();
+    return flags?.isEnabled(FeatureFlags.enableOnDeviceOcr) ?? false;
+  }
 
   // Lazily-created HTTP client (reused across calls, closed on dispose).
   // BUT-427: third-party OCR fallbacks (OCR.space, Google Vision, Tesseract)
@@ -286,7 +331,8 @@ class OCRExtractionService extends BaseService {
   /// Initialize OCR service
   @override
   Future<void> initialize() async {
-    // OCR service ready - providers: OCR.space, Google Vision, Tesseract
+    // OCR service ready - providers: on-device ML Kit (free, flag-gated),
+    // OCR.space, Google Vision, Tesseract
   }
 
   /// Record OCR usage - delegates to usage tracker
@@ -360,7 +406,12 @@ class OCRExtractionService extends BaseService {
     // surfacing the misleading "try better lighting" copy for what is actually
     // a missing-credentials misconfiguration. Mark every breaker `open` so the
     // message builder's "services unavailable" branch produces accurate copy.
+    // Tier 0 counts as a configured provider: on a device-only build with no
+    // API keys it is the ONLY provider, and reporting "no provider configured"
+    // there would surface a misconfiguration message for a working setup.
+    final onDeviceUsable = _onDeviceEnabled && _onDeviceRecognizer.isAvailable;
     final noProviderConfigured =
+        !onDeviceUsable &&
         _ocrApiKey.isEmpty &&
         _googleVisionKey.isEmpty &&
         _tesseractApiUrl.isEmpty;
@@ -380,6 +431,89 @@ class OCRExtractionService extends BaseService {
           'provider_errors': const <String, String>{},
         },
       );
+    }
+
+    // Tier 0 — the platform's own recognizer. Free, offline, private. Runs
+    // first so the paid providers below are only reached for what it can't
+    // read. TWO independent gates, and each catches what the other cannot:
+    // RecipeTextHeuristic rejects non-recipes (a receipt scores high on text
+    // quality), and the confidence threshold below rejects thin or partial
+    // reads (a half-read page is recipe-SHAPED but poor). Dropping either one
+    // has a live test that reddens; do not "simplify" them into one.
+    if (onDeviceUsable && _onDeviceCircuitBreaker.canExecute) {
+      try {
+        // Sanitize BEFORE the heuristic gate, so the gate judges the text that
+        // will actually be stored. This service is the only sanitization
+        // boundary on the path — `photo_import_strategy` and
+        // `photo_import_viewmodel` consume `ocrResult.text` directly, persist
+        // it to the draft, and it later lands in a GDPR export. Without this
+        // the surviving character set depended on which tier answered, and the
+        // free tier was the only one that skipped it.
+        // Bounded like every other tier. Without it a stalled platform channel
+        // hangs the import forever: the recognizer's contract is "never throw",
+        // so nothing else would fall through to the paid chain or trip the
+        // breaker. Generous against the ~400 ms/page measured on a Pixel 9a.
+        final raw = await _onDeviceRecognizer
+            .recognize(preprocessedImage)
+            .timeout(_onDeviceTimeout);
+        final text = raw == null
+            ? null
+            : HtmlSanitizer.instance.sanitizeText(raw);
+        // Same bar as every paid tier. The heuristic alone is not enough: it
+        // fires on one measurement plus one cooking verb, so a PARTIAL read of
+        // a real page ("2 dl mjöl / vispa") would be accepted, cached for 24h,
+        // and the paid chain never consulted — while the identical string from
+        // OCR.space is rejected. The confidence is computed from the text by
+        // the same function all four tiers use, so it is exactly as comparable
+        // here as anywhere else.
+        final onDeviceConfidence = text == null
+            ? 0.0
+            : _calculateConfidenceFromText(text);
+        if (text != null &&
+            text.isNotEmpty &&
+            onDeviceConfidence >= _minConfidenceThreshold &&
+            RecipeTextHeuristic.looksLikeRecipe(text)) {
+          _onDeviceCircuitBreaker.recordSuccess();
+          _recordUsage('on_device');
+          result = OCRResult(
+            text: text,
+            // Scored from the text, never a constant: this value is rendered
+            // as the confidence badge and drives the import viewmodel's
+            // warnings, so a fabricated 0.6 would paint every free read as
+            // "medium quality" and emit bogus better-lighting tips.
+            confidence: onDeviceConfidence,
+            processingMethod: 'on_device',
+            metadata: const {'provider': 'mlkit', 'cost_usd': 0},
+            timestamp: _now,
+          );
+          _cacheResult(imageHash, result, rawHash: rawHash);
+          return result;
+        }
+        if (raw != null) {
+          // Gate rejection is a real outcome, not a non-event: recording it is
+          // what makes the field accept-rate measurable outside the corpus.
+          // Kept separate from the null case below — folding them together
+          // would file a broken recognizer as a heuristic rejection and make
+          // the accept rate unreadable.
+          _recordUsage('on_device_rejected');
+        } else {
+          _recordUsage('on_device_error');
+          // The recognizer's contract is "never throw", so this null is the
+          // ONLY failure signal it can emit. Without recording it the breaker
+          // could never open, and a device with permanently broken ML Kit
+          // would pay a file write plus a platform round-trip on every import,
+          // forever, with no backoff.
+          _onDeviceCircuitBreaker.recordFailure();
+        }
+      } catch (e) {
+        _onDeviceCircuitBreaker.recordFailure();
+        // This catch is the ONLY branch the on-device timeout can reach, so a
+        // stuck platform channel — the exact event the timeout exists for —
+        // was invisible to the tracker whose accept-rate split the flag
+        // decision rests on.
+        _recordUsage('on_device_error');
+        providerErrors['on_device'] = e.toString();
+      }
     }
 
     if (_ocrSpaceCircuitBreaker.canExecute && _ocrApiKey.isNotEmpty) {
@@ -441,6 +575,13 @@ class OCRExtractionService extends BaseService {
         'quality_assessment': qualityAssessment.qualityScore,
         'recommendations': qualityAssessment.recommendations,
         'circuit_breakers': {
+          // Emitted ONLY when tier 0 actually participated. 'closed' cannot
+          // distinguish "ran fine" from "never ran", and the message builder
+          // reads an absent key as down — so publishing it unconditionally
+          // would make "services unavailable" unreachable for every user with
+          // the flag off, which is the default state.
+          if (onDeviceUsable)
+            'on_device_state': _onDeviceCircuitBreaker.state.name,
           'ocr_space_state': _ocrSpaceCircuitBreaker.state.name,
           'google_vision_state': _googleVisionCircuitBreaker.state.name,
           'tesseract_state': _tesseractCircuitBreaker.state.name,
@@ -963,6 +1104,11 @@ class OCRExtractionService extends BaseService {
       'timestamp': clock.now().toIso8601String(),
       'cache_size': _cache.length,
       'circuit_breakers': {
+        'on_device': {
+          'state': _onDeviceCircuitBreaker.state.name,
+          'failures': _onDeviceCircuitBreaker.failures,
+          'can_execute': _onDeviceCircuitBreaker.canExecute,
+        },
         'ocr_space': {
           'state': _ocrSpaceCircuitBreaker.state.name,
           'failures': _ocrSpaceCircuitBreaker.failures,
@@ -981,6 +1127,9 @@ class OCRExtractionService extends BaseService {
       },
       'device_compatibility': 'universal_ios_android',
       'api_keys_configured': {
+        // Tier 0 needs no key — it is reported here as "usable" so a reader of
+        // this map can tell a device-only configuration from a broken one.
+        'on_device': _onDeviceEnabled && _onDeviceRecognizer.isAvailable,
         'ocr_space': _ocrApiKey.isNotEmpty,
         'google_vision': _googleVisionKey.isNotEmpty,
         'tesseract': _tesseractApiUrl.isNotEmpty,

@@ -1,24 +1,24 @@
 /**
  * Nightly anomaly detector for the admin dashboard's non-time-series tabs.
  *
- * The `daily-snapshots.ts` jobs (05:00–05:40 UTC) each write ONE scalar-bearing
- * doc per UTC day at `analytics/<group>/daily/{date}`. This job runs AFTER them
- * (06:00 UTC), reads the recent daily series for each monitored group, and
- * flags a metric as anomalous when today's value is a statistical outlier
- * versus the trailing baseline.
+ * The `daily-snapshots.ts` jobs each write ONE scalar-bearing doc per UTC day
+ * at `analytics/<group>/daily/{date}`. This job reads the recent daily series
+ * for each monitored group and flags a metric as anomalous when today's value
+ * is a statistical outlier versus the trailing baseline.
+ *
+ * It runs as the ninth task in the `dailyAnalytics` chain (06:00 UTC — see
+ * `scheduled/maintenance-dispatchers.ts`); it no longer owns a Cloud Scheduler
+ * job. Its position is load-bearing: the five snapshot tasks are its producers
+ * and run ahead of it in the same chain. A missing producer doc is SKIPPED,
+ * never assumed zero.
  *
  * Structurally mirrors `daily-snapshots.ts`:
- *   - `onSchedule` (region pinned globally to europe-west1 via
- *     `setGlobalOptions` in index.ts — this function inherits it, same as every
- *     sibling scheduled job; do NOT pin a per-function region here),
- *     `timeZone: "UTC"`.
- *   - A `runDetectAnomalies(deps)` test-seam function + a thin `onSchedule`
- *     wrapper that delegates and re-throws on error (so a transient failure
- *     retries; the write is idempotent).
- *   - `logger.info` start/complete with structured fields, try/catch in the
- *     wrapper.
+ *   - A `runDetectAnomalies(deps)` test-seam function, called both by the
+ *     dispatcher and directly by tests. No `onSchedule` wrapper lives here.
+ *   - `logger.info` start/complete with structured fields.
  *   - Deterministic doc id = the run-day UTC date string → a same-day re-run
- *     OVERWRITES (idempotent via `set()`, never `create()`).
+ *     OVERWRITES (idempotent via `set()`, never `create()`). The chain runs
+ *     with `retryCount: 0`, so there is no automatic re-run.
  *
  * Output: `analytics/anomalies/daily/{date}` (4 segments = a doc), matching the
  * snapshot-path convention and the Flutter AnomalyRepository that reads it.
@@ -36,7 +36,6 @@
  * If today's doc is missing for a series, it is skipped (logged at info).
  */
 
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
@@ -288,20 +287,3 @@ export async function runDetectAnomalies(
   });
   return result;
 }
-
-/**
- * Schedule wrapper — thin delegator at 06:00 UTC (after the 05:00–05:40 daily
- * snapshot jobs). Re-throws on error so a transient failure retries; the write
- * is idempotent on the deterministic date-keyed doc, so a retry overwrites.
- */
-export const detectAnomalies = onSchedule(
-  { schedule: "0 6 * * *", timeZone: "UTC" },
-  async () => {
-    try {
-      await runDetectAnomalies();
-    } catch (err) {
-      logger.error("detect_anomalies_failed", { err });
-      throw err;
-    }
-  },
-);

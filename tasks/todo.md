@@ -1,3 +1,826 @@
+# Sprint 2026-08-01 SALVAGE — resumed 2026-08-02
+
+Continuation of the approved plan below. Open findings and their proposed fixes are in
+`tasks/butlery-salvage-open-findings.md`; this section records only what the resume ADDS to
+the approved fileset.
+
+## Widened fileset (recorded per the repo's own rule)
+
+**`lib/services/unified/unified_recipe_service.dart`** — one binding changed.
+
+`SocialOpsContext.updateRecipe` was bound to `updateRecipe`, which resolves to
+`PersonalRecipeCrud.updateRecipe` -> `personal_recipe_module.dart:242`:
+`if (!updatedRecipe.isPersonal) return false;`
+
+That seam is handed to exactly one consumer, `RecipeMemberManager`
+(`social_recipe_operations.dart:62-67`). Every entry point there filters `r.isCollaborative`
+(lines 42, 117, 228, 308, 395, 444, 460) and rebuilds with `type: recipe.type`, and personal and
+collaborative are mutually exclusive (`recipe_unified.dart:1474-1476`).
+
+So **add-member, remove-member and remove-group have never written anything** — each returned
+false and surfaced as a generic error. Wider than the BUT-1785 ticket, which named only the group
+case. The member-manager suite is green because it stubs the seam to `true`.
+
+Rebound to `saveRecipeForSocialModule`, which exists for this case, says so in its own doc
+comment, and is already used two bindings up by `SocialRecipeModule`.
+
+Risk: the seam has one consumer, so the blast radius is that consumer's four write sites — all of
+which want the collaborative-tolerant path. Verification is the member-manager suite driven
+against the REAL terminal function rather than a stub.
+
+---
+
+# Sprint 2026-08-01 SALVAGE — approved plan (in execution)
+
+> Malin approved keeping the sprint's uncommitted work and fixing its failures.
+> This is the plan being executed. The sprint's own selection record is preserved
+> below the separator — the ship phase still needs it (fileset deviations, ticket
+> grading). Do not delete it.
+
+# Butlery — Sprint 2026-08-01 salvage: fix the blocking defects, then ship
+
+> On execution, mirror this plan to `tasks/butlery-sprint-salvage-plan.md` (the sprint's own
+> record stays in `tasks/todo.md`; `~/.claude/plans/` is shared across all three repos).
+
+## Context
+
+The 2026-08-01 parallel sprint built ten tickets and then refused to commit, correctly: no
+review marker on disk named the files it was about to ship. Its work — 77 changed files, 43
+Dart + 18 Cloud Functions — has been sitting uncommitted in the working tree since. Malin's
+decision: **keep the work and fix the failures.**
+
+Four commit-gate specialists re-reviewed the real fileset (the sprint's own completeness
+sweep proved two of them never ran during the sprint), and a fresh-context auditor then read
+this plan cold and found a defect in it. Everything below is the corrected set.
+
+Backup of the whole tree state — `tracked-changes.patch` plus copies of the 9 untracked files —
+is at
+`C:/Users/malla/AppData/Local/Temp/claude/C--Butlery-butlery/9fede5e3-3a2f-4230-ad3d-b8e12a829903/scratchpad/sprint-backup/`
+and stays until the commit lands.
+
+## Scope decisions
+
+- **In:** defects that are verified against real command output *and* would break production
+  or leak/strand user data. Allergen correctness is in scope, always (A3).
+- **Out — the group-conversation path unification.** Groups are written to
+  `users/{uid}/conversations` and read from top-level `conversations` by five server callers
+  and two rules blocks. That is a migration, not a fix (BUT-1795, BUT-1796). This plan fixes
+  the *lie* it produces — a failed leave that reports success — so the bug becomes visible.
+- **Out, with the hole each one leaves open:**
+  - BUT-1797 — taking a group off a shared recipe revokes no access; those members keep full
+    access until it lands. Needs Malin's product call.
+  - BUT-1801 — six more wrong-path recipe reads, including the Art. 15 export and Art. 17
+    cascade. Same bug class as B1 below; those legs stay broken.
+  - BUT-1805 — an admin removing another member leaves no audit row; the trail is console-only.
+  - BUT-1804/1806/1807/1808 — test gaps and small leftovers, no user-facing hole.
+- Malin's answer, 2026-08-01: the export's `shared_content` section ships **with** other
+  recipients' UIDs and the sharer's display name; avatars stay stripped.
+
+---
+
+## A. Production-breaking — fix now
+
+**A1. `firestore.rules:1547-1548` — the group-takeover guard denies every update to a
+conversation whose `metadata` is null or absent, taking message sending down with it.**
+In rules CEL `.get(k, default)` returns the default only when the key is *absent*; a key
+present with value `null` returns `null`, and `.get()` on `null` is an evaluation error →
+blanket deny. `ConversationDto.toFirestore` (`conversation_dto.dart:143`) emits
+`'metadata': conversation.metadata` unconditionally and `message_mutation_module.dart:186-194`
+sends it on every message, in the same atomic batch as the message. Apply the spelling the
+rules specialist verified on the emulator (13/13 probe cases; all six takeover denies kept):
+
+```
+&& (request.resource.data.get('metadata', {}) is map
+    ? request.resource.data.get('metadata', {}).get('creatorId', null) : null)
+   == (resource.data.get('metadata', {}) is map
+    ? resource.data.get('metadata', {}).get('creatorId', null) : null);
+```
+
+**A1b. `functions/src/__tests__/conversations-rules.test.ts` — the allow test certifies the
+broken case as working.** C11 sends `update({lastMessage})` with no `metadata` key, which
+genuinely allows, while the real client write on the same document denies. Mirror
+`ConversationDto.toFirestore`'s full key set (including `metadata`) in at least one allow test
+per write path; add the legacy-doc takeover deny (C12) and a group-rename allow so a future
+blanket `metadata` freeze cannot pass green.
+
+**A2. `lib/services/unified/operations/modules/recipe_sharing_manager.dart:589` — the
+first-ever share of any recipe silently fails.** The new create-only `sharedAt` stamping probes
+`sharedContentRef.get()`, but `firestore.rules:723` dereferences `resource.data.sharedByUserId`
+in `allow get`; on a document that does not exist `resource` is null → `PERMISSION_DENIED` →
+swallowed by the catch at `:638` → the row is never created. That costs the recipient their
+read grant *and* their Art. 15 row — exactly what the change was written to protect.
+`fake_cloud_firestore` evaluates no rules, so no existing test can see it. Fail the probe open:
+
+```dart
+var isNew = true;
+try {
+  isNew = !(await sharedContentRef.get()).exists;
+} on FirebaseException catch (e) {
+  if (e.code != 'permission-denied') rethrow;
+}
+```
+Test: new case in `functions/src/__tests__/` — sharer `get()` on a non-existent
+`shared_content/{recipeId}` denies, so the probe must not be trusted as an existence oracle.
+
+**A3. BUT-1794 (Urgent) — the ingredient retag cascades match nothing for å/ä/ö.**
+`on-ingredient-soft-deleted.ts:112-116` and `on-ingredient-properties-changed.ts:157-161`
+query `core.ingredientsNormalized array-contains stripDiacritics(name.toLowerCase())`, but the
+producer (`IngredientNormalizer` via `ingredient_processor.dart:384`) preserves diacritics.
+**8 of the 14 EU allergens have å/ä/ö in their Swedish names.** The corpus is mixed (a retired
+backfill wrote stripped forms), so the fix is a **union**, not a swap:
+
+```ts
+const variants = [...new Set([
+  ingredientName.toLowerCase(),
+  stripDiacritics(ingredientName.toLowerCase()),
+])];
+.collectionGroup(Collections.recipes)
+.where("core.ingredientsNormalized", "array-contains-any", variants);
+```
+Delete the false comment at `on-ingredient-soft-deleted.ts:102` in the same edit. No index work:
+`firestore.indexes.json` already declares that field CONTAINS at COLLECTION and COLLECTION_GROUP
+scope. Tests: extend the existing ingredient-trigger suites with an å/ä/ö case per trigger, and
+mutation-test them (drop one variant, confirm red).
+
+**A4. `lib/models/notification_preferences.dart:186-190` + `notification_preference_manager.dart:391-406`
+— a stale local cache still serves factory defaults as a real answer.** BUT-1799's main hole is
+closed, but `fromJson` returns `defaults()` for an unusable payload and `_loadPreferencesLocally`
+returns that as a non-null cache hit. The old `toJson()` stub wrote the literal `'{}'`, so that
+string is in every existing user's `SharedPreferences` today: first failed read after upgrade
+serves defaults, caches them, and the next toggle in
+`notification_preferences_view.dart:107-116` persists factory defaults to Firestore. Make the
+unusable-shape branch return `null` and let the caller fall through to the uncached,
+unpersisted defaults path that already exists.
+Test: `test/unit/services/notifications/notification_preference_manager_test.dart` — a `'{}'`
+cache entry must NOT be reported as a cache hit, and must not be persisted on the next write.
+
+**A5. `lib/repositories/firebase/modules/conversation_mutation_module.dart:333-347` — a no-op
+leave is spelled exactly like a completed one.** `removeParticipant` is `Future<void>`: it
+awaits the callable, never reads `removed`/`remainingParticipants`, and logs success
+unconditionally. The callable's no-oracle gate (`leave-group-conversation.ts:271`) returns
+`{removed:false, remaining:0}` for a missing document — reachable by construction, since groups
+live at `users/{uid}/conversations`. `ConversationsViewModel.leaveGroup:209-219` then returns
+`true` and fires `logGroupLeft`.
+Return the parsed result up through `MessagingRepository.removeParticipant` →
+`removeParticipantFromGroup` → `ConversationsViewModel` and `GroupDetailViewModel`, and treat
+`removed == false` as a visible failure. This does **not** fix the path split (BUT-1795); it
+stops it lying.
+- Signature change crosses three layers — pin it with tests in
+  `test/unit/repositories/firebase/modules/conversation_mutation_module_test.dart` and
+  `test/unit/viewmodels/conversations_viewmodel_test.dart` (a `removed:false` reply must yield a
+  failed leave and must NOT fire `logGroupLeft`).
+- New user-facing string: `leaveGroupFailed` in **both** `lib/l10n/app_sv.arb` and
+  `app_en.arb`, regenerated into both `app_localizations_*` files. Swedish copy — "Kunde inte
+  lämna gruppen. Försök igen."
+
+---
+
+## B. GDPR — export ⊇ erasure
+
+**B1. `functions/src/account/account-deletion-cascade.ts` — the uid the export now returns
+cannot be erased, and it must be queried under BOTH spellings.**
+The cascade discovers `shared_content` only via a `members/{uid}` subcollection doc
+(`:1369-1392`), but the three writers touched this sprint (`recipe_sharing_manager`,
+`social_menu_operations`, `shopping_social_share_module`) write the parent doc only. Nothing
+scrubs `sharedWithUserIds` at all, and `probeResidualData` has no `shared_content` entry, so
+the residual is invisible.
+
+**The correction the auditor caught:** membership is written under two spellings, and documents
+shared *before* the writer fix carry only `sharedWithUserIds`. Querying `sharedToUserIds` alone
+would miss exactly the legacy corpus this leg exists to clean. The export was forced onto
+`sharedToUserIds` because `firestore.rules:722` refuses the other spelling **to a client** — the
+cascade runs on the admin SDK and has no such constraint. So: **union both queries and dedup by
+document id**, the pattern already used at `account-deletion-cascade.ts:604-609`. `arrayRemove`
+the uid from both fields on every hit, and add both probe pairs to `probeResidualData`.
+
+**B2. `lib/repositories/firebase/firebase_data_export_repository.dart:445-451` — shared shopping
+lists are readable by their recipient and absent from their export.**
+`_sharedContentReceivedQuery` is type-parameterised and only two of the three `contentType`
+values are used. Add the third leg (`'shopping_list'` → `shared_shopping_lists_received`) through
+the same `_dropSharerAvatar`. `exportSharedShoppingLists*` is not coverage — it queries
+`unified_shared_shopping_lists`, a different collection.
+Test: `test/unit/repositories/firebase/firebase_data_export_repository_shared_content_test.dart`
+(already touched this sprint) gains a `shopping_list` row asserting it appears and its avatar is
+stripped.
+
+**B3. Record the decision by EXTENDING the existing entry, not beside it.**
+`.claude/rules/accepted-deviations.md` already governs `shared_content` avatars via the
+conversations entry (BUT-1772/1767/**1775**), which explicitly requires all these sections to go
+through one shared helper "so the sections cannot drift apart". So B3 **amends that entry**
+(both files, same edit) to state: the `shared_content` export sections — recipe, menu, and the
+`shopping_list` rows B2 adds — keep other recipients' UIDs and `sharedByDisplayName`, and strip
+`sharedByAvatarUrl`. Mark it **Malin's explicit call, 2026-08-01**, and say in the entry that it
+is *not* derived from BUT-1732 or BUT-1772 — each of those decided a different question, and
+reasoning by analogy from them is the error BUT-1732 itself records.
+
+---
+
+## C. Robustness (small, same commit)
+
+- `functions/src/admin/bulk-retag.ts:245,268,278` — the drain callable can never drain: a full
+  collection-group `limit(limit)` scan with no `orderBy`/cursor, re-reading the same first N docs
+  forever, with an operator-supplied uncapped `limit`. Add a `startAfter` cursor + `nextCursor`
+  return (the `backfillCanonicalRatings` shape) and clamp to 1000.
+- `functions/src/messaging/leave-group-conversation.ts:48` — module-scope `admin.firestore()`,
+  safe only because of statement order in `index.ts`. Use a lazy `getDb()`.
+- Both ingredient triggers — `retry: true` is now on, so an absent `event.data` becomes an
+  hour-long retry loop. Add `if (!event.data) return;`.
+- `functions/src/account/account-deletion-cascade.ts:1289` — an `Error` nested in the logger
+  payload serializes to `{}`; use the `errCode`/`errName` shape from `:375`.
+- `docs/architecture/ACCEPTED_LARGE_FILES.md` — restate the two stale rows A2/B2 grow further:
+  `firebase_data_export_repository.dart` (row says 783, actual 857) and
+  `recipe_sharing_manager.dart` (row says 604, actual 646). Both are already waived; the rows
+  just need to match reality.
+
+---
+
+## Verification — every command's real output pasted, nothing asserted
+
+1. `dart analyze --fatal-infos` → clean.
+2. Named Dart tests, not "areas": `recipe_member_manager_test.dart`,
+   `notification_preference_manager_test.dart`, `conversation_mutation_module_test.dart`,
+   `conversations_viewmodel_test.dart`,
+   `firebase_data_export_repository_shared_content_test.dart`,
+   `rating_statistics_denormalization_test.dart`, `recipe_save_navigation_test.dart`.
+3. `cd functions && npx tsc --noEmit` → clean. Run the five suites already green
+   (`leave-group-conversation`, `cascade-retry-semantics`, `recipe-collection-group-indexes`,
+   `compute-feature-retention`, `account-deletion-cascade`) **and** the rest of the unit lane —
+   if anything else is red, report it rather than omitting it.
+4. Rules: `test:rules:all` on the emulator, plus re-run the mutation proof on the
+   `metadata.creatorId` conjunct in **both** directions and the 13-case probe against the fixed
+   spelling.
+5. **Re-review the fix diff itself.** Per the repo's own lesson the fix round lands after the
+   last review and is the least-reviewed, most-likely-wrong code in the change. Hand each
+   reviewer the rationale, not just the diff.
+6. If `docs/onboarding/workflow-map.stale` appears (A2/A5/B1/B2 touch mapped code), re-trace only
+   the flows its `triggers` name, update the map's `<script id="data">` JSON, run
+   `python tools/check_workflow_map.py`, delete the marker.
+
+## Ship
+
+7. Run the six commit-gate specialists against the **actual staged fileset**
+   (`git diff --cached --name-only`), **in batches of ≤3 files per agent** — agents stall above
+   that (`memory/feedback_agent_timeout.md`) — touching each marker only after its final batch.
+   Markers pin `path@<staged blob sha>` from `git rev-parse :<path>` taken **after** the final
+   `git add`. No agent may write a marker before emitting its findings.
+8. Append a **Fileset deviations** block to the sprint section of `tasks/todo.md` naming the ~15
+   files changed outside every declared batch (BUT-1803), and name them in the markers too.
+9. Immediately before committing: re-verify `git status --porcelain` for any `MM`/` M` left by a
+   reviewer's mutation probe, re-pin blob shas if anything moved, then **stage by explicit
+   pathspec and commit in the same Bash call**. Push to main.
+10. `firestore.rules` and `firestore.indexes.json` are in this change — commit+push does **not**
+    make them live. Deploy them explicitly, `--non-interactive`, **never `--force`** (13 live TTL
+    policies are absent from the indexes file and `--force` deletes them).
+11. Linear: close only tickets whose acceptance criteria the shipped diff actually meets.
+    BUT-1785, BUT-1781 and BUT-1774 stay **In Review**; BUT-1788 must not be graded Done.
+
+---
+
+## Panel conditions (2026-08-01, full-panel — fold into execution as acceptance criteria)
+
+Seated: Privacy/DPO, Security Architect, DBA/Data-layer, Legal Counsel, Customer Support/Ops,
+Codebase Archaeologist. Dropped as incidental: FinOps (cost items already quantified and
+bounded by the existing 1h guard), Performance (no new hot path), Data Analyst/BI (the false
+`logGroupLeft` is fixed by A5, no metric redefinition), Product (the one product call is
+BUT-1797, explicitly out of scope and ticketed need-malin), Trust & Safety (takeover guard
+covered by Security), Vendor and Software Architect (no vendor change, no new layer).
+
+**Gating — real work, blocks B2:**
+- **C1. Audit the nested `listData` blob before B2 ships.** `shopping_social_share_module.dart:81`
+  writes `'listData': listData` — an entire personal shopping-list document nested inside the
+  `shared_content` row. `_dropSharerAvatar` (`social_export_manager.dart:341`) removes exactly
+  one *top-level* key. Any avatar URL, contributor UID, permission level or cached display name
+  inside that blob would ship unredacted in a section that has never been reviewed against real
+  data. Enumerate its actual key set against a real row, then either bound it to a named
+  allow-list or extend the shared helper to walk it. Anything third-party that survives gets its
+  own line in the deviation entry — never silent passage.
+
+**Corrections to this plan's own text:**
+- **C2. B3 splits into TWO entries** (both files, same edit), because folding a newly-decided
+  question into an older entry is structurally the analogy error BUT-1732 records:
+  (a) mechanical extension of the BUT-1775 entry — the `shared_content` avatar strip now also
+  covers B2's `shopping_list` rows, still through the one shared helper;
+  (b) a **separate dated entry** for the new question, marked *Malin's explicit call,
+  2026-08-01*, reasoned on its own merits, stating it is **not** derived from BUT-1732 or
+  BUT-1772. It must name **both** field spellings (`sharedToUserIds` AND `sharedWithUserIds` —
+  writers emit the same third-party UID list twice) and scope itself to rows where the requester
+  is a **recipient**. It must enumerate concretely what was shown to Malin — UIDs,
+  `sharedByDisplayName`, avatars stripped — in the same style as the BUT-1732 correction, not a
+  compressed one-liner.
+- **C3. Re-title section B** to what it actually delivers: *export ⊇ erasure **for
+  `shared_content` membership***. The current heading claims an invariant BUT-1801 demonstrably
+  leaves broken, which is exactly how BUT-1724 was graded Done while four instances of its own
+  disease were live.
+- **C4. The plain-language summary must name the BUT-1801 Art. 17 residual next to the export
+  expansion**, so both halves of the tradeoff are visible in one read rather than split between
+  a scope bullet and a summary that doesn't cross-reference it.
+
+**Implementation conditions:**
+- **C5. B1 clears BOTH spellings unconditionally on every union hit**, deduped by document id —
+  not just the field whose query matched. `arrayRemove` is a documented no-op when the value is
+  absent, so the double-clear is safe and cheap; a conditional clear leaves the other spelling as
+  residual debt. Verify in the actual diff, not the plan prose.
+- **C6. The residual probe keys on BOTH spellings, pinned by a mutation test** — drop one probe
+  pair, confirm red. A probe that only ever checks `sharedToUserIds` re-creates the invisible
+  residual B1 exists to kill.
+- **C7. B1 logs the legacy-only hit count**, so the size of the `sharedWithUserIds`-only corpus is
+  known rather than assumed.
+- **C8. C's cursor is a `DocumentSnapshot`**, mirroring the already-correct `getRetagStatus`
+  pagination in the same file — a raw-value cursor without an explicit `orderBy` misbehaves silently.
+- **C9. Give the two shopping sections distinct, self-describing keys** plus a one-line provenance
+  note each ("shared with you by a friend" vs "shared via a shared list"). Two near-identically
+  named shopping sections with different provenance is an Art. 12(1) intelligibility defect.
+- **C10. The `data_minimisation` note must be verified against a shipped row.** A note claiming a
+  redaction that did not happen is itself an Art. 12(1) defect — this repo has shipped that bug.
+- **C11. Drop "Försök igen" from the leave-group copy.** Retrying can never succeed until BUT-1795
+  lands, so the string is a false promise support must walk back on every ticket. Reuse the
+  existing `errorCouldNotLeaveGroup` (already in both arb files) instead of adding a new key —
+  this replaces A5's proposed new string.
+- **C12. `--non-interactive`, never `--force`, must survive into the actual deploy command run**,
+  not just the plan text.
+
+**Security Architect — two catches that change the work:**
+- **C16. A1's spelling is verified airtight, for a reason worth writing down.** The ternary
+  collapses absent, `null` and non-map metadata to the same value on *both* sides, so adding a
+  `creatorId` where none was stored yields `non-null == null` → deny. The invariant is monotonic:
+  the only way a write can store `creatorId == X` is if it already equals X, so there is no
+  two-step laundering path. All six takeover denies survive. Put that reasoning in the rule's
+  comment — it is the thing a future "simplification" will destroy.
+- **C17. A1b's fixture is the WRONG SHAPE, so the suite still cannot go red on the live defect.**
+  `NO_METADATA_GROUP` (`conversations-rules.test.ts:258-262`) seeds metadata **absent** — which
+  the current rule already handles. The production-breaking shape is metadata **present with
+  value `null`**, which is what `ConversationDto.toFirestore` emits, and no fixture in the file
+  has ever had it. Fixing only the payload leaves the regression uncovered. Required: seed a
+  third fixture with explicit `metadata: null`, pin an allow test mirroring the DTO's full key
+  set, and mutation-test it — revert the conjunct to the current spelling and confirm *that*
+  test goes red. If it stays green the fixture is still wrong.
+  Also: C12 must deny the takeover on **both** legacy shapes (absent AND null — different
+  branches of the ternary, one does not prove the other), and add a deny for `metadata` written
+  as a non-map, proving `is map` cannot launder a stored creatorId to null.
+- **C18. B1 will arrayRemove every document it is about to hard-delete.**
+  `_writeToSharedRecipesCollection:574` writes `{currentUserId, ...memberIds}` into both arrays,
+  so a deleted user is always in their *own* docs' membership. The new queries would update every
+  owned doc, which the pre-existing `sharedByUserId == uid` leg (`:1398-1406`) then hard-deletes —
+  wasted writes, and a `batch.update` on an already-deleted doc throws NOT_FOUND and poison-pills
+  the chunk on retry. Same failure shape as BUT-1582/1583. Exclude `sharedByUserId == uid` docs
+  from the scrub set (or order scrub strictly before delete and tolerate NOT_FOUND per doc), and
+  prove it with a fixture where the deleted user is both sharer and recipient of the same doc —
+  the normal case. This makes B1 **cost-negative**.
+- **C19. A2's fail-open is wrong in one reachable case, and fails silently there.** The
+  `shared_content` doc id *is* the recipeId, so if another user already shared that recipe and we
+  are not in their `sharedToUserIds`, our probe denies on an **existing** doc → `isNew = true` →
+  `sharedAt` stamped → the write becomes an update → `cannotModify(['sharedAt'])` denies the whole
+  `set(merge:true)` → swallowed by the same catch the change exists to escape. Required: on an
+  inconclusive probe, attempt the create and, on a `permission-denied` write, retry once
+  **without** `sharedAt`; log that branch distinctly and pin it with a test. Do not ship a
+  fail-open whose only failure mode is the silent swallow this ticket is about.
+- **C20. Keep A2's fix client-side.** Do **not** "fix it properly" by adding `resource == null`
+  to `firestore.rules:724`. Today non-existent and not-yours both return permission-denied and are
+  indistinguishable; a null-resource allow would turn that into a **shared-content existence
+  oracle** over recipeIds. The client-side fail-open preserves the non-oracle property and adds
+  zero attack surface.
+- **C21. Two `array-contains` clauses in one query are illegal in Firestore** (including inside
+  `Filter.or`). The union-of-two-queries shape is the only legal spelling, not a stylistic
+  preference — say so in the code comment, or a future "simplification" produces a runtime error.
+- **C22. The new scrub legs must not inherit `strict: false` silently.** The existing leg runs
+  `commitInChunks(..., {strict: false})`, so a chunk failure does not fail the step and erasure
+  can report success over data it never removed. That is acceptable only if the probe legs
+  (C6) genuinely exist and genuinely fail the run.
+- **C23. Verification step 4 runs the mutation proof in BOTH directions on the NEW spelling** —
+  rules reverted → the null-metadata allow goes red; conjunct deleted → C8/C9/C12 go red. A 13/13
+  probe count on its own does not prove the suite would catch a regression.
+- **C24. Scope note to state, not fix:** A1 pins only `creatorId`; the rest of `metadata` stays
+  mutable by any participant, so any member can rewrite `metadata.title` that everyone sees. The
+  new group-rename allow-test will *bless* that. Say so explicitly in the test, or a future reader
+  will take it as a deliberate decision that metadata is unprotected.
+
+**New follow-up tickets (file during execution, do not build):**
+- **C13.** One-off backfill for legacy `sharedWithUserIds`-only `shared_content` documents, and a
+  dated accepted-gap note recording the interim state: *the cascade erases a legacy corpus the
+  export cannot show.* This is a new asymmetry B1 opens in the opposite direction — real, and
+  currently unticketed.
+- **C14.** Support-runbook entries for BUT-1795 ("can't leave group" is a known gap, point at the
+  ticket, don't escalate as new) and BUT-1797 ("my ex-group member still sees my recipe" is a
+  known gap, not a fresh security incident).
+- **C15.** Cross-reference the five accepted-deviations entries that now collectively constitute
+  Butlery's Art. 15(4) balancing policy into the Art. 30 record / `docs/security`, so the
+  reasoning is producible without git archaeology.
+
+**Escalated to Malin — see the question at the end of this plan:** whether A5 ships at all.
+Support's position is that it should, but with honest copy; the tradeoff is a permanent visible
+error versus a silent no-op. Legal separately flags an accumulating pattern of case-by-case
+Art. 17 deferrals (BUT-1570, BUT-1747, now BUT-1801, plus BUT-1795/96/97/1805) that would read to
+a regulator as systemic rather than incidental — that is a standing concern, not a blocker here.
+
+## Open questions
+
+**Asked and answered (2026-08-01, via AskUserQuestion):**
+- *What may the newly-live `shared_content` export section contain?* → Malin: keep other
+  recipients' UIDs **and** the sharer's display name; avatars stay stripped. Folded into B3 as
+  an acceptance criterion, recorded in her name and explicitly **not** as an analogy from
+  BUT-1732 or BUT-1772.
+
+**Open, surfaced not assumed:**
+- *Drop A5?* — see Weakest point below. Default is to keep it; one word changes that.
+
+**No further architecture-changing unknowns. Assumptions, stated so they can be corrected:**
+- The group-conversation path split is a migration, not a fix, and stays out (BUT-1795/1796);
+  this plan only stops it reporting false success.
+- Legacy `sharedWithUserIds`-only documents are reachable by the admin SDK, which bypasses the
+  client rule that forced the export onto the other spelling. B1 depends on this; it is asserted
+  from `firestore.rules:722` being a client-scoped rule, and must be **proven on the emulator**
+  before B1 is called done.
+- Everything already filed as a follow-up ticket stays filed and unbuilt; this run adds no new
+  tickets unless a fix turns one up.
+
+## Weakest point
+
+**A5 is the shakiest part of this plan.** It changes a method signature through three layers to
+make a failure visible, without fixing the underlying cause (BUT-1795). If the parsed reply is
+wired through wrongly, a leave that *did* work could start reporting failure — annoying, but the
+opposite of dangerous, and the two named tests pin both directions. The alternative is to leave
+it lying until BUT-1795 lands; say the word and I'll drop A5 and ship the rest.
+
+## What this means in plain language
+
+- The sprint's work is worth keeping, but nine things would have hurt if they had shipped.
+- Sharing a recipe **for the very first time** would have silently failed — the other person
+  never gets access, and the share never appears in their data export.
+- **Sending a message** would have broken on older chats, because a new anti-takeover rule
+  accidentally blocked the message too.
+- Your **data export** would have started handing out other people's IDs that account deletion
+  could never clean up. Fixing that properly means cleaning records saved under an older field
+  name too — the auditor caught that I had missed exactly those.
+- **Allergens:** the ingredient cleanup never matched anything containing å, ä or ö. That is 8 of
+  the 14 EU allergens. Fixed here, not deferred.
+- **Leaving a group chat** still won't work — that's a move-house job with its own ticket. After
+  this it will at least *tell you* it failed instead of pretending.
+- Your export decision from today gets written down in your name, as its own call rather than
+  borrowed from an older one.
+- **The panel found four more things** the six specialists had missed, including one real privacy
+  problem: shared shopping lists carry a copy of the whole list inside them, and the export only
+  cleans the outside of that parcel. Nobody has ever looked inside it. I will, before shipping.
+- **Also still broken and deliberately left alone:** deleting your account does not fully clean up
+  six other places that read recipes from the wrong location. Your lawyer's point, and it is fair:
+  this change *widens* what the export shows while that gap stays open. Both halves are on the
+  table on purpose.
+- **Risk and undo:** nothing is committed yet, the full tree is backed up, and every step is
+  reversible until the push. After the push, main is fixable forward with another commit — no
+  deploy happens automatically.
+
+
+---
+
+# Sprint 2026-08-01 — Selection
+
+Backlog scanned: Linear MCP live (`list_issues` confirmed), team Butlery. 130 Backlog + 2
+Todo (BUT-1480, BUT-1685, both older/not selected this run) + 0 In Progress + 0 Triage.
+`onboarding-reserved` items (BUT-677, BUT-722) excluded from scoring entirely, per instruction.
+
+**Ship-state check first.** `git log --since="7 days ago"` shows three sprints landed since
+the archived 2026-07-30c write-up below: the crashed-sprint rescue (`c0dc8c984`, 9 tickets:
+BUT-1766/1767/1768/1773/1760/1755/1722/1770/1761 — all confirmed absent from the current
+Backlog fetch, i.e. genuinely Done, not stale), then `46f642baf` (BUT-1762) and `a02d5ff32`
+(BUT-1699 — the TTL-enable ticket that sat in "Needs your call" for two prior sprints,
+since built), then a docs/gates commit. Working tree is clean. No obsolete tickets found —
+every BUT-id referenced in the last 7 days' commits is already absent from the open backlog.
+
+Most of today's candidates are fresh (2026-07-31) findings from a `/linear scan night` +
+specialist-review pass on the just-shipped sprints — verified independently below, not taken
+on the filer's word.
+
+**Step-0 grep-of-main premise check** for every ticket selected below:
+- `lib/views/recipe_detail/recipe_save_navigation.dart:33` — still `arguments: savedRecipe.id`
+  (bare string, not a `Recipe`). BUT-1779 live.
+- `lib/models/notification_preferences.dart` / `lib/views/settings/notification_preferences_view.dart`
+  — `soundEnabled`/`vibrationEnabled` grep across `lib/` (excluding those two files) returns
+  nothing. BUT-1783 live (routed to needsApproval, not built).
+- `lib/widgets/recipe/recipe_card.dart` — `showAllergenBadges` still appears only in this one
+  file (declaration, default `false`, two gates); no passer anywhere. BUT-1780 live (deferred
+  to capacity this sprint, see below).
+- `firestore.rules:1532-1535` — the `conversations` update rule still denies any diff touching
+  `participantIds`; no self-leave exception exists anywhere in the file. BUT-1788 live.
+- `functions/src/shared/collections.ts:9` — `recipes: "recipes"` (top-level) still feeds the
+  five call sites BUT-1781 names. BUT-1781 live.
+- `lib/services/account/export/social_export_manager.dart` — **partial premise change**:
+  `_dropOtherPeoplesAvatars` already narrows `perUserSettings` to the requester's own entry as
+  a conservative *placeholder* default (comment: "NOT the BUT-1772 decision... until that
+  verdict exists"). Her verdict (recorded in BUT-1774's body) asks for exactly that behavior,
+  so item 1 of that ticket is functionally already shipped — but items 2–5 (extend the
+  avatar-strip to `shared_content`, fix the two `sharedByAvatarUrl`/raw-Auth-displayName write
+  sites in `recipe_sharing_manager.dart:584-586` and `social_menu_operations.dart:87-88`, and
+  update the deviation docs) are still live — grep confirms zero `sharedByAvatarUrl` handling
+  in the export manager. Not obsolete; re-scoped in the acceptance criteria below.
+
+Nothing else here is already fixed. Every ticket below except BUT-1774/1775 was Claude-authored
+(the `/linear scan night` + specialist-review round from 2026-07-31), never human-approved —
+the mandate column records why each is safe to build anyway.
+
+## Already decided — her answer, applied (not re-litigated)
+
+- **BUT-1774** (merged with **BUT-1775**) — ticket body carries "BESLUT FATTAT AV MALIN
+  2026-07-30": strip other participants' `perUserSettings`, keep `lastReadTimestamps`; merge
+  with BUT-1775 (strip `sharedByAvatarUrl` in `shared_content`, same file family) in one
+  change; build order set the same day — **BUT-1766 and BUT-1767 build first**. Both landed in
+  `c0dc8c984`, so the wait condition that held this back the last two sprints is now cleared.
+  Applied as **build**, batched below (Agent G). Her stated conditions are copied into the
+  acceptance criteria verbatim.
+
+## Needs your call (found this run, not built)
+
+- **BUT-1783** — notification sound/vibration switches persist correctly but control nothing
+  (Android channel is hardcoded `enableVibration: true, playSound: true`; zero consumers of
+  either preference anywhere in `lib/` or `functions/src/`). The ticket's own filer frames it
+  explicitly as a product choice: **build real per-channel wiring** (touches both trees, an
+  Android notification channel can't change sound/vibration after creation so this is a real
+  redesign) vs. **remove the two switches** until there's something behind them. No comment
+  recorded on the ticket — genuinely undecided.
+  **My read:** lean toward removing the switches — nobody has asked for per-app sound control,
+  Android's own per-channel settings already give users that lever at the OS level, and a
+  switch that lies costs more trust than a missing one. But it's a product call, not mine to
+  make. Not built this sprint.
+
+## Deferred to capacity (clear-enough mandate, held back this sprint)
+
+- **BUT-1780** — allergen/dietary badges never render on `RecipeCard` in any list/grid (the
+  settings screen promises "show on cards", defaults it on, and delivers nothing — the wiring
+  parameter exists but nothing passes `true`). Genuinely a real bug against a shipped promise,
+  but the ticket's own filer flags it should get "a second look from the product side before
+  the 'clean cards by default' intent is overridden" — a `build-review` disposition, not a
+  clean `build`. Held this sprint so BUT-1774/1775 (a *decided*, time-sensitive item, unblocked
+  today) could take its slot within the auto-sized batch count. Next sprint's Agent G.
+- **BUT-1792** — three more Firestore collections (+ presence) need TTL policies declared, same
+  mechanism BUT-1699 just proved works. Clear follow-up to already-approved work, but lower
+  time-pressure than this sprint's live-bug and GDPR-deletion tickets; held for capacity.
+- **BUT-1786** — `cleanupExpiredCache` reads the whole `globalRecipeCache` with no `.limit()`,
+  risking a timeout-before-progress cost spiral. Its own ticket suggests fixing it alongside
+  its sibling BUT-1671 (persisted-cursor gap, also backlog) — held together for next sprint.
+- **BUT-1790** — a personal shopping list with no stored `updatedAt` never gets the BUT-1762
+  day-stamp (parse-time `clock.now()` synthesis makes the guard compare "now" to "now"). Real
+  but narrow (only pre-existing/handwritten docs lack the field, and such a list was already
+  invisible to the metric before BUT-1762 too) — Medium priority, held for capacity.
+
+## Standing need-malin backlog (unchanged, carried from prior sprints)
+
+BUT-1693, BUT-1718, BUT-1730, BUT-1731, BUT-1747, BUT-1480, BUT-1323, BUT-1685, BUT-880,
+BUT-1502, BUT-1557, BUT-1179, BUT-1368, BUT-863, BUT-1445, BUT-1649, BUT-1636, BUT-1361 — the
+standing manual-QA / compliance-diagnosis / product-decision backlog, not re-derived this run
+(each already carries its own reasoning in the archived sprint sections below).
+
+## Agent A — recipe: two dead-end share/save flows
+Area: recipe. Router: single (Software Architect, Product Manager). File-disjoint from every
+other batch: `lib/views/recipe_detail/recipe_save_navigation.dart`,
+`lib/views/smart_import/import_result_handler.dart`,
+`lib/views/recipe_detail/recipe_detail_sharing_status.dart`,
+`lib/services/unified/operations/modules/recipe_member_manager.dart`,
+`lib/services/unified/operations/social_recipe_operations.dart`, plus tests under
+`test/widget/views/`, `test/unit/services/unified/operations/`.
+
+- [ ] **BUT-1779** [Tier A][build] `pushReplacementNamed(Routes.recipeDetail, arguments:
+  savedRecipe.id)` sends a bare id string to a router that only accepts a `Recipe` or a Map
+  wrapping one — every non-onboarding manual save (and 3 import-duplicate-resolution sites)
+  lands on the error screen immediately after a successful save. **requiresPlanMode: true**
+  (Urgent + Bug). Router: single.
+  - Fix: pass the `Recipe` object at all four sites (matching every working call site
+    elsewhere in the app).
+  - Acceptance:
+    1. All four sites (`recipe_save_navigation.dart` + the three branches in
+       `import_result_handler.dart`) pass a `Recipe`, not an id string, to `Routes.recipeDetail`.
+    2. The widget test routes through the real `AppRouter.onGenerateRoute`, not a stub route
+       table, so the type contract is actually pinned.
+    3. Manual handwritten-recipe save lands on the recipe detail view, not the error screen.
+
+- [ ] **BUT-1785** [Tier A][build] Revoking a shared **group's** recipe access always fails —
+  `_confirmRevokeMember` passes the group id into `removeMember(userId: ...)`, which guards on
+  `memberPermissions` (a user-keyed map `categoryIds` never touches). The X icon, confirmation
+  dialog and snackbar are fully wired to a path that can never succeed. **requiresPlanMode:
+  true** (High + Bug). Router: single.
+  - Fix: add a group-specific unshare path that removes the id from
+    `recipe.socialData.categoryIds` and persists; branch to it from `_confirmRevokeMember`.
+  - Acceptance:
+    1. Revoking a group's access removes its id from `categoryIds` and persists.
+    2. Revoking a user's access still works via the existing path (regression guard).
+    3. A test covers both branches — the call site can't otherwise distinguish them.
+
+## Agent B — backend/tagging: dead retag cascade on a nonexistent collection
+Area: tagging / backend. Router: **full-panel** (per the ticket's own stated tier — Database
+Administrator, Security Architect, Software Architect, Product Manager, Privacy/DPO, Legal
+Counsel, FinOps, Customer Support, Vendor/Procurement — allergen-adjacent data integrity).
+File-disjoint from every other batch: `functions/src/ingredients/on-ingredient-soft-deleted.ts`,
+`functions/src/ingredients/on-ingredient-properties-changed.ts`,
+`functions/src/cleanup/cleanup-deleted-ingredients.ts`,
+`lib/services/unified/operations/modules/rating_statistics.dart`, plus tests under
+`functions/src/__tests__/`, `test/unit/services/unified/operations/modules/`.
+
+- [ ] **BUT-1781** [Tier C][build] Five call sites target a top-level `recipes` collection that
+  doesn't exist (recipes live at `users/{uid}/recipes`) — a wrong-path query throws nothing and
+  matches zero. The serious half: the ingredient-soft-delete/properties-changed retag cascade
+  never marks a single real recipe stale, and the monitoring that would catch it (stale-recipe
+  count) reports 0 forever from the same wrong path. A fifth site makes rating a shared recipe
+  throw on the denormalised-aggregate write. **requiresPlanMode: true** (High + Bug, full-panel
+  — allergen-adjacent). Router: full-panel.
+  - Fix: switch the four cascade/monitoring sites to `db.collectionGroup("recipes")`; fix
+    `rating_statistics.dart` to write through the user-scoped path.
+  - Acceptance:
+    1. All five sites read/write the live path (`collectionGroup` or user-scoped), not the
+       nonexistent top-level collection.
+    2. A retag marker written by the ingredient-soft-delete/properties-changed triggers is
+       proven (seeded test) to reach a real recipe under `users/{uid}/recipes`.
+    3. Rating a shared recipe no longer throws on the aggregate-write leg (seeded test).
+    4. `firebase-backend-security` names every touched file in its review marker.
+
+## Agent C — shopping: silent-failure dialog + stale-base access-control race
+Area: shopping. Router: single for BUT-1784; single for BUT-1777 (promoted to
+requiresPlanMode by priority + security label). Same batch — internal file overlap is fine:
+`lib/views/unified_shopping/widgets/dialogs/shopping_list_operations.dart`,
+`lib/services/unified/modules/shopping_list_management_module.dart`,
+`lib/viewmodels/collaborative_shopping/collaborative_shopping_viewmodel.dart`,
+`lib/repositories/firebase/modules/shopping_list_permission_guards.dart`, plus tests under
+`test/unit/services/unified/modules/`, `test/unit/repositories/firebase/modules/`,
+`test/views/social/collaborative_shopping_view_test.dart`.
+
+- [ ] **BUT-1784** [Tier A][build] "Listan skapad" fires unconditionally regardless of whether
+  the write succeeded — `createPersonalList`'s bool return is discarded, the failure path is
+  fully silent (swallowed catch, no `hasError`), and `showCreateListDialog` has no `onError`
+  parameter at all unlike its sibling dialogs. **requiresPlanMode: true** (High + Bug). Router:
+  single.
+  - Fix: add an `onError` callback mirroring the sibling dialogs; branch on the returned bool;
+    log the swallowed catch.
+  - Acceptance:
+    1. The success snackbar only fires when `createPersonalList` actually succeeds.
+    2. The swallowed catch now logs the real failure.
+    3. A test forces the repository create to fail and asserts the error path fires, not the
+       success snackbar.
+
+- [ ] **BUT-1777** [Tier C][build] BUT-1726-resten: the access-control "base" passed to
+  `updateCollaborativeListMembership` is read fresh from the live service copy at submit time,
+  not the copy the dialog actually opened with — so for a connected client, base and stored
+  copy always agree, drift is never detected, and a member removed by someone else mid-dialog
+  can be silently re-granted access. `updateMemberPermission` also adds a permission key
+  without checking the member still exists in the stored copy. **requiresPlanMode: true** (High
+  + security label + `lib/repositories/`). Router: single, promoted.
+  - Fix: capture the base at dialog-open time, not at submit; make `updateMemberPermission`
+    fail closed on a member no longer present in the stored copy.
+  - Acceptance:
+    1. The base passed to `updateCollaborativeListMembership` is the copy the dialog was opened
+       with, not a fresh read at submit.
+    2. `updateMemberPermission` refuses to write a permission key for a member absent from the
+       stored copy (fail closed, same exception shape as other drift cases).
+    3. A test runs the exact scenario: dialog opens → removal happens elsewhere → permission
+       change submitted → write refused, no resurrection.
+    4. `firebase-backend-security` reviews the diff.
+
+## Agent D — social: group leave/remove always denied by the rules
+Area: social. Router: **full-panel** (per the router run on this ticket's fileset — Security
+Architect, Software Architect, Product Manager, Legal Counsel, Privacy/DPO, Trust & Safety,
+Customer Support, Performance, Data Analyst/BI, DB Administrator; `firestore.rules` is a
+high-stakes hit). File-disjoint from every other batch: `lib/viewmodels/group_detail_viewmodel.dart`,
+`lib/repositories/firebase/modules/conversation_mutation_module.dart`,
+`lib/services/messaging_service.dart`, a new Cloud Function under `functions/src/messaging/`
+(or `functions/src/account/`, mirroring `buildGroupDepartureUpdate`'s existing pattern), plus
+emulator rules tests under `functions/src/__tests__/`.
+
+- [ ] **BUT-1788** [Tier C][build] "Leave group" and "remove member" both always fail —
+  `firestore.rules:1532-1535` denies any `conversations` update whose diff touches
+  `participantIds`, with no self-leave exception anywhere in the file. Every click gets
+  `permission-denied`. **requiresPlanMode: true** (High + Bug, full-panel — `firestore.rules`).
+  Router: full-panel.
+  - Fix (ticket's own reasoned recommendation): move the operation to a Cloud Function with the
+    Admin SDK — `buildGroupDepartureUpdate` in `account-deletion-cascade.ts` is a ready
+    template — rather than a narrow client-side rule (removing a member necessarily touches
+    someone else's uid, which a self-leave-only rule can't permit without becoming too wide).
+  - Acceptance:
+    1. A member can leave a group chat and it's reflected in the app.
+    2. A group admin can remove a member.
+    3. Test runs against the emulator with real rules, not a rules-free fake — the entire
+       history of this bug is a green suite over a denied write.
+    4. Whether `participantDisplayNames`/`participantAvatarUrls`/`lastReadTimestamps`/
+       `perUserSettings` get cleaned up on departure (matching the deletion cascade) is decided
+       and stated in the commit body, not left implicit.
+
+## Agent E — account/settings: notification-preferences local cache is a stub
+Area: settings / account. Router: single (Software Architect, Product Manager).
+File-disjoint from every other batch: `lib/models/notification_preferences.dart`,
+`lib/services/notifications/modules/notification_preference_manager.dart`, plus tests under
+`test/unit/services/notifications/modules/`.
+
+- [ ] **BUT-1782** [Tier A][build] `NotificationPreferences.toJson()`/`fromJson()` are
+  placeholders (`return '{}'` / `return NotificationPreferences.defaults()`) — the offline
+  fallback branch of `getPreferences()` silently resets an explicit opt-out (sound, quiet
+  hours, topic subscriptions) back to defaults on any transient Firestore read failure.
+  Close enough to a GDPR-relevant control (push consent) that it shouldn't be guessable.
+  **requiresPlanMode: true** (High + security-adjacent). Router: single.
+  - Fix: route the existing `toFirestore()`/`fromMap()` maps through `jsonEncode`/`jsonDecode`
+    for the real round trip.
+  - Acceptance:
+    1. `toJson()`/`fromJson()` round-trip real preference data through the existing
+       `toFirestore()`/`fromMap()` maps, not stubs.
+    2. A test saves a non-default preference set, forces the repository read to throw, and
+       asserts the returned preferences still match what was saved — not silently-reset
+       defaults.
+    3. No behavior change to the normal (online) Firestore read path.
+
+## Agent F — backend/analytics: retention metric measures the wrong window, and never expires
+Area: analytics / backend. Router: single for BUT-1791 (Data Analyst/BI, Growth/ASO, QA,
+Security Architect, Vendor/Procurement); full-panel for BUT-1789 (adds Database
+Administrator, FinOps, Legal Counsel, Privacy/DPO, Product Manager, Software Architect,
+Trust & Safety — `account-deletion-cascade.ts` is a high-stakes hit). Same batch — both
+tickets touch `compute-feature-retention.ts`, sequential-within-agent so worktree patches
+don't conflict: `functions/src/analytics/compute-feature-retention.ts`,
+`functions/src/account/account-deletion-cascade.ts`, plus tests under
+`functions/src/__tests__/compute-feature-retention.test.ts` and the account-deletion suite.
+
+- [ ] **BUT-1791** [Tier A][build] All five feature-retention flags measure only the first 4.5
+  hours of each UTC day — the job runs at 04:30 UTC probing the *current* (still mostly
+  unwritten) day, so activity after ~06:30 Swedish time is never counted by any run. The
+  existing test suite is structurally blind to it (every case runs the probe *after* the
+  activity, which production never does). **requiresPlanMode: true** (Urgent + Bug). Router:
+  single.
+  - Fix: probe the *previous* UTC day (`todayStartMs - MS_PER_DAY`), carrying `dateStr`
+    through correctly; update KNOWN GAP 3's ramp-trigger list and remove KNOWN GAP 4.
+  - Acceptance:
+    1. Activity at 18:00 local time is counted for that calendar day.
+    2. A test adds the case the current suite structurally lacks — activity *after* the run
+       hour. Mutation-tested: revert the window, the test reds.
+    3. `dateStr` and the stored flag document's date match the day actually measured.
+    4. KNOWN GAP 3's list is updated and KNOWN GAP 4 is removed when this closes.
+
+- [ ] **BUT-1789** [Tier C][build] The per-user, per-day feature-retention documents
+  (`analytics/feature_retention/users/{uid}_{date}`, carrying the raw uid in both the doc id
+  and a field) are never deleted by anything — no cascade, no TTL, no `probeResidualData`
+  coverage, no dated deviation entry. BUT-1762 made this content genuinely meaningful personal
+  data (before it, `shopped` was structurally false for most users; after, it's a truthful
+  behavioral record), which is why this is worth fixing now rather than staying old debt.
+  **requiresPlanMode: true** (High + security, full-panel). Router: full-panel.
+  - Fix (ticket's reasoned recommendation, either is fine): add a step to the deletion cascade
+    sweeping `analytics/feature_retention/users/` on uid match, plus a `probeResidualData`
+    entry — or a TTL no shorter than the 28-day rollup window. If anything is deliberately kept,
+    it needs a dated `ACCEPTED_DEVIATIONS.md` entry, not silence.
+  - Acceptance:
+    1. After account deletion, zero documents remain under `analytics/feature_retention/users/`
+       bearing the deleted uid — proven by a test seeded on the production path.
+    2. `probeResidualData` covers the collection.
+    3. Anything deliberately kept is recorded as a dated `ACCEPTED_DEVIATIONS.md` entry.
+    4. The 28-day rollup still reads correctly after the change.
+
+## Agent G — account: GDPR export — her decided redaction, now unblocked
+Area: account. Router: single (Software Architect, Product Manager — the redaction itself is
+narrow; the domain is sensitive so requiresPlanMode is set regardless). File-disjoint from
+every other batch: `lib/services/account/export/social_export_manager.dart`,
+`lib/services/unified/operations/modules/recipe_sharing_manager.dart`,
+`lib/services/unified/operations/social_menu_operations.dart`,
+`docs/architecture/ACCEPTED_DEVIATIONS.md`, `.claude/rules/accepted-deviations.md`, plus tests
+under `test/unit/services/account/export/`.
+
+- [ ] **BUT-1774** [Tier A][build] (merged with BUT-1775) — Malin's decision, 2026-07-30: strip
+  other conversation participants' `perUserSettings`, keep `lastReadTimestamps`; extend the
+  same avatar-strip principle to `shared_content`'s `sharedByAvatarUrl` (BUT-1775); fix the two
+  write sites persisting the raw Firebase-Auth display name instead of
+  `userService.profileDisplayName` (the BUT-1736 class of bug) in the same change. Build order
+  she set the same day — BUT-1766/BUT-1767 first — is satisfied (both landed in `c0dc8c984`).
+  **Premise note:** `_dropOtherPeoplesAvatars` already narrows `perUserSettings` to the
+  requester's own entry as a conservative placeholder pending this verdict — that part is
+  effectively already shipped; confirm/lock it in rather than re-implementing. The
+  `shared_content` avatar-strip and the two displayName fixes are still fully live.
+  **requiresPlanMode: true** (sensitive domain — GDPR export — even though the diff is narrow,
+  matching the BUT-1772 precedent). Router: single.
+  - Acceptance (her stated conditions, copied in):
+    1. No other participant's avatar URL appears anywhere in the serialised export —
+       conversations AND `shared_content` both — asserted against the whole JSON string.
+    2. `perUserSettings` is narrowed to the requester's own entry only (confirm with an
+       exhaustive test rather than assuming the existing code is correct); `lastReadTimestamps`
+       is explicitly untouched, pinned by a test.
+    3. The two `shared_content` write sites (`recipe_sharing_manager.dart:584-586`,
+       `social_menu_operations.dart:87-88`) persist `profileDisplayName`, not the raw Auth
+       name — with a test.
+    4. `docs/architecture/ACCEPTED_DEVIATIONS.md` and `.claude/rules/accepted-deviations.md`
+       are updated: `perUserSettings` goes from "undecided, pending BUT-1774" to "stripped for
+       others"; `lastReadTimestamps` from "named but not argued" to "kept, with reason."
+
+## Cross-batch file-collision watch
+
+None found this sprint — all seven batches were checked pairwise for file overlap; no shared
+production file between any two agents.
+
+## Post-sprint steps (to run after implementation)
+
+1. `dart analyze --fatal-infos` + `npx tsc --noEmit -p functions` on the full tree.
+2. File follow-up Linear tickets for every deferred sub-scope before commit (in particular:
+   BUT-1780, BUT-1792, BUT-1786, BUT-1790 already exist and just need to carry forward).
+3. Commit through the gate: `code-reviewer` on all `.dart`, `firebase-backend-security` on
+   Agents A/C/D/E/G's repository/export/rules-adjacent touches, `cloud-functions-specialist`
+   on Agents B/D/F's `functions/src` touches, `firestore-rules-tester` if Agent D's Cloud
+   Function work touches `firestore.rules` itself (expected: it may, for the messaging leave
+   path — confirm at diff time).
+4. Push (push does NOT trigger deploy in this repo — `pushTriggersDeploy: false`). Any new
+   Firestore index/rule needs an explicit deploy step called out separately.
+5. Transition tickets: Tier A/C build + all-pass → Done. Any failed/unclear criterion → In
+   Review + plain-language comment + PushNotification.
+6. Re-check `docs/onboarding/workflow-map.stale` before commit.
+7. Grade each selected ticket against its OWN diff before any Done/In Review transition.
+
+---
+
 # Sprint 2026-07-30c — Selection
 
 Third sprint today. Backlog scanned: 130 Backlog + 4 Todo + 0 In Progress + 0 Triage, team
@@ -969,3 +1792,26 @@ and BUT-1703 (re-closed). Full detail trimmed — see prior git history of this 
 
 Trimmed for length — all fully shipped. See prior git history of this file for the complete
 record if needed.
+
+---
+
+# ACTIVE (parallel session, 2026-08-02/03) — free on-device OCR tier
+
+**Approved plan lives in `tasks/butlery-ocr-sites-plan.md`**, not here: this file was already
+holding the 2026-08-01 sprint-salvage plan when the work started, and `git-workflow.md` says a
+second session writes to `tasks/<initiative>-plan.md` rather than taking over `todo.md`. This
+pointer exists only so the plan-threshold guard can see the evidence — nothing above it has
+been touched.
+
+Approved by Malin via ExitPlanMode; audited cold by a fresh-context reviewer (3 REDs found and
+fixed before approval). Status: A built and reviewed; its device measurement (27 recipes, 96.6 vs 96.4) was
+later found untrustworthy — the harness fed raw bytes while production preprocesses —
+so the re-run is pending a device; C cut after a 40-site sweep showed the premise was
+false. Currently applying commit-gate review findings.
+
+- [x] A1 on-device recognizer + web stub, conditional import on `dart.library.io`
+- [x] A2 tier-0 wiring in `ocr_extraction_service.dart` behind `enable_on_device_ocr`
+- [x] A3 device harness + corpus scoring (`integration_test/ocr_engine_comparison_test.dart`)
+- [x] A4 gold transcription: 9 → 27 verified recipes across 15 pages
+- [x] C cut — see the plan's C1' section for the measurement that killed it
+- [ ] Apply commit-gate review findings, then commit and push

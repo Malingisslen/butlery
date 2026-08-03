@@ -4,9 +4,23 @@
 // exception — it must keep driving its own flow, so it opts out and the form
 // pops the saved recipe back instead.
 //
-// This pins that decision in isolation (RecipeSaveNavigation), away from the
-// heavy recipe-form ViewModel/validation/celebration machinery, so the contract
-// is cheap to assert and won't rot.
+// BUT-1779: the earlier version of this file pinned the BUG. It asserted the
+// pushed argument was the bare id `'recipe-nav-1'`, and used a MaterialApp
+// `routes:` map — which never looks at `arguments` at all, so the stub rendered
+// happily while the real app rendered "Sidan kunde inte hittas". These tests now
+// push through an `onGenerateRoute` that decodes the argument the way
+// `AppRouter.generateRoute` does for `Routes.recipeDetail`, so a bare id lands
+// on the error screen exactly as it does in production.
+//
+// Why the decode is mirrored rather than delegated to the real AppRouter:
+// `Routes.recipeDetail` is in `Routes.authenticatedRoutes`, so `generateRoute`
+// hits `FirebaseAuthRepository()` → `FirebaseAuth.instance` before it ever
+// reaches the recipe-detail branch. With no Firebase app in a `flutter test`
+// host that throws, and `generateRoute`'s own try/catch converts it into the
+// generic error route. Verified by probe: the real router returns an error route
+// for a perfectly valid Recipe argument, so it cannot tell the fix from the bug.
+// Source of truth for the mirror below: lib/core/router/app_router.dart, the
+// `case Routes.recipeDetail:` branch.
 library;
 
 import 'package:flutter/material.dart';
@@ -35,6 +49,37 @@ class _NavSpy extends NavigatorObserver {
   }
 }
 
+const _detailMarker = 'detail-for';
+const _errorMarker = 'route-error';
+
+/// Mirrors `AppRouter.generateRoute`'s `Routes.recipeDetail` branch: the
+/// argument is either a Recipe, or a Map carrying one under 'recipe'; anything
+/// else (notably a bare id String) decodes to null and falls through to the
+/// error route.
+Route<dynamic>? _routerLikeOnGenerateRoute(RouteSettings settings) {
+  if (settings.name != Routes.recipeDetail) return null;
+
+  final arguments = settings.arguments;
+  Recipe? recipe;
+  if (arguments is Recipe) {
+    recipe = arguments;
+  } else if (arguments is Map<String, dynamic>) {
+    recipe = arguments['recipe'] as Recipe?;
+  }
+
+  if (recipe == null) {
+    return MaterialPageRoute<void>(
+      settings: settings,
+      builder: (_) => const Scaffold(body: Text(_errorMarker)),
+    );
+  }
+  final resolved = recipe;
+  return MaterialPageRoute<void>(
+    settings: settings,
+    builder: (_) => Scaffold(body: Text('$_detailMarker:${resolved.title}')),
+  );
+}
+
 void main() {
   late Recipe recipe;
 
@@ -43,17 +88,14 @@ void main() {
   });
 
   testWidgets(
-    'navigateToDetail: true replaces the form with the new recipe detail '
-    '(carrying the saved id)',
+    'navigateToDetail: true replaces the form with the recipe detail the '
+    'router can actually build',
     (tester) async {
       final spy = _NavSpy();
       await tester.pumpWidget(
         MaterialApp(
           navigatorObservers: [spy],
-          routes: {
-            Routes.recipeDetail: (_) =>
-                const Scaffold(body: Text('detail-stub')),
-          },
+          onGenerateRoute: _routerLikeOnGenerateRoute,
           home: Builder(
             builder: (ctx) => Scaffold(
               body: ElevatedButton(
@@ -72,13 +114,44 @@ void main() {
       await tester.tap(find.text('save'));
       await tester.pumpAndSettle();
 
-      // The recipe-detail route replaced the form, with the saved id as argument.
       expect(spy.replaced, hasLength(1));
       expect(spy.replaced.single.settings.name, Routes.recipeDetail);
-      expect(spy.replaced.single.settings.arguments, 'recipe-nav-1');
-      // User now sees the detail, not the form button.
-      expect(find.text('detail-stub'), findsOneWidget);
+      // BUT-1779: the Recipe itself, not its id — the router decodes anything
+      // else to null.
+      expect(spy.replaced.single.settings.arguments, same(recipe));
+      // And the route the router built is the detail, not the error screen.
+      expect(find.text('$_detailMarker:Pannkakor'), findsOneWidget);
+      expect(find.text(_errorMarker), findsNothing);
       expect(find.text('save'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'the bare id this used to pass would land on the error route (guards the '
+    'mirror actually discriminates)',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          onGenerateRoute: _routerLikeOnGenerateRoute,
+          home: Builder(
+            builder: (ctx) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () => Navigator.of(ctx).pushReplacementNamed(
+                  Routes.recipeDetail,
+                  arguments: recipe.id,
+                ),
+                child: const Text('save'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('save'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(_errorMarker), findsOneWidget);
+      expect(find.textContaining(_detailMarker), findsNothing);
     },
   );
 
@@ -91,10 +164,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           navigatorObservers: [spy],
-          routes: {
-            Routes.recipeDetail: (_) =>
-                const Scaffold(body: Text('detail-stub')),
-          },
+          onGenerateRoute: _routerLikeOnGenerateRoute,
           home: Builder(
             builder: (ctx) => Scaffold(
               body: ElevatedButton(

@@ -19,8 +19,30 @@ import { requireAdmin } from "../shared/require-admin";
 // Lazy initialization to avoid calling firestore() before initializeApp()
 const getDb = () => admin.firestore();
 
+/**
+ * BUT-1781: recipes live ONLY at `users/{uid}/recipes/{recipeId}`. Both
+ * callables here read a top-level `recipes` collection that has never existed,
+ * so `bulkMarkForRetagging` marked 0 recipes and `getRetagStatus` reported 0 —
+ * silently, because "no recipes match" is a legitimate answer. These are the
+ * operator escape hatch that DRAINS the `stale-ingredient` / `stale-properties`
+ * markers the ingredient cascades write, and those cascades only started
+ * producing markers once they were repointed at the collection group. Fixing one
+ * consumer of a wrong path does not fix the path.
+ *
+ * The `core.createdBy` filter needs a COLLECTION_GROUP fieldOverride, declared
+ * in firestore.indexes.json alongside the two the cascades use.
+ */
+const recipesGroup = (): admin.firestore.Query =>
+  getDb().collectionGroup("recipes");
+
 // CRIT-6: Rate limit constants
 const RATE_LIMIT_PER_DAY = 5;
+
+/**
+ * Hard ceiling on the operator-supplied `limit`. One page must fit in function
+ * memory; 5 calls/day at this size is the real drain rate.
+ */
+const MAX_BULK_RETAG_LIMIT = 1000;
 const RATE_LIMIT_COLLECTION = "admin_rate_limits";
 const AUDIT_LOG_COLLECTION = "admin_audit_logs";
 
@@ -173,6 +195,16 @@ interface BulkRetagRequest {
   userId?: string;
   /** Optional: Dry run - only count affected recipes without updating */
   dryRun?: boolean;
+  /**
+   * Optional: document path to resume after, from a previous call's
+   * `nextCursor`. Without it every call re-reads the same first `limit`
+   * documents in `__name__` order and the callable can never drain the
+   * backlog — it writes the marker `"outdated"`, which still fails the
+   * in-memory `currentVersion !== targetVersion` filter, so the same page
+   * matches forever. BUT-1794 makes the cascades actually produce those
+   * markers at scale, which turns this from latent into live.
+   */
+  startAfter?: string;
 }
 
 interface BulkRetagResponse {
@@ -183,6 +215,12 @@ interface BulkRetagResponse {
     totalUpdated: number;
     batchesProcessed: number;
   };
+  /**
+   * Path of the last document this call scanned, to pass back as `startAfter`.
+   * Absent when the scan reached the end. Without paging through this the
+   * callable re-reads page 1 forever — see `startAfter` on the request.
+   */
+  nextCursor?: string;
 }
 
 /**
@@ -226,7 +264,14 @@ export const bulkMarkForRetagging = onCall(
       );
     }
 
-    const { targetVersion, limit = 1000, userId, dryRun = false } = data;
+    const { targetVersion, userId, dryRun = false, startAfter } = data;
+    // Operator-supplied and previously uncapped and untyped: `limit: 500000`
+    // was an unbounded `.get()` straight into function memory.
+    const requestedLimit = Number(data.limit ?? 1000);
+    const limit =
+      Number.isFinite(requestedLimit) && requestedLimit > 0
+        ? Math.min(Math.floor(requestedLimit), MAX_BULK_RETAG_LIMIT)
+        : 1000;
 
     // CRIT-6: Log audit entry
     await logAuditEntry(adminUid, "bulk_retag_started", {
@@ -249,7 +294,7 @@ export const bulkMarkForRetagging = onCall(
 
     try {
       // Build query for outdated recipes
-      let query: admin.firestore.Query = getDb().collection("recipes");
+      let query: admin.firestore.Query = recipesGroup();
 
       // Filter by user if specified
       if (userId) {
@@ -259,6 +304,18 @@ export const bulkMarkForRetagging = onCall(
       // We want recipes that DON'T have the target version
       // Firestore doesn't support != directly with other conditions,
       // so we query all and filter in-memory
+      // Ordered + cursored so successive calls advance. `__name__` is the only
+      // ordering a collection-group scan gets for free, and it is stable.
+      // One field, not whole recipe documents — the sibling `getRetagStatus`
+      // already does this. It is what makes MAX_BULK_RETAG_LIMIT actually safe
+      // against the default memory limit.
+      query = query.select("core.tagResult.generatorVersion");
+      query = query.orderBy(admin.firestore.FieldPath.documentId());
+      if (typeof startAfter === "string" && startAfter.length > 0) {
+        query = query.startAfter(
+          await admin.firestore().doc(startAfter).get(),
+        );
+      }
       query = query.limit(limit);
 
       const snapshot = await query.get();
@@ -285,6 +342,13 @@ export const bulkMarkForRetagging = onCall(
 
       const totalFound = recipesToUpdate.length;
 
+      // Computed BEFORE the dry-run return. Leaving it below meant `dryRun`
+      // could not page either — the very defect this cursor fixes, surviving
+      // inside its own fix.
+      const lastScanned = snapshot.docs[snapshot.docs.length - 1];
+      const reachedEnd = snapshot.size < limit;
+      const cursor = reachedEnd ? {} : { nextCursor: lastScanned.ref.path };
+
       if (dryRun) {
         logger.info(
           `Dry run: Would update ${totalFound} recipes`
@@ -297,6 +361,7 @@ export const bulkMarkForRetagging = onCall(
             totalUpdated: 0,
             batchesProcessed: 0,
           },
+          ...cursor,
         };
       }
 
@@ -369,6 +434,9 @@ export const bulkMarkForRetagging = onCall(
         dryRun,
       });
 
+      // `cursor` above is the last document SCANNED, not the last updated — the
+      // in-memory version filter drops most of a page, and resuming from an
+      // updated doc would silently skip everything between.
       return {
         success: totalFailed === 0,
         message: totalFailed === 0
@@ -379,6 +447,7 @@ export const bulkMarkForRetagging = onCall(
           totalUpdated,
           batchesProcessed,
         },
+        ...cursor,
       };
     } catch (error) {
       logger.error("Bulk retag failed:", error);
@@ -415,7 +484,7 @@ export const getRetagStatus = onCall(
 
       // H12: Paginate through results to handle large collections
       while (true) {
-        let query: admin.firestore.Query = getDb().collection("recipes");
+        let query: admin.firestore.Query = recipesGroup();
 
         if (userId) {
           query = query.where("core.createdBy", "==", userId);

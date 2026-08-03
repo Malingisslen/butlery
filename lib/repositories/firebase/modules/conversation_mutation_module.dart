@@ -2,6 +2,7 @@
 
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
 import 'package:butlery/models/messaging/conversation.dart';
@@ -21,6 +22,15 @@ class ConversationMutationModule {
   final Future<void> Function(Message) sendMessageFn;
   final ConversationParticipantModule? participantModule;
 
+  /// Resolved lazily so merely constructing this module never calls
+  /// `FirebaseFunctions.instanceFor` — that throws `[core/no-app]` in unit
+  /// tests, which build the repository without a Firebase app.
+  final FirebaseFunctions? _injectedFunctions;
+  FirebaseFunctions? _functionsCache;
+  FirebaseFunctions get functions => _functionsCache ??=
+      (_injectedFunctions ??
+      FirebaseFunctions.instanceFor(region: 'europe-west1'));
+
   ConversationMutationModule({
     required this.firestore,
     required this.collectionName,
@@ -29,7 +39,8 @@ class ConversationMutationModule {
     required this.readFn,
     required this.sendMessageFn,
     this.participantModule,
-  });
+    FirebaseFunctions? functions,
+  }) : _injectedFunctions = functions;
 
   /// Create deterministic direct conversation (get or create pattern).
   Future<String> createDirectConversation({
@@ -207,6 +218,23 @@ class ConversationMutationModule {
   }
 
   /// Add participants to group conversation.
+  ///
+  /// **KNOWN BROKEN, and deliberately not fixed here — the twin of BUT-1788.**
+  /// This method is denied by the exact two rules quoted on [removeParticipant]
+  /// below: it rebuilds `participantIds` through [updateFn] (the conversations
+  /// update rule refuses any client diff touching that key) and then sends a
+  /// `Message.system` (the messages create rule refuses `senderId: "system"`).
+  /// So "Lägg till medlemmar" has never once succeeded, exactly like leave and
+  /// remove. [createGroupConversation] carries the same dead system-message
+  /// write.
+  ///
+  /// It is NOT folded into `leaveGroupConversation`: adding is not the mirror
+  /// image of removing. It needs its own authorization answer (who may add —
+  /// any participant, or only the creator?) and it bypasses
+  /// `enforceGroupMinorMembership`, which is an onDocumentCREATED trigger and
+  /// therefore never sees a member added later. Shipping an Admin-SDK add-member
+  /// without settling those two would open a hole rather than close one; it
+  /// needs its own ticket and its own plan.
   Future<void> addParticipants({
     required String conversationId,
     required List<String> participantIds,
@@ -291,67 +319,61 @@ class ConversationMutationModule {
     }
   }
 
-  /// Remove participant from group conversation.
+  /// Remove a participant from a group conversation — both "leave group" and
+  /// the admin's "remove member".
+  ///
+  /// BUT-1788: this used to rebuild the conversation client-side and write it
+  /// back. `firestore.rules` denies EVERY client update whose diff touches
+  /// `participantIds`, so neither operation has ever succeeded; the system
+  /// message it then sent was refused too (`senderId: "system"` fails the
+  /// messages create rule). The whole operation now runs in the
+  /// `leaveGroupConversation` Cloud Function under the Admin SDK, which owns
+  /// the admin check, the subcollection mirrors and the system message — the
+  /// rule stays closed rather than being widened to let clients rewrite group
+  /// membership.
   Future<void> removeParticipant({
     required String conversationId,
     required String participantId,
   }) async {
     try {
-      final conversation = await readFn(conversationId);
-      if (conversation == null) {
+      final callable = functions.httpsCallable('leaveGroupConversation');
+      final response = await callable.call<Map<String, dynamic>>(
+        <String, dynamic>{
+          'conversationId': conversationId,
+          'participantId': participantId,
+        },
+      );
+
+      // BUT-1795: the callable's no-oracle gate answers a MISSING conversation
+      // with `{removed: false, remainingParticipants: 0}` rather than throwing,
+      // so it does not leak whether a conversation exists. That branch is reachable by
+      // construction, not hypothetically: `createGroupConversation` writes
+      // through `UserScopedFirebaseRepository`, i.e. to
+      // `users/{creatorUid}/conversations/{id}`, while the callable reads
+      // top-level `conversations/{id}`. A group nobody has chatted in has no
+      // top-level document at all.
+      //
+      // Discarding this reply is what turned a loud failure into a silent one:
+      // the user was told they had left, and `logGroupLeft` fired, while
+      // nothing happened. Until the path split is unified (BUT-1795) the honest
+      // answer is to fail visibly. Do NOT "fix" this by treating removed:false
+      // as success again.
+      final removed = response.data['removed'] == true;
+      if (!removed) {
+        // A user-visible, expected failure — an Exception, not an Error.
+        // `StateError` would escape any future `on Exception catch` in this
+        // chain unhandled; both current callers use a bare `catch`.
         throw ResourceNotFoundException(
-          'Conversation not found',
+          'leaveGroupConversation reported no change for $conversationId — '
+          'the conversation was not found at the path the callable reads, or '
+          'the participant was not a member (BUT-1795)',
           resourceType: 'conversation',
           resourceId: conversationId,
         );
       }
 
-      if (!conversation.isGroup) {
-        throw ValidationException(
-          'Cannot remove participants from direct conversation',
-        );
-      }
-
-      final updatedParticipantIds = conversation.participantIds
-          .where((id) => id != participantId)
-          .toList();
-      final updatedDisplayNames = Map<String, String>.from(
-        conversation.participantDisplayNames,
-      )..remove(participantId);
-      final updatedAvatarUrls = Map<String, String?>.from(
-        conversation.participantAvatarUrls,
-      )..remove(participantId);
-      final updatedLastReadTimestamps = Map<String, DateTime>.from(
-        conversation.lastReadTimestamps,
-      )..remove(participantId);
-
-      final updatedConversation = conversation.copyWith(
-        participantIds: updatedParticipantIds,
-        participantDisplayNames: updatedDisplayNames,
-        participantAvatarUrls: updatedAvatarUrls,
-        lastReadTimestamps: updatedLastReadTimestamps,
-        updatedAt: clock.now().toUtc(),
-      );
-
-      await updateFn(updatedConversation);
-
-      // Also remove from subcollections
-      await participantModule?.removeParticipant(
-        conversationId: conversationId,
-        participantId: participantId,
-      );
-
-      // Send system message about participant removal
-      final displayName =
-          conversation.participantDisplayNames[participantId] ?? '?';
-      final systemMessage = Message.system(
-        conversationId: conversationId,
-        content: AppLocale.current.chatParticipantLeft(displayName),
-      );
-      await sendMessageFn(systemMessage);
-
       AppLogger.success(
-        '✅ Removed participant $participantId from conversation $conversationId',
+        '✅ Removed participant ${participantId.maskedUserId} from conversation $conversationId',
       );
     } catch (e) {
       AppLogger.error(

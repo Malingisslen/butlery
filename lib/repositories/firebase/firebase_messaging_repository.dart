@@ -3,6 +3,7 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -43,6 +44,10 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     super.auditRepository,
     super.timestampProvider,
     FeatureFlagService? featureFlagService,
+    // BUT-1788: injectable so tests can drive `leaveGroupConversation` without
+    // a Firebase app; production leaves it null and the mutation module
+    // lazily resolves europe-west1.
+    FirebaseFunctions? functions,
   }) : super(
          authRepository: authRepository ?? FirebaseAuthRepository(),
        ) {
@@ -70,6 +75,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
       readFn: read,
       sendMessageFn: sendMessage,
       participantModule: _participantModule,
+      functions: functions,
     );
 
     _messageQueryModule = MessageQueryModule(

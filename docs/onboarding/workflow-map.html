@@ -1993,13 +1993,13 @@
     },
     {
       "id": "cf-detect-lapsed-users",
-      "label": "detectLapsedUsers — winback (05:00 dagligen)",
+      "label": "detectLapsedUsers — winback (i dailyAnalytics, 06:00 dagligen)",
       "context": "cloud-function",
       "path": "functions/src/analytics/detect-lapsed-users.ts"
     },
     {
       "id": "cf-send-activity-digest",
-      "label": "sendWeeklyActivityDigest (måndagar 08:00)",
+      "label": "sendWeeklyActivityDigest (i weeklyReports, måndagar 08:00)",
       "context": "cloud-function",
       "path": "functions/src/analytics/send-activity-digest.ts"
     },
@@ -2602,7 +2602,7 @@
     {
       "id": "flow3",
       "label": "dela recept — två vägar",
-      "description": "Väg A (dela direkt) skapar ett NYTT dokument; väg B (begär → acceptera) muterar ORIGINALETS memberPermissions på plats. Båda skriver shared_content via olika kod — latent driftrisk. Ingen Cloud Function på någon av vägarna; notiser är klientsända.",
+      "description": "Väg A (dela direkt) skapar ett NYTT dokument; väg B (begär → acceptera) muterar ORIGINALETS memberPermissions på plats. Båda skriver shared_content via olika kod — latent driftrisk. Ingen Cloud Function på någon av vägarna; notiser är klientsända. BUT-1775 (2026-08-01): shared_content-skrivningen i väg A stämplar nu profilnamnet i stället för Auth-namnet, skriver mottagarlistan under den regelsanktionerade stavningen sharedToUserIds, och stämplar sharedAt bara vid skapandet — annars nekade reglerna varje OMdelning i tysthet.",
       "steps": [
         {
           "from": "v-share-dialogs",
@@ -2628,7 +2628,7 @@
         {
           "from": "svc-social-share",
           "to": "ds-social",
-          "payload": "shared_content-metadata {recipeId, sharedByUserId, sharedWithUserIds[], isActive}",
+          "payload": "shared_content-metadata {recipeId, sharedByUserId, sharedByDisplayName, sharedWithUserIds[], sharedToUserIds[], isActive}. BUT-1775: mottagarlistan skrivs under BÅDA stavningarna — bara sharedToUserIds känns igen av firestore.rules 'allow list' (:722) och av GDPR-exporten, så tidigare blev raden permission-denied för just de personer den delats med. sharedByDisplayName tas från profilnamnet (UserService), aldrig från Firebase Auth-kontot. sharedAt stämplas ENDAST vid skapandet: en ny serverTimestamp vid omdelning hamnar i affectedKeys och cannotModify(['sharedAt']) nekar då hela skrivningen — tyst, eftersom felet bara loggas.",
           "transport": "Firestore set/merge",
           "verified": true
         },
@@ -2835,7 +2835,7 @@
         {
           "from": "svc-data-export",
           "to": "vm-data-export",
-          "payload": "JSON-sträng (export_metadata + alla sektioner inkl. pooled_rating_events, version 2.0); export_metadata får truncated_collections/data_completeness och warnings[] efter det djupbegränsade svepet (BUT-1721). data_completeness sätts vid BÅDE trunkering och misslyckad sektion; en sektion som satt error_code UTAN error rapporteras som ofullständig, inte som misslyckad. Samtalssektionen stryker andra deltagares avatar-URL:er (egen behålls) och behåller deras namn och uid — Malins beslut BUT-1772, motsatt kall mot delade listor. BUT-1767 (2026-07-30): meddelandesektionen skickades tidigare tom (fantomväg conversations/{id}/messages saknar regelblock, fel sorteringsfält, ett filter på ett fält som aldrig skrivs) — läser numera top-level messages på conversationId och levererar riktiga rader; per-radens avsändaravatar stryks enligt samma BUT-1772-beslut. BUT-1773 (2026-07-30): varje exportförfrågan skriver nu exakt en revisionsrad (audit_logs) via DataExportService, beviljad eller nekad.",
+          "payload": "JSON-sträng (export_metadata + alla sektioner inkl. pooled_rating_events, version 2.0); export_metadata får truncated_collections/data_completeness och warnings[] efter det djupbegränsade svepet (BUT-1721). data_completeness sätts vid BÅDE trunkering och misslyckad sektion; en sektion som satt error_code UTAN error rapporteras som ofullständig, inte som misslyckad. Samtalssektionen stryker andra deltagares avatar-URL:er (egen behålls) och behåller deras namn och uid — Malins beslut BUT-1772, motsatt kall mot delade listor. BUT-1774 (2026-07-30): andra deltagares perUserSettings (mutad/fäst/arkiverad) är nu ett BESLUTAT bortfall och nämns i sektionens data_minimisation; lastReadTimestamps är det beslutade behållet. BUT-1775 (2026-08-01): samma avatarregel gäller nu även sektionerna shared_recipes_received och shared_menus_received via EN gemensam hjälpfunktion — delarens sharedByAvatarUrl stryks om delaren inte är den som begär exporten — och sektionen har fått en egen data_minimisation-rad. BUT-1767 (2026-07-30): meddelandesektionen skickades tidigare tom (fantomväg conversations/{id}/messages saknar regelblock, fel sorteringsfält, ett filter på ett fält som aldrig skrivs) — läser numera top-level messages på conversationId och levererar riktiga rader; per-radens avsändaravatar stryks enligt samma BUT-1772-beslut. BUT-1773 (2026-07-30): varje exportförfrågan skriver nu exakt en revisionsrad (audit_logs) via DataExportService, beviljad eller nekad. BUT-1775 (2026-08-01): shared_menus_received läste top-level menus filtrerat på sharedToUserIds — ett fält SharedMenu.toFirestore aldrig skriver — och hade därför ALDRIG returnerat en rad; den läser nu shared_content med contentType 'menu', samma väg som recepten, och båda grenarna delar en fråga som filtrerar på den enda stavning firestore.rules 'allow list' godtar. Dokument delade före den fixen bär bara sharedWithUserIds och är osynliga för både reglerna och exporten tills de backfillas.",
           "transport": "in-memory return",
           "verified": true
         },
@@ -4738,7 +4738,7 @@
         {
           "from": "svc-social-menu-operations",
           "to": "ds-shared-content",
-          "payload": "skapa delad-meny-dokument + ett mottagningskvitto per vän",
+          "payload": "skapa delad-meny-dokument i shared_content (contentType 'menu') + ett mottagningskvitto per vän. BUT-1775: mottagarlistan skrivs nu även som sharedToUserIds — utan den är den delade menyn både oläsbar och oexporterbar för mottagarna — och sharedByDisplayName/standardtiteln bygger på profilnamnet, inte Auth-kontots namn.",
           "transport": "Firestore write",
           "verified": true
         },
@@ -6806,7 +6806,7 @@
     {
       "id": "flow-eng-1",
       "label": "Automatisk omtaggning",
-      "description": "Tre separata vägar in i samma tagging-motor: en periodisk klient-scheduler, en manuell 'uppdatera alla'-knapp, och en Firestore-kaskad som märker recept som förlegade när global ingrediensdata ändras.",
+      "description": "Tre separata vägar in i samma tagging-motor: en periodisk klient-scheduler, en manuell 'uppdatera alla'-knapp, och en Firestore-kaskad som märker recept som förlegade när global ingrediensdata ändras. BUT-1781 (2026-08-01): kaskadgrenen var i praktiken död — båda triggarna frågade en top-level recipes-collection som inte finns (recept ligger bara under users/{uid}/recipes), vilket ger noll träffar utan felmeddelande. Den läser nu collectionGroup('recipes') med deklarerade COLLECTION_GROUP-index, och markörhanteringen är hopslagen i en lista på båda sidor.",
       "features": [
         "ENG-04",
         "ENG-05",
@@ -6865,7 +6865,7 @@
         {
           "from": "cf-ingredient-props-changed",
           "to": "ds-recipes",
-          "payload": "paginerad batch-update: sätter tagResult.generatorVersion='stale-properties' på alla recept som innehåller ingrediensen (obs: täcker bara ingredients-collectionen — en ändring i fjärrstyrd tag_configs saknar helt en trigger, se RECIPE_PIPELINE.md 'MISSING LINK')",
+          "payload": "paginerad batch-update över collectionGroup('recipes'), dvs. users/{uid}/recipes hos ALLA användare: sätter tagResult.generatorVersion='stale-properties' på varje recept som innehåller ingrediensen. BUT-1781 (2026-08-01): läste tidigare en top-level recipes-collection som aldrig funnits — noll träffar, inget fel, kaskaden var död. Kräver ett COLLECTION_GROUP-index på core.ingredientsNormalized (firestore.indexes.json). BUT-1794 (2026-08-01): frågan matchade inget för ingredienser med å/ä/ö — den sökte på diakritstrippad text medan Dart-sidan sparar originalstavningen. Frågar nu med array-contains-any över BÅDA stavningarna (ingredientMatchVariants i shared/swedish-normalize.ts), eftersom korpusen innehåller båda. 8 av 14 EU-allergener har å/ä/ö i sina svenska namn. Kör med timeoutSeconds 540 + retry:true och en åldersgräns på 1h, så ett avbrott mitt i utrullningen görs om i stället för att tyst lämna resten av recepten med allergentaggar från ingrediensens GAMLA egenskaper. (Obs: täcker bara ingredients-collectionen — en ändring i fjärrstyrd tag_configs saknar helt en trigger, se RECIPE_PIPELINE.md 'MISSING LINK')",
           "transport": "Firestore batch write",
           "verified": true
         },
@@ -6879,14 +6879,14 @@
         {
           "from": "cf-ingredient-soft-deleted",
           "to": "ds-recipes",
-          "payload": "samma kaskad, sätter generatorVersion='stale-ingredient'",
+          "payload": "samma kaskad, samma collectionGroup('recipes')-fråga, samma index, timeout och retry — sätter generatorVersion='stale-ingredient'. Delar även BUT-1794-fixen: samma array-contains-any över båda stavningarna via ingredientMatchVariants",
           "transport": "Firestore batch write",
           "verified": true
         },
         {
           "from": "ds-recipes",
           "to": "svc-retag-scheduler",
-          "payload": "generatorVersion ≠ kTagGeneratorVersion → needsRetagging blir true → plockas upp vid nästa periodiska skanning",
+          "payload": "generatorVersion ≠ kTagGeneratorVersion → needsRetagging blir true → plockas upp vid nästa periodiska skanning. BUT-1781: klientens _needsRetagging (offline_user_storage.dart) kände tidigare bara igen 'stale-ingredient', så egenskapskaskadens 'stale-properties' markerade recept som sedan aldrig taggades om; båda markörerna räknas nu, och samma par ligger i STALE_TAG_MARKERS på serversidan",
           "transport": "client-side omvärdering vid läsning",
           "verified": true
         }
@@ -7092,7 +7092,7 @@
         {
           "from": "cf-cleanup-ingredients",
           "to": "ds-ingredients",
-          "payload": "hårdraderar mjukraderade ingredienser äldre än 30 dagar, måndagar 04:00 UTC",
+          "payload": "hårdraderar mjukraderade ingredienser äldre än 30 dagar, måndagar 04:00 UTC. Samma körning RÄKNAR även recept som väntar på omtaggning — sedan BUT-1781 via collectionGroup('recipes') i stället för en obefintlig top-level collection (rapporterade alltid 0), och över båda markörerna 'stale-ingredient' och 'stale-properties'. Den bara räknar: ingenting här kör om taggningen.",
           "transport": "schemalagd funktion (cron)",
           "verified": true
         },

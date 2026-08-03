@@ -46,6 +46,7 @@ import {
   deleteTagOverridesLog,
   deleteCookSnaps,
   deleteActivityEvents,
+  deleteFeatureRetentionFlags,
   deleteWeeklyMenuPlans,
   deletePantryItems,
   deleteFamilyData,
@@ -194,6 +195,8 @@ export async function runAccountDeletionWithDeps(
     ["tag_overrides_log", () => deleteTagOverridesLog(database, uid)],
     ["cook_snaps", () => deleteCookSnaps(database, uid)],
     ["activity_events", () => deleteActivityEvents(database, uid)],
+    // BUT-1789: one behavioural row per active day, kept forever until now.
+    ["feature_retention", () => deleteFeatureRetentionFlags(database, uid)],
     ["weekly_menu_plans", () => deleteWeeklyMenuPlans(database, uid)],
     ["pantry_items", () => deletePantryItems(database, uid)],
     ["family_data", () => deleteFamilyData(database, uid)],

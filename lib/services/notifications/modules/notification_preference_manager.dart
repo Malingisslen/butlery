@@ -201,65 +201,68 @@ class NotificationPreferenceManager {
     return timeMinutes >= startMinutes && timeMinutes < endMinutes;
   }
 
-  /// Get notification preferences for current user
-  /// Uses caching to avoid repeated Firestore calls and includes offline fallback
+  /// Get notification preferences for current user.
+  ///
+  /// BUT-1782: a transient repository failure used to RESET the user's
+  /// settings. The old inner catch treated every read error as "no document
+  /// exists yet", built [NotificationPreferences.defaults], wrote them back to
+  /// Firestore and then overwrote the local cache with them — so one offline
+  /// read turned an explicit opt-out into opted-in, permanently, on the server.
+  ///
+  /// The premise was wrong twice over: the repository returns `defaults()`
+  /// WITHOUT throwing for a missing document, so the catch was never the
+  /// first-run path to begin with; and the local cache — the one copy that
+  /// still held the real answer — was clobbered before the fallback below could
+  /// read it. A read error now falls back to the local copy and writes nothing.
   Future<NotificationPreferences> getPreferences() async {
-    try {
-      // Return cached preferences if available and not expired
-      if (_cachedPreferences != null && _isCacheValid()) {
-        AppLogger.debug(
-          '📋 Using cached preferences for ${_userId.maskedUserId}',
-        );
-        return _cachedPreferences!;
-      }
-
-      AppLogger.info(
-        '📋 Loading notification preferences for user: ${_userId.maskedUserId}',
+    // Return cached preferences if available and not expired
+    if (_cachedPreferences != null && _isCacheValid()) {
+      AppLogger.debug(
+        '📋 Using cached preferences for ${_userId.maskedUserId}',
       );
+      return _cachedPreferences!;
+    }
 
-      // Try to load from repository first
-      NotificationPreferences preferences;
-      try {
-        preferences = await _notificationsRepository.getNotificationPreferences(
-          _userId,
-        );
-        AppLogger.success('✅ Loaded preferences from repository');
-      } catch (e) {
-        // Create default preferences if none exist
-        preferences = NotificationPreferences.defaults();
-        await _notificationsRepository.updateNotificationPreferences(
-          _userId,
-          preferences,
-        );
-        AppLogger.info('📋 Created default notification preferences');
-      }
+    AppLogger.info(
+      '📋 Loading notification preferences for user: ${_userId.maskedUserId}',
+    );
 
-      // Cache the preferences
-      _cachedPreferences = preferences;
-      _cacheTimestamp = clock.now();
-
-      // Also save to local storage for offline access
-      await _savePreferencesLocally(preferences);
-
-      return preferences;
+    NotificationPreferences preferences;
+    try {
+      preferences = await _notificationsRepository.getNotificationPreferences(
+        _userId,
+      );
+      AppLogger.success('✅ Loaded preferences from repository');
     } catch (e) {
       AppLogger.error(
         '❌ Failed to load notification preferences from Firestore',
         e,
       );
 
-      // Fallback to local storage
+      // Read failure — NOT "the document is absent". Never seed defaults here
+      // and never write: the last known-good copy is the local one.
       final localPrefs = await _loadPreferencesLocally();
       if (localPrefs != null) {
         AppLogger.info('📋 Using local preferences as fallback');
         _cachedPreferences = localPrefs;
+        _cacheTimestamp = clock.now();
         return localPrefs;
       }
 
-      // Final fallback to defaults
+      // Nothing cached locally either: serve defaults for THIS call only.
+      // They are not cached and not persisted, so the next successful read
+      // still wins and no server state was invented from a network blip.
       AppLogger.warning('⚠️ Using default preferences as fallback');
       return NotificationPreferences.defaults();
     }
+
+    _cachedPreferences = preferences;
+    _cacheTimestamp = clock.now();
+
+    // Local mirror for offline access.
+    await _savePreferencesLocally(preferences);
+
+    return preferences;
   }
 
   /// Update notification preferences for current user
@@ -391,10 +394,27 @@ class NotificationPreferenceManager {
       final prefsJson = prefs.getString('notification_preferences_$_userId');
 
       if (prefsJson != null) {
+        // BUT-1799: `tryFromJson`, not `fromJson`. An unusable cached payload
+        // must read as NO cache, never as "the user is on defaults" — the
+        // caller would otherwise cache those defaults and the next toggle
+        // would persist them over the user's real settings. Every existing
+        // user has the literal '{}' in this slot from the old toJson() stub.
+        final cached = NotificationPreferences.tryFromJson(prefsJson);
+        if (cached == null) {
+          AppLogger.warning(
+            '⚠️ Discarding unusable cached preferences for '
+            '${_userId.maskedUserId}',
+          );
+          // Evict it, or the same poisoned payload is re-decoded and re-warned
+          // on every read failure until a successful repository read happens to
+          // overwrite it. Every existing install carries the literal '{}' here.
+          await prefs.remove('notification_preferences_$_userId');
+          return null;
+        }
         AppLogger.debug(
-          '📋 Loaded preferences from local storage for $_userId',
+          '📋 Loaded preferences from local storage for ${_userId.maskedUserId}',
         );
-        return NotificationPreferences.fromJson(prefsJson);
+        return cached;
       }
     } catch (e) {
       AppLogger.warning('⚠️ Failed to load preferences locally: $e');

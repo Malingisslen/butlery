@@ -52,6 +52,15 @@ class RecipeSocialStats {
     return recipes.where((r) => r.id == recipeId).firstOrNull;
   }
 
+  /// The uid whose `users/{uid}/recipes` collection holds this recipe — the
+  /// only place a recipe document exists (BUT-1781). Null when the recipe is
+  /// not in the loaded set, in which case the denormalization is skipped.
+  String? _recipeOwnerId(String recipeId) {
+    final recipe = _getRecipe(recipeId);
+    if (recipe == null) return null;
+    return recipe.socialData?.ownerId ?? recipe.core.createdBy;
+  }
+
   /// Rate a recipe
   Future<bool> rateRecipe({
     required String recipeId,
@@ -79,6 +88,7 @@ class RecipeSocialStats {
       await RatingStatistics.updateRecipeRatingAggregate(
         firestore: _firestoreRepository.firestore,
         recipeId: recipeId,
+        recipeOwnerId: _recipeOwnerId(recipeId),
       );
 
       // Send notification using RatingNotifications
@@ -125,6 +135,7 @@ class RecipeSocialStats {
       await RatingStatistics.updateRecipeRatingAggregate(
         firestore: _firestoreRepository.firestore,
         recipeId: recipeId,
+        recipeOwnerId: _recipeOwnerId(recipeId),
       );
     }
 
@@ -273,6 +284,9 @@ class RecipeSocialStats {
     return RatingStatistics.updateMultipleRatingAggregates(
       firestore: _firestoreRepository.firestore,
       recipeIds: recipeIds,
+      recipeOwnerIds: {
+        for (final recipeId in recipeIds) recipeId: _recipeOwnerId(recipeId),
+      },
     );
   }
 

@@ -26,6 +26,7 @@ lessons that only matter while writing or running tests.
 - "Map the workflows" means full coverage against a stated universe — never silently curate a sample.
 - When citing a deterministic tool's verdict (router tier, gate, test), RUN it and paste output — never assert what it would say.
 - A subagent naming a file as "the X path" proves existence, not routing — read the client orchestrator's tier/fallback structure yourself before asserting what runs first (cost/privacy claims always get direct verification).
+- `curl` is a DIFFERENT CLIENT from the app — its 403/empty page is not your feature failing. Reproduce through the client the feature actually uses (headless browser, real UA, JS on) before reporting a site as blocked, and grep for an existing fallback tier before proposing to build one. A page-classifying probe needs TWO independent markers or it measures the crawler, not the sites (BUT — 2026-08-01 site sweep).
 - A blocked gate is a STOP, not a puzzle to route around — never forge a marker; a marker's mtime proves a touch, so read its CONTENTS against the current diff before trusting a gates:ok.
 - A new source file can land as a git binary blob — verify `file` says "text" before committing.
 - A registry/structural lint that reddens on a given day is usually pointing at that day's DELETION commit, not at itself — date the first red run, `git log -S <symbol>`, and never allowlist a constant to clear a coverage lint.

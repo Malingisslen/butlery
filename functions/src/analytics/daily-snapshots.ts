@@ -3,30 +3,31 @@
  * features on the NON-time-series tabs (Importhälsa, Recept, Parsing,
  * Drift, Feedback). Those tabs render a single "current" number; the
  * delta-arrow + anomaly engine needs a historical daily series to diff
- * against. These five scheduled jobs each write ONE doc per UTC day so a
- * series accumulates over time.
+ * against. These five jobs each write ONE doc per UTC day so a series
+ * accumulates over time.
  *
  * Structurally mirrors `compute-feature-retention.ts`:
- *   - `onSchedule` (region pinned globally to europe-west1 via
- *     `setGlobalOptions` in index.ts — these functions inherit it, same as
- *     every sibling scheduled job; do NOT pin a per-function region here),
- *     `timeZone: "UTC"`.
- *   - A `runX(deps)` test-seam function + a thin `onSchedule` wrapper that
- *     calls it and re-throws on error (so a transient failure retries).
- *   - `logger.info` start/complete with structured fields, try/catch in the
- *     wrapper.
+ *   - A `runX(deps)` test-seam function, called both by the dispatcher and
+ *     directly by tests. There is no `onSchedule` wrapper here any more.
+ *   - `logger.info` start/complete with structured fields.
  *   - Deterministic doc id = the UTC date string → a same-day re-run
  *     OVERWRITES (idempotent via `set()`, never `create()`).
  *
- * Schedules are staggered 05:00–05:40 UTC so they do not collide with the
- * existing 04:00 (`track-retention`) / 04:30 (`compute-feature-retention`)
- * analytics jobs that scan large collections.
+ * All five run as tasks in `dailyAnalytics` at 06:00 UTC — one Cloud Scheduler
+ * job for the whole daily analytics chain instead of one per job. The former
+ * 05:00–05:40 stagger existed to keep large scans off each other; sequential
+ * execution in one chain serves that intent strictly better.
  *
- *   import_health        → 05:00 UTC → analytics/import_health/daily/{date}
- *   recipes              → 05:10 UTC → analytics/recipes/daily/{date}
- *   parsing_corrections  → 05:20 UTC → analytics/parsing_corrections/daily/{date}
- *   ops                  → 05:30 UTC → analytics/ops/daily/{date}
- *   feedback             → 05:40 UTC → analytics/feedback/daily/{date}
+ *   import_health        → analytics/import_health/daily/{date}
+ *   recipes              → analytics/recipes/daily/{date}
+ *   parsing_corrections  → analytics/parsing_corrections/daily/{date}
+ *   ops                  → analytics/ops/daily/{date}
+ *   feedback             → analytics/feedback/daily/{date}
+ *
+ * `ops` runs LATE in the chain: `runOpsSnapshot` reads `system_events` for the
+ * current UTC day and the weekly cleanup jobs that write there still hold
+ * their own schedules (latest 05:00 Sunday). Moving the chain earlier than
+ * 06:00 would silently drop Sunday's cleanup counts.
  *
  * The `analytics/**` tree is admin-read in firestore.rules and written
  * exclusively by the Admin SDK (these functions). No client ever writes here.
@@ -41,7 +42,6 @@
  * instead of a full scan.
  */
 
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
@@ -455,67 +455,14 @@ export async function runFeedbackSnapshot(
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Schedule wrappers — thin delegators, staggered 05:00–05:40 UTC. Each
-// re-throws on error so a transient failure retries (the write is idempotent
-// on the deterministic date-keyed doc, so a retry simply overwrites).
+// No schedule wrappers live here any more. All five snapshots run as tasks
+// inside `dailyAnalytics` (functions/src/scheduled/maintenance-dispatchers.ts),
+// which owns the single Cloud Scheduler job. The run-seams above are the
+// contract — the dispatcher and every test calls them directly.
+//
+// Ordering that matters and is pinned by a test in the dispatcher's suite:
+// `runOpsSnapshot` reads `system_events` for the current UTC day, so it must
+// run after the weekly cleanup jobs that write there (latest: 05:00 Sunday).
+// That is why the chain fires at 06:00 UTC. `runDetectAnomalies` consumes the
+// four other snapshots and runs last.
 // ─────────────────────────────────────────────────────────────────────────
-
-export const snapshotImportHealthDaily = onSchedule(
-  { schedule: "0 5 * * *", timeZone: "UTC" },
-  async () => {
-    try {
-      await runImportHealthSnapshot();
-    } catch (err) {
-      logger.error("import_health_snapshot_failed", { err });
-      throw err;
-    }
-  },
-);
-
-export const snapshotRecipesDaily = onSchedule(
-  { schedule: "10 5 * * *", timeZone: "UTC" },
-  async () => {
-    try {
-      await runRecipeMethodSnapshot();
-    } catch (err) {
-      logger.error("recipe_method_snapshot_failed", { err });
-      throw err;
-    }
-  },
-);
-
-export const snapshotParsingCorrectionsDaily = onSchedule(
-  { schedule: "20 5 * * *", timeZone: "UTC" },
-  async () => {
-    try {
-      await runParsingCorrectionsSnapshot();
-    } catch (err) {
-      logger.error("parsing_corrections_snapshot_failed", { err });
-      throw err;
-    }
-  },
-);
-
-export const snapshotOpsDaily = onSchedule(
-  { schedule: "30 5 * * *", timeZone: "UTC" },
-  async () => {
-    try {
-      await runOpsSnapshot();
-    } catch (err) {
-      logger.error("ops_snapshot_failed", { err });
-      throw err;
-    }
-  },
-);
-
-export const snapshotFeedbackDaily = onSchedule(
-  { schedule: "40 5 * * *", timeZone: "UTC" },
-  async () => {
-    try {
-      await runFeedbackSnapshot();
-    } catch (err) {
-      logger.error("feedback_snapshot_failed", { err });
-      throw err;
-    }
-  },
-);

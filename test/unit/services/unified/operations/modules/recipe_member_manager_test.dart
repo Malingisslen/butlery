@@ -286,6 +286,111 @@ void main() {
       });
     });
 
+    // BUT-1785: group sharees are recorded in socialData.categoryIds, never in
+    // memberPermissions, so the sharing panel's revoke button used to route
+    // them into removeMember and fail 100% of the time.
+    //
+    // Read `RecipeMemberManager.removeGroup`'s own doc before extending these:
+    // removing the category id drops a LABEL and revokes no access, because
+    // access is decided by memberPermissions alone. The assertion below that
+    // memberPermissions survives is pinning THAT — a deliberately incomplete
+    // semantics whose honesty lives in the UI copy
+    // (`recipeSharingRevokeGroupSuccess`), not a claim that the group's members
+    // have lost access. Full revocation is escalated to Malin; it needs
+    // group-vs-direct provenance that no document currently records.
+    group('Group Access Removal', () {
+      Recipe recipeSharedWithGroups(List<String> categoryIds) => Recipe(
+        core: testCollaborativeRecipe.core,
+        type: testCollaborativeRecipe.type,
+        socialData: RecipeSocialData(
+          ownerId: 'user_123',
+          ownerDisplayName: 'Recipe Owner',
+          memberPermissions: {'user_456': ResourcePermission.editor},
+          categoryIds: categoryIds,
+        ),
+      );
+
+      test('removes the group id from categoryIds and persists', () async {
+        mockParentService.setRecipeState(
+          currentUserId: 'user_123',
+          recipes: [
+            recipeSharedWithGroups(['group_a', 'group_b']),
+          ],
+        );
+        when(
+          () => mockParentService.updateRecipe(any()),
+        ).thenAnswer((_) async => true);
+
+        final success = await memberManager.removeGroup(
+          recipeId: 'collab_1',
+          groupId: 'group_a',
+        );
+
+        expect(success, isTrue);
+        final captured = verify(
+          () => mockParentService.updateRecipe(captureAny()),
+        ).captured;
+        final updatedRecipe = captured.first as Recipe;
+        expect(updatedRecipe.socialData?.categoryIds, ['group_b']);
+        // Individually-shared friends are untouched — they stay revocable
+        // one by one in the same panel.
+        expect(
+          updatedRecipe.socialData?.memberPermissions?.keys,
+          contains('user_456'),
+        );
+      });
+
+      test('fails without persisting when the group is not shared', () async {
+        mockParentService.setRecipeState(
+          currentUserId: 'user_123',
+          recipes: [
+            recipeSharedWithGroups(['group_a']),
+          ],
+        );
+
+        final success = await memberManager.removeGroup(
+          recipeId: 'collab_1',
+          groupId: 'group_zzz',
+        );
+
+        expect(success, isFalse);
+        verifyNever(() => mockParentService.updateRecipe(any()));
+      });
+
+      test('fails for a non-owner who cannot manage members', () async {
+        mockParentService.setRecipeState(
+          currentUserId: 'user_456',
+          recipes: [
+            recipeSharedWithGroups(['group_a']),
+          ],
+        );
+
+        final success = await memberManager.removeGroup(
+          recipeId: 'collab_1',
+          groupId: 'group_a',
+        );
+
+        expect(success, isFalse);
+        verifyNever(() => mockParentService.updateRecipe(any()));
+      });
+
+      test('a group id sent to removeMember still fails (the bug)', () async {
+        mockParentService.setRecipeState(
+          currentUserId: 'user_123',
+          recipes: [
+            recipeSharedWithGroups(['group_a']),
+          ],
+        );
+
+        final success = await memberManager.removeMember(
+          recipeId: 'collab_1',
+          memberId: 'group_a',
+        );
+
+        expect(success, isFalse);
+      });
+    });
+
     group('Permission Updates', () {
       test('should update member permission successfully', () async {
         when(

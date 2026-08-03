@@ -105,7 +105,7 @@ not a decided call. Before treating an entry as prior human approval, check `git
 deviation files, and check whether the entry it argues by analogy from actually records a human
 override of its own.
 
-### [Privacy/GDPR] The conversations export keeps other participants' display names but strips their avatar URLs (BUT-1772)
+### [Privacy/GDPR] The conversations export keeps other participants' display names and read timestamps, strips their avatar URLs and notification settings (BUT-1772 / BUT-1774 / BUT-1775)
 **Decided by Malin, 2026-07-30.** The `messages` Article-15 section exports each conversation's
 whole document as `conversation_info`, which carries every other participant's raw UID, the
 `participantDisplayNames` map, `lastReadTimestamps`, and the embedded `lastMessage` (its
@@ -135,8 +135,95 @@ Do **not** file "third-party PII — must redact participant names/UIDs from the
 export" against this path; that is the decided call. Do not file "strip the requester's own
 avatar" either — withholding the subject's own data is the opposite failure.
 
-**Scope note, so this entry does not read as broader than it is:** it governs `conversation_info`
-and the message rows under it, and nothing else.
+**Scope note:** it governs `conversation_info`, the message rows under it, and — since **BUT-1775**,
+which is this same decision applied consistently rather than a reopening of it — the
+`shared_recipes_received` / `shared_menus_received` rows, whose `shared_content` documents carry
+`sharedByAvatarUrl`: when a friend shares a recipe with you, their profile-picture URL landed
+verbatim in your bundle three sections below the one that had just been fixed. All three sites now
+go through ONE helper (`_dropAvatarUnlessOwn`), because a second copy of the logic is exactly how
+two sections implementing one verdict drift apart. Nothing else is governed.
+
+**Extended 2026-08-01 (BUT-1798).** `shared_shopping_lists_received` was added to the export the
+same day and routes through that same helper, so the avatar strip now covers all three
+`shared_content` content types. Still one helper, for the same reason.
+
+### [Privacy/GDPR] The `shared_content` export keeps other recipients' UIDs and the sharer's display name (BUT-1798)
+
+**Malin's explicit call, 2026-08-01**, taken on its own merits and NOT by analogy.
+
+**What she was shown**, for one row: the other recipients' UID list, the sharer's
+`sharedByDisplayName`, the shared item's title, the share timestamp, and `sharedByAvatarUrl`
+already stripped by the entry above. She chose to keep the UIDs and the name.
+
+**Reasoning.** The requester's own client can already read every one of these documents under
+`firestore.rules` :720-728 — they are in `sharedToUserIds`, which is what grants the read. So the
+export discloses nothing the app does not already hand them. Stripping the sharer's name would
+leave an opaque UID and fail Art. 12(1) intelligibility, the same argument that carried BUT-1772.
+Scoped to rows where the requester is a RECIPIENT.
+
+**Both spellings are named deliberately.** The writers emit the same recipient list twice, as
+`sharedToUserIds` and `sharedWithUserIds`. An entry naming only one invites a future reviewer to
+strip the other "for consistency" and call it a tidy-up.
+
+**Explicitly not derived from BUT-1732 or BUT-1772.** BUT-1732 decided a different collection and
+DROPPED other members' display names; BUT-1772 decided conversation participants. Citing either as
+authority for this question is the exact error the BUT-1732 entry records having made, and this
+entry exists partly so nobody repeats it.
+
+### [Privacy/GDPR] Inside a shared shopping list's nested copy, other members' names are stripped (BUT-1798)
+
+**Malin's explicit call, 2026-08-01.**
+
+A shopping-list share embeds a whole copy of the sender's list under `listData`, so the section's
+top-level avatar strip never reached inside it. That nested copy carries `memberPermissions` keyed
+by uid, `ownerId` / `ownerDisplayName`, `lastActivityByUserId` / `lastActivityByDisplayName`, and —
+per item — three uid + displayName pairs (`addedBy`, `purchasedBy`, `lastModifiedBy`).
+
+**Verdict:** other members' UIDs and permission levels are KEPT; their display names are STRIPPED;
+the requester's own name is KEPT so they can recognise their own entries.
+
+**Why this follows BUT-1732 and not the entry directly above it.** This is the same class of data
+seen from the same angle — a shopping list controlled by someone else — which is precisely what
+BUT-1732 decided. The entry above governs the sharer's single name on the wrapper document, not a
+roster of everyone who ever touched the list. The asymmetry between the two is the decision, not an
+oversight; do not "harmonise" them.
+
+The walk fails CLOSED: a display-name field whose paired uid field is missing or unrecognised is
+dropped rather than passed through.
+
+**Correction, same sprint — the MENU half of that sentence was not true when it was written.**
+BUT-1775 shipped the redaction on `shared_menus_received` and this record asserted a leak there as
+fact, but `exportSharedMenusReceived` was reading the top-level `menus` collection filtered on
+`sharedToUserIds` — a field `SharedMenu.toFirestore()` does not emit, on documents that never carry
+`sharedByAvatarUrl` either. Real shared menus are `shared_content` documents with
+`contentType: 'menu'`. So the section had never returned a single row: nothing leaked, and nothing
+was redacted. The query is now repointed at `shared_content`, which makes the claim above true
+going forward and closes an Article-15 gap (shared menus were missing from the bundle entirely) —
+but the record must not read as though the redaction had ever fired. This is the wrong-path-read
+class in `.claude/rules/lessons-digest.md`: a syntactically perfect query against a collection or
+field nothing writes throws nothing and returns empty, and an empty export section looks normal.
+
+**Related, found in the same pass:** `shared_content` carried membership under TWO field names —
+`sharedToUserIds` (written by `BaseSharedContentRepository`, and the only spelling
+`firestore.rules`' recipient branch at :722/:727 recognises) and `sharedWithUserIds` (written
+directly by `recipe_sharing_manager.dart`, `social_menu_operations.dart` and
+`shopping_social_share_module.dart`). Documents written the second way were unreadable by their own
+recipients — a recipient's `list` is evaluated against `sharedToUserIds` and denied — and therefore
+unexportable. All three direct writers now emit both fields; the export reads the rules-sanctioned
+one. Documents written before that fix carry only `sharedWithUserIds` and no client query can reach
+them at all; a backfill, not an export change, is the remedy.
+
+**Same sweep, BUT-1775's side-finding:** both writers of those documents
+(`recipe_sharing_manager.dart`, `social_menu_operations.dart`) took the name from
+`PermissionService.currentUser`, which is synthesized straight from `FirebaseAuth.currentUser` —
+the legal name on the user's Google/Apple account. Both now use `UserService.profileDisplayName`
+(the BUT-1705/BUT-1736 class): the profile name is what `on-profile-updated.ts` renames and what
+account deletion scrubs, so an Auth-sourced stamp on a document every recipient reads would be
+both unconsented and un-erasable. **The default MENU TITLE (`menuDefaultTitle`) was left behind in
+that pass and is now fixed too** — it reads as content rather than attribution, which is exactly why
+it was missed, but it is persisted on the same document, rendered to every recipient, exported
+verbatim, and `on-profile-updated.ts` does not rename titles, so it was the one copy neither the
+rename propagator nor the deletion cascade could ever reach.
 
 **Status changed 2026-07-30 (same day):** when this entry was first written the section had NO
 production effect — the export read `conversations/{id}/messages`, a subcollection with no `match`
@@ -149,22 +236,30 @@ verdict is live rather than unit-level only. Each message row carries its own
 `senderDisplayName` and `senderAvatarUrl`, and the rule applies there too: `_dropOtherSenderAvatar`
 strips another sender's avatar from every row and fails closed on an unrecognised shape.
 
-**Fields this entry deliberately does NOT decide, listed so the record cannot be read as
-exhaustive:** the conversation document's key set is not `ConversationDto.toFirestore()` — the
-mutation module writes `perUserSettings.<uid>.<key>` by dot-path, and the DTO reads back only the
-current user's sub-map, so the raw export would carry every other participant's `isMuted`,
-`isPinned`, `isArchived`, `pinnedAt` and `archivedAt`. That is third-party BEHAVIOURAL data and the
-keep argument above does not reach it — the client never renders another user's sub-map, so "you
-have already seen it in the app" is false for it. Escalated to Malin as **BUT-1774**, undecided.
+**The two fields this entry left open are now decided — DIFFERENTLY (BUT-1774, Malin,
+2026-07-30).** The conversation document's key set is not `ConversationDto.toFirestore()`: the
+mutation module writes `perUserSettings.<uid>.<key>` by dot-path
+(`conversation_mutation_module.dart:416-441`) while the DTO reads back only the current user's
+sub-map, so the raw export would carry every other participant's `isMuted`, `isPinned`,
+`isArchived`, `pinnedAt` and `archivedAt`.
 
-Because BUT-1767 turned this section from a hard failure into a shipping one, "undecided" would
-otherwise have silently become "shipped". **Pending BUT-1774 the export narrows `perUserSettings`
-to the requester's OWN entry** — the conservative default, not a verdict, and reversible in one
-line. Nothing Art. 15 owes the requester is withheld: another member's mute/pin/archive state says
-nothing about the requester. Pinned by a unit test in `social_export_manager_test.dart`.
-Also kept and not separately argued: `lastReadTimestamps`, `lastMessage.reactions` (emoji → uids)
-and poll `metadata.options[].voterIds` — all uids, so covered by the same balance as the
-participant ids, but named here rather than left implicit.
+- **`perUserSettings` for other participants is STRIPPED.** It is pure third-party behavioural
+  data that the client never renders for anyone but yourself, so the argument that carried the
+  display names — "the requester has seen this on screen every time they opened the thread" — is
+  simply false for it. Nothing Art. 15 owes the requester is withheld: another member's
+  mute/pin/archive state says nothing about the requester.
+- **`lastReadTimestamps` is KEPT.** Zero hits in `lib/views/` and `lib/widgets/`, so it is not
+  rendered either — but the app already shows *that* someone read your message via
+  `MessageStatus.read` in `message_status_widget.dart`, just not the clock time, and the timestamp
+  describes the thread's progression as much as the other person. Weak but real counterpart, and
+  it sits inside the requester's own thread history. **Do not propose stripping it "for
+  consistency" — the asymmetry between these two fields is the verdict.**
+
+The line is drawn where it does the most good and the least harm. Both halves are pinned by unit
+tests in `social_export_manager_test.dart`, in both directions, so neither "strip more" nor "ship
+more" can drift in unnoticed. Also kept and not separately argued: `lastMessage.reactions`
+(emoji → uids) and poll `metadata.options[].voterIds` — all uids, so covered by the same balance
+as the participant ids, but named here rather than left implicit.
 
 **Fail-closed, by construction:** an unrecognised shape for either redacted field drops that field
 wholesale and sets `redaction_fell_back: true`, rather than falling through to the untouched copy.
@@ -383,3 +478,25 @@ stem, so "potatismjöl" swallowed "Mjöl", "bovetemjöl" swallowed "Vete" and "m
 FREE. Rescued rows are therefore exempt from the CONTAINMENT branch in both directions, but not
 from exact-name dedup ("Råg:" still collapses into "2 dl råg"). Do not "simplify" that back to one
 exemption flag covering the whole loop.
+
+### [Privacy/GDPR] Feature-retention DAILY AGGREGATES keep a deleted user's contribution; the per-user rows are erased (BUT-1789)
+`compute-feature-retention.ts` writes two things per run. The per-user-per-day rows,
+`analytics/feature_retention/users/{uid}_{yyyy-mm-dd}`, carry a live uid and a behavioural
+profile of that person's day (cooked / imported / shared / meal-planned / shopped) — those
+are personal data, and **as of BUT-1789 the deletion cascade erases them**
+(`deleteFeatureRetentionFlags`, tier 1, with a matching `probeResidualData` leg on the same
+`userId == uid` handle). The daily aggregates, `analytics/feature_retention/daily/{date}`,
+are **NOT touched and are NOT recomputed** when an account is erased: the counts a deleted
+user contributed stay in every historical `dau` / `wau7d` / `wau28d` figure.
+**Why:** an aggregate row holds five integers and a date. It carries no uid, no pseudonymous
+key and nothing that singles anyone out — there is no personal data left in it to erase, so
+Article 17 does not reach it, and the trailing-window rollups shed the user naturally within
+28 days as the window advances. Recomputing history instead would mean re-reading every
+deleted user's rows to subtract them — the exact documents Article 17 just required us to
+destroy — or rewriting up to 28 aggregate docs per deletion for a number nobody can attribute
+to a person. The residual is deliberate, not a gap in the cascade.
+**Also decided here: NO TTL on the per-user rows.** They live in the subcollection
+`analytics/feature_retention/users`, whose collectionGroup id is `users` — the same id as the
+top-level profile collection — so a TTL fieldOverride on that collectionGroup would arm a
+delete policy over real user documents. The cascade step is the only safe erasure route here;
+a TTL must not be proposed as a "simpler" substitute. — 2026-08-01

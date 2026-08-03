@@ -84,10 +84,12 @@ class CollaborativeShoppingOperations {
     required String listId,
     required String userId,
     required SharedListPermission permission,
+    required UnifiedShoppingList viewedBase,
   }) => members.updateMemberPermission(
     listId: listId,
     userId: userId,
     permission: permission,
+    viewedBase: viewedBase,
   );
   Map<String, SharedListPermission> getListMembers(String listId) =>
       members.getListMembers(listId);

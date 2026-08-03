@@ -63,6 +63,7 @@ class ShoppingListOperations {
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
     Function(String) onSuccess,
+    Function(String) onError,
   ) async {
     final name = await DialogFactory.showTextInput(
       context,
@@ -72,9 +73,19 @@ class ShoppingListOperations {
       required: true,
     );
 
-    if (name != null && name.isNotEmpty) {
-      await viewModel.createPersonalList(name);
-      if (context.mounted) onSuccess(context.l10n.shoppingListCreated(name));
+    if (name == null || name.isEmpty) return;
+
+    // BUT-1784: the bool is load-bearing, exactly as in the sibling dialogs
+    // below. `createPersonalList` returns false for a refused write as well as
+    // for a name the validator rejects, and discarding it announced "Lista
+    // skapad" over a list that does not exist — the user then hunts for it in a
+    // list picker that never shows it.
+    final created = await viewModel.createPersonalList(name);
+    if (!context.mounted) return;
+    if (created) {
+      onSuccess(context.l10n.shoppingListCreated(name));
+    } else {
+      onError(context.l10n.shoppingCouldNotCreateOrSelectList);
     }
   }
 

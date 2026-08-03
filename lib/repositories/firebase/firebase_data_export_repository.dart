@@ -397,32 +397,78 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     return results;
   }
 
-  /// Top-level `shared_content` where contentType == recipe AND
-  /// `sharedWithUserIds arrayContains userId` — recipes shared TO the user.
+  /// One `shared_content` leg: `contentType == [contentType]` AND the caller is
+  /// a recipient.
+  ///
+  /// BUT-1775 follow-up. Membership was written under TWO spellings inside this
+  /// one collection — `sharedToUserIds` (BaseSharedContentRepository, and the
+  /// only one `firestore.rules`' `allow list` recognises, :722) and
+  /// `sharedWithUserIds` (the direct writers in recipe_sharing_manager /
+  /// social_menu_operations / shopping_social_share_module). Those writers now
+  /// emit BOTH, and this query stays on the rules-sanctioned one: a query
+  /// filtered on `sharedWithUserIds` is refused by the list rule for every
+  /// recipient, which would fail the whole section rather than return the rows.
+  ///
+  /// Documents shared BEFORE that writer fix carry only `sharedWithUserIds` and
+  /// are invisible here — they are equally invisible to the rules, so no client
+  /// query can reach them; a backfill is the only remedy and is not this call's
+  /// job.
+  Query<Map<String, dynamic>> _sharedContentReceivedQuery(
+    String userId,
+    String contentType,
+  ) => firestore
+      .collection(FirestoreCollections.sharedContent)
+      .where('contentType', isEqualTo: contentType)
+      .where('sharedToUserIds', arrayContains: userId);
+
+  /// `shared_content` where contentType == recipe and the user is a recipient.
   Future<List<Map<String, dynamic>>> exportSharedRecipesReceived(
     String userId, {
     int maxDocuments = 1000,
   }) => _queryList(
-    firestore
-        .collection(FirestoreCollections.sharedContent)
-        .where('contentType', isEqualTo: 'recipe')
-        .where('sharedWithUserIds', arrayContains: userId),
+    _sharedContentReceivedQuery(userId, 'recipe'),
     userId,
     ExportResourceType.sharedContent,
     limit: maxDocuments,
   );
 
-  /// Top-level `menus` where `sharedToUserIds arrayContains userId` —
-  /// menus shared TO the user.
+  /// `shared_content` where contentType == menu and the user is a recipient.
+  ///
+  /// NOT the top-level `menus` collection, which this read used to target:
+  /// `SharedMenu.toFirestore()` emits neither `sharedToUserIds` nor
+  /// `sharedByAvatarUrl`, and its only two writers (`menu_storage.saveMenu`,
+  /// `UnifiedMenuService.saveMenu`) pass `sharedToUserIds: []` into a factory
+  /// that never serialises it. So the old query matched zero documents and
+  /// `shared_menus_received` had never once carried a row — an Art. 15 gap
+  /// dressed as an empty section. Menus actually shared land in
+  /// `shared_content` with `contentType: 'menu'` (BUT-1775).
   Future<List<Map<String, dynamic>>> exportSharedMenusReceived(
     String userId, {
     int maxDocuments = 500,
   }) => _queryList(
-    firestore
-        .collection(FirestoreCollections.menus)
-        .where('sharedToUserIds', arrayContains: userId),
+    _sharedContentReceivedQuery(userId, 'menu'),
     userId,
-    ExportResourceType.menus,
+    ExportResourceType.sharedContent,
+    limit: maxDocuments,
+  );
+
+  /// `shared_content` where contentType == shopping_list and the user is a
+  /// recipient.
+  ///
+  /// BUT-1798. `shopping_social_share_module` has always written this third
+  /// `contentType`, readable by the recipient under `firestore.rules` :720-728,
+  /// and nothing exported it. `exportSharedShoppingLists*` is NOT coverage —
+  /// those read `unified_shared_shopping_lists`, a different collection with a
+  /// different provenance (a list you were made a MEMBER of, rather than one a
+  /// friend sent you a copy of). Both sections ship, under distinct keys, so
+  /// the bundle stays intelligible under Art. 12(1).
+  Future<List<Map<String, dynamic>>> exportSharedShoppingListsReceived(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    _sharedContentReceivedQuery(userId, 'shopping_list'),
+    userId,
+    ExportResourceType.sharedContent,
     limit: maxDocuments,
   );
 

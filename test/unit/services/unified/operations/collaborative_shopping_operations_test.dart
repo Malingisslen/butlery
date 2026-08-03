@@ -676,6 +676,7 @@ void main() {
           listId: 'collab_list_1',
           userId: 'user_456',
           permission: SharedListPermission.admin,
+          viewedBase: testCollaborativeList,
         );
 
         // Assert
@@ -755,6 +756,7 @@ void main() {
             listId: 'collab_list_1',
             userId: 'user_456',
             permission: SharedListPermission.admin,
+            viewedBase: testCollaborativeList,
           );
 
           final [updated, base] = membershipCalls.single;
@@ -796,6 +798,7 @@ void main() {
               listId: 'collab_list_1',
               userId: 'user_456',
               permission: SharedListPermission.admin,
+              viewedBase: testCollaborativeList,
             ),
             isFalse,
           );
@@ -810,6 +813,121 @@ void main() {
             userId: 'user_456',
           );
           verifyNever(() => mockParentService.updateList(any()));
+        });
+      });
+
+      // BUT-1777, the BUT-1726 remainder. The drift refusal lives in the
+      // repository and compares the DECLARED base against the stored copy — but
+      // this operation declared the freshly-read live copy, so both sides of
+      // that comparison were the same read and it could never fire. A dropdown
+      // in a dialog opened minutes ago was replayed against membership the user
+      // had never seen.
+      group('BUT-1777 a permission change is judged against the viewed copy', () {
+        late List<List<UnifiedShoppingList>> membershipCalls;
+
+        setUp(() {
+          membershipCalls = [];
+          when(
+            () => mockParentService.updateSharedListMembership(any(), any()),
+          ).thenAnswer((invocation) async {
+            membershipCalls.add([
+              invocation.positionalArguments[0] as UnifiedShoppingList,
+              invocation.positionalArguments[1] as UnifiedShoppingList,
+            ]);
+            return true;
+          });
+        });
+
+        test(
+          'the declared base is the caller\'s copy, not the live one',
+          () async {
+            // What the dialog rendered: a membership that still has a member the
+            // live stream copy has since lost track of.
+            final viewed = testCollaborativeList.copyWith(
+              memberPermissions: {
+                ...testCollaborativeList.memberPermissions,
+                'user_999': SharedListPermission.view,
+              },
+            );
+
+            await operations.updateMemberPermission(
+              listId: 'collab_list_1',
+              userId: 'user_456',
+              permission: SharedListPermission.admin,
+              viewedBase: viewed,
+            );
+
+            final [updated, base] = membershipCalls.single;
+            expect(
+              base.memberPermissions.keys,
+              contains('user_999'),
+              reason:
+                  'the base has to be the copy the user reasoned from, or the '
+                  'repository compares the live read against itself and every '
+                  'drift check passes vacuously',
+            );
+            expect(
+              updated.memberPermissions.keys,
+              isNot(contains('user_999')),
+              reason:
+                  'the payload is still computed from the live copy, so a stale '
+                  'view cannot resurrect content the server dropped',
+            );
+            expect(
+              updated.memberPermissions['user_456'],
+              SharedListPermission.admin,
+            );
+          },
+        );
+
+        test('a member the stored copy no longer has is refused', () async {
+          // The owner removed user_456 on another device while this dialog sat
+          // open. `{...members, userId: permission}` against the live copy would
+          // not CHANGE a permission — it would re-grant access to somebody who
+          // was removed.
+          mockParentService.setShoppingState(
+            collaborativeLists: [
+              testCollaborativeList.copyWith(
+                memberPermissions: {
+                  'user_123': SharedListPermission.admin,
+                  'user_789': SharedListPermission.view,
+                },
+              ),
+              testSharedList,
+            ],
+            personalLists: [testPersonalList],
+            currentUserId: 'user_123',
+            currentUserDisplayName: 'Test User',
+          );
+
+          final result = await operations.updateMemberPermission(
+            listId: 'collab_list_1',
+            userId: 'user_456',
+            permission: SharedListPermission.admin,
+            viewedBase: testCollaborativeList,
+          );
+
+          expect(result, isFalse);
+          expect(
+            membershipCalls,
+            isEmpty,
+            reason: 'nothing may be written for a member who is not there',
+          );
+        });
+
+        test('the same call still writes while the member IS there', () async {
+          // Fail-closed control for the test above: identical arguments, only
+          // the stored membership differs, so the refusal cannot be coming from
+          // the permission stubs or the base plumbing.
+          final result = await operations.updateMemberPermission(
+            listId: 'collab_list_1',
+            userId: 'user_456',
+            permission: SharedListPermission.admin,
+            viewedBase: testCollaborativeList,
+          );
+
+          expect(result, isTrue);
+          expect(membershipCalls, hasLength(1));
         });
       });
 

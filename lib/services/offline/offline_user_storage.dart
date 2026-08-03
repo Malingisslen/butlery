@@ -93,12 +93,31 @@ class OfflineUserStorage {
   }
 
   /// H9: Check if a recipe needs retagging based on its tagResult.
+  ///
+  /// The marker set must stay in sync with every PRODUCER that writes one —
+  /// the two ingredient cascades AND the bulk-retag drain callable, which is
+  /// where `outdated` comes from. "Cascade" alone under-described the list
+  /// it heads.
+  /// `stale-properties` (written by `on-ingredient-properties-changed.ts`) was
+  /// missing: those recipes were marked and then never retagged, and the
+  /// `coverage == 0.0` fallback does not rescue them because the existing
+  /// tagResult keeps its coverage. That cascade exists to keep ALLERGEN data
+  /// current when an ingredient's properties change, so the silently-skipped
+  /// recipes were the allergen-relevant ones. It was dormant only because the
+  /// cascade's query read a collection that does not exist (BUT-1781).
   bool _needsRetagging(TagResult tagResult) {
     // Check for explicit failure markers
     final version = tagResult.generatorVersion;
     if (version == 'failed' ||
         version == 'pending' ||
-        version == 'stale-ingredient') {
+        version == 'stale-ingredient' ||
+        version == 'stale-properties' ||
+        // Written by the bulk-retag drain callable. `STALE_TAG_MARKERS` in
+        // cleanup-deleted-ingredients.ts names all three and says this list is
+        // its counterpart — so omitting it made that comment false. The online
+        // path catches it anyway via TagResult's version-mismatch branch; this
+        // is the offline enqueue, which matches on the literal.
+        version == 'outdated') {
       return true;
     }
 

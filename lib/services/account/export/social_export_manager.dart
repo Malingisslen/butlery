@@ -3,6 +3,7 @@
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
+import 'package:butlery/services/account/export/social_export_redaction.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson;
 
@@ -12,7 +13,7 @@ import 'package:butlery/services/account/export/export_pagination_helper.dart'
 /// BUT-501 (closed): All direct Firestore reads route through
 /// [FirebaseDataExportRepository] which enforces `validateOwnership`
 /// defence-in-depth on top of Firestore rules.
-class SocialExportManager {
+class SocialExportManager with SocialExportRedaction {
   final FirebaseDataExportRepository? _exportRepo;
   static const String _logTag = 'SocialExportManager';
 
@@ -122,38 +123,26 @@ class SocialExportManager {
   }
 
   /// [source] with every OTHER participant's avatar URL removed — the map entry
-  /// and the copy embedded in `lastMessage`. Names, user ids, read timestamps
-  /// and message content are deliberately kept.
+  /// and the copy embedded in `lastMessage` — and `perUserSettings` narrowed to
+  /// the requester's own entry. Names, user ids, `lastReadTimestamps` and
+  /// message content are deliberately kept.
   ///
-  /// BUT-1772, Malin's call 2026-07-30. This is the OPPOSITE redaction to
-  /// [SharedShoppingListExport], which strips names and keeps ids, and the
-  /// asymmetry is the decision rather than an oversight: a shopping row's
-  /// cached `addedByDisplayName` is a denormalised copy of a profile that the
-  /// paired `*UserId` makes redundant, while a conversation stripped of names
-  /// is a list of opaque uids that fails Art. 12(1)'s "intelligible" limb. An
-  /// avatar URL is different in kind from a name — a durable, directly
-  /// dereferenceable pointer to another person's photograph, which survives in
-  /// any file this bundle is forwarded to and keeps resolving after they leave
-  /// the thread or delete their account — and it buys the requester nothing.
+  /// This is the OPPOSITE redaction to [SharedShoppingListExport], which strips
+  /// names and keeps ids, and the asymmetry is the decision rather than an
+  /// oversight: a shopping row's cached `addedByDisplayName` is a denormalised
+  /// copy of a profile that the paired `*UserId` makes redundant, while a
+  /// conversation stripped of names is a list of opaque uids that fails
+  /// Art. 12(1)'s "intelligible" limb.
   ///
-  /// The requester's OWN avatar stays. Withholding the subject's own data is
-  /// the opposite failure to the one this guards against.
-  ///
-  /// BUT-1767 repointed the message query at the collection production actually
-  /// writes, so each message row now arrives carrying its own
-  /// `senderAvatarUrl`. [_dropOtherSenderAvatar] applies the same rule to every
-  /// row; this method covers the conversation document only.
-  ///
-  /// `perUserSettings` is narrowed to the requester's OWN entry, and that is
-  /// NOT the BUT-1772 decision — BUT-1772 governs names and avatars only, and
-  /// explicitly leaves this field to BUT-1774. Until that verdict exists the
-  /// default has to be the conservative one: while the section was failing
-  /// (`messages-export-failed`) nothing shipped, and BUT-1767 making it succeed
-  /// must not silently promote undecided third-party data into a downloadable
-  /// file. Another member's mute / pin / archive state says nothing about the
-  /// requester, so nothing is withheld that Art. 15 owes them. Reversible in
-  /// one line if BUT-1774 decides the other way.
-  Map<String, dynamic> _dropOtherPeoplesAvatars(
+  /// BUT-1774 (Malin, 2026-07-30) closed the two fields BUT-1772 had left open,
+  /// and split them: another member's `perUserSettings` — mute / pin / archive —
+  /// is pure third-party behaviour the client never renders for anyone but
+  /// yourself, so "you have already seen it in the app" is false for it and it
+  /// GOES. `lastReadTimestamps` STAYS: it sits inside the requester's own thread
+  /// history and has a weak but real counterpart in what the app already shows
+  /// (`MessageStatus.read` displays *that* a message was read, just not when).
+  /// Do not "tidy up" by stripping it too — that is the decided keep.
+  Map<String, dynamic> _redactOtherParticipants(
     Map<String, dynamic> source,
     String userId,
   ) {
@@ -179,8 +168,7 @@ class SocialExportManager {
       }
     }
 
-    // Same fail-closed shape, for the field BUT-1772 deliberately did NOT
-    // decide (BUT-1774).
+    // Same fail-closed shape, for the field BUT-1774 decided goes.
     final settings = copy['perUserSettings'];
     if (settings != null) {
       if (settings is Map) {
@@ -199,11 +187,12 @@ class SocialExportManager {
     final lastMessage = copy['lastMessage'];
     if (lastMessage != null) {
       if (lastMessage is Map) {
-        if (lastMessage['senderId'] != userId) {
-          copy['lastMessage'] = Map<String, dynamic>.from(
-            lastMessage.cast<String, dynamic>(),
-          )..remove('senderAvatarUrl');
-        }
+        copy['lastMessage'] = dropAvatarUnlessOwn(
+          Map<String, dynamic>.from(lastMessage.cast<String, dynamic>()),
+          ownerIdField: 'senderId',
+          avatarField: 'senderAvatarUrl',
+          userId: userId,
+        );
       } else {
         copy.remove('lastMessage');
         copy['redaction_fell_back'] = true;
@@ -211,26 +200,6 @@ class SocialExportManager {
     }
 
     return copy;
-  }
-
-  /// One message row with ANOTHER participant's `senderAvatarUrl` removed.
-  ///
-  /// The per-row half of the BUT-1772 decision, which governs the whole
-  /// conversation section and not just the conversation document: names and
-  /// uids stay (a thread of opaque ids fails Art. 12(1)'s "intelligible"
-  /// limb), the durable pointer to someone else's photograph goes. The
-  /// requester's own rows keep their own avatar — withholding the subject's
-  /// own data is the opposite failure.
-  ///
-  /// FAILS CLOSED on a row with no recognisable `senderId`: an unrecognised
-  /// shape is treated as somebody else's and stripped, never passed through
-  /// while the section's `data_minimisation` line claims otherwise.
-  Map<String, dynamic> _dropOtherSenderAvatar(
-    Map<String, dynamic> message,
-    String userId,
-  ) {
-    if (message['senderId'] == userId) return message;
-    return Map<String, dynamic>.from(message)..remove('senderAvatarUrl');
   }
 
   /// Export all conversations and messages
@@ -272,9 +241,14 @@ class SocialExportManager {
           // conversation's `participantIds`), so the second limb was always
           // false and every received message was dropped — a filter on a
           // non-existent field throws nothing and reads as deliberate scoping.
-          final messageData = _dropOtherSenderAvatar(
+          //
+          // BUT-1772's per-row half: names and uids stay, the durable pointer
+          // to someone else's photograph goes.
+          final messageData = dropAvatarUnlessOwn(
             sanitizeForJson(msg['data']) as Map<String, dynamic>,
-            userId,
+            ownerIdField: 'senderId',
+            avatarField: 'senderAvatarUrl',
+            userId: userId,
           );
           messagesList.add({
             'message_id': msg['id'],
@@ -284,7 +258,7 @@ class SocialExportManager {
 
         final conversationData = <String, dynamic>{
           'conversation_id': convo['id'],
-          'conversation_info': _dropOtherPeoplesAvatars(
+          'conversation_info': _redactOtherParticipants(
             sanitizeForJson(convo['data']) as Map<String, dynamic>,
             userId,
           ),
@@ -308,12 +282,15 @@ class SocialExportManager {
       // enumerated: the sibling section shipped a positive list that named four
       // of six fields and thereby made the bundle state something false about
       // itself, and this document carries more than the obvious keeps —
-      // `lastReadTimestamps`, `reactions`, poll `voterIds` and `perUserSettings`
-      // among them (BUT-1774 asks Malin about the last of those). A list that
-      // must stay exhaustive to stay true is a list that will stop being true.
+      // `lastReadTimestamps`, `reactions` and poll `voterIds` among them. A list
+      // that must stay exhaustive to stay true is a list that will stop being
+      // true. Both drops are named because BUT-1774 made `perUserSettings` a
+      // decided removal; a bundle that redacts silently states something false.
       messagesData['data_minimisation'] =
-          "Other participants' profile pictures have been removed. Everything "
-          'else this conversation held is kept as it was stored.';
+          "Other participants' profile pictures have been removed, as have "
+          'their own notification settings for this conversation (muted, '
+          'pinned, archived). Everything else this conversation held is kept '
+          'as it was stored.';
 
       return messagesData;
     } catch (e) {
@@ -328,6 +305,7 @@ class SocialExportManager {
       final sharedData = <String, dynamic>{
         'shared_recipes_received': [],
         'shared_menus_received': [],
+        'shared_shopping_lists_received': [],
       };
       // BUT-1698: both legs are probed independently and the section is
       // truncated when either clipped.
@@ -339,7 +317,7 @@ class SocialExportManager {
       for (final entry in sharedRecipes.items) {
         sharedData['shared_recipes_received'].add({
           'share_id': entry['id'],
-          'data': sanitizeForJson(entry['data']),
+          'data': dropSharerAvatar(entry, userId),
         });
       }
 
@@ -351,7 +329,28 @@ class SocialExportManager {
       for (final entry in sharedMenus.items) {
         sharedData['shared_menus_received'].add({
           'menu_id': entry['id'],
-          'data': sanitizeForJson(entry['data']),
+          'data': dropSharerAvatar(entry, userId),
+        });
+      }
+
+      // BUT-1798: the third contentType this collection has always carried and
+      // nothing exported. Distinct key from `shared_shopping_lists_*` (which
+      // read `unified_shared_shopping_lists`) so the two provenances stay
+      // tellable apart in the bundle.
+      final sharedLists = await ExportPaginationHelper.fetchCapped(
+        type: 'shopping_lists',
+        fetch: (max) => _exports.exportSharedShoppingListsReceived(
+          userId,
+          maxDocuments: max,
+        ),
+      );
+      for (final entry in sharedLists.items) {
+        sharedData['shared_shopping_lists_received'].add({
+          'share_id': entry['id'],
+          'data': dropOtherMembersNamesInListData(
+            dropSharerAvatar(entry, userId),
+            userId,
+          ),
         });
       }
 
@@ -359,9 +358,27 @@ class SocialExportManager {
           sharedData['shared_recipes_received'].length;
       sharedData['total_shared_menus'] =
           sharedData['shared_menus_received'].length;
-      if (sharedRecipes.truncated || sharedMenus.truncated) {
+      sharedData['total_shared_shopping_lists'] =
+          sharedData['shared_shopping_lists_received'].length;
+      if (sharedRecipes.truncated ||
+          sharedMenus.truncated ||
+          sharedLists.truncated) {
         sharedData['truncated'] = true;
       }
+
+      // Section level, matching the conversations section, and stating the drop
+      // only — see the note there on why the keep side is never enumerated.
+      sharedData['data_minimisation'] =
+          'The profile picture of whoever shared each item has been removed. '
+          'In shared shopping lists, the names of other members have also been '
+          'removed — from the list itself and from each item, including who '
+          'added, bought or last changed it. Your own name is kept so you can '
+          'recognise your entries. Everything else these shares held is kept '
+          'as it was stored.';
+      sharedData['provenance'] =
+          'shared_shopping_lists_received holds lists a friend sent you a copy '
+          'of. Lists you were made a member of are in the '
+          'shared_shopping_lists sections elsewhere in this export.';
 
       return sharedData;
     } catch (e) {

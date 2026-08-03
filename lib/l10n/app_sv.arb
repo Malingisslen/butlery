@@ -8780,6 +8780,7 @@
   "recipeSharingStopAllConfirm": "Är du säker på att du vill sluta dela med alla?",
   "recipeSharingStopAllSuccess": "Delning avslutad med alla",
   "recipeSharingRevoke": "Ta bort delning",
+  "recipeSharingRemoveGroup": "Ta bort gruppen",
   "recipeSharingRevokeConfirm": "Sluta dela med {name}?",
   "@recipeSharingRevokeConfirm": {
     "placeholders": {
@@ -8790,6 +8791,23 @@
   },
   "recipeSharingRevokeSuccess": "Delning med {name} avslutad",
   "@recipeSharingRevokeSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSharingRevokeGroupConfirm": "Ta bort gruppen {name} från delningen?",
+  "@recipeSharingRevokeGroupConfirm": {
+    "description": "BUT-1785: a group revoke removes the group LABEL only. Every member keeps access until revoked individually, so the copy must not promise a revocation.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSharingRevokeGroupSuccess": "Gruppen {name} borttagen. Medlemmarna har fortfarande åtkomst — ta bort dem en och en under Vänner.",
+  "@recipeSharingRevokeGroupSuccess": {
     "placeholders": {
       "name": {
         "type": "String"
@@ -9844,6 +9862,7 @@
   "duplicateMergeSaveAsNew": "Spara som nytt",
   "duplicateMergeBestFields": "Slå ihop bästa fält",
   "duplicateMergeSuccess": "Receptet har sammanfogats",
+  "duplicateMergeFailed": "Kunde inte sammanfoga receptet",
   "duplicateMergeNoTime": "Ingen tid",
   "duplicateMergeMinutes": "{minutes} min",
   "@duplicateMergeMinutes": {

@@ -151,10 +151,24 @@ class ListMemberOperations {
     }
   }
 
+  /// BUT-1777: [viewedBase] is the copy of the list the CALLER rendered its
+  /// permission UI from — not the live stream copy.
+  ///
+  /// BUT-1726 put the drift refusal in the repository, but this operation
+  /// declared the freshly-read live copy as its own base, so base and stored
+  /// were two reads of the same document and `_accessControlDrift` could never
+  /// find anything: every permission change was replayed against membership the
+  /// user had never seen. Unlike add (which only ever contributes a new key) and
+  /// remove (whose no-op case is harmless), a permission change is written as
+  /// `{...members, userId: permission}` — against a live copy that has lost the
+  /// member, that is not a change at all but a silent RE-GRANT of access the
+  /// owner revoked elsewhere. Hence both halves here: the base states what the
+  /// user was looking at, and the member has to still be there.
   Future<bool> updateMemberPermission({
     required String listId,
     required String userId,
     required SharedListPermission permission,
+    required UnifiedShoppingList viewedBase,
   }) async {
     _beginMutation();
     final list = _lifecycleOps.getListById(listId);
@@ -176,6 +190,16 @@ class ListMemberOperations {
       return false;
     }
 
+    // Fail closed rather than let a dropdown re-seat somebody: the stored copy
+    // is the authority on who is currently a member, and a permission change
+    // for a non-member is an ADD wearing a change's clothes.
+    if (!list.memberPermissions.containsKey(userId)) {
+      AppLogger.error(
+        'Cannot update permission: user is no longer a member of ${list.name}',
+      );
+      return false;
+    }
+
     try {
       final updatedPermissions = {
         ...list.memberPermissions,
@@ -187,7 +211,7 @@ class ListMemberOperations {
         updatedAt: clock.now(),
       );
 
-      if (!await _updateMembership(updatedList, list)) {
+      if (!await _updateMembership(updatedList, viewedBase)) {
         AppLogger.error('Permission change rejected for ${list.name}');
         return false;
       }

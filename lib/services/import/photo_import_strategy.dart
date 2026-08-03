@@ -427,7 +427,12 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       }
 
       // Add OCR method warning if using fallback
-      if (ocrResult.processingMethod != 'ocr_space') {
+      // `on_device` is a PRIMARY provider, not a fallback — it runs first by
+      // design — so reaching it says nothing about the paid chain's health.
+      // Without this it would be reported as "primary unavailable" on the
+      // normal path once the on-device tier is enabled.
+      const primaryMethods = {'ocr_space', 'on_device'};
+      if (!primaryMethods.contains(ocrResult.processingMethod)) {
         warnings.add(
           'Used ${ocrResult.processingMethod} OCR provider (primary unavailable).',
         );

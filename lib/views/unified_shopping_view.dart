@@ -435,6 +435,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
       context,
       _viewModel,
       _showSuccessSnackBar,
+      _showErrorSnackBar,
     );
   }
 

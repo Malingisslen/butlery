@@ -20,6 +20,9 @@ class OCRUsageTracker {
   DateTime? _lastRequestDate;
   DateTime? _monthStartDate;
   final Map<String, int> _providerUsage = {
+    'on_device': 0,
+    'on_device_rejected': 0,
+    'on_device_error': 0,
     'ocr_space': 0,
     'google_vision': 0,
     'tesseract': 0,
@@ -34,7 +37,8 @@ class OCRUsageTracker {
   static const int freeMonthlyLimit = 500;
   static const double _warningThreshold = 0.8; // 80% of limit
 
-  // Cost per call in USD (tesseract is free, on-device)
+  // Cost per call in USD. The on-device tier and tesseract (self-hosted, no
+  // per-call fee) are absent on purpose — only billable providers belong here.
   static const double _ocrSpaceCostPerCall = 0.01;
   static const double _googleVisionCostPerCall = 0.05;
 
@@ -103,9 +107,27 @@ class OCRUsageTracker {
       _monthStartDate = now;
     }
 
-    // Increment counters
-    _dailyRequestCount++;
-    _monthlyRequestCount++;
+    // Increment counters. EVERY tier-0 outcome is excluded from the request
+    // counters, not just the two failure ones: those counters are measured
+    // against [freeMonthlyLimit], a limit derived from PAID pricing, and an
+    // on-device read never leaves the device.
+    //
+    // The success key `on_device` was originally missing here, which was the
+    // dominant case rather than an edge — tier 0 ACCEPTING the page is the
+    // whole point of the feature. Roughly 500 free reads then drove
+    // `remaining` to zero and made `getUsageWarnings()` say "Exceeded monthly
+    // limit" while `_estimateMonthlyCost()` correctly reported $0.00. The cost
+    // half stayed right and the quota half went wrong, which is what made it
+    // easy to miss.
+    const freeTierOutcomes = {
+      'on_device',
+      'on_device_rejected',
+      'on_device_error',
+    };
+    if (!freeTierOutcomes.contains(provider)) {
+      _dailyRequestCount++;
+      _monthlyRequestCount++;
+    }
     _providerUsage[provider] = (_providerUsage[provider] ?? 0) + 1;
 
     _persistDaily();

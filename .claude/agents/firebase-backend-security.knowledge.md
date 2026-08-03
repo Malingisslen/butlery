@@ -323,6 +323,52 @@ personal→collaborative leg only.
   one-audit-row-per-export decision is argued in three places from "rows 3..30 would be rejected by
   `rateLimitWrite('audit_logs', 2)`", which is false. The Art. 30 argument (the processing activity
   is the REQUEST, not each read) stands on its own; the rules claim must go.
+- **Moving a denied client write into a callable moves the whole document behind an Admin-SDK
+  read, so every distinguishable RESPONSE becomes an oracle for a doc the caller cannot read.**
+  A callable is not covered by `firestore.rules`: `not-found` vs a business refusal vs an
+  idempotent success each disclose something. `leaveGroupConversation` (BUT-1788) judges
+  "target == caller" BEFORE any membership test — correct for idempotency, but it means a
+  non-member self-leave returns `{removed:false, remainingParticipants:N}`, i.e. existence AND
+  size of any conversation whose id you can guess; direct-conversation ids are deterministic
+  (`direct_{sortedUidA}_{sortedUidB}`) and uids come from profile search, so "do A and B have a
+  DM" becomes a query. Rule for any client-write→callable migration: enumerate the response set
+  (each `HttpsError` code + each success shape) and ask what a caller who is NOT a participant
+  learns; disclose no counts on the no-op branch, and prefer collapsing "not a member" into the
+  same error as "does not exist". **CLOSED 2026-08-01**: one gate placed before ANY
+  shape-revealing branch (`if (!snap.exists || !participantIds.includes(callerUid)) return
+  {removed:false, remaining:0}`) collapses missing / not-a-member / already-left into one reply,
+  and it needs a PAIRED positive test (a real member still gets the true count) or it passes on a
+  function that always returns 0. **THE PRICE OF THAT GATE (2026-08-01): it also swallows "the
+  callable is reading the wrong path" as a SUCCESS.** `!snap.exists` now means the same as
+  "already left", so a callable pointed at a doc the client writes elsewhere returns
+  `success:true` and the caller reports a completed leave (Butlery's `ConversationsViewModel.
+  leaveGroup` even fires `logGroupLeft`) while nothing was written — a loud failure traded for an
+  invisible one. Whenever a no-oracle gate merges a not-found branch into success, prove the doc
+  EXISTS on the path the callable reads by tracing the real writer (not the ticket's premise), and
+  make the no-op branch still perform whatever cleanup is the CALLER'S OWN data (their membership
+  mirrors), which discloses nothing and is the only part a wrong-path call can still get right.
+  **The CLIENT half is the one that actually ships the lie, and it is a separate review item
+  (verified 2026-08-01, BUT-1781 fileset).** A migration diff that keeps the repository signature
+  `Future<void>` cannot honour `removed` no matter how correct the CF is: Butlery's
+  `ConversationMutationModule.removeParticipant` `await`s the callable, discards
+  `{success, removed, remainingParticipants}` and logs `'✅ Removed participant …'`, so every merged
+  branch — doc absent because `createGroupConversation` wrote `users/{uid}/conversations` via the
+  `UserScoped` `createFn` while the CF reads top-level, caller not a member, already left — reaches
+  the user as a completed leave. Fixed check on any client-write→callable migration: read the
+  RETURN TYPE at every layer of the caller chain (module → repository → service → VM) and require
+  the no-op to be distinguishable; `Future<void>` at any layer means the response contract is
+  unreachable and the guard is decorative.
+- **The SECOND half of that migration: a field the CREATE rule binds is not bound at CALL time.**
+  A callable that reads an admin identity off the document (`metadata.creatorId`) inherits only
+  the constraint the UPDATE rule still enforces. Butlery's `conversations` update rule
+  (`firestore.rules:1532-1535`) forbids exactly `participantIds` + `createdAt`, so any
+  participant may rewrite `metadata` — and `leaveGroupConversation`'s "only the group admin may
+  remove others" becomes "any member who first writes one field". A create-time binding is only
+  trustworthy to a create-TIME reader (`enforceGroupMinorMembership`, an onDocumentCreated
+  trigger, is fine). Fixed check whenever a CF derives authorization from document data: open
+  the collection's UPDATE rule and confirm that exact field path is immutable
+  (`request.resource.data.metadata.get('creatorId',null) == resource.data.metadata.get(...)`),
+  or resolve the identity from a path the client cannot write at all.
 - Cross-user point-reads rely on rules alone (a client pre-check needs the same read); still
   call `logPermissionCheck` on both branches — `validateReadPermission` would be circular.
 - Accepting a social/share request must verify `caller==request.toUserId` at the accept
@@ -371,7 +417,30 @@ personal→collaborative leg only.
   grep `firestore.rules` for the path. No rule block ⇒ nothing writes there (default-deny), so a
   cascade or export aimed at it is dead. Same for the `probeResidualData` canary list — a
   collection missing from it can no-op for months in silence. **The other half of the same
-  shape error is the WRONG NESTING LEVEL**: `deleteUserSubcollections` sweeps
+  shape error is the WRONG NESTING LEVEL**: the sharpest in-repo generator of it is
+  `UserScopedFirebaseRepository`, which silently repoints `create`/`read`/`update` at
+  `users/{uid}/<collectionName>` while every hand-written `firestore.collection(collectionName)`
+  call and every query in the SAME module hits the TOP-LEVEL collection of the same name.
+  `FirebaseMessagingRepository` mixes it in with `collectionName == 'conversations'`, so
+  `createGroupConversation`/`addParticipants`/`updateConversation` (which go through `createFn`/
+  `readFn`/`updateFn`) write and read the creator's private subtree, while
+  `createDirectConversation`, `deleteConversation`, `updateConversationUserSettings`, the
+  `arrayContains` stream and the new `leaveGroupConversation` CF all use top-level
+  `conversations/{id}` — so a doc created by one half is `not-found` to the other. Whenever a
+  module mixes hand-built refs with base-class CRUD, resolve `getCollectionRef()` for that class
+  before believing any path claim, and re-check any CF written to "fix" such a path.
+  **Traced end-to-end 2026-08-01 (BUT-1788 re-review), and the trace is the reusable move:** a
+  top-level GROUP conversation doc is born only in `MessageMutationModule.sendMessage`, whose
+  `batch.set(conversations/{id}, ConversationDto.toFirestore(...), merge:true)` copies the
+  creator's private subtree copy up — and `createGroupConversation` never gets there because the
+  `Message.system` it sends (`senderId:'system'`) fails its own `isParticipant` check and throws.
+  So the doc the `leaveGroupConversation` CF reads does not exist until the CREATOR sends a chat
+  message. Lesson: when a ticket's premise is "the RULE denies this write", confirm the write even
+  REACHES the collection the rule guards — here the client write lands in the private subtree
+  where the owner is allowed, so both the ticket's diagnosis and the CF's target were derived from
+  a path the operation never touched. Follow the writer chain to a `.set(`/`.update(`, never to a
+  constant.
+  Second half of the same shape error: `deleteUserSubcollections` sweeps
   `users/{uid}/user_shared_shopping_lists` and `.../user_shared_menus`, but the app writes both
   as TOP-LEVEL trees `user_shared_shopping_lists/{uid}/received_lists/{id}` — the only shape
   `firestore.rules` grants — so those inbox rows (carrying `sharedByUserId` +
@@ -508,6 +577,24 @@ personal→collaborative leg only.
   and as of 2026-07-31 it is in NO cascade step, NO `probeResidualData` entry, NO TTL job and NO
   deviation entry (OPEN). Whenever a diff flips a metric from structurally-zero to real signal,
   grep the sink collection in `account-deletion-cascade.ts` before passing it.
+  **Two more shapes of the same pair failure, both found 2026-08-01 on `shared_content`.**
+  (a) **A COMPATIBILITY DUPLICATE of a membership array is a new PII copy and a new erasure
+  surface.** Butlery writes recipient uids under two spellings in one collection —
+  `sharedToUserIds` (what `firestore.rules`' `allow list` grants on, what the cascade's
+  `removeFromSharedContent` `arrayRemove`s, what the export now reads) and `sharedWithUserIds`
+  (the three direct writers). Teaching the writers to emit BOTH fixes the read grant and the
+  export in one move and silently doubles the residual: nothing scrubs the second spelling, and
+  the scrub that does exist DISCOVERS its docs via `collectionGroup('members').where('userId')`,
+  a subcollection the direct writers never create — so neither copy is erasable on those docs.
+  When a diff adds a second spelling of an existing field, extend the scrub's FIELD LIST and its
+  DISCOVERY QUERY and the residual probe in the same change, or the duplicate is pure liability.
+  (b) **A shared multi-type collection needs the export to enumerate every discriminator value.**
+  Repointing the recipe and menu legs at `shared_content` left `contentType == 'shopping_list'`
+  (written by `shopping_social_share_module`, carrying a whole `listData` snapshot plus the
+  sharer's avatar URL) read by no export leg at all — and the sibling `SharedShoppingListExport`
+  looks like coverage but reads a DIFFERENT collection (`unified_shared_shopping_lists`). Whenever
+  an export query filters on a type discriminator, list the discriminator's full value set from
+  the writers and account for each one.
 - A pure `users/{uid}/*` subcollection is cheapest to get right: erase = one entry in a generic
   subcollection sweep, export = one whole-doc read of the same subcollection, nothing to
   keep in sync field-by-field. A residual probe that `count()`s the PARENT collection is blind to
@@ -528,6 +615,18 @@ personal→collaborative leg only.
   `auth.deleteUser` unconditionally after the cascade, so the account is gone and the ONLY retry is
   a human running `functions/src/admin/reset-user-data.ts` — nothing alerts on the failed run.
   Prefer strict/loud anyway, but say what the recovery actually is.
+- **A row authored by a SYNTHETIC identity ("system", "bot") that names a real person in FREE TEXT
+  is invisible to every cascade, because every cascade is keyed on an id field.** `deleteMessages`
+  anonymizes `messages where senderId == uid` and tombstones `lastMessage` only when
+  `lastMessage.senderId == uid`; a departure/join notice written by a CF as
+  `{senderId:"system", content:"<Name> har lämnat gruppen"}` matches neither, so the name outlives
+  erasure in the message row AND in the `conversations.lastMessage` copy that
+  `syncConversationLastMessage` makes of it (BUT-1788). Note the trap that hides this class: the
+  same rows attempted CLIENT-side were always denied (`messages` create demands
+  `auth.uid == senderId`), so moving an operation to the Admin SDK can make a long-dead PII write
+  start landing. Any CF-authored row that embeds a display name needs an erasure HANDLE at write
+  time — an id field the cascade can query (`metadata.subjectUserId`) plus a cascade step and a
+  probe entry — or must not embed the name at all.
 - Cross-user cascade mutations stage their audit-log entry in the SAME batch as the mutation.
 - Denormalized author/sharer PII travels in FIELD GROUPS (`sharedBy*`, `authorName*`,
   `lastActivityBy*`) — tombstoning one field on deletion requires clearing every field sharing
@@ -666,6 +765,17 @@ personal→collaborative leg only.
   null means a consent-withdrawal write that nulls it silently FAILS to erase (merge never
   touches an absent key) — that write needs a full `set()` (no merge), after the same
   permission-check chain, and only where no peer-owned field would be clobbered by the replace.
+- **A local-cache PARSER that returns `defaults()` for an unusable payload destroys the caller's
+  only way to say "no cache".** The pattern the fix needs is fail-toward-NULL: Butlery's
+  BUT-1782/BUT-1799 repair correctly stopped `getPreferences()` from seeding + PERSISTING defaults
+  on a read error, but `NotificationPreferences.fromJson` maps a legacy `'{}'` (which the previous
+  stub `toJson()` wrote for every user, so it is in everyone's `SharedPreferences` today) to
+  `defaults()`, and `_loadPreferencesLocally` hands that back as a non-null cache hit. The fallback
+  then serves and CACHES factory settings, and the settings view writes the whole object back on
+  the next toggle — the server reset the ticket set out to prevent, one tap further away. Two
+  checks on any "never invent state from a network blip" fix: follow the fallback's own loader to
+  the parser and require an unusable payload to be indistinguishable from an absent one (null,
+  not a populated default), and grep for the LEGACY on-disk shape the previous version wrote.
 
 ### Age gating & minors (server-authoritative — protected category)
 - Swedish legal floor is **15** (Dataskyddslagen 2 kap. 4§, information-society + social

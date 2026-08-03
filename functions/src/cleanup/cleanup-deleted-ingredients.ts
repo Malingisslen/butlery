@@ -127,27 +127,56 @@ async function hardDeleteOldIngredients(
 }
 
 /**
+ * Every `generatorVersion` value that means "this recipe still needs retagging".
+ *
+ * ONE list, because there are two producers and three consumers and they had
+ * already drifted: `on-ingredient-soft-deleted.ts` writes `stale-ingredient`
+ * and `on-ingredient-properties-changed.ts` writes `stale-properties`, but this
+ * monitor counted only the first, so the second was invisible to the very
+ * dashboard meant to catch it. Keep in sync with `_needsRetagging` in
+ * `lib/services/offline/offline_user_storage.dart` — the Dart side is what
+ * actually re-runs the tagger.
+ */
+const STALE_TAG_MARKERS = [
+  "stale-ingredient",
+  "stale-properties",
+  // Written by the bulk-retag drain callable. Without it the monitor reads 0
+  // the moment an operator drains, while N recipes still await a client
+  // retag — it would certify success for an action that only moved the marker.
+  "outdated",
+] as const;
+
+/** Count recipes carrying any stale marker, across every user's subcollection. */
+async function countByMarkers(
+  db: admin.firestore.Firestore,
+  markers: readonly string[]
+): Promise<number> {
+  const counts = await Promise.all(
+    markers.map((marker) =>
+      db
+        .collectionGroup("recipes")
+        .where("core.tagResult.generatorVersion", "==", marker)
+        .count()
+        .get()
+        .then((snap) => snap.data().count)
+    )
+  );
+  return counts.reduce((total, n) => total + n, 0);
+}
+
+/**
  * Count recipes that have stale ingredient tags.
- * These recipes have generatorVersion='stale-ingredient' or 'failed'.
+ *
+ * BUT-1781: recipes live ONLY at users/{uid}/recipes/{recipeId}; the previous
+ * collection-scoped read hit a top-level `recipes` collection that does not
+ * exist, so this monitor always reported 0. The COLLECTION_GROUP index for
+ * core.tagResult.generatorVersion is declared in firestore.indexes.json.
  */
 async function countStaleRecipes(
   db: admin.firestore.Firestore
 ): Promise<number> {
-  // Count recipes with stale-ingredient marker
-  const staleSnapshot = await db
-    .collection("recipes")
-    .where("core.tagResult.generatorVersion", "==", "stale-ingredient")
-    .count()
-    .get();
-
-  const failedSnapshot = await db
-    .collection("recipes")
-    .where("core.tagResult.generatorVersion", "==", "failed")
-    .count()
-    .get();
-
-  const staleCount = staleSnapshot.data().count;
-  const failedCount = failedSnapshot.data().count;
+  const staleCount = await countByMarkers(db, STALE_TAG_MARKERS);
+  const failedCount = await countByMarkers(db, ["failed"]);
 
   if (staleCount > 0 || failedCount > 0) {
     logger.warn(
@@ -175,18 +204,11 @@ export const getDeletedIngredientStats = onCall(
         .count()
         .get();
 
-      // Count recipes with stale tags
-      const staleRecipesSnapshot = await db
-        .collection("recipes")
-        .where("core.tagResult.generatorVersion", "==", "stale-ingredient")
-        .count()
-        .get();
-
-      const failedRecipesSnapshot = await db
-        .collection("recipes")
-        .where("core.tagResult.generatorVersion", "==", "failed")
-        .count()
-        .get();
+      // Count recipes with stale tags. Collection-group scoped: recipes live
+      // under users/{uid}/recipes, never at the root (BUT-1781). Both stale
+      // markers, not just the soft-delete one — see STALE_TAG_MARKERS.
+      const staleRecipesCount = await countByMarkers(db, STALE_TAG_MARKERS);
+      const failedRecipesCount = await countByMarkers(db, ["failed"]);
 
       // Get oldest soft-deleted ingredient
       const oldestSnapshot = await db
@@ -204,8 +226,8 @@ export const getDeletedIngredientStats = onCall(
 
       return {
         softDeletedCount: deletedSnapshot.data().count,
-        staleRecipesCount: staleRecipesSnapshot.data().count,
-        failedRecipesCount: failedRecipesSnapshot.data().count,
+        staleRecipesCount,
+        failedRecipesCount,
         oldestDeletedAt,
         gracePeriodDays: SOFT_DELETE_GRACE_PERIOD_DAYS,
       };

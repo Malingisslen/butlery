@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -572,33 +573,109 @@ class RecipeSharingManager {
       // Ensure owner is included in sharedWithUserIds along with members
       final allUserIds = {currentUserId, ...memberIds}.toList();
 
-      await _firestoreRepository
+      final sharedContentRef = _firestoreRepository
           .collection(FirestoreCollections.sharedContent)
-          .doc(recipeId)
-          .set({
-            'contentType': 'recipe',
-            'recipeId': recipeId,
-            'title': recipeTitle,
-            'description': recipeData.description ?? '',
-            'sharedByUserId': currentUserId,
-            'sharedByDisplayName':
-                permissionService.currentUser?.displayName ?? 'Unknown',
-            'sharedByAvatarUrl': permissionService.currentUser?.avatarUrl,
-            'sharedWithUserIds': allUserIds,
-            'sharedAt': FieldValue.serverTimestamp(),
-            'isActive': true,
-            'imageUrl': recipeData.imageUrls?.isNotEmpty == true
-                ? recipeData.imageUrls.first
-                : null,
-            'mealType': recipeData.mealType ?? '',
-          }, SetOptions(merge: true));
+          .doc(recipeId);
+      // Re-sharing the same recipe is an UPDATE, and `firestore.rules` :733
+      // guards it with `cannotModify([... , 'sharedAt'])`. A resolved
+      // serverTimestamp NEVER equals the stored one, so stamping it
+      // unconditionally put `sharedAt` in `affectedKeys()` and the rules engine
+      // refused the WHOLE write — silently, because the catch below only warns.
+      // Every share after the first therefore added nobody to
+      // `sharedToUserIds`, which is exactly the field the recipient's `allow
+      // list` grant and their Art. 15 bundle depend on. Create-only stamping is
+      // also the correct semantics: `sharedAt` is when the recipe was first
+      // shared, and the create rule's `hasRequiredFields` still gets it.
+      //
+      // The probe must fail OPEN toward "new". `firestore.rules` :723 dereferences
+      // `resource.data.sharedByUserId` in `allow get`, and on a document that does
+      // not exist `resource` is null — so the very FIRST share of a recipe gets
+      // PERMISSION_DENIED here, the catch below swallows it, and the row is never
+      // created. That is the exact failure create-only stamping exists to prevent,
+      // just moved one line up. `fake_cloud_firestore` evaluates no rules, so no
+      // unit test can PROVOKE the denial — but the catch is reachable by
+      // injecting one through the constructor's `firestoreRepository` seam, and
+      // `recipe_sharing_manager_test.dart` does exactly that.
+      //
+      // Do NOT "fix" this in the rules by adding `resource == null` to `allow get`:
+      // today not-found and not-yours are indistinguishable, and separating them
+      // would turn shared_content into an existence oracle over recipeIds.
+      //
+      // A DENIED probe is not always the first-share case, and the other case
+      // cannot be rescued here. `allow get` (:724) passes for the sharer, a
+      // shared member, or anyone in `sharedToUserIds`; `allow update` (:733)
+      // passes only for the sharer or a shared member. So a denied read PROVES
+      // both update predicates are false — if the document already exists and
+      // belongs to someone else, no payload we send can be written, with or
+      // without `sharedAt`. Re-sharing a recipe another user already wrote to
+      // `shared_content` therefore does not add our recipients to
+      // `sharedToUserIds`, and they get neither the read grant nor the Art. 15
+      // row. That is BUT-1812, not something a retry can paper over.
+      var isNew = true;
+      try {
+        isNew = !(await sharedContentRef.get()).exists;
+      } on FirebaseException catch (e) {
+        if (e.code != 'permission-denied') rethrow;
+        AppLogger.debug(
+          'shared_content probe denied for $recipeId — treating as new; if the '
+          'document exists and is another user\'s, the write below cannot '
+          'succeed under any payload (BUT-1812)',
+        );
+      }
+
+      final payload = <String, dynamic>{
+        'contentType': 'recipe',
+        'recipeId': recipeId,
+        'title': recipeTitle,
+        'description': recipeData.description.orEmpty(),
+        'sharedByUserId': currentUserId,
+        // BUT-1775, applying BUT-1705/BUT-1736: `profileDisplayName`, NOT
+        // `permissionService.currentUser`. The latter is built straight from
+        // the Firebase Auth user, so it stamps the legal name on the
+        // requester's Google/Apple account — never chosen for display, not
+        // what `on-profile-updated.ts` propagates, and not what account
+        // deletion scrubs. This value is persisted on a document every group
+        // member reads and lands verbatim in their GDPR export, so an
+        // Auth-sourced stamp would be both unconsented and un-erasable.
+        //
+        // `tryGet` keeps the module working before/without the service
+        // graph; an unresolved name stamps the localized unknown-user
+        // label, never an Auth-sourced one.
+        'sharedByDisplayName':
+            ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
+            AppLocale.current.displayUnknownUser,
+        'sharedByAvatarUrl': permissionService.currentUser?.avatarUrl,
+        'sharedWithUserIds': allUserIds,
+        // Same list under the OTHER spelling this one collection uses.
+        // `firestore.rules` :722/:727 grants recipient read on
+        // `sharedToUserIds` and nothing else, and it is what
+        // `BaseSharedContentRepository` and the GDPR export both speak;
+        // writing only `sharedWithUserIds` made every recipient's list
+        // query permission-denied and kept these rows out of their Art. 15
+        // bundle. Both are written until the readers are consolidated.
+        // Pre-existing rows still need the one-off backfill.
+        'sharedToUserIds': allUserIds,
+        'isActive': true,
+        'imageUrl': recipeData.imageUrls?.isNotEmpty == true
+            ? recipeData.imageUrls.first
+            : null,
+        'mealType': recipeData.mealType.orEmpty(),
+      };
+      if (isNew) {
+        payload['sharedAt'] = FieldValue.serverTimestamp();
+      }
+
+      await sharedContentRef.set(payload, SetOptions(merge: true));
 
       AppLogger.debug(
         '✅ Recipe written to shared_content collection for group discovery',
       );
     } catch (e) {
-      AppLogger.warning('Failed to write to shared_content collection: $e');
-      // Don't fail the whole sharing operation if this fails
+      // Deliberately non-fatal — the recipe itself is already shared. Logged at
+      // ERROR, not warning: a failure here is invisible to the user and costs
+      // the recipient their read grant and their Art. 15 row, so it must not
+      // sink below the noise floor the way the sharedAt denial did.
+      AppLogger.error('Failed to write to shared_content collection', e);
     }
   }
 }

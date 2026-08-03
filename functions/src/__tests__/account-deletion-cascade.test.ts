@@ -95,17 +95,33 @@ interface FakeRef {
   collection(name: string): FakeSubcollection;
 }
 
+interface FakeQuerySnapshot {
+  empty: boolean;
+  size: number;
+  docs: { ref: FakeRef; id: string; data: () => DocData }[];
+}
+
 interface FakeSubcollection {
-  get(): Promise<{
-    empty: boolean;
-    size: number;
-    docs: { ref: FakeRef; id: string; data: () => DocData }[];
-  }>;
+  get(): Promise<FakeQuerySnapshot>;
   doc(id: string): FakeRef;
+  /**
+   * BUT-1789: a FILTERED read of a subcollection. The top-level `collection()`
+   * matcher below cannot serve this — it only ever considers 2-segment paths,
+   * so `analytics/feature_retention/users` (a 3-segment prefix) is invisible to
+   * it, which is precisely the shape of collection the cascade had never swept.
+   */
+  where(field: string, op: string, value: unknown): { get(): Promise<FakeQuerySnapshot> };
 }
 
 class FakeFirestore {
   private docs = new Map<string, DocData>();
+  /**
+   * Every path a batch WROTE to. The fake's applyUpdate returns silently on a
+   * missing doc, where a real `batch.update` throws grpc 5 and poison-pills the
+   * whole chunk — so "was it written before it was deleted?" is invisible
+   * unless the writes are recorded.
+   */
+  readonly updatedPaths: string[] = [];
 
   set(path: string, data: DocData): void {
     this.docs.set(path, data);
@@ -154,21 +170,34 @@ class FakeFirestore {
       // Subcollections are real in Firestore and NOT deleted with their parent
       // — the whole point of the orphan findings this suite now covers. The
       // stub models them as deeper slash-separated keys.
-      collection: (name: string): FakeSubcollection => ({
-        get: async () => {
-          const paths = this.pathsUnder(`${path}/${name}`);
-          return {
-            empty: paths.length === 0,
-            size: paths.length,
-            docs: paths.map((p) => ({
-              ref: this.makeRef(p),
-              id: p.split("/").pop() as string,
-              data: () => this.docs.get(p) as DocData,
-            })),
-          };
-        },
-        doc: (id: string) => this.makeRef(`${path}/${name}/${id}`),
-      }),
+      collection: (name: string): FakeSubcollection => {
+        const snapshotOf = (paths: string[]): FakeQuerySnapshot => ({
+          empty: paths.length === 0,
+          size: paths.length,
+          docs: paths.map((p) => ({
+            ref: this.makeRef(p),
+            id: p.split("/").pop() as string,
+            data: () => this.docs.get(p) as DocData,
+          })),
+        });
+        return {
+          get: async () => snapshotOf(this.pathsUnder(`${path}/${name}`)),
+          doc: (id: string) => this.makeRef(`${path}/${name}/${id}`),
+          where: (field: string, op: string, value: unknown) => ({
+            get: async () =>
+              snapshotOf(
+                this.pathsUnder(`${path}/${name}`).filter((p) => {
+                  const fieldVal = (this.docs.get(p) as DocData)[field];
+                  if (op === "==") return fieldVal === value;
+                  if (op === "array-contains") {
+                    return Array.isArray(fieldVal) && fieldVal.includes(value);
+                  }
+                  return false;
+                }),
+              ),
+          }),
+        };
+      },
     };
   }
 
@@ -196,6 +225,21 @@ class FakeFirestore {
     this.docs.set(path, next);
   }
 
+  /**
+   * Firestore resolves a dotted `where()` field as a PATH into nested maps —
+   * `metadata.subjectUserId` is not a key called "metadata.subjectUserId". A
+   * stub that looked up the literal key would report the BUT-1788 system-message
+   * sweep as matching nothing while claiming to pass.
+   */
+  private static readField(data: DocData, field: string): unknown {
+    let cursor: unknown = data;
+    for (const segment of field.split(".")) {
+      if (cursor === null || typeof cursor !== "object") return undefined;
+      cursor = (cursor as Record<string, unknown>)[segment];
+    }
+    return cursor;
+  }
+
   collection(name: string): unknown {
     const matcher = (field: string, op: string, value: unknown) => ({
       get: async () => {
@@ -203,7 +247,7 @@ class FakeFirestore {
         for (const [path, data] of this.docs) {
           const segments = path.split("/");
           if (segments.length !== 2 || segments[0] !== name) continue;
-          const fieldVal = data[field];
+          const fieldVal = FakeFirestore.readField(data, field);
           if (op === "==" && fieldVal === value) {
             matches.push({ path, data });
           } else if (
@@ -221,6 +265,9 @@ class FakeFirestore {
             ref: this.makeRef(d.path),
             id: d.path.split("/")[1],
             data: () => d.data,
+            // Real QueryDocumentSnapshots expose get(); the shared_content
+            // membership scrub uses it to skip docs it is about to hard-delete.
+            get: (f: string) => FakeFirestore.readField(d.data, f),
           })),
         };
       },
@@ -229,6 +276,50 @@ class FakeFirestore {
       where: (field: string, op: string, value: unknown) =>
         matcher(field, op, value),
       doc: (id: string) => this.makeRef(`${name}/${id}`),
+    };
+  }
+
+  /**
+   * BUT-1798. Until now this stub had no `collectionGroup`, which is exactly why
+   * `removeFromSharedContent` — whose first act is a collectionGroup read — had
+   * no scenario in this file at all. Matches any path whose LAST collection
+   * segment is `name`, at any depth, which is what a real collection-group query
+   * does.
+   */
+  collectionGroup(name: string): unknown {
+    return {
+      where: (field: string, op: string, value: unknown) => ({
+        get: async () => {
+          const matches: { path: string; data: DocData }[] = [];
+          for (const [path, data] of this.docs) {
+            const segments = path.split("/");
+            // A document path is collection/doc/collection/doc/... so the
+            // owning collection is the second-to-last segment.
+            if (segments.length < 2) continue;
+            if (segments[segments.length - 2] !== name) continue;
+            const fieldVal = FakeFirestore.readField(data, field);
+            if (op === "==" && fieldVal === value) {
+              matches.push({ path, data });
+            } else if (
+              op === "array-contains" &&
+              Array.isArray(fieldVal) &&
+              fieldVal.includes(value)
+            ) {
+              matches.push({ path, data });
+            }
+          }
+          return {
+            empty: matches.length === 0,
+            size: matches.length,
+            docs: matches.map((d) => ({
+              ref: this.makeRef(d.path),
+              id: d.path.split("/").pop() as string,
+              data: () => d.data,
+              get: (f: string) => FakeFirestore.readField(d.data, f),
+            })),
+          };
+        },
+      }),
     };
   }
 
@@ -245,6 +336,7 @@ class FakeFirestore {
         deletes.push(ref.path);
       },
       update: (ref, data) => {
+        this.updatedPaths.push(ref.path);
         updates.push({ path: ref.path, data });
       },
       set: (ref, data) => {
@@ -683,17 +775,419 @@ async function scenario_realtimeParticipationIsRemoved(): Promise<void> {
   );
 }
 
+/**
+ * BUT-1789: the per-user-per-day feature-retention rows must go, and only
+ * those.
+ *
+ * `analytics/feature_retention/users/{uid}_{date}` held one behavioural row per
+ * active day — cooked / imported / shared / meal-planned / shopped — with the
+ * uid in both the id and a `userId` field, and no step, TTL or deviation entry
+ * covering it. Three properties, all of which a wrong implementation gets
+ * wrong in a different way:
+ *
+ *   - EVERY day of the deleted user goes, not just the newest (the rows
+ *     accumulate for the life of the account);
+ *   - another user's row on the same day survives (a prefix/`listDocuments`
+ *     sweep of the whole subcollection would take it);
+ *   - the `daily/{date}` aggregate survives (integer counts, no uid — the
+ *     accepted residual; deleting it would destroy other people's history).
+ */
+async function scenario_featureRetentionRowsAreErased(): Promise<void> {
+  const db = new FakeFirestore();
+  const row = (uid: string, date: string) =>
+    db.set(`analytics/feature_retention/users/${uid}_${date}`, {
+      userId: uid,
+      date,
+      cooked: true,
+      imported: false,
+      shared: false,
+      mealPlanned: false,
+      shopped: true,
+    });
+  row(UID, "2026-04-27");
+  row(UID, "2026-04-28");
+  row(UID, "2026-04-29");
+  row(OTHER, "2026-04-29");
+  db.set("analytics/feature_retention/daily/2026-04-29", {
+    date: "2026-04-29",
+    dau: { cooked: 2, imported: 0, shared: 0, mealPlanned: 0, shopped: 2 },
+  });
+
+  const { deleteFeatureRetentionFlags } =
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("../account/account-deletion-cascade");
+  await deleteFeatureRetentionFlags(asDb(db), UID);
+
+  const left = db.pathsUnder("analytics/feature_retention/users");
+  check(
+    "every feature-retention day of the deleted user is erased",
+    left.every((p) => !p.includes(`/${UID}_`)),
+    `left: ${JSON.stringify(left)}`,
+  );
+  check(
+    "another user's row for the same day is untouched",
+    db.has(`analytics/feature_retention/users/${OTHER}_2026-04-29`),
+    `left: ${JSON.stringify(left)}`,
+  );
+  check(
+    "the anonymous daily aggregate is kept (accepted residual)",
+    db.has("analytics/feature_retention/daily/2026-04-29"),
+    `daily left: ${JSON.stringify(
+      db.pathsUnder("analytics/feature_retention/daily"),
+    )}`,
+  );
+}
+
+/**
+ * BUT-1798. `removeFromSharedContent` discovered membership ONLY through a
+ * `members/{uid}` subcollection doc, which is written by
+ * `BaseSharedContentRepository.addMember()` and by nothing else. The three
+ * direct-share managers (recipe_sharing_manager, social_menu_operations,
+ * shopping_social_share_module) write the parent document only — so every
+ * recipient of an ad-hoc shared recipe, menu or list has been un-erasable for
+ * this collection's entire life, on documents the Art. 15 export has just
+ * started returning.
+ *
+ * Two further traps this pins:
+ *  - membership is stored under TWO spellings, and the old scrub cleared only
+ *    `sharedToUserIds`, leaving the uid in `sharedWithUserIds`;
+ *  - the owner is always in their own membership arrays, so scrubbing without
+ *    excluding owned docs would update every document the very next step hard-
+ *    deletes — wasted writes, and a NOT_FOUND poison-pill on retry.
+ */
+async function scenario_adHocSharedContentMembershipIsScrubbed(): Promise<void> {
+  const db = new FakeFirestore();
+
+  // Legacy row: only the OLD spelling. No client query can even see this one.
+  db.set("shared_content/legacy-recipe", {
+    contentType: "recipe",
+    sharedByUserId: OTHER,
+    sharedWithUserIds: [OTHER, UID, THIRD],
+  });
+  // Post-fix row: both spellings.
+  db.set("shared_content/current-recipe", {
+    contentType: "recipe",
+    sharedByUserId: OTHER,
+    sharedToUserIds: [OTHER, UID],
+    sharedWithUserIds: [OTHER, UID],
+  });
+  // Owned by the deleted user AND listing them as a recipient — the normal
+  // shape, since the writer puts the sharer in their own arrays.
+  db.set("shared_content/owned-by-deleted", {
+    contentType: "recipe",
+    sharedByUserId: UID,
+    sharedToUserIds: [UID, OTHER],
+    sharedWithUserIds: [UID, OTHER],
+  });
+  // Someone else's share, no relation to the deleted user.
+  db.set("shared_content/unrelated", {
+    contentType: "menu",
+    sharedByUserId: OTHER,
+    sharedToUserIds: [OTHER, THIRD],
+    sharedWithUserIds: [OTHER, THIRD],
+  });
+
+  const { removeFromSharedContent } =
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("../account/account-deletion-cascade");
+  await removeFromSharedContent(asDb(db), UID);
+
+  const legacy = db.get("shared_content/legacy-recipe") as DocData;
+  check(
+    "a legacy row carrying only sharedWithUserIds is reached at all",
+    !(legacy.sharedWithUserIds as string[]).includes(UID),
+    `left: ${JSON.stringify(legacy.sharedWithUserIds)}`,
+  );
+  check(
+    "the other members of that legacy row are untouched",
+    (legacy.sharedWithUserIds as string[]).length === 2,
+    `left: ${JSON.stringify(legacy.sharedWithUserIds)}`,
+  );
+
+  const current = db.get("shared_content/current-recipe") as DocData;
+  check(
+    "BOTH spellings are cleared, not just the one the query matched",
+    !(current.sharedToUserIds as string[]).includes(UID) &&
+      !(current.sharedWithUserIds as string[]).includes(UID),
+    `to: ${JSON.stringify(current.sharedToUserIds)} with: ${JSON.stringify(
+      current.sharedWithUserIds,
+    )}`,
+  );
+
+  check(
+    "content OWNED by the deleted user is deleted outright",
+    !db.has("shared_content/owned-by-deleted"),
+    `still present: ${JSON.stringify(db.get("shared_content/owned-by-deleted"))}`,
+  );
+  // The check above passes even without the owner-skip, because the delete runs
+  // last either way. THIS is the one that pins the skip: a real batch.update on
+  // a doc that is about to be deleted throws NOT_FOUND and takes the whole
+  // chunk down on retry, so the owned doc must never be written at all.
+  check(
+    "…and is never written on the way there (the NOT_FOUND poison-pill)",
+    !db.updatedPaths.includes("shared_content/owned-by-deleted"),
+    `wrote: ${JSON.stringify(db.updatedPaths)}`,
+  );
+
+  const unrelated = db.get("shared_content/unrelated") as DocData;
+  check(
+    "an unrelated share between two other people is left alone",
+    (unrelated.sharedToUserIds as string[]).length === 2 &&
+      (unrelated.sharedWithUserIds as string[]).length === 2,
+    `to: ${JSON.stringify(unrelated.sharedToUserIds)}`,
+  );
+}
+
+/**
+ * BUT-1788. `leaveGroupConversation` writes "<Name> har lämnat gruppen" under
+ * `senderId: "system"` into a group the user has since LEFT. Three separate
+ * legs of this cascade miss it: the `senderId == uid` sweep (wrong author), the
+ * `lastMessage` tombstone (only fires when the user is the SENDER), and the
+ * `participantIds array-contains uid` query (they are no longer a participant,
+ * so the conversation is never even visited). `metadata.subjectUserId` is the
+ * only queryable handle on a name embedded in free text.
+ */
+async function scenario_systemMessageAboutDepartedUserIsScrubbed(): Promise<void> {
+  const db = new FakeFirestore();
+  // The user is NOT in participantIds — they left. This is the whole point:
+  // every other leg of deleteMessages skips this conversation entirely.
+  db.set("conversations/c-left", {
+    participantIds: [OTHER, THIRD],
+    lastMessage: {
+      senderId: "system",
+      senderDisplayName: "System",
+      content: "Malin har lämnat gruppen",
+    },
+  });
+  db.set("messages/sys-left", {
+    conversationId: "c-left",
+    senderId: "system",
+    senderDisplayName: "System",
+    content: "Malin har lämnat gruppen",
+    metadata: { systemEvent: "participant_left", subjectUserId: UID },
+  });
+  // A system row about SOMEONE ELSE, in the same collection, must survive.
+  db.set("messages/sys-other", {
+    conversationId: "c-left",
+    senderId: "system",
+    senderDisplayName: "System",
+    content: "Anna har lämnat gruppen",
+    metadata: { systemEvent: "participant_left", subjectUserId: OTHER },
+  });
+
+  await deleteMessages(asDb(db), UID);
+
+  const scrubbed = db.get("messages/sys-left");
+  check(
+    "the departure row about the deleted user is tombstoned",
+    scrubbed?.content === "[Borttaget meddelande]",
+    `content: ${String(scrubbed?.content)}`,
+  );
+  check(
+    "the erasure handle itself is cleared so the probe reads zero",
+    (scrubbed?.metadata as Record<string, unknown> | undefined)
+      ?.subjectUserId === undefined,
+    `metadata: ${JSON.stringify(scrubbed?.metadata)}`,
+  );
+  check(
+    "the denormalized lastMessage copy is tombstoned too",
+    (db.get("conversations/c-left")?.lastMessage as Record<string, unknown>)
+      ?.content === "[Borttaget meddelande]",
+  );
+  check(
+    "a departure row about ANOTHER user is untouched",
+    db.get("messages/sys-other")?.content === "Anna har lämnat gruppen",
+  );
+}
+
+/**
+ * The mirror must only be rewritten when it is still SHOWING the row being
+ * erased — a newer message may have replaced the preview, and blindly stamping
+ * the tombstone would erase that message's copy instead.
+ */
+async function scenario_newerLastMessageSurvivesTheSystemScrub(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set("conversations/c-left", {
+    participantIds: [OTHER, THIRD],
+    lastMessage: {
+      senderId: OTHER,
+      senderDisplayName: "Anna",
+      content: "Vi ses på lördag",
+    },
+  });
+  db.set("messages/sys-left", {
+    conversationId: "c-left",
+    senderId: "system",
+    content: "Malin har lämnat gruppen",
+    metadata: { systemEvent: "participant_left", subjectUserId: UID },
+  });
+
+  await deleteMessages(asDb(db), UID);
+
+  check(
+    "a newer preview from another member is left alone",
+    (db.get("conversations/c-left")?.lastMessage as Record<string, unknown>)
+      ?.content === "Vi ses på lördag",
+  );
+  check(
+    "the system row is still tombstoned",
+    db.get("messages/sys-left")?.content === "[Borttaget meddelande]",
+  );
+}
+
+/**
+ * A Firestore whose transaction on a NAMED conversation always throws — the
+ * ordinary transient outcome on a live group (contention, DEADLINE_EXCEEDED).
+ * Everything else behaves exactly like FakeFirestore.
+ */
+class FlakyMirrorFirestore extends FakeFirestore {
+  constructor(private readonly failingPaths: Set<string>) {
+    super();
+  }
+
+  async runTransaction<T>(
+    handler: (tx: {
+      get: (
+        ref: { path: string },
+      ) => Promise<{ exists: boolean; data: () => DocData | undefined }>;
+      update: (ref: { path: string }, data: DocData) => void;
+      delete: (ref: { path: string }) => void;
+    }) => Promise<T>,
+  ): Promise<T> {
+    return super.runTransaction((tx) =>
+      handler({
+        ...tx,
+        get: async (ref: { path: string }) => {
+          if (this.failingPaths.has(ref.path)) {
+            throw Object.assign(new Error("ABORTED: too much contention"), {
+              code: 10,
+            });
+          }
+          return tx.get(ref as never);
+        },
+      } as never),
+    );
+  }
+}
+
+/**
+ * BUT-1788, the ordering half. `metadata.subjectUserId` is the ONLY handle that
+ * finds these rows again, and the mirror scrub's failure is swallowed on
+ * purpose. Clearing the handle in the same write that tombstones the content —
+ * i.e. BEFORE the mirror — made a transient mirror failure permanent and
+ * quadruple-silent: the mirror keeps the deleted user's name, a re-run
+ * early-exits on an empty query, `probeResidualData` (keyed on that same field)
+ * counts zero and certifies a clean erasure, and the callable still answers
+ * `success: true`. Nothing heals it later — `syncConversationLastMessage`
+ * triggers on message create/delete, never on update.
+ *
+ * The codebase's own recorded rule: a cascade step keyed on a shared handle
+ * must destroy that handle LAST.
+ */
+async function scenario_failedMirrorScrubKeepsTheRetryHandle(): Promise<void> {
+  const db = new FlakyMirrorFirestore(new Set(["conversations/c-flaky"]));
+  db.set("conversations/c-flaky", {
+    participantIds: [OTHER, THIRD],
+    lastMessage: {
+      senderId: "system",
+      senderDisplayName: "System",
+      content: "Malin har lämnat gruppen",
+    },
+  });
+  db.set("messages/sys-flaky", {
+    conversationId: "c-flaky",
+    senderId: "system",
+    content: "Malin har lämnat gruppen",
+    metadata: { systemEvent: "participant_left", subjectUserId: UID },
+  });
+  // A second conversation whose mirror scrub SUCCEEDS, in the same run: one bad
+  // conversation must not hold back the rest.
+  db.set("conversations/c-ok", {
+    participantIds: [OTHER, THIRD],
+    lastMessage: {
+      senderId: "system",
+      senderDisplayName: "System",
+      content: "Malin har lämnat gruppen",
+    },
+  });
+  db.set("messages/sys-ok", {
+    conversationId: "c-ok",
+    senderId: "system",
+    content: "Malin har lämnat gruppen",
+    metadata: { systemEvent: "participant_left", subjectUserId: UID },
+  });
+
+  await deleteMessages(asDb(db), UID);
+
+  const flaky = db.get("messages/sys-flaky");
+  check(
+    "a row whose mirror scrub failed KEEPS its erasure handle",
+    (flaky?.metadata as Record<string, unknown> | undefined)?.subjectUserId ===
+      UID,
+    `metadata: ${JSON.stringify(flaky?.metadata)}`,
+  );
+  check(
+    "…and keeps its original content, so the retry can match the mirror again",
+    flaky?.content === "Malin har lämnat gruppen",
+    `content: ${String(flaky?.content)}`,
+  );
+  check(
+    "a row whose mirror scrub SUCCEEDED is fully cleared in the same run",
+    db.get("messages/sys-ok")?.content === "[Borttaget meddelande]" &&
+      (db.get("messages/sys-ok")?.metadata as Record<string, unknown>)
+        ?.subjectUserId === undefined,
+    `sys-ok: ${JSON.stringify(db.get("messages/sys-ok"))}`,
+  );
+
+  // The retry: same data, mirror now healthy. It must converge — which is only
+  // possible because the handle survived.
+  const healthy = new FakeFirestore();
+  for (const path of db.pathsUnder("conversations")) {
+    healthy.set(path, db.get(path) as DocData);
+  }
+  for (const path of db.pathsUnder("messages")) {
+    healthy.set(path, db.get(path) as DocData);
+  }
+  await deleteMessages(asDb(healthy), UID);
+
+  check(
+    "the re-run finds the missed row and scrubs the mirror it left behind",
+    (healthy.get("conversations/c-flaky")?.lastMessage as Record<
+      string,
+      unknown
+    >)?.content === "[Borttaget meddelande]",
+    `lastMessage: ${JSON.stringify(healthy.get("conversations/c-flaky")?.lastMessage)}`,
+  );
+  check(
+    "the re-run then clears the handle it was holding on to",
+    (healthy.get("messages/sys-flaky")?.metadata as Record<string, unknown>)
+      ?.subjectUserId === undefined &&
+      healthy.get("messages/sys-flaky")?.content === "[Borttaget meddelande]",
+    `sys-flaky: ${JSON.stringify(healthy.get("messages/sys-flaky"))}`,
+  );
+  check(
+    "the already-clean conversation is not re-tombstoned by the re-run",
+    (healthy.get("conversations/c-ok")?.lastMessage as Record<string, unknown>)
+      ?.content === "[Borttaget meddelande]",
+  );
+}
+
 async function main(): Promise<void> {
   await scenario_directConversationIsErasedWhole();
   await scenario_readsTopLevelNotSubcollection();
   await scenario_groupThreadIsAnonymizedNotGutted();
   await scenario_messagesInLeftConversationsAreReached();
   await scenario_groupConversationDocumentIsScrubbed();
+  await scenario_adHocSharedContentMembershipIsScrubbed();
   await scenario_anotherMembersLastMessageIsNotTombstoned();
   await scenario_realtimeMenusOwnedAreDeleted();
   await scenario_realtimeMenuLastEditorIsScrubbed();
   await scenario_ownedRealtimeMenuChildrenAreDeleted();
   await scenario_realtimeParticipationIsRemoved();
+  await scenario_featureRetentionRowsAreErased();
+  await scenario_systemMessageAboutDepartedUserIsScrubbed();
+  await scenario_newerLastMessageSurvivesTheSystemScrub();
+  await scenario_failedMirrorScrubKeepsTheRetryHandle();
 
   let failed = 0;
   for (const r of results) {

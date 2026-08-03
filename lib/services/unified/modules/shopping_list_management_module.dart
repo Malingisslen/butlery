@@ -62,6 +62,11 @@ class ShoppingListManagementModule {
 
       return savedList.id;
     } catch (e) {
+      // BUT-1784: swallowed without a trace, this was the one create path in
+      // the module that left nothing behind — a permission denial, an offline
+      // refusal and a malformed name all came back as an identical `null`, and
+      // the dialog reported success over every one of them.
+      AppLogger.error('Failed to create personal list', e);
       return null;
     }
   }

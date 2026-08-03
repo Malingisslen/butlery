@@ -356,15 +356,40 @@ async function productionWiringGuard(): Promise<void> {
   // pass updatePooledRatingStats (which would throw in prod but pass in a test
   // that injected its own aggregate).
   const indexSrc = fs.readFileSync(path.join(__dirname, "..", "index.ts"), "utf8");
+  // The DRAIN half moved out of index.ts when the scheduler merge collapsed the
+  // two per-minute rating drains into one `drainAggregations` job (Cloud
+  // Scheduler bills per job, not per run). The trigger half still lives in
+  // index.ts. Same guard, two files — the thing being guarded is unchanged: a
+  // scheduler that forgets to pass `updatePooledRatingStats` throws in prod but
+  // would pass any test that injected its own aggregate.
+  const dispatcherSrc = fs.readFileSync(
+    path.join(__dirname, "..", "scheduled", "maintenance-dispatchers.ts"),
+    "utf8",
+  );
 
   const triggerBound =
     /onPooledRatingEventWritten\s*=\s*onDocumentWritten\(/.test(indexSrc) &&
     /document:\s*POOL_EVENT_TRIGGER_PATH/.test(indexSrc) &&
     /schedulePoolAggregation\(/.test(indexSrc);
 
+  // Three facts, not two. When this guard lived in index.ts a top-level
+  // `export const` carried "exists" and "is deployed" at once; a guard that
+  // only reads the dispatcher proves the code exists while the whole family
+  // could be undeployed by deleting one re-export line from index.ts.
+  const dispatcherExported =
+    /export\s*\{[\s\S]*?\bdrainAggregations\b[\s\S]*?\}\s*from\s*["']\.\/scheduled\/maintenance-dispatchers["']/.test(
+      indexSrc,
+    );
+
   const schedulerWired =
-    /drainPooledRatingAggregations\s*=\s*onSchedule\(/.test(indexSrc) &&
-    /drainPoolAggregationQueue\(\s*\{[\s\S]*?aggregate:\s*updatePooledRatingStats/.test(indexSrc);
+    dispatcherExported &&
+    /export\s+const\s+drainAggregations\s*=\s*onSchedule\(/.test(dispatcherSrc) &&
+    // `[^}]*?` not `[\s\S]*?`: the lazy span must stay inside THIS call's own
+    // object literal. Unbounded, a swapped aggregator just scans forward into
+    // the sibling drain call and the guard goes false-green.
+    /drainPoolAggregationQueue\(\s*\{[^}]*?aggregate:\s*updatePooledRatingStats/.test(
+      dispatcherSrc,
+    );
 
   const pathShape =
     POOL_EVENT_TRIGGER_PATH === "users/{uid}/canonical_rating_events/{poolKey}" &&

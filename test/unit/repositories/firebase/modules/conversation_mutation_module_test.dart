@@ -7,8 +7,10 @@
 /// reading back Firestore state where applicable.
 library;
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/messaging/conversation.dart';
@@ -16,6 +18,20 @@ import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_mutation_module.dart';
 
 const _convoCollection = 'conversations';
+
+class _MockFunctions extends Mock implements FirebaseFunctions {}
+
+class _MockCallable extends Mock implements HttpsCallable {}
+
+/// Fake instead of Mock — `HttpsCallableResult.data` reads from a private
+/// backing field that `implements` can't see, so a Mock returns null.
+class _FakeCallableResult extends Fake
+    implements HttpsCallableResult<Map<String, dynamic>> {
+  _FakeCallableResult(this._data);
+  final Map<String, dynamic> _data;
+  @override
+  Map<String, dynamic> get data => _data;
+}
 
 Conversation _groupConvo({
   String id = 'group-1',
@@ -36,6 +52,10 @@ Conversation _groupConvo({
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(<String, dynamic>{});
+  });
+
   group('createDirectConversation', () {
     test('uses deterministic id sorted by user id', () async {
       final firestore = FakeFirebaseFirestore();
@@ -131,6 +151,16 @@ void main() {
     });
   });
 
+  // BUT-1788 twin, NOT a passing feature. Everything below asserts the
+  // CLIENT-SIDE contract, and production refuses part of it: the
+  // `Message.system` write carries `senderId: 'system'`, which
+  // `firestore.rules:1562` (`request.auth.uid == request.resource.data.senderId`)
+  // denies for every client. `createGroupConversation` rethrows after `createFn`
+  // has already created the document, so the user sees a failure for a group
+  // that exists. Green here means "the module calls sendMessageFn", never "the
+  // system message lands" — the leave/remove twin only started landing once it
+  // moved to the Admin SDK. See the KNOWN BROKEN doc comment on
+  // `ConversationMutationModule.addParticipants`.
   group('createGroupConversation', () {
     test(
       'delegates to createFn and emits a system message via sendMessageFn',
@@ -230,6 +260,15 @@ void main() {
     });
   });
 
+  // BUT-1788 twin, KNOWN BROKEN in production — see the note above
+  // `createGroupConversation`. `addParticipants` fails on BOTH counts: the
+  // `updateFn` write rebuilds `participantIds`, which `firestore.rules:1533-1535`
+  // denies outright, and the per-add `Message.system` is denied too. The two
+  // "rejects ..." cases below are genuine (they short-circuit before any write);
+  // the third pins only that the module ASSEMBLES the right payload, not that
+  // "Lägg till medlemmar" works. Deliberately left client-side by BUT-1788:
+  // adding needs its own authorization answer and its own minor-membership
+  // gate, so it needs its own ticket.
   group('addParticipants', () {
     test('rejects missing conversation', () async {
       final firestore = FakeFirebaseFirestore();
@@ -326,99 +365,149 @@ void main() {
     );
   });
 
-  group('removeParticipant', () {
-    test('rejects missing conversation', () async {
-      final firestore = FakeFirebaseFirestore();
-      final module = ConversationMutationModule(
-        firestore: firestore,
-        collectionName: _convoCollection,
-        createFn: (c) async => c,
-        updateFn: (_) async {},
-        readFn: (_) async => null,
-        sendMessageFn: (_) async {},
-      );
+  // BUT-1788: the three tests this replaces asserted the OLD client-side
+  // write — read the conversation, strip the uid from four maps, write the doc
+  // back. That write has never once landed: `firestore.rules` denies any
+  // client update whose diff touches `participantIds`, and the follow-up
+  // system message (senderId "system") fails the messages create rule too. The
+  // suite was green on a code path the backend refuses. The contract is now
+  // "delegate to the `leaveGroupConversation` callable and write nothing
+  // locally", and the authorization/idempotency assertions live server-side in
+  // `functions/src/__tests__/leave-group-conversation.test.ts`.
+  group('removeParticipant (server-side, BUT-1788)', () {
+    late _MockFunctions functions;
+    late _MockCallable callable;
 
-      await expectLater(
-        module.removeParticipant(
-          conversationId: 'missing',
-          participantId: 'user-a',
-        ),
-        throwsA(isA<ResourceNotFoundException>()),
+    setUp(() {
+      functions = _MockFunctions();
+      callable = _MockCallable();
+      when(() => functions.httpsCallable(any())).thenReturn(callable);
+      // Mirror what `leaveGroupConversation` actually returns. The old fixture
+      // was `{success: true}` alone, which predates the `removed` field and so
+      // could not tell a real removal apart from the callable's no-op branch —
+      // the shape BUT-1795 is about.
+      when(() => callable.call<Map<String, dynamic>>(any())).thenAnswer(
+        (_) async => _FakeCallableResult(const {
+          'success': true,
+          'removed': true,
+          'remaining': 2,
+        }),
       );
     });
 
-    test('rejects direct conversations with ValidationException', () async {
-      final firestore = FakeFirebaseFirestore();
-      final direct = Conversation(
-        id: 'direct-1',
-        participantIds: const ['user-a', 'user-b'],
-        participantDisplayNames: const {},
-        participantAvatarUrls: const {},
-        lastReadTimestamps: const {},
-        isGroup: false,
-        createdAt: DateTime.utc(2026),
-        updatedAt: DateTime.utc(2026),
-      );
-
-      final module = ConversationMutationModule(
-        firestore: firestore,
+    ConversationMutationModule buildModule({
+      void Function(Conversation)? onUpdate,
+      void Function(Message)? onSend,
+    }) {
+      return ConversationMutationModule(
+        firestore: FakeFirebaseFirestore(),
         collectionName: _convoCollection,
         createFn: (c) async => c,
-        updateFn: (_) async {},
-        readFn: (_) async => direct,
-        sendMessageFn: (_) async {},
+        updateFn: (c) async => onUpdate?.call(c),
+        readFn: (_) async => _groupConvo(),
+        sendMessageFn: (m) async => onSend?.call(m),
+        functions: functions,
       );
-
-      await expectLater(
-        module.removeParticipant(
-          conversationId: 'direct-1',
-          participantId: 'user-a',
-        ),
-        throwsA(isA<ValidationException>()),
-      );
-    });
+    }
 
     test(
-      'strips participant from all 4 maps and sends a system message',
+      'invokes leaveGroupConversation with the conversation and uid',
       () async {
-        Conversation? capturedUpdate;
-        final sent = <Message>[];
-        final firestore = FakeFirebaseFirestore();
-        final existing = _groupConvo(participants: const ['user-a', 'user-b']);
-        final module = ConversationMutationModule(
-          firestore: firestore,
-          collectionName: _convoCollection,
-          createFn: (c) async => c,
-          updateFn: (c) async {
-            capturedUpdate = c;
-          },
-          readFn: (_) async => existing,
-          sendMessageFn: (m) async => sent.add(m),
-        );
+        final module = buildModule();
 
         await module.removeParticipant(
           conversationId: 'group-1',
           participantId: 'user-b',
         );
 
-        expect(capturedUpdate, isNotNull);
-        expect(capturedUpdate!.participantIds, equals(['user-a']));
-        expect(
-          capturedUpdate!.participantDisplayNames.containsKey('user-b'),
-          isFalse,
-        );
-        expect(
-          capturedUpdate!.participantAvatarUrls.containsKey('user-b'),
-          isFalse,
-        );
-        expect(
-          capturedUpdate!.lastReadTimestamps.containsKey('user-b'),
-          isFalse,
-        );
-        expect(sent, hasLength(1));
-        expect(sent.first.type, equals(MessageType.system));
+        verify(
+          () => functions.httpsCallable('leaveGroupConversation'),
+        ).called(1);
+        final captured =
+            verify(
+                  () => callable.call<Map<String, dynamic>>(captureAny()),
+                ).captured.single
+                as Map<String, dynamic>;
+        expect(captured['conversationId'], equals('group-1'));
+        expect(captured['participantId'], equals('user-b'));
       },
     );
+
+    test(
+      'writes nothing from the client — no doc update, no system message',
+      () async {
+        final updates = <Conversation>[];
+        final sent = <Message>[];
+        final module = buildModule(onUpdate: updates.add, onSend: sent.add);
+
+        await module.removeParticipant(
+          conversationId: 'group-1',
+          participantId: 'user-b',
+        );
+
+        expect(updates, isEmpty);
+        expect(sent, isEmpty);
+      },
+    );
+
+    test('surfaces a denied removal to the caller', () async {
+      when(() => callable.call<Map<String, dynamic>>(any())).thenThrow(
+        FirebaseFunctionsException(
+          code: 'permission-denied',
+          message: 'Only the group admin can remove other members.',
+        ),
+      );
+      final module = buildModule();
+
+      await expectLater(
+        module.removeParticipant(
+          conversationId: 'group-1',
+          participantId: 'user-b',
+        ),
+        throwsA(isA<FirebaseFunctionsException>()),
+      );
+    });
+
+    // BUT-1795. The callable answers a MISSING conversation with
+    // `{removed: false, remaining: 0}` instead of throwing, so it does not leak
+    // whether a conversation exists. That branch is reachable by construction:
+    // groups are created at `users/{uid}/conversations/{id}` while the callable
+    // reads top-level `conversations/{id}`. Discarding the reply is what made a
+    // failed leave report success and fire a false `logGroupLeft`.
+    test('a no-op reply is a FAILURE, not a silent success', () async {
+      when(() => callable.call<Map<String, dynamic>>(any())).thenAnswer(
+        (_) async => _FakeCallableResult(const {
+          'success': true,
+          'removed': false,
+          'remaining': 0,
+        }),
+      );
+      final module = buildModule();
+
+      await expectLater(
+        module.removeParticipant(
+          conversationId: 'group-1',
+          participantId: 'user-b',
+        ),
+        throwsA(isA<ResourceNotFoundException>()),
+      );
+    });
+
+    test('a reply with no `removed` field at all is also a failure', () async {
+      // Fail closed: an older or unexpected payload must not read as success.
+      when(() => callable.call<Map<String, dynamic>>(any())).thenAnswer(
+        (_) async => _FakeCallableResult(const {'success': true}),
+      );
+      final module = buildModule();
+
+      await expectLater(
+        module.removeParticipant(
+          conversationId: 'group-1',
+          participantId: 'user-b',
+        ),
+        throwsA(isA<ResourceNotFoundException>()),
+      );
+    });
   });
 
   group('deleteConversation', () {

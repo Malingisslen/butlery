@@ -624,6 +624,17 @@ class RecipeCore with JsonSerializableMixin {
     return AppLocale.current.recipeLastCookedDaysAgo(difference.inDays);
   }
 
+  /// Star histogram with STRING keys.
+  ///
+  /// The field is `Map<int, int>` in memory because every consumer wants int
+  /// stars, but neither sink accepts int keys: `jsonEncode` (offline cache)
+  /// throws on a non-String key, and cloud_firestore casts every nested map key
+  /// with `key as String` in `_CodecUtility.replaceValueWithDelegatesInMap`
+  /// before the write leaves Dart. `SerializationUtils.safeIntKeyIntMap` parses
+  /// them back on read, so this is lossless in both directions.
+  Map<String, int>? get _ratingDistributionSerialized =>
+      ratingDistribution?.map((stars, tally) => MapEntry('$stars', tally));
+
   @override
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -660,7 +671,7 @@ class RecipeCore with JsonSerializableMixin {
     'ingredientsNormalized': ingredientsNormalized,
     'ratingCount': ratingCount,
     'averageRating': averageRating,
-    'ratingDistribution': ratingDistribution,
+    'ratingDistribution': _ratingDistributionSerialized,
     'familyAverage': familyAverage,
     'familyRatingCount': familyRatingCount,
     'lastRatedAt': lastRatedAt?.toIso8601String(),
@@ -715,7 +726,7 @@ class RecipeCore with JsonSerializableMixin {
     'ingredientsNormalized': ingredientsNormalized,
     'ratingCount': ratingCount,
     'averageRating': averageRating,
-    'ratingDistribution': ratingDistribution,
+    'ratingDistribution': _ratingDistributionSerialized,
     'familyAverage': familyAverage,
     'familyRatingCount': familyRatingCount,
     'lastRatedAt': lastRatedAt != null

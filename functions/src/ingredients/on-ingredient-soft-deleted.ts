@@ -11,19 +11,20 @@
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { stripDiacritics } from "../shared/swedish-normalize";
+import { ingredientMatchVariants } from "../shared/swedish-normalize";
 import { batchUpdateQueryPaginated } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
 
-import { withTimeout, CASCADE_TIMEOUT_MS } from "../shared/with-timeout";
+import {
+  withTimeout,
+  isCascadeEventExpired,
+  CASCADE_TIMEOUT_MS,
+  CASCADE_TIMEOUT_SECONDS,
+} from "../shared/with-timeout";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
 const getDb = () => admin.firestore();
 
-/** Normalize Swedish text for ingredient matching (superset of Dart-side å/ä/ö). */
-function normalizeSwedish(text: string): string {
-  return stripDiacritics(text.toLowerCase());
-}
 
 /**
  * Trigger: When an ingredient document is updated
@@ -34,11 +35,46 @@ function normalizeSwedish(text: string): string {
  * Only triggers cascade when status changes to 'deleted'
  */
 export const onIngredientSoftDeleted = onDocumentUpdated(
-  "ingredients/{ingredientId}",
+  {
+    document: "ingredients/{ingredientId}",
+    // `setGlobalOptions` in index.ts sets the region and nothing else, so this
+    // ran at the v2 event DEFAULT of 60s — shorter than its own
+    // `CASCADE_TIMEOUT_MS` guard, which therefore could never fire. Now that the
+    // query is a collectionGroup that actually matches documents, a common
+    // ingredient (salt, socker, mjöl) fans out across every user's recipes at
+    // 500 writes per page, and a platform kill mid-cascade is silent and does
+    // not resume. BUT-1781.
+    timeoutSeconds: CASCADE_TIMEOUT_SECONDS,
+    // v2 event triggers do NOT retry by default — without this the `throw` at
+    // the bottom is logged and dropped, so a timeout or a transient Firestore
+    // error at page N leaves every remaining recipe carrying allergen tags
+    // computed from the ingredient's PREVIOUS properties, permanently: nothing
+    // re-runs the cascade (the weekly cleanup only counts, and bulk retagging
+    // is a manual admin callable capped at 5/day). Safe because the write is
+    // idempotent — a constant marker value, and the cursor restarts at page 1.
+    // Bounded by the event-age guard below. BUT-1781.
+    retry: true,
+    memory: "512MiB",
+  },
   async (event) => {
-    const before = event.data!.before.data();
-    const after = event.data!.after.data();
+    // `retry: true` is on, so a TypeError from an absent payload would become an
+    // hour-long retry loop instead of a single dropped event.
+    if (!event.data) return;
+
+    const before = event.data.before.data();
+    const after = event.data.after.data();
     const ingredientId = event.params.ingredientId;
+
+    // `retry: true` re-delivers for up to 7 days. Stop a deterministically
+    // failing cascade from re-writing pages for a week.
+    if (isCascadeEventExpired(event.time)) {
+      logger.error("cascade.abandoned", {
+        cascade: "onIngredientSoftDeleted",
+        ingredientId,
+        eventTime: event.time,
+      });
+      return;
+    }
 
     // Only trigger when status changes to 'deleted'
     if (before.status === "deleted" || after.status !== "deleted") {
@@ -46,9 +82,6 @@ export const onIngredientSoftDeleted = onDocumentUpdated(
     }
 
     const ingredientName = after.swedish as string;
-    const ingredientNameNormalized = ingredientName
-      ? normalizeSwedish(ingredientName)
-      : undefined;
 
     if (!ingredientName) {
       logger.error(
@@ -57,21 +90,27 @@ export const onIngredientSoftDeleted = onDocumentUpdated(
       return;
     }
 
+    const ingredientNameVariants = ingredientMatchVariants(ingredientName);
+
     logger.info(
       `Ingredient soft-deleted: "${ingredientName}" (${ingredientId})`
     );
 
     const cascadeOperation = async (): Promise<void> => {
       const db = getDb();
-      // ingredientsNormalized stores Swedish-normalized names (å→a, ä→a, ö→o).
+      // Recipes live ONLY at users/{uid}/recipes/{recipeId} — there is no
+      // top-level `recipes` collection, so a collection-scoped read matched
+      // zero docs and this cascade never fired (BUT-1781). The matching
+      // COLLECTION_GROUP index for core.ingredientsNormalized is declared in
+      // firestore.indexes.json → fieldOverrides.
       // Paginate the read: a common ingredient can match thousands of recipes,
       // and loading them all at once risks an out-of-memory crash.
       const recipesQuery = db
-        .collection(Collections.recipes)
+        .collectionGroup(Collections.recipes)
         .where(
           "core.ingredientsNormalized",
-          "array-contains",
-          ingredientNameNormalized
+          "array-contains-any",
+          ingredientNameVariants
         );
 
       const totalUpdated = await batchUpdateQueryPaginated(

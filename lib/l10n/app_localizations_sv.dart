@@ -13196,6 +13196,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeSharingRevoke => 'Ta bort delning';
 
   @override
+  String get recipeSharingRemoveGroup => 'Ta bort gruppen';
+
+  @override
   String recipeSharingRevokeConfirm(String name) {
     return 'Sluta dela med $name?';
   }
@@ -13203,6 +13206,16 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String recipeSharingRevokeSuccess(String name) {
     return 'Delning med $name avslutad';
+  }
+
+  @override
+  String recipeSharingRevokeGroupConfirm(String name) {
+    return 'Ta bort gruppen $name från delningen?';
+  }
+
+  @override
+  String recipeSharingRevokeGroupSuccess(String name) {
+    return 'Gruppen $name borttagen. Medlemmarna har fortfarande åtkomst — ta bort dem en och en under Vänner.';
   }
 
   @override
@@ -14654,6 +14667,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get duplicateMergeSuccess => 'Receptet har sammanfogats';
+
+  @override
+  String get duplicateMergeFailed => 'Kunde inte sammanfoga receptet';
 
   @override
   String get duplicateMergeNoTime => 'Ingen tid';

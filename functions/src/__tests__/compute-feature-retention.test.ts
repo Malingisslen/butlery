@@ -29,6 +29,18 @@
  *      leg needs. Without it the probe throws FAILED_PRECONDITION in
  *      production, `safeProbe` swallows it and the leg is a silent zero again
  *      — a fake db cannot catch that, so the declaration is asserted directly.
+ *  11. BUT-1791 — the job probes the PREVIOUS UTC day, at the real 04:30 run
+ *      hour, with activity that lands AFTER that hour. Every other case here
+ *      used to run at 08:00Z against 06:00Z activity — a run AFTER the
+ *      activity, which the 04:30 schedule never performs — so the suite was
+ *      structurally unable to see that the job measured 4.5 hours of a day.
+ *
+ * WHICH DAY THE FIXTURES USE (BUT-1791, read before editing any case below):
+ * `now` is the RUN time and `probeStartMs` is the day the run asks about, which
+ * is `now`'s UTC day MINUS ONE. Activity seeded on `now`'s own day is invisible
+ * to the run by design — it belongs to tomorrow's run. Every case therefore
+ * seeds `inDay` off `probeStartMs`, and asserts against `probeDay`, never
+ * against `now`'s date.
  *
  * Run with: npx ts-node src/__tests__/compute-feature-retention.test.ts
  */
@@ -403,8 +415,9 @@ function makeFakeDb(args: {
 
 async function happyPath(): Promise<void> {
   const now = new Date("2026-04-30T08:00:00Z");
-  const todayStartMs = Date.UTC(2026, 3, 30, 0, 0, 0); // 2026-04-30 UTC start
-  const inDay = todayStartMs + 6 * 60 * 60 * 1000; // 06:00 UTC
+  // BUT-1791: the run asks about 2026-04-29, the day before `now`.
+  const probeStartMs = Date.UTC(2026, 3, 29, 0, 0, 0);
+  const inDay = probeStartMs + 6 * 60 * 60 * 1000; // 06:00 UTC on the 29th
 
   const store: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
   const users: FakeUser[] = [
@@ -422,19 +435,19 @@ async function happyPath(): Promise<void> {
 
   await runComputeFeatureRetention({ db: db as never, now });
 
-  const today = formatUtcDate(todayStartMs);
+  const probeDay = formatUtcDate(probeStartMs);
 
   const uAFlags = store.data.get(
-    `analytics/feature_retention/users/uA_${today}`,
+    `analytics/feature_retention/users/uA_${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const uBFlags = store.data.get(
-    `analytics/feature_retention/users/uB_${today}`,
+    `analytics/feature_retention/users/uB_${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const uCFlags = store.data.get(
-    `analytics/feature_retention/users/uC_${today}`,
+    `analytics/feature_retention/users/uC_${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const aggregate = store.data.get(
-    `analytics/feature_retention/daily/${today}`,
+    `analytics/feature_retention/daily/${probeDay}`,
   ) as Record<string, unknown> | undefined;
 
   const flagsOk =
@@ -451,13 +464,13 @@ async function happyPath(): Promise<void> {
   const wau28 = aggregate?.wau28d as Record<string, number> | undefined;
 
   const aggregateOk =
-    aggregate?.date === today &&
+    aggregate?.date === probeDay &&
     dau?.cooked === 1 &&
     dau?.imported === 1 &&
     dau?.shared === 1 &&
     dau?.mealPlanned === 0 &&
     dau?.shopped === 0 &&
-    // Today contributes to WAU windows.
+    // The probed day contributes to WAU windows.
     wau7?.cooked === 1 &&
     wau7?.shared === 1 &&
     wau28?.cooked === 1 &&
@@ -472,8 +485,8 @@ async function happyPath(): Promise<void> {
 
 async function idempotentRerun(): Promise<void> {
   const now = new Date("2026-04-30T08:00:00Z");
-  const todayStartMs = Date.UTC(2026, 3, 30, 0, 0, 0);
-  const inDay = todayStartMs + 6 * 60 * 60 * 1000;
+  const probeStartMs = Date.UTC(2026, 3, 29, 0, 0, 0);
+  const inDay = probeStartMs + 6 * 60 * 60 * 1000;
 
   const store: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
   const users: FakeUser[] = [{ id: "uX", lastActiveDaysAgo: 0 }];
@@ -504,15 +517,17 @@ async function idempotentRerun(): Promise<void> {
 
 async function wau7dRollup(): Promise<void> {
   const now = new Date("2026-04-30T08:00:00Z");
-  const todayStartMs = Date.UTC(2026, 3, 30, 0, 0, 0);
+  const probeStartMs = Date.UTC(2026, 3, 29, 0, 0, 0);
 
   const store: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
   const users: FakeUser[] = [{ id: "uHistorical", lastActiveDaysAgo: 1 }];
-  // No activity TODAY — but there's a flag doc from 5 days ago (cooked=true).
-  const fiveDaysAgoMs = todayStartMs - 5 * MS_PER_DAY;
+  // No activity on the PROBED day — but there's a flag doc from 5 days before
+  // it (cooked=true). Offsets are counted from the probed day, which is the
+  // base the rollup's own day-offset loop uses.
+  const fiveDaysAgoMs = probeStartMs - 5 * MS_PER_DAY;
   const fiveDaysAgo = formatUtcDate(fiveDaysAgoMs);
-  // 10 days ago (outside 7d window, inside 28d).
-  const tenDaysAgoMs = todayStartMs - 10 * MS_PER_DAY;
+  // 10 days before the probed day (outside 7d window, inside 28d).
+  const tenDaysAgoMs = probeStartMs - 10 * MS_PER_DAY;
   const tenDaysAgo = formatUtcDate(tenDaysAgoMs);
 
   const flagDocs: PreExistingFlagDoc[] = [
@@ -523,16 +538,16 @@ async function wau7dRollup(): Promise<void> {
 
   await runComputeFeatureRetention({ db: db as never, now });
 
-  const today = formatUtcDate(todayStartMs);
+  const probeDay = formatUtcDate(probeStartMs);
   const aggregate = store.data.get(
-    `analytics/feature_retention/daily/${today}`,
+    `analytics/feature_retention/daily/${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const dau = aggregate?.dau as Record<string, number> | undefined;
   const wau7 = aggregate?.wau7d as Record<string, number> | undefined;
   const wau28 = aggregate?.wau28d as Record<string, number> | undefined;
 
   const ok =
-    // Today: no activity.
+    // Probed day: no activity.
     dau?.cooked === 0 &&
     dau?.mealPlanned === 0 &&
     // 5d ago cooked → in 7d window.
@@ -560,12 +575,12 @@ async function inactiveUserSkipped(): Promise<void> {
 
   await runComputeFeatureRetention({ db: db as never, now });
 
-  const today = formatUtcDate(Date.UTC(2026, 3, 30));
+  const probeDay = formatUtcDate(Date.UTC(2026, 3, 29));
   const lapsedFlag = store.data.get(
-    `analytics/feature_retention/users/uLapsed_${today}`,
+    `analytics/feature_retention/users/uLapsed_${probeDay}`,
   );
   const activeFlag = store.data.get(
-    `analytics/feature_retention/users/uActive_${today}`,
+    `analytics/feature_retention/users/uActive_${probeDay}`,
   );
   const ok = lapsedFlag == null && activeFlag != null;
   record(
@@ -577,8 +592,8 @@ async function inactiveUserSkipped(): Promise<void> {
 
 async function probeFailureGracefulDegrade(): Promise<void> {
   const now = new Date("2026-04-30T08:00:00Z");
-  const todayStartMs = Date.UTC(2026, 3, 30);
-  const inDay = todayStartMs + 6 * 60 * 60 * 1000;
+  const probeStartMs = Date.UTC(2026, 3, 29);
+  const inDay = probeStartMs + 6 * 60 * 60 * 1000;
 
   const store: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
   const users: FakeUser[] = [{ id: "uProbe", lastActiveDaysAgo: 0 }];
@@ -598,12 +613,12 @@ async function probeFailureGracefulDegrade(): Promise<void> {
 
   await runComputeFeatureRetention({ db: db as never, now });
 
-  const today = formatUtcDate(todayStartMs);
+  const probeDay = formatUtcDate(probeStartMs);
   const flagDoc = store.data.get(
-    `analytics/feature_retention/users/uProbe_${today}`,
+    `analytics/feature_retention/users/uProbe_${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const aggregate = store.data.get(
-    `analytics/feature_retention/daily/${today}`,
+    `analytics/feature_retention/daily/${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const dau = aggregate?.dau as Record<string, number> | undefined;
 
@@ -629,8 +644,8 @@ async function probeFailureGracefulDegrade(): Promise<void> {
  */
 async function shoppedProbeUsesLivePath(): Promise<void> {
   const now = new Date("2026-04-30T08:00:00Z");
-  const todayStartMs = Date.UTC(2026, 3, 30);
-  const inDay = todayStartMs + 6 * 60 * 60 * 1000;
+  const probeStartMs = Date.UTC(2026, 3, 29);
+  const inDay = probeStartMs + 6 * 60 * 60 * 1000;
 
   const store: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
   const users: FakeUser[] = [
@@ -645,15 +660,15 @@ async function shoppedProbeUsesLivePath(): Promise<void> {
 
   await runComputeFeatureRetention({ db: db as never, now });
 
-  const today = formatUtcDate(todayStartMs);
+  const probeDay = formatUtcDate(probeStartMs);
   const liveFlags = store.data.get(
-    `analytics/feature_retention/users/uLive_${today}`,
+    `analytics/feature_retention/users/uLive_${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const retiredFlags = store.data.get(
-    `analytics/feature_retention/users/uRetired_${today}`,
+    `analytics/feature_retention/users/uRetired_${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const aggregate = store.data.get(
-    `analytics/feature_retention/daily/${today}`,
+    `analytics/feature_retention/daily/${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const dau = aggregate?.dau as Record<string, number> | undefined;
 
@@ -679,8 +694,8 @@ async function shoppedProbeUsesLivePath(): Promise<void> {
  */
 async function shoppedProbeFailureDegrades(): Promise<void> {
   const now = new Date("2026-04-30T08:00:00Z");
-  const todayStartMs = Date.UTC(2026, 3, 30);
-  const inDay = todayStartMs + 6 * 60 * 60 * 1000;
+  const probeStartMs = Date.UTC(2026, 3, 29);
+  const inDay = probeStartMs + 6 * 60 * 60 * 1000;
 
   const store: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
   const users: FakeUser[] = [{ id: "uIdx", lastActiveDaysAgo: 0 }];
@@ -701,12 +716,12 @@ async function shoppedProbeFailureDegrades(): Promise<void> {
 
   await runComputeFeatureRetention({ db: db as never, now });
 
-  const today = formatUtcDate(todayStartMs);
+  const probeDay = formatUtcDate(probeStartMs);
   const flagDoc = store.data.get(
-    `analytics/feature_retention/users/uIdx_${today}`,
+    `analytics/feature_retention/users/uIdx_${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const aggregate = store.data.get(
-    `analytics/feature_retention/daily/${today}`,
+    `analytics/feature_retention/daily/${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const dau = aggregate?.dau as Record<string, number> | undefined;
 
@@ -728,10 +743,11 @@ async function shoppedProbeFailureDegrades(): Promise<void> {
  * fix a household that shops only on a shared list scored `shopped: false`
  * every single day. Three users pin the whole contract of the new leg:
  *
- *   uShared     — only shared-list activity today   → shopped TRUE (the fix)
- *   uPersonal   — only personal-list activity today → shopped TRUE (unbroken)
+ *   uShared     — only shared-list activity on the probed day → shopped TRUE
+ *   uPersonal   — only personal-list activity on it          → shopped TRUE
  *   uBystander  — a shared list carrying SOMEONE ELSE'S `lastActivityByUserId`
- *                 today, plus their OWN activity YESTERDAY → shopped FALSE
+ *                 on the probed day, plus their OWN activity the day BEFORE it
+ *                 → shopped FALSE
  *
  * The bystander row is the non-vacuity guard: it proves the leg filters on
  * both the user field and the day range rather than answering true whenever
@@ -739,9 +755,10 @@ async function shoppedProbeFailureDegrades(): Promise<void> {
  */
 async function sharedListShoppingCountsAsShopped(): Promise<void> {
   const now = new Date("2026-04-30T08:00:00Z");
-  const todayStartMs = Date.UTC(2026, 3, 30);
-  const inDay = todayStartMs + 6 * 60 * 60 * 1000;
-  const yesterday = todayStartMs - 6 * 60 * 60 * 1000;
+  const probeStartMs = Date.UTC(2026, 3, 29);
+  const inDay = probeStartMs + 6 * 60 * 60 * 1000;
+  // 18:00 UTC on the 28th — before the probed day opens, so it must not count.
+  const beforeProbeDay = probeStartMs - 6 * 60 * 60 * 1000;
 
   const store: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
   const users: FakeUser[] = [
@@ -762,24 +779,24 @@ async function sharedListShoppingCountsAsShopped(): Promise<void> {
       userId: "uHouseholdMate",
       ts: inDay,
     },
-    // uBystander's own shared activity, but outside the run-day window.
+    // uBystander's own shared activity, but outside the probed-day window.
     {
       source: "unified_shared_shopping_lists",
       userId: "uBystander",
-      ts: yesterday,
+      ts: beforeProbeDay,
     },
   ];
   const db = makeFakeDb({ users, activity, flagDocs: [], store, now });
 
   await runComputeFeatureRetention({ db: db as never, now });
 
-  const today = formatUtcDate(todayStartMs);
+  const probeDay = formatUtcDate(probeStartMs);
   const flags = (uid: string) =>
-    store.data.get(`analytics/feature_retention/users/${uid}_${today}`) as
+    store.data.get(`analytics/feature_retention/users/${uid}_${probeDay}`) as
       | Record<string, unknown>
       | undefined;
   const aggregate = store.data.get(
-    `analytics/feature_retention/daily/${today}`,
+    `analytics/feature_retention/daily/${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const dau = aggregate?.dau as Record<string, number> | undefined;
 
@@ -813,9 +830,9 @@ async function sharedListShoppingCountsAsShopped(): Promise<void> {
  */
 async function sharedShoppedProbeFailureDegrades(): Promise<void> {
   const now = new Date("2026-04-30T08:00:00Z");
-  const todayStartMs = Date.UTC(2026, 3, 30);
-  const inDay = todayStartMs + 6 * 60 * 60 * 1000;
-  const today = formatUtcDate(todayStartMs);
+  const probeStartMs = Date.UTC(2026, 3, 29);
+  const inDay = probeStartMs + 6 * 60 * 60 * 1000;
+  const probeDay = formatUtcDate(probeStartMs);
 
   // A — shared-only user, shared probe throws.
   const storeA: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
@@ -839,10 +856,10 @@ async function sharedShoppedProbeFailureDegrades(): Promise<void> {
   await runComputeFeatureRetention({ db: dbA as never, now });
 
   const flagA = storeA.data.get(
-    `analytics/feature_retention/users/uIdxShared_${today}`,
+    `analytics/feature_retention/users/uIdxShared_${probeDay}`,
   ) as Record<string, unknown> | undefined;
   const dauA = (
-    storeA.data.get(`analytics/feature_retention/daily/${today}`) as
+    storeA.data.get(`analytics/feature_retention/daily/${probeDay}`) as
       | Record<string, unknown>
       | undefined
   )?.dau as Record<string, number> | undefined;
@@ -871,7 +888,7 @@ async function sharedShoppedProbeFailureDegrades(): Promise<void> {
   await runComputeFeatureRetention({ db: dbB as never, now });
 
   const flagB = storeB.data.get(
-    `analytics/feature_retention/users/uIdxBoth_${today}`,
+    `analytics/feature_retention/users/uIdxBoth_${probeDay}`,
   ) as Record<string, unknown> | undefined;
 
   const ok =
@@ -884,6 +901,85 @@ async function sharedShoppedProbeFailureDegrades(): Promise<void> {
     "shared probe failure degrades its own leg only; personal leg still flips shopped",
     ok,
     `A=${JSON.stringify(flagA)} dauA=${JSON.stringify(dauA)} B=${JSON.stringify(flagB)}`,
+  );
+}
+
+/**
+ * BUT-1791: the run must ask about the PREVIOUS, COMPLETED UTC day.
+ *
+ * This is the one case staged the way production actually runs it: `now` is
+ * the real schedule hour, 04:30 UTC, and the activity lands at hours the old
+ * code could not reach. Every other case in this file runs at 08:00Z, which
+ * production never does, and that is exactly why the suite could not see that
+ * the job only ever measured 00:00–04:30 of the day it was standing in.
+ *
+ * Two users, one for each direction of the boundary:
+ *
+ *   uEvening — cooked at 20:00Z on the 29th, i.e. after the 29th's 04:30 run
+ *              had already finished. Under the old code no run ever queried
+ *              that hour: the 29th's run had passed, and the 30th's asked
+ *              about the 30th. It must now score cooked on the 29th.
+ *   uSameDay — cooked at 02:00Z on the 30th, the run's own day and inside the
+ *              old 00:00–04:30 window. It must NOT be counted here; it belongs
+ *              to the run of the 31st, which will probe the 30th.
+ *
+ * The row and the aggregate must both be dated the 29th, and nothing may be
+ * written under the 30th. Reverting `probeStartMs` to `startOfUtcDay(now)`
+ * flips every one of these assertions.
+ */
+async function probesPreviousCompletedUtcDay(): Promise<void> {
+  // The real schedule: `30 4 * * *` UTC.
+  const now = new Date("2026-04-30T04:30:00Z");
+  const probeStartMs = Date.UTC(2026, 3, 29);
+  const runDayStartMs = Date.UTC(2026, 3, 30);
+  const afterYesterdaysRun = probeStartMs + 20 * 60 * 60 * 1000; // 29th, 20:00Z
+  const insideOldWindow = runDayStartMs + 2 * 60 * 60 * 1000; // 30th, 02:00Z
+
+  const store: DocStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+  const users: FakeUser[] = [
+    { id: "uEvening", lastActiveDaysAgo: 0 },
+    { id: "uSameDay", lastActiveDaysAgo: 0 },
+  ];
+  const activity: ActivityRecord[] = [
+    { source: "cook_snaps", userId: "uEvening", ts: afterYesterdaysRun },
+    { source: "cook_snaps", userId: "uSameDay", ts: insideOldWindow },
+  ];
+  const db = makeFakeDb({ users, activity, flagDocs: [], store, now });
+
+  await runComputeFeatureRetention({ db: db as never, now });
+
+  const probeDay = formatUtcDate(probeStartMs);
+  const runDay = formatUtcDate(runDayStartMs);
+  const flags = (uid: string, date: string) =>
+    store.data.get(`analytics/feature_retention/users/${uid}_${date}`) as
+      | Record<string, unknown>
+      | undefined;
+  const aggregate = store.data.get(
+    `analytics/feature_retention/daily/${probeDay}`,
+  ) as Record<string, unknown> | undefined;
+  const dau = aggregate?.dau as Record<string, number> | undefined;
+
+  const ok =
+    probeDay === "2026-04-29" &&
+    runDay === "2026-04-30" &&
+    // The evening activity the old window could never see now counts.
+    flags("uEvening", probeDay)?.cooked === true &&
+    // The run day's own activity is not this run's business.
+    flags("uSameDay", probeDay)?.cooked === false &&
+    // Nothing is written under the run day at all.
+    flags("uEvening", runDay) === undefined &&
+    store.data.get(`analytics/feature_retention/daily/${runDay}`) ===
+      undefined &&
+    aggregate?.date === probeDay &&
+    dau?.cooked === 1;
+  record(
+    "probes the previous COMPLETED utc day: 20:00Z activity counts, run-day activity does not",
+    ok,
+    `probeDay=${probeDay} evening=${JSON.stringify(
+      flags("uEvening", probeDay),
+    )} sameDay=${JSON.stringify(flags("uSameDay", probeDay))} runDayRow=${
+      flags("uEvening", runDay) !== undefined
+    } dau=${JSON.stringify(dau)}`,
   );
 }
 
@@ -954,6 +1050,7 @@ async function runAll(): Promise<void> {
   await shoppedProbeFailureDegrades();
   await sharedListShoppingCountsAsShopped();
   await sharedShoppedProbeFailureDegrades();
+  await probesPreviousCompletedUtcDay();
   sharedShoppingListCompositeDeclared();
 
   console.log(

@@ -8733,6 +8733,7 @@
   "recipeSharingStopAllConfirm": "Are you sure you want to stop sharing with everyone?",
   "recipeSharingStopAllSuccess": "Sharing stopped with everyone",
   "recipeSharingRevoke": "Revoke sharing",
+  "recipeSharingRemoveGroup": "Remove the group",
   "recipeSharingRevokeConfirm": "Stop sharing with {name}?",
   "@recipeSharingRevokeConfirm": {
     "placeholders": {
@@ -8743,6 +8744,23 @@
   },
   "recipeSharingRevokeSuccess": "Sharing with {name} stopped",
   "@recipeSharingRevokeSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSharingRevokeGroupConfirm": "Remove the group {name} from this share?",
+  "@recipeSharingRevokeGroupConfirm": {
+    "description": "BUT-1785: a group revoke removes the group LABEL only. Every member keeps access until revoked individually, so the copy must not promise a revocation.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeSharingRevokeGroupSuccess": "Group {name} removed. Its members still have access — revoke them one by one under Friends.",
+  "@recipeSharingRevokeGroupSuccess": {
     "placeholders": {
       "name": {
         "type": "String"
@@ -9809,6 +9827,7 @@
   "duplicateMergeSaveAsNew": "Save as new",
   "duplicateMergeBestFields": "Merge best fields",
   "duplicateMergeSuccess": "Recipe has been merged",
+  "duplicateMergeFailed": "Could not merge the recipe",
   "duplicateMergeNoTime": "No time",
   "duplicateMergeMinutes": "{minutes} min",
   "@duplicateMergeMinutes": {

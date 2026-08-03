@@ -4,12 +4,19 @@
 /// Total Tests: 92
 /// Test Groups: 10
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/ocr/device_text_recognizer.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import '../../fixtures/ocr_test_data.dart';
 
@@ -2002,4 +2009,588 @@ Line 5''';
       );
     });
   });
+
+  // Tier 0: the free on-device recognizer that runs before any paid provider.
+  // The behaviour that matters is the money: a device-readable image must not
+  // reach the network, and anything the device can't read must still fall
+  // through to the existing chain unchanged.
+  group('OCRExtractionService - on-device tier', () {
+    late MockHttpClient mockClient;
+    late MockStreamedResponse mockResponse;
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+      mockClient = MockHttpClient();
+      mockResponse = MockStreamedResponse();
+      when(() => mockResponse.statusCode).thenReturn(200);
+      when(() => mockResponse.stream).thenAnswer(
+        (_) => _createByteStream(OCRProviderResponses.ocrSpaceSuccess),
+      );
+      when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
+    });
+
+    OCRExtractionService buildService({
+      required DeviceTextRecognizer recognizer,
+      required bool enabled,
+    }) => OCRExtractionService.createForTesting(
+      testHttpClient: mockClient,
+      testOcrApiKey: 'test-ocr-key',
+      testDeviceRecognizer: recognizer,
+      testOnDeviceEnabled: () => enabled,
+    );
+
+    // The other tests inject `testOnDeviceEnabled`, which bypasses the real
+    // flag lookup entirely — so without these two the kill switch itself is
+    // executed by nothing, and a typo in either the constant or the defaults
+    // map would leave the tier impossible to turn OFF once shipped.
+    test(
+      'with no flag service registered the tier stays off (fails closed)',
+      () async {
+        final recognizer = _FakeDeviceRecognizer(
+          text: 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.',
+        );
+        final service = OCRExtractionService.createForTesting(
+          testHttpClient: mockClient,
+          testOcrApiKey: 'test-ocr-key',
+          testDeviceRecognizer: recognizer,
+          // testOnDeviceEnabled deliberately omitted — exercise the real lookup.
+        );
+        addTearDown(service.dispose);
+
+        await service.extractText(OCRTestImages.mediumQuality);
+
+        expect(recognizer.calls, equals(0));
+        verify(() => mockClient.send(any())).called(1);
+      },
+    );
+
+    test('the real lookup asks for the literal production flag key', () async {
+      final flags = _MockFeatureFlags();
+      // The LITERAL string, not FeatureFlags.enableOnDeviceOcr — asserting the
+      // constant against itself would be circular and would not catch a key
+      // that drifted from the Remote Config console.
+      when(() => flags.isEnabled('enable_on_device_ocr')).thenReturn(true);
+      final getIt = GetIt.instance;
+      if (getIt.isRegistered<FeatureFlagService>()) {
+        getIt.unregister<FeatureFlagService>();
+      }
+      getIt.registerSingleton<FeatureFlagService>(flags);
+      ServiceLocator.initialize(DIContainer());
+      addTearDown(() {
+        if (getIt.isRegistered<FeatureFlagService>()) {
+          getIt.unregister<FeatureFlagService>();
+        }
+        ServiceLocator.reset();
+      });
+
+      final recognizer = _FakeDeviceRecognizer(
+        text: 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.',
+      );
+      final service = OCRExtractionService.createForTesting(
+        testHttpClient: mockClient,
+        testOcrApiKey: 'test-ocr-key',
+        testDeviceRecognizer: recognizer,
+      );
+      addTearDown(service.dispose);
+
+      final result = await service.extractText(OCRTestImages.mediumQuality);
+
+      expect(result.processingMethod, equals('on_device'));
+      expect(recognizer.calls, equals(1));
+      verify(() => flags.isEnabled('enable_on_device_ocr')).called(1);
+    });
+
+    test(
+      'with the tier off, failure metadata omits the on-device breaker',
+      () async {
+        // Regression guard for a fix that over-corrected: publishing
+        // `on_device_state` unconditionally reads as "closed" (healthy) when
+        // the tier never ran, which made the "OCR-tjänsterna är otillgängliga"
+        // message unreachable for every user with the flag off — the default.
+        // The message builder treats an ABSENT key as down, so absence is the
+        // contract when tier 0 did not participate.
+        when(() => mockResponse.statusCode).thenReturn(500);
+        final service = OCRExtractionService.createForTesting(
+          testHttpClient: mockClient,
+          testOcrApiKey: 'test-ocr-key',
+          testDeviceRecognizer: _FakeDeviceRecognizer(text: null),
+          testOnDeviceEnabled: () => false,
+        );
+        addTearDown(service.dispose);
+
+        final result = await service.extractText(OCRTestImages.mediumQuality);
+
+        expect(result.isSuccessful, isFalse);
+        final breakers =
+            result.metadata['circuit_breakers'] as Map<String, dynamic>;
+        expect(breakers.containsKey('on_device_state'), isFalse);
+        expect(breakers.containsKey('ocr_space_state'), isTrue);
+      },
+    );
+
+    test('a read that sanitizes away is not accepted', () async {
+      // Long enough (12 chars) to clear RecipeTextHeuristic's <10 length
+      // rejection, so the fall-through is caused by SANITIZATION, not by the
+      // length check. C0 controls are not White_Space, so they survive Dart's
+      // trim() and only vanish when sanitized.
+      //
+      // Honest about what this does NOT pin: the `text.isNotEmpty` guard is
+      // redundant — an empty string fails looksLikeRecipe anyway — so removing
+      // it leaves this green. What it pins is that a read of pure control junk
+      // never reaches the user as an on-device success.
+      final recognizer = _FakeDeviceRecognizer(
+        text:
+            ''
+            '',
+      );
+      final service = buildService(recognizer: recognizer, enabled: true);
+      addTearDown(service.dispose);
+
+      final result = await service.extractText(OCRTestImages.mediumQuality);
+
+      expect(recognizer.calls, equals(1));
+      expect(result.processingMethod, isNot(equals('on_device')));
+      verify(() => mockClient.send(any())).called(1);
+    });
+
+    test('the reported confidence is scored, not a constant', () async {
+      // Regression guard: the first version hardcoded the accept threshold
+      // (0.6) as the reported confidence, which renders as an orange "medium
+      // quality" badge and emitted better-lighting tips on every free read.
+      // `greaterThan(0.6)` alone would not catch a DIFFERENT constant, so the
+      // discriminator is that two texts of different quality score
+      // DIFFERENTLY.
+      final rich = _FakeDeviceRecognizer(
+        text:
+            'Ingredienser för 4 portioner: 2 dl mjöl, 3 msk smör, 1 tsk salt. '
+            'Gör så här: Vispa smeten, grädda i ugn och servera genast.',
+      );
+      final richService = buildService(recognizer: rich, enabled: true);
+      addTearDown(richService.dispose);
+      final richResult = await richService.extractText(
+        OCRTestImages.mediumQuality,
+      );
+
+      // Both fixtures must clear the 0.6 accept threshold — the point is
+      // that they score DIFFERENTLY, not that one is rejected.
+      final plain = _FakeDeviceRecognizer(
+        text: 'Blanda 2 dl mjöl med 1 dl mjölk och grädda i ugnen.',
+      );
+      final plainService = buildService(recognizer: plain, enabled: true);
+      addTearDown(plainService.dispose);
+      final plainResult = await plainService.extractText(
+        OCRTestImages.uniqueImage(77),
+      );
+
+      expect(richResult.processingMethod, equals('on_device'));
+      expect(plainResult.processingMethod, equals('on_device'));
+      expect(richResult.confidence, greaterThan(0.6));
+      expect(richResult.confidence, greaterThan(plainResult.confidence));
+    });
+
+    test(
+      'a repeat of the same image is served from cache, not re-read',
+      () async {
+        // The money claim is "no network on repeat" — but it is also "no second
+        // recognition". If tier 0 skipped the cache write, this stays green only
+        // because the recognizer is cheap, so assert the call count directly.
+        final recognizer = _FakeDeviceRecognizer(
+          text: 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.',
+        );
+        final service = buildService(recognizer: recognizer, enabled: true);
+        addTearDown(service.dispose);
+
+        final first = await service.extractText(OCRTestImages.mediumQuality);
+        final second = await service.extractText(OCRTestImages.mediumQuality);
+
+        expect(first.text, equals(second.text));
+        expect(recognizer.calls, equals(1));
+        verifyNever(() => mockClient.send(any()));
+      },
+    );
+
+    test('a device-read recipe never reaches a paid provider', () async {
+      final recognizer = _FakeDeviceRecognizer(
+        text: 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.',
+      );
+      final service = buildService(recognizer: recognizer, enabled: true);
+      addTearDown(service.dispose);
+
+      final result = await service.extractText(OCRTestImages.mediumQuality);
+
+      expect(result.isSuccessful, isTrue);
+      expect(result.processingMethod, equals('on_device'));
+      expect(recognizer.calls, equals(1));
+      verifyNever(() => mockClient.send(any()));
+    });
+
+    test('device-read text is SANITIZED before it is stored', () async {
+      // The three paid tiers already run sanitizeText; tier 0 shipped without
+      // it, and every other fixture in this group is plain Swedish — on which
+      // the sanitizer is the identity function. So the missing call was
+      // invisible to the whole suite. This fixture carries the two things
+      // sanitizeText actually removes: a Cyrillic homoglyph 'а' (U+0430) hiding
+      // inside an ordinary word, and a C0 control byte.
+      //
+      // It matters because `photo_import_strategy` persists `ocrResult.text`
+      // straight to the draft and it later leaves the device in a GDPR export,
+      // so which characters survive must not depend on which tier answered.
+      final recognizer = _FakeDeviceRecognizer(
+        // Escapes, not literal characters: a Cyrillic homoglyph and a
+        // control byte are invisible in an editor and would be silently
+        // 'tidied' back into plain Latin, leaving the test proving nothing.
+        text:
+            'Ingredienser\n2 dl mj\u00f6l\n'
+            'Visp\u0430 smeten och gr\u00e4dda i ugn.\u0007',
+      );
+      final service = buildService(recognizer: recognizer, enabled: true);
+      addTearDown(service.dispose);
+
+      final result = await service.extractText(OCRTestImages.mediumQuality);
+
+      expect(
+        result.processingMethod,
+        equals('on_device'),
+        reason:
+            'positive control — without this, a fall-through to a paid tier '
+            'would satisfy the two absence assertions just as well',
+      );
+      expect(result.text.contains('а'), isFalse);
+      expect(result.text.contains(''), isFalse);
+      expect(result.text, contains('Vispa smeten'));
+    });
+
+    test('text that is not recipe-shaped falls through to OCR.space', () async {
+      // A parking receipt: no measurements, no cooking verbs. The gate must
+      // reject it rather than let a non-recipe short-circuit the chain.
+      final recognizer = _FakeDeviceRecognizer(
+        text: 'PARKERINGSBILJETT\nZon 4\nGiltig till 14:32',
+      );
+      final service = buildService(recognizer: recognizer, enabled: true);
+      addTearDown(service.dispose);
+
+      final result = await service.extractText(OCRTestImages.mediumQuality);
+
+      expect(recognizer.calls, equals(1));
+      expect(result.processingMethod, isNot(equals('on_device')));
+      verify(() => mockClient.send(any())).called(1);
+    });
+
+    test('a PARTIAL read clears the heuristic but not the confidence '
+        'bar', () async {
+      // The discriminating pair for the confidence gate. Both fixtures pass
+      // RecipeTextHeuristic identically (one measurement + one cooking verb),
+      // so the ONLY thing separating them is _calculateConfidenceFromText's
+      // 30-character step: 0.5 for the short read, 0.7 for the long one. That
+      // makes this the sole shape in the suite that can see the >= 0.6 bar —
+      // every other fixture here is long enough to score 0.7 regardless.
+      //
+      // It matters because an accepted partial read is cached for 24 h and the
+      // paid chain is never consulted, so the user keeps half a recipe while
+      // the identical string from OCR.space would have been rejected.
+      final partial = _FakeDeviceRecognizer(text: '2 dl mjöl\nvispa');
+      final partialService = buildService(
+        recognizer: partial,
+        enabled: true,
+      );
+      addTearDown(partialService.dispose);
+
+      final rejectedResult = await partialService.extractText(
+        OCRTestImages.mediumQuality,
+      );
+
+      expect(partial.calls, equals(1));
+      expect(rejectedResult.processingMethod, isNot(equals('on_device')));
+      expect(
+        (partialService.getUsageStats()['provider_usage']
+            as Map<String, int>)['on_device_rejected'],
+        equals(1),
+      );
+
+      // Control: the same shape, past the 30-character step, is accepted —
+      // so the rejection above is the confidence bar, not the heuristic.
+      final full = _FakeDeviceRecognizer(
+        text: '2 dl mjöl och 1 tsk salt\nvispa smeten väl',
+      );
+      final fullService = buildService(recognizer: full, enabled: true);
+      addTearDown(fullService.dispose);
+
+      final acceptedResult = await fullService.extractText(
+        OCRTestImages.mediumQuality,
+      );
+
+      expect(acceptedResult.processingMethod, equals('on_device'));
+    });
+
+    test('an empty device read falls through to OCR.space', () async {
+      final recognizer = _FakeDeviceRecognizer(text: null);
+      final service = buildService(recognizer: recognizer, enabled: true);
+      addTearDown(service.dispose);
+
+      await service.extractText(OCRTestImages.mediumQuality);
+
+      expect(recognizer.calls, equals(1));
+      verify(() => mockClient.send(any())).called(1);
+    });
+
+    test('flag off means the recognizer is never touched', () async {
+      final recognizer = _FakeDeviceRecognizer(
+        text: 'Ingredienser\n2 dl mjöl\nVispa smeten.',
+      );
+      final service = buildService(recognizer: recognizer, enabled: false);
+      addTearDown(service.dispose);
+
+      final result = await service.extractText(OCRTestImages.mediumQuality);
+
+      expect(recognizer.calls, equals(0));
+      expect(result.processingMethod, isNot(equals('on_device')));
+      verify(() => mockClient.send(any())).called(1);
+    });
+
+    test(
+      'an unavailable recognizer (web stub) is skipped, not failed',
+      () async {
+        final recognizer = _FakeDeviceRecognizer(text: null, available: false);
+        final service = buildService(recognizer: recognizer, enabled: true);
+        addTearDown(service.dispose);
+
+        final result = await service.extractText(OCRTestImages.mediumQuality);
+
+        expect(recognizer.calls, equals(0));
+        expect(result.isSuccessful, isTrue);
+        verify(() => mockClient.send(any())).called(1);
+      },
+    );
+
+    test('a throwing recognizer degrades to the paid chain', () async {
+      final recognizer = _FakeDeviceRecognizer(text: null, throws: true);
+      final service = buildService(recognizer: recognizer, enabled: true);
+      addTearDown(service.dispose);
+
+      final result = await service.extractText(OCRTestImages.mediumQuality);
+
+      expect(result.isSuccessful, isTrue);
+      verify(() => mockClient.send(any())).called(1);
+
+      // The catch is the ONLY branch the on-device timeout can reach, so a
+      // stuck platform channel — the exact event the timeout exists for — was
+      // invisible to the tracker whose accept-rate split the flag decision
+      // rests on. Both the usage key and the breaker live in that catch and
+      // neither was asserted anywhere.
+      final stats = service.getUsageStats();
+      final usage = stats['provider_usage'] as Map<String, int>;
+      expect(usage['on_device_error'], equals(1));
+      expect(
+        usage['on_device_rejected'],
+        equals(0),
+        reason: 'a throw is not a heuristic rejection — the two must not merge',
+      );
+      expect(
+        stats['daily_count'],
+        equals(1),
+        reason: 'only the paid leg spends quota; the failed free read is free',
+      );
+      expect(
+        (service.getServiceStatus()['circuit_breakers']
+            as Map<String, dynamic>)['on_device']['failures'],
+        equals(1),
+        reason: 'pins recordFailure() in the same catch',
+      );
+    });
+
+    test('a stalled recognizer is bounded by the timeout', () {
+      // The recognizer's contract is "never throw", so a stuck platform
+      // channel emits no signal at all: without the .timeout() the import
+      // hangs forever — it never falls through to the paid chain and never
+      // trips the breaker. fakeAsync, never a real wait.
+      fakeAsync((async) {
+        final recognizer = _FakeDeviceRecognizer(text: null, stalls: true);
+        final service = buildService(recognizer: recognizer, enabled: true);
+        OCRResult? result;
+        unawaited(
+          service.extractText(OCRTestImages.mediumQuality).then((r) {
+            result = r;
+          }),
+        );
+
+        // Straddle the flip point: a bound that fires early would abandon a
+        // slow-but-working read, which is as wrong as never firing.
+        async.elapse(const Duration(seconds: 14));
+        async.flushMicrotasks();
+        expect(result, isNull);
+
+        async.elapse(const Duration(seconds: 2));
+        async.flushMicrotasks();
+        expect(result?.processingMethod, equals('ocr_space'));
+        expect(recognizer.calls, equals(1));
+      });
+    });
+
+    test('a stalled tier 0 surfaces as a TIMEOUT, not "better lighting"', () {
+      // The stall's TimeoutException is what _classifyProviderErrors reads to
+      // pick the user's Swedish copy. Misclassifying it as `generic` tells a
+      // user with a wedged ML Kit to improve their lighting forever.
+      fakeAsync((async) {
+        when(() => mockResponse.statusCode).thenReturn(500);
+        final service = buildService(
+          recognizer: _FakeDeviceRecognizer(text: null, stalls: true),
+          enabled: true,
+        );
+        OCRResult? result;
+        unawaited(
+          service.extractText(OCRTestImages.mediumQuality).then((r) {
+            result = r;
+          }),
+        );
+        async.elapse(const Duration(seconds: 20));
+        async.flushMicrotasks();
+
+        expect(result!.isSuccessful, isFalse);
+        expect(result!.metadata['failure_classification'], equals('timeout'));
+        expect(
+          (result!.metadata['provider_errors'] as Map)['on_device'],
+          contains('TimeoutException'),
+        );
+      });
+    });
+
+    test(
+      'a heuristic rejection and a broken read are counted separately',
+      () async {
+        // The whole point of the split: accept rate = on_device / (on_device +
+        // on_device_rejected). Folding a broken recognizer into the rejection
+        // counter would file a hardware failure as "the text was not a recipe"
+        // and make the number the flag-flip decision rests on unreadable.
+        // Asserts the LITERAL counter names, so a typo on either reddens.
+        final rejected = buildService(
+          recognizer: _FakeDeviceRecognizer(
+            text: 'PARKERINGSBILJETT\nZon 4\nGiltig till 14:32',
+          ),
+          enabled: true,
+        );
+        addTearDown(rejected.dispose);
+        await rejected.extractText(OCRTestImages.mediumQuality);
+        final rejectedUsage =
+            rejected.getUsageStats()['provider_usage'] as Map<String, int>;
+
+        expect(rejectedUsage['on_device_rejected'], equals(1));
+        expect(rejectedUsage['on_device_error'], equals(0));
+
+        final broken = buildService(
+          recognizer: _FakeDeviceRecognizer(text: null),
+          enabled: true,
+        );
+        addTearDown(broken.dispose);
+        await broken.extractText(OCRTestImages.mediumQuality);
+        final brokenUsage =
+            broken.getUsageStats()['provider_usage'] as Map<String, int>;
+
+        expect(brokenUsage['on_device_error'], equals(1));
+        expect(brokenUsage['on_device_rejected'], equals(0));
+      },
+    );
+
+    test('repeated broken reads open the tier-0 breaker', () async {
+      // Without recordFailure() on the null arm the breaker can never open, so
+      // a device with permanently broken ML Kit pays a platform round-trip on
+      // every import forever. Paid tier fails too, so nothing is cached and
+      // each call really re-enters tier 0.
+      when(() => mockResponse.statusCode).thenReturn(500);
+      final recognizer = _FakeDeviceRecognizer(text: null);
+      final service = buildService(recognizer: recognizer, enabled: true);
+      addTearDown(service.dispose);
+
+      OCRResult? last;
+      for (var i = 0; i < 6; i++) {
+        last = await service.extractText(OCRTestImages.mediumQuality);
+      }
+
+      // 5, not 6: the sixth import found the breaker open and skipped the
+      // round-trip entirely.
+      expect(recognizer.calls, equals(5));
+      // Mirror of the "tier off omits the key" test above: when tier 0 DID
+      // participate the key must be present and carry the real state, which is
+      // what makes the message builder's "services unavailable" reachable.
+      final breakers =
+          last!.metadata['circuit_breakers'] as Map<String, dynamic>;
+      expect(breakers['on_device_state'], equals('open'));
+    });
+
+    test('a heuristic rejection never opens the breaker', () async {
+      // The discriminator against folding the two arms together: a device that
+      // keeps reading non-recipes is working perfectly, and backing off would
+      // silently disable the free tier for anyone photographing receipts.
+      when(() => mockResponse.statusCode).thenReturn(500);
+      final recognizer = _FakeDeviceRecognizer(
+        text: 'PARKERINGSBILJETT\nZon 4\nGiltig till 14:32',
+      );
+      final service = buildService(recognizer: recognizer, enabled: true);
+      addTearDown(service.dispose);
+
+      for (var i = 0; i < 6; i++) {
+        await service.extractText(OCRTestImages.mediumQuality);
+      }
+
+      expect(recognizer.calls, equals(6));
+    });
+
+    test(
+      'on-device-only setup is not reported as "no provider configured"',
+      () async {
+        final recognizer = _FakeDeviceRecognizer(
+          text: 'Ingredienser\n2 dl mjöl\nVispa smeten.',
+        );
+        // No API keys at all — before tier 0 existed this was a hard
+        // misconfiguration; now it is a valid device-only configuration.
+        final service = OCRExtractionService.createForTesting(
+          testHttpClient: mockClient,
+          testDeviceRecognizer: recognizer,
+          testOnDeviceEnabled: () => true,
+        );
+        addTearDown(service.dispose);
+
+        final result = await service.extractText(OCRTestImages.mediumQuality);
+
+        expect(
+          result.processingMethod,
+          isNot(equals('no_provider_configured')),
+        );
+        expect(result.isSuccessful, isTrue);
+      },
+    );
+  });
+}
+
+class _MockFeatureFlags extends Mock implements FeatureFlagService {}
+
+class _FakeDeviceRecognizer implements DeviceTextRecognizer {
+  _FakeDeviceRecognizer({
+    required this.text,
+    this.available = true,
+    this.throws = false,
+    this.stalls = false,
+  });
+
+  final String? text;
+  final bool available;
+  final bool throws;
+
+  /// Models the failure the recognizer's "never throw" contract cannot
+  /// express: a platform channel that simply never answers.
+  final bool stalls;
+  int calls = 0;
+
+  @override
+  bool get isAvailable => available;
+
+  @override
+  Future<String?> recognize(Uint8List imageBytes) async {
+    calls++;
+    if (stalls) await Completer<String?>().future;
+    if (throws) throw StateError('recognizer exploded');
+    return text;
+  }
+
+  @override
+  Future<void> dispose() async {}
 }

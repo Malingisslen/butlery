@@ -28,9 +28,12 @@ class RecipeSaveNavigation {
     required bool navigateToDetail,
   }) {
     if (navigateToDetail) {
+      // BUT-1779: the detail route decodes its argument as a Recipe (or a Map
+      // carrying one) and falls through to the generic error screen otherwise —
+      // a bare id landed every "skriv själv" save on "Sidan kunde inte hittas".
       Navigator.of(context).pushReplacementNamed(
         Routes.recipeDetail,
-        arguments: savedRecipe.id,
+        arguments: savedRecipe,
       );
     } else {
       Navigator.of(context).pop(savedRecipe);

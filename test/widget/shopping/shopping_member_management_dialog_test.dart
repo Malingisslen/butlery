@@ -53,6 +53,15 @@ const _friendId = 'cecilia';
 /// handlers are what this file separates.
 class _RefusingCollaborativeOps extends Fake
     implements CollaborativeShoppingOperations {
+  _RefusingCollaborativeOps({this.permissionChangeSucceeds = false});
+
+  /// The one operation this file lets succeed, for the BUT-1777 rebase test —
+  /// everything else stays refusing, which is what the rest of the file is for.
+  final bool permissionChangeSucceeds;
+
+  /// The base each permission change declared, in order.
+  final List<UnifiedShoppingList> declaredBases = [];
+
   @override
   Future<bool> addMember({
     required String listId,
@@ -72,20 +81,32 @@ class _RefusingCollaborativeOps extends Fake
     required String listId,
     required String userId,
     required SharedListPermission permission,
-  }) async => false;
+    required UnifiedShoppingList viewedBase,
+  }) async {
+    // BUT-1777: recorded so a caller that stops declaring the copy it rendered
+    // cannot pass this file by refusing anyway.
+    declaredBases.add(viewedBase);
+    return permissionChangeSucceeds;
+  }
 }
 
 /// Mirrors the real service's reason slot: parked by the failed mutation, and
 /// self-clearing on read so a later reader cannot pick up someone else's cause
 /// (BUT-1696).
 class _RefusingShoppingService extends Fake implements UnifiedShoppingService {
-  _RefusingShoppingService({String? reason}) : _reason = reason;
+  _RefusingShoppingService({
+    String? reason,
+    bool permissionChangeSucceeds = false,
+  }) : _reason = reason,
+       _ops = _RefusingCollaborativeOps(
+         permissionChangeSucceeds: permissionChangeSucceeds,
+       );
 
-  final CollaborativeShoppingOperations _ops = _RefusingCollaborativeOps();
+  final _RefusingCollaborativeOps _ops;
   String? _reason;
 
   @override
-  CollaborativeShoppingOperations get collaborative => _ops;
+  _RefusingCollaborativeOps get collaborative => _ops;
 
   @override
   String? consumeMutationError() {
@@ -95,20 +116,30 @@ class _RefusingShoppingService extends Fake implements UnifiedShoppingService {
   }
 }
 
-UnifiedShoppingList _sharedList() => UnifiedShoppingList(
-  id: 'list-1',
-  name: 'Familjehandling',
-  ownerId: _ownerId,
-  ownerDisplayName: 'Malin',
-  type: ListType.collaborative,
-  memberPermissions: const {
-    _ownerId: SharedListPermission.admin,
-    _memberId: SharedListPermission.edit,
-  },
-);
+/// [ownerSeated] false is the LEGACY shape: a collaborative list whose
+/// `memberPermissions` never carried its own owner. `initState` seats the owner
+/// into `_localPermissions` for display, so it is the only fixture in which the
+/// declared base and the rendered map DIFFER — and therefore the only one that
+/// can tell which of the two the dialog ships as an access-control claim.
+UnifiedShoppingList _sharedList({bool ownerSeated = true}) =>
+    UnifiedShoppingList(
+      id: 'list-1',
+      name: 'Familjehandling',
+      ownerId: _ownerId,
+      ownerDisplayName: 'Malin',
+      type: ListType.collaborative,
+      memberPermissions: {
+        if (ownerSeated) _ownerId: SharedListPermission.admin,
+        _memberId: SharedListPermission.edit,
+      },
+    );
 
 void main() {
   late AppLocalizations l10n;
+
+  /// The service the dialog under test is talking to, so a test can read back
+  /// what the dialog declared.
+  late _RefusingShoppingService service;
 
   /// The sentence the production mapping actually produces for the refusal the
   /// repository throws — not a copy of the ARB value.
@@ -125,11 +156,12 @@ void main() {
     production.ServiceLocator.initialize(DIContainer());
   });
 
-  void registerService(_RefusingShoppingService service) {
+  void registerService(_RefusingShoppingService created) {
+    service = created;
     if (GetIt.instance.isRegistered<UnifiedShoppingService>()) {
       GetIt.instance.unregister<UnifiedShoppingService>();
     }
-    GetIt.instance.registerSingleton<UnifiedShoppingService>(service);
+    GetIt.instance.registerSingleton<UnifiedShoppingService>(created);
   }
 
   tearDown(() {
@@ -141,8 +173,15 @@ void main() {
   Future<void> pumpDialog(
     WidgetTester tester, {
     required String? parkedReason,
+    bool permissionChangeSucceeds = false,
+    bool ownerSeated = true,
   }) async {
-    registerService(_RefusingShoppingService(reason: parkedReason));
+    registerService(
+      _RefusingShoppingService(
+        reason: parkedReason,
+        permissionChangeSucceeds: permissionChangeSucceeds,
+      ),
+    );
 
     // The dialog content is a fixed 500px column plus title and actions, and
     // the permission dropdown opens an overlay menu — the default 800x600 test
@@ -165,7 +204,7 @@ void main() {
           builder: (context) {
             l10n = context.l10n;
             return ShoppingMemberManagementDialog(
-              list: _sharedList(),
+              list: _sharedList(ownerSeated: ownerSeated),
               userDisplayNames: const {
                 _ownerId: 'Malin',
                 _memberId: 'Bob',
@@ -265,6 +304,82 @@ void main() {
 
       expect(find.text(l10n.shoppingCouldNotAddMembers), findsOneWidget);
       expect(find.text(staleReason), findsNothing);
+    });
+  });
+
+  /// BUT-1777: the repository refuses an access-control change whose declared
+  /// base has drifted from the stored copy. That only means anything if the
+  /// dialog declares what it RENDERED — and then keeps that base honest as it
+  /// changes things itself, or the second change in a session is refused as
+  /// drift the user caused a second ago.
+  group('the declared base tracks what the user is looking at', () {
+    Future<void> changeBobToEdit(WidgetTester tester) async {
+      await tester.tap(find.byType(DropdownButton<SharedListPermission>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.shoppingPermissionEdit).last);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the first change declares the copy the dialog was given', (
+      tester,
+    ) async {
+      // Legacy shape on purpose: with the owner already in `memberPermissions`
+      // the declared base and the rendered map are byte-identical, so shipping
+      // `_localPermissions` instead would pass this test unnoticed.
+      await pumpDialog(
+        tester,
+        parkedReason: staleReason,
+        ownerSeated: false,
+      );
+      await changeBobToAdmin(tester);
+
+      expect(service.collaborative.declaredBases, hasLength(1));
+      final declared = service.collaborative.declaredBases.single;
+      expect(declared.id, 'list-1');
+      expect(
+        declared.memberPermissions,
+        _sharedList(ownerSeated: false).memberPermissions,
+        reason: 'the persisted membership is what the server has to agree with',
+      );
+      expect(
+        declared.memberPermissions.keys,
+        isNot(contains(_ownerId)),
+        reason:
+            'the owner row is a display-only seat this dialog invented; '
+            'declaring it would read as drift against a server that never had '
+            'it, and refuse every permission change on a legacy list',
+      );
+      // Positive control for the assertion above: the seat DID happen, so the
+      // absence is a statement about the declared base, not about the fixture.
+      expect(find.text(l10n.shoppingPermissionOwner), findsOneWidget);
+      expect(find.text('Malin'), findsOneWidget);
+    });
+
+    testWidgets('a second change declares the base this dialog already moved', (
+      tester,
+    ) async {
+      await pumpDialog(
+        tester,
+        parkedReason: null,
+        permissionChangeSucceeds: true,
+      );
+      await changeBobToAdmin(tester);
+      await changeBobToEdit(tester);
+
+      final bases = service.collaborative.declaredBases;
+      expect(bases, hasLength(2));
+      expect(
+        bases.first.memberPermissions[_memberId],
+        SharedListPermission.edit,
+      );
+      expect(
+        bases.last.memberPermissions[_memberId],
+        SharedListPermission.admin,
+        reason:
+            'the dialog owns the change it just persisted; re-declaring the '
+            'pre-change copy would have the repository refuse the second '
+            'change as drift the user caused themselves',
+      );
     });
   });
 }

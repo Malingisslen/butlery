@@ -32,12 +32,49 @@ files in the same edit.
   opened the thread discloses nothing new, and stripping it would leave opaque UIDs that fail
   Art. 12(1); an avatar URL is a durable dereferenceable pointer to another person's photo that
   outlives the app and buys the requester nothing. **Malin's explicit call, 2026-07-30.** Governs
-  `conversation_info` and the message rows under it. **Now LIVE:** BUT-1767 repointed the query at
-  the top-level `messages` collection the same day, so the section ships instead of failing
-  (`messages-export-failed`), and the per-row avatar strip is covered too. `perUserSettings` carries
-  other participants' mute/pin/archive state and is still NOT decided by this entry — pending
-  BUT-1774 the export narrows it to the requester's own entry, which is a conservative default, not
-  a verdict. BUT-1772/BUT-1767, 2026-07-30
+  `conversation_info`, the message rows under it, **and — since BUT-1775 — the shared-recipe and
+  shared-menu rows' `sharedByAvatarUrl`**, all through one shared helper so the sections cannot
+  drift apart. **Now LIVE:** BUT-1767 repointed the query at the top-level `messages` collection the
+  same day, so the section ships instead of failing (`messages-export-failed`). The MENU half only
+  became live when `exportSharedMenusReceived` was repointed from the top-level `menus` collection
+  (which carries neither `sharedToUserIds` nor `sharedByAvatarUrl`) to `shared_content` — until
+  then that section had never returned a row, so nothing leaked and nothing was redacted. Do not
+  cite this entry as evidence that a menu-avatar leak ever reached a bundle.
+  **Extended 2026-08-01 (BUT-1798):** the same avatar strip now also covers the SHOPPING-LIST rows
+  in `shared_content`, added to the export the same day. Still one shared helper — the reason this
+  clause exists is that three sections implementing one decision separately is how they drift.
+  BUT-1772/BUT-1767/BUT-1775/BUT-1798, 2026-07-30
+- **The `shared_content` export sections keep other recipients' UIDs (under BOTH spellings
+  `sharedToUserIds` and `sharedWithUserIds`) and the sharer's `sharedByDisplayName`** — scoped to
+  rows where the requester is a RECIPIENT. **Malin's explicit call, 2026-08-01.** She was shown
+  exactly what leaves the device for one row: the other recipients' UID list, the sharer's display
+  name, the recipe title, the share timestamp, and `sharedByAvatarUrl` already stripped. Reasoned on
+  its own merits — the requester's own client can already read every one of these documents under
+  `firestore.rules` :720-728, and opaque UIDs with no name would fail Art. 12(1). This is **not**
+  derived from BUT-1732 or BUT-1772: BUT-1732 decided a different collection and DROPPED other
+  members' names, BUT-1772 decided conversation participants; citing either as authority here is the
+  precise error the BUT-1732 entry records having made. Both spellings are named deliberately — the
+  writers emit the same list twice, and an entry naming one invites a future reviewer to strip the
+  other "for consistency". BUT-1798, 2026-08-01
+- **Inside a shared shopping list's nested `listData` copy, other members' DISPLAY NAMES are
+  stripped; their UIDs and permission levels are KEPT; the requester's own name is kept** — covers
+  `ownerDisplayName`, `lastActivityByDisplayName` and, per item, `addedByDisplayName`,
+  `purchasedByDisplayName` and `lastModifiedByDisplayName`. **Malin's explicit call, 2026-08-01.**
+  A shopping-list share embeds a whole copy of the sender's list, so the section's top-level avatar
+  strip never reached inside it. This deliberately follows BUT-1732 (the same data, seen from the
+  same angle: a shopping list someone else controls) rather than the wrapper-level call in the entry
+  above, which governs the sharer's single name on the share document, not a roster of everyone who
+  ever touched the list. The asymmetry between the two entries is the decision, not an oversight.
+  The walk fails CLOSED — an unrecognised shape drops the name. BUT-1798, 2026-08-01
+- **Other participants' `perUserSettings` are STRIPPED from the conversations export;
+  `lastReadTimestamps` are KEPT** — the two fields BUT-1772 deliberately left open, split rather
+  than decided together. **Malin's explicit call, 2026-07-30 (BUT-1774).** Another member's
+  mute/pin/archive state is pure third-party behaviour the client never renders for anyone but
+  yourself, so the "you have already seen it in the app" argument that saved the names does not
+  reach it; a read timestamp sits inside the requester's own thread history and does have a weak
+  counterpart on screen (`MessageStatus.read` shows *that* a message was read, not when). Do not
+  propose stripping `lastReadTimestamps` "for consistency" — the asymmetry is the verdict.
+  BUT-1774, 2026-07-30
 - **A colon-terminated bare GLUTEN word rescued into the flat ingredient list must ALSO be
   exempted from `isValidIngredient`, `isGarbage` and the `_deduplicateIngredients` containment
   branch in BOTH directions** — refusing the heading is not sufficient on its own, and the
@@ -52,6 +89,12 @@ files in the same edit.
   The 2026-07-04 "deliberately ungated" entry was stale; both creates carry `isAgeCompliant()`
   (BUT-1418/ADR-0002) and four rules tests deny a missing or false claim. Malin resolved it in
   favour of the code on 2026-07-24. Never remove either gate citing the old entry. 2026-07-24
+- **Feature-retention DAILY AGGREGATES keep a deleted user's contribution, and the per-user
+  rows get a cascade step rather than a TTL** — `analytics/feature_retention/users/{uid}_{date}`
+  is erased by `deleteFeatureRetentionFlags`; `daily/{date}` holds five integers and a date, no
+  uid, so Art. 17 does not reach it and history is never recomputed. A TTL is NOT an option on
+  those rows: their collectionGroup id is `users`, the same as the profile collection, so the
+  policy would arm over real user documents. BUT-1789, 2026-08-01
 - **A colon-terminated bare GLUTEN word stays an INGREDIENT; every other allergen
   keeps colon-wins** — "Mjöl:"/"Råg:"/"Öl:" are as likely a quantity-less OCR row as
   a heading, and a heading leaves the tagging input; "Mjölk:"/"Ägg:"/"Soja:" stay

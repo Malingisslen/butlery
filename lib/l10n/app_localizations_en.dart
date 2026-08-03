@@ -13162,6 +13162,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeSharingRevoke => 'Revoke sharing';
 
   @override
+  String get recipeSharingRemoveGroup => 'Remove the group';
+
+  @override
   String recipeSharingRevokeConfirm(String name) {
     return 'Stop sharing with $name?';
   }
@@ -13169,6 +13172,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String recipeSharingRevokeSuccess(String name) {
     return 'Sharing with $name stopped';
+  }
+
+  @override
+  String recipeSharingRevokeGroupConfirm(String name) {
+    return 'Remove the group $name from this share?';
+  }
+
+  @override
+  String recipeSharingRevokeGroupSuccess(String name) {
+    return 'Group $name removed. Its members still have access — revoke them one by one under Friends.';
   }
 
   @override
@@ -14617,6 +14630,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get duplicateMergeSuccess => 'Recipe has been merged';
+
+  @override
+  String get duplicateMergeFailed => 'Could not merge the recipe';
 
   @override
   String get duplicateMergeNoTime => 'No time';

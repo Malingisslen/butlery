@@ -1,15 +1,20 @@
 /**
  * Send Weekly Activity Digest
  *
- * Scheduled every Monday at 8 AM UTC. For each recently active user,
- * aggregates their weekly activity (new recipes, comments) and writes
- * a notification to their notifications subcollection.
+ * Runs every Monday 08:00 UTC as the FIRST task in `weeklyReports` (see
+ * `functions/src/scheduled/maintenance-dispatchers.ts`); it no longer owns a
+ * Cloud Scheduler job of its own. It is deliberately first in that chain
+ * because it is the only user-facing task in it — its send time is preserved
+ * to the minute, and `northStarWeekly` (a report) runs after it.
+ *
+ * For each recently active user, aggregates their weekly activity (new
+ * recipes, comments) and writes a notification to their notifications
+ * subcollection.
  *
  * Firestore writes:
  * /users/{userId}/notifications/{auto} — activity_digest notification
  */
 
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
@@ -23,11 +28,21 @@ const getDb = () => admin.firestore();
 
 const USER_BATCH_SIZE = 100;
 
-export const sendWeeklyActivityDigest = onSchedule(
-  { schedule: "0 8 * * 1", timeZone: "UTC" },
-  async () => {
-    const db = getDb();
-    const now = admin.firestore.Timestamp.now();
+/** Injection seam for tests — mirrors `RunDeps` in `daily-snapshots.ts`. */
+export interface RunDeps {
+  db?: admin.firestore.Firestore;
+  now?: Date;
+}
+
+export async function runWeeklyActivityDigest(
+  deps: RunDeps = {},
+): Promise<void> {
+  {
+    const db = deps.db ?? getDb();
+    const now =
+      deps.now != null
+        ? admin.firestore.Timestamp.fromMillis(deps.now.getTime())
+        : admin.firestore.Timestamp.now();
     const sevenDaysAgo = admin.firestore.Timestamp.fromMillis(
       now.toMillis() - 7 * 24 * 60 * 60 * 1000
     );
@@ -207,4 +222,4 @@ export const sendWeeklyActivityDigest = onSchedule(
     }
 
   }
-);
+}

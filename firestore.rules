@@ -1529,10 +1529,38 @@ service cloud.firestore {
         )
         && rateLimitWrite('conversations', 10);
 
-      // Can update if you're a participant (but cannot modify participantIds or createdAt)
+      // Can update if you're a participant (but cannot modify participantIds,
+      // createdAt or the recorded creator).
+      //
+      // BUT-1788: metadata.creatorId must be immutable, not just create-bound.
+      // Two server-side functions treat it as a trustworthy admin identity —
+      // enforceGroupMinorMembership (BUT-1626) and leaveGroupConversation's
+      // authorizeDeparture. The create rule above binds it to the caller, but
+      // affectedKeys() is TOP-LEVEL: 'metadata' is not in the deny list, so
+      // without the conjunct below any group participant could
+      // update({metadata: {creatorId: <own uid>}}) and then call
+      // leaveGroupConversation to remove the real creator and every other
+      // member — the group-takeover primitive that function exists to avoid.
       allow update: if isAuthenticated() && request.auth.uid in resource.data.participantIds
         && !request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['participantIds', 'createdAt']);
+            .hasAny(['participantIds', 'createdAt'])
+        //
+        // The `is map` ternary is load-bearing, not defensive noise. In rules CEL
+        // `.get(k, default)` returns the default only when the key is ABSENT; a key
+        // present with value null returns null, and `.get()` on null is an evaluation
+        // error — a blanket deny. `ConversationDto.toFirestore` emits
+        // `'metadata': conversation.metadata` unconditionally and every message write
+        // batches it, so the bare spelling denied message sending on every conversation
+        // whose stored metadata was null. The ternary collapses absent, null and
+        // non-map to the SAME value (null) on both sides, which is also what keeps the
+        // takeover shut: adding a creatorId where none was stored yields
+        // non-null == null → deny, and the invariant is monotonic, so there is no
+        // two-step laundering path (write metadata as a string first, then as a map
+        // with your own uid — the second write still denies).
+        && (request.resource.data.get('metadata', {}) is map
+            ? request.resource.data.get('metadata', {}).get('creatorId', null) : null)
+           == (resource.data.get('metadata', {}) is map
+            ? resource.data.get('metadata', {}).get('creatorId', null) : null);
 
       // Can delete if you're a participant
       allow delete: if isAuthenticated() && request.auth.uid in resource.data.participantIds;

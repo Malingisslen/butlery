@@ -101,6 +101,63 @@ void main() {
       });
     });
 
+    group('circuit-breaker branch (tier 0)', () {
+      // The three paid providers down. Only `on_device_state` varies, so each
+      // case below differs from the others in exactly one field.
+      const paidProvidersDown = {
+        'ocr_space_state': 'open',
+        'google_vision_state': 'open',
+        'tesseract_state': 'open',
+      };
+
+      OCRResult withBreakers(Map<String, dynamic> breakers) =>
+          _result(metadata: {'circuit_breakers': breakers});
+
+      test('a HEALTHY on-device tier suppresses "services unavailable"', () {
+        // The discriminating case, and the reason the on-device clause exists:
+        // tier 0 ran fine and merely read something that was not a recipe.
+        // Telling that user the OCR services are unreachable is wrong — and
+        // without this test, dropping the on-device conjunct entirely leaves
+        // every other case in the repo green.
+        final message = OcrErrorMessageBuilder.build(
+          withBreakers({...paidProvidersDown, 'on_device_state': 'closed'}),
+        ).message;
+
+        expect(
+          message,
+          isNot(contains(AppLocale.current.errorOcrServicesUnavailable)),
+        );
+        expect(message, contains(AppLocale.current.errorNoTextExtracted));
+      });
+
+      test('an OPEN on-device tier reports "services unavailable"', () {
+        // Positive control for the case above: same fixture, one field
+        // changed, opposite copy.
+        final message = OcrErrorMessageBuilder.build(
+          withBreakers({...paidProvidersDown, 'on_device_state': 'open'}),
+        ).message;
+
+        expect(
+          message,
+          contains(AppLocale.current.errorOcrServicesUnavailable),
+        );
+      });
+
+      test('an ABSENT on-device key counts as down', () {
+        // The service omits the key when tier 0 never participated (flag off —
+        // the default). Reading absence as "healthy" would make this message
+        // unreachable for almost every user.
+        final message = OcrErrorMessageBuilder.build(
+          withBreakers(paidProvidersDown),
+        ).message;
+
+        expect(
+          message,
+          contains(AppLocale.current.errorOcrServicesUnavailable),
+        );
+      });
+    });
+
     group('result record fields', () {
       test('qualityScore + recommendations are copied from metadata, '
           'confidence from the OCR result', () {

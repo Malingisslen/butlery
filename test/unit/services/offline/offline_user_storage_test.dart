@@ -658,6 +658,133 @@ void main() {
           ).called(1);
         },
       );
+
+      /// The third marker, and the one the cross-language contract names.
+      /// `STALE_TAG_MARKERS` in `cleanup-deleted-ingredients.ts` lists all
+      /// three and says this Dart list is its counterpart — "the Dart side is
+      /// what actually re-runs the tagger". `bulk-retag.ts` is the writer.
+      ///
+      /// `coverage: 0.5` is load-bearing for TWO reasons here. It keeps the
+      /// fixture out of the never-tagged branch, and it matches production:
+      /// the drain writes only the dotted field
+      /// `core.tagResult.generatorVersion`, so a drained recipe KEEPS its
+      /// original coverage. A 0.0 fixture would be answered by the
+      /// zero-coverage branch and would stay green with the marker deleted.
+      test(
+        'should queue SyncOperation.tag when recipe has outdated version',
+        () async {
+          final baseRecipe = RecipeBuilder()
+              .withId('recipe_outdated')
+              .withTitle('Outdated Marker Recipe')
+              .build();
+
+          final recipe = Recipe(
+            core: baseRecipe.core.copyWith(
+              tagResult: TagResult(
+                tags: {'middag'},
+                allergenStatus: {},
+                dietaryStatus: {},
+                coverage: 0.5,
+                generatedAt: DateTime.now(),
+                generatorVersion: 'outdated',
+              ),
+            ),
+            type: baseRecipe.type,
+          );
+
+          const userId = 'user_123';
+
+          when(
+            () => mockRecipeDao.upsertRecipe(
+              id: any(named: 'id'),
+              userId: any(named: 'userId'),
+              recipeJson: any(named: 'recipeJson'),
+              needsSync: any(named: 'needsSync'),
+            ),
+          ).thenAnswer((_) async {});
+
+          when(
+            () => mockSyncQueueDao.enqueue(
+              userId: any(named: 'userId'),
+              recipeId: any(named: 'recipeId'),
+              operation: any(named: 'operation'),
+            ),
+          ).thenAnswer((_) async => 1);
+
+          await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+
+          verify(
+            () => mockSyncQueueDao.enqueue(
+              userId: userId,
+              recipeId: recipe.id,
+              operation: SyncOperation.tag,
+            ),
+          ).called(1);
+        },
+      );
+
+      /// BUT-1794 twin. `on-ingredient-properties-changed.ts` stamps
+      /// `stale-properties`, not `stale-ingredient` — a different marker from a
+      /// different cascade. Until this test existed the literal appeared only
+      /// in `lib/` and `functions/src/`, so dropping it from `_needsRetagging`
+      /// reddened nothing while the affected recipes silently kept allergen
+      /// tags computed from the ingredient's PREVIOUS properties. Those are the
+      /// allergen-relevant ones, which is why this is not a cosmetic gap.
+      test(
+        'should queue SyncOperation.tag when recipe has stale-properties version',
+        () async {
+          final baseRecipe = RecipeBuilder()
+              .withId('recipe_stale_props')
+              .withTitle('Stale Properties Recipe')
+              .build();
+
+          final recipe = Recipe(
+            core: baseRecipe.core.copyWith(
+              tagResult: TagResult(
+                tags: {'middag'},
+                allergenStatus: {},
+                dietaryStatus: {},
+                // Deliberately non-zero: a 0.0 coverage would be answered by
+                // the "never tagged" branch above and prove nothing about the
+                // marker.
+                coverage: 0.5,
+                generatedAt: DateTime.now(),
+                generatorVersion: 'stale-properties',
+              ),
+            ),
+            type: baseRecipe.type,
+          );
+
+          const userId = 'user_123';
+
+          when(
+            () => mockRecipeDao.upsertRecipe(
+              id: any(named: 'id'),
+              userId: any(named: 'userId'),
+              recipeJson: any(named: 'recipeJson'),
+              needsSync: any(named: 'needsSync'),
+            ),
+          ).thenAnswer((_) async {});
+
+          when(
+            () => mockSyncQueueDao.enqueue(
+              userId: any(named: 'userId'),
+              recipeId: any(named: 'recipeId'),
+              operation: any(named: 'operation'),
+            ),
+          ).thenAnswer((_) async => 1);
+
+          await storage.saveRecipeForUser(recipe, userId, isOnline: false);
+
+          verify(
+            () => mockSyncQueueDao.enqueue(
+              userId: userId,
+              recipeId: recipe.id,
+              operation: SyncOperation.tag,
+            ),
+          ).called(1);
+        },
+      );
     });
   });
 }

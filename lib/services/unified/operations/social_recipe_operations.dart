@@ -168,6 +168,18 @@ class SocialRecipeOperations {
     );
   }
 
+  /// BUT-1785: group sharees are keyed by `socialData.categoryIds`, so they
+  /// need their own path — [removeMember] only ever matches user ids.
+  Future<bool> removeGroup({
+    required String recipeId,
+    required String groupId,
+  }) async {
+    return await _memberManager.removeGroup(
+      recipeId: recipeId,
+      groupId: groupId,
+    );
+  }
+
   Future<bool> updateMemberPermission({
     required String recipeId,
     required String userId,

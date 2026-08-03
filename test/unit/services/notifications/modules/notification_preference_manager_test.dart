@@ -322,6 +322,167 @@ void main() {
         expect(prefs.soundEnabled, isTrue);
         expect(prefs.vibrationEnabled, isTrue);
       });
+
+      /// BUT-1782 acceptance criterion 2. The reported symptom: one transient
+      /// Firestore read error reset an explicit opt-out. The old code treated
+      /// EVERY read failure as "no document yet", built defaults, wrote them to
+      /// Firestore and overwrote the local cache with them — so the reset was
+      /// BUT-1799. Every existing install carries the literal `'{}'` in this
+      /// SharedPreferences slot, written by the pre-BUT-1782 `toJson()` stub.
+      /// `fromJson('{}')` answers with `defaults()`; `tryFromJson('{}')`
+      /// answers null. The difference is invisible on the FAILING call — both
+      /// hand back a defaults-shaped object — so the discriminating assertion
+      /// is on the SECOND call, after the repository recovers. Under the
+      /// reverted spelling `getPreferences` caches those defaults for the full
+      /// 10-minute window and the recovered read can never win.
+      test(
+        "a legacy '{}' cache is discarded, not read as \"user is on defaults\"",
+        () async {
+          SharedPreferences.setMockInitialValues({
+            'notification_preferences_test-user-123': '{}',
+          });
+          preferenceManager.clearCache();
+
+          when(
+            () => mockRepository.getNotificationPreferences(any()),
+          ).thenThrow(Exception('network unavailable'));
+
+          await preferenceManager.getPreferences();
+
+          // The repository recovers, carrying the user's REAL settings.
+          final realPrefs = NotificationPreferences(
+            enabled: false,
+            categorySettings:
+                NotificationPreferences.defaults().categorySettings,
+            typeSettings: NotificationPreferences.defaults().typeSettings,
+            allowBatching: false,
+            digestFrequency: 'weekly',
+            quietHoursStart: null,
+            quietHoursEnd: null,
+            soundEnabled: false,
+            vibrationEnabled: false,
+            lastUpdated: DateTime.now(),
+          );
+          when(
+            () => mockRepository.getNotificationPreferences(any()),
+          ).thenAnswer((_) async => realPrefs);
+
+          final second = await preferenceManager.getPreferences();
+
+          expect(
+            second.enabled,
+            isFalse,
+            reason:
+                'fromJson would have cached defaults() for ten minutes, so the '
+                'recovered read could never win and the user would appear to '
+                'be on factory settings',
+          );
+          expect(second.digestFrequency, equals('weekly'));
+        },
+      );
+
+      /// The poisoned payload must also be EVICTED, or it is re-decoded and
+      /// re-warned on every read failure until a successful repository read
+      /// happens to overwrite it.
+      test(
+        'the unusable payload is evicted, not left to be re-decoded',
+        () async {
+          SharedPreferences.setMockInitialValues({
+            'notification_preferences_test-user-123': '{}',
+          });
+          preferenceManager.clearCache();
+
+          when(
+            () => mockRepository.getNotificationPreferences(any()),
+          ).thenThrow(Exception('network unavailable'));
+
+          await preferenceManager.getPreferences();
+
+          final prefs = await SharedPreferences.getInstance();
+          expect(
+            prefs.getString('notification_preferences_test-user-123'),
+            isNull,
+          );
+        },
+      );
+
+      /// permanent and server-side.
+      test(
+        'a repository read error falls back to the SAVED preferences and '
+        'writes nothing',
+        () async {
+          // Arrange: a real, explicitly non-default saved state, persisted the
+          // way production persists it (updatePreferences writes both sinks).
+          final savedPrefs = NotificationPreferences(
+            enabled: false,
+            categorySettings:
+                NotificationPreferences.defaults().categorySettings,
+            typeSettings: NotificationPreferences.defaults().typeSettings,
+            allowBatching: false,
+            digestFrequency: 'weekly',
+            quietHoursStart: const TimeOfDay(hour: 21, minute: 30),
+            quietHoursEnd: const TimeOfDay(hour: 7, minute: 15),
+            soundEnabled: false,
+            vibrationEnabled: false,
+            lastUpdated: DateTime.now(),
+          );
+          await preferenceManager.updatePreferences(savedPrefs);
+          // Force the next call past the in-memory cache — the fallback is what
+          // is under test, not the cache.
+          preferenceManager.clearCache();
+
+          // The transient failure.
+          when(
+            () => mockRepository.getNotificationPreferences(any()),
+          ).thenThrow(Exception('network unavailable'));
+
+          // Only writes made from HERE ON count — the arrange step above wrote
+          // once on purpose.
+          clearInteractions(mockRepository);
+
+          // Act
+          final result = await preferenceManager.getPreferences();
+
+          // Assert: the user's own choices come back, not defaults.
+          expect(result.enabled, isFalse);
+          expect(result.digestFrequency, equals('weekly'));
+          expect(result.soundEnabled, isFalse);
+          expect(result.vibrationEnabled, isFalse);
+          expect(result.allowBatching, isFalse);
+          expect(
+            result.quietHoursStart,
+            equals(const TimeOfDay(hour: 21, minute: 30)),
+          );
+
+          // And nothing was written back — defaults must never be persisted
+          // from a read error. This is the half that made the old bug
+          // PERMANENT: the reset survived the next successful read.
+          verifyNever(
+            () => mockRepository.updateNotificationPreferences(any(), any()),
+          );
+        },
+      );
+
+      test(
+        'a read error with no local copy serves defaults WITHOUT persisting '
+        'them',
+        () async {
+          SharedPreferences.setMockInitialValues({});
+          preferenceManager.clearCache();
+          when(
+            () => mockRepository.getNotificationPreferences(any()),
+          ).thenThrow(Exception('network unavailable'));
+
+          clearInteractions(mockRepository);
+
+          final result = await preferenceManager.getPreferences();
+
+          expect(result.enabled, isTrue);
+          verifyNever(
+            () => mockRepository.updateNotificationPreferences(any(), any()),
+          );
+        },
+      );
     });
 
     group('Permission Validation', () {

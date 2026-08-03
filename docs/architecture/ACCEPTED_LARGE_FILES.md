@@ -72,7 +72,7 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | `firebase_user_repository.dart` | 874 | User profile CRUD + settings + GDPR cascade methods (BUT-498). Row refreshed 2026-07-25 (was recorded at 791). |
 | `firebase_ingredient_repository.dart` | 562 | Ingredient CRUD + batch operations |
 | `firebase_friends_repository.dart` | 507 | Explicit facade coordinating three focused sub-repositories |
-| `firebase_data_export_repository.dart` | 783 | Read-only GDPR export gateway — funnels ~30 residual-collection reads through one ownership-guarded query helper (`_guardSelfExport`/`_queryList`). Transitional-by-design per BUT-501 (shrinks as typed `exportXxxByUser` repos grow); cohesive one-method-per-collection, splitting would scatter the single ownership choke-point. +80 from BUT-1450 notification analytics. |
+| `firebase_data_export_repository.dart` | 877 | Read-only GDPR export gateway — funnels ~30 residual-collection reads through one ownership-guarded query helper (`_guardSelfExport`/`_queryList`). Transitional-by-design per BUT-501 (shrinks as typed `exportXxxByUser` repos grow); cohesive one-method-per-collection, splitting would scatter the single ownership choke-point. +80 from BUT-1450 notification analytics. +94 from BUT-1774/1775/1798 (shared_content legs repointed, and the shopping-list leg that had never been exported at all). |
 | `firebase_social_request_repository.dart` | 520 | Single unified social-request collection; clean extension of base repo class |
 | `firebase_analytics_repository.dart` | 608 | Analytics writes with per-install salted SHA-256 PII hashing (GDPR Art.7); single-concern repository |
 | `algolia_search_repository.dart` | 515 | Single search backend; deliberate Algolia bypass rationale documented in code |
@@ -108,7 +108,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `unified_friends_service.dart` | 616 | Friends service facade |
 | `personal_shopping_operations.dart` | 574 | Personal shopping list CRUD |
 | `fcm_service.dart` | 728 | FCM push notification service |
-| `recipe_sharing_manager.dart` | 604 | Recipe sharing operations module |
+| `recipe_sharing_manager.dart` | 683 | Recipe sharing operations module. +79 from BUT-1774/1798: both membership spellings written, and the create-only `sharedAt` stamping with the fail-open existence probe (a rules `get` on a non-existent doc denies, so the first share of any recipe was silently lost). |
 | `fcm_token_manager.dart` | 652 | FCM token lifecycle management |
 | `deep_link_service.dart` | 559 | Deep link routing service |
 | `llm_tier.dart` | 707 | LLM-based recipe parsing tier |
@@ -191,7 +191,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `content_module.dart` | 858 | DI registrations for content layer |
 | `edit_recipe_view.dart` | 707 | Recipe editing screen (drifted +29 from 639 — BUT-550 reconciled 2026-05-28) |
 | `user_profile_edit_view.dart` | 390 | Facade-extracted to `lib/views/social/user_profile_edit/` per BUT-1154 (was 832, now 390 — well under 500; kept in table for history) |
-| `ocr_extraction_service.dart` | 1,020 | OCR-based recipe image extraction |
+| `ocr_extraction_service.dart` | 1,142 | OCR-based recipe image extraction (+121 for the free on-device tier 0, 2026-08-02) |
 | `auth_view.dart` | 780 | Login/signup screen (drifted +61 from 631 — BUT-550 reconciled 2026-05-28) |
 | `smart_import_view.dart` | 383 | Facade-extracted to `lib/views/smart_import/` per BUT-1154 (was 817, now 383 — well under 500; kept in table for history) |
 | `recipe_form_viewmodel.dart` | 729 | Recipe form VM — delegates to 6 managers |

@@ -3,6 +3,8 @@
 import 'dart:math' show min;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -39,6 +41,21 @@ class ShoppingSocialShareModule {
       final currentUser = _permissionService.currentUser;
       if (currentUser == null) return false;
 
+      // BUT-1775, applying BUT-1705/BUT-1736 — the third writer of this class.
+      // `PermissionService.currentUser` is synthesized from
+      // `FirebaseAuth.currentUser`, so its displayName is the legal name on the
+      // user's Google/Apple account, never a name they chose to expose. It is
+      // persisted here on a `shared_content` document every recipient reads and
+      // on a row in THEIR subtree, and it lands verbatim in their Art. 15
+      // bundle — while `on-profile-updated.ts` only propagates the PROFILE name
+      // and account deletion only scrubs that one, so an Auth-sourced stamp is
+      // both unconsented and un-erasable. `tryGet` keeps the module working
+      // before/without the service graph; an unresolved name stamps the
+      // localized unknown-user label, never an Auth-sourced one.
+      final sharedByDisplayName =
+          ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
+          AppLocale.current.displayUnknownUser;
+
       // Get shopping list data from user's personal lists
       final listDoc = await _firestore
           .collection(FirestoreCollections.users)
@@ -64,10 +81,13 @@ class ShoppingSocialShareModule {
         'description': message?.trim(),
         'listData': listData,
         'sharedByUserId': currentUser.uid,
-        'sharedByDisplayName': currentUser.displayName,
+        'sharedByDisplayName': sharedByDisplayName,
         'sharedByAvatarUrl': currentUser.avatarUrl,
         'sharedAt': FieldValue.serverTimestamp(),
         'sharedWithUserIds': friendIds,
+        // Same list under the spelling `firestore.rules` (:722/:727) and the
+        // GDPR export both speak — see the note in `recipe_sharing_manager`.
+        'sharedToUserIds': friendIds,
         'isActive': true,
         'listType': 'shopping_list_shared',
       };
@@ -91,7 +111,7 @@ class ShoppingSocialShareModule {
         batch.set(shareRecordRef, {
           'sharedListId': sharedListRef.id,
           'sharedByUserId': currentUser.uid,
-          'sharedByDisplayName': currentUser.displayName,
+          'sharedByDisplayName': sharedByDisplayName,
           'listTitle': listTitle,
           'sharedAt': FieldValue.serverTimestamp(),
           'isViewed': false,

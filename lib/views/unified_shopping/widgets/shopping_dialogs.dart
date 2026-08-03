@@ -55,11 +55,13 @@ class ShoppingDialogs {
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
     Function(String) onSuccess,
+    Function(String) onError,
   ) async {
     return ShoppingListOperations.showCreateListDialog(
       context,
       viewModel,
       onSuccess,
+      onError,
     );
   }
 

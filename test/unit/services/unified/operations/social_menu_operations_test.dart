@@ -4,9 +4,11 @@ import 'package:butlery/services/unified/operations/social_menu_operations.dart'
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../test_support/base_unit_test.dart';
+import '../../../../test_support/fake_field_value_platform.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/builders/user_builder.dart';
 import '../../../../infrastructure/builders/recipe_builder.dart';
@@ -28,6 +30,10 @@ void main() {
     late Map<String, List<Recipe>> testMenu;
 
     setUpAll(() async {
+      // BEFORE the bootstrap — see the helper's own note. Without it every
+      // `shared_content` write in this file throws inside the fake and lands
+      // nothing, which is what the two share tests below used to be skipped for.
+      installFakeFieldValuePlatform();
       await BaseUnitTest.setupUnit();
       registerFallbackValue(FieldValue.serverTimestamp());
       registerFallbackValue(<String, dynamic>{});
@@ -76,6 +82,12 @@ void main() {
           UserBuilder().withId('friend-1').withName('Friend One').build(),
           UserBuilder().withId('friend-2').withName('Friend Two').build(),
         ],
+        friendsByCategory: {
+          'family-category': [
+            UserBuilder().withId('friend-1').withName('Friend One').build(),
+            UserBuilder().withId('friend-2').withName('Friend Two').build(),
+          ],
+        },
         categoryByName: FriendCategory(
           id: 'family-category',
           name: 'Family',
@@ -138,8 +150,104 @@ void main() {
           expect(sharedDocs.docs, hasLength(1));
           expect(sharedDocs.docs.first.data()['title'], 'Weekly Menu Plan');
         },
-        skip:
-            'FieldValue.serverTimestamp in shareMenuWithFriends conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
+      );
+
+      /// BUT-1775, mirror of the `recipe_sharing_manager` case: the name
+      /// persisted here lands on a document every recipient reads AND verbatim
+      /// in their Article-15 export, so it must be the PROFILE name — the one
+      /// `on-profile-updated.ts` renames and account deletion scrubs — not the
+      /// Firebase Auth handle `PermissionService.currentUser` synthesizes.
+      ///
+      /// Both write sites are asserted: the `shared_content` document and the
+      /// per-recipient record under `user_shared_menus`. The batch leg is a
+      /// second call site with its own copy of the value and was unasserted.
+      /// BUT-1775, the branch the test above cannot reach. Every other call in
+      /// this suite passes `customTitle`, so the DEFAULT title — which is
+      /// persisted on the shared document, rendered to every recipient, and
+      /// exported verbatim — was built by a line no test executed. Reverting it
+      /// to the Auth-sourced `currentUser.displayName` reddened nothing, and
+      /// that value is the one copy neither `on-profile-updated.ts` nor the
+      /// deletion cascade can ever reach.
+      test(
+        'the DEFAULT title uses the profile name, never the Auth handle',
+        () async {
+          final userService = app.ServiceLocator.get<UserService>();
+          when(
+            () => (userService as MockUserService).profileDisplayName,
+          ).thenReturn('Malin i appen');
+
+          final result = await operations.shareMenuWithFriends(
+            menu: testMenu,
+            friendUserIds: ['friend-1'],
+            // No customTitle — this is the whole point.
+          );
+          expect(result, isTrue);
+
+          final firestore = mockFirestoreRepository.firestore;
+          final sharedDocs = await firestore.collection('shared_content').get();
+          expect(sharedDocs.docs, isNotEmpty);
+          final title = sharedDocs.docs.first.data()['title'] as String;
+
+          expect(
+            title,
+            contains('Malin i appen'),
+            reason: 'the default title must come from the profile name',
+          );
+          expect(
+            title,
+            isNot(contains('Test User')),
+            reason:
+                'the Auth-sourced display name must never be persisted here — '
+                'no rename propagator or deletion cascade reaches a title',
+          );
+        },
+      );
+
+      test(
+        'stamps the PROFILE display name on BOTH menu-share writes (BUT-1775)',
+        () async {
+          final userService = app.ServiceLocator.get<UserService>();
+          when(
+            () => (userService as MockUserService).profileDisplayName,
+          ).thenReturn('Malin i appen');
+
+          final result = await operations.shareMenuWithFriends(
+            menu: testMenu,
+            friendUserIds: ['friend-1'],
+            customTitle: 'Weekly Menu Plan',
+          );
+          expect(result, isTrue);
+
+          final firestore = mockFirestoreRepository.firestore;
+          final sharedDocs = await firestore.collection('shared_content').get();
+          expect(
+            sharedDocs.docs,
+            isNotEmpty,
+            reason: 'the shared_content write is the subject of this test',
+          );
+          expect(
+            sharedDocs.docs.first.data()['sharedByDisplayName'],
+            'Malin i appen',
+          );
+          // The membership spelling firestore.rules' recipient branch and the
+          // GDPR export both read. Writing only `sharedWithUserIds` made the
+          // row unreadable by the very people it was shared with.
+          expect(
+            sharedDocs.docs.first.data()['sharedToUserIds'],
+            contains('friend-1'),
+          );
+
+          final records = await firestore
+              .collection('user_shared_menus')
+              .doc('friend-1')
+              .collection('received_menus')
+              .get();
+          expect(records.docs, isNotEmpty);
+          expect(
+            records.docs.first.data()['sharedByDisplayName'],
+            'Malin i appen',
+          );
+        },
       );
 
       test('should not share empty menu', () async {
@@ -201,8 +309,6 @@ void main() {
           expect(sharedDocs.docs, hasLength(1));
           expect(sharedDocs.docs.first.data()['title'], 'Family Meals');
         },
-        skip:
-            'FieldValue.serverTimestamp in shareMenuWithGroup conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test('should not share with empty category', () async {
@@ -292,8 +398,6 @@ void main() {
               .get();
           expect(updatedDoc.data()!['isImported'], isTrue);
         },
-        skip:
-            'FieldValue.serverTimestamp in importSharedMenu.update() conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test(
@@ -324,8 +428,6 @@ void main() {
               .get();
           expect(updatedDoc.data()!['isActive'], isFalse);
         },
-        skip:
-            'FieldValue.serverTimestamp in deleteSharedMenu.update() conflicts with TestServiceLocator platform bindings (MethodChannelFieldValue vs MockFieldValuePlatform)',
       );
 
       test('should not delete menu by non-owner', () async {

@@ -10685,3 +10685,2168 @@ Suite now 44/44; `flutter analyze --fatal-infos` clean on both files.
 - The collaborative leg cannot reach `_touchPersonalListDay` structurally
   (it is called only from the four personal `else` arms), so no "collaborative
   writes must not bill a personal stamp" test is owed.
+
+## 2026-08-01 — BUT-1782 review: NotificationPreferences toJson/fromJson (settings/account)
+
+Trigger: review round on `lib/models/notification_preferences.dart` +
+`test/unit/models/notification_preferences_test.dart` (the two stubs
+`toJson() => '{}'` / `fromJson() => defaults()` were finally implemented, so
+the offline fallback in `notification_preference_manager._loadPreferencesLocally`
+stops silently discarding the user's saved notification settings).
+
+Suite ran 18/18 green as staged; 20/20 after the two test-only strengthenings
+below. `flutter analyze --fatal-infos` clean on both files.
+(First `flutter test` invocation died on a stale
+`build/unit_test_assets/NativeAssetsManifest.json` copy — tool crash, not a
+test failure; a plain retry ran fine.)
+
+### Vacuity found: `.toUtc()` in `toJson` was unobservable
+
+Every round-trip fixture was `DateTime.utc(...)`, and `.toUtc()` on a
+UTC-flagged DateTime is the identity — so deleting line 161's `.toUtc()`
+leaves the whole suite green *by definition*, no production mutation needed.
+Proved with a throwaway `dart run` probe instead of touching the dirty `lib/`
+file (auto-mode refuses heredoc writes into `lib/`, and the file was already
+modified so `git checkout --` was not available):
+
+```
+utc fixture:   ship="2026-03-04T05:06:07.000Z"  mutant="2026-03-04T05:06:07.000Z"  identical=true
+local fixture: ship="2026-03-04T04:06:07.000Z"  mutant="2026-03-04T05:06:07.000"   identical=false
+   ship  -> isUtc=true  sameMoment=true  ==original? false
+   mutant-> isUtc=false sameMoment=true  ==original? true
+```
+
+Two things fall out. `isUtc` is the TZ-independent discriminator (Dart appends
+`Z` only for UTC-flagged values, so on a UTC+0 machine the mutant still yields
+a local-flagged parse). And on correct code a round-tripped LOCAL stamp is NOT
+`==` its original, because `DateTime ==` compares `isUtc` — the strengthened
+assertion has to be `isAtSameMomentAs`.
+
+Production shape matters here: `defaults()` stamps `clock.now()` (local), while
+the Firestore path arrives UTC-flagged via `AppTimestamp.fromFirestore`
+(`toDate().toUtc()`), so the local case is real and was the untested one.
+
+Added `a local lastUpdated is stored as a UTC instant, not a wall clock`:
+`endsWith('Z')` on the encoded string + `restored.lastUpdated.isUtc` +
+`isAtSameMomentAs`.
+
+### Coverage gap: the missing-key case of the local copy
+
+`_parseEnumMap` walks `Enum.values` and fills anything absent with
+`SerializationUtils.safeBool(data, key)` → **false**, not the `defaults()`
+value. Now that the local copy actually drives behaviour offline, a cache
+written before a new `NotificationCategory` existed comes back with that
+category silently OFF until the next successful Firestore read. No test pinned
+it. Added `a category key absent from the stored copy reads back as off`, with
+`system: true` + `shopping: false` as the control proving the copy was parsed
+rather than replaced wholesale by the `hasRequiredFields` → `defaults()` branch
+(without that control, "friends is false" is also what an all-defaults parse of
+a *different* branch could produce). Flagged the product consequence upward
+rather than deciding it.
+
+### Not bugs, checked and cleared
+
+- The new `throw FormatException` on a non-object cannot crash the app: the sole
+  caller (`notification_preference_manager.dart:388-403`) wraps the call in
+  `try/catch` and returns `null` → `defaults()`. The doc comment's claim that
+  the throw lets "the caller tell a corrupt cache from a real one" is true only
+  via the log line, since both arms end at defaults.
+- `toJson` copies `toFirestore()`, which carries `FieldValue.serverTimestamp()`
+  — always overwritten before `jsonEncode`, and a leak would throw
+  `JsonUnsupportedObjectError` rather than pass silently. The existing
+  `isA<String>()` assertion covers it.
+- `data['lastUpdated'] = DateTime.tryParse(...)` in `fromJson` is load-bearing:
+  `AppTimestamp.fromFirestore` takes a `Timestamp`, so leaving the ISO string in
+  place would throw a TypeError. The round-trip test already reddens on that.
+- The `hasRequiredFields` guard is covered — deleting it turns the `'{}'` test's
+  `friends: true` / `quietHours 22:00` assertions red.
+
+### Filed for the parent (not fixed here)
+
+- `FormatException('Expected a JSON object', json)` puts up to ~78 chars of the
+  raw cached blob into `toString()`, which the caller logs. Booleans and times
+  only, so Low; dropping the `source` argument is a one-token fix.
+- `expect(json, isNot('{}'))` is an autopilot stub-regression pin already
+  implied by the `jsonDecode` assertions below it. Harmless, left in place.
+
+## 2026-08-01 — BUT-1788 review: leave-group callable (functions/src/messaging/leave-group-conversation.ts + client mutation module)
+
+Trigger: sprint review round, "social" area, 8 files (CF + its unit suite, index.ts,
+package.json, app-check registry, `conversation_mutation_module.dart`,
+`firebase_messaging_repository.dart`, the module's Dart suite).
+
+### What the diff does
+
+`ConversationMutationModule.removeParticipant` used to read the conversation, strip
+the uid from four uid-keyed maps and write the whole doc back, then send a
+`Message.system` row. Both writes are refused by `firestore.rules`:
+
+- `firestore.rules:1533-1535` — `allow update: ... && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['participantIds','createdAt'])`
+- `firestore.rules:1560-1562` — `allow create: ... && request.auth.uid == request.resource.data.senderId` (a system row carries `senderId:'system'`)
+
+So leave-group and remove-member had never once succeeded, while the three unit
+tests covering them were green (they asserted `updateFn`/`sendMessageFn` were
+called — the fake never denies). The fix moves the whole operation into the
+`leaveGroupConversation` callable under the Admin SDK, leaving the rule closed.
+
+### Verified
+
+- Premise: both rules read directly out of `firestore.rules`; `Message.system`
+  (`message.dart:294`) really does set `senderId:'system'` and
+  `MessageMutationModule.sendMessage` writes it through unchanged.
+- Admin identity agrees end to end: `Conversation.group` writes
+  `metadata:{creatorId}`, `ConversationDto.toFirestore` persists `metadata`, the
+  create rule binds `metadata.creatorId == request.auth.uid` (BUT-1626), the CF
+  requires `creatorId === callerUid`, and `GroupDetailViewModel.isAdmin` reads the
+  same field — so the admin's Remove button and the server agree.
+- Mirror paths match the client's own (`conversations/{id}/participants/{uid}`,
+  `users/{uid}/conversation_memberships/{cid}` = `FirestoreCollections.*`).
+- System-message payload matches `MessageDto.fromMap`'s required fields and the
+  Swedish `chatParticipantLeft` ("{name} har lämnat gruppen").
+- Region: `setGlobalOptions({region:"europe-west1"})` vs the client's
+  `FirebaseFunctions.instanceFor(region:'europe-west1')`.
+- `npx tsc --noEmit` clean; `check-test-registration.js` OK (121 files);
+  app-check registry test 16/16 incl. the new entry; Dart suite 15 pass / 1 skip;
+  `flutter analyze` on the three Dart files clean; messaging repo/VM/service
+  suites 166 pass.
+
+### Test gaps found and CLOSED in this round (test-only, applied here)
+
+1. **Membership branch mutation-dead.** `authorizeDeparture` denies in two places:
+   caller not a participant, then caller not the creator. Every shipped denial
+   fixture (`stranger`→`member`, `stranger`→`gone`, non-admin `member`→`other`)
+   fails BOTH branches with the same `permission-denied` code, so deleting
+   `if (!participantIds.includes(callerUid))` left 13/13 green. Discriminator
+   added: caller IS `creatorId` but has already LEFT the group →
+   `verdict("admin","member",{participantIds:["member","other"]})` must deny.
+2. **The entire orchestration (`removeGroupParticipantWithDeps`) had zero tests.**
+   Added a hand-rolled fake db (same shape as `makeFakeCapDb` in
+   `verify-signup-age.test.ts`: `collection/doc/add/delete` + a `runTransaction`
+   passthrough with `tx.get`/`tx.update` recorders) and six cases:
+   - admin removal → exactly one `update` on `conversations/c1` carrying the
+     `arrayRemove` sentinel + `participantDisplayNames.member` delete, both mirrors
+     deleted at the client's own paths, exactly one row added to top-level
+     `messages` with `senderId:'system'`, `type:'system'` and the Swedish content
+     resolved from the doc ("Bea har lämnat gruppen", not the "?" fallback);
+   - repeat removal of an absent uid → 0 updates, **0 added rows** (the
+     idempotency claim in the header; the pure `noop` verdict cannot see it),
+     0 deletes, `success:true / removed:false / remaining:3`;
+   - padded `participantIds:["a","b","__x__"]` with no `isGroup` field → still a
+     group and the leave lands (judging group-ness on the SANITISED list would
+     refuse it `failed-precondition`);
+   - `delete()` rejecting on both mirrors → the leave still succeeds AND the
+     system message is still written (kills dropping the `.catch`);
+   - non-admin removing a third party → `permission-denied` with 0 writes;
+   - missing conversation → `not-found` with 0 writes.
+   The happy-path/noop pair doubles as the positive control that the double is
+   actually wired (a dead recorder would read 0 in both). 20/20 green.
+
+Mutation reasoning was analytic, not executed: each new case is the only fixture
+satisfying its branch's precondition, and the production file is untracked, so a
+`git checkout --` restore was not available (see the re-review-economics principle
+on `cp -p`-restore risk and the auto-mode refusal of production mutants).
+
+### Filed for the parent (not fixed here — production changes need a plan)
+
+- **Twin paths still refused by the same rules.** `addParticipants`
+  (`conversation_mutation_module.dart:263-271`) writes `participantIds` through
+  `updateFn`; `createGroupConversation` and `addParticipants` both send
+  `Message.system`. `createGroupConversation` rethrows after the conversation doc
+  was already created, so "skapa grupp" reports failure for a group that exists.
+  The file's own tests ("emits a system message via sendMessageFn", "sends a
+  system message per add") pin the refused writes as intended behaviour.
+- **Read oracle the rules deliberately close.** The Admin SDK bypasses
+  `allow read: uid in participantIds`, and the self-leave path never checks that
+  the caller is a participant: any signed-in user calling with an arbitrary
+  `conversationId` and no `participantId` gets `not-found` vs a `noop` success
+  carrying `remainingParticipants` (the real participant count), and for a DM
+  (`direct_<uidA>_<uidB>`, derivable from two known uids) gets `failed-precondition`
+  vs `not-found` — i.e. "do A and B have a thread". Narrow fix: for a caller not in
+  `participantIds`, return the no-op with `remainingParticipants: 0`. Note the
+  constraint that forced the current shape: after a SUCCESSFUL leave the caller is
+  no longer a participant, so a legitimate retry is indistinguishable from a probe.
+- Last member leaving orphans the conversation (empty `participantIds`; the delete
+  rule requires membership, so nobody can ever remove it) and its `messages`.
+- Creator leaving orphans the admin right — nobody can remove members afterwards
+  (now pinned by the departed-creator test); UI keeps offering it.
+- `ConversationParticipantModule.removeParticipant`
+  (`conversation_participant_module.dart:152`) has zero callers now; its own suite
+  keeps it green, which is how a future session wires the denied write back.
+- No rate limit on the callable. Convention is mixed here
+  (`setProfileSearchability` enforces, `acceptFriendRequest` does not) and the cost
+  is one transaction per call, so Info.
+
+## 2026-08-01 — BUT-1775 review: shared-content avatar redaction + profile-name attribution (account sprint)
+
+Scope: `social_export_manager.dart`, `recipe_sharing_manager.dart`,
+`social_menu_operations.dart`, both deviation files, and the two touched suites.
+Ran: `flutter analyze` on all five code files (clean, 5.3 s);
+`flutter test test/unit/services/account/export/social_export_manager_test.dart`
+→ 34/34, the five new `shared-content redaction (BUT-1775)` tests and the new
+`lastReadTimestamps are KEPT` test all confirmed to EXECUTE via `--plain-name`;
+`recipe_sharing_manager_test.dart` → 43 pass, 1 skip.
+
+### The skip was avoidable — measured, not argued
+
+The new `stamps the PROFILE display name on shared_content` test ships `skip:`ped
+with a reason claiming "NO unit test in this harness can observe the document"
+because `FieldValue.serverTimestamp()` throws
+`type 'MethodChannelFieldValue' is not a subtype of type 'MockFieldValuePlatform'
+in type cast` and the write silently lands nothing (the manager swallows it in
+`AppLogger.warning`).
+
+Probe 1 — throwaway `_zz_probe_fieldvalue_test.dart` replicating the file's
+harness (`BaseUnitTest.setupUnit` + `TestServiceLocator.initialize` +
+`app_provider.ServiceLocator.initialize(MockDIContainer())`), writing
+`{'sharedAt': FieldValue.serverTimestamp()}` through the resolved
+`FakeFirestoreRepository`:
+`PROBE thrown=type 'MethodChannelFieldValue' is not a subtype of type 'MockFieldValuePlatform' in type cast` / `PROBE docs=0`.
+So the stated symptom is REAL — the skip reason is honest, unlike most.
+
+Probe 2 — same probe with one added line at the top of the test:
+`FieldValueFactoryPlatform.instance = MockFieldValueFactoryPlatform();`
+(imports: `package:cloud_firestore_platform_interface/cloud_firestore_platform_interface.dart`
+plus `// ignore: implementation_imports`
+`package:fake_cloud_firestore/src/mock_field_value_factory_platform.dart` — the
+class lives in `src/` and `fake_cloud_firestore.dart` exports only
+`src/fake_cloud_firestore_instance.dart`, so the implementation import is
+required). Result: `PROBE thrown=null` / `PROBE docs=1`.
+
+Probe 3 — put that line at the top of the suite's own `setUp`, removed the
+`skip:`, ran `--plain-name "stamps the PROFILE display name"`: **passes, assertion
+unchanged** (`docs.docs.first.data()['sharedByDisplayName'] == 'Malin i appen'`).
+Without the line, the same test fails at `expect(docs.docs, isNotEmpty)` with
+`Actual: []` — i.e. the assertion is live and non-vacuous.
+
+Restored the suite byte-for-byte from a `cp -p` backup (`cmp` clean) and deleted
+the probe file before reporting.
+
+Consequence for the review: the recipe-sharing production change and the whole
+`social_menu_operations.dart` change (which got no test at all) ship with zero
+executing coverage, and closing it costs three lines.
+
+### Wrong-collection finding in the leg the diff redacts
+
+`_dropSharerAvatar` is applied to both `shared_recipes_received` and
+`shared_menus_received`. The menus leg cannot fire in production:
+
+- `FirebaseDataExportRepository.exportSharedMenusReceived` (`:417-427`) queries
+  top-level `menus` where `sharedToUserIds arrayContains userId`.
+- Real shared menus are `shared_content` docs:
+  `FirebaseSharedMenuRepository.collectionName == FirestoreCollections.sharedContent`
+  (`:99`, `:139`), and `social_menu_operations.shareMenuWithFriends` writes
+  `shared_content` with `sharedWithUserIds` (`:105`).
+- The only two writers into `menus` — `social_module.saveMenu:228` and
+  `menu_storage.dart:56` — both hardcode `sharedToUserIds: []`.
+
+So `shared_menus_received` is structurally always empty, the new strip on that
+leg is dead, its test fixture (`sm1` carrying `sharedByAvatarUrl`) models a shape
+that leg cannot return, and every menu shared WITH the user is absent from the
+Art. 15 bundle. The recipe leg filters `sharedWithUserIds`, catching
+`_writeToSharedRecipesCollection` but not `base_shared_content_repository`'s
+`sharedToUserIds` writes — two field spellings inside one collection.
+`ACCEPTED_DEVIATIONS.md` now states the menu leak as fact ("lands verbatim in
+your bundle"), which is the false half.
+
+### The stated rationale is backwards, verified in `functions/src`
+
+Both production comments and the deviations entry say the profile name is "what
+`on-profile-updated.ts` renames and what account deletion scrubs".
+
+- `grep -rn "sharedByDisplayName\|sharedByAvatarUrl" functions/src/` → only
+  `winback-context.ts` (read) and `on-user-deleted.ts` (tombstone). The rename
+  propagator covers `messages.senderDisplayName`, `recipe_comments`,
+  `conversations.participantDisplayNames`, `collectionGroup("members")`,
+  friends, recipes `ownerDisplayName`, `sharedRecipes.socialData.*`, shopping
+  lists and `collectionGroup("items")` — **never `shared_content`**.
+- `on-user-deleted.tombstoneSharedByDisplayNameWithDb:232-260` rewrites
+  `sharedByDisplayName` to the tombstone and nulls `sharedByAvatarUrl` for every
+  `shared_content` doc where `sharedByUserId == uid`, **regardless of where the
+  name came from** — so the field they fixed was already erasable.
+- The field they left, `title` = `AppLocale.current.menuDefaultTitle(currentUser.displayName)`
+  (`social_menu_operations.dart:87`, Auth-sourced), is NOT tombstoned and is
+  copied into every recipient's `user_shared_menus/{friendId}/received_menus/*`
+  as `menuTitle`. That is the genuinely un-erasable Auth-name residual, and the
+  deviations file dismisses it as "content rather than attribution".
+
+### Enumeration miss
+
+The deviations entry says "both writers of those documents". There are three:
+`shopping_social_share_module.dart:67` and `:94` still stamp
+`currentUser.displayName` (`PermissionService.currentUser`, i.e. Auth) as
+`sharedByDisplayName` on a `shared_content` doc plus each recipient's share
+record, and `:68` the Auth `photoURL` as `sharedByAvatarUrl`.
+
+### Test-quality notes kept out of the findings
+
+- The five new shared-content tests are non-vacuous by construction: both
+  fixtures carry the same `otherAvatar` literal, so `json.encode(result)` catches
+  a leak from either leg; the fail-closed test kills a
+  `row[ownerIdField] != null && != userId` mutant; the own-avatar keep kills an
+  unconditional strip on the RECIPES leg only — no menus-leg own-avatar fixture
+  exists, so an unconditional strip there is unasserted (Low).
+- `_dropSharerAvatar`'s `sanitizeForJson(entry['data']) as Map<String, dynamic>`
+  is a new throw site inside the section try/catch: a null/non-map `data` now
+  degrades the WHOLE section to `shared-content-export-failed` where it
+  previously passed the value through (Low; `_queryList` always supplies a map).
+
+## 2026-08-01 — BUT-1777 / BUT-1784 shopping review (trigger: commit-gate review of the shopping slice)
+
+Files reviewed: `list_member_operations.dart`, `collaborative_shopping_operations.dart`,
+`shopping_member_management_dialog.dart`, `shopping_list_operations.dart`,
+`shopping_dialogs.dart`, `unified_shopping_view.dart`,
+`shopping_list_management_module.dart`, plus the two suites
+(`collaborative_shopping_operations_test.dart`, `shopping_member_management_dialog_test.dart`).
+
+Shipped state: `flutter analyze` clean on all 9; unit suite 46/46, widget suite 8/8.
+
+MUTATION PROBE (production files were DIRTY, so `cp -p` backup + reverse Edit + md5
+restore; both files verified byte-identical afterwards — `104532111e3c…` and `e69af98d63…`):
+
+| mutant | red |
+|---|---|
+| `_updateMembership(updatedList, viewedBase)` → `list` (revert BUT-1777) | 1 — "the declared base is the caller's copy, not the live one" |
+| delete the `!list.memberPermissions.containsKey(userId)` fail-closed guard | 1 — "a member the stored copy no longer has is refused" |
+| delete `_rebaseMembers({...userId: newPermission})` from the dialog's success path | 1 — "a second change declares the base this dialog already moved" |
+
+Three mutants, three precise reds, zero collateral: the new tests are non-vacuous and each
+one owns exactly one line of the fix. The "the same call still writes while the member IS
+there" test is a genuine fail-closed control (same arguments, only the stored membership
+differs), and it stayed green under all three mutants.
+
+GAPS FOUND (both Medium, neither commit-blocking):
+
+1. `showCreateListDialog`'s new `onError` branch (BUT-1784) has ZERO tests. Grep of `test/`
+   for `ShoppingListOperations`/`ShoppingDialogs` returns only
+   `shopping_list_operations_convert_test.dart` (the BUT-1723 convert flow), which is the
+   ready-made harness: `createLocalizedTestApp` + a `TextButton` trigger + `successes.add` /
+   `errors.add` collectors. Two tests close it — refused create → `errors` holds
+   `shoppingCouldNotCreateOrSelectList` and `successes` is empty; successful create →
+   `shoppingListCreated(name)` as the recall control. Checked and ruled out a second finding
+   here: unlike the sibling dialogs, this path does NOT `consumeMutationError()`, but
+   `createPersonalList` never PARKS one (`_failMutation` is called only from
+   `updateSharedListMembership` / `mutateSharedList` / `reportMutationFailure`), so there is
+   no stranded-reason hazard and the generic sentence is the only wording available.
+2. Widget-test fixture cannot distinguish `_declaredBase` from the display map — see the
+   principle added to the vacuity section. `_sharedList()` already carries the owner in
+   `memberPermissions`, so `initState`'s synthetic-owner seat never fires.
+
+NOT A BUG (checked, recording so it is not re-filed): the dialog rebases `_declaredBase`
+off ITSELF after a successful add/remove rather than off the live copy. Because add and
+remove declare the LIVE copy as their own base at the service layer, a concurrent remote
+change leaves `_declaredBase` behind the server — but the consequence is the NEXT permission
+change being refused as stale (fail-closed), never a false success, and the drifted member
+has no row in the dialog to change anyway. Also pre-existing, out of this diff: the
+remove-success path calls `setState` with no `mounted` guard, where the permission path has
+one.
+
+## 2026-08-01 — BUT-1781 review: the top-level `recipes` collection that never existed
+
+Trigger: commit-gate review of the tagging/backend slice — two ingredient cascade triggers,
+the cleanup monitor, `firestore.indexes.json`, `rating_statistics.dart`,
+`recipe_social_stats.dart` and one new Dart suite.
+
+**The shipped bug class.** Four production sites read a TOP-LEVEL `recipes` collection that
+has never existed in this project; recipes live only at `users/{uid}/recipes/{recipeId}`,
+nested under a `core` map (`RecipeSerialization.toFirestore` → `'core': recipe.core.toFirestore()`).
+The diff fixed three of them (both `onIngredient*` triggers → `collectionGroup`, and
+`countStaleRecipes` + `getDeletedIngredientStats` → `collectionGroup`) and the Dart rating
+denormalization (→ `users/{uid}/recipes` AND `core.`-prefixed field names — it was wrong on
+BOTH path and field spelling). It missed `functions/src/admin/bulk-retag.ts:252,418`, which
+still `collection("recipes")` while filtering on the modern `core.createdBy` — i.e. the admin
+retag tool and its stats endpoint answer "No recipes found" / all-untagged forever. Not
+allergen-critical only because `RetaggingScheduler` (bootstrapped in `content_stage.dart`,
+24 h period) picks the same recipes up via `TagResult.needsRetagging`'s
+`generatorVersion != kTagGeneratorVersion` catch-all.
+
+**Two consumer asymmetries the fix newly exposes.** `onIngredientPropertiesChanged` writes
+`'stale-properties'`, a value that has never existed in data before because the cascade never
+fired. `countStaleRecipes` counts only `'stale-ingredient'` and `'failed'`, and
+`OfflineUserStorage._needsRetagging` (`offline_user_storage.dart:96`) hardcodes
+`failed|pending|stale-ingredient` with no version-mismatch fallback. Both silently ignore the
+new marker. General rule: when a dead code path is REVIVED, grep every consumer of the literal
+values it emits — the consumers were written when only the other branch could produce data.
+
+**Cost.** The pagination in `batchUpdateQueryPaginated` caps MEMORY, not write volume. Each
+ingredient property edit now fans out one write per matching recipe across all users, with no
+cap and a re-throw that makes Cloud Functions retry the whole paginated run from the start.
+Previously zero. A bulk ingredient-sheet sync is the blast-radius case.
+
+**Mutation probe, and what blocked it.** Goal: prove the new suite would redden if the write
+reverted to the old path. `cp -p` backup → Edit-tool mutant into
+`lib/services/unified/operations/modules/rating_statistics.dart` (path only) → the Edit landed
+fine, but `flutter test <the single suite>` was REFUSED by the auto-mode classifier. Restored
+via the reverse Edit; `md5sum` back to `7179b23ebd1fe9325041e9bf5ab252bb` and `cmp` against
+the backup clean. Fell back to a throwaway `test/unit/_zz_probe_*_test.dart` measuring the
+fake's primitives (deleted after):
+
+```
+UPDATE_MISSING_THROWS: FirebaseException -> [FakeFirestore/not-found] Some requested document was not found.
+ORPHAN_EXISTS: false data=null
+DOTTED_RESULT: {core: {title: t, ratingCount: 2}}
+```
+
+So on `fake_cloud_firestore`: dotted keys write a nested map and preserve siblings,
+`FieldValue.delete()` on an absent nested key is a no-op, and `update()` on a missing doc
+throws not-found and creates nothing. That settles the mutation analytically — under the path
+mutant `_denormalizeOntoRecipe`'s catch swallows the not-found, the owner doc keeps no
+`core.ratingCount`, and tests 1 and 2 both go red. It also proves test 1's
+`expect(orphan.exists, isFalse)` is a PERMANENT PASS: the fake cannot create the top-level doc
+under any mutant, so that line documents intent and guards nothing.
+
+**Index-declaration test gap.** The two new `fieldOverrides`
+(`recipes/core.ingredientsNormalized` CONTAINS COLLECTION_GROUP, and
+`recipes/core.tagResult.generatorVersion` ASC COLLECTION_GROUP) are the ONLY thing standing
+between the cascades and a FAILED_PRECONDITION on every ingredient edit, and no test pins
+them. The repo already has the pattern twice — `compute-feature-retention.test.ts` (BUT-1761,
+composite-index assertion) and `firestore-ttl-policies.test.ts` (BUT-1699, exact-set assertion
+as a `--force`-prune tripwire). The TTL suite counts only `ttl === true` entries (15), so the
+two new non-TTL overrides do not disturb it — verified by running it, 5/5.
+
+Runs: `flutter test` on the new suite 3/3; `rating_statistics_test.dart` +
+`recipe_social_stats_test.dart` 31/31; `flutter analyze` on the three Dart files clean;
+`functions/node_modules/.bin/tsc --noEmit` clean; `npm run test:firestore-ttl-policies` 5/5;
+`python -c json.load` on `firestore.indexes.json` valid, 28 fieldOverrides.
+
+## 2026-08-01 — BUT-1782 re-review round 2: the doc comment named the fixture nobody wrote
+
+**Trigger:** re-review of `lib/models/notification_preferences.dart` +
+`test/unit/models/notification_preferences_test.dart` "after automated fixes",
+settings/account area.
+
+**Tree motion check (first, per the re-review principle).** Unlike the byte-identical
+rounds of BUT-1691/1661, this tree HAD moved: `lib/models/notification_preferences.dart`
+mtime 02:20:14, test 01:55:50, my previous archive entry 02:10:56 — i.e. production was
+rewritten AFTER the last knowledge write. `git diff` confirmed the real change: `toJson`
+went from `return '{}'; // Simplified for now` to a real `jsonEncode(toFirestore())` with
+`lastUpdated` swapped from the `FieldValue.serverTimestamp()` sentinel to a UTC ISO-8601
+string, and `fromJson` from `return defaults(); // Simplified for now` to a decode +
+shape check + `fromMap('local', data)`.
+
+Baseline, md5-bracketed on both files: **20/20 green**, `flutter analyze --fatal-infos`
+on both files clean. md5 identical before and after the run (`3fa0bb7e…` lib,
+`13043375…` test), so no parallel session was moving these bytes.
+
+**Round-1 lesson that DID land.** The knowledge principle at line 110 (UTC-fixture makes
+`.toUtc()` a no-op; discriminate with `restored.lastUpdated.isUtc` on a LOCAL fixture,
+and use `isAtSameMomentAs` not `==` because `DateTime ==` compares `isUtc`) is
+implemented verbatim as the test "a local lastUpdated is stored as a UTC instant, not a
+wall clock" (lines 291-313), comment and all. Good — that closes round 1.
+
+**What round 1 did NOT catch.** The new `fromJson` doc comment (lib lines 171-176) argues
+for the shape check at length:
+
+> The shape check is on the VALUES, not merely on key presence: the two settings maps are
+> parsed with `safeBool`, which reads a missing key as `false`, so
+> `{"categorySettings": "corrupt"}` would clear key presence and then silently produce an
+> object with every notification switched off — indistinguishable from a deliberate
+> opt-out, and about to be written back as one.
+
+Grepped the suite for that example. **No fixture ever feeds a non-Map value to either
+settings map.** The two neighbouring "corrupt" tests cover different paths entirely:
+`throwsFormatException` covers non-object JSON (`'not json at all'`, `'[1,2,3]'`), and
+`'{}'` covers key ABSENCE. So `data['categorySettings'] is! Map || data['typeSettings']
+is! Map` was mutation-dead — deleting both clauses leaves 20/20 green.
+
+**Root cause worth carrying repo-wide:** `SerializationUtils.hasRequiredFields`
+(`lib/core/utils/serialization_utils.dart:414-423`) checks `containsKey` + `!= null` and
+**nothing about type**. So a String value clears it. Then `safeMap` (line 272-282) falls
+through `is Map<String,dynamic>` / `is Map` to `return defaultValue ?? {}`, and
+`_parseEnumMap`'s `safeBool(data, enumValue.toString())` defaults every key to `false`.
+Net: all categories AND all types off.
+
+**Probe, without mutating `lib/`.** Per the auto-mode-refusal principle, I did not stage a
+mutant into the production file. Instead a throwaway
+`test/unit/models/zz_probe_shape_test.dart` called both arms directly — `fromJson` with
+the corrupt blob (the guard's path) and `fromMap('local', {...'corrupt'})` (exactly the
+post-mutant path, since that is the line the guard jumps over):
+
+```
+GUARD-ON => friends=true system=true quietStart=TimeOfDay(22:00)
+hasRequiredFields-only path => friends=false system=false
+```
+
+Deleted the probe file immediately (`git status --porcelain` on `test/unit/models/`
+confirms only the real suite is modified). That pair settles the mutation question with no
+production write at all — worth reaching for whenever the guard is a plain early-return
+over a call the test can make itself.
+
+**Severity work — is the all-off state persisted?** Traced the single caller.
+`NotificationPreferences.fromJson` is called from exactly one place in `lib/`
+(`notification_preference_manager.dart:400`, inside `_loadPreferencesLocally`), wrapped in
+try/catch returning `null` — so the new `FormatException` is contained and is NOT a new
+crash path (checked before anything else, since the pre-fix `fromJson` never threw).
+But the corrupt-shape case does not throw: it returns an object. On the read-failure
+fallback (`getPreferences` lines 243-250) it becomes `_cachedPreferences` and is served to
+the settings UI; the next `updatePreferences` writes the whole object back via the
+repository. So the doc comment's "about to be written back as one" is accurate via the UI
+round trip. The guard is genuinely load-bearing.
+
+**Test-only fix applied** (allowed by the re-review economics principle; no production
+edit). Added "a non-Map settings blob falls back to defaults, per field". Two design
+points, both from the sibling-FIELDS principle:
+- the guard is TWO clauses, one per settings map, so the fixture loops one corrupt field
+  at a time — a both-fields-corrupt fixture cannot separate them;
+- the fixture carries non-default values OUTSIDE the guarded maps (`enabled:false`,
+  `digestFrequency:'weekly'`), so "the blob was parsed" and "defaults() replaced it"
+  differ on every assertion. For the `typeSettings`-only arm this is what carries the
+  test, because `categorySettings` stays well-shaped there and `friends` reads `true`
+  either way.
+
+Result: **21/21 green**, analyze clean, md5-bracketed (`0de7cc91…`).
+
+**Other things checked and cleared, so a later round need not redo them.**
+- GDPR/local-residual: this diff is the first time the SharedPreferences blob holds real
+  data (pre-fix every save wrote the literal `'{}'`). `clearLocalStorage()` exists and is
+  reached — `notification_service.dart:732` (`resetForLogout`) ← `account_deletion_service
+  .dart:125` and the DI modules' `dispose:`. Not a new High. Residual note filed as a
+  Medium against `notification_service.dart:728` (the `if (!_modulesCreated) return;`
+  early-return skips the clear when the modules were never created this session), which is
+  out of the two-file scope and pre-existing in structure.
+- Forward-compat: `_parseEnumMap` defaults an unknown key to `false`, so a NEW
+  `NotificationCategory` ships OFF for every existing user reading a cached copy. The new
+  test at line 317 documents this deliberately. It is NOT a regression — the Firestore
+  path has the identical property, since the remote doc will not carry the new key either.
+  Filed Info.
+- `toJson` cannot leak the server sentinel: `jsonEncode` would throw on a `FieldValue`, so
+  the override at line 161 is proven by the test simply not throwing.
+- Dead assertion: `expect(json, isNot('{}'))` (test line 257) is strictly subsumed by the
+  `decoded['enabled']`/`digestFrequency` assertions two lines below. Left in place as
+  migration documentation; filed Low rather than pruned.
+
+**Phase 9 contract, honestly.** I added the domain-invariant test the draft missed (the
+corrupt-shape guard) but deleted no test: re-reading all seven new tests, none is
+autopilot rot — each pins something that flips under a plausible mutant (null quiet hours
+exercise `_timeOfDayToMap`/`_parseTimeOfDay`'s null legs; the absent-key test carries its
+own parsed-not-replaced control). The one genuinely dead ASSERTION is named above. Faking
+a deletion to satisfy the checklist would have been worse than reporting the gap.
+
+**Verdict:** pass. The fixes are correct and introduce no new Critical/High.
+
+## 2026-08-01 — BUT-1788 round 3 (re-review after automated fixes): both round-2 gaps closed; the surviving twins needed a comment, not a test
+
+**Trigger:** re-review of the working-tree BUT-1788 fileset after automated fixes —
+`functions/src/messaging/leave-group-conversation.ts`,
+`functions/src/__tests__/leave-group-conversation.test.ts`,
+`functions/src/__tests__/app-check-enforcement.test.ts`, `functions/src/index.ts`,
+`functions/package.json`, `lib/repositories/firebase/modules/conversation_mutation_module.dart`,
+`lib/repositories/firebase/firebase_messaging_repository.dart`,
+`test/unit/repositories/firebase/modules/conversation_mutation_module_test.dart`.
+
+**Round-2 findings, both closed.** Round 2 said the CF shipped a well-tested pure
+`authorizeDeparture` with a completely untested DI'd orchestrator
+(`removeGroupParticipantWithDeps`), and that the membership branch was
+mutation-dead because every denial fixture failed BOTH the membership and the
+creator check. The tree now carries a hand-rolled `runTransaction` db (same shape
+as `verify-signup-age.test.ts`) driving eight orchestration cases, plus the
+discriminating fixture — a caller who IS the recorded creator but has already left
+(`verdict("admin","member",{participantIds:["member","other"]})`). 22/22 green:
+`npx ts-node src/__tests__/leave-group-conversation.test.ts`.
+
+**Mutation probe, and the refusal.** Staged the mutant `if (!snap.exists ||
+!participantIds.includes(callerUid))` → `if (!snap.exists)` with the Edit tool after
+`cp -p` to scratchpad. The very next `npx ts-node <that suite>` was REFUSED by the
+auto-mode classifier — exactly the content-sensitive refusal already recorded for
+`account-deletion-cascade.ts` (2026-07-30) and `rating_statistics.dart` (2026-08-01).
+Restored with the reverse Edit; `md5sum` + `cmp` against the backup both matched
+(`4b2e91de1766ea138de8bda4b979912e`). Fell back to analytic discrimination, which was
+decisive: with only the `!snap.exists` leg, an outsider on `groupDoc()` falls through
+to `authorizeDeparture`, `targetUid === callerUid` with `targetIsParticipant === false`
+→ `noop` → `remaining: participantIds.length === 3`, so the "a non-member learns
+nothing" case fails on `remainingParticipants === 0`; and the DM arm throws
+`failed-precondition` instead of returning. So the gate's membership leg is
+load-bearing, and "a real participant still gets the real remaining count" (asserts 2)
+is the positive control that stops the whole thing passing on a function that always
+returns 0. The `!snap.exists` leg alone is redundant (a missing doc yields
+`participantIds === []`, so `includes` already refuses) — defensive, not a finding.
+
+**Premises re-verified against the rules rather than the ticket.**
+`firestore.rules:1533-1535` — `allow update: ... && !request.resource.data.diff(resource.data)
+.affectedKeys().hasAny(['participantIds','createdAt'])`, so every client membership
+write is denied. `firestore.rules:1561-1562` — `allow create: if isAuthenticated() &&
+request.auth.uid == request.resource.data.senderId`, and `Message.system`
+(`lib/models/messaging/message.dart:294`) hardcodes `senderId: 'system'`. Both header
+claims in the CF are exact.
+
+**Art. 17 handle verified from the CONSUMER side.** The CF writes
+`metadata.subjectUserId` + `metadata.systemEvent: 'participant_left'` on the departure
+row, and claims the cascade can reach it. Grepped the consumer, not the comment:
+`account/account-deletion-cascade.ts:1229 anonymizeSystemMessagesAboutUser` queries
+`.where("metadata.subjectUserId","==",uid)`, is called at line 1163, and the field is
+registered in the residual-probe selector list at line 156
+(`[Collections.messages, "metadata.subjectUserId", "=="]`). Field name matches on both
+sides — this is the "wrong-path Firestore read" class from the lessons digest, and it
+is clean here.
+
+**What was still open, and what I did about it.** The fix documented the KNOWN-BROKEN
+twins in production (`ConversationMutationModule.addParticipants` doc comment, which
+also names `createGroupConversation`) but left the TEST file untouched. So
+`test/unit/repositories/firebase/modules/conversation_mutation_module_test.dart` still
+ran two green tests asserting `sent` has 1 and 2 `Message.system` writes — writes
+`firestore.rules:1562` refuses — with nothing telling a reader that green means "the
+module called sendMessageFn", not "the feature works". No assertion can ever express
+this; only a comment can. Applied the zero-risk test-only fix myself (two group-level
+comments naming the exact rule lines and what green means), per the re-review-economics
+principle. `flutter analyze` on the three Dart files: clean. `flutter test` on the
+suite: 15 pass, 1 pre-existing skip.
+
+**Other checks that came back clean.** `functions/package.json` — the new
+`test:leave-group-conversation` is auto-discovered by `scripts/run-all-tests.js`
+(every `test:*` minus `test:rules*`/`test:integration:*`), and
+`test:integration:leave-group-conversation` is correctly excluded from `npm test` and
+appended to `test:rules:all`, so neither is an orphan. `app-check-enforcement.test.ts`
+is a source-scanning guard whose third case ("every USER_FACING entry maps to a real
+onCall declaration") would catch a stale entry; 16/16 green with the new name.
+`index.ts` — module-level `const db = admin.firestore()` at
+`leave-group-conversation.ts:48` is safe because TS's CommonJS emit keeps
+`export … from` at its source position (line 74), after `admin.initializeApp()` at line
+43; 12 already-deployed functions use the identical pattern. `tsc --noEmit`: clean.
+Dart side: `removeParticipant` is reached only via
+`messaging_service → message_management_operations:232 → repository:256 → module:334`,
+and no other caller depended on the client-side write;
+`ConversationParticipantModule.removeParticipant` now has zero callers (dead code,
+Info). `_MockCallable extends Mock` carries no `@override` bodies and
+`_FakeCallableResult extends Fake` — both on the right side of the Mock-vs-Fake rule.
+
+**Lesson folded into the principles file:** when a fix moves only ONE denied method
+server-side, the untouched twins in the same file keep green tests that now pin the
+denied write as intended; each surviving twin owes a group-level comment naming the
+rule line that denies it. And prove a server-authored PII row's erasure handle by
+grepping the consumer for the exact dotted field name.
+
+## 2026-08-01 — BUT-1775 re-review round 2 (social export + share writers), account area
+
+**Trigger:** re-review after automated fixes of `lib/services/account/export/social_export_manager.dart`,
+`lib/services/unified/operations/modules/recipe_sharing_manager.dart`,
+`lib/services/unified/operations/social_menu_operations.dart`, the two deviation files, and the two
+matching suites.
+
+**Tree motion confirmed first.** All three `lib/` files carried mtimes AFTER the previous archive
+entry (02:23 / 02:23 / 03:02 vs archive 02:10); `social_export_manager_test.dart` did not (01:44),
+so the export-suite half was byte-identical to the last round and the round was spent on the parts
+that had moved.
+
+**Bracketed run.** `flutter test` over the three suites: 64/64 green. md5 before and after the run
+identical on all three `lib/` files (`f233400b`, `20412fc9`, `17727548`), so the green run compiled
+the bytes reviewed. `flutter analyze --fatal-infos` over all five in-scope files: clean.
+
+**The mutation probe was refused, exactly as the principles file predicts.** Staged a mutant via the
+Edit tool turning `_dropSharerAvatar` into the identity function (`sanitizeForJson(entry['data'])`),
+then `flutter test test/unit/services/account/export/social_export_manager_test.dart` — auto-mode
+classifier REFUSED, twice (once with a grep pipe, once with `--reporter compact`), where the same
+command had run seconds earlier and ran again after restore. Restored with the reverse Edit;
+`cmp` against the `cp -p` backup reported identical and md5 came back `f233400b`. So every mutation
+count below is ANALYTIC, not measured, and says so.
+
+Analytic discrimination for the refused probe: the BUT-1775 fixture stages `sr1` with
+`sharedByAvatarUrl: otherAvatar`, and three separate assertions read it — the whole-JSON
+`isNot(contains(otherAvatar))`, `data.containsKey('sharedByAvatarUrl') isFalse` on the menu row, and
+the fail-closed row with no `sharedByUserId`. An identity `_dropSharerAvatar` flips all three; the
+"own avatar kept" test stays green (identity keeps it), which is the right shape.
+
+**Finding 1 (Medium, comment/record accuracy, replicated 4x).** `recipe_sharing_manager.dart:588-592`,
+`social_menu_operations.dart:60-63` and `:88-91`, and `docs/architecture/ACCEPTED_DEVIATIONS.md`
+(the BUT-1775 side-finding block) all justify the Auth→profile name swap with "the profile name is
+what `on-profile-updated.ts` renames and what account deletion scrubs, so an Auth-sourced stamp
+would be both unconsented and un-erasable". Two greps kill both limbs:
+- `functions/src/social/on-profile-updated.ts:156` updates
+  `Collections.sharedRecipes` → `functions/src/shared/collections.ts:11` = `"shared_recipes"`, a
+  DIFFERENT collection from `shared_content`, and the field is `socialData.ownerDisplayName`, which
+  these flat `sharedByDisplayName` docs do not have. Nothing propagates a rename to
+  `shared_content.sharedByDisplayName` — the profile name is equally un-propagated.
+- `functions/src/cleanup/on-user-deleted.ts:232-259` (`tombstoneSharedByDisplayNameWithDb`) queries
+  `shared_content where sharedByUserId == userId` and overwrites BOTH `sharedByDisplayName` and
+  `sharedByAvatarUrl`. It matches on the UID, not on the value, so an Auth-sourced stamp is erased
+  just as thoroughly. "Un-erasable" is false.
+
+The change is still correct — the Auth handle is `firebaseUser.displayName`
+(`permission_service.dart:125-139`), the legal name on the user's Google/Apple account, never chosen
+for display, and it lands verbatim in every recipient's Art. 15 bundle. That reason alone carries it.
+The two false limbs should go, and the rename gap they deny (a display-name change never reaches
+`shared_content`) is a real, separate ticket.
+
+**Finding 2 (Low).** `ACCEPTED_DEVIATIONS.md:188` still names `_dropOtherSenderAvatar`, deleted by
+this change (merged into `_dropAvatarUnlessOwn`, which line 143 of the same doc names correctly).
+
+**Finding 3 (Low).** `social_export_manager.dart:394-396` — the new section-level sentence reads
+"The profile picture of whoever shared each item has been removed." Because `sharedToUserIds` now
+includes the sharer (`{currentUserId, ...memberIds}`), the requester's OWN shares appear in this
+section and correctly KEEP their avatar, so the sentence overclaims. The conversations section's
+wording ("Other participants' ...") is the precise model.
+
+**Finding 4 (Info).** `sharedByAvatarUrl` is still Auth-sourced at
+`recipe_sharing_manager.dart:600` and `social_menu_operations.dart:110`
+(`PermissionService.currentUser.avatarUrl` = `firebaseUser.photoURL`,
+`permission_service.dart:134`). Out of BUT-1775's name-only scope and the cascade nulls it, so not a
+defect — recorded so a later sweep does not read the name fix as covering the sibling field.
+
+**Applied myself (test-only, zero risk).** `recipe_sharing_manager_test.dart` asserted the new
+`sharedByDisplayName` but NOT the new `sharedToUserIds`, while the menu suite
+(`social_menu_operations_test.dart`) asserted both. Dropping the field from the recipe writer would
+therefore have left every suite green while each recipient's `list` is denied by
+`firestore.rules:721-728` and the rows vanish from their Art. 15 bundle — the wrong-field-read class,
+which no fake can stage because a fake never denies. Added
+`expect(data['sharedToUserIds'], contains('user_456'))` beside the name assertion, with the rules
+line numbers in the comment. Non-vacuous by construction: a dropped field reads `null` and `contains`
+cannot match it. Re-ran bracketed: 44/44 green across the two suites, analyze clean.
+
+**Also verified, no finding:** the `_dropOtherPeoplesAvatars` → `_redactOtherParticipants` +
+`_dropAvatarUnlessOwn` refactor is behaviour-preserving for conversations (both old branches
+reproduced, including the `lastMessage` copy-before-strip so no aliasing); the `perUserSettings`
+strip / `lastReadTimestamps` keep asymmetry is pinned in BOTH directions with a sentinel value
+(`ANNAS-ARKIVERING-...`) that no other fixture field carries, so the whole-JSON assertion cannot pass
+by accident; `firestore.rules` `allow create` on `shared_content` uses `hasRequiredFields`, not
+`hasOnly`, so the extra written field is accepted; and the legacy
+`includes shared recipes and menus received, with totals` exact-list test still passes because its
+fixture rows carry no avatar to strip.
+
+**Housekeeping note:** `testing-specialist.knowledge.md` is now ~153k chars against its stated ~35k
+budget. Not addressed in a review pass; it needs a sharpen-or-retire sweep of its own.
+
+**Lesson folded into the principles file:** a rationale citing a backend propagator or deletion
+cascade is two greps (resolve the collection CONSTANT, then grep the cascade's query field) and both
+limbs commonly fail; and when one fix lands the same new field in two writers, diff the two suites'
+assertion sets, because the second suite habitually omits it.
+
+## 2026-08-01 — BUT-1779 / BUT-1785 re-review (recipe area): the `routes:` map that hid a nav bug, and a group "revoke" that revokes nothing
+
+**Trigger:** re-review after automated fixes, 7 files: `recipe_save_navigation.dart`,
+`import_result_handler.dart`, `recipe_detail_sharing_status.dart`,
+`recipe_member_manager.dart`, `social_recipe_operations.dart`, plus
+`recipe_save_navigation_test.dart` and `recipe_member_manager_test.dart`.
+
+### What the tree actually did (md5-bracketed, unchanged across the round)
+
+`recipe_member_manager.dart 9d6c6e00`, `recipe_save_navigation.dart eb84078e`,
+`recipe_save_navigation_test.dart f56856af`, `recipe_member_manager_test.dart 2fa9891e`,
+`recipe_detail_sharing_status.dart b0e0b3d8`, `social_recipe_operations.dart 8c8d3730`,
+`import_result_handler.dart 56171e3d`. Same before and after every run.
+
+`flutter test <the two suites>` -> **23/23 green**. `flutter test
+test/unit/viewmodels/social_recipe_viewmodel_test.dart` -> 44/44 (checked because
+`SocialRecipeOperations` gained a method and five suites do
+`extends Fake/Mock implements SocialRecipeOperations`; adding a method to the concrete
+class breaks none of them). `flutter analyze` over all 7 -> clean.
+
+### BUT-1779 — the vacuity that shipped as a passing test
+
+Pre-fix, `RecipeSaveNavigation.afterSuccessfulSave` pushed
+`Routes.recipeDetail, arguments: savedRecipe.id`. `AppRouter.generateRoute`
+(`app_router.dart:254-285`) decodes `arguments is Recipe` or
+`arguments is Map<String,dynamic>` -> `arguments['recipe'] as Recipe?`, and
+`_errorRoute('Recipe argument missing for detail view')` otherwise. So every
+"skriv själv" save landed on "Sidan kunde inte hittas".
+
+The old test was green because it used `MaterialApp(routes: {Routes.recipeDetail: (_) =>
+Scaffold(body: Text('detail-stub'))})`. A `routes:` map builder takes only a
+`BuildContext` — it never consults `settings.arguments` — so the stub renders for ANY
+argument. The test then asserted `settings.arguments == 'recipe-nav-1'`, i.e. it pinned
+the bug as the contract.
+
+The shipped fix replaces that with `onGenerateRoute: _routerLikeOnGenerateRoute`, a
+mirror of the router's decode branch that returns `Text('route-error')` when the decode
+yields null, plus a second test that pushes the OLD bare-id argument and asserts the
+error marker — a control proving the mirror discriminates. Both assertions in test 1
+(`same(recipe)` on the argument, `find.text('detail-for:Pannkakor')`) flip under a revert
+to `.id`, so no mutation probe was needed.
+
+**Why the mirror instead of the real router — verified, not assumed.** The file header
+claims `AppRouter.generateRoute` cannot be used because `Routes.recipeDetail` is in
+`Routes.authenticatedRoutes` (`routes.dart:128`) and `_isUserAuthenticated()` reaches
+`FirebaseAuthRepository()` -> `FirebaseAuth.instance`, which throws in a plugin-less
+`flutter test` host; `generateRoute`'s outer `try/catch` (line 508) then converts that
+into `_errorRoute`. Probed it with a throwaway
+`test/widget/views/zz_probe_router_test.dart` calling the real
+`AppRouter.generateRoute(RouteSettings(name: Routes.recipeDetail, arguments: <valid
+Recipe>))`:
+
+```
+PROBE route=PageRouteBuilder<dynamic>(RouteSettings(none, null), animation: null) thrown=null
+```
+
+No throw escaped, and the discriminator is the SETTINGS: `_buildRoute(widget, settings,
+...)` forwards the original settings (name would be `/recipe-detail`), while `_errorRoute`
+builds a route with fresh settings -> `RouteSettings(none, null)`. So the real router does
+return an error route for a perfectly valid Recipe, and the header's claim is true. Probe
+deleted after the run.
+
+**Twin-site sweep:** `grep -rn "Routes.recipeDetail" lib/ -A3 | grep arguments` — 12 call
+sites, all now passing a `Recipe` or a `{'recipe': ...}` map. `fcm_service.dart:589` passes
+a local `arguments` that is either the Recipe or a map with `'recipe'`;
+`shared_recipe_card.dart` passes `sharedRecipe.contentSnapshot`, whose type is
+`Recipe get contentSnapshot` (`lib/models/shared_recipe.dart:130`). No bare id left.
+`import_result_handler.dart` now passes `merged` (the just-persisted Recipe) rather than
+the stale `matches.first` in both merge arms, and `matches.first` in `keepExisting` —
+correct in all three.
+
+### BUT-1785 — `removeGroup` is honest, and the honesty is only half-placed
+
+Group sharees live in `socialData.categoryIds`; `removeMember` only ever matches
+`memberPermissions` keys, so the group row's revoke button failed 100% of the time. The
+fix adds `RecipeMemberManager.removeGroup` + a `SocialRecipeOperations` passthrough + an
+`isGroup:` flag at the call site that picks both the API and the copy.
+
+Verified the substantive privacy claim rather than trusting the doc comment: recipe read
+access is granted by `firestore.rules:356-363`
+(`request.auth.uid in resource.data.get('socialData',{}).get('memberPermissions',{})`);
+`categoryIds` appears nowhere in the recipes match block, so removing it revokes nothing.
+The conclusion holds — **but the doc comment cites `firestore.rules:889-897`, which is the
+`group_weekly_menu_plans` block, not recipes.** A future reader following that citation
+lands on the wrong collection while auditing a privacy claim. Filed Medium; the correct
+citation is 356-363.
+
+Write-path checks: `RecipeSerialization.toFirestore` emits `'socialData':
+recipe.socialData?.toJson()` and `RecipeSocialData.toJson` carries `categoryIds`
+(`recipe_unified.dart:1193`), so the update actually persists — this is NOT the
+"double models the write's effect" vacuity class. The panel only renders for
+`recipe.createdBy == currentUserId` (`recipe_detail_sharing_status.dart:50`), so the
+actor is always the owner and `allow update: if isOwner(userId)` permits the write; no
+test pins a rules-refused write as expected (the non-owner test uses an EDITOR, which
+`_canManageMembers` denies client-side anyway).
+
+New test group is non-vacuous by construction: the negative "not shared" test uses
+`group_zzz` against a `['group_a']` fixture, and the non-owner test seats `user_456` as
+`ResourcePermission.editor` — a real member with a non-admin level, so it discriminates
+`_canManageMembers` rather than mere non-membership. `verifyNever(updateRecipe)` on both.
+The fourth test (`a group id sent to removeMember still fails`) is the regression pin for
+the original bug.
+
+**Coverage gap left open:** nothing tests `recipe_detail_sharing_status.dart`'s `isGroup`
+routing itself — flipping the group row to `isGroup: false` would restore the bug with
+every suite green. Per BUT-387 Phase 6 that view is journey-test territory (heavy
+ServiceLocator scaffolding: `PermissionService`, `UnifiedFriendsService`,
+`UnifiedRecipeService`), so it is a conscious skip, dated here rather than left implicit.
+
+**Copy placement:** the disclosure that members keep access lives only in the SUCCESS
+snackbar (`recipeSharingRevokeGroupSuccess`, 5 s default from
+`SnackBarUtils.showSuccess`). The confirm dialog says "Ta bort gruppen {name} från
+delningen?", which a user can reasonably read as a revocation — i.e. the decision-time
+copy still carries the meaning the fix set out to stop claiming. Filed Medium with the
+one-line fix (fold the caveat into `recipeSharingRevokeGroupConfirm`).
+
+`recipe_member_manager.dart` is 605 lines against the 504 recorded in
+`ACCEPTED_LARGE_FILES.md`; the guard (`.claude/hooks/file-size-guard.sh`) matches on
+BASENAME only, so this is not a gate violation — just a stale row.
+
+**Lesson folded into the principles file:** a `MaterialApp(routes:)` map cannot see
+`settings.arguments`, so every navigation-argument test built on one is vacuous; mirror
+the router's decode in `onGenerateRoute` and add a control that pushes the old argument.
+The real `AppRouter` is unusable for anything in `Routes.authenticatedRoutes`, and the
+returned route's settings (`RouteSettings(none, null)` = `_errorRoute`) is how you tell
+which branch ran.
+
+## 2026-08-01 — BUT-1781 RE-REVIEW after automated fixes (tagging/backend)
+
+Trigger: second commit-gate pass over the same seven files. **The tree really moved**
+this time — every in-scope file except `recipe_social_stats.dart` (01:43) carries an mtime
+newer than the previous archive entry (02:10:56), up to `rating_statistics.dart` at 02:44.
+
+**Round 1's findings are closed, and correctly.**
+- `bulk-retag.ts:252,418` (the missed 4th wrong-path reader) now routes both callables
+  through a shared `recipesGroup()` helper. `functions/src/admin/bulk-retag.ts` is NOT in
+  the stated fileset — the fix widened past it, which the deviation log should carry.
+- The `stale-properties` consumer asymmetry is closed in BOTH directions:
+  `cleanup-deleted-ingredients.ts` now has ONE `STALE_TAG_MARKERS` const feeding a
+  `countByMarkers()` used by the scheduler and the admin callable, and
+  `offline_user_storage.dart:_needsRetagging` accepts the new marker with a comment
+  explaining why the `coverage == 0.0` fallback does not rescue those recipes.
+- The inert timeout guard is closed: `CASCADE_TIMEOUT_MS` 120_000 → 500_000 with a new
+  `CASCADE_TIMEOUT_SECONDS = 540` (the v2 event max) declared by both triggers, so the
+  guard now fires ~40 s before the platform kill instead of never.
+
+**Index-declaration gap — I closed it myself (test-only).** Wrote
+`functions/src/__tests__/recipe-collection-group-indexes.test.ts` (12/12) pinning the three
+new `fieldOverrides` (`core.ingredientsNormalized` CONTAINS, `core.tagResult.generatorVersion`
+ASC, `core.createdBy` ASC — all COLLECTION_GROUP) against the four querying sources, plus an
+exact-set `--force`-prune tripwire and a "never reads a top-level `recipes` collection"
+regression arm. Registered `test:recipe-collection-group-indexes` in `functions/package.json`
+so `run-all-tests.js` auto-discovery picks it up. Non-vacuity proved by copying the suite to
+`src/__tests__/_zz_probe_indexes.test.ts`, renaming one fieldPath to
+`core.ingredientsNormalised` and running: `8/12`, i.e. the index arm, the exact-set arm and
+both querier arms all redden on a single field drift. Probe file deleted (`ls` confirms).
+
+**Dart suite strengthened (test-only), and one fake primitive newly measured.**
+- `clears the denormalized fields when the last rating is removed` had NO assertion on
+  `ratingDistribution`, and its fixture omitted the field — so the `FieldValue.delete()` in
+  the empty branch was unobservable (an absent nested key is a fake no-op, per the 2026-08-01
+  probe). Seeded `'ratingDistribution': {'4': 3}` and asserted `containsKey(...) isFalse`.
+  **New measurement: the fake DOES honour `FieldValue.delete()` on a dotted path when the key
+  is PRESENT** — the strengthened assertion passes, and `title` surviving in the same doc
+  proves the removal came from the sentinel, not from a whole-map replace.
+- `writes an empty aggregate with no owner at all` was named for behaviour the code does not
+  have (with a null owner the method writes NOTHING) and both its assertions were permanent
+  passes on the fake. Renamed to `an unknown owner skips the write instead of guessing a uid`
+  and given a seeded owner document plus a rater whose uid equals the owner's, so a fallback
+  that guessed the rater's uid — the plausible mutant — now reddens on
+  `expect(core.containsKey('ratingCount'), isFalse)`.
+- The header's "Deliberately does NOT call `BaseUnitTest.setupUnit()`" rationale went STALE
+  inside this same working tree: `test/test_support/fake_field_value_platform.dart` (new,
+  untracked) exists precisely to make sentinels survive the bootstrap. Rewrote the comment to
+  point at the helper so the next reader does not re-derive the wall as impassable.
+
+**Two false comments left for the fix loop** (production files, not editable in a review pass):
+`rating_statistics.dart:626-628` says a missing `recipeOwnerIds` entry means "only the shared
+aggregate is refreshed", which contradicts lines 189-196 and 186-187 of the same file — the
+client no longer touches `recipe_social_stats` at all, so a null owner refreshes nothing.
+
+**Confirmed, not assumed.** `firestore.rules:2506-2508` really is `allow create, update,
+delete: if false` on `recipe_social_stats`, so the OLD client `batch.set` there would have
+failed the whole batch — the removal is a fix, not a regression, and
+`functions/src/ratings/update-recipe-rating-stats.ts` + `drainRatingAggregations` are the
+real producer. `RecipeFactory.createPersonalCopy` drops `socialData` and sets
+`createdBy: newOwnerId`, so `_recipeOwnerId`'s `socialData?.ownerId ?? core.createdBy` cannot
+mis-target a copied recipe; it also mirrors the pre-existing ownership expression at
+`recipe_social_stats.dart:97`. `batchUpdateQueryPaginated` orders by `__name__` ASC (covered
+by the single-field group index) and its update never touches the filter field, so the cursor
+is safe.
+
+Runs: new TS suite 12/12 + mutant 8/12; `npm run test:firestore-ttl-policies` 5/5 (the three
+new non-TTL overrides do not disturb its 15-group set); `tsc --noEmit` clean;
+`flutter test rating_statistics_denormalization_test.dart` 6/6 before and after my edits;
+`rating_statistics_test.dart` + `recipe_social_stats_test.dart` 31/31; `flutter analyze` on
+the three Dart files clean; `firestore.indexes.json` parses, 29 fieldOverrides, no duplicate
+(collectionGroup, fieldPath) pair.
+
+Housekeeping: `testing-specialist.knowledge.md` is 152 KB against a stated ~35 KB budget and
+was being written by a parallel session during this round (two "modified on disk" warnings).
+Merged into existing bullets rather than growing it; it needs a sharpening pass.
+
+## 2026-08-01 — BUT-1777/1784 shopping re-review round 2: two recorded Medium gaps closed, three mutants re-measured
+
+Scope re-reviewed as it stands in the working tree: `shopping_list_operations.dart`,
+`shopping_dialogs.dart`, `unified_shopping_view.dart`, `shopping_list_management_module.dart`,
+`list_member_operations.dart`, `collaborative_shopping_operations.dart`,
+`shopping_member_management_dialog.dart`, plus the two suites
+(`collaborative_shopping_operations_test.dart`, `shopping_member_management_dialog_test.dart`).
+
+SHIPPED STATE ON ENTRY: `flutter analyze --fatal-infos` clean over all seven paths; unit
+suite 46/46, dialog widget suite 8/8. The round-1 archive entry (see above, same files) had
+recorded two Medium gaps that the fix loop cannot consume, because that loop only acts on
+Critical/High. Both were TEST-ONLY, so this round closed them rather than re-filing them.
+
+GAP 1 — the display-copy fixture (round 1's finding, verbatim). `_sharedList()` seated the
+owner in `memberPermissions`, so `_declaredBase` and
+`widget.list.copyWith(memberPermissions: _localPermissions)` were byte-identical and the
+"declares the copy the dialog was given" test could not see which one the dialog shipped.
+Fix: `_sharedList({bool ownerSeated = true})` + `pumpDialog(..., ownerSeated)`, and the
+BUT-1777 first-change test now pumps the LEGACY shape (`ownerSeated: false`), asserts
+`declared.memberPermissions` equals `{bob: edit}`, asserts the owner key is ABSENT with a
+reason naming the refusal it would cause, and carries a positive control that the synthetic
+seat DID fire (`find.text(l10n.shoppingPermissionOwner)` + `find.text('Malin')` each
+findsOneWidget) so the absence is a statement about the base and not about the fixture.
+
+Measured, `cp -p` backup + Edit mutant + reverse Edit + `cmp` restore (production files were
+dirty; `shopping_member_management_dialog.dart` md5 `e69af98d63…` before and after):
+
+| mutant | red BEFORE the fixture change | red AFTER |
+|---|---|---|
+| `viewedBase: _declaredBase` → `widget.list.copyWith(memberPermissions: _localPermissions)` | 0 of 8 | 2 of 8 |
+
+Second red was a surprise worth recording: the "a second change declares the base this
+dialog already moved" test also flipped, with `Actual: edit` where `admin` was expected.
+Cause is ALIASING, not semantics — `copyWith(memberPermissions: _localPermissions)` stores
+the mutable field BY REFERENCE, so the fake's `declaredBases` list held two pointers to one
+map, and by assertion time that map read `bob: edit` (the second change's value). So a
+"successive calls declared different bases" assertion over a recorded-argument fake can pass
+or fail for reference reasons; the discriminating KEY assertion is what makes it real.
+
+GAP 2 — `showCreateListDialog`'s BUT-1784 `onError` branch had zero tests (round 1 recorded
+this and named the harness). New file `test/widget/shopping/shopping_list_operations_create_test.dart`,
+3 tests, modelled on `shopping_list_operations_convert_test.dart`: `createLocalizedTestApp`
++ a `TextButton` invoking the static helper with `successes.add`/`errors.add`, driving the
+real `DialogFactory.showTextInput` (`enterText` into the single `TextField`, tap
+`l10n.commonCreate`). The view model is `_StubShoppingViewModel extends Fake implements
+UnifiedShoppingViewModel` with one concrete `createPersonalList` that records the requested
+name and returns the configured verdict — recording the name is the control that proves the
+create was ATTEMPTED, without which "errors holds the sentence" is equally satisfied by a
+dialog that bailed out above the service. Tests: refused → `successes` empty and
+`errors == [shoppingCouldNotCreateOrSelectList]`; success → `successes ==
+[shoppingListCreated('Veckohandling')]`, `errors` empty (recall control); cancelled → all
+three empty, pinning that the early `return` stays silent.
+
+Mutant (pre-fix shape: drop the bool, always `onSuccess`) → **1 red of 7** across the create
++ convert suites: exactly `a refused create is reported as a failure, never as a list`. The
+convert suite is untouched by it, which is correct — different helper.
+
+RE-MEASURED the round-1 mutants against the current bytes, to confirm the tree had not moved
+under them (`list_member_operations.dart` md5 `104532111e…` before and after both probes):
+
+| mutant | red |
+|---|---|
+| `_updateMembership(updatedList, viewedBase)` → `list` | 1 of 46 — "the declared base is the caller's copy, not the live one" |
+| neuter the `!list.memberPermissions.containsKey(userId)` fail-closed guard (`if (false && …)`) | 1 of 46 — "a member the stored copy no longer has is refused" |
+
+FINAL STATE: `flutter analyze --fatal-infos` clean over all seven production paths plus
+`test/widget/shopping` and the unit suite; `flutter test test/widget/shopping
+test/unit/services/unified/operations/collaborative_shopping_operations_test.dart` → 102/102.
+All three probed production files verified byte-identical to their pre-probe md5s
+(`845eb549a2…`, `104532111e…`, `e69af98d63…`); `git status --porcelain` on `lib/` shows only
+the sprint's own five modified files.
+
+REMAINING, NOT FIXED (both Low, production-side, so out of a review pass's remit):
+
+* `shopping_member_management_dialog.dart:212` — the `_removeMember` success branch calls
+  `setState` after the await with no `mounted` guard, unlike its sibling branches. The dialog
+  is barrier-dismissible, so it is reachable; it is NOT a crash, because the enclosing
+  `catch (e)` swallows the throw and its own `if (mounted)` then no-ops. Pre-existing (the
+  diff only inserted `_rebaseMembers(...)` above it). Effect is a lost snackbar on a dead
+  widget.
+* The permission payload is computed from the LIVE copy while the drift verdict is taken on
+  `viewedBase` vs STORED. When live and stored disagree (both feed from the same snapshot
+  stream, so this is narrow), the written membership is not `declaredBase + change` and the
+  dialog's `_rebaseMembers` then records something the server did not receive. Structural to
+  BUT-1726's seam, not introduced here.
+
+VERDICT: pass. Two rounds of recorded Medium gaps are now closed, five mutants across three
+production files each redden exactly the test that names them, and no Critical/High was
+found in the working tree.
+
+## 2026-08-01 — BUT-1782 round 3 (re-review after automated fixes): the tree never moved; spent the round on defaults() completeness
+
+**Trigger:** re-review of `lib/models/notification_preferences.dart` +
+`test/unit/models/notification_preferences_test.dart` "after automated fixes",
+settings/account area.
+
+**Tree-motion check, and it was decisive.** Round 2 recorded its post-fix md5s
+(`3fa0bb7e…` lib, `0de7cc91…` test). Both files hash to exactly those values now, so
+**nothing landed between round 2 and round 3** — the fix loop consumes Critical/High
+only and round 2 filed none, which is precisely the "returns unchanged forever" case in
+the re-review economics principle. mtime was misleading in both directions: the lib file
+read 03:30:29 (4s AFTER round 2's archive write) and later 04:25:16, yet the bytes never
+changed. Recording md5s in the archive entry is what made this a one-command answer;
+adopted as a standing habit in the principle.
+
+**A transient foreign md5, handled as tree motion not a finding.** One `md5sum` mid-round
+returned `bcb6dcb3f4df619bad656c794c8cf8c8` for the lib file; five polls two seconds
+apart then returned `3fa0bb7e…` continuously, size 9004 both times, `git diff --stat`
+unchanged at `44 insertions, 4 deletions`, CRLF intact. Another session touching the file
+(format pass or `cp -p` restore). Per the principle, re-read before writing a word — and
+report it as evidence the SUITE could not see it, never as a live defect.
+
+**Baseline, md5-bracketed.** 21/21 green, `flutter analyze --fatal-infos` clean on both
+files. Identical to round 2's recorded result.
+
+**The new probe this round: `defaults()` key-set completeness.** Neither earlier round
+checked whether the factory supplies a value for every enum member. It does today (7
+categories, 5 types, both fully enumerated), but nothing pinned it, and the failure mode
+is severe and silent: `isEnabled` reads a missing key through `orFalse()` → `false`, and
+`defaults()` is what every new user gets AND what the corrupt-cache branch returns, so a
+newly added `NotificationCategory` would be dead for everyone with no test going red.
+Added `supplies a value for every category and every type` in the `defaults factory`
+group. Not circular — one side is the hand-written literal in the factory, the other the
+enum declaration.
+
+Non-vacuity probed rather than assumed, because a `Set` comparison that degraded to
+identity would prove nothing: throwaway `test/unit/models/zz_probe_setmatcher_test.dart`
+compared `NotificationCategory.values.toSet()..remove(system)` against the full set and
+reddened with `Which: does not contain NotificationCategory:<NotificationCategory.system>`.
+Probe deleted; `git status --porcelain test/unit/models/` shows only the real suite
+modified. Result **22/22 green**, analyze clean, production md5 unchanged (`3fa0bb7e…`).
+
+**Round-1 archive claim corrected.** Round 1 wrote "The `hasRequiredFields` guard is
+covered — deleting it turns the `'{}'` test's assertions red." That is FALSE.
+`hasRequiredFields` (`serialization_utils.dart:414-423`) is `containsKey && != null`, and
+the two clauses that follow it in the same condition are `data['categorySettings'] is!
+Map || data['typeSettings'] is! Map`. An absent key yields `null`, and `null is! Map` is
+true, so the `is! Map` clauses reject strictly more than `hasRequiredFields` does — it
+cannot reject anything they accept. Deleting `hasRequiredFields` alone changes no
+behaviour and reddens nothing; the `is! Map` pair (which round 2 covered with the
+per-field corrupt-blob test) is the whole guard. Filed Info, not a bug: harmless
+redundancy, no behavioural consequence. Generalised into the vacuity section as "check
+whether a LATER clause already rejects everything an earlier one does".
+
+**Round-2 items re-checked, still open and still Low.**
+- `FormatException('Expected a JSON object', json)` (lib:180) still embeds up to ~78 chars
+  of the raw cached blob in `toString()`, which `notification_preference_manager.dart:401`
+  logs via `AppLogger.warning`. Booleans and times only, so Low; dropping the second
+  argument is a one-token fix that needs a plan (production edit).
+- `expect(json, isNot('{}'))` (test:272 after my insert) remains subsumed by the
+  `jsonDecode` assertions below it. Left in place as migration documentation, per round 2.
+
+**Out-of-scope, not re-filed.** The local-residual Medium round 2 raised against
+`notification_service.dart:728` (`if (!_modulesCreated) return;` skips
+`clearLocalStorage()` when the modules were never created this session) is unchanged and
+lives outside this two-file scope.
+
+**Housekeeping flagged upward:** `testing-specialist.knowledge.md` is now 155,828 chars
+against its stated ~35,000 budget (4.5x). I kept this round's additions to two merged
+lines rather than new sections, but the file needs a sharpening pass by someone with a
+mandate to retire other rounds' principles.
+
+**VERDICT: pass.** Round 2's fixes are correct and complete, the tree is byte-identical to
+what round 2 signed off, 22/22 green with analyze clean, and no Critical/High exists in
+either file.
+
+## 2026-08-01 — BUT-1781 RE-REVIEW round 3: retry semantics landed, and the guard that sits one line too low
+
+Trigger: third commit-gate pass over the same seven files (tagging/backend).
+
+**Tree motion, checked first.** Only two of the seven moved since my round-2 archive write
+(03:30): `on-ingredient-soft-deleted.ts` and `on-ingredient-properties-changed.ts`, both
+04:01:13. `firestore.indexes.json` (02:31), `cleanup-deleted-ingredients.ts` (02:30),
+`recipe_social_stats.dart` (01:43), `rating_statistics.dart` (03:26) and the Dart suite
+(03:24) are byte-identical to what round 2 reviewed. So this round is really a review of ONE
+change: the retry semantics on the two cascades.
+
+**What landed, and it is correct.** Both triggers moved from a bare document-path string to an
+options object: `timeoutSeconds: CASCADE_TIMEOUT_SECONDS` (already there in round 2),
+`retry: true`, `memory: "512MiB"`, plus an `isCascadeEventExpired(event.time)` early return
+logging `cascade.abandoned`. `with-timeout.ts` grew `CASCADE_MAX_EVENT_AGE_MS = 1h` and the
+predicate, which fails OPEN on an absent/unparseable timestamp. `event.time` is the right
+field — the CloudEvent `time` is set at generation and preserved across redeliveries, which is
+what makes an age bound possible at all. 540s is the v2 EVENT maximum (not the 3600s HTTP one),
+and `CASCADE_TIMEOUT_MS = 500_000 < 540_000` keeps the in-process guard firing first.
+
+**New suite `functions/src/__tests__/cascade-retry-semantics.test.ts` (11/11), and its one real
+lesson.** It asserts over SOURCE TEXT, and its own docstring records that the first version
+reported 11/11 with `retry: true` deleted — because the handler's neighbouring COMMENT
+mentions the setting. Fixed with a `readCode()` that strips block comments then line comments
+(`/(^|[^:])\/\/.*$/gm`, the `[^:]` sparing `https://`). I re-proved that independently without
+mutating any production file: a throwaway `src/__tests__/_zz_probe_cascade.test.ts` read the
+real sources, `.replace()`d each setting out of the STRING, and printed base-vs-mutant per
+regex. All six flipped (`retry`, `timeoutSeconds`, `isCascadeEventExpired` × 2 files). Probe
+deleted, `ls` confirms. This string-mutant technique is strictly better than a file mutant here
+— no `cp -p`, no restore, and no auto-mode refusal.
+
+**The finding this round produced.** The age guard is the SECOND thing each handler does:
+`event.data!.before.data()` runs above it (soft-deleted 64-66 / properties-changed 85-87).
+A throw from that non-null assertion therefore escapes the very bound the guard exists to
+impose, and with `retry: true` now on, it redelivers for the full 7-day window instead of one
+hour. Low likelihood (v2 `onDocumentUpdated` always populates `data`), zero-cost fix: only
+`event.params.ingredientId` and `event.time` are needed for the abandon log, so the guard can
+be the first statement. Filed as Low; it is the general check for ANY `retry: true` adoption —
+read where the bound sits, not just that it exists.
+
+**Round-2 carry-over still open.** `rating_statistics.dart:626-628` still says a missing
+`recipeOwnerIds` entry means "only the shared aggregate is refreshed". The client stopped
+touching `recipe_social_stats` in this same diff (189-196), and `_denormalizeOntoRecipe`
+returns immediately on a null owner (266-271), so a missing entry refreshes NOTHING from the
+client. Re-filed as Low — the fix loop consumes Critical/High only, and a review pass may not
+edit production, so this needs to be carried by hand into the next production edit.
+
+**Ruled out, with the greps.** `collectionGroup("recipes")` is unambiguous here: `firestore.rules`
+has exactly one `recipes` match block (line 356, `users/{uid}/recipes/{recipeId}`) plus the
+`{path=**}/recipes` group rule at 2230, so the admin-SDK fan-out cannot spray a sibling
+subcollection. The only trigger on that path is `cleanup-recipe-storage.ts` (onDocumentDeleted),
+so the cascade's own writes cannot loop back. The exact-set index arm (3 recipes overrides) is
+right: the other two `collectionGroup("recipes")` readers are unfiltered
+(`daily-snapshots.ts:241`, `.limit()` only) or filter on `__name__`
+(`backfill-recipe-comments-denorm.ts:85`), neither of which needs a `fieldOverride`.
+`batchUpdateQueryPaginated` orders `__name__` ASC, which the auto single-field group index
+covers, and its update never touches the filter field, so the cursor is safe. The
+`STALE_TAG_MARKERS` comment's "two producers, three consumers" is TRUE as of now — grep for the
+two literals returns exactly the two writers plus `offline_user_storage.dart:110-111`,
+`bulk-retag.ts:27` and the monitor itself.
+
+Runs: `tsc --noEmit` clean; `npm run test:cascade-retry-semantics` 11/11 + string-mutant probe
+6/6 flipped; `npm run test:recipe-collection-group-indexes` 12/12; `npm run
+test:script-test-registration` 20/20 (incl. "the real repository passes its own guard", i.e.
+both new suites are wired into CI); `npm run test:cascade-audit-log-wirings` 3/3;
+`flutter analyze --fatal-infos` on the three Dart files clean; `flutter test` on
+`rating_statistics_denormalization_test.dart` + `rating_statistics_test.dart` +
+`recipe_social_stats_test.dart` 37/37; `firestore.indexes.json` parses, 29 fieldOverrides, no
+duplicate (collectionGroup, fieldPath) pair.
+
+## 2026-08-01 — BUT-1785 round 2 (recipe area): the group revoke persists nothing, because the injected write seam rejects collaborative recipes
+
+**Trigger:** re-review after automated fixes, same 7 files as the earlier 2026-08-01 entry
+(`recipe_save_navigation.dart`, `import_result_handler.dart`,
+`recipe_detail_sharing_status.dart`, `recipe_member_manager.dart`,
+`social_recipe_operations.dart`, `recipe_save_navigation_test.dart`,
+`recipe_member_manager_test.dart`).
+
+### The tree did NOT move
+
+md5 identical to the previous round's record on all seven:
+`eb84078e / 56171e3d / f56856af / b0e0b3d8 / 9d6c6e00 / 8c8d3730 / 2fa9891e`.
+Nothing landed, so the previous round's two Mediums (wrong `firestore.rules` citation,
+confirm-dialog copy) are unchanged and unconsumed — the fix loop only consumes
+Critical/High. `flutter analyze` over the 7 → clean. `flutter test` on the two suites →
+**23/23 green**, same as before.
+
+Per the re-review-economics principle the round was spent on a probe the earlier round did
+NOT run: tracing the WRITE SEAM to its terminal implementation instead of stopping at
+`firestore.rules`.
+
+### The new High — `removeGroup` can never persist
+
+`RecipeMemberManager` takes `required Future<bool> Function(Recipe) updateRecipe` and every
+path it exposes first filters `_getRecipes().where((r) => r.id == recipeId &&
+r.isCollaborative)`. The suite stubs the seam:
+`when(() => mockParentService.updateRecipe(any())).thenAnswer((_) async => true)`.
+
+Production binds it as follows, one construction site, no branching:
+
+1. `social_recipe_operations.dart:62-68` — `RecipeMemberManager(updateRecipe: updateRecipe, ...)`
+2. `social_operations_initializer.dart:63/107/134` — `updateRecipe: ctx.updateRecipe`
+3. `unified_recipe_service.dart:406-416` — `SocialOpsContext(updateRecipe: updateRecipe, ...)`
+4. `unified_recipe_service.dart:741-742` — `updateRecipe => _personalCrud.updateRecipe(...)`
+5. `personal_recipe_crud.dart:103-105` — `withRetry(() => personalModule.updatePersonalRecipe(updatedRecipe), maxAttempts: 3)`
+6. `personal_recipe_module.dart:242-245` — `if (!updatedRecipe.isPersonal) { _setError(AppLocale.current.errorCanOnlyUpdatePersonalRecipes); return false; }`
+
+`isPersonal`/`isCollaborative` are mutually exclusive (`recipe_unified.dart:1474-1476`), and
+`removeGroup` rebuilds the recipe with `type: recipe.type`, i.e. still
+`RecipeType.collaborative`. So step 6 returns false, `withRetry` burns 3 attempts, and
+`removeGroup` hits `AppLogger.error('Failed to update recipe after group removal')` →
+`false` → `recipe_detail_sharing_status.dart:251` shows `commonUnknownError`. Same
+user-visible failure the ticket set out to remove, just from a different line.
+
+**The corroborating tell, and it is two lines apart in the same initializer:**
+`unified_recipe_service.dart:339` hands the sibling `SocialRecipeModule` the OTHER function
+— `saveRecipe: saveRecipeForSocialModule` — whose own doc comment at `:752-753` reads
+"Unlike [updateRecipe], this does not reject collaborative recipes." A collaborative-safe
+writer exists and the social OPS context was wired to the personal-only one.
+
+Scope: this is not new to `removeGroup`. `addMember`, `removeMember` and
+`updateMemberPermission` share the seam and the `isCollaborative` filter, so BUT-1785
+acceptance criterion #2 ("revoking a USER's access still works via the existing path —
+regression guard") is also false. Two extra wrinkles found while checking:
+`recipe_detail_sharing_status.dart:51` renders the panel for `isCollaborative || isShared`,
+but every manager path requires `isCollaborative`, so a `RecipeType.shared` recipe fails at
+the lookup with "Recipe not found or not collaborative"; and `removeGroup` orders its
+`categoryIds`-membership check BEFORE `_canManageMembers`, the reverse of `removeMember`
+(both still return false, so it is a log-ordering nit only).
+
+**Not executed.** Steps 1-6 are a static source read; instantiating the real
+`UnifiedRecipeService` needs the full DI graph, and no existing test drives
+`updatePersonalRecipe` with a collaborative recipe. Every hop is a single unconditional
+line with no branching, and the `saveRecipeForSocialModule` doc comment is independent
+corroboration, but the end-to-end run was not staged.
+
+### What the earlier round missed, and why
+
+It checked the write against `firestore.rules` (correctly: `allow update: if isOwner(userId)`
+permits it, and `RecipeSocialData.toJson` really does carry `categoryIds`) and stopped
+there. Rules were never the gate — a client-side type guard four hops up the injection
+chain was. Generalised into the principles file as the client-side twin of the
+"rules refuse the write, mocks stay green" rule.
+
+### Re-confirmed from the earlier round (unchanged tree)
+
+- BUT-1779 nav fix is correct at all three call sites; the `onGenerateRoute` mirror in the
+  test is a faithful copy of `app_router.dart:261-274` and its bare-id control genuinely
+  discriminates. `import_result_handler.dart` passing `merged` rather than the stale
+  `matches.first` in both merge arms is right.
+- `firestore.rules:889-897` in the `removeGroup` doc comment is still the
+  `group_weekly_menu_plans` block; recipes are `356-363`. Still Medium.
+- `recipeSharingRevokeGroupConfirm` ("Ta bort gruppen {name} från delningen?") still carries
+  no caveat; the disclosure lives only in the 5 s success snackbar. Still Medium — and it is
+  now moot in practice, since the success snackbar never fires.
+- `recipe_member_manager.dart` is 605 lines against the 504 recorded in
+  `ACCEPTED_LARGE_FILES.md:134`. Allowlisted, row stale.
+
+## 2026-08-01 — BUT-1788 re-review round 3: the no-oracle gate hid a mutation-dead branch
+
+Trigger: re-review of the leave-group/remove-member move to a Cloud Function, after
+automated fixes. Files: `functions/src/messaging/leave-group-conversation.ts`,
+`functions/src/__tests__/leave-group-conversation.test.ts`,
+`functions/src/__tests__/app-check-enforcement.test.ts`, `functions/src/index.ts`,
+`functions/package.json`, `lib/repositories/firebase/modules/conversation_mutation_module.dart`,
+`lib/repositories/firebase/firebase_messaging_repository.dart`,
+`test/unit/repositories/firebase/modules/conversation_mutation_module_test.dart`.
+
+Tree motion: the production CF was rewritten at 03:51, i.e. AFTER round 2's archive entry
+(03:30) and after its own suite (02:35). So this round was NOT a byte-identical re-read.
+
+Verified green as they stand:
+- `npm run test:leave-group-conversation` → 22/22 (matching round 2's recorded count).
+- `npx ts-node src/__tests__/app-check-enforcement.test.ts` → 16/16, including the new
+  `leaveGroupConversation declares enforceAppCheck: true` arm.
+- `flutter test test/unit/repositories/firebase/modules/conversation_mutation_module_test.dart`
+  → +15 ~1 (the pre-existing `mergeFields` skip).
+- `flutter analyze --fatal-infos` on the two `lib/` files + the Dart suite → clean.
+- `npx tsc --noEmit -p functions/tsconfig.json` → clean.
+
+Cross-checks done by grep rather than trust:
+- Mirror paths in the CF (`conversations/{id}/participants/{uid}`,
+  `users/{uid}/conversation_memberships/{id}`) match
+  `ConversationParticipantModule.removeParticipant` and
+  `FirestoreCollections.participants` / `.userConversationMemberships` exactly.
+- `Collections.messages == "messages"`, top-level, which is where the client reads.
+- The CF's hardcoded `"${name} har lämnat gruppen"` is byte-identical to
+  `chatParticipantLeft` in `app_sv.arb:9432`.
+- `setGlobalOptions({region:"europe-west1"})` (index.ts:41) matches the client's
+  `FirebaseFunctions.instanceFor(region: 'europe-west1')`.
+- The CF's authorization premise is real: `firestore.rules` gained a
+  `metadata.creatorId` immutability conjunct in the same diff, and the client's
+  `GroupDetailViewModel.isAdmin` (`metadata['creatorId'] == currentUserId`) matches
+  `authorizeDeparture`'s admin test, so the UI does not offer removals the server refuses.
+- `ConversationsViewModel.leaveGroup` and `GroupDetailViewModel.leaveGroup` both pass the
+  CURRENT uid as `participantId`, so self-leave hits the self branch, not the admin branch.
+- `functions/scripts/run-all-tests.js` auto-discovers `test:*` and excludes
+  `test:integration:`, so the new unit script runs in the sweep and the new integration
+  script correctly sits in `test:rules:all` only.
+
+**The finding of the round.** The callable's no-oracle gate
+(`if (!snap.exists || !participantIds.includes(callerUid)) return {removed:false, remaining:0}`)
+runs before everything else. Consequence nobody had noticed: every fixture that could have
+exercised a branch BELOW it as a non-member is eaten by the gate. Concretely the next line,
+`const isGroup = data.isGroup === true || rawParticipantIds.length > 2`, had no live fixture
+at all — `groupDoc()` satisfies both disjuncts, the padded-list doc has raw length 3, and all
+three direct-conversation cases were either a stranger (gate) or a direct call to the pure
+`authorizeDeparture`. Probe: a throwaway `_zz_probe_leave.ts` calling
+`removeGroupParticipantWithDeps` with a REAL participant of a 1:1 doc printed
+`failed-precondition`, `writes 0`, both for evicting the other person and for leaving alone —
+i.e. the branch is reachable and correct, just unasserted. Mutation: replacing the line with
+`const isGroup = true` left the shipped 22 tests fully green, while in production it lets one
+half of a DM evict the other and cut their access to the whole thread.
+
+Test-only fixes applied by me (production untouched; `cp -p` + `cmp` confirmed the CF
+restored byte-identical, md5 `c15c5c8ccaed5ce783392bd34b01d2cd`):
+1. `a 1:1 participant cannot evict the other, and nothing is written` — asserts
+   `failed-precondition` for both eviction and self-leave on a DM whose caller IS a member,
+   plus zero updates/adds/deletes. Under the `isGroup = true` mutant the suite goes
+   23/24 with exactly this test red; restored, 24/24.
+2. `a failing system-message write still completes the leave` — a `failAdds` flag on the
+   fake makes `messages.add()` reject, proving the `.catch()` around
+   `writeDepartureSystemMessage` is load-bearing. Without it the user is told the leave
+   failed for a group they are already out of, and their retry hits the no-oracle gate,
+   so they can never be told it worked.
+
+Generalisable rule (folded into the principles file): after any early "uniform answer" gate,
+list which fixtures reach each line below it; if they all carry the same value for the field
+that line tests, that line is mutation-dead in one direction, and the missing fixture is a
+caller who IS a member of the refused variant.
+
+Not closed this round: `updateConversationUserSettings`'s pre-existing skip reason claims
+the merge contract "is enforced by Firestore security rules in prod", which is false —
+rules do not enforce `set(mergeFields:)` semantics; only the emulator can. Untouched
+because it predates this diff.
+
+## 2026-08-01 — BUT-1775 re-review round 3 (account area): the `exists?` probe that kills the create it guards
+
+**Trigger:** re-review after automated fixes of `lib/services/account/export/social_export_manager.dart`,
+`lib/services/unified/operations/modules/recipe_sharing_manager.dart`,
+`lib/services/unified/operations/social_menu_operations.dart`, the two deviation files, and the two
+matching suites.
+
+**Tree motion, checked first.** Only ONE in-scope pair had moved since round 2's archive entry
+(03:30): `recipe_sharing_manager.dart` 04:09 (md5 `20412fc9` → `fbf34780`) and its suite 04:07.
+`social_export_manager.dart` read `f233400b` — byte-identical to round 2, so its 03:19 mtime was
+round 2's own `cp -p`/reverse-Edit restore, not new work. `social_menu_operations.dart` `17727548`,
+unmoved. So the round was spent on the NEW delta: create-only `sharedAt` stamping, the ERROR-level
+log, `installFakeFieldValuePlatform()`, and two new tests.
+
+**Bracketed run.** `flutter test` over both suites: 45/45 green, md5 identical before and after on
+both `lib/` files. `flutter analyze --fatal-infos` over all five in-scope files plus
+`test/test_support/fake_field_value_platform.dart`: clean.
+
+**Finding 1 (CRITICAL, new this round, measured on the emulator).**
+`recipe_sharing_manager.dart:589` added `final existing = await sharedContentRef.get();` so that
+`sharedAt` is stamped only on a create (round 2's `cannotModify(['…','sharedAt'])` denial on
+re-share). But `firestore.rules:724-728`'s `allow get` on `shared_content` dereferences
+`resource.data.sharedByUserId` and `resource.data.sharedToUserIds`, with only
+`isSharedMember()` (an `exists()` on the members subcollection) in between. On a FIRST share the
+document does not exist and no members doc exists either, so CEL gives `error || false || error` =
+error = DENY. The probe throws `permission-denied`, the writer's own `catch` swallows it, and the
+`shared_content` document is NEVER created — no recipient read grant, no Art. 15 rows, no group
+discovery feed. Strictly worse than the bug it fixes: before, first shares worked and only
+re-shares were refused.
+
+Proved with a throwaway `functions/src/__tests__/_zz_probe_missing_get.test.ts` under
+`cd functions && npx firebase emulators:exec --only firestore --project demo-test "npx ts-node …"`,
+three arms, ~90 s, deleted afterwards:
+- ARM1 `get shared_content/never-created` as an authenticated user →
+  `evaluation error at L724:21 for 'get' … Null value error`
+- ARM2 (control) same read after seeding the doc with that uid as `sharedByUserId` → SUCCEEDED
+- ARM3 the create the writer *would* have issued on a first share → SUCCEEDED
+
+So the only thing between a newly shared recipe and a written document is the new probe read.
+Fix: wrap the probe in its own try/catch defaulting to `exists = false` (correct in every arm — a
+denied probe means either "missing", which is a create, or an actor whose update the rules refuse
+anyway), and pin it with an injected repository whose `.doc().get()` throws
+`FirebaseException(code:'permission-denied')`, asserting the document is still written. The offline
+leg is the same shape (a default-source `get()` with no cached copy).
+
+Also confirmed unchanged from round 2: no other client code in `lib/` does a doc-level `get()` on
+`shared_content`, and the one analogous precedent — `FirebaseShoppingRepository.read():264-277` on
+`unified_shared_shopping_lists` — already wraps exactly this read in a catch that FALLS THROUGH.
+
+**Finding 2 (Medium, residual of the same denial class).** The payload still writes
+`sharedByUserId: currentUserId` unconditionally. When a MEMBER re-shares (member invites are a
+supported flow), that value differs from the stored one, lands in `affectedKeys()`, and
+`cannotModify(['sharedByUserId', …])` refuses the whole update — the same silent drop the comment
+at :579-588 now claims is closed. Closed only for the original sharer.
+
+**Finding 3 (Medium, round 2's Finding 1, UNFIXED and now verified twice).** The Auth→profile-name
+rationale still asserts both false limbs at `recipe_sharing_manager.dart:600-604`,
+`social_menu_operations.dart:60-63`, and `docs/architecture/ACCEPTED_DEVIATIONS.md:~178-183`.
+Re-verified this round: `on-profile-updated.ts:156` updates `Collections.sharedRecipes`
+(= `"shared_recipes"`), field `socialData.ownerDisplayName` — a different collection and a field
+these flat docs do not have; `on-user-deleted.ts:232-251` (`tombstoneSharedByDisplayNameWithDb`)
+queries `shared_content where sharedByUserId == uid` and overwrites `sharedByDisplayName` +
+`sharedByAvatarUrl` by UID, so an Auth-sourced stamp is erased just as thoroughly. The change is
+still right for the reason that carries itself: the Auth handle is the legal Google/Apple name and
+it lands verbatim in every recipient's bundle. Note `social_menu_operations.dart:85-91`'s MENU-TITLE
+claim is a different one and is TRUE — the cascade tombstones the name fields, not `title`.
+
+**Finding 4 (Low, round 2's Finding 3, UNFIXED).** `social_export_manager.dart:394-396`'s new
+sentence ("The profile picture of whoever shared each item has been removed") overclaims:
+`_sharedContentReceivedQuery` filters only on `sharedToUserIds arrayContains uid` with no
+`sharedByUserId != uid` leg, and the recipe writer puts the sharer in that array, so the requester's
+OWN shares appear in this section and correctly KEEP their avatar. The suite's own fixture relies on
+that (`shared_recipes_received[1]`). "Other people's …" is the precise wording.
+
+**Finding 5 (Low, round 2's Finding 2, UNFIXED).** `ACCEPTED_DEVIATIONS.md:~188` still names
+`_dropOtherSenderAvatar`, merged into `_dropAvatarUnlessOwn` by this change.
+
+**Verified non-vacuous, probe on the test side (no `lib/` mutation needed).** The new
+`re-sharing does not re-stamp sharedAt` test rests on the fake resolving `serverTimestamp()` inside
+a merge-set. A 20-line `test/unit/_zz_probe_stamp_test.dart` (deleted after) ran both arms:
+shipped path leaves the seeded `Timestamp(1767322800)` untouched; the mutant's unconditional stamp
+writes `Timestamp(1785551557)`. So restoring the unconditional stamp reddens the first expectation
+exactly as the docstring claims, and the paired `sharedToUserIds contains 'new_member'` assertion is
+a real positive control (a write that never happened fails it), which avoids the "no write was
+issued is unfalsifiable" trap.
+
+**Also verified, no finding:** `installFakeFieldValuePlatform()` is the two-line harness fix the
+principles file predicted, and it un-skips the attribution test unchanged; `_dropSharerAvatar`'s
+`sanitizeForJson(...) as Map<String, dynamic>` is safe because `_queryList` always builds
+`{'id', 'data': doc.data()}` from a QuerySnapshot (non-null map) and `sanitizeForJson` returns
+`Map<String, dynamic>` for any Map; the BUT-1774 `perUserSettings`-strip / `lastReadTimestamps`-keep
+asymmetry is pinned in both directions with a sentinel no other fixture field carries.
+
+**Lesson folded into the principles file:** a client-side `exists?` probe used to choose a
+create-vs-update payload is DENIED on the very case it detects in any rules-guarded collection whose
+`get` dereferences `resource.data`; and any rules-semantics question can be settled in one ~90 s
+`firebase emulators:exec` run whose error message names the rule line, so no Critical resting on
+rules semantics should be filed (or dismissed) from a source read.
+
+## 2026-08-01 — BUT-1777/BUT-1784 shopping re-review (declared base + create verdict)
+
+Re-review round over 9 files (7 production, 2 test) after automated fixes. Tree HAD moved:
+`list_member_operations.dart` 03:23, `shopping_list_operations.dart` 03:26,
+`shopping_member_management_dialog.dart` 03:20, both suites 03:19/03:24 — all newer than
+the previous archive write, so this was a genuinely new tree, not a byte-identical replay.
+
+Verified green: `flutter analyze --fatal-infos` over the WHOLE project (153s, "No issues
+found") — worth the cost here because `updateMemberPermission` gained a REQUIRED named
+param, which is exactly the "adding a named param silently un-matches every old mocktail
+stub" class; the full run is the only thing that proves no other suite or mock was left
+behind. `flutter test` over the three suites: 57/57.
+
+### The mutation probe, and how it was refused
+
+Intended mutant on `list_member_operations.dart` (a DIRTY file, so no `git checkout --`):
+`cp -p` backup → Edit-tool wrote BOTH mutants (`if (false && !list.memberPermissions
+.containsKey(userId))` to disable the fail-closed guard, and `_updateMembership(updatedList,
+list)` to revert the declared base). Both Edits landed without complaint. The very next
+`flutter test <the one suite>` was REFUSED by the auto-mode classifier — twice, once with a
+grep pipeline and once as the bare command, so the refusal is content-sensitive to the dirty
+`lib/` mutant and not to the shell shape. Restored with two reverse Edits; `md5sum` and `cmp`
+against the `.bak` both identical (`104532111e3c9c972559dd64525d7293`). This is the third
+file/third language pair to show the refusal (after `rating_statistics.dart` and
+`account-deletion-cascade.ts`) — budget for "mutant staged, unrunnable" as the default.
+
+### What settled the mutation question instead (analytic discrimination)
+
+The suite was authored so both mutants are decidable by reading:
+
+* `the declared base is the caller's copy, not the live one` — `viewed` carries `user_999`,
+  the live copy (`testCollaborativeList`) does not, so `base.memberPermissions.keys contains
+  'user_999'` can only pass when the code forwards `viewedBase`. Its partner assertion
+  (`updated` must NOT contain `user_999`) pins the other half: the PAYLOAD is still computed
+  from the live copy, so a stale view cannot resurrect dropped members.
+* `a member the stored copy no longer has is refused` + `the same call still writes while
+  the member IS there` — the pair differs ONLY in the stored membership. Checked the fake:
+  `FakePermissionService.canManageShoppingList`/`isShoppingListOwner` read their own
+  `_permissions`/`_currentUserId`, which `MockUnifiedShoppingService.setShoppingState` never
+  touches, so the refusal is attributable to the new `containsKey` guard and to nothing else.
+  That check is what turns a fail-closed control from decoration into proof — do it every
+  time, because a control that shares a mutable seam with the thing it controls proves zero.
+* Widget side, `the first change declares the copy the dialog was given` — deliberately runs
+  the LEGACY `ownerSeated: false` fixture, the only shape in which `_declaredBase` and the
+  rendered `_localPermissions` differ (initState seats a synthetic owner for display). With
+  the owner already seated the two candidate sources are byte-identical and shipping
+  `_localPermissions` would pass unnoticed. Textbook "make the two candidate sources
+  DIFFERENT literals", applied by the author rather than the reviewer.
+
+### Twin-site sweep (the thing a diff read cannot tell you)
+
+* Second create path — `shopping_list_selector.dart:280` already consumes the bool and
+  words the failure from `_viewModel.error`. No twin defect; BUT-1784 was genuinely one site.
+* Hypothesised clobber on `removeMember`/`addMember`, which still declare the LIVE copy as
+  their base: `_memberDiff` emits `FieldValue.delete()` for any key in `stored` but not in
+  `proposed`, so a lagging live copy looked like it could silently delete a concurrently
+  added member. It CANNOT: `restrictAccessControlToDeclaredBase` runs first and compares the
+  SAME live copy against `stored`, so any lag throws `StaleAccessControlBaseException` before
+  the payload is written. The general form is worth keeping: **a "wrong base" hazard is only
+  real when the base the drift guard checks differs from the base the payload was computed
+  from** — which is precisely the asymmetry BUT-1777 fixed for the permission path.
+* `UnifiedShoppingList.copyWith` uses `memberPermissions ?? Map.from(this.memberPermissions)`,
+  so `_rebaseMembers` folding an EMPTY map after removing the last member really empties it
+  (no repeat of the `Recipe.copyWith` empty-list class).
+
+Filed only Low/Info: an unguarded `setState` in `_removeMember`'s success branch (pre-existing,
+swallowed by the enclosing catch, but the new `_rebaseMembers` sits directly above it); the
+reused `shoppingCouldNotCreateOrSelectList` string promising a "select" step the create-only
+dialog does not have; and the create path being the one failure branch in this dialog family
+with no `consumeMutationError()` reason behind it (the module swallows, so there is nothing
+parked to read — a follow-up, not a defect in this diff).
+
+## 2026-08-02 — BUT-1775/1781/1785 social-sharing batch (commit-gate test review, batch 3 of 4)
+
+Scope: the seven social/sharing files under `lib/services/unified/operations/`. Suites all
+green and unskipped: 37 (denorm + sharing manager + member manager), 135 (shopping share +
+menu ops + collaborative facade + social stats + rating stats), 58 (the two share suites
+re-run to confirm `+0 ~0`).
+
+### Verified genuinely pinned (the thing the brief asked for)
+
+All THREE `shared_content` writers now assert `sharedToUserIds`, and each assertion reddens
+on a dropped field because the read is `data['sharedToUserIds'] as List` / `contains(...)`,
+both of which throw or fail on `null`:
+* `recipe_sharing_manager_test.dart:287` — `contains('user_456')`, plus a second pin at :372
+  inside the re-share test (`contains('new_member')`), which is the stronger one because it
+  proves the field is reached through the UPDATE path the `sharedAt` fix exists for.
+* `shopping_social_share_module_test.dart:451` — `equals([...3 ids])`, the strictest of the
+  three (order + exact set). This was the unguarded one earlier in the day; it is fixed.
+* `social_menu_operations_test.dart:194` — `contains('friend-1')`.
+
+`collaborative_shopping_operations.dart`'s facade-only `viewedBase` forward is pinned without
+a structural test: the three new BUT-1777 cases call the FACADE and assert `base` carries
+`user_999`, so a facade that re-read the live copy instead of forwarding reddens the first one.
+
+### Three behaviour changes with no test that can fail
+
+1. `recipe_social_stats.dart` — the WHOLE staged change is `_recipeOwnerId` (`socialData.ownerId
+   ?? core.createdBy`) plus three call sites, and `grep -rn "updateMultipleRatingAggregates\|
+   recipeOwnerId" test/` returns zero hits in that suite. `rating_statistics_denormalization_test`
+   pins the callee GIVEN a correct uid; nobody pins the caller's derivation of it. Returning
+   `null`, or the classic wrong guess `currentUserId`, is silent. Discriminating fixture already
+   exists in `recipe_social_stats_test.dart`: current user is `user_789`, `testRecipe`'s owner is
+   `user_123`, so `stats.updateMultipleRatingAggregates(['recipe_1'])` + a seeded rating +
+   `expect(users/user_123/recipes/recipe_1 core.ratingCount, 1)` separates the two sources. Seed a
+   rating so the empty branch's `FieldValue.delete()` is not reached — that suite runs
+   `TestServiceLocator.initialize()`, which is the platform-binding conflict the denorm suite's
+   header documents.
+2. `recipe_sharing_manager.dart:612-622` — the `shared_content` existence probe's fail-OPEN catch.
+   The production comment says "`fake_cloud_firestore` evaluates no rules, so no unit test can see
+   it", and that is true of the RULES DENIAL but false of the CATCH: the manager takes
+   `firestoreRepository` in its constructor, and `_MockCollectionRef`/`_MockDocRef` already exist
+   in `shopping_repository_routing_module_test.dart:1796`. An injected repo whose `.doc().get()`
+   throws `FirebaseException(code:'permission-denied')` pins both arms — payload still written,
+   and `sharedAt` present (isNew stayed true). **Generalise: an over-broad "untestable" comment is
+   the mechanism by which a testable branch ships untested, and no test can ever catch it.**
+3. `social_menu_operations.dart:92-94` — `menuTitle = customTitle ?? menuDefaultTitle(profileName)`
+   is the site the production comment itself flags as easy to miss. EVERY `shareMenuWithFriends`
+   call in the suite passes `customTitle` (137/172/213/232/258/278), and the only two that do not
+   (543, 555) are the empty-friends and unauthenticated early returns. So the default branch is
+   unreached and reverting that one line to the Auth handle reddens nothing.
+
+### Low / documentation
+
+* `rating_statistics_denormalization_test.dart:79-80` — `expect(recipes/{id}.exists, isFalse)` is a
+  PERMANENT PASS: the fake's `update()` on a missing doc throws and creates nothing, and the new
+  code never names that collection. Keep it as documentation; the guard is `core['ratingCount']`.
+* `recipe_member_manager.removeGroup` — the `_updateRecipe == false` branch is unasserted. The
+  four new tests correctly pin what it DOES (drops the category id, leaves `memberPermissions`
+  intact) and the group header states the non-revocation in prose, matching BUT-1797.
+* `recipe_sharing_manager_test.dart:288` uses `contains('user_456')`, which does not pin the
+  SHARER's own presence in `allUserIds`. Lower stakes (the sharer reads via `sharedByUserId`).
+
+Post-review md5 (the next round's motion check): collaborative_shopping_operations
+`8ded976aa4fbce1708df0bdb9bcfacb6`, rating_statistics `a4a792c9c57451c823c92646109995de`,
+recipe_member_manager `9d6c6e00bde04b3535af30be42b8e692`, recipe_sharing_manager
+`ae402e87e34ac3ba60efd622fa3c28ba`, recipe_social_stats `1b6c2ee9dade5d0ad4351437f1dfd1b7`,
+shopping_social_share_module `0415542b4a0de5813a3951c8918e9300`, social_menu_operations
+`17727548a5b2f01ad1a9e748028684f8`.
+
+## 2026-08-01 — Commit-gate TEST review, batch 2/4 (sprint salvage): OCR tier-0, notification cache, member fail-closed
+
+Scope (9 `lib/` files, all staged, worktree byte-identical to the index):
+`notification_preference_manager.dart` `259de43b`, `ocr/device_text_recognizer.dart` `26170bba`,
+`ocr/device_text_recognizer_mlkit.dart` `3bd72c0e`, `ocr/device_text_recognizer_stub.dart` `44b14d4c`,
+`ocr/ocr_usage_tracker.dart` `57cd184e`, `ocr_extraction_service.dart` `7350fd35`,
+`offline/offline_user_storage.dart` `39b5501b`, `unified/modules/shopping_list_management_module.dart` `41ac12bd`,
+`collaborative_shopping/list_member_operations.dart` `10453211`.
+Baseline: the four affected suites run **181/181 green** together
+(`ocr_extraction_service_test` + `notification_preference_manager_test` +
+`collaborative_shopping_operations_test` + `offline_user_storage_test`).
+
+Verdict: **fail (3 blocking)**.
+
+**B1 — the tier-0 `HtmlSanitizer.sanitizeText` is unpinned (`ocr_extraction_service.dart:445-448`).**
+This was the round's *earlier* blocking finding, fixed in production but never pinned, so it can be
+re-deleted silently. Established analytically and decisively, no mutant needed: `sanitizeText`
+(`html_sanitizer.dart:312-325`) does exactly three things — strip NUL, map 18 Cyrillic homoglyphs,
+strip C0/C1 controls except newline/tab — and every fixture in the new `on-device tier` group is plain
+Latin/Swedish separated by newlines. Identity function on all seven. `grep on_device test/` returns 3 hits,
+every one an assertion on `processingMethod`; nothing anywhere asserts `result.text` for this tier.
+Prescribed fix: one test feeding a Cyrillic a (U+0430) inside an otherwise Swedish word plus a U+0007,
+asserting both are absent from `result.text`, that it still contains the repaired word, and
+`processingMethod == 'on_device'` as the positive control (without it, a fall-through to OCR.space
+satisfies the absence assertions just as well).
+
+**B2 — BUT-1799's discard + evict has zero coverage (`notification_preference_manager.dart:396-418`).**
+`grep -n "tryFromJson\|notification_preferences_" <suite>` gives zero hits. Every test in the file runs on
+`setMockInitialValues({})` or a payload written by `updatePreferences` (a well-formed `toJson()`), so
+`tryFromJson` never returns null and the `prefs.remove` never runs. The mutant IS observable, which is
+why this is blocking rather than latent: `fromJson('{}')` returns `defaults()`
+(`notification_preferences.dart:217-223`) while `tryFromJson('{}')` returns null (`:181-188`), so the
+reverted spelling makes `_loadPreferencesLocally` hand back `defaults()`, which `getPreferences` then
+CACHES at `:247-248` — pinning the user to defaults for the full 10-minute window even after the
+repository recovers. The comment states every existing install carries the literal `'{}'` in this slot,
+so it is the majority path. Discrimination note for the fix: both spellings return a `defaults()`-shaped
+object from the *failing* call, so the test must recover the repository with a NON-default payload and
+assert the second call, not the first. Same file, folded in as a strengthening rather than a separate
+finding: the staged test `'a read error with no local copy serves defaults WITHOUT persisting them'`
+asserts only `verifyNever(update…)`, so re-adding `_cachedPreferences = defaults` above `:256` stays green
+— the "not cached" half of its own comment is unasserted.
+
+**B3 — `stale-properties` ships with no test (`offline_user_storage.dart:111`).**
+`grep -rn stale-properties test/` gives zero; repo-wide it exists only in `lib/`, `functions/src/` and docs.
+The adjacent `stale-ingredient` test (`offline_user_storage_test.dart:605-660`) proves the harness and
+uses `coverage: 0.5`, so it is not answered by the `coverage == 0.0` branch, and the negative control
+already exists (`:505-566`, `v1.0` + coverage 0.85 → tag never queued). A four-line copy with one literal
+changed closes it. Blocking rather than optional because the file's own comment says the silently-skipped
+recipes are the allergen-relevant ones.
+
+**NOT a finding — `list_member_operations.dart:196-201` fail-closed branch is properly covered.**
+Re-verified the 2026-08-01 control-pair claim on this exact tree rather than trusting it: the refusal test
+passes `setShoppingState` args identical to the suite's `setUp` (`:166-171`) except that
+`collaborativeLists[0].memberPermissions` drops `user_456`, and the permission fixture lives in a separate
+`mockPermissionService.setPermissionState` (`:175-206`) that the state setter never touches. So the refusal
+is attributable to the new `containsKey` guard and to nothing else, and the "same call still writes while
+the member IS there" control rules out the permission stubs and the base plumbing. The sibling BUT-1777
+`viewedBase` test is likewise non-vacuous — `viewed` carries `user_999` and `updated` must not, so the two
+copies genuinely differ (the parameterised-fixture lesson from the dialog round, applied correctly here).
+
+**Optional filed:** (a) the tier-0 circuit breaker is unreachable in production — `MlKitTextRecognizer`
+wraps its whole body incl. the `finally` and returns null, `_UnavailableRecognizer` is `async => null`, and
+the abstract's doc says "never a crash", so `recordFailure()` cannot fire, `on_device_state` is a permanent
+`'closed'` and `canExecute` a permanent `true`; the one test that reaches the catch does so only via a
+`_FakeDeviceRecognizer` that breaks that contract and asserts nothing about the breaker. Keep it as
+defence-in-depth, but say so in the name. (b) `ocr_usage_tracker.dart:23`'s `'on_device': 0` is
+behaviour-neutral (`_providerUsage[provider] ?? 0` handles a missing key) and `_recordUsage('on_device')` is
+only implied by `verifyNever(mockClient.send)`. (c) `shopping_list_management_module.dart:69` is a log-only
+line and owes no test — recorded so a later reader does not re-file it.
+
+Post-review md5s: unchanged from the list above (no in-scope file was edited during the round).
+
+## 2026-08-01 — BUT-1779/1784/1785 views batch (commit-gate TEST review, batch 4 of 4)
+
+Files: `social_recipe_operations.dart`, `recipe_detail_sharing_status.dart`, `recipe_save_navigation.dart`,
+`import_result_handler.dart`, `shopping_list_operations.dart`, `shopping_member_management_dialog.dart`,
+`shopping_dialogs.dart`, `unified_shopping_view.dart`. `flutter analyze` on the eight: clean (54.6 s).
+Suites run green: create-list 3/3, save-nav 3/3, smart-import 17/17, member dialog 8/8.
+
+**Blocking, and the round's real find — the BUT-1785 `updateRecipe`-seam defect is STILL LIVE and the new
+`removeGroup` inherits it.** Chain re-read end to end on this tree rather than trusted from the earlier
+entry: `social_recipe_operations.dart:66` passes its ctor `updateRecipe` into `RecipeMemberManager`;
+`social_operations_initializer.dart:17-38` forwards `SocialOpsContext.updateRecipe`;
+`unified_recipe_service.dart:410` binds it to `updateRecipe`, `:741` → `PersonalRecipeCrud.updateRecipe`
+(`helpers/personal_recipe_crud.dart:103-107`, wrapped in `withRetry` ×3) → `updatePersonalRecipe`
+(`unified/modules/personal_recipe_module.dart:242`) = `if (!updatedRecipe.isPersonal) return false;`.
+`RecipeMemberManager.removeGroup` filters `r.isCollaborative` (`:228`) and rebuilds with `type: recipe.type`,
+and `recipe_unified.dart:1474-1476` makes the two types mutually exclusive — so the write is refused every
+time and `recipe_detail_sharing_status.dart:259` shows `commonUnknownError`, i.e. exactly the failure BUT-1785
+set out to fix. `unified_recipe_service.dart`, `personal_recipe_crud.dart` and `personal_recipe_module.dart`
+are all UNMODIFIED in this sprint (`git status --porcelain` empty), so nothing in the diff closes it. The
+suite stays green because `recipe_member_manager_test.dart` stubs `mockParentService.updateRecipe(any()) →
+true` — the injected-seam blindness, one method further on. The sibling `saveRecipeForSocialModule`
+(`unified_recipe_service.dart:754`, "Unlike [updateRecipe], this does not reject collaborative recipes") is
+what the context should bind, and it is already bound two lines above for `SocialRecipeModule` (`:339`).
+
+**Blocking — three route-argument branches and the new refused-write branch of `import_result_handler` have
+no test that can fail.** `import_result_handler_callsite_test.dart` drives the real `checkForDuplicates` but
+only ever taps "Spara som nytt" (`saveAsNew`); nothing reaches `keepExisting` (`:134`), `replaceWithNew`
+(`:172`) or `mergeBestFields` (`:204`), and `import_result_handler_test.dart` is the two pure helpers.
+`grep -rn duplicateMergeFailed test/` → zero, so deleting both `if (!saved)` guards (`:159-165`, `:192-197`)
+leaves 17/17 green while a refused write shows a success snackbar AND a detail screen rendering unsaved
+content. The mirror to reuse already exists: `test/widget/views/recipe_save_navigation_test.dart:55-81`
+(`_routerLikeOnGenerateRoute` + the bare-id control at `:129-156`) is the BUT-1779 template and is the one
+part of that ticket that IS properly pinned — the `routes:`-map vacuity lesson applied correctly.
+
+**Blocking — nothing under `test/` renders `RecipeDetailSharingStatus`.** `grep -rln
+"RecipeDetailSharingStatus\|recipeSharingRevoke\|recipeSharingStatus" test/` returns only
+`recipe_member_manager_test.dart` (a comment). So the `isGroup` dispatch (`:124-129`, `:153-158`) and the
+title/confirm/body/success copy split (`:217-232`, `:250-256`) can revert to the lying "Ta bort delning" copy
+with the whole suite green. The strings are distinct in `app_sv.arb:8782-8810` ("Ta bort delning" vs "Ta bort
+gruppen"), so `find.text` discriminates and no l10n-collision neutralisation is needed — but the discriminator
+that matters is a fake `social` recording WHICH method got the id, since both branches otherwise end in the
+same snackbar shape. Note `_ShareeRow`'s IconButton tooltip (`:300`) still says `recipeSharingRevoke` on group
+rows — the third place the group action promises a revocation it does not perform.
+
+**Blocking — two of the three new `_rebaseMembers` sites in the member dialog are unreachable by its suite.**
+`shopping_member_management_dialog_test.dart`'s `_RefusingCollaborativeOps` returns `false` unconditionally
+from `addMember` and `removeMember` (`:66-77`), so the success branches at `:207-211` (remove) and `:300-305`
+(add) never execute and deleting them is invisible. Only the permission-change rebase (`:118-121`) is pinned,
+by "a second change declares the base this dialog already moved". The BUT-1777 parameterised-fixture work in
+that file is otherwise exemplary — `ownerSeated: false` plus the "the seat DID fire" positive control is the
+pattern to copy. Fix is a success flag per operation on the existing fake, then: remove Bob → change
+Cecilia's permission → assert the second declared base no longer carries Bob.
+
+**Optional filed:** (a) `shopping_dialogs.dart:54-66` and `unified_shopping_view.dart:433-440` forward the new
+`onError` positionally alongside `onSuccess` — both are `Function(String)`, so passing success twice compiles
+and shows a green snackbar over a refused create; nothing under `test/` references `ShoppingDialogs` or
+`UnifiedShoppingView` at all, and per BUT-387 the right home is one beat in the shopping journey test, not a
+per-view test. (b) the group-row tooltip copy above.
+
+`shopping_list_operations_create_test.dart` is the model the other three gaps should be filled from: three
+tests (refused / success / cancelled), `extends Fake` with a concrete body, and `requestedNames` proving the
+VM was actually reached so "the error branch fired" is not also satisfied by a dialog that bailed out early.
+
+Post-review md5s (nothing edited during the round): `social_recipe_operations.dart` 8c8d3730,
+`recipe_detail_sharing_status.dart` 6c194147, `recipe_save_navigation.dart` eb84078e,
+`import_result_handler.dart` 4f5caa6d, `shopping_list_operations.dart` 845eb549,
+`shopping_member_management_dialog.dart` e69af98d, `shopping_dialogs.dart` 7f7da92b,
+`unified_shopping_view.dart` abfc50fb.
+
+## 2026-08-02/03 — Commit-gate TEST review: the free on-device OCR tier's own tests (group + harness + CLI)
+
+Trigger: commit gate on the three TEST artifacts of the tier-0 work — the appended
+`on-device tier` group in `test/unit/services/ocr_extraction_service_test.dart`, the new
+device-only `integration_test/ocr_engine_comparison_test.dart`, and the new
+`tools/corpus_ocr_compare.dart`. Follow-on to the 2026-08-01 batch-2/4 entry, which reviewed
+the `lib/` side of the same feature.
+
+**Motion check first.** `lib/services/ocr_extraction_service.dart` md5 `7350fd35` — byte-identical
+to the hash recorded on 2026-08-01, so the production tier has NOT moved. The TEST file has:
+batch 2/4's blocking B1 (`HtmlSanitizer.sanitizeText` unpinned) is CLOSED, by the prescribed
+shape — group is 8 tests, not the brief's 7, and the suite runs 109/109 green (`flutter test`,
+6 s). `flutter analyze` on all three files: clean, 73.7 s. The brief's "7 tests / 108 green"
+was measured before the sanitize test landed.
+
+Verdict: **fail (3 blocking)**.
+
+**(a) Vacuous tests: none — but one is misnamed, and one branch is mutation-dead.**
+Each of the eight reddens under deletion of the tier-0 block; the discriminators are real.
+`text that is not recipe-shaped...` is the gate's own discriminator and its fixture is clean
+(`PARKERINGSBILJETT / Zon 4 / Giltig till 14:32` scores measures=0 verbs=0 against
+`RecipeTextHeuristic`, so it cannot pass by another branch — matching the brief's
+"removing `looksLikeRecipe` reddens exactly one"). `on-device-only setup is not reported as
+"no provider configured"` looks weak (`isNot(equals(...))` is satisfied by the `user_recovery`
+failure too) but its `isSuccessful` companion saves it, and it is the only test that kills the
+`!onDeviceUsable &&` clause. `a throwing recognizer degrades to the paid chain` asserts nothing
+about the catch BODY (`recordFailure()`, `providerErrors['on_device']`), both deletable green —
+recorded, not filed, because batch 2/4 already established the breaker is unreachable in
+production (`MlKitTextRecognizer` never throws). The misnaming: `an empty device read falls
+through` feeds `text: null`, i.e. it tests the NULL arm; the genuinely empty arm
+(`text.isNotEmpty`) has no fixture and IS reachable — `sanitizeText` of a control-only string
+returns `''` (`html_sanitizer.dart:312-325`), and ML Kit passes control junk through because
+`String.trim()` does not strip C0 (U+0007 is not White_Space). Without that guard the tier returns
+a SUCCESSFUL `on_device` result with empty text, which `photo_import_strategy` persists as an
+empty draft instead of falling through to the paid chain.
+
+**(b) What `_FakeDeviceRecognizer` hides.** It is a correct counting Fake (`implements`, concrete
+bodies, never `when()`-stubbed — the legitimate exception to the mocktail ban), and it does not
+hide the routing it is used for. What it hides is everything about the BYTES and the RESOURCE:
+it ignores `imageBytes` entirely, so nothing pins that tier 0 receives `preprocessedImage` (EXIF
+baked, downscaled to 2048, greyscaled, re-encoded JPEG q=85) rather than the raw camera bytes —
+a swap that is invisible to every unit test and costs real recall on a sideways phone photo,
+and that also de-aligns the tier from the cache key computed over the same bytes. Note the
+naive version of that assertion would be VACUOUS here: `OCRTestImages.mediumQuality` is a PNG
+magic header plus 500 KB of counting bytes, `img.decodeImage` fails on it, and
+`preprocessImageForOcr` hands the ORIGINAL bytes back, so preprocessed == raw in every fixture
+in this file. It needs a genuinely decodable oversized image, then
+`expect(recognizer.lastBytes, equals(OCRExtractionService.preprocessImageForOcr(fixture)))`.
+Second thing hidden: `onDispose` disposes `_deviceRecognizer` (the LAZILY created one), never
+`_testDeviceRecognizer`, so the injected fake is structurally incapable of observing that the
+native `TextRecognizer` is closed.
+
+**B1 (blocking) — the Remote Config kill switch is executed by NO test.**
+All eight tests pass `testOnDeviceEnabled`, so `_onDeviceEnabled`'s real body
+(`ocr_extraction_service.dart:287-291`) never runs: not the `ServiceLocator.tryGet` lookup, not
+`FeatureFlags.enableOnDeviceOcr`, not the `?? false` fail-closed default. `grep -rn
+"enableOnDeviceOcr\|enable_on_device_ocr" test/` gives zero hits. There is no structural guard
+tying the 31 `FeatureFlags` constants to the `_defaults` map (`feature_flag_service.dart:90` vs
+`:344`), so a typo on either side is silent in BOTH directions — the tier can neither be switched
+on nor, worse, switched OFF once it ships. This is the entire mitigation for shipping an engine
+whose quality is still unmeasured (the plan's own A3 gate), and it is the only thing standing
+between a bad free tier and every import. Fix, ~15 lines, precedent in-repo at
+`llm_tier_test.dart:658-679`: (1) build with `testDeviceRecognizer` and NO `testOnDeviceEnabled`,
+nothing registered, assert `recognizer.calls == 0`; (2) register a `_MockFeatureFlags extends Mock
+implements FeatureFlagService` into `GetIt.instance` + `ServiceLocator.initialize(DIContainer())`,
+stub the flag true, assert the tier ran AND that the key it was asked for is the LITERAL
+`'enable_on_device_ocr'` (never the constant — that is circular).
+
+**B2 (blocking) — `tools/corpus_ocr_compare.dart` cannot produce a verdict on any corpus, and its
+doc comment names a producer that does not exist.** It reads `<imageDir>/mlkit.txt`; `grep -rn
+"mlkit.txt\|MLKIT_"` over the repo shows nothing writes it. The harness deliberately writes NO
+files (its own header records three pull-based shapes that failed on 2026-08-02 and were
+abandoned), and the plan spells the file `ocr-mlkit.txt`. So the tool always reaches
+`No page has BOTH engines scored` and `exit(1)`, while line 8 asserts the file is "written by
+integration_test/ocr_engine_comparison_test.dart". No test can catch a false comment; the grep is
+the only guard, and it fails. Two more defects the same file cannot see, because ALL its logic is
+inline in `main()`: `_readText` returns null for an empty file, so a page where the engine read
+NOTHING is dropped from the mean instead of scoring 0 — biasing the release gate upward, and
+disagreeing with the harness, which counts the same page as 0.0. The local convention is a thin
+`main()` over `tools/corpus/*_core.dart` with a suite in `test/tools/` driving the committed
+`test/fixtures/corpus` (`corpus_eval.dart` + `corpus_eval_core_test.dart`) — follow it and the
+pairing / blank-vs-missing / mean / verdict logic all become testable.
+
+**B3 (blocking) — the harness has no positive control that the recognizer read anything.**
+Its only assertions are `base != null`, `images.isNotEmpty`, `golds.isNotEmpty`, `pairs > 0`;
+everything else is `debugPrint`. `onDevice[id] = text ?? ''` means an ML Kit Latin model that has
+not downloaded through Play Services scores 0.0 on every page and prints exactly the same
+`MLKIT_VERDICT on-device is WORSE — keep the flag off` as a genuine quality loss. Two failure
+paths, one observable. One line closes it: assert at least one page produced non-empty text, with
+a reason naming the model-missing case. Related, same file: `goldTokenRecall` returns recall 1.0
+when the gold has no scorable tokens (`total == 0`), so a malformed gold inflates BOTH means and
+shrinks the delta the gate reads — skip entries whose `totalCount == 0`.
+
+**Non-blocking, filed.** (a) The harness scores RAW recognizer output while production scores
+`sanitizeText(...)` gated by `RecipeTextHeuristic.looksLikeRecipe` — defensible as a pure engine
+comparison, but the flag decision is then made on a number the shipped tier cannot achieve; print
+how many pages the gate would have rejected. (b) The sanitize test's fixture uses U+0430 / U+0007
+escapes with a comment explaining why, then asserts with RAW literals (`cat -A` shows `M-PM-0` and
+`^G`); both fail loud if tidied, so not vacuous, but it contradicts its own comment and BUT-1690.
+(c) No test drives `extractText` twice, so nothing pins that the cached `on_device` result stops a
+second recognizer call. (d) `recordUsage('on_device')` increments `_dailyRequestCount` /
+`_monthlyRequestCount`, the counters behind `freeMonthlyLimit = 500`, `remaining` and the
+"Exceeded monthly limit" warning — so FREE reads consume the PAID quota display.
+`_estimateMonthlyCost` correctly excludes them. `cache_hits` has always done the same, so this is a
+pre-existing shape rather than a new bug, but nothing pins either answer; it is a product call for
+Malin, and whichever way it goes, `providerUsage['on_device']` deserves one assertion.
+(e) `MlKitTextRecognizer` has no suite of its own: its VM-reachable contract (`isAvailable` false
+off-mobile, `recognize` returning null without touching path_provider, `dispose` idempotent) is
+cheap to pin; `processImage` genuinely is not.
+
+Post-review md5s (nothing edited during the round): `ocr_extraction_service.dart` `7350fd35`,
+`ocr_extraction_service_test.dart` `4aa87113`, `ocr_engine_comparison_test.dart` `b7818882`,
+`corpus_ocr_compare.dart` `a8bf1730`.
+
+## 2026-08-03 — OCR tier 0, round 2: the kill switch closed, the three seam files judged (BUT — on-device OCR)
+
+**Trigger:** re-review after fixes, scoped to `lib/services/ocr/device_text_recognizer.dart`,
+`device_text_recognizer_mlkit.dart`, `device_text_recognizer_stub.dart` (all three `A` in the index,
+no suite of their own). Verdict asked for: is that acceptable, and would I block.
+
+**Tree motion confirmed before reviewing** (the round-1 discipline): `ocr_extraction_service.dart`
+`7350fd35` → `b1be2981`, `ocr_extraction_service_test.dart` `4aa87113` → `630d929c`. Round 1's
+blocking finding — the Remote Config kill switch executed by no test, because all eight tier-0 tests
+passed `testOnDeviceEnabled:` — is CLOSED: the suite now has a nothing-registered fail-closed arm and
+a GetIt-registered `FeatureFlagService` arm asserting the literal `'enable_on_device_ocr'`, typo
+mutation-verified red.
+
+**The seam files.** Read all three in full. Facts that decide it:
+- `device_text_recognizer.dart` is a pure abstract class + a library doc comment. Nothing to test;
+  a test there would be the banned topology assert. No finding, now or ever.
+- The conditional import lives at `ocr_extraction_service.dart:25-26` (`stub` … `if (dart.library.io)`
+  → `mlkit`). `flutter test` runs on the Dart VM, so **`dart.library.io` is TRUE and the ML Kit file
+  is what compiles into every unit test**, while the stub compiles into none. Both are nonetheless
+  invisible to the suite, because `_onDeviceRecognizer` prefers the injected `_testDeviceRecognizer`
+  and every tier-0 test injects `_FakeDeviceRecognizer` (`ocr_extraction_service_test.dart:2334`).
+  `grep -rn` over `test/` + `integration_test/`: the only construction of `MlKitTextRecognizer`
+  anywhere is `integration_test/ocr_engine_comparison_test.dart:96`, i.e. the device-only measurement
+  harness — which is itself the rig round 1 filed a positive-control gap against. Under
+  `flutter test`, both implementations are executed zero times.
+- `MlKitTextRecognizer.isAvailable` is `Platform.isAndroid || Platform.isIOS` → deterministically
+  FALSE on every CI runner and dev host. That is what makes the un-injected fallback safe (the
+  constructor builds `TextRecognizer(script: latin)`, which stores a script + id and touches no
+  channel), and it is also what makes the naive test of `recognize` vacuous, below.
+
+**Mutation analysis, per proposed case** (round 1's own suggestion list, now graded):
+1. stub `isAvailable == false` — NON-VACUOUS and the strongest of the set. Flipping it to `true`
+   changes three live call sites: `onDeviceUsable` (`:412`), the tier-0 gate (`:443`) and
+   `api_keys_configured['on_device']` (`:1116`). Consequence on web is not a crash — `recognize`
+   returns null, so `_recordUsage('on_device_error')` + `_onDeviceCircuitBreaker.recordFailure()`
+   fire on every import until the breaker opens, and diagnostics claim a provider that cannot exist.
+   That pollutes the accept-rate metric the flag was shipped to gather.
+2. stub `recognize` → null, `dispose()` idempotent — true but near-zero mutation value (8 lines,
+   no branches). Worth writing only because they cost three lines beside case 1.
+3. mlkit `dispose()` twice → `close()` called ONCE — NON-VACUOUS with a mocktail `TextRecognizer`;
+   deleting `if (_disposed) return` reads `called(2)`.
+4. mlkit `close()` throws → `dispose()` still completes, and a subsequent `recognize` returns null
+   with `verifyNever(processImage)` — NON-VACUOUS, and it pins a documented hazard rather than a
+   nicety: the file's own comment says an escaping `MissingPluginException` would abort the owner's
+   teardown, and `ocr_extraction_service.dart:237-243` confirms it — the throw would skip
+   `_deviceRecognizer = null` and `await super.onDispose()`.
+5. **mlkit "returns null without touching path_provider" — VACUOUS as stated, and this is the item
+   worth carrying forward, because round 1 proposed it.** Delete `!isAvailable` from the guard and
+   on a desktop host `getTemporaryDirectory()` throws `MissingPlatformDirectoryException` straight
+   into the method's own never-throw catch: the return value is still `null` AND
+   `verifyNever(processImage)` still passes. Two failure paths, one observable — the recurring shape.
+   The discriminator is a `PathProviderPlatform.instance` fake pointing at `Directory.systemTemp`;
+   with it, the mutant writes a real file and really calls `processImage`, so `verifyNever` flips.
+   That fake is also the only way to reach the `finally { tempFile.delete() }` — currently unpinned,
+   and a leak there is one file per import, forever.
+
+**Verdict: acceptable, non-blocking.** Every failure mode of these files is contained by the
+"never throw → null → next provider" contract plus the circuit breaker; the tier is behind a
+now-test-pinned kill switch that defaults OFF; no user data, permission or GDPR surface is involved.
+Filed as a Medium follow-up with the case list above (1, 3, 4 first; 5 only with the path_provider
+fake, or not at all). Not fixed in-round: a new suite is not the "zero-risk test-only fix" the
+re-review economics rule lets me apply unasked.
+
+**No new blocking findings.** Post-review md5s (nothing edited during the round):
+`device_text_recognizer.dart` `26170bba`, `device_text_recognizer_mlkit.dart` `d217ee3f`,
+`device_text_recognizer_stub.dart` `44b14d4c`, `ocr_extraction_service.dart` `b1be2981`,
+`ocr_extraction_service_test.dart` `630d929c`.
+
+## 2026-08-03 — OCR tier 0 coverage re-read (round 3): timeout, the accounting split, and the builder's absent-key contract
+
+**Trigger:** parent asked whether `ocr_extraction_service.dart`, `photo_import_strategy.dart` and
+`ocr_error_message_builder.dart` are adequately pinned on three named points, after two earlier
+blocking findings (kill switch, empty-after-sanitize) were closed. Start-of-round hashes matched the
+previous archive entry's exactly (`b1be2981` / `630d929c`), i.e. the *production* tree had not moved
+since round 2 — but it moved twice DURING this round (see below).
+
+**Baseline:** 182 green across the four affected suites, md5-bracketed.
+
+**Four gaps found, all four closed in-round (test-only, no production edit).** Each was verified
+with a throwaway `test/`-side probe before writing anything, and each probe printed the production
+behaviour as CORRECT — so every finding was a missing test, never a live defect.
+
+1. **The 15 s tier-0 timeout was mutation-dead.** `grep fakeAsync|Completer|TimeoutException` over
+   the whole OCR suite returned zero; every `_FakeDeviceRecognizer.recognize` answers immediately,
+   so `.timeout(_onDeviceTimeout)` can never fire and deleting it left 13/13 green. Probe (fakeAsync,
+   recognizer returning `Completer().future`): `@14s -> null`, `@16s -> method=ocr_space calls=1`.
+   Second probe with the paid chain also down: `classification=timeout`,
+   `provider_errors={on_device: TimeoutException after 0:00:15.000000...}` — i.e. the stall→Swedish
+   `errorOcrTimeout` copy chain works end to end and was asserted nowhere. Added two tests; the first
+   straddles the flip point (`expect(result, isNull)` at 14 s, then elapse 2 s).
+2. **`on_device_rejected` vs `on_device_error` had ZERO coverage** — the literals appear nowhere in
+   `test/`. Deleting either `_recordUsage`, swapping them, or folding the two arms together (exactly
+   what the production comment warns against) all stayed green. Observable exists and is public:
+   `getUsageStats()['provider_usage']`. Probe: rejected arm → `{on_device_rejected: 1, ocr_space: 1}`,
+   broken arm → `{on_device_error: 1, ocr_space: 1}`. Note `OCRUsageTracker.recordUsage` does
+   `_providerUsage[provider] = (_providerUsage[provider] ?? 0) + 1`, so a TYPO creates a brand-new key
+   silently — the assertion has to name the literal, not the constant. Added one test asserting both
+   arms and the zero on the other counter.
+3. **`recordFailure()` on the null arm was unpinned**, so the breaker could stop opening without a
+   red. Probe with OCR.space at 500 (nothing caches, every call re-enters tier 0): 6 imports →
+   `recognizerCalls=5`, `breakers={on_device_state: open, ...}`. Added that test plus its
+   discriminator, `a heuristic rejection never opens the breaker` (6 imports → 6 calls), which is the
+   test that kills the fold-the-arms-together mutant.
+4. **The builder's absent-key contract was HALF pinned, and the pinned half was luck.**
+   `ocr_classification_chain_test.dart:242` predates tier 0 and carries a 3-key breakers map with no
+   `on_device_state`, so it does pin "absent counts as down" (dropping the `containsKey` clause makes
+   `null == 'open'` false and reddens it). What nothing pinned is the case the clause was WRITTEN for:
+   `on_device_state: 'closed'` + three paid `open` must NOT say "services unavailable". Deleting the
+   whole on-device conjunct left every fixture in the repo green, because the only fixture has the key
+   absent — where the conjunct is a no-op. Probe: `healthy=false open=true absent=true`. Added all
+   three as a one-field-apart triple in the builder's own suite (which had no circuit-breaker group at
+   all — the file was untouched since Jun 24).
+
+**Fifth gap, outside the three named points:** `photo_import_strategy.dart`'s only tier-0 change is
+`const primaryMethods = {'ocr_space', 'on_device'}` in `_buildWarnings`, and its suite (untouched
+since Jul 18) has no `on_device` fixture and never greps 'primary unavailable'. Deleting `'on_device'`
+from the set puts "Used on_device OCR provider (primary unavailable)." on every free import — the
+normal path — with zero reds. The two existing google_vision/tesseract tests
+(`contains(contains('tesseract'))`) are the ready-made recall control, so the fix was one test with a
+`Medium OCR confidence` positive control proving warnings were built at all.
+
+**The tree moved twice mid-round, and the second move shipped a new production gate with no test.**
+`ocr_extraction_service_test.dart` was rewritten under me during my first edit (the Edit tool's
+"modified on disk" notice), and a combined run went `+190 -1` once and then `191/191` on the identical
+command; 6 subsequent isolated runs and 2 combined runs were clean, so the red is unreproducible and
+best attributed to compiling a mid-edit snapshot — reported as tree motion, not as a finding (I did
+not capture the failing test name; next time capture it before re-running). Then at end-of-round hashes:
+`ocr_extraction_service.dart` `b1be2981`→`cd07ddc8` and `ocr_error_message_builder.dart`
+`59053491`→`24e88d66`. The builder change was a pure inline of `onDeviceDown` (semantics identical, my
+three new tests still green). The service change was NOT cosmetic: a new
+`onDeviceConfidence >= _minConfidenceThreshold` conjunct in the tier-0 accept gate, landed WITHOUT a
+test. Its live rejection band is exactly `text.trim().length` 10–29 (`_calculateConfidenceFromText`
+steps 0.3/0.5 below 30, 0.7 below 100, and `looksLikeRecipe` needs ≥10), and every fixture in the group
+is 40+ chars — so the conjunct was born mutation-dead. Closed with a discriminating PAIR that differs
+only across the 30-char step: `'2 dl mjöl\nvispa'` (len 15, conf 0.5 → rejected, `on_device_rejected`
+incremented) vs `'2 dl mjöl och 1 tsk salt\nvispa smeten väl'` (len 41, conf 0.7 → accepted). Premise
+proved with a throwaway probe rather than by reading the regex — `looksLikeRecipe` returns TRUE for
+both (`len=15 true`, `len=41 true`), which is what makes the confidence bar the only difference; had
+the heuristic rejected the short one the test would have passed vacuously.
+
+**One finding I could not fix (production comment, no test can catch it).** `ocr_extraction_service.dart`
+:438-440 still reads "The accept gate is deliberately NOT a confidence number (ML Kit exposes none that
+is comparable to the other providers')" — directly contradicted by the gate added 30 lines below, whose
+own comment argues the opposite ("exactly as comparable here as anywhere else"). Non-blocking, but it is
+the shape that sends the next session to delete the gate for consistency.
+
+**Verdict: pass, 0 blocking.** No production defect found on any probe; the tier is behind a
+test-pinned, off-by-default kill switch; all ten added tests are non-vacuous by construction (each has a
+one-field-apart control or a proved premise). Final: 192 green, `flutter analyze --fatal-infos` clean on
+the three edited suites, md5s stable across the run.
+Post-review md5s — production: `ocr_extraction_service.dart` `cd07ddc8`,
+`photo_import_strategy.dart` `5113392c`, `ocr_error_message_builder.dart` `24e88d66`; tests:
+`ocr_extraction_service_test.dart` `37e1b8a2`, `photo_import_strategy_test.dart` `8e55205a`,
+`ocr_error_message_builder_test.dart` `8b2d02ec`.
+
+## 2026-08-03 — OCR final coverage pass (BUT-682): the counter half of the tier-0 split was unpinned
+
+**Trigger:** final round before commit on the four `lib/services/ocr/` files. The first three
+(`device_text_recognizer.dart`, `_mlkit.dart`, `_stub.dart`) were re-read and are byte-identical in
+substance to the earlier rounds' verdict — md5s `26170bba` / `d217ee3f` / `44b14d4c`, all three staged
+as `A`, seam contract still "never throw → null → next provider", still behind the off-by-default kill
+switch that the service suite pins both ways. No new suite owed; verdict unchanged.
+
+**What HAD changed:** `ocr_usage_tracker.dart` (`38748985`, staged state `MM`). The staged half is
+cosmetic (three new `_providerUsage` keys seeded to 0, a corrected cost comment). The behavioural half —
+the `bookkeepingOnly` exclusion of `on_device_rejected`/`on_device_error` from `_dailyRequestCount` /
+`_monthlyRequestCount` — was entirely UNSTAGED, so anyone reviewing `git diff --cached` would not have
+seen it at all. Reviewed the worktree bytes, which is what `flutter test` compiles.
+
+**Finding (fixed here, test-only):** nothing pinned the exclusion. `test/unit/services/ocr/ocr_usage_tracker_test.dart`
+was clean at HEAD and its seven tests only ever record `ocr_space`/`google_vision`; the service suite's
+`daily_count`/`monthly_count` tests (`ocr_extraction_service_test.dart` :1465-1529) build the service
+without a recognizer, so tier 0 never records. The service suite DOES assert both new keys in
+`provider_usage` (:2451-2464), which is exactly what makes the gap easy to miss — the split's other half
+looked covered. Net: the new branch's condition was TRUE in all 198 green tests, and deleting the branch
+would have kept them green.
+
+**Fix:** three tests in a new group, all at the layer that owns the counter.
+(1) two bookkeeping records leave `dailyRequestCount`/`monthlyRequestCount`/persisted count at 0 while
+`providerUsage` shows 1 each — the `providerUsage` legs are recall controls, deliberately inert under the
+mutant, so the test cannot pass by "recordUsage did nothing"; (2) the comment's own scenario end to end —
+reject then `ocr_space` costs exactly ONE unit, with `estimated_monthly_cost` 0.01 as a second inert
+control; (3) the user-visible end — 400 rejections (80% of `freeMonthlyLimit`) raise NO warning.
+
+**Non-vacuity, by `test/`-side mutant replica** (the `lib/` file is dirty, so no `git checkout --` and no
+Edit-mutant): python-copied the source to `_zz_probe_mutant.dart`, replaced the `if (!bookkeepingOnly…)`
+block with the bare pre-fix increments, renamed the class, printed every asserted value from a throwaway
+suite. Pre-fix: `T1 daily=2 monthly=2 prefs=2 rejected=1`, `T2 daily=2 remaining=498 cost=0.01`,
+`T3 warnings=[Approaching monthly limit (80%), Low cache hit rate (0%)…] pct=80.0`. Every asserted value
+differs from the post-fix value; both controls unchanged. Probes deleted, `git status` on the dir shows
+only the intended test file.
+
+**Non-blocking observation for Malin (production, deliberately NOT encoded in a test):** the new comment
+reframes `_daily/_monthlyRequestCount` as PAID quota, but two free outcomes still count against it — a
+successful `on_device` read (free, and the tier's whole point) and `cache_hits` (free, and pre-dating this
+change). So 500 images served entirely by the free tier still trip "Exceeded monthly limit". The chosen
+exclusion is still directionally right (one image must not cost two units) and the tier is flag-off, so
+this is a semantics question — "total requests" vs "paid requests" — not a defect. I did not pin the
+current `on_device` behaviour, so the tests survive a decision either way.
+
+**Verdict: pass, 0 blocking.** Suite 10/10 green, `flutter analyze --fatal-infos` clean on the edited
+test file. Post-review md5s — production: `ocr_usage_tracker.dart` `38748985`, `device_text_recognizer.dart`
+`26170bba`, `device_text_recognizer_mlkit.dart` `d217ee3f`, `device_text_recognizer_stub.dart` `44b14d4c`.
+
+## 2026-08-03 — OCR tier 0, final coverage pass: the new confidence conjunct, and a sibling test with no mutant power
+
+**Trigger:** final review round before commit on `lib/services/ocr_extraction_service.dart`,
+`lib/services/feature_flags/feature_flag_service.dart`, `lib/services/import/photo_import_strategy.dart`,
+`lib/viewmodels/photo_import/ocr_error_message_builder.dart` and their suites. The change to judge:
+tier 0 now requires `confidence >= _minConfidenceThreshold` in addition to `RecipeTextHeuristic`.
+
+**Tree state (the first finding).** `git status --porcelain` reports `MM` on the OCR service, the flag
+service, the message builder AND `ocr_extraction_service_test.dart`. `git diff` (worktree vs index) shows
+the entire fix — the `onDeviceConfidence` local, the new conjunct, and the `confidence:` field switched to
+reuse it — is UNSTAGED, sitting on top of a pre-fix index; the test file carries 247 unstaged lines on the
+same footing. Everything below was measured on the WORKTREE. The index alone would ship the old accept
+gate, and a partial `git add` of only the test file would redden the new PARTIAL-read test.
+
+**Is the new conjunct pinned? Yes, and non-vacuously.** `test/unit/services/ocr_extraction_service_test.dart`
+:2279 "a PARTIAL read clears the heuristic but not the confidence bar" is a discriminating pair. Verified the
+premise with a throwaway `test/`-side probe (`_zz_probe_heuristic_test.dart`, printed the pure predicates,
+deleted after):
+
+    PARTIAL look=true trimLen=15      -> _calculateConfidenceFromText 0.5, BELOW 0.6 -> rejected
+    FULL    look=true trimLen=41      -> 0.7, above -> accepted (control, same shape)
+    JUNK    trimLen=12 look=false sanitizedLen=0
+
+So the short fixture clears `looksLikeRecipe` and `text.isNotEmpty` and is rejected by the new conjunct
+ALONE. Delete the conjunct and both assertions flip: `processingMethod` becomes `on_device`, and
+`provider_usage['on_device_rejected']` goes 1 -> 0. The control in the same test proves the rejection is
+the confidence step and not the heuristic. This is the strongest shape available for a new conjunct — one
+fixture on each side of the ONLY step function (`<30 chars` -> 0.5) that can straddle the bar.
+
+**Non-blocking: the sibling "a read that sanitizes away is not accepted" (:2131) has zero single-mutant
+power.** Its fixture is 12 literal C0 control bytes (`od -c` confirms U+0001..U+0007 then U+0001..U+0005),
+and its header comment says the 12 chars clear the heuristic's `<10` length rejection "so the fall-through
+is caused by SANITIZATION, not by the length check". The first half is true — Dart's `trim()` keeps C0, so
+`trimLen` is 12. The attribution is not: with `sanitizeText` deleted the read is still refused, because
+`looksLikeRecipe` returns FALSE on pure controls (0 measures, 0 verbs) and the confidence step scores 0.5.
+Three independent guards cover the case, so no single mutant reddens it. The test is NOT vacuous — it
+asserts a real, falsifiable outcome (control junk never surfaces as an on-device success, recognizer called
+once, paid tier consulted) — and the sanitizer's genuine pin is the separate :2227 test, whose fixture
+carries a Cyrillic homoglyph inside "Vispa" plus a U+0007 on SURVIVING recipe text, with a positive control
+on `processingMethod == 'on_device'`. Recommended one-line comment fix only (say "three guards cover this;
+the sanitizer's pin is the homoglyph test"), NOT a behaviour change. Deliberately not applied in this round
+to keep the pre-commit bytes stable.
+
+**Style note (non-blocking).** :2141 embeds its control bytes LITERALLY, while the :2242 fixture 100 lines
+later spells the same class of character as U+XXXX escapes and explains in its own comment why escapes
+matter (lessons-digest: "spell non-printing sentinels as escapes"). Same file, opposite conventions. The
+two literal-byte ASSERTIONS at :2258-2259 are self-proving — a tidied Latin "a" would make the contains()
+true and fail the expectation, and an emptied string would make contains('') true and fail — so a green run
+is evidence they are intact. The FIXTURE at :2141 has no such alarm: tidy its bytes away and the test still
+passes, for the wrong reason.
+
+**Other checks.** The message builder's unstaged delta is behaviour-neutral (the `circuitBreakers == null`
+limb it drops was already dominated by the `!= null` conjunct), and its three-case tier-0 group
+(healthy / open / absent) differs in exactly one field per case, which is the right shape; the absent case
+matches `ocr_classification_chain_test.dart` :242 and the service's conditional `if (onDeviceUsable)` key
+emission at :578. `photo_import_strategy`'s `primaryMethods = {'ocr_space', 'on_device'}` suppression is
+pinned at :417 with the two genuine-fallback tests as controls and a positive control that warnings were
+built at all. The flag-service delta is comment-only; `enable_on_device_ocr` stays `false` in the defaults
+map (fail-closed when Remote Config is unreachable) while the production RC value is TRUE since 2026-08-02.
+No test pins the code default itself — low value, not filed.
+
+**Verdict: pass, 0 blocking.** Measured 192 green over the four named suites plus 5 in
+`test/unit/services/feature_flags/feature_flag_service_dedup_test.dart` (197, vs the brief's 198 — the
+missing one is in a suite outside the four named, not a failure). `flutter analyze --fatal-infos` clean
+over all 8 in-scope files. Post-review md5s — `ocr_extraction_service.dart` `cd07ddc8`,
+`ocr_error_message_builder.dart` `24e88d66`, `photo_import_strategy.dart` `5113392c`,
+`feature_flag_service.dart` `b6a9086f`, `ocr_extraction_service_test.dart` `37e1b8a2`,
+`ocr_error_message_builder_test.dart` `8b2d02ec`.
+
+## 2026-08-03 — Final gate re-review (BUT-682 tier 0 + BUT-1794 markers): both closures verified, one orphaned doc comment
+
+**Trigger.** Commit-gate FINAL round, four staged files, asked to verify that the two blocking
+coverage gaps I raised last round are genuinely closed on the STAGED bytes: (1) the `'outdated'`
+retag marker had no Dart test, (2) the tier-0 `catch` arm's usage key and breaker were unasserted.
+
+**Tree motion.** All four `M ` (index == worktree). Start-of-round md5s equalled end-of-round md5s —
+`offline_user_storage.dart` `4db3c7e6`, `ocr_extraction_service.dart` `fb468270`,
+`offline_user_storage_test.dart` `74575575`, `ocr_extraction_service_test.dart` `a03d8e61`.
+Nothing moved during the round. 149 green over the two suites plus `ocr_usage_tracker_test.dart`;
+`flutter analyze --fatal-infos` clean over all four.
+
+**Gap 1 — `'outdated'` (offline_user_storage_test.dart:680-731). CLOSED, non-vacuous.** Verified
+analytically rather than by re-running the reporter's mutation: `_needsRetagging`'s disjunction is
+`failed | pending | stale-ingredient | stale-properties | outdated`, so the fixture matches on its own
+disjunct alone, and `coverage: 0.5` keeps it clear of the `coverage == 0.0` fallback below — i.e. it is
+NOT answered by an earlier branch. The only tag enqueue in `saveRecipeForUser` sits inside
+`if (tagResult != null && _needsRetagging(tagResult))`, so `verify(enqueue(op: tag)).called(1)` has no
+second source. The negative control (`should NOT queue … valid tagResult`, :502) blocks the
+`return true`-everywhere mutant. The `coverage: 0.5` rationale in the new doc comment checks out against
+production: `bulk-retag.ts:385` writes ONLY `{"core.tagResult.generatorVersion": "outdated"}`, so a
+drained recipe keeps its original coverage.
+
+**The corrected `_needsRetagging` doc comment (offline_user_storage.dart:95-107, 115-119) is accurate
+on every limb** — each verified against source, not prose: two ingredient cascades
+(`on-ingredient-soft-deleted.ts:118` → `stale-ingredient`, `on-ingredient-properties-changed.ts:161` →
+`stale-properties`) plus the bulk-retag DRAIN CALLABLE (`bulk-retag.ts` is an `onCall`, self-described at
+:27 as the operator escape hatch that drains the two cascade markers, writing `"outdated"` at :385);
+`STALE_TAG_MARKERS` (`cleanup-deleted-ingredients.ts:140-147`) does name all three and does point at
+`_needsRetagging` as its Dart counterpart; the "dormant because the cascade read a collection that does
+not exist" claim matches the BUT-1781 comments in both TS files; and "the online path catches it anyway
+via TagResult's version-mismatch branch" is real — `TagResult.needsRetagging` (:791-799) ends in
+`generatorVersion != kTagGeneratorVersion`. The previous "must stay in sync with every CASCADE" wording
+WAS under-inclusive; "PRODUCER" is the right word.
+
+**Gap 2 — tier-0 catch (ocr_extraction_service_test.dart:2365-2399). CLOSED, non-vacuous.**
+`_providerUsage` pre-seeds all seven keys to 0 (`ocr_usage_tracker.dart:22-30`), so
+`on_device_error == 1` is a real value compare, not a null-compare. `daily_count == 1` is the load-bearing
+one: `freeTierOutcomes` excludes all three tier-0 keys from `_daily/_monthlyRequestCount`, so the single
+unit comes from the paid `ocr_space` leg — count the on-device failure and it reads 2. `failures == 1`
+pins `recordFailure()` in the CATCH specifically; the pre-existing breaker test (:2493) drives only the
+NULL arm, so this is new mutant power, not a duplicate.
+
+**Subtler mutations, by arm.** Renaming the catch's key to `on_device_rejected` → caught by :2382.
+Same rename on the NULL arm → caught by :2488. Dropping `providerErrors['on_device']` → caught by the
+stall test's `TimeoutException` assertion (:2451). Turning `.timeout()` into `onTimeout: () => null` →
+still caught by :2449's `failure_classification == 'timeout'`. Widening `freeTierOutcomes` to the daily
+counter only (leaving monthly unconditional) → caught at the tracker layer (`monthlyRequestCount == 0`,
+tracker test :168/:194). I could not construct a tier-0 mutant that survives the whole set.
+
+**The one that DOES survive (optional, cross-language).** `grep -rn '"outdated"\|stale-properties'
+functions/src/__tests__` returns ZERO hits. Change the literal the PRODUCER writes — `bulk-retag.ts:385`
+or `on-ingredient-properties-changed.ts:161` — and the new Dart tests, the TS suites and the monitor all
+stay green while offline retagging silently stops firing for that marker. Both sides carry a comment
+claiming the other is its counterpart; nothing enforces it. Filed as optional with a fix shape (plain-Node
+source-text assertion over both files + npm `test:*` registration), not blocking, since it is outside the
+four staged files and needs its own suite.
+
+**Optional findings filed.** (a) `offline_user_storage_test.dart:662-679` — the doc comment heading the
+NEW `'outdated'` test opens with seven lines that are entirely about `stale-properties` ("BUT-1794 twin …
+stamps `stale-properties`, not `stale-ingredient`"); both tests landed in one edit and the `outdated` one
+was inserted between the comment and the test it describes. Every FACT in it is true, it is attached to
+the wrong test. Fix: move :662-668 down to head the `stale-properties` test at :733, keep :669-679 where
+they are. (b) `ocr_extraction_service_test.dart:2383-2387` — `on_device_rejected == 0` in the throwing test
+is redundant rather than tautological: the only mutant that flips it (writing `on_device_rejected` inside
+the catch) is already caught two lines above by `on_device_error == 1`, and the arm-separation
+discriminator is what :2457 exists for. Keep it as documentation; do not count it as coverage.
+
+**Verdict: pass, 0 blocking.** Post-review md5s are the four listed above — unchanged from the start of
+the round; I edited nothing.

@@ -463,6 +463,115 @@ void main() {
       });
     });
 
+    /// BUT-1785 root cause — the seam, not the manager.
+    ///
+    /// `SocialOpsContext.updateRecipe` is handed to exactly one consumer,
+    /// `RecipeMemberManager`, and every entry point there filters
+    /// `r.isCollaborative`. Bound to `updateRecipe` it resolved to
+    /// `PersonalRecipeCrud.updateRecipe`, whose first guard is
+    /// `if (!updatedRecipe.isPersonal) return false;` — so add-member,
+    /// remove-member and remove-group could never write, and each surfaced as a
+    /// generic error.
+    ///
+    /// `recipe_member_manager_test.dart` cannot see this: it stubs the seam to
+    /// `true`, which is precisely the wiring under test here. This suite builds
+    /// the REAL `UnifiedRecipeService`, so the binding itself is what is pinned.
+    group('social member-write seam (BUT-1785)', () {
+      setUp(() async {
+        await service.initialize();
+      });
+
+      test(
+        'removeGroup actually WRITES - it drives the seam, not a stub',
+        () async {
+          // The whole point: this goes through service.social -> the real
+          // SocialOpsContext binding. recipe_member_manager_test.dart stubs
+          // that seam to `true`, which is exactly why it could not see that
+          // the binding rejected every collaborative recipe.
+          final collaborative =
+              RecipeFactory.build(
+                id: 'collab-1',
+                title: 'Delad middag',
+              ).copyWith(
+                type: RecipeType.collaborative,
+                // Owner must be the current user, or `_canManageMembers` refuses
+                // before the seam is ever reached and the test would pass for the
+                // wrong reason.
+                socialData: const RecipeSocialData(
+                  ownerId: 'test_user_123',
+                  categoryIds: ['group-7'],
+                ),
+              );
+
+          when(
+            () => mockRecipeRepository.fetchUserRecipes(any()),
+          ).thenAnswer((_) async => [collaborative]);
+          await service.loadWebRecipesBounded('test_user_123');
+
+          Recipe? written;
+          when(() => mockRecipeRepository.update(any())).thenAnswer((
+            invocation,
+          ) async {
+            written = invocation.positionalArguments[0] as Recipe;
+          });
+          when(() => mockRecipeRepository.create(any())).thenAnswer((
+            invocation,
+          ) async {
+            written = invocation.positionalArguments[0] as Recipe;
+            return written!;
+          });
+
+          final ok = await service.social.removeGroup(
+            recipeId: 'collab-1',
+            groupId: 'group-7',
+          );
+
+          expect(
+            ok,
+            isTrue,
+            reason:
+                'bound to the personal-only path this returns false for every '
+                'collaborative recipe, so add-member, remove-member and '
+                'remove-group have never written anything',
+          );
+          expect(
+            written,
+            isNotNull,
+            reason: 'a write must have reached the repository',
+          );
+          expect(
+            written!.socialData?.categoryIds ?? const <String>[],
+            isNot(contains('group-7')),
+          );
+        },
+      );
+
+      test(
+        'the personal-only path REFUSES the same recipe (the control)',
+        () async {
+          final collaborative = RecipeFactory.build(
+            id: 'collab-2',
+            title: 'Delad middag',
+          ).copyWith(type: RecipeType.collaborative);
+
+          when(
+            () => mockRecipeRepository.update(any()),
+          ).thenAnswer((_) async {});
+
+          final ok = await service.updateRecipe(collaborative);
+
+          expect(
+            ok,
+            isFalse,
+            reason:
+                'without this control the test above proves nothing — it is the '
+                'asymmetry between the two functions that makes the binding '
+                'choice load-bearing rather than arbitrary',
+          );
+        },
+      );
+    });
+
     group('Personal Recipe Operations', () {
       setUp(() async {
         await service.initialize();

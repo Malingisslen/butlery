@@ -1,7 +1,9 @@
 /**
  * North Star weekly aggregation (BUT-638).
  *
- * Runs Mondays at 06:00 UTC. Computes the week's product North Star
+ * Runs Mondays as the second task in the `weeklyReports` chain (08:00 UTC —
+ * see `maintenance-dispatchers.ts`), after the user-facing activity digest;
+ * it no longer owns a Cloud Scheduler job. Computes the week's North Star
  * metrics from `activity_events` and writes a single doc per ISO week.
  *
  * Metrics:
@@ -27,7 +29,6 @@
  * If the wire format changes, drop the fallback.
  */
 
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { logAnalyticsEvent } from "../shared/analytics-server";
@@ -225,10 +226,3 @@ export async function runNorthStarWeekly(deps: RunDeps = {}): Promise<NorthStarM
 
   return metrics;
 }
-
-export const northStarWeekly = onSchedule(
-  { schedule: "0 6 * * 1", timeZone: "UTC" },
-  async () => {
-    await runNorthStarWeekly();
-  }
-);

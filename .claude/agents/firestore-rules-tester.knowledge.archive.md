@@ -1547,3 +1547,131 @@ revoked state and both reach it only via `withSecurityRulesDisabled`, so nothing
 suite proves a client owner can perform the revoking write at all. ADR-002 (staged in the
 same commit) asserts the rules forbid a non-owner from touching `ownerId`/`memberPermissions`;
 of those three privileged keys only `createdAt` (SSL25) had a test.
+
+### 2026-08-01 — BUT-1788 conversations metadata.creatorId immutability: correct guard, wrong CEL spelling
+
+Reviewed the uncommitted BUT-1788 diff (gate never ran on it; surfaced by the sprint's own
+completeness sweep as BUT-1802). Two files: `firestore.rules` (+17/-2) and
+`conversations-rules.test.ts` (+81, tests C8-C11).
+
+**The conjunct added to `allow update` on `/conversations/{id}` (L1547-1548):**
+
+    && request.resource.data.get('metadata', {}).get('creatorId', null)
+        == resource.data.get('metadata', {}).get('creatorId', null)
+
+Intent is right — `affectedKeys()` is TOP-LEVEL, so the pre-existing deny list
+['participantIds','createdAt'] let any participant rewrite `metadata` wholesale and
+self-promote to creator, then call `leaveGroupConversation` (whose `authorizeDeparture`
+trusts `metadata.creatorId`) to evict everyone. Real group-takeover primitive.
+
+**Mutation proof (both directions):** removed the conjunct from the file -> C8 and C9 flip
+to FAIL (9/11); restored from a byte-copy backup in the SAME Bash call -> 11/11, md5 equal.
+NOTE: `git checkout -- firestore.rules` would have DESTROYED the uncommitted change; always
+back up to scratchpad and `cp` back when the change under test is unstaged.
+
+**The defect found — present-but-null defeats `.get(k, default)`.** In rules CEL, `.get(k,d)`
+returns `d` only when the key is ABSENT. A key PRESENT with value null returns null, and
+chaining `.get('creatorId', null)` onto null is an evaluation error -> the whole update
+denies. `ConversationDto.toFirestore` (conversation_dto.dart:143) writes
+`'metadata': conversation.metadata` UNCONDITIONALLY, and `message_mutation_module.dart:186-194`
+does `batch.set(convRef, ConversationDto.toFirestore(...), merge:true)` atomically with the
+message write on EVERY send. So for any conversation whose stored `metadata` is null or
+absent, the client's message send is denied — and because the batch is atomic, the message
+itself is lost too. Regression proven directly: HEAD rules ALLOW, working-tree rules DENY,
+same doc + same payload.
+
+**Corrected 13-case probe, shipped vs candidate (in-memory `rules.replace`, file untouched):**
+shipped 3 mismatches (PROD merge-set into metadata:null doc; PROD merge-set into
+metadata-ABSENT doc; targeted update on a metadata:null doc), candidate 0 mismatches.
+Verified candidate spelling, both sides:
+
+    && (request.resource.data.get('metadata', {}) is map
+        ? request.resource.data.get('metadata', {}).get('creatorId', null) : null)
+       == (resource.data.get('metadata', {}) is map
+        ? resource.data.get('metadata', {}).get('creatorId', null) : null)
+
+It keeps all six takeover denies (self-promote, drop creatorId, null it out, scalar
+"pwned", ADD creatorId to an absent-metadata doc, ADD to a null-metadata doc) and restores
+all six legitimate paths.
+
+**Why the suite missed it:** C11 asserts "a conversation with no metadata is still
+updatable" but sends `update({lastMessage:...})` with NO metadata key — a payload the app
+never produces. Under shipped rules that exact case ALLOWS (probe case 5), so C11 is green
+and false comfort. Lesson folded into the principles: mirror the DTO's full key set in at
+least one allow test per write path.
+
+**Two probe artifacts that cost a run each (both my bugs, not rule findings):**
+(1) the payload builder hardcoded `participantIds: [A,S]` against docs seeded `[A,S,F]`, so
+three cases denied on the participantIds conjunct instead of the one under test — the
+"re-stamped builder" trap from the 2026-07-28 principle, in a new costume; (2)
+`set(payload, {merge:true})` DEEP-MERGES nested maps, so a payload omitting `creatorId` did
+NOT drop it and the takeover-by-omission case read as a false ALLOW — use `update()` for
+omission tests. Also: `initializeTestEnvironment` returns HTTP 500 "UNKNOWN" if the
+projectId contains UPPERCASE (I used `...-HEAD-...`); lowercase every label.
+
+**Population / severity.** Client creates can no longer produce the bad shape — probed the
+create rule: metadata ABSENT -> ALLOW, `metadata: null` -> DENY (the BUT-1626 create clause
+CEL-errors on `'creatorId' in null`), `{creatorId:self}` -> ALLOW. So the frozen set is
+bounded: 1:1s created before `createDirectConversation` began stamping creatorId
+(commit 8a32b70bd, 2025-10-29) plus anything an Admin-SDK path wrote. It cannot grow from
+the client. Side observation, pre-existing at HEAD and NOT part of this diff: the fallback
+conversation create in `message_mutation_module.dart:139-159` builds a Conversation with no
+metadata, which the DTO turns into `metadata: null` -> denied by that same create clause, so
+that fallback has never worked.
+
+### 2026-08-01 — BUT-1788 test side: NULL is a third fixture state, and a merge-set allow test contaminates the fixture it just proved
+
+The `is map` ternary fix was already applied to `firestore.rules` (uncommitted) when I was
+asked to fix the SUITE. The suite was green and wrong. Two defects, both about fixture
+STATE rather than about actors:
+
+**1. No fixture ever held `metadata` PRESENT-WITH-NULL.** `NO_METADATA_GROUP` seeded the key
+ABSENT, which the OLD bare `.get('metadata',{}).get('creatorId',null)` spelling handles
+correctly (the default `{}` fires only for a missing key). The production-breaking state is
+the one `ConversationDto.toFirestore` writes — `'metadata': conversation.metadata`
+unconditionally, i.e. a stored `null`. Added `NULL_METADATA_GROUP`. So this collection has
+THREE stored states, not two: absent / null / map, each a different branch of the ternary.
+
+**2. C11's allow payload omitted `metadata`,** certifying the broken case as working. Fixed
+by adding `conversationDtoPayload()`, mirroring `conversation_dto.dart:128-145` key for key
+(with `lastMessage` mirroring `message_dto.dart:140-165`), sent as `set(..., merge:true)`
+exactly as `message_mutation_module.dart:190-197` batches it beside the message write.
+
+**The trap that nearly re-broke it:** C11 sends that payload at `NO_METADATA_GROUP` with
+`metadata: null`, and a merge-set WRITES that null. After C11 runs, the absent-metadata
+fixture is a null-metadata fixture. A later absent-branch deny test reusing it would have
+silently tested the null branch twice. Fixed with a dedicated, write-once fixture
+(`NO_METADATA_INJECT_GROUP`). General rule: an ALLOW test that lands a real payload MUTATES
+its fixture; any deny test that depends on the pre-write state needs its own document.
+
+**Tests added:** C10B (real DTO payload onto a doc that HAS a creator — the map/map branch,
+the commonest production write), C11 (fixed: real DTO onto absent-metadata),
+C11B (real DTO onto stored-null — the live defect pin), C12A/C12B (creatorId injection
+denied on absent AND on null: two ternary branches, one does not prove the other),
+C13A/C13B (metadata written as a string / a number over a stored creatorId — proves `is map`
+cannot launder a stored creatorId to null, i.e. no step-one of a two-step takeover),
+C14 (group RENAME allowed with creatorId carried through — the tripwire for a future blanket
+metadata freeze, which every deny in C8–C13B would survive).
+
+**Runs (real output).** Fixed suite: 18/18 passed.
+Mutation (a) — conjunct reverted to the bare spelling: 16/18, the two RED being exactly the
+new real-payload allows ("a conversation with no metadata is still updatable by the real
+ConversationDto payload" and "...whose stored metadata is null..."). Note the absent-metadata
+one now reddens TOO, because the real payload carries `metadata: null` on the REQUEST side —
+the request side alone is enough to trigger the CEL error, the stored side need not be null.
+Mutation (b) — conjunct deleted entirely: 12/18, RED = C8, C9, C12A, C12B, C13A, C13B (every
+takeover deny), allows all still green. `firestore.rules` md5 `963d3028...` before and after
+both mutations.
+
+**Chain-wide:** every other rules/integration suite green
+(14,39,5,22,8,8,34,19,11,24,21,8,9,7,14 + 29,25,15,18,9,4,9,61,6,13,9,49,18,12,28,14,43,4,5,
+plus `recipe-shared-read` ✓-style and `purge-dormant-family-data` "ALL PASS"). The ONLY
+non-green link in `test:rules:all` is `comment-images-storage-rules`, which needs the STORAGE
+emulator on 9199 (`ECONNREFUSED`); `.claude/hooks/ensure-firestore-emulator.sh` starts
+Firestore only. `moderate-upload.integration` detects the same and prints a SKIP banner
+rather than failing — so the chain aborts at the storage RULES suite, mid-list, and the
+suites after it never run unless invoked individually. Not a regression; do not read it as one.
+
+**Mechanic re-learned the hard way:** `cd functions` earlier in a compound Bash call makes a
+later bare `md5sum firestore.rules` miss (the restore `cp` used an absolute path and did land;
+only the verification failed). Absolute paths in BOTH halves of a mutation probe.

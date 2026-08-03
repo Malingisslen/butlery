@@ -1,20 +1,31 @@
 /**
  * Correlate Notification Effectiveness
  *
- * Scheduled daily at 6 AM UTC. Checks notifications sent in the past 24h
- * to determine if users became active within 2 hours of receiving them.
- * Writes per-notification correlation data and a daily summary by type.
+ * Runs daily as a task inside `dailyAnalytics` (see
+ * `functions/src/scheduled/maintenance-dispatchers.ts`); it no longer owns a
+ * Cloud Scheduler job of its own. Checks notifications sent in the past 24h to
+ * determine if users became active within 2 hours of receiving them. Writes
+ * per-notification correlation data and a daily summary by type.
+ *
+ * It reads `notification_history` and `users.lastActiveAt` only — NOT the daily
+ * snapshot docs. It is ordered late in the chain out of caution, not because it
+ * consumes a producer.
  *
  * Firestore writes:
  * /analytics/notifications/effectiveness/{auto} — per-notification correlation
  * /analytics/notifications/summary/{date} — daily aggregate by type
  */
 
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 const getDb = () => admin.firestore();
+
+/** Injection seam for tests — mirrors `RunDeps` in `daily-snapshots.ts`. */
+export interface RunDeps {
+  db?: admin.firestore.Firestore;
+  now?: Date;
+}
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 const BATCH_LIMIT = 500;
@@ -31,11 +42,15 @@ interface TypeStats {
   rate: number;
 }
 
-export const correlateNotificationEffectiveness = onSchedule(
-  { schedule: "0 6 * * *", timeZone: "UTC" },
-  async () => {
-    const db = getDb();
-    const now = admin.firestore.Timestamp.now();
+export async function runCorrelateNotificationEffectiveness(
+  deps: RunDeps = {},
+): Promise<void> {
+  {
+    const db = deps.db ?? getDb();
+    const now =
+      deps.now != null
+        ? admin.firestore.Timestamp.fromMillis(deps.now.getTime())
+        : admin.firestore.Timestamp.now();
     const nowMs = now.toMillis();
     const twentyFourHoursAgo = admin.firestore.Timestamp.fromMillis(
       nowMs - 24 * MS_PER_HOUR
@@ -121,12 +136,21 @@ export const correlateNotificationEffectiveness = onSchedule(
             }
           }
 
-          // Write correlation record
+          // Write correlation record, keyed by the notification it describes.
+          //
+          // An auto-id here made the task non-idempotent, and moving it into a
+          // dispatcher chain made that reachable without a hand re-fire: the
+          // 24h window ends at `now`, and `now` is 06:00 plus the runtime of
+          // nine preceding tasks rather than a fixed hour. A longer chain
+          // re-processes the overlap into duplicate rows; a shorter one drops
+          // the gap. A deterministic id makes the re-processing a harmless
+          // overwrite. `notificationId` is already the first payload field, so
+          // the id carries nothing the row did not already state.
           const correlationRef = db
             .collection("analytics")
             .doc("notifications")
             .collection("effectiveness")
-            .doc();
+            .doc(notifDoc.id);
           batch.set(correlationRef, {
             notificationId: notifDoc.id,
             userId,
@@ -205,4 +229,4 @@ export const correlateNotificationEffectiveness = onSchedule(
     }
 
   }
-);
+}

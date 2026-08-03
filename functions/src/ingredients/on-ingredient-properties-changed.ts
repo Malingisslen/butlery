@@ -11,20 +11,18 @@
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { stripDiacritics } from "../shared/swedish-normalize";
+import { ingredientMatchVariants } from "../shared/swedish-normalize";
 import { batchUpdateQueryPaginated } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
-import { withTimeout, CASCADE_TIMEOUT_MS } from "../shared/with-timeout";
+import {
+  withTimeout,
+  isCascadeEventExpired,
+  CASCADE_TIMEOUT_MS,
+  CASCADE_TIMEOUT_SECONDS,
+} from "../shared/with-timeout";
 
 // Lazy initialization to avoid calling firestore() before initializeApp()
 const getDb = () => admin.firestore();
-
-/**
- * Normalize Swedish text to match Dart-side normalization.
- */
-function normalizeSwedish(text: string): string {
-  return stripDiacritics(text.toLowerCase());
-}
 
 /**
  * Compare two property arrays for meaningful differences.
@@ -61,11 +59,40 @@ function propertiesChanged(
  * handled by onIngredientSoftDeleted).
  */
 export const onIngredientPropertiesChanged = onDocumentUpdated(
-  "ingredients/{ingredientId}",
+  {
+    document: "ingredients/{ingredientId}",
+    // See the identical note on onIngredientSoftDeleted: without an explicit
+    // timeout this ran at the v2 event default of 60s, i.e. shorter than its own
+    // CASCADE_TIMEOUT_MS guard, and a platform kill mid-cascade is silent and
+    // does not resume. BUT-1781.
+    timeoutSeconds: CASCADE_TIMEOUT_SECONDS,
+    // See the identical note on onIngredientSoftDeleted: v2 event triggers do
+    // not retry by default, so without this the `throw` below is dropped and a
+    // half-finished fan-out leaves recipes tagged from the ingredient's OLD
+    // allergen properties with nothing to recover them. The update is
+    // idempotent, and the event-age guard below bounds the retry window.
+    retry: true,
+    memory: "512MiB",
+  },
   async (event) => {
-    const before = event.data!.before.data();
-    const after = event.data!.after.data();
+    // `retry: true` is on, so a TypeError from an absent payload would become an
+    // hour-long retry loop instead of a single dropped event.
+    if (!event.data) return;
+
+    const before = event.data.before.data();
+    const after = event.data.after.data();
     const ingredientId = event.params.ingredientId;
+
+    // `retry: true` re-delivers for up to 7 days; abandon a cascade that is
+    // failing deterministically rather than re-writing pages all week.
+    if (isCascadeEventExpired(event.time)) {
+      logger.error("cascade.abandoned", {
+        cascade: "onIngredientPropertiesChanged",
+        ingredientId,
+        eventTime: event.time,
+      });
+      return;
+    }
 
     // Skip if status changed to 'deleted' (handled by onIngredientSoftDeleted)
     if (before.status !== "deleted" && after.status === "deleted") {
@@ -87,16 +114,15 @@ export const onIngredientPropertiesChanged = onDocumentUpdated(
     }
 
     const ingredientName = after.swedish as string;
-    const ingredientNameNormalized = ingredientName
-      ? normalizeSwedish(ingredientName)
-      : undefined;
 
-    if (!ingredientName || !ingredientNameNormalized) {
+    if (!ingredientName) {
       logger.error(
         `Ingredient ${ingredientId} missing 'swedish' field`
       );
       return;
     }
+
+    const ingredientNameVariants = ingredientMatchVariants(ingredientName);
 
     const addedProps = (afterProps || []).filter(
       (p) => !(beforeProps || []).includes(p)
@@ -115,14 +141,19 @@ export const onIngredientPropertiesChanged = onDocumentUpdated(
 
     const cascadeOperation = async (): Promise<void> => {
       const db = getDb();
+      // Recipes live ONLY at users/{uid}/recipes/{recipeId} — there is no
+      // top-level `recipes` collection, so a collection-scoped read matched
+      // zero docs and this cascade never fired (BUT-1781). The matching
+      // COLLECTION_GROUP index for core.ingredientsNormalized is declared in
+      // firestore.indexes.json → fieldOverrides.
       // Paginate the read: a common ingredient can match thousands of recipes,
       // and loading them all at once risks an out-of-memory crash.
       const recipesQuery = db
-        .collection(Collections.recipes)
+        .collectionGroup(Collections.recipes)
         .where(
           "core.ingredientsNormalized",
-          "array-contains",
-          ingredientNameNormalized
+          "array-contains-any",
+          ingredientNameVariants
         );
 
       const totalUpdated = await batchUpdateQueryPaginated(

@@ -148,10 +148,15 @@ library;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/operations/modules/shopping_social_share_module.dart';
+import 'package:butlery/services/user_service.dart';
 
 import '../../../../../infrastructure/mocks/production_mocks.dart';
 
@@ -269,6 +274,37 @@ Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _receivedFor(
   return snap.docs;
 }
 
+/// The PROFILE display name — what `UserService.profileDisplayName` returns,
+/// and deliberately different from [_myName] (the Firebase Auth handle on
+/// [_meProfile]) so the two sources can never be confused for one another.
+const _myProfileName = 'Anna i appen';
+
+/// A DIContainer that resolves exactly one service.
+///
+/// Deliberately NOT `TestServiceLocator.initialize()`: that installs
+/// `MockFieldValuePlatform`, which is the conflict this whole suite is built
+/// to avoid (see the header). The module only ever asks the locator for
+/// `UserService`, so one entry is the whole dependency.
+class _SingleServiceContainer extends Mock implements DIContainer {
+  _SingleServiceContainer(this.userService);
+
+  /// Null models "the service graph is not up yet" — the `tryGet` fallback.
+  final UserService? userService;
+
+  @override
+  T get<T extends Object>() {
+    if (T == UserService && userService != null) return userService! as T;
+    throw StateError('not registered: $T');
+  }
+
+  @override
+  bool isRegistered<T extends Object>() =>
+      T == UserService && userService != null;
+
+  @override
+  bool get isInitialized => true;
+}
+
 void main() {
   late FakeFirebaseFirestore firestore;
   late FakePermissionService perms;
@@ -281,8 +317,14 @@ void main() {
       isAuthenticated: true,
       currentUser: _meProfile(),
     );
+    final userService = MockUserService();
+    when(() => userService.profileDisplayName).thenReturn(_myProfileName);
+    ServiceLocator.reset();
+    ServiceLocator.initialize(_SingleServiceContainer(userService));
     module = _build(firestore, perms);
   });
+
+  tearDown(ServiceLocator.reset);
 
   // ===========================================================================
   // shareWithFriends — auth + input gates
@@ -394,13 +436,30 @@ void main() {
         expect(sharedData['listType'], 'shopping_list_shared');
         expect(sharedData['title'], 'Helgshandling');
         expect(sharedData['sharedByUserId'], _me);
-        expect(sharedData['sharedByDisplayName'], _myName);
+        // BUT-1775: the PROFILE name, not `PermissionService.currentUser`'s.
+        // The latter is synthesized from Firebase Auth, i.e. the legal name on
+        // the user's Google/Apple account — persisted here on a document every
+        // recipient reads, copied into their Art. 15 bundle, and reachable by
+        // neither `on-profile-updated.ts` nor the deletion cascade, which only
+        // touch the profile name. `_myName` is the Auth handle and must NOT
+        // appear.
+        expect(sharedData['sharedByDisplayName'], _myProfileName);
         expect(sharedData['sharedByAvatarUrl'], _myAvatar);
         expect(sharedData['isActive'], isTrue);
         expect(
           List<String>.from(sharedData['sharedWithUserIds'] as List),
           equals(['friend-1', 'friend-2', 'friend-3']),
           reason: 'recipient order must be preserved verbatim',
+        );
+        expect(
+          List<String>.from(sharedData['sharedToUserIds'] as List),
+          equals(['friend-1', 'friend-2', 'friend-3']),
+          reason:
+              'firestore.rules:720-728 grants recipient read on THIS spelling '
+              'only, and the Art. 15 export selects on it. The two sibling '
+              'writers pin theirs; this one was the last unguarded of the '
+              'three, so dropping the field reddened nothing while recipients '
+              'silently lost both the read grant and their export row.',
         );
 
         // Whitespace-trimmed message.
@@ -420,7 +479,44 @@ void main() {
           expect(recData['listTitle'], 'Helgshandling');
           expect(recData['isViewed'], isFalse);
           expect(recData['isImported'], isFalse);
+          // The receipt lands in the RECIPIENT's own subtree, so the same
+          // BUT-1775 rule binds it — this second stamp was the easy one to
+          // miss.
+          expect(recData['sharedByDisplayName'], _myProfileName);
         }
+      },
+    );
+
+    /// The fallback half of BUT-1775, and the reason `tryGet` is used rather
+    /// than `get`: with no service graph the module must stamp the localized
+    /// unknown-user label. What it must NEVER do is quietly reach for
+    /// `PermissionService.currentUser.displayName` — the Auth-sourced name —
+    /// as the "sensible default", because that is the exact value the whole
+    /// fix exists to keep out of other people's documents.
+    test(
+      'BUT-1775: with no UserService the label is the localized unknown user, '
+      'never the Auth handle',
+      () async {
+        ServiceLocator.reset();
+        ServiceLocator.initialize(_SingleServiceContainer(null));
+
+        await _seedPersonalList(firestore, listId: 'l1');
+        final ok = await module.shareWithFriends(
+          listId: 'l1',
+          friendIds: const ['friend-1'],
+        );
+
+        expect(ok, isTrue);
+        final sharedData = (await _allShared(firestore)).first.data();
+        expect(
+          sharedData['sharedByDisplayName'],
+          AppLocale.current.displayUnknownUser,
+        );
+        expect(
+          sharedData['sharedByDisplayName'],
+          isNot(_myName),
+          reason: 'the Firebase Auth handle must never be the fallback',
+        );
       },
     );
 

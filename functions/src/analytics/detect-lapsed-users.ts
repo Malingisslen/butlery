@@ -1,7 +1,10 @@
 /**
  * Detect Lapsed Users (BUT-688 win-back A/B variant resolution).
  *
- * Scheduled daily at 5 AM UTC. Identifies users who have been inactive
+ * Runs as the third task in the `dailyAnalytics` chain (06:00 UTC — see
+ * `scheduled/maintenance-dispatchers.ts`); it no longer owns a Cloud
+ * Scheduler job. Deliberately ahead of the reporting tasks because it is the
+ * one task in that chain that reaches a user. Identifies users inactive
  * for 7, 14, or 30 days and writes win-back notifications. Push copy
  * is resolved per-user via Remote Config + a deterministic
  * SHA-256(uid:thresholdType) bucket — see `./winback-variant.ts`.
@@ -29,7 +32,6 @@
  * only the attribution bridge is preserved.
  */
 
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { sendPushToUserRespectingPreferences } from "../shared/preference-aware-push";
@@ -113,8 +115,8 @@ export interface RunResult {
 }
 
 /**
- * Test-seam entrypoint. Production schedule wrapper just calls
- * `runDetectLapsedUsers()` with no overrides. Mirrors the shape of
+ * Test-seam entrypoint, and the production entrypoint: the `dailyAnalytics`
+ * dispatcher calls it with no overrides. Mirrors the shape of
  * `runTrackRetention` in `track-retention.ts`.
  */
 export async function runDetectLapsedUsers(
@@ -456,15 +458,3 @@ function countContexts(
   }
   return out;
 }
-
-export const detectLapsedUsers = onSchedule(
-  { schedule: "0 5 * * *", timeZone: "UTC" },
-  async () => {
-    try {
-      await runDetectLapsedUsers();
-    } catch (err) {
-      logger.error("detect_lapsed_users_failed", { err });
-      throw err;
-    }
-  },
-);

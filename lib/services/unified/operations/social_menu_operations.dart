@@ -3,6 +3,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -51,6 +52,20 @@ class SocialMenuOperations {
       final currentUser = ServiceLocator.get<PermissionService>().currentUser;
       if (currentUser == null) return false;
 
+      // BUT-1775, applying BUT-1705/BUT-1736: `profileDisplayName`, NOT
+      // `PermissionService.currentUser`, which is synthesized straight from
+      // `FirebaseAuth.currentUser` and therefore carries the legal name on the
+      // user's Google/Apple account — never a name they chose to expose. This
+      // value is PERSISTED as `sharedByDisplayName` on documents every
+      // recipient reads and lands verbatim in their GDPR export, and it is the
+      // PROFILE name that `on-profile-updated.ts` renames and that account
+      // deletion scrubs, so an Auth-sourced stamp would be both unconsented and
+      // un-erasable. `tryGet` keeps this working before/without the service
+      // graph; an unresolved name stamps the localized unknown-user label.
+      final sharedByDisplayName =
+          ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
+          AppLocale.current.displayUnknownUser;
+
       // Validate that all friend IDs are actual friends
       final userFriends = _friendsService.friends.map((f) => f.uid).toSet();
       final invalidFriendIds = friendUserIds
@@ -67,9 +82,16 @@ class SocialMenuOperations {
         0,
         (total, recipes) => total + recipes.length,
       );
+      // Same source as `sharedByDisplayName` above, for the same reason. This
+      // one is easy to miss because it reads as CONTENT rather than
+      // attribution — but the default title is persisted on the shared document,
+      // rendered to every recipient, and exported verbatim, and
+      // `on-profile-updated.ts` does not rename a title. An Auth-sourced legal
+      // name here would be the one copy the rename propagator and the deletion
+      // cascade can never reach.
       final menuTitle =
           customTitle ??
-          AppLocale.current.menuDefaultTitle(currentUser.displayName);
+          AppLocale.current.menuDefaultTitle(sharedByDisplayName);
 
       // Prepare menu data for Firebase
       final menuData = {
@@ -84,10 +106,15 @@ class SocialMenuOperations {
         ),
         'totalRecipes': totalRecipes,
         'sharedByUserId': currentUser.uid,
-        'sharedByDisplayName': currentUser.displayName,
+        'sharedByDisplayName': sharedByDisplayName,
         'sharedByAvatarUrl': currentUser.avatarUrl,
         'sharedAt': FieldValue.serverTimestamp(),
         'sharedWithUserIds': friendUserIds,
+        // Same list under the spelling `firestore.rules` (:722/:727) and the
+        // GDPR export both speak — see the note in `recipe_sharing_manager`.
+        // Without it a shared menu is unreadable AND unexportable to the very
+        // people it was shared with.
+        'sharedToUserIds': friendUserIds,
         'isActive': true,
         'menuType': 'personal_shared',
       };
@@ -111,7 +138,7 @@ class SocialMenuOperations {
         batch.set(shareRecordRef, {
           'sharedMenuId': sharedMenuRef.id,
           'sharedByUserId': currentUser.uid,
-          'sharedByDisplayName': currentUser.displayName,
+          'sharedByDisplayName': sharedByDisplayName,
           'menuTitle': menuTitle,
           'sharedAt': FieldValue.serverTimestamp(),
           'isViewed': false,

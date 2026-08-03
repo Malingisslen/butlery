@@ -83,6 +83,21 @@ class FeatureFlagService {
     // heading heuristics misfire broadly.
     'ingredient_section_capture': true,
 
+    // Free on-device OCR as tier 0 before the paid provider chain. The code
+    // default stays false so an unreachable Remote Config can never switch it
+    // on.
+    //
+    // NOT YET CLEARED BY A TRUSTWORTHY MEASUREMENT. The production value was
+    // set to TRUE on 2026-08-02 on a corpus eval that has since been found to
+    // compare unlike things — the harness fed the recognizer RAW bytes while
+    // production preprocesses first, and the artifact is larger than the
+    // 0.2-point margin the verdict rested on (see
+    // integration_test/ocr_engine_comparison_test.dart). The harness is fixed;
+    // the re-run is pending a device. Until it lands, treat the production ON
+    // state as a decision awaiting evidence, not as a cleared gate. Flipping it
+    // off restores the previous chain exactly.
+    'enable_on_device_ocr': false,
+
     // Gradual Rollout Flags
     'new_search_rollout_percentage': 0,
 
@@ -334,6 +349,9 @@ abstract final class FeatureFlags {
   static const appMaintenanceMessageSv = 'app_maintenance_message_sv';
   // Ingredient sections (PR #211): import-capture kill switch
   static const ingredientSectionCapture = 'ingredient_section_capture';
+  // Free on-device OCR tier 0 — ON in prod, but pending a trustworthy
+  // re-measurement; see the defaults map above before relying on it.
+  static const enableOnDeviceOcr = 'enable_on_device_ocr';
 
   // Gradual Rollout Flags
   static const newSearchRolloutPercentage = 'new_search_rollout_percentage';

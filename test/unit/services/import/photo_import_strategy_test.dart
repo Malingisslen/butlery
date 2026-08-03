@@ -413,6 +413,46 @@ void main() {
         expect(result.metadata?['ocr_method'], equals('tesseract'));
         expect(result.warnings, contains(contains('tesseract')));
       });
+
+      test('should NOT report the on-device tier as a fallback', () async {
+        // `on_device` runs FIRST by design, so reaching it says nothing about
+        // the paid chain's health. The two tests above are this one's control:
+        // they prove the "(primary unavailable)" warning still fires for a
+        // genuine fallback, so a green here means suppression, not a dead
+        // warning path. Without this, treating on-device as a fallback puts
+        // "primary unavailable" on every free import — the normal path.
+        when(() => mockOcrService.extractText(any())).thenAnswer(
+          (_) async => _createOCRResult(
+            text: 'Recipe text',
+            confidence: 0.75,
+            processingMethod: 'on_device',
+            isSuccessful: true,
+          ),
+        );
+
+        when(
+          () => mockTextStrategy.import(any(), options: any(named: 'options')),
+        ).thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
+
+        // Act
+        final result = await strategy.import(
+          'photo',
+          options: {
+            'imageBytes': testImageBytes,
+          },
+        );
+
+        // Assert
+        expect(result.isSuccess, isTrue);
+        expect(result.metadata?['ocr_method'], equals('on_device'));
+        expect(
+          result.warnings ?? const <String>[],
+          isNot(contains(contains('primary unavailable'))),
+        );
+        // Positive control: warnings WERE built for this result, so the
+        // absence above is suppression rather than an empty list.
+        expect(result.warnings, contains(contains('Medium OCR confidence')));
+      });
     });
 
     group('Confidence Threshold Warnings', () {

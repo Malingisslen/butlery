@@ -40,10 +40,25 @@ class _ShoppingMemberManagementDialogState
   late Map<String, SharedListPermission> _localPermissions;
   late Set<String> _localMemberIds;
 
+  /// BUT-1777: the list copy the rows on screen were computed from — what the
+  /// user is actually looking at, captured when the dialog opened.
+  ///
+  /// This, not the live stream copy, is the base a permission change is judged
+  /// against, so a change the owner reasoned about while their other device
+  /// moved the membership is refused instead of replayed. It is NOT
+  /// [_localPermissions]: `initState` seats a missing owner there for display,
+  /// and shipping that synthetic entry as an access-control claim would read as
+  /// drift against a server that never had it.
+  ///
+  /// It advances with every membership change this dialog makes itself, so a
+  /// second change in the same session is not refused as its own drift.
+  late UnifiedShoppingList _declaredBase;
+
   @override
   void initState() {
     super.initState();
 
+    _declaredBase = widget.list;
     _localPermissions = Map<String, SharedListPermission>.from(
       widget.list.memberPermissions,
     );
@@ -60,6 +75,11 @@ class _ShoppingMemberManagementDialogState
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  /// Folds a membership change this dialog just persisted into [_declaredBase].
+  void _rebaseMembers(Map<String, SharedListPermission> members) {
+    _declaredBase = _declaredBase.copyWith(memberPermissions: members);
   }
 
   void _updateFilteredFriends() {
@@ -91,9 +111,14 @@ class _ShoppingMemberManagementDialogState
             listId: widget.list.id,
             userId: userId,
             permission: newPermission,
+            viewedBase: _declaredBase,
           );
 
       if (success) {
+        _rebaseMembers({
+          ..._declaredBase.memberPermissions,
+          userId: newPermission,
+        });
         if (!mounted) return;
         setState(() {
           _localPermissions[userId] = newPermission;
@@ -179,6 +204,11 @@ class _ShoppingMemberManagementDialogState
       );
 
       if (success) {
+        _rebaseMembers(
+          Map<String, SharedListPermission>.from(
+            _declaredBase.memberPermissions,
+          )..remove(userId),
+        );
         setState(() {
           _localPermissions.remove(userId);
           _localMemberIds.remove(userId);
@@ -260,6 +290,18 @@ class _ShoppingMemberManagementDialogState
         } else {
           firstFailureReason ??= shoppingService.consumeMutationError();
         }
+      }
+
+      if (addedMembers.isNotEmpty) {
+        // Not inside the `mounted` branch below: the base tracks what was
+        // WRITTEN, and a partial batch still moved the server's membership.
+        // Leaving it behind would make the next permission change in this
+        // session look like drift the user never caused.
+        _rebaseMembers({
+          ..._declaredBase.memberPermissions,
+          for (final friendId in addedMembers)
+            friendId: SharedListPermission.edit,
+        });
       }
 
       if (addedMembers.isNotEmpty && mounted) {

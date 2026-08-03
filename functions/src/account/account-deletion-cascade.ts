@@ -151,6 +151,9 @@ export async function probeResidualData(
   // covered by the deleter and by the emulator lane, never by a count here.
   for (const [col, field, op] of [
     [Collections.messages, "senderId", "=="],
+    // BUT-1788: system rows ABOUT the user, authored by "system", so the
+    // senderId leg above is structurally blind to them.
+    [Collections.messages, "metadata.subjectUserId", "=="],
     [Collections.realtimeMenus, "ownerId", "=="],
     [Collections.realtimeMenus, "lastEditedBy", "=="],
     [Collections.realtimeMenus, "participantIds", "array-contains"],
@@ -158,6 +161,15 @@ export async function probeResidualData(
     [Collections.realtimeRecipes, "lastEditedBy", "=="],
     [Collections.realtimeRecipes, "participantIds", "array-contains"],
     [Collections.conversations, "participantIds", "array-contains"],
+    // BUT-1798: shared_content membership, BOTH spellings. The scrub above is
+    // the only thing that clears these, and it was blind to ad-hoc shares for
+    // the collection's entire life — so this probe is what stops that ever
+    // being invisible again. Both legs are required: a probe on
+    // `sharedToUserIds` alone cannot see the legacy corpus, which is exactly
+    // the residual the scrub was added to remove. Single-field array-contains
+    // is served by the automatic index; no composite entry needed.
+    ["shared_content", "sharedToUserIds", "array-contains"],
+    ["shared_content", "sharedWithUserIds", "array-contains"],
   ] as const) {
     try {
       const snap = await db
@@ -343,6 +355,41 @@ export async function probeResidualData(
         },
       );
     }
+  }
+
+  // BUT-1789: the feature-retention rows. A SUBCOLLECTION under an analytics
+  // document, so neither the top-level `userId` loop at the head of this
+  // function nor the `users/{uid}/...` loop above can reach it — both are
+  // structurally blind to `analytics/feature_retention/users`. Same handle the
+  // deleter uses, keeping the deleter a strict superset of the probe. Appended
+  // rather than folded into an existing `try`, for the reason the block above
+  // states: a leg sharing another leg's catch shortens every leg after it.
+  try {
+    const snap = await db
+      .collection("analytics")
+      .doc("feature_retention")
+      .collection("users")
+      .where("userId", "==", uid)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual feature-retention rows", {
+        uid_prefix: uid.slice(0, 6),
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error(
+      "[deletion-cascade] residual probe failed: feature_retention",
+      {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      },
+    );
   }
 
   if (residual > 0 && !result.failedCollections.includes("residual_data_detected")) {
@@ -817,6 +864,48 @@ export async function deleteActivityEvents(
   return true;
 }
 
+/**
+ * BUT-1789: the per-user-per-day feature-retention rows written by
+ * `analytics/compute-feature-retention.ts`.
+ *
+ * `analytics/feature_retention/users/{uid}_{yyyy-mm-dd}` is one document PER
+ * ACTIVE DAY, carrying the uid in the id, in a `userId` field, and a behavioural
+ * profile of that person's day (did they cook, import, share, meal-plan, shop).
+ * Nothing deleted them: no cascade step, no TTL, and no accepted-deviation entry
+ * saying that was on purpose — so an account erased under Article 17 left a
+ * dated row for every day it was ever active, indefinitely.
+ *
+ * A TTL is NOT the alternative here, and the reason is worth stating so it is
+ * not "simplified" into one later: these rows live in the SUBCOLLECTION
+ * `analytics/feature_retention/users`, whose collectionGroup id is `users` —
+ * the same id as the top-level profile collection. A TTL fieldOverride on
+ * collectionGroup `users` would arm a delete policy over real user documents.
+ *
+ * The filter is the writer's own `userId` field rather than a documentId prefix
+ * range: the writer sets it on every row (`batch.set({ userId, date, ...})`),
+ * and a single-field equality needs no composite index. The id-prefix form
+ * would work too but depends on the `{uid}_{date}` id convention holding
+ * forever, which is a weaker handle than the field the writer is contractually
+ * writing.
+ *
+ * The `daily/{date}` aggregates are deliberately NOT touched — integer counts,
+ * no uid, no re-derivation on erasure. That residual is the accepted deviation
+ * recorded for BUT-1789.
+ */
+export async function deleteFeatureRetentionFlags(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const snap = await db
+    .collection("analytics")
+    .doc("feature_retention")
+    .collection("users")
+    .where("userId", "==", uid)
+    .get();
+  await batchDeleteAll(db, snap.docs);
+  return true;
+}
+
 export async function deleteWeeklyMenuPlans(
   db: admin.firestore.Firestore,
   uid: string,
@@ -1053,6 +1142,9 @@ export async function deleteFamilyData(
  *     `enforce-group-minor-membership.ts`, which already removes three of the
  *     four in one `update()`.
  */
+/** The one tombstone string every message-content erasure writes. */
+const MESSAGE_TOMBSTONE = "[Borttaget meddelande]";
+
 export async function deleteMessages(
   db: admin.firestore.Firestore,
   uid: string,
@@ -1070,12 +1162,14 @@ export async function deleteMessages(
           senderId: "deleted",
           senderDisplayName: "[Raderad användare]",
           senderAvatarUrl: null,
-          content: "[Borttaget meddelande]",
+          content: MESSAGE_TOMBSTONE,
         });
       },
       { label: "anonymizeOwnMessages", strict: false },
     );
   }
+
+  await anonymizeSystemMessagesAboutUser(db, uid);
 
   const convos = await db
     .collection(Collections.conversations)
@@ -1118,6 +1212,125 @@ export async function deleteMessages(
 }
 
 /**
+ * BUT-1788: erase the user's name from SYSTEM rows written ABOUT them.
+ *
+ * `leaveGroupConversation` writes "<Name> har lämnat gruppen" under
+ * `senderId: "system"`. Three separate things make that row invisible to every
+ * other leg of this cascade:
+ *
+ *  1. the `senderId == uid` query above cannot match it — the author is
+ *     "system";
+ *  2. `buildGroupDepartureUpdate` only tombstones `lastMessage` when the
+ *     departing user is its SENDER, and here they are its subject;
+ *  3. once the person has left, the `participantIds array-contains uid` query
+ *     below never returns that conversation at all, so the cascade does not
+ *     even visit it.
+ *
+ * The writer therefore stamps `metadata.subjectUserId`, which is the only
+ * queryable handle on a name embedded in free text. Equality on a nested field
+ * is served by the automatic single-field index — no declaration needed.
+ *
+ * Both copies are rewritten: the `messages` row and the denormalised
+ * `conversations/{id}.lastMessage.content` that `syncConversationLastMessage`
+ * made of it. The mirror goes FIRST and the handle is cleared LAST, only for
+ * rows whose mirror write succeeded — see the ordering note inline. Once a row
+ * is fully scrubbed its handle is gone, so `probeResidualData` reads zero and a
+ * re-run is a no-op.
+ */
+export async function anonymizeSystemMessagesAboutUser(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<void> {
+  const about = await db
+    .collection(Collections.messages)
+    .where("metadata.subjectUserId", "==", uid)
+    .get();
+  if (about.docs.length === 0) return;
+
+  // conversationId -> the exact contents the mirror may still be holding.
+  const mirrored = new Map<string, Set<string>>();
+  for (const doc of about.docs) {
+    const data = doc.data() ?? {};
+    const convoId = typeof data.conversationId === "string"
+      ? data.conversationId
+      : null;
+    const content = typeof data.content === "string" ? data.content : null;
+    if (!convoId || !content) continue;
+    const bucket = mirrored.get(convoId) ?? new Set<string>();
+    bucket.add(content);
+    mirrored.set(convoId, bucket);
+  }
+
+  // MIRROR FIRST. `metadata.subjectUserId` is the only handle that finds these
+  // rows again, and the mirror scrub below is best-effort: its failure is
+  // swallowed so one contended conversation cannot abort the erasure. Clearing
+  // the handle before that write would make a swallowed failure permanent —
+  // a re-run early-exits at the empty query above, `probeResidualData` (keyed
+  // on the same field) reads zero and certifies a clean erasure, and the
+  // deleted user's display name stays in the group preview for every remaining
+  // member. Nothing heals it later: syncConversationLastMessage triggers on
+  // message create/delete, never on update.
+  //
+  // Transactional re-read per conversation: a newer message may have replaced
+  // the preview between the query and this write, and blindly stamping the
+  // tombstone would erase THAT message's copy instead.
+  const convoIds = [...mirrored.keys()];
+  const failedConvos = new Set<string>();
+  const chunkSize = 10;
+  for (let i = 0; i < convoIds.length; i += chunkSize) {
+    await Promise.all(
+      convoIds.slice(i, i + chunkSize).map(async (convoId) => {
+        const ref = db.collection(Collections.conversations).doc(convoId);
+        try {
+          await db.runTransaction(async (tx) => {
+            const fresh = await tx.get(ref);
+            if (!fresh.exists) return;
+            const last = (fresh.data() ?? {}).lastMessage as
+              | Record<string, unknown>
+              | undefined;
+            if (!last || last.senderId !== "system") return;
+            if (typeof last.content !== "string") return;
+            if (!mirrored.get(convoId)?.has(last.content)) return;
+            tx.update(ref, { "lastMessage.content": MESSAGE_TOMBSTONE });
+          });
+        } catch (err) {
+          failedConvos.add(convoId);
+          // An Error nested in a structured-log payload serialises to `{}`, so
+          // `err` recorded nothing at all. Same shape as the probe legs above.
+          logger.error("[deletion-cascade] system lastMessage scrub failed", {
+            conversationId: convoId,
+            errCode: (err as { code?: number | string }).code ?? null,
+            errName: err instanceof Error ? err.name : typeof err,
+          });
+        }
+      }),
+    );
+  }
+
+  // Handle-clearing write LAST, and skipped for any conversation whose mirror
+  // scrub failed — the surviving `metadata.subjectUserId` is what lets a re-run
+  // and probeResidualData find the rest. Retry semantics: a skipped row keeps
+  // BOTH its handle and its original content, so the next run rebuilds the same
+  // content match and scrubs the mirror it missed. A row that succeeded is gone
+  // from the query entirely, so a full-success re-run is a plain no-op.
+  const clearable = about.docs.filter((doc) => {
+    const convoId = (doc.data() ?? {}).conversationId;
+    return typeof convoId !== "string" || !failedConvos.has(convoId);
+  });
+  await commitInChunks(
+    db,
+    clearable,
+    (batch, doc) => {
+      batch.update(doc.ref, {
+        content: MESSAGE_TOMBSTONE,
+        "metadata.subjectUserId": admin.firestore.FieldValue.delete(),
+      });
+    },
+    { label: "anonymizeSystemMessagesAboutUser", strict: false },
+  );
+}
+
+/**
  * The single `update()` that removes a departing user from a SURVIVING group
  * conversation document.
  *
@@ -1147,7 +1360,7 @@ function buildGroupDepartureUpdate(
     update["lastMessage.senderId"] = "deleted";
     update["lastMessage.senderDisplayName"] = "[Raderad användare]";
     update["lastMessage.senderAvatarUrl"] = null;
-    update["lastMessage.content"] = "[Borttaget meddelande]";
+    update["lastMessage.content"] = MESSAGE_TOMBSTONE;
   }
   return update;
 }
@@ -1174,7 +1387,12 @@ export async function removeFromSharedContent(
     db.collectionGroup("engagements").where("userId", "==", uid).get(),
   ]);
 
-  // Scrub sharedToUserIds on each parent shared_content doc.
+  // Scrub membership on each parent shared_content doc. BOTH spellings: this
+  // collection carries the same recipient list under `sharedToUserIds` and
+  // `sharedWithUserIds`, and clearing only the first left the uid behind on
+  // every document written before the BUT-1774 writer fix. `arrayRemove` is a
+  // documented no-op when the value is absent, so the unconditional double
+  // clear is safe and cheap.
   if (members.docs.length > 0) {
     await commitInChunks(
       db,
@@ -1184,6 +1402,7 @@ export async function removeFromSharedContent(
         if (parentRef) {
           batch.update(parentRef, {
             sharedToUserIds: admin.firestore.FieldValue.arrayRemove(uid),
+            sharedWithUserIds: admin.firestore.FieldValue.arrayRemove(uid),
           });
         }
       },
@@ -1191,6 +1410,74 @@ export async function removeFromSharedContent(
     );
   }
   await batchDeleteAll(db, members.docs);
+
+  // BUT-1798 — the members-subcollection scrub above reaches ONLY content shared
+  // through BaseSharedContentRepository.addMember() (the group path). The three
+  // direct-share managers — recipe_sharing_manager, social_menu_operations and
+  // shopping_social_share_module — write the parent document only and have never
+  // written a members/{uid} row, so every recipient of an ad-hoc shared recipe,
+  // menu or list has been un-erasable since this collection existed. The Art. 15
+  // export now returns exactly those rows, so the gap has to close with it.
+  //
+  // Two `array-contains` clauses cannot live in one Firestore query (nor inside
+  // Filter.or), so the union of two queries is the only legal spelling — this is
+  // not a style choice, and "simplifying" it to one OR query is a runtime error.
+  // Note these are two DIFFERENT fields, so array-contains-any does not apply.
+  //
+  // The admin SDK bypasses rules, which is why the legacy `sharedWithUserIds`-only
+  // corpus is reachable here at all: `firestore.rules` grants recipient read on
+  // `sharedToUserIds` alone, so no client query can see those documents. That makes
+  // the predicate the only access control on this read — keep it scoped to
+  // shared_content and to these two exact fields.
+  const [byCurrentSpelling, byLegacySpelling] = await Promise.all([
+    db
+      .collection("shared_content")
+      .where("sharedToUserIds", "array-contains", uid)
+      .get(),
+    db
+      .collection("shared_content")
+      .where("sharedWithUserIds", "array-contains", uid)
+      .get(),
+  ]);
+
+  const currentIds = new Set(byCurrentSpelling.docs.map((d) => d.id));
+  const membershipDocs = new Map<
+    string,
+    admin.firestore.QueryDocumentSnapshot
+  >();
+  let legacyOnly = 0;
+  for (const doc of [...byCurrentSpelling.docs, ...byLegacySpelling.docs]) {
+    // Documents this user OWNS are hard-deleted a few lines below. Updating them
+    // first is wasted writes, and a batch.update against an already-deleted doc
+    // throws NOT_FOUND and poison-pills the whole chunk on any retry — the same
+    // failure shape as BUT-1582/1583. The owner is always in their own
+    // membership arrays, so without this skip the overlap would be total.
+    if (doc.get("sharedByUserId") === uid) continue;
+    if (membershipDocs.has(doc.id)) continue;
+    membershipDocs.set(doc.id, doc);
+    if (!currentIds.has(doc.id)) legacyOnly++;
+  }
+
+  if (membershipDocs.size > 0) {
+    await commitInChunks(
+      db,
+      [...membershipDocs.values()],
+      (batch, doc) => {
+        batch.update(doc.ref, {
+          sharedToUserIds: admin.firestore.FieldValue.arrayRemove(uid),
+          sharedWithUserIds: admin.firestore.FieldValue.arrayRemove(uid),
+        });
+      },
+      { label: "scrubSharedContentMembership", strict: false },
+    );
+  }
+
+  // The legacy count is the only measurement of how big the
+  // `sharedWithUserIds`-only corpus actually is; the backfill ticket needs it.
+  logger.info("[deletion-cascade] shared_content membership scrub", {
+    scrubbed: membershipDocs.size,
+    legacyOnly,
+  });
   await batchDeleteAll(db, engagements.docs);
 
   // Delete shared_content owned by uid (members subcollection first).

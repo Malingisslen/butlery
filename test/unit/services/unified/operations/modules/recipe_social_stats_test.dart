@@ -128,6 +128,76 @@ void main() {
         expect(stats.currentUserId, equals('user_789'));
       });
 
+      /// BUT-1781. `_recipeOwnerId` decides WHOSE `users/{uid}/recipes` document
+      /// gets the denormalized rating — the only place a recipe exists. The
+      /// callee is pinned in `rating_statistics_denormalization_test.dart` GIVEN
+      /// a correct uid; nothing pinned the caller deriving it. Returning null, or
+      /// the classic wrong guess `currentUserId`, is silent: a syntactically
+      /// perfect write to a path nobody owns.
+      ///
+      /// The fixture discriminates on purpose — the current user is `user_789`
+      /// and the recipe's owner is `user_123`.
+      group('owner-id derivation (BUT-1781)', () {
+        test('denormalizes onto the OWNER, not the current user', () async {
+          final firestore = mockFirestoreRepository.firestore;
+
+          // One rating so the aggregate has something to write; without it the
+          // empty branch takes over and proves nothing about the path.
+          await firestore.collection('recipe_ratings').add(<String, dynamic>{
+            'recipeId': 'recipe_1',
+            'userId': 'user_789',
+            'rating': 4.0,
+          });
+          await firestore
+              .collection('users')
+              .doc('user_123')
+              .collection('recipes')
+              .doc('recipe_1')
+              .set(<String, dynamic>{'core': <String, dynamic>{}});
+          await firestore
+              .collection('users')
+              .doc('user_789')
+              .collection('recipes')
+              .doc('recipe_1')
+              .set(<String, dynamic>{'core': <String, dynamic>{}});
+
+          await stats.updateMultipleRatingAggregates(['recipe_1']);
+
+          final owner = await firestore
+              .collection('users')
+              .doc('user_123')
+              .collection('recipes')
+              .doc('recipe_1')
+              .get();
+          final currentUser = await firestore
+              .collection('users')
+              .doc('user_789')
+              .collection('recipes')
+              .doc('recipe_1')
+              .get();
+
+          final ownerCore =
+              (owner.data()?['core'] ?? <String, dynamic>{}) as Map;
+          final otherCore =
+              (currentUser.data()?['core'] ?? <String, dynamic>{}) as Map;
+
+          expect(
+            ownerCore['ratingCount'],
+            equals(1),
+            reason:
+                'the aggregate belongs on the owner document — that is the only '
+                'copy of this recipe that exists',
+          );
+          expect(
+            otherCore['ratingCount'],
+            isNull,
+            reason:
+                'writing under the CURRENT user is the wrong-path failure this '
+                'test exists to catch; it throws nothing and matches nothing',
+          );
+        });
+      });
+
       test('should return current user display name', () {
         expect(stats.currentUserDisplayName, equals('Test User'));
       });

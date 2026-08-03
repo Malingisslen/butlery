@@ -192,6 +192,107 @@ class RecipeMemberManager {
     }
   }
 
+  /// Remove a shared GROUP's LABEL from a collaborative recipe.
+  ///
+  /// **This does not revoke anything, and the UI copy says so.** Read that
+  /// sentence before changing this method or its callers.
+  ///
+  /// BUT-1785: group sharees are recorded in `socialData.categoryIds`, not in
+  /// `memberPermissions`, so routing a group id through [removeMember] always
+  /// tripped its "not a member" guard and the button could never succeed. But
+  /// `categoryIds` is a DISPLAY/FILTER field: access is decided exclusively by
+  /// `memberPermissions` (firestore.rules:889-897,
+  /// `recipe_discovery_service.getSharedWithMe`/`getCollaborativeRecipes`, which
+  /// apply `categoryIds` only as a post-hoc filter AFTER the membership check).
+  /// The group-share path expands a group into individual member ids
+  /// (`GroupRecipeSelectionViewModel.shareSelectedRecipes` →
+  /// `shareRecipe(memberIds: group.friendUserIds)`), so every member already
+  /// holds their own `memberPermissions` entry and keeps full access here.
+  ///
+  /// Full revocation is NOT implemented because it needs a decision this code
+  /// cannot make: nothing records whether a member was reached through the group
+  /// or shared with directly, so removing "the group's members" would silently
+  /// cut people who were invited individually. That provenance has to exist
+  /// before the behaviour can. Escalated to Malin; until then the panel reports
+  /// what actually happened (`recipeSharingRevokeGroupSuccess`) instead of
+  /// claiming a revocation — a privacy control that lies is worse than one that
+  /// visibly fails, because the user stops looking.
+  Future<bool> removeGroup({
+    required String recipeId,
+    required String groupId,
+  }) async {
+    try {
+      AppLogger.info('Removing group $groupId from recipe $recipeId');
+
+      final recipe = _getRecipes()
+          .where((r) => r.id == recipeId && r.isCollaborative)
+          .firstOrNull;
+
+      if (recipe == null) {
+        AppLogger.error(
+          'Cannot remove group: Recipe not found or not collaborative',
+        );
+        return false;
+      }
+
+      final currentCategoryIds = recipe.socialData?.categoryIds ?? const [];
+      if (!currentCategoryIds.contains(groupId)) {
+        AppLogger.warning(
+          'Group $groupId is not shared on recipe $recipeId',
+        );
+        return false;
+      }
+
+      if (!_canManageMembers(recipe)) {
+        AppLogger.error(
+          'Current user does not have permission to remove shared groups',
+        );
+        return false;
+      }
+
+      final updatedCategoryIds = currentCategoryIds
+          .where((id) => id != groupId)
+          .toList();
+
+      final updatedSocialData = RecipeSocialData(
+        ownerId: recipe.socialData?.ownerId,
+        ownerDisplayName: recipe.socialData?.ownerDisplayName,
+        memberPermissions: recipe.socialData?.memberPermissions,
+        allowGuestViewing: recipe.socialData?.allowGuestViewing ?? false,
+        allowMemberInvites: recipe.socialData?.allowMemberInvites ?? true,
+        categoryIds: updatedCategoryIds,
+        descriptionCollaborative: recipe.socialData?.descriptionCollaborative,
+      );
+
+      final updatedRecipe = Recipe(
+        core: recipe.core,
+        type: recipe.type,
+        socialData: updatedSocialData,
+        realtimeData: recipe.realtimeData,
+        offlineData: recipe.offlineData,
+      );
+
+      final success = await _updateRecipe(updatedRecipe);
+      if (!success) {
+        AppLogger.error('Failed to update recipe after group removal');
+        return false;
+      }
+
+      AppLogger.success('Successfully removed group $groupId from recipe');
+
+      _logMemberAction(
+        recipeId: recipeId,
+        memberId: groupId,
+        action: 'group_removed',
+      );
+
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to remove group from recipe', e);
+      return false;
+    }
+  }
+
   /// Update member permission level
   Future<bool> updateMemberPermission({
     required String recipeId,

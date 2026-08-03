@@ -22054,6 +22054,12 @@ abstract class AppLocalizations {
   /// **'Ta bort delning'**
   String get recipeSharingRevoke;
 
+  /// No description provided for @recipeSharingRemoveGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort gruppen'**
+  String get recipeSharingRemoveGroup;
+
   /// No description provided for @recipeSharingRevokeConfirm.
   ///
   /// In sv, this message translates to:
@@ -22065,6 +22071,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Delning med {name} avslutad'**
   String recipeSharingRevokeSuccess(String name);
+
+  /// BUT-1785: a group revoke removes the group LABEL only. Every member keeps access until revoked individually, so the copy must not promise a revocation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort gruppen {name} från delningen?'**
+  String recipeSharingRevokeGroupConfirm(String name);
+
+  /// No description provided for @recipeSharingRevokeGroupSuccess.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppen {name} borttagen. Medlemmarna har fortfarande åtkomst — ta bort dem en och en under Vänner.'**
+  String recipeSharingRevokeGroupSuccess(String name);
 
   /// No description provided for @recipeSharingFriends.
   ///
@@ -24514,6 +24532,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Receptet har sammanfogats'**
   String get duplicateMergeSuccess;
+
+  /// No description provided for @duplicateMergeFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte sammanfoga receptet'**
+  String get duplicateMergeFailed;
 
   /// No description provided for @duplicateMergeNoTime.
   ///
