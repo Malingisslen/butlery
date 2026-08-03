@@ -811,7 +811,7 @@
     },
     {
       "id": "svc-ocr-extraction",
-      "label": "OCR-extraktion (OCR.space/Google Vision/Tesseract)",
+      "label": "OCR-extraktion (p\u00e5-enheten \u2192 OCR.space/Google Vision/Tesseract)",
       "context": "service",
       "path": "lib/services/ocr_extraction_service.dart"
     },
@@ -2621,7 +2621,7 @@
         {
           "from": "svc-social-share",
           "to": "ds-recipes",
-          "payload": "NYTT dokument: full kopia, type=collaborative, memberPermissions från noll",
+          "payload": "NYTT dokument: full kopia, type=collaborative, memberPermissions från noll. BUT-1785 (2026-08-03): efterf\u00f6ljande medlems\u00e4ndringar (l\u00e4gg till, ta bort, ta bort grupp) skrev tidigare ALDRIG \u2014 s\u00f6mmen gick till den personliga skrivv\u00e4gen, som avvisar collaborative-recept. Den pekar nu p\u00e5 saveRecipeForSocialModule.",
           "transport": "Firestore create",
           "verified": true
         },
@@ -3747,14 +3747,14 @@
         {
           "from": "vm-photo-import",
           "to": "svc-ocr-extraction",
-          "payload": "Bildbytes (HEIC konverterad till JPEG)",
+          "payload": "Bildbytes (HEIC konverterad till JPEG). 2026-08-03: en gratis p\u00e5-enheten-niv\u00e5 (ML Kit) f\u00f6rs\u00f6ker f\u00f6rst, bakom flaggan enable_on_device_ocr (av som standard). Tr\u00e4ffar den, n\u00e5s ingen betald tj\u00e4nst och ingen kvot f\u00f6rbrukas; annars faller den igenom till kedjan.",
           "transport": "method-call",
           "verified": true
         },
         {
           "from": "svc-ocr-extraction",
           "to": "vm-photo-import",
-          "payload": "OCR-text + konfidens per sida",
+          "payload": "OCR-text + konfidens per sida. Texten saneras h\u00e4r (HtmlSanitizer) p\u00e5 SAMTLIGA niv\u00e5er \u2014 detta \u00e4r enda saneringsgr\u00e4nsen p\u00e5 v\u00e4gen, och konsumenterna sparar texten vidare till utkastet utan att sanera om.",
           "transport": "method-call",
           "verified": true
         },
