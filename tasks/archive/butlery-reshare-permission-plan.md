@@ -49,24 +49,25 @@ real design choice that wants deciding before code:
   original sharer owns; the rule would need to pin every other field.
 - **(b) Stop reusing `recipeId` as the document id** — let each share write its own auto-id
   document, the way `social_menu_operations` and `shopping_social_share_module` already do.
-  Cleaner and matches the two sibling writers, but it changes the read model and needs a
-  migration story for existing rows.
+  Cleaner and matches the two sibling writers. It changes the read model, which would
+  normally need a migration story — with only test data, it does not.
 
-(b) is more consistent with the rest of the codebase. It should be decided alongside
-**BUT-1809** (the backfill), which touches the same corpus.
+(b) is more consistent with the rest of the codebase, and with no real data to migrate its
+main drawback disappears — so take (b) unless something else argues against it.
 
-## The one assumption worth challenging
+BUT-1809 (the backfill over the same corpus) is very likely moot for the same reason: it
+exists to rescue legacy `sharedWithUserIds`-only documents, and there is no legacy.
 
-Every existing shared recipe carries `allowMemberInvites: true`, because that is the model
-default and nothing has ever set it deliberately. Nobody chose that.
+## No back-compat concern (Malin, 2026-08-03)
 
-Once enforcement lands, those recipes become genuinely re-shareable — a behaviour change on
-existing data, arriving as a side effect of a fix. The safe reading of decision 3 is that the
-default should apply to them too: **treat a missing or unset value as false**, and let the
-owner turn it on where they want it.
+The project holds only TEST recipes. There is no production data to protect, so:
 
-That is what this plan assumes. It is the one thing here that changes existing shares rather
-than only new ones, so it should be confirmed rather than inferred.
+- set the model default to `false` and move on — no "treat missing as false" special case,
+  no migration, no dual reading path;
+- if a stale test document is inconvenient, delete it rather than writing code to tolerate it.
+
+Do not add compatibility scaffolding to this plan. It is the kind of code that survives long
+after the reason for it, and here the reason never existed.
 
 ## Tests, and the ones that must fail first
 
@@ -74,7 +75,7 @@ than only new ones, so it should be confirmed rather than inferred.
    level on the emulator, not only in Dart, since the client is not the authority.
 2. The same re-share SUCCEEDS when it is true, and the new recipients actually appear in
    `sharedToUserIds` (the field the recipient's read grant and the Art. 15 export both key on).
-3. A legacy document with no `allowMemberInvites` behaves as false.
+3. The owner's own share always works — the flag governs OTHERS re-sharing, never the owner.
 4. The owner can always share, regardless of the flag.
 5. The toggle round-trips: set at share time, read back on the panel, changeable afterwards.
 6. Mutation-test each: flip the rule's conjunct, watch the deny test go green and redden the
@@ -99,6 +100,5 @@ than only new ones, so it should be confirmed rather than inferred.
   picked, so it should be something they say yes to, not something they forget to say no to.
 - The check lives on the server, not just in the app, so it holds even if someone tampers
   with the app.
-- One thing to confirm: recipes already shared all say "yes" today, purely because nobody
-  ever set it. This plan treats them as "no" instead, so nothing becomes shareable onward
-  without you choosing it.
+- There is nothing to migrate: the project holds only test recipes, so the default is simply
+  off from the start.

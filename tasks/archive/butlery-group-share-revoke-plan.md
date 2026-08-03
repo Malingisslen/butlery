@@ -49,18 +49,14 @@ would make the common case (one group, no overlap) marginally simpler and the de
 `grants` only records *why*. Nothing in `firestore.rules` needs to change, which is the point:
 the access model is untouched, so this cannot open a hole.
 
-## Migration
+## No migration (Malin, 2026-08-03)
 
-Every existing document has no `grants` field. Read it as "every member is `direct`" — which
-is true, because no group share has ever been recorded. So:
+The project holds only TEST recipes, so there is no production data to preserve. Add the
+`grants` field, write it from the start, and delete any stale test document that gets in the
+way rather than writing code to tolerate it.
 
-- no backfill job,
-- no schema version bump needed beyond the usual `?? []` read,
-- old documents behave exactly as they do today, and a group revoke on them removes nobody
-  (correct: nobody got in via a group).
-
-Follow the repo's lazy-compat convention (CLAUDE.md, `schemaVersion` section): read
-`data['grants'] ?? {}`, always write it.
+Specifically: do NOT add a "read a missing `grants` as all-direct" compatibility path. It
+would be dead code the day it shipped.
 
 ## Behaviour
 
@@ -104,7 +100,7 @@ The repo's standing rule: revert the fix, watch the named test redden, restore.
 4. A direct removal cuts a member who also holds a group grant.
 5. Snapshot: someone added to the group AFTER the share does not appear in
    `memberPermissions` and is unaffected by the revoke.
-6. Legacy document with no `grants` — a group revoke removes nobody and throws nothing.
+6. A member revoked individually is gone regardless of how many grants they held.
 7. The panel renders one row per group, and the group dialog's title, confirm button and
    tooltip all describe a real revocation (the widget test added on 2026-08-03 asserts the
    opposite today and must be updated in the same edit, not deleted).
