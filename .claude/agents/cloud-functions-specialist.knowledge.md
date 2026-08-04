@@ -138,6 +138,40 @@ idempotent:
   every later page. Fix shape for that: accumulate per-page failures and throw
   once, or set `retry:true` — safe here because the write is a static idempotent
   field stamp on a doc that must exist to have matched.
+  **Pin that pairing at the DECLARATION SITE, not constant-to-constant.** A
+  `GUARD_MS < LIMIT_SECONDS * 1000` test stays green when someone deletes
+  `timeoutSeconds` from the wrapper — the guard silently becomes dead code again.
+  Assert the deploy manifest instead: every v2 export carries `__endpoint`, which
+  is the SDK's OWN discovery contract (`firebase-functions/lib/runtime/loader.js:33`
+  reads exactly that property to emit functions.yaml), so it cannot move quietly
+  under a version bump without breaking deploys. Measured on 7.2.5: omitting
+  `timeoutSeconds` yields `__endpoint.timeoutSeconds === ResetValue{}` (prints as
+  `null`), so `=== SECONDS` reddens. Two caveats: read it OPTIONALLY
+  (`__endpoint?: {...}` + `endpoint?.timeoutSeconds`) or a future shape change
+  throws a TypeError that aborts the remaining test functions and suppresses the
+  `N/M checks passed` line instead of failing one check; and a suite importing the
+  function module directly never runs `index.ts`'s `setGlobalOptions`, so the
+  manifest's `region` is empty there — that probe pins per-function opts only.
+  Keep the weaker constant-vs-constant check beside it: it pins the ORDERING
+  relation the manifest probe does not. Both halves MEASURED 2026-08-04 on
+  `cleanup-cache` (7.2.5, shadow-copy mutants): deleting `timeoutSeconds` from the
+  wrapper gives exactly one named FAIL whose detail prints
+  `"timeoutSeconds":null` and the other 19 checks still run; an absent
+  `__endpoint` gives one FAIL and the four later test functions still run. Make
+  the null-endpoint detail string SAY "SDK shape change, NOT a timeout
+  regression" — the two failures are otherwise indistinguishable to whoever
+  reads CI.
+- **A `x || DEFAULT` → `typeof x === "number" && x > 0 ? x : DEFAULT` rewrite is
+  NOT semantics-preserving, and "behaviour unchanged" comments say it is.** `||`
+  falls back only on the FALSY set (`0`, `""`, `NaN`, `null`, `undefined`,
+  `false`) and passes NEGATIVES, strings and `true` straight through to
+  arithmetic: `ttlDays: -5` expired a row instantly, `"30"` coerced to 30 days,
+  `"abc"` made the expiry `NaN` so the row was NEVER deleted, `true` meant 1 day.
+  The typed guard maps all four to the default. The rewrite is the better code —
+  fix the PROSE, not the predicate — but check the falsy-set boundary before
+  letting a refactor claim parity, especially where `firestore.rules` constrains
+  only field PRESENCE (`hasRequiredFields([...])`) and no field TYPE, which is
+  what makes those values writable in the first place.
 - Scheduled jobs run hourly, not per-minute (43,200×/month adds up).
 
 ## Secrets handling
@@ -357,6 +391,14 @@ see "When to consult the archive" at the end.
   or, better, call the exported writer against a fake db and assert the key on
   the recorded payload. Same trap for any "the writer still stamps X" or "the
   file still calls Y" file-text guard.
+- **Asserting a literal-typed `export const X = 90` with `X === 90` is NOT
+  compile-time-erased and is NOT silent** — measured 2026-08-04: tsc emits
+  `DEFAULT_TTL_DAYS === 90` into the JS and it evaluates at runtime, and drifting
+  the constant makes the comparison a TS2367 COMPILE error ("types '90' and '80'
+  have no overlap"), i.e. the suite fails loudly. Behavioural bracketing fixtures
+  are still the better assertion (they pin what the constant DOES), but do not let
+  a comment justify them by claiming the direct comparison asserts nothing at
+  runtime — that is itself a false claim about the toolchain.
 - **A COUNT-of-entries tripwire over a config file catches a net LOSS, not a
   SWAP** (one entry deleted + one added in the same edit stays green). Where
   the entries are named — TTL `fieldOverrides`, index specs, allowlists — assert
@@ -896,6 +938,29 @@ see "When to consult the archive" at the end.
   drain still needs a hard iteration cap as a backstop against a
   non-shrinking page — converts a scheduler-timeout crash into a clean
   logged partial-and-resume.
+- **"A deleted doc cannot anchor a `startAfter` cursor" is FALSE, and it is the
+  repo's most repeated paging folk-belief** — `Query._extractFieldValues`
+  (`node_modules/@google-cloud/firestore/build/src/reference/query.js:83`) builds
+  the cursor from the snapshot LOCALLY, pushing `documentSnapshot.ref` for
+  `FieldPath.documentId()` and `.get(field)` otherwise; nothing re-reads the
+  anchor, so a wholly-deleted page still positions the next one correctly. The
+  REAL reason an in-memory-filtered sweep must anchor on the last SCANNED doc is
+  ORDERING: the last *deleted* doc can sort before the last scanned one, so
+  anchoring on it re-reads the page's surviving tail and inflates `scanned`.
+  `cleanup-cache.ts:248` now carries the corrected rationale (BUT-1786, verified
+  2026-08-04); `cleanup-old-notifications.ts:49-50` still says "it would in fact
+  be wrong here since the cursor doc gets deleted" — wrong but harmless there,
+  since that filtered walk self-advances. Correct the PROSE, never the cursor
+  choice. **And when the correction names a fixture as "the ONLY one where X",
+  check X against EVERY fixture, not just the ones that can redden** — the two
+  anchors also differ in `testDeletesOnlyExpired`, whose single page is terminal
+  so the cursor is never consumed. Mutation-measured 2026-08-04: anchoring on the
+  last DELETED doc reds exactly one check (`scanned` 700 → 701, in
+  `testCursorAnchorsOnLastScannedNotLastDeleted`), while 799 belongs to a
+  DIFFERENT mutant (an `indexOf` fake cursor, red only in
+  `testFakeCursorModelIsFaithful`, which stays green under the anchor mutant
+  because its page-one tail is itself deleted). Two mutants, two numbers, two
+  guards; a fix that swaps them repeats the defect it was written to correct.
 - A drain that CLAIMS-BY-DELETE each processed item self-heals across runs
   (overflow stays matched, retried next run) — safer than a bounded scan
   with no claim mechanism, which can starve overflow permanently if the

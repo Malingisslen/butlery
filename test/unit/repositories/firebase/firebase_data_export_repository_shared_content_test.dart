@@ -72,7 +72,6 @@ void main() {
         'sharedByUserId': sharerId,
         'sharedByDisplayName': 'Vännen',
         'sharedByAvatarUrl': 'https://example.test/sharer.png',
-        'sharedWithUserIds': recipients,
         'sharedToUserIds': recipients,
         'isActive': true,
       },

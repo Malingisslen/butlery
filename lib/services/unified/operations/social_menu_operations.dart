@@ -109,7 +109,6 @@ class SocialMenuOperations {
         'sharedByDisplayName': sharedByDisplayName,
         'sharedByAvatarUrl': currentUser.avatarUrl,
         'sharedAt': FieldValue.serverTimestamp(),
-        'sharedWithUserIds': friendUserIds,
         // Same list under the spelling `firestore.rules` (:722/:727) and the
         // GDPR export both speak — see the note in `recipe_sharing_manager`.
         // Without it a shared menu is unreadable AND unexportable to the very
@@ -221,7 +220,7 @@ class SocialMenuOperations {
           'title': data['title'] ?? '?',
           'sharedAt': data['sharedAt'],
           'totalRecipes': data['totalRecipes'] ?? 0,
-          'sharedWithCount': (data['sharedWithUserIds'] as List?)?.length ?? 0,
+          'sharedWithCount': (data['sharedToUserIds'] as List?)?.length ?? 0,
           'description': data['description'],
         };
       }).toList();
@@ -326,10 +325,10 @@ class SocialMenuOperations {
       final menuData = menuDoc.data()!;
 
       // Verify user has access to this menu
-      final sharedWithUserIds = List<String>.from(
-        menuData['sharedWithUserIds'] ?? [],
+      final sharedToUserIds = List<String>.from(
+        menuData['sharedToUserIds'] ?? [],
       );
-      if (!sharedWithUserIds.contains(currentUserId)) {
+      if (!sharedToUserIds.contains(currentUserId)) {
         AppLogger.error('User does not have access to this menu');
         return false;
       }
@@ -401,10 +400,10 @@ class SocialMenuOperations {
       final menuData = menuDoc.data()!;
 
       // Verify user has access to this menu
-      final sharedWithUserIds = List<String>.from(
-        menuData['sharedWithUserIds'] ?? [],
+      final sharedToUserIds = List<String>.from(
+        menuData['sharedToUserIds'] ?? [],
       );
-      if (!sharedWithUserIds.contains(currentUserId)) {
+      if (!sharedToUserIds.contains(currentUserId)) {
         AppLogger.error('User does not have access to this menu');
         return null;
       }
@@ -517,7 +516,7 @@ class SocialMenuOperations {
       // Calculate total friends shared with
       final totalFriendsSharedWith = sharedByMeQuery.docs
           .expand(
-            (doc) => List<String>.from(doc.data()['sharedWithUserIds'] ?? []),
+            (doc) => List<String>.from(doc.data()['sharedToUserIds'] ?? []),
           )
           .toSet()
           .length;

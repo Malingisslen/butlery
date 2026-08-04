@@ -400,19 +400,15 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   /// One `shared_content` leg: `contentType == [contentType]` AND the caller is
   /// a recipient.
   ///
-  /// BUT-1775 follow-up. Membership was written under TWO spellings inside this
-  /// one collection — `sharedToUserIds` (BaseSharedContentRepository, and the
-  /// only one `firestore.rules`' `allow list` recognises, :722) and
-  /// `sharedWithUserIds` (the direct writers in recipe_sharing_manager /
-  /// social_menu_operations / shopping_social_share_module). Those writers now
-  /// emit BOTH, and this query stays on the rules-sanctioned one: a query
-  /// filtered on `sharedWithUserIds` is refused by the list rule for every
-  /// recipient, which would fail the whole section rather than return the rows.
+  /// Filtered on `sharedToUserIds` because that is the only membership field
+  /// `firestore.rules`' `allow list` recognises (:722) — filtering on anything
+  /// else is refused for every recipient, which fails the whole section rather
+  /// than returning the rows.
   ///
-  /// Documents shared BEFORE that writer fix carry only `sharedWithUserIds` and
-  /// are invisible here — they are equally invisible to the rules, so no client
-  /// query can reach them; a backfill is the only remedy and is not this call's
-  /// job.
+  /// Membership was briefly written under a second spelling as well, so rows
+  /// predating that fix stayed readable. Retired 2026-08-03: the project holds
+  /// only test data, so the compatibility field protected nothing and two
+  /// copies of one fact could only drift apart.
   Query<Map<String, dynamic>> _sharedContentReceivedQuery(
     String userId,
     String contentType,

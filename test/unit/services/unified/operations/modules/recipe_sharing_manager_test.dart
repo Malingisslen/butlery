@@ -286,7 +286,7 @@ void main() {
           );
           // The membership spelling `firestore.rules`' recipient branch
           // (:722/:727) and the GDPR export both read. Writing only
-          // `sharedWithUserIds` made the row permission-denied for the very
+          // `sharedToUserIds` made the row permission-denied for the very
           // people it was shared with, and kept it out of their Art. 15 bundle
           // — a wrong-field query throws nothing and reads as "no shares".
           // Mirrors the menu-side assertion in
@@ -297,7 +297,7 @@ void main() {
             contains('user_456'),
             reason:
                 'the recipient must be listed under the rules-sanctioned '
-                'membership field, not only under sharedWithUserIds',
+                'membership field, the one the rules and the export both read',
           );
         },
       );
@@ -407,7 +407,6 @@ void main() {
             'sharedByUserId': 'user_123',
             'sharedAt': firstSharedAt,
             'sharedToUserIds': ['user_123', 'user_456', 'user_789'],
-            'sharedWithUserIds': ['user_123', 'user_456', 'user_789'],
             'isActive': true,
           });
 

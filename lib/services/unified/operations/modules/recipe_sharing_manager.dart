@@ -557,7 +557,17 @@ class RecipeSharingManager {
     required String recipeId,
     required String recipeTitle,
     required List<String> memberIds,
-    required dynamic recipeData,
+    // Typed, NOT `dynamic`. Dart extension methods are dispatched STATICALLY,
+    // so `recipeData.description.orEmpty()` on a dynamic receiver looks for an
+    // instance method named `orEmpty` on the runtime String, does not find one,
+    // and throws NoSuchMethodError — which the catch at the bottom of this
+    // method swallows, so the shared_content row is silently never written.
+    // The analyzer cannot see it: every member access on a dynamic is legal.
+    //
+    // That is exactly what happened on 2026-08-03 when a raw `?? ''` was
+    // replaced with `.orEmpty()` to satisfy the BUT-581 arch guard. Typing the
+    // parameter is the root-cause fix; both call sites already pass a Recipe.
+    required Recipe recipeData,
   }) async {
     try {
       final permissionService = ServiceLocator.get<PermissionService>();
@@ -570,7 +580,7 @@ class RecipeSharingManager {
         return;
       }
 
-      // Ensure owner is included in sharedWithUserIds along with members
+      // Ensure owner is included in sharedToUserIds along with members
       final allUserIds = {currentUserId, ...memberIds}.toList();
 
       final sharedContentRef = _firestoreRepository
@@ -627,7 +637,7 @@ class RecipeSharingManager {
         'contentType': 'recipe',
         'recipeId': recipeId,
         'title': recipeTitle,
-        'description': recipeData.description.orEmpty(),
+        'description': recipeData.description,
         'sharedByUserId': currentUserId,
         // BUT-1775, applying BUT-1705/BUT-1736: `profileDisplayName`, NOT
         // `permissionService.currentUser`. The latter is built straight from
@@ -645,21 +655,18 @@ class RecipeSharingManager {
             ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
             AppLocale.current.displayUnknownUser,
         'sharedByAvatarUrl': permissionService.currentUser?.avatarUrl,
-        'sharedWithUserIds': allUserIds,
-        // Same list under the OTHER spelling this one collection uses.
-        // `firestore.rules` :722/:727 grants recipient read on
-        // `sharedToUserIds` and nothing else, and it is what
-        // `BaseSharedContentRepository` and the GDPR export both speak;
-        // writing only `sharedWithUserIds` made every recipient's list
-        // query permission-denied and kept these rows out of their Art. 15
-        // bundle. Both are written until the readers are consolidated.
-        // Pre-existing rows still need the one-off backfill.
+        // The single membership field. `firestore.rules` :722/:727 grants
+        // recipient read on this and nothing else, and it is what
+        // `BaseSharedContentRepository`, the GDPR export and the deletion
+        // cascade all speak. It was briefly written twice, under a second
+        // spelling, so rows predating the fix stayed readable — retired
+        // 2026-08-03 once it was established the project holds only test data.
         'sharedToUserIds': allUserIds,
         'isActive': true,
-        'imageUrl': recipeData.imageUrls?.isNotEmpty == true
+        'imageUrl': recipeData.imageUrls.isNotEmpty
             ? recipeData.imageUrls.first
             : null,
-        'mealType': recipeData.mealType.orEmpty(),
+        'mealType': recipeData.mealType,
       };
       if (isNew) {
         payload['sharedAt'] = FieldValue.serverTimestamp();

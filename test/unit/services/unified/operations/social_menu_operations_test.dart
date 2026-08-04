@@ -230,7 +230,7 @@ void main() {
             'Malin i appen',
           );
           // The membership spelling firestore.rules' recipient branch and the
-          // GDPR export both read. Writing only `sharedWithUserIds` made the
+          // GDPR export both read. Writing only `sharedToUserIds` made the
           // row unreadable by the very people it was shared with.
           expect(
             sharedDocs.docs.first.data()['sharedToUserIds'],
@@ -342,7 +342,7 @@ void main() {
           'sharedAt': DateTime.now().toIso8601String(),
           'totalRecipes': 5,
           'sharedByUserId': 'test-user-123',
-          'sharedWithUserIds': ['friend-1'],
+          'sharedToUserIds': ['friend-1'],
           'isActive': true,
           'description': 'Test menu',
         });
@@ -367,7 +367,7 @@ void main() {
               .collection('shared_content')
               .doc('menu-to-import')
               .set({
-                'sharedWithUserIds': ['test-user-123'],
+                'sharedToUserIds': ['test-user-123'],
                 'title': 'Menu to Import',
                 'isActive': true,
               });
@@ -545,7 +545,7 @@ void main() {
         final firestore = mockFirestoreRepository.firestore;
         await firestore.collection('shared_content').doc('inactive-menu').set({
           'isActive': false,
-          'sharedWithUserIds': ['test-user-123'],
+          'sharedToUserIds': ['test-user-123'],
           'title': 'Inactive Menu',
         });
 
@@ -562,7 +562,7 @@ void main() {
         await firestore.collection('shared_content').doc('restricted-menu').set(
           {
             'isActive': true,
-            'sharedWithUserIds': ['other-user-123'],
+            'sharedToUserIds': ['other-user-123'],
             'title': 'Restricted Menu',
           },
         );

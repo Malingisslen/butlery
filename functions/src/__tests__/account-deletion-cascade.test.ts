@@ -848,28 +848,30 @@ async function scenario_featureRetentionRowsAreErased(): Promise<void> {
  * this collection's entire life, on documents the Art. 15 export has just
  * started returning.
  *
- * Two further traps this pins:
- *  - membership is stored under TWO spellings, and the old scrub cleared only
- *    `sharedToUserIds`, leaving the uid in `sharedWithUserIds`;
- *  - the owner is always in their own membership arrays, so scrubbing without
- *    excluding owned docs would update every document the very next step hard-
- *    deletes — wasted writes, and a NOT_FOUND poison-pill on retry.
+ * The further trap this pins: the owner is always in their own membership
+ * array, so scrubbing without excluding owned docs would update every document
+ * the very next step hard-deletes — wasted writes, and a NOT_FOUND poison-pill
+ * on retry.
+ *
+ * Membership was briefly stored under two spellings, and this scenario used to
+ * prove both were cleared. Retired 2026-08-03: with only test data there was
+ * nothing for the second field to protect, and two copies of one fact could
+ * only drift.
  */
 async function scenario_adHocSharedContentMembershipIsScrubbed(): Promise<void> {
   const db = new FakeFirestore();
 
-  // Legacy row: only the OLD spelling. No client query can even see this one.
-  db.set("shared_content/legacy-recipe", {
+  // A share the deleted user received, alongside a third party who must survive.
+  db.set("shared_content/three-way-recipe", {
     contentType: "recipe",
     sharedByUserId: OTHER,
-    sharedWithUserIds: [OTHER, UID, THIRD],
+    sharedToUserIds: [OTHER, UID, THIRD],
   });
-  // Post-fix row: both spellings.
+  // A plain two-person share.
   db.set("shared_content/current-recipe", {
     contentType: "recipe",
     sharedByUserId: OTHER,
     sharedToUserIds: [OTHER, UID],
-    sharedWithUserIds: [OTHER, UID],
   });
   // Owned by the deleted user AND listing them as a recipient — the normal
   // shape, since the writer puts the sharer in their own arrays.
@@ -877,14 +879,12 @@ async function scenario_adHocSharedContentMembershipIsScrubbed(): Promise<void> 
     contentType: "recipe",
     sharedByUserId: UID,
     sharedToUserIds: [UID, OTHER],
-    sharedWithUserIds: [UID, OTHER],
   });
   // Someone else's share, no relation to the deleted user.
   db.set("shared_content/unrelated", {
     contentType: "menu",
     sharedByUserId: OTHER,
     sharedToUserIds: [OTHER, THIRD],
-    sharedWithUserIds: [OTHER, THIRD],
   });
 
   const { removeFromSharedContent } =
@@ -892,26 +892,23 @@ async function scenario_adHocSharedContentMembershipIsScrubbed(): Promise<void> 
     require("../account/account-deletion-cascade");
   await removeFromSharedContent(asDb(db), UID);
 
-  const legacy = db.get("shared_content/legacy-recipe") as DocData;
+  const threeWay = db.get("shared_content/three-way-recipe") as DocData;
   check(
-    "a legacy row carrying only sharedWithUserIds is reached at all",
-    !(legacy.sharedWithUserIds as string[]).includes(UID),
-    `left: ${JSON.stringify(legacy.sharedWithUserIds)}`,
+    "an ad-hoc share the deleted user RECEIVED is reached at all",
+    !(threeWay.sharedToUserIds as string[]).includes(UID),
+    `left: ${JSON.stringify(threeWay.sharedToUserIds)}`,
   );
   check(
-    "the other members of that legacy row are untouched",
-    (legacy.sharedWithUserIds as string[]).length === 2,
-    `left: ${JSON.stringify(legacy.sharedWithUserIds)}`,
+    "the other two members of that share are untouched",
+    (threeWay.sharedToUserIds as string[]).length === 2,
+    `left: ${JSON.stringify(threeWay.sharedToUserIds)}`,
   );
 
   const current = db.get("shared_content/current-recipe") as DocData;
   check(
-    "BOTH spellings are cleared, not just the one the query matched",
-    !(current.sharedToUserIds as string[]).includes(UID) &&
-      !(current.sharedWithUserIds as string[]).includes(UID),
-    `to: ${JSON.stringify(current.sharedToUserIds)} with: ${JSON.stringify(
-      current.sharedWithUserIds,
-    )}`,
+    "the membership field is cleared on a plain two-person share",
+    !(current.sharedToUserIds as string[]).includes(UID),
+    `to: ${JSON.stringify(current.sharedToUserIds)}`,
   );
 
   check(
@@ -932,8 +929,7 @@ async function scenario_adHocSharedContentMembershipIsScrubbed(): Promise<void> 
   const unrelated = db.get("shared_content/unrelated") as DocData;
   check(
     "an unrelated share between two other people is left alone",
-    (unrelated.sharedToUserIds as string[]).length === 2 &&
-      (unrelated.sharedWithUserIds as string[]).length === 2,
+    (unrelated.sharedToUserIds as string[]).length === 2,
     `to: ${JSON.stringify(unrelated.sharedToUserIds)}`,
   );
 }

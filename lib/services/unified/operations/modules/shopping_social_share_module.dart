@@ -84,7 +84,6 @@ class ShoppingSocialShareModule {
         'sharedByDisplayName': sharedByDisplayName,
         'sharedByAvatarUrl': currentUser.avatarUrl,
         'sharedAt': FieldValue.serverTimestamp(),
-        'sharedWithUserIds': friendIds,
         // Same list under the spelling `firestore.rules` (:722/:727) and the
         // GDPR export both speak — see the note in `recipe_sharing_manager`.
         'sharedToUserIds': friendIds,
@@ -285,13 +284,13 @@ class ShoppingSocialShareModule {
         final receivedData = receivedListData[sharedListId];
 
         // BUT-1108: defense-in-depth — verify the current user is in the
-        // canonical sharedWithUserIds. The implicit access via received_lists
+        // canonical sharedToUserIds. The implicit access via received_lists
         // pointer is no longer the only gate; if Firestore rules ever loosen
         // on pointer writes, this prevents cross-user inbox leakage.
-        final sharedWithUserIds =
-            (listData?['sharedWithUserIds'] as List?)?.cast<String>() ??
+        final sharedToUserIds =
+            (listData?['sharedToUserIds'] as List?)?.cast<String>() ??
             const <String>[];
-        if (!sharedWithUserIds.contains(currentUserId)) continue;
+        if (!sharedToUserIds.contains(currentUserId)) continue;
 
         if (listData != null &&
             receivedData != null &&
@@ -345,7 +344,7 @@ class ShoppingSocialShareModule {
           // BUT-1109: localized fallback for missing title — was literal '?'.
           'title': data['title'] ?? AppLocale.current.unnamedSharedList,
           'sharedAt': data['sharedAt'],
-          'sharedWithCount': (data['sharedWithUserIds'] as List?)?.length ?? 0,
+          'sharedWithCount': (data['sharedToUserIds'] as List?)?.length ?? 0,
           'description': data['description'],
         };
       }).toList();
@@ -377,10 +376,10 @@ class ShoppingSocialShareModule {
       final listData = listDoc.data()!;
 
       // Verify user has access to this list
-      final sharedWithUserIds = List<String>.from(
-        listData['sharedWithUserIds'] ?? [],
+      final sharedToUserIds = List<String>.from(
+        listData['sharedToUserIds'] ?? [],
       );
-      if (!sharedWithUserIds.contains(currentUserId)) {
+      if (!sharedToUserIds.contains(currentUserId)) {
         AppLogger.error('User does not have access to this shopping list');
         return null;
       }
@@ -453,7 +452,7 @@ class ShoppingSocialShareModule {
       final totalSharedByMe = querySnapshot.docs.length;
       final totalFriendsSharedWith = querySnapshot.docs
           .expand(
-            (doc) => List<String>.from(doc.data()['sharedWithUserIds'] ?? []),
+            (doc) => List<String>.from(doc.data()['sharedToUserIds'] ?? []),
           )
           .toSet()
           .length;

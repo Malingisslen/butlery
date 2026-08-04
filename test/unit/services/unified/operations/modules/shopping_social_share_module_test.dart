@@ -25,7 +25,7 @@
 /// Happy path (`shareWithFriends`):
 /// - Writes a single doc to `shared_content` with contentType
 ///   `shopping_list`, listType `shopping_list_shared`, sharedByUserId =
-///   current uid, sharedWithUserIds = the provided friendIds (preserving
+///   current uid, sharedToUserIds = the provided friendIds (preserving
 ///   order), and `isActive: true`.
 /// - Writes ONE per-friend record to
 ///   `user_shared_shopping_lists/{friendId}/received_lists/{sharedListId}`
@@ -80,9 +80,9 @@
 /// - Unauthenticated → null.
 /// - Shared list not found → null.
 /// - **Permission boundary**: a user whose uid is NOT in
-///   `sharedWithUserIds` cannot import the list — returns null and does
+///   `sharedToUserIds` cannot import the list — returns null and does
 ///   NOT write any `isImported: true` flag. This is the access-control
-///   gate; a flip from `!sharedWithUserIds.contains` to `.contains`
+///   gate; a flip from `!sharedToUserIds.contains` to `.contains`
 ///   would let strangers import any shared list they know the id of.
 /// - Happy path: returns the listId AND updates the user's received
 ///   pointer with `isImported: true`. Pin both — returning the id
@@ -135,7 +135,7 @@
 ///   current behaviour in the orphan / missing-data tests.
 ///
 /// - **BUG-5 (cross-link to BUT-1085)**: `getShoppingListsSharedWithMe`
-///   does NOT filter by `sharedWithUserIds.contains(currentUserId)` on
+///   does NOT filter by `sharedToUserIds.contains(currentUserId)` on
 ///   the shared doc — the access check is implicit (the user has a
 ///   per-friend received_lists pointer only if someone sent it to
 ///   them). If a malicious user manually creates a received_lists
@@ -447,7 +447,7 @@ void main() {
         expect(sharedData['sharedByAvatarUrl'], _myAvatar);
         expect(sharedData['isActive'], isTrue);
         expect(
-          List<String>.from(sharedData['sharedWithUserIds'] as List),
+          List<String>.from(sharedData['sharedToUserIds'] as List),
           equals(['friend-1', 'friend-2', 'friend-3']),
           reason: 'recipient order must be preserved verbatim',
         );
@@ -638,7 +638,7 @@ void main() {
         final shared = await _allShared(firestore);
         expect(shared, hasLength(1));
         expect(
-          List<String>.from(shared.first.data()['sharedWithUserIds'] as List),
+          List<String>.from(shared.first.data()['sharedToUserIds'] as List),
           equals(['collab-1']),
         );
         expect(shared.first.data()['description'], 'wanna co-edit?');
@@ -813,7 +813,7 @@ void main() {
           'sharedByUserId': 'bob-uid',
           'description': 'tjena',
           'isActive': true,
-          'sharedWithUserIds': [_me],
+          'sharedToUserIds': [_me],
         });
 
         // Seed the user's received pointer.
@@ -858,7 +858,7 @@ void main() {
             'sharedByDisplayName': 'Bob',
             'sharedByUserId': 'bob-uid',
             'isActive': false, // <-- soft-deleted
-            'sharedWithUserIds': [_me],
+            'sharedToUserIds': [_me],
           });
 
       await firestore
@@ -881,11 +881,11 @@ void main() {
     });
 
     /// BUT-1108: defense-in-depth — even when the recipient has a valid
-    /// received_lists pointer, the shared doc's canonical sharedWithUserIds
+    /// received_lists pointer, the shared doc's canonical sharedToUserIds
     /// must include the recipient. Without this gate, a Firestore-rules
     /// regression that allowed self-creating pointers would expose other
     /// users' shopping lists. Belt-and-suspenders pattern.
-    test('BUT-1108: shared doc without me in sharedWithUserIds is filtered out '
+    test('BUT-1108: shared doc without me in sharedToUserIds is filtered out '
         '(even with a valid received pointer)', () async {
       // Seed a shared doc shared ONLY with someone else — not the current user.
       await firestore
@@ -897,7 +897,7 @@ void main() {
             'sharedByDisplayName': 'Bob',
             'sharedByUserId': 'bob-uid',
             'isActive': true,
-            'sharedWithUserIds': ['other-user'], // _me NOT in this list
+            'sharedToUserIds': ['other-user'], // _me NOT in this list
           });
 
       // But somehow the current user has a received_lists pointer for it
@@ -965,7 +965,7 @@ void main() {
               'sharedByUserId': _me,
               'isActive': true,
               'title': 'Mitt veckoinköp',
-              'sharedWithUserIds': ['f1', 'f2', 'f3'],
+              'sharedToUserIds': ['f1', 'f2', 'f3'],
               'sharedAt': Timestamp.fromDate(DateTime(2026, 5, 1)),
             });
 
@@ -976,8 +976,8 @@ void main() {
       },
     );
 
-    /// `sharedWithUserIds` missing → count is 0, not crash.
-    test('missing sharedWithUserIds → count 0', () async {
+    /// `sharedToUserIds` missing → count is 0, not crash.
+    test('missing sharedToUserIds → count 0', () async {
       await firestore
           .collection(FirestoreCollections.sharedContent)
           .doc('s1')
@@ -1010,12 +1010,12 @@ void main() {
     });
 
     /// **Permission boundary**: a user whose uid is NOT in
-    /// `sharedWithUserIds` cannot import. Without this gate, a stranger
+    /// `sharedToUserIds` cannot import. Without this gate, a stranger
     /// who guesses or harvests a shared list id can mark it imported in
     /// their own inbox — pollutes their state AND signals false
     /// engagement to the sender's stats.
     test(
-      'user not in sharedWithUserIds → null and does NOT set isImported=true',
+      'user not in sharedToUserIds → null and does NOT set isImported=true',
       () async {
         await firestore
             .collection(FirestoreCollections.sharedContent)
@@ -1023,7 +1023,7 @@ void main() {
             .set({
               'sharedByUserId': 'bob-uid',
               'isActive': true,
-              'sharedWithUserIds': ['someone-else'], // _me is NOT listed
+              'sharedToUserIds': ['someone-else'], // _me is NOT listed
             });
         // Pre-seed the would-be received pointer so we can detect a write.
         await firestore
@@ -1061,7 +1061,7 @@ void main() {
           .set({
             'sharedByUserId': 'bob-uid',
             'isActive': true,
-            'sharedWithUserIds': [_me],
+            'sharedToUserIds': [_me],
           });
       await firestore
           .collection(FirestoreCollections.userSharedShoppingLists)
@@ -1095,7 +1095,7 @@ void main() {
             .set({
               'sharedByUserId': 'bob-uid',
               'isActive': true,
-              'sharedWithUserIds': [_me],
+              'sharedToUserIds': [_me],
             });
         // Intentionally NO received_lists pointer seeded.
 
@@ -1184,7 +1184,7 @@ void main() {
             'contentType': 'shopping_list',
             'sharedByUserId': _me,
             'isActive': true,
-            'sharedWithUserIds': ['friend-A', 'friend-B'],
+            'sharedToUserIds': ['friend-A', 'friend-B'],
             'sharedAt': Timestamp.fromDate(DateTime(2026, 4, 1)),
           });
       await firestore
@@ -1194,7 +1194,7 @@ void main() {
             'contentType': 'shopping_list',
             'sharedByUserId': _me,
             'isActive': true,
-            'sharedWithUserIds': ['friend-A', 'friend-C'],
+            'sharedToUserIds': ['friend-A', 'friend-C'],
             'sharedAt': Timestamp.fromDate(DateTime(2026, 5, 1)),
           });
 

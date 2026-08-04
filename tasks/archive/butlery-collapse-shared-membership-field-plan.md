@@ -8,8 +8,18 @@ Every `shared_content` document currently carries the SAME recipient list twice:
 
 - `sharedToUserIds` — what `firestore.rules` grants recipient read on (:722, :727), what the
   Art. 15 export selects on, and what `BaseSharedContentRepository` speaks.
-- `sharedWithUserIds` — written by the three direct-share managers, read by nothing except
-  the deletion cascade's union query.
+- `sharedWithUserIds` — written by the three direct-share managers, and read in EIGHT more
+  places than this plan first claimed. Corrected 2026-08-03 before implementation, by grepping
+  rather than trusting the earlier sentence:
+  - `social_menu_operations.dart` :224 (a shared-with count), :330 (**an access check**),
+    :520 (an analytics count)
+  - `shopping_social_share_module.dart` :292 (**a defence-in-depth access check**, BUT-1108),
+    :348 (a count), :381 (**an access check**), :456 (an analytics count)
+  - plus the deletion cascade's union query.
+
+  Three of those are access checks. Deleting the write without repointing them would silently
+  deny people access to menus and lists they can legitimately see — the collapse is a REPOINT,
+  not a deletion.
 
 The duplication is not a design. It is scar tissue: the two spellings drifted apart, rows
 written under one were invisible to readers keying on the other, and on 2026-08-01 the fix was

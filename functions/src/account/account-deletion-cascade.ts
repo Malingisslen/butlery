@@ -161,15 +161,12 @@ export async function probeResidualData(
     [Collections.realtimeRecipes, "lastEditedBy", "=="],
     [Collections.realtimeRecipes, "participantIds", "array-contains"],
     [Collections.conversations, "participantIds", "array-contains"],
-    // BUT-1798: shared_content membership, BOTH spellings. The scrub above is
-    // the only thing that clears these, and it was blind to ad-hoc shares for
-    // the collection's entire life — so this probe is what stops that ever
-    // being invisible again. Both legs are required: a probe on
-    // `sharedToUserIds` alone cannot see the legacy corpus, which is exactly
-    // the residual the scrub was added to remove. Single-field array-contains
-    // is served by the automatic index; no composite entry needed.
+    // BUT-1798: shared_content membership. The scrub above is the only thing
+    // that clears this, and it was blind to ad-hoc shares for the collection's
+    // entire life — so this probe is what stops that ever being invisible
+    // again. Single-field array-contains is served by the automatic index; no
+    // composite entry needed.
     ["shared_content", "sharedToUserIds", "array-contains"],
-    ["shared_content", "sharedWithUserIds", "array-contains"],
   ] as const) {
     try {
       const snap = await db
@@ -1387,12 +1384,11 @@ export async function removeFromSharedContent(
     db.collectionGroup("engagements").where("userId", "==", uid).get(),
   ]);
 
-  // Scrub membership on each parent shared_content doc. BOTH spellings: this
-  // collection carries the same recipient list under `sharedToUserIds` and
-  // `sharedWithUserIds`, and clearing only the first left the uid behind on
-  // every document written before the BUT-1774 writer fix. `arrayRemove` is a
-  // documented no-op when the value is absent, so the unconditional double
-  // clear is safe and cheap.
+  // Scrub membership on each parent shared_content doc. One field: this
+  // collection briefly carried the same recipient list under two spellings so
+  // rows predating the writer fix stayed readable. Retired 2026-08-03 — the
+  // project holds only test data, so there was nothing for the second field to
+  // protect and two copies of one fact could only drift.
   if (members.docs.length > 0) {
     await commitInChunks(
       db,
@@ -1402,7 +1398,6 @@ export async function removeFromSharedContent(
         if (parentRef) {
           batch.update(parentRef, {
             sharedToUserIds: admin.firestore.FieldValue.arrayRemove(uid),
-            sharedWithUserIds: admin.firestore.FieldValue.arrayRemove(uid),
           });
         }
       },
@@ -1419,43 +1414,29 @@ export async function removeFromSharedContent(
   // menu or list has been un-erasable since this collection existed. The Art. 15
   // export now returns exactly those rows, so the gap has to close with it.
   //
-  // Two `array-contains` clauses cannot live in one Firestore query (nor inside
-  // Filter.or), so the union of two queries is the only legal spelling — this is
-  // not a style choice, and "simplifying" it to one OR query is a runtime error.
-  // Note these are two DIFFERENT fields, so array-contains-any does not apply.
+  // Single `array-contains` on the one membership field. This was a union of
+  // two queries deduped by document id, because the collection carried the same
+  // list under two spellings; retired 2026-08-03.
   //
-  // The admin SDK bypasses rules, which is why the legacy `sharedWithUserIds`-only
-  // corpus is reachable here at all: `firestore.rules` grants recipient read on
-  // `sharedToUserIds` alone, so no client query can see those documents. That makes
-  // the predicate the only access control on this read — keep it scoped to
-  // shared_content and to these two exact fields.
-  const [byCurrentSpelling, byLegacySpelling] = await Promise.all([
-    db
-      .collection("shared_content")
-      .where("sharedToUserIds", "array-contains", uid)
-      .get(),
-    db
-      .collection("shared_content")
-      .where("sharedWithUserIds", "array-contains", uid)
-      .get(),
-  ]);
+  // The admin SDK bypasses rules, so this predicate is the only access control
+  // on the read — keep it scoped to shared_content and to this exact field.
+  const membershipSnap = await db
+    .collection("shared_content")
+    .where("sharedToUserIds", "array-contains", uid)
+    .get();
 
-  const currentIds = new Set(byCurrentSpelling.docs.map((d) => d.id));
   const membershipDocs = new Map<
     string,
     admin.firestore.QueryDocumentSnapshot
   >();
-  let legacyOnly = 0;
-  for (const doc of [...byCurrentSpelling.docs, ...byLegacySpelling.docs]) {
+  for (const doc of membershipSnap.docs) {
     // Documents this user OWNS are hard-deleted a few lines below. Updating them
     // first is wasted writes, and a batch.update against an already-deleted doc
     // throws NOT_FOUND and poison-pills the whole chunk on any retry — the same
     // failure shape as BUT-1582/1583. The owner is always in their own
-    // membership arrays, so without this skip the overlap would be total.
+    // membership array, so without this skip the overlap would be total.
     if (doc.get("sharedByUserId") === uid) continue;
-    if (membershipDocs.has(doc.id)) continue;
     membershipDocs.set(doc.id, doc);
-    if (!currentIds.has(doc.id)) legacyOnly++;
   }
 
   if (membershipDocs.size > 0) {
@@ -1465,18 +1446,14 @@ export async function removeFromSharedContent(
       (batch, doc) => {
         batch.update(doc.ref, {
           sharedToUserIds: admin.firestore.FieldValue.arrayRemove(uid),
-          sharedWithUserIds: admin.firestore.FieldValue.arrayRemove(uid),
         });
       },
       { label: "scrubSharedContentMembership", strict: false },
     );
   }
 
-  // The legacy count is the only measurement of how big the
-  // `sharedWithUserIds`-only corpus actually is; the backfill ticket needs it.
   logger.info("[deletion-cascade] shared_content membership scrub", {
     scrubbed: membershipDocs.size,
-    legacyOnly,
   });
   await batchDeleteAll(db, engagements.docs);
 

@@ -102,6 +102,17 @@ files in the same edit.
 
 ## Engineering
 
+- **SUPERSEDES the "both spellings are named deliberately" clause of the BUT-1798 export
+  entry.** `shared_content` now carries membership under ONE field, `sharedToUserIds`. The
+  dual write existed so rows predating the writer fix stayed readable; **Malin, 2026-08-03:
+  the project holds only TEST recipes**, so it protected nothing and two copies of one fact
+  could only drift — which is exactly what they did, at the cost of an invisible export gap
+  and an un-erasable uid. The earlier entry stands as the record of why it was ever dual; do
+  not read it as still requiring both. Note `sharedWithUserIds` remains the legitimate, sole
+  field on `recipe_comments` (firestore.rules:1247, BUT-458) — scope any future change by
+  COLLECTION, never by field name. 2026-08-03
+
+
 - **The free on-device OCR tier ships ON despite losing the measured comparison** — the
   corrected eval (harness preprocessing like production) scores on-device 96.1 vs the paid
   chain 96.6 over 39 verified recipes across 21 pages, so the plan's "at least as good" gate

@@ -8863,3 +8863,210 @@ follow-up sweep rather than a gate block. Likewise `compute-feature-retention.ts
 any string and `tx.get(ref)` answers from `state.doc` regardless of the ref, so neither
 collection nor doc path is pinned (24/24 green either way). The file belongs to batch 3;
 recorded here so the two halves are not reviewed as if independent.
+
+### 2026-08-04 — BUT-1786 pass 4 (paged `globalRecipeCache` walk): sign-off [Pattern discovered]
+
+Reviewed `functions/src/cleanup/cleanup-cache.ts` + `functions/src/__tests__/cleanup-cache.test.ts`.
+Verdict: pass, 0 blocking, 3 non-blocking (all prose/test-shape). `npm run test:cleanup-cache`
+20/20, `npx tsc --noEmit` clean.
+
+**The `__endpoint` probe is SOUND — keep it.** The question asked was whether it reaches into
+an internal that could move under a `firebase-functions` bump. It does not, in the way that
+matters: `firebase-functions/lib/runtime/loader.js:33` reads `val.__endpoint` itself to build
+the functions.yaml the CLI deploys from, so it is the SDK↔CLI contract, not an incidental
+field. Measured on the installed 7.2.5 with a throwaway node probe (no repo file touched):
+`onSchedule({schedule,timeZone,timeoutSeconds:60})` → `__endpoint.timeoutSeconds === 60`;
+omitting it → `ResetValue {}`, which `JSON.stringify`s to `null` and fails `=== 60`. So the
+claimed mutation result reproduces exactly. Residual (filed Low): the probe dereferences
+`__endpoint` unguarded, and `testTruncationIsVisible` is 5th of 9, so an absent/renamed
+property throws a TypeError that skips the last 4 test functions and the `20/20` summary
+line — a confusing red rather than one named FAIL. Remedy is 3 lines (`__endpoint?:` in the
+cast + `endpoint?.timeoutSeconds` + a detail string naming the SDK cause).
+
+**Verified the suite's own mutation claim rather than trusting the comment.** The fake's
+cursor comment asserts "swapping this line back to `indexOf` leaves the whole suite green —
+verified". Shadow-copied the test to `src/__tests__/_cfs_mut_cachecursor.test.ts` (per the
+shadow-copy principle — a parallel session is live in this worktree), asserted the
+substitution landed, ran it: **19/20, exactly one red**, and it was
+`testFakeCursorModelIsFaithful`, reporting `scanned: 799` — the precise number its own detail
+string predicts. Deleted the shadow, `git status --porcelain functions/` shows nothing tracked
+moved. The claim is true and the test earns its place.
+
+**The stale-prose sweep found one more instance of the ticket's recurring defect** (after the
+false TTL claim, the fake-model claim, and the timeout docstring). The header now says
+"Semantics are unchanged against the ORIGINAL implementation — the same rows are examined and
+the same rows are deleted". Against `git show HEAD:functions/src/cleanup/cleanup-cache.ts`
+there are four divergences, all deliberate and all improvements, none disclosed at that
+sentence: (1) a `cachedAt` that throws on `.toMillis()` — original threw out of the whole run
+(and, `__name__`-ordered with no persisted cursor, stalled every later row forever), new one
+counts `malformed` and deletes it; (2) `ttlDays: -5` — truthy under `||`, so the original
+expired it instantly, the new one falls back to 90 and KEEPS it; (3) `ttlDays: "abc"` —
+original computed a `NaN` expiry so the row was never deleted, new one expires it at 90 days
+(`"30"` → 30d and `true` → 1d likewise collapse to 90); (4) a budget-exhausted run examines
+fewer rows than the original by construction. The paired inline comment at `:204-208` closes
+with "'behaviour unchanged' has to survive the values the schema actually permits", which is
+exactly what the `typeof === "number" && > 0` predicate does not do for those values — and
+`firestore.rules:2073` constrains only field PRESENCE (`hasRequiredFields(['url','title',
+'createdBy','createdAt')`), never a TYPE, and does not require `cachedAt` at all, so a client
+CAN write every one of them. Recommended fixing the prose, not the predicate.
+
+**Everything else in both headers checked out against the code it describes**, which is the
+point of the sweep: `maintenance-dispatchers.ts:21-23` does state the nine cleanup/purge jobs
+stay standalone; `withTimeout` really is `Promise.race` (`shared/with-timeout.ts:77`) called
+from `runTaskChain` (`:188`), so the `RunDeps.budgetMs` seam note is right; `cache_entry.dart:98`
+stamps `expireAt: Timestamp.fromDate(clock.now().add(...))` on every write (client clock —
+justification 2 holds); `global_recipe_cache.dart:32-37,192` picks ttlDays 180/90/30 by source;
+`firestore.indexes.json:585` declares the `expireAt` TTL and `firestore-ttl-policies.test.ts:94`
+pins `globalRecipeCache` in the exact-set list; `cleanup-old-notifications.ts:48,72` really does
+re-run a filtered query with no cursor, so the "unlike the notification cleanup" contrast is
+accurate; `MAX_PAGE_ITERATIONS * BATCH_LIMIT` = 20000 × 500 = 10M as claimed; 60s is the v2
+default, so declaring it changed nothing at deploy time as the docstring now says. The
+`WALL_CLOCK_BUDGET_MS` docstring no longer claims the job declares no `timeoutSeconds`.
+
+**CI wiring is real:** `package.json:16` `test:cleanup-cache`, picked up by both
+`run-all-tests.js` and `run-ci-unit-tests.js` (`CI_EXCLUDE` empty), so the suite actually gates.
+
+**Importing the wrapper into the test is safe** (the third question asked). `onSchedule` at
+module load only builds a function object, reads `getGlobalOptions()`, and attaches
+`__endpoint`/`__requiredAPIs` — no network, no app required, no global registry mutated
+(v2 discovery is by module export, not registration). The test initialises its own app first
+and the SUT resolves `admin.firestore()` lazily inside the function, so nothing leaks into
+sibling suites.
+
+**Operational note, not a defect** (disclosed in the header already): at ~150ms/page the 45s
+budget covers roughly 150k docs, and there is no persisted cursor, so if the collection ever
+outgrows one run the tail is never swept — `truncated:true` is a WARNING nobody alerts on
+(`detect-anomalies.ts`'s five `MONITORED_SERIES` do not include it). Bounded in practice: rows
+written since `expireAt` shipped are the TTL policy's problem, not this job's.
+
+### 2026-08-04 — BUT-1786 fifth/final review pass: the "wrong comment" class found a FIFTH instance [Pattern discovered]
+
+Fifth pass on `cleanup/cleanup-cache.ts` + `__tests__/cleanup-cache.test.ts`. Brief was
+explicit: the same defect class (a comment asserting something the code/toolchain does not
+do) had been found four times in this one ticket, so sweep for it again and treat "already
+checked" as no evidence. Files opened with `Read`; every factual assertion checked against
+its referent.
+
+**The corrected parity enumeration is ACCURATE and mechanistically COMPLETE.** Verified
+against `git show HEAD:functions/src/cleanup/cleanup-cache.ts` (old per-row logic:
+`cachedAt = data.cachedAt?.toMillis() || 0`, `ttlDays = data.ttlDays || 90`, delete if
+`cachedAt + ttlDays*86400000 < now`):
+- throwing `cachedAt` — old had no try/catch, aborted the run. TRUE.
+- `ttlDays: -5` — `-5 || 90` → -5, expiry in the past, deleted at once. TRUE.
+- `ttlDays: "abc"` — `"abc" * 86400000` = NaN, `NaN < now` false, never deleted. TRUE.
+  Parenthetical `"30"` → 30d and `true` → 1d under `||`, both → 90 now. TRUE.
+- budget truncation — new only. TRUE.
+Exhaustive over `ttlDays`: falsy (0/null/undefined/""/false/NaN) → 90 in BOTH; positive
+number → identical in both; every other value is truthy and coerces either to a finite
+wrong number (the -5/"30"/true class, incl. `[]`→0, `["30"]`→30) or to NaN (the "abc"
+class, incl. `{}` and a Timestamp). Both classes enumerated. `firestore.rules:2068-2087`
+confirms the scope sentence: `hasRequiredFields(['url','title','createdBy','createdAt'])`
+is presence-only, no type predicates, `cachedAt` not required; update is limited to
+`accessCount`/`lastAccessedAt`, so a malformed `cachedAt` can only arrive on create.
+
+**FIFTH wrong comment, found at `cleanup-cache.ts:248-249`** (not in the enumeration —
+in the cursor rationale): "Advance from the last SCANNED doc, never the last deleted one —
+the deleted docs are gone and cannot anchor a cursor." False. Verified against the
+installed SDK: `Query._extractFieldValues` (`@google-cloud/firestore/build/src/reference/
+query.js:83`) builds the cursor from the snapshot locally — `documentSnapshot.ref` for
+`FieldPath.documentId()` — and never re-reads the anchor. The test file states the CORRECT
+model twice (lines 87-92, 268-270) and `testFullyDeletedPageDoesNotStall` exists precisely
+to prove a deleted anchor works, so the two files under review contradict each other and
+the production one is wrong. The cursor CHOICE is right; only the reason is wrong, and the
+right reason is ordering (the last deleted doc can sort before the last scanned one → the
+surviving tail is re-read, `scanned` inflates to 799 vs 700 in the fake). Same folk-belief
+also live at `cleanup-old-notifications.ts:49-50`, out of scope for this verdict.
+
+**SIXTH, in the test file at lines 178-182**: "TS narrows `DEFAULT_TTL_DAYS` to its literal
+type, so `=== 90` is resolved at compile time and asserts nothing at runtime." Measured:
+tsc emits `cleanup_cache_1.DEFAULT_TTL_DAYS === 90` and it evaluates at runtime; changing
+the constant to 80 raises TS2367, a compile error. So the direct comparison would have
+failed LOUDLY, not silently. The bracketing fixtures the comment argues for are still the
+better test — the rationale is what is false.
+
+**20/20 green for the right reasons.** Mutation evidence, all on shadow copies
+(`src/cleanup/_cfs_mut_cache.ts` + `src/__tests__/_cfs_mut_cache.test.ts`, deleted after;
+`git status --porcelain` and md5 both confirm the tracked files never moved):
+- Mutant A, `timeoutSeconds` deleted from the wrapper → 19/20, the single FAIL is the
+  manifest check, detail `"timeoutSeconds":null` (the `ResetValue`). The optional chaining
+  did NOT weaken it.
+- Mutant B, `__endpoint` renamed away (SDK shape change) → 19/20, one named FAIL carrying
+  the "NOT a timeout regression" detail, and all four later test functions still ran —
+  which is exactly what the unguarded version could not do.
+- Mutant C1, fake's `findIndex(id > after)` → `indexOf(after)+1` → the ONLY red is
+  `testFakeCursorModelIsFaithful`, reporting `scanned: 799`, the exact number its own
+  detail string predicts. C2, same mutation with that test neutralised (kept referenced
+  behind `if (Number("1") > 99)` to dodge the `noUnusedLocals` TSError trap) → 19/19 GREEN,
+  confirming the comment's claim that it is the sole guard on the fake's cursor model.
+
+**Cross-references all check out**: `BATCH_LIMIT = 500` (`shared/batch-update.ts:9`) so
+20000 × 500 = 10M as `MAX_PAGE_ITERATIONS` claims; `batchDeleteDocs` really does take a
+`QuerySnapshot` (`shared/batch-delete.ts:8`), so "no need to fake a QuerySnapshot" holds;
+`withTimeout` really is `Promise.race` (`shared/with-timeout.ts:76`) and `runTaskChain`
+really wraps tasks in it (`maintenance-dispatchers.ts:188`); `maintenance-dispatchers.ts:21`
+really states the cleanup jobs stay standalone; `cache_entry.dart:98` stamps `expireAt` in
+`toFirestore()`; `_ttlBySource` is 30/60/90/180 so "30–180 days" is right;
+`firestore.indexes.json` carries the `globalRecipeCache`/`expireAt`/`ttl:true` override and
+`firestore-ttl-policies.test.ts:94` lists it. `npm run build` clean, `test:cleanup-cache`
+wired in package.json.
+
+**Process note, not a code finding:** the INDEX holds the previous revision of both files
+(`git status` shows `MM`/`AM`); this round's header rewrite is unstaged. Staging must
+include both files or the commit ships the header that the last reviewer already proved
+wrong.
+
+### 2026-08-04 — BUT-1786 seventh pass: re-verifying my OWN correction, by mutation [Pattern discovered]
+
+Narrow pass. Pass 6 had rejected the cursor-advance comment for citing `700 → 799 in
+testFakeCursorModelIsFaithful` when the anchor mutant actually produces 701 and is caught by
+`testCursorAnchorsOnLastScannedNotLastDeleted`; pass 6 supplied a replacement block, which
+Malin pasted verbatim. Brief for this pass: re-verify my own replacement text rather than
+trust it, because the ticket's recurring failure is a correction that ships a NEW false claim.
+
+Both files opened with `Read`. Baseline: `npx tsc --noEmit` clean, `npm run test:cleanup-cache`
+**20/20**, `test:cleanup-cache` wired in `package.json:16`.
+
+**Every load-bearing claim in the block re-measured, not re-read.** Shadow copies only
+(`src/cleanup/_cfs_mut_cache.ts` + `src/__tests__/_cfs_mut_cache.test.ts`, import path
+rewritten, both deleted after; the mutation script asserted `includes(target)` and
+`out !== s` before writing, and `git status --porcelain` afterwards showed no `_cfs_mut`
+entry — the tracked files never moved, md5 `7c54d0ff3be2e48cf85dde53530b6b06` /
+`d8c1d8c12181b3444b31f33792d5010f`):
+- Mutant A, `cursor = expired.length > 0 ? expired[expired.length-1] : page.docs[...]`
+  → **19/20, the single FAIL is `testCursorAnchorsOnLastScannedNotLastDeleted`, detail
+  `{"scanned":701,"deleted":499,...}`**. 701 and its attribution: CONFIRMED.
+  `testFakeCursorModelIsFaithful` stayed GREEN, exactly as the block claims, because that
+  fixture's page-one tail (index 499) is itself deleted, so the two anchors coincide.
+- Mutant B, fake's `findIndex(id > after)` → `indexOf(after)+1` → **19/20, the single FAIL is
+  `testFakeCursorModelIsFaithful`, `{"scanned":799,"deleted":401,...}`**. 799 and its
+  attribution: CONFIRMED. `testCursorAnchorsOnLastScannedNotLastDeleted` stayed green.
+- SDK claim re-verified in the installed package, not from memory:
+  `Query._extractFieldValues` (`@google-cloud/firestore/build/src/reference/query.js:83`)
+  pushes `documentSnapshot.ref` when the field order is `FieldPath.documentId()`, and its only
+  caller is `createCursor` (`:539`), which serialises those local values into the query
+  proto. Nothing re-reads the anchor. TRUE.
+- `testFullyDeletedPageDoesNotStall` "passes because of the SDK behaviour rather than proving
+  it" — correct in direction, and stronger than the block claims: it is GREEN under BOTH
+  mutants, so it guards neither. The block cites the SDK source as the evidence and the test
+  only as a consequence, which is the right ordering; it never claims the fake-backed test
+  proves SDK behaviour.
+- Cross-reference `cleanup-old-notifications.ts:49-50` re-read: the wrong-belief sentence
+  ("it would in fact be wrong here since the cursor doc gets deleted") really does span those
+  two lines, and really is harmless there — the filtered walk self-advances.
+- Byte check of lines 248-266 (`cat -A`): LF endings, no CR, no trailing whitespace, no NUL;
+  the only non-ASCII are em-dash (`E2 80 94`) and `→` (`E2 86 92`).
+
+**ONE residual imprecision, mine, Low and non-blocking:** "the only fixture where the two
+anchors differ". They also differ in `testDeletesOnlyExpired` (last deleted
+`c-short-ttl-expired` sorts before last scanned `f-under-default-ttl`) — but that page is
+terminal (`page.size < BATCH_LIMIT` breaks immediately after the assignment), so the cursor
+is never consumed and the fixture cannot redden. The claim is true of every fixture that CAN
+observe the difference and false of the literal set. Exact replacement clause handed back.
+
+**Process note:** the INDEX still holds a pre-pass-5 revision of both files, so plain
+`git diff` (worktree vs index) shows the whole accumulated rewrite and cannot isolate "what
+changed this round" — I could not byte-compare the pasted block against my own prior message
+(no record of it exists; the archive's last entry was pass 5), and said so rather than
+asserting identity. Independent verification of the claims is the substitute, and is the
+stronger check anyway. Worktree mtimes are consistent with the stated single edit:
+`cleanup-cache.ts` 01:14, `cleanup-cache.test.ts` 01:08.

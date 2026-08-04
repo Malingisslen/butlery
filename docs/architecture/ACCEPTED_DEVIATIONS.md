@@ -541,3 +541,38 @@ and was used to switch the flag on. It was wrong: the harness fed the recognizer
 while production preprocesses first, and the paid arm it compared against had been captured
 through that preprocessing. The artifact was larger than the margin. The harness was fixed and
 the eval re-run before this decision was taken.
+
+### [Engineering] `shared_content` membership collapses to one field — supersedes the dual-spelling clause (2026-08-03)
+
+**Supersedes**, in part, the BUT-1798 export entry: the clause reading *"Both spellings are
+named deliberately — the writers emit the same list twice, and an entry naming one invites a
+future reviewer to strip the other 'for consistency'."* That clause was written precisely to
+stop this change being made casually. It is not being overruled casually.
+
+**What changed.** `shared_content` documents now carry the recipient list once, as
+`sharedToUserIds` — the field `firestore.rules` grants recipient read on (:722, :727), the
+Art. 15 export selects on, and the Art. 17 cascade scrubs.
+
+**Why the earlier reasoning no longer holds.** It rested on a premise: that documents exist
+which only the retired spelling can reach, so dropping it would strand them. **Malin,
+2026-08-03: the project holds only TEST recipes.** There is no such corpus. The compatibility
+field was protecting nothing, while costing a union query in the deletion cascade, a second
+residual probe pair, a `legacyOnly` counter, and a standing risk that the two copies disagree
+— which they did, producing both an Art. 15 export gap and an un-erasable uid.
+
+**What the collapse actually involved.** Not a deletion. The plan initially recorded the
+retired field as write-only; a grep before implementation found **eight readers**, three of
+them access checks (`social_menu_operations.dart:330`,
+`shopping_social_share_module.dart:292` and `:381`). Deleting the write without repointing
+those would have silently denied people access to menus and lists they could legitimately
+see. All were repointed.
+
+**The trap, recorded so it is not rediscovered the hard way.** `sharedWithUserIds` remains
+the legitimate and sole membership field on an unrelated collection: `recipe_comments`
+(`firestore.rules:1247`, BUT-458, plus `recipe_comment.dart` and
+`firebase_comments_repository.dart`). A repo-wide rename would silently break who can read a
+comment. Scope by COLLECTION, never by field name.
+
+**Consequence for the backlog.** BUT-1809 — the one-off backfill to rescue legacy
+`sharedWithUserIds`-only documents — is moot for the same reason this entry exists: there is
+no legacy corpus. Close it rather than running it.
