@@ -25,6 +25,12 @@ const steps = [
   // Fas 1 (femte vändan): registret var handskrivet och drev. Det genereras nu
   // ur source-authority.json och vaktas av GEN-01.
   ['Källauktoritetsregister ur source-authority.json', 'tools/gen-authority.mjs', 'gen-authority'],
+  // F1-H08/H09: manifestet var handskrivet. Kedjan SKRIVER det inte — då hade
+  // ett stale manifest tyst reparerats i stället för att rapporteras — men den
+  // kräver att den incheckade listan är byteidentisk med vad enumeratorn ger.
+  // I repo-läge bärs zip:/-posterna vidare oförändrade; att de stämmer bevisas
+  // i delivery-läge av CHK-MF-01.
+  ['Manifestet mot enumeratorn', 'tools/gen-manifest.mjs --check', 'gen-manifest-check'],
   ['Genererad kod', 'tools/test-generated.mjs', 'test-generated'],
   ['Kontrollgeometri', 'tools/lint-controls.mjs', 'lint-controls'],
   ['Spec-lint', 'tools/spec-lint.mjs', 'spec-lint'],
@@ -99,7 +105,8 @@ for (const [name, script, key] of steps) {
   // stdout vid exit 0, så ett verktyg som skrev fällande diagnostik till stderr
   // och av misstag returnerade 0 blev osynligt — hela kedjan kunde stå grön med
   // 0 rapporterade fel. Fas 0.8. Ett steg fälls av exitkod ELLER diagnostik.
-  const proc = spawnSync(process.execPath, [script], { encoding: 'utf8' });
+  // Ett steg får bära argument ("tools/gen-manifest.mjs --check").
+  const proc = spawnSync(process.execPath, script.split(' '), { encoding: 'utf8' });
   const out = (proc.stdout || '') + (proc.stderr || '');
   const code = proc.status ?? 1;
   const verdict = classifyStep(out, code);

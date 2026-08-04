@@ -9,6 +9,8 @@ import { createHash } from 'node:crypto';
 // GEMENSAM parser och sökvägsupplösning — samma som verifieraren och grinden
 // använder för fingeravtrycket. Fas 0.15: tre implementationer kunde glida isär.
 import { manifestEntries, resolveEntry } from '../tools/report-logic.mjs';
+// F1-H08/H09: EN enumerator och EN undantagslista för båda ytorna.
+import { enumerateSurface, RUNTIME_EXEMPT, MANIFEST_PATH } from '../tools/manifest-contract.mjs';
 import { join, relative, resolve, parse, sep } from 'node:path';
 
 // LÄGE: repo = fristående checkout (leveransytan får saknas) · delivery = uppackad
@@ -27,27 +29,19 @@ const MD = 'fas0/andrade-filer.md';
 if (!existsSync(MD)) { console.error('✖ manifest saknas: ' + MD); process.exit(1); }
 const md = readFileSync(MD, 'utf8');
 
-// Kanonisk fillista: varje text- och kodartefakt i reporoten. Binärer och
-// genererade rapporter undantas uttryckligen och namngivet.
-// SVG i reporotens topp (appikoner) räknas som artefakter; SVG i assets/ och
-// exports/ är binärlika leveranser och undantas med katalogregeln nedan.
-const TEXT = /\.(md|json|mjs|js|jsx|dart|css|txt|ya?ml|dc\.html|html|svg)$/i;
-const SKIP_DIRS = new Set(['node_modules', '.git', 'assets', 'exports', 'Butlery-lockup-family-L4-3']);
-// Genererade artefakter. Fas 0.11: manifestet SA att ci-evidence.json var
-// undantagen men checkern undantog den inte, så CI-körningen fällde set-likheten.
-const SKIP_FILES = new Set(['fas0/verify.log', 'fas0/manifest.log', 'fas0/verify-report.json',
-  'fas0/kontrollstatus.md', 'fas0/andrade-filer.md', 'fas0/ci-evidence.json', 'fas0/verify-exit', '.thumbnail']);
-const walk = (dir, acc = []) => {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    const rel = relative('.', p);
-    if (statSync(p).isDirectory()) { if (!SKIP_DIRS.has(e)) walk(p, acc); continue; }
-    if (!TEXT.test(e) || SKIP_FILES.has(rel)) continue;
-    acc.push(rel);
-  }
-  return acc;
-};
-const onDisk = new Set(walk('.').map(p => p.split('\\').join('/')));
+// KANONISK FILLISTA — hela reporotsytan, ingen allowlist.
+//
+// Fas 0.11: manifestet SA att ci-evidence.json var undantagen men checkern
+// undantog den inte, så CI-körningen fällde set-likheten.
+// F1-H08: den gamla walkern jämförde `relative('.', p)` — som på Windows ger
+// `fas0\andrade-filer.md` — mot undantag skrivna med snedstreck. INGET
+// fas0/-undantag matchade därför på Windows, och manifestet rapporterade sig
+// självt som olistat. Normaliseringen låg en rad för sent.
+// F1-H09: TEXT-allowlisten och katalogundantagen (`assets`, `exports`,
+// lockup-katalogen) gjorde 125 filer osynliga för set-likheten.
+const repoSurface = enumerateSurface('.', { mode: 'repo' });
+const onDisk = new Set(repoSurface.files);
+for (const p of repoSurface.problems) console.error('✖ reporotsytan: ' + p);
 
 const expected = Number((md.match(/<!--manifest:files=(\d+)-->/) || [])[1] || 0);
 let parsed = 0, ok = 0, bad = 0, missing = 0, dup = 0, outside = 0, outsideFound = 0;
@@ -112,26 +106,15 @@ const zipRootProblems = () => {
   return p;
 };
 
-// SET-LIKHET ÄVEN UTANFÖR REPOROTEN — ALLA filer, ingen allowlist.
+// SET-LIKHET ÄVEN UTANFÖR REPOROTEN — SAMMA enumerator som reporotsytan.
 //
 // Fas 1 (tredje vändan): set-likheten mättes bara inom reporoten.
 // Fas 1 (fjärde vändan): undantaget var ett namn-wildcard och därmed fail-open.
 // Fas 1 (femte vändan): kontrollen räknade bara filer som matchade en
-// TEXT-allowlist och hoppade över breda kataloger — zip:/surprise.png och
-// zip:/uploads/scraps/undeclared.json gav fortfarande unlisted=0. Nu räknas
-// VARJE vanlig fil i leveransytan, och bara EXAKTA sökvägar undantas.
-// Symlänkar avvisas med lstatSync, och varje post måste ligga innanför
-// leveransrotens realpath — annars kan en länk leda ut ur ytan (samma klass av
-// fel som fick kontrollen att traversera filsystemet).
-const DELIVERY_SKIP_EXACT = new Set([
-  'fas0/verify.log', 'fas0/manifest.log', 'fas0/verify-report.json',
-  'fas0/kontrollstatus.md', 'fas0/ci-evidence.json', 'fas0/verify-exit',
-  'fas0/verify-chain-exit', '.thumbnail'
-]);
-// VCS- och byggkataloger hör inte till en leverans. De namnges, räknas och
-// redovisas i summeringen — de göms inte.
-const DELIVERY_SKIP_DIRS = new Set(['node_modules', '.git']);
-const DELIVERY_MAX_DEPTH = 8;
+// TEXT-allowlist och hoppade över breda kataloger.
+// F1-H08: de två ytorna räknades av två olika walkers med olika
+// säkerhetsegenskaper. Nu delar de enumeratorn i tools/manifest-contract.mjs,
+// så en härdning av den ena gäller automatiskt den andra.
 let deliveryUnlisted = [];
 if (MODE === 'delivery') {
   const probs = zipRootProblems();
@@ -140,50 +123,18 @@ if (MODE === 'delivery') {
     console.error('✖ delivery-läge kan inte bedömas — kör --mode=repo för en fristående checkout');
     process.exit(2);
   }
-  const realRoot = realpathSync(ZIP_ROOT);
-  const pkgReal = realpathSync(process.cwd());
   const declared = new Set(manifestEntries(md).filter(e => e.outside).map(e => e.rel));
-  const surface = [];
-  const problems = [];
-  let deep = 0, skippedDirs = 0;
-  const inside = p => {
-    let rp = null;
-    try { rp = realpathSync(p); } catch { return null; }
-    return (rp === realRoot || rp.startsWith(realRoot + sep)) ? rp : false;
-  };
-  const walkZip = (dir, rel = '', depth = 0) => {
-    if (depth > DELIVERY_MAX_DEPTH) { deep++; return; }
-    let names = [];
-    try { names = readdirSync(dir); } catch { return; }
-    for (const e of names) {
-      const p = join(dir, e);
-      const r = rel ? rel + '/' + e : e;
-      let st;
-      try { st = lstatSync(p); } catch { continue; }
-      // SYMLÄNKAR avvisas. En länk kan peka ut ur leveransytan.
-      if (st.isSymbolicLink()) { problems.push('symlänk i leveransytan: zip:/' + r); continue; }
-      const rp = inside(p);
-      if (rp === false) { problems.push('posten zip:/' + r + ' ligger utanför leveransrotens realpath'); continue; }
-      if (rp === pkgReal || (rp && rp.startsWith(pkgReal + sep))) continue;   // paketet mäts av reporotsytan
-      if (st.isDirectory()) {
-        if (DELIVERY_SKIP_DIRS.has(e)) { skippedDirs++; continue; }
-        walkZip(p, r, depth + 1);
-        continue;
-      }
-      if (!st.isFile()) { problems.push('posten zip:/' + r + ' är varken fil eller katalog'); continue; }
-      if (DELIVERY_SKIP_EXACT.has(r)) continue;
-      surface.push(r);
-    }
-  };
-  walkZip(ZIP_ROOT);
-  deliveryUnlisted = surface.filter(p => !declared.has(p)).sort();
+  // Den inbäddade reporoten mäts av sin egen yta — stopAt hindrar dubbelräkning.
+  const zipSurface = enumerateSurface(ZIP_ROOT, { mode: 'delivery', stopAt: [process.cwd()] });
+  deliveryUnlisted = zipSurface.files.filter(p => !declared.has(p)).sort();
   for (const p of deliveryUnlisted) console.error('✖ olistad artefakt i leveransytan: zip:/' + p);
-  for (const p of problems) console.error('✖ leveransytan: ' + p);
-  if (deep) console.error('✖ leveransytan är djupare än ' + DELIVERY_MAX_DEPTH + ' nivåer på ' + deep + ' ställen — traverseringen avbröts');
-  console.log('DELIVERY-SURFACE files=' + surface.length + ' declared=' + declared.size +
-    ' unlisted=' + deliveryUnlisted.length + ' rejected=' + problems.length +
-    ' skipped_dirs=' + skippedDirs + ' truncated=' + deep + ' root=' + ZIP_ROOT);
-  if (deep || problems.length) deliveryUnlisted = [...deliveryUnlisted, ...problems, ...(deep ? ['(djupbegränsning nådd)'] : [])];
+  for (const p of zipSurface.problems) console.error('✖ leveransytan: ' + p);
+  if (zipSurface.truncated) console.error('✖ leveransytan är djupare än traverseringsgränsen på ' + zipSurface.truncated + ' ställen');
+  console.log('DELIVERY-SURFACE files=' + zipSurface.files.length + ' declared=' + declared.size +
+    ' unlisted=' + deliveryUnlisted.length + ' rejected=' + zipSurface.problems.length +
+    ' rejected_dirs=' + zipSurface.rejectedDirs.length + ' truncated=' + zipSurface.truncated + ' root=' + ZIP_ROOT);
+  if (zipSurface.truncated || zipSurface.problems.length)
+    deliveryUnlisted = [...deliveryUnlisted, ...zipSurface.problems, ...(zipSurface.truncated ? ['(djupbegränsning nådd)'] : [])];
 }
 
 console.log('MANIFEST-MODE ' + MODE + ' (leveransfiler funna: ' + outsideFound + ' av ' + (outsideFound + outside) + ')');
@@ -194,7 +145,21 @@ let fail = 0;
 if (!expected) { console.error('✖ manifestet saknar <!--manifest:files=N--> — antalet kan inte kontrolleras'); fail = 1; }
 if (parsed === 0) { console.error('✖ manifestet parsade noll rader'); fail = 1; }
 if (expected && parsed !== expected) { console.error('✖ deklarerat ' + expected + ' poster, läste ' + parsed); fail = 1; }
+if (repoSurface.problems.length) fail = 1;
 if (bad || missing || dup || unlisted.length || deliveryUnlisted.length) fail = 1;
+// F1-H09: undantagen är centralt definierade. Registret måste förteckna samma
+// mängd — annars kan de två glida isär och en körartefakt bli osynlig i det
+// ena men obligatorisk i det andra.
+if (existsSync('source-authority.json')) {
+  try {
+    const ra = JSON.parse(readFileSync('source-authority.json', 'utf8')).runtimeArtifacts || [];
+    const a = [...ra].sort().join('|'), b = [...RUNTIME_EXEMPT].sort().join('|');
+    if (a !== b) {
+      console.error('✖ source-authority.runtimeArtifacts [' + ra.join(', ') + '] skiljer sig från undantagen i tools/manifest-contract.mjs [' + RUNTIME_EXEMPT.join(', ') + ']');
+      fail = 1;
+    }
+  } catch { /* T-20 fäller en otolkbar fil */ }
+}
 if (MODE === 'delivery' && outside) {
   console.error('✖ delivery-läge: ' + outside + ' obligatorisk leveransfil saknas — i en uppackad ZIP är varje zip:/-post krävd');
   fail = 1;

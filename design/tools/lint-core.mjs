@@ -1,5 +1,8 @@
 import { SCREEN_FILES, ICON_SOURCE_FILES } from './screen-files.mjs';
-import { parseEvidence, splitEvidenceProblems, walkSchema } from './report-logic.mjs';
+import { parseEvidence, splitEvidenceProblems, walkSchema, manifestEntries } from './report-logic.mjs';
+import { readVersion, strategyFor, sameVersion } from './version-read.mjs';
+import { REQUIRED_DOMAIN_IDS, AUTHORITY_STATES, CHANGE_POLICIES, CURRENT_STATES } from './authority-contract.mjs';
+import { FULLY_GENERATED } from './gen-targets.mjs';
 // Butlery · spec-lint, delad logik. Importeras av tools/spec-lint.mjs.
 // Ren funktion av en env ({read, exists}) så att samma kod kan köras i CI
 // och i granskningsverktyg utan filsystemsantaganden.
@@ -208,26 +211,89 @@ export function lint(env) {
     walkSchema(A, S, 'source-authority', ps);
     for (const p of ps) fail('T-20', p);
 
-    // 1 · EXAKT en aktiv auktoritet per domän.
-    const ACTIVE = new Set(['gällande', 'fryst']);
+    const rows = A.authorities || [];
+
+    // 1 · F1-H01 · Registrets egen version. Filens `version` och den auktoritets-
+    // post som äger domänen `source-authority` måste vara SAMMA faktiska värde.
+    // Registret deklarerade 1.0 om sig självt medan filen sa 1.1 — och eftersom
+    // den gamla versionskontrollen bara jämförde `a.version` mot `j.version` i
+    // JSON-filer var det just den här filen som kunde motsäga sig själv.
+    {
+      const self = rows.filter(a => a.domainId === 'source-authority');
+      if (self.length !== 1)
+        fail('T-20', 'domänen source-authority har ' + self.length + ' poster — registret måste ha exakt en post om sig självt');
+      else if (!sameVersion(self[0].version, A.version))
+        fail('T-20', 'source-authority.json säger version ' + A.version + ' men självposten deklarerar ' +
+          self[0].version + ' — filversionen och självposten ska vara samma faktiska version (F1-H01)');
+    }
+
+    // 2 · F1-H04 · EXAKT obligatorisk domänmängd. Den kanoniska mängden bor i
+    // tools/authority-contract.mjs — inte i den fil som valideras. Utan detta
+    // kunde en hel domän strykas ur registret utan att någon kontroll märkte
+    // det: registret validerade sig självt mot sig självt.
+    {
+      const ids = rows.map(a => a.domainId).filter(Boolean);
+      const dup = ids.filter((v, i) => ids.indexOf(v) !== i);
+      for (const d of [...new Set(dup)]) fail('T-20', 'domainId "' + d + '" förekommer flera gånger — id ska vara unika');
+      const have = new Set(ids), want = new Set(REQUIRED_DOMAIN_IDS);
+      const missing = [...want].filter(d => !have.has(d));
+      const extra = [...have].filter(d => !want.has(d));
+      for (const d of missing)
+        fail('T-20', 'den obligatoriska domänen "' + d + '" saknas helt i source-authority.json — mängden är kanonisk i tools/authority-contract.mjs (F1-H04)');
+      for (const d of extra)
+        fail('T-20', 'domänen "' + d + '" finns i registret men inte i den obligatoriska mängden i tools/authority-contract.mjs — lägg till den där eller ta bort raden (F1-H04)');
+    }
+
+    // 3 · F1-H02 · Tvådimensionell status. authorityState säger vilken roll
+    // posten spelar, changePolicy om källan får ändras. De är oberoende: en
+    // källa kan vara active OCH frozen.
     const perDomain = new Map();
-    for (const a of A.authorities || []) {
-      if (!perDomain.has(a.domain)) perDomain.set(a.domain, []);
-      perDomain.get(a.domain).push(a);
+    for (const a of rows) {
+      if (!perDomain.has(a.domainId)) perDomain.set(a.domainId, []);
+      perDomain.get(a.domainId).push(a);
     }
-    for (const [domain, rows] of perDomain) {
-      const active = rows.filter(r => ACTIVE.has(r.status));
-      if (active.length > 1) fail('T-20', 'domänen "' + domain + '" har ' + active.length + ' aktiva auktoriteter (' +
-        active.map(r => r.file || '(saknas)').join(', ') + ') — exakt en gäller');
-      if (!active.length && !rows.some(r => r.status === 'ska skapas'))
-        fail('T-20', 'domänen "' + domain + '" har ingen aktiv auktoritet och är inte märkt "ska skapas"');
+    for (const a of rows) {
+      if (!AUTHORITY_STATES[a.authorityState])
+        fail('T-20', 'domänen "' + a.domain + '" har authorityState "' + a.authorityState + '", som inte finns i tools/authority-contract.mjs');
+      if (!CHANGE_POLICIES[a.changePolicy])
+        fail('T-20', 'domänen "' + a.domain + '" har changePolicy "' + a.changePolicy + '", som inte finns i tools/authority-contract.mjs');
     }
-    // 2 · Statusordboken styr, och kontrollstatusarna är exakt de fem.
-    const vocab = new Set(Object.keys(A.statusVocabulary || {}));
-    for (const a of A.authorities || [])
-      if (!vocab.has(a.status)) fail('T-20', 'domänen "' + a.domain + '" har statusen "' + a.status + '", som inte finns i statusVocabulary');
-    for (const s2 of A.superseded || [])
-      if (!vocab.has(s2.status)) fail('T-20', s2.file + ' har statusen "' + s2.status + '", som inte finns i statusVocabulary');
+    for (const [domainId, rr] of perDomain) {
+      const current = rr.filter(r => CURRENT_STATES.includes(r.authorityState));
+      const active = rr.filter(r => r.authorityState === 'active');
+      const planned = rr.filter(r => r.authorityState === 'planned');
+      if (current.length > 1)
+        fail('T-20', 'domänen "' + domainId + '" har ' + current.length + ' aktuella auktoriteter (' +
+          current.map(r => r.authorityState + ':' + (r.file || '(ingen fil)')).join(', ') + ') — exakt en av active eller planned gäller');
+      if (!current.length)
+        fail('T-20', 'domänen "' + domainId + '" har ingen aktuell auktoritet — varje obligatorisk domän ska vara antingen active eller planned');
+      if (active.length && planned.length)
+        fail('T-20', 'domänen "' + domainId + '" är samtidigt active och planned — de två utesluter varandra');
+    }
+    for (const a of rows) {
+      const st = AUTHORITY_STATES[a.authorityState];
+      if (!st) continue;
+      if (st.requiresFile && !a.file)
+        fail('T-20', 'domänen "' + a.domain + '" är ' + a.authorityState + ' utan fil — endast planned får sakna normativ källa');
+      if (!st.requiresFile && a.file)
+        fail('T-20', 'domänen "' + a.domain + '" är ' + a.authorityState + ' men pekar ändå på ' + a.file +
+          ' — planned betyder att den normativa källan ännu inte har skapats');
+      if (a.authorityState === 'superseded' && !a.supersededBy)
+        fail('T-20', 'domänen "' + a.domain + '" är superseded utan supersededBy — en ersatt källa måste peka ut sin efterträdare');
+      if (a.authorityState === 'concept' && a.changePolicy !== 'frozen' && st.normative)
+        fail('T-20', 'domänen "' + a.domain + '" är concept men behandlas som normativ — concept är uttryckligen icke-normativ');
+    }
+    for (const s2 of A.superseded || []) {
+      if (!AUTHORITY_STATES[s2.authorityState])
+        fail('T-20', s2.file + ' har authorityState "' + s2.authorityState + '", som inte finns i tools/authority-contract.mjs');
+      if (AUTHORITY_STATES[s2.authorityState] && AUTHORITY_STATES[s2.authorityState].current)
+        fail('T-20', s2.file + ' står i superseded-listan med det aktuella tillståndet "' + s2.authorityState +
+          '" — historical, concept och superseded får aldrig räknas som aktuell auktoritet');
+      if (s2.authorityState === 'superseded' && !s2.supersededBy)
+        fail('T-20', s2.file + ' är superseded utan supersededBy');
+    }
+
+    // 4 · Kontrollstatusarna är exakt de fem, var för sig och i ordning.
     const want = ['passed', 'failed', 'blocked', 'not run', 'not applicable'];
     const got = (A.controlStatusVocabulary || []).map(c => c.status);
     if (got.join('|') !== want.join('|'))
@@ -235,30 +301,95 @@ export function lint(env) {
     for (const c of A.controlStatusVocabulary || [])
       if (c.satisfies !== (c.status === 'passed' || c.status === 'not applicable'))
         fail('T-20', 'controlStatusVocabulary: "' + c.status + '" har satisfies=' + c.satisfies + ' — endast passed och not applicable uppfyller ett kriterium');
-    // 3 · Varje deklarerad fil finns.
-    // Poster utanför reporoten (zip:/) kan inte kontrolleras här — de mäts av
-    // manifestets leveransyta. De måste vara uttryckligen märkta.
-    for (const a of A.authorities || [])
-      if (a.file && !a.outsideRepoRoot && !env.exists(a.file)) fail('T-20', 'domänen "' + a.domain + '" pekar på ' + a.file + ', som inte finns');
+
+    // 5 · F1-H07 · VERKLIG filnärvaro. Intern konsistens mellan flera referenser
+    // får aldrig ersätta kontroll av att filen finns. Poster i reporoten mäts mot
+    // filytan; poster utanför mäts mot manifestets faktiska zip:/-poster, så att
+    // en auktoritet som döps om KONSEKVENT i alla referenser ändå fälls.
+    const zipDeclared = new Set();
+    if (env.exists('fas0/andrade-filer.md')) {
+      for (const e of manifestEntries(env.read('fas0/andrade-filer.md')))
+        if (e.outside) zipDeclared.add(e.rel);
+    } else {
+      fail('T-20', 'fas0/andrade-filer.md saknas — poster utanför reporoten kan inte kontrolleras mot manifestet');
+    }
+    const checkPresence = (label, file, outside) => {
+      if (!file) return;
+      if (outside) {
+        if (!zipDeclared.has(file))
+          fail('T-20', label + ' pekar på ' + file + ' utanför reporoten, men manifestet har ingen zip:/-post för den filen (F1-H07)');
+        return;
+      }
+      if (!env.exists(file)) fail('T-20', label + ' pekar på ' + file + ', som inte finns');
+    };
+    for (const a of rows) checkPresence('domänen "' + a.domain + '"', a.file, a.outsideRepoRoot);
+    for (const s2 of A.superseded || []) checkPresence('superseded ' + s2.file, s2.file, s2.outsideRepoRoot);
     for (const g of A.generatedArtifacts || []) {
       if (!env.exists(g.file)) fail('T-20', 'genererad artefakt ' + g.file + ' finns inte');
       if (!env.exists(g.generator)) fail('T-20', 'generatorn ' + g.generator + ' finns inte');
     }
-    for (const s2 of A.superseded || [])
-      if (!s2.outsideRepoRoot && !env.exists(s2.file)) fail('T-20', 'superseded ' + s2.file + ' finns inte (den ska finnas kvar som spår, annars stryk raden)');
-    // 4 · Versionen måste stämma med filens egen, där filen bär en.
-    for (const a of A.authorities || []) {
-      if (!a.file || !a.version || !/\.json$/.test(a.file) || !env.exists(a.file)) continue;
-      let j = null; try { j = JSON.parse(env.read(a.file)); } catch { continue; }
-      if (j && j.version && String(j.version) !== String(a.version))
-        fail('T-20', 'domänen "' + a.domain + '" deklarerar ' + a.file + ' ' + a.version + ' men filen säger ' + j.version);
+
+    // 6 · F1-H06 · Mängdlikhet mot generatorregistret, i BÅDA riktningarna.
+    {
+      const declared = new Set((A.generatedArtifacts || []).map(g => g.file));
+      const targets = new Set(FULLY_GENERATED);
+      for (const f of [...targets].filter(f => !declared.has(f)))
+        fail('T-20', 'generatormålet ' + f + ' saknas i generatedArtifacts — varje helrenderat skrivmål i tools/gen-targets.mjs ska stå i registret (F1-H06)');
+      for (const f of [...declared].filter(f => !targets.has(f)))
+        fail('T-20', 'generatedArtifacts deklarerar ' + f + ', som inte är ett helrenderat generatormål i tools/gen-targets.mjs (F1-H06)');
     }
-    // 5 · supersededBy: målet måste vara känt, och ingen cykel får finnas.
+
+    // 7 · F1-H05 · VERKLIG version för varje aktiv källa, oavsett filformat.
+    // Den gamla kontrollen läste bara "version" ur JSON, så en Markdown- eller
+    // HTML-källa kunde deklarera vilken version som helst. Nu används samma
+    // läsare som T-15 — en saknad eller tvetydig versionsuppgift fäller.
+    for (const a of rows) {
+      if (a.authorityState !== 'active') continue;
+      if (a.outsideRepoRoot) continue;               // mäts i leveransläge av T-15
+      if (!a.file || !env.exists(a.file)) continue;  // redan fällt av 5
+      const strategy = strategyFor(a.file);
+      const r = readVersion(a.file, env.read(a.file), strategy);
+      if (r.versionless) {
+        if (a.version !== null)
+          fail('T-20', 'domänen "' + a.domain + '" deklarerar version ' + a.version + ' för ' + a.file +
+            ', men filen bär ingen version (strategi: none) — sätt version till null');
+        continue;
+      }
+      if (a.version === null || a.version === undefined) {
+        fail('T-20', 'domänen "' + a.domain + '" saknar version för ' + a.file +
+          ', men filen bär en (strategi: ' + strategy + ') — en aktiv källa ska deklarera sin version');
+        continue;
+      }
+      if (r.problem) {
+        fail('T-20', 'domänen "' + a.domain + '" deklarerar ' + a.file + ' ' + a.version +
+          ' men versionen kan inte läsas ur filen: ' + r.problem + ' (strategi: ' + strategy + ')');
+        continue;
+      }
+      if (!sameVersion(r.value, a.version))
+        fail('T-20', 'domänen "' + a.domain + '" deklarerar ' + a.file + ' ' + a.version +
+          ' men filen säger ' + r.value + ' (strategi: ' + strategy + ')');
+    }
+
+    // 8 · F1-H07 · Dokumentruntimen. De två byggena är avsiktligt olika och båda
+    // ska vara manifestdeklarerade. En instans som tyst byts ut mot den andra
+    // ska synas.
+    for (const ri of A.runtimeInstances || []) {
+      const outside = ri.path.startsWith('zip:/');
+      const rel = ri.path.replace(/^zip:\//, '');
+      if (ri.manifestStatus === 'declared') {
+        if (outside && !zipDeclared.has(rel))
+          fail('T-20', 'runtimeInstances: ' + ri.path + ' är märkt declared men saknar zip:/-post i manifestet');
+        if (!outside && !env.exists(rel))
+          fail('T-20', 'runtimeInstances: ' + ri.path + ' är märkt declared men filen finns inte i reporoten');
+      }
+    }
+
+    // 9 · supersededBy: målet måste vara känt, och ingen cykel får finnas.
     // Körartefakter finns inte i en nyuppackad leverans men är legitima mål.
-    const known = new Set([...(A.authorities || []).map(a => a.file), ...(A.superseded || []).map(s2 => s2.file),
+    const known = new Set([...rows.map(a => a.file), ...(A.superseded || []).map(s2 => s2.file),
       ...(A.generatedArtifacts || []).map(g => g.file), ...(A.runtimeArtifacts || [])].filter(Boolean));
     const edge = new Map();
-    for (const r of [...(A.authorities || []), ...(A.superseded || [])]) {
+    for (const r of [...rows, ...(A.superseded || [])]) {
       if (!r.supersededBy) continue;
       if (!known.has(r.supersededBy) && !env.exists(r.supersededBy))
         fail('T-20', (r.file || r.domain) + ' pekar på supersededBy ' + r.supersededBy + ', som varken är en känd post eller en fil på disk');
@@ -273,8 +404,11 @@ export function lint(env) {
         cur = edge.get(cur);
       }
     }
-    if (!ps.length) info('T-20', (A.authorities || []).length + ' domäner · ' + (A.generatedArtifacts || []).length +
-      ' genererade artefakter · ' + (A.superseded || []).length + ' superseded · registret genereras av tools/gen-authority.mjs');
+    if (!ps.length) info('T-20', rows.length + ' domäner (' + REQUIRED_DOMAIN_IDS.length + ' obligatoriska) · ' +
+      rows.filter(a => a.authorityState === 'active').length + ' active · ' +
+      rows.filter(a => a.authorityState === 'planned').length + ' planned · ' +
+      (A.generatedArtifacts || []).length + ' genererade artefakter · ' + (A.superseded || []).length +
+      ' superseded · registret genereras av tools/gen-authority.mjs');
   })();
 
   /* ── T-02 · kontrast enligt tokens.contrastPairs, mot RÄTT bakgrund ─────── */
@@ -528,7 +662,11 @@ export function lint(env) {
   (function () {
     ran('T-10');
     const claim = (label, version) => {
-      const re = new RegExp('\\|\\s*\\*{0,2}' + label + '\\*{0,2}\\s*\\|\\s*\\*\\*([\\d.]+)\\*\\*');
+      // F1-H03: Del-cellen kan bära en `auth:`-markör som säger att raden är
+      // generatorägd. Mönstret hoppar över den. Utan `[^|]*` slutade T-10 hitta
+      // raden alls och degraderade tyst från fail till warn — kontrollen fanns
+      // kvar men mätte ingenting.
+      const re = new RegExp('\\|\\s*\\*{0,2}' + label + '\\*{0,2}[^|]*\\|\\s*\\*\\*([\\d.]+)\\*\\*');
       const m = index.match(re);
       if (!m) { warn('T-10', 'indexet har ingen versionsrad för ' + label); return; }
       if (m[1] !== version) fail('T-10', 'indexet säger ' + label + ' ' + m[1] + ', filen säger ' + version);
@@ -766,38 +904,10 @@ export function lint(env) {
       if (/^\|\s*:?-{2,}/.test(l)) continue;      // skiljelinjen
       rows.push(l);
     }
-    const STRATEGY = {
-      'Butlery Komponentark v1.dc.html': 'filename',
-      'Butlery Grafisk manual v6.dc.html': 'filename',
-      'Butlery tillganglighetshandoff.dc.html': 'manual-linked',
-      'Butlery ceremonier rorelsereferens.dc.html': 'manual-linked',
-      'FONT-VERSION.txt': 'active-release',
-      'assets/fonts/VALIDATION-0.626.txt': 'filename',
-      'assets/generated/tokens.css': 'generated-header',
-      'lib/theme/butlery_tokens.dart': 'generated-header',
-      // Fas 1: app-temat genereras nu i kedjan och mäts med samma strategi.
-      // Tidigare föll de tillbaka på 'field' och blev omätbara.
-      'lib/theme/app_colors.dart': 'generated-header',
-      'lib/theme/app_text_styles.dart': 'generated-header',
-      'butlery-tokens.schema.json': 'schema-id',
-      'fas0/verify-report.schema.json': 'schema-id',
-      'tools/app-theme-map.schema.json': 'schema-id',
-      'source-authority.json': 'field',
-      'source-authority.schema.json': 'schema-id',
-      'legacy-api-contract.json': 'field',
-      'legacy-api-contract.schema.json': 'schema-id',
-      'tools/app-theme-map.json': 'field',
-      'Butlery Skarmar v12.dc.html': 'filename',
-      'assets/brand-colors.json': 'field',
-      'grundgranskning.md': 'dated',
-      // Frysta historiska underlag bär sitt datum i frysmarkören, inte ett
-      // versionsfält. Fas 1: de föll som "omätbara" trots att de har ett värde.
-      'arbetsplan.md': 'frozen',
-      'luckor-etapp9.md': 'frozen',
-      'migration-gap.md': 'dated',
-      'korsgranskning.md': 'field'
-    };
-    const norm = s => String(s).toLowerCase().replace(/^v/, '');
+    // F1-H05: strategitabellen och läsarna låg tidigare HÄR, inne i T-15, medan
+    // T-20 hade en fjärdedels egen variant som bara kunde läsa JSON. Nu är de
+    // samma modul (tools/version-read.mjs), så en strategi som ger fel värde ger
+    // fel i båda kontrollerna samtidigt.
     let measured = 0, filesSeen = 0;
     for (const line of rows) {
       const cells = line.split('|').map(s => s.trim());
@@ -814,62 +924,11 @@ export function lint(env) {
       for (const file of files) {
         filesSeen++;
         if (!env.exists(file)) { fail('T-15', del + ': versionstabellen pekar på ' + file + ', som inte finns'); continue; }
-        const strategy = STRATEGY[file] || 'field';
-        const t = env.read(file);
-        let actual = null;
-        switch (strategy) {
-          case 'frozen': {
-            // FRYSTA underlag: markören bevisar att dokumentet är fryst, men
-            // VÄRDET som versionstabellen jämför mot är dokumentets egen
-            // version. Fas 1 (andra vändan): strategin mätte frysdatumet och
-            // jämförde det med indexets versionsnummer ("1.1" mot "2026-07-31"),
-            // vilket alltid föll. Nu krävs markören OCH versionen.
-            if (!/FRYST\s+(\d{4}-\d{2}-\d{2})/.test(t)) {
-              fail('T-15', del + ' (' + file + '): fryst underlag utan "FRYST <datum>"-markör');
-              break;
-            }
-            actual = (t.match(/"version"\s*:\s*"([^"]+)"/) || [])[1]
-              || (t.match(/[Vv]ersion\s*\*{0,2}\s*([Vv]?\d+(?:\.\d+)+)/) || [])[1];
-            if (!actual) fail('T-15', del + ' (' + file + '): fryst underlag utan versionsfält — skriv "Version N.N" i dokumenthuvudet');
-            break;
-          }
-          case 'schema-id': {
-            // Schemafiler bär sin version i $id eller i ett version-fält.
-            let j = null; try { j = JSON.parse(t); } catch {}
-            actual = j && (String(j.$id || '').match(/\/(\d+(?:\.\d+)*)$/) || [])[1];
-            if (!actual && j && j.version) actual = String(j.version);
-            // "$id: …/2" och indexets "2.0" är samma version.
-            if (actual && /^\d+$/.test(actual) && j && j.version) actual = String(j.version);
-            if (!actual) fail('T-15', del + ' (' + file + '): schemafilen saknar version i $id och i version-fältet');
-            break;
-          }
-          case 'filename': actual = (file.match(/[ -]([Vv]?\d+(?:\.\d+)+)(?=\.[a-z]|$)/) || file.match(/[ -]([Vv]\d+)(?=\.|$)/) || [])[1]; break;
-          case 'manual-linked': actual = (t.match(/manual\s*\*{0,2}\s*([Vv]\d+)/i) || [])[1]; break;
-          case 'active-release': actual = (t.match(/(?:active release|aktuell|version)[^\n]*?([\d.]+)/i) || [])[1]; break;
-          // ANKRAD till header-raden. Den gamla regexen matchade ordet
-          // "tokens." i "ändra tokens.json" på rad 1 och extraherade "." —
-          // vilket också gjorde självtestet falskt positivt. Fas 0.9.
-          case 'generated-header': {
-            const head = t.split('\n').slice(0, 12).join('\n');
-            actual = (head.match(/^[^\n]*\btokens\s+v?(\d+\.\d+(?:\.\d+)?)/im) || [])[1] ||
-                     (head.match(/tokens[- ]?version\s*[:=]\s*v?(\d+\.\d+(?:\.\d+)?)/i) || [])[1] || null;
-            if (!actual) fail('T-15', del + ' (' + file + '): headern saknar en läsbar rad "tokens <version>" bland de första 12 raderna');
-            break;
-          }
-          // Hela ISO-datumet jämförs, ANKRAT till dokumentets eget datumfält.
-          // Strategin krävde tidigare bara att NÅGOT datum fanns i filen, så en
-          // mutation av tabellens datum gav noll fel — och när frysmarkören
-          // lades till i rad 1 mätte den frysdatumet i stället för dokumentets.
-          case 'dated': actual = (t.match(/\*{0,2}Datum:?\*{0,2}\s*:?\s*(20\d\d-\d\d-\d\d)/i) || [])[1]
-            || (t.match(/(?:läst|granskad|skriven)\s+(20\d\d-\d\d-\d\d)/i) || [])[1]
-            || (t.match(/(20\d\d-\d\d-\d\d)/) || [])[1]; break;
-          default: {
-            const jj = t.match(/"version"\s*:\s*"([^"]+)"/);
-            // Fas 1: fem md-filer skriver "Version 1.0 · datum" utan fetstil.
-            actual = jj ? jj[1]
-              : (t.match(/[Vv]ersion\s*\*{0,2}\s*([Vv]?\d+(?:\.\d+)+)/) || [])[1];
-          }
-        }
+        const strategy = strategyFor(file);
+        const read = readVersion(file, env.read(file), strategy);
+        const actual = read.value;
+        if (read.problem) { fail('T-15', del + ' (' + file + '): ' + read.problem); continue; }
+        if (read.versionless) { fail('T-15', del + ' (' + file + '): filen bär ingen version — den hör inte hemma i versionstabellen'); continue; }
         if (!actual) { fail('T-15', del + ' (' + file + '): strategin "' + strategy + '" gav inget värde — rätta strategin eller lägg in ett versionsfält'); continue; }
         measured++;
         if (strategy === 'dated') {
@@ -879,7 +938,7 @@ export function lint(env) {
           continue;
         }
         if (!claimed) { fail('T-15', del + ': versionstabellen saknar versionsvärde för ' + file); continue; }
-        if (norm(actual) !== norm(claimed)) fail('T-15', del + ': indexet säger ' + claimed + ' men ' + file + ' säger ' + actual + ' (strategi: ' + strategy + ')');
+        if (!sameVersion(actual, claimed)) fail('T-15', del + ': indexet säger ' + claimed + ' men ' + file + ' säger ' + actual + ' (strategi: ' + strategy + ')');
       }
     }
     info('T-15', rows.length + ' datarader i versionstabellen · ' + filesSeen + ' filreferenser · ' + measured + ' mätta');

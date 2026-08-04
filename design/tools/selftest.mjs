@@ -68,13 +68,18 @@ const cases = [
   }],
   ['T-15 field · tokensversion i indexet', 'T-15', () => {
     const t = read(idx);
-    if (!/\| Tokens \| \*\*[\d.]+\*\*/.test(t)) return null;
-    return { [idx]: t.replace(/\| Tokens \| \*\*[\d.]+\*\*/, '| Tokens | **9.99**') };
+    // F1-H03: Del-cellen bär numera en auth:-markör. Mönstret hoppar över den
+    // i stället för att sluta matcha — ett prov som tyst slutar mäta är värre
+    // än inget prov alls.
+    const m = t.match(/(\| Tokens[^|]*\| )\*\*[\d.]+\*\*/);
+    if (!m) return null;
+    return { [idx]: t.replace(m[0], m[1] + '**9.99**') };
   }],
   ['T-15 filename · komponentarkets version', 'T-15', () => {
     const t = read(idx);
-    if (!/\| Komponentark \| \*\*V1\*\*/.test(t)) return null;
-    return { [idx]: t.replace(/\| Komponentark \| \*\*V1\*\*/, '| Komponentark | **V999**') };
+    const m = t.match(/(\| Komponentark[^|]*\| )\*\*V1\*\*/);
+    if (!m) return null;
+    return { [idx]: t.replace(m[0], m[1] + '**V999**') };
   }],
   ['T-15 dated · grundgranskningens datum', 'T-15', () => {
     const t = read(idx);
@@ -134,9 +139,9 @@ const cases = [
   }],
   ['T-15 manual-linked · handoffens manualversion', 'T-15', () => {
     const t = read(idx);
-    const m = t.match(/\| Tillgänglighetshandoff \| ([^|]*)\|/);
+    const m = t.match(/(\| Tillgänglighetshandoff[^|]*\| )([^|]*)\|/);
     if (!m) return null;
-    return { [idx]: t.replace(m[0], '| Tillgänglighetshandoff | mot manual V99 |') };
+    return { [idx]: t.replace(m[0], m[1] + 'mot manual V99 |') };
   }],
   ['T-15 active-release · fontversionen', 'T-15', () => {
     const t = read(idx);
@@ -200,7 +205,7 @@ const cases = [
     // läser — den läser tabellraden "| Tokens | **N** |".
     const p = '00-spec-index.md';
     const t = read(p);
-    const mm = t.match(/\|\s*\*{0,2}Tokens\*{0,2}\s*\|\s*\*\*([\d.]+)\*\*/);
+    const mm = t.match(/\|\s*\*{0,2}Tokens\*{0,2}[^|]*\|\s*\*\*([\d.]+)\*\*/);
     if (!mm) return null;
     return { [p]: t.replace(mm[0], mm[0].replace(mm[1], '9.99')) };
   }],
@@ -302,9 +307,86 @@ const cases = [
     const p = 'source-authority.json';
     const a = JSON.parse(read(p) || 'null');
     if (!a) return null;
-    const first = a.authorities.find(x => x.file && x.status === 'gällande');
+    const first = a.authorities.find(x => x.file && x.authorityState === 'active');
     if (!first) return null;
     a.authorities.push({ ...first, file: 'tokens.json' });
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  // F1-H01 · registrets egen version mot självposten.
+  ['T-20 · filversionen och självposten säger olika (F1-H01)', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    const self = a.authorities.find(x => x.domainId === 'source-authority');
+    if (!self) return null;
+    self.version = '1.0';               // filen säger något annat
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  // F1-H04 · HELA domänen stryks. Den obligatoriska mängden bor i
+  // tools/authority-contract.mjs, inte i den fil som muteras — annars hade
+  // strykningen tagit med sig sitt eget krav och provet blivit vakuöst.
+  ['T-20 · hela domänen Designvärden struken ur registret (F1-H04)', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    const before = a.authorities.length;
+    a.authorities = a.authorities.filter(x => x.domainId !== 'design-values');
+    if (a.authorities.length === before) return null;
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  // F1-H04 · en domän som INTE finns i den kanoniska mängden.
+  ['T-20 · okänd domän tillagd i registret (F1-H04)', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    a.authorities.push({
+      domainId: 'hittepa-domain', domain: 'Påhittad domän', sourceId: null,
+      file: 'tokens.json', version: '1.13', authorityState: 'active',
+      changePolicy: 'maintained', owner: 'DS', note: ''
+    });
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  // F1-H05 · en Markdown-källa deklareras med en version filen inte bär.
+  // Den gamla kontrollen läste bara JSON och hade sagt ingenting.
+  ['T-20 · content-style-guide.md deklarerad som 9.9 (F1-H05)', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    const row = a.authorities.find(x => x.file === 'content-style-guide.md');
+    if (!row) return null;
+    row.version = '9.9';                // filen ändras INTE
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  // F1-H06 · mängdlikhet mot tools/gen-targets.mjs, båda riktningarna.
+  ['T-20 · borttagen rad ur generatedArtifacts (F1-H06)', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a || !a.generatedArtifacts.length) return null;
+    a.generatedArtifacts = a.generatedArtifacts.filter(g => g.file !== 'assets/generated/tokens.css');
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  ['T-20 · extra rad i generatedArtifacts (F1-H06)', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    a.generatedArtifacts.push({ file: 'tokens.json', generator: 'tools/gen-css.mjs' });
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  // F1-H07 · KONSEKVENT omdöpning. Alla inkommande referenser döps om samtidigt,
+  // så intern konsistens är perfekt. Bara en kontroll mot manifestets faktiska
+  // zip:/-poster kan fälla det — och det är precis vad som saknades.
+  ['T-20 · extern auktoritet konsekvent omdöpt till en fil som inte finns (F1-H07)', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    const OLD = 'Butlery styrdokument modulart designsystem.dc.html';
+    const NEW = 'Butlery styrdokument modulart designsystem v9.dc.html';
+    let touched = 0;
+    for (const row of [...a.authorities, ...a.superseded]) {
+      if (row.file === OLD) { row.file = NEW; touched++; }
+      if (row.supersededBy === OLD) { row.supersededBy = NEW; touched++; }
+    }
+    if (!touched) return null;
     return { [p]: JSON.stringify(a, null, 2) };
   }],
   ['T-20 · blocked och not run ihopslagna i statusordboken', 'T-20', () => {
@@ -321,6 +403,24 @@ const cases = [
     const row = a.authorities.find(x => x.file === 'icons.json');
     if (!row) return null;
     row.version = '1.6';
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  // F1-H02 · en domän kan inte vara både active och planned.
+  ['T-20 · samma domän både active och planned (F1-H02)', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    const row = a.authorities.find(x => x.domainId === 'decisions');
+    if (!row) return null;
+    a.authorities.push({ ...row, file: null, version: null, authorityState: 'planned' });
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  // F1-H02 · historical får aldrig räknas som aktuell auktoritet.
+  ['T-20 · historisk post satt som aktuell (F1-H02)', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a || !a.superseded.length) return null;
+    a.superseded[0] = { ...a.superseded[0], authorityState: 'active' };
     return { [p]: JSON.stringify(a, null, 2) };
   }],
   ['T-20 · supersededBy som pekar i en cykel', 'T-20', () => {

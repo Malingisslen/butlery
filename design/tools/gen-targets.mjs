@@ -31,6 +31,45 @@ export const GENERATED_OUTPUTS = [
   'fas0/kallauktoritetsregister.md'
 ];
 
+// F1-H06: den DELMÄNGD av skrivmålen som source-authority.json måste förteckna
+// i `generatedArtifacts` — filer som renderas i sin HELHET ur en kanonisk källa
+// och därför inte har någon egen auktoritet. T-20 kräver mängdlikhet i båda
+// riktningarna mot den här listan. Tidigare fanns ingen definierad koppling
+// alls: en rad kunde tas bort ur generatedArtifacts utan att något fälldes.
+export const FULLY_GENERATED = [
+  'fas0/verify-report.schema.json',
+  'assets/generated/tokens.css',
+  'lib/theme/butlery_tokens.dart',
+  'lib/theme/app_colors.dart',
+  'lib/theme/app_text_styles.dart',
+  'fas0/kallauktoritetsregister.md'
+];
+
+// De övriga skrivmålen ANNOTERAS på plats — generatorn skriver in räknetal eller
+// `usages` i en fil som i övrigt är handskriven och bär egen auktoritet. De ska
+// därför INTE stå i generatedArtifacts.
+export const ANNOTATED_IN_PLACE = [
+  'icons.json',
+  '00-spec-index.md',
+  'testmatris.md',
+  'evidensmatris.md',
+  'Butlery tillganglighetshandoff.dc.html'
+];
+
+// Invarianten binder de två listorna till GENERATED_OUTPUTS: varje skrivmål är
+// antingen helrenderat eller annoterat, aldrig ingetdera och aldrig båda.
+{
+  const split = [...FULLY_GENERATED, ...ANNOTATED_IN_PLACE];
+  const dup = split.filter((v, i) => split.indexOf(v) !== i);
+  const missing = GENERATED_OUTPUTS.filter(f => !split.includes(f));
+  const extra = split.filter(f => !GENERATED_OUTPUTS.includes(f));
+  if (dup.length || missing.length || extra.length)
+    throw new Error('gen-targets: FULLY_GENERATED + ANNOTATED_IN_PLACE ≠ GENERATED_OUTPUTS' +
+      (dup.length ? ' · dubbletter: ' + dup.join(', ') : '') +
+      (missing.length ? ' · saknas: ' + missing.join(', ') : '') +
+      (extra.length ? ' · okända: ' + extra.join(', ') : ''));
+}
+
 // output → förväntad generator → indata. Delas av preflight (GEN-02), som
 //   1 kräver att headern namnger RÄTT generator för filen,
 //   2 räknar om källfingeravtrycket ur indata + generatorns källa,

@@ -1,22 +1,22 @@
-# Butlery · Fas 0 stängd · Fas 1 pågår
+# Butlery · Fas 0 historiskt stängd · Fas 1 pågår
 
-2026-08-02. **Inga körsiffror i den här filen** — de genereras av `bash fas0/run-verify.sh`.
+2026-08-04. **Inga körsiffror i den här filen** — de genereras av `bash fas0/run-verify.sh` och läses i `fas0/verify-report.json` och `fas0/kontrollstatus.md`.
 
-## Fas 0 · STÄNGD
+## Fas 0 · HISTORISKT STÄNGD PÅ `d34b9f8`
 
-Verklig GitHub Actions-körning, commit `d34b9f82de0afd34595dea22f68fd1ee5c6a324f`, run `30764509765`:
+Fas 0-grinden passerade i en verklig GitHub Actions-körning på commit
+`d34b9f82de0afd34595dea22f68fd1ee5c6a324f`, run `30764509765` (2026-08-02).
+Utfallet står i den körningens rapport — **inte här**.
 
-| Mått | Utfall |
-|---|---|
-| Fas 0-grinden | **8/8 passed, exit 0** |
-| Blockerare | 0 |
-| Rapportintegritet | ok |
-| Registertäckning | 38/38 |
-| Artefaktfingeravtryck | 93/93 oförändrat |
-| CHK-CI-01 | **passed** i levande CI |
-| `overallResult` | failed — den förväntat röda innehållsbaslinjen, blockerar inte grinden |
+**Vad den körningen inte bevisar.** Den kördes på den dåvarande verktygskedjan.
+v25 ändrar `check-manifest.mjs`, `lint-core.mjs`, `metatest.mjs`, `selftest.mjs`
+och `gen-authority.mjs`, och F1-H01–H13 ändrar dem igen. En grön grind på
+`d34b9f8` säger ingenting om den kedja som körs nu.
 
-Fas 0 återöppnas endast vid en faktisk regression.
+**Följden.** Samtliga ärvda Fas 0-kontroller (`requiredForGate: [0, 1]`) måste
+passera på nytt inom den verkliga Fas 1-körningen. De ingår därför i
+Fas 1-grinden — det är hela poängen med att de bär båda faserna. Fas 0
+återöppnas inte formellt, men dess kontroller får inte regressera.
 
 ## Fas 1 · femte vändan · genomförd i källan
 
@@ -42,6 +42,41 @@ Alla fyra ur tokens **1.13**, plus `fas0/kallauktoritetsregister.md` ur `source-
 De fyra filerna renderade ur källan · `test-generated` grön mot dem · tolv mutationer av utdata och källa fällda av `check-app-theme` · T-01 och T-20 gröna med nio negativa prov fällda · T-15 mäter varje filreferens · manifestet omräknat och kontrolläst mot filerna. **Antal och utfall står i den genererade rapporten, inte här.**
 
 **Inte kört:** kedjan, selftest, metatest, manifestkontroll, båda grindarna, dubbelkörningen.
+
+## Fas 1 · sjätte vändan · F1-H01…H13
+
+Rättningarna gäller källauktoritet, versionering, manifestintegritet,
+generatorer, grindar och beviskedja. Innehållsbaslinjen (kontrast, geometri,
+träffytor, komponentimplementering) rörs **inte**.
+
+| # | Fynd | Åtgärd |
+|---|---|---|
+| F1-H01 | `source-authority.json` deklarerade sig själv som 1.0 medan filen sa 1.1 | Filversion och självpost är samma värde. Registret är **2.0**. Negativt prov i `selftest` |
+| F1-H02 | Endimensionell status blandade normativitet med ändringspolicy | `authorityState` (`active` · `planned` · `superseded` · `historical` · `concept`) och `changePolicy` (`maintained` · `frozen`) är oberoende. Stabila `domainId`/`sourceId`. Maskinvärden engelska, svenska etiketter enbart i presentationslagret |
+| F1-H03 | `00-spec-index.md` underhöll domän, version och status parallellt med registret | Rader med `auth:`-markör är generatorägda. Indexet kallar sig inte längre ensam källa |
+| F1-H04 | T-20 kontrollerade bara de domäner som råkade finnas i registret | Den obligatoriska mängden bor i `tools/authority-contract.mjs`, utanför den fil som valideras. T-20 kräver exakt mängdlikhet. Mutationsprov: hela domänen `design-values` struken |
+| F1-H05 | Versionskontrollen läste bara JSON — Markdown och HTML var omätta | Gemensam läsare i `tools/version-read.mjs`, delad av T-15 och T-20. Prov: `content-style-guide.md` deklarerad som 9.9 |
+| F1-H06 | Ingen definierad koppling mellan `generatedArtifacts` och generatorernas skrivmål | `FULLY_GENERATED` i `tools/gen-targets.mjs`, mängdlikhet i båda riktningarna. Prov för både borttagen och extra rad |
+| F1-H07 | Intern konsistens ersatte kontroll av verklig filnärvaro | Poster i reporoten mäts mot filytan, `outsideRepoRoot` mot manifestets faktiska `zip:/`-poster. Prov: konsekvent omdöpning av en extern auktoritet |
+| F1-H08 | Två walkers med olika säkerhetsegenskaper; repo-walkern matchade undantag mot Windows-sökvägar och undantog därför ingenting | EN enumerator i `tools/manifest-contract.mjs`. `lstatSync()` överallt, symlänkar avvisas först, sökvägar normaliseras före undantagen |
+| F1-H09 | Filtypsallowlist och katalogundantag gjorde `assets/`, `exports/` och lockup-katalogen osynliga | Varje vanlig fil räknas. Endast sju exakt namngivna körartefakter undantas. Bygg-, dependency- och VCS-kataloger **avvisas**. M-22 utökad till tio odeklarerade filer i båda ytorna plus två symlänkar |
+| F1-H10 | M-24 läste `gateIn().status` ur ett `runProc`-resultat som bara bär `{code, timedOut, out}` — villkoret var alltid sant | Läser `code`. Provet bevisar att mutationen skedde, att grinden kördes, att den var grön före, och att den nya diagnostiken kom ur fingeravtrycket |
+| F1-H11 | Vakuösa prov | Delta mot baslinjen krävs i `selftest`; M-33 låser sju felklasser i källan, inklusive varje jämförelse mot `.status` |
+| F1-H12 | Motsägelser i de aktiva dokumenten | 17→**18** grindkontroller (M-34 räknar om talet), tokens 1.13, styrdokument 2.5, trasiga rader för Formskala, Ikoner och Kravstatus, oavslutad `<b>`, och datumet 2026-08-05 → **2026-08-04** |
+| F1-H13 | — | Generatorer, manifest sist, ren leverans, kedjan två gånger, byteidentitet, båda grindarna |
+
+### Nytt integritetsfynd · två byggen av `support.js`
+
+Leveransen bär två olika byggen av dokumentruntimen:
+`support.js` i reporoten (66 404 byte, 1 841 rader, 23 konsumenter) och
+`zip:/support.js` i leveransroten (69 150 byte, 1 911 rader, 4 konsumenter).
+Den yttre är ett **senare bygge** och en strikt superset — tillägget är
+`isDeckMountTag`, `renderDeckKids` och `walkDeckChildren`. Ingenting är
+borttaget, och inget dokument i leveransen använder deck-taggar.
+
+Båda är manifestdeklarerade och förtecknade i `source-authority.json`
+(`runtimeInstances`, domänen `document-runtime`). **Ingen av dem skrivs över
+eller slås ihop** förrän relationen omprövas.
 
 ## Kvar · innehållsbaslinjen (Fas 1 och framåt)
 

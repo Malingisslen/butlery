@@ -1,14 +1,8 @@
 {
   "$schema": "source-authority.schema.json",
-  "$note": "MASKINLÄSBART källauktoritetsregister. Styrdokumentet krävde det i Fas 1; till dess var registret handskrivet och drev: icons.json stod som 1.6 och \"ej regenererad\", de fyra genererade filerna som tokens 1.3/1.4 ur 1.9, och två skilda kontrollstatusar låg ihopslagna på samma rad. Den här filen är källan. fas0/kallauktoritetsregister.md GENERERAS ur den av tools/gen-authority.mjs och får inte redigeras för hand. Valideras av T-20.",
-  "version": "1.1",
-  "date": "2026-08-05",
-  "statusVocabulary": {
-    "gällande": "aktiv normativ källa för sin domän",
-    "fryst": "aktiv men låst — får inte ändras utan att kontraktet omförhandlas",
-    "historisk": "underhålls inte, får inte citeras som gällande, bär en FRYST-rad överst",
-    "ska skapas": "domänen har ingen maskinläsbar auktoritet ännu — leverabel i en senare fas"
-  },
+  "$note": "MASKINLÄSBART källauktoritetsregister. Styrdokumentet krävde det i Fas 1; till dess var registret handskrivet och drev: icons.json stod som 1.6 och \"ej regenererad\", de fyra genererade filerna som tokens 1.3/1.4 ur 1.9, och två skilda kontrollstatusar låg ihopslagna på samma rad. Den här filen är källan. fas0/kallauktoritetsregister.md GENERERAS ur den av tools/gen-authority.mjs och får inte redigeras för hand. Valideras av T-20. Version 2.0 (F1-H01–H07): tvådimensionell status (authorityState + changePolicy), stabila domainId/sourceId, obligatorisk domänmängd i tools/authority-contract.mjs, verklig versionsläsning via tools/version-read.mjs och mängdlikhet mot tools/gen-targets.mjs.",
+  "version": "2.0",
+  "date": "2026-08-04",
   "controlStatusVocabulary": [
     {
       "status": "passed",
@@ -38,184 +32,265 @@
   ],
   "authorities": [
     {
+      "domainId": "product-invariants",
       "domain": "Produktinvarianter (beteende, datasäkerhet)",
+      "sourceId": "produktregler",
       "file": "produktregler.md",
       "version": "1.12",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "PRODUKT",
       "note": "**två** öppna beslut kvar (genereringskontraktet, åldersgränsen). Allergentillstånden och veckomodellen är beslutade — se styrdokumentets § 9A"
     },
     {
+      "domainId": "design-values",
       "domain": "Designvärden",
+      "sourceId": "tokens",
       "file": "tokens.json",
       "version": "1.13",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": "schemat validerar hela strukturen (`butlery-tokens/2`), fältnivå för samtliga 13 kontrollkomponenter · T-01. Designvärden bor BARA här: `bodyMedium` och de sju överläggstokens flyttades hit från mappningsfilen"
     },
     {
+      "domainId": "token-structure",
       "domain": "Tokenstruktur",
+      "sourceId": "tokens-schema",
       "file": "butlery-tokens.schema.json",
       "version": "2.0",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": "fältnivå, typer och gränser. Samma validator (`walkSchema`) som rapport- och mappningsschemat"
     },
     {
+      "domainId": "legacy-dart-api-map",
       "domain": "Äldre Dart-API mot token-id",
+      "sourceId": "app-theme-map",
       "file": "tools/app-theme-map.json",
       "version": "1.4",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DEV",
       "note": "mappningsbeslut, **aldrig designvärden** — varje högersida är ett token-id eller ett rollnamn (T-01). Eget schema; värdena mäts mot genererad Dart av TG-01, inklusive `scheme.darkOverrides` och `typeSemantic.color`"
     },
     {
+      "domainId": "brand-colors",
       "domain": "Externa varumärkesfärger",
+      "sourceId": "brand-colors",
       "file": "assets/brand-colors.json",
       "version": "1.0",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "PRODUKT",
       "note": "citat, inte design. Schemavalideras av T-01"
     },
     {
+      "domainId": "legacy-api-surface",
       "domain": "Publik Dart-API-yta (legacy)",
+      "sourceId": "legacy-api-contract",
       "file": "legacy-api-contract.json",
       "version": "1.0",
-      "status": "fryst",
+      "authorityState": "active",
+      "changePolicy": "frozen",
       "owner": "DEV",
       "note": "120 AppColors-medlemmar, 2 ColorScheme-fält, 76 AppTextStyles-getters, 3 strängkonstanter. TG-01 kräver exakt mängdlikhet i båda riktningarna. **Fryst ur den levererade koden, inte ur app-repot** — att ytan motsvarar appens faktiska anrop är overifierat till Fas 2 (§ 9E)"
     },
     {
+      "domainId": "component-contract",
       "domain": "Komponent-API, semantik, tillstånd",
+      "sourceId": null,
       "file": null,
       "version": null,
-      "status": "ska skapas",
+      "authorityState": "planned",
+      "changePolicy": "maintained",
       "owner": "DS",
-      "note": "Fas 3-leverabel. Interimistiskt: `Butlery Komponentark v1.dc.html`, handritad, ej maskinläsbar"
+      "note": "Fas 3-leverabel. Ingen aktiv auktoritet finns för domänen förrän dess. `Butlery Komponentark v1.dc.html` är handritad, ej maskinläsbar och **inte normativ** — den läses som underlag, aldrig som kontrakt."
     },
     {
+      "domainId": "layout-composition",
       "domain": "Layout och komposition",
+      "sourceId": "skarmar-v12",
       "file": "Butlery Skarmar v12.dc.html",
       "version": "v12",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": "innehållsfil plus fjorton delfiler. 326 artefakter utan `artifact`/`status` — Fas 2"
     },
     {
+      "domainId": "content-text",
       "domain": "Text",
+      "sourceId": "content-style-guide",
       "file": "content-style-guide.md",
       "version": "1.1",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": ""
     },
     {
+      "domainId": "a11y-handoff",
       "domain": "Semantik och tillstånd (handoff)",
+      "sourceId": "a11y-handoff-doc",
       "file": "Butlery tillganglighetshandoff.dc.html",
       "version": "mot manual V6",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": "täcker roll och namn, **inte tillstånd** — minst 245 luckor (A11Y-02)"
     },
     {
+      "domainId": "icon-names",
       "domain": "Ikonnamn och antal",
+      "sourceId": "icons",
       "file": "icons.json",
       "version": "1.8",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": "`usages` genereras av `gen-icons`, statusen mäts mot filnärvaro av T-05. Regenererad och byteidentisk mellan körningar"
     },
     {
+      "domainId": "asset-status",
       "domain": "Filstatus och paketering",
+      "sourceId": "assets-manifest",
       "file": "assets-manifest.json",
       "version": "1.4",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DEV",
       "note": "filreferenser kontrolleras av T-06b"
     },
     {
+      "domainId": "principles",
       "domain": "Principer och motiv",
+      "sourceId": "grafisk-manual",
       "file": "Butlery Grafisk manual v6.dc.html",
       "version": "V6",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": "förklarar, föreskriver inte värden"
     },
     {
+      "domainId": "requirement-status",
       "domain": "Kravstatus",
+      "sourceId": "evidensmatris",
       "file": "evidensmatris.md",
       "version": "1.0",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": "radantal och statusfördelning räknas ur filens egna rader och redovisas i `fas0/verify-report.json` — inga handskrivna totaler"
     },
     {
+      "domainId": "test-matrix",
       "domain": "Vad som ska bevisas",
+      "sourceId": "testmatris",
       "file": "testmatris.md",
       "version": "1.1",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": "T-01…T-12 definieras där, T-13…T-19 i `evidensmatris.md`. Kontrollernas utfall står i den genererade rapporten"
     },
     {
+      "domainId": "platform-differences",
       "domain": "Plattformsskillnader",
+      "sourceId": "plattformsmatris",
       "file": "plattformsmatris.md",
       "version": "1.0",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": ""
     },
     {
+      "domainId": "flows-budget-analytics",
       "domain": "Flöden, budget, analytics",
+      "sourceId": "flows-roles-budget",
       "file": "flows-roles-budget.md",
       "version": "1.1",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": ""
     },
     {
+      "domainId": "decisions",
       "domain": "Beslut",
+      "sourceId": "beslutslogg",
       "file": "beslutslogg.md",
       "version": "1.6",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": "de tre besluten ur `luckor-etapp9.md` är införda som B-44, B-47 och B-48; K-09 är stängd av B-45"
     },
     {
+      "domainId": "report-schema",
       "domain": "Verifieringsrapportens struktur",
+      "sourceId": "verify-report-schema",
       "file": "fas0/verify-report.schema.json",
       "version": "2.0",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": "genereras ur `REPORT_SCHEMA` av `tools/gen-schema.mjs`"
     },
     {
+      "domainId": "control-register",
       "domain": "Kontrollregister",
+      "sourceId": "controls-mjs",
       "file": "tools/controls.mjs",
       "version": null,
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "note": "kontrollernas id, namn, ägare, fas och grindtillhörighet. Renderas till både `verify-report.json` och `kontrollstatus.md` — skriv inga kontrollrader för hand"
     },
     {
+      "domainId": "source-authority",
       "domain": "Källauktoritet",
+      "sourceId": "source-authority-json",
       "file": "source-authority.json",
-      "version": "1.0",
-      "status": "gällande",
+      "version": "2.0",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
-      "note": "den här filen. `fas0/kallauktoritetsregister.md` genereras ur den; T-20 validerar den"
+      "note": "den här filen. `fas0/kallauktoritetsregister.md` genereras ur den; T-20 validerar den. Filens `version` och den här postens `version` är samma värde — avvikelse fälls av T-20 (F1-H01)."
     },
     {
+      "domainId": "governance",
       "domain": "Styrning, fasmodell och grindar",
+      "sourceId": "styrdokument",
       "file": "Butlery styrdokument modulart designsystem.dc.html",
       "version": "2.5",
-      "status": "gällande",
+      "authorityState": "active",
+      "changePolicy": "maintained",
       "owner": "DS",
       "outsideRepoRoot": true,
       "note": "ligger i ZIP-roten, inte i reporoten (`zip:/`). Definierar faserna, grindarna, statusordboken och §§ 9A–9E"
+    },
+    {
+      "domainId": "document-runtime",
+      "domain": "Dokumentruntime (dc-runtime)",
+      "sourceId": "support-js",
+      "file": "support.js",
+      "version": null,
+      "authorityState": "active",
+      "changePolicy": "frozen",
+      "owner": "DEV",
+      "note": "genererad körtidsfil för `.dc.html`-dokumenten — `// GENERATED from dc-runtime/src/*.ts`. Den bär ingen egen version. **Två byggen finns i leveransen** och de är avsiktligt olika, se `runtimeInstances`. Ingen av dem får skrivas över eller slås ihop utan att relationen omprövas (F1-H07)."
     }
   ],
   "generatedArtifacts": [
+    {
+      "file": "fas0/verify-report.schema.json",
+      "generator": "tools/gen-schema.mjs"
+    },
     {
       "file": "assets/generated/tokens.css",
       "generator": "tools/gen-css.mjs"
@@ -239,62 +314,86 @@
   ],
   "superseded": [
     {
-      "file": "Butlery-arbetsorder-modulart-designsystem.md",
+      "file": "uploads/Butlery-arbetsorder-modulart-designsystem.md",
       "where": "uploads-roten",
-      "status": "historisk",
+      "authorityState": "superseded",
+      "changePolicy": "frozen",
       "supersededBy": "Butlery styrdokument modulart designsystem.dc.html",
-      "note": "superseded som instruktion",
-      "outsideRepoRoot": true
+      "outsideRepoRoot": true,
+      "note": "superseded som instruktion. Sökvägen är leveransrelativ (zip:/uploads/…) — F1-H07: det bara-filnamnet som stod här matchade ingen manifestpost och kunde därför inte kontrolleras."
     },
     {
       "file": "Butlery granskning och implementeringsplan.dc.html",
       "where": "projektroten",
-      "status": "historisk",
+      "authorityState": "superseded",
+      "changePolicy": "frozen",
       "supersededBy": "Butlery styrdokument modulart designsystem.dc.html",
-      "note": "superseded som instruktion",
-      "outsideRepoRoot": true
+      "outsideRepoRoot": true,
+      "note": "superseded som instruktion"
     },
     {
       "file": "arbetsplan.md",
       "where": "paketet",
-      "status": "historisk",
+      "authorityState": "historical",
+      "changePolicy": "frozen",
       "supersededBy": null,
       "note": "etapp 0–11 genomförda"
     },
     {
       "file": "grundgranskning.md",
       "where": "paketet",
-      "status": "historisk",
+      "authorityState": "superseded",
+      "changePolicy": "frozen",
       "supersededBy": "beslutslogg.md",
       "note": "besluten B-36…B-38, B-40, B-41"
     },
     {
       "file": "luckor-etapp9.md",
       "where": "paketet",
-      "status": "historisk",
+      "authorityState": "superseded",
+      "changePolicy": "frozen",
       "supersededBy": "beslutslogg.md",
       "note": "de tre besluten finns som B-44, B-47 och B-48. Filen bär inget levande beslut"
     },
     {
       "file": "migration-gap.md",
       "where": "paketet",
-      "status": "historisk",
+      "authorityState": "superseded",
+      "changePolicy": "frozen",
       "supersededBy": "beslutslogg.md",
       "note": "K-09 är stängd av B-45"
     },
     {
       "file": "granskning-v12.md",
       "where": "paketet",
-      "status": "historisk",
+      "authorityState": "superseded",
+      "changePolicy": "frozen",
       "supersededBy": "fas0/verify-report.json",
       "note": "dess sluttal (320 ramar, noll fynd) är motbevisade"
     },
     {
       "file": "fas0/baseline-report-SUPERSEDED.json",
       "where": "paketet",
-      "status": "historisk",
+      "authorityState": "superseded",
+      "changePolicy": "frozen",
       "supersededBy": "fas0/verify-report.json",
       "note": "sandlådebaslinje, behålls som spår"
+    }
+  ],
+  "runtimeInstances": [
+    {
+      "path": "support.js",
+      "where": "reporoten",
+      "manifestStatus": "declared",
+      "consumers": 23,
+      "note": "laddas av de 23 `.dc.html`-dokumenten i reporoten. Äldre bygge — saknar deck-stödet nedan. Inget dokument i leveransen använder deck-taggar, så skillnaden är utan verkan i dag."
+    },
+    {
+      "path": "zip:/support.js",
+      "where": "leveransroten",
+      "manifestStatus": "declared",
+      "consumers": 4,
+      "note": "laddas av de fyra dokumenten i leveransroten. **Senare bygge**: strikt superset av den inre — 70 rader mer, tillägget är `isDeckMountTag`, `renderDeckKids` och `walkDeckChildren`. Ingenting är borttaget."
     }
   ],
   "sections": [
@@ -320,9 +419,12 @@
     }
   ],
   "runtimeArtifacts": [
+    "fas0/verify.log",
+    "fas0/manifest.log",
     "fas0/verify-report.json",
     "fas0/kontrollstatus.md",
-    "fas0/verify.log",
-    "fas0/manifest.log"
+    "fas0/ci-evidence.json",
+    "fas0/verify-exit",
+    "fas0/verify-chain-exit"
   ]
 }

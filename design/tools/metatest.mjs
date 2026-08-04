@@ -5,7 +5,7 @@
 // report-logic.mjs och kräver rätt slutsats. Tidigare var sju av nio prov
 // källtextssökningar — de upptäckte inte att en manifestkrasch av fel orsak ändå
 // passerade, eftersom de bara krävde "någon icke-nollkod".
-import { readFileSync, writeFileSync, mkdtempSync, rmSync, mkdirSync, copyFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, mkdirSync, copyFileSync, existsSync, symlinkSync, readdirSync, rmdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { CONTROLS } from './controls.mjs';
@@ -249,6 +249,9 @@ group('M-07', () => {
   mkdirSync(join(dir, 'tools'), { recursive: true });
   copyFileSync('fas0/check-manifest.mjs', join(dir, 'fas0/check-manifest.mjs'));
   copyFileSync('tools/report-logic.mjs', join(dir, 'tools/report-logic.mjs'));
+  // F1-H08: enumeratorn är ett nytt runtimeberoende — samma klass av fel som
+  // Fas 0.16, där barnprocesserna dog med ERR_MODULE_NOT_FOUND.
+  copyFileSync('tools/manifest-contract.mjs', join(dir, 'tools/manifest-contract.mjs'));
     // UTTRYCKLIGT repo-läge: fixturen är ingen leverans, och auto/delivery skulle
     // leta efter en leveransrot som inte finns.
     const run = () => runProc(process.execPath, ['fas0/check-manifest.mjs', '--mode=repo'], { cwd: dir });
@@ -516,10 +519,16 @@ group('M-18', () => {
 group('M-19', () => {
     const pf = readFileSync('tools/preflight.mjs', 'utf8');
     const lc = readFileSync('tools/lint-core.mjs', 'utf8');
-    const headerAnchored = /slice\(0, 12\)/.test(lc) && /\\btokens\\s\+/.test(lc);
+    // F1-H05: headerparsern bor inte längre i lint-core utan i den GEMENSAMMA
+    // versionsläsaren, som T-15 och T-20 delar. M-19 mäter den där den nu är —
+    // och kräver dessutom att lint-core verkligen anropar den, så att en
+    // återinförd lokal parser i T-15 syns.
+    const vr = readFileSync('tools/version-read.mjs', 'utf8');
+    const headerAnchored = /slice\(0, 12\)/.test(vr) && /\\btokens\\s\+/.test(vr);
+    const shared = /from '\.\/version-read\.mjs'/.test(lc) && /readVersion\(/.test(lc) && /generated-header/.test(vr);
     t('M-19 · preflight mäter incheckad drift och T-15:s headerparser är ankrad till header-raden',
-      /GEN-02/.test(pf) && /tokens\.json/.test(pf) && /generated-header/.test(lc) && headerAnchored,
-      'ankrad: ' + headerAnchored);
+      /GEN-02/.test(pf) && /tokens\.json/.test(pf) && shared && headerAnchored,
+      'ankrad: ' + headerAnchored + ' · delad läsare: ' + shared);
 });
 
 /* M-20 · namnrymderna är disjunkta och maskinellt märkta */
@@ -565,6 +574,8 @@ group('M-22', () => {
     mkdirSync(join(pkg, 'tools'), { recursive: true });
   copyFileSync('fas0/check-manifest.mjs', join(pkg, 'fas0/check-manifest.mjs'));
   copyFileSync('tools/report-logic.mjs', join(pkg, 'tools/report-logic.mjs'));
+  // F1-H08: kontrollen och generatorn delar enumerator — fixturen måste bära den.
+  copyFileSync('tools/manifest-contract.mjs', join(pkg, 'tools/manifest-contract.mjs'));
     const shaOf = f => createHash('sha256').update(readFileSync(f)).digest('hex');
     // Ett minimalt paket: en reporotsfil + två leveransfiler.
     writeFileSync(join(pkg, 'x.md'), '# x\n');
@@ -576,6 +587,7 @@ group('M-22', () => {
       const rows = [
         ['x.md', shaOf(join(pkg, 'x.md'))],
         ['fas0/check-manifest.mjs', shaOf(join(pkg, 'fas0/check-manifest.mjs'))],
+        ['tools/manifest-contract.mjs', shaOf(join(pkg, 'tools/manifest-contract.mjs'))],
         ['tools/report-logic.mjs', shaOf(join(pkg, 'tools/report-logic.mjs'))]
       ];
       const out = [
@@ -599,15 +611,64 @@ group('M-22', () => {
     const undeclaredCases = [];
     // Fas 1 (femte vändan): surprise.png och uploads/scraps/undeclared.json gav
     // fortfarande unlisted=0 — TEXT-allowlisten och de breda katalogundantagen.
-    for (const rel of ['extra.md', 'uploads/v99-undeclared.json', 'uploads/v99-undeclared.log',
-      'uploads/v22-second-verify.log', 'surprise.png', 'uploads/scraps/undeclared.json', 'exports/oanmald.bin']) {
-      mkdirSync(join(dir, rel.split('/').slice(0, -1).join('/')) || dir, { recursive: true });
-      writeFileSync(join(dir, rel), '# odeklarerad\n');
+    //
+    // F1-H09: mutationerna täcker nu BÅDA ytorna. De tre sista är nya och
+    // prövar precis det som var osynligt: en binär i reporoten, en fil i en
+    // katalog repo-walkern hoppade över, och en byggkatalog i leveransytan som
+    // ska AVVISAS, inte hoppas över.
+    //
+    // F1-H11: varje fall bevisar tre saker — att mutationen finns på disk, att
+    // kontrollen fällde, och att den fällde MED rätt diagnostik. Ett fall som
+    // bara ger exit≠0 utan diagnostikrad räknas som misslyckat.
+    const surfaceCases = [
+      ['zip', 'extra.md', /olistad artefakt i leveransytan/],
+      ['zip', 'uploads/v99-undeclared.json', /olistad artefakt i leveransytan/],
+      ['zip', 'uploads/v99-undeclared.log', /olistad artefakt i leveransytan/],
+      ['zip', 'uploads/v22-second-verify.log', /olistad artefakt i leveransytan/],
+      ['zip', 'surprise.png', /olistad artefakt i leveransytan/],
+      ['zip', 'uploads/scraps/undeclared.json', /olistad artefakt i leveransytan/],
+      ['zip', 'exports/oanmald.bin', /olistad artefakt i leveransytan/],
+      ['zip', 'node_modules/surprise.png', /bygg- eller dependencykatalogen/],
+      ['repo', 'surprise.png', /olistad artefakt i reporoten/],
+      ['repo', 'assets/scraps/undeclared.json', /olistad artefakt i reporoten/]
+    ];
+    for (const [where, rel, diag] of surfaceCases) {
+      const base = where === 'zip' ? dir : pkg;
+      const parent = rel.includes('/') ? join(base, rel.split('/').slice(0, -1).join('/')) : base;
+      mkdirSync(parent, { recursive: true });
+      writeFileSync(join(base, rel), '# odeklarerad\n');
+      const present = existsSync(join(base, rel));
       const r = run('delivery');
-      undeclaredCases.push([rel, r.code, /olistad artefakt i leveransytan/.test(r.out)]);
-      rmSync(join(dir, rel));
+      undeclaredCases.push([(where === 'zip' ? 'zip:/' : '') + rel, r.code, present && r.code !== 0 && diag.test(r.out)]);
+      rmSync(join(base, rel));
+      // Städa bara TOMMA kataloger, nedifrån och upp. Ett rekursivt rmSync på
+      // `uploads` hade raderat det inbäddade paketet (uploads/p1/p2) och gjort
+      // varje efterföljande fall meningslöst — precis den sortens tyst trasiga
+      // fixtur som F1-H11 finns för att fånga.
+      const parts = rel.split('/').slice(0, -1);
+      for (let k = parts.length; k > 0; k--) {
+        const d = join(base, parts.slice(0, k).join('/'));
+        try { if (!readdirSync(d).length) rmdirSync(d); } catch { /* inte tom */ }
+      }
     }
-    const allUndeclaredFell = undeclaredCases.every(([, code, saw]) => code !== 0 && saw);
+
+    // SYMLÄNKAR. Får aldrig hoppas över tyst: om Windows nekar
+    // symlänksskapande redovisas det uttryckligen och provet räknas som
+    // OKÖRT — inte som godkänt. Samma prov körs i CI, där rättigheten finns.
+    const symlinkCases = [];
+    const trySymlink = (label, target, linkPath, diag) => {
+      try { symlinkSync(target, linkPath); }
+      catch (e) { symlinkCases.push([label, 'EJ KÖRT (' + e.code + ')', false, true]); return; }
+      const r = run('delivery');
+      symlinkCases.push([label, r.code, r.code !== 0 && diag.test(r.out), false]);
+      try { rmSync(linkPath, { force: true }); } catch {}
+    };
+    trySymlink('reporot/sneaky.bin → utanför', tmpdir(), join(pkg, 'sneaky.bin'), /symlänk i artefaktytan/);
+    trySymlink('reporot/tools/link.mjs → x.md', join(pkg, 'x.md'), join(pkg, 'tools/link.mjs'), /symlänk i artefaktytan/);
+    const symlinkSkipped = symlinkCases.filter(c => c[3]).length;
+    const symlinkOk = symlinkCases.every(c => c[2] || c[3]);
+
+    const allUndeclaredFell = undeclaredCases.every(([, , ok]) => ok);
     const afterExtra = run('delivery');
     // Ta bort EN leveransfil.
     rmSync(join(dir, 'support.js'));
@@ -617,12 +678,17 @@ group('M-22', () => {
     const allMissing = run('delivery');
     const autoEmpty = run('auto');
     const badMode = run('deliveri');
-    t('M-22 · delivery-läget fäller saknad leveransfil, tömd leveransyta OCH varje odeklarerad fil i ZIP-ytan',
-      full.code === 0 && allUndeclaredFell &&
+    t('M-22 · odeklarerad fil i BÅDA ytorna, byggkatalog, symlänkar, saknad leveransfil och fel läge (' +
+      (undeclaredCases.length + symlinkCases.length + 5) + ' fall' + (symlinkSkipped ? ', varav ' + symlinkSkipped + ' EJ KÖRDA lokalt' : '') + ')',
+      full.code === 0 && allUndeclaredFell && symlinkOk &&
       afterExtra.code === 0 && oneMissing.code !== 0 && allMissing.code !== 0 && badMode.code === 2,
-      'komplett ' + full.code + ' · odeklarerade: ' + undeclaredCases.map(([f, c, saw]) => f + '=' + c + (saw ? '' : '(ingen diagnostik)')).join(', ') +
+      'komplett ' + full.code + ' · odeklarerade: ' + undeclaredCases.map(([f, c, ok]) => f + '=' + c + (ok ? '' : '(FEL — ingen eller fel diagnostik)')).join(', ') +
+      ' · symlänkar: ' + symlinkCases.map(([l, c, ok, skip]) => l + '=' + c + (skip ? ' [kräver CI]' : ok ? '' : '(FEL)')).join(', ') +
       ' · återställd ' + afterExtra.code + ' · en saknad ' + oneMissing.code + ' · alla saknade ' + allMissing.code +
       ' · auto utan markör ' + autoEmpty.code + ' (därför kräver leveranskontrollen --mode=delivery) · fel läge ' + badMode.code);
+    if (symlinkSkipped)
+      console.error('◐ M-22 · ' + symlinkSkipped + ' symlänksprov kunde inte köras lokalt (Windows kräver rättigheten "Skapa symboliska länkar"). ' +
+        'De är INTE godkända — de körs i CI, där rättigheten finns. Se GitHub Actions-jobbet fas1-gate.');
     rmSync(dir, { recursive: true, force: true });
 });
 
@@ -932,12 +998,107 @@ group('M-24', () => {
       const g1 = gateIn();
       check('I delivery-basfall grönt', g1.code === 0,
         'exit ' + g1.code + ' :: ' + g1.out.split('\n').filter(l => /^✖/.test(l)).slice(0, 2).join(' | '));
+
+      // F1-H10 · Raden nedan läste tidigare gateIn().status. runProc() returnerar
+      // {code, timedOut, out} — `status` fanns inte, så `undefined !== 0` var
+      // ALLTID sant och provet passerade utan att någonting prövades. Ett
+      // villkor som blir sant därför att en egenskap är undefined är inget prov.
+      //
+      // F1-H11 · Provet är nu icke-vakuöst och bevisar fem saker:
+      //   1 mutationen genomfördes verkligen (filen på disk ändrades),
+      //   2 grinden kördes (den skrev utdata),
+      //   3 grinden var GRÖN före mutationen (g1 ovan),
+      //   4 mutationen gav en NY diagnostik ur rätt kontroll (fingeravtrycket),
+      //   5 utfallet vilar inte på ett allmänt exitvärde eller ett redan
+      //     befintligt fel — den nya raden fanns inte i g1.
+      const before = readFileSync(join(dir, 'support.js'), 'utf8');
       writeFileSync(join(dir, 'support.js'), '// muterad efter rapporten\n');
-      check('I ändrad zip:/-fil fäller', gateIn().status !== 0);
+      const after = readFileSync(join(dir, 'support.js'), 'utf8');
+      check('I mutationen genomfördes', before !== after);
+      const g2 = gateIn();
+      check('I grinden kördes efter mutationen', typeof g2.code === 'number' && g2.out.length > 0,
+        'code=' + JSON.stringify(g2.code) + ' utdata=' + g2.out.length + ' tecken');
+      check('I ändrad zip:/-fil fäller', g2.code !== 0, 'exit ' + g2.code);
+      const newLines = g2.out.split('\n').filter(l => /^✖/.test(l)).filter(l => !g1.out.includes(l));
+      check('I ny diagnostik ur fingeravtrycket', newLines.some(l => /fingeravtryck|artefakt/i.test(l)),
+        'nya rader: ' + (newLines.slice(0, 3).join(' | ') || '(inga)'));
       rmSync(dir, { recursive: true, force: true });
     }
 
     t('M-24 · finaliseringen och grinden prövade som riktiga processer (' + (problems.length ? 'fel: ' + problems.length : '10 fall') + ')',
+      problems.length === 0, problems.join(' · '));
+});
+
+/* M-33 · VAKUÖSA PROV — beständigt regressionsskydd för felklasserna i F1-H11
+   Ett prov som passerar därför att en egenskap är undefined, därför att
+   mutationen aldrig gjordes, eller därför att ett redan befintligt fel råkade
+   finnas, är inget prov. M-24:s "gateIn().status !== 0" var alla tre samtidigt
+   och stod grön i fem vändor. Här låses varje felklass fast i källan. */
+group('M-33', () => {
+    const mt = readFileSync('tools/metatest.mjs', 'utf8');
+    const st = readFileSync('tools/selftest.mjs', 'utf8');
+    const problems = [];
+    const check = (label, ok, detail) => { if (!ok) problems.push(label + (detail ? ' (' + detail + ')' : '')); };
+
+    // 1 · runProc returnerar {code, timedOut, out}. Ingen jämförelse får läsa
+    //     `.status` ur ett sådant resultat — det är alltid undefined och gör
+    //     varje olikhetsvillkor sant.
+    const runProcShape = /code: timedOut \? 'TIMEOUT' : p\.status/.test(mt);
+    // KOD, inte kommentarer: beskrivningen av felet nedan innehåller själva
+    // mönstret, och en naiv sökning hade fällt sin egen dokumentation.
+    const code = mt.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').map(l => l.replace(/\/\/.*$/, '')).join('\n');
+    const statusCompare = [...code.matchAll(/\w+\(\)\.status\s*!==?\s*0/g)].map(m => m[0]);
+    check('1 runProc-formen oförändrad', runProcShape);
+    check('1 ingen jämförelse mot .status på ett runProc-resultat', statusCompare.length === 0, statusCompare.join(', '));
+
+    // 2 · selftest kräver att mutationen FAKTISKT ändrade källan.
+    check('2 selftest kräver ändrad källa', /mutationen ändrade ingenting|ändrade inte källan|!==\s*read\(/.test(st));
+
+    // 3 · selftest kräver en NY diagnostik som inte fanns i baslinjen.
+    check('3 selftest mäter delta mot baslinjen', /baseSet/.test(st) && /nya/.test(st));
+
+    // 4 · den nya diagnostiken måste bära RÄTT kontroll-id.
+    check('4 selftest kräver rätt kontroll-id', /gav INGEN ny diagnostik/.test(st));
+
+    // 5 · ett prov som inte kan byggas får inte räknas som godkänt.
+    check('5 skipped ger exit 1', /skipped/.test(st) && /HOPPAS ÖVER/.test(st));
+
+    // 6 · M-22 får inte räkna ett fall som godkänt utan diagnostikrad.
+    check('6 M-22 kräver diagnostik per fall', /FEL — ingen eller fel diagnostik/.test(mt));
+
+    // 7 · M-24 måste bevisa att mutationen nådde grinden.
+    check('7 M-24 bevisar mutation + ny diagnostik', /I mutationen genomfördes/.test(mt) && /I ny diagnostik ur fingeravtrycket/.test(mt));
+
+    t('M-33 · vakuösa prov fälls — sju felklasser låsta i källan',
+      problems.length === 0, problems.join(' · '));
+});
+
+/* M-34 · dokumenterade grindtal räknas om ur controls.mjs
+   F1-H12: tools/README.md och zip:/fas0/LAS-MIG.md sa att Fas 1-grinden bestod
+   av 17 kontroller. Den bestod av 18 — CHK-T-20 saknades i uppräkningen. Talet
+   var handskrivet på tre ställen och kunde bara drifta. Nu räknas det om. */
+group('M-34', () => {
+    const gateSize = phase => CONTROLS.filter(c => (c.requiredForGate || []).includes(phase)).length;
+    const docs = [['tools/README.md', 1], ['fas0/LAS-MIG.md', 1], ['fas0/LAS-MIG.md', 0]];
+    const problems = [];
+    for (const [file, phase] of docs) {
+      if (!existsSync(file)) { problems.push(file + ' saknas'); continue; }
+      const txt = readFileSync(file, 'utf8');
+      const want = gateSize(phase);
+      // Varje tal som står bredvid ordet "grind" och "kontroller" måste stämma.
+      const re = new RegExp('Fas ' + phase + '-[Gg][Rr][Ii][Nn][Dd][^\\n]*?(\\d+)\\s*(?:kontroller|\\.|$)', 'g');
+      const found = [...txt.matchAll(re)].map(m => Number(m[1]));
+      const wrong = found.filter(n => n !== want);
+      if (found.length && wrong.length)
+        problems.push(file + ' säger ' + wrong.join('/') + ' om Fas ' + phase + '-grinden, controls.mjs ger ' + want);
+    }
+    // Uppräkningen i README måste dessutom nämna varje grindkontroll vid id.
+    if (existsSync('tools/README.md')) {
+      const txt = readFileSync('tools/README.md', 'utf8');
+      const missing = CONTROLS.filter(c => (c.requiredForGate || []).includes(1)).map(c => c.id).filter(id => !txt.includes(id));
+      if (missing.length) problems.push('tools/README.md nämner inte ' + missing.join(', ') + ' i Fas 1-grinden');
+    }
+    t('M-34 · dokumenterade grindtal stämmer med controls.mjs (Fas 0: ' + gateSize(0) + ' · Fas 1: ' + gateSize(1) + ')',
       problems.length === 0, problems.join(' · '));
 });
 

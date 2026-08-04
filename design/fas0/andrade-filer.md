@@ -1,50 +1,42 @@
-# Manifest · Fas 1 · femte vändan
+# Artefaktmanifest
 
-**Genererat allra sist**, efter att de fyra genererade kodfilerna regenererats ur tokens 1.13 och `fas0/kallauktoritetsregister.md` renderats ur `source-authority.json`.
+**GENERERAD FIL — kör `node tools/gen-manifest.mjs`, redigera inte för hand.** Byggs ALLRA SIST i kedjan, efter varje generator, och kontrolleras av `fas0/check-manifest.mjs` (CHK-MF-01) med samma enumerator som skrev den: `tools/manifest-contract.mjs`.
 
-**Reporoten** kontrolleras med **set-likhet**. **Leveransytan** kontrolleras enligt läge; en leveranskontroll är alltid explicit (`bash fas0/verify-delivery.sh`).
+## Två lägen
 
-| Läge | Betyder | Leveransytan | Fingeravtryck |
+| Läge | Yta | Krav | Set-likhet mot |
 |---|---|---|---|
-| `repo` | fristående checkout | får saknas | reporotsytan |
+| `repo` | fristående checkout | `zip:/`-posterna får saknas | reporotsytan |
 | `delivery` | uppackad ZIP | **varje `zip:/`-post krävs · set-likhet över HELA ytan** | reporotsytan **plus** alla `zip:/`-poster |
 | `auto` | markören `zip:/fas0/DELIVERY` avgör | delivery när markören finns | följer valt läge |
 
 **VALIDERAD LEVERANSROT.** Delivery-läget kräver att roten ligger exakt tre nivåer över reporoten, inte är filsystemets rot, och bär `zip:/fas0/DELIVERY` — annars exit 2. Traverseringen är djupbegränsad.
 
-**HELA YTAN, INGEN ALLOWLIST.** Leveransytan räknade tidigare bara filer som matchade en filtypslista, och hoppade över breda kataloger — `surprise.png` och `uploads/scraps/undeclared.json` passerade. Nu räknas **varje vanlig fil**, och bara **exakta sökvägar** undantas: `fas0/verify.log`, `fas0/manifest.log`, `fas0/verify-report.json`, `fas0/kontrollstatus.md`, `fas0/ci-evidence.json`, `fas0/verify-exit`, `fas0/verify-chain-exit`, `.thumbnail`. Symlänkar avvisas (`lstatSync`) och varje post måste ligga innanför leveransrotens realpath.
+## Hela ytan, ingen allowlist (F1-H09)
 
-**Genererade filer i manifestet** (sex): de fyra kodfilerna, `icons.json` och `fas0/kallauktoritetsregister.md`. Kodfilerna bär systemversion, tokenversion, generatorversion, källfingeravtryck (indata **plus** generatorns källa och den delade headerkoden) och ett **källdatum**. GEN-02 byte-jämför dessutom kroppen mot generatorns `--check`-läge.
+Varje **vanlig fil** räknas, oavsett filändelse och katalog. Det finns ingen filtypslista och inga katalogundantag — `assets/`, `exports/` och lockup-katalogen räknades tidigare inte alls. Bara följande **exakta** sökvägar undantas, och de är körartefakter som skrivs av kedjan:
 
-Undantagna i checkern: genererade rapporter i `fas0/`, körstatusfilerna, ikonmastrarna i `assets/icons/` (räknas av `gen-icons`, kontrolleras av T-05), binärer och `exports/`, samt manifestet självt.
+- `fas0/verify.log`
+- `fas0/manifest.log`
+- `fas0/verify-report.json`
+- `fas0/kontrollstatus.md`
+- `fas0/ci-evidence.json`
+- `fas0/verify-exit`
+- `fas0/verify-chain-exit`
 
-<!--manifest:files=113-->
-Deklarerat antal poster: **113** (105 i reporoten + 8 i leveransytan).
+Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
-## Reporoten · set-likhet gäller
+**Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
+
+<!--manifest:files=234-->
+
+## Reporoten
 
 | Fil | SHA-256 |
 |---|---|
 | `.github/workflows/verify.yml` | `18889417ae1fca6efa775b237641ad14aac9606d6f89c5c380255a49c4aae937` |
-| `00-spec-index.md` | `a83d032477036b7c743de358081672c228a82ed0c2187f321072ad07e24aa9f8` |
-| `animations-v2.jsx` | `33e9200b93f5eb416d294e1a1ffc6bebe75d2bee95817977a08fa896229be774` |
-| `arbetsplan.md` | `326221917cb77f0db4595c909d09d8ffe762ee11a5ee43f710d78c95cabfa81a` |
-| `assets-manifest.json` | `df7201da509c2359b5c35114a32a55755aa4647108cfb5824c1ae594144e64ec` |
-| `assets/brand-colors.json` | `1cc1e0243b46309c56a2c2686c6401bfa200f1cc70fafcbc68dc99f973102935` |
-| `assets/brand-colors.schema.json` | `7c16a20daa7be3856cbf48706940eeb065a44849cf8d6afd11fa4d9bfeeaf0af` |
-| `assets/fonts/FONTLOG.txt` | `8689d6943baffaba05292edfe74535114fa83d1f6d30c7d225ae075ed3d614a8` |
-| `assets/fonts/OFL-1.1.txt` | `863bba7ab7d16d6f0c37470f60b9ad03607ea12a73bbbd1317b0fd505e5756f9` |
-| `assets/fonts/README.txt` | `84b43a68e61b394d690b95f5ca58d51ad0c35878a24ecbd4a680038378d54706` |
-| `assets/fonts/THIRD_PARTY_NOTICES.txt` | `df63ad80acf18f06440975818dfb22f526dda320794f639d034125172538b1b1` |
-| `assets/fonts/VALIDATION-0.626.txt` | `ffe23fedf47e3f1d51a4e87bf147da7b19ac180c806518faada8adfbaa4b1c94` |
-| `assets/generated/tokens.css` | `5799c42843a2d0a5c39e803285ed9b6363cae458c8fb166515eb96d162fd9ec7` |
-| `assets/LICENSES.md` | `17d5f6fbdf80c3ccee9e420a646c3ebb03ec7a188eacb7a42eaae857ac942b95` |
-| `beslutslogg.md` | `25aef6833c0ddc57d6d5239413c864c5edb60698c640975b0ac21ff51a6f2fd3` |
-| `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
-| `Butlery beslut grund v13.dc.html` | `ce0aaa76a62fb6616d58e93fdaabd1c5b185bdf87ac11bfb60a91b3f7b324eaf` |
-| `Butlery beslut kalendermatt v1.dc.html` | `8fb980fb2eb6c9805c14e8d1bc15421e3e57e5656df1d1ea735314b200f1cdb0` |
-| `Butlery blockerande tickets.dc.html` | `dc8d379aaa1469f94d5189923972e6a498d5f5441e347e226dbef7eb19215e39` |
-| `Butlery ceremonier rorelsereferens.dc.html` | `19cc633fbbfb4f1526430099e077557e8a6b0281e10fa2b1b02f51dc8a3aff9b` |
+| `.thumbnail` | `c46e64bfadb3139f1a1f25f416ffb3492b4f206bd7cca938c3efc82563e83017` |
+| `00-spec-index.md` | `281a2717b380a5defaea82c46b0b6947d542a726ff681c7b5b3526cd204e8057` |
 | `Butlery Grafisk manual v6.dc.html` | `3879f2b3451f47de109db76b05f4fd18361f7c1318bebc625c1bdeca6fbd2964` |
 | `Butlery Komponentark v1.dc.html` | `78f27a546502c7d2a9cb99aa954d6cd8ba3b5d18f1694aac2d9db1496ff1ed47` |
 | `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `b473330181de718ddeb92c6bdcd287ad7e3a9545055806c9333d67205ab6b8cc` |
@@ -62,31 +54,164 @@ Deklarerat antal poster: **113** (105 i reporoten + 8 i leveransytan).
 | `Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html` | `7dc8d002f638756aa48396476721cffc95177dbaeac87d2f51b03ebf4d25bce2` |
 | `Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html` | `c906904b10eada66833c99058a4922c69351c17fc49e1d858e76bc82bec9f8dd` |
 | `Butlery Skarmar v12.dc.html` | `c1b435cf7c470ebe31db64b82b5fc4ee94993391801130edee761f1540c893b2` |
+| `Butlery beslut grund v13.dc.html` | `ce0aaa76a62fb6616d58e93fdaabd1c5b185bdf87ac11bfb60a91b3f7b324eaf` |
+| `Butlery beslut kalendermatt v1.dc.html` | `8fb980fb2eb6c9805c14e8d1bc15421e3e57e5656df1d1ea735314b200f1cdb0` |
+| `Butlery blockerande tickets.dc.html` | `dc8d379aaa1469f94d5189923972e6a498d5f5441e347e226dbef7eb19215e39` |
+| `Butlery ceremonier rorelsereferens.dc.html` | `19cc633fbbfb4f1526430099e077557e8a6b0281e10fa2b1b02f51dc8a3aff9b` |
 | `Butlery tillganglighetshandoff.dc.html` | `d4f0ea3be4dcf1a4fd7dfe71963459b3085ab658f2a1ee12169c987410473321` |
 | `Butlery utestaende beslut.dc.html` | `a42589af8458f36e700689d3daf8fb5be688ae04e607c5ed1e44743d8863e536` |
 | `Butlery-app-icon-gradde-platta-R4-6.svg` | `5003745e69f7fb491a5dd5487f1f4a2e98a803d691efc9e826d05d8e1a3d78cf` |
 | `Butlery-app-icon-monoline-R4-6.svg` | `09b3a6e2548ee1b906b81f2c5a22bb5f304fa09158dac1a6fc7544c1cb6dd377` |
 | `Butlery-app-icon-negativ-R4-6.svg` | `4e4a7e673550dbd3c2c55d9c2757099d60d9c34101822d84d5cfc63995f82ffd` |
 | `Butlery-app-icon-solid-R4-6.svg` | `f5e6739bfdf1fb110f630097a5733844d3bd2be23d3e19798f3e66f105e050d9` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-horizontal-centred-light-L4-3-outlined.svg` | `d9b104c2dfff040e4e4087a7c4e8b2690be2bc39dc1dacf75763e0bd4de6a041` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-horizontal-centred-reversed-L4-3-outlined.svg` | `cc0f3ec358ff15ebe01584b74b40c97054c88b7242fc02e7665b51142a4f25f6` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-horizontal-centred-reversed-transparent-L4-3-outlined.svg` | `76059538af72a05151e241caf80c4197207ef1f486f35a933e14f06b15ac3e6d` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-monoline-light-L4-3-outlined.svg` | `29a566475250a5e0ae2b337240219c0f6d73915959b58c7741afe550f5d28cb8` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-monoline-reversed-L4-3-outlined.svg` | `be58af273c3581228b760f579d5f066c411363facdf06cc8f8616e5974c036b5` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-stacked-tight-light-L4-3-outlined.svg` | `348a46c4f1bdded79aaa5bf76d81081cc28892c8f0136dd9048a7463d1203b13` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-stacked-tight-reversed-L4-3-outlined.svg` | `5f07a457af7a9ffeab4f6d3a3d02ebb6ce92413fb7de70e8b5057f904397459f` |
+| `Butlery-lockup-family-L4-3/Butlery-logo-stacked-tight-reversed-transparent-L4-3-outlined.svg` | `2c91d8d75c8acacf0c60601891169c168f3aed9fd0fbbb89e502dd8cf3e234c1` |
+| `Butlery-lockup-family-L4-3/Butlery-mark-micro-light-L4-3.svg` | `c63d56b4bd9a35effc1dc7aeed8e263bbff2b814b946f6ee98772b282df8f8b2` |
+| `Butlery-lockup-family-L4-3/Butlery-mark-micro-reversed-L4-3.svg` | `ad833989b42eab78b823087e662c9451ac9f6665408a9810a32b3cbce7e76d09` |
+| `Butlery-lockup-family-L4-3/Butlery-wordmark-light-L4-3-outlined.svg` | `bc107250280d4aa21d69e5d9269bce78b18a4e81b1282d12827fc2e808087746` |
+| `Butlery-lockup-family-L4-3/Butlery-wordmark-reversed-L4-3-outlined.svg` | `f490e61aa99d9be40b17682446167037ba153f21e0049fd164e2ab9bb91edb6b` |
+| `FONT-VERSION.txt` | `b9b7731a213a7f4ae7d36bb8a5bdbb9ebd91c4dd093b8d08443d3a397e92cbcf` |
+| `LAS-MIG-GRANSKNING.md` | `5305b92b1b958396e51e5985128f6f2b43f90415d8afa9445aa3548cb1fe8bdd` |
+| `animations-v2.jsx` | `33e9200b93f5eb416d294e1a1ffc6bebe75d2bee95817977a08fa896229be774` |
+| `arbetsplan.md` | `326221917cb77f0db4595c909d09d8ffe762ee11a5ee43f710d78c95cabfa81a` |
+| `assets-manifest.json` | `df7201da509c2359b5c35114a32a55755aa4647108cfb5824c1ae594144e64ec` |
+| `assets/LICENSES.md` | `17d5f6fbdf80c3ccee9e420a646c3ebb03ec7a188eacb7a42eaae857ac942b95` |
+| `assets/brand-colors.json` | `1cc1e0243b46309c56a2c2686c6401bfa200f1cc70fafcbc68dc99f973102935` |
+| `assets/brand-colors.schema.json` | `7c16a20daa7be3856cbf48706940eeb065a44849cf8d6afd11fa4d9bfeeaf0af` |
+| `assets/fonts/ButlerySans-0.626-Bold.ttf` | `ea2f924134a732405fa7d28afe64a899ef79f8ba5da8b18630f3f6d166477042` |
+| `assets/fonts/ButlerySans-0.626-Bold.woff2` | `7295ac71e238c47d2238dabbb0f3df49eabe87d56333b1e144190aad3fbce923` |
+| `assets/fonts/ButlerySans-0.626-BoldItalic.ttf` | `d01decb05f071f87929d6f3cc39a67524079309fe7ba7358976b95421fd5519d` |
+| `assets/fonts/ButlerySans-0.626-BoldItalic.woff2` | `6d444a74361d4b0456fa6938bc087cf620e35cb296febb6d68f1031b95076c5e` |
+| `assets/fonts/ButlerySans-0.626-Italic.ttf` | `a1541fed0877543028365157e0aaa5bb3187ca5fadc0ff11171e17b959feaf6a` |
+| `assets/fonts/ButlerySans-0.626-Italic.woff2` | `4ad720fc84a440e99a2e7168fd555d2ff1d69413a524b811303fd2f37bd65024` |
+| `assets/fonts/ButlerySans-0.626-Regular.ttf` | `d2cfc327caaa0cb4a1426f232af6d6d209b3f10ae0479bed6a1d64f38ad53789` |
+| `assets/fonts/ButlerySans-0.626-Regular.woff2` | `736fcd08f3edade14b9e6256fc84f1d6ee621303f28bcf827d67e603d9bc41aa` |
+| `assets/fonts/ButlerySans-0.626-Semibold.ttf` | `0f985fa4a8c9b93fd68e81ab1540bdd4728bca461a5787963211a21a63073904` |
+| `assets/fonts/ButlerySans-0.626-Semibold.woff2` | `5231db76313fe70266b197d3733862e61ea6164d40ccfe7a0d149311d2dd081d` |
+| `assets/fonts/ButlerySans-0.626-SemiboldItalic.ttf` | `0cbecdafa851a2744565b91566b0811208a2216621d7bea29b94135d2726b70e` |
+| `assets/fonts/ButlerySans-0.626-SemiboldItalic.woff2` | `6fb9ff67614e4f8fce78773a144755c0bf5c924616345f93f0dd78cd301ccf21` |
+| `assets/fonts/FONTLOG.txt` | `8689d6943baffaba05292edfe74535114fa83d1f6d30c7d225ae075ed3d614a8` |
+| `assets/fonts/OFL-1.1.txt` | `863bba7ab7d16d6f0c37470f60b9ad03607ea12a73bbbd1317b0fd505e5756f9` |
+| `assets/fonts/README.txt` | `84b43a68e61b394d690b95f5ca58d51ad0c35878a24ecbd4a680038378d54706` |
+| `assets/fonts/THIRD_PARTY_NOTICES.txt` | `df63ad80acf18f06440975818dfb22f526dda320794f639d034125172538b1b1` |
+| `assets/fonts/VALIDATION-0.626.txt` | `ffe23fedf47e3f1d51a4e87bf147da7b19ac180c806518faada8adfbaa4b1c94` |
+| `assets/generated/tokens.css` | `5799c42843a2d0a5c39e803285ed9b6363cae458c8fb166515eb96d162fd9ec7` |
+| `assets/icons/archive.svg` | `cf161abb7df09faed9bccb69e17efc0c85b134b4a522d6654c45201e3706467c` |
+| `assets/icons/arrow-left.svg` | `f86261b82b6c3df65ab8f027335d56dba6cf3131c76929398d59d0da0bfb3cc3` |
+| `assets/icons/arrow-right.svg` | `b9961b118f5627bb77b489e57f106607380d9a240e86da37f6868c53ae9c9010` |
+| `assets/icons/arrow-up-down.svg` | `b53019824302c6aea237fc64a16696d3e884b75d728ebffb3f0ccd7c2388118c` |
+| `assets/icons/bell.svg` | `22eee821e457234d522d88f4e94ebbea116ef98684547880fb87a064453856f0` |
+| `assets/icons/block.svg` | `dc701131d77c12ff65f8ea1dc40aa560072cc654d4731bdc6c3aefd8e97487c1` |
+| `assets/icons/calendar.svg` | `9a9cc1995eda1c9306b831b4b4e6143d8eff858d96912294828169c063048bc5` |
+| `assets/icons/camera.svg` | `df02deb0b63ad4b6e122edc142adf10c3c84468f1387b79ffa6d2a515cc7cf2d` |
+| `assets/icons/check-square.svg` | `52aa916993e709ee1f5510463976c914e73e90250e5ccc4be70f04e4eb3b0b24` |
+| `assets/icons/check.svg` | `3953c377a49c920265660c2d5bf931774926494ac5efcd10d01c7aac13943962` |
+| `assets/icons/chevron-down.svg` | `38e65b48c1e006483551dfcf742f20cf63505cd35fb6a5c2b25084ff7e3565b9` |
+| `assets/icons/chevron-left.svg` | `2fd5cf77e29abc9e2cc1b4865cb7e5ef00b0d1ac5e3c98d02a1ac6834649e646` |
+| `assets/icons/chevron-right.svg` | `3879fe334bb7d761e670a7172dbc535b6b634ff78a725b7060ab346783151fc0` |
+| `assets/icons/chevron-up.svg` | `c817de8f05743addb7f47a84573ca8b10afb4755b536a588aae592dd1cbbf34f` |
+| `assets/icons/circle-check.svg` | `3fa65a65dd97fb9b3aa68ec61a478e9fec38e6bc5a5f2ca3074efe114c922894` |
+| `assets/icons/circle-help.svg` | `69914710a241d634cfa519383fdd96168525ba885762a6801c4e7d876527d153` |
+| `assets/icons/clock.svg` | `acf0fcdb418356b28a9f6409b4af80556b09d0b91f9a4626404718988e111bc3` |
+| `assets/icons/copy.svg` | `43a196b715896b06fbdeb61bfb7218400a08721e951aa5d0ed5de0b132c46d7d` |
+| `assets/icons/download.svg` | `d8e81a1f9c9c8e6c46a4d42f3489461b6ac34475f72ba4b5aa998362a75084b4` |
+| `assets/icons/drag.svg` | `852691c116150bb901347f85b3a3434107ad5ec6eab3769968b455390f9c8791` |
+| `assets/icons/drop.svg` | `c200a1b843f6a937785b1552f5074a58d28a37403ba59aec921db80b5a41c1dc` |
+| `assets/icons/export.svg` | `12fc498ccab1403ecf3bb45fe695cf59d2de101470563df2c147df79fac58586` |
+| `assets/icons/eye.svg` | `e3db961457292ae91a895e7e61143621da90f7e80ca3247eb9c6022f436ae98d` |
+| `assets/icons/file.svg` | `f06efb89b828daec1dca7ef406e8829ec10b3c190c8e86b0bd2de14c15a4a9b4` |
+| `assets/icons/filter.svg` | `f3ebb296b5543ed991d287c335a1a6a52face98a6cdcbbf46d8d7b16bb424260` |
+| `assets/icons/folder.svg` | `42ce942bb5263b904c5560a9dc9458414f7429bb4f2c2156f6c8eadfac538024` |
+| `assets/icons/hand.svg` | `c994c30df2b39264eae3f3a92876010ed408573fcf98d0647ec449115bf01099` |
+| `assets/icons/heart.svg` | `38d863fcaf65b283eac5f90ac322455e5d99d5401b17d2a2c1c8b40c877b094d` |
+| `assets/icons/house.svg` | `d25fb6197c5b5a1956eb894d9f3da066639bf4495a481f24a47aaf99402f0f02` |
+| `assets/icons/image.svg` | `4eba3e45b0cd0750bb631fb98f381168f188c8ca290a0f11d00056788a306180` |
+| `assets/icons/info.svg` | `bbf92e1d2d682c1e34ce40e433cc9ad180ecb9761fd280c9358de0c5e073619f` |
+| `assets/icons/link.svg` | `a7c4c166ede8c89b2635e7546842c1fcb3d4156df103953fcdb4d133a17c1c57` |
+| `assets/icons/list-check.svg` | `1c13cfe9b8c0222b91442fb58b0fdcd2d39b2240546bc1882068987cb1616fcc` |
+| `assets/icons/list.svg` | `5ca9f5560f724014dee4593f1fd262f20fe21cb446a88b15864322bc00709d55` |
+| `assets/icons/lock.svg` | `61c387edb960f8f932c3fe177dd998d9a32b10d7f121a5906b709d7445ab36a8` |
+| `assets/icons/mail.svg` | `77c1df936427dc675647b5d0f9b450b78604f2a411c06f59e57c825643908c46` |
+| `assets/icons/message-square.svg` | `856a6f2c0da6d090f3726ecd16a3b9279878f213961ddf5cef56f71a5f4dfc70` |
+| `assets/icons/mic.svg` | `64ad366b5a1be09dc622e52835a686bd7bfede5e870ce0668f8a3477415a4b08` |
+| `assets/icons/minus.svg` | `e7d7352faef80ab07591bb0c2dad207382020e3c744898839a712b7e6f35f599` |
+| `assets/icons/more-vertical.svg` | `ec0ed34c4fd381a1aad564fd4589cff0be55ffd1f77fdb82518d7b860cf9cd39` |
+| `assets/icons/move.svg` | `0961e9a9df076e4a725e0edfb55ba812561e77f4d18bf0c2f2810c9bb2efa204` |
+| `assets/icons/nav-add.svg` | `039f65079658b8dce9dd089e10f8402ce3359c3e4ea892be3cbe2f73f359ddb4` |
+| `assets/icons/nav-home.svg` | `a578ecaea9b79235445ca39760de8b7831341abeee031a89594dc5ea6f2c4cda` |
+| `assets/icons/nav-more.svg` | `c4083aef7629e441b966e21dd3fa8740ff0bc6dc496e7ff553c3576adc44ef31` |
+| `assets/icons/nav-shopping.svg` | `9097e89b774b972081522c4db3d4ba8b54b7c38458776102039b26b9808ce8dc` |
+| `assets/icons/nav-week.svg` | `570e33c0f2cafc36a65c462878ff83bd46302230d0dfc4b68d369cd486a0cd30` |
+| `assets/icons/paperclip.svg` | `306954cf36deb0190f64efa3d9bbf4206433ad3875a1534244213bcd6b213676` |
+| `assets/icons/pause.svg` | `0da78f3a5482d0fa11dc62dc3d40c3b95b5965ba04ba41a6ff1a5bcb269cfb74` |
+| `assets/icons/pencil.svg` | `fe02e1ce7ce066839f7b95d080b3b9990a15f0da6e97a957713771fbf9672565` |
+| `assets/icons/pin.svg` | `65386a798275ec45cd97c474589a7fb3caf6d038378f855899e1c05009525137` |
+| `assets/icons/play.svg` | `c5ad74fdbbbd6163e2dd9dd861bf97bd16669dd1e40340c1187943ddf31b9ccc` |
+| `assets/icons/plus.svg` | `91c960cd589b4feb75c4009b7ecc393d7da8c534498d19c33d8eb250bec308d9` |
+| `assets/icons/reaction-add.svg` | `e3d91c36d51c3f2cfb00d598bf602e5e21a559a17d847348e6fae1b08f612e3b` |
+| `assets/icons/refresh-cw.svg` | `686de34b4c51308307815ac94996e2c86ef51e164987f1a4f805f790f0e2e46b` |
+| `assets/icons/search.svg` | `ea2ad628a5da3cc4bf4015b58e185d84a9821f23d99e456cabc9330a923a5c48` |
+| `assets/icons/send.svg` | `8e5241043f15c2e35f4121366ce277a2e61377cd90bb230bee6c004ab2ecf27f` |
+| `assets/icons/server.svg` | `9e4d142c0500738dd2e188eea21ee06e8babca7ffd7db149251c1bfc53574b9a` |
+| `assets/icons/settings.svg` | `ec92c7623ef2957b0de1250aeb2ea70d271f4fca261052cfcd1a7f0fbeb4d859` |
+| `assets/icons/share-2.svg` | `ec6e9578c11cd2fcc56549ec062f89f7a1ee09c07b540f099ce9844ae66c4f23` |
+| `assets/icons/shield-check.svg` | `71ea758902bf3c5da1c25c945cd645a241aba739405d63645293ba3801c3fb43` |
+| `assets/icons/shopping-cart.svg` | `3f3f22643c6fc991f675ed531d94924c466aa395074fc4f8186fdaf740fd54c2` |
+| `assets/icons/shuffle.svg` | `c4e424f45c343c8100847dbf073e7074812b3e66d4c550b2d2b759b6c4890fe1` |
+| `assets/icons/star.svg` | `a56e43c990b8f22116a5c25628b984a62904f7246ea9b65d9affb4397c86512a` |
+| `assets/icons/stop.svg` | `3f8e1f8a8fffe5ba9eec6541a2180842de805e71f076a1b1585c46603b974ee4` |
+| `assets/icons/swap-horizontal.svg` | `081cdcc7db1dfa60477cc68da64d8e40b11ec242cedf245bb66f5b5afbbda1c6` |
+| `assets/icons/tag.svg` | `52ff495d873c7a8269d5c578a09f696e62ca27dc21f12d240b4151f4642d5f76` |
+| `assets/icons/trash-2.svg` | `1df8ffcca6bea783222fbac4401644b37a0cc76a98c46e580b183ff95169c8f8` |
+| `assets/icons/triangle-alert.svg` | `0fd28c0cf073d41a25ece79bb3952af2bcd2d3e4b76074cc8248e5ef33c7680d` |
+| `assets/icons/unlock.svg` | `4163946e11e1d809f0f2907a20354c2c873868ba246d5d5ff08f2ea3e0c5b3b4` |
+| `assets/icons/user-minus.svg` | `29dc5f846acb3475cefacac3f6f76551bed5460339029c41441baabe2d5b33f0` |
+| `assets/icons/user.svg` | `14a950331bb0157d2df5f9c15b3f45b8168b7df4352e5e3cc616be3cde776030` |
+| `assets/icons/users.svg` | `016591ebbea8ed2a154c543c0a6ee0742d7ed7f7913e7df114632010914d9d87` |
+| `assets/icons/utensils.svg` | `de1d721e3ea3a4808b99d19ecc8527fe4fc3d4739a0d5203886c46d159634bc9` |
+| `assets/icons/volume.svg` | `0b030431c9b748ebad8d1871ed68a4aedcef63218fbd83b9de14a4780004f145` |
+| `assets/icons/vote.svg` | `f270cd1eb328d1a7c8b0d52a20c1c27c8d736560ea388b930e9ebf5e94a6b573` |
+| `assets/icons/wifi-off.svg` | `90d085f0a8a5c3d805c2e4581764e20353369060bf7f351a922cd73a63b61a90` |
+| `assets/icons/x.svg` | `966b860fe25929778bc7213e5b0c9d6ac2605bef611c2ca5fb303c9cd54aebaf` |
+| `assets/icons/zap.svg` | `9f65150beb5e8550ac1d810574474220396e2f0f72a8596f79be018db214a5f2` |
+| `assets/illustrations/butlery-ill-bread-basket-dark.svg` | `6f9b5a5a2afebac602d2d9bce9e8efc47cb565d8ff3743b1bc08189ca61d22f8` |
+| `assets/illustrations/butlery-ill-bread-basket.svg` | `fc4326e161d22d351057dc560da2dd7b75f8cef13f303a10d23ef91ff7844b14` |
+| `assets/illustrations/butlery-ill-cookbook-dark.svg` | `83ef4a7878cc74b418dd4079a9a3ea4b8128d0ee9ada3b530930c0f7f0b05fdc` |
+| `assets/illustrations/butlery-ill-cookbook.svg` | `8c8c2b4ce86ca99ebc0c4e9a334137a72935af20bbffcbfc11df3a20bd032278` |
+| `assets/illustrations/butlery-ill-empty-plate-dark.svg` | `f2e55dd5759cb0929e2cc53349d97fe79ea294d891fbcd2bba7b1fd6986e9869` |
+| `assets/illustrations/butlery-ill-empty-plate.svg` | `1fce33a45052f335c4cc4537bff873ba84417ad5a676e7d5a797e8f5b613a393` |
+| `assets/illustrations/butlery-ill-grocery-bag-dark.svg` | `b0eeed53ee36d1d9749005796b5b170f3b62df81cbad6e889e88c9ce80c22759` |
+| `assets/illustrations/butlery-ill-grocery-bag.svg` | `30f73deaf9bcf0ea9b40631326c846b87160e6c4e3f164aab071251e0d05cc51` |
+| `beslutslogg.md` | `25aef6833c0ddc57d6d5239413c864c5edb60698c640975b0ac21ff51a6f2fd3` |
+| `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `butlery-tokens.schema.json` | `3757e0005ea613416f00a73ac67a3d7303d46a9468feb0ca2f5dc553fa90891d` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
 | `content-style-guide.md` | `cb4fe9e93fe8286a394570353c8fe0d57f39b276a6eaff647129cb857cb570fd` |
 | `evidensmatris.md` | `0d9a6f3ad09b8461644eb7578a462c797495c24f1433308494b8436ac7c7ad81` |
+| `exports/android/ic_launcher_background.svg` | `81044da47484b9cc4affbcaaecc26524ac7bcea67185bc46258c370291e09dde` |
+| `exports/android/ic_launcher_foreground.svg` | `7fb789ae266c96e4193483deb33ada24be8f110d93ab6588aa2d2a906fb87327` |
+| `exports/android/ic_launcher_monochrome.svg` | `a03249354c03d5723cec56a38ed7514384ab4109531da449a02268075d399ef8` |
+| `exports/ios/AppIcon-1024.png` | `2bce7e0b683b3054285607fb19d3a58706b483a69ade344c1e90fcfed74b036a` |
+| `exports/ios/AppIcon-1024.svg` | `671dbabd32d82447548055e7215ccaf4a98f3b64259cad8cb91c227954734264` |
+| `fas0/LAS-MIG.md` | `5e99d40df92c4b5c68024570ce15d38bbd9037bb05978b7b71b61f28c18fde82` |
 | `fas0/baseline-report-SUPERSEDED.json` | `12e79a51948917b6481ae31192b53a751e86e42b64cd44b341a5c41518fcb3be` |
-| `fas0/blockerar-fas1.md` | `bece3d1d1e15f0a57fddf882e7a58f3ed2c97021a31ff2d6a0655d2febd57518` |
-| `fas0/check-manifest.mjs` | `977c1b4717ead3de0f817e2024169f617b5f34c74565138582d9b2a9e6535fb5` |
-| `fas0/kallauktoritetsregister.md` | `43fd7373f260bfe5887cf3cb554584f59a238eb6b2d51255e81463320e4fb68c` |
-| `fas0/LAS-MIG.md` | `f36b6774c9cf53c155ee3ca5e31d1672ad70495f0f7c2a0da4512381a814baf5` |
+| `fas0/blockerar-fas1.md` | `5a8189af818cb65b73009bde3638a9d12902b3043c56b6ea7e1ff742c4ca20e1` |
+| `fas0/check-manifest.mjs` | `dd49a98c4a2e91110ae77128f9a6338e097de8ba19a623301ef77932169b3e35` |
+| `fas0/kallauktoritetsregister.md` | `5089268cc09fd5ec6c3e4afc24fa82182b2a0f68dec4b42dbec93d81dd7aa189` |
 | `fas0/run-verify.sh` | `8cfdac6f33d8683f50ad4ca962a0f849917e4911e998c9177ae0587640cb36d7` |
 | `fas0/verify-delivery.sh` | `b793ff7225563b71520127c41614a8c1f2e03f7f72780cadc63911d0e4d1e5f7` |
 | `fas0/verify-report.schema.json` | `70687a2337ca6fe4a4419089983d8dfda52821b9af4799b4dabb03dfe9ac895d` |
 | `flows-roles-budget.md` | `d9d66bc1669e65ec4f9769efc0b7b66885b4e8252e6dfb7345ce0c8da19d22f6` |
-| `FONT-VERSION.txt` | `b9b7731a213a7f4ae7d36bb8a5bdbb9ebd91c4dd093b8d08443d3a397e92cbcf` |
 | `granskning-v12.md` | `0e1f0409c370e9a82dda87ae43379660c3b404e5ff2de5089f0fb69262da7d37` |
 | `grundgranskning.md` | `019015ca6aca9fc50b54e5769b2099f410dac33e1f6d3f215546932be4cc1728` |
 | `icons.json` | `ba05efada07608a40cad09da0a8adf87c5f57d65023f66fb73139bc2953223c2` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
-| `LAS-MIG-GRANSKNING.md` | `5305b92b1b958396e51e5985128f6f2b43f90415d8afa9445aa3548cb1fe8bdd` |
 | `legacy-api-contract.json` | `d80c3482657f2698a28d98f76fde20209373e7864d83017021a874fd7c004618` |
 | `legacy-api-contract.schema.json` | `0196feab113bc269adc411eb4c60e8869b293ce658d0908959cddd7b7ec670ce` |
 | `lib/theme/app_colors.dart` | `88d091799771f4178ccaa1912deccbca3e06689e761807300059fa29ade5d8c8` |
@@ -96,50 +221,55 @@ Deklarerat antal poster: **113** (105 i reporoten + 8 i leveransytan).
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `8e7b7cd9faaa64ac6ebaadb92b748ff253b2883831d036d6144ec25a99ef96f9` |
-| `source-authority.json` | `584c48b544bcbbb740e9cb59f0ca140fb5f9fb077c14e5eb2515de633b41d311` |
-| `source-authority.schema.json` | `f3fc496857d6a5ee2f6f79e9ae35a3d06589e2920a29be5d3a4b0be4358f8c1e` |
+| `source-authority.json` | `674f7ff4631212db26cf6a78edf6c49a50134a5fc35d056156a0dd54c911eb63` |
+| `source-authority.schema.json` | `678a47c72544c43cb4bce181bbd1cad94c27afa2f83c3e7c608550df57c5941e` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |
 | `testmatris.md` | `7da9f1a7038b53e553186a1fdeea041110ed36e5ccf885e716b8bf005c0dc5de` |
 | `tokens.json` | `444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02` |
+| `tools/README.md` | `179716f8972379cbd869729c8768370ed2baab698c1eabd2ddb3b32a8c5c7fdd` |
 | `tools/app-theme-map.json` | `7d2b2a1e90ed24b97715ec4decacc2b9ed4d5b5fb10dc52f398e922368cd2c7b` |
 | `tools/app-theme-map.schema.json` | `540c09035681771786f7884abb098468e3382682f1e5dde6e98b9e2a829fd387` |
+| `tools/authority-contract.mjs` | `5f12a7f64853b561cc649cffacf2c83b445a88b7f66119bb02d0e49e012557ee` |
 | `tools/check-app-theme.mjs` | `3ec46efe91680b7050662962c1f117d5dc9a2653ffd1f9437a67a0a72217b745` |
 | `tools/controls.mjs` | `33637e081d8463b2776d044ced1a6e5e1f64e0f291133ae1e7a63105ca76590c` |
 | `tools/finalize.mjs` | `74fd11be650ad6a50a4c6817c06bac45dd1815c97faf524cd59c41f91ef0afd1` |
 | `tools/gate.mjs` | `02917e6f14ed023585a1496630ba68b1b9dea5109ab991f5d1a5a931195ba4f0` |
 | `tools/gen-app-theme.mjs` | `f07136386c267f52bda54a0e5b14523fa41facb615f276befc3b9c140f17bd01` |
-| `tools/gen-authority.mjs` | `a2fcc473b2490c4e4d5ac7749678e3bb47ddfadc21b94e189cac4733fec9a801` |
+| `tools/gen-authority.mjs` | `be7166fe1341419957a009554506e8f8e789fa0ecea87983b30dfddd3b44233a` |
 | `tools/gen-check.mjs` | `f52d62056ee0b58cb2f718f64a57ce422fa73fd21079e9dc666d5307b51f31d4` |
 | `tools/gen-counts.mjs` | `d74c3921589f23e7ec5d3d5208565677b04daa7833ae3f6af65c7d522fa869cd` |
 | `tools/gen-css.mjs` | `723681243b90cc2703aefc9874d6421b248940a7c6884c316bc23b7daaf24d1b` |
 | `tools/gen-flutter.mjs` | `112c73ba2c1808d845c692d26145854a22bfb89f9e7a9b3098c64742a92fd984` |
 | `tools/gen-header.mjs` | `9c3b95d6d5e0a4f9e13d4943df07aca82c113eae55cf17e3b93800e59e97d508` |
 | `tools/gen-icons.mjs` | `25e45becf2b0c0dd538dae54f7f0b74d2cd6ddc9095d9bd2b2b95f8f44e291ea` |
+| `tools/gen-manifest.mjs` | `a6dcb2d72a54e24f3bdaf284e8aa21b6b0113d234ad8f8e4f2962e5b70adc7ee` |
 | `tools/gen-report.mjs` | `8e32d2530c1bf94ebc032f626e58764f99b8ec8f965633cbcf4d9fab082d432e` |
 | `tools/gen-schema.mjs` | `1d276054d4fb6976fc8e1005626d23467c4c21bb5d48996016e883312cb74a84` |
-| `tools/gen-targets.mjs` | `3c6a4e4b34199c7296b88575a437e05fdffc9ff306badd2eefd0b27dfd3aec91` |
+| `tools/gen-targets.mjs` | `ac227e794e3b41d842cb2195a1e9f708726a96b582ed00eda4e1a686cb9b7b53` |
 | `tools/lint-controls.mjs` | `07350d4dd8b167c772f9ca145cd69b92ff0418632c2252d434b7d9ad59f6c244` |
-| `tools/lint-core.mjs` | `0c0430549a52685a4ea377454f3b476a02929a48142ac8bd9d51df150d7d1ca4` |
-| `tools/metatest.mjs` | `1e72538bfd5b9e2e0f33acf291ec7195760f0afc353947e447a86277e6e073b0` |
+| `tools/lint-core.mjs` | `85131d1a65cf4333afb71df0a9fb2edc873b2869533db9f3eeca4e52be49a16b` |
+| `tools/manifest-contract.mjs` | `ac03ad3a6bc519af29130dd452ba4225019572342a579a2383299bb53a26d75b` |
+| `tools/metatest.mjs` | `d48ea24b028f407d2dffaac30a67143ce91cfa21e71eb63f77803253546b4d27` |
 | `tools/preflight.mjs` | `3fe3bfa0e6f92fcb71ca5d19aa2c8e5e9df307f80eb3c8fe4dee09f173d5f3af` |
-| `tools/README.md` | `8c98b69e11e94391d883fc41cbeaffd1a5544e37eaa1e2adb767b0015fb93c6e` |
 | `tools/report-logic.mjs` | `62b38358e6d8f77dd31a52ef6cde1061ec4a5d03b390204ec0ff51505b30258f` |
 | `tools/screen-files.mjs` | `d975c827273def112992f5ad6b1269817fffc6efc3e882a7d41d0d4269735e48` |
-| `tools/selftest.mjs` | `a05697e17c9fad74553373f7b9ee9e7774ce121c485ad8ad38f5af51f76b2930` |
+| `tools/selftest.mjs` | `d311d394bcedaf2983130f4e5bf2e45671146a53c0cc98d9919f69569699b7fd` |
 | `tools/spec-lint.mjs` | `520964df0ad36015cb3afce41ec8f89bd54dd6bb9d345ce47c7cd3da8075503d` |
 | `tools/sync-icon-paths.mjs` | `7e8e9836aa79f545f95c381810df3a3fe68f607c652e36d6718d4e9f1f513de9` |
 | `tools/test-generated.mjs` | `174f65e84f5cc6bee55b75df2ceb29e2ec4957ad397865bd6af65cf472eb7002` |
-| `tools/verify.mjs` | `a3ece40611040bb85c3b637ea0b00df618657429f6e4eb9df20b0d8937a3c211` |
+| `tools/verify.mjs` | `5a1558408e885c0192d5b55fbedb0f63bbe337768c0b92225fd4057675af88d9` |
+| `tools/version-read.mjs` | `d060f4d7e4beee84e2aba9108cdb93e5894ee22cceb08a8b34ad79c1776021a3` |
 
 ## Leveransytan utanför reporoten
 
 | Fil | SHA-256 |
 |---|---|
+| `zip:/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
 | `zip:/Butlery Fas 0 leverans.dc.html` | `cd3f24aacd6a45c4ec21cddd66f5aeeffec8badc0482f71277c61a2f26a8d97b` |
-| `zip:/Butlery Fas 1 leverans.dc.html` | `abb7efa772cb30785187bde3f3ec1169ac08569ec0893eb768df884975c6256b` |
+| `zip:/Butlery Fas 1 leverans.dc.html` | `8a03837c427589b5999b62148cd66ff37c13c6015eb4c5250ea61da8a62116d1` |
 | `zip:/Butlery granskning och implementeringsplan.dc.html` | `76ab6fe3c1a833d5c2345b9391464de2446da52d7483e488facd5b38a05060fb` |
-| `zip:/Butlery styrdokument modulart designsystem.dc.html` | `b4f29ea1926acb92172ddd8e4ed6e01836829be1039ce2ee08fa8e7300a9ab65` |
+| `zip:/Butlery styrdokument modulart designsystem.dc.html` | `ae88f611464fad0e13e44853c99672c584d72017414964c2422a04f4b2cab92b` |
 | `zip:/fas0/DELIVERY` | `d9b3ef4a66ffc0c8ad97ac7dc80d0ec25cf19763c3448e1815cde9d6d935edd9` |
-| `zip:/fas0/LAS-MIG.md` | `651e42c615166c7462b74a9539534c25e92b95fd9d99e14d314132dde2d770a4` |
+| `zip:/fas0/LAS-MIG.md` | `e40ced969555e5342132bf5fe27775e7c844dee2bdc2a5e667609737d26f2aff` |
 | `zip:/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` |
 | `zip:/uploads/Butlery-arbetsorder-modulart-designsystem.md` | `4606e0ba64e57025713d717ed2415a0fcb3d541a7f9b74f0ed570efd821bd52b` |

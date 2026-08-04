@@ -1,7 +1,8 @@
 # Butlery · Spec-index
 
-**Enda source of truth för versioner, precedens och status.** Uppdaterad **2026-08-05** (tokens 1.13 · ikoner 1.8 · API-mappning 1.4 · källauktoriteten maskinläsbar). Raderna nedan bär sitt eget datum; den här raden säger när tabellen senast rördes, inget annat.
-Om ett dokument säger något annat än den här filen är den här filen rätt — och dokumentet ska rättas.
+<!--auth:header:start-->
+**Navigationskarta och versionsregister.** Den **maskinella källan** för domänägarskap, versioner, `authorityState` och `changePolicy` är `source-authority.json` 2.0 (2026-08-04) — inte den här filen. Rader nedan med en `auth:`-markör genereras ur registret av `tools/gen-authority.mjs` och ska aldrig handredigeras; övriga rader är handskrivna. Vid konflikt mellan en genererad cell och en handskriven rad gäller registret, och avvikelsen fälls av T-15 och T-20.
+<!--auth:header:end-->
 
 > **Specen är inte stängd.** Den visuella riktningen och designspråket är godkända. P0 och P1 nedan är öppna och speglar den externa granskningen 2026-07-26. Ingen punkt får strykas för att den ser åtgärdad ut i en skärm — den stryks när `testmatris.md` § 4 eller ett CI-test säger det.
 
@@ -11,33 +12,33 @@ Om ett dokument säger något annat än den här filen är den här filen rätt 
 
 | Del | Version | Fil | Status | Normativ för |
 |---|---|---|---|---|
-| Tokens | **1.13** · 2026-08-05 | `tokens.json` | gällande | **värden** — färg, typ, rum, radie, rörelse, träffytor, kontrastpolicy, **kontrollgeometri** |
-| Tokenschema | **2.0** · 2026-08-02 | `butlery-tokens.schema.json` | gällande · versionen står i `$id` | **tokenstrukturen** — fältnivå, typer och gränser för alla 13 kontrollkomponenter |
-| Produktregler | **1.12** · 2026-07-27 | `produktregler.md` | gällande | **produktlogik** — allergener, konflikt, offline, veckomeny, roller, onboarding |
-| Ikoner | **1.8** · 2026-08-03 | `icons.json` | gällande, `usages` genererad av `tools/gen-icons.mjs` | **ikonnamn och antal** |
-| Assets | **1.4** · 2026-07-30 | `assets-manifest.json` | gällande | **filstatus och paketering** |
-| Content | **1.1** · 2026-07-26 | `content-style-guide.md` | gällande | **all text** |
-| Flöden, roller, budget | **1.1** | `flows-roles-budget.md` | gällande | **flödesövergångar, prestandabudget, analytics** |
-| Tillgänglighetshandoff | mot manual V6 kap 10 | `Butlery tillganglighetshandoff.dc.html` | gällande | **roller, namn, tillstånd** |
-| Test- och tillståndsmatris | **1.1** · 2026-07-26 | `testmatris.md` | gällande | **vad som ska bevisas per vy** |
-| **Evidensmatris** | **1.0** · 2026-07-26 | `evidensmatris.md` | gällande | **status per krav** — enda källan till vad som är klart |
-| **Plattformsmatris** | **1.0** · 2026-07-26 | `plattformsmatris.md` | gällande | **Android/iOS-skillnader** |
+| Tokens <!--auth:design-values:version,status--> | **1.13** | `tokens.json` | gällande · ägare DS | **värden** — färg, typ, rum, radie, rörelse, träffytor, kontrastpolicy, **kontrollgeometri** |
+| Tokenschema <!--auth:token-structure:version,status--> | **2.0** | `butlery-tokens.schema.json` | gällande · ägare DS | **tokenstrukturen** — fältnivå, typer och gränser för alla 13 kontrollkomponenter |
+| Produktregler <!--auth:product-invariants:version,status--> | **1.12** | `produktregler.md` | gällande · ägare PRODUKT | **produktlogik** — allergener, konflikt, offline, veckomeny, roller, onboarding |
+| Ikoner <!--auth:icon-names:version,status--> | **1.8** | `icons.json` | gällande · ägare DS | **ikonnamn och antal** |
+| Assets <!--auth:asset-status:version,status--> | **1.4** | `assets-manifest.json` | gällande · ägare DEV | **filstatus och paketering** |
+| Content <!--auth:content-text:version,status--> | **1.1** | `content-style-guide.md` | gällande · ägare DS | **all text** |
+| Flöden, roller, budget <!--auth:flows-budget-analytics:version,status--> | **1.1** | `flows-roles-budget.md` | gällande · ägare DS | **flödesövergångar, prestandabudget, analytics** |
+| Tillgänglighetshandoff <!--auth:a11y-handoff:version,status--> | mot manual V6 | `Butlery tillganglighetshandoff.dc.html` | gällande · ägare DS | **roller, namn, tillstånd** |
+| Test- och tillståndsmatris <!--auth:test-matrix:version,status--> | **1.1** | `testmatris.md` | gällande · ägare DS | **vad som ska bevisas per vy** |
+| **Evidensmatris** <!--auth:requirement-status:version,status--> | **1.0** | `evidensmatris.md` | gällande · ägare DS | **status per krav** — enda källan till vad som är klart |
+| **Plattformsmatris** <!--auth:platform-differences:version,status--> | **1.0** | `plattformsmatris.md` | gällande · ägare DS | **Android/iOS-skillnader** |
 | Kod ur tokens | **1.13** · ur tokens 1.13 | `assets/generated/tokens.css` + `lib/theme/butlery_tokens.dart` + `lib/theme/app_colors.dart` + `lib/theme/app_text_styles.dart` | genererade | **aldrig handredigerade** — headern bär tokenversionen och mäts av T-15 (`generated-header`) |
-| **Källauktoritet** | **1.1** · 2026-08-05 | `source-authority.json` | gällande, schemavaliderad (T-20) | **vilken fil som äger vilken domän** — `fas0/kallauktoritetsregister.md` genereras ur den och redigeras aldrig för hand |
-| Rapportschema | **2.0** · 2026-08-02 | `fas0/verify-report.schema.json` | genererad av `tools/gen-schema.mjs` ur `REPORT_SCHEMA` | **verifieringsrapportens struktur** |
-| API-mappning | **1.4** · 2026-08-04 | `tools/app-theme-map.json` | gällande, schemavaliderad | **äldre Dart-API-namn → semantiska token-id**, ColorScheme-slottar, typroller, typalias och semantiska textvarianter — inte en designkälla, men det enda stället där mappningsbesluten står |
+| **Källauktoritet** <!--auth:source-authority:version,status--> | **2.0** | `source-authority.json` | gällande · ägare DS | **vilken fil som äger vilken domän** — `fas0/kallauktoritetsregister.md` genereras ur den och redigeras aldrig för hand |
+| Rapportschema <!--auth:report-schema:version,status--> | **2.0** | `fas0/verify-report.schema.json` | gällande · ägare DS | **verifieringsrapportens struktur** |
+| API-mappning <!--auth:legacy-dart-api-map:version,status--> | **1.4** | `tools/app-theme-map.json` | gällande · ägare DEV | **äldre Dart-API-namn → semantiska token-id**, ColorScheme-slottar, typroller, typalias och semantiska textvarianter — inte en designkälla, men det enda stället där mappningsbesluten står |
 | Mappningsschema | **1.3** · 2026-08-03 | `tools/app-theme-map.schema.json` | gällande · versionen står i `$id` | **mappningens struktur** — fältnivå, typer och gränser för colors, aliases, scheme, typroller |
-| Varumärkesfärger | **1.0** · 2026-08-02 | `assets/brand-colors.json` | gällande, schemavaliderad | **externa varumärken** — citat, inte design |
-| **Legacy-API-kontrakt** | **1.0** · fryst 2026-08-04 · schema `legacy-api-contract.schema.json` | `legacy-api-contract.json` | gällande, mäts av TG-01 med exakt mängdlikhet | **den publika Dart-ytan** — AppColors-medlemmar, ColorScheme-fält, AppTextStyles-getters. Fryst ur den levererade koden, **inte** ur app-repot: att den motsvarar de 50 vyernas faktiska användning bevisas i Fas 2 |
+| Varumärkesfärger <!--auth:brand-colors:version,status--> | **1.0** | `assets/brand-colors.json` | gällande · ägare PRODUKT | **externa varumärken** — citat, inte design |
+| **Legacy-API-kontrakt** <!--auth:legacy-api-surface:version,status--> | **1.0** | `legacy-api-contract.json` | gällande · fryst · ägare DEV | **den publika Dart-ytan** — AppColors-medlemmar, ColorScheme-fält, AppTextStyles-getters. Fryst ur den levererade koden, **inte** ur app-repot: att den motsvarar de 50 vyernas faktiska användning bevisas i Fas 2 |
 | Grundgranskning | 2026-07-26 | `grundgranskning.md` | **historisk** | **avvikelser mot manual v6 och grund v12** — dess tre öppna beslut är avgjorda (B-36…B-38, B-40, B-41) |
 | Arbetsplan | **1.1** · 2026-07-29 | `arbetsplan.md` | **historisk** | etapp 0–11 är ritade; planen är genomförd och styr inget längre |
 | Luckinventering etapp 9 | **1.0** · 2026-07-29 | `luckor-etapp9.md` | **historisk, fryst** | — · de tre besluten (emoji-regeln, strukna knuffar och svep-tips, behållen röstassistans) är införda i `beslutslogg.md` som B-44, B-47 och B-48 |
 | **Korsgranskning** | **1.0** · 2026-07-29 | `korsgranskning.md` | gällande | **dokumenten mot varandra** |
 | **Blockerande krav** | **1.0** · 2026-07-29 | `blockerande.md` | gällande | **vad som måste vara löst före release** |
-| Beslutslogg | **1.6** · 2026-07-30 | `beslutslogg.md` | gällande | **vilka frågor som är avgjorda** — 50 poster |
-| Komponentark | **V1** mot manual V6 | `Butlery Komponentark v1.dc.html` | gällande, femton avsnitt | **interaktionsmodell per komponent** |
-| Skärmar | **v12** · 2026-07-27 | `Butlery Skarmar v12.dc.html` (innehåll) + **fjorton delfiler**: `del 1 recept och veckomeny`, `del 2 familj och socialt`, `del 3 sok och skalbevis`, `del 4 morkt lage och etapp 0-1`, `etapp 2`, `etapp 2 inkop och skafferi`, `etapp 3 onboarding`, `etapp 4 import`, `etapp 5-7`, `etapp 6 konto och integritet`, `etapp 9 globala tillstand och flerval`, `etapp 9 socialt och komponenter`, `etapp 10 bred layout`, `etapp 11 breda vyer` | gällande, <!--n:frames-->279<!--/n--> ramar | **instanser** — layout och komposition, aldrig värden |
-| Grafisk manual | **V6** · 2026-07-26 | `Butlery Grafisk manual v6.dc.html` | gällande | **principer och motiveringar** |
+| Beslutslogg <!--auth:decisions:version,status--> | **1.6** | `beslutslogg.md` | gällande · ägare DS | **vilka frågor som är avgjorda** — 50 poster |
+| Komponentark <!--auth:component-contract:status--> | **V1** mot manual V6 | `Butlery Komponentark v1.dc.html` | planerad · ägare DS | **inte normativ** — handritad interaktionsreferens. Komponentkontraktet är en Fas 3-leverabel; domänen är `planned` i källauktoriteten |
+| Skärmar <!--auth:layout-composition:version--> | **v12** | `Butlery Skarmar v12.dc.html` (innehåll) + **fjorton delfiler**: `del 1 recept och veckomeny`, `del 2 familj och socialt`, `del 3 sok och skalbevis`, `del 4 morkt lage och etapp 0-1`, `etapp 2`, `etapp 2 inkop och skafferi`, `etapp 3 onboarding`, `etapp 4 import`, `etapp 5-7`, `etapp 6 konto och integritet`, `etapp 9 globala tillstand och flerval`, `etapp 9 socialt och komponenter`, `etapp 10 bred layout`, `etapp 11 breda vyer` | gällande, <!--n:frames-->279<!--/n--> ramar | **instanser** — layout och komposition, aldrig värden |
+| Grafisk manual <!--auth:principles:version,status--> | **V6** | `Butlery Grafisk manual v6.dc.html` | gällande · ägare DS | **principer och motiveringar** |
 | Typsnitt | Butlery Sans **0.626** · 2026-07-30 | `assets/fonts/` · `FONT-VERSION.txt` · `assets/fonts/VALIDATION-0.626.txt` | gällande, sex stilar, äkta kursiv, OFL-1.1-derivat | **licensnoteringar och attribution** |
 | Rörelse | ceremonier i manual V6 kap 08 | `Butlery ceremonier rorelsereferens.dc.html` | demoreferens | **illustrativ, aldrig normativ** |
 
