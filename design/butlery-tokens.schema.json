@@ -1,8 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "butlery-tokens.schema.json",
-  "title": "Butlery design tokens",
-  "$comment": "Schemat beskriver tokens.json EXAKT som filen ser ut — inte en önskad form. Validatorn i tools/lint-core.mjs (T-01) går rekursivt igenom type, required, pattern, minimum, minItems, enum och const. Utöver schemat körs T-02 (kontrast mot deklarerade par), T-03/T-04 (råvärden i spec-HTML) och T-10 (indexets påståenden).",
+  "$id": "butlery-tokens/2",
+  "version": "2.0",
+  "title": "Butlery designtokens",
+  "description": "Fas 1: hela strukturen valideras på fältnivå. Version 2.0 — controls och emptyStateGlyph är slutna objekt med typer och gränser. Schemat versioneras i $id; höj vid strukturändring.",
   "type": "object",
   "required": [
     "version",
@@ -17,8 +18,12 @@
     "motion",
     "contrastPolicy",
     "contrastPairs",
-    "controls"
+    "controls",
+    "emptyStateGlyph",
+    "platformMapping",
+    "unitPolicy"
   ],
+  "additionalProperties": false,
   "properties": {
     "version": {
       "type": "string",
@@ -346,32 +351,57 @@
         },
         "roles": {
           "type": "object",
+          "minProperties": 1,
+          "description": "Fas 1: lineHeight är normativt och obligatoriskt — det låg tidigare hårdkodat i gen-app-theme.mjs.",
           "additionalProperties": {
             "type": "object",
+            "additionalProperties": false,
             "required": [
               "size",
-              "weight"
+              "weight",
+              "lineHeight"
             ],
             "properties": {
               "size": {
                 "type": "number",
-                "minimum": 10
+                "exclusiveMinimum": 0,
+                "maximum": 200
               },
               "weight": {
                 "type": "number",
-                "minimum": 100
+                "enum": [
+                  300,
+                  400,
+                  500,
+                  600,
+                  700,
+                  800
+                ]
               },
-              "tracking": {
+              "lineHeight": {
+                "type": "number",
+                "minimum": 0.8,
+                "maximum": 2.5
+              },
+              "letterSpacing": {
+                "type": "number"
+              },
+              "note": {
                 "type": "string"
               },
               "transform": {
                 "type": "string"
               },
-              "note": {
-                "type": "string"
+              "tracking": {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?px$",
+                "description": "teckenavstånd med enhet, t.ex. \"-0.4px\""
               }
             }
           }
+        },
+        "$lineHeightNote": {
+          "type": "string"
         }
       }
     },
@@ -483,51 +513,616 @@
     },
     "controls": {
       "type": "object",
-      "description": "Låst kontrollgeometri (B-37). Mäts av tools/lint-controls.mjs — måtten låg tidigare bara i manualtexten och kunde därför glida.",
+      "description": "Låst kontrollgeometri (B-37). Fas 1: varje normativt fält har typ och gränser, och objekten är slutna — tidigare kunde godtyckliga fält och felstavningar passera. 13 komponenter.",
+      "required": [
+        "checkbox",
+        "radio",
+        "toggle",
+        "chip",
+        "chipCompactInField",
+        "statusPill",
+        "badge",
+        "button",
+        "stepper",
+        "avatarScale",
+        "avatarStackRing",
+        "lines",
+        "calendarPresenceRow"
+      ],
+      "additionalProperties": false,
       "properties": {
+        "$note": {
+          "type": "string"
+        },
         "checkbox": {
           "type": "object",
+          "additionalProperties": false,
           "required": [
             "size",
             "radius",
+            "border",
+            "checkStroke",
             "hitbox"
-          ]
+          ],
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "size": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "radius": {
+              "oneOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 400
+                },
+                {
+                  "const": "pill"
+                }
+              ]
+            },
+            "border": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "checkStroke": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "hitbox": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            }
+          }
         },
         "radio": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "size",
+            "border",
+            "hitbox"
+          ],
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "size": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "border": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "hitbox": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            }
+          }
         },
         "toggle": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "width",
+            "height",
+            "knob",
+            "hitbox"
+          ],
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "height": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "knob": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "hitbox": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            }
+          }
         },
         "chip": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fontSize",
+            "weight",
+            "paddingY",
+            "paddingX",
+            "radius",
+            "hitbox"
+          ],
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "fontSize": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "weight": {
+              "type": "number",
+              "enum": [
+                300,
+                400,
+                500,
+                600,
+                700,
+                800
+              ],
+              "description": "fontvikt ur typskalan"
+            },
+            "paddingY": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 400,
+              "description": "dp, får vara 0"
+            },
+            "paddingX": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 400,
+              "description": "dp, får vara 0"
+            },
+            "radius": {
+              "oneOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 400
+                },
+                {
+                  "const": "pill"
+                }
+              ]
+            },
+            "minGap": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 400,
+              "description": "dp, får vara 0"
+            },
+            "hitbox": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            }
+          }
         },
         "chipCompactInField": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "paddingY",
+            "paddingX"
+          ],
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "paddingY": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 400,
+              "description": "dp, får vara 0"
+            },
+            "paddingX": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 400,
+              "description": "dp, får vara 0"
+            }
+          }
         },
         "statusPill": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fontSize",
+            "weight",
+            "paddingY",
+            "paddingX",
+            "radius"
+          ],
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "fontSize": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "weight": {
+              "type": "number",
+              "enum": [
+                300,
+                400,
+                500,
+                600,
+                700,
+                800
+              ],
+              "description": "fontvikt ur typskalan"
+            },
+            "paddingY": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 400,
+              "description": "dp, får vara 0"
+            },
+            "paddingX": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 400,
+              "description": "dp, får vara 0"
+            },
+            "radius": {
+              "oneOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 400
+                },
+                {
+                  "const": "pill"
+                }
+              ]
+            }
+          }
         },
         "badge": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "paddingY",
+            "paddingX"
+          ],
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "paddingY": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 400,
+              "description": "dp, får vara 0"
+            },
+            "paddingX": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 400,
+              "description": "dp, får vara 0"
+            }
+          }
         },
         "button": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "minHeight",
+            "compactVisual",
+            "compactHitbox",
+            "fontSize",
+            "weight"
+          ],
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "minHeight": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "maxHeight": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "compactVisual": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "compactHitbox": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "minWidth": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "fontSize": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "weight": {
+              "type": "number",
+              "enum": [
+                300,
+                400,
+                500,
+                600,
+                700,
+                800
+              ],
+              "description": "fontvikt ur typskalan"
+            },
+            "iconSize": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 400,
+                "description": "dp"
+              }
+            },
+            "iconGap": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 400,
+                "description": "dp, får vara 0"
+              }
+            }
+          }
         },
         "stepper": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "visual",
+            "hitbox"
+          ],
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "visual": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "hitbox": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            }
+          }
         },
         "avatarScale": {
           "type": "array",
+          "minItems": 1,
           "items": {
-            "type": "number"
-          }
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 400,
+            "description": "dp"
+          },
+          "description": "Avatarens storleksskala i dp."
         },
         "avatarStackRing": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "width"
+          ],
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            }
+          }
         },
         "lines": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "hairline",
+            "sectionRule",
+            "control"
+          ],
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "hairline": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "sectionRule": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "control": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "outlinedEdge": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "cellAccent": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "cellUnderline": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            }
+          }
+        },
+        "calendarPresenceRow": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "height",
+            "avatar",
+            "maxFaces",
+            "labelSize",
+            "labelWeight"
+          ],
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "height": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "avatar": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "maxFaces": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "labelSize": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 400,
+              "description": "dp"
+            },
+            "labelWeight": {
+              "type": "number",
+              "enum": [
+                300,
+                400,
+                500,
+                600,
+                700,
+                800
+              ],
+              "description": "fontvikt ur typskalan"
+            },
+            "degradeTo": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "emptyStateGlyph": {
+      "type": "object",
+      "description": "Tomlägesglyfens två fall. Fas 1: tidigare helt ovaliderad.",
+      "required": [
+        "inline",
+        "fullscreen"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "$note": {
+          "type": "string"
+        },
+        "inline": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "fullscreen": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "fullscreenNote": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "stroke": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "strokeNote": {
+          "type": "string"
         }
       }
     }

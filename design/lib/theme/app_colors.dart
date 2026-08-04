@@ -1,8 +1,13 @@
-// GENERERAD FIL — ändra tokens.json eller tools/app-theme-map.json, inte den här.
-// tokens 1.3 · 2026-07-26 · generator tools/gen-app-theme.mjs
+// GENERERAD FIL — ändra källan, inte den här.
+// system 2.1 · tokens 1.13
+// generator tools/gen-app-theme.mjs v2.3
+// källfingeravtryck sha256:3ed8bfa7d6ebb81821a81d9543e0a14dfa3149bc34cf968cab9a3d5101545b2e (6 indatafiler, generatorns källa inräknad)
+// genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
-// Migration (etapp 8.1): varje medlem har samma NAMN som före — appens 50 vyer
-// kompilerar oförändrade — men VÄRDET kommer nu ur tokens.json. Färgnamn som
+// Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA
+// leveranskontraktet (legacy-api-contract.json), som TG-01 mäter med exakt
+// mängdlikhet. Att ytan motsvarar app-repots faktiska anrop är OVERIFIERAT
+// till Fas 2 (styrdokumentet § 9E). VÄRDET kommer ur tokens.json. Färgnamn som
 // forestGreen och cream är därför historiska: de bär ink respektive paper.
 // Att döpa om dem är en separat, mekanisk vända (BUT-nr saknas).
 //
@@ -35,6 +40,7 @@ class AppColors {
   static const Color greenMuted = Color(0xFF627061);
   /// Systemet har inget rent vitt · semantic.surface.base
   static const Color cardWhite = Color(0xFFF5F4ED);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.paperCard
   static const Color cardWhite54 = Color(0x8AF5F4ED);
   /// semantic.text.primary
   static const Color textDark = Color(0xFF24382C);
@@ -118,18 +124,25 @@ class AppColors {
   static const Color sharedRecipeIcon = Color(0xFFB4BFA6);
   /// semantic.surface.raised
   static const Color sharedRecipeBackground = Color(0xFFE6EAD9);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.elevation.shadow
   static const Color shadowColor = Color(0x1A17251D);
   /// Lila fanns inte i systemet — närmaste avsikt är clay · palette.clay
   static const Color secondaryPurple = Color(0xFF9C3B23);
   /// palette.inkRaised
   static const Color surfaceDark = Color(0xFF2F4437);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.paperWash
   static const Color overlayWhite40 = Color(0x66F5F4ED);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.inkSubtle
   static const Color overlayBlack10 = Color(0x1A17251D);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.inkLight
   static const Color overlayBlack20 = Color(0x3317251D);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.inkMedium
   static const Color overlayBlack40 = Color(0x6617251D);
+  /// Överlägg — värdet ligger i tokens.semantic, inte här · semantic.overlay.inkStrong
   static const Color overlayBlack60 = Color(0x9917251D);
 
-  // Alias — oförändrade, pekar på medlemmar ovan.
+  // Alias — oförändrade, pekar på medlemmar ovan. Deklarerade i
+  // tools/app-theme-map.json; högersidan mäts mot utdata av TG-01.
   static const Color textSecondary = textMedium;
   static const Color accent = rust;
   static const Color warningText = onWarningContainer;
@@ -238,10 +251,16 @@ class AppColors {
     surfaceTint: Color(0xFF24382C),
   );
 
-  // ── Externa varumärken · tokeniseras inte (se generatorns kommentar) ──
+  // ── Externa varumärken · tokeniseras inte (se kommentaren ovan) ──
   static const Color brandYoutube = Color(0xFFFF0000);
+  static const Color brandYoutubeBackground = Color(0xFFFFE0E0);
+  static const Color brandYoutubeText = Color(0xFFCC0000);
   static const Color brandTiktok = Color(0xFF00F2EA);
+  static const Color brandTiktokBackground = Color(0xFFE0F7FA);
+  static const Color brandTiktokText = Color(0xFF161823);
   static const Color brandInstagram = Color(0xFFE1306C);
+  static const Color brandInstagramBackground = Color(0xFFFCE4EC);
+  static const Color brandInstagramText = Color(0xFFC13584);
   static const Color brandTwitter = Color(0xFF1DA1F2);
   static const Color brandPinterest = Color(0xFFE60023);
   static const Color brandWhatsapp = Color(0xFF25D366);
@@ -254,10 +273,4 @@ class AppColors {
   static const Color brandArla = Color(0xFFE30613);
   static const Color brandKoketSe = Color(0xFF000000);
   static const Color brandGeneric = Color(0xFF6B7280);
-  static const Color brandYoutubeBackground = Color(0xFFFFE0E0);
-  static const Color brandTiktokBackground = Color(0xFFE0F7FA);
-  static const Color brandInstagramBackground = Color(0xFFFCE4EC);
-  static const Color brandYoutubeText = Color(0xFFCC0000);
-  static const Color brandTiktokText = Color(0xFF161823);
-  static const Color brandInstagramText = Color(0xFFC13584);
 }

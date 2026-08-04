@@ -1,44 +1,50 @@
-# Manifest · Fas 0.18
+# Manifest · Fas 1 · femte vändan
+
+**Genererat allra sist**, efter att de fyra genererade kodfilerna regenererats ur tokens 1.13 och `fas0/kallauktoritetsregister.md` renderats ur `source-authority.json`.
 
 **Reporoten** kontrolleras med **set-likhet**. **Leveransytan** kontrolleras enligt läge; en leveranskontroll är alltid explicit (`bash fas0/verify-delivery.sh`).
 
 | Läge | Betyder | Leveransytan | Fingeravtryck |
 |---|---|---|---|
 | `repo` | fristående checkout | får saknas | reporotsytan |
-| `delivery` | uppackad ZIP | **varje `zip:/`-post krävs** | reporotsytan **plus** alla `zip:/`-poster |
+| `delivery` | uppackad ZIP | **varje `zip:/`-post krävs · set-likhet över HELA ytan** | reporotsytan **plus** alla `zip:/`-poster |
 | `auto` | markören `zip:/fas0/DELIVERY` avgör | delivery när markören finns | följer valt läge |
 
-**En parser** (`manifestEntries`, `resolveEntry`, `artifactFingerprint`) delas av verifieraren, grinden och manifestkontrollen.
+**VALIDERAD LEVERANSROT.** Delivery-läget kräver att roten ligger exakt tre nivåer över reporoten, inte är filsystemets rot, och bär `zip:/fas0/DELIVERY` — annars exit 2. Traverseringen är djupbegränsad.
 
-**Grinden reducerar om** hela registret ur rapportens rådata och **djupjämför** varje kontrollrad med `isDeepStrictEqual` — extra, borttagna och ändrade fält fäller alla, inklusive nästlade.
+**HELA YTAN, INGEN ALLOWLIST.** Leveransytan räknade tidigare bara filer som matchade en filtypslista, och hoppade över breda kataloger — `surprise.png` och `uploads/scraps/undeclared.json` passerade. Nu räknas **varje vanlig fil**, och bara **exakta sökvägar** undantas: `fas0/verify.log`, `fas0/manifest.log`, `fas0/verify-report.json`, `fas0/kontrollstatus.md`, `fas0/ci-evidence.json`, `fas0/verify-exit`, `fas0/verify-chain-exit`, `.thumbnail`. Symlänkar avvisas (`lstatSync`) och varje post måste ligga innanför leveransrotens realpath.
 
-Undantagna i checkern: `fas0/verify.log`, `fas0/manifest.log`, `fas0/manifest-delivery.log`, `fas0/verify-report.json`, `fas0/kontrollstatus.md`, `fas0/ci-evidence.json`, `fas0/verify-exit`, `fas0/verify-chain-exit`, binärer i `assets/` och `exports/`, samt manifestet självt.
+**Genererade filer i manifestet** (sex): de fyra kodfilerna, `icons.json` och `fas0/kallauktoritetsregister.md`. Kodfilerna bär systemversion, tokenversion, generatorversion, källfingeravtryck (indata **plus** generatorns källa och den delade headerkoden) och ett **källdatum**. GEN-02 byte-jämför dessutom kroppen mot generatorns `--check`-läge.
 
-<!--manifest:files=100-->
-Deklarerat antal poster: **100** (93 i reporoten + 7 i leveransytan).
+Undantagna i checkern: genererade rapporter i `fas0/`, körstatusfilerna, ikonmastrarna i `assets/icons/` (räknas av `gen-icons`, kontrolleras av T-05), binärer och `exports/`, samt manifestet självt.
+
+<!--manifest:files=113-->
+Deklarerat antal poster: **113** (105 i reporoten + 8 i leveransytan).
 
 ## Reporoten · set-likhet gäller
 
 | Fil | SHA-256 |
 |---|---|
-| `.github/workflows/verify.yml` | `6f6985b45f1fcc2f26ddf0d541c3477b77de0cdccdca46eab2ae30ebe271f3ef` |
-| `00-spec-index.md` | `d414563c541cde7cead857de47ab724f38681983fc1569b35ab3d494757eaede` |
+| `.github/workflows/verify.yml` | `18889417ae1fca6efa775b237641ad14aac9606d6f89c5c380255a49c4aae937` |
+| `00-spec-index.md` | `a83d032477036b7c743de358081672c228a82ed0c2187f321072ad07e24aa9f8` |
 | `animations-v2.jsx` | `33e9200b93f5eb416d294e1a1ffc6bebe75d2bee95817977a08fa896229be774` |
 | `arbetsplan.md` | `326221917cb77f0db4595c909d09d8ffe762ee11a5ee43f710d78c95cabfa81a` |
 | `assets-manifest.json` | `df7201da509c2359b5c35114a32a55755aa4647108cfb5824c1ae594144e64ec` |
+| `assets/brand-colors.json` | `1cc1e0243b46309c56a2c2686c6401bfa200f1cc70fafcbc68dc99f973102935` |
+| `assets/brand-colors.schema.json` | `7c16a20daa7be3856cbf48706940eeb065a44849cf8d6afd11fa4d9bfeeaf0af` |
 | `assets/fonts/FONTLOG.txt` | `8689d6943baffaba05292edfe74535114fa83d1f6d30c7d225ae075ed3d614a8` |
 | `assets/fonts/OFL-1.1.txt` | `863bba7ab7d16d6f0c37470f60b9ad03607ea12a73bbbd1317b0fd505e5756f9` |
 | `assets/fonts/README.txt` | `84b43a68e61b394d690b95f5ca58d51ad0c35878a24ecbd4a680038378d54706` |
 | `assets/fonts/THIRD_PARTY_NOTICES.txt` | `df63ad80acf18f06440975818dfb22f526dda320794f639d034125172538b1b1` |
 | `assets/fonts/VALIDATION-0.626.txt` | `ffe23fedf47e3f1d51a4e87bf147da7b19ac180c806518faada8adfbaa4b1c94` |
-| `assets/generated/tokens.css` | `a63d5df71c2dd9e91199769ac44ad016d97c761969c0f37f442ee0df7373f4bc` |
+| `assets/generated/tokens.css` | `5799c42843a2d0a5c39e803285ed9b6363cae458c8fb166515eb96d162fd9ec7` |
 | `assets/LICENSES.md` | `17d5f6fbdf80c3ccee9e420a646c3ebb03ec7a188eacb7a42eaae857ac942b95` |
 | `beslutslogg.md` | `25aef6833c0ddc57d6d5239413c864c5edb60698c640975b0ac21ff51a6f2fd3` |
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `Butlery beslut grund v13.dc.html` | `ce0aaa76a62fb6616d58e93fdaabd1c5b185bdf87ac11bfb60a91b3f7b324eaf` |
 | `Butlery beslut kalendermatt v1.dc.html` | `8fb980fb2eb6c9805c14e8d1bc15421e3e57e5656df1d1ea735314b200f1cdb0` |
 | `Butlery blockerande tickets.dc.html` | `dc8d379aaa1469f94d5189923972e6a498d5f5441e347e226dbef7eb19215e39` |
-| `Butlery ceremonier rorelsereferens.dc.html` | `f74dc38729fcb4c0bedc9a29f99d4201f149eac228742007bb467ae135652950` |
+| `Butlery ceremonier rorelsereferens.dc.html` | `19cc633fbbfb4f1526430099e077557e8a6b0281e10fa2b1b02f51dc8a3aff9b` |
 | `Butlery Grafisk manual v6.dc.html` | `3879f2b3451f47de109db76b05f4fd18361f7c1318bebc625c1bdeca6fbd2964` |
 | `Butlery Komponentark v1.dc.html` | `78f27a546502c7d2a9cb99aa954d6cd8ba3b5d18f1694aac2d9db1496ff1ed47` |
 | `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `b473330181de718ddeb92c6bdcd287ad7e3a9545055806c9333d67205ab6b8cc` |
@@ -62,67 +68,78 @@ Deklarerat antal poster: **100** (93 i reporoten + 7 i leveransytan).
 | `Butlery-app-icon-monoline-R4-6.svg` | `09b3a6e2548ee1b906b81f2c5a22bb5f304fa09158dac1a6fc7544c1cb6dd377` |
 | `Butlery-app-icon-negativ-R4-6.svg` | `4e4a7e673550dbd3c2c55d9c2757099d60d9c34101822d84d5cfc63995f82ffd` |
 | `Butlery-app-icon-solid-R4-6.svg` | `f5e6739bfdf1fb110f630097a5733844d3bd2be23d3e19798f3e66f105e050d9` |
-| `butlery-tokens.schema.json` | `78e0d013bbb0b53ae8c0c49bda730462fa495a166fee24d639ced4f96b8014dc` |
+| `butlery-tokens.schema.json` | `3757e0005ea613416f00a73ac67a3d7303d46a9468feb0ca2f5dc553fa90891d` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
 | `content-style-guide.md` | `cb4fe9e93fe8286a394570353c8fe0d57f39b276a6eaff647129cb857cb570fd` |
 | `evidensmatris.md` | `0d9a6f3ad09b8461644eb7578a462c797495c24f1433308494b8436ac7c7ad81` |
 | `fas0/baseline-report-SUPERSEDED.json` | `12e79a51948917b6481ae31192b53a751e86e42b64cd44b341a5c41518fcb3be` |
-| `fas0/blockerar-fas1.md` | `e7efa82531a39ab880b8b55d2d601751473e869fa6079cff9ff5f4ad7e2ea735` |
-| `fas0/check-manifest.mjs` | `bfbc4a22d97b50638cbf966642afb4616c019763c0c8027540cda425402240f0` |
-| `fas0/kallauktoritetsregister.md` | `1f26c67d34a41eb4ebcc63078fb3d7c8d207593310fc6b9a8cff9e461daba163` |
+| `fas0/blockerar-fas1.md` | `bece3d1d1e15f0a57fddf882e7a58f3ed2c97021a31ff2d6a0655d2febd57518` |
+| `fas0/check-manifest.mjs` | `977c1b4717ead3de0f817e2024169f617b5f34c74565138582d9b2a9e6535fb5` |
+| `fas0/kallauktoritetsregister.md` | `43fd7373f260bfe5887cf3cb554584f59a238eb6b2d51255e81463320e4fb68c` |
 | `fas0/LAS-MIG.md` | `f36b6774c9cf53c155ee3ca5e31d1672ad70495f0f7c2a0da4512381a814baf5` |
 | `fas0/run-verify.sh` | `8cfdac6f33d8683f50ad4ca962a0f849917e4911e998c9177ae0587640cb36d7` |
 | `fas0/verify-delivery.sh` | `b793ff7225563b71520127c41614a8c1f2e03f7f72780cadc63911d0e4d1e5f7` |
-| `fas0/verify-report.schema.json` | `cd080a2b58d6d55c9a01567bc13baec269b1181c233a26a1468503b85234e2fc` |
+| `fas0/verify-report.schema.json` | `70687a2337ca6fe4a4419089983d8dfda52821b9af4799b4dabb03dfe9ac895d` |
 | `flows-roles-budget.md` | `d9d66bc1669e65ec4f9769efc0b7b66885b4e8252e6dfb7345ce0c8da19d22f6` |
 | `FONT-VERSION.txt` | `b9b7731a213a7f4ae7d36bb8a5bdbb9ebd91c4dd093b8d08443d3a397e92cbcf` |
 | `granskning-v12.md` | `0e1f0409c370e9a82dda87ae43379660c3b404e5ff2de5089f0fb69262da7d37` |
 | `grundgranskning.md` | `019015ca6aca9fc50b54e5769b2099f410dac33e1f6d3f215546932be4cc1728` |
-| `icons.json` | `e4f8413cf68813648f01033b74dbcda2872a84054e19517396fe5c3087f351ed` |
+| `icons.json` | `ba05efada07608a40cad09da0a8adf87c5f57d65023f66fb73139bc2953223c2` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
 | `LAS-MIG-GRANSKNING.md` | `5305b92b1b958396e51e5985128f6f2b43f90415d8afa9445aa3548cb1fe8bdd` |
-| `lib/theme/app_colors.dart` | `fb0f74925366fcea5a303a55d8509d59e413588f244da8f81cda6c0f1351d285` |
-| `lib/theme/app_text_styles.dart` | `3f4592a2fe387de911108477de8f5302190805593789636acf676be6aa3ac54b` |
-| `lib/theme/butlery_tokens.dart` | `d87dba1bbe7ca8b2e608c76a591ee1ae0d01621e2f49e750c4d7f615d1d3f3df` |
+| `legacy-api-contract.json` | `d80c3482657f2698a28d98f76fde20209373e7864d83017021a874fd7c004618` |
+| `legacy-api-contract.schema.json` | `0196feab113bc269adc411eb4c60e8869b293ce658d0908959cddd7b7ec670ce` |
+| `lib/theme/app_colors.dart` | `88d091799771f4178ccaa1912deccbca3e06689e761807300059fa29ade5d8c8` |
+| `lib/theme/app_text_styles.dart` | `4313702975dff44154804260b427404ddfef250eefe6cd0dfd0b0f343a68be98` |
+| `lib/theme/butlery_tokens.dart` | `ef697346e89ad4e1a9c3023bf299e70196dc8074dc8cc97f3865685c652098c2` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `8e7b7cd9faaa64ac6ebaadb92b748ff253b2883831d036d6144ec25a99ef96f9` |
+| `source-authority.json` | `584c48b544bcbbb740e9cb59f0ca140fb5f9fb077c14e5eb2515de633b41d311` |
+| `source-authority.schema.json` | `f3fc496857d6a5ee2f6f79e9ae35a3d06589e2920a29be5d3a4b0be4358f8c1e` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |
 | `testmatris.md` | `7da9f1a7038b53e553186a1fdeea041110ed36e5ccf885e716b8bf005c0dc5de` |
-| `tokens.json` | `e3f272bc3f95f752f93e75384da18ae9ae2313ac34c3c37f75767a8a0c6c5fc4` |
-| `tools/app-theme-map.json` | `90a26dfda9e567d365ca6be42c1cc52001e996c4ed781252c7ae5851adac91c4` |
-| `tools/controls.mjs` | `cd7fc97a7d1eee7019b063683bedb9566a4764f1631477faa2246608adcb87f3` |
+| `tokens.json` | `444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02` |
+| `tools/app-theme-map.json` | `7d2b2a1e90ed24b97715ec4decacc2b9ed4d5b5fb10dc52f398e922368cd2c7b` |
+| `tools/app-theme-map.schema.json` | `540c09035681771786f7884abb098468e3382682f1e5dde6e98b9e2a829fd387` |
+| `tools/check-app-theme.mjs` | `3ec46efe91680b7050662962c1f117d5dc9a2653ffd1f9437a67a0a72217b745` |
+| `tools/controls.mjs` | `33637e081d8463b2776d044ced1a6e5e1f64e0f291133ae1e7a63105ca76590c` |
 | `tools/finalize.mjs` | `74fd11be650ad6a50a4c6817c06bac45dd1815c97faf524cd59c41f91ef0afd1` |
 | `tools/gate.mjs` | `02917e6f14ed023585a1496630ba68b1b9dea5109ab991f5d1a5a931195ba4f0` |
-| `tools/gen-app-theme.mjs` | `5cf80ac0fff044a1533a0d1ec8b7947dd322fb95a8962801179b548b9fbd98c9` |
+| `tools/gen-app-theme.mjs` | `f07136386c267f52bda54a0e5b14523fa41facb615f276befc3b9c140f17bd01` |
+| `tools/gen-authority.mjs` | `a2fcc473b2490c4e4d5ac7749678e3bb47ddfadc21b94e189cac4733fec9a801` |
+| `tools/gen-check.mjs` | `f52d62056ee0b58cb2f718f64a57ce422fa73fd21079e9dc666d5307b51f31d4` |
 | `tools/gen-counts.mjs` | `d74c3921589f23e7ec5d3d5208565677b04daa7833ae3f6af65c7d522fa869cd` |
-| `tools/gen-css.mjs` | `43251edd5ed6a13db6081d61ca74f80f5cdd381ab22c72b324ee30c9ef115617` |
-| `tools/gen-flutter.mjs` | `94f5c80a216bb10e238e2bdbc16ba7ae18b31a57e5d5fc323f9f367a78f824b5` |
-| `tools/gen-icons.mjs` | `476acd192456259402668e655aa75c44bbf923c5ebc06c60bdb2f2a347bac178` |
-| `tools/gen-report.mjs` | `d534a6b1985024203ebba2e008e91c6b46b7c1dc9b8b680bd9e1478f6d0b68a8` |
+| `tools/gen-css.mjs` | `723681243b90cc2703aefc9874d6421b248940a7c6884c316bc23b7daaf24d1b` |
+| `tools/gen-flutter.mjs` | `112c73ba2c1808d845c692d26145854a22bfb89f9e7a9b3098c64742a92fd984` |
+| `tools/gen-header.mjs` | `9c3b95d6d5e0a4f9e13d4943df07aca82c113eae55cf17e3b93800e59e97d508` |
+| `tools/gen-icons.mjs` | `25e45becf2b0c0dd538dae54f7f0b74d2cd6ddc9095d9bd2b2b95f8f44e291ea` |
+| `tools/gen-report.mjs` | `8e32d2530c1bf94ebc032f626e58764f99b8ec8f965633cbcf4d9fab082d432e` |
 | `tools/gen-schema.mjs` | `1d276054d4fb6976fc8e1005626d23467c4c21bb5d48996016e883312cb74a84` |
+| `tools/gen-targets.mjs` | `3c6a4e4b34199c7296b88575a437e05fdffc9ff306badd2eefd0b27dfd3aec91` |
 | `tools/lint-controls.mjs` | `07350d4dd8b167c772f9ca145cd69b92ff0418632c2252d434b7d9ad59f6c244` |
-| `tools/lint-core.mjs` | `255fb7c661ecb136911f8cb2c8dfd5d2fe69e3be89a4d53efd0b9e83d3c5f0d3` |
-| `tools/metatest.mjs` | `705918246fe8ca85193a721152c8bb8029996c876be53b52ecfcc777647b7ab8` |
-| `tools/preflight.mjs` | `9160836d5b92d234f4b85a37a192fb2e3c87e86123d53522cd73dd24caaf30e0` |
-| `tools/README.md` | `4b5589338cf5b1b0a4403fe696e5f2e76bffc3608abf37a9b22b428e90903931` |
-| `tools/report-logic.mjs` | `dc9444fed6d43b01b6155b622e15429d47d425666d30c429bc3fcf508413780a` |
+| `tools/lint-core.mjs` | `0c0430549a52685a4ea377454f3b476a02929a48142ac8bd9d51df150d7d1ca4` |
+| `tools/metatest.mjs` | `1e72538bfd5b9e2e0f33acf291ec7195760f0afc353947e447a86277e6e073b0` |
+| `tools/preflight.mjs` | `3fe3bfa0e6f92fcb71ca5d19aa2c8e5e9df307f80eb3c8fe4dee09f173d5f3af` |
+| `tools/README.md` | `8c98b69e11e94391d883fc41cbeaffd1a5544e37eaa1e2adb767b0015fb93c6e` |
+| `tools/report-logic.mjs` | `62b38358e6d8f77dd31a52ef6cde1061ec4a5d03b390204ec0ff51505b30258f` |
 | `tools/screen-files.mjs` | `d975c827273def112992f5ad6b1269817fffc6efc3e882a7d41d0d4269735e48` |
-| `tools/selftest.mjs` | `7ed095f1245c507dbfce69014f517ed69009f5b7ffef764ba9ceac96f5c5db88` |
+| `tools/selftest.mjs` | `a05697e17c9fad74553373f7b9ee9e7774ce121c485ad8ad38f5af51f76b2930` |
 | `tools/spec-lint.mjs` | `520964df0ad36015cb3afce41ec8f89bd54dd6bb9d345ce47c7cd3da8075503d` |
 | `tools/sync-icon-paths.mjs` | `7e8e9836aa79f545f95c381810df3a3fe68f607c652e36d6718d4e9f1f513de9` |
-| `tools/test-generated.mjs` | `bc218b83578e5069cc94d40bbef74bac2134e71c6717441d19dcc568bb8d4ba4` |
-| `tools/verify.mjs` | `c44a141766ac3b9b5b2a4e3aa178c2a8e038a69c2da2fe2c5a9839db830275fc` |
+| `tools/test-generated.mjs` | `174f65e84f5cc6bee55b75df2ceb29e2ec4957ad397865bd6af65cf472eb7002` |
+| `tools/verify.mjs` | `a3ece40611040bb85c3b637ea0b00df618657429f6e4eb9df20b0d8937a3c211` |
 
 ## Leveransytan utanför reporoten
 
 | Fil | SHA-256 |
 |---|---|
 | `zip:/Butlery Fas 0 leverans.dc.html` | `cd3f24aacd6a45c4ec21cddd66f5aeeffec8badc0482f71277c61a2f26a8d97b` |
+| `zip:/Butlery Fas 1 leverans.dc.html` | `abb7efa772cb30785187bde3f3ec1169ac08569ec0893eb768df884975c6256b` |
 | `zip:/Butlery granskning och implementeringsplan.dc.html` | `76ab6fe3c1a833d5c2345b9391464de2446da52d7483e488facd5b38a05060fb` |
-| `zip:/Butlery styrdokument modulart designsystem.dc.html` | `854b9a162f3fa09fdac3854ba774853ec2462b94f877f29052df93559ea5c0b7` |
+| `zip:/Butlery styrdokument modulart designsystem.dc.html` | `b4f29ea1926acb92172ddd8e4ed6e01836829be1039ce2ee08fa8e7300a9ab65` |
 | `zip:/fas0/DELIVERY` | `d9b3ef4a66ffc0c8ad97ac7dc80d0ec25cf19763c3448e1815cde9d6d935edd9` |
-| `zip:/fas0/LAS-MIG.md` | `ff5c5a1b9fca4c05408fbd5937368bb5ff95832028bbc67a8a972239a1e3b87b` |
+| `zip:/fas0/LAS-MIG.md` | `651e42c615166c7462b74a9539534c25e92b95fd9d99e14d314132dde2d770a4` |
 | `zip:/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` |
 | `zip:/uploads/Butlery-arbetsorder-modulart-designsystem.md` | `4606e0ba64e57025713d717ed2415a0fcb3d541a7f9b74f0ed570efd821bd52b` |

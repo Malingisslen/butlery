@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // Butlery · tokens.json → lib/theme/butlery_tokens.dart
 // Kör: node tools/gen-flutter.mjs   ·   Verifieras av tools/test-generated.mjs + dart analyze
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+// GEMENSAM header — importen saknades och generatorn kraschade i varje körning.
+import { header } from './gen-header.mjs';
+import { emit } from './gen-check.mjs';
 
 const camel = s => String(s).replace(/[-_. ]+(.)/g, (m, c) => c.toUpperCase()).replace(/^(.)/, (m, c) => c.toLowerCase());
 const isColor = v => typeof v === 'string' && (/^#[0-9A-Fa-f]{6}$/.test(v) || /^rgba?\(/.test(v));
@@ -17,8 +20,7 @@ function argb(v) {
 
 function renderDart(t) {
   const L = [];
-  L.push('// GENERERAD FIL — ändra tokens.json, inte den här.');
-  L.push('// tokens ' + t.version + ' · ' + t.date + ' · generator tools/gen-flutter.mjs');
+  for (const h of header({ generator: 'tools/gen-flutter.mjs', generatorVersion: '1.3', tokenVersion: t.version, inputs: ['tokens.json'], date: t.date }).lines) L.push(h);
   L.push('// ignore_for_file: unused_field');
   L.push("import 'package:flutter/material.dart';");
   L.push('');
@@ -174,7 +176,6 @@ function renderDart(t) {
 }
 
 const t = JSON.parse(readFileSync('tokens.json', 'utf8'));
-mkdirSync('lib/theme', { recursive: true });
 const out = renderDart(t);
-writeFileSync('lib/theme/butlery_tokens.dart', out);
+emit({ 'lib/theme/butlery_tokens.dart': out }, { label: 'gen-flutter' });
 console.log('butlery_tokens.dart skriven · ' + out.split('\n').length + ' rader');

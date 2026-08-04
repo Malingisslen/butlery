@@ -9,10 +9,51 @@ import { readFileSync, writeFileSync, mkdtempSync, rmSync, mkdirSync, copyFileSy
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { CONTROLS } from './controls.mjs';
+import { GENERATORS, GENERATED_OUTPUTS, GENERATED_REGISTER } from './gen-targets.mjs';
+import { checkAppTheme } from './check-app-theme.mjs';
+import { renderMarkdown } from './gen-report.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { classifyStep, reduceControls, computeTotals, countRequirements, DEPENDS_ON, manifestIntegrity, validateRegistry, validateReport, validateRegistryCoverage, parseEvidence, validateReportSchema, checkNamespaces } from './report-logic.mjs';
 
+// PROCESSPROV — sanerad miljö och ÄNDLIG timeout.
+//
+// Fas 1 (fjärde vändan): M-07:s fixtur ärvde BUTLERY_MANIFEST_MODE=delivery från
+// wrappern och startade check-manifest UTAN uttryckligt läge. Fixturen låg så
+// grunt att zip-roten (../../..) blev "/", varpå manifestkontrollen började
+// traversera hela filsystemet. Kedjan hängde på 100 % CPU och skrev aldrig
+// METATEST-SUMMARY — direktkörning utan den ärvda miljön gav 34/34, vilket
+// bevisade orsaken. Två skydd: ingen BUTLERY_*-variabel ärvs in i ett
+// processprov, och en timeout räknas som TESTFEL i stället för att hänga.
+const PROC_TIMEOUT_MS = Number(process.env.BUTLERY_METATEST_TIMEOUT_MS || 90000);
+// Fas 1 (femte vändan): cleanEnv() sanerade basmiljön men opts.env kunde
+// återinföra BUTLERY_* — gateEnv() spred process.env rakt igenom. Nu filtreras
+// BÅDA leden: bara uttryckligen tillåtna CI- och fasvärden får skickas in.
+const ALLOWED_CHILD_ENV = /^(GITHUB_(ACTIONS|RUN_ID|RUN_ATTEMPT|SHA|REPOSITORY|WORKFLOW)|RUNNER_OS|CI|BUTLERY_PHASE|BUTLERY_MANIFEST_MODE)$/;
+const cleanEnv = (extra = {}) => {
+  const e = { ...process.env };
+  for (const k of Object.keys(e)) if (/^BUTLERY_/.test(k) || /^GITHUB_/.test(k) || /^RUNNER_/.test(k) || k === 'CI') delete e[k];
+  for (const [k, v] of Object.entries(extra)) {
+    if (!ALLOWED_CHILD_ENV.test(k)) continue;   // tysta bort allt annat
+    e[k] = v;
+  }
+  return e;
+};
+export const __cleanEnvForTest = cleanEnv;
+function runProc(bin, args, opts = {}) {
+  const p = spawnSync(bin, args, {
+    cwd: opts.cwd, encoding: 'utf8',
+    timeout: opts.timeout ?? PROC_TIMEOUT_MS, killSignal: 'SIGKILL',
+    env: cleanEnv(opts.env || {})
+  });
+  const out = (p.stdout || '') + (p.stderr || '');
+  const timedOut = p.error && (p.error.code === 'ETIMEDOUT' || /ETIMEDOUT/.test(String(p.error)));
+  return {
+    code: timedOut ? 'TIMEOUT' : p.status,
+    timedOut: !!timedOut,
+    out: out + (timedOut ? '\n✖ processen avbröts efter ' + PROC_TIMEOUT_MS + ' ms' : '')
+  };
+}
 const results = [];
 const t = (name, ok, detail) => { results.push({ name, ok }); console.log((ok ? '✔ ' : '✖ ') + name + (detail ? ' — ' + detail : '')); };
 // Ett kraschande testfall får INTE hindra resterande grupper eller summeringen.
@@ -208,7 +249,9 @@ group('M-07', () => {
   mkdirSync(join(dir, 'tools'), { recursive: true });
   copyFileSync('fas0/check-manifest.mjs', join(dir, 'fas0/check-manifest.mjs'));
   copyFileSync('tools/report-logic.mjs', join(dir, 'tools/report-logic.mjs'));
-    const run = () => { const p = spawnSync(process.execPath, ['fas0/check-manifest.mjs'], { cwd: dir, encoding: 'utf8' }); return { code: p.status, out: (p.stdout || '') + (p.stderr || '') }; };
+    // UTTRYCKLIGT repo-läge: fixturen är ingen leverans, och auto/delivery skulle
+    // leta efter en leveransrot som inte finns.
+    const run = () => runProc(process.execPath, ['fas0/check-manifest.mjs', '--mode=repo'], { cwd: dir });
 
     writeFileSync(join(dir, 'fas0/andrade-filer.md'), '# tom\n<!--manifest:files=0-->\n');
     const empty = run();
@@ -311,10 +354,8 @@ group('M-11', () => {
     copyFileSync('fas0/run-verify.sh', join(dir, 'fas0/run-verify.sh'));
     writeFileSync(join(dir, 'fas0/check-manifest.mjs'), 'console.log("MANIFEST-SUMMARY mode=repo expected=1 parsed=1 ok=1 bad=0 missing=0 duplicates=0 unlisted=0 outside_absent=0");process.exit(0);\n');
     writeFileSync(join(dir, 'tools/verify.mjs'), 'console.log("stub");process.exit(0);\n');
-    const env2 = { ...process.env };
-    for (const k of Object.keys(env2)) if (/^BUTLERY_/.test(k)) delete env2[k];
-    const p = spawnSync('bash', ['fas0/run-verify.sh'], { cwd: dir, encoding: 'utf8', env: env2 });
-    const out = (p.stdout || '') + (p.stderr || '');
+    const p = runProc('bash', ['fas0/run-verify.sh'], { cwd: dir, env: {} });
+    const out = p.out;
     const noUnbound = !/unbound variable/.test(out);
     rmSync(dir, { recursive: true, force: true });
 
@@ -444,10 +485,13 @@ group('M-17', () => {
 
 /* M-18 · GEN-01:s register täcker samtliga generatorers skrivmål */
 group('M-18', () => {
-    const v = readFileSync('tools/verify.mjs', 'utf8');
-    const reg = (v.match(/const GENERATED_OUTPUTS = \[([\s\S]*?)\]/) || [])[1] || '';
-    const listed = [...reg.matchAll(/'([^']+)'/g)].map(m2 => m2[1]);
-    const GENERATORS = ['tools/gen-counts.mjs', 'tools/gen-icons.mjs', 'tools/gen-css.mjs', 'tools/gen-flutter.mjs', 'tools/gen-schema.mjs'];
+    // Fas 1 (andra vändan): M-18 läste GENERATED_OUTPUTS ur verify.mjs källtext
+    // och bar sin EGEN generatorlista, där gen-app-theme.mjs saknades. Nu läses
+    // det centrala registret i tools/gen-targets.mjs — samma modul som verify.mjs
+    // importerar — så listorna inte kan glida isär igen.
+    const listed = GENERATED_OUTPUTS;
+    const usesRegister = /from '\.\/gen-targets\.mjs'/.test(readFileSync('tools/verify.mjs', 'utf8'));
+    const chainSteps = [...readFileSync('tools/verify.mjs', 'utf8').matchAll(/'(tools\/gen-[a-z-]+\.mjs)'/g)].map(m2 => m2[1]);
     const written = new Set();
     for (const g of GENERATORS) {
       if (!existsSync(g)) continue;
@@ -458,9 +502,14 @@ group('M-18', () => {
       for (const mm of src.matchAll(/const (?:OUT_?FILE|DEST|TARGET|ICONS|SRC_ICONS)\s*=\s*'([^']+)'/g)) written.add(mm[1]);
     }
     const missing = [...written].filter(f => !listed.includes(f));
+    // Varje generator i registret måste också vara ett STEG i kedjan.
+    const notInChain = GENERATORS.filter(g => !chainSteps.includes(g));
     t('M-18 · GEN-01-registret täcker samtliga generatorers skrivmål',
-      written.size > 0 && missing.length === 0,
-      'register ' + listed.length + ' · skrivmål ' + written.size + (missing.length ? ' · SAKNAS: ' + missing.join(', ') : ''));
+      written.size > 0 && missing.length === 0 && usesRegister && notInChain.length === 0,
+      'register ' + listed.length + ' · generatorer ' + GENERATORS.length + ' · skrivmål ' + written.size +
+      (missing.length ? ' · SAKNAS I REGISTRET: ' + missing.join(', ') : '') +
+      (notInChain.length ? ' · SAKNAS I KEDJAN: ' + notInChain.join(', ') : '') +
+      (usesRegister ? '' : ' · verify.mjs importerar inte gen-targets.mjs'));
 });
 
 /* M-19 · preflight, T-15 och GEN-01 har skilda roller */
@@ -540,11 +589,26 @@ group('M-22', () => {
       writeFileSync(join(pkg, 'fas0/andrade-filer.md'), md);
     };
     write();
-    const run = mode => {
-      const p = spawnSync(process.execPath, ['fas0/check-manifest.mjs', '--mode=' + mode], { cwd: pkg, encoding: 'utf8' });
-      return { code: p.status, out: (p.stdout || '') + (p.stderr || '') };
-    };
+    const run = mode => runProc(process.execPath, ['fas0/check-manifest.mjs', '--mode=' + mode], { cwd: pkg });
     const full = run('delivery');
+    // ODEKLARERAD fil i LEVERANSYTAN. Fas 1 (tredje vändan): set-likheten mättes
+    // bara inom reporoten, så tre odeklarerade filer i ZIP-ytan gav unlisted=0.
+    // Fas 1 (fjärde vändan): undantaget var ett wildcard över uploads/vNN-*.log
+    // och .json, så exakt de filerna slank igenom ändå. Alla tre namnformerna
+    // provas nu — inklusive de två som föll igenom.
+    const undeclaredCases = [];
+    // Fas 1 (femte vändan): surprise.png och uploads/scraps/undeclared.json gav
+    // fortfarande unlisted=0 — TEXT-allowlisten och de breda katalogundantagen.
+    for (const rel of ['extra.md', 'uploads/v99-undeclared.json', 'uploads/v99-undeclared.log',
+      'uploads/v22-second-verify.log', 'surprise.png', 'uploads/scraps/undeclared.json', 'exports/oanmald.bin']) {
+      mkdirSync(join(dir, rel.split('/').slice(0, -1).join('/')) || dir, { recursive: true });
+      writeFileSync(join(dir, rel), '# odeklarerad\n');
+      const r = run('delivery');
+      undeclaredCases.push([rel, r.code, /olistad artefakt i leveransytan/.test(r.out)]);
+      rmSync(join(dir, rel));
+    }
+    const allUndeclaredFell = undeclaredCases.every(([, code, saw]) => code !== 0 && saw);
+    const afterExtra = run('delivery');
     // Ta bort EN leveransfil.
     rmSync(join(dir, 'support.js'));
     const oneMissing = run('delivery');
@@ -553,9 +617,11 @@ group('M-22', () => {
     const allMissing = run('delivery');
     const autoEmpty = run('auto');
     const badMode = run('deliveri');
-    t('M-22 · delivery-läget fäller en saknad leveransfil OCH en helt tömd leveransyta',
-      full.code === 0 && oneMissing.code !== 0 && allMissing.code !== 0 && badMode.code === 2,
-      'komplett ' + full.code + ' · en saknad ' + oneMissing.code + ' · alla saknade ' + allMissing.code +
+    t('M-22 · delivery-läget fäller saknad leveransfil, tömd leveransyta OCH varje odeklarerad fil i ZIP-ytan',
+      full.code === 0 && allUndeclaredFell &&
+      afterExtra.code === 0 && oneMissing.code !== 0 && allMissing.code !== 0 && badMode.code === 2,
+      'komplett ' + full.code + ' · odeklarerade: ' + undeclaredCases.map(([f, c, saw]) => f + '=' + c + (saw ? '' : '(ingen diagnostik)')).join(', ') +
+      ' · återställd ' + afterExtra.code + ' · en saknad ' + oneMissing.code + ' · alla saknade ' + allMissing.code +
       ' · auto utan markör ' + autoEmpty.code + ' (därför kräver leveranskontrollen --mode=delivery) · fel läge ' + badMode.code);
     rmSync(dir, { recursive: true, force: true });
 });
@@ -605,15 +671,11 @@ group('M-23', () => {
     // DETERMINISTISK miljö: fixturen byggs med CI_ENV, alltså måste grinden köra
     // med samma. Fas 0.17: proven rensade CI-miljön och CHK-CI-01 reducerades då
     // till failed i barnprocessen medan fixturen byggts med giltigt bevis.
-    const gateEnv = () => {
-      const e = { ...process.env };
-      for (const k of Object.keys(e)) if (/^GITHUB_/.test(k) || /^RUNNER_/.test(k) || k === 'CI') delete e[k];
-      return { ...e, ...CI_ENV };
-    };
-    const runGate = (dir, phase) => {
-      const p = spawnSync(process.execPath, ['tools/gate.mjs', '--phase=' + phase], { cwd: dir, encoding: 'utf8', env: gateEnv() });
-      return { code: p.status, out: (p.stdout || '') + (p.stderr || '') };
-    };
+    // Bara CI-kontexten skickas in; runProc() sanerar resten. Fas 1 (femte
+    // vändan): den gamla varianten spred process.env och kunde återinföra
+    // BUTLERY_PHASE från moderprocessen.
+    const gateEnv = () => ({ ...CI_ENV });
+    const runGate = (dir, phase) => runProc(process.execPath, ['tools/gate.mjs', '--phase=' + phase], { cwd: dir, env: gateEnv() });
     const run = (reportObj, phase, extra = {}) => {
       const dir = mkPkg(reportObj, extra);
       if (extra.mutate) extra.mutate(dir);
@@ -748,46 +810,52 @@ group('M-24', () => {
         before.set(f, shaOf(readFileSync(join(dir, f))));
       return { dir, before };
     };
-    const runFinalize = dir => {
-      const p = spawnSync(process.execPath, ['tools/finalize.mjs'], { cwd: dir, encoding: 'utf8',
-        env: { ...process.env, ...CI_ENV } });
-      const out = (p.stdout || '') + (p.stderr || '');
+    // FASOBEROENDE. Fas 1 (tredje vändan): runFinalize() och gateEnvM24() ärvde
+    // BUTLERY_PHASE från moderprocessen, medan provet körde gate.mjs --phase=0.
+    // Under en riktig Fas 1-körning föll därför M-24 ("A grinden grön") — provet
+    // mätte fasblandning, inte finalisering. Fasen skickas nu uttryckligen och
+    // fall A körs för BÅDA faserna.
+    const runFinalize = (dir, phase = 0) => {
+      const p = runProc(process.execPath, ['tools/finalize.mjs'], { cwd: dir, env: { ...CI_ENV, BUTLERY_PHASE: String(phase) } });
+      const out = p.out;
+      // Fas 1 (femte vändan): raden nedan läste p.status ur ett runProc-resultat
+      // som bara bär {code, timedOut, out} — M-24 rapporterade "exit undefined".
       // KRASCHSÄKERT: läs det som finns, anta inget.
       let rep = null, md = null;
       try { rep = JSON.parse(readFileSync(join(dir, 'fas0/verify-report.json'), 'utf8')); } catch {}
       try { md = readFileSync(join(dir, 'fas0/kontrollstatus.md'), 'utf8'); } catch {}
-      return { code: p.status, out, rep, md };
+      return { code: p.code, out, rep, md };
     };
     const statusOf = (rep, id) => (rep?.controls || []).find(c => c.id === id)?.status;
     // SAMMA CI-miljö som finaliseringen körde i. Fas 0.17: fall A finaliserade i
     // simulerad CI men körde grinden utan miljön, så omreduceringen gjorde
     // CHK-CI-01 röd med rätta.
-    const gateEnvM24 = () => {
-      const e = { ...process.env };
-      for (const k of Object.keys(e)) if (/^GITHUB_/.test(k) || /^RUNNER_/.test(k) || k === 'CI') delete e[k];
-      return { ...e, ...CI_ENV };
-    };
-    const gate = dir => spawnSync(process.execPath, ['tools/gate.mjs', '--phase=0'],
-      { cwd: dir, encoding: 'utf8', env: gateEnvM24() }).status;
+    const gateEnvM24 = (phase = 0) => ({ ...CI_ENV, BUTLERY_PHASE: String(phase) });
+    const gate = (dir, phase = 0) => runProc(process.execPath, ['tools/gate.mjs', '--phase=' + phase],
+      { cwd: dir, env: gateEnvM24(phase) }).code;
     const problems = [];
     const check = (label, cond, detail) => { if (!cond) problems.push(label + (detail ? ': ' + detail : '')); };
 
-    // A · giltigt bevis → CI passed, inget ändrat, samma runId i båda filerna
-    {
+    // A · giltigt bevis → CI passed, inget ändrat, samma runId i båda filerna.
+    // Körs för VARJE definierad fas: grinden bedömer bara en rapport som räknats
+    // för samma fas, så fasen är en parameter och inte en miljöslump.
+    for (const phase of [...new Set(CONTROLS.flatMap(c => c.requiredForGate || []))].sort((a, b) => a - b)) {
+      const A = 'A(fas ' + phase + ') ';
       const { dir, before } = build();
-      const r = runFinalize(dir);
-      check('A finalize-exit', r.code === 0, 'exit ' + r.code + ' :: ' + r.out.split('\n').filter(l => /^✖/.test(l)).slice(0, 2).join(' | '));
-      check('A CI passed', statusOf(r.rep, 'CHK-CI-01') === 'passed',
+      const r = runFinalize(dir, phase);
+      check(A + 'finalize-exit', r.code === 0, 'exit ' + r.code + ' :: ' + r.out.split('\n').filter(l => /^✖/.test(l)).slice(0, 2).join(' | '));
+      check(A + 'CI passed', statusOf(r.rep, 'CHK-CI-01') === 'passed',
         String(statusOf(r.rep, 'CHK-CI-01')) + ' — ' + ((r.rep?.controls || []).find(c => c.id === 'CHK-CI-01')?.why || '?'));
-      check('A Markdown skriven', !!r.md);
-      check('A samma runId', !!(r.rep && r.md && r.md.includes(r.rep.runId)));
+      check(A + 'Markdown skriven', !!r.md);
+      check(A + 'samma runId', !!(r.rep && r.md && r.md.includes(r.rep.runId)));
+      check(A + 'rapporten räknad för fasen', Number(r.rep?.currentPhase) === phase, String(r.rep?.currentPhase));
       for (const [f, h] of before) {
         let now2 = null;
         try { now2 = shaOf(readFileSync(join(dir, f))); } catch {}
-        check('A oförändrad ' + f, now2 === h);
+        check(A + 'oförändrad ' + f, now2 === h);
       }
-      check('A totalen röd', r.rep?.overallResult === 'failed', String(r.rep?.overallResult));
-      check('A grinden grön', gate(dir) === 0);
+      check(A + 'totalen röd', r.rep?.overallResult === 'failed', String(r.rep?.overallResult));
+      check(A + 'grinden grön', gate(dir, phase) === 0);
       rmSync(dir, { recursive: true, force: true });
     }
     // B · ogiltigt bevis → CI failed
@@ -859,13 +927,11 @@ group('M-24', () => {
         rep.finalized = wf; rep.finalizedAt = at; }
       writeFileSync(join(pkg, 'fas0/verify-report.json'), JSON.stringify(rep, null, 2));
       const gateIn = () => {
-        const e = { ...process.env };
-        for (const k of Object.keys(e)) if (/^GITHUB_/.test(k) || /^RUNNER_/.test(k) || k === 'CI') delete e[k];
-        return spawnSync(process.execPath, ['tools/gate.mjs', '--phase=0'], { cwd: pkg, encoding: 'utf8', env: { ...e, ...CI_ENV } });
+        return runProc(process.execPath, ['tools/gate.mjs', '--phase=0'], { cwd: pkg, env: { ...CI_ENV } });
       };
       const g1 = gateIn();
-      check('I delivery-basfall grönt', g1.status === 0,
-        'exit ' + g1.status + ' :: ' + ((g1.stdout || '') + (g1.stderr || '')).split('\n').filter(l => /^✖/.test(l)).slice(0, 2).join(' | '));
+      check('I delivery-basfall grönt', g1.code === 0,
+        'exit ' + g1.code + ' :: ' + g1.out.split('\n').filter(l => /^✖/.test(l)).slice(0, 2).join(' | '));
       writeFileSync(join(dir, 'support.js'), '// muterad efter rapporten\n');
       check('I ändrad zip:/-fil fäller', gateIn().status !== 0);
       rmSync(dir, { recursive: true, force: true });
@@ -957,6 +1023,224 @@ group('M-27', () => {
     t('M-27 · registertäckning kräver exakt set-likhet och stabil metadata',
       okCov.ok && !trimmed.ok && !extra.ok && !meta.ok,
       'full ' + okCov.ok + ' · beskuren ' + trimmed.ok + ' (' + trimmed.problems.length + ' fel) · extra ' + extra.ok + ' · metadata ' + meta.ok);
+});
+
+/* M-28 · rapportrenderaren escapar pipes i tabellceller */
+group('M-28', () => {
+  // Fas 1: en scope-text med '||' skrev två tabellrader på samma källrad, och
+  // T-19 fällde den genererade rapporten på andra körningen.
+  const r = fullReport({ failOutsideGate: false });
+  r.controls[0].scope = 'A || B och en enkel | pipe';
+  r.controls[0].why = 'orsak | med pipe';
+  r.controls[1] && (r.controls[1].name = 'namn || med dubbel');
+  const md = renderMarkdown(r);
+  // Ingen tabellrad får bära en OESCAPAD pipe utöver kolumnavgränsarna.
+  // SAMMA maskning och SAMMA radparser som T-19 (tools/lint-core.mjs): en tom
+  // cell skrivs legitimt som "| | " och är INTE en dubbel avgränsare.
+  // Fas 1 (andra vändan): heuristiken /\|\s*\|\s*\S/ tolkade den tomma cellen i
+  // precedenstabellen som ett fel, så M-28 föll medan CHK-T-19 passerade.
+  const mask = s => s.replace(/\\\|/g, '\u0000').replace(/`[^`]*`/g, m2 => m2.replace(/\|/g, '\u0000'));
+  let offenders = 0, header = null, firstBad = null;
+  for (const line of md.split('\n')) {
+    if (!line.startsWith('|')) { header = null; continue; }
+    const m2 = mask(line);
+    if (/^\|[\s:|-]+\|?\s*$/.test(m2)) continue;
+    const n = m2.split('|').length;
+    if (header === null) { header = n; continue; }
+    if (n !== header) { offenders++; if (!firstBad) firstBad = line.slice(0, 120); }
+  }
+  // De INJICERADE cellerna kontrolleras direkt: varje pipe ska stå escapad.
+  const injected = [
+    ['scope', 'A \\|\\| B och en enkel \\| pipe'],
+    ['why', 'orsak \\| med pipe'],
+    ...(r.controls[1] ? [['name', 'namn \\|\\| med dubbel']] : [])
+  ];
+  const unescaped = injected.filter(([, want]) => !md.includes(want)).map(([f]) => f);
+  t('M-28 · pipes i scope, why och name escapas i den genererade rapporten',
+    offenders === 0 && unescaped.length === 0,
+    offenders ? offenders + ' rader med fel kolumnantal · ' + firstBad
+      : (unescaped.length ? 'oescapade celler: ' + unescaped.join(', ') : ''));
+});
+
+/* M-29 · TG-01 mäter FAKTISKA värden, inte bara namn */
+group('M-29', () => {
+  // Fas 1 (tredje vändan): kontrollen såg bara att medlemsnamnen fanns.
+  // forestGreen kunde bytas till rent vitt och test-generated gav exit 0.
+  const tokens = JSON.parse(readFileSync('tokens.json', 'utf8'));
+  const map = JSON.parse(readFileSync('tools/app-theme-map.json', 'utf8'));
+  const brand = JSON.parse(readFileSync('assets/brand-colors.json', 'utf8'));
+  const colorsSrc = readFileSync('lib/theme/app_colors.dart', 'utf8');
+  const textSrc = readFileSync('lib/theme/app_text_styles.dart', 'utf8');
+  const legacy = existsSync('legacy-api-contract.json') ? JSON.parse(readFileSync('legacy-api-contract.json', 'utf8')) : null;
+  const run1 = (o) => checkAppTheme({ colorsSrc, textSrc, tokens, map, brand, legacy, ...o }).errors;
+  const base = run1({});
+  const muts = [
+    ['vanlig färg', s2 => s2.replace(/(static const Color forestGreen = )Color\(0x[0-9A-F]{8}\)/, '$1Color(0xFFFFFFFF)'), 'colors'],
+    ['ljust ColorScheme-värde', s2 => s2.replace(/(lightColorScheme = ColorScheme\(\n\s*brightness: Brightness\.light,\n\s*primary: )Color\(0x[0-9A-F]{8}\)/, '$1Color(0xFF010203)'), 'colors'],
+    ['darkOverride', s2 => s2.replace(/(darkColorScheme[\s\S]*?onError: )Color\(0x[0-9A-F]{8}\)/, '$1Color(0xFF040506)'), 'colors'],
+    ['varumärkesfärg', s2 => s2.replace(/(static const Color brand[A-Z]\w* = )Color\(0x[0-9A-F]{8}\)/, '$1Color(0xFF00FF00)'), 'colors'],
+    ['aliasmål', s2 => s2.replace(/(static const Color textSecondary = )\w+;/, '$1textDark;'), 'colors'],
+    ['typroll', s2 => s2.replace(/(get bodyLarge => TextStyle\(\n\s*fontFamily: family,\n\s*fontSize: )[\d.]+/, '$199'), 'text'],
+    ['typalias', s2 => s2.replace(/(get buttonText => )\w+;/, '$1labelMedium;'), 'text'],
+    ['semantisk variant', s2 => s2.replace(/(get errorText => \w+\.copyWith\(color: )AppColors\.\w+/, '$1AppColors.success'), 'text'],
+    // BÅDA riktningarna av mängdlikheten. Fas 1 (femte vändan): sviten provade
+    // bara borttagningsriktningen, trots att implementationen fångar båda.
+    ['borttagen legacy-medlem', s2 => s2.replace(/\n  static const Color textSecondary = \w+;/, ''), 'colors'],
+    ['oanmäld extra legacy-medlem', s2 => s2.replace(/(static const Color transparent = Colors\.transparent;)/, '$1\n  static const Color oanmaldMedlem = Color(0xFF000000);'), 'colors'],
+    ['borttagen legacy-getter', s2 => s2.replace(/\n  static TextStyle get buttonText => \w+;/, ''), 'text'],
+    ['oanmäld extra legacy-getter', s2 => s2.replace(/(  \/\/ ── Alias · samma stil, historiska namn ──)/, '$1\n  static TextStyle get oanmaldGetter => bodyLarge;'), 'text']
+  ];
+  const misses = [];
+  for (const [label, mut, which] of muts) {
+    const c2 = which === 'colors' ? mut(colorsSrc) : colorsSrc;
+    const t2 = which === 'text' ? mut(textSrc) : textSrc;
+    const changed = which === 'colors' ? c2 !== colorsSrc : t2 !== textSrc;
+    if (!changed) { misses.push(label + ' (mutationen kunde inte byggas)'); continue; }
+    const errs = run1({ colorsSrc: c2, textSrc: t2 });
+    if (errs.length <= base.length) misses.push(label);
+  }
+  t('M-29 · TG-01 fäller ändrade FÄRGVÄRDEN, schemaslottar, aliasmål och typroller',
+    base.length === 0 && misses.length === 0,
+    'baslinje ' + base.length + ' fel · ' + (muts.length - misses.length) + '/' + muts.length + ' mutationer fällda' +
+    (misses.length ? ' · MISSADE: ' + misses.join(', ') : ''));
+});
+
+/* M-30 · GEN-02 fäller en KROPP som inte kommer ur generatorn */
+group('M-30', () => {
+  // Fas 1 (tredje vändan): preflight jämförde bara headerns tokenversion och
+  // källfingeravtryck. Två levererade filer hade helt korrekt header och
+  // fingeravtryck men en kropp ur en äldre körning — GEN-02 stod grön.
+  const NEED = ['tools/preflight.mjs', 'tools/gen-targets.mjs', 'tools/gen-header.mjs', 'tools/gen-check.mjs',
+    ...new Set(Object.values(GENERATED_REGISTER).map(v => v.generator)),
+    ...new Set(Object.values(GENERATED_REGISTER).flatMap(v => v.inputs)),
+    ...Object.keys(GENERATED_REGISTER)];
+  const dir = mkdtempSync(join(tmpdir(), 'butlery-gen02-'));
+  for (const f of [...new Set(NEED)]) {
+    mkdirSync(join(dir, f.split('/').slice(0, -1).join('/')), { recursive: true });
+    copyFileSync(f, join(dir, f));
+  }
+  const run = () => runProc(process.execPath, ['tools/preflight.mjs'], { cwd: dir });
+  const clean = run();
+  // Mutera KROPPEN — inte headern. Första raden efter headern som bär ett värde.
+  const bodyMutate = (file, re, to) => {
+    const p2 = join(dir, file);
+    const s2 = readFileSync(p2, 'utf8');
+    const n2 = s2.replace(re, to);
+    if (n2 === s2) return false;
+    writeFileSync(p2, n2);
+    return true;
+  };
+  const cssOk = bodyMutate('assets/generated/tokens.css', /(--butlery-touch-min:\s*)\d+/, '$1999');
+  const css = run();
+  copyFileSync('assets/generated/tokens.css', join(dir, 'assets/generated/tokens.css'));
+  const dartOk = bodyMutate('lib/theme/app_colors.dart', /(static const Color forestGreen = )Color\(0x[0-9A-F]{8}\)/, '$1Color(0xFFFFFFFF)');
+  const dart = run();
+  rmSync(dir, { recursive: true, force: true });
+  const headerIntact = /GEN-CHECK drift/.test(css.out) && !/fingeravtrycket är/.test(css.out);
+  t('M-30 · GEN-02 fäller kroppsdrift trots korrekt header och fingeravtryck',
+    clean.code === 0 && cssOk && dartOk && css.code === 1 && dart.code === 1 && headerIntact,
+    'ren ' + clean.code + ' · css ' + css.code + ' · dart ' + dart.code +
+    ' · mutationer ' + [cssOk, dartOk].join(',') + ' · kroppsdiagnostik ' + headerIntact);
+});
+
+/* M-31 · KÄLLMUTATIONER följda av regenerering */
+group('M-31', () => {
+  // Fas 1 (fjärde vändan): M-29 muterade genererad output mot oförändrad källa.
+  // Tre mutationer av SJÄLVA MAPPNINGEN passerade hela kedjan efter
+  // regenerering: rå färg i darkOverrides, en typeSemantic-färg mot en medlem
+  // som inte finns, och ett borttaget legacy-alias.
+  const NEED = ['tools/gen-app-theme.mjs', 'tools/gen-header.mjs', 'tools/gen-check.mjs', 'tools/gen-targets.mjs',
+    'tools/check-app-theme.mjs', 'tools/test-generated.mjs',
+    'tokens.json', 'tools/app-theme-map.json', 'assets/brand-colors.json', 'legacy-api-contract.json',
+    ...Object.keys(GENERATED_REGISTER)];
+  const build = () => {
+    const dir = mkdtempSync(join(tmpdir(), 'butlery-src-'));
+    for (const f of [...new Set(NEED)]) {
+      const sub = f.split('/').slice(0, -1).join('/');
+      mkdirSync(sub ? join(dir, sub) : dir, { recursive: true });
+      copyFileSync(f, join(dir, f));
+    }
+    return dir;
+  };
+  const mutate = (dir, fn) => {
+    const p = join(dir, 'tools/app-theme-map.json');
+    const m = JSON.parse(readFileSync(p, 'utf8'));
+    if (fn(m) === false) return false;
+    writeFileSync(p, JSON.stringify(m, null, 2) + '\n');
+    return true;
+  };
+  const gen = dir => runProc(process.execPath, ['tools/gen-app-theme.mjs'], { cwd: dir });
+  const tg = dir => runProc(process.execPath, ['tools/test-generated.mjs'], { cwd: dir });
+  const problems = [];
+
+  // 0 · Kontroll: orörd kopia ska regenerera och passera.
+  { const dir = build();
+    const g = gen(dir), v = tg(dir);
+    if (g.code !== 0) problems.push('orörd kopia: generatorn gav ' + g.code);
+    if (v.code !== 0) problems.push('orörd kopia: test-generated gav ' + v.code + ' :: ' + v.out.split('\n').filter(l => /^✖/.test(l))[0]);
+    rmSync(dir, { recursive: true, force: true }); }
+
+  // 1 · Rå färg i darkOverrides → generatorn får inte skriva något.
+  { const dir = build();
+    const ok = mutate(dir, m => { m.scheme.darkOverrides[Object.keys(m.scheme.darkOverrides)[0]] = ['raw', 'rgba(1,2,3,0.4)']; });
+    const g = gen(dir);
+    if (!ok || g.code === 0) problems.push('rå darkOverride: generatorn gav ' + g.code + ' (väntade ≠ 0)');
+    rmSync(dir, { recursive: true, force: true }); }
+
+  // 2 · typeSemantic.color mot en medlem som inte finns.
+  { const dir = build();
+    const ok = mutate(dir, m => {
+      const k = Object.keys(m.typeSemantic).find(x => m.typeSemantic[x].color);
+      if (!k) return false;
+      m.typeSemantic[k].color = 'AppColors.doesNotExist';
+    });
+    const g = gen(dir);
+    if (!ok || g.code === 0) problems.push('okänd AppColors-medlem: generatorn gav ' + g.code + ' (väntade ≠ 0)');
+    rmSync(dir, { recursive: true, force: true }); }
+
+  // 3 · Borttaget legacy-alias → generatorn lyckas, men det FRYSTA kontraktet fäller.
+  { const dir = build();
+    const ok = mutate(dir, m => { delete m.aliases.textSecondary; });
+    const g = gen(dir);
+    const v = tg(dir);
+    if (!ok || g.code !== 0) problems.push('borttaget alias: generatorn gav ' + g.code + ' (väntade 0)');
+    else if (v.code === 0 || !/LEGACY-API/.test(v.out))
+      problems.push('borttaget alias: test-generated gav ' + v.code + ' utan LEGACY-API-diagnostik');
+    rmSync(dir, { recursive: true, force: true }); }
+
+  t('M-31 · källmutationer i mappningen fälls efter regenerering (rå kind, okänd medlem, borttaget legacy-alias)',
+    problems.length === 0, problems.join(' · ') || '4 fall: orörd grön, tre mutationer fällda');
+});
+
+/* M-32 · processprovens miljö kan inte förgiftas av moderprocessen */
+group('M-32', () => {
+  // Fas 1 (femte vändan): cleanEnv() sanerade basmiljön men opts.env kunde
+  // återinföra BUTLERY_* — och gateEnv() spred process.env rakt igenom. En
+  // förgiftad moderprocess kunde därför styra ett barnprovs läge och fas.
+  const before = { ...process.env };
+  process.env.BUTLERY_MANIFEST_MODE = 'delivery';
+  process.env.BUTLERY_PHASE = '7';
+  process.env.BUTLERY_PAHITT = 'ja';
+  process.env.GITHUB_ACTIONS = 'true';
+  process.env.GITHUB_RUN_ID = '999';
+  const bare = __cleanEnvForTest({});
+  const withCi = __cleanEnvForTest({ ...CI_ENV, BUTLERY_PHASE: '1', BUTLERY_PAHITT: 'nej' });
+  // Bevisa dessutom att ett barn FAKTISKT ser den sanerade miljön.
+  const seen = runProc(process.execPath, ['-e',
+    'process.stdout.write(JSON.stringify({m:process.env.BUTLERY_MANIFEST_MODE??null,p:process.env.BUTLERY_PHASE??null,x:process.env.BUTLERY_PAHITT??null,g:process.env.GITHUB_RUN_ID??null}))'],
+    { env: { ...CI_ENV, BUTLERY_PHASE: '1' } });
+  let child = {};
+  try { child = JSON.parse(seen.out); } catch {}
+  for (const k of Object.keys(process.env)) if (!(k in before)) delete process.env[k];
+  Object.assign(process.env, before);
+  t('M-32 · processprovens miljö bär bara uttryckligen tillåtna värden',
+    bare.BUTLERY_MANIFEST_MODE === undefined && bare.BUTLERY_PHASE === undefined && bare.BUTLERY_PAHITT === undefined &&
+    bare.GITHUB_RUN_ID === undefined && withCi.BUTLERY_PHASE === '1' && withCi.BUTLERY_PAHITT === undefined &&
+    withCi.GITHUB_RUN_ID === CI_ENV.GITHUB_RUN_ID &&
+    child.m === null && child.p === '1' && child.x === null && child.g === CI_ENV.GITHUB_RUN_ID,
+    'bas: ' + JSON.stringify({ m: bare.BUTLERY_MANIFEST_MODE ?? null, p: bare.BUTLERY_PHASE ?? null, x: bare.BUTLERY_PAHITT ?? null }) +
+    ' · tillåtet: ' + JSON.stringify({ p: withCi.BUTLERY_PHASE, x: withCi.BUTLERY_PAHITT ?? null }) +
+    ' · barnet såg: ' + JSON.stringify(child));
 });
 
 const fail = results.filter(r => !r.ok).length;

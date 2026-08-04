@@ -2,10 +2,14 @@ name: verify
 on: [push, pull_request]
 # Reporot = specpaketets rot (katalogen som bär tools/, fas0/ och dokumenten).
 #
-# TVÅ JOBB, med skilda ansvar (Fas 0.12):
+# TRE JOBB, med skilda ansvar (Fas 0.12 · utökat i Fas 1):
 #   fas0-gate      · avgör om FAS 0-GRINDEN passerar. Innehållsfynd och GEN-01-drift
 #                    får INTE fälla det här jobbet.
-#   content-baseline · rapporterar totalen och driften. Får vara rött.
+#   fas1-gate      · avgör om FAS 1-GRINDEN ("en källa") passerar. Egen körning med
+#                    BUTLERY_PHASE=1 — grinden bedömer bara en rapport som räknats
+#                    för samma fas — plus GEN-01 som fällande steg.
+#   content-baseline · rapporterar totalen och driften. Får vara rött. Kör kedjan TVÅ
+#                    gånger och kräver byteidentisk generatorutdata på andra körningen.
 # Fas 0.11 hade ett jobb, och ett obligatoriskt git diff fällde det på GEN-01-drift
 # trots att drift ligger utanför grinden.
 jobs:
@@ -93,6 +97,94 @@ jobs:
             fas0/kontrollstatus.md
             fas0/ci-evidence.json
 
+  # FAS 1-GRINDEN — "en källa". Egen körning eftersom rapporten beräknas för EN
+  # aktuell fas (BUTLERY_PHASE) och grinden vägrar bedöma en rapport som räknats
+  # för en annan. Fas 0-grinden ingår i Fas 1-mängden: verktygsintegriteten får
+  # inte regressera. Innehållsbaslinjen får fortfarande vara röd.
+  fas1-gate:
+    name: Fas 1-grinden (en källa)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '24' }
+
+      - name: CI-kontext för CHK-CI-01
+        run: |
+          node -e "
+            const fs=require('fs'), crypto=require('crypto');
+            const mf = fs.existsSync('fas0/andrade-filer.md')
+              ? crypto.createHash('sha256').update(fs.readFileSync('fas0/andrade-filer.md')).digest('hex') : null;
+            fs.mkdirSync('fas0',{recursive:true});
+            fs.writeFileSync('fas0/ci-evidence.json', JSON.stringify({
+              schema: 'butlery-ci-evidence/2',
+              ciProvider: 'github-actions',
+              githubActions: process.env.GITHUB_ACTIONS || null,
+              runId: process.env.GITHUB_RUN_ID || null,
+              runAttempt: process.env.GITHUB_RUN_ATTEMPT || null,
+              runnerOs: process.env.RUNNER_OS || null,
+              repository: process.env.GITHUB_REPOSITORY || null,
+              commit: process.env.GITHUB_SHA || null,
+              workflow: process.env.GITHUB_WORKFLOW || null,
+              manifestSha256: mf,
+              startedAt: new Date().toISOString()
+            }, null, 2));
+          "
+
+      - name: Verifieringskedjan (fas 1)
+        continue-on-error: true
+        env:
+          BUTLERY_MANIFEST_MODE: repo
+          BUTLERY_PHASE: '1'
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: bash fas0/run-verify.sh
+
+      - name: Komplettera CI-beviset
+        if: always()
+        run: |
+          node -e "
+            const fs=require('fs');
+            const p='fas0/ci-evidence.json';
+            if (!fs.existsSync(p)) process.exit(0);
+            const e=JSON.parse(fs.readFileSync(p,'utf8'));
+            e.verifyExitCode = fs.existsSync('fas0/verify-exit') ? Number(fs.readFileSync('fas0/verify-exit','utf8').trim()) : null;
+            e.completedAt = new Date().toISOString();
+            fs.writeFileSync(p, JSON.stringify(e,null,2));
+            console.log('CI-bevis komplett · exit ' + e.verifyExitCode);
+          "
+
+      - name: Finalisera rapporten
+        if: always()
+        continue-on-error: true
+        env:
+          BUTLERY_PHASE: '1'
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: node tools/finalize.mjs
+
+      # INGEN DRIFT: körningen får inte ha ändrat en incheckad genererad fil. Ändras
+      # någon var den incheckade versionen stale (GEN-01, i Fas 1-grinden).
+      - name: Genererade filer oförändrade av körningen (GEN-01)
+        if: always()
+        run: |
+          git diff --exit-code -- assets/generated lib/theme icons.json \
+            || (echo "✖ generatorutdata drev — den incheckade versionen var stale" && exit 1)
+
+      - name: Fas 1-grinden
+        if: always()
+        run: node tools/gate.mjs --phase=1
+
+      - name: Rapport
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fas1-gate-report
+          path: |
+            fas0/verify.log
+            fas0/manifest.log
+            fas0/verify-report.json
+            fas0/kontrollstatus.md
+            fas0/ci-evidence.json
+
   content-baseline:
     name: Innehållsbaslinje (får vara röd)
     runs-on: ubuntu-latest
@@ -109,6 +201,27 @@ jobs:
           BUTLERY_MANIFEST_MODE: repo
           BUTLERY_COMMIT: ${{ github.sha }}
         run: bash fas0/run-verify.sh
+      # ANDRA KÖRNINGEN: generatorutdata måste vara byteidentisk mellan körningar.
+      # Fas 1 (andra vändan): gen-icons stämplade dagens datum och bytte nyckelnamn,
+      # så varje körning gav ett nytt icons.json.
+      - name: Reproducerbarhet — andra körningen ger byteidentisk utdata
+        continue-on-error: true
+        env:
+          BUTLERY_MANIFEST_MODE: repo
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: |
+          for f in assets/generated/tokens.css lib/theme/butlery_tokens.dart \
+                   lib/theme/app_colors.dart lib/theme/app_text_styles.dart icons.json; do
+            cp "$f" "/tmp/$(basename "$f").run1"
+          done
+          bash fas0/run-verify.sh || true
+          rc=0
+          for f in assets/generated/tokens.css lib/theme/butlery_tokens.dart \
+                   lib/theme/app_colors.dart lib/theme/app_text_styles.dart icons.json; do
+            cmp -s "$f" "/tmp/$(basename "$f").run1" || { echo "✖ $f skiljer sig mellan körning 1 och 2"; rc=1; }
+          done
+          [ "$rc" -eq 0 ] && echo "✔ samtliga fem generatorutdata byteidentiska över två körningar"
+          exit "$rc"
       - name: Genererade filer är incheckade (GEN-01)
         continue-on-error: true
         run: |

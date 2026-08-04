@@ -240,6 +240,200 @@ const cases = [
     lines[i] = lines[i].trimEnd() + '| K-99 | inbäddad rad som försvinner |';
     return { [p]: lines.join('\n') };
   }],
+  // Fas 1 · BESTÄNDIGA schemaprov. Varje rad är en mutation som måste fällas av
+  // T-01; listan är verktygskedjans egen, inte en engångskörning.
+  ...[
+    ['negativt mått', t => { t.controls.checkbox.size = -4; }],
+    ['okänd toppnyckel', t => { t.pahittadNyckel = 1; }],
+    ['chip.paddingY som text', t => { t.controls.chip.paddingY = 'fel'; }],
+    ['button.iconSize som tal', t => { t.controls.button.iconSize = -8; }],
+    ['button.iconSize med negativ post', t => { t.controls.button.iconSize = [16, -8]; }],
+    ['lines.hairline negativ', t => { t.controls.lines.hairline = -1; }],
+    ['labelWeight som ord', t => { t.controls.calendarPresenceRow.labelWeight = 'bold'; }],
+    ['felstavat fältnamn', t => { t.controls.chip.fontSzie = 12; }],
+    ['checkbox utan checkStroke', t => { delete t.controls.checkbox.checkStroke; }],
+    ['maxFaces = 0', t => { t.controls.calendarPresenceRow.maxFaces = 0; }],
+    ['maxFaces som decimal', t => { t.controls.calendarPresenceRow.maxFaces = 3.5; }],
+    ['toggle.knob som sträng', t => { t.controls.toggle.knob = '12'; }],
+    ['okänd komponent i controls', t => { t.controls.pahitt = { size: 1 }; }],
+    ['statusPill.radius som boolean', t => { t.controls.statusPill.radius = true; }],
+    ['tom avatarskala', t => { t.controls.avatarScale = []; }],
+    ['emptyStateGlyph utan fullscreen', t => { delete t.emptyStateGlyph.fullscreen; }],
+    ['okänt fält i glyfen', t => { t.emptyStateGlyph.pahitt = 1; }]
+  ].map(([label, mut]) => ['T-01 · ' + label, 'T-01', () => {
+    const t = JSON.parse(read('tokens.json'));
+    mut(t);
+    return { 'tokens.json': JSON.stringify(t, null, 2) };
+  }]),
+  // Fas 1 (andra vändan): T-01 validerar tre källor, inte en. De två nya
+  // grenarna måste kunna fällas — annars mäter de ingenting.
+  ['T-01 · app-theme-map med felaktig boldWeight', 'T-01', () => {
+    const p = 'tools/app-theme-map.json';
+    const m = JSON.parse(read(p) || 'null');
+    if (!m) return null;
+    m.boldWeight = '700';
+    return { [p]: JSON.stringify(m, null, 2) };
+  }],
+  ['T-01 · app-theme-map med okänd toppnyckel', 'T-01', () => {
+    const p = 'tools/app-theme-map.json';
+    const m = JSON.parse(read(p) || 'null');
+    if (!m) return null;
+    m.pahitt = 1;
+    return { [p]: JSON.stringify(m, null, 2) };
+  }],
+  // Fas 1 (fjärde vändan): dessa två källmutationer passerade HELA kedjan.
+  ['T-01 · rå färg i scheme.darkOverrides', 'T-01', () => {
+    const p = 'tools/app-theme-map.json';
+    const m = JSON.parse(read(p) || 'null');
+    if (!m || !m.scheme?.darkOverrides) return null;
+    m.scheme.darkOverrides[Object.keys(m.scheme.darkOverrides)[0]] = ['raw', 'rgba(1,2,3,0.4)'];
+    return { [p]: JSON.stringify(m, null, 2) };
+  }],
+  ['T-01 · typeSemantic.color mot en AppColors-medlem som inte finns', 'T-01', () => {
+    const p = 'tools/app-theme-map.json';
+    const m = JSON.parse(read(p) || 'null');
+    if (!m || !m.typeSemantic) return null;
+    const key = Object.keys(m.typeSemantic).find(k => m.typeSemantic[k].color);
+    if (!key) return null;
+    m.typeSemantic[key].color = 'AppColors.doesNotExist';
+    return { [p]: JSON.stringify(m, null, 2) };
+  }],
+  ['T-20 · två aktiva auktoriteter för samma domän', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    const first = a.authorities.find(x => x.file && x.status === 'gällande');
+    if (!first) return null;
+    a.authorities.push({ ...first, file: 'tokens.json' });
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  ['T-20 · blocked och not run ihopslagna i statusordboken', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    a.controlStatusVocabulary = a.controlStatusVocabulary.filter(c => c.status !== 'not run');
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  ['T-20 · deklarerad version som inte stämmer med filen', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    const row = a.authorities.find(x => x.file === 'icons.json');
+    if (!row) return null;
+    row.version = '1.6';
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  ['T-20 · supersededBy som pekar i en cykel', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    a.superseded = a.superseded.map(s2 => s2.file === 'grundgranskning.md' ? { ...s2, supersededBy: 'luckor-etapp9.md' } : s2);
+    const b = a.superseded.find(s2 => s2.file === 'luckor-etapp9.md');
+    if (b) b.supersededBy = 'grundgranskning.md';
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  ['T-01 · tomt legacy-API-kontrakt', 'T-01', () => {
+    const p = 'legacy-api-contract.json';
+    const c = JSON.parse(read(p) || 'null');
+    if (!c) return null;
+    c.appColors.members = [];
+    return { [p]: JSON.stringify(c, null, 2) };
+  }],
+  ['T-01 · varumärkesfärg utan giltig hex', 'T-01', () => {
+    const p = 'assets/brand-colors.json';
+    const b = JSON.parse(read(p) || 'null');
+    if (!b) return null;
+    b.brands[Object.keys(b.brands)[0]].color = 'red';
+    return { [p]: JSON.stringify(b, null, 2) };
+  }],
+  // minProperties/maxProperties var deklarerade i schemana men INTE
+  // implementerade i walkSchema — ett tömt rollobjekt och en tömd
+  // varumärkeslista gav noll problem. Fas 1 (tredje vändan).
+  ['T-01 · tom typography.roles (minProperties)', 'T-01', () => {
+    const t = JSON.parse(read('tokens.json'));
+    t.typography.roles = {};
+    return { 'tokens.json': JSON.stringify(t, null, 2) };
+  }],
+  ['T-01 · tom brands (minProperties)', 'T-01', () => {
+    const p = 'assets/brand-colors.json';
+    const b = JSON.parse(read(p) || 'null');
+    if (!b) return null;
+    b.brands = {};
+    return { [p]: JSON.stringify(b, null, 2) };
+  }],
+  // Registret får inte motsäga leveransen: fjorton mastrar fanns på disk medan
+  // icons.json sa "att rita". Fas 1 (tredje vändan).
+  ['T-05 · status "att rita" på en ikon som finns på disk', 'T-05', () => {
+    const p = 'icons.json';
+    const i = JSON.parse(read(p) || 'null');
+    if (!i || !i.ui_family?.length) return null;
+    i.ui_family[0].status = 'att rita';
+    return { [p]: JSON.stringify(i, null, 2) };
+  }],
+  ['T-05 · icke-kanonisk ikonstatus', 'T-05', () => {
+    const p = 'icons.json';
+    const i = JSON.parse(read(p) || 'null');
+    if (!i || !i.ui_family?.length) return null;
+    i.ui_family[1].status = 'levererad 2026-07-26';
+    return { [p]: JSON.stringify(i, null, 2) };
+  }],
+  ['T-10 · genererad kodfil med fel tokenversion i headern', 'T-10', () => {
+    const p = 'lib/theme/app_colors.dart';
+    const t = read(p);
+    if (!t) return null;
+    const lines = t.split('\n');
+    const i = lines.findIndex(l => /\btokens\s+\d+\.\d+/.test(l));
+    if (i < 0) return null;
+    lines[i] = lines[i].replace(/\btokens\s+\d+\.\d+(\.\d+)?/, 'tokens 0.001');
+    return { [p]: lines.join('\n') };
+  }],
+  // Fas 1 · SVG-KONTRAKTET. T-05 kontrollerade tidigare bara namn och filnärvaro.
+  ['T-05 · fel stroke-width i en ikonmaster', 'T-05', () => {
+    const p = 'assets/icons/bell.svg';
+    const t = read(p);
+    if (!t) return null;
+    return { [p]: t.replace('stroke-width="1.75"', 'stroke-width="3"') };
+  }],
+  ['T-05 · title matchar inte ikonens id', 'T-05', () => {
+    const p = 'assets/icons/bell.svg';
+    const t = read(p);
+    if (!t) return null;
+    return { [p]: t.replace('<title>bell</title>', '<title>klocka</title>') };
+  }],
+  ['T-05 · saknad title', 'T-05', () => {
+    const p = 'assets/icons/tag.svg';
+    const t = read(p);
+    if (!t) return null;
+    return { [p]: t.replace(/\s*<title>[^<]*<\/title>/, '') };
+  }],
+  ['T-05 · fel viewBox', 'T-05', () => {
+    const p = 'assets/icons/minus.svg';
+    const t = read(p);
+    if (!t) return null;
+    return { [p]: t.replace('viewBox="0 0 24 24"', 'viewBox="0 0 32 32"') };
+  }],
+  ['T-05 · fyllning i en strecksymbol', 'T-05', () => {
+    const p = 'assets/icons/block.svg';
+    const t = read(p);
+    if (!t) return null;
+    return { [p]: t.replace('fill="none"', 'fill="currentColor"') };
+  }],
+  ['T-05 · inline style i mastern', 'T-05', () => {
+    const p = 'assets/icons/stop.svg';
+    const t = read(p);
+    if (!t) return null;
+    return { [p]: t.replace('<title>stop</title>', '<title>stop</title>\n  <g style="opacity:.5"></g>') };
+  }],
+  ['T-05 · undantag utan motivering', 'T-05', () => {
+    const ic = JSON.parse(read('icons.json'));
+    ic.contract.exceptions.bell = { 'stroke-width': '3' };
+    return { 'icons.json': JSON.stringify(ic, null, 2) };
+  }],
+  ['T-05 · undantag för en ikon som inte finns', 'T-05', () => {
+    const ic = JSON.parse(read('icons.json'));
+    ic.contract.exceptions['finns-inte'] = { variant: 'filled', reason: 'x' };
+    return { 'icons.json': JSON.stringify(ic, null, 2) };
+  }],
   ['T-05 · okänt ikonnamn', 'T-05', () => {
     const t = read(screen);
     if (!/data-icon="[a-z-]+"/.test(t)) return null;
@@ -425,7 +619,6 @@ const COVERED = provenNegative;   // endast bevisat fällande prov
 // tidigare undantogs T-04, T-06a/b och T-09 med skäl som inte prövade samma
 // logik, och T-13 (renderad, statisk) stod i runtime-listan medan T-19 saknades.
 const EXEMPT = {
-  'T-01': 'schemavalidering: en mutation av tokens.json fälls av schemat innan lint-core körs — provas av T-02:s tokenmutation, som går genom samma inläsning',
   'T-03': 'råfärgslint rapporterar bara varningar; ST-01 kräver fällande diagnostik och kan därför inte pröva den. Varningsräkningen prövas av M-01 (◐ räknas aldrig som fel)',
   'T-04': 'opacitetslint delar kodväg med T-03 (samma stilattributsläsning) och har ingen egen fällande gren utanför den',
   'T-06a': 'kaskadberoende: mutationen skulle döljas av blocked-omklassningen. Kodvägen prövas av metatest M-06 (T-06a blocked, T-06b självständig)',
@@ -436,7 +629,7 @@ const EXEMPT = {
 };
 // Endast kontroller som FAKTISKT körs i lint-core. T-13 är renderad och statisk.
 const RUNTIME = ['T-01', 'T-02', 'T-03', 'T-04', 'T-05', 'T-06a', 'T-06b', 'T-07', 'T-08', 'T-09',
-  'T-10', 'T-11', 'T-12', 'T-14', 'T-15', 'T-16', 'T-17', 'T-18a', 'T-18b', 'T-19', 'A11Y-01', 'A11Y-02'];
+  'T-10', 'T-11', 'T-12', 'T-14', 'T-15', 'T-16', 'T-17', 'T-18a', 'T-18b', 'T-19', 'T-20', 'A11Y-01', 'A11Y-02'];
 let uncovered = 0;
 for (const id of RUNTIME) {
   if (COVERED.has(id)) continue;

@@ -1,5 +1,5 @@
 import { SCREEN_FILES, ICON_SOURCE_FILES } from './screen-files.mjs';
-import { parseEvidence, splitEvidenceProblems } from './report-logic.mjs';
+import { parseEvidence, splitEvidenceProblems, walkSchema } from './report-logic.mjs';
 // Butlery · spec-lint, delad logik. Importeras av tools/spec-lint.mjs.
 // Ren funktion av en env ({read, exists}) så att samma kod kan köras i CI
 // och i granskningsverktyg utan filsystemsantaganden.
@@ -88,48 +88,193 @@ export function lint(env) {
   const docTexts = {};
   for (const d of DOCS) if (env.exists(d)) docTexts[d] = env.read(d);
 
-  /* ── T-01 · tokens mot schema, rekursivt och typat ───────────────────────── */
+  /* ── T-01 · tokens mot schemat, via den GEMENSAMMA validatorn ────────────── */
+  // Fas 1: T-01 hade en egen rekursiv validator som saknade numeriska gränser,
+  // oneOf och additionalProperties: false. Nu används walkSchema() ur
+  // report-logic.mjs — samma kod som prövar rapportschemat.
   (function () {
     ran('T-01');
-    const check = (node, sch, path) => {
-      if (!sch) return;
-      if (sch.$ref) { warn('T-01', path + ': $ref stöds inte av den här validatorn'); return; }
-      if (sch.type === 'object') {
-        if (typeof node !== 'object' || node === null || Array.isArray(node)) { fail('T-01', path + ' ska vara object'); return; }
-        for (const r of sch.required || []) if (!(r in node)) fail('T-01', path + ' saknar "' + r + '"');
-        for (const [k, v] of Object.entries(node)) {
-          if (sch.properties && sch.properties[k]) { check(v, sch.properties[k], path + '.' + k); continue; }
-          let matched = false;
-          for (const [re, s] of Object.entries(sch.patternProperties || {})) {
-            if (new RegExp(re).test(k)) { check(v, s, path + '.' + k); matched = true; }
-          }
-          if (!matched && sch.additionalProperties && typeof sch.additionalProperties === 'object') check(v, sch.additionalProperties, path + '.' + k);
+    if (!env.exists('butlery-tokens.schema.json')) { fail('T-01', 'butlery-tokens.schema.json saknas'); return; }
+    let schema;
+    try { schema = JSON.parse(env.read('butlery-tokens.schema.json')); }
+    catch (e) { fail('T-01', 'schemat går inte att tolka: ' + e.message); return; }
+    const problems = [];
+    walkSchema(tokens, schema, 'tokens', problems);
+    for (const p of problems) fail('T-01', p);
+    if (!problems.length) info('T-01', 'tokens.json validerar mot hela schemat (' + (schema.required || []).length + ' obligatoriska toppnycklar)');
+    // Fas 1 (andra vändan): tokens.json var den ENDA datafil kedjan validerade.
+    // assets/brand-colors.json hade ett schema som ingen läste, och
+    // tools/app-theme-map.json hade inget schema alls — en felstavad kind, ett
+    // alias utan mål eller en typroll utan token upptäcktes först som trasig
+    // Dart-kod. Båda valideras nu med SAMMA validator, i samma kontroll.
+    for (const [data, sch, label] of [
+      ['assets/brand-colors.json', 'assets/brand-colors.schema.json', 'brand-colors'],
+      ['tools/app-theme-map.json', 'tools/app-theme-map.schema.json', 'app-theme-map'],
+      // Fas 1 (femte vändan): kontraktsfilen hade inget eget schema.
+      ['legacy-api-contract.json', 'legacy-api-contract.schema.json', 'legacy-api-contract']
+    ]) {
+      if (!env.exists(sch)) { fail('T-01', sch + ' saknas — ' + label + ' kan inte valideras'); continue; }
+      if (!env.exists(data)) { fail('T-01', data + ' saknas'); continue; }
+      let d, s;
+      try { d = JSON.parse(env.read(data)); } catch (e) { fail('T-01', data + ' går inte att tolka: ' + e.message); continue; }
+      try { s = JSON.parse(env.read(sch)); } catch (e) { fail('T-01', sch + ' går inte att tolka: ' + e.message); continue; }
+      const ps = [];
+      walkSchema(d, s, label, ps);
+      for (const p of ps) fail('T-01', p);
+      if (!ps.length) info('T-01', data + ' validerar mot ' + sch);
+    }
+    // INVARIANT: mappningsfilen får inte bära designvärden. Fas 1 (tredje
+    // vändan): den innehöll sju råa rgba-färger och ett uttryckligt typmått
+    // (bodyMedium), medan källauktoritetsregistret sa "aldrig designvärden".
+    // Värdena ligger nu i tokens; kontrollen ser till att de inte kryper tillbaka.
+    if (env.exists('tools/app-theme-map.json')) {
+      let m = null;
+      try { m = JSON.parse(env.read('tools/app-theme-map.json')); } catch {}
+      if (m) {
+        const HEX = /#[0-9A-Fa-f]{3,8}\b|rgba?\(/;
+        for (const [name, e] of Object.entries(m.colors || {})) {
+          if (e[0] === 'raw') fail('T-01', 'app-theme-map.json: ' + name + ' är ett rått färgvärde (kind "raw") — flytta det till tokens.semantic och peka på token-id');
+          else if (HEX.test(String(e[1]))) fail('T-01', 'app-theme-map.json: ' + name + ' pekar på ett färgvärde (' + e[1] + ') i stället för ett token-id');
         }
-      } else if (sch.type === 'array') {
-        if (!Array.isArray(node)) { fail('T-01', path + ' ska vara array'); return; }
-        if (sch.minItems && node.length < sch.minItems) fail('T-01', path + ' behöver minst ' + sch.minItems + ' element');
-        if (sch.items) node.forEach((n, i) => check(n, sch.items, path + '[' + i + ']'));
-      } else if (sch.type === 'number') {
-        if (typeof node !== 'number') { fail('T-01', path + ' ska vara number, är ' + typeof node); return; }
-        if (sch.minimum !== undefined && node < sch.minimum) fail('T-01', path + ' = ' + node + ' under minimum ' + sch.minimum);
-      } else if (sch.type === 'string') {
-        if (typeof node !== 'string') { fail('T-01', path + ' ska vara string'); return; }
-        if (sch.pattern && !new RegExp(sch.pattern).test(node)) fail('T-01', path + ' = "' + node + '" matchar inte ' + sch.pattern);
-        if (sch.enum && !sch.enum.includes(node)) fail('T-01', path + ' = "' + node + '" utanför enum');
-      } else if (sch.const !== undefined) {
-        if (node !== sch.const) fail('T-01', path + ' ska vara ' + JSON.stringify(sch.const));
-      } else if (sch.oneOf) {
-        const ok = sch.oneOf.some(s => {
-          const before = errors.length;
-          check(node, s, path);
-          const clean = errors.length === before;
-          errors.length = before;
-          return clean;
-        });
-        if (!ok) fail('T-01', path + ' matchar ingen av de tillåtna formerna');
+        // BÅDA schemagrenarna. Fas 1 (fjärde vändan): darkOverrides granskades
+        // inte alls, så ["raw","rgba(1,2,3,0.4)"] där passerade T-01, GEN-02 och
+        // TG-01. Endast semantic, palette och member är tillåtna kinds.
+        const KINDS = new Set(['semantic', 'palette', 'member']);
+        for (const [branch, obj] of [['slots', (m.scheme || {}).slots], ['darkOverrides', (m.scheme || {}).darkOverrides]])
+          for (const [slot, e] of Object.entries(obj || {})) {
+            if (!Array.isArray(e) || !KINDS.has(e[0]))
+              fail('T-01', 'app-theme-map.json: scheme.' + branch + '.' + slot + ' har kind "' + (e && e[0]) + '" — tillåtna: ' + [...KINDS].join(', '));
+            else if (HEX.test(String(e[1])))
+              fail('T-01', 'app-theme-map.json: scheme.' + branch + '.' + slot + ' bär färgvärdet ' + e[1] + ' i stället för ett token-id');
+          }
+        // FÄRGREFERENSEN i en semantisk textstil måste peka på en medlem som
+        // finns. AppColors.doesNotExist gav grönt i hela kedjan.
+        {
+          const cap = x => x.charAt(0).toUpperCase() + x.slice(1);
+          let brands = {};
+          try { brands = JSON.parse(env.read('assets/brand-colors.json')).brands || {}; } catch {}
+          const members = new Set([...Object.keys(m.colors || {}), ...Object.keys(m.aliases || {}), 'transparent']);
+          for (const [n2, v] of Object.entries(brands)) {
+            members.add('brand' + cap(n2));
+            if (v.background) members.add('brand' + cap(n2) + 'Background');
+            if (v.text) members.add('brand' + cap(n2) + 'Text');
+          }
+          for (const [n2, sem] of Object.entries(m.typeSemantic || {})) {
+            if (sem.color === null || sem.color === undefined) continue;
+            const ref = String(sem.color).match(/^AppColors\.(\w+)$/);
+            if (!ref) fail('T-01', 'app-theme-map.json: typeSemantic.' + n2 + '.color = "' + sem.color + '" — måste vara null eller AppColors.<medlem>');
+            else if (!members.has(ref[1])) fail('T-01', 'app-theme-map.json: typeSemantic.' + n2 + '.color pekar på AppColors.' + ref[1] + ', som inte finns — den genererade Dart-koden skulle inte kompilera');
+          }
+        }
+        // FRYST legacy-API. Kontraktet måste finnas och vara läsbart; mängderna
+        // mäts av TG-01 mot den genererade koden.
+        if (!env.exists('legacy-api-contract.json')) fail('T-01', 'legacy-api-contract.json saknas — den historiska API-ytan är oskyddad');
+        else {
+          try {
+            const lc2 = JSON.parse(env.read('legacy-api-contract.json'));
+            const nC = (lc2.appColors?.members || []).length, nT = (lc2.appTextStyles?.getters || []).length;
+            if (!nC || !nT) fail('T-01', 'legacy-api-contract.json deklarerar ' + nC + ' färgmedlemmar och ' + nT + ' textgetters — ett tomt kontrakt skyddar ingenting');
+            // UNIKA namn: en dubblett gör mängdlikheten meningslös.
+            for (const [label2, list] of [['appColors.members', lc2.appColors?.members], ['appColors.colorSchemes', lc2.appColors?.colorSchemes],
+              ['appTextStyles.getters', lc2.appTextStyles?.getters], ['appTextStyles.stringConstants', lc2.appTextStyles?.stringConstants]]) {
+              const arr = list || [];
+              const dupes = [...new Set(arr.filter((x, i2) => arr.indexOf(x) !== i2))];
+              if (dupes.length) fail('T-01', 'legacy-api-contract.json: ' + label2 + ' har dubbletter (' + dupes.join(', ') + ')');
+            }
+          } catch (e2) { fail('T-01', 'legacy-api-contract.json går inte att tolka: ' + e2.message); }
+        }
+        if (m.derivedStyles) fail('T-01', 'app-theme-map.json: derivedStyles bär typmått (' + Object.keys(m.derivedStyles).join(', ') + ') — en typografisk storlek är ett designvärde och hör i tokens.typography.roles');
+        for (const [n, role] of Object.entries(m.typeRoles || {}))
+          if (!(tokens.typography.roles || {})[role]) fail('T-01', 'app-theme-map.json: typeRoles.' + n + ' pekar på rollen ' + role + ', som inte finns i tokens.typography.roles');
       }
-    };
-    check(tokens, schema, 'tokens');
+    }
+  })();
+
+  /* ── T-20 · maskinläsbar källauktoritet ────────────────────────────────── */
+  // Fas 1 (femte vändan): styrdokumentet krävde en maskinläsbar motsvarighet till
+  // fas0/kallauktoritetsregister.md redan i Fas 1. Den fanns inte, och det
+  // handskrivna registret drev: icons.json stod som 1.6 och "ej regenererad",
+  // de fyra genererade filerna som tokens 1.3/1.4 ur 1.9, och blocked/not run
+  // låg ihopslagna på en rad. Källan är nu source-authority.json.
+  (function () {
+    ran('T-20');
+    const SRC = 'source-authority.json', SCH = 'source-authority.schema.json';
+    if (!env.exists(SRC)) { fail('T-20', SRC + ' saknas — källauktoriteten är inte maskinläsbar'); return; }
+    if (!env.exists(SCH)) { fail('T-20', SCH + ' saknas — källauktoriteten kan inte valideras'); return; }
+    let A, S;
+    try { A = JSON.parse(env.read(SRC)); } catch (e) { fail('T-20', SRC + ' går inte att tolka: ' + e.message); return; }
+    try { S = JSON.parse(env.read(SCH)); } catch (e) { fail('T-20', SCH + ' går inte att tolka: ' + e.message); return; }
+    const ps = [];
+    walkSchema(A, S, 'source-authority', ps);
+    for (const p of ps) fail('T-20', p);
+
+    // 1 · EXAKT en aktiv auktoritet per domän.
+    const ACTIVE = new Set(['gällande', 'fryst']);
+    const perDomain = new Map();
+    for (const a of A.authorities || []) {
+      if (!perDomain.has(a.domain)) perDomain.set(a.domain, []);
+      perDomain.get(a.domain).push(a);
+    }
+    for (const [domain, rows] of perDomain) {
+      const active = rows.filter(r => ACTIVE.has(r.status));
+      if (active.length > 1) fail('T-20', 'domänen "' + domain + '" har ' + active.length + ' aktiva auktoriteter (' +
+        active.map(r => r.file || '(saknas)').join(', ') + ') — exakt en gäller');
+      if (!active.length && !rows.some(r => r.status === 'ska skapas'))
+        fail('T-20', 'domänen "' + domain + '" har ingen aktiv auktoritet och är inte märkt "ska skapas"');
+    }
+    // 2 · Statusordboken styr, och kontrollstatusarna är exakt de fem.
+    const vocab = new Set(Object.keys(A.statusVocabulary || {}));
+    for (const a of A.authorities || [])
+      if (!vocab.has(a.status)) fail('T-20', 'domänen "' + a.domain + '" har statusen "' + a.status + '", som inte finns i statusVocabulary');
+    for (const s2 of A.superseded || [])
+      if (!vocab.has(s2.status)) fail('T-20', s2.file + ' har statusen "' + s2.status + '", som inte finns i statusVocabulary');
+    const want = ['passed', 'failed', 'blocked', 'not run', 'not applicable'];
+    const got = (A.controlStatusVocabulary || []).map(c => c.status);
+    if (got.join('|') !== want.join('|'))
+      fail('T-20', 'controlStatusVocabulary är [' + got.join(', ') + '] — de fem värdena ska stå var för sig i ordningen ' + want.join(', '));
+    for (const c of A.controlStatusVocabulary || [])
+      if (c.satisfies !== (c.status === 'passed' || c.status === 'not applicable'))
+        fail('T-20', 'controlStatusVocabulary: "' + c.status + '" har satisfies=' + c.satisfies + ' — endast passed och not applicable uppfyller ett kriterium');
+    // 3 · Varje deklarerad fil finns.
+    // Poster utanför reporoten (zip:/) kan inte kontrolleras här — de mäts av
+    // manifestets leveransyta. De måste vara uttryckligen märkta.
+    for (const a of A.authorities || [])
+      if (a.file && !a.outsideRepoRoot && !env.exists(a.file)) fail('T-20', 'domänen "' + a.domain + '" pekar på ' + a.file + ', som inte finns');
+    for (const g of A.generatedArtifacts || []) {
+      if (!env.exists(g.file)) fail('T-20', 'genererad artefakt ' + g.file + ' finns inte');
+      if (!env.exists(g.generator)) fail('T-20', 'generatorn ' + g.generator + ' finns inte');
+    }
+    for (const s2 of A.superseded || [])
+      if (!s2.outsideRepoRoot && !env.exists(s2.file)) fail('T-20', 'superseded ' + s2.file + ' finns inte (den ska finnas kvar som spår, annars stryk raden)');
+    // 4 · Versionen måste stämma med filens egen, där filen bär en.
+    for (const a of A.authorities || []) {
+      if (!a.file || !a.version || !/\.json$/.test(a.file) || !env.exists(a.file)) continue;
+      let j = null; try { j = JSON.parse(env.read(a.file)); } catch { continue; }
+      if (j && j.version && String(j.version) !== String(a.version))
+        fail('T-20', 'domänen "' + a.domain + '" deklarerar ' + a.file + ' ' + a.version + ' men filen säger ' + j.version);
+    }
+    // 5 · supersededBy: målet måste vara känt, och ingen cykel får finnas.
+    // Körartefakter finns inte i en nyuppackad leverans men är legitima mål.
+    const known = new Set([...(A.authorities || []).map(a => a.file), ...(A.superseded || []).map(s2 => s2.file),
+      ...(A.generatedArtifacts || []).map(g => g.file), ...(A.runtimeArtifacts || [])].filter(Boolean));
+    const edge = new Map();
+    for (const r of [...(A.authorities || []), ...(A.superseded || [])]) {
+      if (!r.supersededBy) continue;
+      if (!known.has(r.supersededBy) && !env.exists(r.supersededBy))
+        fail('T-20', (r.file || r.domain) + ' pekar på supersededBy ' + r.supersededBy + ', som varken är en känd post eller en fil på disk');
+      if (r.file) edge.set(r.file, r.supersededBy);
+    }
+    for (const start of edge.keys()) {
+      const seen = new Set([start]);
+      let cur = edge.get(start);
+      while (cur && edge.has(cur)) {
+        if (seen.has(cur)) { fail('T-20', 'supersededBy bildar en cykel via ' + cur); break; }
+        seen.add(cur);
+        cur = edge.get(cur);
+      }
+    }
+    if (!ps.length) info('T-20', (A.authorities || []).length + ' domäner · ' + (A.generatedArtifacts || []).length +
+      ' genererade artefakter · ' + (A.superseded || []).length + ' superseded · registret genereras av tools/gen-authority.mjs');
   })();
 
   /* ── T-02 · kontrast enligt tokens.contrastPairs, mot RÄTT bakgrund ─────── */
@@ -216,6 +361,61 @@ export function lint(env) {
     const known = new Map([...icons.ui_family, ...icons.nav_family].map(g => [g.name, g]));
     for (const name of usedIcons.keys()) if (!known.has(name)) fail('T-05', 'data-icon="' + name + '" saknar post i icons.json');
     for (const [name, g] of known) if (!env.exists(g.master_svg)) fail('T-05', name + ': filen ' + g.master_svg + ' saknas');
+    // STATUS mot FILNÄRVARO. Fas 1 (tredje vändan): de fjorton nyritade
+    // mastrarna fanns på disk men stod kvar som "att rita" i det NORMATIVA
+    // registret, och pause bar ensam formen "levererad 2026-07-26". Registret
+    // motsade alltså leveransen utan att någon kontroll märkte det.
+    const ICON_STATUS = new Set(['levererad', 'att rita']);
+    for (const [name, g] of known) {
+      const st = String(g.status ?? '');
+      if (!ICON_STATUS.has(st))
+        fail('T-05', name + ': status "' + st + '" är inte kanonisk — tillåtna: ' + [...ICON_STATUS].join(', ') + ' (datum hör i ett eget fält)');
+      const onDisk = env.exists(g.master_svg);
+      if (st === 'att rita' && onDisk)
+        fail('T-05', name + ': status "att rita" men ' + g.master_svg + ' finns — registret motsäger leveransen');
+      if (st === 'levererad' && !onDisk)
+        fail('T-05', name + ': status "levererad" men ' + g.master_svg + ' saknas');
+    }
+
+    // SVG-KONTRAKTET mäts maskinellt, per familj. Fas 1: T-05 kontrollerade bara
+    // namn och filnärvaro, så formen var enbart manuellt styrkt. Kontraktet ligger
+    // i icons.json och deklarerar varje undantag — en glyf som avviker utan post
+    // där är ett fel.
+    const CT = icons.contract;
+    if (!CT) fail('T-05', 'icons.json saknar contract — SVG-formen kan inte mätas');
+    else {
+      const fams = [['ui_family', icons.ui_family || []], ['nav_family', icons.nav_family || []]];
+      for (const [fam, list] of fams) {
+        const base = CT[fam];
+        if (!base) { fail('T-05', 'icons.json: contract saknar ' + fam); continue; }
+        for (const g of list) {
+          if (!env.exists(g.master_svg)) continue;
+          const svg = env.read(g.master_svg);
+          const open = (svg.match(/<svg\b[^>]*>/) || [])[0];
+          if (!open) { fail('T-05', g.name + ': ' + g.master_svg + ' saknar en <svg>-tagg'); continue; }
+          const e = (CT.exceptions || {})[g.name];
+          let want = e && e.variant ? { ...CT[e.variant] } : { ...base };
+          if (e) {
+            if (!e.reason) fail('T-05', g.name + ': undantaget i icons.json saknar reason');
+            for (const [k, v] of Object.entries(e)) if (k !== 'variant' && k !== 'reason') want[k] = v;
+          }
+          for (const [k, w] of Object.entries(want)) {
+            if (k === '$note') continue;
+            const got = (open.match(new RegExp(k.replace(/-/g, '\\-') + '="([^"]*)"')) || [])[1];
+            if (got === undefined) fail('T-05', g.name + ': ' + k + ' saknas i <svg>');
+            else if (got !== String(w)) fail('T-05', g.name + ': ' + k + '="' + got + '", kontraktet säger "' + w + '"');
+          }
+          const title = (svg.match(/<title>([^<]*)<\/title>/) || [])[1];
+          if (title === undefined) fail('T-05', g.name + ': <title> saknas — ikonen är onåbar för skärmläsare');
+          else if (title.trim() !== g.name) fail('T-05', g.name + ': <title>' + title + '</title> motsvarar inte ikonens id');
+          if (/\bstyle="/.test(svg)) fail('T-05', g.name + ': inline style i mastern');
+        }
+      }
+      // Ett undantag utan glyf är ett spöke.
+      const allNames = new Set([...(icons.ui_family || []), ...(icons.nav_family || [])].map(g => g.name));
+      for (const n of Object.keys(CT.exceptions || {}))
+        if (!allNames.has(n)) fail('T-05', 'contract.exceptions.' + n + ' motsvarar ingen deklarerad ikon');
+    }
   })();
 
   /* ── T-06a · icons.json usages · BEROENDE av gen-icons ──────────────────── */
@@ -336,6 +536,26 @@ export function lint(env) {
     claim('Tokens', tokens.version);
     claim('Ikoner', icons.version);
     claim('Assets', assets.version);
+    // Fas 1: GENERERAD KOD täcks nu också. Indexets rad "Kod ur tokens" påstår en
+    // version, och varje genererad fils header måste bära samma. T-10 kontrollerade
+    // tidigare bara tokens, ikoner och assets — därför kunde app_colors.dart stå
+    // kvar på 1.3 medan indexet sa något annat.
+    (function () {
+      const row = index.match(/\|\s*\*{0,2}Kod ur tokens\*{0,2}\s*\|\s*\*\*([\d.]+)\*\*/);
+      if (!row) { warn('T-10', 'indexet har ingen versionsrad för "Kod ur tokens"'); return; }
+      const claimed = row[1];
+      const GEN = ['assets/generated/tokens.css', 'lib/theme/butlery_tokens.dart',
+        'lib/theme/app_colors.dart', 'lib/theme/app_text_styles.dart'];
+      for (const f of GEN) {
+        if (!env.exists(f)) { fail('T-10', 'indexet räknar ' + f + ' som genererad kod, men filen finns inte'); continue; }
+        const head = env.read(f).split('\n').slice(0, 12).join('\n');
+        const got = (head.match(/^[^\n]*\btokens\s+v?(\d+\.\d+(?:\.\d+)?)/im) || [])[1];
+        if (!got) { fail('T-10', f + ': headern saknar en läsbar "tokens <version>"-rad'); continue; }
+        if (got !== claimed) fail('T-10', 'indexet säger Kod ur tokens ' + claimed + ' men ' + f + ' är genererad ur tokens ' + got);
+      }
+      if (claimed !== tokens.version)
+        fail('T-10', 'indexets "Kod ur tokens" säger ' + claimed + ' men tokens.json är ' + tokens.version);
+    })();
     // Markdown-dokumenten bär sin version i prosan; läs den i stället för att gissa.
     const mdVersion = (file) => {
       if (!env.exists(file)) return null;
@@ -555,9 +775,25 @@ export function lint(env) {
       'assets/fonts/VALIDATION-0.626.txt': 'filename',
       'assets/generated/tokens.css': 'generated-header',
       'lib/theme/butlery_tokens.dart': 'generated-header',
+      // Fas 1: app-temat genereras nu i kedjan och mäts med samma strategi.
+      // Tidigare föll de tillbaka på 'field' och blev omätbara.
+      'lib/theme/app_colors.dart': 'generated-header',
+      'lib/theme/app_text_styles.dart': 'generated-header',
+      'butlery-tokens.schema.json': 'schema-id',
+      'fas0/verify-report.schema.json': 'schema-id',
+      'tools/app-theme-map.schema.json': 'schema-id',
+      'source-authority.json': 'field',
+      'source-authority.schema.json': 'schema-id',
+      'legacy-api-contract.json': 'field',
+      'legacy-api-contract.schema.json': 'schema-id',
+      'tools/app-theme-map.json': 'field',
+      'Butlery Skarmar v12.dc.html': 'filename',
+      'assets/brand-colors.json': 'field',
       'grundgranskning.md': 'dated',
-      'arbetsplan.md': 'field',
-      'luckor-etapp9.md': 'field',
+      // Frysta historiska underlag bär sitt datum i frysmarkören, inte ett
+      // versionsfält. Fas 1: de föll som "omätbara" trots att de har ett värde.
+      'arbetsplan.md': 'frozen',
+      'luckor-etapp9.md': 'frozen',
       'migration-gap.md': 'dated',
       'korsgranskning.md': 'field'
     };
@@ -582,6 +818,31 @@ export function lint(env) {
         const t = env.read(file);
         let actual = null;
         switch (strategy) {
+          case 'frozen': {
+            // FRYSTA underlag: markören bevisar att dokumentet är fryst, men
+            // VÄRDET som versionstabellen jämför mot är dokumentets egen
+            // version. Fas 1 (andra vändan): strategin mätte frysdatumet och
+            // jämförde det med indexets versionsnummer ("1.1" mot "2026-07-31"),
+            // vilket alltid föll. Nu krävs markören OCH versionen.
+            if (!/FRYST\s+(\d{4}-\d{2}-\d{2})/.test(t)) {
+              fail('T-15', del + ' (' + file + '): fryst underlag utan "FRYST <datum>"-markör');
+              break;
+            }
+            actual = (t.match(/"version"\s*:\s*"([^"]+)"/) || [])[1]
+              || (t.match(/[Vv]ersion\s*\*{0,2}\s*([Vv]?\d+(?:\.\d+)+)/) || [])[1];
+            if (!actual) fail('T-15', del + ' (' + file + '): fryst underlag utan versionsfält — skriv "Version N.N" i dokumenthuvudet');
+            break;
+          }
+          case 'schema-id': {
+            // Schemafiler bär sin version i $id eller i ett version-fält.
+            let j = null; try { j = JSON.parse(t); } catch {}
+            actual = j && (String(j.$id || '').match(/\/(\d+(?:\.\d+)*)$/) || [])[1];
+            if (!actual && j && j.version) actual = String(j.version);
+            // "$id: …/2" och indexets "2.0" är samma version.
+            if (actual && /^\d+$/.test(actual) && j && j.version) actual = String(j.version);
+            if (!actual) fail('T-15', del + ' (' + file + '): schemafilen saknar version i $id och i version-fältet');
+            break;
+          }
           case 'filename': actual = (file.match(/[ -]([Vv]?\d+(?:\.\d+)+)(?=\.[a-z]|$)/) || file.match(/[ -]([Vv]\d+)(?=\.|$)/) || [])[1]; break;
           case 'manual-linked': actual = (t.match(/manual\s*\*{0,2}\s*([Vv]\d+)/i) || [])[1]; break;
           case 'active-release': actual = (t.match(/(?:active release|aktuell|version)[^\n]*?([\d.]+)/i) || [])[1]; break;
@@ -595,12 +856,18 @@ export function lint(env) {
             if (!actual) fail('T-15', del + ' (' + file + '): headern saknar en läsbar rad "tokens <version>" bland de första 12 raderna');
             break;
           }
-          // Hela ISO-datumet jämförs. Strategin krävde tidigare bara att NÅGOT
-          // datum fanns i filen, så en mutation av tabellens datum gav noll fel.
-          case 'dated': actual = (t.match(/(20\d\d-\d\d-\d\d)/) || [])[1]; break;
+          // Hela ISO-datumet jämförs, ANKRAT till dokumentets eget datumfält.
+          // Strategin krävde tidigare bara att NÅGOT datum fanns i filen, så en
+          // mutation av tabellens datum gav noll fel — och när frysmarkören
+          // lades till i rad 1 mätte den frysdatumet i stället för dokumentets.
+          case 'dated': actual = (t.match(/\*{0,2}Datum:?\*{0,2}\s*:?\s*(20\d\d-\d\d-\d\d)/i) || [])[1]
+            || (t.match(/(?:läst|granskad|skriven)\s+(20\d\d-\d\d-\d\d)/i) || [])[1]
+            || (t.match(/(20\d\d-\d\d-\d\d)/) || [])[1]; break;
           default: {
             const jj = t.match(/"version"\s*:\s*"([^"]+)"/);
-            actual = jj ? jj[1] : (t.match(/[Vv]ersion\s*\*{0,2}\s*([Vv]?\d+(?:\.\d+)*)/) || [])[1];
+            // Fas 1: fem md-filer skriver "Version 1.0 · datum" utan fetstil.
+            actual = jj ? jj[1]
+              : (t.match(/[Vv]ersion\s*\*{0,2}\s*([Vv]?\d+(?:\.\d+)+)/) || [])[1];
           }
         }
         if (!actual) { fail('T-15', del + ' (' + file + '): strategin "' + strategy + '" gav inget värde — rätta strategin eller lägg in ett versionsfält'); continue; }

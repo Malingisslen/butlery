@@ -1,5 +1,8 @@
-// GENERERAD FIL — ändra tokens.json, inte den här.
-// tokens 1.4 · 2026-07-27 · generator tools/gen-flutter.mjs
+// GENERERAD FIL — ändra källan, inte den här.
+// system 2.1 · tokens 1.13
+// generator tools/gen-flutter.mjs v1.3
+// källfingeravtryck sha256:f5957e59f8e5b4fb9de1fb6bd2ec040e903d7d182010609316a841cf6b27707b (4 indatafiler, generatorns källa inräknad)
+// genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 // ignore_for_file: unused_field
 import 'package:flutter/material.dart';
 
@@ -71,6 +74,32 @@ class ButleryColors {
   static const textSuccessOnRaisedDark = Color(0xFF8FB89A);
   static const textDisabledOnRaised = Color(0xFF788477);
   static const textDisabledOnRaisedDark = Color(0xFF93A48D);
+  static const surfaceTintWarning = Color(0xFFF0EEE2);
+  static const surfaceTintWarningDark = Color(0xFF2F4437);
+  static const surfaceTintAccent = Color(0xFFF7E8D2);
+  static const surfaceTintAccentDark = Color(0xFF2F4437);
+  static const surfaceTintSuccess = Color(0xFFDFE8DC);
+  static const surfaceTintSuccessDark = Color(0xFF2F4437);
+  static const surfaceTintDanger = Color(0xFFF2DDD6);
+  static const surfaceTintDangerDark = Color(0xFF2F4437);
+  static const borderOnInk = Color(0xFF3F5145);
+  static const borderOnInkDark = Color(0xFF3F5145);
+  static const textLink = Color(0xFF8A5212);
+  static const textLinkDark = Color(0xFFDCA968);
+  static const elevationShadow = Color(0x1A17251D);
+  static const elevationShadowDark = Color(0x1A17251D);
+  static const overlayInkSubtle = Color(0x1A17251D);
+  static const overlayInkSubtleDark = Color(0x1A17251D);
+  static const overlayInkLight = Color(0x3317251D);
+  static const overlayInkLightDark = Color(0x3317251D);
+  static const overlayInkMedium = Color(0x6617251D);
+  static const overlayInkMediumDark = Color(0x6617251D);
+  static const overlayInkStrong = Color(0x9917251D);
+  static const overlayInkStrongDark = Color(0x9917251D);
+  static const overlayPaperCard = Color(0x8AF5F4ED);
+  static const overlayPaperCardDark = Color(0x8AF5F4ED);
+  static const overlayPaperWash = Color(0x66F5F4ED);
+  static const overlayPaperWashDark = Color(0x66F5F4ED);
   static const avatar1Fill = Color(0xFF4A5C43);
   static const avatar1OnFill = Color(0xFFF5F4ED);
   static const avatar2Fill = Color(0xFF3F6B4F);
@@ -181,6 +210,7 @@ class ButleryType {
   static const TextStyle stat = TextStyle(fontFamily: family, fontSize: 38, fontWeight: FontWeight.w700);
   static const TextStyle cookingStep = TextStyle(fontFamily: family, fontSize: 19, fontWeight: FontWeight.w600);
   static const TextStyle body = TextStyle(fontFamily: family, fontSize: 16, fontWeight: FontWeight.w400);
+  static const TextStyle bodyMedium = TextStyle(fontFamily: family, fontSize: 14, fontWeight: FontWeight.w400);
   static const TextStyle stepper = TextStyle(fontFamily: family, fontSize: 17, fontWeight: FontWeight.w600);
   static const TextStyle cardTitle = TextStyle(fontFamily: family, fontSize: 15, fontWeight: FontWeight.w600);
   static const TextStyle label = TextStyle(fontFamily: family, fontSize: 14, fontWeight: FontWeight.w600);
@@ -189,6 +219,7 @@ class ButleryType {
   static const TextStyle caption = TextStyle(fontFamily: family, fontSize: 12, fontWeight: FontWeight.w400);
   static const TextStyle navLabel = TextStyle(fontFamily: family, fontSize: 11, fontWeight: FontWeight.w700);
   static const TextStyle overline = TextStyle(fontFamily: family, fontSize: 10.5, fontWeight: FontWeight.w700, letterSpacing: 1.5);
+  static const TextStyle calendarCell = TextStyle(fontFamily: family, fontSize: 11, fontWeight: FontWeight.w600);
 }
 
 class ButleryTheme {

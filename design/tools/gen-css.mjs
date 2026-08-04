@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 // Butlery · tokens.json → assets/generated/tokens.css
 // Kör: node tools/gen-css.mjs   ·   Verifieras av tools/test-generated.mjs
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+// GEMENSAM header. Fas 1 (andra vändan): importen saknades, så generatorn
+// kraschade på "header is not defined" i varje körning — och de incheckade
+// filerna kunde därför inte vara annat än stale.
+import { header } from './gen-header.mjs';
+// --check renderar till minnet och jämför byte för byte utan att skriva.
+import { emit } from './gen-check.mjs';
 
 const kebab = s => String(s).replace(/([a-z0-9])([A-Z])/g, '$1-$2').replace(/[._ ]+/g, '-').toLowerCase();
 const isColor = v => typeof v === 'string' && (/^#[0-9A-Fa-f]{6}$/.test(v) || /^rgba?\(/.test(v));
@@ -42,8 +48,10 @@ function renderCss(t) {
   const { light, dark } = buildCss(t);
   const ind = a => a.map(l => '  ' + l).join('\n');
   return [
-    '/* GENERERAD FIL — ändra tokens.json, inte den här.',
-    '   tokens ' + t.version + ' · ' + t.date + ' · generator tools/gen-css.mjs */',
+    '/*',
+    ...header({ generator: 'tools/gen-css.mjs', generatorVersion: '1.3', tokenVersion: t.version,
+      inputs: ['tokens.json'], comment: '*', date: t.date }).lines,
+    '*/',
     '',
     ':root {', ind(light.slice().sort()), '}',
     '',
@@ -64,8 +72,7 @@ function renderCss(t) {
 }
 
 const t = JSON.parse(readFileSync('tokens.json', 'utf8'));
-mkdirSync('assets/generated', { recursive: true });
 const out = renderCss(t);
-writeFileSync('assets/generated/tokens.css', out);
+emit({ 'assets/generated/tokens.css': out }, { label: 'gen-css' });
 const n = (out.match(/--butlery-/g) || []).length;
 console.log('tokens.css skriven · ' + n + ' variabelreferenser');

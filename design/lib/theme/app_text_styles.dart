@@ -1,7 +1,10 @@
-// GENERERAD FIL — ändra tokens.json, inte den här.
-// tokens 1.3 · 2026-07-26 · generator tools/gen-app-theme.mjs
+// GENERERAD FIL — ändra källan, inte den här.
+// system 2.1 · tokens 1.13
+// generator tools/gen-app-theme.mjs v2.3
+// källfingeravtryck sha256:3ed8bfa7d6ebb81821a81d9543e0a14dfa3149bc34cf968cab9a3d5101545b2e (6 indatafiler, generatorns källa inräknad)
+// genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
-// Migration (etapp 8.2): samma medlemsnamn som före, värden ur
+// Migration (etapp 8.2): samma medlemsnamn som i det frysta kontraktet, värden ur
 // tokens.json → typography.roles. Tre ändringar som INTE är kosmetiska:
 //
 //  1. **En familj, inte två.** Josefin Sans (rubrik) och Space Grotesk (brödtext)
@@ -29,6 +32,7 @@ class AppTextStyles {
     fontSize: 26,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.6,
+    height: 1.3,
   );
 
   /// tokens: typography.roles.display.compact — 26/700
@@ -37,6 +41,7 @@ class AppTextStyles {
     fontSize: 26,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.6,
+    height: 1.3,
   );
 
   /// tokens: typography.roles.title — 22/700
@@ -45,6 +50,7 @@ class AppTextStyles {
     fontSize: 22,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.4,
+    height: 1.3,
   );
 
   /// tokens: typography.roles.display — 32/700
@@ -53,6 +59,7 @@ class AppTextStyles {
     fontSize: 32,
     fontWeight: FontWeight.w700,
     letterSpacing: -1,
+    height: 1.3,
   );
 
   /// tokens: typography.roles.stepper — 17/600
@@ -79,6 +86,14 @@ class AppTextStyles {
     height: 1.5,
   );
 
+  /// tokens: typography.roles.bodyMedium — 14/400 · appens vanligaste brödtext — 14/400. Fas 1 (tredje vändan): värdet låg som derivedStyles i tools/app-theme-map.json, dessförinnan som ett dolt medelvärde i generatorn. Steget 14 finns i skalan; ingen 400-vikt under 12 px.
+  static TextStyle get bodyMedium => TextStyle(
+    fontFamily: family,
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+  );
+
   /// tokens: typography.roles.listItem — 13/600
   static TextStyle get bodySmall => TextStyle(
     fontFamily: family,
@@ -92,6 +107,7 @@ class AppTextStyles {
     fontFamily: family,
     fontSize: 14,
     fontWeight: FontWeight.w600,
+    height: 1.4,
   );
 
   /// tokens: typography.roles.meta — 12.5/600 · säkerhets- och samtyckestext 12,5–13
@@ -99,6 +115,7 @@ class AppTextStyles {
     fontFamily: family,
     fontSize: 12.5,
     fontWeight: FontWeight.w600,
+    height: 1.4,
   );
 
   /// tokens: typography.roles.navLabel — 11/700 · höjd från 10,5 — kökskontext
@@ -106,6 +123,7 @@ class AppTextStyles {
     fontFamily: family,
     fontSize: 11,
     fontWeight: FontWeight.w700,
+    height: 1.45,
   );
 
   /// tokens: typography.roles.overline — 10.5/700 · endast kategorier och systemetiketter
@@ -114,6 +132,7 @@ class AppTextStyles {
     fontSize: 10.5,
     fontWeight: FontWeight.w700,
     letterSpacing: 1.5,
+    height: 1.45,
   );
 
   /// tokens: typography.roles.stat — 38/700 · endast statistikvyn
@@ -121,6 +140,7 @@ class AppTextStyles {
     fontFamily: family,
     fontSize: 38,
     fontWeight: FontWeight.w700,
+    height: 1.3,
   );
 
   /// tokens: typography.roles.cookingStep — 19/600 · matlagningsläget — läsavstånd
@@ -137,15 +157,6 @@ class AppTextStyles {
     fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 1.45,
-  );
-
-  /// 14/400 — härledd: body i 14 px. Ingen egen roll i tokens, tillåten av
-  /// regeln (ingen 400-vikt under 12 px).
-  static TextStyle get bodyMedium => const TextStyle(
-    fontFamily: family,
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    height: 1.4,
   );
 
   // ── Alias · samma stil, historiska namn ──

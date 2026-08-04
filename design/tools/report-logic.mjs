@@ -7,7 +7,7 @@
 // oavsett om den råkar passera mot en kvarliggande artefakt.
 export const DEPENDS_ON = {
   'CHK-T-06a': ['gen-icons'],
-  'CHK-TG-01': ['gen-css', 'gen-flutter'],
+  'CHK-TG-01': ['gen-css', 'gen-flutter', 'gen-app-theme'],
   // Fas 0.13: CHK-SC-01 stod passed medan gen-schema.mjs hade kraschat.
   'CHK-SC-01': ['gen-schema']
 };
@@ -490,6 +490,7 @@ export const REPORT_SCHEMA_VERSION = 'butlery-verify-report/2';
 export const REPORT_SCHEMA = {
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   $id: 'butlery-verify-report/2',
+  version: '2.0',
   type: 'object',
   required: ['schema', 'runId', 'generatedAt', 'canonicalCommand', 'packageIdentity', 'sources',
     'steps', 'controls', 'tally', 'measures', 'manifest',
@@ -567,7 +568,7 @@ function typeOk(v, t) {
     x === 'null' ? v === null : true);
 }
 
-function walkSchema(value, schema, path, p) {
+export function walkSchema(value, schema, path, p) {
   if (!schema || typeof schema !== 'object') return;
   if (schema.const !== undefined && value !== schema.const)
     p.push(path + ' = ' + JSON.stringify(value) + ', schemat kräver ' + JSON.stringify(schema.const));
@@ -580,6 +581,42 @@ function walkSchema(value, schema, path, p) {
   }
   if (schema.pattern && typeof value === 'string' && !new RegExp(schema.pattern).test(value))
     p.push(path + ' = "' + value + '" matchar inte ' + schema.pattern);
+  // Numeriska gränser och listlängder. Fas 1: validatorn kände bara type/pattern,
+  // så ett negativt mått i tokens.json gick igenom.
+  if (typeof value === 'number') {
+    if (schema.minimum !== undefined && value < schema.minimum) p.push(path + ' = ' + value + ' < minimum ' + schema.minimum);
+    if (schema.maximum !== undefined && value > schema.maximum) p.push(path + ' = ' + value + ' > maximum ' + schema.maximum);
+    if (schema.exclusiveMinimum !== undefined && value <= schema.exclusiveMinimum) p.push(path + ' = ' + value + ' måste vara > ' + schema.exclusiveMinimum);
+    if (schema.exclusiveMaximum !== undefined && value >= schema.exclusiveMaximum) p.push(path + ' = ' + value + ' måste vara < ' + schema.exclusiveMaximum);
+    if (schema.multipleOf && value % schema.multipleOf !== 0) p.push(path + ' = ' + value + ' är ingen multipel av ' + schema.multipleOf);
+  }
+  if (Array.isArray(value)) {
+    if (schema.minItems !== undefined && value.length < schema.minItems) p.push(path + ' har ' + value.length + ' poster, minst ' + schema.minItems + ' krävs');
+    if (schema.maxItems !== undefined && value.length > schema.maxItems) p.push(path + ' har ' + value.length + ' poster, högst ' + schema.maxItems + ' tillåts');
+  }
+  // Objektstorlek. Fas 1 (tredje vändan): schemaorden minProperties/maxProperties
+  // ANVÄNDES av tokenschemat (typography.roles) och brand-colors (brands) men var
+  // inte implementerade — ett tömt rollobjekt och en tömd varumärkeslista gav noll
+  // problem. Ett schemaord som inte implementeras är ett tyst godkännande.
+  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+    const n = Object.keys(value).length;
+    if (schema.minProperties !== undefined && n < schema.minProperties)
+      p.push(path + ' har ' + n + ' nycklar, minst ' + schema.minProperties + ' krävs');
+    if (schema.maxProperties !== undefined && n > schema.maxProperties)
+      p.push(path + ' har ' + n + ' nycklar, högst ' + schema.maxProperties + ' tillåts');
+  }
+  if (typeof value === 'string') {
+    if (schema.minLength !== undefined && value.length < schema.minLength) p.push(path + ' är kortare än ' + schema.minLength + ' tecken');
+    if (schema.maxLength !== undefined && value.length > schema.maxLength) p.push(path + ' är längre än ' + schema.maxLength + ' tecken');
+  }
+  // oneOf/anyOf: minst en gren måste hålla.
+  for (const key of ['oneOf', 'anyOf']) {
+    if (!Array.isArray(schema[key])) continue;
+    const branches = schema[key].map(sub => { const q = []; walkSchema(value, sub, path, q); return q; });
+    const okCount = branches.filter(q => q.length === 0).length;
+    if (okCount === 0) p.push(path + ' matchar ingen av ' + key + '-grenarna (' + branches[0].slice(0, 1).join('') + ')');
+    else if (key === 'oneOf' && okCount > 1) p.push(path + ' matchar ' + okCount + ' oneOf-grenar, exakt en krävs');
+  }
   if (Array.isArray(schema.required) && value && typeof value === 'object')
     for (const k of schema.required)
       if (value[k] === undefined || value[k] === null || value[k] === '')
@@ -587,10 +624,16 @@ function walkSchema(value, schema, path, p) {
   if (schema.properties && value && typeof value === 'object' && !Array.isArray(value)) {
     for (const [k, sub] of Object.entries(schema.properties))
       if (value[k] !== undefined) walkSchema(value[k], sub, path + '.' + k, p);
-    if (schema.additionalProperties === false)
+    if (schema.additionalProperties === false) {
       for (const k of Object.keys(value))
         if (!(k in schema.properties)) p.push(path + ' har okänd nyckel "' + k + '"');
+    } else if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
+      for (const k of Object.keys(value))
+        if (!(k in schema.properties)) walkSchema(value[k], schema.additionalProperties, path + '.' + k, p);
+    }
   }
+  if (!schema.properties && schema.additionalProperties && typeof schema.additionalProperties === 'object' && value && typeof value === 'object' && !Array.isArray(value))
+    for (const k of Object.keys(value)) walkSchema(value[k], schema.additionalProperties, path + '.' + k, p);
   if (schema.items && Array.isArray(value))
     value.forEach((el, i2) => walkSchema(el, schema.items, path + '[' + i2 + ']', p));
 }

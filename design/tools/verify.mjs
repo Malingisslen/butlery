@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, readFileSync, existsSync, renameSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { CONTROLS } from './controls.mjs';
+import { GENERATED_OUTPUTS } from './gen-targets.mjs';
 import { renderMarkdown } from './gen-report.mjs';
 import { classifyStep, reduceControls, computeTotals, countRequirements, validateRegistry, validateReport, validateRegistryCoverage, parseEvidence, validateReportSchema, checkNamespaces, REPORT_SCHEMA, artifactFingerprint } from './report-logic.mjs';
 
@@ -18,6 +19,12 @@ const steps = [
   ['Ram- och kontrollräkning', 'tools/gen-counts.mjs', 'gen-counts'],
   ['CSS ur tokens', 'tools/gen-css.mjs', 'gen-css'],
   ['Flutter-tema ur tokens', 'tools/gen-flutter.mjs', 'gen-flutter'],
+  // Fas 1: app_colors.dart och app_text_styles.dart stod kvar på tokens 1.3
+  // eftersom generatorn aldrig ingick i kedjan.
+  ['App-tema ur tokens', 'tools/gen-app-theme.mjs', 'gen-app-theme'],
+  // Fas 1 (femte vändan): registret var handskrivet och drev. Det genereras nu
+  // ur source-authority.json och vaktas av GEN-01.
+  ['Källauktoritetsregister ur source-authority.json', 'tools/gen-authority.mjs', 'gen-authority'],
   ['Genererad kod', 'tools/test-generated.mjs', 'test-generated'],
   ['Kontrollgeometri', 'tools/lint-controls.mjs', 'lint-controls'],
   ['Spec-lint', 'tools/spec-lint.mjs', 'spec-lint'],
@@ -65,19 +72,11 @@ const bump = (id, kind) => {
   e[kind]++;
 };
 
-// KANONISKT register över allt generatorerna skriver. gen-counts skriver fyra
-// dokument som inte hashades — ett stale räkneankare rättades tyst och GEN-01
-// rapporterade passed med tom drift. Fas 0.9.
-const GENERATED_OUTPUTS = [
-  'fas0/verify-report.schema.json',
-  'assets/generated/tokens.css',
-  'lib/theme/butlery_tokens.dart',
-  'icons.json',
-  '00-spec-index.md',
-  'testmatris.md',
-  'evidensmatris.md',
-  'Butlery tillganglighetshandoff.dc.html'
-];
+// KANONISKT register över allt generatorerna skriver — EN källa, delad med
+// metatest M-18. gen-counts skriver fyra dokument som inte hashades: ett stale
+// räkneankare rättades tyst och GEN-01 rapporterade passed med tom drift.
+// Fas 0.9. Fas 1: listan flyttad till tools/gen-targets.mjs.
+// (listan ligger i tools/gen-targets.mjs och importeras ovan)
 // SCHEMAARTEFAKTEN mäts FÖRE gen-schema.mjs. Fas 0.14: mätningen låg efter
 // generatorn, som hann reparera en stale leverans innan kontrollen tittade —
 // drift: false på en fil som körningen just skrivit om.

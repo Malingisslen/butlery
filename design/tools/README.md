@@ -24,7 +24,9 @@
 
 **Leveranskontroll.** `bash fas0/verify-delivery.sh` kör manifestet med `--mode=delivery`, där varje `zip:/`-post är obligatorisk. Auto-läget kan inte skilja ett legitimt repo från en leverans där både markören och alla externa filer försvunnit — därför måste en leveranskontroll alltid vara explicit.
 
-**Grinden är ett eget kommando.** `node tools/gate.mjs --phase=0` läser `fas0/verify-report.json` och returnerar **grindens** exitkod. Den kör inte kedjan. Totalen (`overallResult`) rapporteras separat och får vara röd — innehållsfynd blockerar inte Fas 0.
+**Grinden är ett eget kommando.** `node tools/gate.mjs --phase=0` läser `fas0/verify-report.json` och returnerar **grindens** exitkod. Den kör inte kedjan. Totalen (`overallResult`) rapporteras separat och får vara röd — innehållsfynd blockerar ingen grind.
+
+**En grind per fas, en körning per grind.** Grinden vägrar bedöma en rapport som räknats för en annan fas (`currentPhase`). Fas 1 körs därför som `BUTLERY_PHASE=1 bash fas0/run-verify.sh` följt av `node tools/finalize.mjs` och `node tools/gate.mjs --phase=1`. CI har ett jobb per grind.
 
 ## Kanoniska källor
 
@@ -44,7 +46,13 @@
 - Genererade filer redigeras aldrig för hand. **GEN-01** fäller om en körning ändrar en incheckad genererad fil.
 - Inga körsiffror skrivs i dokument — de genereras.
 - **Maskin-id:** kontroller heter `CHK-*` (`CHK-T-14`), krav heter `REQ-*`. Namnrymderna är disjunkta; `legacyId` finns kvar för prosa.
-- **Fas 0-grinden** omfattar bara verktygsintegritet: `CHK-MF-01`, `CHK-SC-01`, `CHK-ST-01`, `CHK-MT-01`, `CHK-T-19`, `CHK-T-18a`, `CHK-T-18b`, `CHK-CI-01`. Grinden är **fail-closed**: ogiltig fas, trasigt schema, stale rapport eller en grindmängd som inte stämmer med `controls.mjs` ger exit ≠ 0. Innehållsfynd bär `requiredForGate: []` och blockerar inte grinden även när de är röda.
+- **Fas 0-grinden** omfattar bara verktygsintegritet: `CHK-MF-01`, `CHK-SC-01`, `CHK-ST-01`, `CHK-MT-01`, `CHK-T-19`, `CHK-T-18a`, `CHK-T-18b`, `CHK-CI-01`.
+- **Fas 1-grinden** är de åtta ovan (de bär `requiredForGate: [0, 1]`, så verktygsintegriteten inte kan regressera) **plus** `CHK-T-01`, `CHK-T-05`, `CHK-T-06a`, `CHK-T-06b`, `CHK-T-10`, `CHK-T-15`, `CHK-TG-01`, `CHK-GEN-01` och `CHK-GEN-02` — sammanlagt 17. Innehållsbaslinjen ligger utanför också denna grind.
+- **Processprov** (M-07, M-11, M-22, M-23, M-24, M-26, M-30, M-31) körs med **sanerad miljö** (ingen `BUTLERY_*`-variabel ärvs), uttryckligt manifestläge och en **ändlig timeout** som räknas som testfel. Ett prov som hänger är ett prov som inte finns.
+- **Delivery-läget kräver en validerad leveransrot:** exakt tre nivåer över reporoten, aldrig filsystemets rot, och `zip:/fas0/DELIVERY` måste finnas. Annars exit 2. Set-likheten gäller **båda** ytorna; undantagen är en exakt lista, aldrig ett namnmönster.
+- **Mappningen får bara bära token-id.** `semantic`, `palette`, `member` i `colors`, `scheme.slots` OCH `scheme.darkOverrides`; `typeSemantic.color` är `null` eller `AppColors.<medlem som finns>`. Prövas av T-01, av generatorn och av M-31 (källmutation + regenerering).
+- **Legacy-API:t** ligger fryst i `legacy-api-contract.json` och mäts med exakt mängdlikhet i båda riktningarna av TG-01.
+- **Generatorer och skrivmål** har EN källa: `tools/gen-targets.mjs`. `verify.mjs` importerar `GENERATED_OUTPUTS`, preflight läser `GENERATED_INPUTS`, och M-18 jämför registret mot generatorernas faktiska skrivanrop. Grinden är **fail-closed**: ogiltig fas, trasigt schema, stale rapport eller en grindmängd som inte stämmer med `controls.mjs` ger exit ≠ 0. Innehållsfynd bär `requiredForGate: []` och blockerar inte grinden även när de är röda.
 - **Mätvärden** läses bara ur stegspecifika maskinsummeringar (`COUNT-SUMMARY`, `LC-SUMMARY`, `SELFTEST-SUMMARY`, `METATEST-SUMMARY`, `PREFLIGHT-SUMMARY`, `MANIFEST-SUMMARY`) och bär `source`.
 - **Fem statusvärden:** `passed` · `failed` · `blocked` · `not run` · `not applicable`. Endast `passed` och `not applicable` uppfyller ett kriterium.
 - **Tre resultatnivåer:** `pipelineResult` (stegen) · `controlsResult` (registret) · `phaseGateResult` (kontroller med `requiredForGate` som innehåller den aktuella fasen). `overallResult` kräver alla tre plus manifest och GEN-01.

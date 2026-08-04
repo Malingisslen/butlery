@@ -1,6 +1,6 @@
 # Butlery · Spec-index
 
-**Enda source of truth för versioner, precedens och status.** Uppdaterad **2026-07-26**.
+**Enda source of truth för versioner, precedens och status.** Uppdaterad **2026-08-05** (tokens 1.13 · ikoner 1.8 · API-mappning 1.4 · källauktoriteten maskinläsbar). Raderna nedan bär sitt eget datum; den här raden säger när tabellen senast rördes, inget annat.
 Om ett dokument säger något annat än den här filen är den här filen rätt — och dokumentet ska rättas.
 
 > **Specen är inte stängd.** Den visuella riktningen och designspråket är godkända. P0 och P1 nedan är öppna och speglar den externa granskningen 2026-07-26. Ingen punkt får strykas för att den ser åtgärdad ut i en skärm — den stryks när `testmatris.md` § 4 eller ett CI-test säger det.
@@ -11,9 +11,10 @@ Om ett dokument säger något annat än den här filen är den här filen rätt 
 
 | Del | Version | Fil | Status | Normativ för |
 |---|---|---|---|---|
-| Tokens | **1.9** · 2026-07-30 | `tokens.json` (+ `butlery-tokens.schema.json`) | gällande | **värden** — färg, typ, rum, radie, rörelse, träffytor, kontrastpolicy, **kontrollgeometri** |
+| Tokens | **1.13** · 2026-08-05 | `tokens.json` | gällande | **värden** — färg, typ, rum, radie, rörelse, träffytor, kontrastpolicy, **kontrollgeometri** |
+| Tokenschema | **2.0** · 2026-08-02 | `butlery-tokens.schema.json` | gällande · versionen står i `$id` | **tokenstrukturen** — fältnivå, typer och gränser för alla 13 kontrollkomponenter |
 | Produktregler | **1.12** · 2026-07-27 | `produktregler.md` | gällande | **produktlogik** — allergener, konflikt, offline, veckomeny, roller, onboarding |
-| Ikoner | **1.6** · 2026-07-29 | `icons.json` | gällande, `usages` genererad av `tools/gen-icons.mjs` | **ikonnamn och antal** |
+| Ikoner | **1.8** · 2026-08-03 | `icons.json` | gällande, `usages` genererad av `tools/gen-icons.mjs` | **ikonnamn och antal** |
 | Assets | **1.4** · 2026-07-30 | `assets-manifest.json` | gällande | **filstatus och paketering** |
 | Content | **1.1** · 2026-07-26 | `content-style-guide.md` | gällande | **all text** |
 | Flöden, roller, budget | **1.1** | `flows-roles-budget.md` | gällande | **flödesövergångar, prestandabudget, analytics** |
@@ -21,7 +22,13 @@ Om ett dokument säger något annat än den här filen är den här filen rätt 
 | Test- och tillståndsmatris | **1.1** · 2026-07-26 | `testmatris.md` | gällande | **vad som ska bevisas per vy** |
 | **Evidensmatris** | **1.0** · 2026-07-26 | `evidensmatris.md` | gällande | **status per krav** — enda källan till vad som är klart |
 | **Plattformsmatris** | **1.0** · 2026-07-26 | `plattformsmatris.md` | gällande | **Android/iOS-skillnader** |
-| Kod ur tokens | **1.9** · ur tokens 1.9 | `assets/generated/tokens.css` + `lib/theme/butlery_tokens.dart` | genererade | **aldrig handredigerade** — headern bär tokenversionen och mäts av T-15 (`generated-header`) |
+| Kod ur tokens | **1.13** · ur tokens 1.13 | `assets/generated/tokens.css` + `lib/theme/butlery_tokens.dart` + `lib/theme/app_colors.dart` + `lib/theme/app_text_styles.dart` | genererade | **aldrig handredigerade** — headern bär tokenversionen och mäts av T-15 (`generated-header`) |
+| **Källauktoritet** | **1.1** · 2026-08-05 | `source-authority.json` | gällande, schemavaliderad (T-20) | **vilken fil som äger vilken domän** — `fas0/kallauktoritetsregister.md` genereras ur den och redigeras aldrig för hand |
+| Rapportschema | **2.0** · 2026-08-02 | `fas0/verify-report.schema.json` | genererad av `tools/gen-schema.mjs` ur `REPORT_SCHEMA` | **verifieringsrapportens struktur** |
+| API-mappning | **1.4** · 2026-08-04 | `tools/app-theme-map.json` | gällande, schemavaliderad | **äldre Dart-API-namn → semantiska token-id**, ColorScheme-slottar, typroller, typalias och semantiska textvarianter — inte en designkälla, men det enda stället där mappningsbesluten står |
+| Mappningsschema | **1.3** · 2026-08-03 | `tools/app-theme-map.schema.json` | gällande · versionen står i `$id` | **mappningens struktur** — fältnivå, typer och gränser för colors, aliases, scheme, typroller |
+| Varumärkesfärger | **1.0** · 2026-08-02 | `assets/brand-colors.json` | gällande, schemavaliderad | **externa varumärken** — citat, inte design |
+| **Legacy-API-kontrakt** | **1.0** · fryst 2026-08-04 · schema `legacy-api-contract.schema.json` | `legacy-api-contract.json` | gällande, mäts av TG-01 med exakt mängdlikhet | **den publika Dart-ytan** — AppColors-medlemmar, ColorScheme-fält, AppTextStyles-getters. Fryst ur den levererade koden, **inte** ur app-repot: att den motsvarar de 50 vyernas faktiska användning bevisas i Fas 2 |
 | Grundgranskning | 2026-07-26 | `grundgranskning.md` | **historisk** | **avvikelser mot manual v6 och grund v12** — dess tre öppna beslut är avgjorda (B-36…B-38, B-40, B-41) |
 | Arbetsplan | **1.1** · 2026-07-29 | `arbetsplan.md` | **historisk** | etapp 0–11 är ritade; planen är genomförd och styr inget längre |
 | Luckinventering etapp 9 | **1.0** · 2026-07-29 | `luckor-etapp9.md` | **historisk, fryst** | — · de tre besluten (emoji-regeln, strukna knuffar och svep-tips, behållen röstassistans) är införda i `beslutslogg.md` som B-44, B-47 och B-48 |
