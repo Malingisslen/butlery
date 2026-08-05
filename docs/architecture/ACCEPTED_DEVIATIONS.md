@@ -747,8 +747,12 @@ because access can come from ownership.
 - The three copies of the (memberIds, groupIds) → tokens loop agree today. The
   `categoryIds` write beside them did NOT: two sites merged the raw argument while
   `mergeCategoryIds` derives from the grants actually written, and they diverged on a
-  reachable input (a group whose roster is only the sharer). Fixed 2026-08-05 and
-  pinned; the tokens-loop collapse is still owed. Collapsing them into
+  reachable input (a group whose roster is only the sharer). Fixed 2026-08-05 at both
+  sites. Pinning lagged the fix by one commit: the re-share site was pinned
+  immediately, the CREATE site — the ordinary path, since a first-time group share of
+  a personal recipe never reaches the re-share branch — shipped unpinned, and a
+  whole-range reviewer measured that mutant leaving 162 tests green. Both are pinned
+  now. The tokens-loop collapse is still owed. Collapsing them into
   `RecipeShareGrants` is right and is its own change, not a fix round for a failed gate.
 - The group-share success snackbar reports "0 recept delade" — `clearSelections()` runs before the
   count is read. Pre-existing and unrelated to provenance.

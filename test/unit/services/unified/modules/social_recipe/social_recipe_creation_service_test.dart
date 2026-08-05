@@ -392,6 +392,43 @@ void main() {
     /// leg of the feature ships on an untested code path — which is how the
     /// parameter came to be silently dropped one layer up in the first place.
     group('Group provenance (BUT-1797)', () {
+      test('a group containing only the creator adds no revocable row', () async {
+        // The MORE important of the two solo-group sites, and the one that
+        // shipped unpinned: `RecipeSharingManager` only reaches
+        // `_grantAccessOnReshare` when the recipe is ALREADY collaborative. A
+        // first-time group share of a personal recipe — the ordinary case —
+        // comes down this path instead.
+        //
+        // With a roster of just the creator, the loop skips them, so nobody is
+        // granted. Writing the raw `groupIds` into `categoryIds` would then put a
+        // revoke row in the panel matching no member's grant: `removeGroup`
+        // clears its guard, `revokeGroup` no-ops, and the snackbar still says the
+        // group lost access. Every other fixture here supplies a real second
+        // member, so the derived and raw lists coincide and none of them can see
+        // this.
+        final recipeId = await creationService.createCollaborativeRecipe(
+          title: 'Solo Group Test',
+          ingredients: const ['Ingredient'],
+          instructions: const ['Instruction'],
+          initialMembers: [currentUserId],
+          categoryIds: const ['grp-solo'],
+        );
+
+        expect(recipeId, isNotNull);
+        final social = lastSavedRecipe!.socialData!;
+        expect(
+          social.categoryIds,
+          isNull,
+          reason: 'no grant was written, so there is nothing to revoke',
+        );
+        expect(social.grants, isNull);
+        expect(
+          social.memberPermissions?[currentUserId],
+          ResourcePermission.admin,
+          reason: 'control — the creator still owns the recipe',
+        );
+      });
+
       test('records the group each member was reached through', () async {
         final recipeId = await creationService.createCollaborativeRecipe(
           title: 'Delad med familjen',
