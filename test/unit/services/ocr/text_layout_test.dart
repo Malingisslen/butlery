@@ -1,0 +1,587 @@
+import 'dart:convert';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/services/ocr/text_layout.dart';
+
+/// The whole value of this model is that a line INDEX addresses a line of the
+/// produced text. Every test here exists to pin that, or to pin the one signal
+/// the model adds over a plain string: type size.
+void main() {
+  OcrWord word(String t, double h, {double x = 0}) => OcrWord(
+    text: t,
+    box: LayoutBox(left: x, top: 0, width: t.length * h * 0.5, height: h),
+  );
+
+  OcrLine line(String text, {required double height, int words = 5}) {
+    final parts = text.trim().isEmpty
+        ? <String>[]
+        : List.generate(words, (i) => 'w$i');
+    return OcrLine(
+      text: text,
+      box: LayoutBox(left: 0, top: 0, width: 100, height: height),
+      words: parts.map((p) => word(p, height)).toList(),
+    );
+  }
+
+  /// A line the way a recognizer actually hands it over: per-word heights that
+  /// vary, and a LINE box that is measured separately — on a skewed photo the
+  /// line box is inflated by the line's WIDTH, so it must be settable
+  /// independently of the type size, or the fixture cannot tell the two apart.
+  OcrLine measured(
+    String text,
+    List<double> wordHeights, {
+    required double boxHeight,
+  }) {
+    final tokens = text.trim().split(RegExp(r'\s+'));
+    return OcrLine(
+      text: text,
+      box: LayoutBox(
+        left: 0,
+        top: 0,
+        width: text.length * 18,
+        height: boxHeight,
+      ),
+      words: [
+        for (var i = 0; i < wordHeights.length; i++)
+          word(i < tokens.length ? tokens[i] : 'w$i', wordHeights[i]),
+      ],
+    );
+  }
+
+  /// Four lines of running text off a real spread — used wherever a test needs
+  /// "enough body lines to be a baseline" without inventing page shapes.
+  const prose = [
+    'Lägg kokta, skalade 8-minuters-ägg',
+    'i en ratatouille eller en fransk',
+    'servera med bröd till eller med råris',
+    'Räkna med 4-5 ägg för 2 personer',
+  ];
+
+  group('OcrLine.typeHeight', () {
+    test('is the MEDIAN word height, not the line box', () {
+      // The line box is deliberately wrong here: on a skewed photo an
+      // axis-aligned box around a tilted line grows with the line's WIDTH, so
+      // trusting it makes long body lines look like headings.
+      final l = OcrLine(
+        text: 'Provençalska ägg',
+        box: const LayoutBox(left: 0, top: 0, width: 900, height: 400),
+        words: [word('Provençalska', 70), word('ägg', 70)],
+      );
+      expect(l.typeHeight, equals(70));
+    });
+
+    test('one mis-segmented giant word does not drag the line up', () {
+      // OCR merging a glyph with the line above produces exactly this. A mean
+      // would answer 130; the median holds the line at body size.
+      final l = OcrLine(
+        text: 'i en ratatouille eller en fransk grönsaksröra',
+        box: const LayoutBox(left: 0, top: 0, width: 900, height: 70),
+        words: [word('i', 68), word('en', 70), word('RATATOUILLE', 320)],
+      );
+      expect(l.typeHeight, equals(70));
+    });
+
+    test('falls back to the line box only when word boxes are absent', () {
+      final l = OcrLine(
+        text: 'no words',
+        box: LayoutBox(left: 0, top: 0, width: 100, height: 42),
+      );
+      expect(l.typeHeight, equals(42));
+    });
+
+    test('averages the two middle words when the count is EVEN', () {
+      // Word boxes arrive in reading order, not sorted by height, and an even
+      // count has no single middle. Both halves matter: picking one middle
+      // element answers 78 here, and averaging without sorting answers 61.
+      final l = OcrLine(
+        text: 'Räkna med 4-5 ägg',
+        box: const LayoutBox(left: 0, top: 0, width: 900, height: 70),
+        words: [
+          word('Räkna', 80),
+          word('med', 62),
+          word('4-5', 60),
+          word('ägg', 78),
+        ],
+      );
+      expect(l.typeHeight, equals(70));
+    });
+  });
+
+  group('OcrLine.wordCount', () {
+    test(
+      'counts boxes when present, whitespace tokens when they are absent',
+      () {
+        expect(
+          line('Fransk omelett', height: 70, words: 5).wordCount,
+          equals(5),
+        );
+
+        // A provider that returns lines but no word geometry is the degraded
+        // case the body-line filter still has to work under. Padding and runs of
+        // whitespace must not inflate the count into "this is running text".
+        final noBoxes = OcrLine(
+          text: '  Räkna med  4-5 ägg  ',
+          box: LayoutBox(left: 0, top: 0, width: 900, height: 70),
+        );
+        expect(noBoxes.wordCount, equals(4));
+
+        // `''.split(...)` yields [''], so a blank line would otherwise report
+        // ONE word — and one word is the heading-shaped case this signal
+        // exists to name.
+        final blank = OcrLine(
+          text: '   ',
+          box: LayoutBox(left: 0, top: 0, width: 900, height: 70),
+        );
+        expect(blank.wordCount, equals(0));
+      },
+    );
+  });
+
+  group('PageLayout.bodyTypeHeight', () {
+    test('ignores short lines, so headings cannot set the baseline', () {
+      // Four body lines around 70 plus two big short headings. The body
+      // heights are deliberately DISTINCT and out of order: with the headings
+      // counted the baseline answers 73, and taking the median without sorting
+      // answers 69, so only the shipped filter answers 70. If the headings
+      // counted, they would stop looking like headings — the signal would eat
+      // itself.
+      final page = PageLayout(
+        lines: [
+          line('Provençalska ägg', height: 160, words: 2),
+          line('en lång rad brödtext som fortsätter', height: 74),
+          line('ännu en lång rad brödtext', height: 66),
+          line('Fransk omelett', height: 130, words: 2),
+          line('tredje raden brödtext här', height: 72),
+          line('fjärde raden brödtext här', height: 68),
+        ],
+      );
+      expect(page.bodyTypeHeight, equals(70));
+    });
+
+    test('a line needs four words before it counts as running text', () {
+      // Declining to judge is the contract, and this is the threshold that
+      // decides it. A three-word line is a label, a portion count or OCR
+      // noise; treating it as body text would let short lines set the
+      // baseline that short lines are supposed to be measured against.
+      PageLayout pageOf(int wordsPerLine) => PageLayout(
+        lines: [
+          for (final t in prose) line(t, height: 70, words: wordsPerLine),
+        ],
+      );
+
+      expect(pageOf(3).bodyTypeHeight, isNull);
+      expect(pageOf(4).bodyTypeHeight, equals(70));
+    });
+
+    test('three body lines are not a baseline, four are', () {
+      // The other half of "decline rather than guess": a median over three
+      // lines is an accident, and a caller that treated it as a baseline would
+      // split a page on noise.
+      PageLayout pageOf(int n) => PageLayout(
+        lines: [for (final t in prose.take(n)) line(t, height: 70)],
+      );
+
+      expect(pageOf(3).bodyTypeHeight, isNull);
+      expect(pageOf(4).bodyTypeHeight, equals(70));
+    });
+
+    test('one badly measured line does not move the page baseline', () {
+      // A whole line mis-measured (OCR swallowing the line above) is the page
+      // -level version of the mis-segmented word. A mean baseline would answer
+      // 133 and call every real heading body text.
+      final page = PageLayout(
+        lines: [
+          line(prose[0], height: 70),
+          line(prose[1], height: 320),
+          line(prose[2], height: 70),
+          line(prose[3], height: 72),
+        ],
+      );
+      expect(page.bodyTypeHeight, equals(71));
+    });
+
+    test('a page with no word boxes at all still measures from line boxes', () {
+      // The degraded provider: lines but no per-word geometry. The body filter
+      // has to fall back to counting the text's own words, or the whole page
+      // reads as "no body lines" and the caller declines on a usable page.
+      final page = PageLayout(
+        lines: [
+          for (var i = 0; i < prose.length; i++)
+            OcrLine(
+              text: prose[i],
+              box: LayoutBox(left: 0, top: 0, width: 900, height: 68 + i * 2),
+            ),
+        ],
+      );
+      expect(page.bodyTypeHeight, equals(71));
+    });
+
+    test('the real page that motivated this model separates cleanly', () {
+      // Line type sizes measured from butlery-corpus/blandat-svart/
+      // PXL_20260803_204246157 — a prose spread with NO ingredient list, where
+      // every text rule fails and the two titles are the only lines over 100.
+      //
+      // The per-word spread around each measured median, the inflated LINE
+      // boxes on the long body lines, and the one mis-segmented word are
+      // constructed — they are the photo conditions this model exists to
+      // survive, and without them the fixture is answered identically by
+      // reading the line box (a body baseline of 172.5, no headings found at
+      // all) or by taking the mean (which promotes a body line to a heading).
+      final page = PageLayout(
+        lines: [
+          measured('Provençalska ägg', [165, 169], boxHeight: 172),
+          measured(
+            'Lägg kokta, skalade 8-minuters-ägg',
+            [70, 74, 71, 73, 72],
+            boxHeight: 168,
+          ),
+          measured(
+            'i en ratatouille eller en fransk',
+            [68, 70, 69, 71, 320],
+            boxHeight: 175,
+          ),
+          measured(
+            'servera med bröd till eller med råris',
+            [73, 75, 74, 76, 72],
+            boxHeight: 180,
+          ),
+          measured('Fransk omelett', [127, 131], boxHeight: 134),
+          measured(
+            'Få saker är så lättlagade som en',
+            [66, 68, 67, 69, 65],
+            boxHeight: 165,
+          ),
+          measured(
+            'blir omeletten om man inte vispar',
+            [67, 69, 68, 70, 66],
+            boxHeight: 170,
+          ),
+          measured(
+            'Räkna med 4-5 ägg för 2 personer',
+            [73, 75, 74, 76, 72],
+            boxHeight: 178,
+          ),
+        ],
+      );
+      final body = page.bodyTypeHeight!;
+      final headings = page.lines.where((l) => l.typeHeight >= body * 1.5);
+      expect(
+        headings.map((l) => l.text),
+        equals(['Provençalska ägg', 'Fransk omelett']),
+      );
+    });
+  });
+
+  group('a DECODED page with no measurements declines to judge', () {
+    // These go through fromJson on purpose. Every other degraded-page fixture
+    // in this file is CONSTRUCTED with a real line box, so it exercises the one
+    // path nothing produces and skips the only path anything can currently
+    // reach the model by.
+    PageLayout decoded(List<Map<String, dynamic>> lines) =>
+        PageLayout.fromJson({'lines': lines});
+
+    test('a fully unmeasured page yields no baseline at all', () {
+      // With the zero heights left in the sample this answered 0.0, and every
+      // `typeHeight >= body * k` rule then said TRUE for every line on the page
+      // — the guard failing on exactly the event it exists for.
+      final page = decoded([
+        for (final t in prose) {'text': t},
+      ]);
+
+      expect(page.lines, hasLength(4));
+      expect(page.bodyTypeHeight, isNull);
+    });
+
+    test('unmeasured lines are dropped from the sample, not counted as 0', () {
+      // The measured heights are DISTINCT and the zeros outnumber nothing by
+      // accident: with four identical 70s the two zeros sort below the middle
+      // pair and never touch an even median, so the fixture answered 70 with
+      // the defect live. Measured 66/70/72/74 plus two zeros: keeping the
+      // zeros gives 68 (the median slides down two places), dropping them
+      // gives 71. Only the shipped filter answers 71.
+      Map<String, dynamic> withWords(String t, int h) => {
+        'text': t,
+        'words': [
+          for (var i = 0; i < 5; i++) {'t': 'w', 'h': h, 'w': 30},
+        ],
+      };
+      final page = decoded([
+        withWords(prose[0], 66),
+        withWords(prose[1], 70),
+        {'text': 'en orad rad utan matt alls'},
+        withWords(prose[2], 72),
+        {'text': 'annu en orad rad utan matt'},
+        withWords(prose[3], 74),
+      ]);
+
+      expect(page.bodyTypeHeight, equals(71));
+    });
+
+    test('too few MEASURED lines declines, even with plenty of lines', () {
+      // The line count is not the sample size. Six lines of which two carry
+      // measurements is still a two-line sample, and two is not a baseline.
+      final page = decoded([
+        {
+          'text': prose[0],
+          'words': [
+            for (var i = 0; i < 5; i++) {'t': 'w', 'h': 70, 'w': 30},
+          ],
+        },
+        {
+          'text': prose[1],
+          'words': [
+            for (var i = 0; i < 5; i++) {'t': 'w', 'h': 70, 'w': 30},
+          ],
+        },
+        {'text': prose[2]},
+        {'text': prose[3]},
+      ]);
+
+      expect(page.lines, hasLength(4));
+      expect(page.bodyTypeHeight, isNull);
+    });
+  });
+
+  group('the text is DERIVED from the lines', () {
+    test('a page joins its own lines with newlines', () {
+      final page = PageLayout(
+        lines: [line('första', height: 70), line('andra', height: 70)],
+      );
+      expect(page.text, equals('första\nandra'));
+      expect(page.text.split('\n')[1], equals(page.lines[1].text));
+    });
+
+    test('textLineIndex maps a flat line index onto the document text', () {
+      final a = PageLayout(
+        lines: [line('a1', height: 70), line('a2', height: 70)],
+      );
+      final b = PageLayout(lines: [line('b1', height: 70)]);
+      final doc = DocumentLayout([a, b]);
+
+      final split = doc.text!.split('\n');
+      for (var i = 0; i < doc.lines.length; i++) {
+        // The conversion has to live in the model. Doing this arithmetic at the
+        // call site is what the offsets exist to prevent, and it is right for
+        // page one either way — only page two exposes a mistake.
+        expect(split[doc.textLineIndex(i)!], equals(doc.lines[i].text));
+      }
+      expect(doc.textLineIndex(2), equals(3), reason: 'b1 sits after a blank');
+      expect(doc.textLineIndex(3), isNull, reason: 'past the last line');
+      expect(doc.textLineIndex(-1), isNull);
+    });
+
+    test('an EMPTY page still occupies one row, so later pages stay aligned', () {
+      // A page with zero lines is reachable from a malformed capture and from a
+      // blank photo. Counting `lines.length` instead of the rows the page
+      // actually contributes put every later page one line early while
+      // isComplete still reported true — a silent, confident wrong answer.
+      final a = PageLayout(
+        lines: [line('a1', height: 70), line('a2', height: 70)],
+      );
+      final b = PageLayout(lines: [line('b1', height: 70)]);
+      final doc = DocumentLayout([a, const PageLayout(lines: []), b]);
+
+      expect(doc.lineOffsets, equals([0, 3, 5]));
+      expect(doc.text!.split('\n')[5], equals('b1'));
+    });
+
+    test('a document with any geometry-less page yields NO text at all', () {
+      // Not a best effort. A page a paid tier read contributes its OWN lines to
+      // the real combined string and this object cannot know how many, so any
+      // string produced here would be wrong by an unbounded amount and would
+      // look exactly like a correct one.
+      final a = PageLayout(lines: [line('a1', height: 70)]);
+      final doc = DocumentLayout([a, null]);
+
+      expect(doc.text, isNull);
+      expect(doc.lineOffsets, isNull);
+      expect(doc.textLineIndex(0), isNull);
+    });
+
+    test('a line carrying an embedded newline still occupies ONE row', () {
+      // A recognizer hands back a "line" with a newline in it often enough to
+      // matter, and one line that occupies two rows breaks the whole contract:
+      // lineOffsets counts ROWS, textLineIndex counts LIST ENTRIES, and past
+      // that line every answer is confidently one row early. Normalising at
+      // construction is what makes the two counts the same count.
+      final page = PageLayout(
+        lines: [
+          line('Provençalska\nägg', height: 70),
+          line('serveras ljumna', height: 70),
+        ],
+      );
+      final doc = DocumentLayout([page]);
+
+      expect(page.lines.first.text, equals('Provençalska ägg'));
+      expect(doc.text!.split('\n'), hasLength(2));
+      expect(
+        doc.text!.split('\n')[doc.textLineIndex(1)!],
+        equals('serveras ljumna'),
+      );
+    });
+
+    test('a one-page import gets no separator at all', () {
+      // The common case is a single photo. A separator emitted anyway would
+      // put a blank line at the end of every one-page import and shift nothing
+      // visibly — which is exactly how it would survive to the two-page case.
+      final only = PageLayout(
+        lines: [line('a1', height: 70), line('a2', height: 70)],
+      );
+      final doc = DocumentLayout([only]);
+
+      expect(doc.lineOffsets, equals([0]));
+      expect(doc.text, equals(only.text));
+      expect(doc.text!.split('\n'), hasLength(2));
+    });
+  });
+
+  group('DocumentLayout.isComplete fails closed', () {
+    test('true only when every page carries geometry', () {
+      final page = PageLayout(lines: [line('x', height: 70)]);
+      expect(DocumentLayout([page, page]).isComplete, isTrue);
+      expect(DocumentLayout([page, null]).isComplete, isFalse);
+      expect(DocumentLayout([null]).isComplete, isFalse);
+    });
+
+    test('an empty document is not complete', () {
+      // Otherwise "no pages at all" would read as "every page has geometry"
+      // and the layout path would run on nothing.
+      expect(const DocumentLayout([]).isComplete, isFalse);
+    });
+  });
+
+  group('JSON is the contract with tools/', () {
+    test('a page survives a round trip with its geometry intact', () {
+      final page = PageLayout(
+        imageWidth: 2048,
+        imageHeight: 1536,
+        lines: [
+          line('Provençalska ägg', height: 167, words: 2),
+          line('en rad brödtext som fortsätter', height: 70),
+        ],
+      );
+
+      final back = PageLayout.fromJson(
+        jsonDecode(jsonEncode(page.toJson())) as Map<String, dynamic>,
+      );
+
+      expect(back.text, equals(page.text));
+      expect(back.imageWidth, equals(2048));
+      expect(back.lines.first.typeHeight, equals(167));
+      expect(back.lines.first.words.first.text, equals('w0'));
+    });
+
+    test('a line with no word boxes round-trips as a usable line box', () {
+      // The degraded capture must replay as the degraded case, not as a line
+      // with no size at all — the line box IS the type-size signal here, and
+      // it travels in its own key that no other assertion reads.
+      final bare = OcrLine(
+        text: 'no words',
+        box: const LayoutBox(left: 0, top: 0, width: 100, height: 42),
+      );
+      final json = bare.toJson();
+
+      // Absent, not an empty list: a replay file carries one row per word for
+      // a whole cookbook, so the empty case must not pay for a key.
+      expect(json.containsKey('words'), isFalse);
+
+      final back = OcrLine.fromJson(
+        jsonDecode(jsonEncode(json)) as Map<String, dynamic>,
+      );
+      expect(back.words, isEmpty);
+      expect(back.typeHeight, equals(42));
+    });
+
+    test('a stored line with no box of its own derives one from its words', () {
+      // No capture records a line box, so this is the path EVERY replayed line
+      // takes — decoding the absent box as a zero would hand the column
+      // orderer a page whose lines all sit at the origin with no size.
+      //
+      // The words arrive in CAPTURE order, which the library warns is not
+      // reading order, so the box may not lean on the first word for anything:
+      // here the first word is interior on all four edges, and left, top,
+      // right and bottom each come from one of the others.
+      final l = OcrLine.fromJson(const {
+        'text': 'ägg i ratatouille',
+        'words': [
+          {'t': 'i', 'x': 200.0, 'y': 110.0, 'w': 40.0, 'h': 40.0},
+          {'t': 'ägg', 'x': 40.0, 'y': 100.0, 'w': 100.0, 'h': 70.0},
+          {'t': 'ratatouille', 'x': 320.0, 'y': 96.0, 'w': 90.0, 'h': 60.0},
+        ],
+      });
+
+      expect(l.box.left, equals(40));
+      expect(l.box.top, equals(96));
+      expect(l.box.right, equals(410));
+      expect(l.box.bottom, equals(170));
+    });
+
+    test('numbers written as strings replay as geometry, not as zeros', () {
+      // A capture re-encoded by a tool that quotes its numbers is the
+      // commonest round-trip corruption, and decoding those to 0 is worse
+      // than throwing: the page replays looking complete, with every line
+      // stacked at the origin and no type size to judge it by.
+      final page = PageLayout.fromJson(const {
+        'width': '2048',
+        'height': '1536',
+        'lines': [
+          {
+            'text': 'Provençalska ägg',
+            'x': '40',
+            'y': '100',
+            'w': '260',
+            'h': '167',
+          },
+          // A dimension that is not a number at all must land on ZERO, not on
+          // some small positive value: zero is what the baseline sample drops,
+          // so garbage declines to be measured instead of quietly joining the
+          // median as a tiny line.
+          {'text': 'i en ratatouille', 'h': 'inte ett tal'},
+        ],
+      });
+
+      expect(page.imageWidth, equals(2048));
+      expect(page.lines.first.typeHeight, equals(167));
+      expect(page.lines.first.box.right, equals(300));
+      expect(page.lines.last.typeHeight, equals(0));
+    });
+
+    test('a malformed page decodes to something empty, never a throw', () {
+      // Replaying a capture must degrade to "no geometry" so the caller falls
+      // back to the text path, not crash an import.
+      final back = PageLayout.fromJson(const {'lines': 'nonsense'});
+      expect(back.lines, isEmpty);
+      expect(back.text, isEmpty);
+
+      // Text that is missing, or present but of the wrong TYPE, must decode to
+      // an EMPTY line — never to a stringified version of the corruption. This
+      // text is not incidental: it IS what PageLayout.text hands the parser, so
+      // a decoder that stringifies whatever it finds puts the word "null", or
+      // the fragment "[Provençalska, ägg]", into the middle of a recipe on a
+      // page that still reports itself complete. Same standard the numeric
+      // fields already hold ('inte ett tal' above lands on zero, not on a
+      // plausible small number).
+      final partial = PageLayout.fromJson(const {
+        'lines': [
+          {
+            'words': [
+              {'x': 40.0, 'y': 100.0, 'w': 90.0, 'h': 70.0},
+            ],
+          },
+          {
+            'text': ['Provençalska', 'ägg'],
+            'words': [
+              {'t': 42, 'x': 40.0, 'y': 100.0, 'w': 90.0, 'h': 70.0},
+            ],
+          },
+        ],
+      });
+      expect(partial.lines.first.text, isEmpty, reason: 'text key absent');
+      expect(partial.lines.first.words.single.text, isEmpty);
+      expect(partial.lines.last.text, isEmpty, reason: 'text key is a list');
+      expect(partial.lines.last.words.single.text, isEmpty);
+      // Two empty rows, not two fabricated ones.
+      expect(partial.text.trim(), isEmpty);
+    });
+  });
+}

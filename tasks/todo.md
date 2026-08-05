@@ -1,3 +1,458 @@
+# IN EXECUTION 2026-08-05 — layout-aware recipe splitting
+
+Approved by Malin ("a", 2026-08-05) after the measured report on why cookbook
+spreads fail to split. THIS file is the live execution copy. BUT-1797 finished
+and merged to main on 2026-08-05, so `tasks/todo.md` was reclaimed for this
+initiative; its record is preserved below the separator. The sibling
+`tasks/butlery-layout-aware-split-plan.md` is the APPROVAL snapshot and is
+deliberately not kept in sync — corrections found during execution (⑥ in
+particular) live here, and here only.
+
+## Progress
+
+- [x] Först: städa bordet — tidsutläsningen committad (cf16988bb, on main).
+- [x] Steg 0: `tools/corpus_split_eval.dart` + the `recipeEntries` verified-level
+      fix. Baseline recorded: single 122/133 (92%), multi 12/48 (25%), 46 lost.
+- [x] Steg 1: MEASURED AND DROPPED — the strict title filter recovered 6 recipes
+      but cost one recipe 29 points of ingredient-F1, past the 5-point per-recipe
+      limit this plan set in advance.
+- [ ] Steg 2: `lib/services/ocr/text_layout.dart` — page model. Built, 21 tests
+      green, in review (three rounds so far; 9 findings fixed).
+- [ ] Steg 3: widen `DeviceTextRecognizer` to return the page model.
+- [ ] Steg 4: carry it on `OCRResult`, cached.
+- [ ] Steg 5: heading detector.
+- [ ] Steg 6: `MultiRecipeSplitter.split(input, {layout})` + the
+      `layout.text != input` precondition.
+- [ ] Steg 7: thread it through `photo_import_viewmodel`.
+- [ ] Steg 8: column ordering — separate commit, may prove unnecessary.
+
+---
+
+# Butlery — Plan: låt sidans utseende följa med från kameran
+
+> Ersätter den tidigare planen i den här filen (tid + rubrik). Den planens steg 0–2
+> är byggda men **ocommittade** — se "Först: städa bordet" nedan. Steg 3 (rubrikval)
+> utgår helt: den här planen löser rubriken på ett bättre sätt.
+> Mirror to `tasks/butlery-layout-aware-split-plan.md` on execution;
+> `tasks/todo.md` belongs to another session.
+
+## Context
+
+Fotoimporten klarar en receptsida men inte ett uppslag. Mätt över 181
+korpussidor med handkontrollerat facit (242 recept):
+
+| | |
+|---|---|
+| Sidor med **ett** recept, rätt antal block | **91 %** |
+| Sidor med **flera** recept, rätt antal block | **25 %** (12 av 48) |
+| Recept som aldrig kommer fram | **46** |
+
+Orsaken är inte en trasig regel utan en saknad indata. `MultiRecipeSplitter`
+öppnar ett nytt receptblock bara när en rubrikliknande rad följs av en
+**ingredienslista** (`_ingredientClusterAhead`, ≥2 måttrader inom 8 rader).
+Tratten över de 109 facittitlarna på flersidesuppslagen:
+
+```
+109  titlar enligt facit
+ 73  finns över huvud taget i OCR-texten
+ 57  godkänns av _isTitleish
+ 23  har dessutom en ingredienslista inom 8 rader  ← de enda som får öppna block
+```
+
+Två separata fel syns i tratten:
+
+1. **15 av de 16 underkända titlarna faller på `looksLikeIngredient`.** Den
+   matchar bara ordet — `_ingredientWordPatterns`
+   (`recipe_section_detector.dart:381`) innehåller `potatis`, `ägg`, `fisk`,
+   `kött`. Så "Dillstuvad potatis" och "Förlorade ägg" klassas som
+   ingrediensrader. Splittern har redan en STRIKT måttregex för just den här
+   sortens beslut (`multi_recipe_splitter.dart:39`, med en kommentar som
+   förklarar varför den lösa inte duger) — men använder ändå den lösa i
+   `_isTitleish`.
+2. **34 av de 57 godkända titlarna har ingen ingredienslista efter sig.** 36 av
+   181 sidor är prosakokböcker där mängderna står i löpande text. Alla 8
+   flersidesuppslag i den genren misslyckas, utan undantag.
+
+Signalen som saknas finns redan på enheten. ML Kit returnerar
+`RecognizedText.blocks[].lines[].boundingBox` — rad för rad, med höjd och
+position. `device_text_recognizer_mlkit.dart:59` gör `recognized.text.trim()`
+och slänger allt utom bokstäverna.
+
+**Mätt** (geometri från Windows offline-OCR över alla 250 sidor, enbart som
+mätinstrument — se ⑥ för vad det betyder och inte betyder). Radhöjd är
+**medianen av ordhöjderna på raden**, för både brödtext och kandidat, så
+skevhet i fotot påverkar båda armarna lika:
+
+| regel | rubrikträff | precision |
+|---|---|---|
+| dagens (`_isTitleish` + ingredienskluster) | 21 % | 22 % |
+| radhöjd ≥ 1,35× brödtexten | 81 % | 32 % |
+| radhöjd + textkontroller | **71 %** | **62 %** |
+| radhöjd + tak (>2,5× = kapitelrubrik) | 60 % | 62 % — **sämre, taket utgår** |
+| radhöjd + storleksklasser (bara största/vanligaste klassen) | — | **mätt sämre, se ②** |
+
+## A — Bedömningar
+
+### ① Tröskeln väljs på villkoret "försämrar inte det som fungerar"
+
+Jag simulerade hela den föreslagna uppdelaren mot facit — block*antal*, inte
+bara rubrikträff — och mätte **båda** populationerna. K = radhöjdströskel,
+minChars = minsta block, verb = blocket måste innehålla ett tillagningsverb:
+
+| inställning | enstaka sidor kvar som en | flersides rätt | recept borta |
+|---|---|---|---|
+| dagens textregler | 91 % | 25 % | 46 |
+| K=1,35 minChars=40 | 63 % | 60 % | 7 |
+| K=1,35 minChars=120 verb | 76 % | 58 % | 13 |
+| K=1,50 minChars=120 verb | 87 % | 50 % | 17 |
+| **K=1,50 minChars=200 verb** | **91 %** | **40 %** | **27** |
+
+- **Föreslaget: sista raden.** Den enda inställningen som bevisligen inte
+  försämrar de 129 enstaka sidorna, och den halverar ändå antalet förlorade
+  recept. Alla tre trösklarna blir namngivna konstanter.
+- **Avvisat: K=1,35**, trots att den är bäst på uppslag. Den delar sönder var
+  fjärde enstaka sida.
+- **Asymmetrin går åt andra hållet än jag först antog.** Jag trodde en
+  felaktig delning var ofarlig eftersom användaren får välja. Den läsningen är
+  fel: `batch_import_preview.dart:24` **förkryssar alla** recept i `initState`,
+  och widgeten har ingen ihopslagning. En felaktig delning sparar alltså två
+  halva recept, båda ikryssade, utan att användaren kan foga ihop dem — tyst
+  dataförlust. Ett falskt extra recept är en avbockning; en falsk delning är
+  det inte. **Därför optimeras det här mot precision, inte mot täckning.**
+
+### ② Vad kritiken föreslog och mätningen underkände
+
+Två förslag lät bra och visade sig sämre. Båda är körda, inte resonerade bort:
+
+- **Storleksklasser i stället för tak** (rubriker på ett uppslag är satta i
+  samma grad; gruppera kandidaterna och släpp bara igenom en klass). Mätt:
+  flersides föll från 60 % till 29–35 %. Instrumentets radklippning splittrar
+  en rubrik i två olika höjder och förgiftar klasserna. Utgår.
+- **Bredare ingredientfönster** (`_lookahead` 8 → 16 i textvägen). Mätt på
+  riktig korpustext: rubrikträff 28 % → 38 % (+11 titlar), men falska öppningar
+  129 → 215 (+86) — **ungefär åtta falska delningar per räddad titel**, och
+  enligt ① är det den dyra feltypen. Utgår.
+  *(Ett tidigare utkast skrev "ungefär två". Fel: 86/11 ≈ 8. Slutsatsen står
+  kvar, siffran var min, inte mätningens.)*
+
+Kvar från kritiken, adopterat i sin helhet: förvillkoret i ③, saneringslagen i
+④, dokumentnivå-fail-closed i ⑤, flaggan och cachen i ⑥.
+
+### ③ Layouten är sanningen, texten härleds — och kontrolleras
+
+Rubrikens radindex måste peka rätt i strängen. Lösningen är inte en `assert`
+utan en **jämförelse som faller tillbaka**:
+
+- `DocumentLayout.text` är den ENDA producenten av den sammanfogade strängen
+  (`lines.map((l) => l.text).join('\n')`, sidor med `'\n\n'`). Radindex är
+  därmed radnummer per definition.
+- `MultiRecipeSplitter.split` inleder med ett förvillkor som faller tillbaka:
+  stämmer inte layouten med indata, sätts `layout = null` och textvägen
+  gäller. Det är planens viktigaste enskilda rad.
+- **Jämförelsen är RADANTAL, inte bytes, och ingen av strängarna får
+  trimmas först.** Ett tidigare utkast av den här planen skrev
+  `layout.text != input` — en byte-jämförelse. Den kan aldrig lyckas:
+  `HtmlSanitizer.sanitizeText` normaliserar homoglyfer och tar bort
+  styrtecken (men bevarar `
+`), så bytesen skiljer sig på friska sidor och
+  layoutvägen hade stängts av permanent — vilket ser exakt ut som
+  "geometri hjälper inte". Att trimma båda före räkningen är lika fel åt
+  andra hållet: den enda trimningen på vägen är PER SIDA och sker före
+  hopfogningen (`device_text_recognizer_mlkit:59`;
+  `photo_import_viewmodel:709` trimmar aldrig den sammanslagna strängen),
+  så en trimmad räkning döljer just den förskjutningen på sida ett och
+  varje radnummer blir för lågt. Kontraktet står i `text_layout.dart`.
+- Den fångar automatiskt allt som annars skulle spricka tyst: den globala
+  `recognized.text.trim()` på `device_text_recognizer_mlkit.dart:59` (som kan
+  äta en inledande tomrad och förskjuta varje index — trimma per rad i
+  stället), `'\n\n'`-hopfogningen, utkaståterställningen
+  (`photo_import_viewmodel.dart:394`) som bara har text, och handskriftsvägen
+  som syntetiserar text helt utan layout.
+
+### ④ Saneringen får flytta, och det är bevisbart
+
+`HtmlSanitizer.sanitizeText` (`html_sanitizer.dart:312-325`) gör tre saker:
+tar bort `\x00`, byter 18 kyrilliska homoglyfer tecken-för-tecken, och tar bort
+kontrolltecken med klassen `[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]`. **Den klassen
+utesluter `\x09`, `\x0A` och `\x0D`** (verifierat i källan, inte antaget). Alla
+18 homoglyfnycklar är enstaka tecken och alla värden är enstaka ASCII-bokstäver.
+
+Alltså gäller `sanitize(a + b) == sanitize(a) + sanitize(b)`, och därmed
+`sanitize(lines.join('\n')) == lines.map(sanitize).join('\n')`, byte för byte.
+Saneringen kan flytta till radnivå **utan beteendeändring**, och likheten
+skrivs som ett egenskapstest — inte som en kommentar. (Lagen gäller på
+RAD-nivå: saneringen kan korta eller tömma en rad, så teckenoffsets får aldrig
+bäras vidare, bara radindex.)
+
+### ⑤ Flera foton blir EN text — fail-closed på dokumentnivå
+
+`photo_import_viewmodel.dart:709` gör `_pages.map((p) => p.text).join('\n\n')`.
+
+- `DocumentLayout { List<PageLayout?> pages }` — brödtexthöjd beräknas **per
+  sida** (olika avstånd, zoom och beskärning), aldrig över dokumentet.
+- **Saknar någon sida layout → hela dokumentet faller till textreglerna.** Den
+  avgörande anledningen är att `_recombineAndParse` körs om vid **varje ny
+  sida**: med en delvis regel skulle ett andra foto som råkar gå till en betald
+  nivå tyst fälla ihop väljaren från två recept till ett mitt i flödet.
+  Fail-closed gör det i stället deterministiskt och förklarligt.
+- `_recordUsage('layout_mixed_tier')` så att en framtida uppmjukning kan
+  motiveras med data i stället för argument.
+
+### ⑥ Vad som inte kan bevisas här, och hur risken bärs
+
+Alla siffror kommer från Windows offline-OCR. Produktionen använder ML Kit på
+en **förbehandlad** bild (`preprocessImageForOcr` — orientering, nedskalning
+till 2048 px, gråskala, kontrast, **ingen skevhetsrättning**). Det som inte är
+mätt: om 1,50 är rätt konstant för ML Kits lådor, hur ML Kit grupperar rader i
+en tvåspaltig uppslagning, och om `boundingBox` är tillförlitligt ifylld på iOS.
+
+- **Risken bärs av en flagga, inte av en förhoppning.**
+  `enable_layout_recipe_split`, default `false`, oberoende av
+  `enable_on_device_ocr`. Trösklarna läses via Remote Config så de kan
+  justeras utan release.
+- **Avvisat: kräva en enhetsinsamling av geometri för alla 250 sidor som
+  go/no-go.** Det vore mest korrekt, men kostar en felsökningsskärm och att
+  Malin kör 250 foton genom telefonen. Flaggan ger samma skydd till en
+  bråkdel av kostnaden. Insamlingen kan komma senare om flaggan visar problem.
+- Saknad `boundingBox` behandlas som "ingen geometri för sidan" → fail-closed.
+
+- **Ungefär en fjärdedel av måltavlan kommer aldrig att nå layoutvägen, och
+  det är kontraktet som fungerar — inte ett fel.** Mätt över de 250 lagrade
+  mätningarna avböjer `bodyTypeHeight` på 53 sidor, varav **22 av 92** sidor
+  som bär mer än ett recept: för få mätta brödtextrader för att en baslinje
+  ska betyda något. De faller till textvägen. Det sätter taket för steg 6:s
+  flersidessiffra I FÖRVÄG, så ett nedslående resultat får INTE läsas som
+  "K=1,50 är fel konstant".
+
+- **KORPUSENS EGEN TEXT OCH GEOMETRI KOMMER FRÅN OLIKA MOTORER, och det gör
+  planens grind omöjlig som den står.** `ocr.txt` är OCR.space (se
+  `ocr.meta.json`), `layout-winocr.json` är Windows offline-OCR. Mätt över de
+  247 parade sidorna: **0 av 247** är byte-identiska, **34 av 247** har ens
+  samma radantal, och att mata WinOCR-texten till dagens splitter i stället för
+  `ocr.txt` flyttar blockantalet på **12 av 133** verifierade sidor på egen
+  hand. `tools/corpus_split_eval.dart` matar `ocr.txt`, så förvillkoret i ③
+  (`layout.text != input` ⇒ layout = null) nollar layouten på VARJE korpussida:
+  grinden "flersides ≥ 40 % mätt med corpus_split_eval" skulle rapportera noll
+  effekt oavsett hur bra layoutvägen är, och läsas som "geometri hjälper inte".
+  **Från steg 6 matar harnesset `layout.text`, inte `ocr.txt`** — och då är
+  dagens nollmätning (single 122/133, multi 12/48) tagen på FEL text och måste
+  köras om på WinOCR-texten innan något ≥91 % / ≥40 % läses. Grinden gäller mot
+  den omkörda nollmätningen, aldrig mot den gamla.
+
+### ⑦ Spaltordningen skiljs ut helt
+
+Att sortera spalter ändrar texten för **varje** on-device-import, även de
+enstaka sidor som ligger på 91 %. Det är den enda delen som kan försämra en
+fungerande väg, och den syns inte i någon av mätningarna ovan.
+
+- Eget commit, efter att 1–6 landat och mätts.
+- **Den kan visa sig onödig:** ML Kit grupperar redan i `TextBlock`, så en
+  tvåspaltig uppslagning kan mycket väl komma ut spaltvis redan. Kontrolleras
+  mot riktig geometri innan en enda rad skrivs.
+- När den byggs: **identitet som default** — ordnaren får bara röra sig när
+  radernas x-intervall delar sig i ≥2 tydliga grupper, och två egenskapstester
+  gäller (utdata är en permutation av indata; utdata är identisk med indata när
+  ingen spaltstruktur hittas).
+- Tier 0:s acceptgrind påverkas inte: `_calculateConfidenceFromText` och
+  `RecipeTextHeuristic.looksLikeRecipe` är båda okänsliga för radordning.
+- Bildutklipp i väljaren ligger utanför planen — koordinaterna är i
+  förbehandlad rymd och de bytesen sparas inte.
+
+## B — Byggordning
+
+**Först: städa bordet.** Tidsutläsningen är byggd men ocommittad och orelaterad.
+**En parallell session har ~40 filer STAGADE i samma checkout** (recept-delning
+/ `grants`), så indexet får inte svepas. Committa med explicit pathspec, i
+samma Bash-anrop, exakt dessa fyra:
+`lib/services/import/parsers/recipe_time_extractor.dart` (ny),
+`lib/services/import/parsers/text_import_normalizer.dart`,
+`lib/services/import/text_import_strategy.dart`,
+`test/corpus/corpus_prelabel_test.dart`. Aldrig `git add .` / `-A`
+(`.claude/rules/git-workflow.md` § Parallel sessions).
+
+**0. Mätverktyget först.** `tools/corpus_split_eval.dart` (se C) byggs innan
+något ändras, annars finns ingen nollmätning att jämföra med. Det är också
+verktyget varje senare steg grindas mot.
+
+**1. Strikt rubrikfilter i textvägen — ensamt och grindat.**
+`multi_recipe_splitter.dart:120` byter `RecipeSectionDetector.looksLikeIngredient(t)`
+mot filens egen `_measurement`. Ett titelfilter behöver inte "nämner mat", det
+behöver "bär en mängd". Mätt på rubriknivå: träff 21 → 28 % (+7 titlar), falska
+öppningar 105 → 129 (+24) — **~3,4 falska per räddad titel**, alltså samma sorts
+avvägning som ② avvisar, bara mildare.
+**Därför landar steget bara om `corpus_split_eval` visar enstaka sidor ≥ 91 %
+OCH inte fler förlorade recept än idag.** Rubrikträffen är en proxy; blockantalet
+är beslutskriteriet enligt ①. Faller det, kastas steget — det ligger utanför
+`enable_layout_recipe_split` och når webben och de betalda nivåerna, så det får
+inte skeppas på en proxysiffra. `_lookahead` rörs INTE (②).
+`recipe_section_detector.dart` rörs inte alls — 502 rader, står som
+"the single audited heading/ingredient safety hinge".
+
+**2. Sidmodell som rena, serialiserbara värdetyper.**
+Ny `lib/services/ocr/text_layout.dart`: `LayoutBox {left, top, width, height}`,
+`OcrWord`, `OcrLine`, `PageLayout`, `DocumentLayout`, med `toJson`/`fromJson`.
+**Ingen `dart:ui`-`Rect`** — konvertering sker bara inne i ML Kit-adaptern, så
+allt ovanför kan köras under vanlig `dart test`. JSON-formatet är kontraktet
+mot `tools/`, som förblir Flutter-fritt (`tools/corpus/corpus_models.dart`
+kräver det).
+
+**3. Bredda sömmen.**
+`DeviceTextRecognizer.recognize` returnerar `RecognitionResult { String text,
+PageLayout? layout }` — **ett** anrop, en temp-fil, ett felläge. Kontraktet
+"null = fall igenom, kasta aldrig" står kvar ordagrant. Trimning per rad, inte
+globalt. Stubben returnerar `layout: null`.
+
+**4. `OCRResult` bär layouten.**
+Nytt typat fält `final PageLayout? layout` — inte en nyckel i `metadata`, och
+inte bara för snyggheten: `metadata` rinner ut i felsöknings- och analysdumpar,
+och en per-rad-geometriklump där skulle blåsa upp varje sådan dump.
+*(Ett tidigare utkast skrev "och i en GDPR-export". Det är fel — inget
+OCR-fält finns i `lib/services/account/export/*`, och `OCRResult` har inget
+`toJson` idag. Rättat innan det hann bli en kodkommentar.)*
+Layouten hålls utanför loggning. **Den måste cachas**: `_cache` håller hela
+`OCRResult` i 24 h, så utan fältet skulle samma foto delas första gången och
+inte andra. ~6 kB/sida × 100 poster ≈ 600 kB, acceptabelt och noterat.
+
+**5. Rubrikdetektorn.**
+Ny `lib/services/import/layout/heading_detector.dart` — ren beräkning, ingen
+`BaseService` (samma kategori som `ingredient_categorizer.dart`; läggs till i
+listan i `lib/services/CLAUDE.md`). Brödtexthöjd = median över rader med ≥4 ord
+av radens ordhöjdsmedian; rubrik = ≥ K × den, plus textkontrollerna (längd
+3–60, 1–8 ord, ingen inledande siffra, ingen avslutande `:` `,` `.`, ingen
+måttangivelse, versal inledning). **Inget tak, inga storleksklasser** — båda
+mätta sämre.
+
+**6. Uppdelaren tar emot layouten.**
+`split(String input, {DocumentLayout? layout})`, med förvillkoret från ③.
+Med layout: gränser = rubrikrader; ett block överlever på `minChars` **plus**
+ett instruktionstecken via befintliga `_isInstructional`; högst 8 block och
+minst 4 icke-tomma rader mellan två gränser. Faller något av det: **textvägen**,
+inte ett stup. `_isCompleteRecipeBlock` används INTE på layoutblock — den
+kräver ingredienser *och* instruktioner, vilket prosarecept aldrig har.
+Returkontraktet "aldrig färre än `[input]`" är filens mest värdefulla egenskap
+och rörs inte.
+
+**7. Trådning genom vyn.** `_PhotoPage` får `layout`; `_ocrAppendOne` behåller
+ett värde till; `_recombineAndParse` bygger sträng och `DocumentLayout` i samma
+loop; `autoParseMulti` får en `DocumentLayout?`-parameter till `split` på :609.
+Utkastet bär bara text — efter navigering bort och tillbaka gäller textvägen.
+Det skrivs i koden, och om det visar sig irriterande blir det ett eget ärende.
+
+**8. Spaltordning — separat commit, se ⑦.**
+
+## C — Mekaniskt
+
+Enhetstester bredvid varje ny fil, fixturer byggda från riktiga korpussidor.
+Ny `tools/corpus_split_eval.dart` (mönster från `tools/corpus_eval.dart`,
+återanvänder `tools/corpus/corpus_paths.dart`, som får en `ocrLayout()` bredvid
+befintliga `ocrMeta()`). Den läser `layout-winocr.json` — 250 geometrifångster
+ligger redan sparade bredvid sidorna — och rapporterar blockantal mot facit,
+**uppdelat på enstaka och flersides**. Det är mätvärdet planen styrs av.
+
+**Stakeholder-router**, faktisk utdata:
+
+```
+$ python tools/stakeholder_router.py --json lib/services/ocr/device_text_recognizer.dart \
+    lib/services/ocr/device_text_recognizer_mlkit.dart lib/services/ocr_extraction_service.dart \
+    lib/services/import/multi_recipe_splitter.dart lib/services/import/import_manager.dart
+{"tier": "single", "panel": ["Data / Integrations Engineer",
+ "Financial Controller / FinOps", "Monetization / Subscriptions Lead"], "high_stakes_hits": []}
+```
+
+Tier `single`, ingen panel. FinOps-träffen gäller importvägens kostnadsyta —
+noll nätanrop, noll modellanrop, all beräkning på enheten. Noterat, inte hoppat
+över.
+
+**Filstorlek:** `ocr_extraction_service.dart` (1169), `import_manager.dart`
+(1077) och `photo_import_viewmodel.dart` (827) står i `ACCEPTED_LARGE_FILES.md`
+med **inaktuella radtal** (1142 / 888 / 647). Raderna uppdateras i samma commit
+som filen växer. `multi_recipe_splitter.dart` är 192 rader.
+
+## Verifiering
+
+- `flutter analyze --fatal-infos` rent.
+- **Egenskapstest:** `sanitize(join) == join(map(sanitize))` över genererade
+  strängar med `\n`, `\t`, kyrilliska homoglyfer och kontrolltecken (④).
+- **Förvillkoret:** en layout vars RADANTAL inte stämmer med indatas ⇒ exakt
+  dagens blockresultat (③). Testet får inte skrivas som en byte-jämförelse.
+- Rubrikdetektorn mot tre fixturer: ett riktigt uppslag, en prosasida, en
+  brussida.
+- Sömadaptern mot en fejkad ML Kit-retur; `OCRExtractionService` har redan
+  `testDeviceRecognizer` och ett `_FakeDeviceRecognizer` att bygga på.
+- Sammanslagning av två sidors layout, inklusive fallet "en sida saknar layout
+  ⇒ hela dokumentet till textvägen" (⑤).
+- **Negativa test som är själva poängen:** layout = null ⇒ byte-identiskt med
+  dagens; en sida med en enda rubrik ⇒ ett block; en sida där layoutvägen ger
+  9 block ⇒ fallback, inte 9 recept. Minst ett av dem mutationstestas (ta bort
+  tröskeln, se testet rodna, återställ).
+- `test/services/import/multi_recipe_splitter_test.dart` och
+  `import_manager_multi_test.dart` gröna **oförändrade** — de beskriver
+  textvägen, som inte får röra sig.
+- `dart run tools/corpus_split_eval.dart` före och efter varje steg. Mål,
+  mätt: **enstaka sidor ≥ 91 %** (ingen försämring) och **flersides ≥ 40 %**
+  från dagens 25 %. Varje siffra i commit-meddelandet — och **märkt som
+  proxysiffror**: de är mätta på Windows offline-OCR, inte på ML Kit, så de
+  säger vad algoritmen gör, inte vad telefonen gör (⑥, och lärdomen
+  "mät appens egen väg, inte ett skalverktygs").
+- **Arbetsflödeskartan.** `docs/onboarding/workflow-map.html` refererar
+  `photo_import_viewmodel.dart`, `multi_recipe_splitter.dart` och
+  `ocr_extraction_service.dart` — alla tre ändras här, så haken stämplar
+  `workflow-map.stale` och CI grindar på flödestäckning
+  (`CLAUDE.md` § Workflow map freshness). Spåra om de fotoimportflöden markören
+  namnger, uppdatera kartans `<script id="data">`-JSON och inget annat, kör
+  lintern, radera markören, committa båda. (En markör från den parallella
+  sessionen ligger redan på disk — den är inte min.)
+
+## Open questions — Öppna frågor
+
+No architecture-changing unknowns. Formen är bestämd: sömmen breddas, layouten
+är sanningen och texten härleds ur den, degraderingen är layout → textregler →
+`[input]`, och hela vägen ligger bakom `enable_layout_recipe_split`. Inget av
+det nedan kan ändra den formen — de är mätrisker som bärs av flaggan och av
+Remote-Config-trösklarna, inte av ett val Malin behöver göra nu. Antagandena,
+i fallande ordning efter spännvidd:
+
+1. **ML Kits geometri är omätt** — tröskel, radgruppering på tvåspaltiga
+   uppslag, och iOS-lådor. Bärs av flaggan och Remote-Config-trösklarna (⑥),
+   inte av en förhoppning.
+2. **33 % av facittitlarna saknas i OCR-texten** över huvud taget. Layouten kan
+   inte lyfta det taket. Egen fråga, inte den här planens.
+3. **Facit räknar inte alltid varianträtter som egna recept** ("Med örter" är
+   en riktig rubrik i boken). En del av det som mäts som överdelning är alltså
+   facit, inte kod. Inte utrett.
+4. **Nivå 0 måste vinna** för att geometrin ska finnas. Faller den fria
+   avläsningen på konfidensgrinden går importen till en betald nivå utan
+   geometri. Ingen försämring, men ingen vinst heller — just där bilden var
+   svårläst.
+5. **Bara latinsk skrift.** Samma avgränsning som nivå 0 redan har.
+
+## Vad det betyder på vanlig svenska
+
+- Fotografera ett kokboksuppslag med flera rätter och få flera recept i stället
+  för ett hopkok. Mätt: från 1 sida av 4 rätt till 2 av 5, och antalet recept
+  som helt försvinner nästan halveras.
+- Enstaka receptsidor, som fungerar idag, rör sig inte ur fläcken. Det är
+  villkoret jag valde tröskeln efter.
+- Prosakokböcker, där mängderna står i löpande text, kan delas för första
+  gången. Idag misslyckas de alla.
+- Jag hittade en sak jag hade fel om: när appen delar ett recept i två av
+  misstag kryssas **båda** i automatiskt och du kan inte foga ihop dem igen. Det
+  gjorde att jag valde en försiktigare inställning än jag först tänkt.
+- Ingen ny kostnad. Allt räknas på telefonen, inget nätanrop, ingen språkmodell.
+- Det hela ligger bakom en avstängningsknapp tills det är provat på din telefon.
+- Väljaren som visar "vi hittade tre recept" finns redan i appen — den får
+  äntligen något att visa.
+- Vad jag behöver av dig: ingenting nu. När det är byggt vill jag att du
+  fotograferar ett par uppslag så vi ser om siffrorna håller på riktig telefon.
+- **Om du hellre vill ha det djärvare:** säg "kör 1,35" — då blir 3 uppslag av 5
+  rätt i stället för 2, men var fjärde vanlig receptsida delas i två av misstag.
+  Jag valde bort det, men det är en siffra och den kan bytas.
+
+
+==============================================================================
+# PRIOR EXECUTION RECORD — BUT-1797 (completed, merged to main 2026-08-05)
+==============================================================================
+
 # IN EXECUTION 2026-08-04 — BUT-1797: group sharing that can actually be revoked
 
 Approved by Malin ("go with this", 2026-08-04, selecting the recommendation to
