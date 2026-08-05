@@ -1362,6 +1362,73 @@ group('M-38', () => {
       problems.length === 0, problems.join(' · '));
 });
 
+/* M-39 · CI-JOBBETS KÖRORDNING ÄR FAIL-CLOSED
+   F1-U13: fas1-gate korde kedjan, kompletterade beviset, FINALISERADE, och
+   korde sedan kedjan EN ANDRA GANG i reproducerbarhetssteget. Den andra
+   korningen skrev over den finaliserade rapporten med en ofinaliserad, och
+   grinden bedomde den utan att finalize.mjs kort igen — integrity=failed pa en
+   kedja som var gron. Steget bar dessutom `|| true`, sa en krasch i andra
+   korningen svaldes och grinden las den GAMLA rapporten.
+   Ordningen ar en INVARIANT och lases har. */
+group('M-39', () => {
+    const problems = [];
+    const check = (label, ok, detail) => { if (!ok) problems.push(label + (detail ? ' (' + detail + ')' : '')); };
+    const WF = '.github/workflows/verify.yml';
+    if (!existsSync(WF)) { t('M-39 · CI-jobbets körordning', false, WF + ' saknas'); return; }
+    const y = readFileSync(WF, 'utf8');
+    const job = y.slice(y.indexOf('  fas1-gate:'), y.indexOf('  content-baseline:'));
+    const steps = [...job.matchAll(/^      - name: (.+)$/gm)].map(m => m[1]);
+    const at = re => steps.findIndex(s => re.test(s));
+
+    const iRun1 = at(/^Verifieringskedjan · körning 1/);
+    const iProve1 = at(/Bevisa att körning 1/);
+    const iGen01 = at(/GEN-01/);
+    const iRun2 = at(/^Verifieringskedjan · körning 2/);
+    const iProve2 = at(/Bevisa att körning 2/);
+    const iRepro = at(/^Reproducerbarhet/);
+    const iEvidence = at(/Komplettera CI-beviset/);
+    const iFinal = at(/Finalisera/);
+    const iGate = at(/Fas 1-grinden/);
+
+    for (const [label, i] of [['körning 1', iRun1], ['bevis 1', iProve1], ['GEN-01', iGen01],
+      ['körning 2', iRun2], ['bevis 2', iProve2], ['reproducerbarhet', iRepro],
+      ['CI-bevis', iEvidence], ['finalisering', iFinal], ['grind', iGate]])
+      check('steget "' + label + '" finns', i >= 0);
+    if (problems.length) { t('M-39 · CI-jobbets körordning är fail-closed', false, problems.join(' · ')); return; }
+
+    // INVARIANTEN: ingen kedjekörning får ligga efter finaliseringen, och
+    // grinden ligger sist av allt som rör rapporten.
+    check('a fullföljd bevisas direkt efter varje körning', iProve1 === iRun1 + 1 && iProve2 === iRun2 + 1,
+      'run1@' + iRun1 + ' prove1@' + iProve1 + ' run2@' + iRun2 + ' prove2@' + iProve2);
+    check('b GEN-01 mäter mot det incheckade före körning 2', iGen01 > iProve1 && iGen01 < iRun2);
+    check('c reproducerbarheten jämförs efter körning 2', iRepro > iProve2);
+    check('d CI-beviset kompletteras EFTER sista körningen', iEvidence > iRun2, 'bevis@' + iEvidence + ' run2@' + iRun2);
+    check('e finaliseringen sker EFTER sista körningen', iFinal > iRun2, 'final@' + iFinal + ' run2@' + iRun2);
+    check('f grinden ligger efter finaliseringen', iGate > iFinal);
+    check('g ingen kedjekörning efter finaliseringen',
+      !steps.slice(iFinal).some(s => /körning \d/.test(s)), steps.slice(iFinal).join(' | '));
+
+    // FAIL-OPEN: run-verify.sh får aldrig stå bakom ett obevakat `|| true`.
+    const badGuard = [...y.matchAll(/^.*run-verify\.sh.*\|\|\s*true.*$/gm)].map(m => m[0].trim());
+    check('h inget obevakat "|| true" kring run-verify.sh i hela workflowen',
+      badGuard.length === 0, badGuard.join(' · '));
+
+    // Varje körning måste följas av ett maskinellt fullföljdsbevis.
+    const runs = (y.match(/bash fas0\/run-verify\.sh/g) || []).length;
+    const proofs = (y.match(/tools\/run-complete\.mjs/g) || []).length;
+    check('i varje kedjekörning har ett fullföljdsbevis', proofs >= runs - 1,
+      runs + ' körningar, ' + proofs + ' bevis');
+
+    // Den hårdkodade sjufilslistan får inte komma tillbaka.
+    check('j ingen hårdkodad fillista i GEN-01-steget',
+      !/for f in assets\/generated/.test(job), 'hårdkodad lista kvar i fas1-gate');
+    check('k GEN-01 härleds ur registret', /repro-check\.mjs --compare/.test(job));
+
+    t('M-39 · CI-jobbets körordning är fail-closed (' +
+      (problems.length ? 'fel: ' + problems.length : '20 domslut') + ')',
+      problems.length === 0, problems.join(' · '));
+});
+
 /* M-25 · schemavalideringen är SCHEMADRIVEN (enhetsprov, inte process) ─────────
    Prövar validateReportSchema() direkt: den traverserar REPORT_SCHEMA, så typer
    och mönster kan inte glida från schemafilen. Processnivån täcks av M-24 E. */

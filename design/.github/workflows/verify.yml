@@ -124,6 +124,23 @@ jobs:
           node tools/build-delivery.mjs --out="$GITHUB_WORKSPACE/leverans-bygge" --force
           test -f "$GITHUB_WORKSPACE/leverans-bygge/fas0/DELIVERY" || { echo "leveransmarkoren saknas i bygget"; exit 1; }
 
+      # F1-U13 · KÖRORDNINGEN ÄR FAIL-CLOSED.
+      #
+      # Den gamla ordningen var: kor -> komplettera bevis -> FINALISERA ->
+      # reproducerbarhetssteget kor kedjan EN ANDRA GANG -> grind. Andra
+      # korningen skrev over den finaliserade rapporten med en ofinaliserad,
+      # och grinden bedomde den utan att finalize.mjs kort igen:
+      #     integrity=failed · rapporten ar inte finaliserad
+      # Reproducerbarhetssteget bar dessutom ett obevakat `|| true`: en krasch
+      # innan rapporten skrevs svaldes, generatorhasharna var oforandrade,
+      # REPRO-SUMMARY blev gron och grinden las den GAMLA rapporten.
+      #
+      # Ny ordning: snapshot -> korning 1 -> bevisa fullfoljd -> jamfor mot
+      # incheckat (GEN-01) -> snapshot -> korning 2 -> bevisa fullfoljd ->
+      # jamfor korning 1 mot 2 -> komplettera CI-beviset ur SISTA korningen ->
+      # finalisera -> grind. Rapporten grinden bedomer ar alltid den sist
+      # skrivna, och den ar alltid finaliserad.
+
       - name: CI-kontext för CHK-CI-01
         run: |
           node -e "
@@ -146,14 +163,60 @@ jobs:
             }, null, 2));
           "
 
-      - name: Verifieringskedjan (fas 1 · delivery-läge)
-        continue-on-error: true
+      # 1 · Snapshot av det INCHECKADE tillstandet, dynamiskt ur gen-targets.
+      - name: Snapshot före körning 1 (alla generatorutdata)
+        run: node tools/repro-check.mjs --snapshot=/tmp/repro-incheckat.json
+
+      # 2 · Forsta korningen. Exitkoden fangas i stallet for att svaljas.
+      - name: Verifieringskedjan · körning 1 (delivery-läge)
         env:
           BUTLERY_MANIFEST_MODE: delivery
           BUTLERY_PHASE: '1'
           BUTLERY_COMMIT: ${{ github.sha }}
-        run: bash fas0/run-verify.sh
+        run: |
+          set +e
+          bash fas0/run-verify.sh 2>&1 | tee /tmp/run1.log
+          echo "${PIPESTATUS[0]}" > /tmp/run1.exit
+          set -e
+          echo "kedjans exitkod: $(cat /tmp/run1.exit)"
 
+      - name: Bevisa att körning 1 fullföljdes
+        run: node tools/run-complete.mjs --log=/tmp/run1.log --exit="$(cat /tmp/run1.exit)"
+
+      # 3 · GEN-01 mot det INCHECKADE tillstandet — alla elva skrivmal, harledda
+      #     ur tools/gen-targets.mjs. Den hardkodade sjufilslistan ar borta.
+      - name: Genererade filer oförändrade av körningen (GEN-01)
+        run: node tools/repro-check.mjs --compare=/tmp/repro-incheckat.json
+
+      # 4 · Snapshot EFTER forsta korningen.
+      - name: Snapshot efter körning 1
+        run: node tools/repro-check.mjs --snapshot=/tmp/repro-korning1.json
+
+      # 5 · Andra korningen. Inget obevakat `|| true` — exitkoden fangas och
+      #     fullfoljden bevisas maskinellt av nasta steg.
+      - name: Verifieringskedjan · körning 2 (reproducerbarhet)
+        env:
+          BUTLERY_MANIFEST_MODE: delivery
+          BUTLERY_PHASE: '1'
+          BUTLERY_COMMIT: ${{ github.sha }}
+        run: |
+          node -e "console.log(require('./fas0/verify-report.json').runId)" > /tmp/run1.runid
+          set +e
+          bash fas0/run-verify.sh 2>&1 | tee /tmp/run2.log
+          echo "${PIPESTATUS[0]}" > /tmp/run2.exit
+          set -e
+          echo "kedjans exitkod: $(cat /tmp/run2.exit)"
+
+      - name: Bevisa att körning 2 fullföljdes
+        run: |
+          node tools/run-complete.mjs --log=/tmp/run2.log \
+            --not-runid="$(cat /tmp/run1.runid)" --exit="$(cat /tmp/run2.exit)"
+
+      # 6 · Byteidentitet mellan de tva korningarna, alla elva.
+      - name: Reproducerbarhet — körning 1 mot körning 2
+        run: node tools/repro-check.mjs --compare=/tmp/repro-korning1.json
+
+      # 7 · CI-beviset kompletteras ur den SISTA genomforda korningen.
       - name: Komplettera CI-beviset
         if: always()
         run: |
@@ -168,6 +231,7 @@ jobs:
             console.log('CI-bevis komplett · exit ' + e.verifyExitCode);
           "
 
+      # 8 · Finalisering av den rapport grinden FAKTISKT ska bedoma.
       - name: Finalisera rapporten
         if: always()
         continue-on-error: true
@@ -176,32 +240,7 @@ jobs:
           BUTLERY_COMMIT: ${{ github.sha }}
         run: node tools/finalize.mjs
 
-      # INGEN DRIFT: körningen får inte ha ändrat en incheckad genererad fil. Ändras
-      # någon var den incheckade versionen stale (GEN-01, i Fas 1-grinden).
-      # Bygget har ingen .git, så driften mäts mot checkouten i stället för med
-      # git diff: varje generatormål jämförs byte för byte med repot.
-      - name: Genererade filer oförändrade av körningen (GEN-01)
-        if: always()
-        run: |
-          rc=0
-          for f in assets/generated/tokens.css lib/theme/butlery_tokens.dart \
-                   lib/theme/app_colors.dart lib/theme/app_text_styles.dart icons.json \
-                   fas0/kallauktoritetsregister.md fas0/verify-report.schema.json; do
-            cmp -s "$f" "$GITHUB_WORKSPACE/repo/$f" || { echo "drift i $f mot den incheckade versionen"; rc=1; }
-          done
-          exit "$rc"
-
-      # F1-U11 · REPRODUCERBARHET, OBLIGATORISKT OCH FULLSTÄNDIGT.
-      # Listan härleds ur tools/gen-targets.mjs (11 skrivmål) i stallet for en
-      # YAML-lista som glidit isar: Fas 1-jobbet jamforde 7 och content-baseline
-      # 5. Steget ar fallande — det ar inte en baslinje som far vara rod.
-      - name: Reproducerbarhet — andra körningen ger byteidentisk utdata
-        run: |
-          node tools/repro-check.mjs --snapshot=/tmp/repro1.json
-          BUTLERY_MANIFEST_MODE=delivery BUTLERY_PHASE=1 bash fas0/run-verify.sh > /tmp/run2.log 2>&1 || true
-          tail -n 25 /tmp/run2.log
-          node tools/repro-check.mjs --compare=/tmp/repro1.json
-
+      # 9 · Grinden sist.
       - name: Fas 1-grinden
         if: always()
         run: node tools/gate.mjs --phase=1
@@ -239,10 +278,19 @@ jobs:
         env:
           BUTLERY_MANIFEST_MODE: repo
           BUTLERY_COMMIT: ${{ github.sha }}
-        run: bash fas0/run-verify.sh
+        run: |
+          set +e
+          bash fas0/run-verify.sh 2>&1 | tee /tmp/baseline1.log
+          echo "${PIPESTATUS[0]}" > /tmp/baseline1.exit
+          set -e
+          node tools/run-complete.mjs --log=/tmp/baseline1.log --exit="$(cat /tmp/baseline1.exit)"
       # ANDRA KÖRNINGEN: generatorutdata måste vara byteidentisk mellan körningar.
       # Fas 1 (andra vändan): gen-icons stämplade dagens datum och bytte nyckelnamn,
       # så varje körning gav ett nytt icons.json.
+      # F1-U13: `|| true` svalde en krasch i andra körningen. Da var
+      # generatorhasharna oforandrade av det trivialaste skalet — ingenting hade
+      # kort — och REPRO-SUMMARY blev gron pa en korning som aldrig hande.
+      # Fullfoljden bevisas nu maskinellt, aven i det har jobbet.
       - name: Reproducerbarhet — andra körningen ger byteidentisk utdata (baslinje)
         continue-on-error: true
         env:
@@ -250,7 +298,13 @@ jobs:
           BUTLERY_COMMIT: ${{ github.sha }}
         run: |
           node tools/repro-check.mjs --snapshot=/tmp/repro-baseline.json
-          bash fas0/run-verify.sh || true
+          node -e "console.log(require('./fas0/verify-report.json').runId)" > /tmp/baseline1.runid
+          set +e
+          bash fas0/run-verify.sh 2>&1 | tee /tmp/baseline2.log
+          echo "${PIPESTATUS[0]}" > /tmp/baseline2.exit
+          set -e
+          node tools/run-complete.mjs --log=/tmp/baseline2.log \
+            --not-runid="$(cat /tmp/baseline1.runid)" --exit="$(cat /tmp/baseline2.exit)"
           node tools/repro-check.mjs --compare=/tmp/repro-baseline.json
       - name: Genererade filer är incheckade (GEN-01)
         continue-on-error: true

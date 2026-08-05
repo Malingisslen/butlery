@@ -28,13 +28,13 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=247-->
+<!--manifest:files=248-->
 
 ## Reporoten
 
 | Fil | SHA-256 |
 |---|---|
-| `.github/workflows/verify.yml` | `aed5f7badfecf66164a230cb15fdfc251bddcfc3465a5a12aff698b0210e6474` |
+| `.github/workflows/verify.yml` | `769074037ab42d6b1c074d57e5be02152b14d353e1f512ea2fe3cd2d2945a87b` |
 | `.thumbnail` | `c46e64bfadb3139f1a1f25f416ffb3492b4f206bd7cca938c3efc82563e83017` |
 | `00-spec-index.md` | `8005d787ba21db171d67a1265d1512df832c750a7a7f063083c2c298e6322f5a` |
 | `Butlery Grafisk manual v6.dc.html` | `3879f2b3451f47de109db76b05f4fd18361f7c1318bebc625c1bdeca6fbd2964` |
@@ -260,10 +260,11 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/lint-controls.mjs` | `07350d4dd8b167c772f9ca145cd69b92ff0418632c2252d434b7d9ad59f6c244` |
 | `tools/lint-core.mjs` | `05ca33f1af6e70c8a2dedf61ad77aa2fb7d9c0101bf6c71a5c3bc7e397672941` |
 | `tools/manifest-contract.mjs` | `5980918a090575a81f484cae0e6cecfa69e7addf7dd581faac03b331357f7e6c` |
-| `tools/metatest.mjs` | `6c90650a044e49939f5f98443f320be542dc3281f65ced771f252e81b18102f8` |
+| `tools/metatest.mjs` | `85e7d260489942d9ec068ed3aace55ebb48df1ba3cf7179f30420118310fa4e4` |
 | `tools/preflight.mjs` | `3fe3bfa0e6f92fcb71ca5d19aa2c8e5e9df307f80eb3c8fe4dee09f173d5f3af` |
 | `tools/report-logic.mjs` | `62b38358e6d8f77dd31a52ef6cde1061ec4a5d03b390204ec0ff51505b30258f` |
 | `tools/repro-check.mjs` | `7aefb37dd9ea18a37e20c0e52d0bf784b0e5515a40fbbb2058d9672c2e09a0ba` |
+| `tools/run-complete.mjs` | `a3884fe3ebaade9af0eca6789160fe11d2ad249ccd9ebcce517f17bc9f6a3bc2` |
 | `tools/screen-files.mjs` | `d975c827273def112992f5ad6b1269817fffc6efc3e882a7d41d0d4269735e48` |
 | `tools/selftest.mjs` | `0718f2dfe08db8ea496d15659ae60ae465f0b53c92dccd5e9b53f688b546bc37` |
 | `tools/spec-lint.mjs` | `520964df0ad36015cb3afce41ec8f89bd54dd6bb9d345ce47c7cd3da8075503d` |
