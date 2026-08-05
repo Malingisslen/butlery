@@ -1,8 +1,11 @@
 import { SCREEN_FILES, ICON_SOURCE_FILES } from './screen-files.mjs';
 import { parseEvidence, splitEvidenceProblems, walkSchema, manifestEntries } from './report-logic.mjs';
 import { readVersion, strategyFor, sameVersion } from './version-read.mjs';
-import { REQUIRED_DOMAIN_IDS, AUTHORITY_STATES, CHANGE_POLICIES, CURRENT_STATES } from './authority-contract.mjs';
-import { FULLY_GENERATED } from './gen-targets.mjs';
+import { ZIP_LAYER } from './manifest-contract.mjs';
+import { REQUIRED_DOMAIN_IDS, AUTHORITY_STATES, CHANGE_POLICIES, CURRENT_STATES,
+  INDEX_AUTHORITY_ROWS, INDEX_ROWS_EXEMPT, INDEX_MARKER_RE, INDEX_MARKER_RE_G,
+  indexVersionCell, indexFileRef, indexStatusCell } from './authority-contract.mjs';
+import { FULLY_GENERATED, FULLY_GENERATED_BY } from './gen-targets.mjs';
 // Butlery · spec-lint, delad logik. Importeras av tools/spec-lint.mjs.
 // Ren funktion av en env ({read, exists}) så att samma kod kan köras i CI
 // och i granskningsverktyg utan filsystemsantaganden.
@@ -329,13 +332,23 @@ export function lint(env) {
       if (!env.exists(g.generator)) fail('T-20', 'generatorn ' + g.generator + ' finns inte');
     }
 
-    // 6 · F1-H06 · Mängdlikhet mot generatorregistret, i BÅDA riktningarna.
+    // 6 · F1-H06 + F1-U03 · Mängdlikhet mot generatorregistret, i BÅDA
+    // riktningarna och över BÅDA fälten. Kontrollen jämförde tidigare bara
+    // mängden filnamn, så en artefakt kunde behålla rätt filnamn men få namnet
+    // på en annan existerande generator utan att något fälldes.
     {
-      const declared = new Set((A.generatedArtifacts || []).map(g => g.file));
-      const targets = new Set(FULLY_GENERATED);
-      for (const f of [...targets].filter(f => !declared.has(f)))
-        fail('T-20', 'generatormålet ' + f + ' saknas i generatedArtifacts — varje helrenderat skrivmål i tools/gen-targets.mjs ska stå i registret (F1-H06)');
-      for (const f of [...declared].filter(f => !targets.has(f)))
+      const declared = new Map((A.generatedArtifacts || []).map(g => [g.file, g.generator]));
+      const targets = new Map(Object.entries(FULLY_GENERATED_BY));
+      for (const [f, gen] of targets) {
+        if (!declared.has(f)) {
+          fail('T-20', 'generatormålet ' + f + ' saknas i generatedArtifacts — varje helrenderat skrivmål i tools/gen-targets.mjs ska stå i registret (F1-H06)');
+          continue;
+        }
+        if (declared.get(f) !== gen)
+          fail('T-20', 'generatedArtifacts säger att ' + f + ' skrivs av ' + declared.get(f) +
+            ', men den kanoniska mappningen i tools/gen-targets.mjs säger ' + gen + ' (F1-U03)');
+      }
+      for (const f of [...declared.keys()].filter(f => !targets.has(f)))
         fail('T-20', 'generatedArtifacts deklarerar ' + f + ', som inte är ett helrenderat generatormål i tools/gen-targets.mjs (F1-H06)');
     }
 
@@ -345,10 +358,13 @@ export function lint(env) {
     // läsare som T-15 — en saknad eller tvetydig versionsuppgift fäller.
     for (const a of rows) {
       if (a.authorityState !== 'active') continue;
-      if (a.outsideRepoRoot) continue;               // mäts i leveransläge av T-15
-      if (!a.file || !env.exists(a.file)) continue;  // redan fällt av 5
+      // F1-U06: `outsideRepoRoot` hoppades tidigare över helt — styrdokumentet,
+      // projektets normativa styrningskälla, hade alltså ingen versionskontroll
+      // alls. Nu när leveranslagret ligger i Git läses filen ur `leverans/`.
+      const path = a.outsideRepoRoot ? ZIP_LAYER + '/' + a.file : a.file;
+      if (!path || !env.exists(path)) continue;      // redan fällt av 5
       const strategy = strategyFor(a.file);
-      const r = readVersion(a.file, env.read(a.file), strategy);
+      const r = readVersion(a.file, env.read(path), strategy);
       if (r.versionless) {
         if (a.version !== null)
           fail('T-20', 'domänen "' + a.domain + '" deklarerar version ' + a.version + ' för ' + a.file +
@@ -362,12 +378,12 @@ export function lint(env) {
       }
       if (r.problem) {
         fail('T-20', 'domänen "' + a.domain + '" deklarerar ' + a.file + ' ' + a.version +
-          ' men versionen kan inte läsas ur filen: ' + r.problem + ' (strategi: ' + strategy + ')');
+          ' men versionen kan inte läsas ur ' + path + ': ' + r.problem + ' (strategi: ' + strategy + ')');
         continue;
       }
       if (!sameVersion(r.value, a.version))
         fail('T-20', 'domänen "' + a.domain + '" deklarerar ' + a.file + ' ' + a.version +
-          ' men filen säger ' + r.value + ' (strategi: ' + strategy + ')');
+          ' men ' + path + ' säger ' + r.value + ' (strategi: ' + strategy + ')');
     }
 
     // 8 · F1-H07 · Dokumentruntimen. De två byggena är avsiktligt olika och båda
@@ -382,6 +398,24 @@ export function lint(env) {
         if (!outside && !env.exists(rel))
           fail('T-20', 'runtimeInstances: ' + ri.path + ' är märkt declared men filen finns inte i reporoten');
       }
+    }
+
+    // 8b · F1-U01 · PAKETERADE BINÄRER. `.thumbnail` ärvdes ur en gammal ZIP
+    // utan att någonstans vara motiverad. Varje binär som följer med paketet
+    // utan att genereras måste ha ett uttryckligt kontrakt, ligga på disk och
+    // vara manifestdeklarerad — annars är den bara skräp som råkat följa med.
+    {
+      const declaredBin = new Set();
+      for (const b of A.packagedBinaries || []) {
+        declaredBin.add(b.path);
+        if (b.generated) fail('T-20', 'packagedBinaries: ' + b.path + ' är märkt generated — då hör den hemma i generatedArtifacts');
+        if (!env.exists(b.path)) fail('T-20', 'packagedBinaries: ' + b.path + ' finns inte på disk');
+      }
+      // Varje binär i ytan som inte kan läsas som text måste vara förtecknad.
+      // `.thumbnail` var det enda fallet och stod utan motivering.
+      for (const p of ['.thumbnail', ZIP_LAYER + '/.thumbnail'])
+        if (env.exists(p) && !declaredBin.has(p))
+          fail('T-20', p + ' följer med paketet men saknar kontrakt i packagedBinaries — en binär får inte bara ärvas ur en gammal ZIP (F1-U01)');
     }
 
     // 9 · supersededBy: målet måste vara känt, och ingen cykel får finnas.
@@ -694,6 +728,69 @@ export function lint(env) {
       if (claimed !== tokens.version)
         fail('T-10', 'indexets "Kod ur tokens" säger ' + claimed + ' men tokens.json är ' + tokens.version);
     })();
+    /* F1-U02 · indexets auktoritetsrader: mängdlikhet OCH cellinnehåll ──────
+     * Generatorn skrev bara `version` och `status`. Filkolumnen, radens
+     * identitet och radens EXISTENS var manuella — en struken rad fällde
+     * ingenting, och en filkolumn kunde peka på en annan fil än den registret
+     * pekar ut medan version och status stod kvar korrekta.
+     * Kontrollen mäter fyra saker: att markörmängden är exakt den kanoniska,
+     * att ingen markör är dubblerad eller okänd, och att varje ägd cell
+     * innehåller exakt det generatorn skulle ha skrivit. */
+    (function () {
+      if (!env.exists('source-authority.json')) return;
+      let A = null;
+      try { A = JSON.parse(env.read('source-authority.json')); } catch { return; }
+      const byDomain = new Map((A.authorities || []).map(a => [a.domainId, a]));
+      const lines = index.split('\n');
+      const markers = [];
+      for (const line of lines) for (const m of line.matchAll(INDEX_MARKER_RE_G)) markers.push(m[1]);
+
+      const dup = markers.filter((v, i) => markers.indexOf(v) !== i);
+      for (const d of [...new Set(dup)])
+        fail('T-10', 'auth:-markören för "' + d + '" förekommer ' + markers.filter(x => x === d).length +
+          ' gånger i versionstabellen — exakt en rad per domän');
+      const have = new Set(markers), want = new Set(INDEX_AUTHORITY_ROWS);
+      for (const d of [...want].filter(d => !have.has(d)))
+        fail('T-10', 'versionstabellen saknar raden för domänen "' + d + '" — markören auth:' + d +
+          ' finns inte, och generatorn kan inte återskapa en struken rad');
+      for (const d of [...have].filter(d => !want.has(d)))
+        fail('T-10', byDomain.has(d)
+          ? 'domänen "' + d + '" har en auth:-markör men står inte i INDEX_AUTHORITY_ROWS' +
+            (INDEX_ROWS_EXEMPT[d] ? ' — den är uttryckligen undantagen: ' + INDEX_ROWS_EXEMPT[d] : '')
+          : 'okänd auth:-markör "' + d + '" i versionstabellen — domänen finns inte i source-authority.json');
+
+      for (const line of lines) {
+        const m = line.match(INDEX_MARKER_RE);
+        if (!m) continue;
+        const a = byDomain.get(m[1]);
+        if (!a) continue;                       // redan fällt ovan
+        const own = new Set(m[2].split(',').filter(Boolean));
+        const cells = line.split('|');
+        const trim = s => String(s === undefined ? '' : s).trim();
+        if (own.has('version')) {
+          const wantCell = indexVersionCell(a);
+          if (wantCell !== null && trim(cells[2]) !== wantCell)
+            fail('T-10', 'versionscellen för "' + a.domainId + '" är "' + trim(cells[2]) +
+              '", registret ger "' + wantCell + '"');
+        }
+        if (own.has('file')) {
+          const ref = indexFileRef(a);
+          const got = (trim(cells[3]).match(/`[^`]+`/) || [])[0] || trim(cells[3]);
+          if (got !== ref)
+            fail('T-10', 'filkolumnen för "' + a.domainId + '" pekar på ' + got +
+              ', registret pekar på ' + ref);
+        }
+        if (own.has('status')) {
+          const wantCell = indexStatusCell(a);
+          if (trim(cells[4]) !== wantCell)
+            fail('T-10', 'statuscellen för "' + a.domainId + '" är "' + trim(cells[4]) +
+              '", registret ger "' + wantCell + '"');
+        }
+      }
+      info('T-10', markers.length + ' generatorägda auktoritetsrader i versionstabellen · ' +
+        Object.keys(INDEX_ROWS_EXEMPT).length + ' domäner uttryckligen undantagna');
+    })();
+
     // Markdown-dokumenten bär sin version i prosan; läs den i stället för att gissa.
     const mdVersion = (file) => {
       if (!env.exists(file)) return null;

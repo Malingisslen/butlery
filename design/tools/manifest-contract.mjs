@@ -34,6 +34,12 @@ export const RUNTIME_EXEMPT = [
 // strukturell omöjlighet, och står därför för sig.
 export const MANIFEST_PATH = 'fas0/andrade-filer.md';
 
+// F1-U01 · Leveransens yttre lager, versionshanterat i repot. Speglingen ÄR
+// modellen: `leverans/<sökväg>` blir `zip:/<sökväg>` i den byggda leveransen.
+// Ingen mappningsfil, inga undantag. Katalogen ligger i reporotsytan som vilken
+// annan spårad fil som helst och följer därför med in i paketet.
+export const ZIP_LAYER = 'leverans';
+
 // Kataloger som inte hör hemma i en leverans. De AVVISAS — de göms inte.
 export const REJECT_DIRS = ['node_modules', 'dist', 'build', '.svn', '.hg', '__pycache__', '.venv', '.cache'];
 
@@ -80,7 +86,19 @@ export function enumerateSurface(root, { mode = 'repo', stopAt = [] } = {}) {
   };
 
   const walk = (dir, rel = '', depth = 0) => {
-    if (depth > MAX_DEPTH) { truncated++; return; }
+    // F1-U08 · DJUPGRÄNSEN ÄR FÄLLANDE, I ALLA LÄGEN.
+    //
+    // Traverseringen räknade tidigare bara upp `truncated` och gick vidare.
+    // Repo-ytans anropare läste aldrig det talet, och leveransytan rapporterade
+    // det utan att det ändrade utfallet: en odeklarerad fil fjorton nivåer ned
+    // gav exit 0 och oförändrad set-likhet. En gräns som inte fäller är ingen
+    // gräns — den är ett hål med en räknare bredvid.
+    if (depth > MAX_DEPTH) {
+      truncated++;
+      problems.push('katalogen ' + (rel || '.') + ' ligger djupare än ' + MAX_DEPTH +
+        ' nivåer — traverseringen avbröts och ytan kan därför inte mätas fullständigt');
+      return;
+    }
     let names = [];
     try { names = readdirSync(dir); } catch { problems.push('katalogen ' + (rel || '.') + ' går inte att läsa'); return; }
     for (const name of names) {

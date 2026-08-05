@@ -22,7 +22,9 @@
 // fortfarande handskrivna.
 import { readFileSync, existsSync } from 'node:fs';
 import { emit } from './gen-check.mjs';
-import { AUTHORITY_STATES, CHANGE_POLICIES, stateLabel, policyLabel } from './authority-contract.mjs';
+import { AUTHORITY_STATES, CHANGE_POLICIES, stateLabel, policyLabel,
+  INDEX_AUTHORITY_ROWS, INDEX_ROWS_EXEMPT, INDEX_MARKER_RE, INDEX_MARKER_RE_G,
+  indexVersionCell, indexFileRef, indexStatusCell } from './authority-contract.mjs';
 
 const A = JSON.parse(readFileSync('source-authority.json', 'utf8'));
 const tokens = JSON.parse(readFileSync('tokens.json', 'utf8'));
@@ -132,51 +134,66 @@ const out = L.join('\n');
  * i samma cell.
  */
 const byDomain = new Map(A.authorities.map(a => [a.domainId, a]));
-
-// Versionscellen: numeriska versioner fetas, textbärande versioner
-// ("mot manual V6") skrivs som de står. Datum står inte här — de är inte
-// registrets data och kan därför inte hållas aktuella av det.
-function versionCell(a) {
-  if (a.version === null || a.version === undefined) return null;
-  return /^[Vv]?\d/.test(String(a.version)) ? '**' + cell(a.version) + '**' : cell(a.version);
-}
-function statusCell(a) {
-  const bits = [stateLabel(a.authorityState)];
-  if (a.changePolicy === 'frozen') bits.push('fryst');
-  bits.push('ägare ' + a.owner);
-  return bits.join(' · ');
-}
-
-// Kolumnnamnen är slutna, så huvudblockets <!--auth:header:start--> aldrig kan
-// tolkas som en radmarkör.
-const MARKER = /<!--auth:([a-z0-9-]+):((?:version|status)(?:,(?:version|status))*)-->/;
 const idxPath = '00-spec-index.md';
 let index = readFileSync(idxPath, 'utf8');
 const idxLines = index.split('\n');
+
+// F1-U02 · MÄNGDLIKHET FÖRST, cellskrivning sedan.
+//
+// Generatorn rörde tidigare bara de rader den råkade hitta. En struken rad var
+// därför osynlig: inga markörer, inga celler att skriva, och ett "klart".
+// Nu jämförs markörmängden mot den kanoniska listan i authority-contract.mjs
+// INNAN något skrivs, och avviker den skriver generatorn ingenting alls.
+const seenMarkers = [];
+for (const line of idxLines) {
+  for (const m of line.matchAll(INDEX_MARKER_RE_G)) seenMarkers.push(m[1]);
+}
+const idxProblems = [];
+const dupMarkers = seenMarkers.filter((v, i) => seenMarkers.indexOf(v) !== i);
+for (const d of [...new Set(dupMarkers)])
+  idxProblems.push('markören auth:' + d + ' förekommer ' + seenMarkers.filter(x => x === d).length + ' gånger — en rad per domän');
+const haveM = new Set(seenMarkers), wantM = new Set(INDEX_AUTHORITY_ROWS);
+for (const d of [...wantM].filter(d => !haveM.has(d)))
+  idxProblems.push('raden för domänen "' + d + '" saknas i versionstabellen — markören auth:' + d + ' finns inte');
+for (const d of [...haveM].filter(d => !wantM.has(d))) {
+  idxProblems.push(byDomain.has(d)
+    ? 'domänen "' + d + '" har en auth:-markör men står inte i INDEX_AUTHORITY_ROWS' +
+      (INDEX_ROWS_EXEMPT[d] ? ' (undantagen: ' + INDEX_ROWS_EXEMPT[d] + ')' : '')
+    : 'okänd auth:-markör "' + d + '" — domänen finns inte i source-authority.json');
+}
+if (idxProblems.length) {
+  for (const p of idxProblems) console.error('✖ 00-spec-index.md: ' + p);
+  console.error('✖ gen-authority skriver ingenting — indexets auktoritetsrader måste vara exakt ' +
+    INDEX_AUTHORITY_ROWS.length + ' stycken innan cellerna kan ägas');
+  process.exit(1);
+}
+
+// Cellskrivning. Renderarna ligger i authority-contract.mjs och delas med
+// linten, så generatorn och kontrollen aldrig kan mena olika saker om vad en
+// cell ska innehålla.
 let rewritten = 0;
-const unknown = [];
 for (let i = 0; i < idxLines.length; i++) {
-  const m = idxLines[i].match(MARKER);
+  const m = idxLines[i].match(INDEX_MARKER_RE);
   if (!m) continue;
-  const [, domainId, cols] = m;
-  const a = byDomain.get(domainId);
-  if (!a) { unknown.push(domainId); continue; }
-  const own = new Set(cols.split(',').filter(Boolean));
+  const a = byDomain.get(m[1]);
+  const own = new Set(m[2].split(',').filter(Boolean));
   const cells = idxLines[i].split('|');
   // cells[0] är tomt (raden börjar med |), cells[1] = Del, [2] = Version,
   // [3] = Fil, [4] = Status, [5] = Normativ för.
   if (own.has('version')) {
-    const v = versionCell(a);
-    if (v !== null) cells[2] = ' ' + v + ' ';
+    const v = indexVersionCell(a);
+    if (v !== null) cells[2] = ' ' + cell(v) + ' ';
   }
-  if (own.has('status')) cells[4] = ' ' + statusCell(a) + ' ';
-  const next = cells.join('|');
-  if (next !== idxLines[i]) { idxLines[i] = next; }
+  // Filkolumnen: generatorn äger det FÖRSTA kodcitatet, resten är prosa.
+  if (own.has('file')) {
+    const ref = indexFileRef(a);
+    cells[3] = /`[^`]+`/.test(cells[3])
+      ? cells[3].replace(/`[^`]+`/, ref)
+      : ' ' + ref + ' ';
+  }
+  if (own.has('status')) cells[4] = ' ' + cell(indexStatusCell(a)) + ' ';
+  idxLines[i] = cells.join('|');
   rewritten++;
-}
-if (unknown.length) {
-  console.error('✖ 00-spec-index.md bär auth:-markörer för okända domäner: ' + unknown.join(', '));
-  process.exitCode = 1;
 }
 
 // Indexets huvudrad. F1-H03: indexet får inte kalla sig ensam källa för

@@ -141,14 +141,25 @@ export function readVersion(file, text, strategyOverride) {
     // eller "Butlery · Fas 1 · korrigerad / 2026-08-02 · styrdokument 2.1".
     // Läses ANKRAT till de första 60 raderna, så en versionsliknande sträng
     // längre ned i brödtexten aldrig kan plockas upp.
+    // F1-U06: läsaren tog FÖRSTA träffen och tystade därmed en motsägelse —
+    // ett dokument kunde ha 2.5 i titeln och 2.6 i versionsplaketten och ändå
+    // rapportera en enda prydlig version. Nu samlas ALLA kandidater i den
+    // tillåtna headerregionen, och skiljer de sig är det ett fel, inte ett val.
     case 'doc-header': {
       const head = t.split('\n').slice(0, 60).join('\n');
       const title = (head.match(/<title>([^<]*)<\/title>/i) || [])[1] || '';
-      const badge = (head.match(/class="[^"]*\b(?:ver|version|badge)\b[^"]*"[^>]*>\s*([Vv]?\d+(?:\.\d+)+)/i) || [])[1];
-      const fromTitle = (title.match(/·\s*([Vv]?\d+(?:\.\d+)+)\s*$/) || title.match(/\b([Vv]?\d+\.\d+)\b/) || [])[1];
-      const fromHead = (head.match(/styrdokument\s*·?\s*([Vv]?\d+\.\d+)/i) || [])[1];
-      const v = badge || fromTitle || fromHead;
-      return v ? out(v) : bad('dokumenthuvudet bär ingen läsbar version bland de första 60 raderna');
+      const cands = [];
+      const push = (where, v) => { if (v) cands.push({ where, value: v }); };
+      push('versionsplakett', (head.match(/class="[^"]*\b(?:ver|version|badge)\b[^"]*"[^>]*>\s*([Vv]?\d+(?:\.\d+)+)/i) || [])[1]);
+      push('titel', (title.match(/·\s*([Vv]?\d+(?:\.\d+)+)\s*$/) || title.match(/\b([Vv]?\d+\.\d+)\b/) || [])[1]);
+      push('dokumentnamn i huvudet', (head.match(/styrdokument\s*·?\s*([Vv]?\d+\.\d+)/i) || [])[1]);
+      if (!cands.length) return bad('dokumenthuvudet bär ingen läsbar version bland de första 60 raderna');
+      const distinct = [...new Set(cands.map(c => normalizeVersion(c.value)))];
+      if (distinct.length > 1)
+        return bad('motstridiga versioner i dokumenthuvudet: ' +
+          cands.map(c => c.where + ' säger ' + c.value).join(' · ') +
+          ' — headerregionen får bära exakt ett versionsvärde');
+      return out(cands[0].value);
     }
 
     // Historiska underlag daterar sig i stället för att versionera.

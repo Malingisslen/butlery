@@ -13,6 +13,7 @@ import { GENERATORS, GENERATED_OUTPUTS, GENERATED_REGISTER } from './gen-targets
 import { checkAppTheme } from './check-app-theme.mjs';
 import { renderMarkdown } from './gen-report.mjs';
 import { tmpdir } from 'node:os';
+import { procCode, procPassed, procFailed, judgeMutation, judgeSymlinkCases, runSymlinkCase } from './testkit.mjs';
 import { join } from 'node:path';
 import { classifyStep, reduceControls, computeTotals, countRequirements, DEPENDS_ON, manifestIntegrity, validateRegistry, validateReport, validateRegistryCoverage, parseEvidence, validateReportSchema, checkNamespaces } from './report-logic.mjs';
 
@@ -579,6 +580,12 @@ group('M-22', () => {
     const shaOf = f => createHash('sha256').update(readFileSync(f)).digest('hex');
     // Ett minimalt paket: en reporotsfil + två leveransfiler.
     writeFileSync(join(pkg, 'x.md'), '# x\n');
+    // F1-U01: varje zip:/-post måste ha en SPÅRAD källa i leverans/. Fixturen
+    // speglar därför den riktiga modellen: leveranslagret ligger i paketet och
+    // materialiseras till ZIP-roten.
+    mkdirSync(join(pkg, 'leverans/fas0'), { recursive: true });
+    writeFileSync(join(pkg, 'leverans/support.js'), '// support\n');
+    writeFileSync(join(pkg, 'leverans/fas0/DELIVERY'), 'butlery-delivery/1\n');
     writeFileSync(join(dir, 'support.js'), '// support\n');
     mkdirSync(join(dir, 'fas0'), { recursive: true });
     writeFileSync(join(dir, 'fas0/DELIVERY'), 'butlery-delivery/1\n');
@@ -587,6 +594,8 @@ group('M-22', () => {
       const rows = [
         ['x.md', shaOf(join(pkg, 'x.md'))],
         ['fas0/check-manifest.mjs', shaOf(join(pkg, 'fas0/check-manifest.mjs'))],
+        ['leverans/support.js', shaOf(join(pkg, 'leverans/support.js'))],
+        ['leverans/fas0/DELIVERY', shaOf(join(pkg, 'leverans/fas0/DELIVERY'))],
         ['tools/manifest-contract.mjs', shaOf(join(pkg, 'tools/manifest-contract.mjs'))],
         ['tools/report-logic.mjs', shaOf(join(pkg, 'tools/report-logic.mjs'))]
       ];
@@ -652,21 +661,34 @@ group('M-22', () => {
       }
     }
 
-    // SYMLÄNKAR. Får aldrig hoppas över tyst: om Windows nekar
-    // symlänksskapande redovisas det uttryckligen och provet räknas som
-    // OKÖRT — inte som godkänt. Samma prov körs i CI, där rättigheten finns.
+    // F1-U08 · DJUPT NEDGRÄVDA FILER. En odeklarerad fil under
+    // traverseringsgränsen gav tidigare exit 0 och oförändrad set-likhet i BÅDA
+    // ytorna: gränsen räknades men fällde inte.
+    const deepCases = [];
+    for (const [where, base] of [['repo', pkg], ['zip', dir]]) {
+      const rel = Array.from({ length: 14 }, (_, i) => 'd' + i).join('/') + '/djupt.bin';
+      mkdirSync(join(base, rel.split('/').slice(0, -1).join('/')), { recursive: true });
+      writeFileSync(join(base, rel), '# djupt nedgravd\n');
+      const r = run('delivery');
+      deepCases.push([where + ':14 nivåer', procCode(r, 'M-22 djup ' + where),
+        procCode(r) !== 0 && /ligger djupare än|traverseringen avbröts/.test(r.out)]);
+      rmSync(join(base, 'd0'), { recursive: true, force: true });
+    }
+    const deepOk = deepCases.every(([, , ok]) => ok);
+
+    // SYMLÄNKAR. F1-U04: ett prov som inte kunde köras räknas som ICKE
+    // GODKÄNT. Den gamla raden `every(c => c[2] || c[3])` lät `EJ KÖRT` bidra
+    // till 38/38, vilket stred mot den redovisade policyn. Domslutet ligger nu
+    // i tools/testkit.mjs och delas med M-35, som simulerar EPERM.
     const symlinkCases = [];
     const trySymlink = (label, target, linkPath, diag) => {
-      try { symlinkSync(target, linkPath); }
-      catch (e) { symlinkCases.push([label, 'EJ KÖRT (' + e.code + ')', false, true]); return; }
-      const r = run('delivery');
-      symlinkCases.push([label, r.code, r.code !== 0 && diag.test(r.out), false]);
+      const c = runSymlinkCase({ label, target, link: linkPath, diag, mk: symlinkSync, run: () => run('delivery') });
+      symlinkCases.push(c);
       try { rmSync(linkPath, { force: true }); } catch {}
     };
     trySymlink('reporot/sneaky.bin → utanför', tmpdir(), join(pkg, 'sneaky.bin'), /symlänk i artefaktytan/);
     trySymlink('reporot/tools/link.mjs → x.md', join(pkg, 'x.md'), join(pkg, 'tools/link.mjs'), /symlänk i artefaktytan/);
-    const symlinkSkipped = symlinkCases.filter(c => c[3]).length;
-    const symlinkOk = symlinkCases.every(c => c[2] || c[3]);
+    const symlinkVerdict = judgeSymlinkCases(symlinkCases);
 
     const allUndeclaredFell = undeclaredCases.every(([, , ok]) => ok);
     const afterExtra = run('delivery');
@@ -679,16 +701,18 @@ group('M-22', () => {
     const autoEmpty = run('auto');
     const badMode = run('deliveri');
     t('M-22 · odeklarerad fil i BÅDA ytorna, byggkatalog, symlänkar, saknad leveransfil och fel läge (' +
-      (undeclaredCases.length + symlinkCases.length + 5) + ' fall' + (symlinkSkipped ? ', varav ' + symlinkSkipped + ' EJ KÖRDA lokalt' : '') + ')',
-      full.code === 0 && allUndeclaredFell && symlinkOk &&
-      afterExtra.code === 0 && oneMissing.code !== 0 && allMissing.code !== 0 && badMode.code === 2,
-      'komplett ' + full.code + ' · odeklarerade: ' + undeclaredCases.map(([f, c, ok]) => f + '=' + c + (ok ? '' : '(FEL — ingen eller fel diagnostik)')).join(', ') +
-      ' · symlänkar: ' + symlinkCases.map(([l, c, ok, skip]) => l + '=' + c + (skip ? ' [kräver CI]' : ok ? '' : '(FEL)')).join(', ') +
-      ' · återställd ' + afterExtra.code + ' · en saknad ' + oneMissing.code + ' · alla saknade ' + allMissing.code +
-      ' · auto utan markör ' + autoEmpty.code + ' (därför kräver leveranskontrollen --mode=delivery) · fel läge ' + badMode.code);
-    if (symlinkSkipped)
-      console.error('◐ M-22 · ' + symlinkSkipped + ' symlänksprov kunde inte köras lokalt (Windows kräver rättigheten "Skapa symboliska länkar"). ' +
-        'De är INTE godkända — de körs i CI, där rättigheten finns. Se GitHub Actions-jobbet fas1-gate.');
+      (undeclaredCases.length + symlinkCases.length + deepCases.length + 5) + ' fall)',
+      procPassed(full, 'M-22 basfall') && allUndeclaredFell && symlinkVerdict.ok && deepOk &&
+      procPassed(afterExtra, 'M-22 återställd') && procFailed(oneMissing, 'M-22 en saknad') &&
+      procFailed(allMissing, 'M-22 alla saknade') && procCode(badMode, 'M-22 fel läge') === 2,
+      'komplett ' + procCode(full) + ' · odeklarerade: ' + undeclaredCases.map(([f, c, ok]) => f + '=' + c + (ok ? '' : '(FEL — ingen eller fel diagnostik)')).join(', ') +
+      ' · djupt nedgrävda: ' + deepCases.map(([l, c, ok]) => l + '=' + c + (ok ? '' : '(FEL)')).join(', ') +
+      ' · symlänkar: ' + symlinkVerdict.detail + (symlinkVerdict.reason ? ' — ' + symlinkVerdict.reason : '') +
+      ' · återställd ' + procCode(afterExtra) + ' · en saknad ' + procCode(oneMissing) + ' · alla saknade ' + procCode(allMissing) +
+      ' · auto utan markör ' + procCode(autoEmpty) + ' (därför kräver leveranskontrollen --mode=delivery) · fel läge ' + procCode(badMode));
+    if (symlinkVerdict.notRun)
+      console.error('✖ M-22 · ' + symlinkVerdict.reason + '. Kör i CI (Linux) eller aktivera rättigheten ' +
+        '"Skapa symboliska länkar" på Windows. Provet är INTE godkänt.');
     rmSync(dir, { recursive: true, force: true });
 });
 
@@ -1035,41 +1059,113 @@ group('M-24', () => {
    finnas, är inget prov. M-24:s "gateIn().status !== 0" var alla tre samtidigt
    och stod grön i fem vändor. Här låses varje felklass fast i källan. */
 group('M-33', () => {
-    const mt = readFileSync('tools/metatest.mjs', 'utf8');
-    const st = readFileSync('tools/selftest.mjs', 'utf8');
+    const problems = [];
+    const check = (label, ok, detail) => { if (!ok) problems.push(label + (detail ? ' (' + detail + ')' : '')); };
+    // Domsluten nedan är EXAKT de funktioner selftest och M-22/M-24 använder.
+    // Provet kör dem med riktiga indata i stället för att leta efter fraser i
+    // källtexten — ett mönster kan stå i en kommentar, en funktion kan inte.
+    const BASE = ['✖ T-14  gammal rad', '◐ T-04  gammal varning'];
+
+    // 1 · MUTATION SOM INTE GENOMFÖRDES
+    check('1 oförändrad källa underkänns',
+      judgeMutation({ mutated: 'x', original: 'x', baseline: BASE, after: [...BASE, '✖ T-02 ny'], controlId: 'T-02' }).ok === false);
+    check('1 obyggbart prov underkänns',
+      judgeMutation({ mutated: null, original: 'x', baseline: BASE, after: BASE, controlId: 'T-02' }).ok === false);
+
+    // 2 · KONTROLL SOM REDAN VAR RÖD FÖRE MUTATIONEN
+    //     Diagnostiken finns efteråt, men den fanns redan i baslinjen.
+    const alreadyRed = judgeMutation({
+      mutated: 'y', original: 'x',
+      baseline: ['✖ T-14  gammal rad'], after: ['✖ T-14  gammal rad'], controlId: 'T-14' });
+    check('2 redan röd kontroll underkänns', alreadyRed.ok === false, alreadyRed.reason);
+
+    // 3 · FEL KONTROLL-ID · ny diagnostik finns, men ur en annan kontroll
+    const wrongId = judgeMutation({
+      mutated: 'y', original: 'x',
+      baseline: BASE, after: [...BASE, '✖ T-15  ny rad'], controlId: 'T-20' });
+    check('3 ny diagnostik ur fel kontroll underkänns', wrongId.ok === false, wrongId.reason);
+    check('3 diagnostiken namnger den kontroll som faktiskt fällde', /T-15/.test(wrongId.reason || ''));
+
+    // 4 · UTEBLIVEN NY DIAGNOSTIK
+    check('4 ingen ny rad underkänns',
+      judgeMutation({ mutated: 'y', original: 'x', baseline: BASE, after: BASE, controlId: 'T-02' }).ok === false);
+
+    // 4b · det positiva fallet måste fortfarande godkännas, annars mäter
+    //      domslutet ingenting.
+    const good = judgeMutation({ mutated: 'y', original: 'x', baseline: BASE, after: [...BASE, '✖ T-02  ny rad'], controlId: 'T-02' });
+    check('4b äkta mutation godkänns', good.ok === true, good.reason);
+
+    // 5 · PROCESSRESULTAT MED FEL FÄLTNAMN
+    //     Det här är felet i M-24: `{status: 1}` saknar `code`, och
+    //     `undefined !== 0` var alltid sant. Nu KASTAR läsningen.
+    let threw = null;
+    try { procCode({ status: 1, stdout: '' }, 'simulerat'); } catch (e) { threw = e.message; }
+    check('5 resultat utan "code" kastar', threw !== null, 'inget fel kastades');
+    check('5 felet namnger det saknade fältet', /saknar fältet "code"/.test(threw || ''), threw || '');
+    let threw2 = null;
+    try { procCode({ code: 'noll' }, 'simulerat'); } catch (e) { threw2 = e.message; }
+    check('5 icke-numerisk code kastar', threw2 !== null);
+    check('5 giltigt resultat läses', procCode({ code: 0, out: '' }) === 0);
+
+    // 6 · ÖVERHOPPAT SYMLÄNKSPROV får aldrig bidra till ett godkänt utfall.
+    const skipped = judgeSymlinkCases([
+      { label: 'a', created: true, fell: true },
+      { label: 'b', created: false, fell: false, error: 'EPERM' }
+    ]);
+    check('6 EJ KÖRT symlänksprov underkänns', skipped.ok === false, skipped.reason);
+    check('6 utfallet redovisar antalet ej körda', skipped.notRun === 1);
+    const bothRan = judgeSymlinkCases([
+      { label: 'a', created: true, fell: true },
+      { label: 'b', created: true, fell: true }
+    ]);
+    check('6 två körda och fällda godkänns', bothRan.ok === true, bothRan.reason);
+    check('6 körd men icke fällande underkänns',
+      judgeSymlinkCases([{ label: 'a', created: true, fell: false }]).ok === false);
+
+    t('M-33 · vakuösa prov underkänns — sex felklasser prövade som kod, inte som mönster (' +
+      (problems.length ? 'fel: ' + problems.length : '15 domslut') + ')',
+      problems.length === 0, problems.join(' · '));
+});
+
+/* M-35 · SIMULERAT EPERM: ett symlänksprov som inte kan skapas ska ge
+   icke-noll exitkod, inte tyst godkännande. Provet kör den VERKLIGA
+   kodvägen — runSymlinkCase() med en injicerad mk() som kastar — och kör
+   dessutom en riktig barnprocess som bevisar att exitkoden blir 1. */
+group('M-35', () => {
     const problems = [];
     const check = (label, ok, detail) => { if (!ok) problems.push(label + (detail ? ' (' + detail + ')' : '')); };
 
-    // 1 · runProc returnerar {code, timedOut, out}. Ingen jämförelse får läsa
-    //     `.status` ur ett sådant resultat — det är alltid undefined och gör
-    //     varje olikhetsvillkor sant.
-    const runProcShape = /code: timedOut \? 'TIMEOUT' : p\.status/.test(mt);
-    // KOD, inte kommentarer: beskrivningen av felet nedan innehåller själva
-    // mönstret, och en naiv sökning hade fällt sin egen dokumentation.
-    const code = mt.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').map(l => l.replace(/\/\/.*$/, '')).join('\n');
-    const statusCompare = [...code.matchAll(/\w+\(\)\.status\s*!==?\s*0/g)].map(m => m[0]);
-    check('1 runProc-formen oförändrad', runProcShape);
-    check('1 ingen jämförelse mot .status på ett runProc-resultat', statusCompare.length === 0, statusCompare.join(', '));
+    const eperm = () => { const e = new Error('operation not permitted'); e.code = 'EPERM'; throw e; };
+    const c = runSymlinkCase({
+      label: 'simulerad', target: 'x', link: 'y', diag: /symlänk/,
+      mk: eperm, run: () => { throw new Error('kontrollen ska aldrig köras när länken inte kunde skapas'); }
+    });
+    check('a fallet markeras som ej skapat', c.created === false);
+    check('a felkoden bevaras', c.error === 'EPERM', String(c.error));
+    check('a fallet räknas inte som fällt', c.fell === false);
+    const v = judgeSymlinkCases([c]);
+    check('b domslutet underkänner', v.ok === false, v.reason);
+    check('b redovisas som ej körd', v.notRun === 1 && /ICKE GODKÄNDA/.test(v.reason || ''));
 
-    // 2 · selftest kräver att mutationen FAKTISKT ändrade källan.
-    check('2 selftest kräver ändrad källa', /mutationen ändrade ingenting|ändrade inte källan|!==\s*read\(/.test(st));
+    // Verklig process: ett litet skript som använder samma domslut och
+    // avslutar med exitkoden. Bevisar att utfallet blir 1, inte 0.
+    const dir = mkdtempSync(join(tmpdir(), 'butlery-eperm-'));
+    mkdirSync(join(dir, 'tools'), { recursive: true });
+    copyFileSync('tools/testkit.mjs', join(dir, 'tools/testkit.mjs'));
+    writeFileSync(join(dir, 'run.mjs'),
+      "import { runSymlinkCase, judgeSymlinkCases } from './tools/testkit.mjs';\n" +
+      "const eperm = () => { const e = new Error('nope'); e.code = 'EPERM'; throw e; };\n" +
+      "const c = runSymlinkCase({ label: 's', target: 'a', link: 'b', diag: /x/, mk: eperm, run: () => ({ code: 0, out: '' }) });\n" +
+      "const v = judgeSymlinkCases([c]);\n" +
+      "console.log('SYMLINK-VERDICT ok=' + v.ok + ' notRun=' + v.notRun);\n" +
+      "process.exit(v.ok ? 0 : 1);\n");
+    const r = runProc(process.execPath, ['run.mjs'], { cwd: dir });
+    check('c barnprocessen ger exit 1', procCode(r, 'M-35 barnprocess') === 1, 'exit ' + procCode(r));
+    check('c utfallet redovisas maskinellt', /SYMLINK-VERDICT ok=false notRun=1/.test(r.out), r.out.trim());
+    rmSync(dir, { recursive: true, force: true });
 
-    // 3 · selftest kräver en NY diagnostik som inte fanns i baslinjen.
-    check('3 selftest mäter delta mot baslinjen', /baseSet/.test(st) && /nya/.test(st));
-
-    // 4 · den nya diagnostiken måste bära RÄTT kontroll-id.
-    check('4 selftest kräver rätt kontroll-id', /gav INGEN ny diagnostik/.test(st));
-
-    // 5 · ett prov som inte kan byggas får inte räknas som godkänt.
-    check('5 skipped ger exit 1', /skipped/.test(st) && /HOPPAS ÖVER/.test(st));
-
-    // 6 · M-22 får inte räkna ett fall som godkänt utan diagnostikrad.
-    check('6 M-22 kräver diagnostik per fall', /FEL — ingen eller fel diagnostik/.test(mt));
-
-    // 7 · M-24 måste bevisa att mutationen nådde grinden.
-    check('7 M-24 bevisar mutation + ny diagnostik', /I mutationen genomfördes/.test(mt) && /I ny diagnostik ur fingeravtrycket/.test(mt));
-
-    t('M-33 · vakuösa prov fälls — sju felklasser låsta i källan',
+    t('M-35 · ett symlänksprov som inte kunde skapas gör metatestet icke godkänt (' +
+      (problems.length ? 'fel: ' + problems.length : '8 domslut, varav ett i riktig process') + ')',
       problems.length === 0, problems.join(' · '));
 });
 
@@ -1099,6 +1195,170 @@ group('M-34', () => {
       if (missing.length) problems.push('tools/README.md nämner inte ' + missing.join(', ') + ' i Fas 1-grinden');
     }
     t('M-34 · dokumenterade grindtal stämmer med controls.mjs (Fas 0: ' + gateSize(0) + ' · Fas 1: ' + gateSize(1) + ')',
+      problems.length === 0, problems.join(' · '));
+});
+
+/* M-36 · LEVERANSEN GÅR ATT HÄRLEDA UR GIT
+   F1-U01: gen-manifest bar tidigare de nio zip:/-hasharna vidare oförändrade ur
+   det befintliga manifestet i repo-läge. Manifestet kunde alltså inte byggas
+   från noll, och en ändrad extern hash var osynlig för en repocheckout.
+   Två prov, båda med riktiga processer:
+     a · ändra EN gammal zip:/-hash → repo-kontrollen ska fälla den
+     b · radera manifestet helt → generatorn ska ge byteidentiskt resultat */
+group('M-36', () => {
+    const problems = [];
+    const check = (label, ok, detail) => { if (!ok) problems.push(label + (detail ? ' (' + detail + ')' : '')); };
+    const dir = mkdtempSync(join(tmpdir(), 'butlery-noll-'));
+    // Minimal klon av det som krävs: leveranslagret, enumeratorn, generatorn
+    // och kontrollen. Ingen extern katalog, inget ärvt manifest.
+    mkdirSync(join(dir, 'tools'), { recursive: true });
+    mkdirSync(join(dir, 'fas0'), { recursive: true });
+    mkdirSync(join(dir, 'leverans/fas0'), { recursive: true });
+    for (const f of ['tools/manifest-contract.mjs', 'tools/gen-manifest.mjs', 'tools/gen-check.mjs',
+      'tools/report-logic.mjs', 'fas0/check-manifest.mjs'])
+      copyFileSync(f, join(dir, f));
+    writeFileSync(join(dir, 'leverans/support.js'), '// yttre runtime\n');
+    writeFileSync(join(dir, 'leverans/fas0/DELIVERY'), 'butlery-delivery/1\n');
+    writeFileSync(join(dir, 'x.md'), '# x\n');
+
+    const gen = () => runProc(process.execPath, ['tools/gen-manifest.mjs'], { cwd: dir });
+    const chk = () => runProc(process.execPath, ['fas0/check-manifest.mjs', '--mode=repo'], { cwd: dir });
+    const MF = join(dir, 'fas0/andrade-filer.md');
+
+    const g1 = gen();
+    check('bygger manifestet från noll', procCode(g1, 'M-36 gen') === 0, g1.out.trim().slice(0, 160));
+    const first = readFileSync(MF, 'utf8');
+    check('zip:/-poster härledda ur leverans/', /zip:\/support\.js/.test(first) && /zip:\/fas0\/DELIVERY/.test(first));
+    const c1 = chk();
+    check('basfallet grönt', procCode(c1, 'M-36 chk') === 0, c1.out.split('\n').filter(l => /^✖/.test(l))[0] || '');
+
+    // a · EN gammal zip:/-hash muteras. Filen i leverans/ rörs inte.
+    const mutated = first.replace(/(\| `zip:\/support\.js` \| `)[0-9a-f]{64}(`)/, '$1' + 'b'.repeat(64) + '$2');
+    check('a mutationen genomfördes', mutated !== first);
+    writeFileSync(MF, mutated);
+    const c2 = chk();
+    check('a repo-kontrollen fäller en ändrad zip:/-hash', procCode(c2, 'M-36 muterad') !== 0, 'exit ' + procCode(c2));
+    const fresh = c2.out.split('\n').filter(l => /^✖/.test(l)).filter(l => !c1.out.includes(l));
+    check('a diagnostiken pekar på det spårade lagret',
+      fresh.some(l => /spårade leveranslagret|leverans\/support\.js/.test(l)), fresh.slice(0, 2).join(' | ') || '(inga nya rader)');
+
+    // b · manifestet raderas helt och byggs om — byteidentiskt.
+    rmSync(MF);
+    check('b manifestet är borta', !existsSync(MF));
+    const g2 = gen();
+    check('b generatorn bygger utan befintligt manifest', procCode(g2, 'M-36 gen2') === 0, g2.out.trim().slice(0, 160));
+    const second = readFileSync(MF, 'utf8');
+    check('b byteidentiskt mot första bygget', second === first,
+      second.length + ' mot ' + first.length + ' tecken');
+    check('b kontrollen grön igen', procCode(chk(), 'M-36 chk2') === 0);
+
+    rmSync(dir, { recursive: true, force: true });
+    t('M-36 · zip:/-posterna härleds ur Git · ändrad hash fälls · manifestet byggs från noll byteidentiskt (' +
+      (problems.length ? 'fel: ' + problems.length : '10 domslut') + ')',
+      problems.length === 0, problems.join(' · '));
+});
+
+/* M-37 · KEDJANS UTDATA DRÄNERAS NÄR STDOUT ÄR EN PIPE
+   F1-U10: verify.mjs avslutade med process.exit(), som river processen innan
+   node hunnit tömma en buffrad pipe. På Linux slutade råloggen mitt i selftest
+   och saknade både SELFTEST-SUMMARY och METATEST-SUMMARY — talen fanns i
+   rapporten, men loggen som skulle visa dem var stympad. Provet kör ett skript
+   som skriver mer än en pipebuffert och sätter exitkod på båda sätten. */
+group('M-37', () => {
+    const problems = [];
+    const check = (label, ok, detail) => { if (!ok) problems.push(label + (detail ? ' (' + detail + ')' : '')); };
+    const dir = mkdtempSync(join(tmpdir(), 'butlery-pipe-'));
+    // 200 000 tecken — långt över en pipebuffert på både Linux och Windows.
+    const body = "const big = 'x'.repeat(200000);\nprocess.stdout.write(big + '\\n');\nconsole.log('SLUT-SUMMARY ok=1');\n";
+
+    writeFileSync(join(dir, 'exit.mjs'), body + 'process.exit(1);\n');
+    writeFileSync(join(dir, 'exitcode.mjs'), body + 'process.exitCode = 1;\n');
+
+    // Kör med stdout som PIPE — det är precis vad `> logg` ger.
+    const runPiped = f => runProc(process.execPath, [f], { cwd: dir });
+    const a = runPiped('exitcode.mjs');
+    check('exitCode: rätt exitkod', procCode(a, 'M-37 exitCode') === 1, 'exit ' + procCode(a));
+    check('exitCode: hela utdata kom fram', a.out.length > 200000, a.out.length + ' tecken');
+    check('exitCode: slutsummeringen finns med', /SLUT-SUMMARY ok=1/.test(a.out));
+
+    // Referensfallet: process.exit() efter en stor skrivning. Här får utdata
+    // stympas — provet dokumenterar SKILLNADEN, inte att det ena alltid faller.
+    const b = runPiped('exit.mjs');
+    check('exit(): rätt exitkod', procCode(b, 'M-37 exit') === 1);
+
+    // KEDJAN SJÄLV får inte längre avsluta med process.exit().
+    const vsrc = readFileSync('tools/verify.mjs', 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '').split('\n').map(l => l.replace(/\/\/.*$/, '')).join('\n');
+    check('verify.mjs använder inte process.exit()', !/process\.exit\s*\(/.test(vsrc),
+      (vsrc.match(/process\.exit\s*\([^)]*\)/) || [''])[0]);
+    check('verify.mjs sätter process.exitCode', /process\.exitCode\s*=/.test(vsrc));
+
+    rmSync(dir, { recursive: true, force: true });
+    t('M-37 · pipad stdout dräneras och kedjan avslutar med exitCode (' +
+      (problems.length ? 'fel: ' + problems.length : '6 domslut') + ')',
+      problems.length === 0, problems.join(' · '));
+});
+
+/* M-38 · BYGGAREN AVVISAR, SANERAR INTE
+   F1-U09: build-delivery.mjs hoppade tyst över REJECT_DIRS. Med
+   `dist/undeclared.bin` i källan gav bygget exit 0 och utelämnade filen —
+   byggaren städade alltså undan precis det manifestkontrollen finns för att
+   hitta, och CI fick aldrig se det. Dessutom kunde --force radera vilken
+   katalog som helst, och --out kunde peka in i källan. */
+group('M-38', () => {
+    const problems = [];
+    const check = (label, ok, detail) => { if (!ok) problems.push(label + (detail ? ' (' + detail + ')' : '')); };
+    const root = mkdtempSync(join(tmpdir(), 'butlery-build-'));
+    const src = join(root, 'src');
+    mkdirSync(join(src, 'tools'), { recursive: true });
+    mkdirSync(join(src, 'leverans/fas0'), { recursive: true });
+    for (const f of ['tools/build-delivery.mjs', 'tools/manifest-contract.mjs']) copyFileSync(f, join(src, f));
+    writeFileSync(join(src, 'leverans/fas0/DELIVERY'), 'butlery-delivery/1\n');
+    writeFileSync(join(src, 'x.md'), '# x\n');
+    const build = (out, ...extra) =>
+      runProc(process.execPath, ['tools/build-delivery.mjs', '--out=' + out, ...extra], { cwd: src });
+
+    const outOk = join(root, 'ut');
+    const a = build(outOk);
+    check('a basfallet bygger', procCode(a, 'M-38 bas') === 0, a.out.trim().slice(0, 140));
+
+    // a2 · körartefakter följer inte med
+    writeFileSync(join(src, 'fas0-tmp.txt'), 'x\n');
+    mkdirSync(join(src, 'fas0'), { recursive: true });
+    writeFileSync(join(src, 'fas0/verify.log'), 'logg\n');
+    const a2 = build(outOk, '--force');
+    check('a2 bygger med körartefakt i källan', procCode(a2, 'M-38 runtime') === 0);
+    check('a2 körartefakten följde inte med', !existsSync(join(outOk, 'uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/verify.log')));
+    check('a2 redovisar att den hoppades över', /runtime_skipped=[1-9]/.test(a2.out), a2.out.trim().slice(-90));
+
+    // b · förbjuden katalog i källan → AVVISAS
+    mkdirSync(join(src, 'dist'), { recursive: true });
+    writeFileSync(join(src, 'dist/undeclared.bin'), 'x\n');
+    const b = build(outOk, '--force');
+    check('b dist/ avvisas', procCode(b, 'M-38 dist') !== 0, 'exit ' + procCode(b));
+    check('b diagnostiken namnger katalogen', /dist/.test(b.out) && /avvisar/.test(b.out), b.out.trim().slice(0, 140));
+    rmSync(join(src, 'dist'), { recursive: true, force: true });
+
+    // c · --out inne i källan → avvisas
+    const c = build('./inuti');
+    check('c --out inne i källan avvisas', procCode(c, 'M-38 out-inuti') === 2, 'exit ' + procCode(c));
+    check('c inget skrevs', !existsSync(join(src, 'inuti')));
+
+    // d · --force får inte radera en godtycklig katalog
+    const foreign = join(root, 'viktig');
+    mkdirSync(foreign, { recursive: true });
+    writeFileSync(join(foreign, 'viktig.txt'), 'rör inte\n');
+    const d = build(foreign, '--force');
+    check('d --force vägrar en främmande katalog', procCode(d, 'M-38 force') === 2, 'exit ' + procCode(d));
+    check('d filen finns kvar', existsSync(join(foreign, 'viktig.txt')));
+
+    // e · --force skriver över en TIDIGARE leverans
+    const e = build(outOk, '--force');
+    check('e --force bygger om en tidigare leverans', procCode(e, 'M-38 force-ok') === 0, e.out.trim().slice(0, 140));
+
+    rmSync(root, { recursive: true, force: true });
+    t('M-38 · byggaren avvisar förbjudna kataloger och --force är säkert (' +
+      (problems.length ? 'fel: ' + problems.length : '11 domslut') + ')',
       problems.length === 0, problems.join(' · '));
 });
 

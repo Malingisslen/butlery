@@ -102,12 +102,27 @@ jobs:
   # för en annan. Fas 0-grinden ingår i Fas 1-mängden: verktygsintegriteten får
   # inte regressera. Innehållsbaslinjen får fortfarande vara röd.
   fas1-gate:
-    name: Fas 1-grinden (en källa)
+    name: Fas 1-grinden (en källa · delivery-läge)
     runs-on: ubuntu-latest
+    # F1-U01: jobbet körde tidigare i repo-läge direkt i checkouten. De nio
+    # zip:/-posterna var då outside_absent, delivery-läget kördes ALDRIG i CI,
+    # och en grön grind bevisade aldrig leveransytan. Nu byggs hela leveransen
+    # ur Git och grinden körs i den — samma yta som den lokala verifieringen.
+    defaults:
+      run:
+        working-directory: leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: repo
       - uses: actions/setup-node@v4
         with: { node-version: '24' }
+
+      - name: Bygg den fullständiga leveransen ur Git
+        working-directory: repo
+        run: |
+          node tools/build-delivery.mjs --out="$GITHUB_WORKSPACE/leverans-bygge" --force
+          test -f "$GITHUB_WORKSPACE/leverans-bygge/fas0/DELIVERY" || { echo "leveransmarkoren saknas i bygget"; exit 1; }
 
       - name: CI-kontext för CHK-CI-01
         run: |
@@ -131,10 +146,10 @@ jobs:
             }, null, 2));
           "
 
-      - name: Verifieringskedjan (fas 1)
+      - name: Verifieringskedjan (fas 1 · delivery-läge)
         continue-on-error: true
         env:
-          BUTLERY_MANIFEST_MODE: repo
+          BUTLERY_MANIFEST_MODE: delivery
           BUTLERY_PHASE: '1'
           BUTLERY_COMMIT: ${{ github.sha }}
         run: bash fas0/run-verify.sh
@@ -163,27 +178,51 @@ jobs:
 
       # INGEN DRIFT: körningen får inte ha ändrat en incheckad genererad fil. Ändras
       # någon var den incheckade versionen stale (GEN-01, i Fas 1-grinden).
+      # Bygget har ingen .git, så driften mäts mot checkouten i stället för med
+      # git diff: varje generatormål jämförs byte för byte med repot.
       - name: Genererade filer oförändrade av körningen (GEN-01)
         if: always()
         run: |
-          git diff --exit-code -- assets/generated lib/theme icons.json \
-            || (echo "✖ generatorutdata drev — den incheckade versionen var stale" && exit 1)
+          rc=0
+          for f in assets/generated/tokens.css lib/theme/butlery_tokens.dart \
+                   lib/theme/app_colors.dart lib/theme/app_text_styles.dart icons.json \
+                   fas0/kallauktoritetsregister.md fas0/verify-report.schema.json; do
+            cmp -s "$f" "$GITHUB_WORKSPACE/repo/$f" || { echo "drift i $f mot den incheckade versionen"; rc=1; }
+          done
+          exit "$rc"
+
+      # F1-U11 · REPRODUCERBARHET, OBLIGATORISKT OCH FULLSTÄNDIGT.
+      # Listan härleds ur tools/gen-targets.mjs (11 skrivmål) i stallet for en
+      # YAML-lista som glidit isar: Fas 1-jobbet jamforde 7 och content-baseline
+      # 5. Steget ar fallande — det ar inte en baslinje som far vara rod.
+      - name: Reproducerbarhet — andra körningen ger byteidentisk utdata
+        run: |
+          node tools/repro-check.mjs --snapshot=/tmp/repro1.json
+          BUTLERY_MANIFEST_MODE=delivery BUTLERY_PHASE=1 bash fas0/run-verify.sh > /tmp/run2.log 2>&1 || true
+          tail -n 25 /tmp/run2.log
+          node tools/repro-check.mjs --compare=/tmp/repro1.json
 
       - name: Fas 1-grinden
         if: always()
         run: node tools/gate.mjs --phase=1
 
+      # F1-U12 · ABSOLUTA SÖKVÄGAR.
+      # defaults.run.working-directory galler bara `run`-steg. upload-artifact ar
+      # ingen `run`, sa dess relativa `fas0/...`-sokvagar utgick fran arbetsytans
+      # rot — dar de inte finns. Artefakten blev tom utan att nagot fallerade.
+      # if-no-files-found: error gor det till ett fel i stallet for en tyst nolla.
       - name: Rapport
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: fas1-gate-report
+          if-no-files-found: error
           path: |
-            fas0/verify.log
-            fas0/manifest.log
-            fas0/verify-report.json
-            fas0/kontrollstatus.md
-            fas0/ci-evidence.json
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/verify.log
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/manifest.log
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/verify-report.json
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/kontrollstatus.md
+            ${{ github.workspace }}/leverans-bygge/uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12/fas0/ci-evidence.json
 
   content-baseline:
     name: Innehållsbaslinje (får vara röd)
@@ -204,24 +243,15 @@ jobs:
       # ANDRA KÖRNINGEN: generatorutdata måste vara byteidentisk mellan körningar.
       # Fas 1 (andra vändan): gen-icons stämplade dagens datum och bytte nyckelnamn,
       # så varje körning gav ett nytt icons.json.
-      - name: Reproducerbarhet — andra körningen ger byteidentisk utdata
+      - name: Reproducerbarhet — andra körningen ger byteidentisk utdata (baslinje)
         continue-on-error: true
         env:
           BUTLERY_MANIFEST_MODE: repo
           BUTLERY_COMMIT: ${{ github.sha }}
         run: |
-          for f in assets/generated/tokens.css lib/theme/butlery_tokens.dart \
-                   lib/theme/app_colors.dart lib/theme/app_text_styles.dart icons.json; do
-            cp "$f" "/tmp/$(basename "$f").run1"
-          done
+          node tools/repro-check.mjs --snapshot=/tmp/repro-baseline.json
           bash fas0/run-verify.sh || true
-          rc=0
-          for f in assets/generated/tokens.css lib/theme/butlery_tokens.dart \
-                   lib/theme/app_colors.dart lib/theme/app_text_styles.dart icons.json; do
-            cmp -s "$f" "/tmp/$(basename "$f").run1" || { echo "✖ $f skiljer sig mellan körning 1 och 2"; rc=1; }
-          done
-          [ "$rc" -eq 0 ] && echo "✔ samtliga fem generatorutdata byteidentiska över två körningar"
-          exit "$rc"
+          node tools/repro-check.mjs --compare=/tmp/repro-baseline.json
       - name: Genererade filer är incheckade (GEN-01)
         continue-on-error: true
         run: |

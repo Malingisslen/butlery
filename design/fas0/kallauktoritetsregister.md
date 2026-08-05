@@ -1,6 +1,6 @@
 # Källauktoritetsregister
 
-**GENERERAD FIL — ändra `source-authority.json`, inte den här.** Renderad av `tools/gen-authority.mjs` ur `source-authority.json` 2.0 (2026-08-04). Valideras av T-20: exakt en aktiv auktoritet per domän, varje deklarerad fil finns, statusarna hör till ordboken, och `supersededBy` bildar ingen cykel.
+**GENERERAD FIL — ändra `source-authority.json`, inte den här.** Renderad av `tools/gen-authority.mjs` ur `source-authority.json` 2.0 (2026-08-05). Valideras av T-20: exakt en aktiv auktoritet per domän, varje deklarerad fil finns, statusarna hör till ordboken, och `supersededBy` bildar ingen cykel.
 
 **Precedens.** En rad per beslutsdomän. Auktoriteten följer styrdokumentets § 3 — **domänägarskap, ingen generell vinnarordning**. En konflikt mellan två domäner är ett valideringsfel som ska fälla bygget och visa båda källorna, aldrig ett tyst val.
 
@@ -33,7 +33,7 @@
 | `report-schema` | Verifieringsrapportens struktur | `fas0/verify-report.schema.json` | 2.0 | gällande (`active`) | underhålls | DS | genereras ur `REPORT_SCHEMA` av `tools/gen-schema.mjs` |
 | `control-register` | Kontrollregister | `tools/controls.mjs` | — | gällande (`active`) | underhålls | DS | kontrollernas id, namn, ägare, fas och grindtillhörighet. Renderas till både `verify-report.json` och `kontrollstatus.md` — skriv inga kontrollrader för hand |
 | `source-authority` | Källauktoritet | `source-authority.json` | 2.0 | gällande (`active`) | underhålls | DS | den här filen. `fas0/kallauktoritetsregister.md` genereras ur den; T-20 validerar den. Filens `version` och den här postens `version` är samma värde — avvikelse fälls av T-20 (F1-H01). |
-| `governance` | Styrning, fasmodell och grindar | `Butlery styrdokument modulart designsystem.dc.html` | 2.5 | gällande (`active`) | underhålls | DS | ligger i ZIP-roten, inte i reporoten (`zip:/`). Definierar faserna, grindarna, statusordboken och §§ 9A–9E |
+| `governance` | Styrning, fasmodell och grindar | `Butlery styrdokument modulart designsystem.dc.html` | 2.6 | gällande (`active`) | underhålls | DS | ligger i leveransroten (`zip:/`), men källan är versionshanterad i `leverans/` sedan F1-U01 — T-20 läser och jämför dess verkliga version. Definierar faserna, grindarna, statusordboken och §§ 9A–9E. **2.6**: § 18.4 skriven mot den tvådimensionella modellen (F1-U07). |
 | `document-runtime` | Dokumentruntime (dc-runtime) | `support.js` | — | gällande (`active`) | fryst | DEV | genererad körtidsfil för `.dc.html`-dokumenten — `// GENERATED from dc-runtime/src/*.ts`. Den bär ingen egen version. **Två byggen finns i leveransen** och de är avsiktligt olika, se `runtimeInstances`. Ingen av dem får skrivas över eller slås ihop utan att relationen omprövas (F1-H07). |
 
 ## Dokumentruntime

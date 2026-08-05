@@ -2,7 +2,7 @@
   "$schema": "source-authority.schema.json",
   "$note": "MASKINLÄSBART källauktoritetsregister. Styrdokumentet krävde det i Fas 1; till dess var registret handskrivet och drev: icons.json stod som 1.6 och \"ej regenererad\", de fyra genererade filerna som tokens 1.3/1.4 ur 1.9, och två skilda kontrollstatusar låg ihopslagna på samma rad. Den här filen är källan. fas0/kallauktoritetsregister.md GENERERAS ur den av tools/gen-authority.mjs och får inte redigeras för hand. Valideras av T-20. Version 2.0 (F1-H01–H07): tvådimensionell status (authorityState + changePolicy), stabila domainId/sourceId, obligatorisk domänmängd i tools/authority-contract.mjs, verklig versionsläsning via tools/version-read.mjs och mängdlikhet mot tools/gen-targets.mjs.",
   "version": "2.0",
-  "date": "2026-08-04",
+  "date": "2026-08-05",
   "controlStatusVocabulary": [
     {
       "status": "passed",
@@ -267,12 +267,12 @@
       "domain": "Styrning, fasmodell och grindar",
       "sourceId": "styrdokument",
       "file": "Butlery styrdokument modulart designsystem.dc.html",
-      "version": "2.5",
+      "version": "2.6",
       "authorityState": "active",
       "changePolicy": "maintained",
       "owner": "DS",
       "outsideRepoRoot": true,
-      "note": "ligger i ZIP-roten, inte i reporoten (`zip:/`). Definierar faserna, grindarna, statusordboken och §§ 9A–9E"
+      "note": "ligger i leveransroten (`zip:/`), men källan är versionshanterad i `leverans/` sedan F1-U01 — T-20 läser och jämför dess verkliga version. Definierar faserna, grindarna, statusordboken och §§ 9A–9E. **2.6**: § 18.4 skriven mot den tvådimensionella modellen (F1-U07)."
     },
     {
       "domainId": "document-runtime",
@@ -394,6 +394,22 @@
       "manifestStatus": "declared",
       "consumers": 4,
       "note": "laddas av de fyra dokumenten i leveransroten. **Senare bygge**: strikt superset av den inre — 70 rader mer, tillägget är `isDeckMountTag`, `renderDeckKids` och `walkDeckChildren`. Ingenting är borttaget."
+    }
+  ],
+  "packagedBinaries": [
+    {
+      "path": ".thumbnail",
+      "where": "reporoten",
+      "origin": "dokumentverktyget",
+      "generated": false,
+      "contract": "WebP-förhandsbild (RIFF/WEBP, 400×383) som dokumentverktyget skriver bredvid ett .dc.html-paket. Kedjan har ingen renderare och kan inte generera den. Den är därför ett SPÅRAT binärt indata: den ligger i Git, är manifestdeklarerad och hashad, bär ingen auktoritet och styr ingenting. Den får bytas ut när verktyget skriver en ny — men bara som en synlig commit, aldrig genom att ärvas ur en gammal ZIP (F1-U01)."
+    },
+    {
+      "path": "leverans/.thumbnail",
+      "where": "leveransroten",
+      "origin": "dokumentverktyget",
+      "generated": false,
+      "contract": "Samma kontrakt som ovan, 639×387. Materialiseras till zip:/.thumbnail av tools/build-delivery.mjs."
     }
   ],
   "sections": [

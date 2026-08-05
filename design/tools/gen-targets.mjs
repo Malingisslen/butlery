@@ -36,14 +36,21 @@ export const GENERATED_OUTPUTS = [
 // och därför inte har någon egen auktoritet. T-20 kräver mängdlikhet i båda
 // riktningarna mot den här listan. Tidigare fanns ingen definierad koppling
 // alls: en rad kunde tas bort ur generatedArtifacts utan att något fälldes.
-export const FULLY_GENERATED = [
-  'fas0/verify-report.schema.json',
-  'assets/generated/tokens.css',
-  'lib/theme/butlery_tokens.dart',
-  'lib/theme/app_colors.dart',
-  'lib/theme/app_text_styles.dart',
-  'fas0/kallauktoritetsregister.md'
-];
+// F1-U03: listan bar bara FILNAMN, och T-20 jämförde bara mängden filnamn. En
+// artefakt kunde därför behålla rätt filnamn men få namnet på en annan
+// existerande generator — `assets/generated/tokens.css` kunde stå som skriven
+// av `gen-flutter.mjs` — och ingenting fällde. Kopplingen är nu kanonisk:
+// output → generator, och T-20 kräver exakt likhet i BÅDA fälten.
+export const FULLY_GENERATED_BY = {
+  'fas0/verify-report.schema.json': 'tools/gen-schema.mjs',
+  'assets/generated/tokens.css': 'tools/gen-css.mjs',
+  'lib/theme/butlery_tokens.dart': 'tools/gen-flutter.mjs',
+  'lib/theme/app_colors.dart': 'tools/gen-app-theme.mjs',
+  'lib/theme/app_text_styles.dart': 'tools/gen-app-theme.mjs',
+  'fas0/kallauktoritetsregister.md': 'tools/gen-authority.mjs'
+};
+
+export const FULLY_GENERATED = Object.keys(FULLY_GENERATED_BY);
 
 // De övriga skrivmålen ANNOTERAS på plats — generatorn skriver in räknetal eller
 // `usages` i en fil som i övrigt är handskriven och bär egen auktoritet. De ska

@@ -13,6 +13,7 @@
     "generatedArtifacts",
     "superseded",
     "runtimeInstances",
+    "packagedBinaries",
     "sections",
     "runtimeArtifacts"
   ],
@@ -249,6 +250,42 @@
           "note": {
             "type": "string",
             "minLength": 20
+          }
+        }
+      }
+    },
+    "packagedBinaries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "where",
+          "origin",
+          "generated",
+          "contract"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 3
+          },
+          "where": {
+            "type": "string",
+            "minLength": 3
+          },
+          "origin": {
+            "type": "string",
+            "minLength": 3
+          },
+          "generated": {
+            "type": "boolean"
+          },
+          "contract": {
+            "type": "string",
+            "minLength": 80
           }
         }
       }

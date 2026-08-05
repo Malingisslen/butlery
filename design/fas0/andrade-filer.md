@@ -28,15 +28,15 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=234-->
+<!--manifest:files=247-->
 
 ## Reporoten
 
 | Fil | SHA-256 |
 |---|---|
-| `.github/workflows/verify.yml` | `18889417ae1fca6efa775b237641ad14aac9606d6f89c5c380255a49c4aae937` |
+| `.github/workflows/verify.yml` | `aed5f7badfecf66164a230cb15fdfc251bddcfc3465a5a12aff698b0210e6474` |
 | `.thumbnail` | `c46e64bfadb3139f1a1f25f416ffb3492b4f206bd7cca938c3efc82563e83017` |
-| `00-spec-index.md` | `281a2717b380a5defaea82c46b0b6947d542a726ff681c7b5b3526cd204e8057` |
+| `00-spec-index.md` | `8005d787ba21db171d67a1265d1512df832c750a7a7f063083c2c298e6322f5a` |
 | `Butlery Grafisk manual v6.dc.html` | `3879f2b3451f47de109db76b05f4fd18361f7c1318bebc625c1bdeca6fbd2964` |
 | `Butlery Komponentark v1.dc.html` | `78f27a546502c7d2a9cb99aa954d6cd8ba3b5d18f1694aac2d9db1496ff1ed47` |
 | `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `b473330181de718ddeb92c6bdcd287ad7e3a9545055806c9333d67205ab6b8cc` |
@@ -202,8 +202,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas0/LAS-MIG.md` | `5e99d40df92c4b5c68024570ce15d38bbd9037bb05978b7b71b61f28c18fde82` |
 | `fas0/baseline-report-SUPERSEDED.json` | `12e79a51948917b6481ae31192b53a751e86e42b64cd44b341a5c41518fcb3be` |
 | `fas0/blockerar-fas1.md` | `5a8189af818cb65b73009bde3638a9d12902b3043c56b6ea7e1ff742c4ca20e1` |
-| `fas0/check-manifest.mjs` | `dd49a98c4a2e91110ae77128f9a6338e097de8ba19a623301ef77932169b3e35` |
-| `fas0/kallauktoritetsregister.md` | `5089268cc09fd5ec6c3e4afc24fa82182b2a0f68dec4b42dbec93d81dd7aa189` |
+| `fas0/check-manifest.mjs` | `2ebcdd900af7d1baaf5aed1d3b7c2a98c5459d402798c49e5ba62ae745aab934` |
+| `fas0/kallauktoritetsregister.md` | `35dc52fa4b5d7fd5d8c09d09865761addb4d3cd1df4d00ca43861544e9bbe375` |
+| `fas0/leveransmodellen.md` | `e8f935f282f1a6ef5e96564dc783104e197752f5417c8819c1ae938092adebd2` |
 | `fas0/run-verify.sh` | `8cfdac6f33d8683f50ad4ca962a0f849917e4911e998c9177ae0587640cb36d7` |
 | `fas0/verify-delivery.sh` | `b793ff7225563b71520127c41614a8c1f2e03f7f72780cadc63911d0e4d1e5f7` |
 | `fas0/verify-report.schema.json` | `70687a2337ca6fe4a4419089983d8dfda52821b9af4799b4dabb03dfe9ac895d` |
@@ -214,6 +215,15 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
 | `legacy-api-contract.json` | `d80c3482657f2698a28d98f76fde20209373e7864d83017021a874fd7c004618` |
 | `legacy-api-contract.schema.json` | `0196feab113bc269adc411eb4c60e8869b293ce658d0908959cddd7b7ec670ce` |
+| `leverans/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
+| `leverans/Butlery Fas 0 leverans.dc.html` | `cd3f24aacd6a45c4ec21cddd66f5aeeffec8badc0482f71277c61a2f26a8d97b` |
+| `leverans/Butlery Fas 1 leverans.dc.html` | `bf0cb107e99d7b7d174ed32f6ade640ed2ecfcf48d05ea21e5fd911bed9cfb46` |
+| `leverans/Butlery granskning och implementeringsplan.dc.html` | `76ab6fe3c1a833d5c2345b9391464de2446da52d7483e488facd5b38a05060fb` |
+| `leverans/Butlery styrdokument modulart designsystem.dc.html` | `668514af38a383621c32f81b10dad4331b016fc2683b42237065198e5f0b10f0` |
+| `leverans/fas0/DELIVERY` | `d9b3ef4a66ffc0c8ad97ac7dc80d0ec25cf19763c3448e1815cde9d6d935edd9` |
+| `leverans/fas0/LAS-MIG.md` | `e40ced969555e5342132bf5fe27775e7c844dee2bdc2a5e667609737d26f2aff` |
+| `leverans/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` |
+| `leverans/uploads/Butlery-arbetsorder-modulart-designsystem.md` | `4606e0ba64e57025713d717ed2415a0fcb3d541a7f9b74f0ed570efd821bd52b` |
 | `lib/theme/app_colors.dart` | `88d091799771f4178ccaa1912deccbca3e06689e761807300059fa29ade5d8c8` |
 | `lib/theme/app_text_styles.dart` | `4313702975dff44154804260b427404ddfef250eefe6cd0dfd0b0f343a68be98` |
 | `lib/theme/butlery_tokens.dart` | `ef697346e89ad4e1a9c3023bf299e70196dc8074dc8cc97f3865685c652098c2` |
@@ -221,44 +231,47 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `8e7b7cd9faaa64ac6ebaadb92b748ff253b2883831d036d6144ec25a99ef96f9` |
-| `source-authority.json` | `674f7ff4631212db26cf6a78edf6c49a50134a5fc35d056156a0dd54c911eb63` |
-| `source-authority.schema.json` | `678a47c72544c43cb4bce181bbd1cad94c27afa2f83c3e7c608550df57c5941e` |
+| `source-authority.json` | `cc2367575d058cab7638ef373dd95b3308e916b4b2c8f9e91f438d795f120658` |
+| `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |
 | `testmatris.md` | `7da9f1a7038b53e553186a1fdeea041110ed36e5ccf885e716b8bf005c0dc5de` |
 | `tokens.json` | `444b332bda5241a5e6450d3ee6a5f7e3b76e9e8af4b06a4616ddec7478ae1f02` |
-| `tools/README.md` | `179716f8972379cbd869729c8768370ed2baab698c1eabd2ddb3b32a8c5c7fdd` |
+| `tools/README.md` | `759f70a35c33d3ce2824c37ecda40724b3f2e6fcc1ab7b4cf976059f5b872051` |
 | `tools/app-theme-map.json` | `7d2b2a1e90ed24b97715ec4decacc2b9ed4d5b5fb10dc52f398e922368cd2c7b` |
 | `tools/app-theme-map.schema.json` | `540c09035681771786f7884abb098468e3382682f1e5dde6e98b9e2a829fd387` |
-| `tools/authority-contract.mjs` | `5f12a7f64853b561cc649cffacf2c83b445a88b7f66119bb02d0e49e012557ee` |
+| `tools/authority-contract.mjs` | `b806511cb2b06fba63d2e6974c7233ca2b694e09a0eaa1ed76fcde073d3348fa` |
+| `tools/build-delivery.mjs` | `fcfc81f8a1776576fd85e5e2140b0f55483efa8ecef36d87a0aa89d16b7a5d9d` |
 | `tools/check-app-theme.mjs` | `3ec46efe91680b7050662962c1f117d5dc9a2653ffd1f9437a67a0a72217b745` |
 | `tools/controls.mjs` | `33637e081d8463b2776d044ced1a6e5e1f64e0f291133ae1e7a63105ca76590c` |
 | `tools/finalize.mjs` | `74fd11be650ad6a50a4c6817c06bac45dd1815c97faf524cd59c41f91ef0afd1` |
 | `tools/gate.mjs` | `02917e6f14ed023585a1496630ba68b1b9dea5109ab991f5d1a5a931195ba4f0` |
 | `tools/gen-app-theme.mjs` | `f07136386c267f52bda54a0e5b14523fa41facb615f276befc3b9c140f17bd01` |
-| `tools/gen-authority.mjs` | `be7166fe1341419957a009554506e8f8e789fa0ecea87983b30dfddd3b44233a` |
+| `tools/gen-authority.mjs` | `6af83d88709b2ea93d89c22b4d5a4ffceccd0980418a8b126f88b06d8954e32b` |
 | `tools/gen-check.mjs` | `f52d62056ee0b58cb2f718f64a57ce422fa73fd21079e9dc666d5307b51f31d4` |
 | `tools/gen-counts.mjs` | `d74c3921589f23e7ec5d3d5208565677b04daa7833ae3f6af65c7d522fa869cd` |
 | `tools/gen-css.mjs` | `723681243b90cc2703aefc9874d6421b248940a7c6884c316bc23b7daaf24d1b` |
 | `tools/gen-flutter.mjs` | `112c73ba2c1808d845c692d26145854a22bfb89f9e7a9b3098c64742a92fd984` |
 | `tools/gen-header.mjs` | `9c3b95d6d5e0a4f9e13d4943df07aca82c113eae55cf17e3b93800e59e97d508` |
 | `tools/gen-icons.mjs` | `25e45becf2b0c0dd538dae54f7f0b74d2cd6ddc9095d9bd2b2b95f8f44e291ea` |
-| `tools/gen-manifest.mjs` | `a6dcb2d72a54e24f3bdaf284e8aa21b6b0113d234ad8f8e4f2962e5b70adc7ee` |
+| `tools/gen-manifest.mjs` | `3572f9b1a2d63ee9ffdc605d7c40d903276a7605753ee21dc6d6170ee458b0dd` |
 | `tools/gen-report.mjs` | `8e32d2530c1bf94ebc032f626e58764f99b8ec8f965633cbcf4d9fab082d432e` |
 | `tools/gen-schema.mjs` | `1d276054d4fb6976fc8e1005626d23467c4c21bb5d48996016e883312cb74a84` |
-| `tools/gen-targets.mjs` | `ac227e794e3b41d842cb2195a1e9f708726a96b582ed00eda4e1a686cb9b7b53` |
+| `tools/gen-targets.mjs` | `e209b3d50c749d4da11c5bb27b45727329763a8579c7ec0dc9f11eb9cba04c2f` |
 | `tools/lint-controls.mjs` | `07350d4dd8b167c772f9ca145cd69b92ff0418632c2252d434b7d9ad59f6c244` |
-| `tools/lint-core.mjs` | `85131d1a65cf4333afb71df0a9fb2edc873b2869533db9f3eeca4e52be49a16b` |
-| `tools/manifest-contract.mjs` | `ac03ad3a6bc519af29130dd452ba4225019572342a579a2383299bb53a26d75b` |
-| `tools/metatest.mjs` | `d48ea24b028f407d2dffaac30a67143ce91cfa21e71eb63f77803253546b4d27` |
+| `tools/lint-core.mjs` | `05ca33f1af6e70c8a2dedf61ad77aa2fb7d9c0101bf6c71a5c3bc7e397672941` |
+| `tools/manifest-contract.mjs` | `5980918a090575a81f484cae0e6cecfa69e7addf7dd581faac03b331357f7e6c` |
+| `tools/metatest.mjs` | `6c90650a044e49939f5f98443f320be542dc3281f65ced771f252e81b18102f8` |
 | `tools/preflight.mjs` | `3fe3bfa0e6f92fcb71ca5d19aa2c8e5e9df307f80eb3c8fe4dee09f173d5f3af` |
 | `tools/report-logic.mjs` | `62b38358e6d8f77dd31a52ef6cde1061ec4a5d03b390204ec0ff51505b30258f` |
+| `tools/repro-check.mjs` | `7aefb37dd9ea18a37e20c0e52d0bf784b0e5515a40fbbb2058d9672c2e09a0ba` |
 | `tools/screen-files.mjs` | `d975c827273def112992f5ad6b1269817fffc6efc3e882a7d41d0d4269735e48` |
-| `tools/selftest.mjs` | `d311d394bcedaf2983130f4e5bf2e45671146a53c0cc98d9919f69569699b7fd` |
+| `tools/selftest.mjs` | `0718f2dfe08db8ea496d15659ae60ae465f0b53c92dccd5e9b53f688b546bc37` |
 | `tools/spec-lint.mjs` | `520964df0ad36015cb3afce41ec8f89bd54dd6bb9d345ce47c7cd3da8075503d` |
 | `tools/sync-icon-paths.mjs` | `7e8e9836aa79f545f95c381810df3a3fe68f607c652e36d6718d4e9f1f513de9` |
 | `tools/test-generated.mjs` | `174f65e84f5cc6bee55b75df2ceb29e2ec4957ad397865bd6af65cf472eb7002` |
-| `tools/verify.mjs` | `5a1558408e885c0192d5b55fbedb0f63bbe337768c0b92225fd4057675af88d9` |
-| `tools/version-read.mjs` | `d060f4d7e4beee84e2aba9108cdb93e5894ee22cceb08a8b34ad79c1776021a3` |
+| `tools/testkit.mjs` | `59ad0de4f40fa319d23ab05a7548bf3328abc935680f136582b735f838a6c17a` |
+| `tools/verify.mjs` | `b6d905489a89d79ae9b84538383c786f79ad7fef865bb4a42656a6e02a1dea5b` |
+| `tools/version-read.mjs` | `931021ed5eca2e9a28987392b7146e2064b028e65a5038b7b1fc4b310262c474` |
 
 ## Leveransytan utanför reporoten
 
@@ -266,9 +279,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 |---|---|
 | `zip:/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
 | `zip:/Butlery Fas 0 leverans.dc.html` | `cd3f24aacd6a45c4ec21cddd66f5aeeffec8badc0482f71277c61a2f26a8d97b` |
-| `zip:/Butlery Fas 1 leverans.dc.html` | `8a03837c427589b5999b62148cd66ff37c13c6015eb4c5250ea61da8a62116d1` |
+| `zip:/Butlery Fas 1 leverans.dc.html` | `bf0cb107e99d7b7d174ed32f6ade640ed2ecfcf48d05ea21e5fd911bed9cfb46` |
 | `zip:/Butlery granskning och implementeringsplan.dc.html` | `76ab6fe3c1a833d5c2345b9391464de2446da52d7483e488facd5b38a05060fb` |
-| `zip:/Butlery styrdokument modulart designsystem.dc.html` | `ae88f611464fad0e13e44853c99672c584d72017414964c2422a04f4b2cab92b` |
+| `zip:/Butlery styrdokument modulart designsystem.dc.html` | `668514af38a383621c32f81b10dad4331b016fc2683b42237065198e5f0b10f0` |
 | `zip:/fas0/DELIVERY` | `d9b3ef4a66ffc0c8ad97ac7dc80d0ec25cf19763c3448e1815cde9d6d935edd9` |
 | `zip:/fas0/LAS-MIG.md` | `e40ced969555e5342132bf5fe27775e7c844dee2bdc2a5e667609737d26f2aff` |
 | `zip:/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` |

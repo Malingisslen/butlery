@@ -10,7 +10,7 @@ import { createHash } from 'node:crypto';
 // använder för fingeravtrycket. Fas 0.15: tre implementationer kunde glida isär.
 import { manifestEntries, resolveEntry } from '../tools/report-logic.mjs';
 // F1-H08/H09: EN enumerator och EN undantagslista för båda ytorna.
-import { enumerateSurface, RUNTIME_EXEMPT, MANIFEST_PATH } from '../tools/manifest-contract.mjs';
+import { enumerateSurface, RUNTIME_EXEMPT, MANIFEST_PATH, ZIP_LAYER } from '../tools/manifest-contract.mjs';
 import { join, relative, resolve, parse, sep } from 'node:path';
 
 // LÄGE: repo = fristående checkout (leveransytan får saknas) · delivery = uppackad
@@ -55,8 +55,25 @@ for (const e of manifestEntries(md)) {
   if (seen.has(path)) { console.error('✖ dubbel manifestpost: ' + path); dup++; continue; }
   seen.add(path);
   if (e.outside) {
+    // F1-U01 · Varje zip:/-post har numera en SPÅRAD källa i leverans/, och den
+    // kontrolleras ALLTID — även i repo-läge. Tidigare hoppades posten över så
+    // snart filen inte var materialiserad, så en ändrad extern hash var helt
+    // osynlig för en repocheckout.
+    const tracked = join(ZIP_LAYER, e.rel);
+    if (!existsSync(tracked)) {
+      console.error('✖ ' + path + ' saknar spårad källa ' + ZIP_LAYER + '/' + e.rel +
+        ' — varje zip:/-post ska kunna härledas ur Git');
+      bad++;
+    } else {
+      const src = createHash('sha256').update(readFileSync(tracked)).digest('hex');
+      if (src !== want) {
+        console.error('✖ hash mot det spårade leveranslagret: ' + path +
+          '\n    manifest:  ' + want + '\n    ' + ZIP_LAYER + '/' + e.rel + ': ' + src);
+        bad++;
+      }
+    }
     const p = resolveEntry(e);
-    if (!existsSync(p)) { console.log('· utanför reporoten, ej närvarande: ' + path); outside++; continue; }
+    if (!existsSync(p)) { console.log('· utanför reporoten, ej materialiserad (spårad källa kontrollerad): ' + path); outside++; continue; }
     outsideFound++;
     const got = createHash('sha256').update(readFileSync(p)).digest('hex');
     if (got === want) ok++; else { console.error('✖ hash (utanför repot): ' + path); bad++; }

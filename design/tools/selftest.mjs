@@ -432,6 +432,90 @@ const cases = [
     if (b) b.supersededBy = 'grundgranskning.md';
     return { [p]: JSON.stringify(a, null, 2) };
   }],
+  // ── F1-U02 · indexets auktoritetsrader ────────────────────────────────────
+  // Fyra fall som alla passerade tidigare, eftersom generatorn bara rörde de
+  // rader den råkade hitta och linten bara mätte version och status.
+  ['T-10 · obligatorisk auth:-rad struken ur versionstabellen (F1-U02)', 'T-10', () => {
+    const t = read(idx);
+    const i = t.split('\n').findIndex(l => l.includes('<!--auth:decisions:'));
+    if (i < 0) return null;
+    const lines = t.split('\n');
+    lines.splice(i, 1);
+    return { [idx]: lines.join('\n') };
+  }],
+  ['T-10 · filkolumnen ändrad, version och status orörda (F1-U02)', 'T-10', () => {
+    const t = read(idx);
+    const m = t.match(/^\|[^\n]*<!--auth:content-text:[^\n]*$/m);
+    if (!m) return null;
+    const cells = m[0].split('|');
+    if (!/`content-style-guide\.md`/.test(cells[3])) return null;
+    cells[3] = cells[3].replace('`content-style-guide.md`', '`produktregler.md`');
+    return { [idx]: t.replace(m[0], cells.join('|')) };
+  }],
+  ['T-10 · markören borttagen men raden kvar (F1-U02)', 'T-10', () => {
+    const t = read(idx);
+    const m = t.match(/<!--auth:brand-colors:[a-z,]+-->/);
+    if (!m) return null;
+    return { [idx]: t.replace(m[0], '') };
+  }],
+  ['T-10 · okänd auth:-markör tillagd (F1-U02)', 'T-10', () => {
+    const t = read(idx);
+    const m = t.match(/<!--auth:decisions:([a-z,]+)-->/);
+    if (!m) return null;
+    return { [idx]: t.replace(m[0], m[0] + '<!--auth:hittepa-domain:version,file,status-->') };
+  }],
+  ['T-10 · dubblerad auth:-markör (F1-U02)', 'T-10', () => {
+    const t = read(idx);
+    const m = t.match(/<!--auth:principles:([a-z,]+)-->/);
+    if (!m) return null;
+    return { [idx]: t.replace(m[0], m[0] + m[0]) };
+  }],
+  // ── F1-U06 · versionskontroll även utanför reporoten ──────────────────────
+  // T-20 hoppade tidigare över varje `outsideRepoRoot` med ett `continue`.
+  // Styrdokumentet — projektets normativa styrningskälla — hade alltså ingen
+  // versionskontroll alls.
+  ['T-20 · fel version i styrdokumentets auktoritetspost (F1-U06)', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    const row = a.authorities.find(x => x.domainId === 'governance');
+    if (!row) return null;
+    row.version = '2.5';                 // dokumentet säger 2.6
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
+  ['T-20 · titel och versionsplakett säger olika (F1-U06)', 'T-20', () => {
+    const f = 'leverans/Butlery styrdokument modulart designsystem.dc.html';
+    const t = read(f);
+    if (!t) return null;
+    const head = t.split('\n').slice(0, 60).join('\n');
+    if (!/styrdokument · 2\.6/.test(head)) return null;
+    // Lägg in en titel med en ANNAN version i headerregionen.
+    const lines = t.split('\n');
+    const at = lines.findIndex(l => l.includes('styrdokument · 2.6'));
+    if (at < 0 || at > 55) return null;
+    lines.splice(at, 0, '<title>Butlery · styrdokument · 2.4</title>');
+    return { [f]: lines.join('\n') };
+  }],
+  ['T-20 · två olika versionsvärden i headerregionen (F1-U06)', 'T-20', () => {
+    const f = 'leverans/Butlery styrdokument modulart designsystem.dc.html';
+    const t = read(f);
+    if (!t) return null;
+    const lines = t.split('\n');
+    const at = lines.findIndex(l => l.includes('styrdokument · 2.6'));
+    if (at < 0 || at > 55) return null;
+    lines.splice(at + 1, 0, '<div class="version">9.9</div>');
+    return { [f]: lines.join('\n') };
+  }],
+  // ── F1-U03 · generatorn hör ihop med filen ────────────────────────────────
+  ['T-20 · rätt filnamn men fel generator i generatedArtifacts (F1-U03)', 'T-20', () => {
+    const p = 'source-authority.json';
+    const a = JSON.parse(read(p) || 'null');
+    if (!a) return null;
+    const row = a.generatedArtifacts.find(g => g.file === 'assets/generated/tokens.css');
+    if (!row) return null;
+    row.generator = 'tools/gen-flutter.mjs';   // finns, men är fel generator för filen
+    return { [p]: JSON.stringify(a, null, 2) };
+  }],
   ['T-01 · tomt legacy-API-kontrakt', 'T-01', () => {
     const p = 'legacy-api-contract.json';
     const c = JSON.parse(read(p) || 'null');

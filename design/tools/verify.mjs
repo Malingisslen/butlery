@@ -28,8 +28,10 @@ const steps = [
   // F1-H08/H09: manifestet var handskrivet. Kedjan SKRIVER det inte — då hade
   // ett stale manifest tyst reparerats i stället för att rapporteras — men den
   // kräver att den incheckade listan är byteidentisk med vad enumeratorn ger.
-  // I repo-läge bärs zip:/-posterna vidare oförändrade; att de stämmer bevisas
-  // i delivery-läge av CHK-MF-01.
+  // F1-U01: zip:/-posterna bärs INTE längre vidare ur det befintliga
+  // manifestet. Varje sådan hash räknas ur `leverans/`, som ligger i Git, i
+  // BÅDA lägena — manifestet går därför att bygga från noll i vilken klon som
+  // helst, och en ändrad extern hash fälls även i repo-läge.
   ['Manifestet mot enumeratorn', 'tools/gen-manifest.mjs --check', 'gen-manifest-check'],
   ['Genererad kod', 'tools/test-generated.mjs', 'test-generated'],
   ['Kontrollgeometri', 'tools/lint-controls.mjs', 'lint-controls'],
@@ -380,7 +382,10 @@ mkdirSync(REPORT_DIR, { recursive: true });
   const back = JSON.parse(readFileSync(jsonTmp, 'utf8'));
   if (back.runId !== report.runId || !Array.isArray(back.controls)) {
     console.error('✖ den temporära rapporten är inte komplett — byter inte in den');
-    process.exit(3);
+    // F1-U10: process.exit() avbryter innan node hunnit dränera en pipad
+    // stdout. Se kommentaren vid kedjans slut.
+    process.exitCode = 3;
+    throw new Error('ofullständig rapport');
   }
   renameSync(jsonTmp, REPORT_DIR + '/verify-report.json');
   renameSync(mdTmp, REPORT_DIR + '/kontrollstatus.md');
@@ -395,4 +400,15 @@ if (report.metrics && report.metrics.controls) console.log('Räknade kontroller 
 if (failed) console.error('\n✖ Första fällande steg: ' + failed + ' — hela kedjan kördes ändå.');
 if (report.overallResult === 'passed') console.log('\n✔ Kedjan, manifestet, grinden och samtliga kontroller är gröna.');
 else console.error('\n✖ Totalt: failed — ' + report.overallBlockers.join(' · '));
-process.exit(report.finalExitCode);
+// F1-U10 · UTDATA MÅSTE DRÄNERAS.
+//
+// Kedjan avslutades med process.exit(), som river processen omedelbart. När
+// stdout är en PIPE (`bash fas0/run-verify.sh > logg 2>&1`) är skrivningen
+// asynkron och buffrad — på Linux slutade råloggen mitt i selftest och saknade
+// både SELFTEST-SUMMARY och METATEST-SUMMARY, trots att rapporten innehöll
+// samma tal. Bevisen fanns alltså, men loggen som skulle visa dem var stympad.
+//
+// process.exitCode sätter utfallet utan att avbryta: node avslutar av sig
+// självt när händelsekön är tom, och då är buffertarna tömda. Prövas av M-37,
+// som kör kedjan med pipad stdout och kräver att båda summeringarna finns med.
+process.exitCode = report.finalExitCode;

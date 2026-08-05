@@ -15,7 +15,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { resolve, join, relative, sep } from 'node:path';
 import { emit } from './gen-check.mjs';
-import { enumerateSurface, RUNTIME_EXEMPT, MANIFEST_PATH, REJECT_DIRS } from './manifest-contract.mjs';
+import { enumerateSurface, RUNTIME_EXEMPT, MANIFEST_PATH, REJECT_DIRS, ZIP_LAYER } from './manifest-contract.mjs';
 
 const sha = p => createHash('sha256').update(readFileSync(p)).digest('hex');
 const ZIP_ROOT = resolve('../../..');
@@ -37,18 +37,45 @@ if (isDelivery) {
   }
 }
 
-const rows = repo.files.map(f => [f, sha(f)]);
-// I repo-läge kan zip:/-posterna inte hashas — filerna finns inte. De bärs då
-// vidare OFÖRÄNDRADE ur det befintliga manifestet, så att `--check` går att
-// köra i båda lägena. Att de stämmer bevisas bara i delivery-läge; i repo-läge
-// bevisas bara att ingen har handredigerat resten av listan.
-let zip;
-if (isDelivery) {
-  zip = outside.files.map(f => ['zip:/' + f, sha(join(ZIP_ROOT, f))]);
-} else {
-  const prev = existsSync(MANIFEST_PATH) ? readFileSync(MANIFEST_PATH, 'utf8') : '';
-  zip = [...prev.matchAll(/^\|\s*`(zip:\/[^`]+)`\s*\|\s*`([0-9a-f]{64})`\s*\|$/gm)].map(m => [m[1], m[2]]);
+// F1-U01 · ZIP-ROTLAGRET ÄR KÄLLAN, ALLTID.
+//
+// Tidigare hashades zip:/-posterna bara i delivery-läge; i repo-läge bars de
+// vidare OFÖRÄNDRADE ur det befintliga manifestet. Manifestet kunde alltså inte
+// byggas från noll — det ärvde nio hashar ur sig självt, och en ändrad extern
+// fil kunde inte upptäckas av en repocheckout.
+//
+// Nu härleds varje zip:/-post ur `leverans/`, som ligger i Git. Manifestet går
+// att bygga från noll i vilken klon som helst, och `--check` mäter samma sak i
+// båda lägena.
+const zipLayer = enumerateSurface(ZIP_LAYER, { mode: 'repo' });
+if (zipLayer.problems.length) {
+  for (const p of zipLayer.problems) console.error('✖ ' + ZIP_LAYER + '/: ' + p);
+  process.exit(1);
 }
+if (!zipLayer.files.length) {
+  console.error('✖ ' + ZIP_LAYER + '/ är tomt — leveransens yttre lager saknas');
+  process.exit(1);
+}
+const zip = zipLayer.files.map(f => ['zip:/' + f, sha(join(ZIP_LAYER, f))]);
+
+// I delivery-läge ska den byggda ytan vara EXAKT den spårade. Skiljer den sig
+// har någon rört den utanför Git, eller så är bygget stale.
+if (isDelivery) {
+  const built = new Map(outside.files.map(f => [f, sha(join(ZIP_ROOT, f))]));
+  const declared = new Map(zipLayer.files.map(f => [f, sha(join(ZIP_LAYER, f))]));
+  const problems = [];
+  for (const [f, h] of declared) {
+    if (!built.has(f)) problems.push('leveransen saknar zip:/' + f + ', som finns i ' + ZIP_LAYER + '/');
+    else if (built.get(f) !== h) problems.push('zip:/' + f + ' i leveransen skiljer sig från ' + ZIP_LAYER + '/' + f);
+  }
+  for (const f of built.keys())
+    if (!declared.has(f)) problems.push('leveransen bär zip:/' + f + ', som inte finns i ' + ZIP_LAYER + '/');
+  if (problems.length) {
+    for (const p of problems) console.error('✖ ' + p);
+    process.exit(1);
+  }
+}
+const rows = repo.files.map(f => [f, sha(f)]);
 const total = rows.length + zip.length;
 
 const L = [];
