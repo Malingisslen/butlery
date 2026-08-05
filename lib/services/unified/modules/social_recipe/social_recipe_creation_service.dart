@@ -145,7 +145,10 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
         tagResult: TagResult.pending(),
         socialData: newRecipe.socialData?.copyWith(
           memberPermissions: permissions,
-          categoryIds: groupIds.isEmpty ? null : groupIds,
+          // Derived from the grants written, not from `groupIds` — a group whose
+          // roster is only the creator grants nobody, and the raw id would put a
+          // revoke row in the panel that matches no member.
+          categoryIds: RecipeShareGrants.mergeCategoryIds(null, grants),
           grants: grants.isEmpty ? null : grants,
         ),
       );

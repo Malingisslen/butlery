@@ -696,10 +696,19 @@ because access can come from ownership.
   `onRecipeUpdated`, which lands it in the same in-memory list
   `RecipeMemberManager._getRecipes()` reads.
 
-  What remains unproven is whether that copy is ever written BACK to
-  `users/{uid}/recipes` — which is what would make the loss destructive rather than
-  merely local. The failure direction is fail-safe either way: a missing `grants`
-  makes a revoke drop the label and cut nobody, never the reverse.
+  The write-back is NOT the open question — that half is proven:
+  `RecipeMemberManager` writes whatever `_getRecipes()` returns, whole, through
+  `saveRecipeForSocialModule`. The genuinely unproven step is one earlier: whether a
+  `realtime_recipes` document ever exists for a recipe that ALSO lives under
+  `users/{uid}/recipes` carrying `grants` — i.e. whether the grants-less copy can
+  shadow the grants-bearing one in that list. That is a data question, not a code
+  one, and it is what the ticket should be scoped to.
+
+  Failure direction: fail-safe for ACCESS — a missing `grants` makes a revoke drop
+  the label and cut nobody, never the reverse. But not fail-safe for honesty. Since
+  BUT-1797 the snackbar on that path reads "Gruppen {name} har inte längre åtkomst
+  till receptet", so it asserts a revocation that did not happen. Under BUT-1785 the
+  same no-op said the opposite, which is what made failing visibly honest.
 
   So: still deferred, but on "not proven to round-trip", NOT on "no live path".
   Scope the ticket to that sync path. Do not cite the original wording to close it.
@@ -735,7 +744,11 @@ because access can come from ownership.
   erasure there, and `grants` now holds a second copy in the same document, same audience, no new
   collection or reader. When that pre-existing gap is closed, the scrub must drop `grants` in the
   SAME `update()` — the repo's own "one fact, two spellings" rule.
-- The three copies of the (memberIds, groupIds) → tokens loop agree today. Collapsing them into
+- The three copies of the (memberIds, groupIds) → tokens loop agree today. The
+  `categoryIds` write beside them did NOT: two sites merged the raw argument while
+  `mergeCategoryIds` derives from the grants actually written, and they diverged on a
+  reachable input (a group whose roster is only the sharer). Fixed 2026-08-05 and
+  pinned; the tokens-loop collapse is still owed. Collapsing them into
   `RecipeShareGrants` is right and is its own change, not a fix round for a failed gate.
 - The group-share success snackbar reports "0 recept delade" — `clearSelections()` runs before the
   count is read. Pre-existing and unrelated to provenance.

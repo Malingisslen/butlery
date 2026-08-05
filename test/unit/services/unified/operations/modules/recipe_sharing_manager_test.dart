@@ -674,6 +674,34 @@ void main() {
         );
       });
 
+      test('a group containing only the sharer adds no revocable row', () async {
+        // Every friend category seeds its own owner, so a group you created and
+        // have not populated has exactly this roster. The sharer is skipped, so
+        // NOBODY is granted — and merging the raw group id into `categoryIds`
+        // would put a revoke row in the panel that matches no member's grant.
+        //
+        // Pressing that row: `removeGroup` clears its `categoryIds.contains`
+        // guard, `revokeGroup` takes the empty-grants branch, returns true having
+        // cut nobody, and the snackbar says "Gruppen X har inte längre åtkomst
+        // till receptet." That is BUT-1785 through a different door, and worse —
+        // the copy this ticket replaced at least admitted the members kept access.
+        await sharingManager.shareRecipe(
+          recipeId: 'collab_1',
+          memberIds: ['user_123'],
+          memberDisplayNames: const {'user_123': 'Me'},
+          categoryIds: ['group_solo'],
+        );
+
+        final saved = savedRecipes.single.socialData!;
+        expect(
+          saved.categoryIds ?? const <String>[],
+          isNot(contains('group_solo')),
+          reason:
+              'no grant was written for anyone, so there is nothing to revoke',
+        );
+        expect(saved.grants?.containsKey('user_123'), isNot(isTrue));
+      });
+
       test('a re-share never overwrites an existing permission', () async {
         // `user_789` is a VIEWER in the fixture, and the re-share default is
         // editor — so this fixture discriminates in the direction that matters.

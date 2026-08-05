@@ -513,6 +513,9 @@ class RecipeSharingManager {
     final groupIds = categoryIds ?? const <String>[];
 
     final currentUserId = _getCurrentUserId();
+    // What each member is actually granted here — the input `mergeCategoryIds`
+    // derives the panel rows from.
+    final grantsWritten = <String, List<String>>{};
     for (final memberId in memberIds) {
       // The sharer is not a sharee. A group's roster always contains its own
       // owner (friend_categories_operations seeds it that way), and the caller
@@ -532,16 +535,22 @@ class RecipeSharingManager {
         continue;
       }
       for (final groupId in groupIds) {
-        grants = RecipeShareGrants.add(
-          grants,
-          memberId,
-          RecipeSocialData.groupGrant(groupId),
-        );
+        final token = RecipeSocialData.groupGrant(groupId);
+        grants = RecipeShareGrants.add(grants, memberId, token);
+        grantsWritten.putIfAbsent(memberId, () => <String>[]).add(token);
       }
     }
 
-    final existingCategoryIds = recipe.socialData?.categoryIds ?? const [];
-    final mergedCategoryIds = <String>{...existingCategoryIds, ...groupIds};
+    // Derived from the grants actually written, NOT from the raw `categoryIds`
+    // argument. A group whose roster is only the sharer writes no grant for
+    // anyone, and merging the raw id would put a revoke row in the panel that
+    // matches nobody: `removeGroup` would clear its guard, cut no one, and the
+    // snackbar would still say the group had lost access. `mergeCategoryIds`
+    // makes that row structurally impossible.
+    final mergedCategoryIds = RecipeShareGrants.mergeCategoryIds(
+      recipe.socialData?.categoryIds,
+      grantsWritten,
+    );
 
     final updated = Recipe(
       core: recipe.core,
@@ -549,9 +558,7 @@ class RecipeSharingManager {
       socialData: (recipe.socialData ?? const RecipeSocialData()).copyWith(
         memberPermissions: permissions,
         grants: grants,
-        categoryIds: mergedCategoryIds.isEmpty
-            ? null
-            : mergedCategoryIds.toList(),
+        categoryIds: mergedCategoryIds,
       ),
       realtimeData: recipe.realtimeData,
       offlineData: recipe.offlineData,
