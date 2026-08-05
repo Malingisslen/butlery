@@ -2,8 +2,8 @@
 //
 // Intent-Test Sprint Batch 14 — CollaborationManagementModule
 //
-// Behaviours covered (one test per behaviour, focused on owner-gate + race +
-// dispose-safety bug terrain):
+// Behaviours covered (one test per behaviour, focused on owner-gate, fresh-read
+// race, and — since BUT-1797 — grant provenance):
 //   - enableCollaborativeEditing — happy path captures correct args
 //   - enableCollaborativeEditing — already-collaborative short-circuits without
 //     calling createCollaborativeRecipe (no duplicate-recipe bug)
@@ -12,8 +12,11 @@
 //   - enableCollaborativeEditing — recipe not found returns false
 //   - enableCollaborativeEditing — createCollaborativeRecipe returning null
 //     does NOT delete the personal recipe (atomicity-ish guard)
-//   - enableCollaborativeEditing — thrown collaborator does NOT delete the
-//     personal recipe (bug class: delete-before-validation)
+//   - BUT-1797 grant provenance: an added collaborator is recorded as `direct`,
+//     a removed one loses their whole entry, a permission update that
+//     INTRODUCES a member records a reason for them while leaving everyone
+//     else's untouched, and transferOwnership records one for the DEMOTED
+//     outgoing owner (whose access stops coming from ownership).
 //   - disableCollaborativeEditing — non-owner rejected
 //   - disableCollaborativeEditing — createPersonalRecipe failure preserves
 //     the collaborative recipe (no orphaned delete)
@@ -44,6 +47,11 @@
 //   - getCollaborationStatus — surfaces userRole, member count, hasRealtimeService
 //   - validateCollaborationSettings — 20-member ceiling
 //   - isWithinCollaborationLimits — additionalMembers respects 20 ceiling
+//
+// NOT covered here, stated so the list above is not read as exhaustive: no test
+// stages a throwing collaborator, so the delete-before-validation class is
+// unguarded in this file — `setCollaborativeState` has no throwing mode to
+// stage it with.
 
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
@@ -72,11 +80,28 @@ void main() {
     late Recipe personalRecipe;
     late Recipe collaborativeRecipe;
 
+    /// A collaborative recipe fixture whose `categoryIds` is DERIVED from the
+    /// group tokens in [grants], so the helper cannot stage a pair production
+    /// never writes.
+    ///
+    /// Every production writer sets both fields in one expression. A fixture
+    /// carrying `group:x` with no `categoryIds` looks harmless here — the token
+    /// is only an untouched control — but `RecipeMemberManager.removeGroup`
+    /// returns false BEFORE doing anything when `categoryIds` lacks the group,
+    /// so a revoke test built on that shape would pass while exercising nothing.
+    /// That trap has been sprung in this repo before.
     Recipe collabWith({
       String id = 'collab_1',
       required String ownerId,
       Map<String, ResourcePermission>? members,
+      Map<String, List<String>>? grants,
     }) {
+      final derivedCategoryIds = <String>{
+        for (final tokens in grants?.values ?? const <List<String>>[])
+          for (final token in tokens)
+            if (token.startsWith('group:') && token.length > 'group:'.length)
+              token.substring('group:'.length),
+      };
       return RecipeBuilder()
           .withId(id)
           .withTitle('Shared Soup')
@@ -92,6 +117,10 @@ void main() {
                     ownerId: ResourcePermission.owner,
                     'editor_user': ResourcePermission.editor,
                   },
+              grants: grants,
+              categoryIds: derivedCategoryIds.isEmpty
+                  ? null
+                  : derivedCategoryIds.toList(),
             ),
           )
           .build();
@@ -481,6 +510,60 @@ void main() {
         expect(result, isTrue);
         verifyNever(() => mockRecipeRepository.update(any()));
       });
+
+      /// BUT-1797. This module is one of the membership writers, and every one
+      /// has to record WHY access was granted or a later group revoke cuts
+      /// someone who was invited individually — the one outcome Malin's
+      /// 2026-08-03 decision forbids.
+      ///
+      /// Dropping the `grants:` argument reddens the FIRST assertion only: the
+      /// new member gets no reason at all. It cannot redden the second, because
+      /// `copyWith` PRESERVES a field it is not given — measured, not assumed.
+      /// The erasing failure was a different mutant in a different file: the
+      /// field-by-field rebuild in `recipe_member_manager.updateMemberPermission`
+      /// that enumerated seven of eight fields.
+      ///
+      /// The second assertion still earns its place — it guards a refactor back
+      /// to that enumerating shape, and a `RecipeShareGrants.add` that returned a
+      /// fresh single-entry map instead of a copy.
+      test('a collaborator added here is recorded as a DIRECT grant', () async {
+        final freshCollab = collabWith(
+          id: 'recipe_collab',
+          ownerId: 'user_owner',
+          members: {
+            'user_owner': ResourcePermission.owner,
+            'friend_of_group': ResourcePermission.editor,
+          },
+          grants: {
+            'friend_of_group': [RecipeSocialData.groupGrant('grp_fam')],
+          },
+        );
+        when(
+          () => mockRecipeRepository.read('recipe_collab'),
+        ).thenAnswer((_) async => freshCollab);
+        when(
+          () => mockRecipeRepository.update(any()),
+        ).thenAnswer((_) async => true);
+
+        final result = await module.addCollaborators('recipe_collab', [
+          'brand_new',
+        ]);
+
+        expect(result, isTrue);
+        final captured =
+            verify(
+                  () => mockRecipeRepository.update(captureAny()),
+                ).captured.single
+                as Recipe;
+        expect(captured.socialData!.grants!['brand_new'], [
+          RecipeSocialData.directGrant,
+        ]);
+        expect(
+          captured.socialData!.grants!['friend_of_group'],
+          [RecipeSocialData.groupGrant('grp_fam')],
+          reason: 'an add must not erase anyone else\'s provenance',
+        );
+      });
     });
 
     // ------------------------------------------------------------------
@@ -557,6 +640,56 @@ void main() {
           containsAll(['user_owner', 'editor_user']),
         );
       });
+
+      /// BUT-1797. An explicit removal overrides every reason at once, so the
+      /// whole entry goes. A stale group grant left behind would make a later
+      /// `removeGroup` count `goodbye` among the members it cut and send them a
+      /// second "you lost access" notification for access they no longer had.
+      /// `goodbye` deliberately holds TWO reasons, so dropping only the direct
+      /// one is not enough to pass.
+      test('an explicit removal drops every grant the member held', () async {
+        final fresh = collabWith(
+          id: 'recipe_collab',
+          ownerId: 'user_owner',
+          members: {
+            'user_owner': ResourcePermission.owner,
+            'editor_user': ResourcePermission.editor,
+            'goodbye': ResourcePermission.viewer,
+          },
+          grants: {
+            'goodbye': [
+              RecipeSocialData.groupGrant('grp_fam'),
+              RecipeSocialData.directGrant,
+            ],
+            'editor_user': [RecipeSocialData.directGrant],
+          },
+        );
+        when(
+          () => mockRecipeRepository.read('recipe_collab'),
+        ).thenAnswer((_) async => fresh);
+        when(
+          () => mockRecipeRepository.update(any()),
+        ).thenAnswer((_) async => true);
+
+        final result = await module.removeCollaborators('recipe_collab', [
+          'goodbye',
+        ]);
+
+        expect(result, isTrue);
+        final captured =
+            verify(
+                  () => mockRecipeRepository.update(captureAny()),
+                ).captured.single
+                as Recipe;
+        expect(captured.socialData!.grants!.containsKey('goodbye'), isFalse);
+        expect(
+          captured.socialData!.grants!['editor_user'],
+          [
+            RecipeSocialData.directGrant,
+          ],
+          reason: 'a removal touches nobody else\'s provenance',
+        );
+      });
     });
 
     // ------------------------------------------------------------------
@@ -624,6 +757,62 @@ void main() {
           expect(
             captured.socialData!.memberPermissions!['editor_user'],
             ResourcePermission.owner,
+          );
+        },
+      );
+
+      /// BUT-1797. This method is named "update", but it writes with `addAll`,
+      /// so a uid that is not yet a member is INTRODUCED by it — another way
+      /// into `memberPermissions`, despite the name. A member created here without a recorded
+      /// reason is cut the first time a group they were later swept into is
+      /// revoked, which is exactly what the decision forbids.
+      ///
+      /// The fixture names one existing member and one stranger, so both sides
+      /// of the `containsKey` skip are exercised at once: dropping the guard
+      /// stacks a spurious 'direct' onto editor_user's group reason, and
+      /// dropping the loop leaves the stranger with no reason at all.
+      test(
+        'a permission update that INTRODUCES a member records why',
+        () async {
+          final fresh = collabWith(
+            id: 'recipe_collab',
+            ownerId: 'user_owner',
+            members: {
+              'user_owner': ResourcePermission.owner,
+              'editor_user': ResourcePermission.editor,
+            },
+            grants: {
+              'editor_user': [RecipeSocialData.groupGrant('grp_fam')],
+            },
+          );
+          when(
+            () => mockRecipeRepository.read('recipe_collab'),
+          ).thenAnswer((_) async => fresh);
+          when(
+            () => mockRecipeRepository.update(any()),
+          ).thenAnswer((_) async => true);
+
+          final result = await module.updateMemberPermissions('recipe_collab', {
+            'editor_user': 'admin',
+            'stranger': 'edit',
+          });
+
+          expect(result, isTrue);
+          final captured =
+              verify(
+                    () => mockRecipeRepository.update(captureAny()),
+                  ).captured.single
+                  as Recipe;
+          expect(captured.socialData!.grants!['stranger'], [
+            RecipeSocialData.directGrant,
+          ]);
+          expect(
+            captured.socialData!.grants!['editor_user'],
+            [RecipeSocialData.groupGrant('grp_fam')],
+            reason:
+                'an existing member already has a reason — a permission change '
+                'is not a second one, and stacking it would survive the revoke '
+                'that was meant to undo it',
           );
         },
       );
@@ -732,6 +921,50 @@ void main() {
           );
         },
       );
+
+      /// BUT-1797, the writer this module gained last: a transfer is the one
+      /// place where access that came from OWNERSHIP — which needs no recorded
+      /// reason — is converted into an ordinary membership entry. Without a
+      /// grant written here, the person who created the recipe is the one
+      /// member holding a permission and no reason, so the first revoke of a
+      /// group they were later swept into cuts them out of their own recipe.
+      test('the demoted owner gets a reason for the access they keep', () async {
+        final fresh = collabWith(
+          id: 'recipe_collab',
+          ownerId: 'user_owner',
+          members: {
+            'user_owner': ResourcePermission.owner,
+            'editor_user': ResourcePermission.editor,
+          },
+          grants: {
+            'editor_user': [RecipeSocialData.groupGrant('grp_fam')],
+          },
+        );
+        when(
+          () => mockRecipeRepository.read('recipe_collab'),
+        ).thenAnswer((_) async => fresh);
+        when(
+          () => mockRecipeRepository.update(any()),
+        ).thenAnswer((_) async => true);
+
+        await module.transferOwnership('recipe_collab', 'editor_user');
+
+        final captured =
+            verify(
+                  () => mockRecipeRepository.update(captureAny()),
+                ).captured.single
+                as Recipe;
+        expect(captured.socialData!.grants!['user_owner'], [
+          RecipeSocialData.directGrant,
+        ]);
+        expect(
+          captured.socialData!.grants!['editor_user'],
+          [RecipeSocialData.groupGrant('grp_fam')],
+          reason:
+              'control: the incoming owner keeps the provenance they already '
+              'had — a transfer records one reason, it does not rewrite the map',
+        );
+      });
     });
 
     // ------------------------------------------------------------------

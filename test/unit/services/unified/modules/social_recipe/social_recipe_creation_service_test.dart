@@ -264,29 +264,51 @@ void main() {
         expect(uniqueMembers, contains('user-3'));
       });
 
-      test('should not add creator to initial members list', () async {
-        // Arrange
-        const title = 'Creator in Members Test';
-        final ingredients = ['Ingredient'];
-        final instructions = ['Instruction'];
-        final initialMembers = [currentUserId, 'user-2']; // Include creator
-
-        // Act
+      /// Replaces an earlier version of this test that asserted the creator
+      /// appeared exactly once among `memberPermissions.keys` — unfailable, a
+      /// Map cannot hold a duplicate key — and that the map had two entries,
+      /// which the demotion also satisfies. Measured 2026-08-04: with both
+      /// creator skips deleted the whole 50-test suite stayed green while the
+      /// owner came out `editor` and holding a revocable grant.
+      test('the creator keeps admin and is never granted a revocable '
+          'reason', () async {
+        // Every friend category contains its own owner, and the group-share
+        // caller passes the roster straight through — so this is the ORDINARY
+        // shape of the call, not an exotic one.
         final recipeId = await creationService.createCollaborativeRecipe(
-          title: title,
-          ingredients: ingredients,
-          instructions: instructions,
-          initialMembers: initialMembers,
+          title: 'Creator in Members Test',
+          ingredients: const ['Ingredient'],
+          instructions: const ['Instruction'],
+          initialMembers: [currentUserId, 'mom-uid'],
+          categoryIds: const ['grp-fam'],
         );
 
-        // Assert
         expect(recipeId, isNotNull);
-        // Should not duplicate creator
-        final memberPermissions =
-            lastSavedRecipe!.socialData?.memberPermissions;
-        final members = memberPermissions?.keys.toList() ?? [];
-        expect(members.where((m) => m == currentUserId).length, equals(1));
-        expect(memberPermissions?.length, equals(2)); // Creator + user-2
+        final social = lastSavedRecipe!.socialData!;
+        expect(
+          social.memberPermissions?[currentUserId],
+          ResourcePermission.admin,
+          reason:
+              'the member loop must not overwrite the admin entry seeded above '
+              'it — that demotes the owner of their own recipe',
+        );
+        expect(
+          social.memberPermissions?.length,
+          2,
+          reason: 'creator + mom-uid, the creator seeded exactly once',
+        );
+        expect(
+          social.grants?.containsKey(currentUserId),
+          isFalse,
+          reason:
+              'an owner is not a sharee; a group grant here would let a revoke '
+              'of that group strip the owner of their own recipe',
+        );
+        expect(
+          social.grants?['mom-uid'],
+          ['group:grp-fam'],
+          reason: 'positive control — the grants loop did run',
+        );
       });
     });
 
@@ -360,6 +382,79 @@ void main() {
           memberPermissions?['user-4'],
           equals(ResourcePermission.editor),
         ); // Default
+      });
+    });
+
+    /// BUT-1797. This is the branch the FIRST group-share path lands on:
+    /// `GroupRecipeSelectionViewModel` → `RecipeSharingManager` → here, whenever
+    /// the recipe being shared is still personal. Nothing else in the repo
+    /// passes `categoryIds` this far, so without these the whole group-share
+    /// leg of the feature ships on an untested code path — which is how the
+    /// parameter came to be silently dropped one layer up in the first place.
+    group('Group provenance (BUT-1797)', () {
+      test('records the group each member was reached through', () async {
+        final recipeId = await creationService.createCollaborativeRecipe(
+          title: 'Delad med familjen',
+          ingredients: const ['Ingredient'],
+          instructions: const ['Instruction'],
+          initialMembers: const ['mom-uid'],
+          categoryIds: const ['grp-fam'],
+        );
+
+        expect(recipeId, isNotNull);
+        final social = lastSavedRecipe!.socialData!;
+        expect(
+          social.grants?['mom-uid'],
+          ['group:grp-fam'],
+          reason:
+              'a share with no recorded reason can never be revoked as a '
+              'group — this is the entire feature',
+        );
+        expect(
+          social.categoryIds,
+          ['grp-fam'],
+          reason: 'the sharing panel renders its revoke rows from this',
+        );
+      });
+
+      test(
+        'records a direct grant when no group is behind the share',
+        () async {
+          await creationService.createCollaborativeRecipe(
+            title: 'Delad direkt',
+            ingredients: const ['Ingredient'],
+            instructions: const ['Instruction'],
+            initialMembers: const ['mom-uid'],
+          );
+
+          final social = lastSavedRecipe!.socialData!;
+          expect(social.grants?['mom-uid'], ['direct']);
+          expect(
+            social.categoryIds,
+            isNull,
+            reason:
+                'no group was picked, so there is no row to offer a revoke on',
+          );
+        },
+      );
+
+      test('a create with no members records no grants at all', () async {
+        // The deliberate absence of a compatibility path (Malin, 2026-08-03):
+        // absent provenance stays absent rather than being written as an empty
+        // map that a later reader could mistake for "checked, nobody".
+        await creationService.createCollaborativeRecipe(
+          title: 'Bara jag',
+          ingredients: const ['Ingredient'],
+          instructions: const ['Instruction'],
+        );
+
+        final social = lastSavedRecipe!.socialData!;
+        expect(social.grants, isNull);
+        expect(social.categoryIds, isNull);
+        expect(
+          social.memberPermissions?[currentUserId],
+          ResourcePermission.admin,
+        );
       });
     });
 

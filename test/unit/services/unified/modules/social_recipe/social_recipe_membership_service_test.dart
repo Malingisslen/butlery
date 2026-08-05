@@ -15,6 +15,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_membership_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 
 // Test infrastructure
 import '../../../../../test_support/base_unit_test.dart';
@@ -372,6 +373,221 @@ void main() {
         final recipe = testRecipesMap[recipeId];
         final memberPermissions = recipe?.socialData?.memberPermissions;
         expect(memberPermissions?[currentUserId], equals(newPermission));
+      });
+    });
+
+    /// BUT-1797. This is a membership path — a sibling to the two
+    /// group-share paths the ticket fixed, that the first pass missed. Access lives
+    /// in `memberPermissions`; `grants` records WHY each member has it, and a
+    /// group revoke cuts only the people whose sole recorded reason was that
+    /// group. A member added here without a grant would be cut by revoking a
+    /// group they were later swept into — the one outcome Malin's decision of
+    /// 2026-08-03 forbids — and a member removed here whose grant was left
+    /// behind would be counted and re-notified by a later revoke as if they
+    /// were still around.
+    group('Grant provenance (BUT-1797)', () {
+      /// Seeds a recipe the current user administers, with provenance already
+      /// on it. `RecipeFactory.buildCollaborative` predates `grants`, so the
+      /// field is layered on here rather than threaded through the factory.
+      /// This suite drives the SERVICE and then replays `RecipeShareGrants`
+      /// directly, and neither reads `categoryIds` — so unlike `collabWith` in
+      /// collaboration_management_module_test.dart, this helper deliberately
+      /// does not derive it from the grant tokens. If a test here ever routes
+      /// through `RecipeMemberManager.removeGroup`, it must: that method refuses
+      /// a groupId absent from `categoryIds` and the test would pass vacuously.
+      void seedWithGrants(
+        String recipeId,
+        Map<String, ResourcePermission> permissions,
+        Map<String, List<String>> grants,
+      ) {
+        final base = RecipeFactory.buildCollaborative(
+          id: recipeId,
+          title: 'Provenance Recipe',
+          permissions: permissions,
+        );
+        testRecipesMap[recipeId] = base.copyWith(
+          socialData: base.socialData?.copyWith(grants: grants),
+        );
+      }
+
+      test('an added member gets a reason of their own', () async {
+        // recipe-1 carries no grants at all — the shape this path produced
+        // before the fix. The member must come out holding 'direct', not
+        // nothing, or the next group share is the only reason on file for them.
+        final result = await membershipService.addMemberToRecipe(
+          'recipe-1',
+          'new-member',
+          ResourcePermission.editor,
+        );
+
+        expect(result, isTrue);
+        expect(testRecipesMap['recipe-1']!.socialData?.grants, {
+          'new-member': ['direct'],
+        });
+      });
+
+      test(
+        'adding someone reached through a group keeps that reason',
+        () async {
+          seedWithGrants(
+            'recipe-grants',
+            {
+              currentUserId: ResourcePermission.admin,
+              'mom-uid': ResourcePermission.viewer,
+              'dad-uid': ResourcePermission.viewer,
+            },
+            {
+              'mom-uid': ['group:grp-fam'],
+              'dad-uid': ['group:grp-fam'],
+            },
+          );
+
+          await membershipService.addMemberToRecipe(
+            'recipe-grants',
+            'mom-uid',
+            ResourcePermission.editor,
+          );
+
+          final grants = testRecipesMap['recipe-grants']!.socialData!.grants!;
+          expect(
+            grants['mom-uid'],
+            ['group:grp-fam', 'direct'],
+            reason:
+                'two separate decisions were made about mom-uid; revoking the '
+                'group may only undo one of them',
+          );
+          expect(
+            grants['dad-uid'],
+            ['group:grp-fam'],
+            reason: 'a member this call never mentions keeps their provenance',
+          );
+        },
+      );
+
+      test('an explicit removal takes every reason with it', () async {
+        seedWithGrants(
+          'recipe-grants',
+          {
+            currentUserId: ResourcePermission.admin,
+            'mom-uid': ResourcePermission.viewer,
+            'dad-uid': ResourcePermission.viewer,
+            'kid-uid': ResourcePermission.viewer,
+          },
+          {
+            // mom holds TWO reasons, so the exact-map assertion below means
+            // "every reason went", not just the group one.
+            'mom-uid': ['group:grp-fam', 'direct'],
+            'dad-uid': ['group:grp-fam'],
+            // kid is removed explicitly and had ONLY the group. That is what
+            // makes the revoke assertion able to fail: a stale mom entry would
+            // route her to retainedMemberIds (she still holds 'direct') and the
+            // assertion could never see it, but a stale KID entry lands in
+            // removedMemberIds and reddens.
+            'kid-uid': ['group:grp-fam'],
+          },
+        );
+
+        await membershipService.removeMemberFromRecipe(
+          'recipe-grants',
+          'mom-uid',
+        );
+        await membershipService.removeMemberFromRecipe(
+          'recipe-grants',
+          'kid-uid',
+        );
+
+        final social = testRecipesMap['recipe-grants']!.socialData!;
+        expect(
+          social.grants,
+          {
+            'dad-uid': ['group:grp-fam'],
+          },
+          reason:
+              'an explicit removal overrides every reason at once, and only '
+              'the removed member is touched',
+        );
+
+        // The symptom a stale entry produces, asserted rather than described: a
+        // left-behind entry for someone already removed is counted again by the
+        // next revoke and re-notifies them.
+        final revoke = RecipeShareGrants.revokeGroup(
+          grants: social.grants,
+          permissions: social.memberPermissions,
+          groupId: 'grp-fam',
+          ownerId: social.ownerId,
+        );
+        expect(revoke.removedMemberIds, ['dad-uid']);
+      });
+
+      test('changing a permission does not disarm a later revoke', () async {
+        // The twin of the defect the gate caught in RecipeMemberManager, where
+        // a field-by-field rebuild of RecipeSocialData dropped `grants` — one
+        // permission change then left the revoke with nothing to cut, and it
+        // reported success. This path rebuilds through copyWith; that is the
+        // property under test, not the permission write itself.
+        seedWithGrants(
+          'recipe-grants',
+          {
+            currentUserId: ResourcePermission.admin,
+            'mom-uid': ResourcePermission.viewer,
+          },
+          {
+            'mom-uid': ['group:grp-fam'],
+          },
+        );
+
+        await membershipService.updateMemberPermission(
+          'recipe-grants',
+          'mom-uid',
+          ResourcePermission.editor,
+        );
+
+        final social = testRecipesMap['recipe-grants']!.socialData!;
+        expect(
+          social.memberPermissions?['mom-uid'],
+          ResourcePermission.editor,
+          reason: 'positive control — the permission change did happen',
+        );
+        expect(social.grants, {
+          'mom-uid': ['group:grp-fam'],
+        });
+      });
+
+      test('a permission update that INTRODUCES a member records why', () async {
+        // The other side of the `containsKey` branch, and the one that was
+        // unpinned: this method is named "update" but has no is-already-a-member
+        // guard, so it CREATES members. One created with no recorded reason is
+        // later cut by revoking a group they were swept into — the outcome
+        // Malin's decision of 2026-08-03 forbids.
+        seedWithGrants(
+          'recipe-grants',
+          {
+            currentUserId: ResourcePermission.admin,
+            'mom-uid': ResourcePermission.viewer,
+          },
+          {
+            'mom-uid': ['group:grp-fam'],
+          },
+        );
+
+        await membershipService.updateMemberPermission(
+          'recipe-grants',
+          'stranger-uid',
+          ResourcePermission.editor,
+        );
+
+        final social = testRecipesMap['recipe-grants']!.socialData!;
+        expect(
+          social.memberPermissions?.containsKey('stranger-uid'),
+          isTrue,
+          reason: 'positive control — this "update" really does create members',
+        );
+        expect(social.grants!['stranger-uid'], [RecipeSocialData.directGrant]);
+        expect(
+          social.grants!['mom-uid'],
+          ['group:grp-fam'],
+          reason: 'introducing one member rewrites nobody else\'s provenance',
+        );
       });
     });
 

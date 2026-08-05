@@ -155,6 +155,63 @@ the vacuous "not scrubbed first" cascade assertion · the default menu title bra
 BUT-1809 (backfill), BUT-1810 (support runbook), BUT-1811 (Art. 15(4) record),
 BUT-1812 (re-share writes nobody), BUT-1813 (why reviews miss cross-file disagreements).
 
+## Unfiled finding — 2026-08-04, `flutter test` is red on a clean tree
+
+Four files under `test/test_support/` are named `*_test.dart` but are shared BASE CLASSES with
+no `main()`:
+
+- `base_integration_test.dart`, `base_test.dart`, `base_unit_test.dart`, `base_widget_test.dart`
+
+`flutter test` with no path argument discovers them by name, fails to load each one
+("Undefined name 'main'"), and reports 4 failures. Last touched 2026-06-23, so this is not new.
+
+**Why it has stayed invisible:** CI runs `flutter test test/unit` (sharded), never the whole
+tree, so the job is green. Only a human or agent running bare `flutter test` sees the red — and
+on a 20,000-test run the four failures scroll past in a wall of passes.
+
+**Why it is worth fixing anyway:** a suite that is *always* 4-red trains everyone to read "some
+tests failed" as normal, which is precisely how a real regression gets waved through. The repo's
+own lesson says chronic-red disarms safety gates silently.
+
+**Fix:** rename to `base_*_support.dart` (or move under `test/helpers/`) and update the imports.
+Mechanical; no behaviour change.
+
+Not filed: Linear is at its free-issue limit.
+
+Measured on this run: 20,072 passing, 108 skipped, 4 failing — the four above and nothing else.
+
+## Unfiled finding — 2026-08-04, an order-dependent test in photo import
+
+`test/unit/viewmodels/photo_import/photo_import_draft_test.dart` →
+*"clearPhoto (explicit user clear) discards draft and staged image"* failed once inside a
+combined `flutter test test/unit test/widget` run (~20k tests), and passed:
+
+- in isolation (9/9),
+- across its whole directory, `test/unit/viewmodels/` (3440/3440).
+
+**Not caused by the BUT-1797 change.** That change touches sharing, grants and l10n; its only
+edit to shared test infrastructure is an ADDITIVE `removeGroup` override on
+`FakeSocialRecipeOperations`, a class this test never constructs.
+
+**Reproduction pattern, four samples:** passes in isolation (9/9) and across
+`test/unit/viewmodels/` alone (3440/3440); fails in both large combined runs
+(`test/unit` + `test/widget`, and unified+models+repositories+viewmodels+widget).
+So it is load-dependent rather than order-dependent on a specific neighbour — which is what a
+timing race looks like, and what makes it invisible in CI's sharded lanes.
+
+**Likely root cause, stated as a hypothesis and not verified:** the test writes a real file to
+disk, calls `vm.clearPhoto()`, and asserts `File(staged).existsSync() == false` after a single
+`pumpEventQueue()`. If `clearPhoto` fires an unawaited async delete, one pump is a race that
+widens under load. The repo's own rule is to fix a flake at its root rather than rerun until
+green — the root here would be awaiting the deletion, or exposing a future the test can await.
+
+**Why it is being recorded rather than fixed here:** it belongs to another area, and a fix
+round for a failed review gate is the wrong place to start editing an unrelated suite. Note CI
+runs `flutter test test/unit` sharded and never combines `test/unit` with `test/widget`, so this
+ordering does not occur there — which is also why it has stayed invisible.
+
+Not filed: Linear is at its free-issue limit.
+
 ## Ship rules that still apply
 
 - Reviewers earn the gate by opening files with `Read`; editing a file un-proves it, so the

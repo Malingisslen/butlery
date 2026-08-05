@@ -199,9 +199,11 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
   /// `socialData.categoryIds` (BUT-1785 — sending a group id to the user-keyed
   /// `removeMember` failed every time).
   ///
-  /// The two branches do NOT do the same thing, and the copy says so. Only the
-  /// friend branch actually revokes access; the group branch removes a label.
-  /// See [RecipeMemberManager.removeGroup].
+  /// BUT-1797: both branches now genuinely revoke. The group branch cuts every
+  /// member whose only reason to be here was that group, and deliberately keeps
+  /// anyone who also holds a direct share — two decisions were made about that
+  /// person and only one is being undone (Malin, 2026-08-03). The copy says
+  /// exactly that; see [RecipeMemberManager.removeGroup].
   Future<void> _confirmRevokeMember(
     BuildContext context,
     String memberId,
@@ -212,18 +214,18 @@ class _RecipeDetailSharingStatusState extends State<RecipeDetailSharingStatus> {
       context: context,
       // The TITLE and the confirm button are what the user reads at the moment
       // of deciding; a transient snackbar afterwards does not undo a promise
-      // made twice on the dialog. "Ta bort delning" over a group action would
-      // promise exactly the revocation the body copy then denies.
+      // made there. The group title used to read "Ta bort gruppen" — byte
+      // identical to the button that DELETES a friend group — so it promised
+      // the wrong action entirely; it now names the access, which is what is
+      // actually being taken back.
       title: isGroup
           ? context.l10n.recipeSharingRemoveGroup
           : context.l10n.recipeSharingRevoke,
-      // BUT-1785: a GROUP row gets its own copy, because it does something
-      // different. Access is granted by `socialData.memberPermissions`, which a
-      // group share expanded into individual member entries; removing the group
-      // id from `socialData.categoryIds` drops the LABEL and revokes nothing.
-      // Asking "Sluta dela med X?" and then reporting "Delning med X avslutad"
-      // over that would be a privacy action that silently lies — worse than the
-      // error snackbar this replaced, because the user would stop looking.
+      // A GROUP row still gets its own copy, for a different reason than before
+      // (BUT-1785 -> BUT-1797): it no longer has to avoid promising a
+      // revocation, but it does have to be honest that someone you ALSO shared
+      // with individually keeps their access. Revoking a group undoes the group
+      // decision, not every decision you ever made about those people.
       message: isGroup
           ? context.l10n.recipeSharingRevokeGroupConfirm(displayName)
           : context.l10n.recipeSharingRevokeConfirm(displayName),

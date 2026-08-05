@@ -176,6 +176,13 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
           recipeId: recipe.id,
           memberIds: memberIds,
           memberDisplayNames: memberDisplayNames,
+          // BUT-1797: without the group id the share is indistinguishable from
+          // picking the same people by hand, so it can never be revoked as a
+          // group. This is the origin of that provenance — it was simply never
+          // passed. `memberIds` is resolved HERE and now, so the share reaches
+          // whoever is in the group at this moment; joining later grants nothing
+          // retroactively (Malin's decision, 2026-08-03).
+          categoryIds: [targetGroup.id],
         );
 
         if (success == null) {

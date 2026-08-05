@@ -13162,7 +13162,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeSharingRevoke => 'Revoke sharing';
 
   @override
-  String get recipeSharingRemoveGroup => 'Remove the group';
+  String get recipeSharingRemoveGroup => 'Remove the group\'s access';
 
   @override
   String recipeSharingRevokeConfirm(String name) {
@@ -13176,12 +13176,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String recipeSharingRevokeGroupConfirm(String name) {
-    return 'Remove the group $name from this share?';
+    return 'Revoke access to this recipe for the group $name? Anyone you also shared with individually, or through another group, keeps theirs.';
   }
 
   @override
   String recipeSharingRevokeGroupSuccess(String name) {
-    return 'Group $name removed. Its members still have access — revoke them one by one under Friends.';
+    return 'The group $name no longer has access to this recipe. Anyone you also shared with individually, or through another group, keeps theirs.';
   }
 
   @override

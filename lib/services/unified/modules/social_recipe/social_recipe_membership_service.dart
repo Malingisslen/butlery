@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/base/base_service.dart';
@@ -66,9 +67,20 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
       );
       updatedMemberPermissions[userId] = permission;
 
+      // BUT-1797: record WHY they have access, exactly as RecipeMemberManager
+      // does. This is one of the membership paths the first pass missed — a sibling to
+      // the two group-share paths that ticket fixed. Without the grant, someone
+      // added here who is later swept into a group share holds only that group's
+      // token, so revoking the group CUTS them: the one outcome Malin's decision
+      // of 2026-08-03 forbids.
       final updatedRecipe = recipe.copyWith(
         socialData: recipe.socialData?.copyWith(
           memberPermissions: updatedMemberPermissions,
+          grants: RecipeShareGrants.add(
+            recipe.socialData?.grants,
+            userId,
+            RecipeSocialData.directGrant,
+          ),
         ),
       );
 
@@ -104,9 +116,17 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
       );
       updatedMemberPermissions.remove(userId);
 
+      // BUT-1797: an explicit removal overrides every reason at once, so the
+      // member's whole grants entry goes with the permission. A stale entry left
+      // here would make a later group revoke count a ghost — reporting them as
+      // newly cut and re-notifying someone already gone.
       final updatedRecipe = recipe.copyWith(
         socialData: recipe.socialData?.copyWith(
           memberPermissions: updatedMemberPermissions,
+          grants: RecipeShareGrants.dropMember(
+            recipe.socialData?.grants,
+            userId,
+          ),
         ),
       );
 
@@ -146,11 +166,25 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
       final updatedMemberPermissions = Map<String, ResourcePermission>.from(
         recipe.socialData?.memberPermissions ?? {},
       );
+      // BUT-1797: this is named "update" but has no is-already-a-member guard,
+      // so it can INTRODUCE one. A member created here with no recorded reason
+      // would later be cut by revoking a group they were swept into — access
+      // granted by an individual act, withdrawn by a group one.
+      final introducesMember = !updatedMemberPermissions.containsKey(userId);
       updatedMemberPermissions[userId] = permission;
 
       final updatedRecipe = recipe.copyWith(
         socialData: recipe.socialData?.copyWith(
           memberPermissions: updatedMemberPermissions,
+          // An existing member keeps the provenance they had: changing someone's
+          // permission is not a reason to rewrite why they are here.
+          grants: introducesMember
+              ? RecipeShareGrants.add(
+                  recipe.socialData?.grants,
+                  userId,
+                  RecipeSocialData.directGrant,
+                )
+              : recipe.socialData?.grants,
         ),
       );
 

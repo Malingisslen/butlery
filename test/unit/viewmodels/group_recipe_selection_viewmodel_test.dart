@@ -478,6 +478,7 @@ void main() {
             recipeId: any(named: 'recipeId'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         ).thenAnswer((_) async => 'recipe-1');
 
@@ -494,6 +495,11 @@ void main() {
             recipeId: 'recipe-1',
             memberIds: testTargetGroup.friendUserIds,
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            // BUT-1797: the group id is what makes this share revocable as a
+            // group later. Without it the share is indistinguishable from
+            // picking the same people by hand, and "un-share this group" can
+            // never take the recipe back from anyone.
+            categoryIds: [testTargetGroup.id],
           ),
         ).called(1);
       });
@@ -510,6 +516,7 @@ void main() {
             recipeId: any(named: 'recipeId'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         ).thenAnswer((_) async => 'recipe-1');
 
@@ -524,6 +531,7 @@ void main() {
             recipeId: 'recipe-1',
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         ).called(1);
 
@@ -532,6 +540,7 @@ void main() {
             recipeId: 'recipe-2',
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         ).called(1);
       });
@@ -548,6 +557,7 @@ void main() {
             recipeId: any(named: 'recipeId'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         ).thenAnswer((invocation) async {
           capturedDisplayNames =
@@ -577,6 +587,7 @@ void main() {
             recipeId: any(named: 'recipeId'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         ).thenAnswer((_) async => 'recipe-1');
 
@@ -599,6 +610,7 @@ void main() {
             recipeId: any(named: 'recipeId'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         ).thenAnswer((_) async => 'recipe-1');
 
@@ -625,6 +637,7 @@ void main() {
             recipeId: any(named: 'recipeId'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         );
       });
@@ -641,6 +654,7 @@ void main() {
             recipeId: any(named: 'recipeId'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         ).thenAnswer((_) async {
           await Future.delayed(const Duration(milliseconds: 100));
@@ -662,6 +676,7 @@ void main() {
             recipeId: any(named: 'recipeId'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         ).called(1);
       });
@@ -677,6 +692,7 @@ void main() {
             recipeId: any(named: 'recipeId'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         ).thenThrow(Exception('Failed to share'));
 
@@ -701,6 +717,7 @@ void main() {
             recipeId: any(named: 'recipeId'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         ).thenAnswer((_) async => null);
 
@@ -723,6 +740,7 @@ void main() {
             recipeId: any(named: 'recipeId'),
             memberIds: any(named: 'memberIds'),
             memberDisplayNames: any(named: 'memberDisplayNames'),
+            categoryIds: any(named: 'categoryIds'),
           ),
         ).thenAnswer((_) async {
           await Future.delayed(const Duration(milliseconds: 50));

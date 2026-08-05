@@ -1174,6 +1174,15 @@ class RecipeSocialData {
   final List<String>? categoryIds;
   final String? descriptionCollaborative;
 
+  /// Why each member has access: uid -> ['direct', 'group:<categoryId>', ...].
+  ///
+  /// Purely descriptive. [memberPermissions] stays the sole source of truth for
+  /// access, and `firestore.rules` reads only that — so nothing here can widen
+  /// what anyone may see. Revoking a group has to answer "does this person still
+  /// have any reason to be here?", which is a question about a member, not about
+  /// a group; hence uid-keyed rather than a per-group member list.
+  final Map<String, List<String>>? grants;
+
   const RecipeSocialData({
     this.ownerId,
     this.ownerDisplayName,
@@ -1182,7 +1191,14 @@ class RecipeSocialData {
     this.allowMemberInvites = true,
     this.categoryIds,
     this.descriptionCollaborative,
+    this.grants,
   });
+
+  /// The grant token recorded for a share made to [categoryId].
+  static String groupGrant(String categoryId) => 'group:$categoryId';
+
+  /// The grant token recorded for an individually made share.
+  static const String directGrant = 'direct';
 
   Map<String, dynamic> toJson() => {
     'ownerId': ownerId,
@@ -1192,6 +1208,7 @@ class RecipeSocialData {
     'allowMemberInvites': allowMemberInvites,
     'categoryIds': categoryIds,
     'descriptionCollaborative': descriptionCollaborative,
+    'grants': grants,
   };
 
   factory RecipeSocialData.fromJson(Map<String, dynamic> json) =>
@@ -1231,6 +1248,19 @@ class RecipeSocialData {
           json,
           'descriptionCollaborative',
         ),
+        // Absent stays absent. A missing `grants` is NOT read as "everyone is
+        // direct" — that compatibility path would be dead code, since the only
+        // documents without the field are test data (Malin, 2026-08-03).
+        grants: json['grants'] != null
+            ? (json['grants'] as Map).map(
+                (k, v) => MapEntry(
+                  k as String,
+                  v is List
+                      ? List<String>.from(v.whereType<String>())
+                      : <String>[],
+                ),
+              )
+            : null,
       );
 
   RecipeSocialData copyWith({
@@ -1241,6 +1271,7 @@ class RecipeSocialData {
     bool? allowMemberInvites,
     Object? categoryIds = _sentinel,
     Object? descriptionCollaborative = _sentinel,
+    Object? grants = _sentinel,
   }) {
     return RecipeSocialData(
       ownerId: ownerId == _sentinel ? this.ownerId : ownerId as String?,
@@ -1258,6 +1289,9 @@ class RecipeSocialData {
       descriptionCollaborative: descriptionCollaborative == _sentinel
           ? this.descriptionCollaborative
           : descriptionCollaborative as String?,
+      grants: grants == _sentinel
+          ? this.grants
+          : grants as Map<String, List<String>>?,
     );
   }
 }

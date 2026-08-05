@@ -2,6 +2,7 @@
 
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
@@ -219,16 +220,26 @@ class CollaborationManagementModule {
       final currentPerms = Map<String, ResourcePermission>.from(
         freshRecipe.socialData?.memberPermissions ?? {},
       );
+      var grants = freshRecipe.socialData?.grants;
       for (final memberId in newMembers) {
         currentPerms[memberId] = ResourcePermission.editor;
+        // BUT-1797: record WHY, like every other membership writer. Without it a
+        // collaborator added here who is later swept into a group share holds
+        // only that group's token, so revoking the group CUTS them.
+        grants = RecipeShareGrants.add(
+          grants,
+          memberId,
+          RecipeSocialData.directGrant,
+        );
       }
 
       final updated = freshRecipe.copyWith(
         socialData:
             freshRecipe.socialData?.copyWith(
               memberPermissions: currentPerms,
+              grants: grants,
             ) ??
-            RecipeSocialData(memberPermissions: currentPerms),
+            RecipeSocialData(memberPermissions: currentPerms, grants: grants),
       );
       await repo.update(updated);
 
@@ -283,13 +294,18 @@ class CollaborationManagementModule {
       final currentPerms = Map<String, ResourcePermission>.from(
         freshRecipe.socialData?.memberPermissions ?? {},
       );
+      var grants = freshRecipe.socialData?.grants;
       for (final memberId in memberIds) {
         currentPerms.remove(memberId);
+        // An explicit removal drops every reason at once. A stale entry would
+        // make a later group revoke count a ghost and notify them again.
+        grants = RecipeShareGrants.dropMember(grants, memberId);
       }
 
       final updated = freshRecipe.copyWith(
         socialData: freshRecipe.socialData?.copyWith(
           memberPermissions: currentPerms,
+          grants: grants,
         ),
       );
       await repo.update(updated);
@@ -361,11 +377,24 @@ class CollaborationManagementModule {
       final currentPerms = Map<String, ResourcePermission>.from(
         freshRecipe.socialData?.memberPermissions ?? {},
       );
+      // BUT-1797: `addAll` takes any uid in the map, so this "update" can
+      // INTRODUCE members. One created without a recorded reason is later cut by
+      // revoking a group they were swept into — the outcome the decision forbids.
+      var permGrants = freshRecipe.socialData?.grants;
+      for (final memberId in permissionMap.keys) {
+        if (currentPerms.containsKey(memberId)) continue;
+        permGrants = RecipeShareGrants.add(
+          permGrants,
+          memberId,
+          RecipeSocialData.directGrant,
+        );
+      }
       currentPerms.addAll(permissionMap);
 
       final updated = freshRecipe.copyWith(
         socialData: freshRecipe.socialData?.copyWith(
           memberPermissions: currentPerms,
+          grants: permGrants,
         ),
       );
       await repo.update(updated);
@@ -422,8 +451,20 @@ class CollaborationManagementModule {
       final currentPerms = Map<String, ResourcePermission>.from(
         freshRecipe.socialData?.memberPermissions ?? {},
       );
+      var ownerGrants = freshRecipe.socialData?.grants;
       if (currentOwnerId != null) {
+        // BUT-1797: the outgoing owner's access came from OWNERSHIP, which needs
+        // no recorded reason. This line converts it into an ordinary membership
+        // entry — so it must record one, or the person who created the recipe is
+        // cut the first time a group they were later swept into is revoked.
+        // (The outgoing owner, not necessarily the creator — ownership may have
+        // moved before.)
         currentPerms[currentOwnerId] = ResourcePermission.editor;
+        ownerGrants = RecipeShareGrants.add(
+          ownerGrants,
+          currentOwnerId,
+          RecipeSocialData.directGrant,
+        );
       }
       currentPerms[newOwnerId] = ResourcePermission.owner;
 
@@ -432,6 +473,7 @@ class CollaborationManagementModule {
         socialData: freshRecipe.socialData?.copyWith(
           ownerId: newOwnerId,
           memberPermissions: currentPerms,
+          grants: ownerGrants,
         ),
       );
       await repo.update(updated);

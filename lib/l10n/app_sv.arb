@@ -8780,7 +8780,7 @@
   "recipeSharingStopAllConfirm": "Är du säker på att du vill sluta dela med alla?",
   "recipeSharingStopAllSuccess": "Delning avslutad med alla",
   "recipeSharingRevoke": "Ta bort delning",
-  "recipeSharingRemoveGroup": "Ta bort gruppen",
+  "recipeSharingRemoveGroup": "Ta bort gruppens åtkomst",
   "recipeSharingRevokeConfirm": "Sluta dela med {name}?",
   "@recipeSharingRevokeConfirm": {
     "placeholders": {
@@ -8797,17 +8797,18 @@
       }
     }
   },
-  "recipeSharingRevokeGroupConfirm": "Ta bort gruppen {name} från delningen?",
+  "recipeSharingRevokeGroupConfirm": "Ta bort åtkomsten till receptet för gruppen {name}? De du även delat med enskilt eller via en annan grupp har kvar sin åtkomst.",
   "@recipeSharingRevokeGroupConfirm": {
-    "description": "BUT-1785: a group revoke removes the group LABEL only. Every member keeps access until revoked individually, so the copy must not promise a revocation.",
+    "description": "BUT-1797: a group revoke now genuinely revokes. A member who ALSO holds a direct share keeps access (Malin, 2026-08-03), so the copy promises the group's access back, not every individual's.",
     "placeholders": {
       "name": {
         "type": "String"
       }
     }
   },
-  "recipeSharingRevokeGroupSuccess": "Gruppen {name} borttagen. Medlemmarna har fortfarande åtkomst — ta bort dem en och en under Vänner.",
+  "recipeSharingRevokeGroupSuccess": "Gruppen {name} har inte längre åtkomst till receptet. De du även delat med enskilt eller via en annan grupp har kvar sin åtkomst.",
   "@recipeSharingRevokeGroupSuccess": {
+    "description": "BUT-1797: a group revoke now genuinely revokes. A member who ALSO holds a direct share keeps access (Malin, 2026-08-03), so BOTH strings carry that carve-out - the confirm because the title and confirm button are what the user reads while deciding, and a snackbar afterwards cannot undo a promise made there. Avoid the {name}s genitive: group names are user-authored and Swedish takes no extra -s after s/x/z.",
     "placeholders": {
       "name": {
         "type": "String"

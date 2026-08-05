@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 
 /// Collaborative recipe membership management module
 class RecipeMemberManager {
@@ -57,15 +58,22 @@ class RecipeMemberManager {
         recipe.socialData?.memberPermissions ?? {},
       );
       currentPermissions[memberId] = permission;
-      final updatedSocialData = RecipeSocialData(
-        ownerId: recipe.socialData?.ownerId,
-        ownerDisplayName: recipe.socialData?.ownerDisplayName,
-        memberPermissions: currentPermissions,
-        allowGuestViewing: recipe.socialData?.allowGuestViewing ?? false,
-        allowMemberInvites: recipe.socialData?.allowMemberInvites ?? true,
-        categoryIds: recipe.socialData?.categoryIds,
-        descriptionCollaborative: recipe.socialData?.descriptionCollaborative,
-      );
+      // `RecipeSocialData` is rebuilt through `copyWith` throughout this file,
+      // never field by field: one of these enumerated seven of its eight fields
+      // and silently deleted `grants`, disarming the group revoke for the whole
+      // recipe. A rebuild that never enumerates cannot lose a field added later
+      // either. (The `Recipe(...)` construction below is a different object; it
+      // passes all five of its fields today, so it carries the same future-field
+      // hazard — it is simply not the one that bit us.)
+      final updatedSocialData = (recipe.socialData ?? const RecipeSocialData())
+          .copyWith(
+            memberPermissions: currentPermissions,
+            grants: RecipeShareGrants.add(
+              recipe.socialData?.grants,
+              memberId,
+              RecipeSocialData.directGrant,
+            ),
+          );
 
       final updatedRecipe = Recipe(
         core: recipe.core,
@@ -147,14 +155,17 @@ class RecipeMemberManager {
       );
       currentPermissions.remove(memberId);
 
-      final updatedSocialData = RecipeSocialData(
-        ownerId: recipe.socialData?.ownerId,
-        ownerDisplayName: recipe.socialData?.ownerDisplayName,
+      // An explicit "remove this person" overrides every grant at once, so the
+      // whole entry goes — not just the direct one. Leaving a stale group grant
+      // behind would make a later group-revoke look like it had already run.
+      final updatedGrants = RecipeShareGrants.dropMember(
+        recipe.socialData?.grants,
+        memberId,
+      );
+
+      final updatedSocialData = recipe.socialData!.copyWith(
         memberPermissions: currentPermissions,
-        allowGuestViewing: recipe.socialData?.allowGuestViewing ?? false,
-        allowMemberInvites: recipe.socialData?.allowMemberInvites ?? true,
-        categoryIds: recipe.socialData?.categoryIds,
-        descriptionCollaborative: recipe.socialData?.descriptionCollaborative,
+        grants: updatedGrants,
       );
 
       final updatedRecipe = Recipe(
@@ -192,31 +203,34 @@ class RecipeMemberManager {
     }
   }
 
-  /// Remove a shared GROUP's LABEL from a collaborative recipe.
+  /// Revoke a shared GROUP's access to a collaborative recipe.
   ///
-  /// **This does not revoke anything, and the UI copy says so.** Read that
-  /// sentence before changing this method or its callers.
+  /// BUT-1797: this now genuinely revokes. It could not before, and the reason
+  /// is worth keeping: access lives in `memberPermissions`, the group share
+  /// expanded a group into individual entries, and nothing recorded WHERE an
+  /// entry came from. Without that provenance "remove the group's members" would
+  /// have silently cut people who were invited individually, so the method only
+  /// dropped the display label and the UI copy said so.
   ///
-  /// BUT-1785: group sharees are recorded in `socialData.categoryIds`, not in
-  /// `memberPermissions`, so routing a group id through [removeMember] always
-  /// tripped its "not a member" guard and the button could never succeed. But
-  /// `categoryIds` is a DISPLAY/FILTER field: access is decided exclusively by
-  /// `memberPermissions` (firestore.rules:889-897,
-  /// `recipe_discovery_service.getSharedWithMe`/`getCollaborativeRecipes`, which
-  /// apply `categoryIds` only as a post-hoc filter AFTER the membership check).
-  /// The group-share path expands a group into individual member ids
-  /// (`GroupRecipeSelectionViewModel.shareSelectedRecipes` →
-  /// `shareRecipe(memberIds: group.friendUserIds)`), so every member already
-  /// holds their own `memberPermissions` entry and keeps full access here.
+  /// `socialData.grants` supplies the provenance. Each member's list says why
+  /// they are here — `'direct'`, `'group:<categoryId>'`, or several at once —
+  /// and revoking a group removes only that group's reason. A member is cut when
+  /// they have no reason left.
   ///
-  /// Full revocation is NOT implemented because it needs a decision this code
-  /// cannot make: nothing records whether a member was reached through the group
-  /// or shared with directly, so removing "the group's members" would silently
-  /// cut people who were invited individually. That provenance has to exist
-  /// before the behaviour can. Escalated to Malin; until then the panel reports
-  /// what actually happened (`recipeSharingRevokeGroupSuccess`) instead of
-  /// claiming a revocation — a privacy control that lies is worse than one that
-  /// visibly fails, because the user stops looking.
+  /// **Malin's decision, 2026-08-03:** someone who ALSO holds a direct share
+  /// keeps access. Two separate decisions were made about that person; only one
+  /// is being undone.
+  ///
+  /// `memberPermissions` remains the sole source of truth for access, and
+  /// `firestore.rules` still reads only that — `grants` never widens anything on
+  /// its own. `categoryIds` stays a display/filter field
+  /// (`recipe_discovery_service.getSharedWithMe`/`getCollaborativeRecipes` apply
+  /// it only AFTER the membership check).
+  ///
+  /// A recipe with no `grants` at all has no member holding a group grant, so
+  /// only the label drops. That is deliberate: the field is written from the
+  /// start and the only documents without it are test data, so a "treat missing
+  /// grants as all-direct" path would be dead code (Malin, 2026-08-03).
   Future<bool> removeGroup({
     required String recipeId,
     required String groupId,
@@ -254,15 +268,21 @@ class RecipeMemberManager {
           .where((id) => id != groupId)
           .toList();
 
-      final updatedSocialData = RecipeSocialData(
-        ownerId: recipe.socialData?.ownerId,
-        ownerDisplayName: recipe.socialData?.ownerDisplayName,
-        memberPermissions: recipe.socialData?.memberPermissions,
-        allowGuestViewing: recipe.socialData?.allowGuestViewing ?? false,
-        allowMemberInvites: recipe.socialData?.allowMemberInvites ?? true,
-        categoryIds: updatedCategoryIds,
-        descriptionCollaborative: recipe.socialData?.descriptionCollaborative,
+      final revocation = RecipeShareGrants.revokeGroup(
+        grants: recipe.socialData?.grants,
+        permissions: recipe.socialData?.memberPermissions,
+        groupId: groupId,
+        // The owner is never cut by a group revoke, whatever the grants say —
+        // the same invariant removeMember enforces explicitly.
+        ownerId: recipe.socialData?.ownerId ?? recipe.createdBy,
       );
+
+      final updatedSocialData = (recipe.socialData ?? const RecipeSocialData())
+          .copyWith(
+            memberPermissions: revocation.permissions,
+            categoryIds: updatedCategoryIds,
+            grants: revocation.grants,
+          );
 
       final updatedRecipe = Recipe(
         core: recipe.core,
@@ -278,7 +298,19 @@ class RecipeMemberManager {
         return false;
       }
 
-      AppLogger.success('Successfully removed group $groupId from recipe');
+      AppLogger.success(
+        'Revoked group $groupId from recipe: '
+        '${revocation.removedMemberIds.length} member(s) lost access, '
+        '${revocation.retainedMemberIds.length} kept it (another grant, or ownership)',
+      );
+
+      for (final removedId in revocation.removedMemberIds) {
+        await _sendMemberRemovedNotification(
+          recipeId: recipeId,
+          recipeTitle: recipe.title,
+          removedMemberId: removedId,
+        );
+      }
 
       _logMemberAction(
         recipeId: recipeId,
@@ -345,14 +377,14 @@ class RecipeMemberManager {
 
       currentPermissions[memberId] = newPermission;
 
-      final updatedSocialData = RecipeSocialData(
-        ownerId: recipe.socialData?.ownerId,
-        ownerDisplayName: recipe.socialData?.ownerDisplayName,
+      // `copyWith`, not a field-by-field rebuild. This enumerated seven of the
+      // eight fields and silently dropped `grants` — and because the document is
+      // written whole, that DELETES the provenance rather than leaving it alone.
+      // One permission change then disarmed `removeGroup` for the whole recipe:
+      // it took the no-grants branch, cut nobody, and still reported success.
+      // A rebuild cannot fail that way if it never enumerates.
+      final updatedSocialData = recipe.socialData!.copyWith(
         memberPermissions: currentPermissions,
-        allowGuestViewing: recipe.socialData?.allowGuestViewing ?? false,
-        allowMemberInvites: recipe.socialData?.allowMemberInvites ?? true,
-        categoryIds: recipe.socialData?.categoryIds,
-        descriptionCollaborative: recipe.socialData?.descriptionCollaborative,
       );
 
       final updatedRecipe = Recipe(

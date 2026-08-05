@@ -12850,3 +12850,1743 @@ discriminator is what :2457 exists for. Keep it as documentation; do not count i
 
 **Verdict: pass, 0 blocking.** Post-review md5s are the four listed above — unchanged from the start of
 the round; I edited nothing.
+
+## 2026-08-04 — BUT-1797 group-share provenance: test-adequacy review of three staged production files
+
+**Scope.** Commit-gate review of `lib/models/recipe_unified.dart` (f08fa7ef),
+`lib/viewmodels/group_recipe_selection_viewmodel.dart` (115d7e86),
+`lib/views/recipe_detail/recipe_detail_sharing_status.dart` (604a8fd9). All three opened with
+`Read` in full. Suites run together: **83/83 green** (48 model + 33 VM + 2 widget). Nothing edited
+in `lib/` or `test/`; the round produced findings only.
+
+**Verdict: pass, 0 blocking.**
+
+### The widget file is the thin one, and its two tests stop one tap short
+
+`test/widget/views/recipe_detail_sharing_status_test.dart` is the only thing under `test/` that
+renders `RecipeDetailSharingStatus` (grep confirms: two production call sites,
+`recipe_detail_view.dart:876` and `recipe_detail_tablet_content.dart:81`, one test file). Its two
+tests tap the revoke icon, assert the dialog copy, and stop. `UnifiedRecipeService` is not even
+registered in the harness, so the confirm path is unreachable by construction.
+
+What that leaves unpinned, in descending order:
+
+1. **The branch the copy labels.** `_confirmRevokeMember(isGroup: true)` dispatches
+   `social.removeGroup(recipeId:, groupId:)`; `isGroup: false` dispatches
+   `social.removeMember(recipeId:, userId:)`. Re-routing the group row into the user-keyed
+   `removeMember` — the exact BUT-1785 bug, which "failed every time" — changes no string and
+   leaves both tests green.
+2. **The decided asymmetry is spoken on a surface no test renders.** `app_sv.arb`:
+   `recipeSharingRevokeGroupConfirm` = "Ta bort {name}s åtkomst till receptet?" (generic);
+   `recipeSharingRevokeGroupSuccess` = "{name} har inte längre åtkomst. Den du även delat med
+   personligen behåller sin." Malin's 2026-08-03 decision is quoted ONLY in the snackbar. The
+   production comment at :221-225 says the group dialog "has to be honest that someone you ALSO
+   shared with individually keeps their access" — the dialog it points at does not say that, while
+   the same file's comment at :215-217 argues a transient snackbar cannot carry a promise made at
+   the moment of deciding. Flagged to Malin as a copy question, not filed as a test defect.
+3. **The third assertion does not discriminate.** `find.textContaining('åtkomst till receptet')`
+   is claimed by its own comment to "catch a revert of the code without the copy". It is a generic
+   revoke phrase; the clause only the post-BUT-1797 branch can say is "behåller sin".
+4. **Zero coverage on:** the owner gate (`recipe.createdBy != currentUserId` -> `SizedBox.shrink`,
+   i.e. a viewer must never see the roster + revoke buttons), the type gate (personal -> shrink),
+   the empty gate, the friend/group NAME resolution (both tests deliberately rely on the raw-id
+   fallback, so a permanently-broken `_friendsService` lookup is invisible), `_confirmStopAll` ->
+   `unshareRecipe`, the cancel path, `onSharingChanged` ever firing, and the `success == false`
+   arm (`removeGroup` early-returns false when `categoryIds` does not contain the group).
+
+**Cheapest close, one test:** register `MockUnifiedRecipeService` (its `.social` is a concrete
+`FakeSocialRecipeOperations` override), tap the group row, confirm, then
+`verify(removeGroup(recipeId:'recipe_1', groupId:'group_1')).called(1)` +
+`verifyNever(removeMember)` + `expect(find.textContaining('behåller sin'), findsOneWidget)`.
+That single test pins the branch, the callback and the decided clause.
+
+### `grants` round-trip: right shape, three named gaps
+
+The five model tests drive the real `toJson`/`fromJson` pair (not `copyWith`), and the
+`List<dynamic>` test is the one that matters — `toJson` hands `fromJson` the live
+`Map<String, List<String>>`, so the round-trip alone never exercises Firestore's actual shape.
+Whole-`Recipe` persistence routes through `RecipeSerialization.toFirestore`/`fromMap`, which call
+exactly these two, so the primary path is covered transitively. Gaps:
+
+- **`whereType<String>()` is a surviving mutant.** Every fixture's list is pure-String, so
+  replacing the filter with a bare `List<String>.from(v)` stays 48/48 green. Killer input:
+  `'grants': {'anna': ['direct', 7]}` (a `List<dynamic>`) -> `['direct']` with the filter,
+  `_TypeError` without.
+- **The container is unguarded.** `(json['grants'] as Map)` throws on `'grants': ['anna']`, and
+  `RecipeSocialData.fromJson` has no try/catch — a malformed field kills the whole Recipe parse,
+  not just the provenance. The test named "a malformed grants entry degrades to empty, not to a
+  throw" is true of ENTRIES only.
+- **`copyWith(grants: null)` — the explicit-clear arm of the sentinel — has no test.** Only the
+  "not provided" arm is pinned.
+- **A second deserializer drops the field entirely.**
+  `lib/models/realtime/recipe_serialization.dart:292 _deserializeSocialData` rebuilds
+  `RecipeSocialData` field-by-field and never reads `grants` (nor is it in that file's serializer).
+  It stamps `type: RecipeType.realtime` and is reached from `RealtimeRecipe`
+  (`realtime_recipe.dart:383`), so it is off the collaborative group-share path today — but it is
+  the twin-class shape from the lessons digest, and a recipe promoted to realtime loses its
+  provenance silently. Out of the staged diff; named, not filed.
+
+### ViewModel
+
+The concrete `verify(categoryIds: [testTargetGroup.id])` is live (mocktail wraps non-matcher args
+in `equals`, which compares lists deeply) and is the right pin for the root cause. The 14
+`any(named: 'categoryIds')` stubs are permissive, not vacuous — a `when` must match the real call.
+
+Uncovered: **the entire analytics block (:196-213) is dead in all 33 tests.** `_analyticsService`
+comes from the PRODUCTION `ServiceLocator.tryGet<AnalyticsService>()`, which returns null while the
+suite runs on `TestServiceLocator` ("skipping production ServiceLocator" in the run log). Proof
+without a probe: `MockAnalyticsService` has no concrete `logRecipeShared` (0 hits in
+`production_mocks.dart`), so had the field resolved, the unstubbed call would have thrown
+`MissingStubError` inside `shareSelectedRecipes`'s own `try`, and the happy-path test's
+`expect(error, null)` / `expect(result, true)` would be red. Consequences: `recipientCount ==
+group size`, the `logFirstShareIfMilestone` milestone call, and the comment's "fire-and-forget so
+it never gates the post-share UI return" are all unasserted. The constructor already takes
+`analyticsService`/`userService` — inject them and add two arms (params captured; logger throws ->
+still `true`).
+
+Also uncovered: **partial batch failure.** Sharing N recipes aborts on the first null, so recipes
+already shared in that batch never reach `_alreadySharedRecipeIds` and never clear from the
+selection, and the user is shown `errorSomeSharesFailed`. Input: two selected, second returns null
+-> assert the first call happened, `result == false`, and state the intended
+`isRecipeAlreadyShared` answer rather than leaving it undefined.
+
+**Naming nit (non-blocking):** the VM suite declares `class FakeSocialRecipeOperations extends Mock`
+locally (:17), shadowing the genuine `FakeSocialRecipeOperations extends Fake` in
+`production_mocks.dart:2233`. Both names in one file would be a compile error, and a reader who
+greps the name lands on the wrong contract. `MockSocialRecipeOperations` is the honest name.
+
+**No vacuous test found** among the eight new ones; the four weaknesses above are missing fixtures
+and a missing confirm-tap, not tautologies.
+
+**Post-review md5s (unchanged from the start of the round; nothing in `lib/` or `test/` was edited):**
+`recipe_unified.dart` f08fa7ef007730cdc91694d86bcf5759,
+`group_recipe_selection_viewmodel.dart` 115d7e8621265658bf3f0e9edecb7884,
+`recipe_detail_sharing_status.dart` 604a8fd9e9656c2145e22daa77d85b06,
+`recipe_share_grants.dart` dd7897c19c91be1f494993b85578ca0b,
+`recipe_detail_sharing_status_test.dart` d6449495c6147daf3f5bf511d0a6b0a7.
+
+## 2026-08-04 — BUT-1797 commit gate, round 2: the create chain and the reshare seam (`social_recipe_module.dart`, `social_recipe_operations.dart`, `unified_recipe_service.dart`)
+
+**Trigger:** commit-gate review of the three STAGED chain files, scoped to test adequacy. A
+sibling round earlier the same day covered the other fileset (`recipe_unified`,
+`group_recipe_selection_viewmodel`, `recipe_detail_sharing_status`, `recipe_share_grants`) —
+entry above. Explicitly out of scope by the accepted-deviations entry: `createCollaborativeRecipe`
+still dropping `descriptionCollaborative` / `allowGuestViewing` / `allowMemberInvites` /
+`imageUrls` / `mealType` / `rating` / `sourceUrl`.
+
+**Q1 — is the `updateRecipe` seam pinned?** Yes for the consumer that existed, no for the one this
+ticket added. `SocialOpsContext.updateRecipe` (`unified_recipe_service.dart:424`) is bound once to
+`saveRecipeForSocialModule` and reaches BOTH managers through the single
+`SocialRecipeOperations({required updateRecipe})` param (`:59` sharing, `:67` member), via
+`social_operations_initializer.dart:63/107/134` (`ctx.updateRecipe` at all three). The BUT-1785
+group in `unified_recipe_service_test.dart:479-573` builds the REAL service and drives
+`social.removeGroup`, with `service.updateRecipe(collaborative) == false` as its control —
+136/136 green on this tree, so flipping the binding back to the personal-only path reddens. That
+one test therefore also protects the sharing manager TODAY, but only because one binding feeds two
+consumers; nothing pins `:59` independently, and every suite below the service stubs the seam
+(`social_recipe_operations_test.dart:532` `updateRecipe: (_) async => true`).
+
+**The real hole is the new consumer's BEHAVIOUR.** `RecipeSharingManager._grantAccessOnReshare`
+(`:504-551`) is the BUT-1797 fix that adds re-sharees to `memberPermissions` (previously they were
+notified about a recipe they could not open). Its suite's staged diff adds
+`updateRecipe: (recipe) { savedRecipes.add(recipe); return true; }` in `setUp` — and
+`grep -n savedRecipes` returns exactly three lines: the declaration, the reset, and the `add`.
+**Never asserted.** The only test through that branch (`:579 'should re-share when recipe already
+collaborative'`) asserts `newId == 'collab_1'` and nothing else. So all of this is unpinned:
+`putIfAbsent` (an existing editor must not be demoted to viewer), the group-vs-direct grant token,
+the `mergedCategoryIds` union, and the `if (!granted) return null` arm.
+
+**Q2 — end-to-end `categoryIds`?** No test exists; the harness for one does, and I proved it.
+Per-hop today: VM → `ops.shareRecipe` pinned (`group_recipe_selection_viewmodel_test.dart:502`);
+sharing manager → `createCollaborativeRecipe` fn pinned (`recipe_sharing_manager_test.dart:214`,
+`call['categoryIds'] == ['category_1']`). Then nothing: `grep -rln categoryIds test/` misses
+`social_recipe_module_test.dart` (which has NO create test at all), `social_recipe_coordinator_test.dart`
+and `social_recipe_creation_service_test.dart`. So the three tail hops — including the two staged
+one-line passthroughs this ticket adds — are unreached, which is the same defect class the ticket
+fixed.
+
+**Probes (both throwaway, both deleted; the service suite was `cp -p` backed up and restored, git
+clean afterwards).** (1) `SocialRecipeCreationService` direct, printing `lastSaved`:
+group arm → `cat=[group-7] grants={friend-1: [group:group-7]} perms=[test-user-123, friend-1]`;
+direct arm → `cat=null grants={friend-1: [direct]}`. Two arms, different literals, and the owner
+uid is in `perms` but absent from `grants` — which pins the deviation doc's "an owner is not a
+sharee and is never revocable" claim for free. (2) A test temporarily inserted into
+`unified_recipe_service_test.dart`'s 'Collaborative Recipe Operations' group (its `setUp` already
+stubs `create`/`update`/`read`), calling the real `service.createCollaborativeRecipe(categoryIds:
+['group-7'])` and reading back `service.getRecipeById(id)` → `PROBE-E2E cat=[group-7]
+grants={user1: [group:group-7]}`. Five lines added to the existing 'should create collaborative
+recipe' test would pin the whole chain.
+
+**Tree state, which matters more than usual here.** A parallel session was live during the round
+(`_zz_probe*_test.dart` under `.../social_recipe/` and `.../operations/modules/`, mtimes 20:31-20:38
+against 20:40 wall clock — NOT mine; my own `Write` to that exact path was refused for "not read
+yet", which is how I found them). Do not delete those, and never `git add -A` here. Two test paths
+that belong to this change are NOT staged: `test/infrastructure/mocks/production_mocks.dart`
+(unstaged `FakeSocialRecipeOperations.removeGroup => _shouldSucceed`) and
+`test/widget/views/recipe_detail_sharing_status_test.dart` (`MM` — the worktree version registers
+`MockUnifiedRecipeService` and asserts the SUCCESS snackbar after confirming, i.e. it closes the
+previous round's "no confirm tap" finding; the INDEX version only opens the dialog and asserts copy,
+and needs no mock override, so the index is self-consistent but strictly weaker). Stage the two
+together or not at all — adding the widget test alone would redden it.
+
+**Suites run on this tree:** `unified_recipe_service_test.dart` 136/136; and
+`recipe_share_grants` + `recipe_member_manager` + `recipe_sharing_manager` +
+`social_recipe_sharing_service` + `social_recipe_creation_service` + `social_recipe_module`
+133/133.
+
+**Post-review md5s:** `social_recipe_module.dart` 28ddd2a6d566f0fa57f8060c6a231346,
+`social_recipe_operations.dart` ef71542bbfd86482b1891cba2306a5ec,
+`unified_recipe_service.dart` 738bd12628bdc31156df5b88d0c0f3c9,
+`recipe_sharing_manager.dart` a2c9cf35eb359579456fd7e7349ecae8.
+
+## 2026-08-04 — BUT-1797 commit gate, round 3: the two group-share paths' tail (`social_recipe_sharing_service.dart`, `social_recipe_creation_service.dart`, `social_recipe_coordinator.dart`)
+
+**Scope.** All three opened with `Read` in full, plus `recipe_share_grants.dart` (the algebra they
+both call) and `recipe_unified.dart:1160-1300` (the sentinel `copyWith`). Round 1 covered the
+model/VM/widget, round 2 the module/operations/service create chain; this closes the remaining
+three staged production files.
+
+**Verdict: fail, 1 blocking** — a comment stating a safety invariant the code does not hold on its
+primary caller path. Everything else in this entry was CLOSED by test-only edits in the round.
+
+### The blocking one: "the creator's own admin entry is deliberately ungranted" is false
+
+`social_recipe_creation_service.dart:106-110` says the creator is never granted, because "an owner
+is not a sharee and is never revocable". The loop under it iterates `initialMembers` raw. Probe
+(`initialMembers: ['me-uid','mom-uid'], categoryIds: ['grp-fam']`, printed, not reasoned):
+
+```
+GRANTS={me-uid: [group:grp-fam], mom-uid: [group:grp-fam]}
+PERMS={me-uid: ResourcePermission.editor, mom-uid: ResourcePermission.editor}
+```
+
+Reachable, and in fact the NORMAL case for path 1: `friend_categories_operations.dart:100` creates
+every category with `friendUserIds: [currentUserId]`, and `GroupRecipeSelectionViewModel` passes
+`targetGroup.friendUserIds` straight through to `RecipeSharingManager` -> `_createCollaborativeRecipe`.
+The sibling path defends against exactly this (`shareRecipeWithGroups` does
+`grantsByUserId.remove(currentUserId)`); this one does not. Access impact is contained TODAY only
+because `RecipeShareGrants.revokeGroup` has its own `entry.key == ownerId` guard — i.e. the
+invariant is upheld by a different file than the one claiming it.
+
+**Second, worse, and pre-existing:** the same line demotes the owner. `permissions[currentUserId] =
+admin` is written first, then the `initialMembers` loop overwrites it with `editor`. The existing
+test "should not add creator to initial members list" cannot see it — `memberPermissions?.length ==
+2` and `members.where((m) => m == currentUserId).length == 1` are both TAUTOLOGIES over a Map's
+keys. Not introduced by this diff; named, not filed as blocking.
+
+### Closed in-round (test-only, zero production edits)
+
+- **`_grantsFor`/`_categoryIdsFrom`'s `existing != null` arm was never executed.** Both new
+  provenance tests seed `_personal(...)`, so both take the personal->collaborative branch with
+  `existing: null`; `_collaborative()` had no way to carry grants at all. Added `grants`/
+  `categoryIds` params to that fixture + 5 tests in a new group. Probe-measured merge behaviour:
+  `MERGED_GRANTS={mom-uid: [group:grp-old], dad-uid: [direct]}`, `MERGED_CATS=[grp-old]`,
+  `BOTH_GRANTS={mom-uid: [group:grp-old, direct], ...}`.
+- **The `categoryIds` erasure trap.** `RecipeSocialData.copyWith` is sentinel-based, so an explicit
+  null ERASES. A plain share survives only because `_categoryIdsFrom` folds the existing list in
+  first; changing that argument to `null` — which reads as harmless symmetry with the branch two
+  lines up — silently drops the group row out of the panel with no other symptom.
+- **`grantsByUserId.remove(currentUserId)` was unpinned.** The obvious-looking assertion
+  `grants.containsKey('me-uid') == isFalse` is satisfied by an EARLIER branch: `_grantsFor` iterates
+  `userIds`, from which self was already removed by pre-BUT-1797 code, so deleting the new line
+  leaves it green. The discriminating fixture is a group whose ONLY member is the sharer, alongside
+  a real group: `_categoryIdsFrom` iterates `grantsByUserId.values` unfiltered, so without the
+  removal `categoryIds` gains a group nobody was shared with. Measured via the ghost probe
+  (`GUARD_CATS=[grp-old, grp-ghost]`).
+- **The four-hop `categoryIds` pass-through had no end-to-end pin** (round 2's recommendation, not
+  yet landed). Added to `unified_recipe_service_test.dart`'s existing collaborative group: create
+  with `categoryIds: ['grp-fam']`, then assert on `service.getRecipeById(id)!.socialData` — 5 lines,
+  covers service -> module -> coordinator -> creation service.
+- **Creation service had ZERO `categoryIds` coverage** (`grep -c grants` == 0). Three tests: group
+  arm, direct arm, and the "no members -> `grants` null, not `{}`" ternary.
+
+### Named, not filed
+
+- **`_categoryIdsFrom` filters by nothing while `_grantsFor` filters by `userIds`.** A uid present
+  in `grantsByUserId` but absent from `userIds` contributes its group to `categoryIds` and no grant
+  to anyone — a revoke row for a group with no holder. Unreachable from in-repo callers (both maps
+  are built together), but `grantsByUserId` is a PUBLIC parameter. Deliberately NOT pinned as
+  expected behaviour; pinning a wart is worse than leaving it uncovered.
+- **`shareRecipeWithUsers('r1', [], perm)` returns `RecipeShareResult.full`**: converts the recipe
+  to collaborative, writes `grants: {}` and a `shared_recipes` doc with zero recipients. No guard,
+  no caller does it, no test.
+- **The `'direct'` guard's comment does bad arithmetic.** It claims an unguarded `substring` would
+  yield the category id `"ct"`; `'direct'.length == 'group:'.length == 6`, so it would yield the
+  EMPTY string. The guard is right, the comment's example is not. Pinned by the new test either way.
+- Coordinator's only change is a one-line named pass-through; no per-hop test written, per the
+  chain-owes-one-end-to-end-pin rule.
+
+**Suites run:** `social_recipe_sharing_service` + `social_recipe_creation_service` 71/71;
+`unified_recipe_service_test.dart` 137/137. `flutter analyze --fatal-infos` on the three edited test
+files: clean. Both `_zz_probe*_test.dart` deleted (`git status` on the directory verified).
+
+**Post-review md5s:** `social_recipe_sharing_service.dart` 05c3f46f92a6a399983229c015fc54b1,
+`social_recipe_creation_service.dart` 7eff2b35748e53741349690fbbd5cdad,
+`social_recipe_coordinator.dart` 1ebcf0ab5e15798f3f02770a965033f2,
+`recipe_share_grants.dart` dd7897c19c91be1f494993b85578ca0b (unchanged from round 1).
+
+## 2026-08-04 — BUT-1797 commit gate, round 4: the grant algebra and its two managers (`recipe_share_grants.dart`, `recipe_member_manager.dart`, `recipe_sharing_manager.dart`)
+
+**Trigger:** commit-gate test-adequacy review of the last three staged production files of BUT-1797.
+Rounds 1–3 covered model/VM/widget, the create chain, and the two share paths' tail. All three files
+opened with `Read` in full; `recipe_member_manager.dart` re-read after it moved mid-round.
+
+**Verdict: fail, 2 blocking.**
+
+### Blocking 1 — the STAGED `updateMemberPermission` deletes every `grants` entry
+
+`recipe_member_manager.dart` rebuilds `RecipeSocialData` field-by-field in four methods.
+`addMember`, `removeMember` and `removeGroup` enumerate all EIGHT fields; `updateMemberPermission`
+enumerates SEVEN and omits `grants`. The document is written whole, so one permission change ERASES
+the provenance for every member. `removeGroup` then takes its `grants == null` branch — cuts nobody,
+returns `true`, and shows the success snackbar. The privacy control silently stops working after any
+unrelated permission edit, which is precisely the failure BUT-1797 exists to end.
+
+Measured, not reasoned (throwaway probe under the module's test dir, deleted): seeding
+`grants: {user_456: [group:group_a, direct]}, categoryIds: [group_a]` and calling
+`updateMemberPermission(user_456 -> editor)` printed `grantsAfter=null categoryIdsAfter=[group_a]` —
+i.e. the group row survives in the panel while nobody holds a reason for it.
+
+**The worktree already fixes this with `recipe.socialData!.copyWith(memberPermissions: …)` — and it
+is NOT staged (`git status` on the file: `MM`).** Stage that with the rest or ship the bug. It is
+also still UNPINNED in both trees: the `Permission Updates` group's fixtures carry no `grants` at
+all, so reverting `copyWith` to the enumerating rebuild reddens nothing. The killer fixture is a
+recipe with grants, asserting `updatedRecipe.socialData!.grants` survives the permission change.
+**Generalise:** an aggregate that is rebuilt field-by-field at N sites loses a NEWLY-ADDED field at
+whichever site the author forgot; when a model gains a field, grep every `RecipeSocialData(` /
+`XxxData(` construction in the diff's blast radius, not just the ones the ticket touched.
+
+### Blocking 2 — `_grantAccessOnReshare` has zero behavioural assertions
+
+Confirms and extends round 2's finding. `savedRecipes` is captured in `setUp` and never read; the
+only test through the branch asserts `newId == 'collab_1'`, which stays green with the whole method
+deleted. Unreached, with the input that reaches each:
+
+- **The fix itself.** `shareRecipe('collab_1', memberIds: ['user_999'])` -> `memberPermissions`
+  must gain `user_999`. Without it the recipient is notified about a recipe they cannot open.
+- **"never demote an existing member" — and round 2's suggested fixture for it is VACUOUS.** The
+  default is `putIfAbsent(memberId, () => ResourcePermission.editor)`, so an existing EDITOR is
+  indistinguishable from the `permissions[memberId] = editor` mutant. Use `user_789`, the fixture's
+  VIEWER (or an admin): the mutant then promotes/demotes and the test reddens. Same trap as the
+  BUT-1797 `'direct'` guard in round 3 — a defensive line whose obvious assertion is already true.
+- **Provenance.** `categoryIds: ['group_a']` -> `grants[user_999] == ['group:group_a']`; no
+  `categoryIds` -> `['direct']`; two groups -> both tokens (survives either revoke).
+- **The `categoryIds` union.** `mergedCategoryIds` is what `removeGroup` gates on
+  (`!currentCategoryIds.contains(groupId)` -> `return false`), so a member can hold `group:x` on a
+  recipe whose panel cannot revoke x. Grants and categoryIds must be asserted in the SAME test.
+- **`if (!granted) return null`.** `updateRecipe: (_) async => false` -> `shareRecipe` returns null
+  AND sends no notification. Every manager in the suite hardwires the seam to `true`, so this arm has
+  never run; without the no-notification half, a failed grant reproduces the original bug.
+- **Permission LEVEL is undecided-by-test.** A re-share hands new members `editor`, while `addMember`
+  defaults to `viewer`. Consistent with the create path (round 3 probe: `PERMS={…: editor}`), so
+  probably intended — but nothing pins it, so it is free to flip.
+
+### Not blocking, but unpinned
+
+- **`addMember` recording the `'direct'` grant reddens nothing if deleted.** The algebra suite tests
+  `RecipeShareGrants.add` in isolation; the member-manager add tests assert only `memberPermissions`.
+  Consequence is the ticket's core promise: an individually invited member later included in a group
+  share holds only `group:x`, so revoking that group CUTS them. The one test worth having is the
+  cross-module sequence — `addMember` -> group re-share -> `removeGroup` -> still a member.
+- **`removeGroup`'s per-removed-member notification fan-out is unasserted**, and the suite's stubs
+  point at the wrong method: the tests stub `sendBatchableNotification` while production calls
+  `sendImmediateNotification` (added) / `sendSilentNotification` (removed). `NotificationHelper.
+  sendSafely` catches everything, including `MissingStubError`, so a wrong stub is invisible and a
+  deleted notification is equally invisible. Probe: `sendSilentNotification` callCount == 1 on a
+  one-member revoke, with only the wrong method stubbed. Any notification claim in this file needs
+  `verify(sendSilentNotification(...)).called(n)`, never a `when(...)`.
+- **`removeGroup` with `_updateRecipe -> false`** (no persist, no notifications) is unreached.
+- `revokeGroup(permissions: null)` and `grants: {}` (empty, not null) arms are unreached; low value.
+
+### Vacuous test found: the SNAPSHOT case (already replaced in the worktree, unstaged)
+
+The STAGED grants suite contains `'SNAPSHOT: someone who joined the group after the share is
+untouched'`, whose load-bearing assertions are `containsKey('late_joiner') == isFalse` for a uid that
+appears in NEITHER input map. `revokeGroup` is a pure filter over those two maps and cannot invent a
+key, so no mutant reddens it; its remaining assertion duplicates the first test. The snapshot
+property belongs to the SHARE path, which resolves group members at share time. The worktree replaces
+it with `'a member with no grants entry at all is never cut'` (an `erik` holding a permission and no
+grant — the walk-`permissions`-instead-of-`grants` mutant reddens there and nowhere else), plus two
+added assertions on the owner's spent grant and `grants` staying null. That is the right test; it is
+`AM` and must be staged with the production fix.
+
+**Tree motion, recorded because it decided the verdict.** Both `recipe_member_manager.dart` (`MM`)
+and `recipe_share_grants_test.dart` (`AM`) gained unstaged worktree fixes DURING this round — the
+`copyWith` fix landed after my probe had already printed `grantsAfter=null` against the older bytes.
+The review therefore reports on two different trees and says which: the INDEX carries the defect, the
+WORKTREE carries an unpinned fix. A parallel session is live here (it also deleted two
+`_zz_probe*_test.dart` files of mine mid-run, one before it could execute — write probes expecting
+that, and never `git add -A`).
+
+**Post-review md5s (worktree):** `recipe_share_grants.dart` dd7897c19c91be1f494993b85578ca0b
+(unchanged since round 1), `recipe_member_manager.dart` 15958ef29b488f244b03922fe04645bc (index
+version differs — it is the pre-`copyWith` one), `recipe_sharing_manager.dart`
+a2c9cf35eb359579456fd7e7349ecae8 (unchanged since round 2).
+
+## 2026-08-04 — BUT-1797 l10n gate: the copy that reported the outcome had no test at all
+
+**Trigger:** commit-gate review of the three staged generated l10n files
+(`app_localizations.dart`, `app_localizations_en.dart`, `app_localizations_sv.dart`), asked
+three questions: is "don't unit-test generated l10n" right here; is the widget test's
+hardcoded Swedish string a feature or brittleness; does any repo mechanism catch an ARB
+edited without regeneration.
+
+**Answers, with the evidence.**
+
+1. *Generated files:* correct not to test. A key that exists in the ARB and not in the
+   generated Dart is a compile error at the call site, and `flutter gen-l10n` fails loudly on
+   a placeholder mismatch. Verified arb -> generated by hand for both locales and the abstract
+   doc comments; they agree.
+
+2. *The hardcoded string:* it was `find.textContaining('åtkomst till receptet')`, and it was
+   pinning the CONFIRM dialog only. Two separate problems, only one of them brittleness. The
+   real gap: `recipeSharingRevokeGroupSuccess` — the string that until this ticket told the
+   user "Medlemmarna har fortfarande åtkomst", a sentence that became FALSE when the revoke
+   became real — is rendered by NO test. The widget test opens the dialog and never confirms,
+   so `removeGroup` is never called and the snackbar never appears. Reverting only the success
+   copy left every suite green.
+
+3. *Drift mechanism:* `.claude/hooks/regenerate-l10n.sh` (PostToolUse Write|Edit) runs
+   `flutter gen-l10n` when an `lib/l10n/*.arb` is written. It is session-local, non-blocking
+   (`exit 0` on failure), one-directional, and silently skips when flutter is off PATH. No CI
+   step and no lefthook gate regenerates and diffs — grepped `.github/workflows/` (`l10n`
+   appears once, as an lcov ignore path) and `lefthook.yml`. A missing key is caught by the
+   compiler; a STALE VALUE is not caught by anything.
+
+**What I changed (test-only).** Added `removeGroup` to `FakeSocialRecipeOperations`
+(answering `_shouldSucceed` rather than a hardcoded true — it previously did not exist, so the
+Fake threw `UnimplementedError` and the view's catch swallowed it into an error snackbar).
+Made `pumpPanel` return the panel's own `AppLocalizations` via a `Builder`. Added a third case
+that confirms the dialog and asserts (a) `find.text(l10n.recipeSharingRevokeGroupSuccess(id))`
+present, (b) `recipeSharingRevokeSuccess` absent — routing, copy-independent — and (c) one
+hardcoded negative anchor `find.textContaining('fortfarande åtkomst')` aimed at the retracted
+BUT-1785 sentence rather than at the current wording. 3/3 green, analyze clean on both files.
+
+**Tree motion, again, and it mattered.** A parallel session rewrote BOTH strings mid-review,
+in the WORKTREE only, after I had Read the staged bytes: sv confirm is now "Ta bort åtkomsten
+till receptet för gruppen {name}? De du även delat med enskilt har kvar sin åtkomst." and sv
+success "Gruppen {name} har inte längre åtkomst till receptet. …". It also replaced the
+hardcoded confirm assertion with the resolved-l10n form — and left `await pumpPanel(tester);`
+discarding the return in the first test, so the file referenced an undefined `l10n` and my
+first run died on a compile that the 600 s timeout reported as "Terminated". Repaired
+(`final l10n = await pumpPanel(tester)`), re-read all three l10n files at final bytes, re-ran
+green. The l10n paths are `MM`: the INDEX still holds the earlier wording, so a commit that
+does not re-stage them ships copy nobody reviewed.
+
+**Post-review md5s (worktree):** `app_localizations.dart` 9fa91e38fec7b1876290e2356a892740,
+`app_localizations_en.dart` f71fd63a225b425b3eec9d92021c77d0, `app_localizations_sv.dart`
+81f4f152683b48e4ad6ea034a6b3e79f, `recipe_detail_sharing_status_test.dart`
+29f8688e48fccd9b53fa7b0a9f5630ab.
+
+## 2026-08-04 — BUT-1797 round 2: verifying the closed gaps, and what the fixes did not reach
+
+**Trigger:** re-review of `recipe_member_manager.dart`, `recipe_share_grants.dart`,
+`recipe_sharing_manager.dart`, `social_recipe_operations.dart` after round 1's gaps were
+declared closed. All four Read in full. Suites `recipe_member_manager_test` +
+`recipe_share_grants_test` + `recipe_sharing_manager_test`: **51/51 green**, md5-bracketed
+on `recipe_sharing_manager.dart` a2c9cf35eb359579456fd7e7349ecae8 before and after.
+
+**Round 1's closures verified present and non-trivial.** `updateMemberPermission` now
+rebuilds through `copyWith` (`recipe_member_manager.dart:394`) and
+`'a permission change does not erase anyone\'s grants'` carries the only fixture in the
+Permission Updates group that has a `grants` map at all — the reason the whole group stayed
+green over the bug. The three `_grantAccessOnReshare` tests
+(`recipe_sharing_manager_test.dart:598-660`) read the `savedRecipes` recorder that round 1
+found installed-and-unread; the demotion test uses `user_789` (VIEWER) against a re-share
+default of editor, so `putIfAbsent` and a plain overwrite really do differ — using
+`user_456` (already editor) would have been byte-identical under the mutant.
+
+**Three gaps still open, all provable by negative-space grep, no mutation needed.**
+
+1. *Notification claim unchanged.* `removeGroup` fans out through
+   `_sendMemberRemovedNotification` -> `NotificationHelper.sendSilentSafely` ->
+   `sendSilentNotification(targetUserIds:, data:)`. The suite stubs
+   `sendBatchableNotification` at 7 sites (124/155/231/368/470/561/624) — a method production
+   never calls anywhere in these files. `grep -rn sendSilentNotification test/` hits only
+   `notification_service_test.dart`. `sendSafely`'s bare `catch (e)` catches Errors too, so a
+   `MissingStubError` is logged and dropped. Closing pair: `verify(() =>
+   mock.sendSilentNotification(targetUserIds: ['user_456'], data: any(named:'data'))).called(1)`
+   in the REVOKES test, plus `verifyNever(...)` in the keeps-access test — the negative is what
+   kills a fan-out swapped to `retainedMemberIds`, which a single-member positive cannot see.
+2. *Persist-failed arm unreached.* No `removeGroup` fixture stubs `updateRecipe` false, and
+   `_grantAccessOnReshare`'s `if (!granted) return null` (`recipe_sharing_manager.dart:189`)
+   is likewise never entered. The harmful mutant is the notification moving above the guard.
+3. *`addMember`'s `'direct'` grant is unpinned.* `grep -rn "directGrant\|groupGrant" test/`
+   shows zero assertions on `grants` after `addMember`; the two success tests read only
+   `memberPermissions['user_999']`. That method still rebuilds `RecipeSocialData` field by
+   field, so dropping the `grants:` argument deletes EVERY member's provenance — the exact
+   bug just fixed one method down — and inverts the decided asymmetry (a directly-invited
+   member later swept into a group share holds `[group:x]` only, and a group revoke cuts them).
+
+**Adjacent, outside the four files:** `social_recipe_membership_service.dart:79/:126` — the
+third membership path the commit gate found — records and drops grants, and
+`social_recipe_membership_service_test.dart` contains no `grants` at all. Same hole, one file over.
+
+**Weakest surviving test:** `'a group id sent to removeMember still fails (the bug)'` —
+`removeMember` rejects any id absent from `memberPermissions`, so it is unfailable short of
+someone adding a group branch. Keep as an anti-harmonisation anchor; say so in the comment.
+
+**Tree motion, reported not filed.** At 21:51:0x `git diff` showed a live mutant of
+`_grantAccessOnReshare` (`permissions[memberId] = ResourcePermission.editor` for
+`putIfAbsent`); the file was rewritten back to the fix 14 s later (md5
+b8c4125022dee67b13a83c5f5c8b7dd7 -> a2c9cf35eb359579456fd7e7349ecae8, `MM` -> `M `). Two
+untracked `_zz_probe_creation_*.dart` appeared under
+`test/unit/services/unified/modules/social_recipe/` at 21:52-21:53. A parallel session is
+mutation-probing this tree right now — I deliberately ran NO `lib/` mutant of my own, since
+the grep proofs are decisive and a concurrent probe would misattribute either way. Re-verify
+`putIfAbsent` at the moment of commit; stage by explicit pathspec.
+
+**Post-review md5s:** `recipe_member_manager.dart` 15958ef29b488f244b03922fe04645bc,
+`recipe_share_grants.dart` dd7897c19c91be1f494993b85578ca0b, `recipe_sharing_manager.dart`
+a2c9cf35eb359579456fd7e7349ecae8, `social_recipe_operations.dart`
+ef71542bbfd86482b1891cba2306a5ec, `recipe_member_manager_test.dart`
+aa80b3da0163d2c35ab8c5248711a021, `recipe_share_grants_test.dart`
+d5303ac6e67795b73528896469ced39c, `recipe_sharing_manager_test.dart`
+283f1d48345e79f907a1d9862a7b87fc.
+
+## 2026-08-04 — BUT-1797 round 2: the third membership path, and a skip guard pinned by nothing
+
+Trigger: second review round on the group-share/revoke ticket, after two production fixes
+landed from round-1 findings (`social_recipe_membership_service.dart` routed through
+`RecipeShareGrants.add`/`.dropMember`; `social_recipe_creation_service.dart` gained two
+`if (memberId == currentUserId) continue;` guards). Scope: the five named files, read in
+full; `docs/architecture/ACCEPTED_DEVIATIONS.md` BUT-1797 entry read first, so the realtime
+deserializer, the `shared_content` residual, `grants` in `shared_recipes` snapshots and the
+three duplicate token loops were out of scope by decision.
+
+**Tree state.** All five production files staged and index-identical at review start
+(`M` in column 1 only). Mid-round, `social_recipe_creation_service.dart` read `MM` with
+md5 `8f02167f…`, and the worktree diff was exactly the two `continue` lines DELETED — with
+no marker comment, so not my replica's text (mine inserted `// MUTANT: skip removed` into
+`test/`). Polled md5 every 5 s: back to the index hash `9252efae…` within ~40 s, and
+`git diff --stat` empty thereafter. Another session's revert-probe on the same fix,
+reported as tree motion, never as a finding. Corroborated by `recipe_member_manager_test.dart`
+and `recipe_detail_sharing_status_test.dart` reading `MM` in the same window.
+
+**Finding 1 — the creator skip was pinned by nothing.** Baseline 50/50 green. Only one
+test fed the guard's input (`initialMembers: [currentUserId, 'user-2']`) and it asserted
+`keys.where((m) => m == currentUserId).length == 1` (a Map cannot hold a duplicate key —
+unfailable) and `memberPermissions.length == 2` (true under the mutant too). Replica probe
+(`test/.../_zz_probe_creation_mutant.dart`, class renamed, both `continue` lines removed,
+driven by a throwaway `_zz_probe_creation_test.dart` printing the observables) measured:
+
+    MUTANT creatorKeyCount=1 permsLength=2 creatorPermission=ResourcePermission.editor
+           grants={test-user-123: [direct], user-2: [direct]}
+    MUTANT group arm: creatorPermission=ResourcePermission.editor
+           grants={test-user-123: [group:grp-fam], mom-uid: [group:grp-fam]}
+
+i.e. the owner demoted to `editor` and holding a revocable group grant, with the suite green.
+Fixed test-side: the old test is REPLACED by `the creator keeps admin and is never granted a
+revocable reason`, feeding the ordinary group shape (`initialMembers: [currentUserId,
+'mom-uid'], categoryIds: ['grp-fam']`) and asserting `admin`, `grants.containsKey(owner) ==
+false`, length 2, plus `grants['mom-uid'] == ['group:grp-fam']` as the loop-ran control.
+Three of the four assertions flip under the measured mutant.
+
+**Finding 2 — the membership service's grant semantics were covered by nothing.**
+`grep -c grants` across `test/unit/services/unified/modules/social_recipe/*`:
+sharing 19, creation 4, membership **0**, permission 0, query 0, coordinator 0. The
+membership suite's 50 tests assert `memberPermissions` exclusively. Added a
+`Grant provenance (BUT-1797)` group of four tests; combined-replica mutant (add's
+`RecipeShareGrants.add` removed, remove's `dropMember` removed, update's `copyWith`
+given `grants: null` to model a field-by-field rebuild) printed:
+
+    MUTANT add:    grants=null
+    MUTANT merge:  grants={mom-uid: [group:grp-fam], dad-uid: [group:grp-fam]}
+    MUTANT remove: grants={mom-uid: [group:grp-fam, direct], dad-uid: [group:grp-fam]}
+    MUTANT update: grants=null perm=ResourcePermission.editor
+
+Every new assertion flips; the update test's `perm == editor` control correctly stays green
+under the mutant. The removal test also runs the saved document through
+`RecipeShareGrants.revokeGroup` and asserts `removedMemberIds == ['dad-uid']` — the
+stale-entry symptom the deviation describes in prose (a ghost counted and re-notified),
+asserted instead of described.
+
+**Finding 3 (non-blocking, unchanged from round 1).** `shareRecipeWithUsers('r1', [], perm)`
+still returns `RecipeShareResult.full`, converts a personal recipe to collaborative, writes
+`grants: {}` (`_grantsFor` returns `existing ?? {}` and the loop never runs — note the
+creation path deliberately writes `null` in the same situation) and calls
+`createSharedRecipe` with `recipientIds: []`. No guard, no test — and no reachable caller:
+`shareRecipeWithGroups` refuses an empty resolved set before delegating,
+`recipe_share_request_module.dart:117` passes a one-element literal, and
+`SocialRecipeModule.shareRecipeWithUsers` has no caller in `lib/` at all. Deliberately NOT
+test-pinned: a test asserting `full` for a zero-recipient share would pin a defect as
+intended behaviour. Behaviourally inert today because `revokeGroup` treats `{}` and `null`
+identically. Ticket a one-line guard.
+
+**Verification.** `flutter analyze --fatal-infos` on the suite directory: no issues.
+`flutter test test/unit/services/unified/modules/social_recipe/
+test/unit/services/unified/operations/modules/recipe_share_grants_test.dart` → 202/202,
+md5-bracketed on all six production files (stable across the run). Probe files deleted and
+`git status` re-verified clean of them.
+
+Post-review hashes:
+e947c77123089f0cbea003a9600c7253 `social_recipe_membership_service.dart`,
+9252efae01fe09574495100bc669f190 `social_recipe_creation_service.dart`,
+05c3f46f92a6a399983229c015fc54b1 `social_recipe_sharing_service.dart`,
+1ebcf0ab5e15798f3f02770a965033f2 `social_recipe_coordinator.dart`,
+28ddd2a6d566f0fa57f8060c6a231346 `social_recipe_module.dart`,
+70d960485af62e6b950522ec01b0fc7b `social_recipe_membership_service_test.dart`,
+e9668bd738d1fa938c0eb21f3691c820 `social_recipe_creation_service_test.dart`.
+
+## 2026-08-04 — BUT-1797 round 2 (UI dispatch + model + VM), test-adequacy review
+
+Trigger: "SECOND ROUND for BUT-1797. Verify test adequacy of the current bytes." In-scope
+production files read: `unified_recipe_service.dart`, `recipe_unified.dart`,
+`recipe_detail_sharing_status.dart`, `group_recipe_selection_viewmodel.dart` and the three
+generated l10n files. Also read (to attribute findings): `recipe_share_grants.dart`,
+`recipe_member_manager.dart`, `social_recipe_creation_service.dart`, `notification_helper.dart`,
+`notification_service.dart`, `production_mocks.dart`, `base_unit_test.dart`,
+`test_service_locator.dart`, `application_provider.dart`.
+
+**Round-1 items re-checked, verdicts.**
+
+1. *Owner gate uncovered* — STILL TRUE. All three tests in
+   `recipe_detail_sharing_status_test.dart` pump with `currentUserId == _ownerId`. Both call
+   sites (`recipe_detail_view.dart:876`, `recipe_detail_tablet_content.dart:81`) build the
+   panel unconditionally, so `if (recipe.createdBy != currentUserId) return SizedBox.shrink()`
+   is the only thing between a SHAREE and the full roster of everyone else the recipe is
+   shared with, plus revoke buttons. Missing input: the same `_sharedRecipe()` pumped with
+   `setPermissionState(currentUserId: _memberId)`, asserting the member id, the group id and
+   `Icons.share_outlined` all `findsNothing`, with the owner pump as the positive control in
+   the same test.
+2. *Analytics block dead in every VM test* — STILL TRUE, and now attributed exactly: the file
+   uses `BaseUnitTest.setupUnit()`, which (unlike `setupUnitWithProductionLocator()`) never
+   calls `prod.ServiceLocator.initialize(DIContainer())`, so `_container == null` and
+   `tryGet` returns null on the first line regardless of `TestServiceLocator` having a
+   `MockAnalyticsService` registered under the same GetIt. `createViewModel()` never passes
+   the `analyticsService`/`userService` constructor seams either. Discriminating input:
+   inject both and assert `logRecipeShared(method:'group', recipeId:'recipe-1',
+   recipientCount: 3)` — 3 is `targetGroup.friendUserIds.length` and the fixture's
+   `groupMembers.length` is 2, so the obvious wrong-list mutant flips.
+3. *`whereType<String>()` surviving mutant* — STILL TRUE. All five `grants` tests feed
+   pure-String lists; the malformed test feeds `'not-a-list'`, which takes the `v is List`
+   false branch and never reaches `whereType`. Killer input:
+   `fromJson({'grants': {'anna': <dynamic>['direct', null]}})` → shipped code `['direct']`,
+   bare `List<String>.from(v)` throws `TypeError`, which `RecipeSerialization` swallows and
+   the recipe silently loses ALL socialData. Non-blocking (only malformed docs reach it).
+4. *`copyWith(grants: null)` explicit-clear arm* — NOT pinned, and verified harmless today:
+   the only production explicit-null site is `social_recipe_creation_service.dart:149`
+   (`grants.isEmpty ? null : grants`) applied to a freshly built `socialData` whose `grants`
+   is already null, so sentinel and explicit-null are indistinguishable there. Optional.
+
+**New blocking finding A — a Fake whose two branch methods both answer `true` collapses the
+routing test.** `FakeSocialRecipeOperations.removeGroup` returns `_shouldSucceed` (default
+true) while `removeMember` returns a hardcoded `true`, and the sharing panel picks BOTH the
+API and the snackbar key from the same `isGroup` flag. So re-routing the group row into
+`removeMember(userId: groupId)` — the original BUT-1785 defect, at the feature's only
+dispatch site — leaves all three widget tests green. Two comments claim otherwise: the test
+file's "the two halves meet in the success-message test below, which does confirm", and the
+fake's own "a caller that reports the wrong outcome for it is exactly what the sharing
+panel's copy test exists to catch — so it answers `_shouldSucceed`", which describes a
+discrimination no test uses because no widget test ever sets `shouldSucceed: false`. Fix
+uses machinery already in the tree: a fourth test that calls
+`recipes.mockSocial.setSocialState(shouldSucceed: false)`, confirms the group dialog and
+asserts `commonUnknownError` renders while neither success string does — under the mis-route
+mutant `removeMember` still answers true, the success snackbar shows, and it reddens.
+
+**New blocking finding B — the removeGroup notification fan-out is unasserted, and the stubs
+present name a method the manager never calls.** `_sendMemberRemovedNotification` goes
+through `NotificationHelper.sendSilentSafely` → `sendSilentNotification`, and
+`_sendMemberAddedNotification` → `sendImmediateNotification`; every stub in
+`recipe_member_manager_test.dart` (lines 124, 155, 231, 368, 470, 561, 624) names
+`sendBatchableNotification`, and `sendSafely` swallows the resulting `MissingStubError`.
+`grep -c 'sendSilentNotification\|sendImmediateNotification'` over that suite = 0. So
+BUT-1797's new `for (final removedId in revocation.removedMemberIds)` loop can be deleted
+whole with the suite green, and a member cut by a group revoke is never told. Fix: in
+"REVOKES a member whose only grant was that group",
+`verify(() => mockNotificationService.sendSilentNotification(targetUserIds: ['user_456'],
+data: any(named: 'data'))).called(1)`, and `verifyNever(...)` in the "also has a direct
+share keeps access" test — the pair kills both the notify-nobody and notify-everybody
+mutants. Replace the inert batchable stubs rather than keeping them.
+
+**What is genuinely well covered this round** (checked, not assumed): `recipe_share_grants_test.dart`
+(12 cases, every one of Malin's decisions plus a no-mutation control on the input maps);
+the end-to-end `categoryIds`/`grants` pin in `unified_recipe_service_test.dart:749` (asserts
+at `getRecipeById`, and the group arm's `['group:grp-fam']` differs from the direct arm's
+`['direct']`, with the owner absent by construction); `recipe_sharing_manager_test.dart:598-660`
+— the round-1 "recorder installed and never read" hole is closed, and the demote fixture
+correctly uses the VIEWER (`user_789`), not the editor, so `putIfAbsent` vs a plain overwrite
+are no longer byte-identical; `recipe_member_manager_test.dart:586` pins that a permission
+change no longer erases `grants`.
+
+**Flake, unattributed.** The six suites run 137/137 green in 4 of 5 combined invocations and
+all 6 pass in isolation; the first (cold, 23 s vs 10-21 s) combined run reported `+134 -1`
+and I did not capture the test name. Two suspects, both in the VM suite and both the
+wall-clock anti-pattern: "should not share when already sharing" and "should set loading
+state during share" assert after a real `Future.delayed(10 ms)` against a 50/100 ms fake
+delay. Reported as a rate (1/5), not attributed — `fakeAsync` is the fix if it recurs.
+
+In-scope hashes at end of round:
+604a8fd9e9656c2145e22daa77d85b06 `recipe_detail_sharing_status.dart`,
+f08fa7ef007730cdc91694d86bcf5759 `recipe_unified.dart`,
+115d7e8621265658bf3f0e9edecb7884 `group_recipe_selection_viewmodel.dart`,
+733f41f5810eaf40095f45ece742f542 `unified_recipe_service.dart`,
+bce15e8b2428e16265ae647bcfd29873 `recipe_member_manager.dart`,
+453033e60449ac4d64df41dd85a4cb73 `recipe_share_grants.dart`,
+ecde269f6b3989a78e207a0df122dc00 `recipe_detail_sharing_status_test.dart`,
+ca480567cea24fa4558e7b45c4164783 `recipe_member_manager_test.dart`,
+fbeb1982f97cfa741759444310c4bd53 `recipe_unified_test.dart`,
+fe384eb17c2725a8fdc9fc09642ebefd `group_recipe_selection_viewmodel_test.dart`.
+
+## 2026-08-04 — BUT-1797 round 3: the two closed gaps, and membership writers five, six and seven
+
+**Trigger:** third test-adequacy round on the group-share/revoke ticket. Five production
+files Read in full (`recipe_member_manager.dart`, `recipe_sharing_manager.dart`,
+`recipe_share_grants.dart`, `collaboration_management_module.dart`,
+`firebase_recipe_repository.dart`), plus `recipe_share_grants_test.dart`,
+`recipe_member_manager_test.dart`, the collaboration-module suite and the sharing-service
+suite. `docs/architecture/ACCEPTED_DEVIATIONS.md` + `.claude/rules/accepted-deviations.md`
+read first: the `grants`-is-descriptive-only, snapshot-at-share-time and
+no-compatibility-path clauses were out of scope by decision.
+
+**Motion check paid for itself immediately.** Round 2's post-review hashes vs round-3 start:
+`recipe_member_manager.dart` 15958ef2 -> bce15e8b, `recipe_share_grants.dart` dd7897c1 ->
+453033e6, `recipe_sharing_manager.dart` a2c9cf35 -> af8d7790 — but
+`recipe_share_grants_test.dart` and `recipe_sharing_manager_test.dart` were BYTE-IDENTICAL
+to round 2. Two moved production files under two frozen suites is the whole round's map:
+every new line in them is unasserted by construction.
+
+**Round 2's three gaps verified CLOSED and non-trivial.** Stubs are
+`sendImmediateNotification`/`sendSilentNotification` — the methods `NotificationHelper`
+actually calls. The revoke fan-out is pinned in both directions:
+`verify(sendSilentNotification(targetUserIds: ['user_456'], ...)).called(1)` in the REVOKES
+test, `verifyNever` in the keeps-access test (mocktail logs an invocation whether or not it
+is stubbed, so the negative survives `sendSafely`'s bare catch and really does kill a
+fan-out swapped to `retainedMemberIds`). The persist-failed arm is entered via
+`updateRecipe -> false` with a fixture that genuinely produces a non-empty
+`removedMemberIds`. `addMember`'s `'direct'` grant is pinned with a second member holding a
+group token, so a dropped `grants:` argument flips two assertions.
+
+**Three writers found unasserted, all closed test-side this round.**
+1. `recipe_sharing_manager.dart:524` `if (memberId == currentUserId) continue;` — LIVE
+   (`shareRecipe` is the sharing panel's path) and untested: no re-share test passed the
+   sharer's own id. Fixture makes it discriminate twice, because `user_123` is the owner and
+   is deliberately ABSENT from the fixture's `memberPermissions`, so the mutant both writes
+   `grants['user_123'] = ['group:group_a']` AND `putIfAbsent`s them in as an ordinary
+   `editor`. Added a control PAIR (`user_999` gets both a grant and a permission), which is
+   what converts two `isFalse` negatives into load-bearing assertions without a mutation run.
+2. `collaboration_management_module.dart` add/removeCollaborators — `grep -c grants` on its
+   887-line suite was ZERO. Extended the suite's `collabWith` helper with a `grants:`
+   parameter and added two tests. Dormant (`RealtimeRecipeOperations.addCollaborators` and
+   `leaveCollaboration` have no caller in `lib/`), but the fixtures and capture already
+   existed, so the pin cost six lines each.
+3. `collaboration_management_module.updateMemberPermissions` — landed MID-ROUND, unstaged.
+   It writes with `addAll`, so it can INTRODUCE a member; the new hunk records a `'direct'`
+   grant for anyone not already in `currentPerms`. Fixture names one existing member (group
+   grant, must not be stacked) and one stranger, exercising both sides of the `containsKey`
+   skip.
+
+**Free mutation evidence, attributed by value.** Right after adding the
+updateMemberPermissions test the suite ran `+43 -1` at a lib md5 IDENTICAL to the two later
+green `+44` runs. The parallel session had rewritten that lib file seconds earlier and
+`flutter test`'s kernel cache is timestamp-keyed, so the run compiled the pre-hunk module —
+i.e. an accidental revert-probe proving the one test that can newly fail is mine. Do not
+chase such a `-1` as a flake before checking whether the count equals "all pre-existing
+tests plus your new one failing".
+
+**The `forShare`/`mergeCategoryIds` lift did NOT orphan its tests.** They live only in
+`social_recipe_sharing_service.dart`, and its suite covers every branch behaviourally
+(existing-grants merge, categoryIds fold-in, empty -> null, non-group token guard, both
+reasons on one member) — and its docstrings were correctly rewritten to the new public
+names, so the twin-site comment did not go stale. `recipe_share_grants_test.dart` has no
+DIRECT test for either static; acceptable, since the caller-level tests discriminate.
+Only `excludeUserId` is unreached there (the group path filters self upstream). Verified,
+not assumed: `grep -rn "RecipeShareGrants\.\(forShare\|mergeCategoryIds\)" lib/ test/`.
+
+**Reported, deliberately NOT test-pinned.** `FirebaseRecipeRepository.addCollaborator` /
+`removeCollaborator` now maintain grants but are not on the `RecipeRepository` interface and
+have ZERO callers in `lib/` (`base_shared_content_repository`'s same-named methods are a
+different class). Writing tests would pin dead code; ticket the deletion instead.
+
+**Tree motion, reported not filed — three separate moves during one round.**
+`collaboration_management_module.dart` 0dfc4dfc -> 62d73ead and
+`firebase_recipe_repository.dart` afac88e1 -> 347ab714 (both new unstaged hunks, `MM`), then
+`recipe_share_grants.dart` 453033e6 -> ef2548c1, a comment-only correction of a FALSE claim
+("a stray 'direct' becomes the category id 'ct'" — both `'direct'` and `'group:'` are six
+characters, so `substring(6)` yields the EMPTY id). The parallel session fixed the twin
+comment in the sharing-service suite in the same window. Also swept my two edited suites,
+adding `imageUrl:`/`actions:` to the notification stubs.
+
+**STAGING HAZARD, stated because a partial `git add` reddens the suite.** The
+`updateMemberPermissions` grant hunk and the `removeCollaborator` grant drop are WORKTREE
+ONLY; my new tests pass against the worktree and the updateMemberPermissions one FAILS
+against the index. Stage lib and test paths together.
+
+**Test-only cleanups applied:** dead `sendBatchableNotification` stub (a method production
+calls nowhere) swapped to `sendSilentNotification`; anti-harmonisation comment added to the
+unfailable `'a group id sent to removeMember still fails'` test, per round 2's request.
+
+**Weakest surviving test:** `revokeGroup` `'does not mutate the maps it was given'` — a
+shallow `Map.from` inside `_copy` still passes it, because nothing in the class mutates a
+list in place; it catches in-place MAP mutation only. Narrower than its name, not vacuous.
+
+**Verification.** `flutter analyze --fatal-infos` on all three touched test directories:
+no issues. `flutter test` over the four suites plus the whole `social_recipe/` directory:
+**289/289**, md5-bracketed on all five production files (stable across the run).
+
+Post-review hashes: `recipe_share_grants.dart` ef2548c10751c966982af80927a88925,
+`recipe_member_manager.dart` bce15e8b2428e16265ae647bcfd29873,
+`recipe_sharing_manager.dart` af8d7790fb59a90c5230510831bf7470,
+`collaboration_management_module.dart` 62d73ead36f7c42c6de7ef6d9938374b,
+`firebase_recipe_repository.dart` 347ab714f63bb77e866b708271d49d68,
+`recipe_member_manager_test.dart` 7ba88e60e3e54b4e3cb35b3ac974bfc2,
+`recipe_sharing_manager_test.dart` d10977b7095029fdb9494ef09e003515,
+`collaboration_management_module_test.dart` 7ef3efe6011f2bbc9ebc2a36a66a640a.
+
+## 2026-08-04 — Recipe time extractor + normalizer boundary (test-coverage review, no ticket id given)
+
+Trigger: asked to review TEST coverage of an uncommitted 6-file change (new
+`RecipeTimeExtractor`, word-bounded instruction-header split in
+`TextImportNormalizer`, `?? _extractTime` wiring in `TextImportStrategy`, plus
+their tests and a `_totalTime` fix in the corpus prelabel harness). Parallel
+session held ~40 other staged files; reviewed only the six named.
+
+Probe technique: no production file touched at all. Built
+`test/unit/services/import/parsers/_zz_probe_mutant.dart` — a replica of
+`RecipeTimeExtractor` with each guard behind a constructor flag, plus a replica
+of `TextImportNormalizer.preprocessText` with the header regex switchable
+between the shipped `SwedishWordBoundary.boundedRegExp`, an ASCII `\b`, and the
+pre-fix unbounded form. A companion `_zz_probe_test.dart` asserted the replica
+== the real class on all 25 fixtures (control), then printed every mutant's
+answer per fixture. Deleted both afterwards; `md5sum` on all three lib files
+before and after was identical (`recipe_time_extractor.dart`
+46fd5df371581bf38837cd458f5838b8).
+
+Mutant red-counts over the 20 shipped extractor assertions:
+- no wait-guard: **0 reds**
+- ASCII `\b` instead of SwedishWordBoundary: 1 red (only `'påkoktid 15 min'`)
+- `contains()` instead of any boundary: 3 reds
+- no composite summing: 2 reds
+- no total-over-phase ranking: 2 reds
+- no `break` on total / drop the `total == null` guard: 0 reds each (both
+  provably behaviour-inert given the other)
+
+So the five `_waitLabels` — the class doc's headline claim ("Waiting is not
+work: Vilotid and Kyltid are recognised precisely so they can be REJECTED") —
+are pinned by nothing. The two tests that claim to cover them are answered by
+earlier code: `'Vilotid: 2 timmar'` alone matches no total/phase label either
+way, and on the sillsallad page the loop `break`s on the total one line above
+the Vilotid line. The guard's only disagreement set is a wait label sharing a
+LINE with a work label, where it skips the whole line and returns null:
+`'Tillagningstid 45 min, vilotid 2 timmar'` → shipped null, guard-less 45.
+Corpus check: 0 such lines in 414 gold dirs (Tillagningstid always precedes
+Vilotid, on its own bulleted line), so the finding is Medium, not High.
+
+Normalizer: shipped/unbounded/ascii outputs printed per fixture.
+`'kötttillagning'` reads `'kötttillagning'` under ALL THREE — the `\n` the bug
+inserts is at end of string and `preprocessText` ends with `.trim()`. That
+explains the brief's "reverting reddens exactly 2": tests 1 and 2 redden, the
+å/ä/ö test cannot. Two independent defects in one fixture: the trim swallow,
+and the comment's claim that ASCII `\b` "would fire a boundary right here" when
+the char before `tillagning` is `t`. Discriminators measured:
+`'kötttillagning tar tid'` → unbounded splits, ascii does not (kills the
+unbounded mutant only); `'råtillagning tar tid'` / `'sjötillagning tar tid'` →
+BOTH unbounded and ascii split (kills both). Also `'stegvis blandning'` →
+`'steg\nvis blandning'` unbounded, and `'methodology of the dish'` →
+`'method\nology…'`: two traps the production comment names and no test covers.
+The two `isNot(contains('Stid'))` assertions are permanently green — the bug
+emits lowercase `stid:` (confirmed in the corpus drafts:
+`potatisratter/PXL_20260602_192528336/draft.json:62` `stid: 40 minuter.`).
+
+Corpus evidence (`../butlery-corpus`, 414 gold dirs, 242 verified):
+- `potatisratter/PXL_20260602_192848565/ocr.txt:34` is byte-for-byte
+  `• Tillagningstid: 1 timme` — the normalizer test's "verbatim" claim CHECKS OUT.
+- Label frequency in ocr.txt: Tillagningstid 52 files, Koktid 10, Gräddningstid
+  9, Bakningstid 5, Friteringstid 4, Vilotid 9, Kyltid 3, Jästid 1,
+  Marineringstid 1. **Stektid, Ugnstid, Svalningstid and "Total tid": ZERO** —
+  four of the 13 label constants are speculative, which the extractor test's
+  header comment covers with "wherever the corpus has the form".
+- Value shapes after `Tillagningstid`: `N minuter` 69, `N timme` 26,
+  `N timme och N minuter` 8, `N min` 2, **`N` 2, `ca N timme` 2,
+  `N timme och N` 1, `N timmar` 1, `N timm` 1, `N minu` 1, `N mi` 1,
+  bare label 1, `Tillagningstid : N m` 1**. So ~7 real lines match the label
+  and yield null from `_minutesFrom` — an entirely untested branch, and the one
+  where the `??` fallback earns its keep (`_extractTime`'s cruder
+  `(\d+)\s*timm` / `(\d+)\s*min` still reads `1 timm` and `45 minu`).
+- Old-vs-new accuracy probe over the 43 verified golds that have both a
+  `timeMinutes` and a co-located `ocr.txt`: old 35/43, new 35/43, 0 fixes, 0
+  regressions, label found on only 2 of 43. Those 43 are all from the two books
+  that do NOT use the label; the label-bearing book (`potatisratter`) stores
+  gold per `recipe-NN/` subdir with the ocr.txt one level up at page scope, so
+  it cannot be scored without the multi-recipe splitter. i.e. **the ticket's
+  "wrong on 16 of 59" cannot be reproduced from the committed harnesses**, and
+  nothing in CI measures this change against the corpus.
+
+End-to-end discriminator found for the `??` wiring (verified through the real
+`strategy.import`, DI harness copied from `text_import_strategy_test.dart`):
+the corpus-verbatim `• Tillagningstid: 1 timme och 15 minuter` gives new=75,
+old=60 — because `_extractTime`'s pattern 2 (`tid\s*:\s*(\d+)\s*timm`) reads
+the composite as 1 hour. Its no-label sibling (`Grädda i 20 min`) gives 20 on
+both, pinning the fallback. Note the doc comment's rationale ("takes the first
+`<n> min` anywhere, usually a step timer") overstates it: `_extractTime` tries
+three `tid:`-anchored patterns BEFORE the bare scavenger, so on a colon-labelled
+minute line the old path was already right. The composite and the multi-recipe
+page are where it actually loses.
+
+`test/corpus/corpus_prelabel_test.dart` is `@Tags(['corpus-tools'])` (excluded
+by `dart_test.yaml`) AND gated on `RUN_CORPUS_PRELABEL=1`, so the `_totalTime`
+change ships with zero automated coverage by construction. It feeds
+`draft.json.timeMinutes`, which `tools/corpus/corpus_eval_core.dart` scores as
+`timeMatch`/`timeAccuracy` — so the natural home is to lift `_totalTime` into
+`tools/corpus/` and cover it in `test/tools/corpus_metrics_test.dart`, which
+does run untagged in CI. Also noted: the new OCR-reuse branch fabricates
+`OcrMeta(provider:'ocr_space', timestampIso: DateTime.now())` instead of reading
+the stored `ocr.meta.json`; it is never persisted on that branch, so the blast
+radius today is only the in-run `isFailure` check.
+
+Suites run: `flutter test test/unit/services/import/parsers/ test/services/import/
+test/unit/services/import/text_import_strategy_test.dart` → 230 pass.
+`flutter analyze --fatal-infos lib/services/import test/unit/services/import
+test/corpus` → clean.
+
+Post-review md5: `recipe_time_extractor.dart` 46fd5df371581bf38837cd458f5838b8,
+`text_import_normalizer.dart` dea3bf24d711309b85adfb7fe270f18b,
+`text_import_strategy.dart` 14bea68c9502786d7d2147b907aa511f,
+`recipe_time_extractor_test.dart` 776d0e21d902fa405c7411544ede8036,
+`text_import_normalizer_test.dart` a1ab111c73024f46ff6368d4c7df557e,
+`corpus_prelabel_test.dart` 651855d108f7a9eb381dffbeb2974471.
+
+## 2026-08-05 — Recipe time extractor, round 2 (re-review after three fixes)
+
+Trigger: re-review of the staged import/time-extraction diff after my round-1
+`fail (3 blocking)`. Ten files in scope. Verdict this round: pass, with three
+test-only gaps closed by me and one staging hazard flagged.
+
+### Round-1 findings, verified
+
+1. **Vacuous `kötttillagning` fixture — CLOSED.** Replaced by
+   `råtillagning tar tid` asserting full equality, plus `stegvis` /
+   `methodology`. Non-vacuous: the trailing text defeats `preprocessText`'s own
+   `.trim()`, and `rå` before the label kills BOTH the unbounded mutant and an
+   ASCII-`\b` mutant (`\b` fires between `å` and `t`). The lookAHEAD side is
+   still discriminated only against the unbounded mutant, which is correct —
+   Swedish compounds insert a linking `-s-`, so a å/ä/ö immediately after these
+   labels is not a real word.
+2. **Nothing pinned `text_import_strategy` line 640 — CLOSED.** Both drafted
+   tests are in "Metadata Extraction". `_extractTime`'s
+   `tid\s*:\s*(\d+)\s*timm` stops at the hour and answers 60 where the
+   extractor sums 75, so test 1 kills the revert-to-bare-`_extractTime` mutant;
+   test 2 (no label, expects 20) kills the drop-the-`??`-fallback mutant. Both
+   arms of the `??` covered. Note test 1 is a superset pin — it also reddens if
+   the normalizer's bounded header split regresses, since `Tillagningstid`
+   would be cut to `stid:` before the extractor sees it.
+3. **`_waitLabels` — HALF closed, and I said so explicitly.** The production
+   route was taken: `extract` now skips only lines with NO work label, and
+   `_minutesAfter` truncates the tail at any following wait label. Replica
+   probe (two mutants, 24 fixtures, `test/`-side copies, `lib/` never touched):
+   - M2 (`_minutesAfter` to `_minutesFrom(line)`) reddens exactly ONE
+     assertion, `'Vilotid: 2 timmar Tillagningstid: 45 minuter'` giving 120 vs
+     45. The brief's claim reproduced exactly.
+   - M1 (delete the wait truncation) reddens **ZERO of the 20 shipped
+     fixtures** — every one puts the work NUMBER between the work label and the
+     wait label, so first-match-in-tail is right either way. `_waitPattern`'s
+     five labels were still pinned by nothing.
+   Discriminating shape found by probe: a collapsed row whose work value did
+   not survive OCR, so the first duration after the work label belongs to the
+   WAIT. `'Tillagningstid: Vilotid: 2 timmar'` gives base null, M1 120;
+   `'Koktid — Jästid: 2 timmar'` gives null vs 120. Test added with those two
+   plus the work-value-present positive control.
+
+### `duration_parser._durationPattern` ASCII `\b` to `SwedishWordBoundary.after`
+
+Unpinned in its own suite. Replica probe (`\b` restored): `'Gör 2 hål i degen'`
+gives null vs **2 HOURS**, `'Stick 3 hål i locket'` null vs 3 h,
+`'30 säsonger senare'` null vs 30 s; recall controls `1 h`, `2 h och rör om`,
+`30 s`, `10 min`, `1,5 h` identical under both. Added three tests to
+`duration_parser_test.dart` (two negatives + one recall control).
+The behaviour was incidentally killed by the extractor suite's
+`'Koktid: 2 hål i degen, 20 min'`, but by accident and with a different
+expected value — a cross-suite accident is not a pin.
+
+**Backslash trap hit again, exactly as the knowledge file warns.** The first
+replica was built from a bash heredoc where a doubled backslash reached python
+singled, so the Dart source got a literal U+0008 and the mutant returned null
+for EVERYTHING including `10 min`. A mutant that reddens far MORE than expected
+is the tell that the mutant is wrong. Rebuilt with `chr(92)` and read the line
+back with `repr()` before trusting it. The same trap fired a second time in a
+heredoc-written probe TEST (`replaceAll` of a backslash literal), producing a
+compile error, and a third time when a heredoc `cat >>` of the archive entry
+itself died on quoting — write long text with the Write tool, not a heredoc.
+
+### Tooling
+
+- `tools/corpus/corpus_paths.dart::recipeEntries` — the level is now chosen by
+  which gold is VERIFIED, not which file exists. Behaviour change to a shared
+  helper used by `tools/corpus_eval.dart`, and
+  `test/corpus/corpus_multi_layout_test.dart` (not in the staged set) had NO
+  fixture for a page with gold at both levels. Replica probe with the
+  existence-only rule: BASE returns `[broken/recipe-01, single,
+  spread/recipe-01, spread/recipe-02, unver/recipe-01, unver/recipe-02]`, MUT
+  returns `[broken, single, spread, unver]` — 3 of my 4 new tests flip, and
+  `single` is correctly inert as the recall control. Four tests added.
+- `tools/corpus_split_eval.dart` — all logic is inline in `main()` plus private
+  top-levels, so it is untestable by construction. Non-blocking (a report CLI
+  whose numbers are read by a human), but it does not follow the local
+  thin-`main()`-over-`*_core.dart` shape that `corpus_eval.dart` established.
+- `test/corpus/corpus_prelabel_test.dart` — all three claims verified: key read
+  at line 95 but demanded only at the point of use (163), `stale` computed from
+  `ocr.lastModified().isBefore(image.lastModified())`, stored meta read with an
+  `OcrMeta(provider:'unknown')` fallback rather than fabricated. The staleness
+  rule is real logic living inside a skipped test file, so nothing can exercise
+  it — noted, not blocked.
+
+### The tree moved THREE times mid-round
+
+`recipe_time_extractor.dart` was clean (`A `) at round start and became `AM`
+during the round, twice, while its suite stayed byte-identical apart from my
+own addition — i.e. the moved production file was carrying unasserted lines by
+construction. What arrived:
+
+- `_totalPattern` rewritten so the bare `tid` alternative requires a colon
+  (`tid(?=\s*:)`), because "Ta ut smöret i god tid, ca 20 min innan" was read
+  as a 20-minute total.
+- `_minutesFrom`'s composite branch bounded (`summed >= 1 && <= _maxMinutes`),
+  because it returns before reaching `DurationParser` and so did not inherit
+  its 12-hour cap: `"0 tim 0 min"` answered 0 (non-null, wins the caller's
+  `??`) and `"99 timmar och 999 min"` answered 6939.
+
+`grep -c 'god tid|99 timmar|0 tim|maxMinutes'` over the suite = **0**. Three
+tests added. Non-vacuity and the staging hazard proved in ONE probe by
+compiling the INDEX version (`git show :<path>`) as a replica beside the
+worktree class: worktree/staged = `null/20`, `null/0`, `null/6939` on the three
+new assertions, and identical on all three controls.
+
+**Intermediate state caught in flight.** At 00:18 the new `_totalPattern` used
+NON-raw Dart literals for `total\s+tid` and `tid(?=\s*:)`. Dart silently drops
+an unrecognised escape, so the compiled pattern was `totals+tid` /
+`tid(?=s*:)` — "Total tid" no longer matched at all, masked entirely by the
+bare-`tid` alternative answering the same fixture. By the time I re-read the
+file it had been fixed to raw strings. The tell was my probe's RECONSTRUCTION
+disagreeing with the live class on one input (`'Tid : 30 min'`): the
+reconstruction said no-match, the real class said 30. A reconstruction-vs-live
+disagreement is a tree-motion signal, not a finding — re-read before writing a
+word. Reported as history, not as a live defect.
+
+The other two moves (`text_import_normalizer.dart`,
+`tools/corpus/corpus_paths.dart`, plus their suites) were COMMENT-ONLY: stale
+corpus counts corrected to a counted 96 `Stid:` lines in 66 unverified seeds,
+page counts removed as un-maintainable from inside the repo, a line-number
+reference dropped, and a known remaining gap documented (`Tillredningstid:` is
+left whole by the bounded split and then dropped wholesale by the
+still-unbounded `RecipeSectionDetector.isInstructionHeader`; zero occurrences
+in 250 corpus pages). Re-read; no behaviour change; my earlier review of them
+stands.
+
+### Runs
+
+`flutter test test/unit/services/import/parsers/
+test/unit/services/import/text_import_strategy_test.dart
+test/unit/utils/duration_parser_test.dart test/services/import/
+test/corpus/corpus_multi_layout_test.dart` gave **291 passed**, md5-bracketed
+(tree stable across the run). `flutter analyze --fatal-infos` on every touched
+file was clean. All probe replicas were `test/`-side and deleted; `lib/` was
+never mutated.
+
+Post-review md5: `recipe_time_extractor.dart` 4a43583225e3ffdbfd55037fba73dd80,
+`text_import_normalizer.dart` 0d253c11c37d44e1d2774b5d15808e2c,
+`text_import_strategy.dart` 653128bf7e66f36cd9a0ace24b22c63d,
+`duration_parser.dart` 2b644b623e8760cae4356e6c156dd233,
+`corpus_paths.dart` 72662400be2ee6e75d317552bf534ac3,
+`corpus_split_eval.dart` e45096dac8ad52148c220c04e5227675.
+
+## 2026-08-05 — `text_layout` value type: 13 tests, 0 fully vacuous, 1 marquee fixture that killed nothing (OCR geometry, pre-consumer)
+
+**Trigger:** review the test coverage of two NEW staged files landing ahead of their callers —
+`lib/services/ocr/text_layout.dart` (LayoutBox / OcrWord / OcrLine / PageLayout / DocumentLayout,
+the per-word bounding boxes `DeviceTextRecognizer` currently discards, so a later commit can split
+cookbook spreads by TYPE SIZE) and `test/unit/services/ocr/text_layout_test.dart` (13 tests, green).
+The task asked to MEASURE vacuity rather than read it, and named three suspects.
+
+**Tree state.** Both `A ` (staged, worktree == index). `lib` md5 `915f4a9a0f3d38f8a4f865bc783a7673`
+at round start AND at round end — never edited. Suite md5 `a6c9a04b8f6f7975bb8c4c0a643597cd` ->
+`bf31e1466834d1804d5a504a2299b6fb` (my additions only). Baseline `flutter test` 13/13.
+
+**Probe used (no `lib/` mutation at any point).** The replica technique in its cheapest form for a
+dependency-free value type: a `python` driver copies `lib/services/ocr/text_layout.dart` to
+`test/unit/services/ocr/_zz_probe_impl.dart`, applies ONE string mutant, copies the real suite to
+`_zz_probe_test.dart` with only the import line swapped (`package:butlery/...` -> `_zz_probe_impl.dart`),
+runs `flutter test <probe> -r compact`, scrapes `[E]` lines, deletes both. 31 mutants, run twice
+(before and after my edits). `M0-control` green both times = replica faithful.
+
+### Result table — mutants that SURVIVED the shipped 13 tests
+
+| Mutant | Meaning | Shipped 13 | After edits |
+|---|---|---|---|
+| M3 even-median -> `heights[mid]` | drops the even-count average | GREEN | RED 1 |
+| M9/M10/M11 `_minBodyWords` 4->3 / 5 / 2 | the body-line threshold | GREEN x3 | RED 1/2/2 |
+| M12 `_minBodyLines` 4->3 | the baseline threshold, low side | GREEN | RED 1 |
+| M15 `bodyTypeHeight` median->mean | page baseline robustness | GREEN | RED 1 |
+| M17 `wordCount` drops the text fallback | degraded-provider path | GREEN | RED 2 |
+| M18 `toJson` always emits `words` | wire shape | GREEN | RED 1 |
+| M25/M26 drop `..sort()` (page / line) | median over unsorted input | GREEN x2 | RED 2/1 |
+| M27 `OcrLine.toJson` drops `'box'` | the line box never round-trips | GREEN | RED 1 |
+
+M30 (`lines` rewritten as `whereType<PageLayout>().expand(...)`) is green in both — an EQUIVALENT
+mutant (identical semantics to the null-safe spread), not a gap. Everything else was already killed.
+
+### The three named suspects, measured
+
+1. **"the real page that motivated this model separates cleanly" — killed ZERO mutants.** Not merely
+   weak against the line-box mutant the task suspected: it was answered identically by M1 (use the line
+   box), M2 (mean per line), M15 (mean per page), M25/M26 (no sort) and M11 (headings counted). The cause
+   is the fixture HELPER, not the test: `line(text, {height, words})` sets the line box height, EVERY word's
+   height and the word count from one `height` arg, so `box.height == typeHeight == every word` by
+   construction — i.e. the fixture erases exactly the distinction the model exists to make. The only
+   mutant it caught (M23, `_minBodyWords=6` -> `bodyTypeHeight` null -> `!` throws) is also caught by four
+   other tests. Rebuilt with a `measured(text, wordHeights, {boxHeight})` helper: per-word spread around
+   each corpus-measured median, LINE boxes inflated to 165-180 on the long body lines (the skew the
+   library doc argues about) and one mis-segmented 320 word. It now kills M1 (body baseline reads 172.5,
+   no line clears 1.5x -> heading list empty) and M2 (the mis-segmented body line's mean 119.6 clears
+   1.5x73 -> it is REPORTED as a heading).
+2. **`lineOffsets` / the blank-separator `+1` — LIVE, as the code claims.** M4 (drop the `+1`) reddens 2;
+   M5 (a null page counts 0 lines instead of 1) reddens 1; M6 (`join` with one newline instead of two)
+   reddens 2.
+3. **`isComplete` — LIVE, both arms, correctly split.** M7 (drop `pages.isNotEmpty`) reddens only
+   "an empty document is not complete"; M8 (`every`->`any`) reddens only "true only when every page
+   carries geometry". One mutant each, no piggy-backing.
+
+### The false comment (test-only, fixed)
+
+"ignores short lines, so headings cannot set the baseline" claimed *"If the headings counted, the median
+would rise"*. **Measured false:** with `_minBodyWords=2` (headings counted) the fixture still answers 70,
+because all four body lines were 70 and a median is robust — the two big values sort to the end and never
+reach the middle. Fixed by giving the body lines DISTINCT out-of-order heights (74, 66, 72, 68 -> median 70):
+headings-counted now answers 73 and unsorted-median answers 69, so that one fixture kills M11 and M25.
+This is the `lessons-digest` "a comment is an untested assertion" shape, living in a test comment.
+
+### Suite edits (test-only; 13 -> 20 tests, all replica-mutant verified)
+
+Deleted 1 (measured redundant), added 8:
+- `typeHeight averages the two middle words when the count is EVEN` — words `[80,62,60,78]`, out of
+  reading order, mean == median == 70 so it owns M3 (-> 78) and M26 (-> 61) and free-rides on nothing.
+- `wordCount counts boxes when present, whitespace tokens when absent` — padded text with a double space
+  -> 4, pinning trim + the `\s+` collapse. Kills M17.
+- `a line needs four words before it counts as running text` — `pageOf(3) -> null`, `pageOf(4) -> 70`.
+  Pins `_minBodyWords` EXACTLY; kills M9/M10/M11/M23 on its own.
+- `three body lines are not a baseline, four are` — pins `_minBodyLines` exactly (kills M12, M14, M16)
+  and strictly SUBSUMES the shipped `is null when there are too few body lines`, which was therefore
+  DELETED (the round's autopilot deletion; it killed only mutants the new pair also kills).
+- `one badly measured line does not move the page baseline` — body heights `[70,320,70,72]` in page
+  order -> 71. Kills M15 (mean = 133) and M25 (unsorted = 195).
+- `a page with no word boxes at all still measures from line boxes` — the degraded provider end to end;
+  kills M17 at page scale and M24.
+- `a one-page import gets no separator at all` — `lineOffsets == [0]`, no trailing blank line.
+- `a line with no word boxes round-trips as a usable line box` — `containsKey('words') isFalse` (M18)
+  plus `back.typeHeight == 42` (M27, the line box silently not travelling).
+
+`flutter analyze --fatal-infos` on both files: clean. `flutter test test/unit/services/ocr/`: 31/31.
+
+### Two conventions worth keeping from this file
+
+Placement (`test/unit/services/ocr/`) and group naming both match the sibling `ocr_usage_tracker_test.dart`;
+groups are named after the PROPERTY (`the text is DERIVED from the lines`, `DocumentLayout.isComplete fails
+closed`, `JSON is the contract with tools/`) rather than after methods, which is why the one mis-named group
+comment stood out at all. Fixture TEXT is real Swedish page content throughout — the weakness was never the
+strings, it was that every NUMBER on a line was the same number.
+
+### Harness scare (worth the rule it earned)
+
+Piping the mutation driver into `head -14` SIGPIPE-killed it before its cleanup, leaving `_zz_probe_impl.dart`
+and `_zz_probe_test.dart` in `test/unit/services/ocr/` — where `flutter test <dir>` runs them and a `git add`
+would stage them. Caught by `git status --porcelain`, not by the driver's own "probe files removed" line
+(which never printed and was never missed). Same family as the 2026-08-03 harness-timeout-left-a-mutant-live
+entry, one layer out: the cleanup is only as reliable as the process's right to finish.
+
+**Verdict:** pass (0 blocking). No production change requested or made.
+**Closing hashes:** `lib/services/ocr/text_layout.dart` 915f4a9a0f3d38f8a4f865bc783a7673 (UNCHANGED all
+round), `test/unit/services/ocr/text_layout_test.dart` bf31e1466834d1804d5a504a2299b6fb.
+
+## 2026-08-05 — BUT-1797 round 4: the two newest guards, and the EIGHTH membership writer arriving mid-round
+
+**Trigger:** final test-adequacy pass on the group-share/revoke ticket, seven production
+files named. All seven Read in full (`recipe_share_grants.dart`,
+`social_recipe_sharing_service.dart`, `social_recipe_membership_service.dart`,
+`collaboration_management_module.dart`, `firebase_recipe_repository.dart`,
+`unified_recipe_service.dart`, `social_recipe_operations.dart`), plus
+`recipe_share_grants_test.dart`, the sharing suite, the collaboration suite, the
+membership suite's test roster and the unified-service seam group.
+`.claude/rules/accepted-deviations.md` + the BUT-1797 entry read first — the
+descriptive-only `grants`, the snapshot semantics and the no-compatibility-path clause were
+out of scope by decision, as were the realtime twin deserializer, the `shared_content`
+revoke residual and the dead repository methods.
+
+**Motion check as map, again.** Round-3 hashes vs round-4 start: `recipe_share_grants.dart`
+ef2548c1 -> e79172ae and `social_recipe_sharing_service.dart` 05c3f46f -> 116d9435 both MOVED,
+under `recipe_share_grants_test.dart` BYTE-IDENTICAL to round 2 (d5303ac6). Two moved
+producers under a frozen suite pointed straight at the two guards the brief asked about.
+`collaboration_management_module.dart`, `firebase_recipe_repository.dart` and
+`social_recipe_operations.dart` read frozen at start — and one of them did not stay that way.
+
+**Guard 1 — `mergeCategoryIds` empty-category-id refusal: UNPINNED. Now pinned.**
+A grep for a bare group-prefix token or `groupGrant` of an empty id across `test/` returned
+zero, and `recipe_share_grants_test.dart` had NO test for `mergeCategoryIds` or `forShare` at
+all. The neighbouring caller-level test feeds a `direct` token, which is refused one line
+EARLIER by `startsWith` — so it cannot reach the `isEmpty` line. Killing input, measured with
+a `test/`-side replica (guard deleted, class renamed): real `[family]`, mutant `[, family]`.
+Added `a group token with an empty id never becomes a category row` with `family` as the
+loop-ran control, plus `the groups already on the recipe survive a later share` (the
+existing+new fold, which no caller test stages: every group-share fixture starts from a
+PERSONAL recipe, so `existing` is always null there).
+
+**Guard 2 — the permission-write self-skip: was unpinned, and a PARALLEL SESSION pinned it
+mid-round.** My own test for it compile-failed against a fixture param that did not exist
+(`permissions:` vs `members:`) — because the other session was editing the same file in the
+same minute and landed `a share whose recipient list contains the sharer keeps their admin`,
+a strictly stronger version (it also asserts the friend-B grant). Deleted MINE, kept theirs,
+left a pointer comment where mine had been. Replica mutant confirms the kill:
+`me-uid perm=viewer` with the guard removed, i.e. the owner demoted on their own recipe.
+**Rule extracted: on a duplicate, delete YOUR copy, never the parallel session's** — theirs
+may already be in their report, and two identical-intent tests are rot whoever wrote them.
+
+**Third gap found and closed: the FIRST-share half of `excludeUserId`.** The conversion
+branch also passes `excludeUserId: currentUserId`, and nothing reached it — the group path
+strips self upstream (`allMemberIds.remove`), so every existing "no self grant" assertion
+holds for that reason and survives the mutant. Replica measured: mutant writes
+`grants={me-uid: [direct], friend-B: [direct]}` while `ownerPerm` stays `admin` (the
+permission half is safe there for a different reason — the owner's admin is written AFTER
+the loop). Added `a first share that includes the sharer gives them no revocable reason`.
+
+**The mid-round arrival, and the writer count going to EIGHT.**
+`collaboration_management_module.dart` moved 62d73ead -> 5bf7eada mid-round with a brand-new
+`transferOwnership` hunk: the outgoing owner is demoted to `editor` and now gets a `direct`
+grant. Its suite's transfer test captures the saved entity and asserts ownerId + both
+permissions — and nothing about `grants`. Whole-suite replica run (module class renamed, the
+`RecipeShareGrants.add` deleted): `+44 -1`, the single red being the test I had just added,
+`Expected: ['direct'] Actual: <null>`. So the hunk was unasserted and no pre-existing test
+could see it. Closed with `the demoted owner gets a reason for the access they keep`, whose
+control asserts the incoming owner's group grant survives (a transfer records one reason, it
+does not rewrite the map).
+
+**Tree-motion discriminator worth keeping.** `social_recipe_sharing_service.dart` md5 moved
+116d9435 -> 542f18ad while `git diff <path>` printed NOTHING — not the usual CRLF artefact:
+the other session had edited AND STAGED, so worktree==index and only `git diff HEAD` shows
+it. The change was comment-only (a "do not delete the sharer's removal from the group
+member set, it still feeds the empty-group refusal and keeps self out of `recipientIds`"
+note — verified true against the group resolver and the `SharedRecipe.create` call).
+`git diff` empty + md5 moved therefore means CRLF *or* staged motion; `git diff HEAD`
+separates them.
+
+**Verified, not re-derived (the brief's four closed gaps).** Notification stubs are
+`sendImmediateNotification`/`sendSilentNotification` with the revoke fan-out verified both
+directions; `_grantAccessOnReshare` has three assertions on the recorder; the re-share creator
+skip carries its control pair; `updateMemberPermission`'s introduce branch is
+`social_recipe_membership_service_test.dart:538` inside a `Grant provenance (BUT-1797)` group
+(27 `grants` hits in that suite).
+
+**DI seam re-confirmed after this round's edits.** `unified_recipe_service.dart:426` still
+binds `SocialOpsContext.updateRecipe: saveRecipeForSocialModule`, and
+`unified_recipe_service_test.dart`'s `social member-write seam (BUT-1785)` group builds the
+REAL service, drives `service.social.removeGroup` to a repository write, and carries the
+control that `updateRecipe` REFUSES the same collaborative recipe. Note the seam's production
+comment now says TWO consumers (member manager + the sharing manager's `_grantAccessOnReshare`)
+while the test's docstring still says "exactly one" — stale prose in a test file, not a
+coverage gap; left for the owning session rather than edited under a parallel writer.
+
+**Nothing vacuous found in the current bytes.** The weakest survivor is unchanged from round 3
+(`revokeGroup` `does not mutate the maps it was given`, which catches in-place MAP mutation
+only). `revokeGroup`'s empty-map disjunct is behaviourally inert (an empty map takes the
+loop-free path either way) — deliberately NOT test-pinned.
+
+**Verification.** `flutter analyze --fatal-infos test/unit/services/unified`: no issues.
+`flutter test test/unit/services/unified/operations/ test/unit/services/unified/modules/social_recipe/`
+-> **1023/1023**, md5-bracketed on the three moved production files (stable across the run);
+`collaboration_management_module_test.dart` 45/45 bracketed separately. All four `_zz_probe_*`
+files deleted and `git status` re-verified clean of them.
+
+**Verdict:** pass (0 blocking). No production file edited.
+**Closing hashes:** `recipe_share_grants.dart` e79172ae73f0765cb614660e33f0c684,
+`social_recipe_sharing_service.dart` 542f18adec05c2a63bf58fd712167d2e,
+`social_recipe_membership_service.dart` 13e72010190de9402362973c265fe7e6,
+`collaboration_management_module.dart` 5bf7eada8f1b2910bb222b65b774ce58,
+`unified_recipe_service.dart` 733f41f5810eaf40095f45ece742f542,
+`firebase_recipe_repository.dart` 347ab714f63bb77e866b708271d49d68,
+`social_recipe_operations.dart` ef71542bbfd86482b1891cba2306a5ec.
+
+## 2026-08-05 — BUT-1797 round 5 (final test-adequacy pass: widened group-revoke copy, l10n sync)
+
+**Trigger:** asked to judge whether the twice-rewritten group-revoke copy is pinned, confirm
+the three generated l10n files match the two ARBs, name untested inputs in
+`social_recipe_sharing_service.dart` + `recipe_member_manager.dart`, and find vacuity.
+
+**Motion check (start).** All in-scope files staged (`M`/`A `). Worktree == index for the two
+named production files at open.
+
+**Tree motion during the round, twice, on `recipe_share_grants.dart` — reported, not filed.**
+The Read at the top of the round returned a live `// MUTANT: startsWith guard removed` marker
+in place of `if (!token.startsWith(_groupPrefix)) continue;`. Minutes later the guard was back
+and `git diff` instead showed `if (categoryId.isEmpty) continue;` replaced by `// MUTANT`. Both
+are exactly the two guards pinned by `social_recipe_sharing_service_test.dart:1354` and
+`recipe_share_grants_test.dart:273` — i.e. another session running the non-vacuity probe for
+that pair, one guard at a time. Restored by the end of the round; `git diff` on the file empty.
+Standing consequence: **grep `MUTANT` across `lib/` before staging anything in this feature.**
+
+**Contaminated-then-cleared test run.** First `flutter test` over the four suites was bracketed
+and the brackets disagreed: `recipe_share_grants.dart` read `918f8546` (not the clean
+`e79172ae`) and `recipe_member_manager.dart` went `81756d3c` -> `f250cab1` across the run. The
+diff turned out to be COMMENT-ONLY (the parallel session correcting three doc comments: "kept it
+(another grant, or ownership)", "five injected seams", and the `mergeCategoryIds` null-vs-absent
+correction), so 94/94 green stands behaviourally. `flutter analyze` over the 8 scoped files:
+clean, 44.5 s.
+
+**l10n sync — the cheap definitive method.** Hand-diffing ARB values against the generated Dart
+is a trap: a chunk-match comparison reported 95 SV / 94 EN "mismatches", every one an artefact of
+Dart quote/escape choice (`"..."` for strings holding `"`, `\n`). The real check is one command
+pair — `md5sum lib/l10n/app_localizations*.dart`, `flutter gen-l10n`, `md5sum` again. All three
+hashes identical (`93509d6c` / `bcb93931` / `645182826d`), so the generated files ARE what the
+ARBs produce. Key-set parity separately confirmed: 4489 keys each, sv-minus-en and en-minus-sv
+both empty, zero ARB keys without a declaration in any of the three files.
+
+**The copy question, answered.** Nothing pins the widened clause. `grep 'annan grupp|enskilt'`
+over `test/` returns zero; the only hardcoded copy in the widget suite is
+`find.textContaining('fortfarande åtkomst')` — the negative anchor on BUT-1785's RETRACTED
+sentence. Every positive assertion resolves through `l10n.recipeSharingRevokeGroup*(...)`, which
+is satisfied by whatever the ARB currently says. So narrowing back to "…delat med enskilt…" is
+green. **Recommended NOT to test it**, on the distinction now folded into the principle: a
+retracted claim is FALSE about what the code just did (earns an anchor); a narrowed claim is
+true-but-incomplete — the people it names really do keep access, it merely omits a second set who
+also do. Under-promising in a confirm dialog, `firestore.rules` untouched either way. Any catching
+test must lock a phrase and would redden on legitimate Swedish rewording, in a file that already
+carries five hardcoded literals for a string rewritten twice in three days. The behaviour behind
+the clause is pinned on both sides (`recipe_share_grants_test.dart:77`,
+`social_recipe_sharing_service_test.dart:962`), so a CODE regression making the narrow copy true
+reddens immediately; only copy-drifting-from-correct-code is uncovered, and the ARB
+`@description` on both keys now states the rule where a copy editor stands.
+
+**Untested inputs named (none blocking).**
+1. `RecipeMemberManager._sendMemberAddedNotification` is mutation-dead. All seven
+   `sendImmediateNotification` occurrences in the 922-line suite are `when(...)` stubs; zero
+   `verify`. Input: `addMember(recipeId:'collab_1', memberId:'user_999', ...)` on the happy path —
+   delete the `await _sendMemberAddedNotification(...)` line and 94/94 stays green, i.e. a member
+   added to a shared recipe is never told. (The REMOVED half is covered indirectly: the
+   `removeGroup` tests `verify(sendSilentNotification(targetUserIds:['user_456']))`, and
+   `removeMember` shares that helper — so only the helper's CALL SITE in `removeMember` is free,
+   not its body.)
+2. `removeGroup`'s fan-out loop with MORE THAN ONE cut member. Every fixture cuts exactly
+   `user_456`. Input: `grants: {'user_456':[group:group_a], 'user_789':[group:group_a]}` with both
+   in `memberPermissions` — a mutant taking `removedMemberIds.first`, or breaking after one
+   iteration, survives the whole suite.
+3. `SocialRecipeSharingService._resolveGroupMembers`' display-name resolution (the `allFriends`
+   lookup + `displayUnknownUser` fallback, :474-488) is reached by no test and CANNOT be: the sole
+   caller uses `groupMembers.keys`, so every VALUE the map builds is dead. A production
+   observation (dead work per group member per share), not a test gap to fill.
+
+**Vacuity in the current bytes.**
+- `social_recipe_sharing_service_test.dart:440-443` — the PII test's comment says "This assertion
+  is an explicit pin against a future refactor that adds one and forgets to redact it", and there
+  is no such assertion; the parenthetical "(Sanity: SharedRecipe has no field shaped like
+  'email'.)" is prose. The three live assertions (`sharedByUserId`, `sharedByDisplayName`,
+  `recipientIds`) are fine. Fix is either a real negative over the serialized keys or a reworded
+  comment.
+- Falsified mid-round by the parallel session's own correction: `recipe_share_grants_test.dart:310`
+  ('nothing to record leaves the field ABSENT, not empty' + "the create path leaves the field
+  absent") and `social_recipe_sharing_service_test.dart:1333` ('a first plain share writes no
+  categoryIds at all'). Production's corrected comment now states `toJson` writes the key either
+  way, so the distinction is null vs `[]`. The `isNull` ASSERTIONS remain correct and
+  non-vacuous — only the titles/comments overstate.
+- `recipe_member_manager_test.dart:634` ('a group id sent to removeMember still fails') is
+  self-labelled an anti-harmonisation anchor rather than coverage. Correctly labelled; not a
+  finding.
+
+**Deliberately did NOT apply the test-only fixes this round.** Normal rule is to fix zero-risk
+test-only items in place; here a parallel session was demonstrably inside these exact suites and
+production files during the round (two live mutants plus three comment corrections landing), so
+an edit would have collided with an in-flight probe. Reported instead, with the reason stated.
+
+**Also observed:** `testing-specialist.knowledge.md` is 205,511 chars against its own stated
+~35,000 budget. Not addressed here (a sharpening pass is its own task), flagged so it is not
+discovered again as news.
+
+**Post-round md5 of in-scope files:**
+`recipe_share_grants.dart` 918f8546669c45ed088cd6d2ea5bbb9d (comment-only ahead of index),
+`recipe_member_manager.dart` f250cab1c795dc8bd77c754a8875e3a5 (comment-only ahead of index),
+`social_recipe_sharing_service.dart` 542f18adec05c2a63bf58fd712167d2e,
+`app_localizations.dart` 93509d6cb616c2e53cae7cfdefd3f797,
+`app_localizations_en.dart` bcb93931a6098a03adef8b8e8cb3d230,
+`app_localizations_sv.dart` 645182826d74c017dcb56c9d6ce73070.
+
+## 2026-08-05 — BUT-1797 round 6 (closing test-adequacy pass: two closed gaps verified, two judgements returned)
+
+**Trigger:** verify round 5's two closed items, give a judgement (not a fix) on the two left
+open deliberately, confirm the `mergeCategoryIds` guard separation, and name anything else
+untested in four production files. All four Read in full
+(`recipe_share_grants.dart`, `recipe_member_manager.dart`,
+`social_recipe_sharing_service.dart`, `collaboration_management_module.dart`), plus
+`recipe_share_grants_test.dart`, `recipe_member_manager_test.dart` (the Group-Access-Removal
+and Member-Addition groups), `social_recipe_sharing_service_test.dart` (the PII, group-share
+and provenance-merge groups) and `collaboration_management_module_test.dart` (header, setUp,
+leaveCollaboration). `.claude/rules/accepted-deviations.md` read first — the descriptive-only
+`grants`, the group-share SNAPSHOT semantics, the no-compatibility-path clause and the
+asymmetry between group-revoke and explicit-remove are decided and were not re-litigated.
+
+**Motion check as map.** Round-5 closing hashes vs this round's start: `recipe_share_grants.dart`
+918f8546 and `recipe_member_manager.dart` f250cab1 both UNCHANGED; `social_recipe_sharing_service.dart`
+542f18ad -> 00c2dacd and `collaboration_management_module.dart` 5bf7eada (round 4) -> 94df1fdd
+had MOVED. Mid-round the first two moved again (918f8546 -> 77c629e5, f250cab1 -> 6b46d41b) with
+`git status` reading `AM`/`MM`; `git diff` showed the change was COMMENT-ONLY both times, and both
+comments were corrections of false claims — the `Recipe(...)` construction in `addMember` does NOT
+"have no such hazard" (it passes five fields explicitly, so it carries the same future-field risk),
+and the `mergeCategoryIds` guard comment gained the RangeError case (a token SHORTER than
+`'group:'` makes `substring(6)` throw, which is a second reason guard 1 is load-bearing). No
+`MUTANT` marker live in `lib/` this round.
+
+**Closed gap 1 — the add-notification: VERIFIED closed and faithful.**
+`recipe_member_manager_test.dart:706` now carries
+`verify(sendImmediateNotification(targetUserIds: ['user_999'], strategy/variables/additionalData/imageUrl/actions: any(named:))).called(1)`.
+Checked against `NotificationHelper.sendImmediateSafely:99-106`: production passes exactly those
+six named args, so the verify's shape matches the invocation and cannot pass by accident. Deleting
+`await _sendMemberAddedNotification(...)` now reddens. Note the `when(...)` stub is NOT what makes
+it pass — `sendSafely` swallows `MissingStubError` — so the verify is the entire coverage, which is
+the point.
+
+**Closed gap 2 — the GDPR data-scope comment: VERIFIED closed.**
+`social_recipe_sharing_service_test.dart:444` is now a real assertion:
+`call.doc.toFirestore().keys.map(toLowerCase)` filtered on `email|phone|mail|tel`, `isEmpty`.
+`SharedRecipe.toFirestore()` = `getCommonFirestoreFields()` (7 unconditional literal keys incl.
+`sharedByUserId`) + copy-on-write fields + 5 more, so the key set can never be empty and the
+negative cannot pass vacuously by an emptied serializer. One-line strengthening available but not
+required: a positive control (`expect(keys, contains('sharedbyuserid'))`) would also pin that the
+serializer ran.
+
+**Guard separation — MEASURED, not reasoned.** Throwaway `test/`-side replica (three copies of
+`mergeCategoryIds`: shipped, guard-1 deleted, guard-2 deleted), run once and deleted, `git status`
+re-verified clean. On the suite's fixture
+`[groupGrant(''), 'direct-share', groupGrant('family')]`:
+`SHIPPED=[family]`, `NO_STARTSWITH=[-share, family]`, `NO_ISEMPTY=[, family]` — so
+`expect(merged, ['family'])` reddens under EITHER mutant, i.e. the two guards are genuinely
+separated by one test. The control run on the old `direct`-only fixture printed `null` under all
+three, confirming in one line the comment's claim that a six-character token can distinguish
+nothing.
+
+**Judgement 1 — `removeGroup`'s multi-member fan-out: WRITE IT (one test, manager layer).**
+Not because the loop is risky, but because the singleton is the unrealistic case: a group share
+exists to reach several people, so the only production-shaped input is the one no fixture uses.
+And the gap is two layers deep, not one — `RecipeShareGrants.revokeGroup`'s `removed.add`/
+`retained.add` accumulation is single-element in EVERY fixture of the pure suite too, so
+`removed=[entry.key]` survives there as well. One manager test (grants
+`{'user_456':[group:group_a], 'user_789':[group:group_a], 'user_222':[group:group_a, direct]}`,
+all three seated in `memberPermissions`) capturing every `targetUserIds` and asserting the set
+`{['user_456'],['user_789']}` kills `.first`, `break`, the accumulator mutant and
+notify-the-retained in one assertion. Consistency argument: closing "notify nobody" while
+leaving "notify only the first" open is an arbitrary stopping point on the same defect class.
+Non-blocking (production is correct).
+
+**Judgement 2 — `_resolveGroupMembers`' dead display-name work: CONFIRMED, and it belongs in its
+OWN ticket.** Still true in the current bytes: the helper returns `Map<String,String>` (:465-504)
+and its sole caller reads `.keys` twice (:324, :325), so every value is discarded — a full linear
+scan of `friends` per member per group per share, plus an l10n lookup per unresolved member. Three
+reasons to keep it out of this commit: it is CPU-only with no I/O and nothing user-visible depends
+on it; the map shape PREDATES BUT-1797 (the ticket only added the `.keys` iteration for grants),
+so folding it in widens a diff five review rounds have signed off for zero behavioural delta; and
+the fix is a real decision, not a deletion — the `AppLogger.warning('Friend not found')`
+diagnostic is worth keeping and a future "delad med Mamma" notification is the natural consumer of
+the names, so the ticket must choose between `Set<String>` + a separate unresolved-ids log and
+actually USING the names. Same ticket should sweep `RecipeMemberManager._logMemberAction`, which
+is the identical shape in a second of the four files (builds a 5-7 entry `logData` map with
+`performedBy` and a `clock.now()` stamp, reads it never, ships only
+`AppLogger.info('Member action logged: ...')` — and no `unused_local_variable` fires because
+the map is written to).
+
+**Other untested inputs, named (all non-blocking).**
+1. `RecipeShareGrants.revokeGroup` with >1 removed member — as above, the pure-suite half.
+2. `RecipeShareGrants.add` / `dropMember` input-map non-mutation. `revokeGroup` has
+   'does not mutate the maps it was given'; its two siblings do not, so a mutant
+   `current..remove(memberId)` (mutate in place, return the same instance) survives the whole
+   repo. Input: `final g = {'anna':[direct]}; dropMember(g,'anna'); expect(g['anna'], [direct]);`.
+   Consequence is narrow but on-theme: `removeMember` whose persist FAILS would still have
+   stripped the cached recipe's grants in memory, which is the "a later group-revoke looks
+   already spent" symptom the file's own comments exist to prevent.
+3. `CollaborationManagementModule.leaveCollaboration` for a genuine NON-OWNER. Input:
+   `fakePermissionService.setPermissionState(currentUserId:'editor_user', defaultHasPermission:false)`
+   then `leaveCollaboration('recipe_collab')`. Production: `removeCollaborators` returns false at
+   its `isRecipeOwner` gate (`recipe_permission_module.dart:262` is a strict
+   `ownerId == currentUserId`), `leaveCollaboration` DISCARDS that return (:520) and logs success
+   and `return true` (:522-523). The covering test flips `currentUserId` on the recipe service
+   only and leaves `FakePermissionService` at `defaultHasPermission:true, currentUserId:'user_owner'`,
+   so the fake answers `isRecipeOwner` TRUE for a non-owner and the FIXTURE is what makes the write
+   happen. Latent only: `grep -rn` across `lib/` shows `leaveCollaboration`, `removeCollaborators`,
+   `addCollaborators` and `updateMemberPermissions` have NO call site outside their one-line
+   passthroughs in `realtime_recipe_operations.dart`, which themselves have none. Ticket, not a
+   blocker — and worth pairing with a decision on whether the five facade methods should exist.
+4. `CollaborationManagementModule` with `freshRecipe.socialData == null`. `addCollaborators` has a
+   `?? RecipeSocialData(...)` fallback; `removeCollaborators`, `updateMemberPermissions` and
+   `transferOwnership` do not, and `Recipe.copyWith`'s `socialData` is SENTINEL-based
+   (`recipe_unified.dart:1722`), so the whole membership change is silently dropped while
+   `repo.update` runs and the method returns true. Malformed-document input, low value.
+
+**Verified, not re-derived.** The four collaboration-module grant writers each have a live pin
+(`addCollaborators` :529, `removeCollaborators` :650, `updateMemberPermissions`' introduce branch
+:774, `transferOwnership`'s demoted owner :931). The sharing service's merge arms are all staged
+(`existing` non-null at :1257 and :1290, both-reasons at :1315, the self-only-group phantom
+category id at :1019, the sharer-in-recipient-list permission skip at :1045, the first-share
+`excludeUserId` at :402).
+
+**Cosmetic, not filed:** `social_recipe_sharing_service_test.dart:1362-1371` has a duplicated,
+run-on doc comment (the same "this pins that the input is REACHABLE" sentence twice). Left for the
+owning session — a parallel session was demonstrably editing these files during the round.
+
+**Verification.** `flutter analyze --fatal-infos` over the four production files and the three
+suite directories: **No issues found (8.9 s)**. `flutter test` over the four suites:
+**134/134**, md5-bracketed on all four production files and stable across the run
+(77c629e5 / 6b46d41b / 00c2dacd / 94df1fdd, identical before and after). Probe file deleted and
+`git status` re-verified clean of it. No production file edited; no test edited (the two open
+items were referred back by request, and a parallel session was live in these files).
+
+**Verdict:** pass (0 blocking).
+**Closing hashes:** `recipe_share_grants.dart` 77c629e5f480a04e018dc13c7d796869,
+`recipe_member_manager.dart` 6b46d41b3b84879ba3c54c27ef3c451d,
+`social_recipe_sharing_service.dart` 00c2dacd4d34b2cfb30dbb9472c70a52,
+`collaboration_management_module.dart` 94df1fddcb9f7d2d1d12446b2c08adf1,
+`recipe_share_grants_test.dart` 13770f61214115839957ffaf016b59fc,
+`recipe_member_manager_test.dart` 476022fde1a7f352000c951c6efe3cc7,
+`social_recipe_sharing_service_test.dart` 00b06d8c5689675c9f984522d6778945.
+
+## 2026-08-05 — BUT-1797 round 7 (verification pass: fan-out test, rewritten guard comment, three carried gaps)
+
+**Trigger:** verify the multi-member fan-out test I recommended in round 6 actually asserts
+what the brief claims (specifically that the RETAINED member's absence is asserted, not
+implied) rather than trusting the reported mutation result; judge whether the rewritten
+`mergeCategoryIds` guard-1 rationale is testable as stated, RangeError clause included;
+confirm the three carried gaps are still open and say which if any blocks; sweep for
+vacuity in the current bytes. Read in full: `recipe_share_grants.dart`,
+`recipe_member_manager.dart`, `recipe_sharing_manager.dart`, plus the changed ARB region
+(`app_en.arb` :8700-8819, whole file is 11,313 lines), `recipe_share_grants_test.dart`,
+the manager suite's Group-Access-Removal and Permission-Updates groups, the sharing-manager
+suite's new re-share block and fixture, and `collaboration_management_module.dart` :210-270.
+`.claude/rules/accepted-deviations.md` and the BUT-1797 entry read first — the
+descriptive-only `grants`, the group-revoke/explicit-remove asymmetry, the SNAPSHOT
+semantics and the no-compatibility-path clause were not re-litigated.
+
+**Motion check as map.** Round-6 closing hashes vs this round: all three production files
+UNCHANGED (`recipe_share_grants.dart` 77c629e5, `recipe_member_manager.dart` 6b46d41b,
+`social_recipe_sharing_service.dart` 00c2dacd), `collaboration_management_module.dart`
+still 94df1fdd. The two SUITES moved (`recipe_share_grants_test.dart` 13770f61 -> 3c8e4dcb,
+`recipe_member_manager_test.dart` 476022fd -> 7c1e675d) — the inverse of the usual hazard:
+tests arriving over frozen production, which is what a closing round should look like. The
+brief's "one production comment changed materially since your pass" is the same
+`mergeCategoryIds` RangeError edit already recorded landing MID-round-6; it is inside
+77c629e5 and nothing moved after it.
+
+**Claim 1 — the fan-out test: VERIFIED, and the exclusion is asserted, not implied.**
+`recipe_member_manager_test.dart:372` 'every cut member is notified, and no retained one is'.
+Fixture: `user_456` + `user_789` on `group:group_a` only, `user_222` on
+`[group:group_a, direct]`, all four (incl. owner `user_123`) seated in `memberPermissions`.
+The stub records `invocation.namedArguments[#targetUserIds]` into `notified`, and the
+assertion is `expect(notified, unorderedEquals([['user_456'],['user_789']]))`.
+Measured rather than reasoned — threw the matcher itself at each mutant's capture shape in
+a 10-line probe (`expected.matches(actual, {})`, no production touched, deleted after):
+`both cut, retained silent -> PASS`, `reversed order -> PASS`, `retained ALSO notified ->
+FAIL`, `only the first (.first) -> FAIL`, `nobody notified -> FAIL`, `retained INSTEAD of
+cut -> FAIL`, `one call, batched ids -> FAIL`. So the whole-capture set equality is what
+carries the exclusion — `user_222` appearing anywhere in the capture fails on cardinality,
+with no `verifyNever` needed — and the reversed-order PASS confirms it will not redden when
+`grants` map iteration order changes. Fail-closed on wiring too: `sendSilentSafely` swallows
+`MissingStubError`, so a stub that stopped matching leaves `notified` EMPTY and the test
+reddens rather than passing blind.
+Two limits worth stating, neither blocking. (a) The recorder is scoped to
+`sendSilentNotification`; a mutant that notified the retained member through
+`sendImmediateNotification` would be invisible, because that method is unstubbed in this
+test and `sendImmediateSafely` swallows the resulting `MissingStubError`. All four mutants
+the test names go through the one helper, so this is a note, not a gap. (b) The fixture
+proves the fan-out at N=2 but the PERSISTENCE half is still only proven at N=1 (:482) — a
+contrived `if (removed.isEmpty) nextPermissions?.remove(...)` would cut only the first from
+`memberPermissions` while notifying both, and survives. Two expects on the already-captured
+recipe would close it for free; recommended, not filed.
+
+**Claim 2 — the rewritten guard rationale: TRUE, testable as stated, and the RangeError
+clause is unreachable-by-construction TODAY.** Measured with a `test/`-side replica of
+`mergeCategoryIds` (shipped / guard-1 deleted / substring HOISTED above guard 1), run once
+and deleted, `git status` re-verified clean:
+`SHIPPED short('own') = OK null`, `NO_GUARD1 short = THROW RangeError`,
+`HOISTED short = THROW RangeError`, `SHIPPED 'direct-share' = OK null`,
+`NO_GUARD1 'direct-share' = OK [-share]`, `HOISTED 'direct-share' = OK null`.
+So both shapes the comment credits to guard 1 are real, and the corrected `'direct'`
+reasoning is right (six characters, `substring(6)` is empty, guard 2 catches it).
+Reachability is a PRODUCER question and settles it: every `grantsByUserId` in `lib/` is
+built solely from `RecipeSocialData.groupGrant(groupId)` = `'group:' + id`, minimum six
+characters (`social_recipe_sharing_service.dart:328`; the direct path passes `null`), so no
+production caller can present a token shorter than the prefix. Guard 1 is therefore
+defensive on that half and load-bearing on the `'direct-share'` half, which is exactly what
+the comment says. Worth pinning? The HOISTED row is the case for it — a plausible refactor
+that leaves the existing fixture GREEN and crashes on a short token. Right-sized fix is one
+TOKEN appended to the existing fixture at `recipe_share_grants_test.dart:284`
+(`'own',` beside `groupGrant('')` and `'direct-share'`; expectation stays `['family']`),
+not a second test for the same line. Recommended, non-blocking, and deliberately NOT applied
+in-round: the file is staged (`A`) ahead of an imminent commit, and editing it would leave
+worktree != index under a review marker that names the reviewed bytes.
+
+**The three carried gaps — all three still OPEN, none blocking.**
+1. `add`/`dropMember` input-map non-mutation. `recipe_share_grants_test.dart` has 'does not
+   mutate the maps it was given' for `revokeGroup` (:188) and nothing equivalent in the
+   `add / dropMember` group (:209-267), so a mutant mutating `current` in place and returning
+   the same instance survives the repo. Not blocking: both are non-mutating in the shipped
+   bytes, this pins a future regression, not a live bug.
+2. `leaveCollaboration` for a genuine non-owner. Unchanged — 'non-owner member successfully
+   leaves' (:995) flips only `mockParentService.setRecipeState(currentUserId:'editor_user')`
+   while `fakePermissionService` stays at `defaultHasPermission:true, currentUserId:'user_owner'`
+   (setUp :169-172), so the fake answers `isRecipeOwner` TRUE for a non-owner and the FIXTURE
+   is what makes the write happen. Still latent: no call site outside the one-line
+   passthroughs in `realtime_recipe_operations.dart`.
+3. `freshRecipe.socialData == null` in the collaboration module. Re-read the bytes rather
+   than trusting round 6: `addCollaborators` DOES carry the fallback
+   (`?? RecipeSocialData(memberPermissions:..., grants:...)`, :241-242); `removeCollaborators`
+   (:306), `updateMemberPermissions` (:395) and `transferOwnership` (:473) use a bare
+   `socialData?.copyWith(...)`, and `Recipe.copyWith`'s socialData is sentinel-based, so a
+   null there means "unchanged" and the membership change is silently dropped while
+   `repo.update` runs and the method returns true. Malformed-document input, low value.
+None of the three is about behaviour this commit introduces except (1), and (1) is a
+regression pin for correct code. Ticket all three; block on none.
+
+**Vacuity sweep of the current bytes — nothing found.** Checked the discriminating power of
+each fixture in the moved suites, not just their assertions: the sharing-manager re-share
+block asserts on `savedRecipes`, which the previously-installed-and-never-read `updateRecipe`
+seam fills (a recorder with no assertion was the round-5 finding, now closed); 'never
+overwrites an existing permission' uses `user_789`, a VIEWER against an `editor` default, so
+putIfAbsent-vs-overwrite really is discriminated (`user_456` would have been vacuous, and
+the comment says so); the sharer-skip test's two negatives are backed by a control pair on
+`user_999` proving the same loop body writes both a grant and a permission for an id it does
+not skip, and `user_123` is deliberately absent from the fixture's `memberPermissions` so
+`putIfAbsent` really would write on the mutant; the `mergeCategoryIds` fixture keeps
+`'family'` as the loop-ran control. `recipe_member_manager_test.dart:697` remains correctly
+self-labelled an anti-harmonisation anchor rather than coverage. The ARB pair carries a
+`@description` on BOTH revoke keys naming the widened carve-out, which is the control round 6
+recommended in place of a phrase assertion.
+
+**Verification.** `flutter analyze --fatal-infos` over `lib/services/unified/operations/modules/`,
+`lib/services/unified/modules/social_recipe/` and the suite directory:
+**No issues found (36.6 s)**. `flutter test` over the three suites: **58/58**, md5-bracketed
+on all four production files, identical before and after. Both probes deleted and
+`git status` re-verified clean of them. No production file edited; no test edited.
+
+**Verdict:** pass (0 blocking).
+**Closing hashes:** `recipe_share_grants.dart` 77c629e5f480a04e018dc13c7d796869,
+`recipe_member_manager.dart` 6b46d41b3b84879ba3c54c27ef3c451d,
+`recipe_sharing_manager.dart` b00e79a636abb2e9dc81263c7b8a67b1,
+`social_recipe_sharing_service.dart` 00c2dacd4d34b2cfb30dbb9472c70a52,
+`collaboration_management_module.dart` 94df1fddcb9f7d2d1d12446b2c08adf1,
+`app_en.arb` 950284a8d814a7a5ca35e7716e3909e3,
+`recipe_share_grants_test.dart` 3c8e4dcbcf60f2f78e2c909cd11058a5,
+`recipe_member_manager_test.dart` 7c1e675d2b189ea60ef73c9e2b18efe8,
+`recipe_sharing_manager_test.dart` fb08207409fe0c69f3095b33d459fd5e.
+
+### 2026-08-05 — BUT-1797 round 7, ADDENDUM (the tree moved twice more, and the second arrival was behavioural)
+
+The round-7 verification above was measured on `recipe_share_grants.dart` 77c629e5 /
+`recipe_sharing_manager.dart` b00e79a6. Both moved AFTER that run, and the file moved again
+DURING the re-run — exactly the "re-hash at the END, the mid-round arrival is the
+least-tested code" hazard, hit twice in one round. Final stable bytes:
+`recipe_share_grants.dart` fec4816e (polled 6x/60 s unchanged before the closing run),
+`recipe_sharing_manager.dart` 538c1893, `recipe_member_manager.dart` 6b46d41b (never moved),
+`recipe_member_manager_test.dart` afeb3f02, `recipe_share_grants_test.dart` 61f72d27,
+`recipe_sharing_manager_test.dart` 77fe2602.
+
+**Arrival 1 (comment-only, three files) — verified TRUE, which is not a formality on this
+ticket.** `revokeGroup`'s ownerId doc now says the owner CAN legitimately hold a group grant
+(transfer keeps tokens; a non-owner re-sharing to a roster containing the owner grants one) —
+both mechanisms confirmed in code and the first is pinned by
+`collaboration_management_module_test.dart:960` 'the incoming owner keeps the provenance they
+already had'. Guard 2's rationale was corrected from "phantom row no revoke can match" to
+"NAMELESS row": confirmed at `recipe_detail_sharing_status.dart:149`,
+`final displayName = group?.name ?? groupId` — an empty id renders as an empty label, and a
+Firestore doc id can never be ''. `recipe_sharing_manager.dart:522` fixed a MISQUOTED log
+string ("kept access (another grant..." -> "kept it (another grant..."), which is what
+`recipe_member_manager.dart:304` actually prints. Test-side edits were comment sharpenings
+plus one merge: the old 'should re-share when recipe already collaborative' test was deleted
+and its `expect(newId, equals('collab_1'))` folded into the BUT-1797 grant test — the pin is
+preserved, and the file no longer claims "everything below" asserts on `savedRecipes`.
+The fan-out `reason:` string was rewritten and is now MORE accurate: the retained-for-removed
+swap really is caught by the singleton fixture at :547 (`verifyNever`) as well as by the new
+one, so the earlier "two mutants a singleton cannot see" over-claimed.
+
+**Arrival 2 (BEHAVIOURAL, unstaged, unpinned) — `RecipeShareGrants.forShare` return type
+went `Map<String, List<String>>` -> `Map<String, List<String>>?`, returning null instead of
+`{}` when nothing is recorded.** Judged safe, and the discriminator is the CONSUMER's
+copyWith, not the callee: `RecipeSocialData.copyWith` is SENTINEL-based for `grants`
+(`recipe_unified.dart:1274/1292`), so an explicit null ERASES rather than meaning
+"unchanged". The delta is therefore "store null" where it used to "store empty map", and only
+on the narrow input where the recipe had no grants and the loop added none — `forShare`
+returns `existing` untouched whenever it is non-empty, so a populated map can never become
+null. `revokeGroup` short-circuits on `grants == null || grants.isEmpty` alike and `toJson`
+writes the key either way, so nothing downstream can tell the two apart. It also removes a
+real two-shapes-for-one-fact drift against `mergeCategoryIds`.
+It is nevertheless the least-tested line in the tree: `grep -rn "forShare(" test/` finds ONE
+comment reference and no test group anywhere, so the new null contract is proved only by 250
+neighbouring tests still passing. Right-sized pin is three lines in the file already open,
+mirroring its sibling at `recipe_share_grants_test.dart:321` ('nothing to record leaves the
+field NULL, not empty'): assert `forShare(existing: null, userIds: ['me'], excludeUserId:
+'me')` is null. Non-blocking — no defect ships — but it must be STAGED with the rest: the
+index still holds the pre-change file (`AM`), so a partial `git add` silently commits the
+empty-map version. No compile hazard either way; the callers already accept a nullable.
+
+**Closing verification (bracketed, stable bytes).** `flutter analyze --fatal-infos
+lib/services/unified/`: **No issues found (2.5 s)**. `flutter test` over the three module
+suites PLUS `test/unit/services/unified/modules/social_recipe/` — the latter added
+specifically because `forShare`'s only two call sites live there: **250/250**, with
+`recipe_share_grants.dart` fec4816e and `social_recipe_sharing_service.dart` 00c2dacd
+identical before and after. Both throwaway probes deleted; `git status` clean of them.
+No production file edited by me; no test edited by me.
+
+**Verdict unchanged: pass (0 blocking).**
+
+## 2026-08-05 — BUT-1797 round 8 (final gate pass: the three requested additions, verified as built)
+
+Trigger: "BUT-1797 final gate pass … eight rounds have run, every blocking finding for the
+last five has been a comment inaccuracy … I will act on BLOCKING findings only." Scope: the
+two production modules plus the three generated l10n files. `.claude/rules/accepted-deviations.md`
+and `docs/architecture/ACCEPTED_DEVIATIONS.md`'s BUT-1797 entry read first.
+
+**Motion check (start).** `recipe_share_grants.dart` fec4816e and `recipe_sharing_manager.dart`
+538c1893 — both IDENTICAL to round 7's closing hashes, i.e. no production motion since. Same
+for `recipe_member_manager.dart` 6b46d41b and `social_recipe_sharing_service.dart` 00c2dacd.
+The test side moved exactly where the brief said: `recipe_share_grants_test.dart` 61f72d27 ->
+56221b7d, `recipe_member_manager_test.dart` afeb3f02 -> 0696e9c9. Re-hashed at the END:
+all seven unchanged, so nothing arrived mid-round for the first time in this ticket.
+
+**Addition 1 — the `'own'` token in the `mergeCategoryIds` fixture. Non-vacuous AND minimal,
+measured.** `test/`-side replica (`_zz_probe_mutant.dart`, class renamed) with the substring
+hoisted above guard 1, run twice in one process: fixture WITH `'own'` -> `RangeError` (test
+reddens); the SAME fixture WITHOUT it -> `[family]`, byte-identical to the real class's answer,
+i.e. green. So the token is the sole discriminator for the hoist mutant and nothing else in the
+fixture is doing that work. Ordering also checked: `'group:'` -> `''`, `'direct-share'` ->
+`'-share'`, neither throws, so `'own'` is reached.
+
+**Addition 2 — the `RecipeShareGrants.forShare` group (3 tests). Non-vacuous.** Same replica,
+second mutant `return grants ?? <String, List<String>>{}` printed `{}` for both
+`forShare(existing: null, userIds: [])` and `forShare(existing: null, userIds: ['me'],
+excludeUserId: 'me')`, against a suite that asserts `isNull` — reddens. The other two tests
+carry their own controls (the preserved `'mom'` entry; `'anna'` present proving the loop ran
+rather than the whole call being skipped). Nullable contract judged ADEQUATELY covered: re-read
+both call sites (`social_recipe_sharing_service.dart:149` constructor arg, `:192` sentinel
+`copyWith`) and `forShare` returns `existing` untouched whenever it is non-empty, so the null
+return is reachable only where the field was already null/empty — an erase of nothing. The
+group-token path (`grantsByUserId`) stays pinned at the caller, correctly.
+
+**Addition 3 — persistence at N=2 in the fan-out test (`recipe_member_manager_test.dart`
+:436-447). Non-vacuous.** `verify(...).captured.last as Recipe` is the only verify of
+`updateRecipe` in that test, so `.last` is unambiguous; `perms.containsKey('user_456')` and
+`('user_789')` both false plus `perms['user_222'] == editor` kill "revoke only the first",
+"revoke nobody" and "revoke the retained one" at the PERSISTENCE layer, which the
+`unorderedEquals` capture only killed at the NOTIFICATION layer. Free assertion on an already-
+captured entity, exactly the right size.
+
+**l10n sync — settled by regenerate-and-hash, not by value comparison.** `md5sum
+lib/l10n/app_localizations*.dart`, `flutter gen-l10n`, re-`md5sum`: all three identical
+(361879ca / 11e5fb88 / 3852735e), so the generated Dart is exactly what the ARBs produce. The
+Swedish title the brief flagged is live and no longer collides with the delete-a-group button:
+`recipeSharingRemoveGroup` 'Ta bort gruppen' -> **'Ta bort gruppens åtkomst'**, and the widget
+suite's four hardcoded label literals were updated with it (`recipe_detail_sharing_status_test.dart`
+:180/:322 positive+negative). The retracted-copy anchor `find.textContaining('fortfarande
+åtkomst')` still stands and still finds nothing. Minor, NOT filed: `recipeSharingRemoveGroup`
+carries no `@description` in either ARB while its two siblings do — a label, not a promise.
+
+**Closing verification.** `flutter analyze --fatal-infos` over `lib/services/unified/`,
+`lib/l10n/`, the module test dir and the widget test: **No issues found (29.9 s)**. `flutter
+test` over the three module suites + the widget suite: **65/65**; the two new groups re-run by
+name to prove they are actually discovered (`--plain-name "every cut member is notified"` 1/1,
+`--plain-name "forShare"` 3/3). Both probe files deleted, `git status` clean of them. No
+production file edited; no test edited.
+
+**Verdict: pass (0 blocking).** Closing hashes: `recipe_share_grants.dart` fec4816e,
+`recipe_sharing_manager.dart` 538c1893, `app_localizations.dart` 361879ca,
+`app_localizations_en.dart` 11e5fb88, `app_localizations_sv.dart` 3852735e,
+`recipe_share_grants_test.dart` 56221b7d, `recipe_member_manager_test.dart` 0696e9c9,
+`recipe_sharing_manager_test.dart` 77fe2602, `recipe_detail_sharing_status_test.dart` ccfd015c.

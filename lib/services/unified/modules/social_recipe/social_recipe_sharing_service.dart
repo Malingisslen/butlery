@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -81,8 +82,12 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
   Future<RecipeShareResult> shareRecipeWithUsers(
     String recipeId,
     List<String> userIds,
-    ResourcePermission permission,
-  ) async {
+    ResourcePermission permission, {
+
+    /// BUT-1797: which group(s) reached each member, when this share came from
+    /// picking groups. Absent means a plain user share, recorded as 'direct'.
+    Map<String, List<String>>? grantsByUserId,
+  }) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
       _setError(AppLocale.current.errorMustBeLoggedIn);
@@ -141,6 +146,16 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
             memberPermissions: memberPermissions,
             allowGuestViewing: false,
             allowMemberInvites: true,
+            grants: RecipeShareGrants.forShare(
+              existing: null,
+              userIds: userIds,
+              grantsByUserId: grantsByUserId,
+              excludeUserId: currentUserId,
+            ),
+            categoryIds: RecipeShareGrants.mergeCategoryIds(
+              null,
+              grantsByUserId,
+            ),
           ),
         );
       } else {
@@ -149,12 +164,41 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
           recipe.socialData?.memberPermissions ?? {},
         );
         for (final userId in userIds) {
+          // The sharer is not a sharee. `forShare(excludeUserId:)` below covers
+          // the GRANT half only; without this the permission half would be
+          // guarded solely by a caller two functions away, and a sharer whose
+          // uid reached `userIds` would have their own `admin` overwritten with
+          // whatever `permission` this share carries.
+          //
+          // This does NOT make `shareRecipeWithGroups`' own
+          // `allMemberIds.remove(currentUserId)` redundant — do not delete it.
+          // That one still carries jobs this line cannot: it feeds the
+          // empty-group refusal (a group containing only yourself must fail, not
+          // silently succeed with zero recipients), it keeps the sharer out of
+          // `recipientIds`, and it keeps `ShareScope` at `individual` for a
+          // two-person group that contains you.
+          //
+          // It does NOT keep the sharer out of the stored `sharedToUserIds`:
+          // `FirebaseSharedRecipeRepository` seeds that with the sharer's own uid
+          // unconditionally. Checked, because an earlier version of this comment
+          // claimed otherwise.
+          if (userId == currentUserId) continue;
           updatedPermissions[userId] = permission;
         }
 
         updatedRecipe = recipe.copyWith(
           socialData: recipe.socialData?.copyWith(
             memberPermissions: updatedPermissions,
+            grants: RecipeShareGrants.forShare(
+              existing: recipe.socialData?.grants,
+              userIds: userIds,
+              grantsByUserId: grantsByUserId,
+              excludeUserId: currentUserId,
+            ),
+            categoryIds: RecipeShareGrants.mergeCategoryIds(
+              recipe.socialData?.categoryIds,
+              grantsByUserId,
+            ),
           ),
         );
       }
@@ -267,16 +311,27 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     try {
       AppLogger.info('Sharing recipe $recipeId with ${groupIds.length} groups');
 
-      // Resolve group IDs to member user IDs
+      // Resolve group IDs to member user IDs. BUT-1797: remember WHICH group
+      // each member came through while we still know — the union below throws
+      // that away, and without it the share cannot be revoked per group. A
+      // member reached through two groups carries both tokens and survives
+      // either one being revoked.
       final allMemberIds = <String>{};
+      final grantsByUserId = <String, List<String>>{};
 
       for (final groupId in groupIds) {
         final groupMembers = await _resolveGroupMembers(groupId);
         allMemberIds.addAll(groupMembers.keys);
+        for (final memberId in groupMembers.keys) {
+          grantsByUserId
+              .putIfAbsent(memberId, () => <String>[])
+              .add(RecipeSocialData.groupGrant(groupId));
+        }
       }
 
       // Don't share with yourself
       allMemberIds.remove(currentUserId);
+      grantsByUserId.remove(currentUserId);
 
       if (allMemberIds.isEmpty) {
         _setError(AppLocale.current.errorNoGroupMembersFound);
@@ -290,6 +345,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         recipeId,
         allMemberIds.toList(),
         permission,
+        grantsByUserId: grantsByUserId,
       )).fullyShared;
 
       if (success) {

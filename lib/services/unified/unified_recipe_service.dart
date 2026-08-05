@@ -407,10 +407,12 @@ class UnifiedRecipeService
     getCurrentUserId: _userIdGetter,
     getCurrentUserDisplayName: _displayNameGetter,
     getRecipes: _recipesGetter,
-    // BUT-1785 root cause. This seam is handed to exactly one consumer,
-    // `RecipeMemberManager` (social_recipe_operations.dart:62-67), and EVERY
-    // entry point there filters `r.isCollaborative` (:42, :117, :228, :308,
-    // :395, :444, :460) and rebuilds with `type: recipe.type`. Bound to
+    // BUT-1785 root cause. Since BUT-1797 this seam has TWO consumers, both in
+    // `social_recipe_operations.dart`: `RecipeSharingManager`, whose
+    // `_grantAccessOnReshare` writes an already-collaborative recipe, and
+    // `RecipeMemberManager`, whose every entry point filters `r.isCollaborative`
+    // and rebuilds with `type: recipe.type`. Both therefore need a writer that
+    // ACCEPTS collaborative recipes, which is the whole point below. Bound to
     // `updateRecipe` it reached `PersonalRecipeCrud.updateRecipe` →
     // `personal_recipe_module.dart:242`, which is
     // `if (!updatedRecipe.isPersonal) return false;` — and personal and
@@ -785,6 +787,10 @@ class UnifiedRecipeService
     bool allowMemberInvites = true,
     List<String>? categoryIds,
   }) async {
+    // BUT-1797: `categoryIds` was accepted here and silently dropped, so the app
+    // forgot which group you picked the moment you tapped share — which is why
+    // un-sharing a group could never take the recipe back from anyone. It now
+    // reaches the document, and carries the grant provenance with it.
     final recipeId = await _socialModule.createCollaborativeRecipe(
       title: title,
       ingredients: ingredients,
@@ -794,6 +800,7 @@ class UnifiedRecipeService
       portions: portions,
       cookingTime: timeMinutes,
       personalTagIds: personalTagIds,
+      categoryIds: categoryIds,
     );
 
     // Note: Recipe is already added to _recipes in saveRecipeForSocialModule

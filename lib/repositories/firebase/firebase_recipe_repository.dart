@@ -4,6 +4,7 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_gdpr_export_operations.dart';
 import 'package:butlery/repositories/firebase/modules/recipe_legacy_validator.dart';
@@ -920,13 +921,25 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         userId: ResourcePermission.editor,
       };
 
+      // BUT-1797: every membership writer has to record WHY access was granted,
+      // or a group revoke will later cut someone who was invited individually —
+      // the one outcome the decision forbids. Its remove twin below drops the
+      // whole entry for the mirror reason.
+      final updatedGrants = RecipeShareGrants.add(
+        recipe.socialData?.grants,
+        userId,
+        RecipeSocialData.directGrant,
+      );
+
       final updatedRecipe = recipe.copyWith(
         socialData:
             recipe.socialData?.copyWith(
               memberPermissions: updatedMembers,
+              grants: updatedGrants,
             ) ??
             RecipeSocialData(
               memberPermissions: updatedMembers,
+              grants: updatedGrants,
             ),
       );
 
@@ -964,9 +977,20 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       );
       updatedMembers.remove(userId);
 
+      // An explicit removal overrides every reason at once, so the whole grants
+      // entry goes with the permission. A stale 'direct' token surviving a
+      // removal is worse than a ghost notification: if that person is later
+      // swept into a group share, revoking the group would RETAIN them on a
+      // reason the owner had already withdrawn.
+      final updatedGrants = RecipeShareGrants.dropMember(
+        recipe.socialData?.grants,
+        userId,
+      );
+
       final updatedRecipe = recipe.copyWith(
         socialData: recipe.socialData?.copyWith(
           memberPermissions: updatedMembers,
+          grants: updatedGrants,
         ),
       );
 

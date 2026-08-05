@@ -576,3 +576,166 @@ comment. Scope by COLLECTION, never by field name.
 **Consequence for the backlog.** BUT-1809 — the one-off backfill to rescue legacy
 `sharedWithUserIds`-only documents — is moot for the same reason this entry exists: there is
 no legacy corpus. Close it rather than running it.
+
+### [Safety and privacy] Group revoke keeps a member who also has a direct share (2026-08-04)
+
+**Malin's decisions, 2026-08-03, all three settled before implementation:**
+
+1. The feature is wanted: share to a group, and be able to take that share back.
+2. A member who ALSO has a direct share **keeps access** when the group is revoked.
+3. A group share is a **snapshot**: it reaches whoever is in the group at that moment.
+   Adding someone to the group later does not silently grant them access to recipes shared
+   before they joined.
+
+**Why the feature could not be built before.** Access lives in
+`socialData.memberPermissions`. A group share expanded the group into individual entries and
+recorded nothing about where each entry came from, so a member reached through the group was
+indistinguishable from one invited directly. "Remove the group's members" would have silently
+cut people who were invited individually. The honest interim behaviour was to drop the display
+label only, and to say so in the UI copy — a privacy control that lies is worse than one that
+visibly fails, because the user stops looking.
+
+**The provenance.** `RecipeSocialData.grants` maps uid -> `['direct', 'group:<categoryId>', ...]`.
+Per-member rather than per-group, because revoking has to answer *"does this person still have
+any reason to be here?"*, and that is a question about a member.
+
+**The invariant that keeps this safe.** `grants` is descriptive. `memberPermissions` remains
+the sole source of truth for access, `firestore.rules` reads only that, and no rules change was
+needed — which is the point: the access model is untouched, so this cannot open a hole.
+
+**The asymmetry is the decision.** Revoking a group removes only that group's reason; an
+explicit "remove this person" drops the member's whole entry, every grant included. Leaving a
+stale group grant behind after an explicit removal would make a later group-revoke look like it
+had already run. Do not "harmonise" the two paths.
+
+**No compatibility path, deliberately.** A missing `grants` is NOT read as "everyone is
+direct". Such a document loses only its label on a group revoke. The field is written from the
+start and the only documents without it are test data (Malin, 2026-08-03), so the tolerance code
+would be dead the day it shipped.
+
+**Three things the implementation found that the plan had not.**
+
+- `GroupRecipeSelectionViewModel.shareSelectedRecipes` never passed `categoryIds` at all, so
+  the group id was not merely dropped downstream — it was never supplied. Fixed at the source.
+- `UnifiedRecipeService.createCollaborativeRecipe` accepted `categoryIds` and silently dropped
+  it, along with `descriptionCollaborative`, `allowGuestViewing`, `allowMemberInvites`,
+  `imageUrls`, `mealType`, `rating` and `sourceUrl`. Only `categoryIds` is fixed here; **the
+  rest are still dropped** and are not covered by this entry.
+- Re-sharing an ALREADY-collaborative recipe wrote only the `shared_recipes` row and sent
+  notifications — the new people were never added to `memberPermissions`, so they were told
+  about a recipe they could not open. Granting a recorded reason for access that does not exist
+  would be meaningless, so `_grantAccessOnReshare` now writes the permission entry too. Members
+  already present keep the permission they hold: a re-share must never silently demote an editor.
+
+**There are TWO group-share paths, and both had to be fixed.** The plan named only
+`GroupRecipeSelectionViewModel`. `UniversalShareDialogViewModel` reaches
+`SocialRecipeSharingService.shareRecipeWithGroups`, an entirely separate implementation that
+also recorded no provenance — so a group share would have been revocable or not depending on
+which dialog the user happened to open. Found by grepping for the sibling by NAME rather than
+trusting the plan's file list; the repo's own lesson about twin classes is what prompted the
+grep.
+
+That path needed one extra piece of care: it resolves every group to a union of member ids and
+then shares once, which throws away which group each person came through. The attribution is
+captured before the union, so a member reached via two groups carries both tokens and survives
+either one being revoked.
+
+**The commit gate caught eight defects this plan and its author did not.** Nineteen reviewers
+across three specialists read the staged set; six of them independently found the same one.
+Recorded because the pattern is the lesson, not the individual bugs:
+
+- **`updateMemberPermission` deleted `grants`.** Three of four `RecipeSocialData` rebuilds in
+  that file were updated; the fourth enumerated seven of eight fields. The document is written
+  whole, so the field was DELETED, not left alone — one permission change disarmed the revoke
+  for the entire recipe, which then cut nobody and reported success. Fixed by rebuilding through
+  `copyWith`, which cannot drop a field it never enumerates.
+- **A THIRD membership path.** `SocialRecipeMembershipService` add/remove is a sibling to the two
+  group-share paths this ticket fixed, and was missed. Its add recorded no grant — so a member
+  invited there and later swept into a group share would be CUT by revoking that group, the one
+  outcome the decision above forbids. Its remove left a stale grant.
+- **The creator was granted, and demoted.** Every friend category contains its own owner, and the
+  group-share caller passes the roster straight through — so `initialMembers` contains the
+  creator on the ORDINARY path. The loop overwrote their `admin` with `editor` and recorded them
+  a revocable grant, while the comment above it claimed the opposite.
+- **Three of my own tests were weak or false:** a snapshot test asserting the absence of a uid
+  present in neither input map (structurally unfailable), a comment claiming one assertion caught
+  a revert in both directions when it caught one, and a `_grantAccessOnReshare` recorder installed
+  in the test setup and never asserted on — so that half of the ticket could have been deleted
+  with every suite green.
+- **The Swedish copy was not idiomatic:** a stranded possessive, a singular subject for what is
+  usually several people, and a `{name}s` genitive that breaks on group names ending in s/x/z.
+  Both strings now also carry the carve-out at the DECISION point, not only in the snackbar —
+  the panel's own rule is that a snackbar cannot undo a promise already made.
+
+**Three review rounds, and each one found more writers of the same field.** This is the part
+worth keeping, because the lesson is not any individual bug:
+
+- Round 1 found the field-by-field rebuild that DELETED `grants` (six reviewers, independently).
+- Round 2 found a third membership path that recorded none, and the creator being granted and
+  demoted on the ordinary path.
+- Round 3 found three more — a remove that left a stale grant, and two methods named *update*
+  that will happily CREATE a member with no reason recorded. A member created that way is later
+  cut by revoking a group they were swept into: the one outcome the decision above forbids.
+
+Each round I believed the list was complete. A comment shipped in round 3 saying "the sixth and
+last membership writer" was falsified 25 lines below itself, in the same file. The enumeration
+that actually closed it was a reviewer walking EVERY writer of `memberPermissions` in `lib/` and
+tabulating them — nine sites, of which two legitimately need no grant write because they refuse
+non-members. If a tenth is ever added, it must maintain `grants` too; the invariant is
+"`grants` never contains a uid absent from `memberPermissions`", and the reverse is normal
+because access can come from ownership.
+
+**Deliberately left, recorded rather than silently dropped:**
+
+- `lib/models/realtime/recipe_serialization.dart` holds a SECOND, hand-rolled `RecipeSocialData`
+  deserializer that never learned `grants` (it also already mis-reads `descriptionCollaborative`).
+  No live path round-trips a collaborative recipe through it. Latent drift, needs its own ticket.
+- **A revoke does not trim `shared_content.sharedToUserIds`.** A revoked member loses the recipe
+  document but keeps the discovery row — title, description, image — and its Art. 15 export line.
+  Pre-existing for `removeMember`; this ticket makes it more visible because the copy now promises
+  a revocation. Needs a decision, not a unilateral fix.
+- **RULED 2026-08-05 — `grants` never reaches `shared_content`, and the premise of the earlier
+  bullet was simply wrong.** Two independent barriers, traced rather than assumed:
+  `SharedRecipe.create` takes `recipeSnapshot` but reads only five scalars off it and never
+  passes it to the constructor, so `_recipeSnapshot` is null on that path; and
+  `SharedRecipe.toFirestore()` — which is what `BaseSharedContentRepository.createSharedContent`
+  actually writes — emits no snapshot key at all. Only `toJson()` does, and its one caller is a
+  local device cache on a device that can already read the recipe.
+  I had recorded this as an open security question on an unverified claim. It was never true.
+
+  **The surface that DOES exist, and the ruling on it: acceptable.** `grants` is persisted on the
+  recipe document, which `firestore.rules:360-363` opens to every uid in `memberPermissions`, and
+  Firestore has no field-level read control. Acceptable on two verified grounds: `memberPermissions`
+  (every co-member's uid) and `categoryIds` (the group-id set) already sit on that same document for
+  that same audience, so the only new information is the partition; and `firestore.rules:2213-2216`
+  grants `friend_categories` read only to someone already in that group's `friendUserIds`, so a
+  recipient can dereference `group:<categoryId>` to a NAME only for groups they are already in —
+  where they can already read the whole roster. Every other token is an opaque UUID.
+
+  **EXPIRES if a category NAME is ever denormalized onto `socialData`** (e.g. for the sharing
+  panel). The ruling rests on that opacity; adding names lapses it and it must be re-decided.
+
+- **A second copy of an already-unerasable uid, recorded so it is fixed in one edit when the time
+  comes.** No cascade step scrubs a deleted user's uid from ANOTHER owner's recipe —
+  `deleteRecipes` is own-scoped, and the `memberPermissions.${uid}` sweeps target top-level
+  collections, not `users/{other}/recipes/{id}.socialData`. So a foreign uid already survives
+  erasure there, and `grants` now holds a second copy in the same document, same audience, no new
+  collection or reader. When that pre-existing gap is closed, the scrub must drop `grants` in the
+  SAME `update()` — the repo's own "one fact, two spellings" rule.
+- The three copies of the (memberIds, groupIds) → tokens loop agree today. Collapsing them into
+  `RecipeShareGrants` is right and is its own change, not a fix round for a failed gate.
+- The group-share success snackbar reports "0 recept delade" — `clearSelections()` runs before the
+  count is read. Pre-existing and unrelated to provenance.
+- `FirebaseRecipeRepository.addCollaborator` / `removeCollaborator` are not on the
+  `RecipeRepository` interface and have ZERO callers in `lib/`. They were brought in line with the
+  invariant anyway, because a writer that ignores it is how the next caller reintroduces the
+  split — but the better end state is deleting them, and a test would only pin dead code and make
+  that harder. Ticket the deletion. **`RecipeFactory.convertToCollaborative` belongs to the same
+  ticket:** it builds members from `initialMembers` with no way to supply grants, and likewise has
+  zero `lib/` callers. Its two siblings (`createCollaborative`, `Recipe.collaborative`) are safe
+  because the one live caller passes an empty member map and sets members and grants together in
+  the same `copyWith`.
+
+**Not done, stated rather than implied.** The panel renders one row per group, as before, but
+without a member count ("Familjen (4 personer)" in the plan). Cosmetic, and the count is not
+available where the row is built.

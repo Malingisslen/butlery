@@ -2285,6 +2285,16 @@ class FakeSocialRecipeOperations extends Fake
     required String userId,
   }) async => true;
 
+  /// BUT-1797: the group branch is a different call from [removeMember], and a
+  /// caller that reports the wrong outcome for it is exactly what the sharing
+  /// panel's copy test exists to catch — so it answers [_shouldSucceed] rather
+  /// than a hardcoded true.
+  @override
+  Future<bool> removeGroup({
+    required String recipeId,
+    required String groupId,
+  }) async => _shouldSucceed;
+
   @override
   Future<bool> updateMemberPermission({
     required String recipeId,

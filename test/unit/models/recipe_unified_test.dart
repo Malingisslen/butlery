@@ -847,6 +847,97 @@ void main() {
         expect(updated.ownerDisplayName, equals('Updated Owner'));
         expect(updated.allowGuestViewing, isTrue);
       });
+
+      // BUT-1797. `grants` is what makes a group share revocable, so a
+      // serialization bug here silently costs the whole feature: the write
+      // succeeds, the read comes back empty, and a later revoke finds nobody to
+      // cut while reporting success.
+      test('grants survive a JSON round-trip', () {
+        final original = RecipeSocialData(
+          ownerId: 'owner_123',
+          memberPermissions: const {'anna': ResourcePermission.editor},
+          categoryIds: const ['family'],
+          grants: {
+            'anna': [RecipeSocialData.groupGrant('family')],
+            'bea': [
+              RecipeSocialData.directGrant,
+              RecipeSocialData.groupGrant('family'),
+            ],
+          },
+        );
+
+        final restored = RecipeSocialData.fromJson(original.toJson());
+
+        expect(restored.grants!['anna'], ['group:family']);
+        expect(restored.grants!['bea'], ['direct', 'group:family']);
+      });
+
+      test('grants parse from Firestore dynamic lists', () {
+        // Firestore hands back Map<String, dynamic> of List<dynamic>, never the
+        // declared type. Verified in a scratch program, not assumed:
+        // `List<String>.from(List<dynamic>)` copes, but casting the map
+        // (`as Map<String, List<String>>`) or its values (`v as List<String>`)
+        // both throw _TypeError — and the callers swallow it. Those two
+        // spellings are what this pins against.
+        final restored = RecipeSocialData.fromJson({
+          'grants': <String, dynamic>{
+            'anna': <dynamic>['direct', 'group:family'],
+          },
+        });
+
+        expect(restored.grants!['anna'], ['direct', 'group:family']);
+      });
+
+      test('a document with no grants parses to null, not to all-direct', () {
+        // The deliberate absence of a compatibility path (Malin, 2026-08-03).
+        // Reading missing provenance as "everyone is direct" would make a group
+        // revoke cut nobody while looking like it worked.
+        final restored = RecipeSocialData.fromJson({
+          'memberPermissions': {'anna': ResourcePermission.editor.index},
+        });
+
+        expect(restored.grants, isNull);
+        expect(restored.memberPermissions!['anna'], ResourcePermission.editor);
+      });
+
+      test('a non-String element in a grants list is dropped, not thrown on', () {
+        // Three reviewers flagged `whereType<String>()` as a surviving mutant:
+        // every other fixture here is pure-String, so removing it kept the suite
+        // green. This is the input that kills it — a bare `List<String>.from(v)`
+        // throws "type 'Null' is not a subtype of type 'String'" out of
+        // `fromJson`. That propagates through `Recipe.fromMap`, so the caller
+        // loses the WHOLE RECIPE, not just its social data — the realtime event
+        // handler catches and logs, dropping the entire external edit. `null` is the realistic Firestore shape; an int does it
+        // too.
+        final restored = RecipeSocialData.fromJson({
+          'grants': <String, dynamic>{
+            'anna': <dynamic>['direct', null],
+          },
+        });
+
+        expect(restored.grants!['anna'], ['direct']);
+      });
+
+      test('a malformed grants entry degrades to empty, not to a throw', () {
+        final restored = RecipeSocialData.fromJson({
+          'grants': <String, dynamic>{'anna': 'not-a-list'},
+        });
+
+        expect(restored.grants!['anna'], isEmpty);
+      });
+
+      test('copyWith carries grants through untouched', () {
+        final original = RecipeSocialData(
+          ownerId: 'owner_123',
+          grants: {
+            'anna': [RecipeSocialData.groupGrant('family')],
+          },
+        );
+
+        final updated = original.copyWith(ownerDisplayName: 'Ny ägare');
+
+        expect(updated.grants!['anna'], ['group:family']);
+      });
     });
 
     group('RecipeRealtimeData', () {

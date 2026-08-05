@@ -5,6 +5,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
@@ -51,6 +52,7 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
     int? portions,
     int? cookingTime,
     List<String>? personalTagIds,
+    List<String>? categoryIds,
   }) async {
     try {
       AppLogger.info('🤝 Creating collaborative recipe: $title');
@@ -93,11 +95,48 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
         currentUserId: ResourcePermission.admin, // Creator gets admin
       };
 
-      // Add initial members with default permissions
+      // Add initial members with default permissions.
+      //
+      // The creator is skipped, and that guard is load-bearing twice over. Every
+      // friend category is created with its owner already in `friendUserIds`
+      // (friend_categories_operations.dart), and the group-share caller passes
+      // `targetGroup.friendUserIds` straight through — so the creator is in this
+      // list on the ordinary path, not an exotic one. Without the skip the loop
+      // overwrote the `admin` entry set just above with `editor`, DEMOTING the
+      // owner of their own recipe, and then recorded them a revocable grant. The
+      // sibling path guards the same way (`allMemberIds.remove(currentUserId)`).
       if (initialMembers != null) {
         for (final memberId in initialMembers) {
+          if (memberId == currentUserId) continue;
           permissions[memberId] =
               initialPermissions?[memberId] ?? ResourcePermission.editor;
+        }
+      }
+
+      // BUT-1797: record WHY each member is here, at the moment access is
+      // granted. Members reached through a group carry that group's token, so
+      // the share can later be revoked for exactly those people; a share with no
+      // group behind it is direct. The creator gets no grant — an owner is not a
+      // sharee and is never revocable — which the skip above now actually
+      // delivers rather than merely asserting.
+      final groupIds = categoryIds ?? const <String>[];
+      var grants = <String, List<String>>{};
+      for (final memberId in initialMembers ?? const <String>[]) {
+        if (memberId == currentUserId) continue;
+        if (groupIds.isEmpty) {
+          grants = RecipeShareGrants.add(
+            grants,
+            memberId,
+            RecipeSocialData.directGrant,
+          );
+          continue;
+        }
+        for (final groupId in groupIds) {
+          grants = RecipeShareGrants.add(
+            grants,
+            memberId,
+            RecipeSocialData.groupGrant(groupId),
+          );
         }
       }
 
@@ -106,6 +145,8 @@ class SocialRecipeCreationService extends BaseService with UserContextMixin {
         tagResult: TagResult.pending(),
         socialData: newRecipe.socialData?.copyWith(
           memberPermissions: permissions,
+          categoryIds: groupIds.isEmpty ? null : groupIds,
+          grants: grants.isEmpty ? null : grants,
         ),
       );
 

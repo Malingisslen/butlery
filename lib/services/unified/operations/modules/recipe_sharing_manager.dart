@@ -12,6 +12,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/services/unified/operations/modules/recipe_share_grants.dart';
 import 'package:butlery/services/social/activity_feed_service.dart';
 import 'package:butlery/models/social/activity_event.dart';
 
@@ -64,6 +66,13 @@ class RecipeSharingManager {
   final List<Recipe> Function() _getRecipes;
   final CreateCollaborativeRecipeFn _createCollaborativeRecipe;
   final CreatePersonalRecipeFn _createPersonalRecipe;
+
+  /// BUT-1797: re-sharing an ALREADY-collaborative recipe used to write only the
+  /// `shared_recipes` row, so the new people were notified about a recipe they
+  /// could not open — `firestore.rules` decides access from `memberPermissions`,
+  /// and nothing added them to it. Granting that access needs a write seam; this
+  /// is the same one `RecipeMemberManager` uses.
+  final Future<bool> Function(Recipe) _updateRecipe;
   final NotificationService? _notificationService;
   final FirestoreRepository _firestoreRepository;
 
@@ -80,6 +89,7 @@ class RecipeSharingManager {
     required List<Recipe> Function() getRecipes,
     required CreateCollaborativeRecipeFn createCollaborativeRecipe,
     required CreatePersonalRecipeFn createPersonalRecipe,
+    required Future<bool> Function(Recipe) updateRecipe,
     required NotificationService? notificationService,
     FirestoreRepository? firestoreRepository,
     void Function(String)? onShareError,
@@ -88,6 +98,7 @@ class RecipeSharingManager {
        _getRecipes = getRecipes,
        _createCollaborativeRecipe = createCollaborativeRecipe,
        _createPersonalRecipe = createPersonalRecipe,
+       _updateRecipe = updateRecipe,
        _notificationService = notificationService,
        _onShareError = onShareError,
        _firestoreRepository =
@@ -162,8 +173,24 @@ class RecipeSharingManager {
       String finalRecipeId;
 
       if (isAlreadyCollaborative) {
-        // For collaborative recipes, just sync to shared_recipes collection
         AppLogger.info('🔄 Re-sharing collaborative recipe to group');
+
+        // BUT-1797: grant the new people access, then record WHY they have it.
+        // Previously this branch only wrote the `shared_recipes` row and sent
+        // notifications, so the recipients were told about a recipe they could
+        // not open. Members already present keep the permission they have — a
+        // re-share must never silently demote an editor to viewer — but they do
+        // pick up the new grant, so a later revoke of this group reaches them.
+        final granted = await _grantAccessOnReshare(
+          recipe: recipeToShare,
+          memberIds: memberIds,
+          categoryIds: categoryIds,
+        );
+        if (!granted) {
+          AppLogger.error('❌ Failed to grant access when re-sharing recipe');
+          return null;
+        }
+
         await _syncCollaborativeRecipeToSharedCollection(
           recipe: recipeToShare,
           memberIds: memberIds,
@@ -466,10 +493,77 @@ class RecipeSharingManager {
     return true;
   }
 
+  /// Grants [memberIds] access to an already-collaborative [recipe] and records
+  /// the provenance of that access.
+  ///
+  /// A share carrying [categoryIds] came from picking a group, so each member
+  /// gets that group's grant token; a share with no group behind it is direct.
+  /// `memberPermissions` stays the sole source of truth for access — the grants
+  /// only record why, so this cannot widen what anyone may see beyond the
+  /// permission entry written right here.
+  Future<bool> _grantAccessOnReshare({
+    required Recipe recipe,
+    required List<String> memberIds,
+    required List<String>? categoryIds,
+  }) async {
+    final permissions = Map<String, ResourcePermission>.from(
+      recipe.socialData?.memberPermissions ?? const {},
+    );
+    var grants = recipe.socialData?.grants;
+    final groupIds = categoryIds ?? const <String>[];
+
+    final currentUserId = _getCurrentUserId();
+    for (final memberId in memberIds) {
+      // The sharer is not a sharee. A group's roster always contains its own
+      // owner (friend_categories_operations seeds it that way), and the caller
+      // passes that roster straight through — so without this skip an owner
+      // re-sharing to their own group grants themselves a revocable reason to
+      // see their own recipe, and the revoke log then counts them as a member
+      // who "kept it (another grant, or ownership)". The create path guards the same
+      // way; this one did not.
+      if (memberId == currentUserId) continue;
+      permissions.putIfAbsent(memberId, () => ResourcePermission.editor);
+      if (groupIds.isEmpty) {
+        grants = RecipeShareGrants.add(
+          grants,
+          memberId,
+          RecipeSocialData.directGrant,
+        );
+        continue;
+      }
+      for (final groupId in groupIds) {
+        grants = RecipeShareGrants.add(
+          grants,
+          memberId,
+          RecipeSocialData.groupGrant(groupId),
+        );
+      }
+    }
+
+    final existingCategoryIds = recipe.socialData?.categoryIds ?? const [];
+    final mergedCategoryIds = <String>{...existingCategoryIds, ...groupIds};
+
+    final updated = Recipe(
+      core: recipe.core,
+      type: recipe.type,
+      socialData: (recipe.socialData ?? const RecipeSocialData()).copyWith(
+        memberPermissions: permissions,
+        grants: grants,
+        categoryIds: mergedCategoryIds.isEmpty
+            ? null
+            : mergedCategoryIds.toList(),
+      ),
+      realtimeData: recipe.realtimeData,
+      offlineData: recipe.offlineData,
+    );
+
+    return _updateRecipe(updated);
+  }
+
   /// Sync collaborative recipe to shared_recipes collection
   /// Used when re-sharing an already collaborative recipe
   Future<void> _syncCollaborativeRecipeToSharedCollection({
-    required dynamic recipe,
+    required Recipe recipe,
     required List<String> memberIds,
   }) async {
     try {

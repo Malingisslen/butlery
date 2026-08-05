@@ -2621,7 +2621,7 @@
         {
           "from": "svc-social-share",
           "to": "ds-recipes",
-          "payload": "NYTT dokument: full kopia, type=collaborative, memberPermissions från noll. BUT-1785 (2026-08-03): efterf\u00f6ljande medlems\u00e4ndringar (l\u00e4gg till, ta bort, ta bort grupp) skrev tidigare ALDRIG \u2014 s\u00f6mmen gick till den personliga skrivv\u00e4gen, som avvisar collaborative-recept. Den pekar nu p\u00e5 saveRecipeForSocialModule.",
+          "payload": "TVÅ grenar. Personligt recept: NYTT dokument, full kopia, type=collaborative, memberPermissions från noll. REDAN collaborative (omdelning): dokumentet uppdateras på plats — de nya personerna läggs till i memberPermissions, och den som redan finns behåller sin behörighet (en omdelning får aldrig tyst degradera en editor). Före BUT-1797 skrev den grenen BARA shared_recipes-raden och skickade notiser, så mottagarna fick besked om ett recept de inte kunde öppna. Båda grenarna skriver socialData.grants[uid] — 'direct' eller 'group:<id>' — härkomsten som gör delningen återkallelsebar; memberPermissions förblir den enda källan till åtkomst. BUT-1785 (2026-08-03): efterf\u00f6ljande medlems\u00e4ndringar (l\u00e4gg till, ta bort, ta bort grupp) skrev tidigare ALDRIG \u2014 s\u00f6mmen gick till den personliga skrivv\u00e4gen, som avvisar collaborative-recept. Den pekar nu p\u00e5 saveRecipeForSocialModule.",
           "transport": "Firestore create",
           "verified": true
         },
@@ -2670,7 +2670,7 @@
         {
           "from": "svc-social-sharing",
           "to": "ds-recipes",
-          "payload": "ORIGINALET muteras på plats: memberPermissions{userId}, type → collaborative (samma doc-id)",
+          "payload": "ORIGINALET muteras på plats: memberPermissions{userId}, type → collaborative (samma doc-id). Samma tjänst bär den ANDRA gruppdelningsvägen (universal-delningsdialogen → shareRecipeWithGroups); sedan BUT-1797 skriver även den socialData.grants och categoryIds, så en gruppdelning är återkallelsebar oavsett vilken dialog användaren öppnade. Unionen av medlemmar inuti shareRecipeWithGroups slänger gruppstillhörigheten, så den fångas före unionen — den som nås via två grupper bär båda och överlever att den ena återkallas.",
           "transport": "Firestore update",
           "verified": true
         },
@@ -5812,7 +5812,7 @@
         {
           "from": "vm-group-recipe-selection",
           "to": "ds-recipes",
-          "payload": "shareSelectedRecipes → memberPermissions per medlem",
+          "payload": "shareSelectedRecipes → memberPermissions per medlem, plus socialData.categoryIds = [gruppens id] och socialData.grants[uid] = ['group:<id>'] — härkomsten som gör delningen återkallelsebar. Medlemmarna löses upp HÄR och nu: den som går med i gruppen senare får ingen åtkomst retroaktivt (BUT-1797)",
           "transport": "call",
           "verified": true
         }

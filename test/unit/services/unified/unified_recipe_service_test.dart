@@ -740,6 +740,33 @@ void main() {
         expect(createdRecipe!.id, equals(recipeId));
       });
 
+      /// BUT-1797. `categoryIds` crosses four objects to reach the document —
+      /// service → module → coordinator → creation service — and every hop is a
+      /// named argument the compiler is happy to see omitted. It WAS omitted at
+      /// the first hop, which is why a group share could never be taken back:
+      /// the app forgot which group you picked the moment you tapped share.
+      /// This asserts at the far end, so any hop dropping it again reddens here.
+      test('createCollaborativeRecipe carries the group all the way to the '
+          'saved recipe', () async {
+        final recipeId = await service.createCollaborativeRecipe(
+          title: 'Delad med familjen',
+          memberIds: ['mom-uid'],
+          ingredients: ['Ingredient 1'],
+          instructions: ['Step 1'],
+          categoryIds: ['grp-fam'],
+        );
+
+        final created = service.getRecipeById(recipeId!);
+        expect(created!.socialData?.categoryIds, ['grp-fam']);
+        expect(
+          created.socialData?.grants?['mom-uid'],
+          ['group:grp-fam'],
+          reason:
+              'without the recorded reason the member is indistinguishable '
+              'from one invited by hand, and the group revoke cannot cut them',
+        );
+      });
+
       test('should add member to recipe', () async {
         // Arrange - create collaborative recipe
         final recipeId = await service.createCollaborativeRecipe(

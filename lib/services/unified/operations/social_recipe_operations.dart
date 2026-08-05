@@ -56,6 +56,7 @@ class SocialRecipeOperations {
       getRecipes: getRecipes,
       createCollaborativeRecipe: createCollaborativeRecipe,
       createPersonalRecipe: createPersonalRecipe,
+      updateRecipe: updateRecipe,
       notificationService: _notificationService,
       onShareError: onShareError,
     );

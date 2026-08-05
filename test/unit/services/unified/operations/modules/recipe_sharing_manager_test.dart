@@ -30,6 +30,7 @@ void main() {
     late MockUnifiedRecipeService mockParentService;
     late MockNotificationService mockNotificationService;
     late RecipeSharingManager sharingManager;
+    late List<Recipe> savedRecipes;
     late Recipe testPersonalRecipe;
     late Recipe testCollaborativeRecipe;
 
@@ -69,6 +70,8 @@ void main() {
       app_provider.ServiceLocator.reset();
       app_provider.ServiceLocator.initialize(MockDIContainer());
 
+      savedRecipes = [];
+
       // Create mocks
       mockParentService = MockUnifiedRecipeService();
       mockNotificationService = MockNotificationService();
@@ -81,6 +84,10 @@ void main() {
         getRecipes: () => mockParentService.recipes,
         createCollaborativeRecipe: mockParentService.createCollaborativeRecipe,
         createPersonalRecipe: mockParentService.createPersonalRecipe,
+        updateRecipe: (recipe) async {
+          savedRecipes.add(recipe);
+          return true;
+        },
         notificationService: mockNotificationService,
       );
 
@@ -284,11 +291,13 @@ void main() {
                 'account, never chosen for display, and it lands verbatim in '
                 'every recipient s Article-15 bundle',
           );
-          // The membership spelling `firestore.rules`' recipient branch
-          // (:722/:727) and the GDPR export both read. Writing only
-          // `sharedToUserIds` made the row permission-denied for the very
-          // people it was shared with, and kept it out of their Art. 15 bundle
-          // — a wrong-field query throws nothing and reads as "no shares".
+          // `sharedToUserIds` is the membership field `firestore.rules`'
+          // recipient branch (:722/:727) and the GDPR export both read, and
+          // since 2026-08-03 the only one written. Writing the row under the
+          // RETIRED spelling `sharedWithUserIds` instead made it
+          // permission-denied for the very people it was shared with, and kept
+          // it out of their Art. 15 bundle — a wrong-field query throws nothing
+          // and reads as "no shares".
           // Mirrors the menu-side assertion in
           // `social_menu_operations_test.dart`; without it a dropped field is
           // invisible to every suite, because no fake ever denies.
@@ -341,6 +350,7 @@ void main() {
             createCollaborativeRecipe:
                 mockParentService.createCollaborativeRecipe,
             createPersonalRecipe: mockParentService.createPersonalRecipe,
+            updateRecipe: (_) async => true,
             notificationService: mockNotificationService,
             firestoreRepository: _ProbeDenyingRepository(docRef),
           );
@@ -509,6 +519,7 @@ void main() {
             createCollaborativeRecipe:
                 mockParentService.createCollaborativeRecipe,
             createPersonalRecipe: mockParentService.createPersonalRecipe,
+            updateRecipe: (_) async => true,
             notificationService: mockNotificationService,
             onShareError: (msg) => surfacedError = msg,
           );
@@ -567,18 +578,124 @@ void main() {
         expect(mockParentService.createCollaborativeRecipeCalls, isEmpty);
       });
 
-      test('should re-share when recipe already collaborative', () async {
-        // Production now supports re-sharing an already-collaborative recipe
-        // (syncs to shared_recipes collection for the new group instead of
-        // failing). The previous "should fail" expectation predated that
-        // feature; the recipe id flows through unchanged.
-        final newId = await sharingManager.shareRecipe(
+      // BUT-1797. The FOUR tests immediately below assert on `savedRecipes`,
+      // which the `updateRecipe` seam fills — not everything in the rest of this
+      // file. Until they existed the seam was installed and never read: a
+      // recorder with no assertion, which reads as coverage to a reviewer and to
+      // grep while proving nothing. `_grantAccessOnReshare` could
+      // have been deleted whole with every suite green.
+      test(
+        'a re-share GRANTS the new people access, not just a notification',
+        () async {
+          final newId = await sharingManager.shareRecipe(
+            recipeId: 'collab_1',
+            memberIds: ['user_999'],
+            memberDisplayNames: {'user_999': 'New Member'},
+          );
+
+          // Carries the return-value pin from the test this replaced: the id
+          // flows through unchanged AND `_grantAccessOnReshare` returned true —
+          // a false return makes the whole call yield null.
+          expect(newId, equals('collab_1'));
+
+          final saved = savedRecipes.single;
+          expect(
+            saved.socialData?.memberPermissions?.containsKey('user_999'),
+            isTrue,
+            reason:
+                'before this, a re-share wrote only the shared_recipes row — the '
+                'recipient was told about a recipe they could not open',
+          );
+          expect(saved.socialData?.grants?['user_999'], [
+            RecipeSocialData.directGrant,
+          ]);
+        },
+      );
+
+      test('a re-share from a GROUP records that group as the reason', () async {
+        await sharingManager.shareRecipe(
           recipeId: 'collab_1',
           memberIds: ['user_999'],
           memberDisplayNames: {'user_999': 'New Member'},
+          categoryIds: ['group_a'],
         );
 
-        expect(newId, equals('collab_1'));
+        final saved = savedRecipes.single;
+        expect(saved.socialData?.grants?['user_999'], ['group:group_a']);
+        // The group must also reach `categoryIds`: `removeGroup` refuses outright
+        // when the group is not listed there, so dropping this merge would leave
+        // members holding `group:group_a` on a recipe whose panel cannot revoke
+        // it — provenance recorded and unusable.
+        expect(saved.socialData?.categoryIds, contains('group_a'));
+      });
+
+      test('re-sharing to a group that contains the sharer grants the '
+          'sharer nothing', () async {
+        // A friend category always contains its own owner, and the caller hands
+        // that roster straight to shareRecipe — so without the skip in
+        // `_grantAccessOnReshare` the owner grants THEMSELVES a revocable reason
+        // to see their own recipe. Two things then go wrong, and both are
+        // asserted here because either one alone can be produced by a different
+        // mutant: the owner picks up an `editor` permission entry they never
+        // had, and `revokeGroup` later counts them among the members who "kept
+        // access via another grant".
+        //
+        // `user_123` is the owner and is deliberately ABSENT from the fixture's
+        // memberPermissions, so `putIfAbsent` really does write on the mutant.
+        await sharingManager.shareRecipe(
+          recipeId: 'collab_1',
+          memberIds: ['user_123', 'user_999'],
+          memberDisplayNames: const {
+            'user_123': 'Current User',
+            'user_999': 'New Member',
+          },
+          categoryIds: ['group_a'],
+        );
+
+        final saved = savedRecipes.single;
+        expect(
+          saved.socialData?.grants?.containsKey('user_123'),
+          isFalse,
+          reason: 'the sharer is not a sharee — ownership needs no grant',
+        );
+        expect(
+          saved.socialData?.memberPermissions?.containsKey('user_123'),
+          isFalse,
+          reason: 'and they must not be written in as an ordinary editor',
+        );
+        // CONTROL PAIR, and it is what makes the two negatives above load-
+        // bearing rather than vacuous: the same loop body demonstrably writes
+        // BOTH a grant and a permission for an id it does not skip. So the only
+        // thing that can explain user_123 having neither is the skip itself.
+        expect(saved.socialData?.grants?['user_999'], ['group:group_a']);
+        expect(
+          saved.socialData?.memberPermissions?['user_999'],
+          ResourcePermission.editor,
+        );
+      });
+
+      test('a re-share never overwrites an existing permission', () async {
+        // `user_789` is a VIEWER in the fixture, and the re-share default is
+        // editor — so this fixture discriminates in the direction that matters.
+        // Using `user_456` (already an editor) would be vacuous: `putIfAbsent`
+        // and a plain overwrite are byte-identical when the value equals the
+        // default.
+        await sharingManager.shareRecipe(
+          recipeId: 'collab_1',
+          memberIds: ['user_456', 'user_789'],
+          memberDisplayNames: const {
+            'user_456': 'Member One',
+            'user_789': 'Member Two',
+          },
+        );
+
+        final perms = savedRecipes.single.socialData!.memberPermissions!;
+        expect(
+          perms['user_789'],
+          ResourcePermission.viewer,
+          reason: 'a re-share must not silently promote or demote anyone',
+        );
+        expect(perms['user_456'], ResourcePermission.editor);
       });
 
       test('should handle creation failure', () async {

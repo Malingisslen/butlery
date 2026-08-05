@@ -22057,7 +22057,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeSharingRemoveGroup.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort gruppen'**
+  /// **'Ta bort gruppens åtkomst'**
   String get recipeSharingRemoveGroup;
 
   /// No description provided for @recipeSharingRevokeConfirm.
@@ -22072,16 +22072,16 @@ abstract class AppLocalizations {
   /// **'Delning med {name} avslutad'**
   String recipeSharingRevokeSuccess(String name);
 
-  /// BUT-1785: a group revoke removes the group LABEL only. Every member keeps access until revoked individually, so the copy must not promise a revocation.
+  /// BUT-1797: a group revoke now genuinely revokes. A member who ALSO holds a direct share keeps access (Malin, 2026-08-03), so the copy promises the group's access back, not every individual's.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort gruppen {name} från delningen?'**
+  /// **'Ta bort åtkomsten till receptet för gruppen {name}? De du även delat med enskilt eller via en annan grupp har kvar sin åtkomst.'**
   String recipeSharingRevokeGroupConfirm(String name);
 
-  /// No description provided for @recipeSharingRevokeGroupSuccess.
+  /// BUT-1797: a group revoke now genuinely revokes. A member who ALSO holds a direct share keeps access (Malin, 2026-08-03), so BOTH strings carry that carve-out - the confirm because the title and confirm button are what the user reads while deciding, and a snackbar afterwards cannot undo a promise made there. Avoid the {name}s genitive: group names are user-authored and Swedish takes no extra -s after s/x/z.
   ///
   /// In sv, this message translates to:
-  /// **'Gruppen {name} borttagen. Medlemmarna har fortfarande åtkomst — ta bort dem en och en under Vänner.'**
+  /// **'Gruppen {name} har inte längre åtkomst till receptet. De du även delat med enskilt eller via en annan grupp har kvar sin åtkomst.'**
   String recipeSharingRevokeGroupSuccess(String name);
 
   /// No description provided for @recipeSharingFriends.

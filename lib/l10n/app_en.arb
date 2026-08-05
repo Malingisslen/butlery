@@ -8733,7 +8733,7 @@
   "recipeSharingStopAllConfirm": "Are you sure you want to stop sharing with everyone?",
   "recipeSharingStopAllSuccess": "Sharing stopped with everyone",
   "recipeSharingRevoke": "Revoke sharing",
-  "recipeSharingRemoveGroup": "Remove the group",
+  "recipeSharingRemoveGroup": "Remove the group's access",
   "recipeSharingRevokeConfirm": "Stop sharing with {name}?",
   "@recipeSharingRevokeConfirm": {
     "placeholders": {
@@ -8750,17 +8750,18 @@
       }
     }
   },
-  "recipeSharingRevokeGroupConfirm": "Remove the group {name} from this share?",
+  "recipeSharingRevokeGroupConfirm": "Revoke access to this recipe for the group {name}? Anyone you also shared with individually, or through another group, keeps theirs.",
   "@recipeSharingRevokeGroupConfirm": {
-    "description": "BUT-1785: a group revoke removes the group LABEL only. Every member keeps access until revoked individually, so the copy must not promise a revocation.",
+    "description": "BUT-1797: a group revoke now genuinely revokes. A member who ALSO holds a direct share keeps access (Malin, 2026-08-03), so the copy promises the group's access back, not every individual's.",
     "placeholders": {
       "name": {
         "type": "String"
       }
     }
   },
-  "recipeSharingRevokeGroupSuccess": "Group {name} removed. Its members still have access — revoke them one by one under Friends.",
+  "recipeSharingRevokeGroupSuccess": "The group {name} no longer has access to this recipe. Anyone you also shared with individually, or through another group, keeps theirs.",
   "@recipeSharingRevokeGroupSuccess": {
+    "description": "BUT-1797: a group revoke now genuinely revokes. A member who ALSO holds a direct share keeps access (Malin, 2026-08-03), so BOTH strings carry that carve-out - the confirm because the title and confirm button are what the user reads while deciding, and a snackbar afterwards cannot undo a promise made there. Avoid the {name}s genitive: group names are user-authored and Swedish takes no extra -s after s/x/z.",
     "placeholders": {
       "name": {
         "type": "String"

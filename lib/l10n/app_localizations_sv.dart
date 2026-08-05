@@ -13196,7 +13196,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeSharingRevoke => 'Ta bort delning';
 
   @override
-  String get recipeSharingRemoveGroup => 'Ta bort gruppen';
+  String get recipeSharingRemoveGroup => 'Ta bort gruppens åtkomst';
 
   @override
   String recipeSharingRevokeConfirm(String name) {
@@ -13210,12 +13210,12 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String recipeSharingRevokeGroupConfirm(String name) {
-    return 'Ta bort gruppen $name från delningen?';
+    return 'Ta bort åtkomsten till receptet för gruppen $name? De du även delat med enskilt eller via en annan grupp har kvar sin åtkomst.';
   }
 
   @override
   String recipeSharingRevokeGroupSuccess(String name) {
-    return 'Gruppen $name borttagen. Medlemmarna har fortfarande åtkomst — ta bort dem en och en under Vänner.';
+    return 'Gruppen $name har inte längre åtkomst till receptet. De du även delat med enskilt eller via en annan grupp har kvar sin åtkomst.';
   }
 
   @override

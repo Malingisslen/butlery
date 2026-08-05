@@ -125,6 +125,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     int? portions,
     int? cookingTime,
     List<String>? personalTagIds,
+    List<String>? categoryIds,
   }) async {
     return await _creationService.createCollaborativeRecipe(
       title: title,
@@ -136,6 +137,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       portions: portions,
       cookingTime: cookingTime,
       personalTagIds: personalTagIds,
+      categoryIds: categoryIds,
     );
   }
 

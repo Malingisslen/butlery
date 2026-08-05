@@ -100,7 +100,21 @@ files in the same edit.
   a heading, and a heading leaves the tagging input; "Mjölk:"/"Ägg:"/"Soja:" stay
   headings. The asymmetry is the decision, not a gap. BUT-1714, 2026-07-27
 
+- **Revoking a group does NOT cut a member who also holds a direct share** — and an
+  explicit "remove this person" DOES cut them regardless of how many grants they hold. The
+  asymmetry is the decision, not a gap: a group share and a direct share are two separate
+  decisions about the same person, so undoing one must not undo the other, while an explicit
+  removal is the user overriding every reason at once. Provenance lives in
+  `socialData.grants` (uid -> `['direct', 'group:<categoryId>']`), which is DESCRIPTIVE only —
+  `memberPermissions` stays the sole source of truth for access and `firestore.rules` reads
+  only that, so nothing in `grants` can widen what anyone may see. A group share is a
+  SNAPSHOT: members are resolved at share time, so joining the group later grants nothing
+  retroactively. Do not add a "missing `grants` means everyone is direct" compatibility
+  path — the field is written from the start and the only documents without it are test data
+  (Malin, 2026-08-03). BUT-1797, 2026-08-04
+
 ## Engineering
+
 
 - **SUPERSEDES the "both spellings are named deliberately" clause of the BUT-1798 export
   entry.** `shared_content` now carries membership under ONE field, `sharedToUserIds`. The

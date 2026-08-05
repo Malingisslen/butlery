@@ -30,7 +30,7 @@ Domain models with serialization, factory methods, schema migration. Splitting f
 
 | File | Lines | Reason |
 |------|-------|--------|
-| `recipe_unified.dart` | 1,713 | Core recipe model — serialization, factories, copyWith, type variants. Cohesive growth from family-rating fields; future option is to extract `recipe_unified_serialization.dart` if drift exceeds +25%. |
+| `recipe_unified.dart` | 1780 | Core recipe model — serialization, factories, copyWith, type variants. Cohesive growth from family-rating fields; future option is to extract `recipe_unified_serialization.dart` if drift exceeds +25%. |
 | `tag_result.dart` | 869 | Auto-tagging result — serialization, schema migration, 20+ query helpers |
 | `unified_shopping_list.dart` | 837 | Shopping list model — serialization, member permissions, sync status |
 | `recipe_form_state.dart` | 802 | Recipe form state — validation, field tracking, error handler extracted |
@@ -87,7 +87,7 @@ Already modular services or well-organized modules within service facades. Furth
 | File | Lines | Reason |
 |------|-------|--------|
 | `personal_recipe_module.dart` | 1,100 | Recipe CRUD + tagging + sync — methods deeply coupled via shared state |
-| `unified_recipe_service.dart` | 1,161 | Service facade coordinating 4 modules |
+| `unified_recipe_service.dart` | 1182 | Service facade coordinating 4 modules |
 | `import_manager.dart` | 888 | Import pipeline orchestrator — multi-format, multi-tier |
 | `social_recipe_coordinator.dart` | 702 | Social recipe sharing/rating coordinator |
 | `unified_menu_service.dart` | 708 | Menu service facade |
@@ -99,7 +99,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `messaging_service.dart` | 903 | Chat/messaging service |
 | `text_import_strategy.dart` | 1006 | Text-based recipe import strategy |
 | `friends_management_operations.dart` | 675 | Add/remove/block friends operations |
-| `collaboration_management_module.dart` | 626 | Realtime collaboration session management |
+| `collaboration_management_module.dart` | 666 | Realtime collaboration session management |
 | `intelligent_cache_manager.dart` | 601 | Adaptive caching based on usage patterns |
 | `friend_categories_operations.dart` | 636 | Friend category CRUD operations |
 | `realtime_notification_module.dart` | 602 | Realtime notification dispatch; SRP module (explicit "does not contain" comment) |
@@ -108,7 +108,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `unified_friends_service.dart` | 616 | Friends service facade |
 | `personal_shopping_operations.dart` | 574 | Personal shopping list CRUD |
 | `fcm_service.dart` | 728 | FCM push notification service |
-| `recipe_sharing_manager.dart` | 683 | Recipe sharing operations module. +79 from BUT-1774/1798: both membership spellings written, and the create-only `sharedAt` stamping with the fail-open existence probe (a rules `get` on a non-existent doc denies, so the first share of any recipe was silently lost). |
+| `recipe_sharing_manager.dart` | 782 | Recipe sharing operations module. The create-only `sharedAt` stamping with the fail-open existence probe (a rules `get` on a non-existent doc denies, so the first share of any recipe was silently lost). +90 from BUT-1797: re-sharing an already-collaborative recipe wrote only the `shared_recipes` row, so the new people were notified about a recipe they could not open — `_grantAccessOnReshare` adds the permission entry and records why it exists. The dual membership spelling this row used to cite was retired 2026-08-03. |
 | `fcm_token_manager.dart` | 652 | FCM token lifecycle management |
 | `deep_link_service.dart` | 559 | Deep link routing service |
 | `llm_tier.dart` | 707 | LLM-based recipe parsing tier |
@@ -131,7 +131,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `social_engagement_metrics.dart` | 508 | SRP module: engagement calculation only (explicit "does not contain" comment) |
 | `url_import_strategy.dart` | 507 | Single multi-tier URL extraction strategy; coherent pipeline |
 | `recipe_auto_save_manager.dart` | 506 | Single-concern auto-save + draft management for recipe form |
-| `recipe_member_manager.dart` | 504 | Focused module for collaborative membership only |
+| `recipe_member_manager.dart` | 636 | Focused module for collaborative membership only. The grant algebra behind BUT-1797's real group revoke lives in its own file (`recipe_share_grants.dart`) rather than here, so the decided behaviour is testable without this module's five injected seams. |
 | `weekly_menu_plan_service.dart` | 563 | Single-algorithm service: today-anchored menu auto-distribution; coherent domain |
 | `analytics_service.dart` | 575 | Explicit facade delegating to 7 specialized tracker modules |
 | `cache_optimization.dart` | 526 | Single-concern LRU + periodic cache cleanup utility |

@@ -686,6 +686,23 @@ personal→collaborative leg only.
   "they've already seen it on screen" justification cannot cover it. Prefer "everything else is kept
   as stored" over a positive enumeration in the `data_minimisation` sentence: an incomplete KEEP list
   is the same self-description defect as an incomplete DROP list.
+  **The INVERSE bites too, and it over-reports (2026-08-05, BUT-1797): a CONSTRUCTOR ARGUMENT is not
+  the document.** `SharedRecipe.create(recipeSnapshot: recipe)` reads like the whole recipe
+  (`socialData` included) lands in `shared_content`, and a deviation entry was filed on exactly that
+  premise — but `SharedRecipe.toFirestore()` emits only the V2 denormalized fields and never
+  `recipeSnapshot`, and the sibling writer builds its payload key-by-key. Before ruling on ANY "field
+  X rides into collection Y" claim, open the serializer that the repository's `toFirestore` delegates
+  to and confirm the key is emitted; an in-memory field held by a model is not a disclosure.
+- **A DESCRIPTIVE provenance/attribution field is still a disclosure decision, decided by the
+  document's READ rule, because Firestore has no field-level read control.** BUT-1797's
+  `socialData.grants` (uid -> `['direct','group:<id>']`) changes no rule — `users/{uid}/recipes` reads
+  `isOwner || uid in socialData.memberPermissions` and never `grants` — yet it sits in the doc every
+  member may read, so the sharer's private grouping of their friends becomes visible to all members.
+  Judge such a field on the DELTA over what the same doc already shows (co-member uids were already
+  there) and on whether the new value is DEREFERENCEABLE: an opaque `categoryId` is only resolvable
+  by someone already in `friendUserIds` (`firestore.rules` collection-group `friend_categories`), so
+  no name leaks. That ruling expires the moment anyone denormalizes the NAME onto the doc for the
+  panel — make the "stays opaque" condition explicit when clearing one.
 - Anonymize (don't hard-delete) a row that is also someone else's GDPR evidence.
 - Prefer read-modify-write list rewrites over `FieldValue.arrayRemove()` in scrubs — test fakes
   silently no-op `arrayRemove`, hiding a broken cascade.

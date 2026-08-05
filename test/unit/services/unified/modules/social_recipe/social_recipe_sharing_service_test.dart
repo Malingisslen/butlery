@@ -210,6 +210,8 @@ Recipe _collaborative({
   String id = 'r1',
   String ownerId = 'me-uid',
   Map<String, ResourcePermission>? members,
+  Map<String, List<String>>? grants,
+  List<String>? categoryIds,
 }) {
   final core = RecipeCore(
     id: id,
@@ -237,6 +239,8 @@ Recipe _collaborative({
           },
       allowGuestViewing: false,
       allowMemberInvites: true,
+      grants: grants,
+      categoryIds: categoryIds,
     ),
   );
 }
@@ -386,6 +390,36 @@ void main() {
       expect(perms['friend-B'], ResourcePermission.viewer);
     });
 
+    /// BUT-1797, the FIRST-share twin of 'a share whose recipient list contains
+    /// the sharer keeps their admin'. That one covers the already-collaborative
+    /// branch; this one covers `forShare(excludeUserId:)` on the conversion
+    /// branch, where the permission half is safe for a different reason (the
+    /// owner's `admin` is written AFTER the loop) and the grant half is not.
+    /// Drop `excludeUserId` here and the owner acquires a revocable reason of
+    /// their own — a sharee row in the panel offering to un-share the owner
+    /// from their own recipe. Nothing else in the suite reaches it: the group
+    /// path strips self upstream, so its assertions hold for that reason.
+    test('a first share that includes the sharer gives them no revocable '
+        'reason', () async {
+      final h = _Harness(currentUserId: 'me-uid');
+      h.seed(_personal(id: 'r1'));
+      final svc = h.build();
+
+      await svc.shareRecipeWithUsers('r1', [
+        'me-uid',
+        'friend-B',
+      ], ResourcePermission.viewer);
+
+      final social = h.saved.single.socialData!;
+      expect(social.grants?.containsKey('me-uid'), isFalse);
+      expect(
+        social.grants?['friend-B'],
+        [RecipeSocialData.directGrant],
+        reason: 'control: the loop ran, so the absence above is the exclusion',
+      );
+      expect(social.memberPermissions?['me-uid'], ResourcePermission.admin);
+    });
+
     /// Proves the SharedRecipe doc written to the secondary collection
     /// carries `sharedByUserId` = current user AND the recipient list AND
     /// nothing more sensitive than display name.
@@ -403,10 +437,24 @@ void main() {
       expect(call.doc.sharedByUserId, 'me-uid');
       expect(call.doc.sharedByDisplayName, 'Anna');
       expect(call.recipientIds, ['friend-A']);
-      // GDPR / data-scope: the SharedRecipe model has no email/phone field
-      // by construction. This assertion is an explicit pin against a future
-      // refactor that adds one and forgets to redact it.
-      // (Sanity: SharedRecipe has no field shaped like 'email'.)
+      // GDPR / data-scope. Every recipient can read this document, so a field
+      // carrying contact details would leak on every share. The previous version
+      // of this comment promised "an explicit pin" and then delivered prose —
+      // this is the assertion it claimed.
+      final keys = call.doc.toFirestore().keys.map((k) => k.toLowerCase());
+      expect(
+        keys.where(
+          (k) =>
+              k.contains('email') ||
+              k.contains('phone') ||
+              k.contains('mail') ||
+              k.contains('tel'),
+        ),
+        isEmpty,
+        reason:
+            'a new contact-shaped field on SharedRecipe must be a deliberate '
+            'decision, not something that ships because nothing looked',
+      );
     });
 
     /// Proves allowCollaboration mirrors the permission arg: editor/admin
@@ -496,6 +544,10 @@ void main() {
         expect(perms['friend-A'], ResourcePermission.editor);
       },
     );
+
+    // The permission-write skip for the sharer's own uid is pinned by
+    // 'a share whose recipient list contains the sharer keeps their admin',
+    // further down this file. Not duplicated here.
   });
 
   group('shareRecipeWithUsers — share-cap (BUT-955)', () {
@@ -883,6 +935,160 @@ void main() {
     /// recipient list. A bug here ("share with self") would be visible
     /// noise in the recipient's inbox AND violate the auth/permission
     /// contract (you can't grant yourself a permission you already have).
+    /// BUT-1797. This is the SECOND group-share path (the universal share
+    /// dialog); `GroupRecipeSelectionViewModel` is the first. Both had to record
+    /// provenance or a group share would be revocable or not depending on which
+    /// dialog the user happened to open.
+    ///
+    /// The union of members inside `shareRecipeWithGroups` throws away which
+    /// group each person came through, so the attribution has to be captured
+    /// before it — that is what these pin.
+    test('a group share records who came through which group', () async {
+      fakeFriends.categoriesById['grp-fam'] = FriendCategory(
+        id: 'grp-fam',
+        ownerId: 'me-uid',
+        name: 'Familj',
+        friendUserIds: const ['me-uid', 'mom-uid'],
+      );
+
+      final h = _Harness(currentUserId: 'me-uid');
+      h.seed(_personal(id: 'r1'));
+      final svc = h.build();
+
+      await svc.shareRecipeWithGroups('r1', [
+        'grp-fam',
+      ], ResourcePermission.viewer);
+
+      final saved = h.saved.single;
+      expect(saved.socialData?.grants?['mom-uid'], ['group:grp-fam']);
+      expect(
+        saved.socialData?.categoryIds,
+        ['grp-fam'],
+        reason: 'the panel needs a row to offer a revoke on',
+      );
+      expect(
+        saved.socialData?.grants?.containsKey('me-uid'),
+        isFalse,
+        reason: 'the sharer is the owner, not a sharee, and is never revocable',
+      );
+    });
+
+    test('a member in TWO groups carries both reasons', () async {
+      // The decided case, from the other direction: revoking one group must
+      // leave this person standing, and that is only possible if both tokens
+      // were recorded at share time.
+      fakeFriends.categoriesById['grp-fam'] = FriendCategory(
+        id: 'grp-fam',
+        ownerId: 'me-uid',
+        name: 'Familj',
+        friendUserIds: const ['mom-uid'],
+      );
+      fakeFriends.categoriesById['grp-jobb'] = FriendCategory(
+        id: 'grp-jobb',
+        ownerId: 'me-uid',
+        name: 'Jobb',
+        friendUserIds: const ['mom-uid'],
+      );
+
+      final h = _Harness(currentUserId: 'me-uid');
+      h.seed(_personal(id: 'r1'));
+      final svc = h.build();
+
+      await svc.shareRecipeWithGroups('r1', [
+        'grp-fam',
+        'grp-jobb',
+      ], ResourcePermission.viewer);
+
+      final saved = h.saved.single;
+      expect(saved.socialData?.grants?['mom-uid'], [
+        'group:grp-fam',
+        'group:grp-jobb',
+      ]);
+      expect(
+        saved.socialData?.categoryIds,
+        containsAll(['grp-fam', 'grp-jobb']),
+      );
+    });
+
+    /// The sharer is dropped from the attribution map as well as from the
+    /// recipient list, and only this shape can tell the two apart: a group whose
+    /// ONLY member is you contributes a group id that no recipient holds. If
+    /// that id reached `categoryIds` the sharing panel would offer a revoke row
+    /// for a group nobody was ever shared with, and pressing it would report
+    /// success while cutting no one.
+    test('a group containing only the sharer adds no revocable row', () async {
+      fakeFriends.categoriesById['grp-solo'] = FriendCategory(
+        id: 'grp-solo',
+        ownerId: 'me-uid',
+        name: 'Bara jag',
+        friendUserIds: const ['me-uid'],
+      );
+      fakeFriends.categoriesById['grp-fam'] = FriendCategory(
+        id: 'grp-fam',
+        ownerId: 'me-uid',
+        name: 'Familj',
+        friendUserIds: const ['mom-uid'],
+      );
+
+      final h = _Harness(currentUserId: 'me-uid');
+      h.seed(_personal(id: 'r1'));
+      final svc = h.build();
+
+      await svc.shareRecipeWithGroups('r1', [
+        'grp-solo',
+        'grp-fam',
+      ], ResourcePermission.viewer);
+
+      expect(h.saved.single.socialData?.categoryIds, ['grp-fam']);
+    });
+
+    test(
+      'a share whose recipient list contains the sharer keeps their admin',
+      () async {
+        // Every test in this file passes non-self ids, and the group path strips
+        // self before calling — so the permission-write skip was unpinned, and
+        // deleting it left the whole suite green. The regression it prevents is
+        // not cosmetic: the sharer is the owner, and overwriting their `admin`
+        // with the share's `permission` locks them out of every
+        // `_hasAdminPermission`-gated member operation on their own recipe.
+        final h = _Harness(currentUserId: 'me-uid');
+        h.seed(
+          _collaborative(
+            id: 'r1',
+            members: const {
+              'me-uid': ResourcePermission.admin,
+              'friend-A': ResourcePermission.viewer,
+            },
+          ),
+        );
+        final svc = h.build();
+
+        await svc.shareRecipeWithUsers('r1', [
+          'me-uid',
+          'friend-B',
+        ], ResourcePermission.viewer);
+
+        final social = h.saved.single.socialData!;
+        expect(
+          social.memberPermissions?['me-uid'],
+          ResourcePermission.admin,
+          reason: 'the sharer owns this recipe — a share must not demote them',
+        );
+        expect(
+          social.grants?.containsKey('me-uid'),
+          isFalse,
+          reason: 'and they are not a sharee, so they get no revocable reason',
+        );
+        // Control: the same loop demonstrably writes both for an id it does not
+        // skip, so the two negatives above cannot pass for the wrong reason.
+        expect(
+          social.memberPermissions?['friend-B'],
+          ResourcePermission.viewer,
+        );
+        expect(social.grants?['friend-B'], [RecipeSocialData.directGrant]);
+      },
+    );
+
     test('resolves members, excludes self, shares with the rest', () async {
       fakeFriends.categoriesById['grp-fam'] = FriendCategory(
         id: 'grp-fam',
@@ -1032,6 +1238,152 @@ void main() {
             'service-unavailable must not crash, must surface as a clean '
             'no-members-found error',
       );
+    });
+  });
+
+  /// BUT-1797, the arm the two provenance tests above never reach. Both of them
+  /// share a PERSONAL recipe, so `RecipeShareGrants.forShare` is called with `existing: null`
+  /// and there is nothing to merge into. Every share after the first takes the
+  /// already-collaborative branch, which passes the recipe's CURRENT grants —
+  /// and that is where the decided behaviour lives: "revoking a group does not
+  /// cut a member who also holds a direct share" is only possible if an earlier
+  /// share's reasons survive a later one.
+  group('shareRecipeWithUsers — provenance merges into what is already '
+      'there', () {
+    /// Proves an unrelated share does not wipe the group provenance of a member
+    /// it never mentions. If `RecipeShareGrants.forShare` started from an empty map instead of
+    /// the recipe's own grants, mom-uid would silently become ungranted and a
+    /// later revoke of grp-old would find nobody to cut while reporting success.
+    test('a plain share preserves another member\'s group grant', () async {
+      final h = _Harness(currentUserId: 'me-uid');
+      h.seed(
+        _collaborative(
+          id: 'r1',
+          ownerId: 'me-uid',
+          members: {
+            'me-uid': ResourcePermission.admin,
+            'mom-uid': ResourcePermission.editor,
+          },
+          grants: {
+            'mom-uid': ['group:grp-old'],
+          },
+          categoryIds: ['grp-old'],
+        ),
+      );
+      final svc = h.build();
+
+      await svc.shareRecipeWithUsers('r1', [
+        'dad-uid',
+      ], ResourcePermission.viewer);
+
+      final grants = h.saved.single.socialData!.grants!;
+      expect(grants['mom-uid'], ['group:grp-old']);
+      expect(grants['dad-uid'], ['direct']);
+    });
+
+    /// `RecipeSocialData.copyWith` treats an explicit null as "erase" (sentinel
+    /// defaults), so `categoryIds` survives a non-group share only because
+    /// `RecipeShareGrants.mergeCategoryIds` folds the existing list in first. Passing `null` for
+    /// the existing list there — which reads as a harmless simplification, and
+    /// is exactly what the personal branch two lines up does — would drop the
+    /// group row out of the sharing panel with no other symptom.
+    test(
+      'a plain share does not erase a group already on the recipe',
+      () async {
+        final h = _Harness(currentUserId: 'me-uid');
+        h.seed(
+          _collaborative(
+            id: 'r1',
+            ownerId: 'me-uid',
+            members: {'me-uid': ResourcePermission.admin},
+            categoryIds: ['grp-old'],
+          ),
+        );
+        final svc = h.build();
+
+        await svc.shareRecipeWithUsers('r1', [
+          'dad-uid',
+        ], ResourcePermission.viewer);
+
+        expect(h.saved.single.socialData?.categoryIds, ['grp-old']);
+      },
+    );
+
+    /// The decided invariant (Malin, 2026-08-03) as this path produces it:
+    /// two separate decisions were made about mom-uid, so both reasons are on
+    /// the document and revoking the group leaves the direct share standing.
+    test('someone shared with by group AND directly carries both '
+        'reasons', () async {
+      final h = _Harness(currentUserId: 'me-uid');
+      h.seed(
+        _collaborative(
+          id: 'r1',
+          ownerId: 'me-uid',
+          members: {
+            'me-uid': ResourcePermission.admin,
+            'mom-uid': ResourcePermission.viewer,
+          },
+          grants: {
+            'mom-uid': ['group:grp-fam'],
+          },
+          categoryIds: ['grp-fam'],
+        ),
+      );
+      final svc = h.build();
+
+      await svc.shareRecipeWithUsers('r1', [
+        'mom-uid',
+      ], ResourcePermission.editor);
+
+      expect(h.saved.single.socialData?.grants?['mom-uid'], [
+        'group:grp-fam',
+        'direct',
+      ]);
+    });
+
+    /// A share with no group behind it leaves the field absent rather than
+    /// writing an empty array — `categoryIds` is what the panel renders rows
+    /// from, and `[]` and `null` must not both have to be handled downstream.
+    test('a first plain share leaves categoryIds null', () async {
+      final h = _Harness(currentUserId: 'me-uid');
+      h.seed(_personal(id: 'r1'));
+      final svc = h.build();
+
+      await svc.shareRecipeWithUsers('r1', [
+        'dad-uid',
+      ], ResourcePermission.viewer);
+
+      expect(h.saved.single.socialData?.categoryIds, isNull);
+      expect(h.saved.single.socialData?.grants, {
+        'dad-uid': ['direct'],
+      });
+    });
+
+    /// The `startsWith('group:')` guard in `RecipeShareGrants.mergeCategoryIds`,
+    /// reached through the public `grantsByUserId` parameter.
+    ///
+    /// Note what this does NOT prove: a stray 'direct' is refused by EITHER
+    /// guard, because `'direct'.substring(6)` is '' and the empty-id guard
+    /// catches it. The two guards are separated in recipe_share_grants_test.dart
+    /// with a token whose remainder is non-empty. What this pins is that the
+    /// input is reachable at all from a caller.
+    test('a direct token in the attribution map never becomes a category '
+        'id', () async {
+      final h = _Harness(currentUserId: 'me-uid');
+      h.seed(_personal(id: 'r1'));
+      final svc = h.build();
+
+      await svc.shareRecipeWithUsers(
+        'r1',
+        ['dad-uid'],
+        ResourcePermission.viewer,
+        grantsByUserId: const {
+          'dad-uid': [RecipeSocialData.directGrant],
+        },
+      );
+
+      expect(h.saved.single.socialData?.categoryIds, isNull);
+      expect(h.saved.single.socialData?.grants?['dad-uid'], ['direct']);
     });
   });
 
