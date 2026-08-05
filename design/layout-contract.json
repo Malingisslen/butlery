@@ -1,0 +1,669 @@
+{
+ "$schema": "layout-contract.schema.json",
+ "$note": "MASKINKÄLLA för layoutlägen, viewportprofiler och renderingsprober. F2-L01: brytpunkterna bodde i appkoden som nio predikat med tre överlapp, och designsidan hade ingen maskinläsbar motsvarighet alls — bredbrytpunkter beskrev problemet i prosa. Kontraktet är DRAFT: det är beslutat men inte aktiverat, eftersom appens brytpunktskod inte får ändras förrän inventeringen och renderingsresultaten är granskade.",
+ "version": "1.3",
+ "date": "2026-08-05",
+ "contractState": "draft",
+ "appCommit": "712ef7ba9ba711f9eec9013df6947ef617a50aa0",
+ "activationBlockers": [
+  "R-01…R-04 baslinjemätning ar genomford men fynden ar inte atgardade",
+  "appens brytpunktskod far inte andras forran inventeringen och renderingsresultaten ar granskade",
+  "getGridCrossAxisCount saknar 1920-steget som standardrutnatet foreskriver"
+ ],
+ "modes": [
+  {
+   "id": "compact",
+   "label": "Kompakt",
+   "min": 0,
+   "max": 600,
+   "minInclusive": true,
+   "maxInclusive": false,
+   "note": "Telefon i porträtt. Sammanfaller med Material compact och med appens isMobile, som har flest anrop."
+  },
+  {
+   "id": "medium",
+   "label": "Mellan",
+   "min": 600,
+   "max": 1024,
+   "minInclusive": true,
+   "maxInclusive": false,
+   "note": "Stor telefon liggande och surfplatta porträtt. Sammanfaller exakt med appens isTablet."
+  },
+  {
+   "id": "expanded",
+   "label": "Utbredd",
+   "min": 1024,
+   "max": null,
+   "minInclusive": true,
+   "maxInclusive": false,
+   "note": "Surfplatta liggande och skrivbord. Sammanfaller exakt med appens isDesktop. Öppet uppåt."
+  }
+ ],
+ "profiles": [
+  {
+   "id": "compact-390",
+   "mode": "compact",
+   "width": 390,
+   "height": 844,
+   "role": "primary",
+   "note": "iPhone 14-klass. Ligger inne i intervallet, inte på en gräns."
+  },
+  {
+   "id": "medium-820",
+   "mode": "medium",
+   "width": 820,
+   "height": 1180,
+   "role": "primary",
+   "note": "iPad 10,9 tum porträtt. Väl inne i [600, 1024)."
+  },
+  {
+   "id": "expanded-1180",
+   "mode": "expanded",
+   "width": 1180,
+   "height": 820,
+   "role": "primary",
+   "note": "Samma platta liggande. Inne i [1024, ∞) utan att nudda 1280."
+  },
+  {
+   "id": "expanded-desktop-1440",
+   "mode": "expanded",
+   "width": 1440,
+   "height": 900,
+   "role": "secondary",
+   "buildTarget": "admin-web",
+   "note": "Adminwebbens yta. SEKUNDÄR profil inom samma layoutläge — inte ett fjärde läge."
+  },
+  {
+   "id": "expanded-ultrawide-2048",
+   "mode": "expanded",
+   "width": 2048,
+   "height": 1152,
+   "role": "secondary",
+   "note": "Representativ yta ÖVER 1920-gränsen. 1920 självt förblir en gränsprob, inte en profil — en profil på en gräns bevisar ingenting om intervallet under."
+  }
+ ],
+ "probes": [
+  {
+   "width": 319,
+   "expectMode": "compact",
+   "expectBand": "band-320",
+   "why": "under mobileSmall"
+  },
+  {
+   "width": 320,
+   "expectMode": "compact",
+   "expectBand": "band-600",
+   "why": "mobileSmall, inklusiv nedre"
+  },
+  {
+   "width": 599,
+   "expectMode": "compact",
+   "expectBand": "band-600",
+   "why": "sista pixeln under mobileLarge"
+  },
+  {
+   "width": 600,
+   "expectMode": "medium",
+   "expectBand": "band-768",
+   "why": "mobileLarge — läget byter här"
+  },
+  {
+   "width": 767,
+   "expectMode": "medium",
+   "expectBand": "band-768",
+   "why": "sista pixeln under tablet"
+  },
+  {
+   "width": 768,
+   "expectMode": "medium",
+   "expectBand": "band-1024",
+   "why": "tablet — bandet byter, inte läget"
+  },
+  {
+   "width": 1023,
+   "expectMode": "medium",
+   "expectBand": "band-1024",
+   "why": "sista pixeln under tabletLarge"
+  },
+  {
+   "width": 1024,
+   "expectMode": "expanded",
+   "expectBand": "band-1280",
+   "why": "tabletLarge — läget byter. 29 breda artefakter är ritade exakt här"
+  },
+  {
+   "width": 1279,
+   "expectMode": "expanded",
+   "expectBand": "band-1280",
+   "why": "sista pixeln under desktop"
+  },
+  {
+   "width": 1280,
+   "expectMode": "expanded",
+   "expectBand": "band-1920",
+   "why": "desktop — bandet byter, inte läget"
+  },
+  {
+   "width": 1919,
+   "expectMode": "expanded",
+   "expectBand": "band-1920",
+   "why": "sista pixeln under desktopLarge"
+  },
+  {
+   "width": 1920,
+   "expectMode": "expanded",
+   "expectBand": "band-1920",
+   "why": "desktopLarge — kolumnsteget byter, varken läge eller band"
+  }
+ ],
+ "migration": [
+  {
+   "predicate": "isMobile",
+   "calls": 7,
+   "mode": "compact",
+   "action": "map"
+  },
+  {
+   "predicate": "isMobileWidth",
+   "calls": 2,
+   "mode": "compact",
+   "action": "map"
+  },
+  {
+   "predicate": "isTablet",
+   "calls": 4,
+   "mode": "medium",
+   "action": "map"
+  },
+  {
+   "predicate": "isTabletWidth",
+   "calls": 1,
+   "mode": "medium",
+   "action": "map"
+  },
+  {
+   "predicate": "isDesktop",
+   "calls": 4,
+   "mode": "expanded",
+   "action": "map"
+  },
+  {
+   "predicate": "isDesktopWidth",
+   "calls": 2,
+   "mode": "expanded",
+   "action": "map"
+  },
+  {
+   "predicate": "isSmallMobile",
+   "calls": 0,
+   "mode": null,
+   "action": "retire",
+   "why": "överlappar medium; noll anrop"
+  },
+  {
+   "predicate": "isLargeTablet",
+   "calls": 0,
+   "mode": null,
+   "action": "retire",
+   "why": "överlappar medium och expanded; noll anrop"
+  },
+  {
+   "predicate": "isLargeDesktop",
+   "calls": 0,
+   "mode": null,
+   "action": "retire",
+   "why": "noll anrop"
+  },
+  {
+   "predicate": "getDeviceCategory",
+   "calls": 3,
+   "mode": null,
+   "action": "keep",
+   "why": "sex steg för valueForCategory — innehållsmått, inte layoutläge"
+  }
+ ],
+ "parallelModels": [
+  {
+   "id": "column-count-desktopLarge",
+   "severity": "blocking",
+   "what": "Kolumnantalet väljs med valueForCategory och har ett FJÄRDE steg vid desktopLarge (1920) som de tre layoutlägena inte har.",
+   "sites": [
+    "lib/widgets/common/responsive/responsive_grid.dart:84",
+    "lib/widgets/common/responsive/responsive_grid.dart:310",
+    "lib/core/responsive/breakpoints.dart:230"
+   ],
+   "detail": "responsive_grid ger 1 · 2 · 3 · 4 och getCardColumnCount ger 1 · 2 · 2 · 3. Två olika kolumntrappor, båda med ett steg vid 1920.",
+   "resolution": "Antingen in i kontraktet som en egen dimension (kolumntrappa per läge plus ett innehållsbreddstak), eller uttryckligen avvecklad så att kolumnantalet följer de tre lägena."
+  }
+ ],
+ "callInventory": {
+  "appCommit": "712ef7ba9ba711f9eec9013df6947ef617a50aa0",
+  "namedWidthPredicates": 20,
+  "getDeviceCategory": 3,
+  "valueForTextualMatches": 73,
+  "valueForRealCalls": 72,
+  "valueForInDocComment": 1,
+  "byPurpose": {
+   "innehållsbredd": 40,
+   "visuellt värde": 29,
+   "kolumnantal": 3,
+   "synlighet": 0,
+   "omordning": 0,
+   "struktur": 0
+  },
+  "columnSites": [
+   "lib/core/responsive/responsive_builder.dart:491",
+   "lib/widgets/common/responsive/responsive_grid.dart:84",
+   "lib/widgets/common/responsive/responsive_grid.dart:310"
+  ],
+  "note": "Ingen av de 72 anropen växlar synlighet, omordning eller struktur — samtliga producerar ett VÄRDE. Den enda parallella layoutmodellen är kolumntrappan, se parallelModels."
+ },
+ "valueBands": [
+  {
+   "id": "band-320",
+   "min": 0,
+   "max": 320,
+   "note": "under mobileSmall — deklarerad men utan predikat i appen"
+  },
+  {
+   "id": "band-600",
+   "min": 320,
+   "max": 600,
+   "note": "mobileSmall till mobileLarge"
+  },
+  {
+   "id": "band-768",
+   "min": 600,
+   "max": 768,
+   "note": "mobileLarge till tablet"
+  },
+  {
+   "id": "band-1024",
+   "min": 768,
+   "max": 1024,
+   "note": "tablet till tabletLarge"
+  },
+  {
+   "id": "band-1280",
+   "min": 1024,
+   "max": 1280,
+   "note": "tabletLarge till desktop"
+  },
+  {
+   "id": "band-1920",
+   "min": 1280,
+   "max": null,
+   "note": "desktop och uppåt; kolumnsteget vid 1920 ligger här"
+  }
+ ],
+ "$valueBandsNote": "Storleksband får påverka VISUELLA VÄRDEN och INNEHÅLLSBREDDER — aldrig struktur, synlighet eller omordning. De motsvarar appens sex DeviceCategory-steg och är det lager valueFor/valueForCategory faktiskt arbetar i.",
+ "gridPolicies": [
+  {
+   "id": "standardrutnat",
+   "label": "Standardrutnät",
+   "steps": [
+    {
+     "fromWidth": 0,
+     "columns": 1
+    },
+    {
+     "fromWidth": 600,
+     "columns": 2
+    },
+    {
+     "fromWidth": 1024,
+     "columns": 3
+    },
+    {
+     "fromWidth": 1920,
+     "columns": 4
+    }
+   ],
+   "note": "1 · 2 · 3 och 4 från 1920. Används av de generella rutnäten."
+  },
+  {
+   "id": "kortrutnat",
+   "label": "Kortrutnät",
+   "steps": [
+    {
+     "fromWidth": 0,
+     "columns": 1
+    },
+    {
+     "fromWidth": 600,
+     "columns": 2
+    },
+    {
+     "fromWidth": 1024,
+     "columns": 2
+    },
+    {
+     "fromWidth": 1920,
+     "columns": 3
+    }
+   ],
+   "note": "1 · 2 · 2 och 3 från 1920. Kort är bredare än listrader och tål färre spalter."
+  }
+ ],
+ "$gridPoliciesNote": "1920 är en GRID- och VÄRDEGRÄNS inom expanded, inte ett fjärde layoutläge. Två olika trappor är tillåtna; två anonyma parallella modeller är det inte — varje kodplats deklarerar sin policy.",
+ "gridConsumers": [
+  {
+   "site": "lib/widgets/common/layout_components.dart:308",
+   "symbol": "ResponsiveGrid (via ResponsiveCardGrid)",
+   "policy": "standardrutnat",
+   "live": true,
+   "consumers": 1,
+   "note": "Enda levande konsumenten av ResponsiveGrid. Kolumntrappan kommer fran _getColumnCount: 1/2/3/4."
+  },
+  {
+   "site": "lib/theme/app_dimensions.dart:688",
+   "symbol": "Breakpoints.getCardColumnCount",
+   "policy": "kortrutnat",
+   "live": true,
+   "consumers": 1,
+   "note": "Enda levande konsumenten av kortrutnatet: 1/2/2/3."
+  }
+ ],
+ "render": {
+  "chromeVersion": "150.0.7871.188",
+  "devicePixelRatio": 2,
+  "note": "DPR 2 speglar de enheter produkten faktiskt körs på. Ändras den ändras alla mätvärden, så den står i kontraktet och inte i harnessets kod."
+ },
+ "viewportClassMap": {
+  "phone": {
+   "mode": "compact",
+   "profile": "compact-390"
+  },
+  "wide": {
+   "mode": "expanded",
+   "profile": "expanded-1180"
+  },
+  "expanded": {
+   "mode": "expanded",
+   "profile": "expanded-desktop-1440",
+   "requiresBuildTarget": true
+  },
+  "none": {
+   "mode": null,
+   "profile": null,
+   "note": "bord och annoteringar — ingen yta, ingen profil"
+  }
+ },
+ "$viewportClassMapNote": "Kopplingen ger RENDERINGSPROFIL och ingenting annat. Den ändrar aldrig classificationState och ger aldrig normativ auktoritet — det är beslut, och beslut fattas inte av en mappningstabell.",
+ "coverageGaps": [
+  {
+   "mode": "medium",
+   "artifacts": 0,
+   "severity": "open",
+   "what": "Layoutläget medium [600, 1024) har noll artefakter.",
+   "why": "Ingen artefakt är ritad för stor telefon liggande eller surfplatta i porträtt.",
+   "resolution": "Antingen egna medium-varianter, eller en uttrycklig återanvändningsregel som säger vilken variant som gäller i medium. Inga mediumartefakter får skapas genom antagande."
+  }
+ ],
+ "deprecationCandidates": [
+  {
+   "symbol": "getGridCrossAxisCount",
+   "site": "lib/core/responsive/responsive_builder.dart:485",
+   "productionConsumers": 0,
+   "testReferences": [
+    "test/unit/core/responsive/responsive_builder_test.dart:752",
+    "test/unit/core/responsive/responsive_builder_test.dart:758"
+   ],
+   "policy": null,
+   "status": "avvecklingskandidat",
+   "note": "Anropas bara av sitt eget test, som faster trappan 1/2/3 vid 400, 800 och 1400. Tester ar inte konsumenter: en helper med noll produktionsanrop ska inte tilldelas en aktiv produktionspolicy. Koden ror vi inte i den har commiten."
+  },
+  {
+   "symbol": "ResponsiveStaggeredGrid",
+   "site": "lib/widgets/common/responsive/responsive_grid.dart:305",
+   "productionConsumers": 0,
+   "testReferences": [],
+   "policy": null,
+   "status": "avvecklingskandidat",
+   "note": "Noll anrop i lib/. Kolumntrappan 1/2/3/4 finns men konsumeras inte."
+  }
+ ],
+ "gridMatning": {
+  "kalla": "flutter test test/gridmatning_test.dart",
+  "enhet": "logiska pixlar",
+  "not": "oanvand är strukturellt alltid 0: SliverGridDelegateWithFixedCrossAxisCount delar hela den tillgängliga bredden. Den verkliga frågan är kortbredden, inte tomrummet.",
+  "matpunkter": [
+   {
+    "policy": "standardrutnat",
+    "bredd": 1180,
+    "kolumner": 2,
+    "kortbredd": 546,
+    "gap": 24,
+    "padding": "32/32",
+    "radbredd": 1116,
+    "oanvand": 0,
+    "overflow": 0,
+    "maxbredd": 800,
+    "maxbreddTillampad": false
+   },
+   {
+    "policy": "standardrutnat",
+    "bredd": 1919,
+    "kolumner": 3,
+    "kortbredd": 602.33,
+    "gap": 24,
+    "padding": "32/32",
+    "radbredd": 1855,
+    "oanvand": 0,
+    "overflow": 0,
+    "maxbredd": 1200,
+    "maxbreddTillampad": false
+   },
+   {
+    "policy": "standardrutnat",
+    "bredd": 1920,
+    "kolumner": 4,
+    "kortbredd": 446,
+    "gap": 24,
+    "padding": "32/32",
+    "radbredd": 1856,
+    "oanvand": 0,
+    "overflow": 0,
+    "maxbredd": 1400,
+    "maxbreddTillampad": false
+   },
+   {
+    "policy": "standardrutnat",
+    "bredd": 2048,
+    "kolumner": 4,
+    "kortbredd": 478,
+    "gap": 24,
+    "padding": "32/32",
+    "radbredd": 1984,
+    "oanvand": 0,
+    "overflow": 0,
+    "maxbredd": 1400,
+    "maxbreddTillampad": false
+   },
+   {
+    "policy": "kortrutnat",
+    "bredd": 1180,
+    "kolumner": 2,
+    "kortbredd": 546,
+    "gap": 24,
+    "padding": "32/32",
+    "radbredd": 1116,
+    "oanvand": 0,
+    "overflow": 0,
+    "maxbredd": 800,
+    "maxbreddTillampad": false
+   },
+   {
+    "policy": "kortrutnat",
+    "bredd": 1919,
+    "kolumner": 2,
+    "kortbredd": 915.5,
+    "gap": 24,
+    "padding": "32/32",
+    "radbredd": 1855,
+    "oanvand": 0,
+    "overflow": 0,
+    "maxbredd": 1200,
+    "maxbreddTillampad": false
+   },
+   {
+    "policy": "kortrutnat",
+    "bredd": 1920,
+    "kolumner": 3,
+    "kortbredd": 602.67,
+    "gap": 24,
+    "padding": "32/32",
+    "radbredd": 1856,
+    "oanvand": 0,
+    "overflow": 0,
+    "maxbredd": 1400,
+    "maxbreddTillampad": false
+   },
+   {
+    "policy": "kortrutnat",
+    "bredd": 2048,
+    "kolumner": 3,
+    "kortbredd": 645.33,
+    "gap": 24,
+    "padding": "32/32",
+    "radbredd": 1984,
+    "oanvand": 0,
+    "overflow": 0,
+    "maxbredd": 1400,
+    "maxbreddTillampad": false
+   }
+  ],
+  "$regel": "Ren observation av levande kod. Ger ingen normativ auktoritet."
+ },
+ "gridPolicyAvvikelse": {
+  "$regel": "Fyra skilda fält, aldrig sammanblandade. Mätningen visar vad de levande konsumenterna GÖR. Den avgör inte vad som SKA gälla — ingen beslutad auktoritetsordning gör produktionskoden till normativ källa för layoutlagen.",
+  "declaredPolicy": {
+   "standardrutnat": [
+    {
+     "fromWidth": 0,
+     "columns": 1
+    },
+    {
+     "fromWidth": 600,
+     "columns": 2
+    },
+    {
+     "fromWidth": 1024,
+     "columns": 3
+    },
+    {
+     "fromWidth": 1920,
+     "columns": 4
+    }
+   ],
+   "kortrutnat": [
+    {
+     "fromWidth": 0,
+     "columns": 1
+    },
+    {
+     "fromWidth": 600,
+     "columns": 2
+    },
+    {
+     "fromWidth": 1024,
+     "columns": 2
+    },
+    {
+     "fromWidth": 1920,
+     "columns": 3
+    }
+   ],
+   "kalla": "layout-contract.json#gridPolicies (draft)"
+  },
+  "observedImplementation": {
+   "standardrutnat": [
+    {
+     "fromWidth": 0,
+     "columns": 1
+    },
+    {
+     "fromWidth": 768,
+     "columns": 2
+    },
+    {
+     "fromWidth": 1280,
+     "columns": 3
+    },
+    {
+     "fromWidth": 1920,
+     "columns": 4
+    }
+   ],
+   "kortrutnat": [
+    {
+     "fromWidth": 0,
+     "columns": 1
+    },
+    {
+     "fromWidth": 768,
+     "columns": 2
+    },
+    {
+     "fromWidth": 1920,
+     "columns": 3
+    }
+   ],
+   "kalla": "flutter test test/gridmatning_test.dart · GRIDTRAPPA · appCommit 712ef7ba9ba711f9eec9013df6947ef617a50aa0",
+   "matpunkter_st": 13,
+   "not": "Båda sidor om varje kategorigräns i breakpoints.dart."
+  },
+  "discrepancy": [
+   {
+    "policy": "standardrutnat",
+    "steg": "2 spalter",
+    "deklarerat": 600,
+    "observerat": 768,
+    "avvikelse_px": 168
+   },
+   {
+    "policy": "standardrutnat",
+    "steg": "3 spalter",
+    "deklarerat": 1024,
+    "observerat": 1280,
+    "avvikelse_px": 256
+   },
+   {
+    "policy": "standardrutnat",
+    "steg": "4 spalter",
+    "deklarerat": 1920,
+    "observerat": 1920,
+    "avvikelse_px": 0
+   },
+   {
+    "policy": "kortrutnat",
+    "steg": "2 spalter",
+    "deklarerat": 600,
+    "observerat": 768,
+    "avvikelse_px": 168
+   },
+   {
+    "policy": "kortrutnat",
+    "steg": "3 spalter",
+    "deklarerat": 1920,
+    "observerat": 1920,
+    "avvikelse_px": 0
+   },
+   {
+    "policy": "kortrutnat",
+    "steg": "eget steg vid 1024",
+    "deklarerat": "2 spalter deklarerat som eget steg",
+    "observerat": "inget eget steg — 768-steget räcker till 1920",
+    "avvikelse_px": null
+   }
+  ],
+  "normativeDecisionStatus": "OBESLUTAD. Två utfall är möjliga: (a) kontraktet är normativt och appkoden ska rättas, (b) appkoden är normativ och kontraktet ska rättas. Ingen av dem är beslutad. Avvikelsen är registrerad, inte löst."
+ },
+ "maxbreddFraga": {
+  "$regel": "Får INTE lösas genom att tyst anpassa beskrivningen till nuläget.",
+  "declaredPolicy": "Breakpoints.getMaxContentWidth ger 800 px (tablet), 1200 px (desktop), 1400 px (desktopLarge). Deklarationen finns i appkoden.",
+  "observedImplementation": "Ingen av de två levande gridkonsumenterna tillämpar taket. Vid 2048 px är raden 1984 px bred mot deklarerade 1400 px.",
+  "discrepancy": "Taket finns i API:t utan konsument. Vid 1919 px ger kortrutnätet kort på 915,5 logiska pixlar.",
+  "normativeDecisionStatus": "OBESLUTAD — eget kontrakts- eller implementationsbeslut. Registrerad, inte löst."
+ }
+}
