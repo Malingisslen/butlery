@@ -65,7 +65,7 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 
 | File | Lines | Reason |
 |------|-------|--------|
-| `firebase_recipe_repository.dart` | 998 | Recipe CRUD + sync/caching — module-extracted (tag/query/gdpr-export ops) per BUT-536 (was 931, drifted to 1104, now 998) |
+| `firebase_recipe_repository.dart` | 1022 | Recipe CRUD + sync/caching — module-extracted (tag/query/gdpr-export ops) per BUT-536 (was 931, drifted to 1104, now 998) |
 | `firebase_shared_shopping_repository.dart` | 802 | Shared shopping — member management + item ops |
 | `base_shared_content_repository.dart` | 799 | Base class for shared content metadata |
 | `firebase_storage_repository.dart` | 647 | Storage operations — upload, resize, cache |
@@ -89,7 +89,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `personal_recipe_module.dart` | 1,100 | Recipe CRUD + tagging + sync — methods deeply coupled via shared state |
 | `unified_recipe_service.dart` | 1182 | Service facade coordinating 4 modules |
 | `import_manager.dart` | 888 | Import pipeline orchestrator — multi-format, multi-tier |
-| `social_recipe_coordinator.dart` | 702 | Social recipe sharing/rating coordinator |
+| `social_recipe_coordinator.dart` | 706 | Social recipe sharing/rating coordinator |
 | `unified_menu_service.dart` | 708 | Menu service facade |
 | `recipe_discovery_service.dart` | 655 | Focused discovery/recommendation module; explicit "does not contain" SRP comment |
 | `friends_state_manager.dart` | 646 | Friends list state + stream management |
@@ -118,7 +118,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `realtime_menu_service.dart` | 512 | Explicit facade; delegates to MenuOperations + MenuParticipants modules |
 | `file_import_strategy.dart` | 599 | File-format (CSV/Excel) import strategy; coherent single-platform pipeline |
 | `search_service.dart` | 538 | Recipe/content search service |
-| `social_recipe_operations.dart` | 509 | Social recipe sharing/rating ops |
+| `social_recipe_operations.dart` | 512 | Social recipe sharing/rating ops |
 | `notification_service.dart` | 764 | Push notification dispatch |
 | `share_service.dart` | 580 | Multi-content type sharing — recipes, menus, shopping lists |
 | `import_rate_limiter.dart` | 524 | Single-responsibility Firestore rate-limiter; coherent single concern |

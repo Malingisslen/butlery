@@ -689,7 +689,20 @@ because access can come from ownership.
 
 - `lib/models/realtime/recipe_serialization.dart` holds a SECOND, hand-rolled `RecipeSocialData`
   deserializer that never learned `grants` (it also already mis-reads `descriptionCollaborative`).
-  No live path round-trips a collaborative recipe through it. Latent drift, needs its own ticket.
+  **Corrected 2026-08-05.** This entry originally said "no live path round-trips a
+  collaborative recipe through it". That was asserted, not traced, and a whole-range
+  reviewer found one: `firebase_sync_manager.dart:225` deserializes every
+  `realtime_recipes` document through this file and hands the result to
+  `onRecipeUpdated`, which lands it in the same in-memory list
+  `RecipeMemberManager._getRecipes()` reads.
+
+  What remains unproven is whether that copy is ever written BACK to
+  `users/{uid}/recipes` — which is what would make the loss destructive rather than
+  merely local. The failure direction is fail-safe either way: a missing `grants`
+  makes a revoke drop the label and cut nobody, never the reverse.
+
+  So: still deferred, but on "not proven to round-trip", NOT on "no live path".
+  Scope the ticket to that sync path. Do not cite the original wording to close it.
 - **A revoke does not trim `shared_content.sharedToUserIds`.** A revoked member loses the recipe
   document but keeps the discovery row — title, description, image — and its Art. 15 export line.
   Pre-existing for `removeMember`; this ticket makes it more visible because the copy now promises
