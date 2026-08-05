@@ -370,6 +370,83 @@ void main() {
     // ---------------------------------------------------------------
     // preprocessText (full pipeline)
     // ---------------------------------------------------------------
+    group('preprocessText — instruction headers are word-bounded', () {
+      // The header split used to run on an UNBOUNDED `tillagning`, so it fired
+      // INSIDE "Tillagningstid" and cut the line in half. Counted 2026-08-05
+      // across `butlery-corpus`: 96 instruction lines beginning `Stid:` in 66
+      // unverified gold seeds, all from the 2026-06-02 potatisratter shoot.
+      // The split emits lowercase `stid:`; what is STORED is capitalised,
+      // because `_parseInstructionLine` upper-cases the first character
+      // afterwards — so assertions here target the split's own output, not the
+      // stored form. Each fixture CONTAINS the trigger word: one the bug
+      // cannot fire on would pass identically with and without the fix.
+      test('a time label survives as one line, not split mid-word', () {
+        // Verbatim from potatisratter/PXL_20260602_192848565/ocr.txt:34.
+        final result = TextImportNormalizer.preprocessText(
+          '• Tillagningstid: 1 timme',
+        );
+        expect(result, contains('Tillagningstid: 1 timme'));
+        expect(
+          result,
+          isNot(contains('\nstid')),
+          reason: 'splitting inside "Tillagningstid" leaves the orphan "stid:"',
+        );
+      });
+
+      test('the composite form is not cut either', () {
+        final result = TextImportNormalizer.preprocessText(
+          'Tillagningstid: 1 timme och 10 minuter.',
+        );
+        expect(result, contains('Tillagningstid: 1 timme och 10 minuter'));
+        expect(result, isNot(contains('\nstid')));
+      });
+
+      test('a standalone instruction header still gets its line break', () {
+        // The split must still do its job — the anchor narrows it, not removes
+        // it. Without this, "no split ever" would pass the two tests above.
+        final result = TextImportNormalizer.preprocessText(
+          'Tillagning Koka pastan.',
+        );
+        expect(result, contains('Tillagning\n'));
+      });
+
+      test('an INFLECTED header still splits, so its step is not deleted', () {
+        // `RecipeSectionDetector.isInstructionHeader` is an unbounded
+        // `contains`, and `text_import_strategy` DROPS any line it calls a
+        // header. Leave "Instruktioner: Låt degen jäsa" whole and the step
+        // dies with the header. Låt is not in the "break before" verb list, so
+        // no later rule rescues it.
+        final result = TextImportNormalizer.preprocessText(
+          'Instruktioner: Låt degen jäsa under duk.',
+        );
+        expect(result, contains('Instruktioner\n'));
+      });
+
+      test('a label preceded by å/ä/ö is not split (ASCII \\b fires here)', () {
+        // Two things this fixture must do that the previous version did not:
+        // put a Swedish vowel immediately BEFORE the label (ASCII \b treats
+        // å/ä/ö as non-word, so it fires exactly there), and carry trailing
+        // text — `preprocessText` ends in `.trim()`, which swallows a newline
+        // inserted at end-of-string and makes the assertion unfailable.
+        final result = TextImportNormalizer.preprocessText(
+          'råtillagning tar tid',
+        );
+        expect(result, equals('råtillagning tar tid'));
+      });
+
+      test('the other two traps the pattern names are real', () {
+        // Unbounded, these split into "steg\nvis" and "method\nology".
+        expect(
+          TextImportNormalizer.preprocessText('stegvis blandning av smeten'),
+          equals('stegvis blandning av smeten'),
+        );
+        expect(
+          TextImportNormalizer.preprocessText('methodology of the dish'),
+          equals('methodology of the dish'),
+        );
+      });
+    });
+
     group('preprocessText', () {
       test('should clean hashtags, concatenated ingredients, and decimals', () {
         final result = TextImportNormalizer.preprocessText(

@@ -15,6 +15,7 @@ import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dar
 import 'package:butlery/services/import/parsers/heading_word_lists.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/services/import/parsers/recipe_time_extractor.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
 import 'package:butlery/utils/text/ocr_error_corrector.dart';
@@ -630,7 +631,18 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
 
     final portions = _extractPortions(text);
-    final timeMinutes = _extractTime(text);
+    // A LABELLED time beats a scavenged one. `_extractTime` reads a label in
+    // its first pattern but falls through to an unanchored `(\d+)\s*min`, so
+    // on a page with no clean label it takes a step timer, and on a page that
+    // also states a resting time it can take that. The extractor refuses
+    // waiting time, ranks a total above a phase whichever comes first, and
+    // sums the composite form; it returns null rather than guessing, so
+    // `_extractTime` still covers every page carrying no label at all.
+    //
+    // Deliberately NOT claiming a corpus delta here. The eval's time metric
+    // moves on few pages, because most labelled lines were already read
+    // correctly — see the class doc for what is genuinely new.
+    final timeMinutes = RecipeTimeExtractor.extract(text) ?? _extractTime(text);
     final rating = extractRating(text);
     final mealType = _guessMealType(text);
 

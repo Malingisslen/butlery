@@ -5,6 +5,7 @@
 /// `BUTLERY_CORPUS_DIR` environment variable. Pure `dart:io`.
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 class CorpusPaths {
@@ -43,6 +44,15 @@ class CorpusPaths {
 
   String ocrMeta(String bookSlug, String recipeId) =>
       '${recipe(bookSlug, recipeId)}/ocr.meta.json';
+
+  /// Per-line geometry for the page, captured once from an offline OCR engine
+  /// and replayed forever. Held separately from [ocrText] because the text and
+  /// the geometry come from DIFFERENT engines: the text is the paid tier's
+  /// (better Swedish), the geometry is Windows' offline recognizer (free, and
+  /// the only one that runs on a dev machine). They must never be read as one
+  /// page — a heading index from one does not address the other.
+  String ocrLayout(String bookSlug, String recipeId) =>
+      '${recipe(bookSlug, recipeId)}/layout-winocr.json';
 
   String draft(String bookSlug, String recipeId) =>
       '${recipe(bookSlug, recipeId)}/draft.json';
@@ -103,39 +113,79 @@ class CorpusPaths {
       if (imageId == 'inbox') continue;
       final ocrPath = ocrText(bookSlug, imageId);
 
-      // Flat (single-recipe) layout.
-      if (File('${imageDir.path}/gold.json').existsSync()) {
-        entries.add(RecipeEntry(
-          bookSlug: bookSlug,
-          imageId: imageId,
-          blockId: null,
-          goldPath: gold(bookSlug, imageId),
-          draftPath: draft(bookSlug, imageId),
-          ocrTextPath: ocrPath,
-        ));
+      final blocks =
+          imageDir
+              .listSync()
+              .whereType<Directory>()
+              .where((b) => File('${b.path}/gold.json').existsSync())
+              .toList()
+            ..sort((a, b) => a.path.compareTo(b.path));
+
+      // A page can carry gold at BOTH levels: the prelabel writes a page-level
+      // draft AND one per block, so whichever shape the transcriber did not use
+      // is left behind as an unverified leftover. VERIFIED gold is the truth
+      // wherever it sits, so the level is chosen by where the verification is —
+      // never by which file exists.
+      //
+      // Choosing on existence alone (as this did until 2026-08-04) let a flat
+      // leftover SHADOW verified blocks: `recipeEntries` returned one
+      // unverified entry, the eval skipped it as "not verified yet", and every
+      // verified recipe on that spread left the score without a word. It was
+      // most of the long-standing "scores far fewer than the verified count"
+      // gap. Deliberately no page counts here — the corpus is live and outside
+      // the repo, so any number pinned in this comment is false within hours
+      // (the first draft of it went stale the same night). Run
+      // `tools/corpus_split_eval.dart` for the current figures.
+      final flatGold = File('${imageDir.path}/gold.json');
+      final useBlocks =
+          blocks.isNotEmpty &&
+          (!flatGold.existsSync() ||
+              !_isVerified(flatGold) ||
+              blocks.any((b) => _isVerified(File('${b.path}/gold.json'))));
+
+      if (!useBlocks) {
+        if (!flatGold.existsSync()) continue;
+        entries.add(
+          RecipeEntry(
+            bookSlug: bookSlug,
+            imageId: imageId,
+            blockId: null,
+            goldPath: gold(bookSlug, imageId),
+            draftPath: draft(bookSlug, imageId),
+            ocrTextPath: ocrPath,
+          ),
+        );
         continue;
       }
 
-      // Nested (multi-recipe) layout.
-      final blocks = imageDir
-          .listSync()
-          .whereType<Directory>()
-          .where((b) => File('${b.path}/gold.json').existsSync())
-          .toList()
-        ..sort((a, b) => a.path.compareTo(b.path));
       for (final blockDir in blocks) {
         final blockId = _basename(blockDir.path);
-        entries.add(RecipeEntry(
-          bookSlug: bookSlug,
-          imageId: imageId,
-          blockId: blockId,
-          goldPath: goldBlock(bookSlug, imageId, blockId),
-          draftPath: draftBlock(bookSlug, imageId, blockId),
-          ocrTextPath: ocrPath,
-        ));
+        entries.add(
+          RecipeEntry(
+            bookSlug: bookSlug,
+            imageId: imageId,
+            blockId: blockId,
+            goldPath: goldBlock(bookSlug, imageId, blockId),
+            draftPath: draftBlock(bookSlug, imageId, blockId),
+            ocrTextPath: ocrPath,
+          ),
+        );
       }
     }
     return entries;
+  }
+
+  /// True only when the file exists AND says `verified: true`. A missing or
+  /// malformed gold file is NOT verified — an unreadable file must never pass
+  /// for a transcription someone stood behind.
+  static bool _isVerified(File goldFile) {
+    if (!goldFile.existsSync()) return false;
+    try {
+      final m = jsonDecode(goldFile.readAsStringSync());
+      return m is Map && m['verified'] == true;
+    } catch (_) {
+      return false;
+    }
   }
 
   static String _clean(String p) => p.replaceAll('\\', '/');

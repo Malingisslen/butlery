@@ -1165,6 +1165,38 @@ Full recipe: www.blog.com/full-recipe
     });
 
     group('Metadata Extraction', () {
+      // These two exist because nothing else in the repo pinned
+      // `RecipeTimeExtractor.extract(text) ?? _extractTime(text)`. Reverting it
+      // to the bare `_extractTime(text)` left every other suite green, so the
+      // whole change could have been undone without a single red test.
+      test(
+        'a labelled composite time beats what the scavenger reads',
+        () async {
+          // `_extractTime`'s `tid\s*:\s*(\d+)\s*timm` stops at the hour and
+          // answers 60; the extractor sums the composite.
+          const text = '''
+Fin sillsallad
+• Tillagningstid: 1 timme och 15 minuter
+Ingredienser:
+2 dl grädde
+Gör så här:
+Koka potatisen i 20 minuter.
+''';
+          final result = await strategy.import(text);
+          expect(result.recipe!.timeMinutes, equals(75));
+        },
+      );
+
+      test('with no label at all the cruder scavenger still fires', () async {
+        // The other half of the `??`: the extractor returning null must not
+        // blank out a time the old path could still find.
+        const text =
+            'Pannkakor\nIngredienser:\n3 dl mjöl\n'
+            'Gör så här:\nGrädda i 20 min på medelvärme.';
+        final result = await strategy.import(text);
+        expect(result.recipe!.timeMinutes, equals(20));
+      });
+
       test('should extract servings information', () async {
         // Arrange — each input mapped to the portions the parser actually
         // extracts today (null where no pattern matches). The extractor keys on

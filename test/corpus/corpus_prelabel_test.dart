@@ -14,7 +14,13 @@
 ///   4. Write draft.json (the parser's prediction) + a gold.json seed
 ///      (verified:false copy you then correct by hand and flip to true)
 ///
-/// Run it (OCR key + RUN flag are real ENV VARS, not dart-defines):
+/// Run it (all three are real ENV VARS, not dart-defines). The OCR key is
+/// needed ONLY for pages with no stored `ocr.txt`: re-deriving drafts after a
+/// PARSER change reuses every stored read and costs nothing, so the key is
+/// demanded at the point of use rather than upfront. `FORCE_CORPUS_OCR=1`
+/// re-reads every page anyway — a re-shoot, or a deliberate provider
+/// comparison.
+///
 ///   `OCR_SPACE_API_KEY=<key>` RUN_CORPUS_PRELABEL=1 \
 ///     flutter test test/corpus/corpus_prelabel_test.dart
 ///
@@ -81,10 +87,12 @@ void main() {
         );
       }
 
+      // NOT demanded upfront. Since OCR reuse landed, a parser-only
+      // re-derivation touches no paid provider at all, and failing here made
+      // that free path unreachable — the run this harness exists for could not
+      // start without a key it would never use. Demanded at the point of use
+      // instead, where the message can name the page that actually needs it.
       final ocrKey = Platform.environment['OCR_SPACE_API_KEY'] ?? '';
-      if (ocrKey.isEmpty) {
-        fail('OCR_SPACE_API_KEY env var not set — pass it to flutter test.');
-      }
 
       final importManager = ImportManager(_NoopPersonalOps());
       final ingredientParser = IngredientParsingStrategy();
@@ -115,16 +123,60 @@ void main() {
           // production artifact the corpus is meant to preserve.
           await File('${recipeDir.path}/page-01.jpg').writeAsBytes(bytes);
 
-          // OCR.space's free plan rejects payloads over 1.5 MB (E556). Phone
-          // photos are 2–4 MB, so shrink the COPY sent to OCR — mirrors the
-          // image_picker compression the real app applies before OCR. Text OCR
-          // gains nothing above ~1600px, so this costs no accuracy.
-          final ocrBytes = _shrinkForOcr(bytes);
-          final ocr = await _runOcr(ocrKey, ocrBytes, '$bookSlug/$recipeId');
-          File(paths.ocrText(bookSlug, recipeId)).writeAsStringSync(ocr.text);
-          File(
-            paths.ocrMeta(bookSlug, recipeId),
-          ).writeAsStringSync(encodeJsonPretty(ocr.meta.toJson()));
+          // REUSE an existing read instead of paying for it again. Every run
+          // used to re-OCR the whole corpus, so re-deriving drafts after a
+          // PARSER change — the common case, and the whole point of the
+          // corpus — cost one paid call per page (250 today). The stored
+          // ocr.txt is the same artifact the eval already treats as the
+          // baseline, so reusing it changes nothing about what is measured.
+          // Set FORCE_CORPUS_OCR=1 to re-read anyway (a new photo, or a
+          // deliberate OCR-provider comparison).
+          final existingOcr = File(paths.ocrText(bookSlug, recipeId));
+          final forceOcr = Platform.environment['FORCE_CORPUS_OCR'] == '1';
+          final storedText = existingOcr.existsSync()
+              ? existingOcr.readAsStringSync()
+              : '';
+          // Re-shoot protection: a newer inbox image against an older ocr.txt
+          // means the stored read belongs to a DIFFERENT photo. Reusing it
+          // there would let someone verify gold against the new image while
+          // every metric still scores the old text — fresh gold, stale OCR,
+          // and nothing anywhere says so.
+          final stale =
+              existingOcr.existsSync() &&
+              existingOcr.lastModifiedSync().isBefore(image.lastModifiedSync());
+          final _OcrOutcome ocr;
+          if (!forceOcr && !stale && storedText.trim().isNotEmpty) {
+            // Read the stored meta rather than inventing one. Fabricating
+            // `provider: 'ocr_space'` mislabels text that came from another
+            // tier, and fabricating a fresh timestamp erases when the page was
+            // actually read.
+            final metaFile = File(paths.ocrMeta(bookSlug, recipeId));
+            final meta = metaFile.existsSync()
+                ? OcrMeta.fromJson(
+                    jsonDecode(metaFile.readAsStringSync())
+                        as Map<String, dynamic>,
+                  )
+                : OcrMeta(provider: 'unknown', timestampIso: '');
+            ocr = _OcrOutcome(storedText, meta);
+            stdout.writeln('OCR[$bookSlug/$recipeId] reused stored ocr.txt');
+          } else {
+            if (ocrKey.isEmpty) {
+              fail(
+                'OCR_SPACE_API_KEY not set, and $bookSlug/$recipeId has no '
+                'reusable ocr.txt (stale: $stale, forced: $forceOcr).',
+              );
+            }
+            // OCR.space's free plan rejects payloads over 1.5 MB (E556). Phone
+            // photos are 2–4 MB, so shrink the COPY sent to OCR — mirrors the
+            // image_picker compression the real app applies before OCR. Text
+            // OCR gains nothing above ~1600px, so this costs no accuracy.
+            final ocrBytes = _shrinkForOcr(bytes);
+            ocr = await _runOcr(ocrKey, ocrBytes, '$bookSlug/$recipeId');
+            existingOcr.writeAsStringSync(ocr.text);
+            File(
+              paths.ocrMeta(bookSlug, recipeId),
+            ).writeAsStringSync(encodeJsonPretty(ocr.meta.toJson()));
+          }
 
           if (ocr.meta.isFailure || ocr.text.trim().isEmpty) {
             failed++;
@@ -381,7 +433,13 @@ int? _totalTime(Recipe? r) {
   final prep = r.prepTimeMinutes ?? 0;
   final cook = r.cookTimeMinutes ?? 0;
   final total = prep + cook;
-  return total > 0 ? total : null;
+  if (total > 0) return total;
+  // The TEXT/photo path never fills the split prep/cook fields — it writes a
+  // single `timeMinutes` (TextImportStrategy._extractTime). Reading only
+  // prep+cook made the eval report 0.0% time accuracy for every photographed
+  // page regardless of what the parser found: a broken yardstick, not a
+  // measured failure. Fall back to the field that path actually populates.
+  return r.timeMinutes;
 }
 
 String _firstNonEmptyLine(String text) => text

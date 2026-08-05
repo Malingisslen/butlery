@@ -1,6 +1,8 @@
 /// Text Import Normalizer - Text preprocessing utilities for recipe import.
 /// Extracted from text_import_strategy.dart for better organization.
 
+import 'package:butlery/utils/text/swedish_word_boundary.dart';
+
 /// Provides text normalization, decimal protection, sentence splitting,
 /// and social media cleanup for recipe text parsing.
 class TextImportNormalizer {
@@ -188,10 +190,47 @@ class TextImportNormalizer {
       'gör så här',
     );
 
-    // Add line breaks after instruction headers
+    // Add line breaks after instruction headers.
+    //
+    // BOUNDED, and it has to be. Unbounded, `tillagning` matched INSIDE
+    // `Tillagningstid`, cutting the label in half: the dish's own time left the
+    // field and its tail joined the cooking steps. Counted 2026-08-05 across
+    // `butlery-corpus`: 96 instruction lines beginning `Stid:` — capitalised,
+    // because `_parseInstructionLine` upper-cases the first character after the
+    // split — in 66 unverified `gold.json` seeds, all from the 2026-06-02
+    // `potatisratter` shoot. (Not in `draft.json`: those were re-derived after
+    // this fix, so the seeds are the surviving record.) Same trap for `steg`
+    // (inside "stegvis"), `method` (inside "methodology") and `tillredning`.
+    //
+    // The INFLECTIONS are load-bearing, not tidiness. `RecipeSectionDetector.
+    // isInstructionHeader` is still an unbounded `contains`, and
+    // `text_import_strategy` DROPS any line it calls a header. So a bounded
+    // pattern matching only the stem would leave "Instruktioner: Låt degen
+    // jäsa" as one line, which that `contains` then classifies as a pure
+    // header — deleting the step with it. Unbounded, the split used to cut
+    // after "Instruktion" and the mangled remainder survived as a step. The
+    // two predicates have to agree on the inflected forms or narrowing this
+    // one silently loses content.
+    //
+    // They now agree on every BARE inflection, but NOT on compound TAILS: this
+    // pattern leaves "Tillredningstid: 45 minuter" whole and that same
+    // `contains` then drops it entirely, where the unbounded split at least
+    // left half of it alive. Zero occurrences in 250 corpus pages, so it is a
+    // known remaining gap rather than a closed one. The durable fix is bounding
+    // `isInstructionHeader` itself, which belongs in its own change:
+    // `recipe_section_detector.dart` is accepted-large and is the audited
+    // heading/ingredient safety hinge.
+    //
+    // Dart's own `\b` cannot be used: it is ASCII-only, so it never fires after
+    // å/ä/ö and fires spuriously beside them (BUT-1691). `caseSensitive: false`
+    // is passed explicitly because SwedishWordBoundary defaults to true, and
+    // dropping it would stop matching the capitalised headings every cookbook
+    // page actually uses.
     processed = processed.replaceAllMapped(
-      RegExp(
-        r'(gör så här|gör såhär|instruktion|tillredning|tillagning|steg|instructions|method|directions|preparation)',
+      SwedishWordBoundary.boundedRegExp(
+        r'gör så här|gör såhär|instruktion(?:erna|er|en)?|'
+        r'tillredning(?:arna|ar|en)?|tillagning(?:en)?|steg(?:en|et)?|'
+        r'instructions|method|directions|preparation',
         caseSensitive: false,
       ),
       (match) => '${match.group(0)}\n',

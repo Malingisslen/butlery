@@ -152,6 +152,34 @@ void main() {
         isNull,
       );
     });
+
+    // BUT-1691, the phantom-boundary direction. The unit's trailing edge is
+    // `SwedishWordBoundary.after`, never ASCII `\b`: Dart's `\b` treats å/ä/ö
+    // as NON-word, so it fires between a one-letter unit and a Swedish vowel
+    // and the single letter is read as a unit. Measured 2026-08-05 against a
+    // `\b` replica — every fixture below came back as a real duration, and no
+    // other test in this file puts å/ä/ö immediately after a unit, so the whole
+    // change was unpinned here.
+    test('"2 hål" is not 2 hours (ASCII \\b fires between "h" and "å")', () {
+      expect(parseSwedishDuration('Gör 2 hål i degen'), isNull);
+      expect(parseSwedishDuration('Stick 3 hål i locket'), isNull);
+    });
+
+    test('"30 säsonger" is not 30 seconds', () {
+      expect(parseSwedishDuration('30 säsonger senare'), isNull);
+    });
+
+    test('the boundary costs no recall on real one-letter units', () {
+      // Recall control for the tightening above: a legitimate unit followed by
+      // a space, a normal letter or end-of-line must still parse, or the two
+      // negatives above would also be satisfied by a parser gone blind.
+      expect(parseSwedishDuration('1 h'), const Duration(hours: 1));
+      expect(
+        parseSwedishDuration('Låt stå 2 h och rör om'),
+        const Duration(hours: 2),
+      );
+      expect(parseSwedishDuration('Vänta 30 s'), const Duration(seconds: 30));
+    });
   });
 
   group('word-number phrases (BUT-604)', () {

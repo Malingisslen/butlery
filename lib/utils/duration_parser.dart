@@ -17,6 +17,8 @@
 /// to avoid surprising UX if upstream bounds change.
 library;
 
+import 'package:butlery/utils/text/swedish_word_boundary.dart';
+
 /// Upper bound for a legal parsed duration. Anything longer is returned as
 /// `null` on the assumption that it's a recipe total, not a single step.
 const Duration _maxDuration = Duration(hours: 12);
@@ -25,10 +27,17 @@ const Duration _maxDuration = Duration(hours: 12);
 /// 1. optional lower bound of a range (ignored — we use the upper bound)
 /// 2. numeric value (int or decimal with `,`/`.`)
 /// 3. unit token
+/// The unit's trailing edge is [SwedishWordBoundary.after], never ASCII `\b`.
+/// Dart's `\b` treats å/ä/ö as NON-word, so it fires between the one-letter
+/// units and a Swedish vowel and the single letter is read as a unit:
+/// `2 hål i degen` parsed as 2 HOURS, `30 säsonger` as 30 seconds (BUT-1691,
+/// the phantom-boundary direction). No legitimate Swedish duration puts å/ä/ö
+/// immediately after the unit with no separator, so nothing is lost.
 final RegExp _durationPattern = RegExp(
   r'(?:(\d+(?:[,\.]\d+)?)\s*[-–]\s*)?'
   r'(\d+(?:[,\.]\d+)?)\s*'
-  r'(timmar|timme|timar|tim|tmr|h|minuter|minut|min|sekunder|sekund|sek|s)\b',
+  r'(timmar|timme|timar|tim|tmr|h|minuter|minut|min|sekunder|sekund|sek|s)'
+  '${SwedishWordBoundary.after}',
   caseSensitive: false,
 );
 
