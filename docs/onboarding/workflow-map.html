@@ -3775,7 +3775,7 @@
         {
           "from": "svc-text-import-strategy",
           "to": "svc-import-manager",
-          "payload": "Recipe (endast parsat, ej sparat)",
+          "payload": "Recipe (endast parsat, ej sparat). Tillagningstiden avg\u00f6rs sedan 2026-08-05 av `RecipeTimeExtractor` (lib/services/import/parsers/recipe_time_extractor.dart); strategins egen `_extractTime` \u00e4r kvar som fallback n\u00e4r extraktorn inte hittar n\u00e5got.",
           "transport": "method-call",
           "verified": true
         },
@@ -3919,7 +3919,7 @@
         {
           "from": "svc-text-import-strategy",
           "to": "svc-import-manager",
-          "payload": "Recipe(s) med källartefakt (textPaste)",
+          "payload": "Recipe(s) med k\u00e4llartefakt (textPaste). Tillagningstiden kommer fr\u00e5n `RecipeTimeExtractor` med strategins `_extractTime` som fallback (2026-08-05).",
           "transport": "method-call",
           "verified": true
         },

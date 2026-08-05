@@ -97,9 +97,9 @@ Already modular services or well-organized modules within service facades. Furth
 | `realtime_recipe_operations.dart` | 630 | Realtime recipe collaboration ops |
 | `user_service.dart` | 1032 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
 | `messaging_service.dart` | 903 | Chat/messaging service |
-| `text_import_strategy.dart` | 1006 | Text-based recipe import strategy |
+| `text_import_strategy.dart` | 1038 | Text-based recipe import strategy |
 | `friends_management_operations.dart` | 675 | Add/remove/block friends operations |
-| `collaboration_management_module.dart` | 666 | Realtime collaboration session management |
+| `collaboration_management_module.dart` | 668 | Realtime collaboration session management |
 | `intelligent_cache_manager.dart` | 601 | Adaptive caching based on usage patterns |
 | `friend_categories_operations.dart` | 636 | Friend category CRUD operations |
 | `realtime_notification_module.dart` | 602 | Realtime notification dispatch; SRP module (explicit "does not contain" comment) |
@@ -108,6 +108,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `unified_friends_service.dart` | 616 | Friends service facade |
 | `personal_shopping_operations.dart` | 574 | Personal shopping list CRUD |
 | `fcm_service.dart` | 728 | FCM push notification service |
+| `social_recipe_sharing_service.dart` | 505 | The universal-share-dialog path: resolves friend categories to members, converts personal → collaborative, and writes the secondary `shared_content` row with bounded self-heal (BUT-1503). Crossed 500 in BUT-1797 (+56): the `grantsByUserId` attribution captured before the member union, and the two `RecipeShareGrants.forShare`/`mergeCategoryIds` call sites. The grant algebra itself was deliberately lifted OUT to `recipe_share_grants.dart` rather than kept here. Splitting the remaining group-resolution half would separate the union from the attribution it exists to preserve. |
 | `recipe_sharing_manager.dart` | 782 | Recipe sharing operations module. The create-only `sharedAt` stamping with the fail-open existence probe (a rules `get` on a non-existent doc denies, so the first share of any recipe was silently lost). +90 from BUT-1797: re-sharing an already-collaborative recipe wrote only the `shared_recipes` row, so the new people were notified about a recipe they could not open — `_grantAccessOnReshare` adds the permission entry and records why it exists. The dual membership spelling this row used to cite was retired 2026-08-03. |
 | `fcm_token_manager.dart` | 652 | FCM token lifecycle management |
 | `deep_link_service.dart` | 559 | Deep link routing service |
@@ -131,7 +132,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `social_engagement_metrics.dart` | 508 | SRP module: engagement calculation only (explicit "does not contain" comment) |
 | `url_import_strategy.dart` | 507 | Single multi-tier URL extraction strategy; coherent pipeline |
 | `recipe_auto_save_manager.dart` | 506 | Single-concern auto-save + draft management for recipe form |
-| `recipe_member_manager.dart` | 636 | Focused module for collaborative membership only. The grant algebra behind BUT-1797's real group revoke lives in its own file (`recipe_share_grants.dart`) rather than here, so the decided behaviour is testable without this module's five injected seams. |
+| `recipe_member_manager.dart` | 637 | Focused module for collaborative membership only. The grant algebra behind BUT-1797's real group revoke lives in its own file (`recipe_share_grants.dart`) rather than here, so the decided behaviour is testable without this module's five injected seams. |
 | `weekly_menu_plan_service.dart` | 563 | Single-algorithm service: today-anchored menu auto-distribution; coherent domain |
 | `analytics_service.dart` | 575 | Explicit facade delegating to 7 specialized tracker modules |
 | `cache_optimization.dart` | 526 | Single-concern LRU + periodic cache cleanup utility |
