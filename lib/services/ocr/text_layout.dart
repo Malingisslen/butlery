@@ -56,9 +56,14 @@
 /// longer does. Both are recorded rather than deleted because the rule survived
 /// both wrong reasons, and the next reader deserves to know that.)
 ///
-/// The callers are still being built: as of 2026-08-05 only the recognizer seam
-/// imports this file, and nothing yet reads a [PageLayout] downstream of
-/// `OCRResult`. The above is a requirement on the steps to come.
+/// That check is [DocumentLayout.matchesLineCountOf] — named here because the
+/// rule sat in this paragraph unimplemented from the model's first commit until
+/// step 6a, which is exactly what happens when a MUST points at nothing.
+///
+/// The callers are still being built: as of 2026-08-06 the recognizer seam and
+/// `HeadingDetector` (d8d565981) import this file, but nothing calls either
+/// `HeadingDetector` or [DocumentLayout.matchesLineCountOf] from the
+/// `OCRResult` path yet. The above is a requirement on the steps to come.
 library;
 
 /// An axis-aligned box in the coordinate space of the image the recognizer
@@ -373,6 +378,43 @@ class DocumentLayout {
       if (i + 1 < pages.length) cursor += _separatorLines;
     }
     return offsets;
+  }
+
+  /// True when [input] has the same number of ROWS as [text] — the check the
+  /// library doc above mandates before any line index may be trusted.
+  ///
+  /// It lives here so no caller invents its own version. The step-5 review
+  /// (d8d565981) found the rule written down and implemented nowhere, which
+  /// left a heading index addressing a string nobody had shown matched the
+  /// parser's input. (An earlier draft credited the seam commit's review
+  /// instead; that one caught the trimming paragraph, not this gap. Recorded
+  /// rather than replaced, because the same mistake was then reported as fixed
+  /// when the edit had silently failed to apply.)
+  ///
+  /// ROWS, not bytes: `HtmlSanitizer.sanitizeText` runs between here and the
+  /// parser, rewriting homoglyphs and stripping control characters while
+  /// preserving newlines, so byte equality fails on healthy pages and would
+  /// disable the layout path permanently.
+  ///
+  /// UNTRIMMED on both sides: the provider's own string is trimmed on the
+  /// tier-0 path, and trimming here too would hide exactly the row shift that
+  /// makes an index wrong. A caller that trimmed its own input must subtract
+  /// the removed rows itself, not ask this to forgive them.
+  ///
+  /// Passing is NECESSARY, not sufficient. Two strings of equal row count are
+  /// indistinguishable to this check, and the tier-0 provider string and the
+  /// layout string usually HAVE equal row counts — they differ only in
+  /// separators and a global trim. So a cached `OCRResult` holding one while
+  /// the layout beside it was built from the other would pass here and still
+  /// be addressed by the wrong indices. Step 4 must cache text and layout as
+  /// ONE unit under one key; this method cannot cover that and must never be
+  /// described as covering it.
+  ///
+  /// False whenever [text] is null — an incomplete document can never pass.
+  bool matchesLineCountOf(String input) {
+    final own = text;
+    if (own == null) return false;
+    return _newlineCount(own) == _newlineCount(input);
   }
 
   /// Converts an index into [lines] to a line number in [text].

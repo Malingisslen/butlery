@@ -44,8 +44,11 @@ particular) live here, and here only.
       ML Kit lamnar ingen bildstorlek - sa de ar 0. Forsta konsumenten som
       normaliserar en x-koordinat mot sidbredden far `Infinity`, inte ett
       undantag. Fyll dem, eller dividera aldrig med dem.
-- [ ] Steg 4: carry it on `OCRResult`, cached.
-- [ ] Steg 5: heading detector. IN PROGRESS 2026-08-06.
+- [ ] Steg 4: carry it on `OCRResult`, cached. **Text och layout maste cachas
+      som EN enhet under EN nyckel** - se cache-luckan under steg 6a.
+- [x] Steg 5: heading detector.
+      KLART, d8d565981 pa main. Tre granskningsrundor, sex fynd, varav fyra
+      falska pastaenden fran mig om korpusen.
       `lib/services/import/layout/heading_detector.dart`, pure compute.
       Parametrar redan MATTA, ska inte harledas om: troskel 1,50 x
       brodtextens typstorlek (1,35 hittar fler uppslag men delar sonder
@@ -54,6 +57,22 @@ particular) live here, and here only.
       (matt samre: flersides 60 % -> 29-35 %). Textkontrollerna lyfter
       precisionen 32 % -> 62 %. Tom lista nar sidan saknar baslinje ar
       KONTRAKTET - ca en fjardedel av flersidesbilderna avbojer.
+- [x] Steg 6a: radantalsjamforelsen pa `DocumentLayout`. KLART 2026-08-06.
+      Alla tre granskare namnde den som SAKNAD: kontraktet i
+      `text_layout.dart` foreskrev den, men ingen kod implementerade den, sa
+      ett rubrikindex adresserade en strang ingen bevisat matchade parserns
+      indata. Otrimmad radantalsjamforelse, aldrig bytes.
+
+      **Cachen ar en lucka den HAR grinden inte tacker.** OCR-cachen ar
+      nycklad pa bildens hash, inte pa flaggan, sa efter en flaggvandning kan
+      ett cachat resultat bara providerText med en layout byggd ur samma
+      block. De tva strangarna har oftast SAMMA radantal (de skiljer bara i
+      separatorer och den globala trimningen), sa jamforelsen slapper igenom
+      en strang indexen inte adresserar. Steg 4 maste cacha text och layout
+      som EN enhet under en nyckel; beskriv aldrig den har metoden som
+      tackande det fallet. Praktiskt: starta om appen efter en flaggvandning,
+      annars mater man fel i upp till 24 timmar.
+
 - [ ] Steg 6: `MultiRecipeSplitter.split(input, {layout})` + the
       **Checklista fran granskningen av steg 5 (2026-08-06):**
       (a) `split()` harleder sina egna granser och tar inga injicerade -
@@ -62,9 +81,9 @@ particular) live here, and here only.
       att `
 
 ` lagger till en tomrad per sida).
-      (b) Radantalsjamforelsen som `text_layout.dart` kraver finns INTE
-      implementerad nagonstans an. Utan den adresserar ett rubrikindex en
-      strang ingen bevisat matchar parserns indata.
+      (b) LOST av steg 6a: `DocumentLayout.matchesLineCountOf` finns nu. Kvar
+      for steg 6 ar att ANROPA den och falla tillbaka pa textvagen nar den
+      svarar false - metoden finns, grinden ar inte inkopplad.
       (c) Bestam uttryckligen om en layoutgrans fortfarande maste klara
       `_ingredientClusterAhead` och `_isCompleteRecipeBlock`. OBS:
       `_minBlockChars` ar 40 idag, men 91 %-siffran kommer fran 200 + verb -
@@ -73,7 +92,7 @@ particular) live here, and here only.
       avbojer raderar sidan fore) har noll instanser i korpusen. Det
       syntetiska testet ar den enda evidens som nagonsin kommer finnas -
       forsvaga inte regeln senare med 'vi har aldrig sett det'.
-      `layout.text != input` precondition.
+      radantalsforvillkoret (`DocumentLayout.matchesLineCountOf`).
 - [ ] Steg 7: thread it through `photo_import_viewmodel`.
 - [ ] Steg 8: column ordering — separate commit, may prove unnecessary.
 

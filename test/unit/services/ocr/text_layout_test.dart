@@ -435,6 +435,125 @@ void main() {
     });
   });
 
+  group('matchesLineCountOf — the gate on trusting any index', () {
+    PageLayout pageOf(List<String> texts) => PageLayout(
+      lines: [
+        for (final t in texts)
+          OcrLine(
+            text: t,
+            box: const LayoutBox(left: 0, top: 0, width: 100, height: 20),
+          ),
+      ],
+    );
+
+    test('the same rows match even when the BYTES differ', () {
+      // The whole reason it counts rows. The fixture carries a Cyrillic 'e'
+      // (code point 0435, which HtmlSanitizer maps to Latin 'e') and a BEL
+      // byte (0x07, which its control-character strip removes), so
+      // `sanitized` below is exactly what `sanitizeText` returns for this
+      // text. Check that homoglyph table before editing either side, or the
+      // constant stops being a real round trip: the earlier 0430 spelling
+      // mapped to Latin 'a' and could never produce the 'e' this constant
+      // claims. Bytes change, not one row. A byte comparison would fail on
+      // this healthy page and disable the layout path permanently.
+      final doc = DocumentLayout([
+        pageOf(['Prov\u0435ncalska agg', 'Lagg kokta agg\u0007']),
+      ]);
+      const sanitized = 'Provencalska agg\nLagg kokta agg';
+
+      expect(doc.text, isNot(equals(sanitized)), reason: 'bytes differ');
+      expect(doc.matchesLineCountOf(sanitized), isTrue, reason: 'rows do not');
+    });
+
+    test('one row more or fewer does NOT match', () {
+      final doc = DocumentLayout([
+        pageOf(['a', 'b', 'c']),
+      ]);
+      expect(doc.matchesLineCountOf('a\nb\nc'), isTrue);
+      expect(doc.matchesLineCountOf('a\nb\nc\n'), isFalse);
+      expect(doc.matchesLineCountOf('a\nb'), isFalse);
+    });
+
+    test('a TRIMMED input does not match, and must not', () {
+      // The tier-0 path trims the provider's string. Forgiving that here would
+      // hide the row shift that makes every converted index wrong — which is
+      // the one failure this method exists to catch.
+      final doc = DocumentLayout([
+        pageOf(['', 'Pannkakor', 'Vispa smeten', '']),
+      ]);
+      final own = doc.text!;
+
+      expect(doc.matchesLineCountOf(own), isTrue);
+      expect(doc.matchesLineCountOf(own.trim()), isFalse);
+
+      // The LEADING half, separately. `trim()` removes a row at BOTH ends, so
+      // the counts still differ there and the assertion above still PASSES
+      // under an implementation that forgives only the leading one — which is
+      // exactly why the leading half needs an assertion of its own. (An earlier
+      // version of this sentence said that assertion "stays red", i.e. catches
+      // it. It does not.) Measured: `_newlineCount(own.trimLeft()) ==
+      // _newlineCount(input.trimLeft())` reddens exactly TWO assertions in this
+      // six-test group — the one below, and `matchesLineCountOf('\n')` in the
+      // empty-document test. Everything else survives it, so those two are the
+      // whole defence. (An earlier version of this comment claimed the mutant
+      // passed the entire group; it did not, and the claim was about a
+      // four-test group that had since grown.)
+      // That is the worst shift of the set: a row lost at the START moves
+      // EVERY index in the document, not the tail.
+      expect(
+        doc.matchesLineCountOf(own.trimLeft()),
+        isFalse,
+        reason: 'one row short at the start',
+      );
+    });
+
+    test('the blank row BETWEEN pages counts', () {
+      // The only reason this lives on DocumentLayout rather than PageLayout.
+      // A multi-page import's text carries a separator row per boundary, so
+      // the comparison must be against the joined string, never against the
+      // pages' own rows — and never against `lines.length`, which is the
+      // defect lineOffsets already records having shipped once (here: three
+      // lines, four rows).
+      final doc = DocumentLayout([
+        pageOf(['a1', 'a2']),
+        pageOf(['b1']),
+      ]);
+
+      expect(doc.matchesLineCountOf(doc.text!), isTrue);
+      expect(doc.lines, hasLength(3), reason: 'list entries, not rows');
+      expect(
+        doc.matchesLineCountOf(['a1', 'a2', 'b1'].join('\n')),
+        isFalse,
+        reason: 'the separator row is missing',
+      );
+    });
+
+    test('a document whose text is EMPTY is still judgeable', () {
+      // The boundary the null case above must not swallow: a complete document
+      // of one blank page has text '', which is one EMPTY row, not no rows. It
+      // matches an empty input and nothing else. Counting list entries answers
+      // zero here and would refuse a page the caller can safely index.
+      final blank = DocumentLayout([pageOf([])]);
+
+      expect(blank.text, isEmpty, reason: 'empty, not null');
+      expect(blank.matchesLineCountOf(''), isTrue);
+      expect(blank.matchesLineCountOf('\n'), isFalse);
+    });
+
+    test('an unjudgeable document never passes', () {
+      // text is null, so there is nothing to compare — false, not a throw and
+      // not an accidental true on the empty string.
+      final incomplete = DocumentLayout([
+        pageOf(['a']),
+        null,
+      ]);
+      expect(incomplete.text, isNull);
+      expect(incomplete.matchesLineCountOf('a'), isFalse);
+      expect(incomplete.matchesLineCountOf(''), isFalse);
+      expect(const DocumentLayout([]).matchesLineCountOf(''), isFalse);
+    });
+  });
+
   group('DocumentLayout.isComplete fails closed', () {
     test('true only when every page carries geometry', () {
       final page = PageLayout(lines: [line('x', height: 70)]);
