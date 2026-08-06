@@ -1,10 +1,10 @@
 /// Where the words sat on the page — the half of OCR the app currently throws
 /// away.
 ///
-/// Every recognizer computes glyph geometry; `DeviceTextRecognizer` still
-/// returns only `recognized.text` and discards it (the seam widens in a later
-/// commit), so everything downstream reconstructs page structure from a flat
-/// string. Across 181 hand-verified cookbook pages the splitter aligns on only
+/// Every recognizer computes glyph geometry. Until 2026-08-05
+/// `DeviceTextRecognizer` returned only the text and discarded it, so everything
+/// downstream reconstructed page structure from a flat string; the seam now
+/// carries the measurements, and this is the model it fills. Across 181 hand-verified cookbook pages the splitter aligns on only
 /// 12 of the 48 multi-recipe spreads, and 46 recipes are never emitted at all.
 /// A heading is reliably LARGER than body text, and no text rule can see that.
 ///
@@ -35,22 +35,30 @@
 /// equality would trip on healthy pages and disable the layout path
 /// permanently, looking exactly like "geometry never helps".
 ///
-/// The one trim on the path is per PAGE and runs BEFORE the join:
-/// `device_text_recognizer_mlkit` trims each page's own text, and
-/// `photo_import_viewmodel._recombineAndParse` joins the already-trimmed pages.
-/// So it can strip a blank FIRST or LAST line of a page. Trimming the combined
-/// strings before counting would hide exactly that on page one — the counts
-/// would agree, the consumer would proceed, and every [DocumentLayout.
-/// textLineIndex] answer would be short by the rows the trim removed. An
-/// untrimmed count sees the disagreement and falls back, which is the safe
-/// direction. A caller that trims its own input MUST subtract the removed rows
-/// from every index it converts.
+/// NO trim is applied to the LAYOUT string. `device_text_recognizer_mlkit`
+/// returns [PageLayout.text] verbatim — it trims only to TEST emptiness — and
+/// `photo_import_viewmodel._recombineAndParse` joins the pages as they are, so
+/// a page's leading and trailing blank rows survive and no index needs
+/// adjusting.
 ///
-/// (An earlier draft here prescribed the opposite, deriving it from a
-/// document-level trim that does not exist on this path. Corrected 2026-08-05.)
+/// The PROVIDER's own string is a different case and keeps the global trim it
+/// has always had: it addresses no line index, its only job is to be the
+/// rollback, and it is what ships while `enable_layout_recipe_split` is off —
+/// which is today's default. The asymmetry is the design, not an oversight.
 ///
-/// Nothing imports this file yet; the above is a requirement on the callers to
-/// come, not a description of shipped behaviour.
+/// That is precisely why the count comparison must still not trim either side:
+/// a caller that trims its OWN input reintroduces the drift, and would then
+/// have to subtract the removed rows from every index it converts. An untrimmed
+/// count sees the disagreement and falls back, which is the safe direction.
+///
+/// (Two earlier drafts of this paragraph were wrong in opposite directions —
+/// one prescribed trimming both, one described a per-page trim the adapter no
+/// longer does. Both are recorded rather than deleted because the rule survived
+/// both wrong reasons, and the next reader deserves to know that.)
+///
+/// The callers are still being built: as of 2026-08-05 only the recognizer seam
+/// imports this file, and nothing yet reads a [PageLayout] downstream of
+/// `OCRResult`. The above is a requirement on the steps to come.
 library;
 
 /// An axis-aligned box in the coordinate space of the image the recognizer

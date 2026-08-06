@@ -14,7 +14,7 @@ class _UnavailableRecognizer implements DeviceTextRecognizer {
   bool get isAvailable => false;
 
   @override
-  Future<String?> recognize(Uint8List imageBytes) async => null;
+  Future<RecognitionResult?> recognize(Uint8List imageBytes) async => null;
 
   @override
   Future<void> dispose() async {}

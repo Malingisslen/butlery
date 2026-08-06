@@ -14,17 +14,52 @@ library;
 
 import 'dart:typed_data';
 
+import 'package:butlery/services/ocr/text_layout.dart';
+
+/// What one recognition pass produced: the text, and — when the provider
+/// measured it — where the words sat.
+///
+/// ONE type rather than a second `recognizeLayout()` method, deliberately. Two
+/// methods would mean two platform round-trips, two temp files and two failure
+/// modes for one photo, and nothing would guarantee the second call read the
+/// same bytes as the first. The geometry is a by-product the recognizer has
+/// already computed by the time it hands back the text, so taking both at once
+/// costs nothing.
+class RecognitionResult {
+  /// The provider's OWN string, exactly as it assembled it — what shipped
+  /// before this seam carried geometry.
+  final String providerText;
+
+  /// Null when the provider measured nothing.
+  final PageLayout? layout;
+
+  const RecognitionResult({required this.providerText, this.layout});
+
+  /// The string built from [layout]'s lines — the only one a line index
+  /// addresses. Null when there is no geometry.
+  String? get layoutText => layout?.text;
+
+  /// There is deliberately NO `text` getter that picks one for you.
+  ///
+  /// The two strings hold the same words but are assembled differently, and
+  /// which one ships is a product decision the caller owns, not a default this
+  /// type gets to make: [layoutText] is required for the geometry path to mean
+  /// anything, and [providerText] is what a rollback has to be able to return
+  /// to. A convenience getter preferring the layout would make that rollback
+  /// impossible to express, which is exactly the hole this shape closes.
+}
+
 abstract class DeviceTextRecognizer {
   /// False on platforms without an on-device recognizer, so callers can skip
   /// the tier without treating it as a provider failure.
   bool get isAvailable;
 
-  /// Returns recognized text, or null when nothing usable was read.
+  /// Returns what was recognized, or null when nothing usable was read.
   ///
   /// Contract: null means "fall through to the next provider", never a crash.
   /// The caller still decides whether the text is *acceptable* — this layer
   /// makes no judgement about recipe-shapedness.
-  Future<String?> recognize(Uint8List imageBytes);
+  Future<RecognitionResult?> recognize(Uint8List imageBytes);
 
   Future<void> dispose();
 }

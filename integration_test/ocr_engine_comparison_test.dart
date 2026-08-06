@@ -106,7 +106,13 @@ void main() {
         final preprocessed = OCRExtractionService.preprocessImageForOcr(
           await image.readAsBytes(),
         );
-        final text = await recognizer.recognize(preprocessed);
+        final read = await recognizer.recognize(preprocessed);
+        // The seam returns both strings + geometry since 2026-08-05. This
+        // harness compares READING quality against the paid tiers, so it
+        // takes the provider's own string — the same bytes it scored
+        // before the seam widened, which keeps its numbers comparable to
+        // the 96.1 vs 96.6 recorded in the deviation log.
+        final text = read?.providerText;
         sw.stop();
         onDevice[id] = text ?? '';
         debugPrint(

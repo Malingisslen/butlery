@@ -16,9 +16,34 @@ particular) live here, and here only.
 - [x] Steg 1: MEASURED AND DROPPED — the strict title filter recovered 6 recipes
       but cost one recipe 29 points of ingredient-F1, past the 5-point per-recipe
       limit this plan set in advance.
-- [ ] Steg 2: `lib/services/ocr/text_layout.dart` — page model. Built, 21 tests
-      green, in review (three rounds so far; 9 findings fixed).
+- [x] Steg 2: `lib/services/ocr/text_layout.dart` — page model. Landed
+      b2756986e after seven review rounds and sixteen findings.
 - [ ] Steg 3: widen `DeviceTextRecognizer` to return the page model.
+      IN PROGRESS. Seam widened, ML Kit mapper written and exposed for
+      testing. **Decision taken 2026-08-06 (Malin):** the text swap goes
+      BEHIND `enable_layout_recipe_split`, not just the split. Reason: the
+      rollback did not work — the new string reaches every on-device photo,
+      not only cookbook spreads, and turning off the split flag would not
+      have undone it; only disabling the free tier would, at a cost per
+      image. `RecognitionResult` now carries BOTH the provider's own string
+      and the layout, and `OCRExtractionService` chooses from the flag.
+      **AVVIKELSE fran planen, medveten (2026-08-06):** ③ och steg 3 nedan
+      foreskriver "trimma per rad i stallet for globalt". Koden gor ingetdera.
+      Den trimmar PROVIDER-strangen globalt — exakt som HEAD, for det ar hela
+      dess uppgift att vara aterstallningen — och trimmar LAYOUT-strangen inte
+      alls, for en trimning dar tar bort en inledande tomrad och forskjuter
+      varje radindex. En trimning PER RAD skulle dessutom andra radernas
+      innehall, inte bara deras antal. Klausulerna i ③ och steg 3 om "den enda
+      trimningen ar per sida" och "trimma per rad" ar darmed OVERSPELADE —
+      las den har punkten i stallet.
+      **Utvarderingsprotokoll:** OCR-cachen ar nycklad pa bildens hash, inte pa
+      flaggan, med 24 h livslangd. Starta om appen (eller rensa OCR-cachen)
+      efter att flaggan vants, annars blandar de forsta matningarna strangar
+      fran bada lagen vid omimport av samma sida.
+      **Not till steg 8:** adaptern fyller aldrig `imageWidth`/`imageHeight` -
+      ML Kit lamnar ingen bildstorlek - sa de ar 0. Forsta konsumenten som
+      normaliserar en x-koordinat mot sidbredden far `Infinity`, inte ett
+      undantag. Fyll dem, eller dividera aldrig med dem.
 - [ ] Steg 4: carry it on `OCRResult`, cached.
 - [ ] Steg 5: heading detector.
 - [ ] Steg 6: `MultiRecipeSplitter.split(input, {layout})` + the

@@ -17,6 +17,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/ocr/device_text_recognizer.dart';
+import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 import '../../fixtures/ocr_test_data.dart';
 
@@ -2029,14 +2030,21 @@ Line 5''';
       when(() => mockClient.send(any())).thenAnswer((_) async => mockResponse);
     });
 
+    /// [layout] drives `enable_layout_recipe_split`, which decides WHICH of the
+    /// recognizer's two strings ships. Default false, matching production: the
+    /// geometry is off until it has been proven on a real device, and with it
+    /// off the tier stores the provider's own string exactly as it did before
+    /// the seam widened.
     OCRExtractionService buildService({
       required DeviceTextRecognizer recognizer,
       required bool enabled,
+      bool layout = false,
     }) => OCRExtractionService.createForTesting(
       testHttpClient: mockClient,
       testOcrApiKey: 'test-ocr-key',
       testDeviceRecognizer: recognizer,
       testOnDeviceEnabled: () => enabled,
+      testLayoutEnabled: () => layout,
     );
 
     // The other tests inject `testOnDeviceEnabled`, which bypasses the real
@@ -2070,6 +2078,12 @@ Line 5''';
       // constant against itself would be circular and would not catch a key
       // that drifted from the Remote Config console.
       when(() => flags.isEnabled('enable_on_device_ocr')).thenReturn(true);
+      // Stubbed too, or the tier throws instead of running: the service now
+      // asks a SECOND flag (which of the recognizer's two strings ships),
+      // and an unstubbed mocktail call is an exception, not a false.
+      when(
+        () => flags.isEnabled('enable_layout_recipe_split'),
+      ).thenReturn(false);
       final getIt = GetIt.instance;
       if (getIt.isRegistered<FeatureFlagService>()) {
         getIt.unregister<FeatureFlagService>();
@@ -2098,6 +2112,11 @@ Line 5''';
       expect(result.processingMethod, equals('on_device'));
       expect(recognizer.calls, equals(1));
       verify(() => flags.isEnabled('enable_on_device_ocr')).called(1);
+      // The SECOND flag's key, asserted the same way and for the same reason:
+      // it is the rollback for the string swap, and a key that drifted from the
+      // Remote Config console would leave the geometry impossible to turn off
+      // from the console once shipped. Literal, never the constant.
+      verify(() => flags.isEnabled('enable_layout_recipe_split')).called(1);
     });
 
     test(
@@ -2534,6 +2553,188 @@ Line 5''';
       expect(recognizer.calls, equals(6));
     });
 
+    // (A separate flag-OFF row-count test stood here and was removed: it used
+    // the same fixture and the same seam as 'the flag decides WHICH of the two
+    // strings is stored' below, whose off arm asserts the string exactly.
+    // Measured over the five plausible mutants of the selection expression, it
+    // killed a strict SUBSET of what that test kills — always-layout and
+    // flag-inverted, both of which the survivor also catches.)
+
+    test('sanitizing the page changes bytes, never the ROW the layout '
+        'indexed', () async {
+      // The tier sanitizes the WHOLE page string in one call, and the seam's
+      // point is that the recognizer's line indices still address the right
+      // rows of what actually gets stored. That `sanitizeText` distributes
+      // over the row separator is pinned at its own layer (html_sanitizer_test,
+      // 'changes bytes but NEVER the number of rows'); this pins the
+      // COMPOSITION, at the one boundary that depends on it.
+      //
+      // The fixture carries every hazard at once: a LEADING blank row (what
+      // a global trim eats - the exact reason the adapter stopped trimming),
+      // a two-row blank RUN (what a blank-run collapse eats), a control byte
+      // and a Cyrillic homoglyph that force the sanitizer to genuinely rewrite
+      // the string, and the rewritten row placed LAST so any dropped row shows
+      // up as a shifted index rather than as a missing one.
+      final recognizer = _FakeDeviceRecognizer(
+        text:
+            '\n'
+            'Ingredienser\n'
+            '\n'
+            '\n'
+            '2 dl mj\u00f6l\u0007\n'
+            'Visp\u0430 smeten och gr\u00e4dda i ugn.',
+      );
+      // The geometry flag is ON here: this test is about the string the
+      // LAYOUT produced. With it off the tier ships the provider's own
+      // string and the row indices are not ours to reason about.
+      final service = buildService(
+        recognizer: recognizer,
+        enabled: true,
+        layout: true,
+      );
+      addTearDown(service.dispose);
+
+      final result = await service.extractText(OCRTestImages.mediumQuality);
+
+      expect(
+        result.processingMethod,
+        equals('on_device'),
+        reason:
+            'positive control - a fall-through to a paid tier would store '
+            'entirely different text and satisfy nothing below by accident',
+      );
+      final rows = result.text.split('\n');
+      expect(rows, hasLength(recognizer.lastLayout!.lines.length));
+      expect(
+        rows[0],
+        isEmpty,
+        reason:
+            'a LEADING blank row is the one a global trim eats, and eating '
+            'it shifts every index after it by one',
+      );
+      expect(
+        rows[3],
+        isEmpty,
+        reason:
+            'the SECOND row of a two-row blank run - one blank row survives a '
+            'collapse of three-or-more newlines, two do not',
+      );
+      expect(rows[5], equals('Vispa smeten och gr\u00e4dda i ugn.'));
+    });
+
+    // (A flag-OFF variant of the "measured NO geometry" test below stood here
+    // and was removed. With the flag off the tier never reads `raw.layout` at
+    // all, so it could only ever kill a mutant that dereferenced the layout
+    // ABOVE the flag branch \u2014 measured, exactly one of five, and the ON-arm
+    // sibling kills that one plus the missing `?? providerText` fallback.)
+
+    test('the flag decides WHICH of the two strings is stored', () async {
+      // The rollback, in both directions, over ONE fixture. `enable_layout_
+      // recipe_split` exists because widening the seam changed the string every
+      // on-device photo produces — not just cookbook spreads — so "off returns
+      // the exact bytes that shipped before" is a promise, and a promise no
+      // test measures is a comment. Pinning only the ON direction would leave
+      // an always-layout implementation green, and only the OFF direction would
+      // leave an always-provider one green; the pair is what closes it.
+      //
+      // Measured 2026-08-06, which is why the pair is not optional: deleting
+      // the flag entirely — shipping the layout string unconditionally, the
+      // exact regression it exists to prevent — left all 123 tests in this
+      // group green. Every other flag-off assertion in the group was a
+      // `contains`, which both strings satisfy.
+      const page = 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.';
+
+      final offRecognizer = _FakeDeviceRecognizer(text: page);
+      final offService = buildService(
+        recognizer: offRecognizer,
+        enabled: true,
+      );
+      addTearDown(offService.dispose);
+      final off = await offService.extractText(OCRTestImages.mediumQuality);
+
+      final onRecognizer = _FakeDeviceRecognizer(text: page);
+      final onService = buildService(
+        recognizer: onRecognizer,
+        enabled: true,
+        layout: true,
+      );
+      addTearDown(onService.dispose);
+      final on = await onService.extractText(OCRTestImages.mediumQuality);
+
+      expect(off.processingMethod, equals('on_device'));
+      expect(on.processingMethod, equals('on_device'));
+      // Off: the provider's own string, verbatim — trailing row and all. The
+      // fake's two strings differ by exactly that row, which is why the
+      // assertion can see which one the service took.
+      expect(off.text, equals('$page\n'));
+      // On: the string the LAYOUT produced, asserted against the geometry it
+      // was derived from rather than against a restated literal.
+      expect(on.text, equals(onRecognizer.lastLayout!.text));
+      expect(
+        off.text,
+        isNot(equals(on.text)),
+        reason:
+            'if these ever match, the fixture stopped distinguishing the two '
+            'strings and the assertions above prove nothing',
+      );
+    });
+
+    test('with no flag service registered the geometry stays off', () async {
+      // Sibling of the tier's own fail-closed test, for the second flag: with
+      // no FeatureFlagService in the locator (unit tests, early startup) the
+      // getter's `?? false` must keep the PROVIDER string. A `?? true` there
+      // would ship the new string to everyone the moment Remote Config was
+      // unreachable — the one state a kill switch has to survive.
+      const page = 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.';
+      expect(
+        ServiceLocator.tryGet<FeatureFlagService>(),
+        isNull,
+        reason:
+            'premise — a flag service left registered by an earlier test would '
+            'answer false too, and this test would pass without ever reaching '
+            'the fail-closed default it exists for',
+      );
+      final recognizer = _FakeDeviceRecognizer(text: page);
+      final service = OCRExtractionService.createForTesting(
+        testHttpClient: mockClient,
+        testOcrApiKey: 'test-ocr-key',
+        testDeviceRecognizer: recognizer,
+        testOnDeviceEnabled: () => true,
+        // testLayoutEnabled deliberately omitted — exercise the real lookup.
+      );
+      addTearDown(service.dispose);
+
+      final result = await service.extractText(OCRTestImages.mediumQuality);
+
+      expect(result.processingMethod, equals('on_device'));
+      expect(result.text, equals('$page\n'));
+    });
+
+    test('with the geometry ON, a provider that measured nothing still '
+        'ships its text', () async {
+      // The `raw.layoutText ?? raw.providerText` fallback, on the arm that can
+      // actually reach it. Its sibling above stages the same recognizer with
+      // the flag OFF, where the fallback is never consulted — so a `raw.layout!`
+      // or an `if (raw.layout == null) return null` would have left that test
+      // green while silently disabling the free tier for any provider that
+      // reads text without measuring it.
+      const page = 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.';
+      final recognizer = _FakeDeviceRecognizer(text: page, measures: false);
+      final service = buildService(
+        recognizer: recognizer,
+        enabled: true,
+        layout: true,
+      );
+      addTearDown(service.dispose);
+
+      final result = await service.extractText(OCRTestImages.mediumQuality);
+
+      expect(recognizer.lastLayout, isNull);
+      expect(result.processingMethod, equals('on_device'));
+      expect(result.text, equals(page));
+      verifyNever(() => mockClient.send(any()));
+    });
+
     test(
       'on-device-only setup is not reported as "no provider configured"',
       () async {
@@ -2569,6 +2770,7 @@ class _FakeDeviceRecognizer implements DeviceTextRecognizer {
     this.available = true,
     this.throws = false,
     this.stalls = false,
+    this.measures = true,
   });
 
   final String? text;
@@ -2578,17 +2780,60 @@ class _FakeDeviceRecognizer implements DeviceTextRecognizer {
   /// Models the failure the recognizer's "never throw" contract cannot
   /// express: a platform channel that simply never answers.
   final bool stalls;
+
+  /// False models a provider that read text but measured NOTHING - the
+  /// `layout == null` half of the seam's contract. The mlkit adapter never
+  /// produces it, but the type allows it and callers must read it as "text
+  /// only", never as a page with no lines.
+  final bool measures;
+
   int calls = 0;
+
+  /// The layout the last call handed back, so a test can assert the STORED
+  /// text against the geometry it was derived from instead of restating the
+  /// fixture and proving only that the fixture equals itself.
+  PageLayout? lastLayout;
 
   @override
   bool get isAvailable => available;
 
+  /// Returns a layout ONLY when the fake was given text, and builds it the way
+  /// the real adapter does - one line per row of [text], with the string
+  /// derived from those lines. A fake that returned a hand-built string and an
+  /// unrelated layout would let the service pass a test the device would fail.
   @override
-  Future<String?> recognize(Uint8List imageBytes) async {
+  Future<RecognitionResult?> recognize(Uint8List imageBytes) async {
     calls++;
-    if (stalls) await Completer<String?>().future;
+    if (stalls) await Completer<RecognitionResult?>().future;
     if (throws) throw StateError('recognizer exploded');
-    return text;
+    if (text == null) return null;
+    // A provider that measured nothing: text only, no geometry.
+    if (!measures) return RecognitionResult(providerText: text!);
+    final layout = PageLayout(
+      lines: [
+        for (final row in text!.split('\n'))
+          OcrLine(
+            text: row,
+            box: const LayoutBox(left: 0, top: 0, width: 100, height: 20),
+          ),
+      ],
+    );
+    lastLayout = layout;
+    // BOTH strings, as the real adapter does, and they must DIFFER: a fake
+    // whose two strings were identical could never show which one the flag
+    // selected, and one that made `providerText` unrecipe-like would fail the
+    // tier's confidence gate instead of the assertion, which is a different
+    // test.
+    //
+    // The trailing row is a deliberate STAND-IN, not a reproduction. The real
+    // adapter's `providerText` is `recognized.text.trim()`, so it can carry no
+    // trailing blank row at all; what genuinely separates the two strings on a
+    // device is that ML Kit's own assembly puts a BLANK ROW between blocks
+    // while `PageLayout.text` joins the same lines with one newline each.
+    // Either shape gives the tests the one thing they need — an observable
+    // difference in the row count — so this stays the cheaper one; do not read
+    // it as documentation of what a device produces.
+    return RecognitionResult(providerText: '${text!}\n', layout: layout);
   }
 
   @override

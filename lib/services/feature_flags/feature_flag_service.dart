@@ -97,6 +97,18 @@ class FeatureFlagService {
     // state as a decision awaiting evidence, not as a cleared gate. Flipping it
     // off restores the previous chain exactly.
     'enable_on_device_ocr': false,
+    // Decides WHICH of the on-device recognizer's two strings the parser sees:
+    // the one built from its measured lines, or ML Kit's own assembly. The page
+    // model itself is always built and is not yet read by anything downstream,
+    // so this flag is not "geometry on/off" — it is which string is stored.
+    //
+    // Independent of enable_on_device_ocr on purpose: off, the free tier still
+    // runs and stores byte-identical text to what it stored before the seam
+    // widened, so a rollback never costs the free tier. NOTHING SPLITS YET —
+    // turning this on before the later steps land buys no upside, only the
+    // changed string. Say that in the Remote Config description too; the
+    // console shows the key, not this comment.
+    'enable_layout_recipe_split': false,
 
     // Gradual Rollout Flags
     'new_search_rollout_percentage': 0,
@@ -352,6 +364,7 @@ abstract final class FeatureFlags {
   // Free on-device OCR tier 0 — ON in prod, but pending a trustworthy
   // re-measurement; see the defaults map above before relying on it.
   static const enableOnDeviceOcr = 'enable_on_device_ocr';
+  static const enableLayoutRecipeSplit = 'enable_layout_recipe_split';
 
   // Gradual Rollout Flags
   static const newSearchRolloutPercentage = 'new_search_rollout_percentage';

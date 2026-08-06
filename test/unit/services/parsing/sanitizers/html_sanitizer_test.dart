@@ -777,6 +777,54 @@ void main() {
 
         expect(result, equals(''));
       });
+
+      test('changes bytes but NEVER the number of rows', () {
+        // `OCRExtractionService` sanitizes a whole on-device page in ONE call
+        // and then relies on the recognizer's per-line indices still
+        // addressing the right rows of the result. That argument is a property
+        // of THIS function: it holds only while every transformation here
+        // distributes over the row separator - null-byte removal, 1:1 homoglyph
+        // substitution, and a control class that excludes \n, \r and \t.
+        //
+        // Nothing pinned it, and the plausible break is inside this very class:
+        // the sibling `stripToPlainText` already collapses `\n{3,}` to two
+        // newlines and trims. Either of those added to `sanitizeText` would
+        // shift every line index downstream while leaving the suite green.
+        //
+        // Escapes, not literal characters: a Cyrillic homoglyph and a control
+        // byte are invisible in an editor and would be silently 'tidied' back
+        // into plain Latin, leaving the test proving nothing.
+        const input =
+            'Ingredienser\r\n'
+            '\n'
+            '\n'
+            '2 dl mj\u00f6l\n'
+            '\tVisp\u0430 smeten och gr\u00e4dda i ugn.\u0007\n';
+
+        final result = sanitizer.sanitizeText(input);
+
+        expect(
+          result,
+          isNot(equals(input)),
+          reason:
+              'positive control - an identity function would satisfy every '
+              'assertion below without preserving anything',
+        );
+        expect(result.split('\n'), hasLength(input.split('\n').length));
+        // Row by row, not just the count: a transformation that merged two
+        // rows and split a third would keep the total unchanged.
+        expect(
+          result.split('\n'),
+          equals(<String>[
+            'Ingredienser\r',
+            '',
+            '',
+            '2 dl mj\u00f6l',
+            '\tVispa smeten och gr\u00e4dda i ugn.',
+            '',
+          ]),
+        );
+      });
     });
 
     // ---------------------------------------------------------------

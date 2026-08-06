@@ -3747,7 +3747,7 @@
         {
           "from": "vm-photo-import",
           "to": "svc-ocr-extraction",
-          "payload": "Bildbytes (HEIC konverterad till JPEG). 2026-08-03: en gratis p\u00e5-enheten-niv\u00e5 (ML Kit) f\u00f6rs\u00f6ker f\u00f6rst, bakom flaggan enable_on_device_ocr (av som standard). Tr\u00e4ffar den, n\u00e5s ingen betald tj\u00e4nst och ingen kvot f\u00f6rbrukas; annars faller den igenom till kedjan.",
+          "payload": "Bildbytes (HEIC konverterad till JPEG). 2026-08-03: en gratis p\u00e5-enheten-niv\u00e5 (ML Kit) f\u00f6rs\u00f6ker f\u00f6rst, bakom flaggan enable_on_device_ocr (av som standard). Tr\u00e4ffar den, n\u00e5s ingen betald tj\u00e4nst och ingen kvot f\u00f6rbrukas; annars faller den igenom till kedjan. 2026-08-06: den nivån lämnar numera ifrån sig BÅDE ML Kits egen sträng och en sidmodell med rad- och ordgeometri. En andra flagga, enable_layout_recipe_split (av som standard), avgör vilken av de två strängarna som lagras — av betyder byte för byte som före sömmen breddades, så en återställning aldrig kostar gratisnivån.",
           "transport": "method-call",
           "verified": true
         },

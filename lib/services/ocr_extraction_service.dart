@@ -162,6 +162,7 @@ class OCRExtractionService extends BaseService {
   final DateTime Function()? _testTimeProvider;
   final DeviceTextRecognizer? _testDeviceRecognizer;
   final bool Function()? _testOnDeviceEnabled;
+  final bool Function()? _testLayoutEnabled;
 
   OCRExtractionService._({
     http.Client? testHttpClient,
@@ -171,13 +172,15 @@ class OCRExtractionService extends BaseService {
     DateTime Function()? testTimeProvider,
     DeviceTextRecognizer? testDeviceRecognizer,
     bool Function()? testOnDeviceEnabled,
+    bool Function()? testLayoutEnabled,
   }) : _testHttpClient = testHttpClient,
        _testOcrApiKey = testOcrApiKey,
        _testGoogleVisionKey = testGoogleVisionKey,
        _testTesseractApiUrl = testTesseractApiUrl,
        _testTimeProvider = testTimeProvider,
        _testDeviceRecognizer = testDeviceRecognizer,
-       _testOnDeviceEnabled = testOnDeviceEnabled {
+       _testOnDeviceEnabled = testOnDeviceEnabled,
+       _testLayoutEnabled = testLayoutEnabled {
     _onDeviceCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
     // Initialize circuit breakers with time provider
     _ocrSpaceCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
@@ -206,6 +209,7 @@ class OCRExtractionService extends BaseService {
     DateTime Function()? testTimeProvider,
     DeviceTextRecognizer? testDeviceRecognizer,
     bool Function()? testOnDeviceEnabled,
+    bool Function()? testLayoutEnabled,
     bool registerAsInstance = false,
   }) {
     final service = OCRExtractionService._(
@@ -216,6 +220,7 @@ class OCRExtractionService extends BaseService {
       testTimeProvider: testTimeProvider,
       testDeviceRecognizer: testDeviceRecognizer,
       testOnDeviceEnabled: testOnDeviceEnabled,
+      testLayoutEnabled: testLayoutEnabled,
     );
     if (registerAsInstance) {
       _instance = service;
@@ -294,6 +299,21 @@ class OCRExtractionService extends BaseService {
     if (_testOnDeviceEnabled != null) return _testOnDeviceEnabled();
     final flags = ServiceLocator.tryGet<FeatureFlagService>();
     return flags?.isEnabled(FeatureFlags.enableOnDeviceOcr) ?? false;
+  }
+
+  /// Whether the GEOMETRY the on-device recognizer produces is used at all.
+  ///
+  /// Separate from [_onDeviceEnabled] so the rollback is real. Widening the
+  /// seam changed which of two strings the parser sees for every on-device
+  /// photo — not just cookbook spreads — and that is the one part of this work
+  /// that can regress a path already working. Gated here, turning it off
+  /// returns the exact bytes that shipped before, while the free tier keeps
+  /// running; gated only on the SPLIT (as first planned) the rollback would
+  /// have meant disabling on-device OCR entirely and paying per image again.
+  bool get _layoutEnabled {
+    if (_testLayoutEnabled != null) return _testLayoutEnabled();
+    final flags = ServiceLocator.tryGet<FeatureFlagService>();
+    return flags?.isEnabled(FeatureFlags.enableLayoutRecipeSplit) ?? false;
   }
 
   // Lazily-created HTTP client (reused across calls, closed on dispose).
@@ -456,16 +476,29 @@ class OCRExtractionService extends BaseService {
         final raw = await _onDeviceRecognizer
             .recognize(preprocessedImage)
             .timeout(_onDeviceTimeout);
-        final text = raw == null
+        // The CALLER picks which string ships, from the flag — the recognizer
+        // hands over both. Off, this is byte-identical to what shipped before
+        // the seam widened, which is what makes the rollback real.
+        final useLayout = _layoutEnabled;
+        final rawText = raw == null
             ? null
-            : HtmlSanitizer.instance.sanitizeText(raw);
-        // Same bar as every paid tier. The heuristic alone is not enough: it
-        // fires on one measurement plus one cooking verb, so a PARTIAL read of
-        // a real page ("2 dl mjöl / vispa") would be accepted, cached for 24h,
-        // and the paid chain never consulted — while the identical string from
-        // OCR.space is rejected. The confidence is computed from the text by
-        // the same function all four tiers use, so it is exactly as comparable
-        // here as anywhere else.
+            : (useLayout
+                  ? (raw.layoutText ?? raw.providerText)
+                  : raw.providerText);
+        // Sanitizing the WHOLE string is safe here, and that is not obvious.
+        // `sanitizeText` removes null bytes, substitutes 18 single-character
+        // homoglyphs, and strips a control-character class that deliberately
+        // EXCLUDES tab, line feed and carriage return. Every operation is a
+        // single-character replace, so it distributes over concatenation and
+        // can never add, remove or merge a ROW - which is what keeps the
+        // layout's line indices addressing the right rows of this sanitized
+        // text. Pinned by `html_sanitizer_test`; if that law ever fails, this
+        // call has to move to per-line. (The class is described rather than
+        // quoted: a comment spelling non-printing characters is how one got
+        // written into this file as real bytes.)
+        final text = rawText == null
+            ? null
+            : HtmlSanitizer.instance.sanitizeText(rawText);
         final onDeviceConfidence = text == null
             ? 0.0
             : _calculateConfidenceFromText(text);
