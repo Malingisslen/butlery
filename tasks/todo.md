@@ -45,8 +45,34 @@ particular) live here, and here only.
       normaliserar en x-koordinat mot sidbredden far `Infinity`, inte ett
       undantag. Fyll dem, eller dividera aldrig med dem.
 - [ ] Steg 4: carry it on `OCRResult`, cached.
-- [ ] Steg 5: heading detector.
+- [ ] Steg 5: heading detector. IN PROGRESS 2026-08-06.
+      `lib/services/import/layout/heading_detector.dart`, pure compute.
+      Parametrar redan MATTA, ska inte harledas om: troskel 1,50 x
+      brodtextens typstorlek (1,35 hittar fler uppslag men delar sonder
+      var fjarde enkelsida - och en felaktig delning ar den dyra, se (1));
+      inget tak (matt SAMRE: traff 71 % -> 60 %); inga storleksklasser
+      (matt samre: flersides 60 % -> 29-35 %). Textkontrollerna lyfter
+      precisionen 32 % -> 62 %. Tom lista nar sidan saknar baslinje ar
+      KONTRAKTET - ca en fjardedel av flersidesbilderna avbojer.
 - [ ] Steg 6: `MultiRecipeSplitter.split(input, {layout})` + the
+      **Checklista fran granskningen av steg 5 (2026-08-06):**
+      (a) `split()` harleder sina egna granser och tar inga injicerade -
+      behover en ingang som tar TEXTRADNUMMER, och ANROPAREN gor
+      `flat -> textLineIndex`, aldrig splittern (bara `DocumentLayout` vet
+      att `
+
+` lagger till en tomrad per sida).
+      (b) Radantalsjamforelsen som `text_layout.dart` kraver finns INTE
+      implementerad nagonstans an. Utan den adresserar ett rubrikindex en
+      strang ingen bevisat matchar parserns indata.
+      (c) Bestam uttryckligen om en layoutgrans fortfarande maste klara
+      `_ingredientClusterAhead` och `_isCompleteRecipeBlock`. OBS:
+      `_minBlockChars` ar 40 idag, men 91 %-siffran kommer fran 200 + verb -
+      raden den kommer fran ar alltsa inte koden som ligger.
+      (d) Alla 250 korpusbilder ar ENSIDIGA, sa flersidesfallan (en sida som
+      avbojer raderar sidan fore) har noll instanser i korpusen. Det
+      syntetiska testet ar den enda evidens som nagonsin kommer finnas -
+      forsvaga inte regeln senare med 'vi har aldrig sett det'.
       `layout.text != input` precondition.
 - [ ] Steg 7: thread it through `photo_import_viewmodel`.
 - [ ] Steg 8: column ordering — separate commit, may prove unnecessary.
