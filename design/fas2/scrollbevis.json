@@ -39,9 +39,9 @@
   {
    "artefakt": "synkko",
    "css": {
-    "overflowX": "hidden",
-    "overflowY": "hidden",
-    "minHeight": "auto"
+    "overflowX": "auto",
+    "overflowY": "auto",
+    "minHeight": "0px"
    },
    "maxScroll": 1,
    "scrollTop_start": 0,

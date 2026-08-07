@@ -1,0 +1,170 @@
+{
+ "$regel": "SRC-01-produktfix for synkko pa NORMATIVT DESIGNBESLUT, inte pa infererad runtimemappning.",
+ "beforeCommit": "fc16a68",
+ "afterCommit": null,
+ "$afterCommitNot": "En fil kan inte bara sitt eget commit-SHA. Granskningspaketets kopia bar det.",
+ "normativtBeslut": {
+  "artifact": "synkko",
+  "runtimeMappingStatus": "unmapped",
+  "$runtimeNot": "Ingen belagd Flutter-motsvarighet finns och ingen har antagits. Inget filnamn har skrivits in.",
+  "scrollIntent": "vertical when overflowing",
+  "beslut": "Innehallskolumnen ska vara vertikalt scrollbar nar innehallet overstiger tillganglig hojd. Alla poster i kon och deras handlingar ska vara nabara.",
+  "skal": "Variabel action-ko. Varje post bar en handling.",
+  "dokumenterat_i": "evidensmatris.md"
+ },
+ "fix": {
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "andring": "overflow:hidden -> overflow-y:auto;min-height:0",
+  "andrade_rader": 1,
+  "monster": "samma minsta bevisade SRC-01-losning som i betygperperson och veckoallergi",
+  "global_ersattning": false
+ },
+ "borttaget": {
+  "raa_verifierade_detektioner_st": 2,
+  "findingId_st": 2,
+  "legacy_instansId_st": 1,
+  "aktiva_effectId_st": 1,
+  "productErrors_st": 1,
+  "findingId": [
+   "CHK-R-03 · synkko · sel:div.c-phone>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+   "CHK-R-03 · synkko · sel:div>div[8] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+  ],
+  "legacy_instansId": [
+   "INST · synkko · sel:div.c-phone>div[2] · klippning"
+  ],
+  "effectId": [
+   "EFF-03 · synkko"
+  ]
+ },
+ "tillkommet": {
+  "verifierade_findingId_st": 0,
+  "legacy_instansId_st": 0,
+  "effectId_st": 0,
+  "productErrors_st": 0
+ },
+ "fore": {
+  "raa": 12,
+  "elementfynd": 8,
+  "instansId": 7,
+  "kallrotorsaker": 5,
+  "ritningar": 5,
+  "effekter": 5,
+  "produktfel": 1
+ },
+ "efter": {
+  "raa": 10,
+  "elementfynd": 6,
+  "instansId": 6,
+  "kallrotorsaker": 4,
+  "ritningar": 4,
+  "effekter": 4,
+  "produktfel": 0,
+  "per_metod_verifierat": {
+   "r03a": 4,
+   "r03b": 0,
+   "r03c": 4,
+   "r03d": 2
+  },
+  "avsiktliga_scrollomraden": {
+   "r03a": 2,
+   "r03b": 4
+  }
+ },
+ "aktiva_effekter_efter": [
+  {
+   "effectId": "EFF-04 · flergrupp",
+   "status": "undecided",
+   "kalla": "SRC-01"
+  },
+  {
+   "effectId": "EFF-05 · kompkalla",
+   "status": "undecided",
+   "kalla": "SRC-02"
+  },
+  {
+   "effectId": "EFF-06 · langavarden",
+   "status": "intentional",
+   "kalla": "SRC-03"
+  },
+  {
+   "effectId": "EFF-07 · onbimport",
+   "status": "undecided",
+   "kalla": "SRC-04"
+  }
+ ],
+ "registry": {
+  "ordinal_3_reserverad": true,
+  "$not": "EFF-03 ar borta ur den aktiva populationen men ordinal 3 aterianvands aldrig. nextOrdinal ar oforandrad."
+ },
+ "scrollfunktionsbevis": [
+  {
+   "artefakt": "betygperperson",
+   "css": {
+    "overflowX": "auto",
+    "overflowY": "auto",
+    "minHeight": "0px"
+   },
+   "maxScroll": 2,
+   "scrollTop_start": 0,
+   "scrollTop_max": 2,
+   "scrollbart": true,
+   "sistaElementetHeltInne": true,
+   "horisontellOverflow": 0,
+   "rect": [
+    412,
+    529
+   ]
+  },
+  {
+   "artefakt": "veckoallergi",
+   "css": {
+    "overflowX": "auto",
+    "overflowY": "auto",
+    "minHeight": "0px"
+   },
+   "maxScroll": 2,
+   "scrollTop_start": 0,
+   "scrollTop_max": 2,
+   "scrollbart": true,
+   "sistaElementetHeltInne": true,
+   "horisontellOverflow": 0,
+   "rect": [
+    412,
+    649
+   ]
+  },
+  {
+   "artefakt": "synkko",
+   "css": {
+    "overflowX": "auto",
+    "overflowY": "auto",
+    "minHeight": "0px"
+   },
+   "maxScroll": 1,
+   "scrollTop_start": 0,
+   "scrollTop_max": 1.5,
+   "scrollbart": true,
+   "sistaElementetHeltInne": true,
+   "horisontellOverflow": 0,
+   "rect": [
+    412,
+    611.5
+   ]
+  }
+ ],
+ "flergrupp_byte_ororad": {
+  "diffrader_som_ror_den": 0,
+  "geometri_identisk": true,
+  "legacy_detektion": "kvar",
+  "effectId": "EFF-04",
+  "adjudicationStatus": "undecided",
+  "sourceRootCause": "SRC-01"
+ },
+ "ovriga_lager": {
+  "identity_v2_verified_ambiguous_st": 0,
+  "CHK_T21": "oforandrad",
+  "EFF-05": "undecided",
+  "EFF-06": "intentional med befintlig evidens",
+  "EFF-07": "undecided, designRuntimeDeviation=true"
+ }
+}

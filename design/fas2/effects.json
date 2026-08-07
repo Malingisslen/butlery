@@ -2,18 +2,18 @@
  "$regel": "PARALLELLT LAGER. Legacy-detektionen är oförändrad: 19 råa detektioner, 13 elementfynd, 9 instansId, 5 källrotorsaker. Ingen produktmarkup rörd.",
  "$ordregel": "\"Verifierad\" i legacy-lagret betyder att mätregeln uppfylldes, inte att produktbeteendet är normativt fel. Frasen \"9 verifierade fel\" används inte längre om legacy-instanslagret.",
  "$sammanslagningsregel": "Två legacy-instanser blir en effekt endast vid samma artefakt, samma element, samma sourceRootCause OCH samma användarupplevda konsekvens, mätt som samma axel och samma storlek inom en halv pixel. Samma symptomsignatur räcker aldrig. Samma element räcker inte heller om konsekvenserna är självständiga.",
- "detectedLegacyInstances_st": 7,
- "adjudicatedEffects_st": 5,
- "productErrors_st": 1,
+ "detectedLegacyInstances_st": 6,
+ "adjudicatedEffects_st": 4,
+ "productErrors_st": 0,
  "intentionalEffects_st": 1,
  "undecidedEffects_st": 3,
  "designRuntimeDeviations_st": 1,
  "legacy_oforandrat": {
-  "raa_verifierade_detektioner_st": 12,
-  "elementfynd_st": 8,
-  "legacy_instansId_st": 7,
-  "legacy_kallrotorsaker_st": 5,
-  "berorda_produktartefakter_st": 5
+  "raa_verifierade_detektioner_st": 10,
+  "elementfynd_st": 6,
+  "legacy_instansId_st": 6,
+  "legacy_kallrotorsaker_st": 4,
+  "berorda_produktartefakter_st": 4
  },
  "idTilldelning": {
   "kalla": "fas2/effect-registry.json v2.0",
@@ -26,44 +26,6 @@
   "status": "godkänd"
  },
  "effects": [
-  {
-   "effectId": "EFF-03 · synkko",
-   "effektnyckel": "synkko ‖ sel:div.c-phone>div[2] ‖ SRC-01 ‖ klass=innehall-ej-nabart ‖ axel=y",
-   "artifactId": "synkko",
-   "legacyInstansIds": [
-    "INST · synkko · sel:div.c-phone>div[2] · klippning"
-   ],
-   "findingIds": [
-    "CHK-R-03 · synkko · sel:div.c-phone>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
-    "CHK-R-03 · synkko · sel:div>div[8] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
-   ],
-   "symptomTypes": [
-    "div · klippning · innehåll utanför boxen"
-   ],
-   "sourceRootCauseId": "SRC-01",
-   "adjudicationStatus": "unintended",
-   "intentionalityEvidence": {
-    "status": "unintended",
-    "skäl": "Barn 1.195 px under klientboxen, scroll minus client = 1. Boxens egen höjd är bråkdelen 611.5 px. Två signaler eniga i riktning och storleksordning.",
-    "$regel": "intentional kräver positiv evidens. undecided och unintended bär skäl, inte evidens för avsikt."
-   },
-   "userEffectDescription": "Innehållet i telefonramens kolumn kapas 1 px nedtill utan att kunna scrollas fram.",
-   "identityV2Status": "stable",
-   "sammanslagen": false,
-   "sammanslagningsgrund": null,
-   "matt": {
-    "axel": "y",
-    "scroll_minus_client_px": 1,
-    "barn_utanfor_brakdel": [
-     {
-      "tag": "div",
-      "underKant_px": 1.1953,
-      "högerOm_px": -24
-     }
-    ]
-   },
-   "designRuntimeDeviation": false
-  },
   {
    "effectId": "EFF-04 · flergrupp",
    "effektnyckel": "flergrupp ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ klass=innehall-ej-nabart ‖ axel=y",

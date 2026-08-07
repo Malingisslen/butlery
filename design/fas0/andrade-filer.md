@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=290-->
+<!--manifest:files=291-->
 
 ## Reporoten
 
@@ -42,7 +42,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `b473330181de718ddeb92c6bdcd287ad7e3a9545055806c9333d67205ab6b8cc` |
 | `Butlery Skarmar v12 del 2 familj och socialt.dc.html` | `8b104b62843ac3c902ef19e18b01e8da8b2901496717a0f6c5baf3bb1e6eb271` |
 | `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `93c9126809fafef0d4cbe935c59096db1de6f8301fac03916616dba16ead4cfb` |
-| `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `954891476dd3b50e35fdfb6da5ac767676877b99cbb7dc69886d1bb1e85b0626` |
+| `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `e0f0d0edd43abffb317f02690019af3c18a480d29455416d4aefc9eff1ab4b35` |
 | `Butlery Skarmar v12 etapp 10 bred layout.dc.html` | `aa09ad6633fa1519a1780d97b2553d42618a80a3396757a3824ef55f0f3fe21d` |
 | `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `fbfe3127fb9e3bb38ae1bd6fcb95d2efc6ba8f2e1ecad0d794021060c0bbc0a2` |
 | `Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html` | `40811c3df142c84eae6406c1d7eaf0c90211fa9af2de2f59d5b797abab7349ff` |
@@ -195,7 +195,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `butlery-tokens.schema.json` | `3757e0005ea613416f00a73ac67a3d7303d46a9468feb0ca2f5dc553fa90891d` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
 | `content-style-guide.md` | `cb4fe9e93fe8286a394570353c8fe0d57f39b276a6eaff647129cb857cb570fd` |
-| `evidensmatris.md` | `ae2057ff72a078d069b351a86765a2545d000d0801fc68c478fc390ef9351a28` |
+| `evidensmatris.md` | `b4604302be4b3a67ecfa3bb27201d6f7a69f5baf3e4bfc2517a6817a2d6420b6` |
 | `exports/android/ic_launcher_background.svg` | `81044da47484b9cc4affbcaaecc26524ac7bcea67185bc46258c370291e09dde` |
 | `exports/android/ic_launcher_foreground.svg` | `7fb789ae266c96e4193483deb33ada24be8f110d93ab6588aa2d2a906fb87327` |
 | `exports/android/ic_launcher_monochrome.svg` | `a03249354c03d5723cec56a38ed7514384ab4109531da449a02268075d399ef8` |
@@ -212,7 +212,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas0/verify-delivery.sh` | `b793ff7225563b71520127c41614a8c1f2e03f7f72780cadc63911d0e4d1e5f7` |
 | `fas0/verify-report.schema.json` | `70687a2337ca6fe4a4419089983d8dfda52821b9af4799b4dabb03dfe9ac895d` |
 | `fas2/effect-registry.json` | `cd783eeb4e09118c863ec344d445f9485c96daa0b782c95093dc7ce837f26efa` |
-| `fas2/effects.json` | `fcbad82169d2b3b5358384f3f5ac62bddee4b95286b3bd0a10542e94275a6ad4` |
+| `fas2/effects.json` | `47d757376d8f10a19af448de3625317458dbc753d80231cca17b8b36a0d4a2fa` |
 | `fas2/effektprov.json` | `fbfa44554294dfb6a534abb9a84f825171b383289cfdf38e680e19489ae483bb` |
 | `fas2/gridmatning.txt` | `8972e840fef68b585a2b76e5ebe37d44a03bc3d3b6c7a7c63350fe53c9337726` |
 | `fas2/gridmatning_test.dart.txt` | `6ee766862801cd83ab3d97d5d80f8399538882a58ef7cbdc6db9ef7c8460102a` |
@@ -224,10 +224,11 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r03-baslinje.json` | `f76b4f37b6bb52ece683c61621670a0b37173be3c74acf1da7bfd992b7e8c702` |
 | `fas2/r04-parningsunderlag.json` | `d82a227cf2f2b978b42e9625365027bdf9e5b41136808987cc61e0a46cb4fa55` |
 | `fas2/reproducerbarhet.json` | `85b244b9bf2d33831d7df56aa61cb5a24887aed3b7d7b095314be792022a726c` |
-| `fas2/residual-r03-triage.json` | `f2171d5675b674d1891d060cd9b16a2e679d78675a6a203d5218a4ebdaa7e09b` |
-| `fas2/scrollbevis.json` | `46f5c3d51fefde864c58efbd90655d0a051fd5eac6fa0359432a7d27a06deaef` |
+| `fas2/residual-r03-triage.json` | `90ba976ae92ebd2ae833b52a9a0048f294367eaa5ba4a2c87ce65abc8dee7901` |
+| `fas2/scrollbevis.json` | `489415bd2ca8a6999cf4036349cceef8502d65d1f9917ccc4c3fbda07a1a3408` |
 | `fas2/source-root-cause-map.json` | `a59b0dcaf2554fa49bc347a016fa1e0cd3f496c66e7ca4410c13c144f52d2bd1` |
 | `fas2/src01-productfix-delta.json` | `e89521e8946e1c71cdceaa20fe7e818f7e5e104baf2a6054f1bd3a5175a6ef6b` |
+| `fas2/src01-synkko-delta.json` | `d873ff5957949bfb6dc25d6941a83e8d52e058b8eb91cf9fd8434fad74d0e4a8` |
 | `flows-roles-budget.md` | `d9d66bc1669e65ec4f9769efc0b7b66885b4e8252e6dfb7345ce0c8da19d22f6` |
 | `granskning-v12.md` | `0e1f0409c370e9a82dda87ae43379660c3b404e5ff2de5089f0fb69262da7d37` |
 | `grundgranskning.md` | `019015ca6aca9fc50b54e5769b2099f410dac33e1f6d3f215546932be4cc1728` |

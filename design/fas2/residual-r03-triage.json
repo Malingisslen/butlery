@@ -2,16 +2,16 @@
  "$regel": "MÄTNING OCH ATTRIBUTION. Ingen fix, ingen ändring av produktskärmar, ingen ändring av kanoniska findingId, instansId eller källrotorsaks-id.",
  "$population": "Verifierad från körningen, inte antagen från äldre rapport.",
  "population": {
-  "felinstanser_fore_analys_st": 7,
-  "elementfynd_st": 8,
-  "raa_verifierade_detektioner_st": 12,
-  "kanoniska_legacy_kallrotorsaker_st": 5,
-  "berorda_produktartefakter_st": 5
+  "felinstanser_fore_analys_st": 6,
+  "elementfynd_st": 6,
+  "raa_verifierade_detektioner_st": 10,
+  "kanoniska_legacy_kallrotorsaker_st": 4,
+  "berorda_produktartefakter_st": 4
  },
  "sammanfattning": {
   "symptomGroups_st": 5,
   "verkligt_belagda_sourceRootCauses_st": 4,
-  "unintended_st": 1,
+  "unintended_st": 0,
   "intentional_st": 2,
   "undecided_st": 4,
   "ritningar_per_sourceRootCause": {
@@ -23,62 +23,6 @@
  },
  "$intentionalitetsregel": "intentional kräver POSITIV evidens. Att CSS-raden använder line-clamp, ellipsis eller overflow:hidden är inget bevis. data-clip-intent förekommer i NOLL ritningar i hela systemet.",
  "instanser": [
-  {
-   "nr": 3,
-   "artifactId": "synkko",
-   "instansId": "INST · synkko · sel:div.c-phone>div[2] · klippning",
-   "findingIds": [
-    "CHK-R-03 · synkko · sel:div.c-phone>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
-    "CHK-R-03 · synkko · sel:div>div[8] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
-   ],
-   "element": "div",
-   "faktisk_overflow": {
-    "axel": "y",
-    "scroll_minus_client_px": 1,
-    "barn_utanfor_brakdel": [
-     {
-      "tag": "div",
-      "underKant_px": 1.1953,
-      "högerOm_px": -24
-     }
-    ],
-    "boxens_egen_hojd_px": 611.5,
-    "scrollH": 613,
-    "clientH": 612
-   },
-   "css": {
-    "overflow": "hidden",
-    "overflowX": "hidden",
-    "overflowY": "hidden",
-    "textOverflow": "clip",
-    "webkitLineClamp": "none",
-    "height": "595.5px",
-    "maxHeight": "none",
-    "lineHeight": "normal",
-    "display": "block"
-   },
-   "inline_style": "padding: 16px 24px 0px; flex: 1 1 0%; overflow: hidden;",
-   "klippande_ancestor": {
-    "tag": "div",
-    "cls": "sc-phone",
-    "overflow": "hidden/hidden/hidden",
-    "inlineStyle": "width: 412px; height: 820px; display: flex; flex-direction: column;"
-   },
-   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-   "dc_tpl": "223",
-   "symptomGroup": "div · klippning · innehåll utanför boxen",
-   "sourceRootCause": "SRC-01",
-   "samma_kallrad_ger_fler_fynd": false,
-   "intentionality": "unintended",
-   "intentionality_skal": "Barn 1.195 px under klientboxen, scroll minus client = 1. Boxens egen höjd är bråkdelen 611.5 px. Två signaler eniga i riktning och storleksordning.",
-   "identityV2_status": "stable",
-   "identityV2_basis": "unique-selector",
-   "clipIntent": null,
-   "roll": null,
-   "namn": null,
-   "text": "Väntar på dig · 2 Dessa försöker inte igen av sig själva. Orsaken står i ord, och varje post har en handling. Ditt betyg på Citronrisotto Receptet finns inte lä",
-   "utsnitt": "utsnitt/INST_synkko_sel_div_c-phone_div_2_klippning__1-2.png"
-  },
   {
    "nr": 4,
    "artifactId": "flergrupp",
@@ -385,5 +329,5 @@
    "utsnitt": "utsnitt/INST_onbimport_roll_textbox_Länk_till_recept_textrunkering__1-1-2-0-1.png"
   }
  ],
- "$efterFix": "Regenererad efter SRC-01-fixen for betygperperson och veckoallergi. Adjudiceringarna for kvarvarande instanser ar oforandrade; inga nya har tillkommit."
+ "$efterFix": "Regenererad efter SRC-01-fixen for synkko. Adjudiceringarna for kvarvarande instanser ar oforandrade."
 }

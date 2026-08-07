@@ -19,6 +19,27 @@ Den giltiga proben är:
 
 Avsiktlig `-webkit-line-clamp` räknas inte som klippning och filtreras bort separat. **Senaste körning: 1 träff, och den är en avsiktlig clamp** (recepttiteln i `#langavarden`).
 
+### Normativt scrollbeslut · `#synkko` (2026-08-07)
+
+| Fält | Värde |
+|---|---|
+| artifact | `synkko` |
+| runtimeMappingStatus | **unmapped** — ingen belagd Flutter-motsvarighet finns, och ingen har antagits |
+| scrollIntent | **vertical when overflowing** |
+| skäl | Variabel action-kö. Varje post bär en handling, och alla poster och deras handlingar ska vara nåbara. |
+
+**Innehållskolumnen ska vara vertikalt scrollbar när innehållet överstiger
+tillgänglig höjd. Alla poster i kön och deras handlingar ska vara nåbara.**
+
+Detta är ett DESIGNBESLUT, inte en infererad runtimemappning. Ingen Flutter-fil
+ligger till grund för det, och inget filnamn skrivs in här förrän en
+motsvarighet är belagd.
+
+Samma SRC-01-konstruktion är belagd i fyra ritningar. Två av dem —
+`#betygperperson` och `#veckoallergi` — rättades på runtimebevis.
+`#synkko` rättas på detta beslut. `#flergrupp` är fortfarande obeslutad och
+rörs inte.
+
 ### Grundningsregel
 
 **Produktlogik för en funktion som redan finns i koden skrivs inte — den läses.** En rad får statusen `implementerad` bara om de datamodeller och juridiska dokument den vilar på är lästa, och kolumnen `Skärmbevis` säger vilka. Etapp 1 bröt mot detta: fyra av fyra påståenden om befintliga modeller var fel, och ett rörde barns personuppgifter i en DPIA-granskad funktion (`produktregler.md` § 7.7).
