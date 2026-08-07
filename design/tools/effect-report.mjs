@@ -14,7 +14,8 @@ const OUT = arg('out');
 
 const triage = JSON.parse(readFileSync('fas2/residual-r03-triage.json', 'utf8'));
 const karta = JSON.parse(readFileSync('fas2/source-root-cause-map.json', 'utf8'));
-const r = adjudicera(triage, karta);
+const registry = JSON.parse(readFileSync('fas2/effect-registry.json', 'utf8'));
+const r = adjudicera(triage, karta, registry);
 
 if (OUT) writeFileSync(OUT, JSON.stringify(r, null, 1));
 

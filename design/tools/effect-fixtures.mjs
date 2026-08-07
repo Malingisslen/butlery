@@ -23,7 +23,7 @@ const inst = (o) => ({
   sourceRootCause: 'SRC-X', intentionality: 'unintended', intentionality_skal: 'prov',
   identityV2_status: 'stable', ...o
 });
-const kör = instanser => adjudicera({ ...bas, instanser }, KARTA);
+const kör = (instanser, reg = null) => adjudicera({ ...bas, instanser }, KARTA, reg);
 
 const resultat = [];
 const prov = (id, vad, ok, diag) => resultat.push({ id, vad, ok: !!ok, diag });
@@ -125,6 +125,49 @@ const prov = (id, vad, ok, diag) => resultat.push({ id, vad, ok: !!ok, diag });
     r.effects[0].adjudicationStatus === 'undecided' && r.productErrors_st === 0,
     'designRuntimeDeviation: ' + r.effects[0].designRuntimeDeviation +
     ' · status: ' + r.effects[0].adjudicationStatus + ' · productErrors: ' + r.productErrors_st);
+}
+
+/* E-09 · effectId får inte bygga på arrayordning ────────────────────────── */
+{
+  // Tre effekter, register som pinnar dem till 1, 2 och 3. Ta bort den första
+  // och kräv att de kvarvarande behåller sina nummer.
+  const mk = (a, px) => inst({ artifactId: a, instansId: 'INST · ' + a + ' · sel:div>div[0] · klippning',
+    findingIds: [a], faktisk_overflow: { axel: 'y', scroll_minus_client_px: px, barn_utanfor_brakdel: [] } });
+  const alla = [mk('A', 10), mk('B', 20), mk('C', 30)];
+  const utanReg = kör(alla);
+  const reg = { version: '1.0', nextOrdinal: 4, tilldelningar: {} };
+  for (let i = 0; i < utanReg.effects.length; i++)
+    reg.tilldelningar[utanReg.effects[i].effektnyckel || Object.keys(reg.tilldelningar).length] = {
+      ordinal: i + 1, effectId: 'EFF-0' + (i + 1) + ' · ' + utanReg.effects[i].artifactId };
+  const medReg = kör(alla, reg);
+  const efterBort = kör(alla.slice(1), reg);
+  const utanRegEfter = kör(alla.slice(1));
+  prov('E-09', 'effectId hämtas ur registret och renumreras aldrig när populationen krymper',
+    medReg.effects.map(e => e.effectId).join(',') === 'EFF-01 · A,EFF-02 · B,EFF-03 · C' &&
+    efterBort.effects.map(e => e.effectId).join(',') === 'EFF-02 · B,EFF-03 · C' &&
+    utanRegEfter.effects.map(e => e.effectId).join(',') === 'EFF-01 · B,EFF-02 · C',
+    'med register efter borttagning: ' + efterBort.effects.map(e => e.effectId).join(', ') +
+    ' · UTAN register (det gamla felet): ' + utanRegEfter.effects.map(e => e.effectId).join(', '));
+}
+
+/* E-10 · ett frigjort nummer återanvänds aldrig ──────────────────────────── */
+{
+  const mk = (a, px) => inst({ artifactId: a, instansId: 'INST · ' + a + ' · sel:div>div[0] · klippning',
+    findingIds: [a], faktisk_overflow: { axel: 'y', scroll_minus_client_px: px, barn_utanfor_brakdel: [] } });
+  const bas3 = [mk('A', 10), mk('B', 20)];
+  const utanReg = kör(bas3);
+  const reg = { version: '1.0', nextOrdinal: 3, tilldelningar: {} };
+  utanReg.effects.forEach((e, i) => { reg.tilldelningar[e.effektnyckel] = { ordinal: i + 1, effectId: 'EFF-0' + (i + 1) + ' · ' + e.artifactId }; });
+  // A rättas bort och en HELT NY effekt tillkommer. Den får 03, aldrig 01.
+  const efter = kör([mk('B', 20), mk('D', 40)], reg);
+  const ny = efter.effects.find(e => e.artifactId === 'D');
+  prov('E-10', 'en ny effekt får nästa lediga nummer och aldrig ett frigjort',
+    ny && ny.effectId === 'EFF-03 · D' &&
+    efter.effects.find(e => e.artifactId === 'B').effectId === 'EFF-02 · B' &&
+    efter.idTilldelning.nytilldelade.length === 1,
+    'ny effekt: ' + (ny ? ny.effectId : '—') + ' · överlevare: ' +
+    efter.effects.find(e => e.artifactId === 'B').effectId +
+    ' · nytilldelade: ' + efter.idTilldelning.nytilldelade.length);
 }
 
 for (const r of resultat) console.log((r.ok ? '✔ ' : '✖ ') + r.id + '  ' + r.vad + '\n     ' + r.diag);

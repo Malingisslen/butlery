@@ -53,7 +53,23 @@ const BESKRIVNING = {
  * @param triage  fas2/residual-r03-triage.json
  * @param karta   fas2/source-root-cause-map.json
  */
-export function adjudicera(triage, karta) {
+/**
+ * STABIL ID-TILLDELNING.
+ *
+ * effectId byggde på arrayindex. Så fort tre effekter rättades renumrerades
+ * EFF-04 till EFF-01, och varje tidigare rapport pekade på fel effekt. Numret
+ * hör till effektens NYCKEL och lever i fas2/effect-registry.json: en effekt
+ * som försvinner frigör aldrig sitt nummer, och en ny får alltid nästa lediga.
+ */
+export function tilldelaId(nyckel, artifactId, registry) {
+  const t = (registry && registry.tilldelningar) || {};
+  if (t[nyckel]) return { effectId: t[nyckel].effectId, ordinal: t[nyckel].ordinal, nytilldelad: false };
+  const nästa = (registry && registry.nextOrdinal) || 1;
+  return { effectId: 'EFF-' + String(nästa).padStart(2, '0') + ' · ' + artifactId,
+           ordinal: nästa, nytilldelad: true };
+}
+
+export function adjudicera(triage, karta, registry = null) {
   const kändaKällor = new Set((karta.sourceRootCauses || []).map(s => s.id));
   const fel = [];
   const grupper = new Map();
@@ -78,6 +94,8 @@ export function adjudicera(triage, karta) {
     grupper.get(k).push(i);
   }
 
+  let nästaLediga = (registry && registry.nextOrdinal) || 1;
+  const nyaId = [];
   const effekter = [...grupper.entries()].map(([nyckel, lista], n) => {
     const f = lista[0];
     const px = f.faktisk_overflow.scroll_minus_client_px;
@@ -87,7 +105,16 @@ export function adjudicera(triage, karta) {
       fel.push('MOTSTRIDIG ADJUDICERING i effekten ' + nyckel + ': ' + statusar.join(' och ') +
         ' — två instanser med olika status kan inte vara samma användareffekt');
     return {
-      effectId: 'EFF-' + String(n + 1).padStart(2, '0') + ' · ' + f.artifactId,
+      effectId: (() => {
+        if (!registry) return 'EFF-' + String(n + 1).padStart(2, '0') + ' · ' + f.artifactId;
+        const t = registry.tilldelningar[nyckel];
+        if (t) return t.effectId;
+        const id = 'EFF-' + String(nästaLediga).padStart(2, '0') + ' · ' + f.artifactId;
+        nyaId.push({ nyckel, effectId: id, ordinal: nästaLediga });
+        nästaLediga++;
+        return id;
+      })(),
+      effektnyckel: nyckel,
       artifactId: f.artifactId,
       legacyInstansIds: lista.map(x => x.instansId),
       findingIds: [...new Set(lista.flatMap(x => x.findingIds))].sort(),
@@ -143,6 +170,12 @@ export function adjudicera(triage, karta) {
       legacy_kallrotorsaker_st: triage.population.kanoniska_legacy_kallrotorsaker_st,
       berorda_produktartefakter_st: triage.population.berorda_produktartefakter_st
     },
+    idTilldelning: registry
+      ? { kalla: 'fas2/effect-registry.json v' + registry.version,
+          regel: 'Numret hör till effektens nyckel, aldrig till dess plats i listan. Ett frigjort nummer återanvänds aldrig.',
+          nytilldelade: nyaId, nastaLediga: nästaLediga }
+      : { kalla: null,
+          varning: 'INGET REGISTER — effectId faller tillbaka på arrayordning och är då INTE stabilt när populationen ändras.' },
     failClosed: { fel, status: fel.length ? 'FÄLLD' : 'godkänd' },
     effects: effekter
   };

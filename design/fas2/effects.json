@@ -15,6 +15,12 @@
   "legacy_kallrotorsaker_st": 5,
   "berorda_produktartefakter_st": 7
  },
+ "idTilldelning": {
+  "kalla": "fas2/effect-registry.json v1.0",
+  "regel": "Numret hör till effektens nyckel, aldrig till dess plats i listan. Ett frigjort nummer återanvänds aldrig.",
+  "nytilldelade": [],
+  "nastaLediga": 8
+ },
  "failClosed": {
   "fel": [],
   "status": "godkänd"
@@ -22,6 +28,7 @@
  "effects": [
   {
    "effectId": "EFF-01 · betygperperson",
+   "effektnyckel": "betygperperson ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ axel=y ‖ px=2",
    "artifactId": "betygperperson",
    "legacyInstansIds": [
     "INST · betygperperson · sel:div.c-phone>div[1] · klippning"
@@ -59,6 +66,7 @@
   },
   {
    "effectId": "EFF-02 · veckoallergi",
+   "effektnyckel": "veckoallergi ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ axel=y ‖ px=2",
    "artifactId": "veckoallergi",
    "legacyInstansIds": [
     "INST · veckoallergi · sel:div.c-phone>div[1] · klippning"
@@ -97,6 +105,7 @@
   },
   {
    "effectId": "EFF-03 · synkko",
+   "effektnyckel": "synkko ‖ sel:div.c-phone>div[2] ‖ SRC-01 ‖ axel=y ‖ px=1",
    "artifactId": "synkko",
    "legacyInstansIds": [
     "INST · synkko · sel:div.c-phone>div[2] · klippning"
@@ -134,6 +143,7 @@
   },
   {
    "effectId": "EFF-04 · flergrupp",
+   "effektnyckel": "flergrupp ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ axel=y ‖ px=3",
    "artifactId": "flergrupp",
    "legacyInstansIds": [
     "INST · flergrupp · sel:div.c-phone>div[1] · klippning"
@@ -164,6 +174,7 @@
   },
   {
    "effectId": "EFF-05 · kompkalla",
+   "effektnyckel": "kompkalla ‖ sel:div>div[2] ‖ SRC-02 ‖ axel=y ‖ px=52",
    "artifactId": "kompkalla",
    "legacyInstansIds": [
     "INST · kompkalla · sel:div>div[2] · klippning"
@@ -205,6 +216,7 @@
   },
   {
    "effectId": "EFF-06 · langavarden",
+   "effektnyckel": "langavarden ‖ sel:div>div[0] ‖ SRC-03 ‖ axel=y ‖ px=22",
    "artifactId": "langavarden",
    "legacyInstansIds": [
     "INST · langavarden · sel:div>div[0] · klippning",
@@ -234,6 +246,7 @@
   },
   {
    "effectId": "EFF-07 · onbimport",
+   "effektnyckel": "onbimport ‖ roll:textbox|Länk till recept ‖ SRC-04 ‖ axel=x ‖ px=19",
    "artifactId": "onbimport",
    "legacyInstansIds": [
     "INST · onbimport · roll:textbox|Länk till recept · klippning",

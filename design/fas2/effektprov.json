@@ -47,8 +47,20 @@
    "vad": "en skillnad mot runtime sätter aldrig automatiskt unintended",
    "ok": true,
    "diag": "designRuntimeDeviation: true · status: undecided · productErrors: 0"
+  },
+  {
+   "id": "E-09",
+   "vad": "effectId hämtas ur registret och renumreras aldrig när populationen krymper",
+   "ok": true,
+   "diag": "med register efter borttagning: EFF-02 · B, EFF-03 · C · UTAN register (det gamla felet): EFF-01 · B, EFF-02 · C"
+  },
+  {
+   "id": "E-10",
+   "vad": "en ny effekt får nästa lediga nummer och aldrig ett frigjort",
+   "ok": true,
+   "diag": "ny effekt: EFF-03 · D · överlevare: EFF-02 · B · nytilldelade: 1"
   }
  ],
- "gröna": 8,
- "av": 8
+ "gröna": 10,
+ "av": 10
 }

@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=287-->
+<!--manifest:files=288-->
 
 ## Reporoten
 
@@ -211,8 +211,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas0/run-verify.sh` | `8cfdac6f33d8683f50ad4ca962a0f849917e4911e998c9177ae0587640cb36d7` |
 | `fas0/verify-delivery.sh` | `b793ff7225563b71520127c41614a8c1f2e03f7f72780cadc63911d0e4d1e5f7` |
 | `fas0/verify-report.schema.json` | `70687a2337ca6fe4a4419089983d8dfda52821b9af4799b4dabb03dfe9ac895d` |
-| `fas2/effects.json` | `c2346bea4cb99a6057617d2231f593f83eeff420254a0b7afbb6ea4ad42f72b1` |
-| `fas2/effektprov.json` | `7fb1c56f85f5698e08e70b43c572d815f3c8bbb4def2f15f98d400d1ca22f886` |
+| `fas2/effect-registry.json` | `5aa354c75335f8a2238124e52e1cf44ab36816d78694ce3d44bf439e102818ee` |
+| `fas2/effects.json` | `784ae6d859fdf8fba6a63dcd370b40736af0c31a2a22017404c5f4d94a6c55c7` |
+| `fas2/effektprov.json` | `b2f533e69e2b29acc955037d42f85b1a3cbb54c1420c231ca4df3caa6ab2a475` |
 | `fas2/gridmatning.txt` | `8972e840fef68b585a2b76e5ebe37d44a03bc3d3b6c7a7c63350fe53c9337726` |
 | `fas2/gridmatning_test.dart.txt` | `6ee766862801cd83ab3d97d5d80f8399538882a58ef7cbdc6db9ef7c8460102a` |
 | `fas2/identitetsprov.json` | `d113891b9c0ac4a1b2cbf04b8ff482533e3f21996beb5d8bd27b591623650ac4` |
@@ -264,9 +265,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/build-delivery.mjs` | `fcfc81f8a1776576fd85e5e2140b0f55483efa8ecef36d87a0aa89d16b7a5d9d` |
 | `tools/check-app-theme.mjs` | `3ec46efe91680b7050662962c1f117d5dc9a2653ffd1f9437a67a0a72217b745` |
 | `tools/controls.mjs` | `6200d355c3198c9fb3e226943baca66a1de467f65566d77f9ec232555ce82088` |
-| `tools/effect-adjudication.mjs` | `8a47dc947b85d93374e6716047acf910ef572dc0819090ed768edd0178b0f4ab` |
-| `tools/effect-fixtures.mjs` | `c0945b16d2793db9f733c3087a2a2faf0da5f1a4d6be37d06a8e095eca7e8d75` |
-| `tools/effect-report.mjs` | `992c7a110a714229fe4cfe627dffe5cf7f7166ed79c17beffd054b89094aa02c` |
+| `tools/effect-adjudication.mjs` | `3b8e54d312e2ab8381d171c2524418dd5169174b9464448db139505160edb05c` |
+| `tools/effect-fixtures.mjs` | `65be23f7574f30085c0a10b71070191cb57b8eb5b69c9801e58d632d818ed01c` |
+| `tools/effect-report.mjs` | `61c1290052d707d1b13913987682a5835653d2ee7b18cf3ae50ff3c304f5e84c` |
 | `tools/finalize.mjs` | `74fd11be650ad6a50a4c6817c06bac45dd1815c97faf524cd59c41f91ef0afd1` |
 | `tools/gate.mjs` | `02917e6f14ed023585a1496630ba68b1b9dea5109ab991f5d1a5a931195ba4f0` |
 | `tools/gen-app-theme.mjs` | `f07136386c267f52bda54a0e5b14523fa41facb615f276befc3b9c140f17bd01` |
