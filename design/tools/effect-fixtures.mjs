@@ -7,7 +7,7 @@
 // som prövas mot en kopia av sig själv bevisar ingenting.
 
 import { writeFileSync } from 'node:fs';
-import { adjudicera } from './effect-adjudication.mjs';
+import { adjudicera, affordansbevis } from './effect-adjudication.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 
@@ -226,6 +226,75 @@ const mkReg = (instanser) => {
     r.idTilldelning.nytilldelade.length === 1,
     'ny effekt: ' + r.effects[0].effectId + ' · nytilldelade: ' + r.idTilldelning.nytilldelade.length +
     ' (det frigjorda 01 återanvänds inte)'); }
+
+
+/* E-15…E-20 · preview med affordans skild från dold text utan affordans ──── */
+const AFF = {
+  collapsedState: true, avsiktligPreview: true, expandControl: true,
+  controlRollNamnState: true, controlNabar: true, expandedArtifact: true,
+  sammaLogiskaInnehall: true, fulltextNabar: true
+};
+const mkPrev = (o = {}) => inst({ sourceRootCause: 'SRC-02',
+  instansId: 'INST · A · sel:div>div[0] · klippning',
+  faktisk_overflow: { axel: 'y', scroll_minus_client_px: 52, barn_utanfor_brakdel: [] }, ...o });
+const KARTA_P = { sourceRootCauses: [{ id: 'SRC-02' }], runtimejamforelse: [] };
+const körP = (i, reg = null) => adjudicera({ ...bas, instanser: i }, KARTA_P, reg);
+
+{ // E-15 · klippt element UTAN affordans
+  const r = körP([mkPrev()]);
+  prov('E-15', 'klippt preview utan affordans behåller innehall-dolt-utan-affordans',
+    r.effects.length === 1 && /innehall-dolt-utan-affordans/.test(r.effects[0].effektnyckel),
+    'nyckel: ' + (r.effects[0] || {}).effektnyckel); }
+
+{ // E-16 · samma element MED verifierad affordans
+  const r = körP([mkPrev({ previewAffordance: AFF })]);
+  prov('E-16', 'verifierad collapsed-preview med fungerande expanded ger begransad-preview-med-affordans',
+    r.effects.length === 1 && /begransad-preview-med-affordans/.test(r.effects[0].effektnyckel),
+    'nyckel: ' + (r.effects[0] || {}).effektnyckel); }
+
+{ // E-17 · samma artefakt/element/källa/axel men olika klass → olika nyckel
+  const utan = körP([mkPrev()]).effects[0].effektnyckel;
+  const med = körP([mkPrev({ previewAffordance: AFF })]).effects[0].effektnyckel;
+  const bara = (a, b) => a.split(' ‖ ').filter((x, i) => x !== b.split(' ‖ ')[i]);
+  prov('E-17', 'klassbytet, inte listordningen, skapar den nya identiteten',
+    utan !== med && bara(utan, med).length === 1 && /klass=/.test(bara(utan, med)[0]),
+    'enda skillnaden i nyckeln: ' + JSON.stringify(bara(utan, med))); }
+
+{ // E-18 · ändrat stateId utan ändrad effektsemantik
+  const a = mkPrev({ stateId: 'kollapsad' });
+  const b = mkPrev({ stateId: 'nagot-annat' });
+  prov('E-18', 'ändrat stateId skapar varken ny effectClass eller ny effectId',
+    körP([a]).effects[0].effektnyckel === körP([b]).effects[0].effektnyckel,
+    'nyckel oförändrad: ' + (körP([a]).effects[0].effektnyckel === körP([b]).effects[0].effektnyckel)); }
+
+{ // E-19 · etikett finns men expanded saknas → fail closed
+  const halv = { ...AFF, expandedArtifact: false, fulltextNabar: false };
+  const r = körP([mkPrev({ previewAffordance: halv })]);
+  const b = affordansbevis({ previewAffordance: halv });
+  prov('E-19', 'kontroll utan verifierat expanded-state ger INTE preview-med-affordans',
+    /innehall-dolt-utan-affordans/.test(r.effects[0].effektnyckel) &&
+    b.verifierad === false && b.saknade.length === 2,
+    'klass: innehall-dolt-utan-affordans · saknade led: ' + JSON.stringify(b.saknade)); }
+
+{ // E-20 · verifierat par kan adjudiceras intentional
+  const r = körP([mkPrev({ previewAffordance: AFF, intentionality: 'intentional',
+    intentionality_skal: 'normativt previewbeslut + verifierat state-par' })]);
+  prov('E-20', 'verifierat collapsed/expanded-par kan adjudiceras intentional',
+    r.intentionalEffects_st === 1 && r.productErrors_st === 0 &&
+    /begransad-preview-med-affordans/.test(r.effects[0].effektnyckel),
+    'intentional: ' + r.intentionalEffects_st + ' · produktfel: ' + r.productErrors_st); }
+
+{ // E-21 · registret ger nästa aldrig använda ordinal, muterar aldrig det gamla
+  const gammal = körP([mkPrev()]);
+  const reg = { version: '2.0', nextOrdinal: 6, tilldelningar: {} };
+  reg.tilldelningar[gammal.effects[0].effektnyckel] = { ordinal: 5, effectId: 'EFF-05 · A' };
+  const ny = körP([mkPrev({ previewAffordance: AFF })], reg);
+  prov('E-21', 'ny semantisk nyckel får nästa oanvända ordinal, gamla 05 muteras inte',
+    ny.effects[0].effectId === 'EFF-06 · A' &&
+    reg.tilldelningar[gammal.effects[0].effektnyckel].ordinal === 5 &&
+    ny.idTilldelning.nytilldelade.length === 1,
+    'ny effectId: ' + ny.effects[0].effectId + ' · gammal ordinal orörd: ' +
+    (reg.tilldelningar[gammal.effects[0].effektnyckel].ordinal === 5)); }
 
 for (const r of resultat) console.log((r.ok ? '✔ ' : '✖ ') + r.id + '  ' + r.vad + '\n     ' + r.diag);
 const gröna = resultat.filter(r => r.ok).length;

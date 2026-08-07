@@ -47,9 +47,38 @@ export const EFFEKTKLASS = {
   'SRC-04': 'faltvarde-dolt'
 };
 
+// Klassen "begransad-preview-med-affordans" beskriver en ANNAN användareffekt
+// än "innehall-dolt-utan-affordans": text är fortfarande dold, men det finns
+// en verifierad väg till fulltexten. Den får ALDRIG
+// valjas for att sourceRootCause rakar vara SRC-02, for att stateId rakar
+// vara kollapsad, for att overflow:hidden finns eller for att ett element
+// heter "Visa hela". En etikett ar ingen affordans.
+export const AFFORDANSKRAV = [
+  'collapsedState', 'avsiktligPreview', 'expandControl', 'controlRollNamnState',
+  'controlNabar', 'expandedArtifact', 'sammaLogiskaInnehall', 'fulltextNabar'
+];
+
+/**
+ * Prövar om en klippt preview har en VERIFIERAD affordans. Alla åtta leden
+ * måste vara belagda i analysunderlaget. Saknas något led rapporteras bristen
+ * och klassen byts inte — fail closed.
+ */
+export function affordansbevis(i) {
+  const a = i.previewAffordance || null;
+  if (!a) return { verifierad: false, saknade: AFFORDANSKRAV.slice(), bevis: null };
+  const saknade = AFFORDANSKRAV.filter(k => a[k] !== true);
+  return { verifierad: saknade.length === 0, saknade, bevis: a };
+}
+
+export function effektklass(i) {
+  const grund = EFFEKTKLASS[i.sourceRootCause] || 'okand-konsekvens';
+  if (grund !== 'innehall-dolt-utan-affordans') return grund;
+  return affordansbevis(i).verifierad ? 'begransad-preview-med-affordans' : grund;
+}
+
 export function effektnyckel(i) {
   const el = (i.instansId || '').split(' · ')[2] || i.element || '?';
-  const klass = EFFEKTKLASS[i.sourceRootCause] || 'okand-konsekvens';
+  const klass = effektklass(i);
   return [i.artifactId, el, i.sourceRootCause, 'klass=' + klass,
           'axel=' + i.faktisk_overflow.axel].join(' ‖ ');
 }

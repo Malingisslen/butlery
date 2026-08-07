@@ -213,7 +213,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas0/verify-report.schema.json` | `70687a2337ca6fe4a4419089983d8dfda52821b9af4799b4dabb03dfe9ac895d` |
 | `fas2/effect-registry.json` | `cd783eeb4e09118c863ec344d445f9485c96daa0b782c95093dc7ce837f26efa` |
 | `fas2/effects.json` | `69072b9aacdf54107d1ef6093846f1305a1bcb127dbc55f3d080e7d0fae009b1` |
-| `fas2/effektprov.json` | `fbfa44554294dfb6a534abb9a84f825171b383289cfdf38e680e19489ae483bb` |
+| `fas2/effektprov.json` | `45ab1902893f061d70a2c1e25590685cb8a5885fb2da6a2ccb4886127f64c93c` |
 | `fas2/gridmatning.txt` | `8972e840fef68b585a2b76e5ebe37d44a03bc3d3b6c7a7c63350fe53c9337726` |
 | `fas2/gridmatning_test.dart.txt` | `6ee766862801cd83ab3d97d5d80f8399538882a58ef7cbdc6db9ef7c8460102a` |
 | `fas2/identitetsprov.json` | `d113891b9c0ac4a1b2cbf04b8ff482533e3f21996beb5d8bd27b591623650ac4` |
@@ -268,8 +268,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/build-delivery.mjs` | `fcfc81f8a1776576fd85e5e2140b0f55483efa8ecef36d87a0aa89d16b7a5d9d` |
 | `tools/check-app-theme.mjs` | `3ec46efe91680b7050662962c1f117d5dc9a2653ffd1f9437a67a0a72217b745` |
 | `tools/controls.mjs` | `6200d355c3198c9fb3e226943baca66a1de467f65566d77f9ec232555ce82088` |
-| `tools/effect-adjudication.mjs` | `544d445b868e522efedaebcf2b41cccda63baf6741e14df3adac50620bbcea6a` |
-| `tools/effect-fixtures.mjs` | `d019fb1a476f0fc664d8aea8c518e320e9670a1b99f6822d6ee45f1bb0f15ba7` |
+| `tools/effect-adjudication.mjs` | `a854723b3b747bcb88f0cfc939300d8607db1d00485314a32c150f0ce780f2b0` |
+| `tools/effect-fixtures.mjs` | `f85a2e184a7f0741e0096ea6abedacd29ee3b3bf526e12104e18378c12cb7f0c` |
 | `tools/effect-report.mjs` | `61c1290052d707d1b13913987682a5835653d2ee7b18cf3ae50ff3c304f5e84c` |
 | `tools/finalize.mjs` | `74fd11be650ad6a50a4c6817c06bac45dd1815c97faf524cd59c41f91ef0afd1` |
 | `tools/gate.mjs` | `02917e6f14ed023585a1496630ba68b1b9dea5109ab991f5d1a5a931195ba4f0` |

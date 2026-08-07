@@ -83,8 +83,50 @@
    "vad": "en verkligt ny effekt på samma element får nytt nummer, aldrig ett återanvänt",
    "ok": true,
    "diag": "ny effekt: EFF-02 · A · nytilldelade: 1 (det frigjorda 01 återanvänds inte)"
+  },
+  {
+   "id": "E-15",
+   "vad": "klippt preview utan affordans behåller innehall-dolt-utan-affordans",
+   "ok": true,
+   "diag": "nyckel: A ‖ sel:div>div[0] ‖ SRC-02 ‖ klass=innehall-dolt-utan-affordans ‖ axel=y"
+  },
+  {
+   "id": "E-16",
+   "vad": "verifierad collapsed-preview med fungerande expanded ger begransad-preview-med-affordans",
+   "ok": true,
+   "diag": "nyckel: A ‖ sel:div>div[0] ‖ SRC-02 ‖ klass=begransad-preview-med-affordans ‖ axel=y"
+  },
+  {
+   "id": "E-17",
+   "vad": "klassbytet, inte listordningen, skapar den nya identiteten",
+   "ok": true,
+   "diag": "enda skillnaden i nyckeln: [\"klass=innehall-dolt-utan-affordans\"]"
+  },
+  {
+   "id": "E-18",
+   "vad": "ändrat stateId skapar varken ny effectClass eller ny effectId",
+   "ok": true,
+   "diag": "nyckel oförändrad: true"
+  },
+  {
+   "id": "E-19",
+   "vad": "kontroll utan verifierat expanded-state ger INTE preview-med-affordans",
+   "ok": true,
+   "diag": "klass: innehall-dolt-utan-affordans · saknade led: [\"expandedArtifact\",\"fulltextNabar\"]"
+  },
+  {
+   "id": "E-20",
+   "vad": "verifierat collapsed/expanded-par kan adjudiceras intentional",
+   "ok": true,
+   "diag": "intentional: 1 · produktfel: 0"
+  },
+  {
+   "id": "E-21",
+   "vad": "ny semantisk nyckel får nästa oanvända ordinal, gamla 05 muteras inte",
+   "ok": true,
+   "diag": "ny effectId: EFF-06 · A · gammal ordinal orörd: true"
   }
  ],
- "gröna": 14,
- "av": 14
+ "gröna": 21,
+ "av": 21
 }
