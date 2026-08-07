@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=297-->
+<!--manifest:files=302-->
 
 ## Reporoten
 
@@ -195,7 +195,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `butlery-tokens.schema.json` | `3757e0005ea613416f00a73ac67a3d7303d46a9468feb0ca2f5dc553fa90891d` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
 | `content-style-guide.md` | `cb4fe9e93fe8286a394570353c8fe0d57f39b276a6eaff647129cb857cb570fd` |
-| `evidensmatris.md` | `0fe384eab669f2f69520d1c87c2b6205d81261b85ad344f8fdf407d2df1f7547` |
+| `evidensmatris.md` | `6f6387d0e8a513d5ddae6aa2e60feaeb0016fa18473852cd86729ea442c2041e` |
 | `exports/android/ic_launcher_background.svg` | `81044da47484b9cc4affbcaaecc26524ac7bcea67185bc46258c370291e09dde` |
 | `exports/android/ic_launcher_foreground.svg` | `7fb789ae266c96e4193483deb33ada24be8f110d93ab6588aa2d2a906fb87327` |
 | `exports/android/ic_launcher_monochrome.svg` | `a03249354c03d5723cec56a38ed7514384ab4109531da449a02268075d399ef8` |
@@ -221,6 +221,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/identitetsprov.json` | `d113891b9c0ac4a1b2cbf04b8ff482533e3f21996beb5d8bd27b591623650ac4` |
 | `fas2/identity-collision-baseline.json` | `d5d133fd190b0e69256a199316169c5147bb2e46a14be8ff2dde2f285f39a5fd` |
 | `fas2/ikongeometri.json` | `27bd32b81bf742d0fdf9da220687d15b5aae677c82d3b915ccb297eb7da4e7dc` |
+| `fas2/kompkalla-r02.json` | `1918f7677d59587ab554ea973865c93ef30c35201ad9e7b704e49c16df43622f` |
+| `fas2/kontrast-avstamning.json` | `8b400496e917a453e2d2fd4664921a2ee6d83faa75c4b0ba3836ed14f590f7c2` |
+| `fas2/kontrastprov.json` | `453d9d62ce512d55bff07494a9eccb65f76a424b26b498c15608f9f6d461001c` |
 | `fas2/nav-add-delta.json` | `0a8748d9f2059c0dc9e187db3824d62f691872cd456f24fca2df370fccc8f22c` |
 | `fas2/negativa-prov.json` | `5ac71e2542a1c9b66427a154f591650f9da433e035e8f5c89d512e520cf658a0` |
 | `fas2/r03-baslinje.json` | `f76b4f37b6bb52ece683c61621670a0b37173be3c74acf1da7bfd992b7e8c702` |
@@ -270,6 +273,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/authority-contract.mjs` | `7479d2ebd3496f4315fb98ed1e0cb006eb0780acaa824616bf47c214583fdad9` |
 | `tools/build-delivery.mjs` | `fcfc81f8a1776576fd85e5e2140b0f55483efa8ecef36d87a0aa89d16b7a5d9d` |
 | `tools/check-app-theme.mjs` | `3ec46efe91680b7050662962c1f117d5dc9a2653ffd1f9437a67a0a72217b745` |
+| `tools/contrast-fixtures.mjs` | `11fb98b25e831ffc86998861a95703f46cf4117d7a997efe33fd4d26f3379617` |
+| `tools/contrast-reconcile.mjs` | `94f6d84d9f0881b989bc5fee545f6f89bf5522d2505aebd299aa6cf15eb52489` |
 | `tools/controls.mjs` | `6200d355c3198c9fb3e226943baca66a1de467f65566d77f9ec232555ce82088` |
 | `tools/effect-adjudication.mjs` | `a854723b3b747bcb88f0cfc939300d8607db1d00485314a32c150f0ce780f2b0` |
 | `tools/effect-fixtures.mjs` | `f85a2e184a7f0741e0096ea6abedacd29ee3b3bf526e12104e18378c12cb7f0c` |
@@ -302,7 +307,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/preview-affordance.mjs` | `d90ad9347cef19d5077f9475e0a0f4c01ce82345cc96929fe9a662831baeb34a` |
 | `tools/render-analyze-lib.mjs` | `5608257ad1b50b6487b0a0b8958930bf07fe4c639e80a6b08acec3707322a6a2` |
 | `tools/render-analyze.mjs` | `43d16c95a2aa622fc6d63e3a2b41e31c2a2ffb135bc31dbcd3533150374eb428` |
-| `tools/render-measure.mjs` | `305d34161178d4a216c4ea0515dfc5ce8011b60e637d28364b866d910d6f2910` |
+| `tools/render-measure.mjs` | `073dab655a27255cc5172a115f50258497d3346d9a3e5c37813bd3073253aaa5` |
 | `tools/render-negatives.mjs` | `10362b2febe71fc62c34b78965b0c99902dca396dadbda1ef708dd5a8eff6c69` |
 | `tools/render-neutrality.mjs` | `54275336bdd61a904a3c111d753dc00b7d8c1a42e9c6954524328163c62ccb51` |
 | `tools/render-probe.mjs` | `cde2604382b5ef4e7f60297dd58156dea66b2908415ffbc358584f1f0907a697` |

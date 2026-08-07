@@ -36,6 +36,145 @@ export const MEASURE = `(() => {
     return { rgb: base };
   }
 
+  // F2-R01 · KONTRAST MÄTS PÅ DET SOM FAKTISKT MÅLAR TEXTEN.
+  //
+  // Den semantiska kontrollen är fortfarande R-01:s kanoniska enhet. Men en
+  // kontroll är ofta bara en behållare: en flik är en div med en ikon och en
+  // etikett i sig. Behållarens egen computed color är då ÄRVD och säger
+  // ingenting om texten — i navigationsraden råkade den vara identisk med
+  // bakgrunden, vilket gav kvoten 1,00 på text som i verkligheten ligger på
+  // 11,36. Ett fabricerat värde som såg ut som ett giltigt mätvärde.
+  //
+  // Nu letas de FAKTISKT RENDERADE textfragmenten upp, och färgen läses från
+  // det element som målar respektive fragment. Varje fragment mäts mot sin
+  // egen bakgrund och bevaras som evidens under kontrollen.
+  //
+  // En behållares ärvda färg används ALDRIG som textfärg för text som målas
+  // av ett barn med annan computed color.
+
+  // Är elementet självt osynligt? visibility och opacity ärvs visuellt neråt,
+  // så kedjan måste gås uppåt. display:none fångas av att textnoden saknar
+  // renderade rektanglar och behöver ingen egen kontroll här.
+  function osynlig(el) {
+    let n = el;
+    while (n && n !== document.documentElement) {
+      const s = getComputedStyle(n);
+      if (s.visibility === 'hidden' || s.visibility === 'collapse') return 'visibility:' + s.visibility;
+      if (parseFloat(s.opacity) === 0) return 'opacity:0';
+      n = n.parentElement;
+    }
+    return null;
+  }
+
+  // Alla synliga textfragment under en kontroll, grupperade på det element som
+  // målar dem. Två textnoder i samma element är ETT fragment: de har samma
+  // färg, samma bakgrund och samma typografi.
+  function textRunsAv(ctl) {
+    const perMålare = new Map();
+    const w = document.createTreeWalker(ctl, NodeFilter.SHOW_TEXT, null);
+    let n;
+    while ((n = w.nextNode())) {
+      const t = (n.textContent || '').replace(/\\s+/g, ' ').trim();
+      if (!t) continue;
+      const m = n.parentElement;
+      if (!m) continue;
+      // Renderas fragmentet? En textnod utan rektanglar målas inte —
+      // display:none och nollyta faller båda ut här.
+      const rng = document.createRange();
+      rng.selectNodeContents(n);
+      const rects = [...rng.getClientRects()].filter(r => r.width > 0 && r.height > 0);
+      if (!rects.length) continue;
+      const dolt = osynlig(m);
+      if (dolt) continue;
+      const f = perMålare.get(m);
+      if (f) { f.text += ' ' + t; }
+      else perMålare.set(m, { el: m, text: t });
+    }
+    return [...perMålare.values()];
+  }
+
+  // Mäter en kontroll. Returnerar alltid ett fullständigt svar: fail closed,
+  // aldrig ett tal som gissats fram.
+  function kontrastAvKontroll(ctl) {
+    // DISABLED KRÄVER POSITIV SEMANTISK EVIDENS. Färg och opacity är
+    // presentationsval och bevisar ingenting om tillståndet.
+    const st = (ctl.getAttribute('data-a11y-state') || '').toLowerCase();
+    let disabledBasis = null;
+    if (ctl.disabled === true || ctl.hasAttribute('disabled')) disabledBasis = 'native-disabled';
+    else if (ctl.getAttribute('aria-disabled') === 'true') disabledBasis = 'aria-disabled';
+    else if (/(^|[,;\\s])(disabled|inaktiv|avst[aä]ngd)([,;\\s]|$)/.test(st)) disabledBasis = 'data-a11y-state';
+    const disabledVerifierad = disabledBasis !== null;
+
+    const funna = textRunsAv(ctl);
+    const runs = [];
+    let mätta = 0, okända = 0;
+    for (const f of funna) {
+      const cs = getComputedStyle(f.el);
+      const fg = parse(cs.color);
+      const bg = bgOf(f.el);
+      const weight = parseInt(cs.fontWeight, 10) || (cs.fontWeight === 'bold' ? 700 : 400);
+      const size = parseFloat(cs.fontSize) || null;
+      // WCAG: stor text = >=24 px, eller >=18.66 px vid vikt >=700.
+      const large = size !== null && (size >= 24 || (size >= 18.66 && weight >= 700));
+      const threshold = large ? 3 : 4.5;
+      const bas = { text: f.text.slice(0, 40), tag: f.el.tagName.toLowerCase(),
+        elementKey: elementKey(f.el, ctl).key,
+        malareArKontrollen: f.el === ctl,
+        color: cs.color, fontSize: size, fontWeight: weight, large, threshold };
+      if (bg.unreducible) {
+        runs.push({ ...bas, bakgrund: null, ratio: null, status: 'unknown',
+          why: 'oreducerbar bakgrund: ' + bg.unreducible, underThreshold: null });
+        okända++; continue;
+      }
+      if (!fg) {
+        runs.push({ ...bas, bakgrund: 'rgb(' + bg.rgb.join(', ') + ')', ratio: null,
+          status: 'unknown', why: 'textfärgen kunde inte tolkas: ' + cs.color, underThreshold: null });
+        okända++; continue;
+      }
+      const framgrund = fg[3] < 1 ? over(fg, bg.rgb) : fg.slice(0, 3);
+      const L1 = lum(framgrund), L2 = lum(bg.rgb);
+      const ratio = +(((Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05))).toFixed(2);
+      runs.push({ ...bas, bakgrund: 'rgb(' + bg.rgb.join(', ') + ')',
+        komposierad: fg[3] < 1 ? 'rgb(' + framgrund.join(', ') + ')' : null,
+        ratio, status: 'measured', why: null, underThreshold: ratio < threshold,
+        marginal: +(ratio / threshold).toFixed(3) });
+      mätta++;
+    }
+
+    // Kontrollens resultat är den SÄMSTA tillämpliga körningen, mätt som
+    // avstånd till sin egen tröskel — en stor text på 3,5 klarar sitt krav
+    // medan en normal text på 4,0 inte gör det.
+    const mättaRuns = runs.filter(r => r.status === 'measured');
+    const värstaRun = mättaRuns.length
+      ? mättaRuns.reduce((a, b) => (b.marginal < a.marginal ? b : a))
+      : null;
+
+    let applicability, status, why = null;
+    if (runs.length === 0) {
+      applicability = 'notApplicable:noVisibleText';
+      status = 'notApplicable';
+      why = 'kontrollen målar ingen synlig text; data-a11y-name är ett tillgängligt namn, inte synlig text';
+    } else if (mättaRuns.length === 0) {
+      applicability = 'unknown';
+      status = 'unknown';
+      why = runs[0].why;
+    } else if (disabledVerifierad) {
+      applicability = 'exempt:disabled';
+      status = 'measured';
+      why = 'kvoten mäts och redovisas, men räknas inte som R-01-produktfel · grund: ' + disabledBasis;
+    } else {
+      applicability = 'applicable';
+      status = 'measured';
+    }
+
+    return { runs, mätta_st: mätta, okända_st: okända, värstaRun,
+      disabledVerifierad, disabledBasis, applicability, status, why,
+      // Bara en TILLÄMPLIG kontroll kan falla. Undantagna och omätbara
+      // kontroller får aldrig ett tyst false som ser ut som ett godkännande.
+      underThreshold: applicability === 'applicable' && värstaRun
+        ? värstaRun.underThreshold : null };
+  }
+
   // Närmaste förfader som faktiskt klipper. Vi skiljer nu på KLIPPANDE
   // (hidden/clip) och SCROLLANDE (auto/scroll) förfader: att ligga utanför en
   // scrollbar behållare är normalt scrollinnehåll, inte klippning.
@@ -136,27 +275,29 @@ export const MEASURE = `(() => {
     const controls = [...it.querySelectorAll('[data-a11y-role]')].map(c => {
       const cr = c.getBoundingClientRect();
       const cs = getComputedStyle(c);
-      const fg = parse(cs.color);
-      const bg = bgOf(c);
-      const weight = parseInt(cs.fontWeight, 10) || (cs.fontWeight === 'bold' ? 700 : 400);
-      const size = parseFloat(cs.fontSize) || null;
-      // WCAG: stor text = >=24 px, eller >=18.66 px vid vikt >=700.
-      const large = size !== null && (size >= 24 || (size >= 18.66 && weight >= 700));
-      let ratio = null, contrastStatus = 'ok', why = null;
-      if (bg.unreducible) { contrastStatus = 'unknown'; why = 'oreducerbar bakgrund: ' + bg.unreducible; }
-      else if (!fg) { contrastStatus = 'unknown'; why = 'textfärgen kunde inte tolkas: ' + cs.color; }
-      else {
-        const f = fg[3] < 1 ? over(fg, bg.rgb) : fg.slice(0,3);
-        const L1 = lum(f), L2 = lum(bg.rgb);
-        ratio = +(((Math.max(L1,L2)+0.05)/(Math.min(L1,L2)+0.05))).toFixed(2);
-      }
+      const kv = kontrastAvKontroll(c);
+      const värst = kv.värstaRun;
       return { role: c.getAttribute('data-a11y-role'), name: c.getAttribute('data-a11y-name') || null,
         state: c.getAttribute('data-a11y-state') || null,
         w: +cr.width.toFixed(2), h: +cr.height.toFixed(2),
-        fontSize: size, fontWeight: weight, large,
+        // Kontrollens egna typografiska värden är BESKRIVANDE. De säger vad
+        // behållaren ärver, inte vad texten målas med — se textRuns.
+        fontSize: parseFloat(cs.fontSize) || null,
+        fontWeight: parseInt(cs.fontWeight, 10) || (cs.fontWeight === 'bold' ? 700 : 400),
+        large: värst ? värst.large : null,
         opacity: parseFloat(cs.opacity),
-        disabled: (c.getAttribute('data-a11y-state') || '').includes('disabled'),
-        contrast: ratio, contrastStatus, contrastWhy: why };
+        disabled: kv.disabledVerifierad,
+        disabledBasis: kv.disabledBasis,
+        contrast: värst ? värst.ratio : null,
+        contrastThreshold: värst ? värst.threshold : null,
+        contrastApplicability: kv.applicability,
+        contrastStatus: kv.status,
+        contrastWhy: kv.why,
+        underThreshold: kv.underThreshold,
+        textRuns: kv.runs,
+        textRuns_st: kv.runs.length,
+        textRunsMatta_st: kv.mätta_st,
+        textRunsOkanda_st: kv.okända_st };
     });
 
     // R-03a scroll-overflow · R-03b utanför klippande förfader ·

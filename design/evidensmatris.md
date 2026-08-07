@@ -101,6 +101,42 @@ i scrollporten vid `scrollTop 0` — den ryms alltså precis — och det
 expanderade källblocket mäter `scrollH 226 = clientH 226` med `overflow-y:
 visible`, alltså ingen kvarvarande klippning.
 
+### Normativt beslut · R-01:s tillämplighetsmodell (2026-08-08)
+
+R-01 mäter **textkontrast**. Beslutet nedan säger vad som räknas som ett
+R-01-produktfel, inte hur mätningen går till.
+
+**Positivt verifierade inaktiva kontroller är undantagna från
+R-01-conformancebedömningen.** De ska ändå mätas när mätning är möjlig,
+redovisas med sin kvot, gå att filtrera och räknas separat som
+`exemptDisabled`. Undantaget är ingen ursäkt för att sluta mäta.
+
+Inaktivitet kräver **positiv semantisk evidens**: `disabled` som attribut eller
+egenskap, `aria-disabled="true"`, eller ett etablerat `data-a11y-state`. Färg
+och `opacity` är presentationsval och bevisar ingenting — en kontroll får aldrig
+bli undantagen för att den råkar se dämpad ut.
+
+| applicability | Betydelse | Räknas som produktfel |
+|---|---|---|
+| `applicable` | synlig text finns och kvoten kunde mätas | ja, om under tröskel |
+| `notApplicable:noVisibleText` | kontrollen målar ingen synlig text | nej |
+| `unknown` | synlig text finns men kvoten kan inte reduceras | nej — men inte heller godkänd |
+| `exempt:disabled` | positivt verifierat inaktiv | nej |
+
+`data-a11y-name` är ett **tillgängligt namn, inte synlig text**. En ikonkontroll
+med ett namn men utan målad text är `notApplicable:noVisibleText`.
+
+**Avgränsning som inte får läsas som ett godkännande:** en kontroll som är
+`notApplicable` för R-01 är inte därmed prövad. Ikonernas och de grafiska
+komponenternas egen kontrast mot sitt underlag — WCAG 1.4.11, icke-textuell
+kontrast — mäts inte av R-01 och är fortfarande **oprövad**. Reglaget
+`#socintegritet` är ett konkret exempel: det målar ingen egen text och faller
+därför utanför R-01, men frågan om reglagets synlighet är inte besvarad.
+
+Tröskeln följer WCAG: 4,5 för normal text, 3,0 för stor text, där stor text är
+minst 24 px eller minst 18,66 px vid vikt 700 eller mer. Tröskeln avgörs per
+text-run, av den typografi som faktiskt målar fragmentet.
+
 ### Grundningsregel
 
 **Produktlogik för en funktion som redan finns i koden skrivs inte — den läses.** En rad får statusen `implementerad` bara om de datamodeller och juridiska dokument den vilar på är lästa, och kolumnen `Skärmbevis` säger vilka. Etapp 1 bröt mot detta: fyra av fyra påståenden om befintliga modeller var fel, och ett rörde barns personuppgifter i en DPIA-granskad funktion (`produktregler.md` § 7.7).
