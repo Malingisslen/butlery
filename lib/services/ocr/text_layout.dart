@@ -68,14 +68,28 @@
 /// rule sat in this paragraph unimplemented from the model's first commit until
 /// step 6a, which is exactly what happens when a MUST points at nothing.
 ///
-/// The callers are still being built. As of 2026-08-07 the recognizer seam,
-/// `HeadingDetector` and `MultiRecipeSplitter` import this file, and the
-/// splitter DOES call both `HeadingDetector` and
-/// [DocumentLayout.matchesLineCountOf] — but only when handed a layout, and
-/// nothing hands it one yet: `import_manager.dart` still calls `split(input)`.
-/// So no layout reaches the parser from the `OCRResult` path, and the above is
-/// still a requirement on the steps to come rather than a description of what
-/// runs.
+/// **The chain is live as of 2026-08-07**, and this paragraph describes what
+/// runs rather than what is planned — it said the opposite that same morning,
+/// so check it against the code before trusting either version:
+///
+///     ML Kit adapter -> `OCRResult.layout` (typed field, cached with the
+///     text under one image-hash key) -> `_PhotoPage.layout` ->
+///     `DocumentLayout` built in `_recombineAndParse` ->
+///     `ImportManager.autoParseMulti(layout:)` ->
+///     `MultiRecipeSplitter.split(input, layout:)`
+///
+/// All of it behind `enable_layout_recipe_split`, default off. The LAST hop
+/// declines unless [DocumentLayout.matchesLineCountOf] accepts the string it
+/// is handed — the earlier ones decline for their own reasons (a null
+/// `PageLayout`, [DocumentLayout.isComplete], a page the detector cannot
+/// judge), so do not go looking for this check in `_recombineAndParse`.
+///
+/// Scoped to the ViewModel path. `PhotoImportStrategy` is the OTHER photo
+/// route (`importSinglePhoto`, the handwriting loops) and calls the text
+/// strategy directly without passing through `autoParseMulti`, so no geometry
+/// travels there and type-size splitting does not apply to it. A page from a paid tier, from the handwriting path or
+/// from a restored draft carries no geometry, which makes the whole document
+/// incomplete and sends the import back to the text rules.
 library;
 
 import 'package:butlery/services/ocr/glyph_metrics.dart';
@@ -471,8 +485,10 @@ class DocumentLayout {
   /// layout string usually HAVE equal row counts — they differ only in
   /// separators and a global trim. So a cached `OCRResult` holding one while
   /// the layout beside it was built from the other would pass here and still
-  /// be addressed by the wrong indices. Step 4 must cache text and layout as
-  /// ONE unit under one key; this method cannot cover that and must never be
+  /// be addressed by the wrong indices. That is closed elsewhere and NOT here:
+  /// `OCRResult` carries text and geometry as one object and the cache stores
+  /// that object whole under one image-hash key (2026-08-07), so the pair can
+  /// never be re-combined. This method still cannot cover it and must never be
   /// described as covering it.
   ///
   /// False whenever [text] is null — an incomplete document can never pass.

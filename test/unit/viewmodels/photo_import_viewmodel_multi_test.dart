@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 
@@ -260,6 +261,191 @@ Stek små plättar i plättlagg.''';
         await vm.reorderPage(1, 1);
 
         expect(vm.ocrText, 'A\n\nB');
+      });
+    });
+
+    group('the geometry reaches the splitter', () {
+      Uint8List bytes(int n) => Uint8List.fromList([n]);
+
+      /// One line the way a reader hands it over: a box per word, so
+      /// `OcrLine.typeHeight` is a real measurement rather than the line box.
+      OcrLine row(String text, double height) => OcrLine(
+        text: text,
+        box: LayoutBox(
+          left: 0,
+          top: 0,
+          width: text.length * 18,
+          height: height,
+        ),
+        words: [
+          for (final w in text.split(' '))
+            OcrWord(
+              text: w,
+              box: LayoutBox(left: 0, top: 0, width: 40, height: height),
+            ),
+        ],
+      );
+
+      /// Prose with no ingredient list and no quantities anywhere — the shape
+      /// the whole layout path exists for. Long enough to clear the splitter's
+      /// 200-char block minimum and carrying a cooking verb, which a
+      /// layout-derived block must have.
+      List<OcrLine> body(String dish) => [
+        row('Lagg kokta skalade agg i en ratatouille och servera', 70),
+        row('med brod till eller med raris och en fransk gronsaksrora', 70),
+        row('Vispa ihop smeten och grada den i ugnen tills $dish ar klar', 70),
+        row('Koka upp och lat sjuda under lock i ungefar tjugo minuter', 70),
+      ];
+
+      /// Both titles at ONE height on purpose: a real spread sets its dish
+      /// names in one type, and `OcrWord.typeHeight` divides out the glyphs, so
+      /// the height argument is the only thing that varies.
+      PageLayout spread() => PageLayout(
+        lines: [
+          row('Italiensk frittata', 167),
+          ...body('ratten'),
+          row('Fransk omelett', 167),
+          ...body('omeletten'),
+        ],
+      );
+
+      test('a photographed prose spread becomes TWO recipes', () async {
+        // The viewmodel half of the chain, with the pages INJECTED:
+        // _PhotoPage -> DocumentLayout -> autoParseMulti -> split, all real.
+        //
+        // The recogniser and the OCR service are NOT in this test.
+        // `addPageForTesting` hands the layout straight to `_PhotoPage`, so the
+        // two hops before that — including the line that reads the geometry off
+        // `OCRResult` — are absent, not exercised. `photo_import_layout_thread_
+        // test` owns that half and is the only suite that can see it.
+        final page = spread();
+
+        // The control first, and it is the point: the SAME text with no
+        // geometry stays one blob.
+        //
+        // Two separate facts make that meaningful, and both were measured
+        // (2026-08-07) rather than reasoned. What DECLINES on the control arm
+        // is the text path's ingredient-cluster gate — this page carries no
+        // quantity anywhere, and adding two quantity rows under each title
+        // splits the identical string with no layout at all. What SPLITS on
+        // the layout arm is the type size — flattening both titles from 167 to
+        // the body's 70 makes the detector find no headings and this arm return
+        // 1 as well. The control alone would also hold on a page that had no
+        // headings to find, which is why the second half is worth stating.
+        await vm.addPageForTesting(bytes(1), page.text);
+        expect(
+          vm.parsedRecipes.length,
+          1,
+          reason: 'control — without geometry the text rules merge this page',
+        );
+
+        vm.clearPhoto();
+        await vm.addPageForTesting(bytes(1), page.text, layout: page);
+
+        expect(vm.parsedRecipes.length, 2);
+      });
+
+      test(
+        'ONE page without geometry drops the whole import to text',
+        () async {
+          // Fail-closed across pages, and it has to be the whole DOCUMENT: a
+          // photo import re-parses on every added page, so a second photo that
+          // happened to reach a paid tier would otherwise collapse the picker
+          // from two recipes to one mid-flow. Mixed provenance also means mixed
+          // engines, whose type sizes are not comparable at all.
+          //
+          // Scope, measured 2026-08-07 — this is a SCENARIO record, not a
+          // discriminating test, and the next reader should not spend it as
+          // coverage. Every plausible mutant of the viewmodel's document build
+          // survives it, but NOT all for the same reason, and the difference is
+          // the part worth carrying (re-measured 2026-08-07 against these exact
+          // fixtures). Dropping the null pages, and keeping only the first, are
+          // both refused one layer down by `matchesLineCountOf`, on row count.
+          // Substituting an EMPTY page for a missing one PASSES that gate — and
+          // only by accident of this fixture, because the page that lost its
+          // geometry holds exactly ONE row, which contributes no newline of its
+          // own; give it two rows and the row count separates them again. What
+          // actually refuses it is `HeadingDetector.headingLinesForDocument`
+          // returning null: a page with no lines has no measurable baseline, so
+          // the detector declines to judge the whole document. Nothing in this
+          // file would catch that mutant if the detector ever learned to judge a
+          // line-less page.
+          //
+          // The rule the test NAMES is pinned in `text_layout_test`'s
+          // 'DocumentLayout.isComplete fails closed' — that is where weakening
+          // the getter reddens directly. It reddens here too, but NOT in the
+          // sibling test above this one, whose pages are all measured. The order
+          // test below is the one that catches a document built wrongly from
+          // these same pages.
+          final measured = spread();
+          final unmeasured = PageLayout(lines: [row('Efterratt', 167)]);
+
+          await vm.addPageForTesting(bytes(1), measured.text, layout: measured);
+          expect(
+            vm.parsedRecipes.length,
+            2,
+            reason: 'premise: page one alone does split',
+          );
+
+          // Page two carries text but NO layout — a paid tier, the handwriting
+          // path, or a restored draft.
+          await vm.addPageForTesting(bytes(2), unmeasured.text);
+
+          expect(vm.parsedRecipes.length, 1);
+        },
+      );
+
+      test('the geometry follows its page when the pages are reordered', () async {
+        // The one failure the fail-closed rules CANNOT catch: a document whose
+        // pages are in a different order from the text they describe. The
+        // pages are the same pages, so the row count matches and
+        // `matchesLineCountOf` says yes; every heading index then converts
+        // confidently to the wrong text row and the split lands mid-prose.
+        //
+        // It needs pages of DIFFERENT lengths to be visible at all. With two
+        // equally long pages a reversed document maps every heading to exactly
+        // the same row, so the whole hazard is invisible — which is why the
+        // single-page fixtures above cannot see it. Measured 2026-08-07 with
+        // this test in place: reversing the viewmodel's page list leaves the
+        // OTHER 34 tests across this suite, the layout-thread suite and
+        // `multi_recipe_splitter_layout_test` green and reddens only this one,
+        // while turning the second block's first line into body prose. (An
+        // earlier version of this sentence said all 34 stayed green — true of
+        // the measurement taken BEFORE this test existed, and it read as
+        // saying the mutant survives here too, which is the one thing the test
+        // is for.)
+        //
+        // Titles, not a count: a wrongly ordered document still yields two
+        // blocks. Only WHERE they start moves.
+        final pA = PageLayout(
+          lines: [row('Italiensk frittata', 167), ...body('ratten')],
+        );
+        final pB = PageLayout(
+          lines: [
+            row('Fransk omelett', 167),
+            ...body('omeletten'),
+            row('Servera genast med en skiva nybakat brod bredvid', 70),
+            row('Stro over hackad persilja och mal svartpeppar over', 70),
+          ],
+        );
+
+        await vm.addPageForTesting(bytes(1), pA.text, layout: pA);
+        await vm.addPageForTesting(bytes(2), pB.text, layout: pB);
+
+        expect(
+          vm.parsedRecipes.map((r) => r.title),
+          orderedEquals(['Italiensk frittata', 'Fransk omelett']),
+        );
+
+        // Reordering is a real user action (drag the page strip), and it moves
+        // the text — so the geometry has to move with it or the two disagree
+        // from the next parse on.
+        await vm.reorderPage(1, 0);
+
+        expect(
+          vm.parsedRecipes.map((r) => r.title),
+          orderedEquals(['Fransk omelett', 'Italiensk frittata']),
+        );
       });
     });
   });

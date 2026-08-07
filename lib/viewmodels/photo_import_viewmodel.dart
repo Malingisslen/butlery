@@ -11,6 +11,7 @@ import 'package:butlery/viewmodels/photo_import/photo_import_draft.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_draft_mixin.dart';
 import 'package:butlery/viewmodels/photo_import/ocr_error_message_builder.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
+import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -189,10 +190,19 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// exercise multi-page ordering, removal, reordering, and the cap without a
   /// platform image picker. Mirrors what [_ocrAndAppendPage] does after a
   /// successful OCR.
+  ///
+  /// [layout] is what the free on-device tier measured for this page, when the
+  /// geometry flag is on. Omitting it models every other provenance — a paid
+  /// tier, the handwriting path, a restored draft — and one such page makes the
+  /// whole document decline, which is the behaviour worth testing.
   @visibleForTesting
-  Future<void> addPageForTesting(Uint8List bytes, String text) async {
+  Future<void> addPageForTesting(
+    Uint8List bytes,
+    String text, {
+    PageLayout? layout,
+  }) async {
     if (!canAddPage) return;
-    _pages.add(_PhotoPage(bytes: bytes, text: text));
+    _pages.add(_PhotoPage(bytes: bytes, text: text, layout: layout));
     await _recombineAndParse();
   }
 
@@ -692,7 +702,13 @@ class PhotoImportViewModel extends ImportBaseViewModel
       return false;
     }
 
-    _pages.add(_PhotoPage(bytes: imageBytes, text: ocrResult.text));
+    _pages.add(
+      _PhotoPage(
+        bytes: imageBytes,
+        text: ocrResult.text,
+        layout: ocrResult.layout,
+      ),
+    );
     _lastConfidence = ocrResult.confidence;
     return true;
   }
@@ -707,6 +723,18 @@ class PhotoImportViewModel extends ImportBaseViewModel
     // Blank-line separator so the parser/splitter treats page boundaries the
     // same as the blank lines that already delimit sections within a page.
     _ocrText = _pages.map((p) => p.text).join('\n\n');
+
+    // Built from the SAME list, in the same order, with the same separator the
+    // join above uses — `DocumentLayout` joins its pages with '\n\n' too, so
+    // the two strings agree row for row and the splitter's precondition can
+    // confirm it rather than assume it.
+    //
+    // Any page without geometry makes this incomplete, and the splitter then
+    // falls back to the text rules for the whole import. That is deliberate
+    // and it is checked there, not here: this method's job is to build the
+    // pair, never to decide whether it is trustworthy.
+    final layout = DocumentLayout([for (final p in _pages) p.layout]);
+
     notifyListeners();
 
     // BUT-910: OCR is the expensive step — persist as soon as combined text
@@ -716,14 +744,20 @@ class PhotoImportViewModel extends ImportBaseViewModel
       persistPhotoDraft(imageBytes: _imageBytes!, ocrText: _ocrText),
     );
 
-    await _autoParseOcrText(_ocrText);
+    await _autoParseOcrText(_ocrText, layout: layout);
   }
 
   /// Parse-only auto-parse: recipes exist in memory until the user explicitly
   /// saves (no silent persistence). Failures degrade to the manual-parse path.
-  Future<void> _autoParseOcrText(String text) async {
+  ///
+  /// [layout] is omitted by every caller that has no geometry to offer. In
+  /// production that is [restoreDraft] — the draft schema stages text and one
+  /// image, never per-line boxes — and the handwriting path's
+  /// needs-assistance branch, which never went near an OCR tier. Omitting it
+  /// is not a degraded path; it is the path that ships today.
+  Future<void> _autoParseOcrText(String text, {DocumentLayout? layout}) async {
     try {
-      final result = await importManager.autoParseMulti(text);
+      final result = await importManager.autoParseMulti(text, layout: layout);
       final recipes = result.successfulRecipes;
       _parsedRecipes
         ..clear()
@@ -823,5 +857,16 @@ class _PhotoPage {
   final Uint8List bytes;
   final String text;
 
-  const _PhotoPage({required this.bytes, required this.text});
+  /// Where the words sat on this page, when the reader measured them.
+  ///
+  /// Null unless the free on-device tier read it AND
+  /// `enable_layout_recipe_split` is on. A page from a paid tier, from the
+  /// handwriting path, or restored from a draft has none — and one such page
+  /// makes the whole document decline, by design: `DocumentLayout.isComplete`
+  /// is false, its text is null, and the splitter's row-count precondition
+  /// refuses it. Mixed provenance means mixed engines, whose type sizes are
+  /// not comparable in the first place.
+  final PageLayout? layout;
+
+  const _PhotoPage({required this.bytes, required this.text, this.layout});
 }

@@ -27,6 +27,7 @@ import 'package:butlery/services/ocr/device_text_recognizer_stub.dart'
 import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
 import 'package:butlery/services/parsing/recipe_text_heuristic.dart';
 import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
+import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/security/pinned_http_client_factory.dart';
 
 /// OCR processing result with comprehensive metadata and quality metrics
@@ -39,6 +40,25 @@ class OCRResult {
   final bool isSuccessful;
   final String? errorMessage;
 
+  /// Where the words sat on the page, when the reader measured them.
+  ///
+  /// Null for every paid tier and for the on-device tier with
+  /// `enable_layout_recipe_split` off — those readers return characters only,
+  /// and a consumer must fall back to the text rules rather than guess.
+  ///
+  /// A TYPED field, deliberately not a key in [metadata]: that map is dumped
+  /// wholesale into debugging output, and per-line geometry would blow up every
+  /// such dump. It also has to live on this object rather than beside it,
+  /// because the cache stores an `OCRResult` whole under one image-hash key —
+  /// which is exactly what `DocumentLayout.matchesLineCountOf` says must be
+  /// true before a line index can be trusted. Split them and a cached entry
+  /// from before a flag flip would hand back one provider's text with the
+  /// other's geometry, and the row-count check cannot see that.
+  ///
+  /// One [OCRResult] is one page. The caller wraps N of them in a
+  /// `DocumentLayout`, in capture order.
+  final PageLayout? layout;
+
   const OCRResult({
     required this.text,
     required this.confidence,
@@ -47,6 +67,7 @@ class OCRResult {
     required this.timestamp,
     this.isSuccessful = true,
     this.errorMessage,
+    this.layout,
   });
 
   factory OCRResult.failure({
@@ -310,6 +331,19 @@ class OCRExtractionService extends BaseService {
   /// returns the exact bytes that shipped before, while the free tier keeps
   /// running; gated only on the SPLIT (as first planned) the rollback would
   /// have meant disabling on-device OCR entirely and paying per image again.
+  ///
+  /// **The rollback does not reach an image already in this session's cache.**
+  /// This getter is read per call, but a cache hit returns the pair that was
+  /// stored — so a photo read while the flag was on keeps its layout string
+  /// and its geometry, and keeps splitting by type size, until the process
+  /// restarts or the 24 h TTL expires. In-memory only, so a restart clears it.
+  ///
+  /// Stripping the geometry on the way out would be WORSE, not a fix: the
+  /// stored text is already the layout-derived string, so the result would be
+  /// text from one assembly with no geometry beside it — the mismatched pair
+  /// [OCRResult.layout] exists to make impossible. Pinned in
+  /// `ocr_extraction_service_test`, which flips the flag between two reads of
+  /// one image rather than asserting this in prose.
   bool get _layoutEnabled {
     if (_testLayoutEnabled != null) return _testLayoutEnabled();
     final flags = ServiceLocator.tryGet<FeatureFlagService>();
@@ -518,6 +552,23 @@ class OCRExtractionService extends BaseService {
             processingMethod: 'on_device',
             metadata: const {'provider': 'mlkit', 'cost_usd': 0},
             timestamp: _now,
+            // Gated on the flag, because with it off `text` is the
+            // provider's assembly, and geometry measured against a DIFFERENT
+            // string is the one thing worse than no geometry —
+            // `matchesLineCountOf` would often let it through, since the two
+            // strings usually share a row count.
+            //
+            // The flag arm alone does not make the pair safe; the invariant
+            // does. `RecognitionResult.layoutText` IS `layout?.text`, so the
+            // `??` fallback above fires exactly when there is no geometry to
+            // store. There is no state where this ships the provider's string
+            // beside a real layout. Keep them one getter apart, or that
+            // guarantee turns back into a coincidence.
+            //
+            // This travels with `text` into the cache as one object, which is
+            // what makes a flag flip safe: the pair is always consistent, even
+            // for an entry written before the flip.
+            layout: useLayout ? raw?.layout : null,
           );
           _cacheResult(imageHash, result, rawHash: rawHash);
           return result;

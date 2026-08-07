@@ -3754,14 +3754,14 @@
         {
           "from": "svc-ocr-extraction",
           "to": "vm-photo-import",
-          "payload": "OCR-text + konfidens per sida. Texten saneras h\u00e4r (HtmlSanitizer) p\u00e5 SAMTLIGA niv\u00e5er \u2014 detta \u00e4r enda saneringsgr\u00e4nsen p\u00e5 v\u00e4gen, och konsumenterna sparar texten vidare till utkastet utan att sanera om.",
+          "payload": "OCR-text + konfidens per sida, och sedan 2026-08-07 \u00e4ven sidans GEOMETRI (OCRResult.layout) n\u00e4r den fria p\u00e5-enheten-niv\u00e5n l\u00e4ste sidan och enable_layout_recipe_split \u00e4r p\u00e5. Geometrin \u00e4r ett TYPAT f\u00e4lt p\u00e5 samma objekt som texten, aldrig en nyckel i metadata: cachen lagrar hela OCRResult under en bildhash, s\u00e5 texten och geometrin kan inte glida is\u00e4r vid en flaggv\u00e4ndning. Texten saneras h\u00e4r (HtmlSanitizer) p\u00e5 SAMTLIGA niv\u00e5er \u2014 detta \u00e4r enda saneringsgr\u00e4nsen p\u00e5 v\u00e4gen, och konsumenterna sparar texten vidare till utkastet utan att sanera om.",
           "transport": "method-call",
           "verified": true
         },
         {
           "from": "vm-photo-import",
           "to": "svc-import-manager",
-          "payload": "Kombinerad OCR-text (alla sidor, autoParseMulti)",
+          "payload": "Kombinerad OCR-text (alla sidor, autoParseMulti), och sedan 2026-08-07 ett DocumentLayout byggt av samma sidor, i samma ordning och med samma separator som str\u00e4ngen. Uppdelaren anv\u00e4nder det bara om radantalen st\u00e4mmer, och saknar N\u00c5GON sida geometri (betald niv\u00e5, handskrift, \u00e5terst\u00e4llt utkast) avb\u00f6jer hela dokumentet s\u00e5 textreglerna g\u00e4ller som f\u00f6rr",
           "transport": "method-call",
           "verified": true
         },

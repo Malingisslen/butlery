@@ -9,6 +9,7 @@ import 'package:butlery/services/unified/operations/personal_recipe_operations.d
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
+import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/photo_import_strategy.dart';
@@ -605,8 +606,12 @@ class ImportManager {
     String input, {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
+    DocumentLayout? layout,
   }) async {
-    final blocks = MultiRecipeSplitter().split(input);
+    // [layout] is where the words sat on the page, when a reader measured
+    // them. Only the photo path can supply it; the paste path never can, so it
+    // stays optional and null reproduces today's behaviour exactly.
+    final blocks = MultiRecipeSplitter().split(input, layout: layout);
 
     final results = <ImportManagerResult>[];
     final recipes = <Recipe>[];

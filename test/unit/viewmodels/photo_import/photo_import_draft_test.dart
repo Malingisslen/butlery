@@ -166,7 +166,35 @@ Vispa ihop smeten och stek i smör.''';
         expect(File(staged!).existsSync(), isTrue);
 
         vm.clearPhoto();
-        await pumpEventQueue();
+
+        // `clearPhoto` fires the discard unawaited, and that discard awaits
+        // three I/O steps in sequence: load prefs, delete the staged file,
+        // clear prefs. A bare `pumpEventQueue()` is 20 microtask pumps, which
+        // does not bound real file I/O — under a multi-directory batch's disk
+        // contention it loses the race, and this test went red once in three
+        // such runs on 2026-08-07 while passing alone every time.
+        //
+        // Polled rather than pumped, with a ceiling. This still reddens if the
+        // discard never runs (the failure the test exists for); it only stops
+        // reddening when the discard is merely SLOW. The wait cannot move into
+        // production: `clearPhoto` is called from a UI handler and the draft
+        // mixin's own doc keeps the discard fire-and-forget on purpose.
+        //
+        // `Stopwatch`, deliberately: `scripts/check_test_real_time.sh` forbids
+        // wall-clock reads in new unit tests, and neither `flutter analyze` nor
+        // a green run reports one — it fails at the commit hook and in CI.
+        // The guard matches the forbidden call TEXTUALLY, so it fires on a
+        // comment that merely names it; that is why this sentence does not.
+        //
+        // Polled on the LAST step of the discard, not the file. The discard is
+        // load prefs -> delete the image -> clear prefs, so waiting for the
+        // file to vanish leaves the prefs half unbounded and just moves the
+        // same flake one step later.
+        final sw = Stopwatch()..start();
+        while ((await vm.loadPersistedDraft()) != null &&
+            sw.elapsed < const Duration(seconds: 5)) {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        }
 
         expect(await vm.loadPersistedDraft(), isNull);
         expect(File(staged).existsSync(), isFalse);

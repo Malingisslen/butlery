@@ -2735,6 +2735,95 @@ Line 5''';
       verifyNever(() => mockClient.send(any()));
     });
 
+    test('the geometry travels WITH the text, or not at all', () async {
+      // Step 4 of the layout plan, and the reason it is a typed field on
+      // `OCRResult` rather than a second thing stored beside it.
+      //
+      // `DocumentLayout.matchesLineCountOf` compares ROW COUNTS, and its own
+      // doc says passing is necessary and not sufficient: the provider's string
+      // and the layout's usually HAVE the same row count, differing only in a
+      // separator and a global trim. So a result holding one string with the
+      // other's geometry sails through that check and is then addressed by
+      // indices that point at the wrong rows. The only structural defence is
+      // that the two can never be separated — which is what this pins.
+      const page = 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.';
+
+      final onRecognizer = _FakeDeviceRecognizer(text: page);
+      final onService = buildService(
+        recognizer: onRecognizer,
+        enabled: true,
+        layout: true,
+      );
+      addTearDown(onService.dispose);
+      final on = await onService.extractText(OCRTestImages.mediumQuality);
+
+      final offRecognizer = _FakeDeviceRecognizer(text: page);
+      final offService = buildService(
+        recognizer: offRecognizer,
+        enabled: true,
+      );
+      addTearDown(offService.dispose);
+      final off = await offService.extractText(OCRTestImages.mediumQuality);
+
+      // ON: the geometry is carried, and it is the geometry the stored text was
+      // derived from — asserted against the recognizer's own object, never a
+      // restated literal.
+      expect(on.layout, isNotNull);
+      expect(on.layout, same(onRecognizer.lastLayout));
+      expect(on.text, equals(on.layout!.text));
+
+      // OFF: the recognizer measured the page all the same, and the result must
+      // NOT carry it. Shipping the provider's string with the layout's geometry
+      // is the pairing this whole field exists to make impossible.
+      expect(offRecognizer.lastLayout, isNotNull);
+      expect(off.layout, isNull);
+    });
+
+    test('a cached page hands back the SAME pair, not a rebuilt one', () async {
+      // The flag is read per call, but the cache is keyed on the image hash
+      // alone — so a second read of the same photo returns whatever was stored
+      // the first time. That is safe ONLY because text and geometry are one
+      // object: the pair a cached entry hands back is always the pair that was
+      // measured together, whatever the flag says now.
+      //
+      // The flag therefore has to FLIP between the two reads, or the sentence
+      // above is asserted by nothing and this is just two identical calls.
+      // Staged after a 2026-08-07 measurement: without the flip this test
+      // reddened under no mutant that the sibling `travels WITH the text` test
+      // did not already redden under, and it stayed green under the one this
+      // group cares most about (the flag gate deleted).
+      //
+      // What it also records: the kill switch does NOT reach an image already
+      // in this session's cache. That is in-memory only (a restart clears it),
+      // and stripping the geometry on the way out would be worse — it would
+      // hand back the layout-derived text with no geometry, which is the
+      // mismatched pair the field exists to make impossible.
+      const page = 'Ingredienser\n2 dl mjöl\nVispa smeten och grädda i ugn.';
+      final recognizer = _FakeDeviceRecognizer(text: page);
+      var layoutFlag = true;
+      final service = OCRExtractionService.createForTesting(
+        testHttpClient: mockClient,
+        testOcrApiKey: 'test-ocr-key',
+        testDeviceRecognizer: recognizer,
+        testOnDeviceEnabled: () => true,
+        testLayoutEnabled: () => layoutFlag,
+      );
+      addTearDown(service.dispose);
+
+      final first = await service.extractText(OCRTestImages.mediumQuality);
+      // A Remote Config push mid-session — the rollback the flag exists for.
+      layoutFlag = false;
+      final second = await service.extractText(OCRTestImages.mediumQuality);
+
+      expect(
+        recognizer.calls,
+        equals(1),
+        reason: 'premise: the second read must come from the cache',
+      );
+      expect(second.layout, same(first.layout));
+      expect(second.text, equals(second.layout!.text));
+    });
+
     test(
       'on-device-only setup is not reported as "no provider configured"',
       () async {

@@ -61,15 +61,34 @@ void main() {
         expect(viewModel.error, AppLocale.current.importOfflineMessage);
         expect(viewModel.hasOcrResult, isFalse);
         // No parse is attempted — the guard returns before OCR even runs.
-        verifyNever(() => mockImportManager.autoParseMulti(any()));
+        verifyNever(
+          () => mockImportManager.autoParseMulti(
+            any(),
+            layout: any(named: 'layout'),
+          ),
+        );
       },
     );
 
+    // NOTE (2026-08-07): every `verifyNever` below names `layout:`
+    // explicitly. mocktail matches on the named-argument KEY SET, so a
+    // bare `autoParseMulti(any())` stops matching the production call the
+    // moment that call gains a named argument — and `verifyNever` passes
+    // when nothing matches, so the suite stays green while the assertion
+    // means nothing. That is what happened when the geometry parameter
+    // landed. The `error` assertions beside these are what actually
+    // guard the offline behaviour; these are belt and braces, and they
+    // have to keep matching to be worth their line.
     test('gallery capture sets the offline message before OCR/parse', () async {
       await viewModel.pickImageFromGallery();
 
       expect(viewModel.error, AppLocale.current.importOfflineMessage);
-      verifyNever(() => mockImportManager.autoParseMulti(any()));
+      verifyNever(
+        () => mockImportManager.autoParseMulti(
+          any(),
+          layout: any(named: 'layout'),
+        ),
+      );
     });
 
     test(
@@ -82,7 +101,12 @@ void main() {
         await viewModel.retryOcr();
 
         expect(viewModel.error, AppLocale.current.importOfflineMessage);
-        verifyNever(() => mockImportManager.autoParseMulti(any()));
+        verifyNever(
+          () => mockImportManager.autoParseMulti(
+            any(),
+            layout: any(named: 'layout'),
+          ),
+        );
       },
     );
   });

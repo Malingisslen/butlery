@@ -44,8 +44,12 @@ particular) live here, and here only.
       ML Kit lamnar ingen bildstorlek - sa de ar 0. Forsta konsumenten som
       normaliserar en x-koordinat mot sidbredden far `Infinity`, inte ett
       undantag. Fyll dem, eller dividera aldrig med dem.
-- [ ] Steg 4: carry it on `OCRResult`, cached. **Text och layout maste cachas
-      som EN enhet under EN nyckel** - se cache-luckan under steg 6a.
+- [x] Steg 4: carry it on `OCRResult`, cached. KLART 2026-08-07, ihop med steg
+      7 - hela beskrivningen star dar nere, inte har, sa den inte hinner saga
+      tva saker. Kravet "text och layout maste cachas som EN enhet under EN
+      nyckel" ar uppfyllt av formen: cachen lagrade redan hela `OCRResult` under
+      en bildhash, sa ett typat falt pa objektet ar automatiskt en enhet med
+      texten. Verifierat i koden, inte antaget.
 - [x] Steg 5: heading detector.
       KLART, d8d565981 pa main. Tre granskningsrundor, sex fynd, varav fyra
       falska pastaenden fran mig om korpusen.
@@ -173,8 +177,54 @@ particular) live here, and here only.
       `HeadingDetector.headingLines` vagrar rader utan ordrutor, samma regel som
       "en omatt rad ar en franvaro, inte en nolla" redan sager en niva upp.
 
-- [ ] Steg 7: thread it through `photo_import_viewmodel`.
+- [~] Steg 4 + 7: bar layouten fran OCR-sommen hela vagen till uppdelaren.
+      Kartlagt 2026-08-07 innan en rad skrevs. Vagen ar sex hopp:
+
+      1. `OCRResult` far ett TYPAT falt `PageLayout? layout` (aldrig i
+         `metadata` - den rinner ut i felsokningsdumpar och en per-rad-geometri
+         dar skulle blasa upp varje sadan dump). 5 konstruktoranrop i `lib/`,
+         3 i `test/`; faltet ar valfritt sa inget annat behover roras.
+      2. **Cachen ar redan EN enhet.** `_cache[imageHash] = result` lagrar hela
+         `OCRResult`-objektet under en nyckel (24 h TTL, 100 poster). Sa fort
+         faltet finns pa objektet cachas text och layout ihop - den lucka
+         `matchesLineCountOf` uttryckligen sager att steg 4 maste stanga ar
+         alltsa stangd av formen, inte av ny kod. Verifierat, inte antaget.
+      3. Nivan-0-blocket slutar slanga `raw.layout`. Bara nar flaggan ar pa -
+         med flaggan av ar faltet null och allt beter sig som idag.
+      4. `_PhotoPage` far `layout`; `_ocrAppendOne` skickar med den.
+      5. `_recombineAndParse` bygger `DocumentLayout` av sidorna i SAMMA ordning
+         och med samma separator (`'\n\n'`) som strangen.
+      6. `_autoParseOcrText` och `ImportManager.autoParseMulti` far en valfri
+         `DocumentLayout?` som nar `split` pa import_manager.dart:609.
+
+      **Radantalet stammer, och det ar hela poangen.** Med flaggan pa ar
+      `OCRResult.text` redan layoutens egen strang (`raw.layoutText`), och det
+      enda som hander med den efterat ar sanering, som bevarar radbrytningar.
+      Sa sidans text och sidans layout har samma radantal, och darmed hela
+      dokumentet - `matchesLineCountOf` slapper igenom.
+
+      **Fail-closed pa blandade nivaer kraver ingen ny kod:** en sida som gick
+      till en betald niva har `layout: null`, `DocumentLayout.isComplete` blir
+      falskt, `text` blir null och forvillkoret avbojer. Utkastaterstallning och
+      handskriftsvagen bygger ocksa sidor utan layout och faller darfor till
+      textreglerna - inskrivet i koden, inte upptackt senare.
+
+
 - [ ] Steg 8: column ordering — separate commit, may prove unnecessary.
+
+      Noterat av granskningen av steg 7 och medvetet INTE atgardat dar: de tva
+      viewmodel-sviterna har byte-identiska fixturbyggare (`row`/`body`/
+      `spread`) som kodar detektorns levande troskelvarden. Flyttas
+      `titleSizeSpread` eller `_minLayoutBlockChars` uppdateras sannolikt bara
+      den ena och den andra blir tyst tandlos. En delad fixtur har sin egen
+      kopplingskostnad; valet ar att lamna dem och skriva ner risken har.
+
+      Ocksa noterat och medvetet uppskjutet: ett aterstallt utkast tappar
+      delningen (sidan far ingen geometri). Att kora om `extractText` vid
+      restore racker INTE - utkastschemat lagrar en enda bild, sa sidorna 2..N
+      kan aldrig fa tillbaka sin geometri och dokumentet avbojer anda. Riktig
+      fix ar en schemaandring, och just nar ett utkast behovs (processen dog)
+      ar OCR-cachen tom, sa omkorningen kan bli ett BETALT anrop. Eget arende.
 
 ---
 

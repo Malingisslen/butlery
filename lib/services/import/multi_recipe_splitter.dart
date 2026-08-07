@@ -76,10 +76,11 @@ class MultiRecipeSplitter {
   ///   accepts [input]. That compares ROW COUNTS, and passing it is NECESSARY,
   ///   NOT SUFFICIENT: two different strings of equal row count are
   ///   indistinguishable to it, and the provider's string and the layout's
-  ///   usually HAVE equal row counts. Pairing text and layout as one cached
-  ///   unit is what actually closes that, and it is still owed — see the
-  ///   contract at [DocumentLayout.matchesLineCountOf], which forbids
-  ///   describing this gate as covering it;
+  ///   usually HAVE equal row counts. What actually closes that is `OCRResult`
+  ///   holding text and geometry as ONE object, cached whole under one
+  ///   image-hash key (2026-08-07) — see the contract at
+  ///   [DocumentLayout.matchesLineCountOf], which forbids describing this gate
+  ///   as covering it;
   /// - the layout path must produce at least two blocks and at most
   ///   [_maxLayoutBlocksPerPage] per page, each clearing
   ///   [_minLayoutBlockChars] and carrying an instruction signal;
@@ -172,7 +173,8 @@ class MultiRecipeSplitter {
     // The precondition, and only half of one: it catches a ROW-COUNT mismatch.
     // A different string with the same row count still passes, still yields
     // confident line numbers, and still addresses the wrong rows. The other
-    // half is caching text and layout as one unit, which step 4 owes.
+    // half is that text and geometry are one object on `OCRResult`, cached
+    // whole under one image-hash key — landed 2026-08-07, not owed.
     if (!layout.matchesLineCountOf(input)) return null;
 
     final flat = HeadingDetector.headingLinesForDocument(layout);
