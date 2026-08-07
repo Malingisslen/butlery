@@ -193,6 +193,19 @@ export const MEASURE = `(() => {
           ? förälder.tagName.toLowerCase() + (clsOf(förälder) ? '.' + clsOf(förälder).trim().split(/\s+/)[0] : '')
           : 'rot') + ' > ' + taggen + (clsOf(el) ? '.' + clsOf(el).trim().split(/\s+/)[0] : '') +
           ' [' + (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 24) + ']',
+        // Diagnostik för identitetslagret: var noden ligger och vilken närmaste
+        // förfader som bär en stabil identitet. Rent beskrivande — ingår aldrig
+        // i findingId, och sökvägen är diagnostik, aldrig kanonisk identitet.
+        rect: [+er.left.toFixed(1), +er.top.toFixed(1), +er.width.toFixed(1), +er.height.toFixed(1)],
+        stabilForfader: (() => {
+          let n = el.parentElement;
+          while (n && n !== it) {
+            const v = n.getAttribute('data-element-id') || n.getAttribute('data-control-id') || n.id;
+            if (v) return n.tagName.toLowerCase() + '#' + v;
+            n = n.parentElement;
+          }
+          return it.id ? 'artefaktroten #' + it.id : null;
+        })(),
         intent: el.getAttribute('data-clip-intent') || null };
 
       // R-03a · Överskjutande innehåll är INTE automatiskt ett fel. En behållare

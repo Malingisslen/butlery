@@ -10,7 +10,7 @@
    "id": "ID-B",
    "vad": "samma DOM-nod sedd av flera metoder är ingen identitetskollision",
    "ok": true,
-   "diag": "kollisioner i B: 0 · registrerade flera-metoder-fall totalt: 16"
+   "diag": "kollisioner i B: 0 · registrerade flera-metoder-fall totalt: 26"
   },
   {
    "id": "ID-C",
@@ -35,8 +35,50 @@
    "vad": "ett inskjutet syskon flyttar DOM-sökvägen men inte den igenkännbara identiteten",
    "ok": true,
    "diag": "samma nyckel: true · samma beskrivning: true · sökväg flyttad: true · E-paths [\"0/0\",\"1/0\"] F-paths [\"1/0\",\"2/0\"]"
+  },
+  {
+   "id": "ID-G",
+   "vad": "två noder med SAMMA data-icon förblir tvetydiga",
+   "ok": true,
+   "diag": "noder: 2 · status: ambiguous,ambiguous · nycklar: [null,null]"
+  },
+  {
+   "id": "ID-H",
+   "vad": "två noder med olika unika data-icon blir stable",
+   "ok": true,
+   "diag": "status: stable/data-icon, stable/data-icon · distinkta nycklar: 2"
+  },
+  {
+   "id": "ID-I",
+   "vad": "ändrad text skapar inte automatiskt en ny kanonisk identitet",
+   "ok": true,
+   "diag": "grund: explicit-element-id, explicit-element-id · texten ingår i nyckeln: false"
+  },
+  {
+   "id": "ID-J",
+   "vad": "tvetydiga observationer redovisas per nod, utan falsk deduplicering",
+   "ok": true,
+   "diag": "tvetydiga observationsnoder: 2 · distinkta sökvägar: 2 · alla utan identityKey: true"
+  },
+  {
+   "id": "ID-K",
+   "vad": "verifierat fynd i tvetydig grupp ger blocked och fäller fasgrinden",
+   "ok": true,
+   "diag": "verifierat tvetydiga: 2 · failClosed: blocked · fasgrind: faller"
+  },
+  {
+   "id": "ID-L",
+   "vad": "inskjutet syskon flyttar runtime-sökvägen men inte identityKey",
+   "ok": true,
+   "diag": "sökväg: 0 → 1 · nyckeldel lika: true"
+  },
+  {
+   "id": "ID-M",
+   "vad": "identityKey null läcker aldrig in i findingId",
+   "ok": true,
+   "diag": "noder utan nyckel: 32 · findingId med null-segment: 0 · osäkra identityKey: 0"
   }
  ],
- "gröna": 6,
- "av": 6
+ "gröna": 13,
+ "av": 13
 }

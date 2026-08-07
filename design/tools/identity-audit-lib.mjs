@@ -3,6 +3,8 @@
 // identity-audit.mjs och identity-fixtures.mjs ANVÄNDER den. Ett prov mot en
 // kopia av logiken bevisar ingenting om den logik som faktiskt kör.
 
+import { bedomGrupp, identityContext, felClosedUtfall, identityKeyÄrSäker } from './identity-v2.mjs';
+
 const METODER = ['r03a', 'r03b', 'r03c', 'r03d'];
 
 export function revidera(D, RAW = '(minne)') {
@@ -25,6 +27,7 @@ export function revidera(D, RAW = '(minne)') {
             path: t.path === '' ? 'rot' : t.path,
             tag: t.tag, cls: t.cls, roll: t.roll ?? null, namn: t.namn ?? null,
             dataAttr: t.dataAttr || {}, domBeskrivning: t.domBeskrivning || null,
+          rect: t.rect || null, stabilForfader: t.stabilForfader ?? null,
             population: probeEndast.includes(a.id) ? 'probe' : 'produkt'
           });
   }
@@ -165,6 +168,110 @@ export function revidera(D, RAW = '(minne)') {
     kollisioner
   };
 
+  /* ── IDENTITY-V2, parallellt lager ─────────────────────────────────────────
+   *
+   * Kör bredvid legacy-identiteten och ändrar ingenting i den. Varje DOM-nod
+   * som någon R-03-metod observerat bedöms mot prioritetsordningen, och
+   * identityKey sätts bara när identiteten är stabil enligt kontraktet. */
+  const perNod = new Map();
+  for (const d of detektioner) {
+    const nyckel = ktx(d) + ' ‖ ' + d.elementKey + ' ‖ ' + d.path;
+    if (!perNod.has(nyckel))
+      perNod.set(nyckel, { ...d, klasser: new Set(), metoder: new Set() });
+    perNod.get(nyckel).klasser.add(d.klass);
+    perNod.get(nyckel).metoder.add(d.metod);
+  }
+  const perLegacyGrupp = new Map();
+  for (const n of perNod.values()) {
+    const g = ktx(n) + ' ‖ ' + n.elementKey;
+    if (!perLegacyGrupp.has(g)) perLegacyGrupp.set(g, []);
+    perLegacyGrupp.get(g).push(n);
+  }
+
+  const v2 = [];
+  for (const [g, noder] of perLegacyGrupp) {
+    const legacyKey = g.split(' ‖ ')[1];
+    // Identitetskontexten är strängare än legacy-kontexten: den stabila
+    // förfadern ingår. Noder som delar legacy-nyckel men ligger under skilda
+    // stabila förfäder är därför olika identiteter från början.
+    const perCtx = new Map();
+    for (const n of noder) {
+      const c = identityContext(n);
+      if (!perCtx.has(c)) perCtx.set(c, []);
+      perCtx.get(c).push(n);
+    }
+    for (const [c, lista] of perCtx) v2.push(...bedomGrupp(legacyKey, lista, c));
+  }
+
+  const räknaV2 = s => v2.filter(x => x.identityStatus === s).length;
+  const ambiguösa = v2.filter(x => x.identityStatus === 'ambiguous');
+  const kandidater = v2.filter(x => x.identityStatus === 'candidate');
+  const ärVerifierad = x => [...(x.nod.klasser || [])].includes('verifierad');
+  const verifieratAmbiguösa = ambiguösa.filter(ärVerifierad);
+  const ambigNycklar = new Set(ambiguösa.map(x => x.legacyElementKey + ' ‖ ' + x.kontext));
+  const ambigArtefakter = new Set(ambiguösa.map(x => x.nod.artefakt));
+  const grupptorlekar = {};
+  for (const x of ambiguösa) {
+    const k = x.legacyElementKey + ' ‖ ' + x.kontext;
+    grupptorlekar[k] = (grupptorlekar[k] || 0) + 1;
+  }
+
+  const utfall = felClosedUtfall({
+    verified_ambiguous_st: verifieratAmbiguösa.length,
+    error_st: räknaV2('error')
+  });
+
+  // identityKey får aldrig bära strängen null, undefined eller NaN.
+  const osäkraNycklar = v2.filter(x => !identityKeyÄrSäker(x.identityKey));
+
+  rapport.identityV2 = {
+    $regel: 'PARALLELLT lager. Ersätter inte elementKey, findingId eller instansId. Ingen migrering av kanoniska id sker i denna commit.',
+    $identityKeyRegel: 'identityKey sätts endast vid identityStatus stable. Vid candidate, ambiguous och error är den null och får aldrig strängifieras in i någon nyckel.',
+    $textRegel: 'Text behandlas ALDRIG som stabil identitet automatiskt. Lokalisering, redaktionella ändringar, dynamiskt innehåll och formattering kan ändra den. Textbaserad särskiljning ger candidate med identityKey null.',
+    $dataIconRegel: 'data-icon ger stable endast när värdet är unikt för samtliga noder inom identitetskontexten artefakt, viewport, tema, textskala och stabil förfader. Ett återanvänt värde gör noderna otydbara, inte identiska.',
+    domnoder_st: perNod.size,
+    stable_st: räknaV2('stable'),
+    candidate_st: kandidater.length,
+    ambiguous_st: ambiguösa.length,
+    error_st: räknaV2('error'),
+    perBasis: v2.reduce((a, x) => { a[x.identityBasis] = (a[x.identityBasis] || 0) + 1; return a; }, {}),
+    ambiguitet: {
+      ambiguous_elementKeys_st: ambigNycklar.size,
+      ambiguous_domNodes_st: ambiguösa.length,
+      artifacts_med_ambiguitet_st: ambigArtefakter.size,
+      största_ambiguity_group_st: Math.max(0, ...Object.values(grupptorlekar))
+    },
+    kontrollresultat: {
+      legacy_collisions_st: kollisioner.length,
+      stable_resolved_by_v2_st: kollisioner.filter(k => {
+        const g = v2.filter(x => x.legacyElementKey === k.elementKey && x.nod.artefakt === k.artefakt);
+        return g.length > 1 && g.every(x => x.identityStatus === 'stable');
+      }).length,
+      candidate_only_st: kollisioner.filter(k => {
+        const g = v2.filter(x => x.legacyElementKey === k.elementKey && x.nod.artefakt === k.artefakt);
+        return g.length > 1 && g.some(x => x.identityStatus === 'candidate');
+      }).length,
+      ambiguous_st: ambigNycklar.size,
+      verified_ambiguous_st: verifieratAmbiguösa.length,
+      observation_ambiguous_st: ambiguösa.filter(x => [...(x.nod.klasser || [])].includes('observation')).length
+    },
+    failClosed: utfall,
+    identityKey_osäkra_st: osäkraNycklar.length,
+    produktmarkupspolicy: 'Explicit data-element-id införs INTE i förväg. Den införs endast när semantiken faktiskt kräver en stabil identitet, eller när en verifierad kontroll annars blockeras av identityAmbiguous.',
+    ambiguösa_grupper: [...new Set(ambiguösa.map(x => x.legacyElementKey + ' ‖ ' + x.kontext))]
+      .slice(0, 200).map(g => ({
+        grupp: g, noder_st: grupptorlekar[g],
+        exempel: ambiguösa.filter(x => x.legacyElementKey + ' ‖ ' + x.kontext === g).slice(0, 3)
+          .map(x => x.identityDiagnostics)
+      })),
+    v2_per_nod: v2.map(x => ({
+      legacyElementKey: x.legacyElementKey, artefakt: x.nod.artefakt, viewport: x.nod.viewport,
+      identityStatus: x.identityStatus, identityBasis: x.identityBasis, identityKey: x.identityKey,
+      klasser: [...(x.nod.klasser || [])].sort(),
+      identityDiagnostics: x.identityDiagnostics
+    }))
+  };
+
   // Vilken diskriminator hade räckt? Räknas ur de faktiska kollisionerna.
   const perDisk = {};
   for (const k of kollisioner) perDisk[k.diskriminator || 'ingen stabil diskriminator'] =
@@ -217,4 +324,45 @@ export const FIXTUR_HTML = `<!doctype html><meta charset="utf-8"><style>
   <p style="margin:0">orelaterat</p>
   <div class="box"><div style="width:400px">&nbsp;</div></div>
   <div class="box"><div style="width:400px">&nbsp;</div></div>
+</div>
+<div class="sc-item" id="G-samma-dataicon">
+  <!-- G · Tva syskon med SAMMA data-icon. Attributet sarskiljer dem inte. -->
+  <div class="box"><div style="width:400px"><svg width="8" height="8" viewBox="0 0 8 8" data-icon="lika"><rect x="0" y="0" width="8" height="8"/></svg></div></div>
+  <div class="box"><div style="width:400px"><svg width="8" height="8" viewBox="0 0 8 8" data-icon="lika"><rect x="0" y="0" width="8" height="8"/></svg></div></div>
+</div>
+<div class="sc-item" id="H-olika-dataicon">
+  <!-- H · Tva syskon med OLIKA unika data-icon. Stabil identitet. -->
+  <div class="box"><div style="width:400px"><svg width="8" height="8" viewBox="0 0 8 8" data-icon="ett"><rect x="0" y="0" width="8" height="8"/></svg></div></div>
+  <div class="box"><div style="width:400px"><svg width="8" height="8" viewBox="0 0 8 8" data-icon="tva"><rect x="0" y="0" width="8" height="8"/></svg></div></div>
+</div>
+<div class="sc-item" id="I-text-alfa">
+  <!-- I · Samma element med explicit id, men olika text. Texten far inte skapa
+       en ny kanonisk identitet. -->
+  <div class="box" data-element-id="rutan"><div style="width:400px">Alfa</div></div>
+</div>
+<div class="sc-item" id="I-text-beta">
+  <div class="box" data-element-id="rutan"><div style="width:400px">Beta</div></div>
+</div>
+<div class="sc-item" id="J-ambigu-observation">
+  <!-- J · De OBSERVERADE noderna ar de inre divarna. Deras foraldrar har
+       identisk signatur, sa nyckeln kolliderar — men innehallet ryms, sa
+       traffen ar en OBSERVATION och inte ett fel. -->
+  <div class="jbox"><div style="overflow:hidden;width:120px;height:40px"><span>x</span></div></div>
+  <div class="jbox"><div style="overflow:hidden;width:120px;height:40px"><span>x</span></div></div>
+</div>
+<div class="sc-item" id="K-ambiguost-verifierat">
+  <!-- K · Tva oskiljbara syskon som BADA klipper pa riktigt. Ett verifierat
+       fynd landar da i en tvetydig grupp och maste blockera. -->
+  <div style="width:60px;height:20px;overflow:hidden"><div style="width:300px;height:60px"></div></div>
+  <div style="width:60px;height:20px;overflow:hidden"><div style="width:300px;height:60px"></div></div>
+</div>
+<div class="sc-item" id="L-stabil-utan-syskon">
+  <!-- L · Stabil identitet via explicit id. -->
+  <div class="box" data-element-id="stabil-1"><div style="width:400px">x</div></div>
+</div>
+<div class="sc-item" id="L-stabil-med-syskon">
+  <!-- M · Samma element, men med ett orelaterat syskon inskjutet fore.
+       Runtime-sokvagen flyttas; identityKey ska sta stilla. -->
+  <p style="margin:0">orelaterat</p>
+  <div class="box" data-element-id="stabil-1"><div style="width:400px">x</div></div>
 </div>`;
