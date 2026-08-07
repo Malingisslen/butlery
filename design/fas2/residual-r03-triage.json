@@ -1,0 +1,501 @@
+{
+ "$regel": "MÄTNING OCH ATTRIBUTION. Ingen fix, ingen ändring av produktskärmar, ingen ändring av kanoniska findingId, instansId eller källrotorsaks-id.",
+ "$population": "Verifierad från körningen, inte antagen från äldre rapport.",
+ "population": {
+  "felinstanser_fore_analys_st": 9,
+  "elementfynd_st": 13,
+  "raa_verifierade_detektioner_st": 19,
+  "kanoniska_legacy_kallrotorsaker_st": 5,
+  "berorda_produktartefakter_st": 7
+ },
+ "sammanfattning": {
+  "symptomGroups_st": 5,
+  "verkligt_belagda_sourceRootCauses_st": 4,
+  "unintended_st": 3,
+  "intentional_st": 2,
+  "undecided_st": 4,
+  "ritningar_per_sourceRootCause": {
+   "SRC-01": 4,
+   "SRC-02": 1,
+   "SRC-03": 1,
+   "SRC-04": 1
+  }
+ },
+ "$intentionalitetsregel": "intentional kräver POSITIV evidens. Att CSS-raden använder line-clamp, ellipsis eller overflow:hidden är inget bevis. data-clip-intent förekommer i NOLL ritningar i hela systemet.",
+ "instanser": [
+  {
+   "nr": 1,
+   "artifactId": "betygperperson",
+   "instansId": "INST · betygperperson · sel:div.c-phone>div[1] · klippning",
+   "findingIds": [
+    "CHK-R-03 · betygperperson · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "CHK-R-03 · betygperperson · sel:div>div[3] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "element": "div",
+   "faktisk_overflow": {
+    "axel": "y",
+    "scroll_minus_client_px": 2,
+    "barn_utanfor_brakdel": [
+     {
+      "tag": "div",
+      "underKant_px": 2,
+      "högerOm_px": -24
+     }
+    ],
+    "boxens_egen_hojd_px": 529,
+    "scrollH": 531,
+    "clientH": 529
+   },
+   "css": {
+    "overflow": "hidden",
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "textOverflow": "clip",
+    "webkitLineClamp": "none",
+    "height": "511px",
+    "maxHeight": "none",
+    "lineHeight": "normal",
+    "display": "block"
+   },
+   "inline_style": "flex: 1 1 0%; padding: 18px 24px 0px; overflow: hidden;",
+   "klippande_ancestor": {
+    "tag": "div",
+    "cls": "sc-phone",
+    "overflow": "hidden/hidden/hidden",
+    "inlineStyle": "width: 412px; height: 700px; display: flex; flex-direction: column;"
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "dc_tpl": "1510",
+   "symptomGroup": "div · klippning · överskott N px i y med overflow-y: hidden",
+   "sourceRootCause": "SRC-01",
+   "samma_kallrad_ger_fler_fynd": false,
+   "intentionality": "unintended",
+   "intentionality_skal": "Ett barn sträcker sig 2.000 px under klientboxen. Två oberoende signaler är eniga: scroll minus client = 2, barnets rektangel = 2.000. Ingen data-clip-intent, ingen dokumenterad regel.",
+   "identityV2_status": "stable",
+   "identityV2_basis": "unique-selector",
+   "clipIntent": null,
+   "roll": null,
+   "namn": null,
+   "text": "M Maja · du 5,0 P Per 4,0 I Ida inte satt Hoppa över Ida Den som hoppar över får ingen rad och räknas inte in i snittet. Betyget går alltid att ändra — det ersä",
+   "utsnitt": "utsnitt/INST_betygperperson_sel_div_c-phone_div_1_klippning__1-1.png"
+  },
+  {
+   "nr": 2,
+   "artifactId": "veckoallergi",
+   "instansId": "INST · veckoallergi · sel:div.c-phone>div[1] · klippning",
+   "findingIds": [
+    "CHK-R-03 · veckoallergi · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "CHK-R-03 · veckoallergi · sel:div>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "CHK-R-03 · veckoallergi · sel:div>div[4] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "element": "div",
+   "faktisk_overflow": {
+    "axel": "y",
+    "scroll_minus_client_px": 2,
+    "barn_utanfor_brakdel": [
+     {
+      "tag": "div",
+      "underKant_px": 2.1484,
+      "högerOm_px": -24
+     }
+    ],
+    "boxens_egen_hojd_px": 649,
+    "scrollH": 651,
+    "clientH": 649
+   },
+   "css": {
+    "overflow": "hidden",
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "textOverflow": "clip",
+    "webkitLineClamp": "none",
+    "height": "631px",
+    "maxHeight": "none",
+    "lineHeight": "normal",
+    "display": "block"
+   },
+   "inline_style": "padding: 18px 24px 0px; flex: 1 1 0%; overflow: hidden;",
+   "klippande_ancestor": {
+    "tag": "div",
+    "cls": "sc-phone",
+    "overflow": "hidden/hidden/hidden",
+    "inlineStyle": "width: 412px; height: 820px; display: flex; flex-direction: column;"
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "dc_tpl": "154",
+   "symptomGroup": "div · klippning · överskott N px i y med overflow-y: hidden",
+   "sourceRootCause": "SRC-01",
+   "samma_kallrad_ger_fler_fynd": false,
+   "intentionality": "unintended",
+   "intentionality_skal": "Barn 2.148 px under klientboxen, scroll minus client = 2. Två signaler eniga; bråkdelen redovisad före avrundning.",
+   "identityV2_status": "stable",
+   "identityV2_basis": "unique-selector",
+   "clipIntent": null,
+   "roll": null,
+   "namn": null,
+   "text": "3 av 5 rätter placerade Två förslag hölls tillbaka. I ett hushåll med allergi planeras bara rätter där alla ingredienser har allergendata. Placerade · säkra Tor",
+   "utsnitt": "utsnitt/INST_veckoallergi_sel_div_c-phone_div_1_klippning__1-1.png"
+  },
+  {
+   "nr": 3,
+   "artifactId": "synkko",
+   "instansId": "INST · synkko · sel:div.c-phone>div[2] · klippning",
+   "findingIds": [
+    "CHK-R-03 · synkko · sel:div.c-phone>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "CHK-R-03 · synkko · sel:div>div[8] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "element": "div",
+   "faktisk_overflow": {
+    "axel": "y",
+    "scroll_minus_client_px": 1,
+    "barn_utanfor_brakdel": [
+     {
+      "tag": "div",
+      "underKant_px": 1.1953,
+      "högerOm_px": -24
+     }
+    ],
+    "boxens_egen_hojd_px": 611.5,
+    "scrollH": 613,
+    "clientH": 612
+   },
+   "css": {
+    "overflow": "hidden",
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "textOverflow": "clip",
+    "webkitLineClamp": "none",
+    "height": "595.5px",
+    "maxHeight": "none",
+    "lineHeight": "normal",
+    "display": "block"
+   },
+   "inline_style": "padding: 16px 24px 0px; flex: 1 1 0%; overflow: hidden;",
+   "klippande_ancestor": {
+    "tag": "div",
+    "cls": "sc-phone",
+    "overflow": "hidden/hidden/hidden",
+    "inlineStyle": "width: 412px; height: 820px; display: flex; flex-direction: column;"
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "dc_tpl": "223",
+   "symptomGroup": "div · klippning · innehåll utanför boxen",
+   "sourceRootCause": "SRC-01",
+   "samma_kallrad_ger_fler_fynd": false,
+   "intentionality": "unintended",
+   "intentionality_skal": "Barn 1.195 px under klientboxen, scroll minus client = 1. Boxens egen höjd är bråkdelen 611.5 px. Två signaler eniga i riktning och storleksordning.",
+   "identityV2_status": "stable",
+   "identityV2_basis": "unique-selector",
+   "clipIntent": null,
+   "roll": null,
+   "namn": null,
+   "text": "Väntar på dig · 2 Dessa försöker inte igen av sig själva. Orsaken står i ord, och varje post har en handling. Ditt betyg på Citronrisotto Receptet finns inte lä",
+   "utsnitt": "utsnitt/INST_synkko_sel_div_c-phone_div_2_klippning__1-2.png"
+  },
+  {
+   "nr": 4,
+   "artifactId": "flergrupp",
+   "instansId": "INST · flergrupp · sel:div.c-phone>div[1] · klippning",
+   "findingIds": [
+    "CHK-R-03 · flergrupp · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "element": "div",
+   "faktisk_overflow": {
+    "axel": "y",
+    "scroll_minus_client_px": 3,
+    "barn_utanfor_brakdel": [],
+    "boxens_egen_hojd_px": 648,
+    "scrollH": 651,
+    "clientH": 648
+   },
+   "css": {
+    "overflow": "hidden",
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "textOverflow": "clip",
+    "webkitLineClamp": "none",
+    "height": "616px",
+    "maxHeight": "none",
+    "lineHeight": "normal",
+    "display": "block"
+   },
+   "inline_style": "flex: 1 1 0%; padding: 16px; overflow: hidden;",
+   "klippande_ancestor": {
+    "tag": "div",
+    "cls": "sc-phone",
+    "overflow": "hidden/hidden/hidden",
+    "inlineStyle": "width: 412px; height: 740px; display: flex; flex-direction: column;"
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "dc_tpl": "784",
+   "symptomGroup": "div · klippning · överskott N px i y med overflow-y: hidden",
+   "sourceRootCause": "SRC-01",
+   "samma_kallrad_ger_fler_fynd": false,
+   "intentionality": "undecided",
+   "intentionality_skal": "SIGNALERNA MOTSÄGER VARANDRA. scroll minus client = 3, men INGET barn sträcker sig under klientboxen — störst underkant är minus 12.875 px. Överskottet kommer inte från en barnbox och kan inte visas kapa innehåll. Markeras undecided och tool limitation tills ett tredje bevis finns. Toleransen har INTE ändrats.",
+   "identityV2_status": "stable",
+   "identityV2_basis": "unique-selector",
+   "clipIntent": null,
+   "roll": null,
+   "namn": null,
+   "text": "Medlemmar och inbjudningar 5 medlemmar 2 valda Ta bort 2 Johan LindMedlem sedan mars Sara EkKunde inte tas bort — hon är också admin Malin GisslénÄgare En av tv",
+   "utsnitt": "utsnitt/INST_flergrupp_sel_div_c-phone_div_1_klippning__1-1.png"
+  },
+  {
+   "nr": 5,
+   "artifactId": "kompkalla",
+   "instansId": "INST · kompkalla · sel:div>div[2] · klippning",
+   "findingIds": [
+    "CHK-R-03 · kompkalla · sel:div>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "element": "div",
+   "faktisk_overflow": {
+    "axel": "y",
+    "scroll_minus_client_px": 52,
+    "barn_utanfor_brakdel": [
+     {
+      "tag": "br",
+      "underKant_px": 0.6875,
+      "högerOm_px": -263.1563
+     },
+     {
+      "tag": "br",
+      "underKant_px": 19.0859,
+      "högerOm_px": -358
+     }
+    ],
+    "boxens_egen_hojd_px": 176,
+    "scrollH": 226,
+    "clientH": 174
+   },
+   "css": {
+    "overflow": "hidden",
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "textOverflow": "clip",
+    "webkitLineClamp": "none",
+    "height": "150px",
+    "maxHeight": "150px",
+    "lineHeight": "18.4px",
+    "display": "block"
+   },
+   "inline_style": "border: 1px solid rgb(204, 209, 194); background: rgb(240, 238, 226); padding: 12px; margin-top: 8px; font: 400 11.5px / 1.6 ui-monospace, Menlo, monospace; color: rgb(55, 69, 58); max-height: 150px; overflow: hidden;",
+   "klippande_ancestor": {
+    "tag": "div",
+    "cls": "sc-phone",
+    "overflow": "hidden/hidden/hidden",
+    "inlineStyle": "width: 412px; height: 680px; display: flex; flex-direction: column; justify-content: flex-end;"
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "dc_tpl": "1313",
+   "symptomGroup": "div · klippning · överskott N px i y med overflow-y: hidden",
+   "sourceRootCause": "SRC-02",
+   "samma_kallrad_ger_fler_fynd": false,
+   "intentionality": "undecided",
+   "intentionality_skal": "52 px dolt av 226 px innehåll, cirka 2,8 rader vid radhöjd 18.4 px. Två br-element ligger 0.688 och 19.086 px under kanten. Effekten är stor, men ett max-height kan vara ett avsiktligt förhandsvisningsbeslut. Ingen data-clip-intent och ingen dokumenterad komponentregel finns — därför undecided, inte intentional.",
+   "identityV2_status": "stable",
+   "identityV2_basis": "unique-selector",
+   "clipIntent": null,
+   "roll": null,
+   "namn": null,
+   "text": "Pannbiffar med lök4 port · 35 min600 g blandfärs1 gul lök, finhackad1 dl ströbröd1 ägg1,5 dl mjölksalt, vitpepparBlanda ströbröd och mjölk. Låt svälla 10 min …",
+   "utsnitt": "utsnitt/INST_kompkalla_sel_div_div_2_klippning__1-1-2-2.png"
+  },
+  {
+   "nr": 6,
+   "artifactId": "langavarden",
+   "instansId": "INST · langavarden · sel:div>div[0] · klippning",
+   "findingIds": [
+    "CHK-R-03 · langavarden · sel:div>div[0] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "element": "div",
+   "faktisk_overflow": {
+    "axel": "y",
+    "scroll_minus_client_px": 22,
+    "barn_utanfor_brakdel": [],
+    "boxens_egen_hojd_px": 40.7969,
+    "scrollH": 63,
+    "clientH": 41
+   },
+   "css": {
+    "overflow": "hidden",
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "textOverflow": "clip",
+    "webkitLineClamp": "2",
+    "height": "40.7969px",
+    "maxHeight": "none",
+    "lineHeight": "20.4px",
+    "display": "flow-root"
+   },
+   "inline_style": "font-size: 17px; font-weight: 700; line-height: 1.2; color: rgb(36, 56, 44); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-wrap: pretty;",
+   "klippande_ancestor": {
+    "tag": "div",
+    "cls": "sc-phone",
+    "overflow": "hidden/hidden/hidden",
+    "inlineStyle": "width: 360px; height: 924px; display: flex; flex-direction: column;"
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "dc_tpl": "1662",
+   "symptomGroup": "div · klippning · överskott N px i y med overflow-y: hidden",
+   "sourceRootCause": "SRC-03",
+   "samma_kallrad_ger_fler_fynd": true,
+   "intentionality": "intentional",
+   "intentionality_skal": "POSITIV EVIDENS: evidensmatris.md rad 20 namnger uttryckligen recepttiteln i #langavarden som en avsiktlig clamp. Det är en normativ källa i repot, inte en slutsats dragen ur CSS-raden.",
+   "identityV2_status": "stable",
+   "identityV2_basis": "unique-selector",
+   "clipIntent": null,
+   "roll": null,
+   "namn": null,
+   "text": "Ugnsbakad rotselleri med brynt smör, rostade hasselnötter och inlagd citron",
+   "utsnitt": "utsnitt/INST_langavarden_sel_div_div_0_klippning__1-2-0.png"
+  },
+  {
+   "nr": 7,
+   "artifactId": "langavarden",
+   "instansId": "INST · langavarden · sel:div>div[0] · textrunkering",
+   "findingIds": [
+    "CHK-R-03 · langavarden · sel:div>div[0] · textrunkering · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "element": "div",
+   "faktisk_overflow": {
+    "axel": "y",
+    "scroll_minus_client_px": 22,
+    "barn_utanfor_brakdel": [],
+    "boxens_egen_hojd_px": 40.7969,
+    "scrollH": 63,
+    "clientH": 41
+   },
+   "css": {
+    "overflow": "hidden",
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "textOverflow": "clip",
+    "webkitLineClamp": "2",
+    "height": "40.7969px",
+    "maxHeight": "none",
+    "lineHeight": "20.4px",
+    "display": "flow-root"
+   },
+   "inline_style": "font-size: 17px; font-weight: 700; line-height: 1.2; color: rgb(36, 56, 44); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-wrap: pretty;",
+   "klippande_ancestor": {
+    "tag": "div",
+    "cls": "sc-phone",
+    "overflow": "hidden/hidden/hidden",
+    "inlineStyle": "width: 360px; height: 924px; display: flex; flex-direction: column;"
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "dc_tpl": "1662",
+   "symptomGroup": "div · textrunkering · line-clamp",
+   "sourceRootCause": "SRC-03",
+   "samma_kallrad_ger_fler_fynd": true,
+   "intentionality": "intentional",
+   "intentionality_skal": "Samma element, samma kodrad och SAMMA användareffekt som ovan: rad tre av titeln döljs. Det är inte två effekter utan en, sedd av två metoder.",
+   "identityV2_status": "stable",
+   "identityV2_basis": "unique-selector",
+   "clipIntent": null,
+   "roll": null,
+   "namn": null,
+   "text": "Ugnsbakad rotselleri med brynt smör, rostade hasselnötter och inlagd citron",
+   "utsnitt": "utsnitt/INST_langavarden_sel_div_div_0_textrunkering__1-2-0.png"
+  },
+  {
+   "nr": 8,
+   "artifactId": "onbimport",
+   "instansId": "INST · onbimport · roll:textbox|Länk till recept · klippning",
+   "findingIds": [
+    "CHK-R-03 · onbimport · roll:textbox|Länk till recept · klippning · axis=x · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "element": "span",
+   "faktisk_overflow": {
+    "axel": "x",
+    "scroll_minus_client_px": 19,
+    "barn_utanfor_brakdel": [],
+    "boxens_egen_hojd_px": 48,
+    "scrollH": 48,
+    "clientH": 48
+   },
+   "css": {
+    "overflow": "hidden",
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "textOverflow": "ellipsis",
+    "webkitLineClamp": "none",
+    "height": "48px",
+    "maxHeight": "none",
+    "lineHeight": "normal",
+    "display": "flex"
+   },
+   "inline_style": "flex: 1 1 0%; min-width: 0px; min-height: 48px; display: flex; align-items: center; font-size: 16px; font-weight: 400; color: rgb(36, 56, 44); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;",
+   "klippande_ancestor": {
+    "tag": "div",
+    "cls": "sc-phone",
+    "overflow": "hidden/hidden/hidden",
+    "inlineStyle": "width: 412px; height: 720px; display: flex; flex-direction: column;"
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "dc_tpl": "436",
+   "symptomGroup": "span · klippning · överskott N px i x med overflow-x: hidden",
+   "sourceRootCause": "SRC-04",
+   "samma_kallrad_ger_fler_fynd": true,
+   "intentionality": "undecided",
+   "intentionality_skal": "Texten är ett FÄLTVÄRDE, inte en etikett: data-a11y-role=textbox, namn \"Länk till recept\", innehåll koket.se/recept/krämig-svamppasta. 19 px av användarens egen inklistrade adress är dold. Ingen dokumenterad regel säger att ett fältvärde får kapas.",
+   "identityV2_status": "stable",
+   "identityV2_basis": "unique-selector",
+   "clipIntent": null,
+   "roll": "textbox",
+   "namn": "Länk till recept",
+   "text": "koket.se/recept/krämig-svamppasta",
+   "utsnitt": "utsnitt/INST_onbimport_roll_textbox_Länk_till_recept_klippning__1-1-2-0-1.png"
+  },
+  {
+   "nr": 9,
+   "artifactId": "onbimport",
+   "instansId": "INST · onbimport · roll:textbox|Länk till recept · textrunkering",
+   "findingIds": [
+    "CHK-R-03 · onbimport · roll:textbox|Länk till recept · textrunkering · axis=x · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "element": "span",
+   "faktisk_overflow": {
+    "axel": "x",
+    "scroll_minus_client_px": 19,
+    "barn_utanfor_brakdel": [],
+    "boxens_egen_hojd_px": 48,
+    "scrollH": 48,
+    "clientH": 48
+   },
+   "css": {
+    "overflow": "hidden",
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "textOverflow": "ellipsis",
+    "webkitLineClamp": "none",
+    "height": "48px",
+    "maxHeight": "none",
+    "lineHeight": "normal",
+    "display": "flex"
+   },
+   "inline_style": "flex: 1 1 0%; min-width: 0px; min-height: 48px; display: flex; align-items: center; font-size: 16px; font-weight: 400; color: rgb(36, 56, 44); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;",
+   "klippande_ancestor": {
+    "tag": "div",
+    "cls": "sc-phone",
+    "overflow": "hidden/hidden/hidden",
+    "inlineStyle": "width: 412px; height: 720px; display: flex; flex-direction: column;"
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "dc_tpl": "436",
+   "symptomGroup": "span · textrunkering · text-overflow ellipsis",
+   "sourceRootCause": "SRC-04",
+   "samma_kallrad_ger_fler_fynd": true,
+   "intentionality": "undecided",
+   "intentionality_skal": "Samma element, samma kodrad och samma användareffekt som ovan. En effekt, två metoder.",
+   "identityV2_status": "stable",
+   "identityV2_basis": "unique-selector",
+   "clipIntent": null,
+   "roll": "textbox",
+   "namn": "Länk till recept",
+   "text": "koket.se/recept/krämig-svamppasta",
+   "utsnitt": "utsnitt/INST_onbimport_roll_textbox_Länk_till_recept_textrunkering__1-1-2-0-1.png"
+  }
+ ]
+}

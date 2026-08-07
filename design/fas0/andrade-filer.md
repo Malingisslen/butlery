@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=279-->
+<!--manifest:files=282-->
 
 ## Reporoten
 
@@ -221,6 +221,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r03-baslinje.json` | `f76b4f37b6bb52ece683c61621670a0b37173be3c74acf1da7bfd992b7e8c702` |
 | `fas2/r04-parningsunderlag.json` | `d82a227cf2f2b978b42e9625365027bdf9e5b41136808987cc61e0a46cb4fa55` |
 | `fas2/reproducerbarhet.json` | `85b244b9bf2d33831d7df56aa61cb5a24887aed3b7d7b095314be792022a726c` |
+| `fas2/residual-r03-triage.json` | `8e6b9efe2f31440c3fcabf4cb68a30a089e73637faa3e3af529cb8773448d711` |
+| `fas2/source-root-cause-map.json` | `a59b0dcaf2554fa49bc347a016fa1e0cd3f496c66e7ca4410c13c144f52d2bd1` |
 | `flows-roles-budget.md` | `d9d66bc1669e65ec4f9769efc0b7b66885b4e8252e6dfb7345ce0c8da19d22f6` |
 | `granskning-v12.md` | `0e1f0409c370e9a82dda87ae43379660c3b404e5ff2de5089f0fb69262da7d37` |
 | `grundgranskning.md` | `019015ca6aca9fc50b54e5769b2099f410dac33e1f6d3f215546932be4cc1728` |
@@ -259,7 +261,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/authority-contract.mjs` | `7479d2ebd3496f4315fb98ed1e0cb006eb0780acaa824616bf47c214583fdad9` |
 | `tools/build-delivery.mjs` | `fcfc81f8a1776576fd85e5e2140b0f55483efa8ecef36d87a0aa89d16b7a5d9d` |
 | `tools/check-app-theme.mjs` | `3ec46efe91680b7050662962c1f117d5dc9a2653ffd1f9437a67a0a72217b745` |
-| `tools/controls.mjs` | `1f7f223f9d161adae8d36f3e95895826abacbe2e4818782df1d674cbd98b7384` |
+| `tools/controls.mjs` | `8e9ac4e5aa5c1c948145bc239f879313614e4ead6379b8712cb0de045424b2c4` |
 | `tools/finalize.mjs` | `74fd11be650ad6a50a4c6817c06bac45dd1815c97faf524cd59c41f91ef0afd1` |
 | `tools/gate.mjs` | `02917e6f14ed023585a1496630ba68b1b9dea5109ab991f5d1a5a931195ba4f0` |
 | `tools/gen-app-theme.mjs` | `f07136386c267f52bda54a0e5b14523fa41facb615f276befc3b9c140f17bd01` |
@@ -293,6 +295,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/render-repro.mjs` | `c01847106337b4f6cc744350f150ef54919ab925928dab19423897191affa2c1` |
 | `tools/report-logic.mjs` | `f5a83590d3c99ae6deba764c5e9b50f1c25cf26bdda717bc220726694a77203a` |
 | `tools/repro-check.mjs` | `7aefb37dd9ea18a37e20c0e52d0bf784b0e5515a40fbbb2058d9672c2e09a0ba` |
+| `tools/residual-triage.mjs` | `527c05bf0f4129ad46ebbae49fbce7d165eda39003461916643061fa8b33a18c` |
 | `tools/run-complete.mjs` | `a3884fe3ebaade9af0eca6789160fe11d2ad249ccd9ebcce517f17bc9f6a3bc2` |
 | `tools/screen-files.mjs` | `d975c827273def112992f5ad6b1269817fffc6efc3e882a7d41d0d4269735e48` |
 | `tools/selftest.mjs` | `f0a642cd4868df70eef74217f2ad5baddf2f8f9cf723be37e054261fd798d183` |
