@@ -16,7 +16,7 @@
   "berorda_produktartefakter_st": 7
  },
  "idTilldelning": {
-  "kalla": "fas2/effect-registry.json v1.0",
+  "kalla": "fas2/effect-registry.json v2.0",
   "regel": "Numret hör till effektens nyckel, aldrig till dess plats i listan. Ett frigjort nummer återanvänds aldrig.",
   "nytilldelade": [],
   "nastaLediga": 8
@@ -28,7 +28,7 @@
  "effects": [
   {
    "effectId": "EFF-01 · betygperperson",
-   "effektnyckel": "betygperperson ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ axel=y ‖ px=2",
+   "effektnyckel": "betygperperson ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ klass=innehall-ej-nabart ‖ axel=y",
    "artifactId": "betygperperson",
    "legacyInstansIds": [
     "INST · betygperperson · sel:div.c-phone>div[1] · klippning"
@@ -66,7 +66,7 @@
   },
   {
    "effectId": "EFF-02 · veckoallergi",
-   "effektnyckel": "veckoallergi ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ axel=y ‖ px=2",
+   "effektnyckel": "veckoallergi ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ klass=innehall-ej-nabart ‖ axel=y",
    "artifactId": "veckoallergi",
    "legacyInstansIds": [
     "INST · veckoallergi · sel:div.c-phone>div[1] · klippning"
@@ -105,7 +105,7 @@
   },
   {
    "effectId": "EFF-03 · synkko",
-   "effektnyckel": "synkko ‖ sel:div.c-phone>div[2] ‖ SRC-01 ‖ axel=y ‖ px=1",
+   "effektnyckel": "synkko ‖ sel:div.c-phone>div[2] ‖ SRC-01 ‖ klass=innehall-ej-nabart ‖ axel=y",
    "artifactId": "synkko",
    "legacyInstansIds": [
     "INST · synkko · sel:div.c-phone>div[2] · klippning"
@@ -143,7 +143,7 @@
   },
   {
    "effectId": "EFF-04 · flergrupp",
-   "effektnyckel": "flergrupp ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ axel=y ‖ px=3",
+   "effektnyckel": "flergrupp ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ klass=innehall-ej-nabart ‖ axel=y",
    "artifactId": "flergrupp",
    "legacyInstansIds": [
     "INST · flergrupp · sel:div.c-phone>div[1] · klippning"
@@ -174,7 +174,7 @@
   },
   {
    "effectId": "EFF-05 · kompkalla",
-   "effektnyckel": "kompkalla ‖ sel:div>div[2] ‖ SRC-02 ‖ axel=y ‖ px=52",
+   "effektnyckel": "kompkalla ‖ sel:div>div[2] ‖ SRC-02 ‖ klass=innehall-dolt-utan-affordans ‖ axel=y",
    "artifactId": "kompkalla",
    "legacyInstansIds": [
     "INST · kompkalla · sel:div>div[2] · klippning"
@@ -216,7 +216,7 @@
   },
   {
    "effectId": "EFF-06 · langavarden",
-   "effektnyckel": "langavarden ‖ sel:div>div[0] ‖ SRC-03 ‖ axel=y ‖ px=22",
+   "effektnyckel": "langavarden ‖ sel:div>div[0] ‖ SRC-03 ‖ klass=text-forkortad ‖ axel=y",
    "artifactId": "langavarden",
    "legacyInstansIds": [
     "INST · langavarden · sel:div>div[0] · klippning",
@@ -236,7 +236,7 @@
    "userEffectDescription": "Tredje raden av recepttiteln döljs av en tvåradig clamp (22 px).",
    "identityV2Status": "stable",
    "sammanslagen": true,
-   "sammanslagningsgrund": "samma artefakt, samma element, samma sourceRootCause, samma axel och samma uppmätta storlek (22 px) — två mätmetoder, en användareffekt",
+   "sammanslagningsgrund": "samma artefakt, samma element, samma sourceRootCause, samma effektklass och samma axel — två mätmetoder, en användareffekt. Storleken (22 px) är evidens, inte identitet.",
    "matt": {
     "axel": "y",
     "scroll_minus_client_px": 22,
@@ -246,7 +246,7 @@
   },
   {
    "effectId": "EFF-07 · onbimport",
-   "effektnyckel": "onbimport ‖ roll:textbox|Länk till recept ‖ SRC-04 ‖ axel=x ‖ px=19",
+   "effektnyckel": "onbimport ‖ roll:textbox|Länk till recept ‖ SRC-04 ‖ klass=faltvarde-dolt ‖ axel=x",
    "artifactId": "onbimport",
    "legacyInstansIds": [
     "INST · onbimport · roll:textbox|Länk till recept · klippning",
@@ -270,7 +270,7 @@
    "userEffectDescription": "Slutet av adressen användaren själv klistrat in är dolt bakom en ellips (19 px).",
    "identityV2Status": "stable",
    "sammanslagen": true,
-   "sammanslagningsgrund": "samma artefakt, samma element, samma sourceRootCause, samma axel och samma uppmätta storlek (19 px) — två mätmetoder, en användareffekt",
+   "sammanslagningsgrund": "samma artefakt, samma element, samma sourceRootCause, samma effektklass och samma axel — två mätmetoder, en användareffekt. Storleken (19 px) är evidens, inte identitet.",
    "matt": {
     "axel": "x",
     "scroll_minus_client_px": 19,

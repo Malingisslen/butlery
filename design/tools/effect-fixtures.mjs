@@ -170,6 +170,63 @@ const prov = (id, vad, ok, diag) => resultat.push({ id, vad, ok: !!ok, diag });
     ' · nytilldelade: ' + efter.idTilldelning.nytilldelade.length);
 }
 
+/* E-11…E-14 · magnitudoberoende identitet ─────────────────────────────────── */
+const mkReg = (instanser) => {
+  const u = kör(instanser);
+  const r = { version: '2.0', nextOrdinal: u.effects.length + 1, tilldelningar: {} };
+  u.effects.forEach((e, i) => { r.tilldelningar[e.effektnyckel] =
+    { ordinal: i + 1, effectId: 'EFF-0' + (i + 1) + ' · ' + e.artifactId }; });
+  return r;
+};
+
+{ // E-11 · samma effekt, olika uppmätt storlek → samma effectId
+  const a = inst({ faktisk_overflow: { axel: 'y', scroll_minus_client_px: 2, barn_utanfor_brakdel: [] } });
+  const b = inst({ faktisk_overflow: { axel: 'y', scroll_minus_client_px: 3, barn_utanfor_brakdel: [] } });
+  const reg = mkReg([a]);
+  const kA = kör([a], reg), kB = kör([b], reg);
+  prov('E-11', 'samma effekt med 2 px i en körning och 3 px i en annan får SAMMA effectId',
+    kA.effects[0].effectId === kB.effects[0].effectId &&
+    kA.effects[0].effektnyckel === kB.effects[0].effektnyckel &&
+    !kA.effects[0].effektnyckel.includes('px='),
+    'A: ' + kA.effects[0].effectId + ' · B: ' + kB.effects[0].effectId +
+    ' · nyckeln bär storlek: ' + kA.effects[0].effektnyckel.includes('px=')); }
+
+{ // E-12 · självständiga konsekvenser på olika axlar → två effectId
+  const r = kör([
+    inst({ faktisk_overflow: { axel: 'y', scroll_minus_client_px: 40, barn_utanfor_brakdel: [] } }),
+    inst({ instansId: 'INST · A · sel:div>div[0] · textrunkering', findingIds: ['F2'],
+           faktisk_overflow: { axel: 'x', scroll_minus_client_px: 19, barn_utanfor_brakdel: [] } })
+  ]);
+  prov('E-12', 'samma artefakt, element och källa men olika axlar ger TVÅ effectId',
+    r.adjudicatedEffects_st === 2 &&
+    new Set(r.effects.map(e => e.matt.axel)).size === 2,
+    'effekter: ' + r.adjudicatedEffects_st + ' · axlar: ' + r.effects.map(e => e.matt.axel).join(',')); }
+
+{ // E-13 · ändrad text och geometri, oförändrad semantisk identitet → samma id
+  const a = inst({ faktisk_overflow: { axel: 'y', scroll_minus_client_px: 20, barn_utanfor_brakdel: [] } });
+  const b = inst({ text: 'en helt annan text', faktisk_overflow: { axel: 'y', scroll_minus_client_px: 47.5, barn_utanfor_brakdel: [{ tag: 'div', underKant_px: 47.5 }] } });
+  const reg = mkReg([a]);
+  const kA = kör([a], reg), kB = kör([b], reg);
+  prov('E-13', 'ändrad text och geometri men oförändrad effektidentitet ger SAMMA effectId',
+    kA.effects[0].effectId === kB.effects[0].effectId &&
+    kA.effects[0].matt.scroll_minus_client_px !== kB.effects[0].matt.scroll_minus_client_px,
+    'id: ' + kB.effects[0].effectId + ' · storlek ' + kA.effects[0].matt.scroll_minus_client_px +
+    ' → ' + kB.effects[0].matt.scroll_minus_client_px + ' px'); }
+
+{ // E-14 · verkligt ny effekt på samma element → nytt nummer, aldrig återanvänt
+  const gammal = inst({ faktisk_overflow: { axel: 'y', scroll_minus_client_px: 20, barn_utanfor_brakdel: [] } });
+  const reg = mkReg([gammal]);
+  reg.nextOrdinal = 2;
+  const ny = inst({ instansId: 'INST · A · sel:div>div[0] · textrunkering', findingIds: ['F9'],
+    sourceRootCause: 'SRC-Y',
+    faktisk_overflow: { axel: 'x', scroll_minus_client_px: 12, barn_utanfor_brakdel: [] } });
+  const r = kör([ny], reg);   // den gamla effekten är borta, en ny har tillkommit
+  prov('E-14', 'en verkligt ny effekt på samma element får nytt nummer, aldrig ett återanvänt',
+    r.effects.length === 1 && r.effects[0].effectId === 'EFF-02 · A' &&
+    r.idTilldelning.nytilldelade.length === 1,
+    'ny effekt: ' + r.effects[0].effectId + ' · nytilldelade: ' + r.idTilldelning.nytilldelade.length +
+    ' (det frigjorda 01 återanvänds inte)'); }
+
 for (const r of resultat) console.log((r.ok ? '✔ ' : '✖ ') + r.id + '  ' + r.vad + '\n     ' + r.diag);
 const gröna = resultat.filter(r => r.ok).length;
 console.log('EFFEKTPROV-SUMMARY status=' + (gröna === resultat.length ? 'godkänd' : 'FÄLLD') +

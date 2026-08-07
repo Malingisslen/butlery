@@ -59,8 +59,32 @@
    "vad": "en ny effekt får nästa lediga nummer och aldrig ett frigjort",
    "ok": true,
    "diag": "ny effekt: EFF-03 · D · överlevare: EFF-02 · B · nytilldelade: 1"
+  },
+  {
+   "id": "E-11",
+   "vad": "samma effekt med 2 px i en körning och 3 px i en annan får SAMMA effectId",
+   "ok": true,
+   "diag": "A: EFF-01 · A · B: EFF-01 · A · nyckeln bär storlek: false"
+  },
+  {
+   "id": "E-12",
+   "vad": "samma artefakt, element och källa men olika axlar ger TVÅ effectId",
+   "ok": true,
+   "diag": "effekter: 2 · axlar: y,x"
+  },
+  {
+   "id": "E-13",
+   "vad": "ändrad text och geometri men oförändrad effektidentitet ger SAMMA effectId",
+   "ok": true,
+   "diag": "id: EFF-01 · A · storlek 20 → 47.5 px"
+  },
+  {
+   "id": "E-14",
+   "vad": "en verkligt ny effekt på samma element får nytt nummer, aldrig ett återanvänt",
+   "ok": true,
+   "diag": "ny effekt: EFF-02 · A · nytilldelade: 1 (det frigjorda 01 återanvänds inte)"
   }
  ],
- "gröna": 10,
- "av": 10
+ "gröna": 14,
+ "av": 14
 }

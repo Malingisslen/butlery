@@ -27,19 +27,31 @@ export const ADJUDICATION_STATUS = ['unintended', 'intentional', 'undecided'];
  *   3  samma belagda sourceRootCause,
  *   4  samma användarupplevda konsekvens.
  *
- * Punkt 4 mäts, den påstås inte: samma axel OCH samma uppmätta storlek inom en
- * halv pixel. Två självständiga konsekvenser på samma element — en box klippt
- * vertikalt och en text trunkerad horisontellt — skiljer sig i axel eller
- * storlek och slås därför aldrig ihop.
+ * Punkt 4 avgörs av EFFEKTKLASS och AXEL, aldrig av uppmätt storlek. Storleken
+ * är EVIDENS, inte identitet: samma användareffekt får inte nytt effectId bara
+ * för att 2 px blir 3 px, för att fontmetriken ändras eller för att viewporten
+ * ger effekten en annan magnitud. Två självständiga konsekvenser på samma
+ * element — en box klippt vertikalt och en text trunkerad horisontellt —
+ * skiljer sig i axel och slås därför aldrig ihop.
  *
  * Att två fynd delar symptomsignatur räcker ALDRIG. Att de ligger på samma
  * element räcker heller inte om konsekvenserna är självständiga.
  */
+// EFFEKTKLASSEN är användarkonsekvensen, härledd deterministiskt ur källan.
+// Den lägger till läsbarhet i nyckeln utan att dela upp något som SRC inte
+// redan delar.
+export const EFFEKTKLASS = {
+  'SRC-01': 'innehall-ej-nabart',
+  'SRC-02': 'innehall-dolt-utan-affordans',
+  'SRC-03': 'text-forkortad',
+  'SRC-04': 'faltvarde-dolt'
+};
+
 export function effektnyckel(i) {
   const el = (i.instansId || '').split(' · ')[2] || i.element || '?';
-  const ax = i.faktisk_overflow.axel;
-  const px = Math.round(i.faktisk_overflow.scroll_minus_client_px * 2) / 2;
-  return [i.artifactId, el, i.sourceRootCause, 'axel=' + ax, 'px=' + px].join(' ‖ ');
+  const klass = EFFEKTKLASS[i.sourceRootCause] || 'okand-konsekvens';
+  return [i.artifactId, el, i.sourceRootCause, 'klass=' + klass,
+          'axel=' + i.faktisk_overflow.axel].join(' ‖ ');
 }
 
 const BESKRIVNING = {
@@ -129,8 +141,7 @@ export function adjudicera(triage, karta, registry = null) {
       identityV2Status: f.identityV2_status,
       sammanslagen: lista.length > 1,
       sammanslagningsgrund: lista.length > 1
-        ? 'samma artefakt, samma element, samma sourceRootCause, samma axel och samma uppmätta storlek (' +
-          px + ' px) — två mätmetoder, en användareffekt'
+        ? 'samma artefakt, samma element, samma sourceRootCause, samma effektklass och samma axel — två mätmetoder, en användareffekt. Storleken (' + px + ' px) är evidens, inte identitet.'
         : null,
       matt: { axel: f.faktisk_overflow.axel, scroll_minus_client_px: px,
               barn_utanfor_brakdel: f.faktisk_overflow.barn_utanfor_brakdel },
