@@ -40,6 +40,33 @@ Samma SRC-01-konstruktion är belagd i fyra ritningar. Två av dem —
 `#synkko` rättas på detta beslut. `#flergrupp` är fortfarande obeslutad och
 rörs inte.
 
+### Normativt affordansbeslut · begränsad källförhandsvisning (2026-08-07)
+
+**Ett källblock får visas som en begränsad förhandsvisning, men dolt innehåll
+måste ha en explicit och direkt synlig väg till fulltexten. För `#kompkalla`
+ska förhandsvisningen kunna expanderas med en synlig kontroll, exempelvis
+"Visa hela", och därefter kunna minimeras igen. Tyst `max-height` +
+`overflow:hidden` utan affordans är inte tillåtet.**
+
+| Fält | Värde |
+|---|---|
+| artifact | `kompkalla` |
+| sourceRootCause | `SRC-02` |
+| previewAllowed | **true** |
+| hiddenContentRequiresAffordance | **true** |
+| preferredAffordance | **expand/collapse** |
+| currentAffordance | **none** |
+
+`max-height: 150px` är **befintlig implementation, inte en beslutad
+designparameter**. Beslutet godkänner inte den höjden som normativ. Intern
+vertikal scroll i ett litet källblock är inte förstahandslösningen — den
+föredragna interaktionen är expandera och minimera, och allt innehåll ska bli
+faktiskt nåbart efter aktivering.
+
+Följden för adjudiceringen: `EFF-05 · kompkalla` går från `undecided` till
+`unintended`. 52 px av 226 px innehåll är dolt utan någon väg till resten,
+vilket nu strider mot ett uttryckligt beslut.
+
 ### Grundningsregel
 
 **Produktlogik för en funktion som redan finns i koden skrivs inte — den läses.** En rad får statusen `implementerad` bara om de datamodeller och juridiska dokument den vilar på är lästa, och kolumnen `Skärmbevis` säger vilka. Etapp 1 bröt mot detta: fyra av fyra påståenden om befintliga modeller var fel, och ett rörde barns personuppgifter i en DPIA-granskad funktion (`produktregler.md` § 7.7).

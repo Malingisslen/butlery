@@ -195,7 +195,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `butlery-tokens.schema.json` | `3757e0005ea613416f00a73ac67a3d7303d46a9468feb0ca2f5dc553fa90891d` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
 | `content-style-guide.md` | `cb4fe9e93fe8286a394570353c8fe0d57f39b276a6eaff647129cb857cb570fd` |
-| `evidensmatris.md` | `b4604302be4b3a67ecfa3bb27201d6f7a69f5baf3e4bfc2517a6817a2d6420b6` |
+| `evidensmatris.md` | `d46ae46096479e4ce7e8ac5a11582f608f9bd42cfa3da0fcd8566d010cee336c` |
 | `exports/android/ic_launcher_background.svg` | `81044da47484b9cc4affbcaaecc26524ac7bcea67185bc46258c370291e09dde` |
 | `exports/android/ic_launcher_foreground.svg` | `7fb789ae266c96e4193483deb33ada24be8f110d93ab6588aa2d2a906fb87327` |
 | `exports/android/ic_launcher_monochrome.svg` | `a03249354c03d5723cec56a38ed7514384ab4109531da449a02268075d399ef8` |
@@ -212,7 +212,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas0/verify-delivery.sh` | `b793ff7225563b71520127c41614a8c1f2e03f7f72780cadc63911d0e4d1e5f7` |
 | `fas0/verify-report.schema.json` | `70687a2337ca6fe4a4419089983d8dfda52821b9af4799b4dabb03dfe9ac895d` |
 | `fas2/effect-registry.json` | `cd783eeb4e09118c863ec344d445f9485c96daa0b782c95093dc7ce837f26efa` |
-| `fas2/effects.json` | `47d757376d8f10a19af448de3625317458dbc753d80231cca17b8b36a0d4a2fa` |
+| `fas2/effects.json` | `69072b9aacdf54107d1ef6093846f1305a1bcb127dbc55f3d080e7d0fae009b1` |
 | `fas2/effektprov.json` | `fbfa44554294dfb6a534abb9a84f825171b383289cfdf38e680e19489ae483bb` |
 | `fas2/gridmatning.txt` | `8972e840fef68b585a2b76e5ebe37d44a03bc3d3b6c7a7c63350fe53c9337726` |
 | `fas2/gridmatning_test.dart.txt` | `6ee766862801cd83ab3d97d5d80f8399538882a58ef7cbdc6db9ef7c8460102a` |
@@ -224,7 +224,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r03-baslinje.json` | `f76b4f37b6bb52ece683c61621670a0b37173be3c74acf1da7bfd992b7e8c702` |
 | `fas2/r04-parningsunderlag.json` | `d82a227cf2f2b978b42e9625365027bdf9e5b41136808987cc61e0a46cb4fa55` |
 | `fas2/reproducerbarhet.json` | `85b244b9bf2d33831d7df56aa61cb5a24887aed3b7d7b095314be792022a726c` |
-| `fas2/residual-r03-triage.json` | `90ba976ae92ebd2ae833b52a9a0048f294367eaa5ba4a2c87ce65abc8dee7901` |
+| `fas2/residual-r03-triage.json` | `1e1aae7653462685d4803b9ef27ca9b1390b6b987999bcd616e9f9f894dad421` |
 | `fas2/scrollbevis.json` | `489415bd2ca8a6999cf4036349cceef8502d65d1f9917ccc4c3fbda07a1a3408` |
 | `fas2/source-root-cause-map.json` | `a59b0dcaf2554fa49bc347a016fa1e0cd3f496c66e7ca4410c13c144f52d2bd1` |
 | `fas2/src01-productfix-delta.json` | `e89521e8946e1c71cdceaa20fe7e818f7e5e104baf2a6054f1bd3a5175a6ef6b` |

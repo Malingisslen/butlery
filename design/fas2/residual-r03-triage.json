@@ -11,9 +11,9 @@
  "sammanfattning": {
   "symptomGroups_st": 5,
   "verkligt_belagda_sourceRootCauses_st": 4,
-  "unintended_st": 0,
+  "unintended_st": 1,
   "intentional_st": 2,
-  "undecided_st": 4,
+  "undecided_st": 3,
   "ritningar_per_sourceRootCause": {
    "SRC-01": 4,
    "SRC-02": 1,
@@ -122,8 +122,8 @@
    "symptomGroup": "div · klippning · överskott N px i y med overflow-y: hidden",
    "sourceRootCause": "SRC-02",
    "samma_kallrad_ger_fler_fynd": false,
-   "intentionality": "undecided",
-   "intentionality_skal": "52 px dolt av 226 px innehåll, cirka 2,8 rader vid radhöjd 18.4 px. Två br-element ligger 0.688 och 19.086 px under kanten. Effekten är stor, men ett max-height kan vara ett avsiktligt förhandsvisningsbeslut. Ingen data-clip-intent och ingen dokumenterad komponentregel finns — därför undecided, inte intentional.",
+   "intentionality": "unintended",
+   "intentionality_skal": "NORMATIVT BESLUT 2026-08-07 (evidensmatris.md): ett kallblock far forhandsvisas begransat, men dolt innehall MASTE ha en explicit och direkt synlig vag till fulltexten. kompkalla doljer 52 px av 226 px med max-height:150px och overflow:hidden UTAN nagon affordans. currentAffordance = none. Darmed unintended. Beslutet godkanner inte 150 px som normativ hojd, och intern scroll ar inte forstahandslosningen — expandera/minimera ar det.",
    "identityV2_status": "stable",
    "identityV2_basis": "unique-selector",
    "clipIntent": null,
