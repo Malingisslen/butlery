@@ -1,0 +1,58 @@
+{
+ "bevis": [
+  {
+   "artefakt": "betygperperson",
+   "css": {
+    "overflowX": "auto",
+    "overflowY": "auto",
+    "minHeight": "0px"
+   },
+   "maxScroll": 2,
+   "scrollTop_start": 0,
+   "scrollTop_max": 2,
+   "scrollbart": true,
+   "sistaElementetHeltInne": true,
+   "horisontellOverflow": 0,
+   "rect": [
+    412,
+    529
+   ]
+  },
+  {
+   "artefakt": "veckoallergi",
+   "css": {
+    "overflowX": "auto",
+    "overflowY": "auto",
+    "minHeight": "0px"
+   },
+   "maxScroll": 2,
+   "scrollTop_start": 0,
+   "scrollTop_max": 2,
+   "scrollbart": true,
+   "sistaElementetHeltInne": true,
+   "horisontellOverflow": 0,
+   "rect": [
+    412,
+    649
+   ]
+  },
+  {
+   "artefakt": "synkko",
+   "css": {
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "minHeight": "auto"
+   },
+   "maxScroll": 1,
+   "scrollTop_start": 0,
+   "scrollTop_max": 1.5,
+   "scrollbart": true,
+   "sistaElementetHeltInne": true,
+   "horisontellOverflow": 0,
+   "rect": [
+    412,
+    611.5
+   ]
+  }
+ ]
+}
