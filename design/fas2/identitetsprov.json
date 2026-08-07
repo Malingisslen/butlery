@@ -1,0 +1,42 @@
+{
+ "prov": [
+  {
+   "id": "ID-A",
+   "vad": "åtta syskon med samma selektor ger åtta noder under EN nyckel",
+   "ok": true,
+   "diag": "svg-nyckel: sel:div>svg[0] · noder: 8 · distinkta sökvägar: 8 · totalt kolliderande nycklar i fixturen: 2 (omslaget kolliderar också, vilket är väntat)"
+  },
+  {
+   "id": "ID-B",
+   "vad": "samma DOM-nod sedd av flera metoder är ingen identitetskollision",
+   "ok": true,
+   "diag": "kollisioner i B: 0 · registrerade flera-metoder-fall totalt: 16"
+  },
+  {
+   "id": "ID-C",
+   "vad": "förälder och barn med olika nycklar är ingen nyckelkollision",
+   "ok": true,
+   "diag": "kollisioner i C: 0 · förfader-barn-par under samma nyckel totalt: 0"
+  },
+  {
+   "id": "ID-D",
+   "vad": "samma tagg och klass men olika data-icon — stabil diskriminator hittas",
+   "ok": true,
+   "diag": "glyfens diskriminator: \"data-attribut\" · omslagets: null · data-attribut: [{\"data-icon\":\"hjarta\"},{\"data-icon\":\"stjarna\"}]"
+  },
+  {
+   "id": "ID-E",
+   "vad": "oskiljbara syskon markeras som identitetsambiguitet utan diskriminator",
+   "ok": true,
+   "diag": "kollisioner: 1 · noder: 2 · diskriminator: null"
+  },
+  {
+   "id": "ID-F",
+   "vad": "ett inskjutet syskon flyttar DOM-sökvägen men inte den igenkännbara identiteten",
+   "ok": true,
+   "diag": "samma nyckel: true · samma beskrivning: true · sökväg flyttad: true · E-paths [\"0/0\",\"1/0\"] F-paths [\"1/0\",\"2/0\"]"
+  }
+ ],
+ "gröna": 6,
+ "av": 6
+}

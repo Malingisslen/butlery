@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=273-->
+<!--manifest:files=278-->
 
 ## Reporoten
 
@@ -213,6 +213,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas0/verify-report.schema.json` | `70687a2337ca6fe4a4419089983d8dfda52821b9af4799b4dabb03dfe9ac895d` |
 | `fas2/gridmatning.txt` | `8972e840fef68b585a2b76e5ebe37d44a03bc3d3b6c7a7c63350fe53c9337726` |
 | `fas2/gridmatning_test.dart.txt` | `6ee766862801cd83ab3d97d5d80f8399538882a58ef7cbdc6db9ef7c8460102a` |
+| `fas2/identitetsprov.json` | `2a07551465bb8da0ef5096d6c0b487fee4bcf699349a001135a0baa1134e75db` |
+| `fas2/identity-collision-baseline.json` | `4c2942e14f7a5c366033d2c6bdedfc9bdf0e26f4b24aac14509fe3221211db01` |
 | `fas2/ikongeometri.json` | `27bd32b81bf742d0fdf9da220687d15b5aae677c82d3b915ccb297eb7da4e7dc` |
 | `fas2/nav-add-delta.json` | `0a8748d9f2059c0dc9e187db3824d62f691872cd456f24fca2df370fccc8f22c` |
 | `fas2/negativa-prov.json` | `5ac71e2542a1c9b66427a154f591650f9da433e035e8f5c89d512e520cf658a0` |
@@ -257,7 +259,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/authority-contract.mjs` | `7479d2ebd3496f4315fb98ed1e0cb006eb0780acaa824616bf47c214583fdad9` |
 | `tools/build-delivery.mjs` | `fcfc81f8a1776576fd85e5e2140b0f55483efa8ecef36d87a0aa89d16b7a5d9d` |
 | `tools/check-app-theme.mjs` | `3ec46efe91680b7050662962c1f117d5dc9a2653ffd1f9437a67a0a72217b745` |
-| `tools/controls.mjs` | `3fe7bc37149b1a94f129f22f4270a2d40c63d9786d9e990c5df733b11971ec23` |
+| `tools/controls.mjs` | `817367d10c109ff6b28a46cad9610ac8fdabeb97ee0b3ba4484f58147480a101` |
 | `tools/finalize.mjs` | `74fd11be650ad6a50a4c6817c06bac45dd1815c97faf524cd59c41f91ef0afd1` |
 | `tools/gate.mjs` | `02917e6f14ed023585a1496630ba68b1b9dea5109ab991f5d1a5a931195ba4f0` |
 | `tools/gen-app-theme.mjs` | `f07136386c267f52bda54a0e5b14523fa41facb615f276befc3b9c140f17bd01` |
@@ -274,6 +276,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/gen-schema.mjs` | `1d276054d4fb6976fc8e1005626d23467c4c21bb5d48996016e883312cb74a84` |
 | `tools/gen-targets.mjs` | `ffbef2620ef4be264e16dab5432c65fb80d24422eb8c0f3d9e512324f82e8e9f` |
 | `tools/icon-geometry.mjs` | `650276031635e06c81f678a89464c4baf8242b02bb45846bdb49a430822da62a` |
+| `tools/identity-audit-lib.mjs` | `2adcc7ee5581528a9ed457a3f8cc2d9a5a95cbdc17c7f8c8e83d6eaa619b6925` |
+| `tools/identity-audit.mjs` | `7207bf9d5259982f3c957a4d2e58b2428eb69eb9343c2fee4f05b7f1ddb8e7e3` |
+| `tools/identity-fixtures.mjs` | `79ba8155c53dcbbb87dc55c00de682bac9914216fdbbf266c9ec13bb83ab415d` |
 | `tools/lint-controls.mjs` | `07350d4dd8b167c772f9ca145cd69b92ff0418632c2252d434b7d9ad59f6c244` |
 | `tools/lint-core.mjs` | `3b2a022f92648daf14b34d99cded4175ec3a95489570efc03be11fab2262ec20` |
 | `tools/manifest-contract.mjs` | `e5b69a41062031b0c15868d4de9673d7f3645256e3cb5c8da66ea79ec83c368d` |
@@ -281,7 +286,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/preflight.mjs` | `3fe3bfa0e6f92fcb71ca5d19aa2c8e5e9df307f80eb3c8fe4dee09f173d5f3af` |
 | `tools/render-analyze-lib.mjs` | `5608257ad1b50b6487b0a0b8958930bf07fe4c639e80a6b08acec3707322a6a2` |
 | `tools/render-analyze.mjs` | `43d16c95a2aa622fc6d63e3a2b41e31c2a2ffb135bc31dbcd3533150374eb428` |
-| `tools/render-measure.mjs` | `f51cc5b7d631e2f38e1a6177bc017a0d8e190c7f3e6d3572e07434725b66114d` |
+| `tools/render-measure.mjs` | `3c369f5de235cdc65fbe21183ff53e311a066ee13e6b1b68b5e696d6590534bd` |
 | `tools/render-negatives.mjs` | `10362b2febe71fc62c34b78965b0c99902dca396dadbda1ef708dd5a8eff6c69` |
 | `tools/render-probe.mjs` | `cde2604382b5ef4e7f60297dd58156dea66b2908415ffbc358584f1f0907a697` |
 | `tools/render-repro.mjs` | `c01847106337b4f6cc744350f150ef54919ab925928dab19423897191affa2c1` |

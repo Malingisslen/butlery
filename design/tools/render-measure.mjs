@@ -172,8 +172,27 @@ export const MEASURE = `(() => {
       if (UTAN_BOX.has(taggen)) continue;
       const mätbar = er.width > 0 && er.height > 0 && cs.display !== 'none';
       const ek = elementKey(el, it);
+      // F2-ID01 · BESKRIVANDE FÄLT FÖR IDENTITETSREVISIONEN.
+      //
+      // De ingår ALDRIG i findingId och ändrar därför inget kanoniskt resultat.
+      // De finns för att en kollisionsinventering ska kunna avgöra OM två
+      // detektioner med samma elementKey är samma fysiska nod eller två skilda,
+      // och vilken stabil diskriminator som i så fall hade kunnat skilja dem.
+      // Fältet path är den sanna nodidentiteten inom en enskild renderkörning.
+      // (Inga bakstreck-citat här: de avslutar mallsträngen mätskriptet bor i.)
+      const dataAttr = {};
+      for (const a of el.attributes || [])
+        if (a.name.startsWith('data-') && a.name !== 'data-dc-tpl') dataAttr[a.name] = a.value.slice(0, 60);
+      const förälder = el.parentElement;
       const desc = { tag: taggen, cls: clsOf(el).slice(0, 40),
         path: nodePath(el, it), elementKey: ek.key, keyBasis: ek.basis,
+        roll: el.getAttribute('data-a11y-role') || el.getAttribute('role') || null,
+        namn: el.getAttribute('data-a11y-name') || el.getAttribute('aria-label') || null,
+        dataAttr,
+        domBeskrivning: (förälder && förälder !== it
+          ? förälder.tagName.toLowerCase() + (clsOf(förälder) ? '.' + clsOf(förälder).trim().split(/\s+/)[0] : '')
+          : 'rot') + ' > ' + taggen + (clsOf(el) ? '.' + clsOf(el).trim().split(/\s+/)[0] : '') +
+          ' [' + (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 24) + ']',
         intent: el.getAttribute('data-clip-intent') || null };
 
       // R-03a · Överskjutande innehåll är INTE automatiskt ett fel. En behållare
