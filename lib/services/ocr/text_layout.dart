@@ -19,6 +19,13 @@
 ///   already import it, `tools/corpus_split_eval.dart` among them. The shape is
 ///   right; the reason was invented.)
 ///
+/// Its ONE import is `glyph_metrics.dart`, a sibling under the same discipline
+/// — no Flutter, no `dart:ui`, nothing third-party. This file carried that
+/// helper inline until it pushed the model past the 500-line limit; the
+/// property that matters (a stored capture replays under plain `dart test`
+/// years from now) is unchanged, and "zero imports" was only ever the
+/// shorthand for it.
+///
 /// **The text is DERIVED from the lines, never the other way round.**
 /// [PageLayout.text] and [DocumentLayout.text] are the only producers of the
 /// string the parser sees, which is what makes a line index a line number by
@@ -60,11 +67,17 @@
 /// rule sat in this paragraph unimplemented from the model's first commit until
 /// step 6a, which is exactly what happens when a MUST points at nothing.
 ///
-/// The callers are still being built: as of 2026-08-06 the recognizer seam and
-/// `HeadingDetector` (d8d565981) import this file, but nothing calls either
-/// `HeadingDetector` or [DocumentLayout.matchesLineCountOf] from the
-/// `OCRResult` path yet. The above is a requirement on the steps to come.
+/// The callers are still being built. As of 2026-08-07 the recognizer seam,
+/// `HeadingDetector` and `MultiRecipeSplitter` import this file, and the
+/// splitter DOES call both `HeadingDetector` and
+/// [DocumentLayout.matchesLineCountOf] — but only when handed a layout, and
+/// nothing hands it one yet: `import_manager.dart` still calls `split(input)`.
+/// So no layout reaches the parser from the `OCRResult` path, and the above is
+/// still a requirement on the steps to come rather than a description of what
+/// runs.
 library;
+
+import 'package:butlery/services/ocr/glyph_metrics.dart';
 
 /// An axis-aligned box in the coordinate space of the image the recognizer
 /// read. That image is the PREPROCESSED one (downscaled, greyscaled), so these
@@ -118,11 +131,12 @@ List<Object?> _listOf(Object? v) => v is List ? v : const [];
 ///
 /// Written as an explicit type test rather than reaching for `.orEmpty()`
 /// because BUT-581's guard bans the raw null-coalesce-to-empty-string form
-/// under `lib/`. Keeping this file at ZERO imports is the reason to write the
-/// helper rather than import the extension — not, as an earlier draft said, a
-/// Flutter dependency: `default_value_extensions.dart` imports only
-/// `package:clock`. Zero imports is a narrower property, and it is the real
-/// one: this model is replayed by tooling for years.
+/// under `lib/`. Keeping this file free of THIRD-PARTY dependencies is the reason
+/// to write the helper rather than import the extension — not, as an earlier
+/// draft said, a Flutter dependency: `default_value_extensions.dart` imports
+/// only `package:clock`. (An earlier version of this paragraph said "zero
+/// imports"; the sibling `glyph_metrics.dart` is now imported, and it is under
+/// the same discipline. The property is dependency-freedom, not the count.)
 String _str(Object? v) => v is String ? v : '';
 
 /// A number written as a string is the commonest JSON round-trip corruption,
@@ -142,6 +156,15 @@ class OcrWord {
   final LayoutBox box;
 
   const OcrWord({required this.text, required this.box});
+
+  /// The word's box height divided by the vertical zones its GLYPHS occupy —
+  /// an estimate of type size that does not depend on which letters the word
+  /// happens to contain. See [glyphSpan] for why that distinction is load
+  /// bearing and what the constants are.
+  double get typeHeight {
+    final span = glyphSpan(text);
+    return span <= 0 ? box.height : box.height / span;
+  }
 
   Map<String, dynamic> toJson() => {'t': text, ...box.toJson()};
 
@@ -173,15 +196,19 @@ class OcrLine {
   OcrLine({required String text, required this.box, this.words = const []})
     : text = text.replaceAll(_newlines, ' ');
 
-  /// The line's type size, as the MEDIAN of its words' heights.
+  /// The line's type size, as the MEDIAN of its words' GLYPH-NORMALISED
+  /// heights — see [OcrWord.typeHeight] for why the raw box height is a poor
+  /// measure of type size.
   ///
   /// Median, not mean: a single mis-segmented fragment (OCR merging a glyph
   /// with the line above) can double a mean and turn body text into a
   /// "heading". Falls back to the line box only when word boxes are absent,
-  /// which is the degraded case, not the normal one.
+  /// which is the degraded case, not the normal one — and that fallback is
+  /// NOT normalised, because a line box spans whatever its tallest and lowest
+  /// glyphs reach and no single word's letters describe it.
   double get typeHeight {
     if (words.isEmpty) return box.height;
-    final heights = words.map((w) => w.box.height).toList()..sort();
+    final heights = words.map((w) => w.typeHeight).toList()..sort();
     final mid = heights.length ~/ 2;
     return heights.length.isOdd
         ? heights[mid]

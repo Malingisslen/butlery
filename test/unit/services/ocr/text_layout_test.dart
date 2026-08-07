@@ -67,7 +67,18 @@ void main() {
         box: const LayoutBox(left: 0, top: 0, width: 900, height: 400),
         words: [word('Provençalska', 70), word('ägg', 70)],
       );
-      expect(l.typeHeight, equals(70));
+      // Not 70: a word's height is divided by the vertical zones its glyphs
+      // occupy (see `OcrWord.typeHeight`). These two words do NOT share a span
+      // — 'ägg' descends and 'Provençalska' does not, its 'P' being a capital —
+      // so an even-count median averages their two measurements. The point of
+      // the test is the line BOX at 400 playing no part, so the expectation is
+      // stated as those measurements rather than as a constant that would
+      // silently re-encode the zone table.
+      final expected =
+          (word('Provençalska', 70).typeHeight + word('ägg', 70).typeHeight) /
+          2;
+      expect(l.typeHeight, equals(expected));
+      expect(l.typeHeight, lessThan(100));
     });
 
     test('one mis-segmented giant word does not drag the line up', () {
@@ -103,7 +114,135 @@ void main() {
           word('ägg', 78),
         ],
       );
-      expect(l.typeHeight, equals(70));
+      // Sorted by NORMALISED height, the two middle words are 'ägg' and
+      // 'Räkna'; 'med' is lowest and the digit group '4-5' highest (no letters,
+      // so it keeps its raw box). Averaging without sorting, or picking one
+      // middle element, both answer something else.
+      final expected =
+          (word('ägg', 78).typeHeight + word('Räkna', 80).typeHeight) / 2;
+      expect(l.typeHeight, equals(expected));
+    });
+  });
+
+  group('OcrWord.typeHeight normalises for glyphs', () {
+    test('two words at the same type size measure the same', () {
+      // The defect this exists for. At ONE type size a word that descends and
+      // carries an umlaut draws MORE ink than one that does neither, so its box
+      // is taller — 'ägg' against 'omelett' by about a quarter. A rule
+      // comparing raw heights reads that as two different headings.
+      //
+      // The heights below are therefore in the ratio of the two words' zone
+      // spans, which is what "the same type size" MEANS for a box drawn around
+      // ink. (An earlier version of this test used 166.5/129 — the two LINE
+      // heights off the real capture — applied to two words that share a span.
+      // That pair is not a same-type-size pair at all, and the assertion only
+      // passed because `glyphSpan` was miscounting a capital 'P' as a
+      // descender.)
+      final descending = OcrWord(
+        text: 'ägg',
+        box: const LayoutBox(left: 0, top: 0, width: 120, height: 180),
+      );
+      final plain = OcrWord(
+        text: 'omelett',
+        box: const LayoutBox(left: 0, top: 0, width: 300, height: 145),
+      );
+
+      expect(
+        descending.box.height / plain.box.height,
+        greaterThan(1.2),
+        reason: 'raw boxes disagree by more than a fifth',
+      );
+      // Must land well under `HeadingDetector.titleSizeSpread`
+      // (`lib/services/import/layout/heading_detector.dart`, 1.10 as of
+      // 2026-08-07) or two sibling titles read as two different sizes. Nothing
+      // enforces that cross-file number; importing the detector into the page
+      // model's own test would be the wrong layering.
+      //
+      // Bounded on BOTH sides on purpose. A one-sided `lessThan` is satisfied
+      // by any descender depth above the true one, including absurd ones —
+      // measured, `_descenderDrop = 2.0` passes it while inverting the pair.
+      final ratio = descending.typeHeight / plain.typeHeight;
+      expect(ratio, lessThan(1.05));
+      expect(ratio, greaterThan(0.95));
+    });
+
+    test('an ALL-CAPS word is not mistaken for a bigger one', () {
+      // 'TUSENBLADSTÅRTA' set as a component heading was one of the eight false
+      // splits. An all-caps word has no x-height band at all: its box spans cap
+      // to baseline, so at the SAME type size it out-measures a lowercase word
+      // that reaches neither above nor below the x-height by about the cap
+      // ratio — which is why the two raw heights below differ by design.
+      final caps = OcrWord(
+        text: 'TUSENBLADSTARTA',
+        box: const LayoutBox(left: 0, top: 0, width: 400, height: 145),
+      );
+      final lowercase = OcrWord(
+        text: 'ananas',
+        box: const LayoutBox(left: 0, top: 0, width: 300, height: 100),
+      );
+
+      expect(caps.typeHeight / lowercase.typeHeight, closeTo(1.0, 0.05));
+    });
+
+    test('a word with no letters keeps its raw box', () {
+      // '4-5', '½', a stray rule. There is no glyph zone to divide by, and
+      // answering zero would make it the smallest thing on every page.
+      final digits = OcrWord(
+        text: '4-5',
+        box: const LayoutBox(left: 0, top: 0, width: 60, height: 60),
+      );
+      expect(digits.typeHeight, equals(60));
+    });
+
+    test('a genuinely larger heading still measures larger', () {
+      // The control. Normalisation must remove the ALPHABET, not the signal —
+      // if it flattened everything the detector would have nothing to read.
+      //
+      // TWO DIFFERENT WORDS deliberately. With the same string on both sides
+      // the ratio is `150/70` for any implementation of the shape
+      // `height / f(text)`, whatever `f` returns — measured, that version
+      // reddened under none of 14 mutants including no-normalisation itself.
+      final heading = OcrWord(
+        text: 'Pannkakor',
+        box: const LayoutBox(left: 0, top: 0, width: 400, height: 150),
+      );
+      final bodyWord = OcrWord(
+        text: 'omelett',
+        box: const LayoutBox(left: 0, top: 0, width: 200, height: 70),
+      );
+      expect(
+        heading.typeHeight / bodyWord.typeHeight,
+        closeTo(150 / 70, 0.001),
+      );
+    });
+
+    test('a word with no plain x-height letter is not read as huge', () {
+      // Every letter in `Kött` stops at the ascender line or above, but the box
+      // still covers the x-height band beneath them. Dropping that band made
+      // this measure 2.2 times its neighbour, which is worse than the defect
+      // the whole file was written to fix. Bucket coverage of `glyphSpan`
+      // itself lives in `glyph_metrics_test.dart`.
+      final tricky = OcrWord(
+        text: 'Kött',
+        box: const LayoutBox(left: 0, top: 0, width: 200, height: 100),
+      );
+      final plain = OcrWord(
+        text: 'Tomater',
+        box: const LayoutBox(left: 0, top: 0, width: 300, height: 100),
+      );
+      expect(tricky.typeHeight, equals(plain.typeHeight));
+
+      // The ROUTING control, and it needs two words that DISAGREE on the axis
+      // being routed. The pair above both span 1.45, so removing normalisation
+      // from `OcrWord.typeHeight` altogether leaves them equal and the
+      // assertion green — it pins the x-band and nothing else. `ägg` descends,
+      // so at the same box height it must measure shorter than `Kött`, and an
+      // unnormalised `typeHeight` would report the two as identical.
+      final descending = OcrWord(
+        text: 'ägg',
+        box: const LayoutBox(left: 0, top: 0, width: 120, height: 100),
+      );
+      expect(tricky.typeHeight, greaterThan(descending.typeHeight));
     });
   });
 

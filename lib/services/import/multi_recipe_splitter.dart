@@ -1,4 +1,6 @@
+import 'package:butlery/services/import/layout/heading_detector.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
+import 'package:butlery/services/ocr/text_layout.dart';
 
 /// Splits a single OCR/text blob that contains SEVERAL recipes (a cookbook
 /// spread) into one text block per recipe.
@@ -41,9 +43,72 @@ class MultiRecipeSplitter {
     caseSensitive: false,
   );
 
+  /// A layout-derived block must be at least this many chars.
+  ///
+  /// 200, not the text path's 40, and the difference is measured rather than
+  /// cautious: the simulation that produced "single-recipe pages stay at 91 %"
+  /// used 200 plus an instruction signal. At 120 the same threshold scores
+  /// 87 %/50 % instead of 91 %/40 %. The text path keeps 40 because its
+  /// boundaries already had to clear an ingredient cluster; a size-derived
+  /// boundary has no such evidence behind it, so the block itself must carry
+  /// the weight.
+  static const int _minLayoutBlockChars = 200;
+
+  /// Fewer blocks than the text path allows. A layout that suggests nine
+  /// recipes on ONE page is describing noise, not a cookbook.
+  ///
+  /// Counted per page, against the page each block actually opens on. The
+  /// measured basis is per page, but `HeadingDetector.headingLinesForDocument`
+  /// is document-scoped and a photo import may hold up to
+  /// `PhotoImportViewModel.maxPages` pages. A flat document cap of 8 would
+  /// therefore have switched the layout path off for five pages holding two
+  /// recipes each, which is not noise — it is the case the feature was built
+  /// for.
+  static const int _maxLayoutBlocksPerPage = 8;
+
   /// Split [input] into N recipe blocks, or `[input]` when not confident.
-  List<String> split(String input) {
+  ///
+  /// With a [layout], boundaries come from TYPE SIZE — a heading is set larger
+  /// than body text, which is the signal the text rules cannot see. Everything
+  /// about that path fails toward the text path, never toward a wrong split:
+  ///
+  /// - the layout is discarded unless [DocumentLayout.matchesLineCountOf]
+  ///   accepts [input]. That compares ROW COUNTS, and passing it is NECESSARY,
+  ///   NOT SUFFICIENT: two different strings of equal row count are
+  ///   indistinguishable to it, and the provider's string and the layout's
+  ///   usually HAVE equal row counts. Pairing text and layout as one cached
+  ///   unit is what actually closes that, and it is still owed — see the
+  ///   contract at [DocumentLayout.matchesLineCountOf], which forbids
+  ///   describing this gate as covering it;
+  /// - the layout path must produce at least two blocks and at most
+  ///   [_maxLayoutBlocksPerPage] per page, each clearing
+  ///   [_minLayoutBlockChars] and carrying an instruction signal;
+  /// - a block failing either test is DROPPED, not merged and not returned —
+  ///   so the path also carries a discard budget: once the text it is throwing
+  ///   away reaches [_minLayoutBlockChars], a whole recipe could be inside it
+  ///   and the path declines instead. Without that, one over-long title (the
+  ///   detector's own limit is 60 chars, with one character of headroom over
+  ///   the corpus) shipped two confident recipes and ate a third, while the
+  ///   text path handed back the same page whole;
+  /// - the budget closes the LOSS case, not every case. This path still runs
+  ///   first and short-circuits the text rules, so a page whose third title the
+  ///   detector refuses (too long, lowercase, carrying a quantity) comes back as
+  ///   two blocks with nothing discarded — the third recipe merged into the
+  ///   second — where the text rules might have found three. Under-splitting is
+  ///   the residual; measured over the corpus it is a net win (47 recipes never
+  ///   emitted becomes 39), which is not the same as saying it cannot happen;
+  /// - anything else falls through to the text rules, which then get their
+  ///   unchanged chance;
+  /// - `_isCompleteRecipeBlock` is deliberately NOT applied to layout blocks. It
+  ///   demands an ingredient signal AND an instruction signal, and a prose
+  ///   cookbook has neither in list form — those pages are precisely why this
+  ///   path exists, and every one of the corpus's prose spreads fails the text
+  ///   rules today.
+  List<String> split(String input, {DocumentLayout? layout}) {
     if (input.trim().isEmpty) return [input];
+
+    final byLayout = _splitByLayout(input, layout);
+    if (byLayout != null) return byLayout;
 
     final rawLines = input.split('\n');
     // Index map of non-empty lines → their position in rawLines, so blocks can
@@ -97,6 +162,89 @@ class MultiRecipeSplitter {
     final valid = blocks.where(_isCompleteRecipeBlock).toList();
     if (valid.length < 2 || valid.length > _maxBlocks) return [input];
     return valid;
+  }
+
+  /// The layout path, or null when it declines — and it declines often, on
+  /// purpose. Null means "the text rules get their normal turn", never "this
+  /// page has one recipe".
+  List<String>? _splitByLayout(String input, DocumentLayout? layout) {
+    if (layout == null) return null;
+    // The precondition, and only half of one: it catches a ROW-COUNT mismatch.
+    // A different string with the same row count still passes, still yields
+    // confident line numbers, and still addresses the wrong rows. The other
+    // half is caching text and layout as one unit, which step 4 owes.
+    if (!layout.matchesLineCountOf(input)) return null;
+
+    final flat = HeadingDetector.headingLinesForDocument(layout);
+    // Null is "cannot judge" (a page with no measurable baseline); empty is
+    // "judged, found none". Both go to the text rules, but only the first is
+    // an absence of evidence.
+    if (flat == null || flat.length < 2) return null;
+
+    final starts = <int>[];
+    for (final i in flat) {
+      final row = layout.textLineIndex(i);
+      if (row == null) return null;
+      starts.add(row);
+    }
+
+    final rawLines = input.split('\n');
+    final blocks = <String>[];
+    // The text row each surviving block opens on, so the cap below can be
+    // counted where it is justified — per page.
+    final blockStarts = <int>[];
+    // Everything before the first heading belongs to no block at all. Usually a
+    // folio and a running header; occasionally a whole recipe whose title the
+    // detector refused, which is why it is counted rather than assumed small.
+    var discarded = rawLines.sublist(0, starts.first).join('\n').trim().length;
+
+    for (var i = 0; i < starts.length; i++) {
+      final end = i + 1 < starts.length ? starts[i + 1] : rawLines.length;
+      // Belt and braces: `starts` is strictly increasing (the detector emits
+      // ascending indices and `textLineIndex` is monotonic) and the row-count
+      // gate bounds the last index, so neither half can fire today.
+      if (starts[i] >= end || end > rawLines.length) return null;
+      final block = rawLines.sublist(starts[i], end).join('\n').trim();
+      // Trimmed per line, as every other caller of `_isInstructional` is:
+      // `instructionScore` matches its verb with `startsWith`, so one leading
+      // space costs the +3 the verb is worth and can drop the line below the
+      // gate on its own.
+      if (block.length < _minLayoutBlockChars ||
+          !block.split('\n').any((l) => _isInstructional(l.trim()))) {
+        discarded += block.length;
+        continue;
+      }
+      blocks.add(block);
+      blockStarts.add(starts[i]);
+    }
+
+    // The discard budget. A dropped block's text is gone from the import
+    // entirely, and `batch_import_preview` pre-ticks what it is handed with no
+    // way to notice the absence — so page furniture may vanish, but never a
+    // recipe's worth of page.
+    if (discarded >= _minLayoutBlockChars) return null;
+
+    if (blocks.length < 2) return null;
+
+    // Counted PER PAGE, not as a document total scaled by the page count. Those
+    // are not the same rule: a total of 16 over two pages passes a scaled cap
+    // even when all 16 sit on page one, which is exactly the "nine recipes on
+    // one page is noise" case the cap exists to catch.
+    final offsets = layout.lineOffsets;
+    // Unreachable, like the bounds guard above: `matchesLineCountOf` already
+    // refused an incomplete document, which is the only way this is null.
+    if (offsets == null) return null;
+    final perPage = List<int>.filled(offsets.length, 0);
+    for (final row in blockStarts) {
+      var page = 0;
+      for (var p = 0; p < offsets.length; p++) {
+        if (offsets[p] <= row) page = p;
+      }
+      perPage[page]++;
+    }
+    if (perPage.any((n) => n > _maxLayoutBlocksPerPage)) return null;
+
+    return blocks;
   }
 
   /// A heading-like line: short, capitalised, and NOT a header/ingredient/

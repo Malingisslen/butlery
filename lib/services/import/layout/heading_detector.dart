@@ -31,6 +31,9 @@ class HeadingDetector {
   /// | K 1.50, minChars 120, verb | 87 %                    | 50 %          |
   /// | K 1.50, minChars 200, verb | **91 %**                | **40 %**      |
   ///
+  /// Scored on `ocr.txt`, so NOT comparable to [titleSizeSpread]'s table below,
+  /// which scores the layout capture's own text from a different engine.
+  ///
   /// The rows differ in more than K, and the 91 % is contingent on ALL THREE:
   /// the minimum block size and the instruction-signal requirement live in the
   /// splitter, not here. Step 6 picking minChars 120 would quietly invalidate
@@ -59,6 +62,10 @@ class HeadingDetector {
   /// Both are recorded so they are not re-derived; neither should return
   /// without a fresh measurement at the shipping threshold.
   ///
+  /// Candidates that clear the size bar are then cut to [titleSizeSpread] of
+  /// the page's TALLEST candidate — a page-relative floor, applied after this
+  /// absolute one, and a different rule from the ceiling above. See its doc.
+  ///
   /// Empty when the page has no measurable baseline — see
   /// [PageLayout.bodyTypeHeight]. That is the contract, not a failure: roughly
   /// a quarter of the corpus's multi-recipe CAPTURES decline — 22 of 92, all of
@@ -73,14 +80,82 @@ class HeadingDetector {
 
     final threshold = body * headingSizeRatio;
     final headings = <int>[];
+    var tallest = 0.0;
     for (var i = 0; i < page.lines.length; i++) {
       final line = page.lines[i];
       if (line.typeHeight < threshold) continue;
       if (!_readsLikeTitle(line)) continue;
       headings.add(i);
+      if (line.typeHeight > tallest) tallest = line.typeHeight;
     }
-    return headings;
+
+    // Keep only the candidates set in the page's LARGEST heading type.
+    final floor = tallest / titleSizeSpread;
+    return headings
+        .where((i) => page.lines[i].typeHeight >= floor)
+        .toList(growable: false);
   }
+
+  /// How far below the page's tallest heading a line may be set and still be a
+  /// RECIPE TITLE rather than one of its parts.
+  ///
+  /// The measured failure this fixes: on the FIRST layout-arm run (2026-08-07,
+  /// raw box heights, no glyph normalisation and no floor) 8 single-recipe pages
+  /// were split in two because a COMPONENT heading — "Topping", "Vaniljglass",
+  /// "Kardemummasmulor", "TUSENBLADSTÅRTA" — is set larger than body text and
+  /// so cleared [headingSizeRatio]. Each sat at roughly two thirds of its
+  /// page's real title, while two dish titles on a genuine spread are set in
+  /// the same type by construction.
+  ///
+  /// This is NOT the size-CLASS idea recorded as measured-worse above: no
+  /// clustering, no bucket to be poisoned by a heading the recognizer cut in
+  /// two. One page-relative floor, applied after the absolute one.
+  ///
+  /// **Only meaningful because [OcrWord.typeHeight] normalises for glyphs.**
+  /// On raw box heights the same page's two sibling titles measured 166.5 and
+  /// 129.0 — a 1.29 spread from a descender and an umlaut, not from type size —
+  /// so any floor tight enough to reject a component heading also rejected half
+  /// the real spreads. Normalisation is what makes this rule possible at all;
+  /// it is not an independent tweak.
+  ///
+  /// Swept with `dart run tools/corpus_split_eval.dart --layout`, which scores
+  /// the SHIPPED code over real stored geometry, both arms on one input:
+  ///
+  /// | spread | single pages | spreads right | recipes lost | spurious blocks |
+  /// |--------|--------------|---------------|--------------|-----------------|
+  /// | text arm (no geometry) | 92 % | 19 % | 47      | 14              |
+  /// | **1.10** | **92 %**   | **33 %**      | **39**   | **13**          |
+  /// | 1.15   | 91 %         | 35 %          | 38           | 14              |
+  /// | 1.20   | 91 %         | 33 %          | 39           | 15              |
+  /// | none   | 88 %         | 31 %          | 34           | 22              |
+  ///
+  /// These rows are NOT comparable to [headingSizeRatio]'s table above. That
+  /// one scores `ocr.txt`; this one scores the layout capture's own text, a
+  /// different OCR engine — which is why the text baseline reads 92 %/19 % here
+  /// and 91 %/25 % there. `tools/corpus_split_eval.dart` prints that warning on
+  /// every run for the same reason. Only the rows below may be compared with
+  /// each other.
+  ///
+  /// 1.10 breaks NOTHING: the single-page score is the text arm's own 92 %, and
+  /// the spurious-block count comes in one BELOW importing with no geometry at
+  /// all. It fixes 7 pages and breaks 0. Every other row buys spreads with
+  /// working pages, which is the trade the whole plan is written to refuse.
+  ///
+  /// That clean result only appeared once [OcrWord.typeHeight] stopped
+  /// measuring the alphabet. The same table against the earlier, buggy span
+  /// arithmetic read 91 % / 29 % / 41 / 14 with one page broken, and against no
+  /// normalisation at all, 86 % with EIGHT broken. The rule and the measurement
+  /// underneath it are not separable.
+  ///
+  /// 1.15 is the measured bolder option: 2 points more spreads and one more
+  /// recipe rescued, against one working page cut in half. A product call, not
+  /// a better number, and one constant away.
+  ///
+  /// A tighter spread also fails in the SAFE direction under the engine
+  /// uncertainty this whole path carries: too tight drops a real title and the
+  /// page falls back to the text rules, while too loose admits a component
+  /// heading and silently splits a working recipe in two.
+  static const double titleSizeSpread = 1.10;
 
   /// Heading positions for a WHOLE import, as indices into
   /// [DocumentLayout.lines] — or null when the document cannot be judged.

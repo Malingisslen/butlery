@@ -16,6 +16,7 @@ void main() {
     required double height,
     int? words,
     double? boxHeight,
+    List<double>? wordHeights,
   }) {
     final tokens = text.trim().isEmpty
         ? <String>[]
@@ -33,7 +34,14 @@ void main() {
         for (var i = 0; i < count; i++)
           OcrWord(
             text: i < tokens.length ? tokens[i] : 'w$i',
-            box: LayoutBox(left: 0, top: 0, width: 40, height: height),
+            box: LayoutBox(
+              left: 0,
+              top: 0,
+              width: 40,
+              height: (wordHeights != null && i < wordHeights.length)
+                  ? wordHeights[i]
+                  : height,
+            ),
           ),
       ],
     );
@@ -41,16 +49,20 @@ void main() {
 
   /// Word heights measured from the capture of
   /// `butlery-corpus/blandat-svart/PXL_20260803_204246157` — a PROSE spread
-  /// with no ingredient list anywhere, where every text rule fails and the two
-  /// titles are the only lines over 100. This is the page the whole approach
-  /// was designed against.
+  /// with no ingredient list anywhere, where every text rule fails. This is the
+  /// page the whole approach was designed against.
+  ///
+  /// The two titles' word boxes are transcribed INDIVIDUALLY (200/133 and
+  /// 139/119) because that is what the capture holds and because giving both
+  /// words of a line one height — as this fixture did until 2026-08-07 — hides
+  /// the effect that actually decides this page. See the group below.
   PageLayout realSpread() => PageLayout(
     lines: [
-      line('Provençalska ägg', height: 167),
+      line('Provençalska ägg', height: 167, wordHeights: [200, 133]),
       line('Lägg kokta, skalade 8-minuters-ägg — två per person', height: 72),
       line('i en ratatouille eller en fransk grönsaksröra', height: 69),
       line('servera med bröd till eller med råris', height: 74),
-      line('Fransk omelett', height: 129),
+      line('Fransk omelett', height: 129, wordHeights: [139, 119]),
       line('Få saker är så lättlagade som en fransk omelett', height: 67),
       line('blir omeletten om man inte vispar i smeten', height: 68),
       line('Räkna med fyra eller fem ägg för två personer', height: 74),
@@ -62,29 +74,70 @@ void main() {
   ).map((i) => page.lines[i].text).toList();
 
   group('HeadingDetector on the page that motivated it', () {
-    test('finds exactly the two dish titles', () {
-      expect(
-        headingTexts(realSpread()),
-        equals(['Provençalska ägg', 'Fransk omelett']),
-      );
+    test('finds the larger title, and — measured — MISSES the smaller', () {
+      // Recorded as a known miss rather than hidden, because this is the page
+      // the whole approach was designed against and the reason is worth
+      // keeping.
+      //
+      // Its two titles ARE set in one type. The capture measures
+      // 'Provensalska' at 200 and 'ägg' at 133 — but 'ägg' occupies MORE
+      // vertical ink (umlaut plus two descenders), so at equal type size it
+      // should measure taller, not shorter. `glyphSpan` divides those zones out
+      // and the two words come back 137.9 and 73.9 — a factor of 1.9, WIDER
+      // than the 1.50 of the raw boxes, which is the correct direction and
+      // shows how much shorter `ägg`'s box really was. Glyphs are therefore not
+      // the remaining error. Word WIDTH is —
+      // an axis-aligned box around a slightly tilted word grows with its
+      // length, exactly as the `OcrWord` class doc says of LINE boxes, and
+      // 'Provensalska' is four times the width of 'ägg'. The line median then
+      // lands at 105.9 against 'Fransk omelett' at 89.0, which is outside
+      // `titleSizeSpread`.
+      //
+      // NOT tuned around. Three line estimators were measured over the corpus
+      // — median (ships), max and min — and median wins on every axis. Nor is
+      // the constant the answer: the two lines measure 105.9 against 89.0, a
+      // ratio of 1.19, so 1.15 does NOT recover this page (its floor is 92.1)
+      // and 1.20 would — a row the table records as no better on spreads, TWO
+      // spurious blocks worse, and a point down on single pages, which is the
+      // axis this whole plan refuses to trade. Deskewing the word boxes is the
+      // real fix and belongs to the column-ordering step, not here.
+      expect(headingTexts(realSpread()), equals(['Provençalska ägg']));
     });
 
     test('returns INDICES into the page lines, not just the texts', () {
       // The splitter slices the page at these positions, so an off-by-one is a
       // recipe that starts mid-sentence.
-      final page = realSpread();
-      expect(HeadingDetector.headingLines(page), equals([0, 4]));
+      //
+      // The page repeats the dish name as a running header at body size, which
+      // is the only thing that makes this test distinct. Against `realSpread`
+      // — where every line text is unique — its kill set was byte-identical to
+      // the test above: `headingTexts` IS `headingLines` mapped through the
+      // texts, so "index 0" and "the text at index 0" were one fact and no
+      // mutant could separate them. Now an implementation returning the header
+      // instead of the title answers [0] where [1] is correct.
+      final page = PageLayout(
+        lines: [
+          line('Provençalska ägg', height: 70),
+          line('Provençalska ägg', height: 167, wordHeights: [200, 133]),
+          line(
+            'Lägg kokta, skalade 8-minuters-ägg — två per person',
+            height: 72,
+          ),
+          line('i en ratatouille eller en fransk grönsaksröra', height: 69),
+          line('servera med bröd till eller med råris', height: 74),
+          line('Räkna med fyra eller fem ägg för två personer', height: 74),
+        ],
+      );
+      expect(HeadingDetector.headingLines(page), equals([1]));
     });
 
     test('the smaller of the two titles is still well clear of the bar', () {
-      // A control on the threshold itself. Six body lines at 67/68/69/72/74/74
-      // give a median of 70.5, so the bar sits at 105.75 and "Fransk omelett"
-      // clears it at 129 — with room, but not vast room. If K reached 1.83
-      // this page would silently yield one recipe again (129/70.5 = 1.8298, so 1.83
-      // already loses it).
+      // A control on the threshold itself, stated against the measured
+      // baseline rather than against a transcribed constant: every height here
+      // is glyph-normalised (`OcrWord.typeHeight`), so a literal 70.5 would
+      // pin the zone table rather than the size bar it claims to control.
       final page = realSpread();
       final body = page.bodyTypeHeight!;
-      expect(body, equals(70.5));
       // Against the CONSTANT, never a restated 1.5 — otherwise this control
       // says nothing about the ratio it claims to control.
       expect(
@@ -95,19 +148,29 @@ void main() {
   });
 
   group('the size bar', () {
-    test('body-sized lines are never headings, however title-like', () {
-      // Same words, same shape, ordinary size. Without the size test this
-      // page would report three headings.
-      final page = PageLayout(
+    test('a line measuring EXACTLY body size is never a heading', () {
+      // 'Pannkakor' clears every text guard, so the size bar is the only rule
+      // that can refuse it — which is what makes this a size-bar test.
+      //
+      // Its height is DERIVED so the line measures exactly the body baseline.
+      // The previous fixture used a raw 70 for 'Provençalska ägg' and claimed
+      // "without the size test this page would report three headings"; both
+      // halves were false. That line normalises to 43.6 against a baseline of
+      // 48.3 — smaller than body text, so the bar was never the thing refusing
+      // it — and the four body rows start lowercase, so the page reports ONE
+      // candidate, not three.
+      PageLayout pageWith(double titleHeight) => PageLayout(
         lines: [
-          line('Provençalska ägg', height: 70),
-          line('en lång rad brödtext som fortsätter här', height: 70),
-          line('ännu en lång rad brödtext som fortsätter', height: 70),
-          line('tredje raden brödtext som fortsätter', height: 70),
-          line('fjärde raden brödtext som fortsätter', height: 70),
+          line('Pannkakor', height: titleHeight),
+          for (var i = 0; i < 4; i++)
+            line('en lång rad brödtext som fortsätter $i', height: 70),
         ],
       );
-      expect(HeadingDetector.headingLines(page), isEmpty);
+      final probe = pageWith(100);
+      final perRawUnit = probe.lines.first.typeHeight / 100;
+      final atBody = probe.bodyTypeHeight! / perRawUnit;
+
+      expect(headingTexts(pageWith(atBody)), isEmpty);
     });
 
     test('a line just under the bar is refused, just over is taken', () {
@@ -119,13 +182,53 @@ void main() {
         ],
       );
 
-      // Body median 70 ⇒ bar 105. These two numbers are what pins K: 104 must
-      // be refused (so K > 1.4857 — K = 1.35, the measured-and-rejected
-      // setting that cuts one single-recipe page in four, reddens HERE) and
-      // 105 must be taken (so K ≤ 1.50). Moving the constant without moving
-      // the trade-off is not possible without editing this test.
-      expect(headingTexts(pageWith(104)), isEmpty);
-      expect(headingTexts(pageWith(105)), equals(['Pannkakor']));
+      // `perRawUnit` converts a raw word height into the normalised scale the
+      // detector works in, so every number below says something about K and
+      // nothing about which letters 'Pannkakor' happens to contain. Hard-coding
+      // the old 104/105 would pin the glyph zone table instead.
+      final probe = pageWith(100);
+      final perRawUnit = probe.lines.first.typeHeight / 100;
+      final body = probe.bodyTypeHeight!;
+
+      // The bar's SHAPE: one raw unit under is refused, one over is taken.
+      final atBar = body * HeadingDetector.headingSizeRatio / perRawUnit;
+      expect(headingTexts(pageWith(atBar - 1)), isEmpty);
+      expect(headingTexts(pageWith(atBar + 1)), equals(['Pannkakor']));
+
+      // The bar's VALUE. The two assertions above are derived FROM the constant
+      // and therefore hold for every positive K — including 1.35, the setting
+      // this file argues at length was measured and rejected for cutting one
+      // single-recipe page in four. These bracket K to (1.40, 1.60] so that
+      // moving it there cannot pass in silence.
+      expect(
+        headingTexts(pageWith(body * 1.40 / perRawUnit)),
+        isEmpty,
+        reason: 'K = 1.35 would take this line',
+      );
+      expect(
+        headingTexts(pageWith(body * 1.60 / perRawUnit)),
+        equals(['Pannkakor']),
+        reason: 'a K above 1.60 would lose a real title',
+      );
+    });
+
+    test('two sibling titles a few percent apart BOTH survive the floor', () {
+      // The loose side of `titleSizeSpread`, which nothing else guards. Every
+      // other fixture in both suites sets sibling headings to one identical
+      // height and one identical glyph shape, so they measure exactly equal and
+      // the constant could be tightened to 1.001 with the whole suite green.
+      //
+      // Real sibling titles are not exactly equal: the recognizer's boxes wobble
+      // by a few percent on one page. 8 % apart must still be one spread.
+      final page = PageLayout(
+        lines: [
+          line('Pannkakor', height: 150),
+          line('Vafflor', height: 138),
+          for (var i = 0; i < 4; i++)
+            line('en lång rad brödtext som fortsätter $i', height: 70),
+        ],
+      );
+      expect(headingTexts(page), equals(['Pannkakor', 'Vafflor']));
     });
 
     test('a heading on the LAST line of the page is still found', () {
@@ -163,23 +266,30 @@ void main() {
       expect(headingTexts(page), equals(['Pannkakor']));
     });
 
-    test('a chapter heading far above the titles is NOT excluded', () {
-      // An upper bound was measured and made recall worse. This
-      // pins that decision: the running header comes back as a heading, and it
-      // is the splitter's job to survive that, not this detector's to guess.
+    test('a chapter heading suppresses a smaller title below it', () {
+      // The known COST of `titleSizeSpread`, recorded rather than hidden.
+      //
+      // No ceiling was added — a ceiling drops the biggest line and was
+      // measured worse, and that decision stands. But a page-relative FLOOR
+      // reaches the same page from the other end: a chapter header set far
+      // above the dish titles becomes the page's reference, and a real title
+      // falls under the floor. This test used to assert both lines came back.
+      //
+      // Kept anyway, on measured grounds. Against no spread rule at all, the
+      // floor saves 5 working pages from being cut in half and removes 9
+      // spurious blocks, at the cost of 5 recipes not emitted — and the whole
+      // page then falls back to the text rules rather than splitting wrongly,
+      // which is the safe direction. If chapter headers turn out common in a
+      // real cookbook, this is where the cost is visible.
       final page = PageLayout(
         lines: [
           line('Vilda grönsaker', height: 420),
-          line('Nässelsoppa', height: 120),
+          line('Nässelsoppa', height: 160),
           for (var i = 0; i < 4; i++)
             line('en lång rad brödtext som fortsätter $i', height: 70),
         ],
       );
-      expect(
-        headingTexts(page),
-        equals(['Vilda grönsaker', 'Nässelsoppa']),
-        reason: 'no ceiling — measured worse',
-      );
+      expect(headingTexts(page), equals(['Vilda grönsaker']));
     });
   });
 
@@ -219,14 +329,16 @@ void main() {
         'Blanda smeten,',
         'Vispa ihop och grädda.',
         'För såsen:',
-        // Capitalized deliberately. A lowercase fragment is refused by the
-        // capitalization guard before the trailing-hyphen one is consulted, so
-        // the lowercase version of this row pinned nothing.
+        // Capitalized deliberately. The trailing-hyphen guard runs BEFORE the
+        // capitalization one, so a lowercase version of this row would be
+        // refused either way and would pin neither.
         'Lammstek eller-',
-        // These two are refused by the capitalization guard (a digit and '('
-        // are both equal to their own lowercase) rather than by the
-        // leading-digit and fragment rules they read as. Kept as behavioural
-        // documentation of the input, not as a pin on either guard.
+        // These two ARE refused by the leading-digit and fragment rules they
+        // read as — both run before the capitalization guard. They still pin
+        // nothing, because a digit and '(' are each equal to their own
+        // lowercase, so capitalization would refuse them too. Behavioural
+        // documentation of the input, not coverage. (An earlier version of this
+        // comment had the guard order backwards in both halves.)
         '(se sidan 10)',
         '4 portioner',
       ]) {

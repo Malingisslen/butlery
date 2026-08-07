@@ -73,26 +73,79 @@ particular) live here, and here only.
       tackande det fallet. Praktiskt: starta om appen efter en flaggvandning,
       annars mater man fel i upp till 24 timmar.
 
-- [ ] Steg 6: `MultiRecipeSplitter.split(input, {layout})` + the
-      **Checklista fran granskningen av steg 5 (2026-08-06):**
-      (a) `split()` harleder sina egna granser och tar inga injicerade -
-      behover en ingang som tar TEXTRADNUMMER, och ANROPAREN gor
-      `flat -> textLineIndex`, aldrig splittern (bara `DocumentLayout` vet
-      att `
+- [x] Steg 6: `MultiRecipeSplitter.split(input, {layout})`. KLART 2026-08-07.
+      Checklistan fran steg 5: (a) konverteringen `flat -> textLineIndex` gors
+      i SPLITTERN, inte i anroparen - avvikelse fran punkten som skrevs, och
+      integrationsgranskaren dömde koden rätt: aritmetiken bor kvar i
+      `DocumentLayout`, splittern anropar den bara pa ett objekt den redan
+      haller. Att skjuta den till anroparen skulle tvinga bade
+      `import_manager` och `photo_import_viewmodel` att kalla `HeadingDetector`
+      och harleda forvillkoret var for sig. (b) forvillkoret ar inkopplat.
+      (c) `_isCompleteRecipeBlock` anvands INTE pa layoutblock; ersatt av
+      `_minLayoutBlockChars = 200` + instruktionssignal. (d) tvasidesfixturen
+      finns, och den ar skriven sa att sidseparatorns radskift faktiskt syns.
 
-` lagger till en tomrad per sida).
-      (b) LOST av steg 6a: `DocumentLayout.matchesLineCountOf` finns nu. Kvar
-      for steg 6 ar att ANROPA den och falla tillbaka pa textvagen nar den
-      svarar false - metoden finns, grinden ar inte inkopplad.
-      (c) Bestam uttryckligen om en layoutgrans fortfarande maste klara
-      `_ingredientClusterAhead` och `_isCompleteRecipeBlock`. OBS:
-      `_minBlockChars` ar 40 idag, men 91 %-siffran kommer fran 200 + verb -
-      raden den kommer fran ar alltsa inte koden som ligger.
-      (d) Alla 250 korpusbilder ar ENSIDIGA, sa flersidesfallan (en sida som
-      avbojer raderar sidan fore) har noll instanser i korpusen. Det
-      syntetiska testet ar den enda evidens som nagonsin kommer finnas -
-      forsvaga inte regeln senare med 'vi har aldrig sett det'.
-      radantalsforvillkoret (`DocumentLayout.matchesLineCountOf`).
+      **Tre granskare gav samma blockerande fynd:** ett block som underkands
+      SLANGDES tyst. En 61 tecken lang titel rackte for att skeppa tva sakra
+      recept och ata ett tredje - alltsa ett SAMRE svar an textvagen, som
+      lamnar sidan hel. Lost med en kastbudget: allt fore forsta rubriken plus
+      varje underkant block raknas, och nar summan nar `_minLayoutBlockChars`
+      avbojer hela vagen. Blockstaket ar nu PER SIDA (5 foton x 2 recept ar
+      inte brus).
+
+- [x] Steg 6b: matningen av den SKEPPADE koden pa riktig geometri. 2026-08-07.
+      `tools/corpus_split_eval.dart --layout` kor bada armarna pa EN strang
+      (layoutens egen text), sa skillnaden ar geometrin och inget annat.
+      Planens simulering lovade 91 %/40 %; koden matte forst 86 %/29 % och
+      slog sonder 8 fungerande sidor. Tva rotorsaker, bada atgardade:
+
+      1. **Komponentrubriker** ("Topping", "Vaniljglass", "TUSENBLADSTARTA")
+         ar storre an brodtext och oppnade falska recept. Ny
+         `HeadingDetector.titleSizeSpread` = 1.10: en kandidat maste ligga
+         inom 10 % av sidans STORSTA rubrik.
+      2. **Radhojd matte alfabetet, inte grader.** En ordruta ritas runt
+         black: `Provensalska agg` (nedhang + prickar) matte 166,5 medan
+         syskonrubriken `Fransk omelett` matte 129 i SAMMA grad. Ny
+         `lib/services/ocr/glyph_metrics.dart` delar bort de zonerna.
+         Nedhangsdjupet svepptes: 0,30-0,35 ar ett platt optimum, 0,32 valt.
+
+      **Tva granskare hittade samma bugg i min egen normalisering, oberoende
+      av varandra, och en hittade en till.** (1) Ett VERSALT P/G/J/Q/Y raknades
+      som nedhang, sa varje `Potatis`, `Gradde` och `GRYTA` matte 18 % for
+      kort - exakt den defekt filen skrevs for att ta bort. (2) Ett ord utan
+      nagon vanlig x-hojdsbokstav (`Kott`, `latt`, `Kal`) tappade x-bandet helt
+      och matte 2,2 ganger for hogt. Ingen av dem syntes i 1087 grona tester,
+      for det fanns inget test som korde `glyphSpan` direkt. Det finns nu
+      (`test/unit/services/ocr/glyph_metrics_test.dart`), och bada buggarna
+      rodnar under mutation.
+
+      Efter rattningen svepptes nedhangsdjupet OM (den gamla platan var matt
+      pa fel aritmetik): 0,32-0,38 ar platt, 0,35 valt som mittpunkt.
+
+      **Matt slutresultat (proxysiffror - Windows offline-OCR, inte ML Kit):**
+      enstaka sidor 92 % -> **92 %** (ingen forsamring alls), uppslag 19 % ->
+      **33 %**, recept som aldrig kommer fram 47 -> **39**, falska extrablock
+      14 -> **13** (alltsa FARRE an textvagen ensam). 7 sidor lagade, **0
+      sonder**. Textvagen orord: 92 % / 25 % / 46.
+
+      **Kvar mot planens mal:** flersides skulle na 40 %. Det gor den inte.
+      Simuleringen var optimistisk. Det djarvare `titleSizeSpread = 1.15` ger
+      35 % men klipper en fungerande sida i tva - en produktavvagning, en
+      konstant bort, ligger i kodens tabell.
+
+      **Kand miss, inskriven i testet:** sidan som hela funktionen designades
+      mot delas fortfarande INTE. Dess tva rubriker ar satta i samma grad, men
+      ordrutan runt `Provensalska` (12 tecken) vaxer med bredden pa en lutande
+      rad medan `agg` (3 tecken) knappt paverkas. Glyfer var alltsa bara halva
+      felet; resten ar skevhet, och den ratta fixen hor till spaltordningen
+      (steg 8). Tre radskattare mattes - median, max och min - och medianen
+      vinner pa varje axel.
+
+      **Kand kostnad:** en kapitelrubrik satt langt over rattrubrikerna trycker
+      ner dem under golvet, sa den sidan faller till textreglerna. Natto
+      positivt (5 sidor raddade, 9 farre falska block, mot 5 recept som inte
+      kommer fram).
+
 - [ ] Steg 7: thread it through `photo_import_viewmodel`.
 - [ ] Steg 8: column ordering — separate commit, may prove unnecessary.
 

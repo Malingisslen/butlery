@@ -225,7 +225,11 @@ void main() {
     expect(words.first.box.top, equals(40));
     expect(words.first.box.width, equals(260));
     expect(words.first.box.height, equals(90));
-    // Median of 90/70/74, not the mean (78) and not the line box (300).
-    expect(layout.lines.single.typeHeight, equals(74));
+    // The adapter's job is to carry the RAW boxes across untouched; the glyph
+    // normalisation that turns them into a type size belongs to `OcrWord` and
+    // is measured in `text_layout_test.dart`. So this pins the three heights
+    // that arrived, and that the line box (300) played no part in any of them.
+    expect(words.map((w) => w.box.height).toList(), [90, 70, 74]);
+    expect(layout.lines.single.typeHeight, lessThan(100));
   });
 }

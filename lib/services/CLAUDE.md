@@ -27,8 +27,11 @@ These services intentionally don't extend `BaseService` because they're pure-com
   cookbook spread into per-recipe blocks; no async, no Firebase, no LLM)
 - `lib/services/import/layout/heading_detector.dart` (pure-compute — finds recipe
   titles on a photographed page by TYPE SIZE; same category as the splitter)
-- `lib/services/ocr/text_layout.dart` (value types only — the OCR page model; zero
-  imports by design so it runs under plain `dart test` and replays offline)
+- `lib/services/ocr/text_layout.dart` (value types only — the OCR page model; no Flutter
+  and nothing third-party by design, so it runs under plain `dart test` and replays
+  offline)
+- `lib/services/ocr/glyph_metrics.dart` (pure function — how tall a word is DRAWN versus
+  how big its type is; same dependency-free discipline as the page model beside it)
 - `lib/services/voice/voice_capture_service.dart` (device I/O: mic capture + on-device whisper.cpp FFI inference — no Firebase user data; same category as the two ONNX services)
 - `lib/services/voice/tts_service.dart` (3rd-party OS TTS wrapper — Android `TextToSpeech`/iOS `AVSpeechSynthesizer` passthrough, no Firebase ops; same category as the ONNX services)
 - `lib/services/monitoring/app_monitoring_service.dart`
