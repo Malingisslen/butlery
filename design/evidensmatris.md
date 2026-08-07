@@ -67,6 +67,40 @@ Följden för adjudiceringen: `EFF-05 · kompkalla` går från `undecided` till
 `unintended`. 52 px av 226 px innehåll är dolt utan någon väg till resten,
 vilket nu strider mot ett uttryckligt beslut.
 
+#### Utfall efter rättningen (2026-08-07)
+
+Beslutets tabell ovan beskriver läget **när beslutet fattades** och skrivs
+aldrig om. Det här stycket redovisar vad rättningen gjorde med det läget.
+
+Förhandsvisningen är kvar, men den har fått den väg vidare som beslutet krävde.
+Tillståndsparet depikteras som **två statiska artefakter** — `receptkalla /
+kollapsad` och `receptkalla / expanderad` — utan `<details>`, utan
+`:checked`-mekanik och utan JavaScript. Arkets kropp är delad i en scrollande
+del och en fast åtgärdsrad, så kontrollen "Visa hela" ligger helt inom
+scrollporten redan vid `scrollTop 0`. Previewhöjden är **115 px**. Det är
+prototypens uppmätta övre gräns för att kontrollen ska rymmas, inte en token
+och inte en beslutad designparameter.
+
+| Fält | Vid beslutet | Efter rättningen |
+|---|---|---|
+| currentAffordance | none | expand/collapse |
+| effectClass | `innehall-dolt-utan-affordans` | `begransad-preview-med-affordans` |
+| effectId | `EFF-05 · kompkalla` | `EFF-08 · kompkalla` |
+| adjudicationStatus | unintended | intentional |
+
+`EFF-08` är ett **nytt** nummer därför att effektens semantik ändrades, inte
+därför att artefakten fick ett `stateId`. Ordinal 5 är frigjord och
+återanvänds aldrig; den ligger kvar i `fas2/effect-registry.json` som en
+förbrukad tilldelning.
+
+Alla åtta affordansled är **mätta**, inte påstådda:
+`fas2/affordansbevis.json` (CHK-R-AFF-01, 8 av 8) med
+`fas2/affordans-negativa-prov.json` som visar att varje led faktiskt kan
+fällas (8 av 8 mutationer). Nyckeltalen: kontrollen har `0.000 px` marginal
+i scrollporten vid `scrollTop 0` — den ryms alltså precis — och det
+expanderade källblocket mäter `scrollH 226 = clientH 226` med `overflow-y:
+visible`, alltså ingen kvarvarande klippning.
+
 ### Grundningsregel
 
 **Produktlogik för en funktion som redan finns i koden skrivs inte — den läses.** En rad får statusen `implementerad` bara om de datamodeller och juridiska dokument den vilar på är lästa, och kolumnen `Skärmbevis` säger vilka. Etapp 1 bröt mot detta: fyra av fyra påståenden om befintliga modeller var fel, och ett rörde barns personuppgifter i en DPIA-granskad funktion (`produktregler.md` § 7.7).
@@ -120,10 +154,10 @@ Valideras av **T-14**. En rad som står `implementerad` eller `verifierad` måst
 
 | Krav-ID | Normativ regel | Berörd vy | Skärmbevis | Automatiskt test | Manuellt test | Ägare | Status |
 |---|---|---|---|---|---|---|---|
-| T-01 | Hitbox ≥ 48 × 48 dp, deklarerad i koden | alla | <!--n:frames-->279<!--/n--> ramar | **T-08** (källa) ✅ + browserprob ✅ 0 under 48 | Accessibility Scanner | design | implementerad |
+| T-01 | Hitbox ≥ 48 × 48 dp, deklarerad i koden | alla | <!--n:frames-->280<!--/n--> ramar | **T-08** (källa) ✅ + browserprob ✅ 0 under 48 | Accessibility Scanner | design | implementerad |
 | T-02 | Kontrast mäts mot **deklarerade par** i tokens **och** mot varje par som bara finns i renderad markup | alla | samtliga tio skärmfiler | **T-02** ✅ + **renderad mätning** ✅ 3 017 par, 0 under golvet | — | design | **verifierad** — mätt 2026-07-29, lägsta icke-avstängda kvot 4,73 |
 | T-03 | Fokusram runt hitboxen, aldrig runt glyfen | kryssruta · radio · reglage | komponentark 15 | — ❌ | manuell tabbning | design | implementerad |
-| T-04 | Varje interaktiv kontroll har roll, namn och tillstånd | alla | <!--n:controls-->1372<!--/n--> märkta kontroller, alla med roll | T-08 ✅ + browserprob ✅ | **TalkBack + VoiceOver** | dev | implementerad |
+| T-04 | Varje interaktiv kontroll har roll, namn och tillstånd | alla | <!--n:controls-->1376<!--/n--> märkta kontroller, alla med roll | T-08 ✅ + browserprob ✅ | **TalkBack + VoiceOver** | dev | implementerad |
 | T-04b | **Ingen interaktiv `div`/`span` utan roll.** Maskinell genomgång av alla fjorton delfiler: kontrollhöjd + handlingsetikett utan `data-a11y-role` ska ge 0 | alla | samtliga skärmfiler | **browserprob** (testmatris § 4) | — | design | **verifierad** — 2026-07-30 — 22 hittade i del 1 och del 2, alla märkta; 0 kvar av 1 372 roller |
 | T-05 | Fokusordning följer läsordning | alla | — | — ❌ | manuell tabbning | dev | beslutad |
 | AU-14 | OTP läses som **ett** fält | auth | `#mfa` (inskrivning) · `#authmfa` (utmaning) | — ❌ | TalkBack rad 2 | dev | beslutad |
@@ -146,7 +180,7 @@ Valideras av **T-14**. En rad som står `implementerad` eller `verifierad` måst
 
 | Krav-ID | Normativ regel | Berörd vy | Skärmbevis | Automatiskt test | Manuellt test | Ägare | Status |
 |---|---|---|---|---|---|---|---|
-| S-01 | Tillstånd per vy enligt `testmatris.md` § 1 — inte sex överallt | alla | <!--n:frames-->279<!--/n--> ramar | — ❌ inget test | — | design | implementerad |
+| S-01 | Tillstånd per vy enligt `testmatris.md` § 1 — inte sex överallt | alla | <!--n:frames-->280<!--/n--> ramar | — ❌ inget test | — | design | implementerad |
 | S-02 | Mörkt läge ritat för kärnvyer, auth, social, juridik, admin | — | 5 vyfamiljer | — ❌ | enhet i mörkt läge | design | implementerad |
 | S-03 | Mörkt läge för formulär och ark | formulär · ark | `#formularmorkt` `#arkmorkt` | — ❌ | — | design | implementerad |
 | S-04 | Laddning: tallrikslinje + text. Ingen spinner, ingen shimmer | alla | `#stateladdar` `#stateladdar412` `#veckogenererar` | — ❌ | — | design | implementerad |

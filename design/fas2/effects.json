@@ -4,8 +4,8 @@
  "$sammanslagningsregel": "Två legacy-instanser blir en effekt endast vid samma artefakt, samma element, samma sourceRootCause OCH samma användarupplevda konsekvens, mätt som samma axel och samma storlek inom en halv pixel. Samma symptomsignatur räcker aldrig. Samma element räcker inte heller om konsekvenserna är självständiga.",
  "detectedLegacyInstances_st": 6,
  "adjudicatedEffects_st": 4,
- "productErrors_st": 1,
- "intentionalEffects_st": 1,
+ "productErrors_st": 0,
+ "intentionalEffects_st": 2,
  "undecidedEffects_st": 2,
  "designRuntimeDeviations_st": 1,
  "legacy_oforandrat": {
@@ -19,7 +19,7 @@
   "kalla": "fas2/effect-registry.json v2.0",
   "regel": "Numret hör till effektens nyckel, aldrig till dess plats i listan. Ett frigjort nummer återanvänds aldrig.",
   "nytilldelade": [],
-  "nastaLediga": 8
+  "nastaLediga": 9
  },
  "failClosed": {
   "fel": [],
@@ -58,8 +58,8 @@
    "designRuntimeDeviation": false
   },
   {
-   "effectId": "EFF-05 · kompkalla",
-   "effektnyckel": "kompkalla ‖ sel:div>div[2] ‖ SRC-02 ‖ klass=innehall-dolt-utan-affordans ‖ axel=y",
+   "effectId": "EFF-08 · kompkalla",
+   "effektnyckel": "kompkalla ‖ sel:div>div[2] ‖ SRC-02 ‖ klass=begransad-preview-med-affordans ‖ axel=y",
    "artifactId": "kompkalla",
    "legacyInstansIds": [
     "INST · kompkalla · sel:div>div[2] · klippning"
@@ -71,12 +71,8 @@
     "div · klippning · överskott N px i y med overflow-y: hidden"
    ],
    "sourceRootCauseId": "SRC-02",
-   "adjudicationStatus": "unintended",
-   "intentionalityEvidence": {
-    "status": "unintended",
-    "skäl": "NORMATIVT BESLUT 2026-08-07 (evidensmatris.md): ett kallblock far forhandsvisas begransat, men dolt innehall MASTE ha en explicit och direkt synlig vag till fulltexten. kompkalla doljer 52 px av 226 px med max-height:150px och overflow:hidden UTAN nagon affordans. currentAffordance = none. Darmed unintended. Beslutet godkanner inte 150 px som normativ hojd, och intern scroll ar inte forstahandslosningen — expandera/minimera ar det.",
-    "$regel": "intentional kräver positiv evidens. undecided och unintended bär skäl, inte evidens för avsikt."
-   },
+   "adjudicationStatus": "intentional",
+   "intentionalityEvidence": "NORMATIVT BESLUT 2026-08-07 (evidensmatris.md): begränsad förhandsvisning är tillåten när dolt innehåll har en explicit och direkt synlig väg till fulltexten. Efter rättningen är alla åtta affordansled MÄTTA som uppfyllda (fas2/affordansbevis.json): kontrollen Visa hela ligger helt inom scrollporten vid scrollTop 0, och det expanderade tillståndet receptkalla / expanderad visar hela källtexten utan kvarvarande klippning (scrollH 226 = clientH 226, overflow-y visible). Klippningen är därmed en avsiktlig preview med affordans, inte dolt innehåll utan väg vidare.",
    "userEffectDescription": "Ungefär 2.8 rader av receptets källblock är dolda (52 px av 226 px innehåll) utan synlig väg till resten.",
    "identityV2Status": "stable",
    "sammanslagen": false,

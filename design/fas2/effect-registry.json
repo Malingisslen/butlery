@@ -4,7 +4,7 @@
  "version": "2.0",
  "date": "2026-08-07",
  "seededFrom": "e80e339",
- "nextOrdinal": 8,
+ "nextOrdinal": 9,
  "tilldelningar": {
   "betygperperson ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ klass=innehall-ej-nabart ‖ axel=y": {
    "ordinal": 1,
@@ -54,6 +54,13 @@
    "artifactId": "onbimport",
    "tilldelad": "e80e339",
    "migrerad": "25ea3fd→v2.0"
+  },
+  "kompkalla ‖ sel:div>div[2] ‖ SRC-02 ‖ klass=begransad-preview-med-affordans ‖ axel=y": {
+   "ordinal": 8,
+   "effectId": "EFF-08 · kompkalla",
+   "artifactId": "kompkalla",
+   "tilldelad": "(denna commit)",
+   "grund": "ny effektsemantik begransad-preview-med-affordans — EFF-05 frigjordes och återanvänds aldrig"
   }
  },
  "migreradFran": {

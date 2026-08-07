@@ -99,7 +99,7 @@ Referensbredd är **412 dp** (Pixel 9a). Bevis krävs i:
 | VoiceOver — samma tre | VoiceOver | | | |
 | Träffytor ≥ 48 dp | Accessibility Scanner | | | |
 | Kontrast, ljust och mörkt | Accessibility Scanner + CI-lint (T-02) | | | |
-| **Renderad** träffytegeometri i alla <!--n:frames-->279<!--/n--> ramar | browserprob, mäter varje interaktiv nod | | | |
+| **Renderad** träffytegeometri i alla <!--n:frames-->280<!--/n--> ramar | browserprob, mäter varje interaktiv nod | | | |
 | Roll, namn, tillstånd per kontroll | TalkBack + `data-a11y-role`-revision | | | |
 | **Nästlade kontroller** — `[data-a11y-role] [data-a11y-role]` ska ge 0 | browserprob (regex kan inte se nästling) | | | |
 | Största systemtext | systeminställning 2,0× | | | |
