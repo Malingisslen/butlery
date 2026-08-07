@@ -4,13 +4,20 @@
 /// Every recognizer computes glyph geometry. Until 2026-08-05
 /// `DeviceTextRecognizer` returned only the text and discarded it, so everything
 /// downstream reconstructed page structure from a flat string; the seam now
-/// carries the measurements, and this is the model it fills. Across 181 hand-verified cookbook pages the splitter aligns on only
-/// 12 of the 48 multi-recipe spreads, and 46 recipes are never emitted at all.
+/// carries the measurements, and this is the model it fills. Across 181
+/// hand-verified cookbook pages the splitter aligns on only 12 of the 48
+/// multi-recipe spreads, and 46 recipes are never emitted at all — figures from
+/// the DEFAULT eval arm, which scores the paid tier's `ocr.txt`. The `--layout`
+/// arm scores the capture's own text and reads 9 of 48 with 47 lost; both are
+/// current, they differ by ENGINE, and `feature_flag_service.dart` quotes the
+/// latter. Do not "fix" one into the other.
 /// A heading is reliably LARGER than body text, and no text rule can see that.
 ///
 /// Deliberately Flutter-free and JSON-serializable:
-/// - no `dart:ui` `Rect`, so every consumer (heading detection, column order,
-///   the splitter) runs under plain `dart test` with no device and no engine;
+/// - no `dart:ui` `Rect`, so every consumer (heading detection, the splitter)
+///   runs under plain `dart test` with no device and no engine. A column
+///   orderer was a planned third consumer; it was measured and declined on
+///   2026-08-07, see ACCEPTED_DEVIATIONS.md;
 /// - the JSON shape is a DURABLE on-disk artifact. A capture is written once
 ///   and replayed for years by whatever reads it next — `tools/`, a Python
 ///   probe, a future rewrite — so it is flat, self-describing and outlives this
@@ -286,8 +293,22 @@ class OcrLine {
         .map((w) => OcrWord.fromJson(w.cast<String, dynamic>()))
         .toList();
     // A stored line may carry no box of its own — no capture records one — so
-    // derive it from the words rather than decoding a zero, which would hand
-    // the column orderer an empty page.
+    // derive it from the words rather than decoding a zero, keeping a replayed
+    // capture geometrically identical to a live one.
+    //
+    // NOTHING under `lib/` reads a line box today (2026-08-07): the detector
+    // measures type size from WORD boxes, and [typeHeight] falls back to the
+    // line box only for a line with NO words — where this rescue cannot change
+    // that height, since `_union(const [])` is zero-HEIGHT too. (It is not the
+    // same box in general: a line storing `x`/`y` but no `w`/`h` decodes at ITS
+    // OWN stored origin, while the union returns the WORDS' origin — two
+    // different points. Only the height is read, so only the height matters
+    // here.) So the rescue is wire fidelity, not a live dependency;
+    // `text_layout_test.dart` is what pins it.
+    // Two earlier versions of this comment each named a beneficiary — first the
+    // column orderer (measured and declined, ACCEPTED_DEVIATIONS.md), then the
+    // heading detector (measured: identical output either way). Do not name a
+    // third without measuring it.
     //
     // ONE spelling, matching [toJson] and a word's. A nested `box` key was
     // decoded here too until 2026-08-05; nothing has ever written one (0 in
@@ -436,8 +457,9 @@ class DocumentLayout {
   /// An index here is the line number WITHIN ITS PAGE's slice, NOT a line
   /// number in [text] — past page one they differ by the blank separator. Use
   /// [textLineIndex] to convert; that is the whole reason it exists. "Capture
-  /// order" is the recognizer's order, which is not yet reading order on a
-  /// two-column spread.
+  /// order" is the recognizer's order, which need not be reading order on a
+  /// two-column spread — no re-orderer exists, and building one was measured
+  /// and declined on 2026-08-07 (see ACCEPTED_DEVIATIONS.md).
   List<OcrLine> get lines => [for (final page in pages) ...?page?.lines];
 
   /// Where each page's first line starts, counted in lines of [text], or null

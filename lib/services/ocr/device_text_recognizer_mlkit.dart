@@ -65,8 +65,10 @@ class MlKitTextRecognizer implements DeviceTextRecognizer {
       // exact bytes that shipped before this seam widened.
       //
       // They differ only in SEPARATORS: block order is identical (we iterate
-      // `recognized.blocks` as given) and no re-ordering happens here — that is
-      // its own step. `recognized.text` is assembled natively; `layout.text` is
+      // `recognized.blocks` as given) and no re-ordering happens anywhere: a
+      // re-orderer was measured and declined on 2026-08-07, so capture order is
+      // the contract, not a pending step (ACCEPTED_DEVIATIONS.md).
+      // `recognized.text` is assembled natively; `layout.text` is
       // a plain newline join of the same lines, which is the only string a line
       // index means anything against.
       //
@@ -126,9 +128,15 @@ class MlKitTextRecognizer implements DeviceTextRecognizer {
   ///
   /// The BLOCK level is dropped on purpose. It is ML Kit's own paragraph
   /// grouping, and it is what makes `recognized.text` order a two-column
-  /// spread the way it does; flattening to lines keeps the geometry, and any
-  /// re-ordering becomes an explicit, testable step over the boxes rather than
-  /// something the recognizer decided for us.
+  /// spread the way it does; flattening to lines removes ML Kit's block
+  /// grouping from the assembled string and keeps the geometry — how ML Kit
+  /// joins blocks in `recognized.text` is its own business and is unmeasured
+  /// off-device, which is the point: we stop depending on it. The line ORDER is
+  /// still ML Kit's. Flattening also puts a re-ordering within reach as an
+  /// explicit, testable step over the boxes, but no such step exists: one was
+  /// measured and declined on 2026-08-07 (ACCEPTED_DEVIATIONS.md), which names
+  /// its own re-opening condition. Until that is met, capture order is what
+  /// every downstream index rests on.
   ///
   /// A line whose box or elements are missing still becomes a line. Losing the
   /// row would shift every index after it, which is worse than a line with no

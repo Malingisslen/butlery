@@ -40,10 +40,12 @@ particular) live here, and here only.
       flaggan, med 24 h livslangd. Starta om appen (eller rensa OCR-cachen)
       efter att flaggan vants, annars blandar de forsta matningarna strangar
       fran bada lagen vid omimport av samma sida.
-      **Not till steg 8:** adaptern fyller aldrig `imageWidth`/`imageHeight` -
-      ML Kit lamnar ingen bildstorlek - sa de ar 0. Forsta konsumenten som
-      normaliserar en x-koordinat mot sidbredden far `Infinity`, inte ett
-      undantag. Fyll dem, eller dividera aldrig med dem.
+      **Not till den som nagonsin normaliserar en x-koordinat mot sidbredden**
+      (adresserades till steg 8, som ar avbojt sedan 2026-08-07): adaptern fyller
+      aldrig `imageWidth`/`imageHeight` - ML Kit lamnar ingen bildstorlek - sa de
+      ar 0, och kvoten blir `Infinity` (eller `NaN` vid noll gap), inte ett
+      undantag. Fyll dem, eller dividera aldrig med dem. Star nu ocksa i
+      `ACCEPTED_DEVIATIONS.md` under receptet for att gora om matningen.
 - [x] Steg 4: carry it on `OCRResult`, cached. KLART 2026-08-07, ihop med steg
       7 - hela beskrivningen star dar nere, inte har, sa den inte hinner saga
       tva saker. Kravet "text och layout maste cachas som EN enhet under EN
@@ -141,9 +143,11 @@ particular) live here, and here only.
       mot delas fortfarande INTE. Dess tva rubriker ar satta i samma grad, men
       ordrutan runt `Provensalska` (12 tecken) vaxer med bredden pa en lutande
       rad medan `agg` (3 tecken) knappt paverkas. Glyfer var alltsa bara halva
-      felet; resten ar skevhet, och den ratta fixen hor till spaltordningen
-      (steg 8). Tre radskattare mattes - median, max och min - och medianen
-      vinner pa varje axel.
+      felet; resten ar skevhet. Tre radskattare mattes - median, max och min -
+      och medianen vinner pa varje axel.
+      **OVERSPELAD klausul:** har stod "den ratta fixen hor till spaltordningen
+      (steg 8)". Det var ett pastaende utan matning. Steg 8 matte bade
+      spaltordning och skevhetskorrigering och bada foll - las steg 8 i stallet.
 
       **Kand kostnad:** en kapitelrubrik satt langt over rattrubrikerna trycker
       ner dem under golvet, sa den sidan faller till textreglerna. Natto
@@ -177,7 +181,8 @@ particular) live here, and here only.
       `HeadingDetector.headingLines` vagrar rader utan ordrutor, samma regel som
       "en omatt rad ar en franvaro, inte en nolla" redan sager en niva upp.
 
-- [~] Steg 4 + 7: bar layouten fran OCR-sommen hela vagen till uppdelaren.
+- [x] Steg 4 + 7: bar layouten fran OCR-sommen hela vagen till uppdelaren.
+      KLART 2026-08-07, 248481c83 pa main. Fem granskningsrundor.
       Kartlagt 2026-08-07 innan en rad skrevs. Vagen ar sex hopp:
 
       1. `OCRResult` far ett TYPAT falt `PageLayout? layout` (aldrig i
@@ -210,7 +215,35 @@ particular) live here, and here only.
       textreglerna - inskrivet i koden, inte upptackt senare.
 
 
-- [ ] Steg 8: column ordering — separate commit, may prove unnecessary.
+- [x] Steg 8: column ordering — MATT OCH AVBOJT 2026-08-07. Planen sa "may
+      prove unnecessary"; matningen sager starkare an sa: den kostar mer an den
+      ger.
+
+      **Spaltordning (PROXYSIFFROR - Windows offline-OCR, inte ML Kit. ML Kits
+      egen blockordning ar OMATT och kraver en telefon; beslutet vilar inte pa
+      den.)** Av 208 sidor med >=8 rader ar 134 tvaspaltiga, och 49 av dem
+      (37 %) kommer ut interfolierade i DEN motorns ordning - lasordningen ar
+      alltsa inte gratis for atminstone en riktig lasare. Men en sorterare som
+      lagger vanster spalt fore hoger skriver om texten pa tva av tre
+      korpussidor (116 av 181) och ger: ratt blockantal 139 mot 138, recept som
+      aldrig kommer fram 39 mot 39, fem sidor lagade och fyra sonder. Netto en
+      sida, brus - for en andring som nodvandigtvis ror minst 68 enkelsidor
+      (bara 48 av de 181 bar mer an ETT recept), alltsa precis den population planen var
+      grindad pa att inte forsamra. Precis den avvagning planen sa
+      var den farliga. Och skulle ML Kit visa sig sortera ratt av sig sjalv
+      blir argumentet svagare, inte starkare: vinsten krymper mot noll medan
+      risken att rora om pa en redan korrekt sida star kvar.
+
+      **Deskew (min egen ide, inte planens - samma proxysiffror).** Rutan runt
+      ett LUTANDE ord vaxer med ordets bredd; anpassar man radens ordhojder mot
+      bredderna och tar skarningen far man en breddfri hojd. Matt: 136 av 181
+      mot 138, 42 forlorade recept mot 39, 0 lagade och 2 sonder. Samre. Inom
+      en rad ar spridningen oftast forsumbar (median 1,02 over 6 280 prov), sa
+      anpassningen ar mest brus. Om en ANNAN skattare skulle funka ar otestat.
+
+      **Foljd:** korpussidan funktionen designades mot delas fortfarande inte,
+      och det finns ingen kand billig fix. Inskrivet i
+      `heading_detector_test`, inte bortstadat.
 
       Noterat av granskningen av steg 7 och medvetet INTE atgardat dar: de tva
       viewmodel-sviterna har byte-identiska fixturbyggare (`row`/`body`/
@@ -441,6 +474,10 @@ en tvåspaltig uppslagning, och om `boundingBox` är tillförlitligt ifylld på 
 
 ### ⑦ Spaltordningen skiljs ut helt
 
+> **AVBÖJD 2026-08-07.** Steg 8 mätte den och den betalar inte — se steg 8 i
+> checklistan ovan och `docs/architecture/ACCEPTED_DEVIATIONS.md`. Texten nedan
+> står kvar som record över vad som skulle kontrolleras, inte som byggorder.
+
 Att sortera spalter ändrar texten för **varje** on-device-import, även de
 enstaka sidor som ligger på 91 %. Det är den enda delen som kan försämra en
 fungerande väg, och den syns inte i någon av mätningarna ovan.
@@ -538,7 +575,8 @@ loop; `autoParseMulti` får en `DocumentLayout?`-parameter till `split` på :609
 Utkastet bär bara text — efter navigering bort och tillbaka gäller textvägen.
 Det skrivs i koden, och om det visar sig irriterande blir det ett eget ärende.
 
-**8. Spaltordning — separat commit, se ⑦.**
+**8. Spaltordning — MÄTT OCH AVBÖJD 2026-08-07, ingen kod skrevs.** Se steg 8 i
+checklistan och `ACCEPTED_DEVIATIONS.md`. ⑦ står kvar som record.
 
 ## C — Mekaniskt
 

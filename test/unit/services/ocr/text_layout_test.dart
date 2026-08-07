@@ -800,8 +800,22 @@ void main() {
 
     test('a stored line with no box of its own derives one from its words', () {
       // No capture records a line box, so this is the path EVERY replayed line
-      // takes — decoding the absent box as a zero would hand the column
-      // orderer a page whose lines all sit at the origin with no size.
+      // takes. It named the column orderer as the victim until 2026-08-07, when
+      // that step was measured and declined (ACCEPTED_DEVIATIONS.md), and no
+      // consumer replaced it: NOTHING under `lib/` reads a LINE box today.
+      // `OcrLine.typeHeight` reads it only for a line with NO words, and this
+      // rescue only CHANGES anything for a line that HAS them (it runs either
+      // way; with no words it yields the same zero height) — measured, the
+      // heading
+      // detector returns the same headings and the same baseline either way.
+      // So the derivation keeps a replayed capture geometrically identical to a
+      // live one: wire fidelity for whatever reads geometry next, not a live
+      // dependency. `tools/` is not that reader either — `corpus_split_eval`
+      // replays a capture for its text AND its geometry, but dereferences no
+      // box itself, and nothing it reaches reads a LINE box; the shipped
+      // detector it calls measures WORD boxes (checked 2026-08-08).
+      // Do not re-justify this by naming a consumer without calling that
+      // consumer first.
       //
       // The words arrive in CAPTURE order, which the library warns is not
       // reading order, so the box may not lean on the first word for anything:

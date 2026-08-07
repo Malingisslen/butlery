@@ -16,8 +16,9 @@ import 'package:butlery/services/ocr/device_text_recognizer_mlkit.dart';
 /// Everything here pins one law: the page's text is DERIVED from the lines, so
 /// a line index is a row number of that text by construction. `recognized.text`
 /// is ML Kit's own assembly and is not that string — it separates blocks, and
-/// on a two-column spread its block order is the thing this whole feature
-/// exists to stop trusting.
+/// that ASSEMBLED STRING is what this feature stops trusting. The block ORDER
+/// is kept as given: re-ordering was measured and declined on 2026-08-07
+/// (ACCEPTED_DEVIATIONS.md), so nothing here or downstream re-sorts a spread.
 void main() {
   TextElement element(String text, Rect box) => TextElement(
     text: text,
@@ -177,12 +178,18 @@ void main() {
   });
 
   test('the order is ML Kit CAPTURE order, never reading order', () {
-    // The mapper must not sort. Ordering a two-column spread by geometry is a
-    // separate, deliberately later step, because it changes the text of EVERY
-    // on-device import — including the single-recipe pages that already work —
-    // and no measurement covers it yet. A sort quietly added here would be
-    // invisible: the page would still hold every row, in a nicer-looking
-    // order, and every other test in this file would stay green.
+    // The mapper must not sort. This used to say ordering a two-column spread
+    // was "a deliberately later step" that "no measurement covers yet"; both
+    // halves went false on 2026-08-07, when it was measured and DECLINED — it
+    // rewrote 116 of 181 corpus pages to buy 139 correct block counts against
+    // 138, 5 fixed and 4 broken. See ACCEPTED_DEVIATIONS.md. So there is no
+    // later step to defer to: capture order is the contract until that entry's
+    // own re-opening condition is met (a device measurement of ML Kit's block
+    // ordering AND a bigger gain than one page).
+    //
+    // A sort quietly added here would be invisible: the page would still hold
+    // every row, in a nicer-looking order, and every other test in this file
+    // would stay green.
     //
     // So block two is the one printed HIGHER on the page (top 20 against 300):
     // sorting by `top` and preserving capture order give different answers.

@@ -3,7 +3,10 @@
 /// A heading is set larger than body text. That is how a reader tells three
 /// dishes on one spread apart, and it is the one signal the text-only splitter
 /// cannot see: measured over 181 hand-verified corpus pages it aligns on 12 of
-/// the 48 multi-recipe spreads, and 46 recipes are never emitted at all.
+/// the 48 multi-recipe spreads, and 46 recipes are never emitted at all —
+/// figures from the DEFAULT eval arm (the paid tier's `ocr.txt`). The `--layout`
+/// arm scores a different engine and reads 9 of 48 with 47 lost; both are
+/// current. The divergence is spelled out in [headingSizeRatio]'s doc below.
 ///
 /// Pure compute — no async, no Firebase, deliberately not a `BaseService`
 /// (same category as `ingredient_categorizer.dart` and
@@ -192,9 +195,11 @@ class HeadingDetector {
   /// different OCR engine — which is why the SPREAD baseline reads 19 % here
   /// and 25 % there. The single-page column does NOT differ by engine: both
   /// arms score the identical 122/133 (92 %). The 91 % in that table is the
-  /// simulation's own unreproducible figure, as its own paragraph records. `tools/corpus_split_eval.dart` prints that warning on
-  /// every run for the same reason. Only the rows below may be compared with
-  /// each other.
+  /// simulation's own unreproducible figure, as its own paragraph records.
+  /// `tools/corpus_split_eval.dart` prints the same NON-COMPARABILITY warning —
+  /// about the engines, not about the 91 % — and only on `--layout` runs, which
+  /// are the ones that pair the two arms. Only the rows below may be compared
+  /// with each other.
   ///
   /// 1.10 breaks NOTHING: the single-page score is the text arm's own 92 %, and
   /// the spurious-block count comes in one BELOW importing with no geometry at

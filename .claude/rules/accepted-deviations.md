@@ -115,6 +115,24 @@ files in the same edit.
 
 ## Engineering
 
+- **Column ordering for on-device OCR is MEASURED AND DECLINED — do not build it.**
+  A sorter putting the left column before the right rewrites two of every three corpus
+  pages (116 of 181), including single-recipe pages that already work, and buys 139
+  correct block counts against 138, the same COUNT of recipes never emitted (39), 5 fixed and
+  4 broken. One page, which is noise. A per-line height-vs-width fit (deskew), proposed
+  separately and not by the plan, scores strictly worse: 136/181, 42 lost, 0 fixed, 2
+  broken. **All PROXY figures — Windows offline OCR, not ML Kit**, so they say what the
+  algorithm does, not what the phone does. ML Kit's own block grouping is still
+  UNMEASURED: the plan hoped it made a sorter unnecessary, and this does not refute that;
+  it makes it moot, because the sorter does not pay either way. Consequence: the corpus
+  page the feature was designed against still does not split, recorded as a passing
+  known-miss test in `heading_detector_test`, not tidied away. Note the interleaving is
+  REAL in that engine — 49 of its 134 two-column pages (37 %) come out of capture
+  out-of-order — so the case for re-opening is a device measurement showing ML Kit behaves
+  the same AND a bigger gain than one page. An engineering call under the plan's ⑦
+  ("check it against real geometry before writing a line"), reported to Malin in the
+  2026-08-07 session summary; no founder override sought or given. 2026-08-07
+
 
 - **SUPERSEDES the "both spellings are named deliberately" clause of the BUT-1798 export
   entry.** `shared_content` now carries membership under ONE field, `sharedToUserIds`. The

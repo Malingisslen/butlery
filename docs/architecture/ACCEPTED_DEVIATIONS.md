@@ -515,7 +515,10 @@ consecutive runs all put the on-device reader behind (-0.3, -0.3, -0.5), so this
 consistent deficit, not noise waiting to average out. That is a stronger reason to keep the
 paid chain behind the tier than the first, thinner measurement gave. The plan
 (`tasks/butlery-ocr-sites-plan.md`, step A3) set the gate at "at least as good as the paid
-chain on the same pages". 96.1 < 96.4, so the gate is **not met**.
+chain on the same pages". 96.1 < 96.6, so the gate is **not met**. (This read "96.1 < 96.4"
+until 2026-08-08. 96.4 is the paid chain's PRE-CORRECTION figure, which the history
+paragraph below identifies as artifact-tainted — the comparison must use the corrected 96.6
+recorded above, or the two halves of this entry contradict each other.)
 
 **Why it ships anyway.** Half a point of recall, on a metric where both arms sit above 96.
 The on-device reader still wins outright on several pages and loses on others. Against that, every photo import currently costs a paid
@@ -530,7 +533,7 @@ paid provider must clear — falls straight through to OCR.space → Vision → 
 before. So the failure mode of a bad on-device read is a paid call, not a bad recipe.
 
 **Do not flip it off citing the gate.** The gate was overridden knowingly, with the numbers on
-the table. A future session that finds 96.1 < 96.4 and "fixes" it would be re-litigating a
+the table. A future session that finds 96.1 < 96.6 and "fixes" it would be re-litigating a
 decided call. Legitimate reasons to revisit: a materially larger gold corpus showing a real
 gap (75 more prelabelled pages are available), a user-visible regression in photo import, or
 a new ML Kit version worth re-measuring. The re-measure is
@@ -769,3 +772,96 @@ because access can come from ownership.
 **Not done, stated rather than implied.** The panel renders one row per group, as before, but
 without a member count ("Familjen (4 personer)" in the plan). Cosmetic, and the count is not
 available where the row is built.
+
+## Column ordering for on-device OCR — measured and declined (2026-08-07)
+
+**Decision: do not build it.** Step 8 of the layout plan proposed sorting a photographed
+page's lines into reading order (left column fully, then right) before splitting. The plan
+already flagged it as the one part of that work that could regress a path already working,
+and guessed it might prove unnecessary because ML Kit groups lines into `TextBlock`s.
+
+**Every figure below is a PROXY.** The stored geometry is `layout-winocr.json` — Windows'
+offline recognizer, chosen because it runs on a dev machine — so these numbers describe
+that engine's line ordering, not ML Kit's. `corpus_paths.dart` says as much where the file
+is named, and step 6b's record carries the same label.
+
+That matters for the plan's actual hypothesis, which this does NOT settle: ⑦ guessed ML
+Kit's `TextBlock` grouping might already emit a two-column spread column-wise, and
+`device_text_recognizer_mlkit.dart` really does flatten blocks in order. **ML Kit's
+ordering remains unmeasured** — it needs a device, which is the plan's own open question
+#1. The decision below does not rest on it.
+
+**Interleaving is real in the proxy.** Over the 250 stored captures, 208 pages carry at
+least 8 lines, 134 of those are two-column by a widest-gutter test, and **49 of the 134
+(37 %) come out of capture interleaved**. So for at least one real recognizer, reading
+order is not free.
+
+**Fixing it does not pay.** A sorter that splits at the widest horizontal gap and emits
+each column top-to-bottom (identity when no clear gutter is found) reorders **116 of the
+181 verified pages — 64 %**, and scores:
+
+| arm | right block count | recipes never emitted |
+|---|---|---|
+| text rules, no geometry | 131/181 (72 %) | 47 |
+| layout, as it ships | 138/181 (76 %) | 39 |
+| layout + column sort | 139/181 (77 %) | 39 |
+
+Five pages fixed, four broken. One page net, which is noise — bought by changing the text
+of two pages in every three. Only 48 of the 181 are multi-recipe, so at least 68
+single-recipe pages were reordered: the sorter necessarily touches the population the
+whole plan was gated on not regressing.
+
+**And if ML Kit turns out to order columns correctly, the case is weaker still**, not
+stronger: the benefit measured here would shrink toward zero while the risk of reordering
+a page that was already right remains.
+
+**A second probe, not part of the plan, fails too.** Deskewing was proposed here rather
+than by the plan's ⑦, and an earlier comment wrongly called it step 8's real fix. The
+residual error on the motivating page is that an
+axis-aligned box around a TILTED word grows with the word's width. Fitting each line's
+word heights against their widths and taking the intercept — the width-free estimate —
+scores 136/181 with 42 recipes lost, 0 pages fixed and 2 broken. Worse. Within one line
+the longest/shortest spread is usually negligible (median 1.02 over 6,280 samples), so the
+fit is mostly noise. Reading the numbers rather than measuring: what would constrain such
+a fit is the tail of wide-spread lines, and the motivating page's heading is one — but that
+is an inference from a single page, not a result, and whether a different estimator could
+exploit it is untested.
+
+**What this leaves standing.** The corpus page the feature was designed against
+(`blandat-svart/PXL_20260803_204246157`) still yields one heading instead of two, and
+there is no known cheap correction. That is recorded as a passing test in
+`heading_detector_test.dart` — a known miss with its measured cause — rather than tidied
+away or tuned around by loosening `titleSizeSpread`, which was separately measured to cost
+a working page.
+
+**How to re-derive this**, since both probes were throwaway and are gone. Baseline:
+`dart run tools/corpus_split_eval.dart --layout`, which scores the shipped splitter over
+`layout-winocr.json` and prints both arms. For the sorter and the deskew fit, rebuild them
+against the same captures — a page counts as two-column when the widest gap between line
+lefts exceeds 18 % of the page's **widest ink extent** (`max(line.box.right)`) and both
+sides hold at least four lines, and note that this same heuristic defines the 134 AND
+drives the sorter, so the two stand or fall together.
+
+**The denominator is load-bearing and this entry got it wrong once**, on 2026-08-07, in the
+sentence above. Re-derived on 2026-08-08 over the same 250 captures, twice and by two
+independent implementations that agreed to the unit: 208 pages carry >= 8 lines under both
+denominators, but the ink extent yields **134** two-column pages and **49** interleaved —
+reproducing the figures above exactly — while the DECLARED page width
+(`PageLayout.imageWidth`, the `width` key in the capture) yields **124** and **45**. Median
+ink extent is ~0.91 of the declared width over those 208 pages, which walks ten of them
+across the bar. A session following the wrong denominator would conclude this entry's
+numbers are fabricated; matching to the unit is what identifies which probe was really run.
+
+Related trap, but **not** a blocker on the device measurement this entry asks for: if you
+re-derive against `PageLayout.imageWidth` instead, note it defaults to 0 (`text_layout.dart`)
+and `MlKitTextRecognizer.toPageLayout` never fills it, so on a phone the ratio degenerates
+silently — `Infinity` for any non-zero gap, `NaN` for a zero gap, no exception and no empty
+result to notice. The ink extent has no such problem, but not for the reason it looks like:
+it is a LINE box, which a device fills from ML Kit's own line rect
+(`device_text_recognizer_mlkit.dart`) while a replay derives it from the word union
+(`OcrLine.fromJson`) — two different mechanisms, both non-zero, so the ratio holds on a
+phone either way. They are not guaranteed byte-equal, so do not compare a device figure
+against a replay figure at the unit.
+
+Re-open only with a new measurement, not a new argument — and the measurement worth having
+is ML Kit's block ordering on a device, which nothing here supplies.

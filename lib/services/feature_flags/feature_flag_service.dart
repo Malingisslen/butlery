@@ -87,27 +87,41 @@ class FeatureFlagService {
     // default stays false so an unreachable Remote Config can never switch it
     // on.
     //
-    // NOT YET CLEARED BY A TRUSTWORTHY MEASUREMENT. The production value was
-    // set to TRUE on 2026-08-02 on a corpus eval that has since been found to
-    // compare unlike things — the harness fed the recognizer RAW bytes while
-    // production preprocesses first, and the artifact is larger than the
-    // 0.2-point margin the verdict rested on (see
-    // integration_test/ocr_engine_comparison_test.dart). The harness is fixed;
-    // the re-run is pending a device. Until it lands, treat the production ON
-    // state as a decision awaiting evidence, not as a cleared gate. Flipping it
-    // off restores the previous chain exactly.
+    // ON in production, and DELIBERATELY so despite losing its own gate. The
+    // 2026-08-02 verdict rested on a harness that fed the recognizer RAW bytes
+    // while production preprocesses first; that was fixed and re-run, and the
+    // corrected eval scores on-device 96.1 against the paid chain's 96.6 over
+    // 39 verified recipes — so the "at least as good" gate is NOT met. Malin
+    // took the call on 2026-08-03: half a point is not worth paying per image
+    // for, and the paid chain still runs behind the tier for anything read
+    // poorly. **Do NOT flip this off citing the gate** — the gate was overridden
+    // knowingly; see docs/architecture/ACCEPTED_DEVIATIONS.md. Flipping it off
+    // restores the previous chain exactly.
     'enable_on_device_ocr': false,
-    // Decides WHICH of the on-device recognizer's two strings the parser sees:
-    // the one built from its measured lines, or ML Kit's own assembly. The page
-    // model itself is always built and is not yet read by anything downstream,
-    // so this flag is not "geometry on/off" — it is which string is stored.
+    // Decides WHICH of the on-device recognizer's two strings the parser sees —
+    // the one built from its measured lines, or ML Kit's own assembly — AND
+    // whether the page geometry travels with it. The page model is always
+    // built; this flag decides whether it is attached and read.
+    //
+    // THE SPLIT PATH IS LIVE behind this flag as of 248481c83 (2026-08-07):
+    // `ocr_extraction_service` attaches the `PageLayout`, `photo_import_viewmodel`
+    // carries it across pages, and `import_manager` hands it to
+    // `MultiRecipeSplitter.split(input, layout: layout)`, which opens a block
+    // per heading found by TYPE SIZE — where the text rules need a title-shaped
+    // line with an ingredient cluster AFTER it. Measured on 181 hand-verified
+    // corpus pages: multi-recipe spreads 19 % -> 33 % correct, recipes never
+    // emitted 47 -> 39, single-recipe pages unchanged at 92 %. PROXY figures —
+    // Windows offline OCR, not ML Kit. The one step that remained after it,
+    // ordering two-column pages, was measured and DECLINED on 2026-08-07
+    // (ACCEPTED_DEVIATIONS.md), so there is no "later step" to wait for.
+    //
+    // **Keep the Remote Config description in step with this block** — the
+    // console shows the key, not this comment, and Malin reads the description
+    // at the moment she decides whether to enable it.
     //
     // Independent of enable_on_device_ocr on purpose: off, the free tier still
     // runs and stores byte-identical text to what it stored before the seam
-    // widened, so a rollback never costs the free tier. NOTHING SPLITS YET —
-    // turning this on before the later steps land buys no upside, only the
-    // changed string. Say that in the Remote Config description too; the
-    // console shows the key, not this comment.
+    // widened, so a rollback never costs the free tier.
     'enable_layout_recipe_split': false,
 
     // Gradual Rollout Flags
@@ -361,9 +375,12 @@ abstract final class FeatureFlags {
   static const appMaintenanceMessageSv = 'app_maintenance_message_sv';
   // Ingredient sections (PR #211): import-capture kill switch
   static const ingredientSectionCapture = 'ingredient_section_capture';
-  // Free on-device OCR tier 0 — ON in prod, but pending a trustworthy
-  // re-measurement; see the defaults map above before relying on it.
+  // Free on-device OCR tier 0 — ON in prod. It LOST its own measured gate and
+  // ships anyway on Malin's 2026-08-03 call; read the defaults map above and
+  // ACCEPTED_DEVIATIONS.md before changing it.
   static const enableOnDeviceOcr = 'enable_on_device_ocr';
+  // Layout-aware recipe splitting — the split path is LIVE behind this flag;
+  // see the defaults map above for the chain and the measured result.
   static const enableLayoutRecipeSplit = 'enable_layout_recipe_split';
 
   // Gradual Rollout Flags

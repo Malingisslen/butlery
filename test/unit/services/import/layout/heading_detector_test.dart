@@ -56,6 +56,14 @@ void main() {
   /// 139/119) because that is what the capture holds and because giving both
   /// words of a line one height — as this fixture did until 2026-08-07 — hides
   /// the effect that actually decides this page. See the group below.
+  ///
+  /// Those heights are PROXY figures, and so is every corpus-wide number in
+  /// this file: the stored geometry is `layout-winocr.json`, Windows' offline
+  /// recognizer rather than ML Kit, and `--layout` corpus runs score that same
+  /// engine (`tools/corpus_split_eval.dart`). So they say what the algorithm
+  /// does, not what the phone does. What is NOT engine-dependent: the
+  /// gold-derived bounds (the 59-character longest title) and the synthetic
+  /// fixtures in the groups below.
   PageLayout realSpread() => PageLayout(
     lines: [
       line('Provençalska ägg', height: 167, wordHeights: [200, 133]),
@@ -99,8 +107,28 @@ void main() {
       // ratio of 1.19, so 1.15 does NOT recover this page (its floor is 92.1)
       // and 1.20 would — a row the table records as no better on spreads, TWO
       // spurious blocks worse, and a point down on single pages, which is the
-      // axis this whole plan refuses to trade. Deskewing the word boxes is the
-      // real fix and belongs to the column-ordering step, not here.
+      // axis this whole plan refuses to trade.
+      //
+      // And THIS deskew estimator is not the answer either, which an earlier
+      // version of this comment asserted about deskewing in general, without
+      // measuring. Fitting each line's word heights against their widths and
+      // taking the intercept — the width-free estimate — scores WORSE over the
+      // whole corpus (2026-08-07, proxy figures on Windows offline OCR: 136 of
+      // 181 pages right against 138, 42 recipes never emitted against 39, 0
+      // pages fixed and 2 broken). Within a line the spread is usually tiny
+      // (median 1.02 over 6,280 samples), so the fit is mostly noise. Whether a
+      // different estimator could work is untested.
+      //
+      // Note the WIDTH argument above is about the real capture, not this
+      // fixture: every word box here is 40 wide, and the effect reaches the
+      // detector only through the transcribed heights (200/133 on the first
+      // title, 139/119 on the second) — both pairs, because the miss is the
+      // RATIO between the two lines' medians.
+      //
+      // So this page stays MISSED and no cheap correction is known. If this
+      // test ever returns BOTH titles, that is an improvement: update the
+      // expectation and the deviation entry — do not revert whatever caused
+      // it.
       expect(headingTexts(realSpread()), equals(['Provençalska ägg']));
     });
 
