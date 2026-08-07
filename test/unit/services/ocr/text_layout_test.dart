@@ -82,8 +82,11 @@ void main() {
     });
 
     test('one mis-segmented giant word does not drag the line up', () {
-      // OCR merging a glyph with the line above produces exactly this. A mean
-      // would answer 130; the median holds the line at body size.
+      // OCR merging a glyph with the line above produces exactly this. Measured
+      // on the CURRENT arithmetic: the mean of the normalised heights is 119.6
+      // (the raw mean is 152.7); the median holds the line at body size. An
+      // earlier version of this comment said 130, which was a raw-box figure
+      // from before normalisation.
       final l = OcrLine(
         text: 'i en ratatouille eller en fransk grönsaksröra',
         box: const LayoutBox(left: 0, top: 0, width: 900, height: 70),
@@ -102,8 +105,10 @@ void main() {
 
     test('averages the two middle words when the count is EVEN', () {
       // Word boxes arrive in reading order, not sorted by height, and an even
-      // count has no single middle. Both halves matter: picking one middle
-      // element answers 78 here, and averaging without sorting answers 61.
+      // count has no single middle. Both halves matter: measured on the CURRENT
+      // arithmetic, picking one middle element answers 55.2 here and averaging
+      // without sorting answers 51.4, and the assertion reddens on each. (78
+      // and 61 were the raw-box figures before normalisation.)
       final l = OcrLine(
         text: 'Räkna med 4-5 ägg',
         box: const LayoutBox(left: 0, top: 0, width: 900, height: 70),
@@ -168,10 +173,12 @@ void main() {
 
     test('an ALL-CAPS word is not mistaken for a bigger one', () {
       // 'TUSENBLADSTÅRTA' set as a component heading was one of the eight false
-      // splits. An all-caps word has no x-height band at all: its box spans cap
-      // to baseline, so at the SAME type size it out-measures a lowercase word
-      // that reaches neither above nor below the x-height by about the cap
-      // ratio — which is why the two raw heights below differ by design.
+      // splits. No letter in an all-caps word STOPS at the x-height line — the
+      // box still covers that band — so it spans cap to baseline, and at the
+      // SAME type size it out-measures a lowercase word reaching neither above
+      // nor below the x-height by about the cap ratio. That is why the two raw
+      // heights below differ by design. (Saying it "has no x-height band" is
+      // the exact wording of the defect `glyphSpan` records having removed.)
       final caps = OcrWord(
         text: 'TUSENBLADSTARTA',
         box: const LayoutBox(left: 0, top: 0, width: 400, height: 145),
@@ -255,9 +262,14 @@ void main() {
           equals(5),
         );
 
-        // A provider that returns lines but no word geometry is the degraded
-        // case the body-line filter still has to work under. Padding and runs of
-        // whitespace must not inflate the count into "this is running text".
+        // A provider that returns lines but no word geometry. Note this
+        // fallback is now production-DEAD: both callers of `wordCount`
+        // (`bodyTypeHeight` and `HeadingDetector._readsLikeTitle`) sit behind
+        // `hasMeasuredWords`, so a line reaching either always has word boxes.
+        // Kept because this model is a durable public type replayed by `tools/`
+        // for years, and because the counting rule below is the interesting
+        // half: padding and runs of whitespace must not inflate the count into
+        // "this is running text".
         final noBoxes = OcrLine(
           text: '  Räkna med  4-5 ägg  ',
           box: LayoutBox(left: 0, top: 0, width: 900, height: 70),
@@ -339,10 +351,29 @@ void main() {
       expect(page.bodyTypeHeight, equals(71));
     });
 
-    test('a page with no word boxes at all still measures from line boxes', () {
-      // The degraded provider: lines but no per-word geometry. The body filter
-      // has to fall back to counting the text's own words, or the whole page
-      // reads as "no body lines" and the caller declines on a usable page.
+    test('a page with no word boxes at all DECLINES', () {
+      // The degraded provider: lines but no per-word geometry. This used to
+      // answer a baseline off the raw line boxes, and that was the defect a
+      // whole-diff review caught — `typeHeight` is glyph-normalised when a line
+      // has words and a raw line box when it does not, so those two are on
+      // different scales and `headingSizeRatio` is calibrated for the first.
+      //
+      // A page like this one is at least SELF-consistent, so a ratio between
+      // its own lines would mean something. Refused anyway: the constant that
+      // would judge it was measured on normalised heights and does not
+      // transfer, and no corpus page can check the answer. Declining sends the
+      // page to the text rules, which is the safe direction and this model's
+      // stated contract everywhere else.
+      //
+      // The case that actually bites is a MIXED page — element absence is per
+      // LINE, so one page can hold both kinds — and `heading_detector_test`
+      // pins that one
+      // AT THE DETECTOR, not here: its unsegmented line carries one word, so
+      // `_minBodyWords` excludes it from this sample either way. Measured,
+      // dropping the guard on this line reddens exactly this test and nothing
+      // in that suite. A mixed-page twin here would be a duplicate through the
+      // same seam — the filter cannot see a page's composition, so a page that
+      // blends is a page that fails to decline.
       final page = PageLayout(
         lines: [
           for (var i = 0; i < prose.length; i++)
@@ -352,7 +383,7 @@ void main() {
             ),
         ],
       );
-      expect(page.bodyTypeHeight, equals(71));
+      expect(page.bodyTypeHeight, isNull);
     });
 
     test('the real page that motivated this model separates cleanly', () {
@@ -437,7 +468,15 @@ void main() {
       // pair and never touch an even median, so the fixture answered 70 with
       // the defect live. Measured 66/70/72/74 plus two zeros: keeping the
       // zeros gives 68 (the median slides down two places), dropping them
-      // gives 71. Only the shipped filter answers 71.
+      // gives 71.
+      //
+      // TWO rules answer 71, and they are pinned separately. The word-less rows
+      // never reach the sample at all now — `hasMeasuredWords` drops them one
+      // filter earlier, which is what makes the raw line box unreachable as a
+      // baseline — so with only those rows the `h > 0` filter this test is named
+      // after could be deleted with all 75 tests in these three suites green.
+      // The last row below is the shape that still reaches it: word boxes
+      // present, their HEIGHTS missing. Keeping its 0 slides the median to 70.
       Map<String, dynamic> withWords(String t, int h) => {
         'text': t,
         'words': [
@@ -451,6 +490,12 @@ void main() {
         withWords(prose[2], 72),
         {'text': 'annu en orad rad utan matt'},
         withWords(prose[3], 74),
+        {
+          'text': 'en rad vars ord saknar hojd',
+          'words': [
+            for (var i = 0; i < 5; i++) {'t': 'w', 'w': 30},
+          ],
+        },
       ]);
 
       expect(page.bodyTypeHeight, equals(71));
@@ -731,8 +776,11 @@ void main() {
 
     test('a line with no word boxes round-trips as a usable line box', () {
       // The degraded capture must replay as the degraded case, not as a line
-      // with no size at all — the line box IS the type-size signal here, and
-      // it travels in its own key that no other assertion reads.
+      // with no size at all. The line box is the only NUMBER such a line has —
+      // it is deliberately no longer a type-size SIGNAL, since `typeHeight`'s
+      // two branches are on different scales and `hasMeasuredWords` now refuses
+      // the comparison. What this pins is that the value survives the round
+      // trip in its own key, which no other assertion reads.
       final bare = OcrLine(
         text: 'no words',
         box: const LayoutBox(left: 0, top: 0, width: 100, height: 42),
@@ -791,9 +839,10 @@ void main() {
             'h': '167',
           },
           // A dimension that is not a number at all must land on ZERO, not on
-          // some small positive value: zero is what the baseline sample drops,
-          // so garbage declines to be measured instead of quietly joining the
-          // median as a tiny line.
+          // some small positive value. Zero is still what the `h > 0` filter
+          // drops — reached now by a line whose WORDS are present but whose word
+          // heights are missing, since `hasMeasuredWords` catches the word-less
+          // shape one filter earlier.
           {'text': 'i en ratatouille', 'h': 'inte ett tal'},
         ],
       });

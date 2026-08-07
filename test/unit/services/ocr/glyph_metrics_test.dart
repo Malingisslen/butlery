@@ -124,10 +124,12 @@ void main() {
       // `heading_detector_test.dart` pins the consequence — that page's smaller
       // title is still MISSED — and holds the SAME two transcribed numbers in
       // its `realSpread` fixture. Re-shoot or re-recognize the capture and both
-      // must move together; nothing links them but this sentence. Do not let this file grow an assertion claiming
-      // otherwise; it had one, and it was a tautology (both words span
-      // `1.0 + _ascenderRise`, so the ratio was 1.0 for every possible value of
-      // every constant here).
+      // must move together; nothing links them but this sentence.
+      //
+      // Do not let this file grow an assertion that the two AGREE after
+      // normalisation. It had one — `span('Provensalska') / span('omelett')`
+      // — and that was a tautology: those two words both span 1.45, so the
+      // ratio is 1.0 for every possible value of every constant here.
       expect(200 / span('Provensalska'), closeTo(137.9, 0.1));
       expect(133 / span('ägg'), closeTo(73.9, 0.1));
     });
@@ -170,10 +172,14 @@ void main() {
       expect(span(nfdCaps), equals(span('TUSENBLADSTÅRTA')));
       // A mark that sits BELOW the baseline must NOT reach the tall branch.
       // The first version of this accepted the whole U+0300-U+036F block, which
-      // holds the cedilla — so an NFD 'garcon' measured 33 % taller than its
-      // precomposed twin, and an all-caps one landed at 1.103 against a plain
-      // sibling, across the detector's floor. Unmodelled marks are skipped for
-      // the same reason a precomposed cedilla is.
+      // holds the cedilla — so an NFD 'garcon' spanned 1.80 against its
+      // precomposed twin's 1.35 and measured 25 % SHORTER (the precomposed one
+      // reads 33 % taller). The case that bites is the all-caps one: an NFD
+      // 'PROVENCALSKA' SPANS 1.103 times a plain sibling, so it MEASURES 0.906
+      // of it — under the 0.909 floor the detector's spread implies, dropping a
+      // real co-title. Span or measurement, always say which: leaving it
+      // ambiguous is how the sentence above got inverted once already. Unmodelled marks are
+      // skipped for the same reason a precomposed cedilla is.
       final cedilla = String.fromCharCode(0x0327);
       expect(span('garc${cedilla}on'), equals(span('garçon')));
       expect(span('PROVENC${cedilla}ALSKA'), equals(span('PROVENÇALSKA')));

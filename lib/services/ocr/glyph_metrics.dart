@@ -2,10 +2,50 @@
 ///
 /// A recognizer's bounding box is drawn around ink, not around the font. At one
 /// and the same type size, "Fransk omelett" reaches from the cap line to the
-/// baseline while "Provensalska ägg" adds a descender and an umlaut and spans
-/// about 1.3 times as much. Every rule that compares one line's height to
-/// another's is therefore reading the alphabet unless it divides that out
-/// first.
+/// baseline while the word "ägg" also reaches below it and spans about a
+/// quarter more (1.80 against 1.45 — the figure `glyph_metrics_test` pins as
+/// 1.24). Every rule comparing one line's height to another's is therefore
+/// reading the alphabet unless it divides that out first.
+///
+/// ## The attainable spans, stated ONCE
+///
+/// With the constants below, [glyphSpan] returns 0 for a word holding no
+/// letters — the caller then keeps the raw box — and otherwise exactly one
+/// of six values:
+///
+///     0     no letters at all ................. '4-5', '123', ''
+///     1.0   x-height only ..................... 'ananas'
+///     1.35  descender, nothing tall ........... 'gam'
+///     1.45  cap or ascender, no descender ..... 'Tomater', 'GRYTA',
+///                                               'Provensalska'
+///     1.60  uppercase Nordic diacritic ........ 'Ättika', 'ÄPPELKAKA'
+///     1.80  tall + descender .................. 'ägg', 'Lägg'
+///     1.95  uppercase diacritic + descender ... 'Ägg', 'Ångad'
+///
+/// `Provensalska` sits on the 1.45 row deliberately: its `P` is a CAPITAL, and
+/// capitals take the cap branch before the descender test runs. Anyone
+/// re-deriving the 137.9 that `glyph_metrics_test` ASSERTS (= 200 / 1.45), and
+/// that `heading_detector_test`'s `realSpread` comment echoes, needs that row
+/// to be right.
+///
+/// 1.15 and 1.50 are unreachable: an uppercase diacritic always implies the
+/// tall band. So **everything from 1.60 up clears a 1.50 size bar on glyph
+/// inflation alone, while 1.45 and below do not.**
+///
+/// ## This bounds a WORD, not a line
+///
+/// These are ink zones for one word. A LINE box carries a second inflation on
+/// top, and that one is UNBOUNDED: an axis-aligned box around a tilted line
+/// grows with the line's WIDTH, which `OcrWord`'s class doc in
+/// `text_layout.dart` gives as the reason per-word measurement exists at all.
+/// Both suites stage it — a 200-high box over 70-high words, and a 400-high
+/// one. So a raw line box read as a type size is inflated by the glyph term
+/// above TIMES an unbounded skew term, and no size bar is safe from it. That
+/// is the whole reason `OcrLine.hasMeasuredWords` exists.
+///
+/// Every other file that needs any of this points HERE rather than restating
+/// it. The numbers were written out in five places once, and three of the
+/// copies were wrong within a single change.
 ///
 /// Measured on the corpus page this whole layout feature was designed against:
 /// its two sibling titles, set in one type, measured 166.5 and 129.0 raw. That
@@ -107,11 +147,16 @@ double glyphSpan(String word) {
 /// Deliberately not the whole U+0300–U+036F block, which was the first
 /// attempt. That block also holds the marks that sit BELOW the baseline —
 /// cedilla U+0327, ogonek, dot below — and raising the tall band for one of
-/// those inflates in the dangerous direction: an NFD `garçon` measured 33 %
-/// taller than its precomposed twin, and an all-caps NFD `PROVENÇALSKA` landed
-/// at 1.103 against a plain sibling, across
-/// `HeadingDetector.titleSizeSpread`. An unmodelled mark is skipped for exactly
-/// the reason a precomposed `ç` or `ñ` is: its zone is not modelled here.
+/// those puts the word on a different measurement from its own precomposed
+/// twin: an NFD `garçon` spans 1.80 against 1.35, so it measures 25 % SHORTER
+/// (equivalently, the precomposed one reads 33 % taller). The load-bearing
+/// case is the all-caps one: an NFD `PROVENÇALSKA` SPANS 1.103 times its plain
+/// sibling, so it MEASURES 0.906 of it — under the 0.909 floor
+/// `HeadingDetector.titleSizeSpread` implies, which drops a real co-title.
+/// Span and measurement are reciprocal, and saying "lands at 1.103" without
+/// saying WHICH is how the sentence above it got inverted once already.
+/// An unmodelled mark is skipped for exactly the reason a precomposed `ç` or
+/// `ñ` is: its zone is not modelled here.
 bool _isModelledMark(String c) {
   if (c.isEmpty) return false;
   final u = c.codeUnitAt(0);
@@ -169,8 +214,13 @@ const double _capDiacriticRise = 0.15;
 /// a heading.
 ///
 /// Left as it is because the corpus sweep shows the spurious-block count
-/// unmoved either way, and because the detector refuses any line carrying a
-/// quantity before type size is consulted at all.
+/// unmoved either way, and because the detector refuses a LINE that starts with
+/// a digit, or carries a quantity in a RECOGNISED unit
+/// (`HeadingDetector._measurement`), before it can be called a heading. Note
+/// that is narrower than it sounds: an unlisted unit passes, so `Ugn 200
+/// grader`, `Vispa 30 min` and `Sats 4 portioner` are all accepted as titles.
+/// (`3ggr` above is the WORD case — as a whole line it starts with a digit
+/// and is refused.)
 const String _letters = 'abcdefghijklmnopqrstuvwxyzåäöéèüæø';
 
 /// `i` and `j` are deliberately absent, even though their dots sit near the

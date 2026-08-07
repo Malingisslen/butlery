@@ -15,9 +15,10 @@
 ///   and replayed for years by whatever reads it next — `tools/`, a Python
 ///   probe, a future rewrite — so it is flat, self-describing and outlives this
 ///   model. (An earlier draft justified that by claiming `tools/` must stay
-///   free of `package:butlery` imports. That is not a rule and four files
-///   already import it, `tools/corpus_split_eval.dart` among them. The shape is
-///   right; the reason was invented.)
+///   free of `package:butlery` imports. That is not a rule —
+///   `tools/corpus_split_eval.dart` imports it. The shape is right; the reason
+///   was invented. No file count here on purpose: an earlier version named one
+///   and it went stale.)
 ///
 /// Its ONE import is `glyph_metrics.dart`, a sibling under the same discipline
 /// — no Flutter, no `dart:ui`, nothing third-party. This file carried that
@@ -202,10 +203,25 @@ class OcrLine {
   ///
   /// Median, not mean: a single mis-segmented fragment (OCR merging a glyph
   /// with the line above) can double a mean and turn body text into a
-  /// "heading". Falls back to the line box only when word boxes are absent,
-  /// which is the degraded case, not the normal one — and that fallback is
-  /// NOT normalised, because a line box spans whatever its tallest and lowest
-  /// glyphs reach and no single word's letters describe it.
+  /// "heading".
+  ///
+  /// **The two branches are NOT on the same scale and must never be compared
+  /// with each other.** With words this is in x-height units; without them it
+  /// falls back to the raw line box, which spans whatever the line's tallest
+  /// and lowest glyphs reach. The fallback is deliberately not normalised,
+  /// because no single word's letters describe a whole line's ink.
+  ///
+  /// That makes an unmeasured line unusable as a heading signal rather than
+  /// merely imprecise: `glyphSpan`'s doc lists the attainable inflations and
+  /// which of them clear a size bar on their own. Use [hasMeasuredWords] to
+  /// refuse the comparison — [PageLayout.bodyTypeHeight] and `HeadingDetector`
+  /// both do.
+  ///
+  /// The two kinds can share ONE page because element absence is per LINE: the
+  /// ML Kit adapter maps each line's elements independently, so a page with one
+  /// unsegmented row among segmented ones is representable whatever ML Kit
+  /// happens to do per platform. That is the claim this guard rests on, and it
+  /// is about code we own.
   double get typeHeight {
     if (words.isEmpty) return box.height;
     final heights = words.map((w) => w.typeHeight).toList()..sort();
@@ -214,6 +230,23 @@ class OcrLine {
         ? heights[mid]
         : (heights[mid - 1] + heights[mid]) / 2;
   }
+
+  /// Whether the line has WORD BOXES at all, so that [typeHeight] is a median
+  /// of per-word measurements rather than the raw line box.
+  ///
+  /// Any comparison of one line's height against another's — a size bar, a page
+  /// baseline, a page-relative floor — has to refuse the lines this is false
+  /// for, because their value is on a different scale entirely. Same rule
+  /// [PageLayout.bodyTypeHeight] already states for a line with no measurement
+  /// at all: an absence, not a number.
+  ///
+  /// Passing is NECESSARY, not sufficient. [OcrWord.typeHeight] itself falls
+  /// back to a raw box for any word holding no letters, so a line of purely
+  /// numeric tokens answers true here and still measures on the raw scale —
+  /// the same two-scales problem one level down. `HeadingDetector` is covered
+  /// by its own quantity and leading-digit guards; [PageLayout.bodyTypeHeight]
+  /// has no text rules and is where such a row could still reach the baseline.
+  bool get hasMeasuredWords => words.isNotEmpty;
 
   /// Words on the line — the cheapest "is this a heading-shaped line" signal
   /// that does not depend on the text itself.
@@ -303,7 +336,12 @@ class PageLayout {
   double? get bodyTypeHeight {
     final heights =
         lines
-            .where((l) => l.wordCount >= _minBodyWords)
+            // Word boxes first: without them `typeHeight` is a raw line box on
+            // a different scale from every normalised sibling, and averaging
+            // the two produces a baseline that belongs to neither. One page can
+            // carry both kinds because element absence is per LINE — see
+            // [OcrLine.typeHeight].
+            .where((l) => l.hasMeasuredWords && l.wordCount >= _minBodyWords)
             .map((l) => l.typeHeight)
             // A line with NO measurement is not a body line, it is an absence.
             // Keeping its 0 was the worst possible failure: a fully degraded

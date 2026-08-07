@@ -163,8 +163,11 @@ class MlKitTextRecognizer implements DeviceTextRecognizer {
     return PageLayout(lines: lines);
   }
 
-  /// `Rect` is `dart:ui`, and `text_layout.dart` deliberately has no imports at
-  /// all so it runs under plain `dart test` and can be replayed by tooling.
+  /// `Rect` is `dart:ui`, and `text_layout.dart` deliberately takes no Flutter
+  /// and no third-party imports, so it runs under plain `dart test` and can be
+  /// replayed by tooling. (It does import its sibling `glyph_metrics.dart`,
+  /// which is under the same discipline — an earlier version of this sentence
+  /// said "no imports at all", which that file itself records as retired.)
   /// This adapter is the only place the two coordinate types meet.
   static LayoutBox _box(Rect r) => LayoutBox(
     left: r.left,

@@ -231,6 +231,77 @@ void main() {
       expect(headingTexts(page), equals(['Pannkakor', 'Vafflor']));
     });
 
+    test('an UNSEGMENTED line is never a heading, however tall it reads', () {
+      // The cross-file defect the whole-diff review caught, and the reason
+      // batched reviews could not: `OcrLine.typeHeight` is glyph-normalised
+      // when the line has word boxes and a RAW line box when it does not, and
+      // those are different scales — `glyphSpan`'s doc lists the six attainable
+      // inflations and which clear a size bar on their own. One page can carry
+      // both kinds because element absence is per LINE, not per platform: the
+      // ML Kit adapter maps each line's elements independently, and
+      // `device_text_recognizer_mlkit_test` stages a page of exactly that
+      // shape.
+      //
+      // 'Tillbehör' below carries no word boxes, so its box spans the line's
+      // full ink — 85, where the segmented body lines beside it normalise to
+      // 48.3. Measured on this fixture: the bar sits at 72.4 and the
+      // page-relative floor at 81.5, so unfiltered it clears BOTH and becomes a
+      // second heading.
+      //
+      // Precisely how far above body it is, because the bound matters and an
+      // earlier version of this comment rounded it away: `glyphSpan('Tillbehör')`
+      // is 1.45 (no descender), so 85 is a type of 58.6 — about a fifth above
+      // body, not exactly at it. A genuinely body-sized unsegmented line of this
+      // shape would measure 70 and stay UNDER the bar. So the defect needs a
+      // line either somewhat larger than body, or one whose ink includes a
+      // descender (span 1.80, which reads 1.80x rather than 1.45x). That bounds
+      // its reach; it does not make it rare — a running header or a section
+      // label is usually set a little larger than body.
+      //
+      // The title's height is 130 for a separate reason: at 150 the floor rises
+      // to 94 and masks the defect entirely, which is how an earlier version of
+      // this fixture passed with the guard deleted. The corpus can never show
+      // any of it — every stored capture has word boxes.
+      final page = PageLayout(
+        lines: [
+          line('Pannkakor', height: 130),
+          OcrLine(
+            text: 'Tillbehör',
+            box: const LayoutBox(left: 0, top: 0, width: 300, height: 85),
+          ),
+          for (var i = 0; i < 4; i++)
+            line('en lång rad brödtext som fortsätter $i', height: 70),
+        ],
+      );
+      expect(headingTexts(page), equals(['Pannkakor']));
+
+      // The guard's SECOND claim, which the page above cannot see. Its
+      // production comment says such a line would also SET `tallest` and push
+      // real titles under the floor — a different, worse outcome than gaining a
+      // false heading, because the page loses the title it did have. Measured
+      // on these bytes: moving the guard below the `tallest` update (line still
+      // refused, but it still sets the reference) reddens exactly ONE assertion
+      // in these three suites — the one below. The page above stays green under
+      // it, which is the whole reason this second page exists; an earlier
+      // version of this sentence said the mutant left all 75 tests green, which
+      // stopped being true the moment this page was added to defend against it.
+      // At 200 the floor rises to 181.8 and
+      // 'Pannkakor' at 89.7 falls under it, so the detector answers nothing at
+      // all.
+      final tallNoise = PageLayout(
+        lines: [
+          line('Pannkakor', height: 130),
+          OcrLine(
+            text: 'Tillbehör',
+            box: const LayoutBox(left: 0, top: 0, width: 300, height: 200),
+          ),
+          for (var i = 0; i < 4; i++)
+            line('en lång rad brödtext som fortsätter $i', height: 70),
+        ],
+      );
+      expect(headingTexts(tallNoise), equals(['Pannkakor']));
+    });
+
     test('a heading on the LAST line of the page is still found', () {
       // The splitter opens its final block here. An off-by-one in the loop
       // bound loses the last recipe on every page and nothing else notices.

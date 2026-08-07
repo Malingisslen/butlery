@@ -107,10 +107,17 @@ void main() {
   });
 
   test('a line ML Kit measured but did not segment still becomes a row', () {
-    // Elements are per-word; a line can arrive with none (ML Kit returns them
-    // per platform, and iOS is the thin one). Dropping such a line would shift
-    // every index after it — strictly worse than a row with no word geometry,
-    // which the model already reads as an absence rather than as a zero.
+    // Elements are per-word, and a line can arrive with none. The adapter maps
+    // each line's elements independently, so this is a PER-LINE possibility —
+    // which is what makes a mixed page representable, and is the claim
+    // `OcrLine.hasMeasuredWords` rests on. (An earlier comment here asserted ML
+    // Kit returns elements per PLATFORM with iOS the thin one. Nothing in this
+    // repo establishes that, and the per-platform reading would imply uniform
+    // pages, which is the opposite of what the guard is for.)
+    //
+    // Dropping such a line would shift every index after it — strictly worse
+    // than a row with no word geometry, which the model already reads as an
+    // absence rather than as a zero.
     final recognized = RecognizedText(
       text: 'ignored',
       blocks: [
@@ -135,7 +142,11 @@ void main() {
     expect(
       layout.lines[1].typeHeight,
       equals(64),
-      reason: 'with no words the line box is the only measurement there is',
+      reason:
+          'the line box is the only NUMBER such a row has — carried across '
+          'verbatim. It is deliberately NOT a type size: see '
+          'OcrLine.hasMeasuredWords, which refuses to compare it with a '
+          'normalised sibling',
     );
   });
 

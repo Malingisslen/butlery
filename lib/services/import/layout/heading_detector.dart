@@ -22,7 +22,8 @@ class HeadingDetector {
   /// size.
   ///
   /// 1.50, not 1.35, and the difference is a measured product decision rather
-  /// than taste. Simulated over the corpus, block count against gold:
+  /// than taste. From a SIMULATION over the corpus (2026-08-06), block count
+  /// against gold:
   ///
   /// | setting                    | single pages kept whole | spreads right |
   /// |----------------------------|-------------------------|---------------|
@@ -31,8 +32,22 @@ class HeadingDetector {
   /// | K 1.50, minChars 120, verb | 87 %                    | 50 %          |
   /// | K 1.50, minChars 200, verb | **91 %**                | **40 %**      |
   ///
-  /// Scored on `ocr.txt`, so NOT comparable to [titleSizeSpread]'s table below,
-  /// which scores the layout capture's own text from a different engine.
+  /// **These are the simulation's own numbers, and its baseline row does not
+  /// reproduce.** `dart run tools/corpus_split_eval.dart` — the shipped code —
+  /// reports the text rules at 122/133, which rounds to 92 %, not 91 %; the
+  /// spread column (12/48 = 25 %) does reproduce exactly. The difference is NOT
+  /// the OCR engine, as an earlier version of this paragraph implied: both
+  /// engines score the identical 122/133 on single pages, and they diverge only
+  /// on spreads (25 % against 19 %) and recipes lost (46 against 47).
+  ///
+  /// So the rows above are comparable WITH EACH OTHER and with nothing else,
+  /// and the conclusion below rests on that internal comparison rather than on
+  /// the absolute figure. Whether the simulation truncated 122/133 or measured
+  /// something slightly different is no longer recoverable — which is the
+  /// argument for scoring a shipped implementation rather than a simulation of
+  /// one, and is why `--layout` exists. [titleSizeSpread]'s table below is
+  /// measured that way, and its shipping row reproduces on every run — the
+  /// other rows need the constant edited and the sweep re-run.
   ///
   /// The rows differ in more than K, and the 91 % is contingent on ALL THREE:
   /// the minimum block size and the instruction-signal requirement live in the
@@ -68,10 +83,12 @@ class HeadingDetector {
   ///
   /// Empty when the page has no measurable baseline — see
   /// [PageLayout.bodyTypeHeight]. That is the contract, not a failure: roughly
-  /// a quarter of the corpus's multi-recipe CAPTURES decline — 22 of 92, all of
-  /// them, verified or not. On the 48 spreads with verified gold, the set every
-  /// other number in this file is measured against, NONE decline. Do not apply
-  /// the quarter to the 48. A caller must
+  /// a quarter of the corpus's multi-recipe CAPTURES decline — verified or not.
+  /// On the 48 spreads with verified GOLD, the set every other number in this
+  /// file is measured against, NONE decline. Do not apply the quarter to the
+  /// 48. (No pinned count here: the corpus is live and outside the repo, so
+  /// that fraction drifts by a page between runs — `corpus_paths.dart` says as
+  /// much. The 0-of-48 is the load-bearing half and it is exact.) A caller must
   /// fall back to the text path rather than read an empty list as "no headings
   /// on this page".
   static List<int> headingLines(PageLayout page) {
@@ -83,6 +100,47 @@ class HeadingDetector {
     var tallest = 0.0;
     for (var i = 0; i < page.lines.length; i++) {
       final line = page.lines[i];
+      // A line with no word boxes has no TYPE SIZE — its `typeHeight` is the
+      // raw line box, on a different scale entirely. `glyphSpan`'s doc states
+      // the inflation and which of it clears a size bar; the numbers are
+      // deliberately NOT restated here, because restating them is exactly how
+      // three copies of them went wrong inside one change.
+      //
+      // Two failure modes. Such a line can clear this bar on inflation alone
+      // and open a false heading, and that does NOT require it to be larger
+      // than body text.
+      //
+      // It can also set `tallest` and push a REAL title under the floor. The
+      // window is exact: `floor = tallest / titleSizeSpread`, so the floor
+      // stays under the size bar — and therefore harmless, since every
+      // candidate already cleared that bar — only while the bogus height is
+      // below `body * headingSizeRatio * titleSizeSpread`. Past that it can
+      // take a genuine title.
+      //
+      // The fixture measures both sides and neither is the whole story on its
+      // own. A bogus 85 implies a floor of 77.3, ALREADY above the 72.4 bar, so
+      // a real title anywhere in 72.4-77.3 would be lost. This page's title
+      // measures 89.7 — taller than the noise line itself, so the noise never
+      // becomes `tallest` and the floor stays at 81.5; that, not luck, is why
+      // the page survives. At 200 the noise IS the tallest, the floor is 181.8
+      // and the title goes outright. Refusing early avoids both modes.
+      //
+      // Two things the refusal does NOT do, both worth knowing before anyone
+      // relaxes it. It is not purely subtractive: dropping a bogus `tallest`
+      // LOWERS the floor, so a page can go from one heading to two — whole to
+      // split, the direction this project treats as expensive. And a REAL title
+      // the recognizer failed to segment is now unfindable; mid-page that
+      // silently merges two recipes into one block, which is the accepted
+      // direction, and for a first title `MultiRecipeSplitter`'s discard budget
+      // catches it. The corpus can show none of this — every stored capture has
+      // word boxes.
+      //
+      // The mixed page is real because element absence is per LINE, not per
+      // platform: `device_text_recognizer_mlkit.dart` models it defensively and
+      // its test stages a page with one unsegmented line among segmented ones.
+      // (Per-platform alone would imply uniform pages, which `bodyTypeHeight`
+      // already declines — so it is not the argument for this guard.)
+      if (!line.hasMeasuredWords) continue;
       if (line.typeHeight < threshold) continue;
       if (!_readsLikeTitle(line)) continue;
       headings.add(i);
@@ -131,8 +189,10 @@ class HeadingDetector {
   ///
   /// These rows are NOT comparable to [headingSizeRatio]'s table above. That
   /// one scores `ocr.txt`; this one scores the layout capture's own text, a
-  /// different OCR engine — which is why the text baseline reads 92 %/19 % here
-  /// and 91 %/25 % there. `tools/corpus_split_eval.dart` prints that warning on
+  /// different OCR engine — which is why the SPREAD baseline reads 19 % here
+  /// and 25 % there. The single-page column does NOT differ by engine: both
+  /// arms score the identical 122/133 (92 %). The 91 % in that table is the
+  /// simulation's own unreproducible figure, as its own paragraph records. `tools/corpus_split_eval.dart` prints that warning on
   /// every run for the same reason. Only the rows below may be compared with
   /// each other.
   ///
@@ -169,8 +229,8 @@ class HeadingDetector {
   ///    boundary from page two onward lands early.
   /// 2. [DocumentLayout.isComplete] is fail-closed for a page with NO geometry,
   ///    but a page that HAS geometry and DECLINES (too few measured body lines)
-  ///    still counts as complete. Measured on the corpus, 22 of 92 multi-recipe
-  ///    captures decline. So a two-page import whose first page declines and
+  ///    still counts as complete. Measured on the corpus, roughly a quarter of
+  ///    multi-recipe captures decline. So a two-page import whose first page declines and
   ///    whose second yields two headings would open its first block at page
   ///    two — and the splitter slices from the first boundary onward, so page
   ///    one's entire content would vanish from every block. Silent whole-page

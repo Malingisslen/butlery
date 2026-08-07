@@ -146,6 +146,33 @@ particular) live here, and here only.
       positivt (5 sidor raddade, 9 farre falska block, mot 5 recept som inte
       kommer fram).
 
+- [~] Steg 6c: helhetsgranskningen fore push (2026-08-07). Den las HELA
+      andringen pa en gang - de tidigare granskarna hade sett den i tva halvor -
+      och hittade precis den sortens fel som bara den kan se:
+
+      **`OcrLine.typeHeight` returnerar TVA OLIKA SKALOR och detektorn jamfor
+      dem med varandra.** Med ordrutor ar vardet normaliserat (x-hojdsenheter);
+      utan ordrutor faller det tillbaka pa radens rata ruta, som ligger pa en
+      helt annan skala. Hur mycket, och vad som racker for att passera
+      storleksgransen, star i `glyphSpan`s dokumentation och avsiktligt ingen
+      annanstans - siffrorna skrevs ut pa fem stallen och tre av kopiorna blev
+      fel inom en och samma andring, inklusive den har raden.
+
+      Elementbortfall sker PER RAD - adaptern mappar varje rads element for sig
+      - sa en och samma sida kan bara bada sorterna. Appens egen mlkit-test
+      iscensatter redan den formen.
+
+      Foljden ar tyst och gar at fel hall: raden blir en falsk rubrik, den kan
+      hoja `tallest` sa att riktiga rubriker faller under golvet, och den hojer
+      brodtextens baslinje. Det motsager splitterns egen invariant ("faller
+      alltid mot textvagen, aldrig mot en felaktig delning"). Korpusen kan
+      aldrig se det - varje lagrad fangst har ordrutor, sa alla siffror i den
+      har planen ar matta pa fall dar buggen inte finns.
+
+      **Atgard:** `OcrLine.hasMeasuredWords`; bade `bodyTypeHeight` och
+      `HeadingDetector.headingLines` vagrar rader utan ordrutor, samma regel som
+      "en omatt rad ar en franvaro, inte en nolla" redan sager en niva upp.
+
 - [ ] Steg 7: thread it through `photo_import_viewmodel`.
 - [ ] Steg 8: column ordering — separate commit, may prove unnecessary.
 
