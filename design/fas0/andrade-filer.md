@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=270-->
+<!--manifest:files=273-->
 
 ## Reporoten
 
@@ -41,8 +41,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery Komponentark v1.dc.html` | `78f27a546502c7d2a9cb99aa954d6cd8ba3b5d18f1694aac2d9db1496ff1ed47` |
 | `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `b473330181de718ddeb92c6bdcd287ad7e3a9545055806c9333d67205ab6b8cc` |
 | `Butlery Skarmar v12 del 2 familj och socialt.dc.html` | `8b104b62843ac3c902ef19e18b01e8da8b2901496717a0f6c5baf3bb1e6eb271` |
-| `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `6287c368c3b3e0071fefc11ea24cb4c19b94a7160a12d4b7a362f5ca51ef5334` |
-| `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `11843dac0cd31072c8a137ab8affe5aac35aef30fec3b48092e6517d59aabbb7` |
+| `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `93c9126809fafef0d4cbe935c59096db1de6f8301fac03916616dba16ead4cfb` |
+| `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `5ab3735880c89a6dc8dbe1de4f366abe6bd14627de8ce55fbd4a04173a63fdd4` |
 | `Butlery Skarmar v12 etapp 10 bred layout.dc.html` | `aa09ad6633fa1519a1780d97b2553d42618a80a3396757a3824ef55f0f3fe21d` |
 | `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `fbfe3127fb9e3bb38ae1bd6fcb95d2efc6ba8f2e1ecad0d794021060c0bbc0a2` |
 | `Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html` | `40811c3df142c84eae6406c1d7eaf0c90211fa9af2de2f59d5b797abab7349ff` |
@@ -213,6 +213,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas0/verify-report.schema.json` | `70687a2337ca6fe4a4419089983d8dfda52821b9af4799b4dabb03dfe9ac895d` |
 | `fas2/gridmatning.txt` | `8972e840fef68b585a2b76e5ebe37d44a03bc3d3b6c7a7c63350fe53c9337726` |
 | `fas2/gridmatning_test.dart.txt` | `6ee766862801cd83ab3d97d5d80f8399538882a58ef7cbdc6db9ef7c8460102a` |
+| `fas2/ikongeometri.json` | `27bd32b81bf742d0fdf9da220687d15b5aae677c82d3b915ccb297eb7da4e7dc` |
+| `fas2/nav-add-delta.json` | `0a8748d9f2059c0dc9e187db3824d62f691872cd456f24fca2df370fccc8f22c` |
 | `fas2/negativa-prov.json` | `5ac71e2542a1c9b66427a154f591650f9da433e035e8f5c89d512e520cf658a0` |
 | `fas2/r03-baslinje.json` | `f76b4f37b6bb52ece683c61621670a0b37173be3c74acf1da7bfd992b7e8c702` |
 | `fas2/r04-parningsunderlag.json` | `d82a227cf2f2b978b42e9625365027bdf9e5b41136808987cc61e0a46cb4fa55` |
@@ -255,7 +257,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/authority-contract.mjs` | `7479d2ebd3496f4315fb98ed1e0cb006eb0780acaa824616bf47c214583fdad9` |
 | `tools/build-delivery.mjs` | `fcfc81f8a1776576fd85e5e2140b0f55483efa8ecef36d87a0aa89d16b7a5d9d` |
 | `tools/check-app-theme.mjs` | `3ec46efe91680b7050662962c1f117d5dc9a2653ffd1f9437a67a0a72217b745` |
-| `tools/controls.mjs` | `5206d56c16c43277332f46802755a00f56f9f81923342becd4904fa57be4c9a2` |
+| `tools/controls.mjs` | `3fe7bc37149b1a94f129f22f4270a2d40c63d9786d9e990c5df733b11971ec23` |
 | `tools/finalize.mjs` | `74fd11be650ad6a50a4c6817c06bac45dd1815c97faf524cd59c41f91ef0afd1` |
 | `tools/gate.mjs` | `02917e6f14ed023585a1496630ba68b1b9dea5109ab991f5d1a5a931195ba4f0` |
 | `tools/gen-app-theme.mjs` | `f07136386c267f52bda54a0e5b14523fa41facb615f276befc3b9c140f17bd01` |
@@ -271,6 +273,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/gen-report.mjs` | `8e32d2530c1bf94ebc032f626e58764f99b8ec8f965633cbcf4d9fab082d432e` |
 | `tools/gen-schema.mjs` | `1d276054d4fb6976fc8e1005626d23467c4c21bb5d48996016e883312cb74a84` |
 | `tools/gen-targets.mjs` | `ffbef2620ef4be264e16dab5432c65fb80d24422eb8c0f3d9e512324f82e8e9f` |
+| `tools/icon-geometry.mjs` | `650276031635e06c81f678a89464c4baf8242b02bb45846bdb49a430822da62a` |
 | `tools/lint-controls.mjs` | `07350d4dd8b167c772f9ca145cd69b92ff0418632c2252d434b7d9ad59f6c244` |
 | `tools/lint-core.mjs` | `3b2a022f92648daf14b34d99cded4175ec3a95489570efc03be11fab2262ec20` |
 | `tools/manifest-contract.mjs` | `e5b69a41062031b0c15868d4de9673d7f3645256e3cb5c8da66ea79ec83c368d` |
