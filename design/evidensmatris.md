@@ -625,9 +625,9 @@ Kedjan körd över tretton dokument (tio skärmfiler, komponentarket, manualen, 
 | FB-05 | Skärmvägen visas med faktiska skärmnamn, utfällbar till alla tjugo | feedback | `#fbformular` | — | — | dev | beslutad |
 | FB-06 | Tom beskrivning ger fel vid fältet, inte i snackbar | feedback | `#fbformular` | — | — | dev | beslutad |
 | FB-07 | Kvittot skiljer skickat med bild från skickat utan bild | feedback | `#fbformular` | — | — | dev | **beslutad · tyst förlust** |
-| FB-08 | Kopieringsknappen innehåller inte e-post, redovisar sitt innehåll och heter *Kopiera felsökningstext* | admin | `#fbinkorg` | — | — | design | implementerad |
-| FB-09 | **Varje kopiering loggas i `ops_log`** | admin | `#fbinkorg` · `#admdrift` | — | Verifieringsprotokoll § 6 | dev | **beslutad · blockerande** |
-| FB-10 | Filter är chips, status är rullgardin per kort | admin | `#fbinkorg` | — | — | design | implementerad |
+| FB-08 | Kopieringsknappen innehåller inte e-post, redovisar sitt innehåll och heter *Kopiera felsökningstext* | admin | `#fbinkorgvy` | — | — | design | implementerad |
+| FB-09 | **Varje kopiering loggas i `ops_log`** | admin | `#fbinkorgvy` · `#admdrift` | — | Verifieringsprotokoll § 6 | dev | **beslutad · blockerande** |
+| FB-10 | Filter är chips, status är rullgardin per kort | admin | `#fbinkorgvy` | — | — | design | implementerad |
 | FB-11 | Anmälans kvitto säger vem, när och att innehållet syns kvar | anmälan | `#fbanmal` | — | — | design | implementerad |
 | FB-12 | Blockera samtidigt erbjuds som eget val i anmälan | anmälan | `#fbanmal` | — | — | dev | beslutad |
 | FB-13 | Blockeringssektionen är utfälld och säger vad blockeringen **inte** gör; raderat konto visas som text | integritet | `#fbblockerade` | — | — | design | implementerad |
@@ -640,7 +640,7 @@ Kedjan körd över tretton dokument (tio skärmfiler, komponentarket, manualen, 
 | SO-02 | Receptets titel skrivs som den heter — `toLowerCase()` utgår | flödet | `#socflode` | — | — | dev | beslutad |
 | SO-03 | Ett kort bär en färgad kant; den dekorativa rostkanten utgår | flödet | `#socflode` | — | — | design | implementerad |
 | SO-04 | **Knuffar utgår som händelsetyp**, inte bara som funktion | flödet | `#socflode` · `#socintegritet` | — | — | dev | beslutad |
-| SO-05 | Tre tomma lägen: inga vänner · tyst · filtret tomt | flödet | `#soctomt` | — | — | design | implementerad |
+| SO-05 | Tre tomma lägen: inga vänner · tyst · filtret tomt | flödet | `#soctomtingavanner` · `#soctomttyst` | — | — | design | implementerad |
 | SO-06 | Oändlig skroll ligger i en skrollyssnare, inte i `itemBuilder` | flödet | `#socflode` | — | — | dev | beslutad |
 | SO-07 | Kortet säger före trycket att receptet inte är delat | flödet | `#socbegar` | — | — | design | implementerad |
 | SO-08 | Efter skickad förfrågan visas *Efterfrågat* med tid; ingen upprepning | flödet | `#socbegar` | — | — | dev | beslutad |
@@ -747,6 +747,6 @@ Kedjan körd över tretton dokument (tio skärmfiler, komponentarket, manualen, 
 | BV-27 | Ingrediensbytet har alltid synlig ikon och frågar **i dag eller receptet**, med *bara i dag* som förval | matlagning | `#lgbgester` | — | — | dev | **beslutad · tyst ändring** |
 | BV-28 | Timrarna i egen list med stegnummer; **utgången timer står kvar tills den kvitteras**; tomt recept broadcastar inte *lagar just nu* | matlagning | `#lgbtimer` · `#lgbutan` | — | — | dev | beslutad |
 | Y-07 | **Reträtten vänster, följden höger** i varje bekräftelse — betydelse, inte ordet *Avbryt* | alla | 18 handlingsrader | — | — | design | verifierad |
-| Y-08 | Tomlägesglyfen: **2× rubrikgraden** i vyn, fast **64** i helskärmsavbrott, streck 1,4 | alla | `#vmbtom` `#ikbtom` `#soctomt` `#globunderhall` `#authepost` | — | — | design | verifierad |
+| Y-08 | Tomlägesglyfen: **2× rubrikgraden** i vyn, fast **64** i helskärmsavbrott, streck 1,4 | alla | `#vmbtom` `#ikbtom` `#soctomtingavanner` `#globunderhall` `#authepost` | — | — | design | verifierad |
 | Y-09 | Offline är **en** form: banner på `surface.raised` med `wifi-off` i `#8A5212` — aldrig ink, aldrig illustration | alla | 12 banderoller | — | — | design | verifierad |
 | Y-10 | **Hushåll, aldrig familj** i systemtext; *rätt* om maten, *måltid* om platsen i veckan | alla | alla ramar — ingen enskild ram bevisar en term (rättat 2026-07-31: pekade på ram-id morkform, som aldrig funnits) | — | Innehållsgranskning | design | verifierad |

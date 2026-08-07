@@ -116,12 +116,20 @@ export function enumerateSurface(root, { mode = 'repo', stopAt = [] } = {}) {
       if (rp === false) { problems.push('posten ' + r + ' ligger utanför rotens realpath'); continue; }
       if (rp !== null && stops.has(rp)) continue;
 
+      // VCS-posten prövas FÖRE fil/katalog-grenen. I en länkad git-worktree är
+      // .git en FIL som innehåller "gitdir: <absolut sökväg>" — inte en katalog.
+      // Med prövningen inne i katalogrenen hamnade den filen i manifestet, och
+      // manifestet blev därmed omöjligt att regenerera identiskt från en ren
+      // checkout: dess hash beror på var på disken worktreen råkar ligga.
+      if (name === VCS_DIR) {
+        if (mode === 'delivery') {
+          problems.push('VCS-posten ' + r + ' hör inte hemma i en leverans');
+          rejectedDirs.push(r);
+        } else skippedVcs++;
+        continue;
+      }
+
       if (st.isDirectory()) {
-        if (name === VCS_DIR) {
-          if (mode === 'delivery') { problems.push('VCS-katalogen ' + r + ' hör inte hemma i en leverans'); rejectedDirs.push(r); }
-          else skippedVcs++;
-          continue;
-        }
         if (REJECT_DIRS.includes(name)) {
           problems.push('bygg- eller dependencykatalogen ' + r + ' hör inte hemma i artefaktytan');
           rejectedDirs.push(r);

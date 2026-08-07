@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=248-->
+<!--manifest:files=266-->
 
 ## Reporoten
 
@@ -51,8 +51,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery Skarmar v12 etapp 4 import.dc.html` | `515703b74dea670292295bc8239e8511d2264cb6c71139af7b9443ae15e05553` |
 | `Butlery Skarmar v12 etapp 5-7.dc.html` | `956053b7d726a911f50c12575f97167b422efadd7d57a9ef1d4a5a7346061d4e` |
 | `Butlery Skarmar v12 etapp 6 konto och integritet.dc.html` | `9b2a97a3eb9094440433f280e5ab338f1313bd4e59ad3e5ac0cfbff3d70bed2b` |
-| `Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html` | `7dc8d002f638756aa48396476721cffc95177dbaeac87d2f51b03ebf4d25bce2` |
-| `Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html` | `c906904b10eada66833c99058a4922c69351c17fc49e1d858e76bc82bec9f8dd` |
+| `Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html` | `3b03cfabfea49a6f3c66f2e8705bac18dc68db9282d7aaa6abb3b96d3dc646c9` |
+| `Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html` | `d411288b5dd1ea20c9c759b229c8224dab0abb1e93135f1127f20f8d75a6fd13` |
 | `Butlery Skarmar v12.dc.html` | `c1b435cf7c470ebe31db64b82b5fc4ee94993391801130edee761f1540c893b2` |
 | `Butlery beslut grund v13.dc.html` | `ce0aaa76a62fb6616d58e93fdaabd1c5b185bdf87ac11bfb60a91b3f7b324eaf` |
 | `Butlery beslut kalendermatt v1.dc.html` | `8fb980fb2eb6c9805c14e8d1bc15421e3e57e5656df1d1ea735314b200f1cdb0` |
@@ -80,6 +80,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `LAS-MIG-GRANSKNING.md` | `5305b92b1b958396e51e5985128f6f2b43f90415d8afa9445aa3548cb1fe8bdd` |
 | `animations-v2.jsx` | `33e9200b93f5eb416d294e1a1ffc6bebe75d2bee95817977a08fa896229be774` |
 | `arbetsplan.md` | `326221917cb77f0db4595c909d09d8ffe762ee11a5ee43f710d78c95cabfa81a` |
+| `artifacts.json` | `dccb76b6ec0cba8eb1bb767e996fc5d1845ebc15545e9d3b5ff7f1bacf3987f5` |
 | `assets-manifest.json` | `df7201da509c2359b5c35114a32a55755aa4647108cfb5824c1ae594144e64ec` |
 | `assets/LICENSES.md` | `17d5f6fbdf80c3ccee9e420a646c3ebb03ec7a188eacb7a42eaae857ac942b95` |
 | `assets/brand-colors.json` | `1cc1e0243b46309c56a2c2686c6401bfa200f1cc70fafcbc68dc99f973102935` |
@@ -193,7 +194,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `butlery-tokens.schema.json` | `3757e0005ea613416f00a73ac67a3d7303d46a9468feb0ca2f5dc553fa90891d` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
 | `content-style-guide.md` | `cb4fe9e93fe8286a394570353c8fe0d57f39b276a6eaff647129cb857cb570fd` |
-| `evidensmatris.md` | `0d9a6f3ad09b8461644eb7578a462c797495c24f1433308494b8436ac7c7ad81` |
+| `evidensmatris.md` | `ae2057ff72a078d069b351a86765a2545d000d0801fc68c478fc390ef9351a28` |
 | `exports/android/ic_launcher_background.svg` | `81044da47484b9cc4affbcaaecc26524ac7bcea67185bc46258c370291e09dde` |
 | `exports/android/ic_launcher_foreground.svg` | `7fb789ae266c96e4193483deb33ada24be8f110d93ab6588aa2d2a906fb87327` |
 | `exports/android/ic_launcher_monochrome.svg` | `a03249354c03d5723cec56a38ed7514384ab4109531da449a02268075d399ef8` |
@@ -208,11 +209,18 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas0/run-verify.sh` | `8cfdac6f33d8683f50ad4ca962a0f849917e4911e998c9177ae0587640cb36d7` |
 | `fas0/verify-delivery.sh` | `b793ff7225563b71520127c41614a8c1f2e03f7f72780cadc63911d0e4d1e5f7` |
 | `fas0/verify-report.schema.json` | `70687a2337ca6fe4a4419089983d8dfda52821b9af4799b4dabb03dfe9ac895d` |
+| `fas2/gridmatning.txt` | `8972e840fef68b585a2b76e5ebe37d44a03bc3d3b6c7a7c63350fe53c9337726` |
+| `fas2/gridmatning_test.dart.txt` | `6ee766862801cd83ab3d97d5d80f8399538882a58ef7cbdc6db9ef7c8460102a` |
+| `fas2/negativa-prov.json` | `5ac71e2542a1c9b66427a154f591650f9da433e035e8f5c89d512e520cf658a0` |
+| `fas2/r03-baslinje.json` | `f76b4f37b6bb52ece683c61621670a0b37173be3c74acf1da7bfd992b7e8c702` |
+| `fas2/r04-parningsunderlag.json` | `d82a227cf2f2b978b42e9625365027bdf9e5b41136808987cc61e0a46cb4fa55` |
+| `fas2/reproducerbarhet.json` | `85b244b9bf2d33831d7df56aa61cb5a24887aed3b7d7b095314be792022a726c` |
 | `flows-roles-budget.md` | `d9d66bc1669e65ec4f9769efc0b7b66885b4e8252e6dfb7345ce0c8da19d22f6` |
 | `granskning-v12.md` | `0e1f0409c370e9a82dda87ae43379660c3b404e5ff2de5089f0fb69262da7d37` |
 | `grundgranskning.md` | `019015ca6aca9fc50b54e5769b2099f410dac33e1f6d3f215546932be4cc1728` |
 | `icons.json` | `ba05efada07608a40cad09da0a8adf87c5f57d65023f66fb73139bc2953223c2` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
+| `layout-contract.json` | `d8b9683b373a3e142456890d177285c52307ccd433908f30c8e0592b35648431` |
 | `legacy-api-contract.json` | `d80c3482657f2698a28d98f76fde20209373e7864d83017021a874fd7c004618` |
 | `legacy-api-contract.schema.json` | `0196feab113bc269adc411eb4c60e8869b293ce658d0908959cddd7b7ec670ce` |
 | `leverans/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
@@ -230,7 +238,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
-| `produktregler.md` | `8e7b7cd9faaa64ac6ebaadb92b748ff253b2883831d036d6144ec25a99ef96f9` |
+| `produktregler.md` | `1892ec01d282772e343db4884e7645401acc3dd9c8db4497055ba6178ab542d6` |
+| `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
+| `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `source-authority.json` | `cc2367575d058cab7638ef373dd95b3308e916b4b2c8f9e91f438d795f120658` |
 | `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |
@@ -242,7 +252,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/authority-contract.mjs` | `b806511cb2b06fba63d2e6974c7233ca2b694e09a0eaa1ed76fcde073d3348fa` |
 | `tools/build-delivery.mjs` | `fcfc81f8a1776576fd85e5e2140b0f55483efa8ecef36d87a0aa89d16b7a5d9d` |
 | `tools/check-app-theme.mjs` | `3ec46efe91680b7050662962c1f117d5dc9a2653ffd1f9437a67a0a72217b745` |
-| `tools/controls.mjs` | `33637e081d8463b2776d044ced1a6e5e1f64e0f291133ae1e7a63105ca76590c` |
+| `tools/controls.mjs` | `ba43770ae9546e203e0626052c042491066eb32fe18b03825e8d3b2a25e89e06` |
 | `tools/finalize.mjs` | `74fd11be650ad6a50a4c6817c06bac45dd1815c97faf524cd59c41f91ef0afd1` |
 | `tools/gate.mjs` | `02917e6f14ed023585a1496630ba68b1b9dea5109ab991f5d1a5a931195ba4f0` |
 | `tools/gen-app-theme.mjs` | `f07136386c267f52bda54a0e5b14523fa41facb615f276befc3b9c140f17bd01` |
@@ -259,9 +269,15 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/gen-targets.mjs` | `e209b3d50c749d4da11c5bb27b45727329763a8579c7ec0dc9f11eb9cba04c2f` |
 | `tools/lint-controls.mjs` | `07350d4dd8b167c772f9ca145cd69b92ff0418632c2252d434b7d9ad59f6c244` |
 | `tools/lint-core.mjs` | `05ca33f1af6e70c8a2dedf61ad77aa2fb7d9c0101bf6c71a5c3bc7e397672941` |
-| `tools/manifest-contract.mjs` | `5980918a090575a81f484cae0e6cecfa69e7addf7dd581faac03b331357f7e6c` |
+| `tools/manifest-contract.mjs` | `e5b69a41062031b0c15868d4de9673d7f3645256e3cb5c8da66ea79ec83c368d` |
 | `tools/metatest.mjs` | `85e7d260489942d9ec068ed3aace55ebb48df1ba3cf7179f30420118310fa4e4` |
 | `tools/preflight.mjs` | `3fe3bfa0e6f92fcb71ca5d19aa2c8e5e9df307f80eb3c8fe4dee09f173d5f3af` |
+| `tools/render-analyze-lib.mjs` | `5608257ad1b50b6487b0a0b8958930bf07fe4c639e80a6b08acec3707322a6a2` |
+| `tools/render-analyze.mjs` | `43d16c95a2aa622fc6d63e3a2b41e31c2a2ffb135bc31dbcd3533150374eb428` |
+| `tools/render-measure.mjs` | `f51cc5b7d631e2f38e1a6177bc017a0d8e190c7f3e6d3572e07434725b66114d` |
+| `tools/render-negatives.mjs` | `10362b2febe71fc62c34b78965b0c99902dca396dadbda1ef708dd5a8eff6c69` |
+| `tools/render-probe.mjs` | `cde2604382b5ef4e7f60297dd58156dea66b2908415ffbc358584f1f0907a697` |
+| `tools/render-repro.mjs` | `c01847106337b4f6cc744350f150ef54919ab925928dab19423897191affa2c1` |
 | `tools/report-logic.mjs` | `62b38358e6d8f77dd31a52ef6cde1061ec4a5d03b390204ec0ff51505b30258f` |
 | `tools/repro-check.mjs` | `7aefb37dd9ea18a37e20c0e52d0bf784b0e5515a40fbbb2058d9672c2e09a0ba` |
 | `tools/run-complete.mjs` | `a3884fe3ebaade9af0eca6789160fe11d2ad249ccd9ebcce517f17bc9f6a3bc2` |
@@ -271,6 +287,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/sync-icon-paths.mjs` | `7e8e9836aa79f545f95c381810df3a3fe68f607c652e36d6718d4e9f1f513de9` |
 | `tools/test-generated.mjs` | `174f65e84f5cc6bee55b75df2ceb29e2ec4957ad397865bd6af65cf472eb7002` |
 | `tools/testkit.mjs` | `59ad0de4f40fa319d23ab05a7548bf3328abc935680f136582b735f838a6c17a` |
+| `tools/theme-pairing-lib.mjs` | `dcd07fd801a0c9d4e82dbf3bf50602d4ecf5a0aaf9905412584d93b2daa5f72a` |
+| `tools/theme-pairing.mjs` | `a89363103ef0a7dcb85f751f238babaf2a9e769d033cc342ab12c326858bae31` |
 | `tools/verify.mjs` | `b6d905489a89d79ae9b84538383c786f79ad7fef865bb4a42656a6e02a1dea5b` |
 | `tools/version-read.mjs` | `931021ed5eca2e9a28987392b7146e2064b028e65a5038b7b1fc4b310262c474` |
 

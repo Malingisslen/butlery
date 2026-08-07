@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "butlery-selection-contexts/1",
+  "version": "1.0",
+  "title": "Butlery · urvalsdimensioner och runtimeadapter",
+  "description": "Kontraktet för selection-contexts.json. En dimension får användas i artifacts.json först när den är enabled, och enabled kräver både en deklarerad dokumentationskälla och en runtimeAdapter med deterministic: true och minst ett usageSite. Utan runtimeval finns inget urval, bara en gissning med flera utfall.",
+  "type": "object",
+  "required": ["version", "date", "appCommit", "dimensions"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "$note": { "type": "string", "minLength": 40 },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+    "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "appCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "dimensions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "values", "enabled", "runtimeAdapter", "documentation", "note"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "label": { "type": "string", "minLength": 2 },
+          "values": {
+            "type": "array",
+            "minItems": 2,
+            "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+          },
+          "enabled": { "type": "boolean" },
+          "documentation": { "type": ["string", "null"] },
+          "note": { "type": "string", "minLength": 10 },
+          "runtimeAdapter": {
+            "type": ["object", "null"],
+            "required": ["expression", "import", "deterministic", "usageSites", "note"],
+            "additionalProperties": false,
+            "properties": {
+              "expression": { "type": "string", "minLength": 3 },
+              "import": { "type": "string", "minLength": 3 },
+              "deterministic": { "type": "boolean" },
+              "usageSites": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string", "pattern": "^lib/.+:\\d+$" }
+              },
+              "note": { "type": "string", "minLength": 20 }
+            }
+          }
+        }
+      }
+    }
+  }
+}
