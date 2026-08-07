@@ -1,0 +1,150 @@
+// F2-E01 · ADJUDICERINGSLAGER — parallellt med legacy-detektionen.
+//
+// Legacy-lagret räknar DETEKTIONER. Det lagret är oförändrat och rörs aldrig
+// här: 19 råa detektioner, 13 elementfynd, 9 instansId, 5 källrotorsaker.
+//
+// Men nio instansId är inte nio användarsynliga fel. Två av dem är samma
+// användareffekt sedd av två mätmetoder, två är adjudicerade som avsiktliga,
+// och flera är obeslutade. Det här lagret översätter DETEKTION till EFFEKT.
+//
+// ORDEN SKA SKILJAS ÅT:
+//   detectedLegacyInstances   geometrin uppfyllde mätregeln
+//   adjudicatedEffects        distinkta användarsynliga effekter
+//   productErrors             effekter adjudicerade som unintended
+//
+// "Verifierad" i legacy-lagret betyder att MÄTNINGEN höll, inte att
+// produktbeteendet är normativt fel. Frasen "9 verifierade fel" ska inte
+// längre användas om legacy-instanslagret.
+
+export const ADJUDICATION_STATUS = ['unintended', 'intentional', 'undecided'];
+
+/**
+ * SAMMANSLAGNINGSREGELN.
+ *
+ * Två legacy-instanser blir samma effekt endast när ALLA fyra håller:
+ *   1  samma artefakt,
+ *   2  samma faktiska element,
+ *   3  samma belagda sourceRootCause,
+ *   4  samma användarupplevda konsekvens.
+ *
+ * Punkt 4 mäts, den påstås inte: samma axel OCH samma uppmätta storlek inom en
+ * halv pixel. Två självständiga konsekvenser på samma element — en box klippt
+ * vertikalt och en text trunkerad horisontellt — skiljer sig i axel eller
+ * storlek och slås därför aldrig ihop.
+ *
+ * Att två fynd delar symptomsignatur räcker ALDRIG. Att de ligger på samma
+ * element räcker heller inte om konsekvenserna är självständiga.
+ */
+export function effektnyckel(i) {
+  const el = (i.instansId || '').split(' · ')[2] || i.element || '?';
+  const ax = i.faktisk_overflow.axel;
+  const px = Math.round(i.faktisk_overflow.scroll_minus_client_px * 2) / 2;
+  return [i.artifactId, el, i.sourceRootCause, 'axel=' + ax, 'px=' + px].join(' ‖ ');
+}
+
+const BESKRIVNING = {
+  'SRC-01': (i, px) => 'Innehållet i telefonramens kolumn kapas ' + px + ' px nedtill utan att kunna scrollas fram.',
+  'SRC-02': (i, px) => 'Ungefär ' + Math.round(px / 18.4 * 10) / 10 + ' rader av receptets källblock är dolda (' + px + ' px av 226 px innehåll) utan synlig väg till resten.',
+  'SRC-03': (i, px) => 'Tredje raden av recepttiteln döljs av en tvåradig clamp (' + px + ' px).',
+  'SRC-04': (i, px) => 'Slutet av adressen användaren själv klistrat in är dolt bakom en ellips (' + px + ' px).'
+};
+
+/**
+ * @param triage  fas2/residual-r03-triage.json
+ * @param karta   fas2/source-root-cause-map.json
+ */
+export function adjudicera(triage, karta) {
+  const kändaKällor = new Set((karta.sourceRootCauses || []).map(s => s.id));
+  const fel = [];
+  const grupper = new Map();
+
+  for (const i of triage.instanser) {
+    // FAIL CLOSED · en legacy-instans utan adjudicering får aldrig tyst falla ur.
+    if (!ADJUDICATION_STATUS.includes(i.intentionality)) {
+      fel.push('ADJUDICERING SAKNAS: ' + i.instansId + ' bär status ' + JSON.stringify(i.intentionality) +
+        ' — varje legacy-instans måste adjudiceras innan effektrapporten kan stängas');
+      continue;
+    }
+    // FAIL CLOSED · en okänd eller saknad sourceRootCause får aldrig ge en
+    // påhittad grupp. Effekten skapas inte alls.
+    if (!i.sourceRootCause || !kändaKällor.has(i.sourceRootCause)) {
+      fel.push('KÄLLA SAKNAS: ' + i.instansId + ' pekar på sourceRootCause ' +
+        JSON.stringify(i.sourceRootCause) + ' som inte finns i källrotorsakskartan — ' +
+        'ingen effekt skapas och ingen grupp hittas på');
+      continue;
+    }
+    const k = effektnyckel(i);
+    if (!grupper.has(k)) grupper.set(k, []);
+    grupper.get(k).push(i);
+  }
+
+  const effekter = [...grupper.entries()].map(([nyckel, lista], n) => {
+    const f = lista[0];
+    const px = f.faktisk_overflow.scroll_minus_client_px;
+    // Statusen måste vara enig inom en effekt; annars är sammanslagningen fel.
+    const statusar = [...new Set(lista.map(x => x.intentionality))];
+    if (statusar.length > 1)
+      fel.push('MOTSTRIDIG ADJUDICERING i effekten ' + nyckel + ': ' + statusar.join(' och ') +
+        ' — två instanser med olika status kan inte vara samma användareffekt');
+    return {
+      effectId: 'EFF-' + String(n + 1).padStart(2, '0') + ' · ' + f.artifactId,
+      artifactId: f.artifactId,
+      legacyInstansIds: lista.map(x => x.instansId),
+      findingIds: [...new Set(lista.flatMap(x => x.findingIds))].sort(),
+      symptomTypes: [...new Set(lista.map(x => x.symptomGroup))].sort(),
+      sourceRootCauseId: f.sourceRootCause,
+      adjudicationStatus: statusar[0],
+      intentionalityEvidence: statusar[0] === 'intentional'
+        ? lista.map(x => x.intentionality_skal).join(' ')
+        : { status: statusar[0], skäl: lista[0].intentionality_skal,
+            $regel: 'intentional kräver positiv evidens. undecided och unintended bär skäl, inte evidens för avsikt.' },
+      userEffectDescription: (BESKRIVNING[f.sourceRootCause] || ((_, p) => 'Uppmätt överskott ' + p + ' px.'))(f, px),
+      identityV2Status: f.identityV2_status,
+      sammanslagen: lista.length > 1,
+      sammanslagningsgrund: lista.length > 1
+        ? 'samma artefakt, samma element, samma sourceRootCause, samma axel och samma uppmätta storlek (' +
+          px + ' px) — två mätmetoder, en användareffekt'
+        : null,
+      matt: { axel: f.faktisk_overflow.axel, scroll_minus_client_px: px,
+              barn_utanfor_brakdel: f.faktisk_overflow.barn_utanfor_brakdel },
+      designRuntimeDeviation: false
+    };
+  });
+
+  // Den belagda implementationsavvikelsen registreras separat och gör ALDRIG
+  // en effekt unintended av sig själv.
+  for (const j of (karta.runtimejamforelse || []))
+    if (/SKILJER SIG/.test(j.slutsats || ''))
+      for (const e of effekter)
+        if (e.sourceRootCauseId === j.source) {
+          e.designRuntimeDeviation = true;
+          e.designRuntimeDeviationDetalj = {
+            designArtifactResult: j.designArtifactResult,
+            runtimeImplementationResult: j.runtimeImplementationResult,
+            $regel: 'En skillnad mot runtime är ett eget fynd. Den sätter aldrig automatiskt adjudicationStatus till unintended.'
+          };
+        }
+
+  const räkna = s => effekter.filter(e => e.adjudicationStatus === s).length;
+  const rapport = {
+    $regel: 'PARALLELLT LAGER. Legacy-detektionen är oförändrad: 19 råa detektioner, 13 elementfynd, 9 instansId, 5 källrotorsaker. Ingen produktmarkup rörd.',
+    $ordregel: '"Verifierad" i legacy-lagret betyder att mätregeln uppfylldes, inte att produktbeteendet är normativt fel. Frasen "9 verifierade fel" används inte längre om legacy-instanslagret.',
+    $sammanslagningsregel: 'Två legacy-instanser blir en effekt endast vid samma artefakt, samma element, samma sourceRootCause OCH samma användarupplevda konsekvens, mätt som samma axel och samma storlek inom en halv pixel. Samma symptomsignatur räcker aldrig. Samma element räcker inte heller om konsekvenserna är självständiga.',
+    detectedLegacyInstances_st: triage.instanser.length,
+    adjudicatedEffects_st: effekter.length,
+    productErrors_st: räkna('unintended'),
+    intentionalEffects_st: räkna('intentional'),
+    undecidedEffects_st: räkna('undecided'),
+    designRuntimeDeviations_st: effekter.filter(e => e.designRuntimeDeviation).length,
+    legacy_oforandrat: {
+      raa_verifierade_detektioner_st: triage.population.raa_verifierade_detektioner_st,
+      elementfynd_st: triage.population.elementfynd_st,
+      legacy_instansId_st: triage.population.felinstanser_fore_analys_st,
+      legacy_kallrotorsaker_st: triage.population.kanoniska_legacy_kallrotorsaker_st,
+      berorda_produktartefakter_st: triage.population.berorda_produktartefakter_st
+    },
+    failClosed: { fel, status: fel.length ? 'FÄLLD' : 'godkänd' },
+    effects: effekter
+  };
+  return rapport;
+}

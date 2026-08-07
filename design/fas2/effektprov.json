@@ -1,0 +1,54 @@
+{
+ "prov": [
+  {
+   "id": "E-01",
+   "vad": "två symptom på samma element med samma konsekvens ger ETT effectId",
+   "ok": true,
+   "diag": "effekter: 1 · legacy per effekt: 2 · grund: samma artefakt, samma element, samma sourceRootCause, samma "
+  },
+  {
+   "id": "E-02",
+   "vad": "två självständiga konsekvenser på samma element ger TVÅ effectId",
+   "ok": true,
+   "diag": "effekter: 2 · axlar: y/40, x/19"
+  },
+  {
+   "id": "E-03",
+   "vad": "samma symptom och samma källa i två artefakter ger TVÅ effectId",
+   "ok": true,
+   "diag": "effekter: 2 · artefakter: A,B · delad källa: SRC-X"
+  },
+  {
+   "id": "E-04",
+   "vad": "en intentional effekt räknas ALDRIG som produktfel",
+   "ok": true,
+   "diag": "productErrors: 0 · intentional: 1 · evidens bärs: true"
+  },
+  {
+   "id": "E-05",
+   "vad": "en undecided effekt räknas ALDRIG som produktfel",
+   "ok": true,
+   "diag": "productErrors: 0 · undecided: 1"
+  },
+  {
+   "id": "E-06",
+   "vad": "en oadjudicerad legacy-instans fäller effektrapporten",
+   "ok": true,
+   "diag": "status: FÄLLD · effekter skapade: 1 · ADJUDICERING SAKNAS: INST · A · sel:div>div[9] · klippning bär status "
+  },
+  {
+   "id": "E-07",
+   "vad": "saknad eller okänd sourceRootCause ger INGEN effekt och ingen påhittad grupp",
+   "ok": true,
+   "diag": "effekter: 0 · fel: 2"
+  },
+  {
+   "id": "E-08",
+   "vad": "en skillnad mot runtime sätter aldrig automatiskt unintended",
+   "ok": true,
+   "diag": "designRuntimeDeviation: true · status: undecided · productErrors: 0"
+  }
+ ],
+ "gröna": 8,
+ "av": 8
+}
