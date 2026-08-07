@@ -6,6 +6,9 @@ import { REQUIRED_DOMAIN_IDS, AUTHORITY_STATES, CHANGE_POLICIES, CURRENT_STATES,
   INDEX_AUTHORITY_ROWS, INDEX_ROWS_EXEMPT, INDEX_MARKER_RE, INDEX_MARKER_RE_G,
   indexVersionCell, indexFileRef, indexStatusCell } from './authority-contract.mjs';
 import { FULLY_GENERATED, FULLY_GENERATED_BY } from './gen-targets.mjs';
+import { ARTIFACT_KINDS, VIEWPORT_CLASSES, ARTIFACT_STATES, CLASSIFICATION_BASES,
+  observeArtifacts, isUndecided, SELECTOR_DIMENSIONS, CLASSIFICATION_STATES,
+  selectionContexts, contextLabel, matchesContext, baseSlot } from './artifact-contract.mjs';
 // Butlery · spec-lint, delad logik. Importeras av tools/spec-lint.mjs.
 // Ren funktion av en env ({read, exists}) så att samma kod kan köras i CI
 // och i granskningsverktyg utan filsystemsantaganden.
@@ -278,9 +281,20 @@ export function lint(env) {
       if (!st) continue;
       if (st.requiresFile && !a.file)
         fail('T-20', 'domänen "' + a.domain + '" är ' + a.authorityState + ' utan fil — endast planned får sakna normativ källa');
-      if (!st.requiresFile && a.file)
-        fail('T-20', 'domänen "' + a.domain + '" är ' + a.authorityState + ' men pekar ändå på ' + a.file +
-          ' — planned betyder att den normativa källan ännu inte har skapats');
+      // F2-L01 · En `planned` domän får peka på en fil som FINNS, om filen själv
+      // deklarerar `contractState: "draft"`. Skillnaden är verklig: källan är
+      // skapad men inte aktiverad. Utan undantaget går ett utkast inte att
+      // versionshantera — och ett oversionshanterat utkast var precis felet i
+      // Fas 1.
+      if (!st.requiresFile && a.file) {
+        let draftDeclared = false;
+        if (/\.json$/.test(a.file) && env.exists(a.file)) {
+          try { draftDeclared = JSON.parse(env.read(a.file)).contractState === 'draft'; } catch { /* T-01 fäller */ }
+        }
+        if (!draftDeclared)
+          fail('T-20', 'domänen "' + a.domain + '" är ' + a.authorityState + ' men pekar ändå på ' + a.file +
+            ' — planned kräver antingen ingen fil alls eller att filen deklarerar contractState: "draft"');
+      }
       if (a.authorityState === 'superseded' && !a.supersededBy)
         fail('T-20', 'domänen "' + a.domain + '" är superseded utan supersededBy — en ersatt källa måste peka ut sin efterträdare');
       if (a.authorityState === 'concept' && a.changePolicy !== 'frozen' && st.normative)
@@ -443,6 +457,350 @@ export function lint(env) {
       rows.filter(a => a.authorityState === 'planned').length + ' planned · ' +
       (A.generatedArtifacts || []).length + ' genererade artefakter · ' + (A.superseded || []).length +
       ' superseded · registret genereras av tools/gen-authority.mjs');
+  })();
+
+  /* ── T-21 · artefaktklassificeringen (Fas 2, § 5.1) ─────────────────────── */
+  // F2-A01: kontrollen är den MASKINELLA OBSERVATÖREN. Den läser artefakterna
+  // ur skärmfilerna, jämför mot beslutsregistret och redovisar tre skilda
+  // felklasser — registerfel, datafel och obeslutat. Att blanda ihop dem vore
+  // att kalla ett ofattat beslut för ett datafel, och tvärtom.
+  (function () {
+    ran('T-21');
+    const P = 'artifacts.json';
+
+    // STABILA FEL-ID. Ett fynd som byter namn mellan körningar går inte att
+    // följa över tid, och en granskare kan inte se om det är samma fel som
+    // förra gången. Varje diagnostik bär därför ett id ur en sluten mängd, och
+    // id:t skrivs först i meddelandet.
+    const t21Fel = [];
+    const t21 = (id, msg) => { t21Fel.push(id); fail('T-21', '[' + id + '] ' + msg); };
+    const t21Status = { verktyg: 'ok', anmärkning: null };
+    if (!env.exists(P)) { t21('T21-KONTRAKT', P + ' saknas — artefaktklassificeringen är inte maskinläsbar'); return; }
+    let R = null;
+    try { R = JSON.parse(env.read(P)); } catch (e) { t21('T21-KONTRAKT', P + ' går inte att tolka: ' + e.message); return; }
+    const rows = R.artifacts || [];
+
+    /* 0 · KONTRAKTET SJÄLVT. artifacts.json deklarerade ett $schema som inte
+     *     fanns på disk, och selection-contexts.json validerades bara indirekt
+     *     genom de värden artefakterna råkade använda. En strukturavvikelse i
+     *     endera filen kunde alltså passera helt oupptäckt. Båda valideras nu
+     *     mot sitt schema, och den deklarerade kontraktsversionen prövas. */
+    const KONTRAKT = [
+      { data: P, schema: 'artifacts.schema.json', label: 'artifacts', kravVersion: /^\d+\.\d+$/ },
+      { data: 'selection-contexts.json', schema: 'selection-contexts.schema.json',
+        label: 'selection-contexts', kravVersion: /^\d+\.\d+$/ }
+    ];
+    for (const k of KONTRAKT) {
+      if (!env.exists(k.data)) { t21('T21-KONTRAKT', 'kontraktsfel: ' + k.data + ' saknas'); continue; }
+      if (!env.exists(k.schema)) {
+        t21('T21-KONTRAKT', 'kontraktsfel: ' + k.schema + ' saknas — ' + k.data +
+          ' deklarerar ett schema som inte finns och kan därför inte valideras');
+        continue;
+      }
+      let d, s;
+      try { d = JSON.parse(env.read(k.data)); } catch (e) { t21('T21-KONTRAKT', 'kontraktsfel: ' + k.data + ' går inte att tolka: ' + e.message); continue; }
+      try { s = JSON.parse(env.read(k.schema)); } catch (e) { t21('T21-KONTRAKT', 'kontraktsfel: ' + k.schema + ' går inte att tolka: ' + e.message); continue; }
+      if (typeof d.version !== 'string' || !k.kravVersion.test(d.version))
+        t21('T21-KONTRAKT', 'kontraktsfel: ' + k.data + ' bär versionen ' + JSON.stringify(d.version) +
+          ' — en kontraktsversion måste vara på formen N.N');
+      const ps = [];
+      walkSchema(d, s, k.label, ps);
+      for (const p of ps) t21('T21-SCHEMA', 'schemaavvikelse: ' + p);
+      if (!ps.length) info('T-21', k.data + ' v' + d.version + ' validerar mot ' + k.schema);
+    }
+    // F2-L01 · Viewportprofilerna ÄGS av layout-contract.json. Registret pekar
+    // bara på dem; en profil som inte finns i kontraktet är ett datafel oavsett
+    // vad registret påstår.
+    const LAYOUT_PROFILES = new Set();
+    let VIEWPORT_CLASS_MAP = null;
+    if (env.exists('layout-contract.json')) {
+      try {
+        const L = JSON.parse(env.read('layout-contract.json'));
+        for (const pr of L.profiles || []) LAYOUT_PROFILES.add(pr.id);
+        VIEWPORT_CLASS_MAP = L.viewportClassMap || null;
+        if (!VIEWPORT_CLASS_MAP)
+          t21('T21-KONTRAKT', 'layout-contract.json saknar viewportClassMap — viewportklasserna kan inte bindas till kanoniskt register');
+      } catch (e) { t21('T21-KONTRAKT', 'layout-contract.json går inte att tolka: ' + e.message); }
+    } else t21('T21-KONTRAKT', 'layout-contract.json saknas — viewportprofilerna kan inte kontrolleras');
+
+    // OBSERVATION ur källan — aldrig ur registret.
+    const observed = [];
+    for (const f of DOCS) {
+      if (!env.exists(f)) continue;
+      observed.push(...observeArtifacts(f, env.read(f)));
+    }
+
+    /* 1 · REGISTERFEL — saknad, extra, dubblerad */
+    const obsIds = observed.map(o => o.artifactId);
+    const regIds = rows.map(a => a.artifactId);
+    for (const d of [...new Set(obsIds.filter((v, i) => obsIds.indexOf(v) !== i))])
+      t21('T21-REGISTER', 'registerfel: käll-id "' + d + '" observeras flera gånger i skärmfilerna — identiteten är inte unik');
+    for (const d of [...new Set(regIds.filter((v, i) => regIds.indexOf(v) !== i))])
+      t21('T21-REGISTER', 'registerfel: artifactId "' + d + '" står flera gånger i ' + P);
+    const obsSet = new Set(obsIds), regSet = new Set(regIds);
+    for (const id of [...obsSet].filter(x => !regSet.has(x)))
+      t21('T21-REGISTER', 'registerfel: artefakten ' + id + ' finns i skärmfilerna men saknas i ' + P);
+    for (const id of [...regSet].filter(x => !obsSet.has(x)))
+      t21('T21-REGISTER', 'registerfel: ' + P + ' bär ' + id + ', som inte kan nås från den kanoniska källan — ' +
+        'ingen skärmfil observerar den');
+
+    // IDENTITETEN är sourceFile + sourceElementId, inte artifactId. Två poster
+    // kunde bära olika artifactId för samma element och därmed ge samma
+    // artefakt två motstridiga klassificeringar utan att dubblettkontrollen på
+    // artifactId märkte något.
+    const identSeen = new Map();
+    for (const a of rows) {
+      const ident = a.sourceFile + '#' + a.sourceElementId;
+      if (!identSeen.has(ident)) { identSeen.set(ident, a); continue; }
+      const b = identSeen.get(ident);
+      const skiljer = ['artifactKind', 'viewportClass', 'authorityState', 'classificationState',
+        'screenId', 'stateId', 'variantId']
+        .filter(f => JSON.stringify(a[f]) !== JSON.stringify(b[f]));
+      t21('T21-REGISTER', 'registerfel: identiteten ' + ident + ' står i ' + P + ' som både ' +
+        b.artifactId + ' och ' + a.artifactId +
+        (skiljer.length
+          ? ' MED MOTSTRIDIGA BESLUT i ' + skiljer.join(', ')
+          : ' — dubblerad identitet') +
+        ' · identiteten är sourceFile + sourceElementId och måste vara unik');
+    }
+
+    // lineageFrom pekar BAKÅT, på den artefakt en delning kom ur. Att den inte
+    // längre finns är väntat — det är just därför delningen gjordes. Ett fel är
+    // därför inte en död referens, utan två andra saker:
+    //  · en post som pekar på sig själv, vilket gör härkomsten cirkulär,
+    //  · en post som pekar på ett id som FINNS i skärmfilerna men saknas i
+    //    registret, vilket är en inkonsekvens och inte en historisk referens.
+    const elementIds = new Set(rows.map(a => a.sourceElementId));
+    const historiska = [];
+    for (const a of rows) {
+      if (!a.lineageFrom) continue;
+      if (a.lineageFrom === a.sourceElementId)
+        t21('T21-REGISTER', 'registerfel: ' + a.artifactId + ' bär lineageFrom till sig själv — härkomsten blir cirkulär');
+      else if (obsSet.has(a.sourceFile.replace(/^Butlery Skarmar v12 /, '').replace(/\.dc\.html$/, '')
+                 .toLowerCase().replace(/[^a-z0-9]+/g, '-') + ':' + a.lineageFrom) &&
+               !elementIds.has(a.lineageFrom))
+        t21('T21-REGISTER', 'registerfel: ' + a.artifactId + ' bär lineageFrom "' + a.lineageFrom +
+          '", som observeras i skärmfilerna men saknas i ' + P);
+      else if (!elementIds.has(a.lineageFrom)) historiska.push(a.sourceElementId + ' ← ' + a.lineageFrom);
+    }
+    if (historiska.length)
+      info('T-21', 'historisk härkomst: ' + historiska.length + ' poster pekar på id som inte längre observeras — ' +
+        historiska.join(', ') + ' · väntat efter en delning, inte ett fel');
+
+    /* 2 · DATAFEL — ogiltiga värden mot vokabulären */
+    const byId = new Map(observed.map(o => [o.artifactId, o]));
+    let dataErrors = 0;
+    for (const a of rows) {
+      const bad = m => { t21('T21-DATA', 'datafel: ' + a.artifactId + ' — ' + m); dataErrors++; };
+      // SAKNAD klass och OKÄND klass är två skilda fel. Ett saknat fält är en
+      // ofullständig post; ett okänt värde är ett felaktigt beslut. Att slå
+      // ihop dem gjorde diagnostiken 'okänd artifactKind "undefined"'.
+      for (const [fält, vokabulär] of [['artifactKind', ARTIFACT_KINDS], ['viewportClass', VIEWPORT_CLASSES],
+                                       ['authorityState', ARTIFACT_STATES], ['classificationState', CLASSIFICATION_STATES]])
+        if (a[fält] === undefined || a[fält] === null || a[fält] === '')
+          bad('saknad ' + fält + ' — klassen krävs på varje post (giltiga: ' + Object.keys(vokabulär).join(', ') + ')');
+      if (a.artifactKind !== undefined && !ARTIFACT_KINDS[a.artifactKind]) bad('okänd artifactKind "' + a.artifactKind + '"');
+      if (a.viewportClass !== undefined && !VIEWPORT_CLASSES[a.viewportClass]) bad('okänd viewportClass "' + a.viewportClass + '"');
+      if (a.authorityState !== undefined && !ARTIFACT_STATES[a.authorityState]) bad('okänd authorityState "' + a.authorityState + '"');
+      if (!CLASSIFICATION_BASES[a.classificationBasis]) bad('okänd classificationBasis "' + a.classificationBasis + '"');
+      const st = ARTIFACT_STATES[a.authorityState];
+      if (st && st.requiresSupersededBy && !a.supersededBy) bad('authorityState superseded utan supersededBy');
+      const cs = CLASSIFICATION_STATES[a.classificationState];
+      if (a.classificationState !== undefined && !cs) bad('okänd classificationState "' + a.classificationState + '"');
+      if (cs && cs.requiresBlockers && !(Array.isArray(a.activationBlockers) && a.activationBlockers.length))
+        bad('classificationState draft utan activationBlockers — vad som återstår måste stå skrivet');
+      // INVARIANTEN mellan de två dimensionerna: normativ auktoritet kräver ett
+      // avslutat beslut. Ett draft får aldrig bära active.
+      if ((ARTIFACT_STATES[a.authorityState] || {}).normative && cs && !cs.decided)
+        bad('authorityState "' + a.authorityState + '" ger normativ auktoritet men classificationState är "' +
+          a.classificationState + '" — beslutet är inte avslutat');
+      // En icke-normativ artefaktsort får aldrig bära ett normativt tillstånd.
+      if (ARTIFACT_KINDS[a.artifactKind] && ARTIFACT_KINDS[a.artifactKind].normative === false &&
+          (ARTIFACT_STATES[a.authorityState] || {}).normative === true)
+        bad('artifactKind "' + a.artifactKind + '" är icke-normativ men authorityState "' + a.authorityState + '" ger normativ auktoritet');
+      if (a.supersededBy && !regSet.has(a.supersededBy)) bad('supersededBy "' + a.supersededBy + '" är ingen känd artefakt');
+      // Beslutet får inte motsäga observationen — men bara när artefakten är
+      // AKTIV. En `draft` är per definition ett beslut som ännu inte stämmer
+      // med källan; det är därför den bär activationBlockers. Att kalla den
+      // motsägelsen ett datafel hade gjort tillståndet omöjligt att använda.
+      const o = byId.get(a.artifactId);
+      const isCurrent = (ARTIFACT_STATES[a.authorityState] || {}).current === true;
+      if (isCurrent && o && a.viewportClass === 'none' && o.observed.hasDeviceFrame)
+        bad('viewportClass "none" trots observerad enhetsram');
+      if (isCurrent && o && ['phone', 'wide', 'tablet'].includes(a.viewportClass) &&
+          !o.observed.hasDeviceFrame && !o.observed.hasExplicitDimensions)
+        bad('viewportClass "' + a.viewportClass + '" men artefakten har varken enhetsram eller explicita mått');
+      // Profilen måste finnas, och en avvikelse måste ha en dokumenterad orsak.
+      if (a.viewportProfile && !LAYOUT_PROFILES.has(a.viewportProfile))
+        bad('viewportProfile "' + a.viewportProfile + '" finns inte i layout-contract.json#profiles');
+      if (a.profileDeviation && !a.profileDeviation.reason)
+        bad('profileDeviation utan reason — avvikande mått kräver dokumenterad orsak');
+      // En VIEWPORT UTAN PROFIL är ett fel oavsett auktoritetstillstånd. Kravet
+      // låg tidigare bakom isCurrent, så en planerad eller draftad viewport
+      // kunde sakna profil utan att någon märkte det — och det är just de
+      // posterna som senare aktiveras.
+      if (['viewport', 'crop'].includes(a.artifactKind) && a.viewportClass !== 'none' && !a.viewportProfile)
+        bad(a.artifactKind + ' i klassen "' + a.viewportClass +
+          '" saknar viewportProfile — mått ska följa en namngiven profil');
+      // Och viewportklassen måste gå att BINDA till det kanoniska registret:
+      // layout-contract.json#viewportClassMap är den enda källan till vilket
+      // layoutläge och vilken profil en klass hör till.
+      if (a.viewportClass && a.viewportClass !== 'none' && VIEWPORT_CLASS_MAP) {
+        const m = VIEWPORT_CLASS_MAP[a.viewportClass];
+        if (!m)
+          bad('viewportClass "' + a.viewportClass + '" kan inte bindas till kanoniskt register — ' +
+            'den saknas i layout-contract.json#viewportClassMap');
+        else if (a.viewportProfile && m.profile && a.viewportProfile !== m.profile && !a.profileDeviation)
+          bad('viewportProfile "' + a.viewportProfile + '" avviker från kartans "' + m.profile +
+            '" för klassen "' + a.viewportClass + '" utan profileDeviation med dokumenterad orsak');
+      }
+      if (a.classificationBasis === 'device-frame-evidence' && o && !o.observed.hasDeviceFrame)
+        bad('classificationBasis device-frame-evidence men ingen enhetsram observeras');
+    }
+
+    /* 3 · URVALSKONTEXTER. F2-A03: att jämföra nycklar räckte inte, eftersom
+     *     selektorer ÖVERLAPPAR — en variant utan selektor gäller alla
+     *     plattformar, och en med platform=ios gäller också iOS. Två skilda
+     *     nycklar, samma verklighet. Vokabulären är ändlig, så varje tillåten
+     *     kontext räknas upp och prövas: exakt EN matchande aktiv variant. */
+    // Selektorvokabulären prövas på VARJE post, inte bara på de aktiva. En
+    // ogiltig theme-, viewport- eller text-scale-dimension i en draftad post är
+    // lika mycket ett datafel — den aktiveras senare utan att någon sett den.
+    for (const a of rows) {
+      for (const [dim, val] of Object.entries(a.selectors || {})) {
+        const D = SELECTOR_DIMENSIONS[dim];
+        if (!D) { t21('T21-DATA', 'datafel: ' + a.artifactId + ' — okänd urvalsdimension "' + dim + '"'); continue; }
+        if (D.enabled && !D.values.includes(val))
+          t21('T21-DATA', 'datafel: ' + a.artifactId + ' — "' + val + '" är inget giltigt värde för ' +
+            dim + ' (' + D.values.join(', ') + ')');
+      }
+    }
+
+    const active = rows.filter(a => (ARTIFACT_STATES[a.authorityState] || {}).current && !isUndecided(a));
+    for (const a of active) {
+      for (const [dim, val] of Object.entries(a.selectors || {})) {
+        const D = SELECTOR_DIMENSIONS[dim];
+        if (!D) { t21('T21-DATA', 'datafel: ' + a.artifactId + ' — okänd urvalsdimension "' + dim + '"'); continue; }
+        if (!D.enabled)
+          t21('T21-DATA', 'datafel: ' + a.artifactId + ' — urvalsdimensionen "' + dim +
+            '" är spärrad: ' + D.note + ' En dimension får användas först när den har en deklarerad källa och ett deterministiskt runtimeval');
+        else if (!D.values.includes(val))
+          t21('T21-DATA', 'datafel: ' + a.artifactId + ' — "' + val + '" är inget giltigt värde för ' +
+            dim + ' (' + D.values.join(', ') + ')');
+      }
+    }
+    const bases = new Map();
+    for (const a of active) {
+      const k = baseSlot(a);
+      if (!bases.has(k)) bases.set(k, []);
+      bases.get(k).push(a);
+    }
+    const CTX = selectionContexts();
+    for (const [k, list] of bases) {
+      for (const ctx of CTX) {
+        const hit = list.filter(a => matchesContext(a, ctx));
+        if (hit.length > 1)
+          t21('T21-KOLLISION', 'urvalskollision i [' + k + '] för kontexten ' + contextLabel(ctx) + ': ' +
+            hit.length + ' aktiva varianter matchar samtidigt — ' +
+            hit.map(a => a.artifactId + ' {' + (Object.keys(a.selectors || {}).length
+              ? Object.entries(a.selectors).map(([d, v]) => d + '=' + v).join(',') : 'oselektiv = alla') + '}') .join(', ') +
+            ' · en oselektiv variant gäller ALLA kontexter');
+        if (hit.length === 0 && list.length)
+          t21('T21-OTACKT', 'omatchad kontext i [' + k + ']: ingen aktiv variant gäller ' + contextLabel(ctx) +
+            ' — varianterna utesluter varandra och lämnar en verklig kontext utan täckning');
+      }
+    }
+
+    /* 3b · ARBETSTILLSTÅNDET, som ren observation. Detta är INTE ett fel och
+     *      får inte formuleras som ett. Ett draft är ett fattat beslut som
+     *      väntar på att blockerarna löses. */
+    const drafts = rows.filter(a => a.classificationState === 'draft');
+    if (drafts.length) {
+      const perBlocker = {};
+      for (const a of drafts)
+        for (const b of (a.activationBlockers || ['(ingen blockerare angiven)']))
+          perBlocker[b] = (perBlocker[b] || 0) + 1;
+      info('T-21', 'arbetstillstånd: ' + drafts.length + ' poster i draft. Blockerare: ' +
+        Object.entries(perBlocker).sort((x, y) => y[1] - x[1])
+          .map(([b, n]) => '"' + b + '" ×' + n).join(' · '));
+    }
+
+    /* 4 · OBESLUTAT — egen felklass, Fas 2-grindfel.
+     *
+     * Meddelandet sa tidigare att 317 poster "saknar klassificeringsbeslut"
+     * samtidigt som warnraden ovanför kallade exakt samma 317 "beslutade men ej
+     * aktiverade". Två motsatta påståenden om samma mängd. Felet ligger i
+     * FORMULERINGEN: posterna bär ett fattat klassificeringsbeslut, men deras
+     * IDENTITETSNYCKEL (screenId, stateId) är inte satt, och utan nyckel kan
+     * ingen variantunikhet prövas. Orsakerna redovisas därför var för sig. */
+    const undecided = rows.filter(isUndecided);
+    if (undecided.length) {
+      const orsak = {
+        'classificationState unclassified': a => a.classificationState === 'unclassified',
+        'classificationState draft (blockerad)': a => a.classificationState === 'draft',
+        'screenId saknas': a => a.screenId === null || a.screenId === undefined,
+        'stateId saknas': a => a.stateId === null || a.stateId === undefined
+      };
+      const fördelning = Object.entries(orsak)
+        .map(([k, f]) => [k, undecided.filter(f).length]).filter(([, n]) => n > 0);
+      const perFile = {};
+      for (const a of undecided) perFile[a.sourceFile] = (perFile[a.sourceFile] || 0) + 1;
+      t21('T21-OBESLUTAT', 'obeslutat: ' + undecided.length + ' av ' + rows.length +
+        ' artefakter kan inte prövas för variantunikhet. Orsaker (poster kan ha flera): ' +
+        fördelning.map(([k, n]) => k + ' ' + n).join(', ') +
+        ' · störst i ' + Object.entries(perFile).sort((a, b) => b[1] - a[1]).slice(0, 4)
+          .map(([f, n]) => f.replace(/^Butlery Skarmar v12 /, '').replace(/\.dc\.html$/, '') + ' ' + n).join(', ') +
+        (Object.keys(perFile).length > 4 ? ' m.fl.' : '') +
+        ' · det är ett ofattat beslut, inte ett datafel');
+    }
+
+    /* 5 · DE TRE TALEN som Fas 2-grinden kräver, ur BESLUTEN — inte ur ramarna */
+    const screens = rows.filter(a => (ARTIFACT_KINDS[a.artifactKind] || {}).countsAsScreen &&
+      (ARTIFACT_STATES[a.authorityState] || {}).current).length;
+    const frames = observed.reduce((n, o) => n + o.observed.deviceFrames, 0);
+    const boards = rows.filter(a => ['component', 'pattern'].includes(a.artifactKind) &&
+      (ARTIFACT_STATES[a.authorityState] || {}).current).length;
+    // F2-A05 · DELSUMMORNA SKRIVS AV KONTROLLEN, inte av en människa i en text.
+    // Prosan sa "22 breda och 7 i etapp 9" om en tabell med 21 och 8. Ett tal
+    // som skrivs för hand bredvid en lista driver alltid isär till slut.
+    const tally = {};
+    for (const a of rows) {
+      const k = a.artifactKind + '·' + a.viewportClass;
+      tally[k] = (tally[k] || 0) + 1;
+    }
+    const sum = Object.values(tally).reduce((n, v) => n + v, 0);
+    info('T-21', 'ARTIFACT-TALLY total=' + rows.length + ' ' +
+      Object.entries(tally).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + '=' + v).join(' ') +
+      (sum === rows.length ? '' : ' ✖ DELSUMMORNA SUMMERAR TILL ' + sum));
+    if (sum !== rows.length)
+      t21('T21-TALLY', 'delsummorna (' + sum + ') summerar inte till registrets ' + rows.length + ' poster');
+    info('T-21', 'observerat ' + observed.length + ' artefakter · ' + frames + ' enhetsramar · ' +
+      'beslutat: ' + screens + ' aktiva vyer, ' + boards + ' aktiva bord, ' +
+      undecided.length + ' obeslutade · registret ' + rows.length + ' poster');
+
+    // MASKINLÄSBART UTLÅTANDE. En kontroll som bara skriver prosa går inte att
+    // följa upp. Raden bär kontroll-id, kontraktsversioner, validerade filer,
+    // postantal, felantal, de stabila fel-id:n som föll och verktygsstatus.
+    let scVer = null;
+    if (env.exists('selection-contexts.json')) {
+      try { scVer = JSON.parse(env.read('selection-contexts.json')).version; } catch { scVer = 'oläsbar'; }
+    }
+    const felPerId = {};
+    for (const id of t21Fel) felPerId[id] = (felPerId[id] || 0) + 1;
+    info('T-21', 'T21-RESULT ' + JSON.stringify({
+      kontroll: 'CHK-T-21',
+      artifactsVersion: R.version || null,
+      selectionContextsVersion: scVer,
+      validerade_filer: ['artifacts.json', 'artifacts.schema.json',
+        'selection-contexts.json', 'selection-contexts.schema.json', 'layout-contract.json']
+        .filter(f => env.exists(f)),
+      poster_st: rows.length,
+      observerade_st: observed.length,
+      fel_st: t21Fel.length,
+      fel_id: felPerId,
+      verktygsstatus: t21Status.verktyg,
+      utfall: t21Fel.length ? 'failed' : 'passed'
+    }));
   })();
 
   /* ── T-02 · kontrast enligt tokens.contrastPairs, mot RÄTT bakgrund ─────── */

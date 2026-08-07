@@ -34,6 +34,8 @@ export const REQUIRED_DOMAIN_IDS = [
   'control-register',
   'source-authority',
   'governance',
+  'selection-contexts',
+  'layout-contract',
   'document-runtime'
 ];
 

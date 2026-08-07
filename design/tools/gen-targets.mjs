@@ -28,7 +28,8 @@ export const GENERATED_OUTPUTS = [
   'testmatris.md',
   'evidensmatris.md',
   'Butlery tillganglighetshandoff.dc.html',
-  'fas0/kallauktoritetsregister.md'
+  'fas0/kallauktoritetsregister.md',
+  'fas0/artefaktforslag.md'
 ];
 
 // F1-H06: den DELMÄNGD av skrivmålen som source-authority.json måste förteckna
@@ -47,7 +48,8 @@ export const FULLY_GENERATED_BY = {
   'lib/theme/butlery_tokens.dart': 'tools/gen-flutter.mjs',
   'lib/theme/app_colors.dart': 'tools/gen-app-theme.mjs',
   'lib/theme/app_text_styles.dart': 'tools/gen-app-theme.mjs',
-  'fas0/kallauktoritetsregister.md': 'tools/gen-authority.mjs'
+  'fas0/kallauktoritetsregister.md': 'tools/gen-authority.mjs',
+  'fas0/artefaktforslag.md': 'tools/gen-artifact-proposal.mjs'
 };
 
 export const FULLY_GENERATED = Object.keys(FULLY_GENERATED_BY);

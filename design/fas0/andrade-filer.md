@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=266-->
+<!--manifest:files=270-->
 
 ## Reporoten
 
@@ -81,6 +81,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `animations-v2.jsx` | `33e9200b93f5eb416d294e1a1ffc6bebe75d2bee95817977a08fa896229be774` |
 | `arbetsplan.md` | `326221917cb77f0db4595c909d09d8ffe762ee11a5ee43f710d78c95cabfa81a` |
 | `artifacts.json` | `dccb76b6ec0cba8eb1bb767e996fc5d1845ebc15545e9d3b5ff7f1bacf3987f5` |
+| `artifacts.schema.json` | `2cafc43ab6a147642447b21c4eb45aac9d38176f659021897ae67f13f86ebc57` |
 | `assets-manifest.json` | `df7201da509c2359b5c35114a32a55755aa4647108cfb5824c1ae594144e64ec` |
 | `assets/LICENSES.md` | `17d5f6fbdf80c3ccee9e420a646c3ebb03ec7a188eacb7a42eaae857ac942b95` |
 | `assets/brand-colors.json` | `1cc1e0243b46309c56a2c2686c6401bfa200f1cc70fafcbc68dc99f973102935` |
@@ -201,10 +202,11 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `exports/ios/AppIcon-1024.png` | `2bce7e0b683b3054285607fb19d3a58706b483a69ade344c1e90fcfed74b036a` |
 | `exports/ios/AppIcon-1024.svg` | `671dbabd32d82447548055e7215ccaf4a98f3b64259cad8cb91c227954734264` |
 | `fas0/LAS-MIG.md` | `5e99d40df92c4b5c68024570ce15d38bbd9037bb05978b7b71b61f28c18fde82` |
+| `fas0/artefaktforslag.md` | `f69520ede848fac35caaa5f743d5d73b5a2e4f24b131b6b1fc64389555fbbcf4` |
 | `fas0/baseline-report-SUPERSEDED.json` | `12e79a51948917b6481ae31192b53a751e86e42b64cd44b341a5c41518fcb3be` |
 | `fas0/blockerar-fas1.md` | `5a8189af818cb65b73009bde3638a9d12902b3043c56b6ea7e1ff742c4ca20e1` |
 | `fas0/check-manifest.mjs` | `2ebcdd900af7d1baaf5aed1d3b7c2a98c5459d402798c49e5ba62ae745aab934` |
-| `fas0/kallauktoritetsregister.md` | `35dc52fa4b5d7fd5d8c09d09865761addb4d3cd1df4d00ca43861544e9bbe375` |
+| `fas0/kallauktoritetsregister.md` | `a275ab4ee906bc50f2995578ef1db0408675a2bd27e4efeb216d3ebb91e50527` |
 | `fas0/leveransmodellen.md` | `e8f935f282f1a6ef5e96564dc783104e197752f5417c8819c1ae938092adebd2` |
 | `fas0/run-verify.sh` | `8cfdac6f33d8683f50ad4ca962a0f849917e4911e998c9177ae0587640cb36d7` |
 | `fas0/verify-delivery.sh` | `b793ff7225563b71520127c41614a8c1f2e03f7f72780cadc63911d0e4d1e5f7` |
@@ -241,7 +243,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `produktregler.md` | `1892ec01d282772e343db4884e7645401acc3dd9c8db4497055ba6178ab542d6` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
-| `source-authority.json` | `cc2367575d058cab7638ef373dd95b3308e916b4b2c8f9e91f438d795f120658` |
+| `source-authority.json` | `0442c2bcd8b4e9ba204858179e459e948baa89670a61678165e57243b86a0d17` |
 | `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |
 | `testmatris.md` | `7da9f1a7038b53e553186a1fdeea041110ed36e5ccf885e716b8bf005c0dc5de` |
@@ -249,13 +251,15 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/README.md` | `759f70a35c33d3ce2824c37ecda40724b3f2e6fcc1ab7b4cf976059f5b872051` |
 | `tools/app-theme-map.json` | `7d2b2a1e90ed24b97715ec4decacc2b9ed4d5b5fb10dc52f398e922368cd2c7b` |
 | `tools/app-theme-map.schema.json` | `540c09035681771786f7884abb098468e3382682f1e5dde6e98b9e2a829fd387` |
-| `tools/authority-contract.mjs` | `b806511cb2b06fba63d2e6974c7233ca2b694e09a0eaa1ed76fcde073d3348fa` |
+| `tools/artifact-contract.mjs` | `04b506fe6cb2f281de72bf389fa7382fbf68063dabb971f8ce84fe93363e7712` |
+| `tools/authority-contract.mjs` | `7479d2ebd3496f4315fb98ed1e0cb006eb0780acaa824616bf47c214583fdad9` |
 | `tools/build-delivery.mjs` | `fcfc81f8a1776576fd85e5e2140b0f55483efa8ecef36d87a0aa89d16b7a5d9d` |
 | `tools/check-app-theme.mjs` | `3ec46efe91680b7050662962c1f117d5dc9a2653ffd1f9437a67a0a72217b745` |
-| `tools/controls.mjs` | `ba43770ae9546e203e0626052c042491066eb32fe18b03825e8d3b2a25e89e06` |
+| `tools/controls.mjs` | `5206d56c16c43277332f46802755a00f56f9f81923342becd4904fa57be4c9a2` |
 | `tools/finalize.mjs` | `74fd11be650ad6a50a4c6817c06bac45dd1815c97faf524cd59c41f91ef0afd1` |
 | `tools/gate.mjs` | `02917e6f14ed023585a1496630ba68b1b9dea5109ab991f5d1a5a931195ba4f0` |
 | `tools/gen-app-theme.mjs` | `f07136386c267f52bda54a0e5b14523fa41facb615f276befc3b9c140f17bd01` |
+| `tools/gen-artifact-proposal.mjs` | `6f0541b35c99c99e55432cb34d8b6c5188feca7297f728b148ff28bd9bc1b2ef` |
 | `tools/gen-authority.mjs` | `6af83d88709b2ea93d89c22b4d5a4ffceccd0980418a8b126f88b06d8954e32b` |
 | `tools/gen-check.mjs` | `f52d62056ee0b58cb2f718f64a57ce422fa73fd21079e9dc666d5307b51f31d4` |
 | `tools/gen-counts.mjs` | `d74c3921589f23e7ec5d3d5208565677b04daa7833ae3f6af65c7d522fa869cd` |
@@ -266,11 +270,11 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/gen-manifest.mjs` | `3572f9b1a2d63ee9ffdc605d7c40d903276a7605753ee21dc6d6170ee458b0dd` |
 | `tools/gen-report.mjs` | `8e32d2530c1bf94ebc032f626e58764f99b8ec8f965633cbcf4d9fab082d432e` |
 | `tools/gen-schema.mjs` | `1d276054d4fb6976fc8e1005626d23467c4c21bb5d48996016e883312cb74a84` |
-| `tools/gen-targets.mjs` | `e209b3d50c749d4da11c5bb27b45727329763a8579c7ec0dc9f11eb9cba04c2f` |
+| `tools/gen-targets.mjs` | `ffbef2620ef4be264e16dab5432c65fb80d24422eb8c0f3d9e512324f82e8e9f` |
 | `tools/lint-controls.mjs` | `07350d4dd8b167c772f9ca145cd69b92ff0418632c2252d434b7d9ad59f6c244` |
-| `tools/lint-core.mjs` | `05ca33f1af6e70c8a2dedf61ad77aa2fb7d9c0101bf6c71a5c3bc7e397672941` |
+| `tools/lint-core.mjs` | `3b2a022f92648daf14b34d99cded4175ec3a95489570efc03be11fab2262ec20` |
 | `tools/manifest-contract.mjs` | `e5b69a41062031b0c15868d4de9673d7f3645256e3cb5c8da66ea79ec83c368d` |
-| `tools/metatest.mjs` | `85e7d260489942d9ec068ed3aace55ebb48df1ba3cf7179f30420118310fa4e4` |
+| `tools/metatest.mjs` | `29e5741faad10c4c250afac5c4a308d0f9ffd7a90ba681cf159ceb281bea1165` |
 | `tools/preflight.mjs` | `3fe3bfa0e6f92fcb71ca5d19aa2c8e5e9df307f80eb3c8fe4dee09f173d5f3af` |
 | `tools/render-analyze-lib.mjs` | `5608257ad1b50b6487b0a0b8958930bf07fe4c639e80a6b08acec3707322a6a2` |
 | `tools/render-analyze.mjs` | `43d16c95a2aa622fc6d63e3a2b41e31c2a2ffb135bc31dbcd3533150374eb428` |
@@ -278,18 +282,18 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/render-negatives.mjs` | `10362b2febe71fc62c34b78965b0c99902dca396dadbda1ef708dd5a8eff6c69` |
 | `tools/render-probe.mjs` | `cde2604382b5ef4e7f60297dd58156dea66b2908415ffbc358584f1f0907a697` |
 | `tools/render-repro.mjs` | `c01847106337b4f6cc744350f150ef54919ab925928dab19423897191affa2c1` |
-| `tools/report-logic.mjs` | `62b38358e6d8f77dd31a52ef6cde1061ec4a5d03b390204ec0ff51505b30258f` |
+| `tools/report-logic.mjs` | `f5a83590d3c99ae6deba764c5e9b50f1c25cf26bdda717bc220726694a77203a` |
 | `tools/repro-check.mjs` | `7aefb37dd9ea18a37e20c0e52d0bf784b0e5515a40fbbb2058d9672c2e09a0ba` |
 | `tools/run-complete.mjs` | `a3884fe3ebaade9af0eca6789160fe11d2ad249ccd9ebcce517f17bc9f6a3bc2` |
 | `tools/screen-files.mjs` | `d975c827273def112992f5ad6b1269817fffc6efc3e882a7d41d0d4269735e48` |
-| `tools/selftest.mjs` | `0718f2dfe08db8ea496d15659ae60ae465f0b53c92dccd5e9b53f688b546bc37` |
+| `tools/selftest.mjs` | `f0a642cd4868df70eef74217f2ad5baddf2f8f9cf723be37e054261fd798d183` |
 | `tools/spec-lint.mjs` | `520964df0ad36015cb3afce41ec8f89bd54dd6bb9d345ce47c7cd3da8075503d` |
 | `tools/sync-icon-paths.mjs` | `7e8e9836aa79f545f95c381810df3a3fe68f607c652e36d6718d4e9f1f513de9` |
 | `tools/test-generated.mjs` | `174f65e84f5cc6bee55b75df2ceb29e2ec4957ad397865bd6af65cf472eb7002` |
 | `tools/testkit.mjs` | `59ad0de4f40fa319d23ab05a7548bf3328abc935680f136582b735f838a6c17a` |
 | `tools/theme-pairing-lib.mjs` | `dcd07fd801a0c9d4e82dbf3bf50602d4ecf5a0aaf9905412584d93b2daa5f72a` |
 | `tools/theme-pairing.mjs` | `a89363103ef0a7dcb85f751f238babaf2a9e769d033cc342ab12c326858bae31` |
-| `tools/verify.mjs` | `b6d905489a89d79ae9b84538383c786f79ad7fef865bb4a42656a6e02a1dea5b` |
+| `tools/verify.mjs` | `84fe21ec973788155bd8f6dfd40450a89e9e18df3bd1b523592a27d97d5f6464` |
 | `tools/version-read.mjs` | `931021ed5eca2e9a28987392b7146e2064b028e65a5038b7b1fc4b310262c474` |
 
 ## Leveransytan utanför reporoten

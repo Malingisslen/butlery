@@ -32,6 +32,9 @@ const steps = [
   // manifestet. Varje sådan hash räknas ur `leverans/`, som ligger i Git, i
   // BÅDA lägena — manifestet går därför att bygga från noll i vilken klon som
   // helst, och en ändrad extern hash fälls även i repo-läge.
+  // Fas 2: förslaget för artefaktklassificeringen genereras ur artifacts.json
+  // och vaktas av GEN-01, så det aldrig kan gå stale mot registret.
+  ['Artefaktförslag ur registret', 'tools/gen-artifact-proposal.mjs', 'gen-artifact-proposal'],
   ['Manifestet mot enumeratorn', 'tools/gen-manifest.mjs --check', 'gen-manifest-check'],
   ['Genererad kod', 'tools/test-generated.mjs', 'test-generated'],
   ['Kontrollgeometri', 'tools/lint-controls.mjs', 'lint-controls'],

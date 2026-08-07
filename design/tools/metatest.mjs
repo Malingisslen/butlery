@@ -1731,6 +1731,33 @@ group('M-32', () => {
     ' · barnet såg: ' + JSON.stringify(child));
 });
 
+/* M-40 · FAIL-CLOSED för obligatoriskt rapporterande kontroller.
+ *
+ * CHK-T-21 kunde stå "not run" i en fullständig körning, och "not run" läses
+ * som att kontrollen ännu inte är aktuell. En aktiverad grindkontroll är alltid
+ * aktuell: att den inte lämnade något utlåtande är i sig ett resultat. Provet
+ * kräver att mustReport ger BLOCKED, att en kontroll UTAN flaggan behåller
+ * "not run", och att "not run" på en grindkontroll ändå fäller fasgrinden. */
+group('M-40', () => {
+  const t21 = CONTROLS.find(c => c.legacyId === 'T-21');
+  const utanFlagga = ctrl('T-99', 'spec-lint');
+  const ctx = { ...base, ranControls: [], steps: [step('spec-lint', 'passed', { specErrors: 3 })] };
+  const medFlagga = reduceControls([{ ...t21 }], ctx)[0];
+  const utan = reduceControls([utanFlagga], ctx)[0];
+  const kord = reduceControls([{ ...t21 }],
+    { ...ctx, ranControls: ['T-21'], perControl: { 'T-21': { errors: 0, warnings: 0 } } })[0];
+  // Även om något annat ändå skulle sätta "not run" måste grinden bli röd.
+  const tot = computeTotals({ steps: [], controls: [{ ...t21, status: 'not run' }],
+    manifest: okManifest, generatedDrift: [], currentPhase: 2 });
+  t('M-40 · CHK-T-21 bär mustReport och kan inte stå not run',
+    !!t21 && t21.mustReport === true && medFlagga.status === 'blocked' &&
+    utan.status === 'not run' && kord.status === 'passed' &&
+    tot.phaseGateResult === 'failed' && tot.gateBlockers.length === 1,
+    'mustReport ' + (t21 || {}).mustReport + ' · utan körbevis ' + medFlagga.status +
+    ' · utan flagga ' + utan.status + ' · med körbevis ' + kord.status +
+    ' · grind ' + tot.phaseGateResult + ' ' + JSON.stringify(tot.gateBlockers));
+});
+
 const fail = results.filter(r => !r.ok).length;
 console.log('\nMETATEST-SUMMARY pass=' + (results.length - fail) + ' fail=' + fail + ' total=' + results.length);
 process.exit(fail ? 1 : 0);
