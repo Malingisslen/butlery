@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=302-->
+<!--manifest:files=304-->
 
 ## Reporoten
 
@@ -226,6 +226,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/kontrastprov.json` | `453d9d62ce512d55bff07494a9eccb65f76a424b26b498c15608f9f6d461001c` |
 | `fas2/nav-add-delta.json` | `0a8748d9f2059c0dc9e187db3824d62f691872cd456f24fca2df370fccc8f22c` |
 | `fas2/negativa-prov.json` | `5ac71e2542a1c9b66427a154f591650f9da433e035e8f5c89d512e520cf658a0` |
+| `fas2/r01-baslinje.json` | `d0f89a18c48f6d0e159f64b8f487c9417d26cc2272d06cce77aef58f0c2ca61c` |
 | `fas2/r03-baslinje.json` | `f76b4f37b6bb52ece683c61621670a0b37173be3c74acf1da7bfd992b7e8c702` |
 | `fas2/r04-parningsunderlag.json` | `d82a227cf2f2b978b42e9625365027bdf9e5b41136808987cc61e0a46cb4fa55` |
 | `fas2/reproducerbarhet.json` | `85b244b9bf2d33831d7df56aa61cb5a24887aed3b7d7b095314be792022a726c` |
@@ -273,6 +274,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/authority-contract.mjs` | `7479d2ebd3496f4315fb98ed1e0cb006eb0780acaa824616bf47c214583fdad9` |
 | `tools/build-delivery.mjs` | `fcfc81f8a1776576fd85e5e2140b0f55483efa8ecef36d87a0aa89d16b7a5d9d` |
 | `tools/check-app-theme.mjs` | `3ec46efe91680b7050662962c1f117d5dc9a2653ffd1f9437a67a0a72217b745` |
+| `tools/contrast-baseline.mjs` | `113856d641b98e32dce5d54979cb5f8110ef478d1581c4b0e63694a96524ac9f` |
 | `tools/contrast-fixtures.mjs` | `11fb98b25e831ffc86998861a95703f46cf4117d7a997efe33fd4d26f3379617` |
 | `tools/contrast-reconcile.mjs` | `94f6d84d9f0881b989bc5fee545f6f89bf5522d2505aebd299aa6cf15eb52489` |
 | `tools/controls.mjs` | `6200d355c3198c9fb3e226943baca66a1de467f65566d77f9ec232555ce82088` |
