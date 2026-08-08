@@ -1,0 +1,424 @@
+{
+ "$schema": "butlery-r02-rotorsaker/1",
+ "kontroll": "CHK-R-02",
+ "$regel": "Gruppering endast på BEVISAD gemensam källa — identisk serialiserad inline-stil och samma uppmätta mekanism. Liknande mått räcker aldrig.",
+ "$scope": "24 verifierade R-02-fynd i den mätbara populationen. 718 kontroller har ännu inte verifierad träffyta och ingår inte i denna analys.",
+ "fynd_totalt": 24,
+ "bevisade_rotorsaker_st": 7,
+ "fynd_utan_bevisad_kalla_st": 2,
+ "fixordning": [
+  "RC-07 — strukturellt underskridande, 21,5 px",
+  "RC-01 — flest fynd per källa, tio element, noll som passerar",
+  "RC-02 och RC-03 — chipsen, nio fynd, samma mekanism men två källor",
+  "RC-04, RC-05, RC-06 — fyra lokala fynd"
+ ],
+ "rotorsaker": [
+  {
+   "id": "RC-01",
+   "namn": "portionskontrollerna byggda på det gamla 44-måttet",
+   "source": {
+    "serialiseradInlineStil": "width:44px;height:44px;border:1.5pxsolidF;display:inline-flex;align-items:center;justify-content:center;flex:00auto;",
+    "delatCssRegel": false,
+    "$note": "Ritningarna har ingen delad CSS-fil och ingen komponentdefinition för de här kontrollerna. Källan är en inline-sträng som upprepas. En källbaserad fix betyder att ETT mönster ändras, inte att en central regel ändras."
+   },
+   "affected": {
+    "fynd_st": 10,
+    "artifactIds": [
+     "bredrecept",
+     "rcbnormal",
+     "rcbportion",
+     "rcblaser",
+     "rcboffline"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "bredrecept",
+      "role": "button",
+      "name": "Färre portioner",
+      "agare": "self",
+      "matt": {
+       "w": 47,
+       "h": 47
+      }
+     },
+     {
+      "artifactId": "bredrecept",
+      "role": "button",
+      "name": "Fler portioner",
+      "agare": "self",
+      "matt": {
+       "w": 47,
+       "h": 47
+      }
+     },
+     {
+      "artifactId": "rcbnormal",
+      "role": "button",
+      "name": "Färre portioner",
+      "agare": "self",
+      "matt": {
+       "w": 47,
+       "h": 47
+      }
+     },
+     {
+      "artifactId": "rcbnormal",
+      "role": "button",
+      "name": "Fler portioner",
+      "agare": "self",
+      "matt": {
+       "w": 47,
+       "h": 47
+      }
+     },
+     {
+      "artifactId": "rcbportion",
+      "role": "button",
+      "name": "Färre portioner",
+      "agare": "self",
+      "matt": {
+       "w": 47,
+       "h": 47
+      }
+     },
+     {
+      "artifactId": "rcbportion",
+      "role": "button",
+      "name": "Fler portioner",
+      "agare": "self",
+      "matt": {
+       "w": 47,
+       "h": 47
+      }
+     },
+     {
+      "artifactId": "rcblaser",
+      "role": "button",
+      "name": "Färre portioner",
+      "agare": "self",
+      "matt": {
+       "w": 47,
+       "h": 47
+      }
+     },
+     {
+      "artifactId": "rcblaser",
+      "role": "button",
+      "name": "Fler portioner",
+      "agare": "self",
+      "matt": {
+       "w": 47,
+       "h": 47
+      }
+     },
+     {
+      "artifactId": "rcboffline",
+      "role": "button",
+      "name": "Färre portioner",
+      "agare": "self",
+      "matt": {
+       "w": 47,
+       "h": 47
+      }
+     },
+     {
+      "artifactId": "rcboffline",
+      "role": "button",
+      "name": "Fler portioner",
+      "agare": "self",
+      "matt": {
+       "w": 47,
+       "h": 47
+      }
+     }
+    ]
+   },
+   "mechanism": "Explicit width och height på 44 px, plus en 1,5 px ram och content-box: 44 + 1,5 + 1,5 = 47 i bägge riktningar. Måttet 44 är kvar från det gamla kontraktet; ramen tar det till 47 men aldrig till 48.",
+   "minimalFix": "Sätt box-sizing: border-box och 48 × 48 på samma sträng. Då ryms ramen inom måttet och kontrollen blir exakt 48.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 10,
+    "under_48_st": 10,
+    "passerar_redan_st": 0,
+    "$note": "Ingen kontroll som passerar bär den här källsträngen — fixen kan inte försämra något som redan är godkänt."
+   },
+   "risks": "Föräldraraderna är 65 px höga, så knapparna växer 1 px inuti befintlig yta. Ingen radbrytning, ingen omflödning."
+  },
+  {
+   "id": "RC-02",
+   "namn": "filterchipsen i sokpanel",
+   "source": {
+    "serialiseradInlineStil": "min-height:44px;display:inline-flex;align-items:center;padding:0px12px;border:1pxsolidF;font-size:13px;font-weight:600;",
+    "delatCssRegel": false,
+    "$note": "Ritningarna har ingen delad CSS-fil och ingen komponentdefinition för de här kontrollerna. Källan är en inline-sträng som upprepas. En källbaserad fix betyder att ETT mönster ändras, inte att en central regel ändras."
+   },
+   "affected": {
+    "fynd_st": 4,
+    "artifactIds": [
+     "sokpanel"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "sokpanel",
+      "role": "button",
+      "name": "Utan gluten",
+      "agare": "self",
+      "matt": {
+       "w": 100.453,
+       "h": 46
+      }
+     },
+     {
+      "artifactId": "sokpanel",
+      "role": "button",
+      "name": "Utan laktos",
+      "agare": "self",
+      "matt": {
+       "w": 99.922,
+       "h": 46
+      }
+     },
+     {
+      "artifactId": "sokpanel",
+      "role": "button",
+      "name": "Över en timme",
+      "agare": "self",
+      "matt": {
+       "w": 118.898,
+       "h": 46
+      }
+     },
+     {
+      "artifactId": "sokpanel",
+      "role": "button",
+      "name": "Mormors",
+      "agare": "self",
+      "matt": {
+       "w": 83.063,
+       "h": 47
+      }
+     }
+    ]
+   },
+   "mechanism": "min-height 44 px är under kontraktet. Med 1 px ram upptill och nedtill och content-box blir den renderade höjden 46. Syskonchipsen i samma rad sträcks till radens höjd, så även de utan ram landar på 46.",
+   "minimalFix": "Höj min-height till 48 på chipmönstret.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 5,
+    "under_48_st": 5,
+    "passerar_redan_st": 0,
+    "$note": "Ingen kontroll som passerar bär den här källsträngen — fixen kan inte försämra något som redan är godkänt."
+   },
+   "risks": "Chipraderna radbryter redan (flex-wrap). De växer 2 px i höjd. Panelen har ingen fast höjd."
+  },
+  {
+   "id": "RC-03",
+   "namn": "placeringschipsen i vmbdelvis",
+   "source": {
+    "serialiseradInlineStil": "min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0px10px;border:1pxsolidF;background:F;font-size:12.5px;font-weight:600;",
+    "delatCssRegel": false,
+    "$note": "Ritningarna har ingen delad CSS-fil och ingen komponentdefinition för de här kontrollerna. Källan är en inline-sträng som upprepas. En källbaserad fix betyder att ETT mönster ändras, inte att en central regel ändras."
+   },
+   "affected": {
+    "fynd_st": 3,
+    "artifactIds": [
+     "vmbdelvis"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "vmbdelvis",
+      "role": "button",
+      "name": "Ugnspannkaka, placera",
+      "agare": "self",
+      "matt": {
+       "w": 138.391,
+       "h": 46
+      }
+     },
+     {
+      "artifactId": "vmbdelvis",
+      "role": "button",
+      "name": "Ärtsoppa, placera",
+      "agare": "self",
+      "matt": {
+       "w": 102.352,
+       "h": 46
+      }
+     },
+     {
+      "artifactId": "vmbdelvis",
+      "role": "button",
+      "name": "Rotsakslåda, placera",
+      "agare": "self",
+      "matt": {
+       "w": 122.203,
+       "h": 46
+      }
+     }
+    ]
+   },
+   "mechanism": "Samma mekanism som RC-02 men en egen källsträng i en annan ritning: min-height 44 plus 1 px ram i content-box ger 46.",
+   "minimalFix": "Höj min-height till 48.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 3,
+    "under_48_st": 3,
+    "passerar_redan_st": 0,
+    "$note": "Ingen kontroll som passerar bär den här källsträngen — fixen kan inte försämra något som redan är godkänt."
+   },
+   "risks": "Chipsen ligger i en flex-wrap-rad utan fast höjd. Två pixlar högre rad."
+  },
+  {
+   "id": "RC-04",
+   "namn": "ingrediens- och kryssrutraderna i inköpslistan",
+   "source": {
+    "serialiseradInlineStil": "display:flex;align-items:center;gap:12px;border:1pxsolidF;padding:10px12px;background:F;",
+    "delatCssRegel": false,
+    "$note": "Ritningarna har ingen delad CSS-fil och ingen komponentdefinition för de här kontrollerna. Källan är en inline-sträng som upprepas. En källbaserad fix betyder att ETT mönster ändras, inte att en central regel ändras."
+   },
+   "affected": {
+    "fynd_st": 2,
+    "artifactIds": [
+     "bredinkop",
+     "ikbnormal"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "bredinkop",
+      "role": "checkbox",
+      "name": "Spetskål, bockad",
+      "agare": "target:bredinkop-checkbox-spetskal-bockad",
+      "matt": {
+       "w": 399,
+       "h": 46
+      }
+     },
+     {
+      "artifactId": "ikbnormal",
+      "role": "checkbox",
+      "name": "Spetskål, bockad",
+      "agare": "target:ikbnormal-checkbox-spetskal-bockad",
+      "matt": {
+       "w": 415,
+       "h": 46
+      }
+     }
+    ]
+   },
+   "mechanism": "Raden har ingen höjdangivelse alls. Höjden byggs av innehållet: en 24 px kryssruta plus 10 + 10 px padding plus 1 + 1 px ram = 46. Ingen 44 är inblandad — det här är en självständig orsak.",
+   "minimalFix": "Sätt min-height: 48 på radmönstret, eller höj padding från 10 till 11 px.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 3,
+    "under_48_st": 2,
+    "passerar_redan_st": 1,
+    "$note": "Samma källa bärs av element som passerar. Se risks för varför."
+   },
+   "risks": "Tre element bär samma sträng och ETT av dem passerar redan: den raden har högre innehåll (statusmärket VÄNTAR) och når 65,5 px. En min-height rör inte den."
+  },
+  {
+   "id": "RC-05",
+   "namn": "ingrediensraden i lgbgester",
+   "source": {
+    "serialiseradInlineStil": "display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px;background:F;",
+    "delatCssRegel": false,
+    "$note": "Ritningarna har ingen delad CSS-fil och ingen komponentdefinition för de här kontrollerna. Källan är en inline-sträng som upprepas. En källbaserad fix betyder att ETT mönster ändras, inte att en central regel ändras."
+   },
+   "affected": {
+    "fynd_st": 1,
+    "artifactIds": [
+     "lgbgester"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "lgbgester",
+      "role": "button",
+      "name": "Byt ut mjölk",
+      "agare": "target:lgbgester-button-byt-ut-mjolk",
+      "matt": {
+       "w": 307,
+       "h": 47
+      }
+     }
+    ]
+   },
+   "mechanism": "min-height 44 px under kontraktet. Innehållet ger 47 px, alltså en pixel för lite. Ägarskapet är verifierat sedan högriskgranskningen — raden ÄR kontrollens träffyta.",
+   "minimalFix": "Höj min-height till 48.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 1,
+    "under_48_st": 1,
+    "passerar_redan_st": 0,
+    "$note": "Ingen kontroll som passerar bär den här källsträngen — fixen kan inte försämra något som redan är godkänt."
+   },
+   "risks": "Enda elementet med den strängen. Raden ligger i en kolumn utan fast höjd."
+  },
+  {
+   "id": "RC-06",
+   "namn": "lägg-till-knappen i bredlandskap",
+   "source": {
+    "serialiseradInlineStil": "width:44px;height:44px;border-radius:999px;background:F;display:inline-flex;align-items:center;justify-content:center;flex:00auto;",
+    "delatCssRegel": false,
+    "$note": "Ritningarna har ingen delad CSS-fil och ingen komponentdefinition för de här kontrollerna. Källan är en inline-sträng som upprepas. En källbaserad fix betyder att ETT mönster ändras, inte att en central regel ändras."
+   },
+   "affected": {
+    "fynd_st": 1,
+    "artifactIds": [
+     "bredlandskap"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "bredlandskap",
+      "role": "button",
+      "name": "Lägg till",
+      "agare": "self",
+      "matt": {
+       "w": 44,
+       "h": 44
+      }
+     }
+    ]
+   },
+   "mechanism": "Explicit 44 × 44 utan ram. Renderas exakt 44 × 44 — fyra pixlar under kontraktet i bägge riktningar. Samma 44-arv som RC-01 men utan ram, alltså en egen källsträng.",
+   "minimalFix": "Sätt 48 × 48.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 1,
+    "under_48_st": 1,
+    "passerar_redan_st": 0,
+    "$note": "Ingen kontroll som passerar bär den här källsträngen — fixen kan inte försämra något som redan är godkänt."
+   },
+   "risks": "Enda elementet med den strängen. Ligger i en verktygsrad på 61 px."
+  },
+  {
+   "id": "RC-07",
+   "namn": "sökfältets roll ligger på textspannet, inte på fältet",
+   "source": {
+    "serialiseradInlineStil": "flex:110%;font-size:15px;font-weight:400;color:F;",
+    "delatCssRegel": false,
+    "$note": "Ritningarna har ingen delad CSS-fil och ingen komponentdefinition för de här kontrollerna. Källan är en inline-sträng som upprepas. En källbaserad fix betyder att ETT mönster ändras, inte att en central regel ändras."
+   },
+   "affected": {
+    "fynd_st": 1,
+    "artifactIds": [
+     "sokpanel"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "sokpanel",
+      "role": "searchbox",
+      "name": "Sök bland dina recept",
+      "agare": "self",
+      "matt": {
+       "w": 222,
+       "h": 21.5
+      }
+     }
+    ]
+   },
+   "mechanism": "Elementet som bär data-a11y-role=\"searchbox\" har ingen höjdangivelse över huvud taget. Det krymper runt sin egen textrad: 21,5 px ÄR radhöjden. Fältet omkring det är 380 × 51 med min-height 48 och egen ram — men den ytan rymmer TRE semantiska kontroller och kan därför inte vara sökfältets exklusiva träffyta enligt kontraktet. align-items: center hindrar dessutom spannet från att sträcka sig till fältets höjd. Detta är ett strukturellt underskridande, inte en nära-miss.",
+   "minimalFix": "Ge sökfältselementet egen höjd inne i ramen: align-self: stretch eller min-height: 48px. Ramen är redan 51 px hög, så ytan finns.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 1,
+    "under_48_st": 1,
+    "passerar_redan_st": 0,
+    "$note": "Ingen kontroll som passerar bär den här källsträngen — fixen kan inte försämra något som redan är godkänt."
+   },
+   "risks": "Enda elementet med den strängen. Ramen har redan sin höjd, så ingen omflödning uppstår. Alternativet — att flytta rollen till ramen — vore en semantisk ändring och ligger utanför en R-02-fix."
+  }
+ ]
+}
