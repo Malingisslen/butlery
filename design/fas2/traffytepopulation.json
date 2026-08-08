@@ -207,10 +207,10 @@
  "klasser": {
   "metadata-utan-roll": 8,
   "ingen-deklaration": 843,
-  "deklaration-lopttext": 331,
+  "deklaration-self": 459,
   "utanfor-artefakt": 32,
-  "deklaration-self": 170,
-  "deklaration-target": 0
+  "deklaration-target": 31,
+  "deklaration-lopttext": 11
  },
  "produktnamnare_st": 1344,
  "failClosed": {
@@ -218,8 +218,8 @@
   "status": "godkänd"
  },
  "domslutPerStatus": {
-  "unknown": 1174,
-  "measured": 170
+  "unknown": 854,
+  "measured": 490
  },
  "status": "godkänd"
 }
