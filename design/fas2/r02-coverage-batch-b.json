@@ -1,0 +1,583 @@
+{
+ "$schema": "butlery-coverage-batch/1",
+ "kontroll": "CHK-R-02",
+ "batch": "B · ikonkontroller med egen knappyta",
+ "$regel": "Positivt stöd: elementet är självt ritat som en kontrollyta och bär rollen. Frånvaron av konkurrent räcker aldrig ensam — den är ett tilläggsvillkor, inte grunden.",
+ "beslutade_st": 44,
+ "self_st": 44,
+ "target_st": 0,
+ "poster": [
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "artifactId": "lagastaende",
+   "role": "button",
+   "accessibleName": "Avsluta matlagningsläget",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "artifactId": "lagamorkt",
+   "role": "button",
+   "accessibleName": "Avsluta matlagningsläget",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "artifactId": "lagastaende320",
+   "role": "button",
+   "accessibleName": "Avsluta matlagningsläget",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "hem360",
+   "role": "button",
+   "accessibleName": "Byt förslag",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "storsttext",
+   "role": "button",
+   "accessibleName": "Tillbaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "storsttext",
+   "role": "button",
+   "accessibleName": "Fler val",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "tangentbord",
+   "role": "button",
+   "accessibleName": "Bifoga",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "tangentbord",
+   "role": "button",
+   "accessibleName": "Skicka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (fylld bakgrund, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "lagaliggande",
+   "role": "button",
+   "accessibleName": "Avsluta matlagning",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "lagaliggande",
+   "role": "button",
+   "accessibleName": "Föregående steg",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "formularmorkt",
+   "role": "button",
+   "accessibleName": "Stäng recepteditorn",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "chattredigerat",
+   "role": "button",
+   "accessibleName": "Bifoga",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "chattredigerat",
+   "role": "button",
+   "accessibleName": "Skicka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (fylld bakgrund, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "chattmeny",
+   "role": "button",
+   "accessibleName": "Bifoga",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "chattmeny",
+   "role": "button",
+   "accessibleName": "Skicka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (fylld bakgrund, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hem",
+   "role": "button",
+   "accessibleName": "Byt förslag",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemmorkt",
+   "role": "button",
+   "accessibleName": "Byt förslag",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemoffline",
+   "role": "button",
+   "accessibleName": "Byt förslag",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptkommentarer",
+   "role": "button",
+   "accessibleName": "Skicka kommentaren",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (fylld bakgrund, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "lagatimers",
+   "role": "button",
+   "accessibleName": "Föregående steg",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "artifactId": "bredmeny",
+   "role": "button",
+   "accessibleName": "Tisdag middag är tom. Lägg något här",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 124.29,
+    "h": 152.19
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram, fylld bakgrund) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "artifactId": "bredmeny",
+   "role": "button",
+   "accessibleName": "Söndag middag är tom. Lägg något här",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 124.28,
+    "h": 152.19
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "artifactId": "bredmeny",
+   "role": "button",
+   "accessibleName": "Måndag lunch är tom",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 124.28,
+    "h": 66
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "artifactId": "bredmeny",
+   "role": "button",
+   "accessibleName": "Onsdag lunch är tom",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 124.28,
+    "h": 66
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "artifactId": "bredmeny",
+   "role": "button",
+   "accessibleName": "Torsdag lunch är tom",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 124.29,
+    "h": 66
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "artifactId": "bredmeny",
+   "role": "button",
+   "accessibleName": "Fredag lunch är tom",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 124.28,
+    "h": 66
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "artifactId": "bredmeny",
+   "role": "button",
+   "accessibleName": "Söndag lunch är tom",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 124.28,
+    "h": 66
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbnormal",
+   "role": "button",
+   "accessibleName": "Måndag lunch är tom",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.28,
+    "h": 60
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbnormal",
+   "role": "button",
+   "accessibleName": "Onsdag lunch är tom",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.28,
+    "h": 60
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbnormal",
+   "role": "button",
+   "accessibleName": "Torsdag lunch är tom",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.29,
+    "h": 60
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbnormal",
+   "role": "button",
+   "accessibleName": "Fredag lunch är tom",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.28,
+    "h": 60
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbnormal",
+   "role": "button",
+   "accessibleName": "Söndag lunch är tom",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.28,
+    "h": 60
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbomrostning",
+   "role": "button",
+   "accessibleName": "Söndag middag är tom",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 126,
+    "h": 134.19
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbkonflikt",
+   "role": "button",
+   "accessibleName": "Söndag middag är tom",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 126,
+    "h": 116
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbarvegods",
+   "role": "button",
+   "accessibleName": "Förstora sidan 1 av mormors kort",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 240,
+    "h": 200
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (fylld bakgrund) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbkommentar",
+   "role": "button",
+   "accessibleName": "Reagera",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 44,
+    "h": 44
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbrotation",
+   "role": "button",
+   "accessibleName": "Stäng matlagningsläget",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 44,
+    "h": 44
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (fylld bakgrund) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbrotation",
+   "role": "button",
+   "accessibleName": "Färre",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbrotation",
+   "role": "button",
+   "accessibleName": "Fler",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbformular",
+   "role": "checkbox",
+   "accessibleName": "Skicka med skärmdumpen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 24,
+    "h": 24
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (fylld bakgrund, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbformular",
+   "role": "checkbox",
+   "accessibleName": "Skicka med de senaste skärmarna",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 24,
+    "h": 24
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (fylld bakgrund, rundade hörn) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbinkorgvy",
+   "role": "button",
+   "accessibleName": "Öppna skärmdumpen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 378,
+    "h": 122
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram, fylld bakgrund) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socreaktion",
+   "role": "button",
+   "accessibleName": "Reagera",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 44,
+    "h": 44
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompbild",
+   "role": "button",
+   "accessibleName": "Lägg till bilder",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 118,
+    "h": 98
+   },
+   "evidens": "elementet som bär rollen är självt ritat som en kontrollyta (egen ram) och innehåller sin ikon; ingen förfader inom artefakten bär exakt en semantisk kontroll",
+   "uppfyller48": true
+  }
+ ]
+}
