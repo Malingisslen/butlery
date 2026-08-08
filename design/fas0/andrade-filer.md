@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=331-->
+<!--manifest:files=333-->
 
 ## Reporoten
 
@@ -51,7 +51,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery Skarmar v12 etapp 4 import.dc.html` | `d74eeeba6c9024cfc215c60943a65250e846aadcf69caad98b0d3ff219a7b002` |
 | `Butlery Skarmar v12 etapp 5-7.dc.html` | `8e3c586101b017bf8f8f73d11b5fcf9cd9117e1b35b5978df5f4d862b82f7f1f` |
 | `Butlery Skarmar v12 etapp 6 konto och integritet.dc.html` | `13d61c7c2e5e80b17e0d09d134deaa339d8cc4fd102d2504e76e04e0659fd18b` |
-| `Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html` | `343b8707b78cf41fedced1b362130a901f1ee5547c7d6fd1be68f7085a4c6097` |
+| `Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html` | `18d1465231e065135f02ececa0356142a4aaf61c07846dc1d587ec75845d09e1` |
 | `Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html` | `a773943d2be5162a9e5c14583c9e994875af1937f52107e0d0a6c113ea40f863` |
 | `Butlery Skarmar v12.dc.html` | `c1b435cf7c470ebe31db64b82b5fc4ee94993391801130edee761f1540c893b2` |
 | `Butlery beslut grund v13.dc.html` | `ce0aaa76a62fb6616d58e93fdaabd1c5b185bdf87ac11bfb60a91b3f7b324eaf` |
@@ -238,9 +238,11 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r02-delta-rc04.json` | `30c70be28b2e3de0ee2a0d65670630e1e967fea5d31b13ef8cd6b8828c32432e` |
 | `fas2/r02-delta-rc07.json` | `d0f053efdfb574a05b1da0e31f80ac84d8c483941f6796633d285bf293093796` |
 | `fas2/r02-delta-rc09-rc10.json` | `1dcd636528c21a4b0d1ef9a84024e4b98e0fadadfcbe9f9e350135efa701b692` |
+| `fas2/r02-delta-rc11.json` | `07878fdb96bad56a3e28cd94affd7d7e9d216705350ce23cac4a26c333e2bdd7` |
 | `fas2/r02-fix04-logg.json` | `a76fd39a7266255ff27741514841d78910ceb56cee35f6b8648f42197a27d12c` |
 | `fas2/r02-fix0910-logg.json` | `ff3c355ac8d37733ceb03a29f3bd09ba6187ee822cead5006141b6dc21359e80` |
 | `fas2/r02-fix44-logg.json` | `7b649c9a69cc9fbfa0b82a98394f88c442baad389275f5352721beef05ea80a5` |
+| `fas2/r02-rc11-matning.json` | `0aa2386aad74afd56f38d378947c16be3d6e2e73384c5a31722e683c3957c4c0` |
 | `fas2/r02-rotorsaker-2.json` | `f07cdad43cfd7986ff3a22b0c7e0ee7c204beb11ac1338bfa96e3824fa6ccce3` |
 | `fas2/r02-rotorsaker.json` | `b2ad1b9d988bd8a1a7bdbacdbb37209b3309d25e81d422878e13c7e55a88d3c5` |
 | `fas2/r02-snapshot-batch-b.json` | `e95c5e15aece6133feecb74e6dfd8ae5cb076fe6cb2dbab915855ab9c7540ad8` |
