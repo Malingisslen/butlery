@@ -504,8 +504,13 @@ class DocumentLayout {
   ///
   /// Passing is NECESSARY, not sufficient. Two strings of equal row count are
   /// indistinguishable to this check, and the tier-0 provider string and the
-  /// layout string usually HAVE equal row counts — they differ only in
-  /// separators and a global trim. So a cached `OCRResult` holding one while
+  /// layout string OFTEN have equal row counts. (Until 2026-08-08 that read
+  /// "usually … they differ only in separators and a global trim". Since
+  /// `edge_crop.dart` the layout string also has rows REMOVED — 132 of 181
+  /// corpus pages — so on a cropped page the counts differ and this check does
+  /// catch the mix-up. On an uncropped page they still match, so the reasoning
+  /// below is unchanged: the crop makes this gate stronger, never sufficient.)
+  /// So a cached `OCRResult` holding one while
   /// the layout beside it was built from the other would pass here and still
   /// be addressed by the wrong indices. That is closed elsewhere and NOT here:
   /// `OCRResult` carries text and geometry as one object and the cache stores

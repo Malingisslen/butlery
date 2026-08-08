@@ -32,6 +32,8 @@ These services intentionally don't extend `BaseService` because they're pure-com
   offline)
 - `lib/services/ocr/glyph_metrics.dart` (pure function — how tall a word is DRAWN versus
   how big its type is; same dependency-free discipline as the page model beside it)
+- `lib/services/ocr/edge_crop.dart` (pure function — drops the sliver of the neighbouring
+  page a phone photo catches at the frame's edge; same category as `glyph_metrics.dart`)
 - `lib/services/voice/voice_capture_service.dart` (device I/O: mic capture + on-device whisper.cpp FFI inference — no Firebase user data; same category as the two ONNX services)
 - `lib/services/voice/tts_service.dart` (3rd-party OS TTS wrapper — Android `TextToSpeech`/iOS `AVSpeechSynthesizer` passthrough, no Firebase ops; same category as the ONNX services)
 - `lib/services/monitoring/app_monitoring_service.dart`

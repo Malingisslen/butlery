@@ -76,9 +76,11 @@ class MultiRecipeSplitter {
   ///   accepts [input]. That compares ROW COUNTS, and passing it is NECESSARY,
   ///   NOT SUFFICIENT: two different strings of equal row count are
   ///   indistinguishable to it, and the provider's string and the layout's
-  ///   usually HAVE equal row counts. What actually closes that is `OCRResult`
-  ///   holding text and geometry as ONE object, cached whole under one
-  ///   image-hash key (2026-08-07) — see the contract at
+  ///   OFTEN have equal row counts — less often since 2026-08-08, when
+  ///   `edge_crop.dart` began removing rows from the layout string only, which
+  ///   makes this gate stronger without making it sufficient. What closes it
+  ///   is `OCRResult` holding text and geometry as ONE object, cached whole
+  ///   under one image-hash key (2026-08-07) — see the contract at
   ///   [DocumentLayout.matchesLineCountOf], which forbids describing this gate
   ///   as covering it;
   /// - the layout path must produce at least two blocks and at most

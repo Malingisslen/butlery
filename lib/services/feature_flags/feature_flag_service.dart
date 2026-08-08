@@ -103,6 +103,14 @@ class FeatureFlagService {
     // whether the page geometry travels with it. The page model is always
     // built; this flag decides whether it is attached and read.
     //
+    // Since 2026-08-08 it is also the switch that makes the EDGE CROP reach an
+    // import (`edge_crop.dart`): the sliver of the neighbouring cookbook page a
+    // photo catches at the frame's edge is dropped from the layout string only,
+    // so with this flag off the uncropped `providerText` ships and that text
+    // still arrives in the recipe. Measured over 181 corpus pages: precision
+    // 66.26 -> 66.64 %, and 66.65 -> 67.70 % on the 45 pages with a real
+    // partial column, at a recall cost of 0.02 points. PROXY figures.
+    //
     // THE SPLIT PATH IS LIVE behind this flag as of 248481c83 (2026-08-07):
     // `ocr_extraction_service` attaches the `PageLayout`, `photo_import_viewmodel`
     // carries it across pages, and `import_manager` hands it to

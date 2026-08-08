@@ -41,9 +41,12 @@ class RecognitionResult {
 
   /// There is deliberately NO `text` getter that picks one for you.
   ///
-  /// The two strings hold the same words but are assembled differently, and
-  /// which one ships is a product decision the caller owns, not a default this
-  /// type gets to make: [layoutText] is required for the geometry path to mean
+  /// The two are assembled differently and, since 2026-08-08, need not hold the
+  /// same words: the layout string has the edge-bleed rows cropped out of it
+  /// (`edge_crop.dart`), so on a page whose photo caught the neighbouring column
+  /// it is a strict SUBSET of [providerText]. Which one ships is a product
+  /// decision the caller owns, not a default this type gets to make:
+  /// [layoutText] is required for the geometry path to mean
   /// anything, and [providerText] is what a rollback has to be able to return
   /// to. A convenience getter preferring the layout would make that rollback
   /// impossible to express, which is exactly the hole this shape closes.

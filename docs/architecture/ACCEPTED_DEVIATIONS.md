@@ -806,6 +806,14 @@ each column top-to-bottom (identity when no clear gutter is found) reorders **11
 | layout, as it ships | 138/181 (76 %) | 39 |
 | layout + column sort | 139/181 (77 %) | 39 |
 
+**Stale as of 2026-08-08, in the row labelled "as it ships".** `--layout` replays an
+UNCROPPED pipeline, and since BUT-1816 the adapter edge-crops before the string is taken, so
+the cropped replay scores 139/181 where that row says 138. All three rows share the
+crop-blind caveat, so the comparison between them is EXPECTED to survive — but the sorter
+arm was not re-run under cropping, so that is an expectation, not a result. Still a PROXY
+either way: nothing here says what the phone does. `corpus_split_eval.dart --edge-crop`
+prints the cropped pair.
+
 Five pages fixed, four broken. One page net, which is noise — bought by changing the text
 of two pages in every three. Only 48 of the 181 are multi-recipe, so at least 68
 single-recipe pages were reordered: the sorter necessarily touches the population the
@@ -865,3 +873,62 @@ against a replay figure at the unit.
 
 Re-open only with a new measurement, not a new argument — and the measurement worth having
 is ML Kit's block ordering on a device, which nothing here supplies.
+
+---
+
+## A single surviving layout block does NOT get to stand — measured and declined (2026-08-08)
+
+**Verdict.** `MultiRecipeSplitter._splitByLayout` keeps its closing
+`if (blocks.length < 2) return null`. Accepting one block was measured, is safe within a
+narrow bound, and buys four tokens across the whole corpus. BUT-1816.
+
+**What prompted it.** Malin photographed a cookbook page and the import carried the NEXT
+recipe's heading: *"rubriken identifieras som tillhörande ett nytt recept och plockas bort
+från importen."* The obvious reading — the detector misses it — is wrong. The layout path
+finds that heading, opens a block on it, discards the block for being under
+`_minLayoutBlockChars`, and then throws its own correct answer away because only one block
+survived. The text rules take over and put the heading back. So the defect is real and the
+diagnosis in the ticket was not.
+
+**Measured** (mutation probe on that one line, `dart run tools/corpus_split_eval.dart
+--layout` for the block counts and `--edge-crop` for the tokens):
+
+| discard bound | single pages | spreads | recipes never emitted | pages broken |
+|---|---|---|---|---|
+| today (>= 2 blocks required) | 122/133 | 16/48 | 39 | 0 |
+| one block accepted, discard < 40 / 80 / 120 | 122/133 | 16/48 | 39 | 0 |
+| one block accepted, discard < 200 (the live budget) | 122/133 | **15/48** | **40** | **1** |
+
+Those block counts come from `--layout`, and the token pair below them is the `--edge-crop`
+arm's BEFORE column — both replay an UNCROPPED pipeline, the same caveat the older entry's
+table carries since 2026-08-08. The shipped, cropped baseline is 91.54 % recall and 66.64 %
+precision; a re-deriver reading the AFTER column will find neither number quoted here. The
+comparison stands because every row shares the caveat.
+
+So it is safe only if the discard budget is tightened to ~120 characters at the same time —
+at the live 200 it costs a spread and a recipe. And at any safe bound it is worth nothing:
+gold-token recall unchanged at 91.56 %, precision 66.26 -> 66.27 %, **four tokens across 181
+pages**. The corpus simply does not hold the case in measurable quantity.
+
+**PROXY figures** — the geometry is `layout-winocr.json` (Windows' offline recognizer), not
+ML Kit, exactly as everything else on this path.
+
+**How to re-derive this.** Back up `multi_recipe_splitter.dart`, replace
+`if (blocks.length < 2) return null;` with
+`if (blocks.length < 1) return null;` plus
+`if (blocks.length < 2 && discarded >= N) return null;`, run both eval arms, restore, and
+verify the file is byte-identical. Sweep N over 40/80/120/200 — the cliff is between 120 and
+200, and it is the discard budget that moves it, not the block rule.
+
+**Why the ticket still shipped something.** Its OTHER half — cropping the neighbouring
+column a phone photo catches at the frame's edge — measured positive and was built
+(`lib/services/ocr/edge_crop.dart`). Do not read this entry as declining BUT-1816; it
+declines one of its two halves.
+
+**But do not read it as "Malin's import is fixed" either.** The crop runs on every tier-0
+recognition and only REACHES an import on the geometry arm: with `enable_layout_recipe_split`
+off — the code default — `OCRExtractionService` ships `providerText`, which is uncropped and
+has no geometry to crop against. So the built half is dark by default until that flag flips,
+by construction rather than by oversight.
+
+Re-open only with a corpus that contains the case, not with an argument that it must exist.

@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/ocr/device_text_recognizer.dart';
+import 'package:butlery/services/ocr/edge_crop.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 
 DeviceTextRecognizer createDeviceTextRecognizer() => MlKitTextRecognizer();
@@ -59,18 +60,27 @@ class MlKitTextRecognizer implements DeviceTextRecognizer {
       final recognized = await _recognizer.processImage(
         InputImage.fromFilePath(tempFile.path),
       );
-      final layout = toPageLayout(recognized);
+      final layout = layoutFor(recognized);
       // BOTH strings travel. The adapter does not choose — `OCRExtractionService`
       // does, from the feature flag, so turning the geometry off returns the
       // exact bytes that shipped before this seam widened.
       //
-      // They differ only in SEPARATORS: block order is identical (we iterate
-      // `recognized.blocks` as given) and no re-ordering happens anywhere: a
+      // They differ in SEPARATORS and, since 2026-08-08, in CONTENT.
+      // `recognized.text` is assembled natively; `layout.text` is a plain
+      // newline join of the lines, which is the only string a line index means
+      // anything against. Line ORDER is identical in both — we iterate
+      // `recognized.blocks` as given, and no re-ordering happens anywhere: a
       // re-orderer was measured and declined on 2026-08-07, so capture order is
       // the contract, not a pending step (ACCEPTED_DEVIATIONS.md).
-      // `recognized.text` is assembled natively; `layout.text` is
-      // a plain newline join of the same lines, which is the only string a line
-      // index means anything against.
+      //
+      // The content difference is [layoutFor]'s edge crop, which fires on 132 of
+      // 181 corpus pages (PROXY — that count is WinOCR geometry cropped against
+      // itself, not ML Kit, and the corpus has no `providerText` to compare
+      // with). Where it fires, `layout.text` is MISSING rows `providerText`
+      // still has — the sliver of the neighbouring page caught at the frame.
+      // That is the whole point of the geometry path shipping a different
+      // string, and it is why "the same words, assembled differently" is no
+      // longer the contract. `edge_crop.dart` carries the measurement.
       //
       // They are trimmed DIFFERENTLY, and that asymmetry is the design:
       // `providerText` keeps HEAD's global trim because its only job is to be
@@ -83,10 +93,13 @@ class MlKitTextRecognizer implements DeviceTextRecognizer {
       // production, so any drift here reaches every photo import regardless of
       // the geometry flag — which is exactly what a rollback must not do.
       final providerText = recognized.text.trim();
-      // Null only when BOTH are blank — an AND, and deliberately so. Either
-      // string alone being blank cannot happen (both derive from the same
-      // blocks), and widening this to OR would report `on_device_error` and
-      // trip the circuit breaker for reads that are fine.
+      // Null only when BOTH are blank — an AND, and deliberately so. Widening
+      // this to OR would report `on_device_error` and trip the circuit breaker
+      // for reads that are fine. The layout string is now a subset rather than
+      // a re-join, so "both derive from the same blocks" no longer makes either
+      // side non-blank on its own; what does is `cropEdgeBleed`, which refuses
+      // to claim more than a third of a page and returns the page untouched
+      // rather than an empty one.
       if (providerText.isEmpty && layout.text.trim().isEmpty) {
         return null;
       }
@@ -170,6 +183,23 @@ class MlKitTextRecognizer implements DeviceTextRecognizer {
     }
     return PageLayout(lines: lines);
   }
+
+  /// The page as tier 0 actually stores it: mapped, then edge-cropped.
+  ///
+  /// Composition rather than a step inside [toPageLayout], so that method keeps
+  /// its documented contract — a faithful, lossless mapping of what ML Kit
+  /// returned, including a line whose box or elements are missing. Dropping
+  /// rows is a separate judgement and belongs outside it.
+  ///
+  /// This exists so the WIRING can be proven, not just the rule. `recognize()`
+  /// is unreachable off-device, so a crop applied only in there would be
+  /// deletable with every suite still green — the failure mode
+  /// `docs/architecture/ACCEPTED_DEVIATIONS.md` already records once, where a
+  /// recorder was installed in a test setup and never asserted on. Assert on
+  /// THIS, not on [toPageLayout].
+  @visibleForTesting
+  static PageLayout layoutFor(RecognizedText recognized) =>
+      cropEdgeBleed(toPageLayout(recognized));
 
   /// `Rect` is `dart:ui`, and `text_layout.dart` deliberately takes no Flutter
   /// and no third-party imports, so it runs under plain `dart test` and can be

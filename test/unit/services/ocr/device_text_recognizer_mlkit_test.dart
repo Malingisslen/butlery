@@ -250,4 +250,80 @@ void main() {
     expect(words.map((w) => w.box.height).toList(), [90, 70, 74]);
     expect(layout.lines.single.typeHeight, lessThan(100));
   });
+
+  group('layoutFor — the page as tier 0 actually stores it', () {
+    /// One line placed by its ink, wide enough to count as body text.
+    TextLine bodyLine(String text, {required double top}) => line(
+      text,
+      box: Rect.fromLTWH(500, top, 2100, 76),
+      elements: [element(text, Rect.fromLTWH(500, top, 2100, 70))],
+    );
+
+    /// A sliver of the neighbouring page, caught at the frame's edge.
+    TextLine sliver(String text, {required double top}) => line(
+      text,
+      box: Rect.fromLTWH(2875, top, 125, 76),
+      elements: [element(text, Rect.fromLTWH(2875, top, 125, 70))],
+    );
+
+    RecognizedText spreadWithBleed() {
+      final lines = [
+        for (var i = 0; i < 8; i++)
+          bodyLine('brodtextrad nummer $i', top: i * 90.0),
+        for (var i = 0; i < 4; i++) sliver('osc$i', top: 800 + i * 90.0),
+      ];
+      return RecognizedText(
+        text: lines.map((l) => l.text).join('\n'),
+        blocks: [block(lines)],
+      );
+    }
+
+    // The point of this test is the WIRING, not the rule — `edge_crop_test.dart`
+    // owns the rule. `recognize()` returns early off Android/iOS, so a crop
+    // applied only in there could be deleted with every suite green. Asserting
+    // on `layoutFor` is what makes the deletion visible.
+    test('drops the edge bleed that toPageLayout faithfully kept', () {
+      final recognized = spreadWithBleed();
+
+      final mapped = MlKitTextRecognizer.toPageLayout(recognized);
+      final stored = MlKitTextRecognizer.layoutFor(recognized);
+
+      // The mapper's contract is unchanged: it carries everything across.
+      expect(mapped.lines.length, 12);
+      expect(mapped.lines.map((l) => l.text), contains('osc0'));
+
+      // What tier 0 stores has the sliver column gone.
+      expect(stored.lines.length, 8);
+      expect(stored.lines.map((l) => l.text), isNot(contains('osc0')));
+      expect(
+        stored.lines.map((l) => l.text),
+        everyElement(startsWith('brodtextrad')),
+      );
+    });
+
+    test('the stored text drops the bleed rows with the lines', () {
+      // `layout.text` is derived from the lines, so cropping must move the
+      // string too — that pairing is what the splitter's precondition checks.
+      final stored = MlKitTextRecognizer.layoutFor(spreadWithBleed());
+
+      expect(stored.text.split('\n').length, 8);
+      expect(stored.text, isNot(contains('osc')));
+    });
+
+    test('a page with nothing to crop comes through the mapper unchanged', () {
+      final lines = [
+        for (var i = 0; i < 8; i++)
+          bodyLine('brodtextrad nummer $i', top: i * 90.0),
+      ];
+      final recognized = RecognizedText(
+        text: lines.map((l) => l.text).join('\n'),
+        blocks: [block(lines)],
+      );
+
+      final mapped = MlKitTextRecognizer.toPageLayout(recognized);
+      final stored = MlKitTextRecognizer.layoutFor(recognized);
+
+      expect(stored.text, equals(mapped.text));
+    });
+  });
 }

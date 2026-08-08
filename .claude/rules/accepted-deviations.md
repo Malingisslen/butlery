@@ -115,6 +115,20 @@ files in the same edit.
 
 ## Engineering
 
+- **Letting a SINGLE surviving layout block stand, instead of falling back to the text
+  rules, is MEASURED AND DECLINED — do not build it.** `MultiRecipeSplitter._splitByLayout`
+  ends on `if (blocks.length < 2) return null`, so a page whose orphan trailing heading was
+  correctly discarded still falls through to the text rules, which put it back. Relaxing
+  that to accept one block is SAFE while the discard budget stays under ~120 characters
+  (single pages 122/133, spreads 16/48, 39 lost — all identical to today) and BREAKS at the
+  live 200-char budget (spreads 15/48, 40 lost, one page broken). It is also worth nothing:
+  gold-token recall unchanged at 91.56 %, precision 66.26 -> 66.27 %, **four tokens across
+  181 pages**. The corpus does not contain the case in measurable quantity. Re-derive with a
+  mutation probe on that one line, reading the BLOCK counts off
+  `corpus_split_eval.dart --layout` and the TOKEN figures off `--edge-crop`. (That arm also
+  prints the paired block report, because it implies `--layout`; `--layout` alone prints no
+  tokens.) PROXY figures — Windows offline OCR, not ML Kit. BUT-1816, 2026-08-08
+
 - **Column ordering for on-device OCR is MEASURED AND DECLINED — do not build it.**
   A sorter putting the left column before the right rewrites two of every three corpus
   pages (116 of 181), including single-recipe pages that already work, and buys 139

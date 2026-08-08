@@ -556,7 +556,10 @@ class OCRExtractionService extends BaseService {
             // provider's assembly, and geometry measured against a DIFFERENT
             // string is the one thing worse than no geometry —
             // `matchesLineCountOf` would often let it through, since the two
-            // strings usually share a row count.
+            // strings often share a row count. (Less often since 2026-08-08 —
+            // `edge_crop.dart` removes rows from the layout string only — but
+            // "often" is still too often to rely on, which is why this is
+            // gated rather than trusted.)
             //
             // The flag arm alone does not make the pair safe; the invariant
             // does. `RecognitionResult.layoutText` IS `layout?.text`, so the

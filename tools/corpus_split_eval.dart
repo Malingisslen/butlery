@@ -1,3 +1,4 @@
+// claude:large-file-ok — waiver + rationale in the "Size" section below
 /// CLI: does a photographed page yield as many recipes as it actually holds?
 ///
 ///   dart run tools/corpus_split_eval.dart
@@ -41,18 +42,48 @@
 /// (different OCR engine, worse Swedish); only the two arms are comparable to
 /// each other. Both facts are printed with the result so a number cannot be
 /// quoted out of its arm.
+///
+/// ## `--edge-crop`: scoring what the crop does to the TEXT
+///
+///   dart run tools/corpus_split_eval.dart --edge-crop
+///
+/// Block counts are nearly blind to `cropEdgeBleed` — dropping a four-character
+/// sliver rarely changes how many blocks come out, it changes what is IN them —
+/// so this arm scores gold-token recall and precision as well as the block
+/// count, before and after cropping the same capture. It is where every figure
+/// in `edge_crop.dart`'s doc and in the BUT-1816 deviation entry comes from, so
+/// those stay re-derivable after the throwaway probes are gone.
+///
+/// ## Size
+///
+/// This file is past the repo's 500-line guideline, and stays that way
+/// deliberately. `ACCEPTED_LARGE_FILES.md` is scoped to `lib/`, so there is no
+/// row to add — the waiver is recorded here instead.
+///
+/// The three arms are one measurement seen three ways: they share the corpus
+/// loader, the `_Page` model, the gold tokeniser and the same
+/// `MultiRecipeSplitter` instance, and each exists to be comparable with the
+/// others. Splitting the newest arm into its own file would move ~150 lines
+/// without reducing what a reader has to hold — they would still need both
+/// halves to know which population a number describes, which is the one mistake
+/// this tool exists to prevent. Revisit if a FOURTH arm lands.
 library;
 
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
+import 'package:butlery/services/ocr/edge_crop.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 
 import 'corpus/corpus_paths.dart';
 
 void main(List<String> args) {
-  final layoutMode = args.contains('--layout');
+  final edgeCropMode = args.contains('--edge-crop');
+  // The crop only exists on the geometry path, so its arm implies `--layout`'s
+  // loading. Block counts alone cannot see it — it changes block CONTENT — which
+  // is why this arm scores tokens instead.
+  final layoutMode = args.contains('--layout') || edgeCropMode;
   final paths = CorpusPaths.resolve();
   stdout.writeln('Corpus root: ${paths.root}');
   if (!paths.exists) {
@@ -95,15 +126,257 @@ void main(List<String> args) {
     stdout.writeln(_formatPaired(scored, withLayout));
   }
 
+  if (edgeCropMode) {
+    final crop = _formatEdgeCrop(pages, splitter);
+    report['edgeCropArm'] = crop.summary;
+    stdout.writeln(crop.text);
+  }
+
   final ts = DateTime.now().toIso8601String().replaceAll(':', '-');
-  final suffix = layoutMode ? 'layout' : 'text';
+  final suffix = edgeCropMode ? 'edge-crop' : (layoutMode ? 'layout' : 'text');
   final file = File('${paths.reportsDir()}/split-eval-$suffix-$ts.json');
   file.parent.createSync(recursive: true);
   report['generatedAt'] = ts;
-  report['arm'] = layoutMode ? 'winocr-text, paired' : 'ocr.txt, text rules';
+  report['arm'] = edgeCropMode
+      ? 'winocr-text, paired + edge-crop'
+      : (layoutMode ? 'winocr-text, paired' : 'ocr.txt, text rules');
   file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(report));
   stdout.writeln('Report written: ${file.path}');
 }
+
+/// The `--edge-crop` arm: what dropping edge bleed does to the TEXT.
+///
+/// Block counts are blind to this change — cropping a four-character sliver off
+/// a page rarely moves how many blocks come out, it moves what is IN them. So
+/// this arm scores gold-token recall and precision instead, and reports two
+/// populations for the same reason the block report does: a page whose only
+/// bleed row is a folio is not the case the feature is for, and averaging it
+/// with the pages carrying a real partial column hides the one that matters.
+///
+/// This lives in the shipped tool rather than a scratch probe on purpose. The
+/// numbers in `edge_crop.dart`'s doc and in the deviation log have to stay
+/// re-derivable; a measurement deleted with the commit that motivated it is the
+/// hole `ACCEPTED_DEVIATIONS.md` had to patch after the fact once already.
+({String text, Map<String, dynamic> summary}) _formatEdgeCrop(
+  List<_Page> pages,
+  MultiRecipeSplitter splitter,
+) {
+  var scoredPages = 0, croppedPages = 0, droppedLines = 0;
+  var goldTot = 0, hitBefore = 0, hitAfter = 0, emitBefore = 0, emitAfter = 0;
+  var bandPages = 0, bandGold = 0, bandBefore = 0, bandAfter = 0;
+  var bandEmitBefore = 0, bandEmitAfter = 0;
+  var alignedBefore = 0, alignedAfter = 0;
+  var shortOnlyInGold = 0, shortNumeralsOnly = 0;
+
+  for (final page in pages) {
+    final doc = page.layout;
+    final gold = page.goldTokens;
+    if (doc == null || gold.isEmpty) continue;
+    final single = doc.pages.first;
+    if (single == null) continue;
+
+    final cropped = cropEdgeBleed(single);
+    final dropped = single.lines.length - cropped.lines.length;
+    final croppedDoc = DocumentLayout([cropped]);
+
+    final beforeText = doc.text, afterText = croppedDoc.text;
+    if (beforeText == null || afterText == null) continue;
+    scoredPages++;
+
+    // Everything below counts over the SAME population the printed recall and
+    // precision do — hence after the `continue` above, not before it. The two
+    // cannot diverge on today's corpus (every stored capture is one non-null
+    // page), but a line reading "of the 496 rows on these 181 pages" should be
+    // true by construction rather than by loop order.
+    if (dropped > 0) {
+      croppedPages++;
+      droppedLines += dropped;
+
+      // Size the blind spot the 3-character token floor creates, on the rows
+      // this rule actually deleted. A dropped row counts when it carries NO
+      // scored token at all and every short word it does carry appears in this
+      // page's gold — plausible real content that `recall` is structurally
+      // unable to miss. Printed rather than asserted: the first version of this
+      // caveat quoted a figure from a deleted probe and understated it by a
+      // third.
+      final removed = <String>[...single.lines.map((l) => l.text)];
+      for (final kept in cropped.lines) {
+        removed.remove(kept.text);
+      }
+      for (final row in removed) {
+        if (_tokens(row).isNotEmpty) continue;
+        final shorts = _shortTokens(row);
+        if (shorts.isEmpty) continue;
+        if (!shorts.every(page.goldShortTokens.contains)) continue;
+        shortOnlyInGold++;
+        // Split by shape. A row of bare numerals is the quantity-column shape
+        // this rule is most likely to delete wrongly — and also the shape most
+        // likely counted by coincidence, since small digits sit in nearly every
+        // page's gold.
+        //
+        // The letters half is NOT the clean counterpart, measured 2026-08-08:
+        // 24 of its 25 rows are Swedish stopword fragments — e.g. `i`, `en`,
+        // `de`, `är`, `på`, `då.` — in essentially every page's gold, i.e. the
+        // same coincidence mechanism. Only one (`ca 2`) looked like a quantity
+        // fragment. So the
+        // split separates two coincidence-prone shapes rather than signal from
+        // noise, and 62 is an upper bound on BOTH halves. Stated because the
+        // sentence this replaced claimed the letters were the stronger signal.
+        if (!row.toLowerCase().contains(_anyLetter)) shortNumeralsOnly++;
+      }
+    }
+
+    final blocksBefore = splitter.split(beforeText, layout: doc);
+    final blocksAfter = splitter.split(afterText, layout: croppedDoc);
+    // The block-count pair the deviation entry and `edge_crop.dart` quote. It
+    // has to come out of THIS arm: `--layout` replays an uncropped pipeline, so
+    // it cannot see the crop at all, and a figure attributed to a command that
+    // does not print it is how a record stops being re-derivable.
+    if (blocksBefore.length == page.goldRecipes) alignedBefore++;
+    if (blocksAfter.length == page.goldRecipes) alignedAfter++;
+    final before = _tokens(blocksBefore.join('\n'));
+    final after = _tokens(blocksAfter.join('\n'));
+
+    goldTot += gold.length;
+    hitBefore += before.intersection(gold).length;
+    hitAfter += after.intersection(gold).length;
+    emitBefore += before.length;
+    emitAfter += after.length;
+
+    // Four rows is a column, not a page number.
+    if (dropped >= 4) {
+      bandPages++;
+      bandGold += gold.length;
+      bandBefore += before.intersection(gold).length;
+      bandAfter += after.intersection(gold).length;
+      bandEmitBefore += before.length;
+      bandEmitAfter += after.length;
+    }
+  }
+
+  String pct(int a, int b) =>
+      b == 0 ? '   -  ' : '${(100 * a / b).toStringAsFixed(2)} %';
+
+  final b = StringBuffer()
+    ..writeln('\nEdge crop vs gold tokens — $scoredPages pages')
+    ..writeln()
+    ..writeln('  Same PROXY caveat as --layout: the geometry is the stored')
+    ..writeln('  winocr capture, not ML Kit. Both arms share one input, so the')
+    ..writeln('  difference between them is the crop and nothing else.')
+    ..writeln()
+    ..writeln('  cropped pages        : $croppedPages   ($droppedLines rows)')
+    ..writeln(
+      '  right block count    : $alignedBefore -> $alignedAfter '
+      'of $scoredPages',
+    )
+    ..writeln()
+    ..writeln('  ALL PAGES            before     after')
+    ..writeln(
+      '    recall             : ${pct(hitBefore, goldTot)}    '
+      '${pct(hitAfter, goldTot)}',
+    )
+    ..writeln(
+      '    precision          : ${pct(hitBefore, emitBefore)}    '
+      '${pct(hitAfter, emitAfter)}',
+    )
+    ..writeln('    tokens emitted     : $emitBefore -> $emitAfter')
+    ..writeln(
+      '    BLIND SPOT: dropped rows made only of sub-3-char words that are '
+      'in gold: $shortOnlyInGold',
+    )
+    ..writeln(
+      '                of which bare numerals: $shortNumeralsOnly   '
+      'carrying letters: ${shortOnlyInGold - shortNumeralsOnly}',
+    )
+    ..writeln()
+    ..writeln('  REAL EDGE COLUMN (>=4 rows dropped): $bandPages pages')
+    ..writeln(
+      '    recall             : ${pct(bandBefore, bandGold)}    '
+      '${pct(bandAfter, bandGold)}',
+    )
+    ..writeln(
+      '    precision          : ${pct(bandBefore, bandEmitBefore)}    '
+      '${pct(bandAfter, bandEmitAfter)}',
+    );
+  return (
+    text: b.toString(),
+    summary: {
+      'scoredPages': scoredPages,
+      'croppedPages': croppedPages,
+      'droppedRows': droppedLines,
+      'droppedRowsShortOnlyInGold': shortOnlyInGold,
+      'alignedBefore': alignedBefore,
+      'alignedAfter': alignedAfter,
+      'goldTokens': goldTot,
+      'recallBefore': hitBefore,
+      'recallAfter': hitAfter,
+      'emittedBefore': emitBefore,
+      'emittedAfter': emitAfter,
+      'bandPages': bandPages,
+      'bandGoldTokens': bandGold,
+      'bandRecallBefore': bandBefore,
+      'bandRecallAfter': bandAfter,
+      'bandEmittedBefore': bandEmitBefore,
+      'bandEmittedAfter': bandEmitAfter,
+    },
+  );
+}
+
+/// Every word of one verified gold recipe — title, ingredient lines as written,
+/// and instructions. Returns empty for an unverified or unreadable record, so a
+/// page with no usable gold simply drops out of the token arm.
+String _goldTextOf(String goldPath) {
+  final f = File(goldPath);
+  if (!f.existsSync()) return '';
+  try {
+    final m = jsonDecode(f.readAsStringSync()) as Map<String, dynamic>;
+    if (m['verified'] != true) return '';
+    final parts = <String>[(m['title'] ?? '') as String];
+    for (final i in (m['ingredients'] as List? ?? const [])) {
+      parts.add(((i as Map)['originalLine'] ?? '') as String);
+    }
+    for (final i in (m['instructions'] as List? ?? const [])) {
+      parts.add(i as String);
+    }
+    return parts.join(' ');
+  } catch (_) {
+    return '';
+  }
+}
+
+final _anyLetter = RegExp(r'[a-zåäö]');
+final _tokenPattern = RegExp(r'[a-z0-9åäö]{3,}');
+final _shortTokenPattern = RegExp(
+  r'(?<![a-z0-9åäö])[a-z0-9åäö]{1,2}(?![a-z0-9åäö])',
+);
+
+/// One- and two-character words, which [_tokens] deliberately excludes.
+///
+/// Bounded by explicit lookarounds rather than `\b`: Dart's `\b` is ASCII-only,
+/// so `å`/`ä`/`ö` would create false word boundaries mid-token and `mjöl` would
+/// yield a spurious `mj`.
+Set<String> _shortTokens(String s) =>
+    _shortTokenPattern.allMatches(s.toLowerCase()).map((m) => m[0]!).toSet();
+
+/// Words of three characters or more, lowercased. Short tokens are dropped
+/// because a two-letter fragment matches too much by accident to say anything
+/// about whether real content survived.
+///
+/// **This floor is a known blind spot in the recall figure, not a neutral
+/// choice.** `dl`, `g`, `st`, `ml` and `cl` never enter the gold set, and a
+/// right-hand quantity column is exactly the shape a "narrow line outside the
+/// body margins" rule deletes. So read `recall 91.56 -> 91.54` as an upper bound
+/// on what survived, not a proof that nothing real was lost — and read the
+/// BLIND SPOT line beside it, which counts the rows that pair cannot see.
+/// Lowering the floor here would close the blind spot and move every other
+/// figure at the same time, so it is a deliberate constant, not an oversight.
+///
+/// The character class is the other half of the same caveat: it covers å, ä and
+/// ö but not é, ü or ç, so `Provençalska` tokenises as `proven` + `alska`. That
+/// is symmetric across both arms, so the BEFORE/AFTER pair this file exists to
+/// print is unaffected — only the absolute recall sits a little low.
+Set<String> _tokens(String s) =>
+    _tokenPattern.allMatches(s.toLowerCase()).map((m) => m[0]!).toSet();
 
 /// One photographed page: how many recipes gold says it holds, and its text.
 class _Page {
@@ -116,12 +389,25 @@ class _Page {
   /// FROM it, so the pair is self-consistent by construction.
   final DocumentLayout? layout;
 
+  /// Every word of this page's verified gold recipes, for the `--edge-crop`
+  /// arm. Empty on the arms that score block counts, which need no text.
+  final Set<String> goldTokens;
+
+  /// The SHORT words of the same gold — one and two characters, which
+  /// [goldTokens] deliberately excludes. Only used to size the blind spot that
+  /// exclusion creates: `dl`, `g`, `st` are exactly what a quantity column is
+  /// made of, and a rule that deletes narrow marginal lines could take one
+  /// without moving the recall figure at all.
+  final Set<String> goldShortTokens;
+
   const _Page({
     required this.bookSlug,
     required this.imageId,
     required this.goldRecipes,
     required this.ocrText,
     this.layout,
+    this.goldTokens = const {},
+    this.goldShortTokens = const {},
   });
 }
 
@@ -158,10 +444,17 @@ List<_Page> _loadPages(CorpusPaths paths, {required bool layoutMode}) {
     final bookSlug = _basename(bookDir.path);
     final byImage = <String, int>{};
     final ocrPathByImage = <String, String>{};
+    final goldByImage = <String, Set<String>>{};
+    final goldShortByImage = <String, Set<String>>{};
     for (final entry in paths.recipeEntries(bookSlug)) {
       if (!_isVerified(entry.goldPath)) continue;
       byImage[entry.imageId] = (byImage[entry.imageId] ?? 0) + 1;
       ocrPathByImage[entry.imageId] = entry.ocrTextPath;
+      final gold = _goldTextOf(entry.goldPath);
+      (goldByImage[entry.imageId] ??= <String>{}).addAll(_tokens(gold));
+      (goldShortByImage[entry.imageId] ??= <String>{}).addAll(
+        _shortTokens(gold),
+      );
     }
     byImage.forEach((imageId, count) {
       if (layoutMode) {
@@ -176,6 +469,8 @@ List<_Page> _loadPages(CorpusPaths paths, {required bool layoutMode}) {
           goldRecipes: count,
           ocrText: derived,
           layout: doc,
+          goldTokens: goldByImage[imageId] ?? const {},
+          goldShortTokens: goldShortByImage[imageId] ?? const {},
         );
         return;
       }

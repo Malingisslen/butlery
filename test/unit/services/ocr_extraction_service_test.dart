@@ -2741,8 +2741,11 @@ Line 5''';
       //
       // `DocumentLayout.matchesLineCountOf` compares ROW COUNTS, and its own
       // doc says passing is necessary and not sufficient: the provider's string
-      // and the layout's usually HAVE the same row count, differing only in a
-      // separator and a global trim. So a result holding one string with the
+      // and the layout's OFTEN have the same row count. (Until 2026-08-08 they
+      // "differed only in a separator and a global trim"; since `edge_crop.dart`
+      // the layout string also has rows REMOVED, which makes the gate stricter
+      // without making it sufficient — an uncropped page's counts still match.)
+      // So a result holding one string with the
       // other's geometry sails through that check and is then addressed by
       // indices that point at the wrong rows. The only structural defence is
       // that the two can never be separated — which is what this pins.
@@ -2916,9 +2919,14 @@ class _FakeDeviceRecognizer implements DeviceTextRecognizer {
     //
     // The trailing row is a deliberate STAND-IN, not a reproduction. The real
     // adapter's `providerText` is `recognized.text.trim()`, so it can carry no
-    // trailing blank row at all; what genuinely separates the two strings on a
-    // device is that ML Kit's own assembly puts a BLANK ROW between blocks
-    // while `PageLayout.text` joins the same lines with one newline each.
+    // trailing blank row at all. TWO things separate the strings on a device:
+    // ML Kit's own assembly puts a BLANK ROW between blocks where
+    // `PageLayout.text` uses one newline per line, and — since 2026-08-08 —
+    // `edge_crop.dart` REMOVES rows from the layout string only, so they are
+    // not even the same lines. (That fires on 132 of 181 corpus pages, but
+    // PROXY: the corpus is WinOCR geometry cropped against itself, not ML Kit.
+    // The rate on a device is unmeasured.) This fake models the separator half
+    // alone.
     // Either shape gives the tests the one thing they need — an observable
     // difference in the row count — so this stays the cheaper one; do not read
     // it as documentation of what a device produces.
