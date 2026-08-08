@@ -3,10 +3,11 @@
  "kontroll": "CHK-R-02",
  "$regel": "lostOwnHitArea = arean av snittet mellan tva SKILDA semantiska kontrollers traffytor. Ar den storre an noll konkurrerar de om samma yta. Ingen z-index-vinnare gor det acceptabelt, och ingen tolerans finns. Overlager kraver POSITIV evidens for att underlaget ar suspenderat.",
  "artefakter_st": 329,
- "verifierade_traffytor_st": 1199,
- "geometricOverlap_st": 7,
+ "verifierade_traffytor_st": 1344,
+ "geometricOverlap_st": 9,
  "relationer": {
-  "intentionalOverlay": 7
+  "intentionalOverlay": 7,
+  "notSimultaneous": 2
  },
  "produktfynd_st": 0,
  "unresolved_st": 0,
@@ -364,6 +365,106 @@
     "pa": null
    },
    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "kompkallahel",
+   "a": "Visa mindre",
+   "b": "Jämför med receptet som det är nu",
+   "rollA": "button",
+   "rollB": "button",
+   "geometricOverlap": true,
+   "relation": "notSimultaneous",
+   "produktfynd": false,
+   "evidens": "minst en av ytorna ar bortscrollad i sin port och kan inte vara aktiv samtidigt som den andra",
+   "rektA": {
+    "x": 65,
+    "y": 25925.859,
+    "w": 76.375,
+    "h": 48,
+    "right": 141.375,
+    "bottom": 25973.859,
+    "area": 3666
+   },
+   "rektB": {
+    "x": 65,
+    "y": 25903.82,
+    "w": 372,
+    "h": 48,
+    "right": 437,
+    "bottom": 25951.82,
+    "area": 17856
+   },
+   "intersection": {
+    "w": 76.375,
+    "h": 25.961,
+    "area": 1982.771
+   },
+   "lostOwnHitArea": {
+    "A": 0.541,
+    "B": 0.111
+   },
+   "samtidigtSynliga": false,
+   "suspenderadA": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "suspenderadB": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "kompkallahel",
+   "a": "Visa mindre",
+   "b": "Tolka källan igen och skriv över",
+   "rollA": "button",
+   "rollB": "button",
+   "geometricOverlap": true,
+   "relation": "notSimultaneous",
+   "produktfynd": false,
+   "evidens": "minst en av ytorna ar bortscrollad i sin port och kan inte vara aktiv samtidigt som den andra",
+   "rektA": {
+    "x": 65,
+    "y": 25925.859,
+    "w": 76.375,
+    "h": 48,
+    "right": 141.375,
+    "bottom": 25973.859,
+    "area": 3666
+   },
+   "rektB": {
+    "x": 65,
+    "y": 25959.82,
+    "w": 372,
+    "h": 48,
+    "right": 437,
+    "bottom": 26007.82,
+    "area": 17856
+   },
+   "intersection": {
+    "w": 76.375,
+    "h": 14.039,
+    "area": 1072.229
+   },
+   "lostOwnHitArea": {
+    "A": 0.292,
+    "B": 0.06
+   },
+   "samtidigtSynliga": false,
+   "suspenderadA": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "suspenderadB": {
+    "ja": false,
+    "via": null,
+    "pa": null
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
   }
  ],
  "status": "godkänd"
