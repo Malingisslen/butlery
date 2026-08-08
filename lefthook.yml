@@ -27,11 +27,24 @@ pre-commit:
 
     # Run Flutter analyze (fatal on infos).
     # Wrapped in `timeout` because `dart analyze` has hung indefinitely on Windows
-    # mid-commit (zombie dart.exe), deadlocking the commit (sprint iter-147). Normal
-    # run is ~11s; 300s is generous headroom, and -k 30 SIGKILLs a hung process so
-    # the commit fails fast (recoverable) instead of freezing forever. Workflow
-    # sprint commits skip this step via LEFTHOOK_EXCLUDE=analyze (already run upstream).
+    # mid-commit (zombie dart.exe), deadlocking the commit (sprint iter-147). A full
+    # run measured 4m10s warm / 6m47s cold on 2026-08-07, so 300s is a real ceiling
+    # rather than headroom; -k 30 SIGKILLs a hung process so the commit fails fast
+    # (recoverable) instead of freezing forever. Workflow sprint commits skip this
+    # step via LEFTHOOK_EXCLUDE=analyze (already run upstream).
+    #
+    # glob-gated so a docs/config-only commit does not pay for it — that was 255s
+    # on a commit with zero code files (2026-08-07). Deliberately NOT scoped to
+    # {staged_files} the way the Stop hook now is: this is the last gate before code
+    # reaches main, so it must still see a file BROKEN BY a staged change without
+    # being staged itself. The glob covers the inputs that can turn clean code red:
+    # the lint config, and the dependency set the analyzer resolves against.
     analyze:
+      glob:
+        - "*.dart"
+        - "analysis_options.yaml"
+        - "pubspec.yaml"
+        - "pubspec.lock"
       run: timeout -k 30 300 dart analyze --fatal-infos
       fail_text: "dart analyze found issues, OR timed out after 5m. If it TIMED OUT, a zombie analyzer deadlocked the commit (see iter-147): kill the stuck process (Windows: taskkill /F /IM dart.exe), stop any running 'Continuous dart analyze' monitor so two analyzers don't contend, then retry. Otherwise, fix the reported issues before committing."
       priority: 2
