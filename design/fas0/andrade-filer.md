@@ -42,7 +42,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `01f92df5b8cd5d70f08562dabd5cdb68281e89b5488f6e25980e5ddd95ce5d81` |
 | `Butlery Skarmar v12 del 2 familj och socialt.dc.html` | `908dffe0511df16a3d0beaa9f8fbe6773020a5fc0e4fd7a5fa275c9ec6fa849d` |
 | `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `0f064d8555b1b7dc1f41ff744dafb622cc3414bcde2827c83218266c0ff3632b` |
-| `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `d916c7189dd6f02dac089cf3dca9eed03af8afb93ba98f944c9927b6e0139a9a` |
+| `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `a069be647bbe3f2ffbf46529a922a70638ad1f7060775a65105062d05dc27513` |
 | `Butlery Skarmar v12 etapp 10 bred layout.dc.html` | `6024617e1a916758a579a3488307d4ccf8407b078c3e2382f390aac420aaf4ad` |
 | `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `e5d9f27aa55aaea3c233d64b892fd1b705afe35f1d7f30134504227121363c90` |
 | `Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html` | `9ca9eaef24611c10881be9d4f55625e54470abfa829fd4189036c4346e368514` |
@@ -51,7 +51,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery Skarmar v12 etapp 4 import.dc.html` | `15ac333384ace250f35c22907583bed9b3e8cad33e301b3c7b189d740b37f06f` |
 | `Butlery Skarmar v12 etapp 5-7.dc.html` | `355c0949f6fccbfc8e96f82688abd6c201b32e1ad71d2c2281c7744ef38e876c` |
 | `Butlery Skarmar v12 etapp 6 konto och integritet.dc.html` | `2798415fa7eed38777fdb19c25291d6b55196b672513e664ba3c16af39685a21` |
-| `Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html` | `a2a7d71d5f7c130d150c8258cd15148c731ef2b4398ace3ec0ebc8e3b10616e4` |
+| `Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html` | `5b69241625797f58230b4773c8807a032cc39e4db1804d7e27256352ee5e499b` |
 | `Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html` | `b964e55409387a61a9fb585c109de2d9e3c467d6f5228b8c9cce10246cd39a82` |
 | `Butlery Skarmar v12.dc.html` | `c1b435cf7c470ebe31db64b82b5fc4ee94993391801130edee761f1540c893b2` |
 | `Butlery beslut grund v13.dc.html` | `ce0aaa76a62fb6616d58e93fdaabd1c5b185bdf87ac11bfb60a91b3f7b324eaf` |
@@ -258,7 +258,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r02-fix44-logg.json` | `7b649c9a69cc9fbfa0b82a98394f88c442baad389275f5352721beef05ea80a5` |
 | `fas2/r02-fix6-logg.json` | `e266c08e46bda22846b4cd6b82209b1cc455cb7d6fbd0b7bce9bdc779adfbbd1` |
 | `fas2/r02-monster-613.json` | `a28cfbd08955bfeda04e9c94b38467286742239ef685b15809143472db24d82b` |
-| `fas2/r02-overlap-audit.json` | `e30ff253201860697ed4880ca50fd73445f4f0c84f23a2e123ef2bb7b6dc7475` |
+| `fas2/r02-overlap-audit.json` | `f7c4cc84507e275c3ed77433c3b4a1b0b19b912fc208d9583c3c19c962e24186` |
 | `fas2/r02-overlappprov.json` | `75be56256e0860ee35df37908fc2be7b5ba7b17e1b00aee8a39e4883056d9518` |
 | `fas2/r02-partition-667.json` | `148e6aeda18c445a3f571fc6fc1a2a48d379cf0b9f65385d7be43763333d05a4` |
 | `fas2/r02-rc11-matning.json` | `0aa2386aad74afd56f38d378947c16be3d6e2e73384c5a31722e683c3957c4c0` |
