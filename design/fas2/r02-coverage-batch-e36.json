@@ -1,0 +1,209 @@
+{
+ "$schema": "butlery-coverage-batch/1",
+ "kontroll": "CHK-R-02",
+ "batch": "E3 + E6 · knappen ager sig sjalv, kortet ar inramning",
+ "self_st": 14,
+ "target_st": 0,
+ "perMonster": {
+  "E3": 12,
+  "E6": 2
+ },
+ "poster": [
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "storsttext",
+   "elementOrdinal": 26,
+   "role": "button",
+   "accessibleName": "Lägg 8 varor i inköpslistan",
+   "monster": "E3",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbgenererar",
+   "elementOrdinal": 21,
+   "role": "button",
+   "accessibleName": "Avbryt genereringen",
+   "monster": "E3",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 203,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbkonflikt",
+   "elementOrdinal": 25,
+   "role": "button",
+   "accessibleName": "Behåll min version, Ärtsoppa",
+   "monster": "E3",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 239,
+    "h": 47
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmboffline",
+   "elementOrdinal": 32,
+   "role": "button",
+   "accessibleName": "Föreslå en vecka, går inte utan uppkoppling",
+   "monster": "E3",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 203,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbalder",
+   "elementOrdinal": 26,
+   "role": "button",
+   "accessibleName": "Nästa, avstängd till dess ett år är valt",
+   "monster": "E3",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbaldrefel",
+   "elementOrdinal": 31,
+   "role": "button",
+   "accessibleName": "Nästa",
+   "monster": "E3",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbimportklar",
+   "elementOrdinal": 61,
+   "role": "button",
+   "accessibleName": "Spara receptet och fortsätt i guiden",
+   "monster": "E3",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbaldermorkt",
+   "elementOrdinal": 84,
+   "role": "button",
+   "accessibleName": "Nästa, avstängd till dess ett år är valt",
+   "monster": "E3",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "mfaaktiv",
+   "elementOrdinal": 52,
+   "role": "button",
+   "accessibleName": "Visa reservkoder, finns inte ännu",
+   "monster": "E3",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 341,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "soctomtingavanner",
+   "elementOrdinal": 10,
+   "role": "button",
+   "accessibleName": "Hitta vänner",
+   "monster": "E3",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 129.2,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socomrostning",
+   "elementOrdinal": 29,
+   "role": "button",
+   "accessibleName": "Lägg Ugnspannkaka på torsdag",
+   "monster": "E3",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 300,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "admdrift",
+   "elementOrdinal": 76,
+   "role": "button",
+   "accessibleName": "arla.se, 89 procent, fastnar på portioner. Visa importerna",
+   "monster": "E6",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 368,
+    "h": 65
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "komparvegods",
+   "elementOrdinal": 100,
+   "role": "button",
+   "accessibleName": "Fota nästa sida",
+   "monster": "E6",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 90,
+    "h": 114
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "surfplatta",
+   "elementOrdinal": 103,
+   "role": "button",
+   "accessibleName": "Lägg allt i inköpslistan",
+   "monster": "E3",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 250,
+    "h": 48
+   },
+   "uppfyller48": true
+  }
+ ]
+}
