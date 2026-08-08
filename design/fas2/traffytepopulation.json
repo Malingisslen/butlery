@@ -6,11 +6,6 @@
   "sourceDeclarations": 1376,
   "renderade": 1376,
   "delta": 0,
-  "dataHitTotalt": 534,
-  "dataHitPaKontroller": 526,
-  "dataHitUtanRoll": 8,
-  "utanDataHit": 837,
-  "aktiverbaraUtanDeklaration": 6,
   "utanforArtefakt": 32,
   "utanforPerFil": {
    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 28,
@@ -25,14 +20,14 @@
   "delta": 0
  },
  "dataHit": {
-  "totalt": 534,
-  "pa_kontroller": 526,
+  "totalt": 668,
+  "pa_kontroller": 660,
   "pa_element_utan_roll": 8
  },
  "undeclared": {
-  "utan_data_hit": 837,
-  "aktiverbara_utan_deklaration": 6,
-  "summa": 843
+  "utan_data_hit": 709,
+  "aktiverbara_utan_deklaration": 0,
+  "summa": 709
  },
  "outsideRegisteredArtifacts": {
   "st": 32,
@@ -206,8 +201,8 @@
  },
  "klasser": {
   "metadata-utan-roll": 8,
-  "ingen-deklaration": 843,
-  "deklaration-self": 459,
+  "ingen-deklaration": 709,
+  "deklaration-self": 593,
   "utanfor-artefakt": 32,
   "deklaration-target": 31,
   "deklaration-lopttext": 11
@@ -218,8 +213,8 @@
   "status": "godkänd"
  },
  "domslutPerStatus": {
-  "unknown": 854,
-  "measured": 490
+  "unknown": 720,
+  "measured": 624
  },
  "status": "godkänd"
 }

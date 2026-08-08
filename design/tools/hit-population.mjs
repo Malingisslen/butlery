@@ -25,9 +25,10 @@ const FRYST = process.argv.includes('--fryst');
 // Den frusna modellen. Talen är beslutade, inte uppmätta i den här körningen —
 // därför prövas de, aldrig skrivs de.
 export const FRUSEN = {
+  // Frusen ar bara det som INTE far rora sig. Antalet data-hit och antalet
+  // odeklarerade VAXER respektive KRYMPER med varje migration — det ar hela
+  // poangen med migrationen och far aldrig larmas som drift.
   sourceDeclarations: 1376, renderade: 1376, delta: 0,
-  dataHitTotalt: 534, dataHitPaKontroller: 526, dataHitUtanRoll: 8,
-  utanDataHit: 837, aktiverbaraUtanDeklaration: 6,
   utanforArtefakt: 32, utanforPerFil: {
     'Butlery Skarmar v12 del 1 recept och veckomeny.dc.html': 28,
     'Butlery Skarmar v12 del 2 familj och socialt.dc.html': 4 }
@@ -107,11 +108,6 @@ if (FRYST) {
   p('SOURCE DECLARATIONS källtext', kallDeklarationer, FRUSEN.sourceDeclarations);
   p('SOURCE DECLARATIONS renderade', rap.sourceDeclarations.renderade, FRUSEN.renderade);
   p('delta', rap.sourceDeclarations.delta, FRUSEN.delta);
-  p('DATA-HIT totalt', rap.dataHit.totalt, FRUSEN.dataHitTotalt);
-  p('DATA-HIT på kontroller', rap.dataHit.pa_kontroller, FRUSEN.dataHitPaKontroller);
-  p('DATA-HIT utan roll', rap.dataHit.pa_element_utan_roll, FRUSEN.dataHitUtanRoll);
-  p('UNDECLARED utan data-hit', rap.undeclared.utan_data_hit, FRUSEN.utanDataHit);
-  p('UNDECLARED aktiverbara', rap.undeclared.aktiverbara_utan_deklaration, FRUSEN.aktiverbaraUtanDeklaration);
   p('OUTSIDE REGISTERED ARTIFACTS', rap.outsideRegisteredArtifacts.st, FRUSEN.utanforArtefakt);
   const perFil = {};
   for (const x of rap.outsideRegisteredArtifacts.poster) perFil[x.fil] = (perFil[x.fil] || 0) + 1;
