@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=333-->
+<!--manifest:files=336-->
 
 ## Reporoten
 
@@ -39,20 +39,20 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `00-spec-index.md` | `d762b1261a80fb225bc2a61c902e090cf6a0ed0028206602a158cab70dc17941` |
 | `Butlery Grafisk manual v6.dc.html` | `3879f2b3451f47de109db76b05f4fd18361f7c1318bebc625c1bdeca6fbd2964` |
 | `Butlery Komponentark v1.dc.html` | `78f27a546502c7d2a9cb99aa954d6cd8ba3b5d18f1694aac2d9db1496ff1ed47` |
-| `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `ebed93ce4a69528db673dafabdb2346519912336903d6925e0585dbaf1a6e749` |
-| `Butlery Skarmar v12 del 2 familj och socialt.dc.html` | `4f2e004529bc93d352d97b04c1612a90e56711af09fd4b8cb324c08be51537c3` |
-| `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `b89814a7812c8da95bea9244d282d1949b4fa0fca811c4078bc0ba10e6f18d07` |
-| `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `af8f5d64c9d88f27bd3660b587dd6b090f04ebad876c7a3a2245780824886f06` |
+| `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `c1d3c0d61e11a052fbfd78d29444f827eade64de166ea59e43f88b8d058114b9` |
+| `Butlery Skarmar v12 del 2 familj och socialt.dc.html` | `dc1441f95a0e5c545667e09b415b2a96ea81d4dcaf1ae65ce04abb0cfe800202` |
+| `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `b32f2c2086a5d57ab0957de92d60232cd5bd238662fe48b70d219469146adeca` |
+| `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `65f2cb50cbe520180bfa835d817ea6fc63f68f021fa729163287596b4caec466` |
 | `Butlery Skarmar v12 etapp 10 bred layout.dc.html` | `d251c6acfc1ea01b1a74a904b703c0ee81f74d1e57152562a32aed39a66b4359` |
-| `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `4f3c4267d6e088c52aeaa38dbdbefbe47e4e19801778a6c688dee1844b17fe34` |
+| `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `6060acd803c9ce62b3f6b0924f0d2802983f23e6071521d45b811c9ef49a94a5` |
 | `Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html` | `bd602c3a5fe4693193cf8c68748c75d21bdae4b99588ce81286d068833918592` |
-| `Butlery Skarmar v12 etapp 2.dc.html` | `ac7a58ba93ca9c4cbfb6f735f5456d74671359b92ec1a0fd0509ac52f11f9d42` |
+| `Butlery Skarmar v12 etapp 2.dc.html` | `a8adcd26e13615c786d0e6f7d22b33b1755fe489098bd1a6f3cf07de84d3f8a5` |
 | `Butlery Skarmar v12 etapp 3 onboarding.dc.html` | `a1f37aa195a95caa1b7ac83547d88a8f612ea4938ee69a3817f76480b3cb1c1f` |
-| `Butlery Skarmar v12 etapp 4 import.dc.html` | `d74eeeba6c9024cfc215c60943a65250e846aadcf69caad98b0d3ff219a7b002` |
-| `Butlery Skarmar v12 etapp 5-7.dc.html` | `8e3c586101b017bf8f8f73d11b5fcf9cd9117e1b35b5978df5f4d862b82f7f1f` |
+| `Butlery Skarmar v12 etapp 4 import.dc.html` | `751dbdf06789fa5f074752c02405476449ba18a1710887967d2cc8395f64aa78` |
+| `Butlery Skarmar v12 etapp 5-7.dc.html` | `a80f5593b9dbbaacd36622dcd1099d99ec61817f08226859799275fe003e60e4` |
 | `Butlery Skarmar v12 etapp 6 konto och integritet.dc.html` | `13d61c7c2e5e80b17e0d09d134deaa339d8cc4fd102d2504e76e04e0659fd18b` |
-| `Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html` | `18d1465231e065135f02ececa0356142a4aaf61c07846dc1d587ec75845d09e1` |
-| `Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html` | `a773943d2be5162a9e5c14583c9e994875af1937f52107e0d0a6c113ea40f863` |
+| `Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html` | `8eda767c988180702f51818512a79f843dfa23a90035ff34602e8c684901744d` |
+| `Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html` | `7e11adfea8c365ed2b93a82a8e86a6bd6a45c9fddd3ed1b5f6a5d95aadf3c9d3` |
 | `Butlery Skarmar v12.dc.html` | `c1b435cf7c470ebe31db64b82b5fc4ee94993391801130edee761f1540c893b2` |
 | `Butlery beslut grund v13.dc.html` | `ce0aaa76a62fb6616d58e93fdaabd1c5b185bdf87ac11bfb60a91b3f7b324eaf` |
 | `Butlery beslut kalendermatt v1.dc.html` | `8fb980fb2eb6c9805c14e8d1bc15421e3e57e5656df1d1ea735314b200f1cdb0` |
@@ -234,6 +234,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r02-baslinje.json` | `ec751bef19c9d3b3f91ebdbba06eaabdc336bd26029aa08512402a7593ccc194` |
 | `fas2/r02-coverage-batch-b.json` | `15fbb9d482f3e47454d05d7b2805dc494d5b2f0ad7ffac226786bcf5e74eb775` |
 | `fas2/r02-coverage-batch-d.json` | `8934ea1db9690fe23bfb1306c114ec75c4b4b758a17cf4232f288dd9930040cf` |
+| `fas2/r02-coverage-batch-st.json` | `28471e2f8b5a882d050d9adb547ff776e35e8960c35b00feddf4673c0c591139` |
 | `fas2/r02-delta-44kontraktet.json` | `6ae99e247759643ff9f46af843591ef1dea12a24947a3f16b79d9b446cc926bc` |
 | `fas2/r02-delta-rc04.json` | `30c70be28b2e3de0ee2a0d65670630e1e967fea5d31b13ef8cd6b8828c32432e` |
 | `fas2/r02-delta-rc07.json` | `d0f053efdfb574a05b1da0e31f80ac84d8c483941f6796633d285bf293093796` |
@@ -242,11 +243,13 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r02-fix04-logg.json` | `a76fd39a7266255ff27741514841d78910ceb56cee35f6b8648f42197a27d12c` |
 | `fas2/r02-fix0910-logg.json` | `ff3c355ac8d37733ceb03a29f3bd09ba6187ee822cead5006141b6dc21359e80` |
 | `fas2/r02-fix44-logg.json` | `7b649c9a69cc9fbfa0b82a98394f88c442baad389275f5352721beef05ea80a5` |
+| `fas2/r02-partition-667.json` | `148e6aeda18c445a3f571fc6fc1a2a48d379cf0b9f65385d7be43763333d05a4` |
 | `fas2/r02-rc11-matning.json` | `0aa2386aad74afd56f38d378947c16be3d6e2e73384c5a31722e683c3957c4c0` |
 | `fas2/r02-rotorsaker-2.json` | `f07cdad43cfd7986ff3a22b0c7e0ee7c204beb11ac1338bfa96e3824fa6ccce3` |
 | `fas2/r02-rotorsaker.json` | `b2ad1b9d988bd8a1a7bdbacdbb37209b3309d25e81d422878e13c7e55a88d3c5` |
 | `fas2/r02-snapshot-batch-b.json` | `e95c5e15aece6133feecb74e6dfd8ae5cb076fe6cb2dbab915855ab9c7540ad8` |
 | `fas2/r02-snapshot-batch-d.json` | `e5d2a59995aa0567a6bfa10530b5c46316fafc68a3ba434eb2addda2be3a3d1a` |
+| `fas2/r02-snapshot-batch-st.json` | `8ab46c4a2434451d7ac45a67dfdfc499f6ed51665d31cc33a0c0db9c7edb31fc` |
 | `fas2/r02-snapshot-hogrisk.json` | `a9f7a54faed517b3e47400e4a9714de341a6dfc69a5a38f2fbdb367d69b77366` |
 | `fas2/r02-unknown-inventering.json` | `b5c81762f452b027814d1ca0b46fcb52be5aae3dfa6ef8a9346c24801a36cab3` |
 | `fas2/r03-baslinje.json` | `f76b4f37b6bb52ece683c61621670a0b37173be3c74acf1da7bfd992b7e8c702` |
