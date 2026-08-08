@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=313-->
+<!--manifest:files=315-->
 
 ## Reporoten
 
@@ -230,6 +230,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/nav-add-delta.json` | `0a8748d9f2059c0dc9e187db3824d62f691872cd456f24fca2df370fccc8f22c` |
 | `fas2/negativa-prov.json` | `5ac71e2542a1c9b66427a154f591650f9da433e035e8f5c89d512e520cf658a0` |
 | `fas2/r01-baslinje.json` | `d0f89a18c48f6d0e159f64b8f487c9417d26cc2272d06cce77aef58f0c2ca61c` |
+| `fas2/r02-baslinje.json` | `ec751bef19c9d3b3f91ebdbba06eaabdc336bd26029aa08512402a7593ccc194` |
 | `fas2/r03-baslinje.json` | `f76b4f37b6bb52ece683c61621670a0b37173be3c74acf1da7bfd992b7e8c702` |
 | `fas2/r04-parningsunderlag.json` | `d82a227cf2f2b978b42e9625365027bdf9e5b41136808987cc61e0a46cb4fa55` |
 | `fas2/reproducerbarhet.json` | `85b244b9bf2d33831d7df56aa61cb5a24887aed3b7d7b095314be792022a726c` |
@@ -301,6 +302,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/gen-report.mjs` | `8e32d2530c1bf94ebc032f626e58764f99b8ec8f965633cbcf4d9fab082d432e` |
 | `tools/gen-schema.mjs` | `1d276054d4fb6976fc8e1005626d23467c4c21bb5d48996016e883312cb74a84` |
 | `tools/gen-targets.mjs` | `ffbef2620ef4be264e16dab5432c65fb80d24422eb8c0f3d9e512324f82e8e9f` |
+| `tools/hit-baseline.mjs` | `ee7b37d71b92b9b5c10c837a050963d792a7b0d22837d4e37f154d35aef89814` |
 | `tools/hit-contract.mjs` | `c0f29eb0cb3ae8017b70a3fea31c037390749491c62043a465d6d5025b77d43a` |
 | `tools/hit-fixtures.mjs` | `26121493020c91084d81863fe70a1fb5d2add6af0340c92e7a231ae0f9d70216` |
 | `tools/hit-measure.mjs` | `fc5427c382cd90495a16cf501bf1c73f60b2a90b2b8f525d6e9f37901a48cf8a` |
