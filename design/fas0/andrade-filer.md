@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=315-->
+<!--manifest:files=317-->
 
 ## Reporoten
 
@@ -44,7 +44,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `e5a4582e92525bc2c9e93f35c83883c747dfcc3ca4bd70b2ec614e29c3af0ebd` |
 | `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `25a18345017ec464f025082326deae53ef1036b9b1b7bdd984020b559dceda22` |
 | `Butlery Skarmar v12 etapp 10 bred layout.dc.html` | `40fd6a938211368192b26a16dc8210dca005f8c2eef5a077ad03020c5052cdbb` |
-| `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `cf1dc5679b74c0b529ee96111d5b50be83dea571eafce96012c1adf489810f6d` |
+| `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `6da24ba8eb5fd9484ae33709f053176596020cd154ac71204d4c363d0c0ae73f` |
 | `Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html` | `bd602c3a5fe4693193cf8c68748c75d21bdae4b99588ce81286d068833918592` |
 | `Butlery Skarmar v12 etapp 2.dc.html` | `ac7a58ba93ca9c4cbfb6f735f5456d74671359b92ec1a0fd0509ac52f11f9d42` |
 | `Butlery Skarmar v12 etapp 3 onboarding.dc.html` | `a1f37aa195a95caa1b7ac83547d88a8f612ea4938ee69a3817f76480b3cb1c1f` |
@@ -219,6 +219,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/gridmatning.txt` | `8972e840fef68b585a2b76e5ebe37d44a03bc3d3b6c7a7c63350fe53c9337726` |
 | `fas2/gridmatning_test.dart.txt` | `6ee766862801cd83ab3d97d5d80f8399538882a58ef7cbdc6db9ef7c8460102a` |
 | `fas2/hit-granskningslogg.json` | `a8fab8ef0847ca3edb1c4baa3cc89a336c71212191319f374d14831b62413c46` |
+| `fas2/hit-hogrisklogg.json` | `665619357787cb6e897a9ef5bfd19741bbecf061065f054dea2a8fa2f235960b` |
 | `fas2/hit-klass1-logg.json` | `60f408964d467ffef602c7ad421440facbd6436bdd2c6be8984ed4a1ae4a5b9d` |
 | `fas2/hit-migrationslogg.json` | `12c8ba18ec02f442a395c4bcb32f686b8e540706dba761c51008d70644b81026` |
 | `fas2/identitetsprov.json` | `d113891b9c0ac4a1b2cbf04b8ff482533e3f21996beb5d8bd27b591623650ac4` |
@@ -231,6 +232,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/negativa-prov.json` | `5ac71e2542a1c9b66427a154f591650f9da433e035e8f5c89d512e520cf658a0` |
 | `fas2/r01-baslinje.json` | `d0f89a18c48f6d0e159f64b8f487c9417d26cc2272d06cce77aef58f0c2ca61c` |
 | `fas2/r02-baslinje.json` | `ec751bef19c9d3b3f91ebdbba06eaabdc336bd26029aa08512402a7593ccc194` |
+| `fas2/r02-snapshot-hogrisk.json` | `a9f7a54faed517b3e47400e4a9714de341a6dfc69a5a38f2fbdb367d69b77366` |
 | `fas2/r03-baslinje.json` | `f76b4f37b6bb52ece683c61621670a0b37173be3c74acf1da7bfd992b7e8c702` |
 | `fas2/r04-parningsunderlag.json` | `d82a227cf2f2b978b42e9625365027bdf9e5b41136808987cc61e0a46cb4fa55` |
 | `fas2/reproducerbarhet.json` | `85b244b9bf2d33831d7df56aa61cb5a24887aed3b7d7b095314be792022a726c` |
