@@ -22,9 +22,12 @@ class CloseDialogIntent extends Intent {
   const CloseDialogIntent();
 }
 
-/// Pop the current route via `Navigator.maybePop`. Bound to Backspace when
-/// no text input has focus — text fields receive Backspace before the
-/// shortcuts layer (Flutter focus order), so this never deletes characters.
+/// Pop the current route via `Navigator.maybePop`. Bound to Backspace, which
+/// this layer reaches BEFORE the framework's text-editing shortcuts (it is
+/// mounted inside `MaterialApp.builder`, i.e. nearer the focused field). The
+/// action therefore disables itself while a text field holds focus — see
+/// `_NavigateBackAction` in `app_actions.dart`; without that, Backspace stops
+/// erasing characters app-wide on web and desktop.
 class NavigateBackIntent extends Intent {
   const NavigateBackIntent();
 }

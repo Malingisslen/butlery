@@ -39,9 +39,7 @@ class AppActions {
       CloseDialogIntent: CallbackAction<CloseDialogIntent>(
         onInvoke: (_) => _maybePop(),
       ),
-      NavigateBackIntent: CallbackAction<NavigateBackIntent>(
-        onInvoke: (_) => _maybePop(),
-      ),
+      NavigateBackIntent: _NavigateBackAction(),
       OpenSearchIntent: CallbackAction<OpenSearchIntent>(
         onInvoke: (_) => _pushSearch(Routes.ingredientSearch),
       ),
@@ -106,5 +104,30 @@ class AppActions {
       form.save();
     }
     return null;
+  }
+}
+
+/// Backspace is bound to "go back", and this app's `Shortcuts` layer sits
+/// inside `MaterialApp.builder` — below `DefaultTextEditingShortcuts` and
+/// therefore CLOSER to a focused field, so it wins the key before the
+/// framework's own delete binding. Left enabled, a hardware Backspace would
+/// silently do nothing in every text field on web and desktop instead of
+/// erasing a character (found on the login screen's password field).
+///
+/// Disabling the action rather than handling it is what makes the key fall
+/// through: `ShortcutManager` treats a disabled action as unhandled and keeps
+/// propagating up to the text-editing shortcuts.
+class _NavigateBackAction extends Action<NavigateBackIntent> {
+  @override
+  bool isEnabled(NavigateBackIntent intent, [BuildContext? context]) =>
+      !_focusIsInsideTextField();
+
+  @override
+  Object? invoke(NavigateBackIntent intent) => AppActions._maybePop();
+
+  static bool _focusIsInsideTextField() {
+    final ctx = FocusManager.instance.primaryFocus?.context;
+    if (ctx == null) return false;
+    return ctx.findAncestorStateOfType<EditableTextState>() != null;
   }
 }

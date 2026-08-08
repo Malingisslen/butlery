@@ -13,6 +13,7 @@
 
 import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/core/keyboard/app_shortcuts.dart';
+import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -124,6 +125,69 @@ void main() {
       final fired = await pumpAndPress(tester, [LogicalKeyboardKey.digit1]);
       await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
       expect(fired, [GoToRecipesIntent]);
+    });
+  });
+
+  group('Backspace vs. text editing', () {
+    // These two use the REAL `AppActions.dispatch()` map, not a capturing
+    // stub: the whole question is whether the production NavigateBack action
+    // disables itself, and a stub action is always enabled. The app's
+    // Shortcuts layer is mounted inside `MaterialApp.builder`, i.e. below
+    // `DefaultTextEditingShortcuts` and therefore nearer a focused field, so
+    // it sees Backspace first and would swallow the delete.
+
+    // Mirrors `butlery_app.dart`: the keyboard layer goes in
+    // `MaterialApp.builder` so it wraps the whole navigator, which is exactly
+    // what puts it below `DefaultTextEditingShortcuts`.
+    Widget app(Widget home) => MaterialApp(
+      navigatorKey: appNavigatorKey,
+      builder: (context, child) => Shortcuts(
+        shortcuts: AppShortcuts.bindings,
+        child: Actions(
+          actions: AppActions.dispatch(),
+          child: Focus(autofocus: true, child: child ?? const SizedBox()),
+        ),
+      ),
+      home: home,
+    );
+
+    testWidgets('Backspace still deletes a character in a focused field', (
+      tester,
+    ) async {
+      final controller = TextEditingController(text: 'abc');
+      addTearDown(controller.dispose);
+
+      await tester.pumpWidget(
+        app(
+          Material(child: TextField(controller: controller, autofocus: true)),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+      await tester.pump();
+
+      expect(controller.text, 'ab');
+    });
+
+    testWidgets('Backspace still pops a route when no field has focus', (
+      tester,
+    ) async {
+      await tester.pumpWidget(app(const Material(child: Text('root'))));
+      await tester.pumpAndSettle();
+
+      appNavigatorKey.currentState!.push(
+        MaterialPageRoute<void>(
+          builder: (_) => const Material(child: Text('pushed')),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('pushed'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+      await tester.pumpAndSettle();
+
+      expect(find.text('pushed'), findsNothing);
     });
   });
 
