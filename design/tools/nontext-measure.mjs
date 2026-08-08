@@ -98,31 +98,6 @@ export const NONTEXT_MEASURE = `(() => {
     return { identitet: null, tillstand: bockar[0] || null, grund: 'varken avgransad form eller glyf i kontrollens subtrad' };
   }
 
-  /* ── STATE FAMILY IDENTITY · bara deklarerad struktur ─────────────────── */
-  //
-  // Color-only jamfor tva TILLSTAND av SAMMA komponent. I en ritningssvit ar
-  // de tva tillstanden tva olika element, och det enda som far knyta ihop dem
-  // ar en deklaration i kallan. Accessible name, nth-child, geometri,
-  // DOM-position och textmatchning ar alla otillatna: de parar ihop saker som
-  // rakar likna varandra.
-  //
-  // Deklarationen ar data-component, pa kontrollen sjalv eller pa exakt ETT
-  // element i dess egen subtrad. Allt annat ar pairingUnknown.
-  function familjIdentitet(c, roll) {
-    if (c.hasAttribute('data-component'))
-      return { id: c.getAttribute('data-component') + ' ‖ ' + roll, status: 'deklarerad',
-        varfor: 'data-component pa kontrollen sjalv' };
-    const inom = [...c.querySelectorAll('[data-component]')].filter(e => egenSubtrad(e, c));
-    if (inom.length === 1)
-      return { id: inom[0].getAttribute('data-component') + ' ‖ ' + roll, status: 'deklarerad',
-        varfor: 'data-component pa ett element i kontrollens egen subtrad' };
-    if (inom.length > 1)
-      return { id: null, status: 'pairingUnknown',
-        varfor: inom.length + ' olika data-component i subtradet — vilken komponent kontrollen ar gar inte att avgora' };
-    return { id: null, status: 'pairingUnknown',
-      varfor: 'ingen deklarerad data-component — kontrollen kan inte knytas till nagon tillstandsfamilj' };
-  }
-
   const ut = [];
   for (const c of document.querySelectorAll('[data-a11y-role]')) {
     const it = c.closest('.sc-item'); if (!it) continue;
@@ -238,13 +213,18 @@ export const NONTEXT_MEASURE = `(() => {
     });
 
     ut.push({ art: it.id, roll, namn: namn || null, state, disabled,
-      familj: familjIdentitet(c, roll),
+      // Identiteten for color-only ar authored och lases ORORD har. Den
+      // valideras i colour-only.mjs, aldrig i browsern.
+      stateGroup: c.getAttribute('data-state-group'),
       harEgenText, text: text.slice(0, 30),
       glyfer: g.map(e => e.getAttribute('data-icon') || '(namnlos)'),
       // Icke-fargbaserade signaler, for color-only-sparet.
       signaler: { bock: g.some(e => BOCK.test(e.getAttribute('data-icon') || '')),
         chevron: g.some(e => CHEVRON.test(e.getAttribute('data-icon') || '')),
         text: harEgenText, glyfNamn: g.map(e => e.getAttribute('data-icon') || '').filter(Boolean).sort().join(','),
+        // Ihalig ram mot massiv yta ar en skillnad i form, inte i farg. Den
+        // syns aven for den som inte uppfattar kulor.
+        avgransning: ((harRam(bararEl) ? 'ram' : '') + (harFyllning(bararEl) ? 'fyllning' : '')) || 'ingen',
         barnAntal: bararEl.children.length,
         thumbLage: roll === 'switch' ? getComputedStyle(bararEl).justifyContent : null,
         form: rect(bararEl).w + 'x' + rect(bararEl).h,

@@ -92,8 +92,10 @@ const co = parbilda(K);
 
 /* ── C · GRAFISKA OBJEKT UTANFOR KONTROLLER ─────────────────────────────── */
 const objPerRoll = {}; for (const g of G) objPerRoll[g.carrier] = (objPerRoll[g.carrier] || 0) + 1;
-const objBarare = G.filter(g => g.carrier === 'graphicalObjectCarrier');
-const objMatta = objBarare.filter(g => g.status === 'matt');
+const objRequired = G.filter(g => g.carrier === 'required');
+const objRedundant = G.filter(g => g.carrier === 'redundant');
+const objDecorative = G.filter(g => g.carrier === 'decorative');
+const objMatta = objRequired.filter(g => g.status === 'matt');
 const objFynd = objMatta.filter(g => g.kvot < 3).sort((a, b) => a.kvot - b.kvot);
 const objOkanda = G.filter(g => g.status === 'unknown');
 
@@ -135,17 +137,23 @@ const doc = {
   B_anvandningAvFarg: {
     $enhet: 'tillstandspar',
     kontrollerMedTillstand_st: co.kontroller_med_tillstand_st,
-    kontrollerIFamilj_st: co.kontroller_i_familj_st,
-    pairingUnknown_kontroller_st: co.pairingUnknown_st,
-    tillstandsfamiljer_st: co.familjer_st,
-    familjerUtanMotpart_st: co.familjer_utan_motpart_st,
+    kontrollerIGrupp_st: co.kontroller_i_grupp_st,
+    pairingUnknown_kontroller_st: co.pairingUnknown_kontroller_st,
+    tackning_procent: co.kontroller_med_tillstand_st
+      ? +(100 * co.kontroller_i_grupp_st / co.kontroller_med_tillstand_st).toFixed(1) : 0,
+    stateGroups_st: co.grupper_st,
+    stateGroups_singelState_st: co.grupper_singelState_st,
+    stateGroups_tvetydiga_st: co.grupper_tvetydiga_st,
     tillstandspar_st: co.par_st,
+    par_medIckefargSignal_st: co.par_med_ickefargSignal_st,
     colorOnly_tillstandspar_st: co.colorOnly_st,
-    $not: 'Familjidentiteten ar deklarerad data-component. Accessible name, geometri och DOM-position ar otillatna som identitet. Kontroller utan deklaration blir pairingUnknown — aldrig "ingen skillnad".',
+    tackningsinvariant_ok: co.invariant_ok,
+    $not: 'Identiteten ar authored data-state-group pa kontrollen sjalv. data-component anvands aldrig som reservidentitet: komponenttyp ar inte identitet. Accessible name, geometri, DOM-position och textmatchning ar otillatna. Utan giltig grupp blir kontrollen pairingUnknown — aldrig "ingen skillnad". En grupp med bara ett representerat tillstand ar single-state, aldrig godkand.',
     colorOnly: co.colorOnly,
     par: co.par,
-    utanMotpart: co.utanMotpart,
-    pairingUnknown_exempel: co.pairingUnknown.slice(0, 30),
+    singelState: co.singelState,
+    tvetydiga: co.tvetydiga,
+    pairingUnknown: co.pairingUnknown,
   },
 
   C_grafiskaObjektUtanforKontroller: {
@@ -153,17 +161,22 @@ const doc = {
     grafiskaObjekt_st: G.length,
     artefakter_st: new Set(G.map(g => g.art)).size,
     perRoll_grafiskaObjekt: objPerRoll,
-    barare_grafiskaObjekt_st: objBarare.length,
-    matta_grafiskaObjekt_st: objMatta.length,
-    unknown_grafiskaObjekt_st: objOkanda.length,
+    required_st: objRequired.length,
+    redundant_st: objRedundant.length,
+    decorative_st: objDecorative.length,
+    unknown_st: objOkanda.length,
+    summa_kontroll: objRequired.length + objRedundant.length + objDecorative.length + objOkanda.length,
+    populationsinvariant_ok: objRequired.length + objRedundant.length + objDecorative.length + objOkanda.length === G.length,
+    required_matta_st: objMatta.length,
     fynd_under_3_grafiskaObjekt_st: objFynd.length,
-    $not: 'Rollen kravs som deklaration, precis som data-hit i R-02. data-icon namnger formen, inte funktionen, och raknas darfor inte.',
+    berorda_artefakter_st: new Set(objFynd.map(g => g.art)).size,
+    $not: 'Rollen kravs som deklaration, precis som data-hit i R-02. data-icon namnger formen, inte funktionen, och raknas darfor inte. required + redundant + decorative + unknown motsvarar exakt populationen.',
     fynd: objFynd.slice(0, 40),
     unknown_exempel: objOkanda.slice(0, 20),
   },
 };
-doc.status = (okandaDelar.length + fynd.length + co.pairingUnknown_st + co.colorOnly_st +
-  objOkanda.length + objFynd.length) ? 'FÄLLD' : 'godkänd';
+doc.status = (okandaDelar.length + fynd.length + co.pairingUnknown_kontroller_st +
+  co.grupper_tvetydiga_st + co.colorOnly_st + objOkanda.length + objFynd.length) ? 'FÄLLD' : 'godkänd';
 doc.$avgransning = 'WCAG 1.4.11 kan inte kallas stangd sa lange nagon population har unknown.';
 if (OUT) writeFileSync(OUT, JSON.stringify(doc, null, 1) + '\n');
 
@@ -188,20 +201,28 @@ rad('beror', new Set(fynd.map(d => d.art)).size, 'artefakter');
 console.log('');
 console.log('B · ANVANDNING AV FARG');
 rad('kontroller med tillstand', co.kontroller_med_tillstand_st, 'kontroller');
-rad('  knutna till en familj', co.kontroller_i_familj_st, 'kontroller');
-rad('  pairingUnknown', co.pairingUnknown_st, 'kontroller');
-rad('tillstandsfamiljer', co.familjer_st, 'familjer');
-rad('  utan motpart i sviten', co.familjer_utan_motpart_st, 'familjer');
+rad('  med giltig state-group', co.kontroller_i_grupp_st, 'kontroller');
+rad('  pairingUnknown', co.pairingUnknown_kontroller_st, 'kontroller');
+console.log('    tackning: ' + doc.B_anvandningAvFarg.tackning_procent + ' %' +
+  (co.invariant_ok ? '  ✔ invariant' : '  ✖ INVARIANT BRUTEN'));
+rad('state-groups', co.grupper_st, 'grupper');
+rad('  single-state / unpaired', co.grupper_singelState_st, 'grupper');
+rad('  tvetydig representant', co.grupper_tvetydiga_st, 'grupper');
 rad('jamforda par', co.par_st, 'tillstandspar');
-rad('color-only', co.colorOnly_st, 'tillstandspar');
+rad('  klarar via ickefarg-signal', co.par_med_ickefargSignal_st, 'tillstandspar');
+rad('  color-only', co.colorOnly_st, 'tillstandspar');
 console.log('');
 console.log('C · GRAFISKA OBJEKT UTANFOR KONTROLLER');
 rad('grafiska objekt', G.length, 'grafiska objekt');
-console.log('    per roll: ' + JSON.stringify(objPerRoll));
-rad('deklarerade barare', objBarare.length, 'grafiska objekt');
-rad('matta', objMatta.length, 'grafiska objekt');
-rad('unknown', objOkanda.length, 'grafiska objekt');
+rad('  required', objRequired.length, 'grafiska objekt');
+rad('  redundant', objRedundant.length, 'grafiska objekt');
+rad('  decorative', objDecorative.length, 'grafiska objekt');
+rad('  unknown', objOkanda.length, 'grafiska objekt');
+console.log('    summa ' + doc.C_grafiskaObjektUtanforKontroller.summa_kontroll +
+  (doc.C_grafiskaObjektUtanforKontroller.populationsinvariant_ok ? '  ✔ invariant' : '  ✖ INVARIANT BRUTEN'));
+rad('required matta', objMatta.length, 'grafiska objekt');
 rad('fynd under 3:1', objFynd.length, 'grafiska objekt');
+rad('beror', new Set(objFynd.map(g => g.art)).size, 'artefakter');
 console.log('');
 console.log('NT-BASLINJE status=' + doc.status);
 process.exit(doc.status === 'godkänd' ? 0 : 1);

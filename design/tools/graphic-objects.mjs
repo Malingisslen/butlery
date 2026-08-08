@@ -13,43 +13,46 @@
 // inte avgoras ur DOM:en.
 //
 // DARFOR: rollen kravs som DEKLARATION, precis som data-hit i R-02.
+// Deklarationen ar data-graphic-role pa objektet sjalv.
 //
-//   deklarerat dekorativ   aria-hidden="true" | role="presentation" | role="none"
-//   deklarerat informativ  role="img" med namn | aria-label | <title> | data-illustration
-//   odeklarerad            unknown — mats aldrig, gissas aldrig
+//   required     grafiken behovs visuellt for att forsta information, status
+//                eller betydelse
+//                => omfattas av kontrastmatningen, trosskel 3:1
+//
+//   redundant    grafiken formedlar betydelse, men samma information finns
+//                fullstandigt i en annan synlig signal — oftast texten intill
+//                => rapporteras, men ar inte required carrier for 1.4.11
+//
+//   decorative   grafiken formedlar ingen information
+//                => utanfor conformance-matningen
+//
+//   saknad eller ogiltig markning => unknown, fail closed
 //
 // data-icon raknas INTE som deklaration. Det namnger formen, inte funktionen:
 // en "check" kan vara den enda bararen av "klart" eller ren utsmyckning
 // bredvid ordet "Klart". Skillnaden finns inte i attributet.
 //
-// Kontrastvardet anvands aldrig for att avgora rollen.
+// Kontrastvardet anvands aldrig for att avgora rollen. Markningen far aldrig
+// sattas for att kvoten ar lag, for att kvoten ar hog eller for att minska
+// fyndantalet. Fragan ar designens avsedda betydelse.
 
 import { FARGMOTOR } from './colour-engine.mjs';
 
 export const GRAPHIC_OBJECTS = `(() => {
   ${FARGMOTOR}
 
-  const DEKORATIV_ROLL = new Set(['presentation', 'none']);
-  const tomt = s => !s || !String(s).trim();
+  const GILTIGA = new Set(['required', 'redundant', 'decorative']);
 
   function deklaration(g) {
-    const roll = (g.getAttribute('role') || '').toLowerCase();
-    if (g.getAttribute('aria-hidden') === 'true')
-      return { roll: 'decorative', grund: 'aria-hidden="true"' };
-    if (DEKORATIV_ROLL.has(roll))
-      return { roll: 'decorative', grund: 'role="' + roll + '"' };
-    const titel = g.querySelector(':scope > title');
-    if (!tomt(g.getAttribute('aria-label')))
-      return { roll: 'graphicalObjectCarrier', grund: 'aria-label' };
-    if (titel && !tomt(titel.textContent))
-      return { roll: 'graphicalObjectCarrier', grund: '<title> i svg' };
-    if (roll === 'img' && !tomt(g.getAttribute('aria-labelledby')))
-      return { roll: 'graphicalObjectCarrier', grund: 'role="img" med aria-labelledby' };
-    if (!tomt(g.getAttribute('data-illustration')))
-      return { roll: 'graphicalObjectCarrier', grund: 'data-illustration' };
-    return { roll: 'unknown',
-      grund: 'ingen deklaration om objektet bar information eller ar dekorativt' +
-        (g.getAttribute('data-icon') ? ' (data-icon namnger formen, inte funktionen)' : '') };
+    if (!g.hasAttribute('data-graphic-role'))
+      return { roll: 'unknown',
+        grund: 'ingen data-graphic-role' +
+          (g.getAttribute('data-icon') ? ' (data-icon namnger formen, inte funktionen)' : '') };
+    const v = (g.getAttribute('data-graphic-role') || '').trim();
+    if (!GILTIGA.has(v))
+      return { roll: 'unknown',
+        grund: 'data-graphic-role "' + v + '" ar inte required, redundant eller decorative' };
+    return { roll: v, grund: 'data-graphic-role="' + v + '"' };
   }
 
   const ut = [];
@@ -64,7 +67,7 @@ export const GRAPHIC_OBJECTS = `(() => {
         ikon: g.getAttribute('data-icon') || g.getAttribute('data-illustration') || null,
         carrier: d.roll, motivering: d.grund,
         w: +r.width.toFixed(1), h: +r.height.toFixed(1) };
-      if (d.roll !== 'graphicalObjectCarrier') {
+      if (d.roll !== 'required') {
         ut.push({ ...bas, kvot: null,
           status: d.roll === 'unknown' ? 'unknown' : 'ejKravd' });
         continue; }

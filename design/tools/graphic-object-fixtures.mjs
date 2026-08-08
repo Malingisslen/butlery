@@ -3,9 +3,11 @@
 //
 // Kör: node tools/graphic-object-fixtures.mjs --out=<katalog utanfor repot>
 //
-// GO-03 ar anti-cirkularitetsprovet: ett deklarerat informativt objekt med
-// kontrast 1,00 forblir barare och blir ett fynd. GO-04 ar fail closed: ett
-// odeklarerat objekt blir aldrig tyst dekorativt.
+// Kontraktet ar data-graphic-role = required | redundant | decorative.
+//
+// GO-03 ar anti-cirkularitetsprovet: ett required-objekt med kontrast 1,00
+// forblir required och blir ett fynd. GO-04 ar fail closed: ett omarkt objekt
+// blir aldrig tyst dekorativt.
 
 import { spawn } from 'node:child_process';
 import { writeFileSync, mkdirSync } from 'node:fs';
@@ -21,30 +23,30 @@ if (outAbs.startsWith(resolve('.') + '\\') || outAbs.startsWith(resolve('.') + '
   console.error('✖ --out ligger inne i reporoten.'); process.exit(2); }
 mkdirSync(outAbs, { recursive: true });
 
-const SVG = (attr, farg, extra = '') => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' +
-  farg + '" stroke-width="2" ' + attr + '>' + extra + '<path d="M12 3l9 16H3z"/></svg>';
+const SVG = (attr, farg) => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' +
+  farg + '" stroke-width="2" ' + attr + '><path d="M12 3l9 16H3z"/></svg>';
 
 const FIXTUR = `<!doctype html><meta charset="utf-8"><style>
  body{margin:0;background:#fff;color:#111;font:14px/1.4 system-ui}
  .sc-item{padding:10px;background:#fff}
 </style>
 
-<div class="sc-item" id="go01-deklarerat-dekorativ">
-  ${SVG('data-icon="sparkle" aria-hidden="true"', '#eeeeee')}
+<div class="sc-item" id="go01-decorative">
+  ${SVG('data-icon="sparkle" data-graphic-role="decorative"', '#eeeeee')}
   <span>Texten sager allt som behovs</span>
 </div>
 
-<div class="sc-item" id="go02-deklarerat-informativ">
-  ${SVG('data-icon="triangle-alert" role="img" aria-label="Varning"', '#8f3324')}
+<div class="sc-item" id="go02-required">
+  ${SVG('data-icon="triangle-alert" data-graphic-role="required"', '#8f3324')}
 </div>
 
-<div class="sc-item" id="go03-informativ-utan-kontrast">
-  <!-- Deklarerat informativ men malad vitt mot vitt: kvot 1,00.
-       Ska forbli barare och bli ett fynd, inte omklassificeras. -->
-  ${SVG('data-icon="triangle-alert" role="img" aria-label="Varning"', '#ffffff')}
+<div class="sc-item" id="go03-required-utan-kontrast">
+  <!-- Markt required men malad vitt mot vitt: kvot 1,00.
+       Ska forbli required och bli ett fynd, aldrig omklassificeras. -->
+  ${SVG('data-icon="triangle-alert" data-graphic-role="required"', '#ffffff')}
 </div>
 
-<div class="sc-item" id="go04-odeklarerad">
+<div class="sc-item" id="go04-omarkt">
   <!-- Bara data-icon. Formen ar namngiven, funktionen ar det inte. -->
   ${SVG('data-icon="info"', '#c9c9c9')}
 </div>
@@ -56,8 +58,19 @@ const FIXTUR = `<!doctype html><meta charset="utf-8"><style>
     style="display:inline-flex;width:48px;height:48px;align-items:center;justify-content:center">${SVG('data-icon="x"', '#24382c')}</span>
 </div>
 
-<div class="sc-item" id="go06-titel-i-svg">
-  ${SVG('data-icon="lock"', '#24382c', '<title>Last</title>')}
+<div class="sc-item" id="go06-redundant">
+  <!-- Betydelsen finns fullstandigt i texten intill. Rapporteras, men ar
+       inte required carrier. -->
+  ${SVG('data-icon="triangle-alert" data-graphic-role="redundant"', '#f0f0f0')}
+  <span>Varning: receptet innehaller notter</span>
+</div>
+
+<div class="sc-item" id="go07-ogiltigt-varde">
+  ${SVG('data-icon="lock" data-graphic-role="supplemental"', '#24382c')}
+</div>
+
+<div class="sc-item" id="go08-tom-markning">
+  ${SVG('data-icon="clock" data-graphic-role=""', '#24382c')}
 </div>`;
 
 const fixturPath = join(outAbs, 'goprov.html');
@@ -91,7 +104,7 @@ try {
   const { sessionId } = await call('Target.attachToTarget', { targetId, flatten: true });
   const s = (m, p) => call(m, p, sessionId);
   await s('Page.enable'); await s('Runtime.enable');
-  await s('Emulation.setDeviceMetricsOverride', { width: 800, height: 900, deviceScaleFactor: 1, mobile: false });
+  await s('Emulation.setDeviceMetricsOverride', { width: 800, height: 1000, deviceScaleFactor: 1, mobile: false });
   await s('Page.navigate', { url: pathToFileURL(fixturPath).href });
   await sleep(900);
   const r = await s('Runtime.evaluate', { expression: GRAPHIC_OBJECTS, returnByValue: true });
@@ -100,7 +113,7 @@ try {
 } catch (e) { verktygsfel = e.message; }
 finally { try { chrome.kill(); } catch {} }
 
-const ANTAL = 6;
+const ANTAL = 8;
 if (verktygsfel) {
   console.log('VERKTYGSFEL: ' + verktygsfel);
   console.log('GRAFIKOBJEKTPROV status=VERKTYGSFEL godkanda=0 av ' + ANTAL); process.exit(2);
@@ -110,23 +123,23 @@ const o = a => data.find(x => x.art === a);
 const resultat = [];
 const prov = (n, vad, ok, diag) => resultat.push({ id: n, vad, ok: !!ok, diag });
 
-{ const d = o('go01-deklarerat-dekorativ');
-  prov('GO-01', 'deklarerat dekorativt objekt mats inte',
+{ const d = o('go01-decorative');
+  prov('GO-01', 'decorative mats inte',
     !!d && d.carrier === 'decorative' && d.status === 'ejKravd' && d.kvot === null,
     d ? d.carrier + ' · ' + d.motivering : 'objektet saknas'); }
 
-{ const d = o('go02-deklarerat-informativ');
-  prov('GO-02', 'deklarerat informativt objekt mats mot sin angransande yta',
-    !!d && d.carrier === 'graphicalObjectCarrier' && d.status === 'matt' && d.kvot >= 3,
+{ const d = o('go02-required');
+  prov('GO-02', 'required mats mot sin angransande yta',
+    !!d && d.carrier === 'required' && d.status === 'matt' && d.kvot >= 3,
     d ? d.carrier + ' · kvot ' + d.kvot + ' mot ' + d.angransande : 'objektet saknas'); }
 
-{ const d = o('go03-informativ-utan-kontrast');
-  prov('GO-03', 'kvot 1,00 omklassificerar aldrig ett deklarerat informativt objekt',
-    !!d && d.carrier === 'graphicalObjectCarrier' && d.status === 'matt' && d.kvot === 1,
+{ const d = o('go03-required-utan-kontrast');
+  prov('GO-03', 'kvot 1,00 omklassificerar aldrig ett required-objekt',
+    !!d && d.carrier === 'required' && d.status === 'matt' && d.kvot === 1,
     d ? d.carrier + ' · kvot ' + d.kvot : 'objektet saknas'); }
 
-{ const d = o('go04-odeklarerad');
-  prov('GO-04', 'odeklarerat objekt blir unknown, aldrig tyst dekorativt',
+{ const d = o('go04-omarkt');
+  prov('GO-04', 'omarkt objekt blir unknown, aldrig tyst dekorativt',
     !!d && d.carrier === 'unknown' && d.status === 'unknown' && d.kvot === null &&
     /data-icon namnger formen/.test(d.motivering || ''),
     d ? d.carrier + ' · ' + d.motivering.slice(0, 70) : 'objektet saknas'); }
@@ -135,10 +148,20 @@ const prov = (n, vad, ok, diag) => resultat.push({ id: n, vad, ok: !!ok, diag })
   prov('GO-05', 'grafik inne i en kontroll ingar aldrig i denna population',
     !d, d ? 'FEL: dok upp som ' + d.carrier : 'inte med — hor till kontrollmodellen'); }
 
-{ const d = o('go06-titel-i-svg');
-  prov('GO-06', '<title> i svg raknas som deklaration att objektet bar information',
-    !!d && d.carrier === 'graphicalObjectCarrier' && /title/.test(d.motivering || '') && d.status === 'matt',
+{ const d = o('go06-redundant');
+  prov('GO-06', 'redundant rapporteras men mats inte mot 3:1',
+    !!d && d.carrier === 'redundant' && d.status === 'ejKravd' && d.kvot === null,
     d ? d.carrier + ' · ' + d.motivering : 'objektet saknas'); }
+
+{ const d = o('go07-ogiltigt-varde');
+  prov('GO-07', 'ogiltigt varde blir unknown, aldrig tyst accepterat',
+    !!d && d.carrier === 'unknown' && /ar inte required, redundant eller decorative/.test(d.motivering || ''),
+    d ? d.carrier + ' · ' + d.motivering.slice(0, 70) : 'objektet saknas'); }
+
+{ const d = o('go08-tom-markning');
+  prov('GO-08', 'tom markning blir unknown',
+    !!d && d.carrier === 'unknown' && d.status === 'unknown',
+    d ? d.carrier + ' · ' + d.motivering.slice(0, 70) : 'objektet saknas'); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
