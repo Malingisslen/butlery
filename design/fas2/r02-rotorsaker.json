@@ -4,8 +4,8 @@
  "$regel": "Gruppering endast på BEVISAD gemensam källa — identisk serialiserad inline-stil och samma uppmätta mekanism. Liknande mått räcker aldrig.",
  "$scope": "24 verifierade R-02-fynd i den mätbara populationen. 718 kontroller har ännu inte verifierad träffyta och ingår inte i denna analys.",
  "fynd_totalt": 24,
- "bevisade_rotorsaker_st": 7,
- "fynd_utan_bevisad_kalla_st": 2,
+ "bevisade_rotorsaker_st": 8,
+ "fynd_utan_bevisad_kalla_st": 0,
  "fixordning": [
   "RC-07 — strukturellt underskridande, 21,5 px",
   "RC-01 — flest fynd per källa, tio element, noll som passerar",
@@ -208,6 +208,52 @@
     "$note": "Ingen kontroll som passerar bär den här källsträngen — fixen kan inte försämra något som redan är godkänt."
    },
    "risks": "Chipraderna radbryter redan (flex-wrap). De växer 2 px i höjd. Panelen har ingen fast höjd."
+  },
+  {
+   "id": "RC-08",
+   "namn": "filterchipsen i sokpanel med fylld bakgrund i stallet for ram",
+   "source": {
+    "serialiseradInlineStil": "min-height:44px;display:inline-flex;align-items:center;padding:0px12px;background:F;color:F;font-size:13px;font-weight:600;",
+    "delatCssRegel": false,
+    "$note": "Ritningarna har ingen delad CSS-fil och ingen komponentdefinition för de här kontrollerna. Källan är en inline-sträng som upprepas. En källbaserad fix betyder att ETT mönster ändras, inte att en central regel ändras."
+   },
+   "affected": {
+    "fynd_st": 2,
+    "artifactIds": [
+     "sokpanel"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "sokpanel",
+      "role": "button",
+      "name": "Utan nötter",
+      "agare": "self",
+      "matt": {
+       "w": 96.375,
+       "h": 46
+      }
+     },
+     {
+      "artifactId": "sokpanel",
+      "role": "button",
+      "name": "Under 30 minuter",
+      "agare": "self",
+      "matt": {
+       "w": 107.688,
+       "h": 46
+      }
+     }
+    ]
+   },
+   "mechanism": "Samma min-height 44 som RC-02, men en EGEN kallstrang: de valda chipsen har fylld bakgrund i stallet for ram. Utan ram vore hojden 44; de landar anda pa 46 darfor att raden stracker syskonen till radens hojd, och radens hojd sätts av de bordade chipsen i RC-02.",
+   "minimalFix": "Hoj min-height till 48 pa samma satt som RC-02. Bagge strangarna maste andras — annars faller den ena tillbaka pa 44 nar den andra slutar satta radhojden.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 2,
+    "under_48_st": 2,
+    "passerar_redan_st": 0,
+    "$note": "Ingen kontroll som passerar bär den här källsträngen — fixen kan inte försämra något som redan är godkänt."
+   },
+   "risks": "Tva element, bagge faller. Beroendet at bagge hallen ar poangen: rattas bara RC-02 blir dessa 48 av strackningen, inte av egen hojd, och det ar inte en fix utan en slump."
   },
   {
    "id": "RC-03",
