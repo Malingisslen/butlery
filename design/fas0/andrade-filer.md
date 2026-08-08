@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=319-->
+<!--manifest:files=321-->
 
 ## Reporoten
 
@@ -43,8 +43,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery Skarmar v12 del 2 familj och socialt.dc.html` | `e14c683dc9c0a2b7a27318aedfd400d758765f2f60a95f6b300271bdd2332e0c` |
 | `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `e5a4582e92525bc2c9e93f35c83883c747dfcc3ca4bd70b2ec614e29c3af0ebd` |
 | `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `25a18345017ec464f025082326deae53ef1036b9b1b7bdd984020b559dceda22` |
-| `Butlery Skarmar v12 etapp 10 bred layout.dc.html` | `40fd6a938211368192b26a16dc8210dca005f8c2eef5a077ad03020c5052cdbb` |
-| `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `6da24ba8eb5fd9484ae33709f053176596020cd154ac71204d4c363d0c0ae73f` |
+| `Butlery Skarmar v12 etapp 10 bred layout.dc.html` | `c1343e6647f02ce33acaa469737f48b82e1c46e3aded5e50973cd475f77c3a32` |
+| `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `2bf6cfe395015437691c6054765ef3991cb3c1bec2c1cd976ed66b353edcda40` |
 | `Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html` | `bd602c3a5fe4693193cf8c68748c75d21bdae4b99588ce81286d068833918592` |
 | `Butlery Skarmar v12 etapp 2.dc.html` | `ac7a58ba93ca9c4cbfb6f735f5456d74671359b92ec1a0fd0509ac52f11f9d42` |
 | `Butlery Skarmar v12 etapp 3 onboarding.dc.html` | `a1f37aa195a95caa1b7ac83547d88a8f612ea4938ee69a3817f76480b3cb1c1f` |
@@ -52,7 +52,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery Skarmar v12 etapp 5-7.dc.html` | `8e3c586101b017bf8f8f73d11b5fcf9cd9117e1b35b5978df5f4d862b82f7f1f` |
 | `Butlery Skarmar v12 etapp 6 konto och integritet.dc.html` | `13d61c7c2e5e80b17e0d09d134deaa339d8cc4fd102d2504e76e04e0659fd18b` |
 | `Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html` | `447cba11ae272ea56624d70df04bf09ee50418a89fc6bec23af820098cfdaaab` |
-| `Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html` | `2a78ca913e6eb5d7eef011523ddd281b9ed3c64786a0c8a0a3507e24b63134e1` |
+| `Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html` | `fb2ecfa55fd6dc4ed4c43ec9189990298d39ee1e613a561b87245c2ba2f38d90` |
 | `Butlery Skarmar v12.dc.html` | `c1b435cf7c470ebe31db64b82b5fc4ee94993391801130edee761f1540c893b2` |
 | `Butlery beslut grund v13.dc.html` | `ce0aaa76a62fb6616d58e93fdaabd1c5b185bdf87ac11bfb60a91b3f7b324eaf` |
 | `Butlery beslut kalendermatt v1.dc.html` | `8fb980fb2eb6c9805c14e8d1bc15421e3e57e5656df1d1ea735314b200f1cdb0` |
@@ -232,7 +232,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/negativa-prov.json` | `5ac71e2542a1c9b66427a154f591650f9da433e035e8f5c89d512e520cf658a0` |
 | `fas2/r01-baslinje.json` | `d0f89a18c48f6d0e159f64b8f487c9417d26cc2272d06cce77aef58f0c2ca61c` |
 | `fas2/r02-baslinje.json` | `ec751bef19c9d3b3f91ebdbba06eaabdc336bd26029aa08512402a7593ccc194` |
+| `fas2/r02-delta-44kontraktet.json` | `6ae99e247759643ff9f46af843591ef1dea12a24947a3f16b79d9b446cc926bc` |
 | `fas2/r02-delta-rc07.json` | `d0f053efdfb574a05b1da0e31f80ac84d8c483941f6796633d285bf293093796` |
+| `fas2/r02-fix44-logg.json` | `7b649c9a69cc9fbfa0b82a98394f88c442baad389275f5352721beef05ea80a5` |
 | `fas2/r02-rotorsaker.json` | `b2ad1b9d988bd8a1a7bdbacdbb37209b3309d25e81d422878e13c7e55a88d3c5` |
 | `fas2/r02-snapshot-hogrisk.json` | `a9f7a54faed517b3e47400e4a9714de341a6dfc69a5a38f2fbdb367d69b77366` |
 | `fas2/r03-baslinje.json` | `f76b4f37b6bb52ece683c61621670a0b37173be3c74acf1da7bfd992b7e8c702` |
