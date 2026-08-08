@@ -60,8 +60,13 @@ export const NONTEXT_MEASURE = `(() => {
     return t.trim(); };
   const CHEVRON = /chevron|caret|arrow|expand|collapse|pil/i;
   const BOCK = /check|bock|tick/i;
+  // Aldrig in i en ANNAN semantisk kontrolls subtrad. Den kontrollen har sin
+  // egen grafik och sin egen bedomning.
+  const egenSubtrad = (el, rot) => { let n = el;
+    while (n && n !== rot) { if (n.hasAttribute('data-a11y-role')) return false; n = n.parentElement; }
+    return true; };
   const glyfer = el => [...el.querySelectorAll('svg, [data-icon]')]
-    .filter(e => e.tagName.toLowerCase() === 'svg' || e.hasAttribute('data-icon'));
+    .filter(e => (e.tagName.toLowerCase() === 'svg' || e.hasAttribute('data-icon')) && egenSubtrad(e, el));
   const glyfFarg = svg => { const st = svg.getAttribute('stroke'), fi = svg.getAttribute('fill');
     if (st && st !== 'none') return st;
     if (fi && fi !== 'none') return fi;
@@ -79,6 +84,47 @@ export const NONTEXT_MEASURE = `(() => {
 
   const VALKONTROLL = new Set(['checkbox', 'radio', 'switch']);
   const TILLSTANDSROLL = new Set(['tab', 'button', 'menuitem', 'link']);
+
+  /* ── CHILD-DESCENT · den synliga formen kan ligga under agaren ────────── */
+  //
+  // R-02-modellen gjorde traffytan till ett genomskinligt element och flyttade
+  // den synliga formen till ett barn. Agare och visuell barare ar darfor inte
+  // alltid samma nod. Descent ar tillaten — men bara nar den ger ett ENTYDIGT
+  // svar.
+  //
+  // Regeln "forsta barnet med ram eller fyllning" anvands INTE. Den skulle
+  // valja nagot aven nar ritningen inte pekar ut nagot, och det ar precis vad
+  // fail closed ska hindra. Kontrast lases aldrig har.
+  function visuellForm(c) {
+    if (harRam(c) || harFyllning(c)) return { identitet: c, tillstand: null, grund: 'agaren har egen boundary' };
+    const inom = [...c.querySelectorAll('*')].filter(e => egenSubtrad(e, c));
+    const avgransade = inom.filter(e => harRam(e) || harFyllning(e));
+    const g = glyfer(c);
+    const bockar = g.filter(e => BOCK.test(e.getAttribute('data-icon') || ''));
+    const ovrigaGlyfer = g.filter(e => !bockar.includes(e));
+
+    if (avgransade.length === 1)
+      return { identitet: avgransade[0], tillstand: bockar[0] || null,
+        grund: 'exakt ett element i kontrollens egen subtrad ritar en avgransad form' };
+
+    if (avgransade.length === 2) {
+      // Track och thumb: den yttre rymmer den inre. Tva syskon gor det inte.
+      const [a, b] = avgransade;
+      if (a.contains(b)) return { identitet: a, tillstand: b, grund: 'tva avgransade element i nastlad kedja — den yttre ar formen, den inre bar tillstandet' };
+      if (b.contains(a)) return { identitet: b, tillstand: a, grund: 'tva avgransade element i nastlad kedja — den yttre ar formen, den inre bar tillstandet' };
+      return { identitet: null, tillstand: null, grund: 'tva avgransade element som syskon — vilket som ar kontrollens form gar inte att avgora' };
+    }
+    if (avgransade.length > 2)
+      return { identitet: null, tillstand: null, grund: avgransade.length + ' avgransade element i subtradet — formen gar inte att avgora entydigt' };
+
+    // Ingen avgransad form. Ar kontrollen ritad SOM en glyf?
+    if (ovrigaGlyfer.length === 1)
+      return { identitet: ovrigaGlyfer[0], tillstand: bockar[0] || null,
+        grund: 'kontrollen ar ritad som en glyf och exakt en glyf bar formen' };
+    if (ovrigaGlyfer.length > 1)
+      return { identitet: null, tillstand: null, grund: ovrigaGlyfer.length + ' glyfer med olika funktion — vilken som ar kontrollens form gar inte att avgora' };
+    return { identitet: null, tillstand: bockar[0] || null, grund: 'varken avgransad form eller glyf i kontrollens subtrad' };
+  }
 
   const ut = [];
   for (const c of document.querySelectorAll('[data-a11y-role]')) {
@@ -99,39 +145,49 @@ export const NONTEXT_MEASURE = `(() => {
       // Valkontroller identifieras av sin egen ruta, inte av etiketten:
       // etiketten sager VAD valet galler, inte att det ar ett val.
       const bock = g.find(e => BOCK.test(e.getAttribute('data-icon') || ''));
-      const inreGlyf = g.find(e => e !== bock);
-      const boundary = harRam(c) ? 'ram' : harFyllning(c) ? 'fyllning' : null;
-      if (boundary) delar.push({ typ: boundary, roll_i_kontrollen: 'componentIdentityCarrier',
-        motivering: 'valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler',
-        el: c, mot: 'yttre' });
-      else delar.push({ typ: 'saknas', roll_i_kontrollen: 'unknown',
-        motivering: 'valkontrollen har varken ram eller fyllning — vilken grafik som identifierar den gar inte att avgora',
+      const form = visuellForm(c);
+      if (form.identitet) {
+        const e = form.identitet;
+        const typ = harRam(e) ? 'ram' : harFyllning(e) ? 'fyllning' : 'glyf';
+        delar.push({ typ, roll_i_kontrollen: 'componentIdentityCarrier',
+          motivering: 'valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — ' + form.grund,
+          el: e, motEl: e.parentElement || c, mot: 'yttre', descent: e !== c });
+      } else delar.push({ typ: 'saknas', roll_i_kontrollen: 'unknown',
+        motivering: 'valkontrollens form gar inte att avgora: ' + form.grund,
         el: c, mot: null });
+      // Tillstandsgrafiken matas mot den yta den ligger PA — formen, inte agaren.
+      const inreYta = form.identitet || c;
       if (bock) delar.push({ typ: 'bock', roll_i_kontrollen: 'stateCarrier',
         motivering: 'bocken ar den grafik som visar att kontrollen ar ikryssad',
-        el: bock, mot: 'inre' });
-      if (roll === 'switch') {
-        const thumb = [...c.children].find(e => e !== bock);
-        if (thumb) delar.push({ typ: 'thumb', roll_i_kontrollen: 'stateCarrier',
-          motivering: 'reglagets knopp och dess lage visar on eller off',
-          el: thumb, mot: 'inre' });
-      }
-      if (inreGlyf && inreGlyf !== bock) delar.push({ typ: 'ikon', roll_i_kontrollen: 'supplemental',
+        el: bock, motEl: inreYta, mot: 'inre' });
+      const thumb = roll === 'switch'
+        ? (form.tillstand && form.tillstand !== bock ? form.tillstand : [...c.children].find(e => e !== bock))
+        : null;
+      if (thumb) delar.push({ typ: 'thumb', roll_i_kontrollen: 'stateCarrier',
+        motivering: 'reglagets knopp och dess lage visar on eller off',
+        el: thumb, motEl: inreYta, mot: 'inre' });
+      const anvand = new Set([form.identitet, bock, thumb].filter(Boolean));
+      for (const e of g) if (!anvand.has(e)) delar.push({ typ: 'ikon',
+        roll_i_kontrollen: 'supplemental',
         motivering: 'ytterligare glyf i en valkontroll som redan identifieras av sin ruta',
-        el: inreGlyf, mot: 'inre' });
+        el: e, motEl: inreYta, mot: 'inre' });
     } else if (!harEgenText) {
       // Ikonkontroll: glyfen ar det enda som visar att kontrollen finns.
       if (g.length) for (const e of g) delar.push({ typ: 'ikon',
         roll_i_kontrollen: 'componentIdentityCarrier',
         motivering: 'kontrollen har ingen synlig text — glyfen ar det enda som identifierar den',
         el: e, mot: 'yttre' });
-      else if (harRam(c) || harFyllning(c)) delar.push({ typ: harRam(c) ? 'ram' : 'fyllning',
-        roll_i_kontrollen: 'componentIdentityCarrier',
-        motivering: 'kontrollen har varken text eller glyf — dess egen yta ar det som identifierar den',
-        el: c, mot: 'yttre' });
-      else delar.push({ typ: 'saknas', roll_i_kontrollen: 'unknown',
-        motivering: 'kontrollen har varken text, glyf, ram eller fyllning',
-        el: c, mot: null });
+      else {
+        const form = visuellForm(c);
+        if (form.identitet) delar.push({ typ: harRam(form.identitet) ? 'ram' : 'fyllning',
+          roll_i_kontrollen: 'componentIdentityCarrier',
+          motivering: 'kontrollen har varken text eller glyf — dess egen yta ar det som identifierar den — ' + form.grund,
+          el: form.identitet, motEl: form.identitet.parentElement || c, mot: 'yttre',
+          descent: form.identitet !== c });
+        else delar.push({ typ: 'saknas', roll_i_kontrollen: 'unknown',
+          motivering: 'kontrollen har varken text eller glyf och ' + form.grund,
+          el: c, mot: null });
+      }
     } else {
       // Textmarkt kontroll: texten identifierar komponenten. Men en glyf kan
       // anda bara TILLSTANDET, och det avgors av glyfens funktion — inte av
@@ -157,13 +213,14 @@ export const NONTEXT_MEASURE = `(() => {
     /* ── STEG 2 · KONTRASTEN, bara for carriers ───────────────────────── */
     const matta = delar.map(d => {
       const bas = { typ: d.typ, carrier: d.roll_i_kontrollen, motivering: d.motivering,
-        ikon: d.el && d.el.getAttribute ? (d.el.getAttribute('data-icon') || null) : null };
+        ikon: d.el && d.el.getAttribute ? (d.el.getAttribute('data-icon') || null) : null,
+        descent: !!d.descent };
       if (d.roll_i_kontrollen === 'supplemental' || d.roll_i_kontrollen === 'decorative' ||
           d.roll_i_kontrollen === 'unknown' || !d.mot)
         return { ...bas, kvot: null, status: d.roll_i_kontrollen === 'unknown' ? 'unknown' : 'ejKravd' };
       // Vilken yta ska den kontrastera MOT? Aldrig godtycklig forfader.
-      const motEl = d.mot === 'inre' ? c : (c.parentElement || c);
-      const bg = bakgrundBakom(d.mot === 'inre' ? c : (c.parentElement || c));
+      const motEl = d.motEl || (d.mot === 'inre' ? c : (c.parentElement || c));
+      const bg = bakgrundBakom(motEl);
       if (bg.oreducerbar) return { ...bas, kvot: null, status: 'unknown',
         varfor: 'oreducerbar angransande farg: ' + bg.oreducerbar };
       let f = null;
