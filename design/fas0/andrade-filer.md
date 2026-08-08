@@ -39,9 +39,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `00-spec-index.md` | `d762b1261a80fb225bc2a61c902e090cf6a0ed0028206602a158cab70dc17941` |
 | `Butlery Grafisk manual v6.dc.html` | `3879f2b3451f47de109db76b05f4fd18361f7c1318bebc625c1bdeca6fbd2964` |
 | `Butlery Komponentark v1.dc.html` | `78f27a546502c7d2a9cb99aa954d6cd8ba3b5d18f1694aac2d9db1496ff1ed47` |
-| `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `ca3a5e3b5bcf1cd0bf8e1823ac42a19c99318df68fed6bcf6655f57b24dfea4f` |
-| `Butlery Skarmar v12 del 2 familj och socialt.dc.html` | `3d6e19ac3528110d5f547f1c682697a79387c02e9d51d5cadecc5cabcb79f1c5` |
-| `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `a27b933b63f593031a8e295ba7316c89f6f028eededa0aec175e256992929568` |
+| `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `01f92df5b8cd5d70f08562dabd5cdb68281e89b5488f6e25980e5ddd95ce5d81` |
+| `Butlery Skarmar v12 del 2 familj och socialt.dc.html` | `908dffe0511df16a3d0beaa9f8fbe6773020a5fc0e4fd7a5fa275c9ec6fa849d` |
+| `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `0f064d8555b1b7dc1f41ff744dafb622cc3414bcde2827c83218266c0ff3632b` |
 | `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `d916c7189dd6f02dac089cf3dca9eed03af8afb93ba98f944c9927b6e0139a9a` |
 | `Butlery Skarmar v12 etapp 10 bred layout.dc.html` | `6024617e1a916758a579a3488307d4ccf8407b078c3e2382f390aac420aaf4ad` |
 | `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `e5d9f27aa55aaea3c233d64b892fd1b705afe35f1d7f30134504227121363c90` |
@@ -258,7 +258,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r02-fix44-logg.json` | `7b649c9a69cc9fbfa0b82a98394f88c442baad389275f5352721beef05ea80a5` |
 | `fas2/r02-fix6-logg.json` | `e266c08e46bda22846b4cd6b82209b1cc455cb7d6fbd0b7bce9bdc779adfbbd1` |
 | `fas2/r02-monster-613.json` | `a28cfbd08955bfeda04e9c94b38467286742239ef685b15809143472db24d82b` |
-| `fas2/r02-overlap-audit.json` | `b61df6fcc864c20d2a8ec2e44b6a99f4b26cce9b29b0679a38f47b4898b7de52` |
+| `fas2/r02-overlap-audit.json` | `51af4a1fab426c5fd1de432054bad506164109a3c9e1a92503ee6c3694f8769c` |
 | `fas2/r02-partition-667.json` | `148e6aeda18c445a3f571fc6fc1a2a48d379cf0b9f65385d7be43763333d05a4` |
 | `fas2/r02-rc11-matning.json` | `0aa2386aad74afd56f38d378947c16be3d6e2e73384c5a31722e683c3957c4c0` |
 | `fas2/r02-rotorsaker-2.json` | `f07cdad43cfd7986ff3a22b0c7e0ee7c204beb11ac1338bfa96e3824fa6ccce3` |
