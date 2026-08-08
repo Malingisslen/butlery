@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=341-->
+<!--manifest:files=343-->
 
 ## Reporoten
 
@@ -52,7 +52,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery Skarmar v12 etapp 5-7.dc.html` | `a80f5593b9dbbaacd36622dcd1099d99ec61817f08226859799275fe003e60e4` |
 | `Butlery Skarmar v12 etapp 6 konto och integritet.dc.html` | `13d61c7c2e5e80b17e0d09d134deaa339d8cc4fd102d2504e76e04e0659fd18b` |
 | `Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html` | `2c601d0076fec925252b6c1d6a786ff071e7f41f8e5e7e1adfe57f42a19a325b` |
-| `Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html` | `3ebda9fa408ebbd8ef431e045787fb12d9fcc1606c06efe84aa717ab039e7611` |
+| `Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html` | `209c36ef82ce9caf6c63bf1aec12c4e09ca988f65065761198b93681d58aeb94` |
 | `Butlery Skarmar v12.dc.html` | `c1b435cf7c470ebe31db64b82b5fc4ee94993391801130edee761f1540c893b2` |
 | `Butlery beslut grund v13.dc.html` | `ce0aaa76a62fb6616d58e93fdaabd1c5b185bdf87ac11bfb60a91b3f7b324eaf` |
 | `Butlery beslut kalendermatt v1.dc.html` | `8fb980fb2eb6c9805c14e8d1bc15421e3e57e5656df1d1ea735314b200f1cdb0` |
@@ -243,6 +243,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r02-delta-rc12-installergen.json` | `198236f21f220d7fcaddb6f5a7d9a3799e606eb95da90f29e0196c8bb8cc8af1` |
 | `fas2/r02-delta-rc13.json` | `ed3f4e8ed855b3756e31cf245e0126e8ef7d6d36799561d392d79b473d34d7fe` |
 | `fas2/r02-delta-rc14-15-16.json` | `c187416752652ccafd65cb9af376728eb179c554e8c1546ce7116f9b01f83966` |
+| `fas2/r02-delta-socintegritet.json` | `31501130b4339bad195035ad3e310c642c0e4103464006b1e72054a6136e9854` |
 | `fas2/r02-fix04-logg.json` | `a76fd39a7266255ff27741514841d78910ceb56cee35f6b8648f42197a27d12c` |
 | `fas2/r02-fix0910-logg.json` | `ff3c355ac8d37733ceb03a29f3bd09ba6187ee822cead5006141b6dc21359e80` |
 | `fas2/r02-fix44-logg.json` | `7b649c9a69cc9fbfa0b82a98394f88c442baad389275f5352721beef05ea80a5` |
@@ -256,6 +257,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r02-snapshot-batch-d.json` | `e5d2a59995aa0567a6bfa10530b5c46316fafc68a3ba434eb2addda2be3a3d1a` |
 | `fas2/r02-snapshot-batch-st.json` | `8ab46c4a2434451d7ac45a67dfdfc499f6ed51665d31cc33a0c0db9c7edb31fc` |
 | `fas2/r02-snapshot-hogrisk.json` | `a9f7a54faed517b3e47400e4a9714de341a6dfc69a5a38f2fbdb367d69b77366` |
+| `fas2/r02-socintegritet-scroll.json` | `c0f21306572877f7888543f722d6896b229c22ae1b2488610037cf06fa2f5590` |
 | `fas2/r02-unknown-inventering.json` | `b5c81762f452b027814d1ca0b46fcb52be5aae3dfa6ef8a9346c24801a36cab3` |
 | `fas2/r03-baslinje.json` | `f76b4f37b6bb52ece683c61621670a0b37173be3c74acf1da7bfd992b7e8c702` |
 | `fas2/r04-parningsunderlag.json` | `d82a227cf2f2b978b42e9625365027bdf9e5b41136808987cc61e0a46cb4fa55` |
