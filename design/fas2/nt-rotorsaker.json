@@ -1,0 +1,3772 @@
+{
+ "$schema": "butlery-nt-rotorsak/1",
+ "$regel": "Grupperingen ar mekanisk. Samma RGB pa olika bakgrunder ar inte samma rotorsak. Rotorsakspopulation och write scope halIs isar.",
+ "population": {
+  "A_kontrollgrafik_grafiskaDelar_st": 145,
+  "A_componentIdentityCarrier_st": 106,
+  "A_stateCarrier_st": 39,
+  "B_fristaende_grafiskaObjekt_st": 22,
+  "totalt_raa_fynd_st": 167
+ },
+ "adjudicering": {
+  "giltiga_fynd_st": 127,
+  "matartefakter_st": 40,
+  "artefakt_barare_utan_egen_farg_st": 12,
+  "artefakt_fel_angransande_yta_st": 28,
+  "$not": "Matartefakter ar bundna till en rotorsak som alla andra, men de ar inte designfel och ska inte fargrattas. De kraver ett metodbeslut."
+ },
+ "rotorsaker_st": 32,
+ "bundna_fynd_st": 167,
+ "oforklarade_st": 0,
+ "rotorsaker": [
+  {
+   "id": "NRC-01",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "ram",
+   "mekanism": "inline style: border: 1px solid rgb(204, 209, 194)  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "border: 1px solid rgb(204, 209, 194)",
+   "kalldeklaration_bakgrund": [
+    "(css-regel eller arv)",
+    "background: rgb(245, 244, 237)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(204, 209, 194)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 36,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 36,
+   "antal_artefakter": 12,
+   "artefakter": [
+    "veckoallergi",
+    "familjmedlemsamtycke",
+    "lgbgester",
+    "veckorostlagg",
+    "onballergi",
+    "onbateruppta",
+    "onbsenare",
+    "taggregel",
+    "cooksnapsynlighet",
+    "notisertyp",
+    "flertaggsam",
+    "kompdubblett"
+   ],
+   "filer": 8,
+   "kvot_min": 1.41,
+   "kvot_max": 1.41,
+   "states": [
+    "unchecked"
+   ],
+   "roller": [
+    "checkbox",
+    "radio"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 36,
+   "write_scope": {
+    "sokmonster": [
+     "border:1px solid #ccd1c2",
+     "border: 1px solid #ccd1c2"
+    ],
+    "forekomster_i_kallan_st": 401,
+    "utanfor_fynden_st": 365,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 14,
+   "exempel": [
+    {
+     "art": "veckoallergi",
+     "namn": "Släpp kravet mindre kött",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"197\" data-component=\"chip\" data-a11y-name=\"Släpp kravet mindre kött\" data-a11y-role=\"checkbox\" data-h"
+    },
+    {
+     "art": "familjmedlemsamtycke",
+     "namn": "0 till 2 år",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"1752\" data-a11y-name=\"0 till 2 år\" data-a11y-role=\"radio\" data-hit=\"self\" style=\"flex: 1 1 0%; min-he"
+    },
+    {
+     "art": "familjmedlemsamtycke",
+     "namn": "3 till 6 år",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"1753\" data-a11y-name=\"3 till 6 år\" data-a11y-role=\"radio\" data-hit=\"self\" style=\"flex: 1 1 0%; min-he"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "veckoallergi",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Släpp kravet mindre kött",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "familjmedlemsamtycke",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "0 till 2 år",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "familjmedlemsamtycke",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "3 till 6 år",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "familjmedlemsamtycke",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "13 till 17 år",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "familjmedlemsamtycke",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Vuxen",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "familjmedlemsamtycke",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Gluten",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "familjmedlemsamtycke",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Mjölk",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "familjmedlemsamtycke",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Oliver",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "familjmedlemsamtycke",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Koriander",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "lgbgester",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "namn": "Ändra receptet för alltid",
+     "state": "unchecked",
+     "kvot": 1.41
+    },
+    {
+     "art": "veckorostlagg",
+     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+     "namn": "Rösta på Krämig svamppasta, föreslagen av Anna, 2 röster",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "veckorostlagg",
+     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+     "namn": "Rösta på Fiskgratäng, föreslagen av Malin, 1 röst",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onballergi",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Mjölk",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onballergi",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Ägg",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onballergi",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Soja",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onballergi",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Fisk",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onballergi",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Skaldjur",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onballergi",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Sesam",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onbateruppta",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Gluten",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onbateruppta",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Mjölk",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onbateruppta",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Nötter",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onbateruppta",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Ägg",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onbsenare",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Vegetariskt",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onbsenare",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Veganskt",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onbsenare",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Glutenfritt",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "onbsenare",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Laktosfritt",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "taggregel",
+     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+     "namn": "Något villkor",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "cooksnapsynlighet",
+     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+     "namn": "Bara jag ser bilden",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "notisertyp",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Samlat, högst en gång i timmen",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "notisertyp",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "En sammanfattning per dag",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "notisertyp",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Inget om samarbete",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "flertaggsam",
+     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+     "namn": "Behåll Snabbt på vardagar, 6 recept",
+     "state": "unchecked",
+     "kvot": 1.41
+    },
+    {
+     "art": "flertaggsam",
+     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+     "namn": "Behåll Vardagsmat, 5 recept",
+     "state": "unchecked",
+     "kvot": 1.41
+    },
+    {
+     "art": "kompdubblett",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "Använd 45 minuter",
+     "state": "unchecked",
+     "kvot": 1.41
+    },
+    {
+     "art": "kompdubblett",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "Behåll fyra portioner",
+     "state": "unchecked",
+     "kvot": 1.41
+    },
+    {
+     "art": "kompdubblett",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "Använd det nya steg 4",
+     "state": "unchecked",
+     "kvot": 1.41
+    }
+   ]
+  },
+  {
+   "id": "NRC-02",
+   "population": "B",
+   "bararroll": "graphicalObjectRequired",
+   "typ": "objekt",
+   "mekanism": "svg-attribut: fill=\"#ce7c1e\"  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "fill=\"#ce7c1e\"",
+   "kalldeklaration_bakgrund": [
+    "(css-regel eller arv)",
+    "background: rgb(245, 244, 237)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(206, 124, 30)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 11,
+   "enhet": "grafiska objekt",
+   "antal_kontroller": null,
+   "antal_artefakter": 5,
+   "artefakter": [
+    "vanner",
+    "betygsoversikt",
+    "publikprofil",
+    "tadelning",
+    "kontextmeny"
+   ],
+   "filer": 2,
+   "kvot_min": 2.92,
+   "kvot_max": 2.92,
+   "states": [],
+   "roller": [],
+   "ikoner": [
+    "star"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 11,
+   "write_scope": {
+    "sokmonster": [
+     "fill=\"#ce7c1e\""
+    ],
+    "forekomster_i_kallan_st": 39,
+    "utanfor_fynden_st": 28,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 2,
+   "exempel": [
+    {
+     "art": "vanner",
+     "namn": null,
+     "kvot": 2.92,
+     "farg": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"597\" data-graphic-role=\"required\" width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"#ce7c1e\" data-icon="
+    },
+    {
+     "art": "vanner",
+     "namn": null,
+     "kvot": 2.92,
+     "farg": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"611\" data-graphic-role=\"required\" width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"#ce7c1e\" data-icon="
+    },
+    {
+     "art": "betygsoversikt",
+     "namn": null,
+     "kvot": 2.92,
+     "farg": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"284\" data-graphic-role=\"required\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"#ce7c1e\" data-icon="
+    }
+   ],
+   "fynd": [
+    {
+     "art": "vanner",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    },
+    {
+     "art": "vanner",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    },
+    {
+     "art": "betygsoversikt",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    },
+    {
+     "art": "betygsoversikt",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    },
+    {
+     "art": "betygsoversikt",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    },
+    {
+     "art": "betygsoversikt",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    },
+    {
+     "art": "publikprofil",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    },
+    {
+     "art": "publikprofil",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    },
+    {
+     "art": "publikprofil",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    },
+    {
+     "art": "tadelning",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    },
+    {
+     "art": "kontextmeny",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    }
+   ]
+  },
+  {
+   "id": "NRC-03",
+   "population": "A",
+   "bararroll": "stateCarrier",
+   "typ": "thumb",
+   "mekanism": "css-regel: (ingen inline background)  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "(ingen inline background)",
+   "kalldeklaration_bakgrund": [
+    "(css-regel eller arv)"
+   ],
+   "matartefakt": true,
+   "artefaktklass": "barare utan egen farg",
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "MATARTEFAKT: bararen malar ingenting. Kvoten kommer ur underlaget, inte ur designen.",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 11,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 11,
+   "antal_artefakter": 2,
+   "artefakter": [
+    "kontosamtycke",
+    "kontonotiser"
+   ],
+   "filer": 1,
+   "kvot_min": 1,
+   "kvot_max": 1,
+   "states": [
+    "checked"
+   ],
+   "roller": [
+    "switch"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 11,
+   "write_scope": {
+    "sokmonster": [],
+    "forekomster_i_kallan_st": null,
+    "utanfor_fynden_st": null,
+    "$not": "deklarationen kommer inte fran en inline-deklaration och gar inte att raka i kallan"
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "kontosamtycke",
+     "namn": "Analys av hur appen används",
+     "kvot": 1,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"79\" style=\"flex: 1 1 0%;\">"
+    },
+    {
+     "art": "kontosamtycke",
+     "namn": "Utskick och nyheter",
+     "kvot": 1,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"85\" style=\"flex: 1 1 0%;\">"
+    },
+    {
+     "art": "kontosamtycke",
+     "namn": "Sociala funktioner",
+     "kvot": 1,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"91\" style=\"flex: 1 1 0%;\">"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "kontosamtycke",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Analys av hur appen används",
+     "state": null,
+     "kvot": 1
+    },
+    {
+     "art": "kontosamtycke",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Utskick och nyheter",
+     "state": null,
+     "kvot": 1
+    },
+    {
+     "art": "kontosamtycke",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Sociala funktioner",
+     "state": "checked",
+     "kvot": 1
+    },
+    {
+     "art": "kontosamtycke",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Push-notiser",
+     "state": "checked",
+     "kvot": 1
+    },
+    {
+     "art": "kontosamtycke",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "AI-tolkning av recept",
+     "state": "checked",
+     "kvot": 1
+    },
+    {
+     "art": "kontonotiser",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Vänner och förfrågningar",
+     "state": "checked",
+     "kvot": 1
+    },
+    {
+     "art": "kontonotiser",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Delade recept",
+     "state": "checked",
+     "kvot": 1
+    },
+    {
+     "art": "kontonotiser",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Samarbete i listor och menyer",
+     "state": "checked",
+     "kvot": 1
+    },
+    {
+     "art": "kontonotiser",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Meddelanden",
+     "state": "checked",
+     "kvot": 1
+    },
+    {
+     "art": "kontonotiser",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Inköpslistan, av som standard",
+     "state": null,
+     "kvot": 1
+    },
+    {
+     "art": "kontonotiser",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Aktivitet från andra, av som standard",
+     "state": null,
+     "kvot": 1
+    }
+   ]
+  },
+  {
+   "id": "NRC-04",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "ikon",
+   "mekanism": "svg-attribut: stroke=\"#17251d\"  mot  rgb(36, 56, 44)",
+   "kalldeklaration_forgrund": "stroke=\"#17251d\"",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(206, 124, 30)"
+   ],
+   "matartefakt": true,
+   "artefaktklass": "fel angransande yta",
+   "faktisk_angransande_yta": [
+    "rgb(206, 124, 30)"
+   ],
+   "adjudicering": "MATARTEFAKT: mats mot ytan utanfor kontrollen, men ligger pa kontrollens egen yta.",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(23, 37, 29)"
+   ],
+   "bakgrund": [
+    "rgb(36, 56, 44)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 9,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 9,
+   "antal_artefakter": 9,
+   "artefakter": [
+    "hem360",
+    "langavarden",
+    "hem",
+    "hemmorkt",
+    "hemtom",
+    "hemladdar",
+    "hemoffline",
+    "hemfel",
+    "bredskal"
+   ],
+   "filer": 3,
+   "kvot_min": 1.27,
+   "kvot_max": 1.27,
+   "states": [],
+   "roller": [
+    "button"
+   ],
+   "ikoner": [
+    "nav-add",
+    "plus"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 9,
+   "write_scope": {
+    "sokmonster": [
+     "stroke=\"#17251d\""
+    ],
+    "forekomster_i_kallan_st": 41,
+    "utanfor_fynden_st": 32,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "hem360",
+     "namn": "Lägg till",
+     "kvot": 1.27,
+     "farg": "rgb(23, 37, 29)",
+     "angransande": "rgb(36, 56, 44)",
+     "tagg": "<svg data-dc-tpl=\"1524\" width=\"24\" height=\"24\" viewBox=\"22 22 116 116\" fill=\"none\" stroke=\"#17251d\" stroke-width=\"2.2\" s"
+    },
+    {
+     "art": "langavarden",
+     "namn": "Lägg till",
+     "kvot": 1.27,
+     "farg": "rgb(23, 37, 29)",
+     "angransande": "rgb(36, 56, 44)",
+     "tagg": "<svg data-dc-tpl=\"1700\" width=\"24\" height=\"24\" viewBox=\"22 22 116 116\" fill=\"none\" stroke=\"#17251d\" stroke-width=\"2.2\" s"
+    },
+    {
+     "art": "hem",
+     "namn": "Lägg till",
+     "kvot": 1.27,
+     "farg": "rgb(23, 37, 29)",
+     "angransande": "rgb(36, 56, 44)",
+     "tagg": "<svg data-dc-tpl=\"592\" width=\"24\" height=\"24\" viewBox=\"22 22 116 116\" fill=\"none\" stroke=\"#17251d\" stroke-width=\"2.2\" st"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "hem360",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": "Lägg till",
+     "state": null,
+     "kvot": 1.27
+    },
+    {
+     "art": "langavarden",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": "Lägg till",
+     "state": null,
+     "kvot": 1.27
+    },
+    {
+     "art": "hem",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Lägg till",
+     "state": null,
+     "kvot": 1.27
+    },
+    {
+     "art": "hemmorkt",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Lägg till",
+     "state": null,
+     "kvot": 1.27
+    },
+    {
+     "art": "hemtom",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Lägg till",
+     "state": null,
+     "kvot": 1.27
+    },
+    {
+     "art": "hemladdar",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Lägg till",
+     "state": null,
+     "kvot": 1.27
+    },
+    {
+     "art": "hemoffline",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Lägg till",
+     "state": null,
+     "kvot": 1.27
+    },
+    {
+     "art": "hemfel",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Lägg till",
+     "state": null,
+     "kvot": 1.27
+    },
+    {
+     "art": "bredskal",
+     "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+     "namn": "Lägg till",
+     "state": null,
+     "kvot": 1.27
+    }
+   ]
+  },
+  {
+   "id": "NRC-05",
+   "population": "A",
+   "bararroll": "stateCarrier",
+   "typ": "bock",
+   "mekanism": "svg-attribut: stroke=\"#F5F4ED\"  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "stroke=\"#F5F4ED\"",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(36, 56, 44)"
+   ],
+   "matartefakt": true,
+   "artefaktklass": "fel angransande yta",
+   "faktisk_angransande_yta": [
+    "rgb(36, 56, 44)"
+   ],
+   "adjudicering": "MATARTEFAKT: mats mot ytan utanfor kontrollen, men ligger pa kontrollens egen yta.",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 9,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 9,
+   "antal_artefakter": 4,
+   "artefakter": [
+    "betygvemat",
+    "betygvemarket",
+    "inkopbockad",
+    "imparkiv"
+   ],
+   "filer": 3,
+   "kvot_min": 1,
+   "kvot_max": 1,
+   "states": [
+    "checked"
+   ],
+   "roller": [
+    "checkbox"
+   ],
+   "ikoner": [
+    "check"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 9,
+   "write_scope": {
+    "sokmonster": [
+     "stroke=\"#F5F4ED\""
+    ],
+    "forekomster_i_kallan_st": 272,
+    "utanfor_fynden_st": 263,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "betygvemat",
+     "namn": "Maja åt (du)",
+     "kvot": 1,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"1467\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F4ED\" stroke-width=\"2.2\" strok"
+    },
+    {
+     "art": "betygvemat",
+     "namn": "Per åt",
+     "kvot": 1,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"1474\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F4ED\" stroke-width=\"2.2\" strok"
+    },
+    {
+     "art": "betygvemat",
+     "namn": "Ida åt",
+     "kvot": 1,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"1480\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F4ED\" stroke-width=\"2.2\" strok"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "betygvemat",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Maja åt (du)",
+     "state": null,
+     "kvot": 1
+    },
+    {
+     "art": "betygvemat",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Per åt",
+     "state": null,
+     "kvot": 1
+    },
+    {
+     "art": "betygvemat",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Ida åt",
+     "state": null,
+     "kvot": 1
+    },
+    {
+     "art": "betygvemarket",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Malin åt, vald",
+     "state": "checked",
+     "kvot": 1
+    },
+    {
+     "art": "betygvemarket",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Anna åt, vald",
+     "state": "checked",
+     "kvot": 1
+    },
+    {
+     "art": "inkopbockad",
+     "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+     "namn": "Grädde 3 deciliter, bockad",
+     "state": "checked",
+     "kvot": 1
+    },
+    {
+     "art": "imparkiv",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "namn": "Vald: Ärtsoppa",
+     "state": null,
+     "kvot": 1
+    },
+    {
+     "art": "imparkiv",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "namn": "Vald: Fiskgratäng",
+     "state": null,
+     "kvot": 1
+    },
+    {
+     "art": "imparkiv",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "namn": "Vald: Kanelbullar",
+     "state": null,
+     "kvot": 1
+    }
+   ]
+  },
+  {
+   "id": "NRC-06",
+   "population": "A",
+   "bararroll": "stateCarrier",
+   "typ": "thumb",
+   "mekanism": "inline style: background: rgb(245, 244, 237)  mot  rgb(204, 209, 194)",
+   "kalldeklaration_forgrund": "background: rgb(245, 244, 237)",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(204, 209, 194)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(204, 209, 194)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "bakgrund": [
+    "rgb(204, 209, 194)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 7,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 6,
+   "antal_artefakter": 3,
+   "artefakter": [
+    "allergener",
+    "notisinstallningar",
+    "socintegritet"
+   ],
+   "filer": 3,
+   "kvot_min": 1.41,
+   "kvot_max": 1.41,
+   "states": [
+    "off"
+   ],
+   "roller": [
+    "switch"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 7,
+   "write_scope": {
+    "sokmonster": [
+     "background:#f5f4ed",
+     "background: #f5f4ed"
+    ],
+    "forekomster_i_kallan_st": 19,
+    "utanfor_fynden_st": 12,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 3,
+   "exempel": [
+    {
+     "art": "allergener",
+     "namn": "Reglage",
+     "kvot": 1.41,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(204, 209, 194)",
+     "tagg": "<span data-dc-tpl=\"1171\" style=\"position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; background: rgb(245,"
+    },
+    {
+     "art": "notisinstallningar",
+     "namn": "Reglage",
+     "kvot": 1.41,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(204, 209, 194)",
+     "tagg": "<span data-dc-tpl=\"91\" style=\"position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; background: rgb(245, 2"
+    },
+    {
+     "art": "notisinstallningar",
+     "namn": "Reglage",
+     "kvot": 1.41,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(204, 209, 194)",
+     "tagg": "<span data-dc-tpl=\"101\" style=\"position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; background: rgb(245, "
+    }
+   ],
+   "fynd": [
+    {
+     "art": "allergener",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": "Reglage",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "notisinstallningar",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": "Reglage",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "notisinstallningar",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": "Reglage",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "Sökbar via e-post",
+     "state": "off",
+     "kvot": 1.41
+    },
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "Visa när jag är online",
+     "state": "off",
+     "kvot": 1.41
+    },
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "Dela det jag gör i flödet",
+     "state": "off",
+     "kvot": 1.41
+    },
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "När jag satt igång med något",
+     "state": "off",
+     "kvot": 1.41
+    }
+   ]
+  },
+  {
+   "id": "NRC-07",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "ram",
+   "mekanism": "inline style: border-top: 1px solid rgba(245, 244, 237, 0.18)  mot  rgb(36, 56, 44)",
+   "kalldeklaration_forgrund": "border-top: 1px solid rgba(245, 244, 237, 0.18)",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(36, 56, 44)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(36, 56, 44)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(74, 90, 79)"
+   ],
+   "bakgrund": [
+    "rgb(36, 56, 44)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 7,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 7,
+   "antal_artefakter": 2,
+   "artefakter": [
+    "arkmorkt",
+    "lagasubst"
+   ],
+   "filer": 1,
+   "kvot_min": 1.71,
+   "kvot_max": 1.71,
+   "states": [],
+   "roller": [
+    "radio"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 7,
+   "write_scope": {
+    "sokmonster": [
+     "border-top:1px solid rgba(245, 244, 237, 0.18)",
+     "border-top: 1px solid rgba(245, 244, 237, 0.18)",
+     "border-top:1px solid rgba(245, 244, 237,.18)",
+     "border-top: 1px solid rgba(245, 244, 237,.18)",
+     "border-top:1px solid rgba(245,244,237,0.18)",
+     "border-top: 1px solid rgba(245,244,237,0.18)",
+     "border-top:1px solid rgba(245,244,237,.18)",
+     "border-top: 1px solid rgba(245,244,237,.18)"
+    ],
+    "forekomster_i_kallan_st": 24,
+    "utanfor_fynden_st": 17,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 2,
+   "exempel": [
+    {
+     "art": "arkmorkt",
+     "namn": "Senast tillagda",
+     "kvot": 1.71,
+     "farg": "rgb(74, 90, 79)",
+     "angransande": "rgb(36, 56, 44)",
+     "tagg": "<div data-dc-tpl=\"72\" data-hit=\"self\" data-a11y-name=\"Senast tillagda\" data-a11y-role=\"radio\" style=\"display: flex; alig"
+    },
+    {
+     "art": "arkmorkt",
+     "namn": "Namn A–Ö",
+     "kvot": 1.71,
+     "farg": "rgb(74, 90, 79)",
+     "angransande": "rgb(36, 56, 44)",
+     "tagg": "<div data-dc-tpl=\"76\" data-hit=\"self\" data-a11y-name=\"Namn A–Ö\" data-a11y-role=\"radio\" style=\"display: flex; align-items"
+    },
+    {
+     "art": "arkmorkt",
+     "namn": "Högst betyg",
+     "kvot": 1.71,
+     "farg": "rgb(74, 90, 79)",
+     "angransande": "rgb(36, 56, 44)",
+     "tagg": "<div data-dc-tpl=\"79\" data-hit=\"self\" data-a11y-name=\"Högst betyg\" data-a11y-role=\"radio\" style=\"display: flex; align-it"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "arkmorkt",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Senast tillagda",
+     "state": null,
+     "kvot": 1.71
+    },
+    {
+     "art": "arkmorkt",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Namn A–Ö",
+     "state": null,
+     "kvot": 1.71
+    },
+    {
+     "art": "arkmorkt",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Högst betyg",
+     "state": null,
+     "kvot": 1.71
+    },
+    {
+     "art": "arkmorkt",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Kortast tid",
+     "state": null,
+     "kvot": 1.71
+    },
+    {
+     "art": "lagasubst",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Byt till champinjoner",
+     "state": null,
+     "kvot": 1.71
+    },
+    {
+     "art": "lagasubst",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Byt till portabello",
+     "state": null,
+     "kvot": 1.71
+    },
+    {
+     "art": "lagasubst",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "Byt till torkad karljohan",
+     "state": null,
+     "kvot": 1.71
+    }
+   ]
+  },
+  {
+   "id": "NRC-08",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "fyllning",
+   "mekanism": "inline style: background: rgb(204, 209, 194)  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "background: rgb(204, 209, 194)",
+   "kalldeklaration_bakgrund": [
+    "(css-regel eller arv)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(204, 209, 194)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 6,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 5,
+   "antal_artefakter": 3,
+   "artefakter": [
+    "allergener",
+    "notisinstallningar",
+    "socintegritet"
+   ],
+   "filer": 3,
+   "kvot_min": 1.41,
+   "kvot_max": 1.41,
+   "states": [
+    "off"
+   ],
+   "roller": [
+    "switch"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 6,
+   "write_scope": {
+    "sokmonster": [
+     "background:#ccd1c2",
+     "background: #ccd1c2"
+    ],
+    "forekomster_i_kallan_st": 117,
+    "utanfor_fynden_st": 111,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 2,
+   "exempel": [
+    {
+     "art": "allergener",
+     "namn": "Reglage",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"1170\" data-component=\"toggle\" style=\"width: 34px; height: 20px; background: rgb(204, 209, 194); borde"
+    },
+    {
+     "art": "notisinstallningar",
+     "namn": "Reglage",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"90\" data-component=\"toggle\" style=\"width: 34px; height: 20px; background: rgb(204, 209, 194); border-"
+    },
+    {
+     "art": "notisinstallningar",
+     "namn": "Reglage",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"100\" data-component=\"toggle\" style=\"width: 34px; height: 20px; background: rgb(204, 209, 194); border"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "allergener",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": "Reglage",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "notisinstallningar",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": "Reglage",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "notisinstallningar",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": "Reglage",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "Sökbar via e-post",
+     "state": "off",
+     "kvot": 1.41
+    },
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "Visa när jag är online",
+     "state": "off",
+     "kvot": 1.41
+    },
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "När jag satt igång med något",
+     "state": "off",
+     "kvot": 1.41
+    }
+   ]
+  },
+  {
+   "id": "NRC-09",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "glyf",
+   "mekanism": "svg-attribut: fill=\"#ccd1c2\"  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "fill=\"#ccd1c2\"",
+   "kalldeklaration_bakgrund": [
+    "(css-regel eller arv)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(204, 209, 194)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 6,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 6,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "betygperperson"
+   ],
+   "filer": 1,
+   "kvot_min": 1.41,
+   "kvot_max": 1.41,
+   "states": [],
+   "roller": [
+    "radio"
+   ],
+   "ikoner": [
+    "star"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 6,
+   "write_scope": {
+    "sokmonster": [
+     "fill=\"#ccd1c2\""
+    ],
+    "forekomster_i_kallan_st": 14,
+    "utanfor_fynden_st": 8,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "betygperperson",
+     "namn": "5 av 5 för Per",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"1551\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"#ccd1c2\" stroke=\"none\" stroke-width=\"0\" stroke-"
+    },
+    {
+     "art": "betygperperson",
+     "namn": "1 av 5 för Ida",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"1560\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"#ccd1c2\" stroke=\"none\" stroke-width=\"0\" stroke-"
+    },
+    {
+     "art": "betygperperson",
+     "namn": "2 av 5 för Ida",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"1563\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"#ccd1c2\" stroke=\"none\" stroke-width=\"0\" stroke-"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "betygperperson",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "5 av 5 för Per",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "betygperperson",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "1 av 5 för Ida",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "betygperperson",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "2 av 5 för Ida",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "betygperperson",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "3 av 5 för Ida",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "betygperperson",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "4 av 5 för Ida",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "betygperperson",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": "5 av 5 för Ida",
+     "state": null,
+     "kvot": 1.41
+    }
+   ]
+  },
+  {
+   "id": "NRC-10",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "ram",
+   "mekanism": "css-regel: (ingen inline border)  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "(ingen inline border)",
+   "kalldeklaration_bakgrund": [
+    "(css-regel eller arv)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [
+    "empty"
+   ],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(230, 234, 217)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 6,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 6,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "vmbtom"
+   ],
+   "filer": 1,
+   "kvot_min": 1.11,
+   "kvot_max": 1.11,
+   "states": [],
+   "roller": [
+    "button"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 6,
+   "write_scope": {
+    "sokmonster": [],
+    "forekomster_i_kallan_st": null,
+    "utanfor_fynden_st": null,
+    "$not": "deklarationen kommer inte fran en inline-deklaration och gar inte att raka i kallan"
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "vmbtom",
+     "namn": "Måndag middag är tom",
+     "kvot": 1.11,
+     "farg": "rgb(230, 234, 217)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"226\" data-hit=\"self\" class=\"empty\" data-a11y-name=\"Måndag middag är tom\" data-a11y-role=\"button\" styl"
+    },
+    {
+     "art": "vmbtom",
+     "namn": "Tisdag middag är tom",
+     "kvot": 1.11,
+     "farg": "rgb(230, 234, 217)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"227\" data-hit=\"self\" class=\"empty\" data-a11y-name=\"Tisdag middag är tom\" data-a11y-role=\"button\" styl"
+    },
+    {
+     "art": "vmbtom",
+     "namn": "Torsdag middag är tom",
+     "kvot": 1.11,
+     "farg": "rgb(230, 234, 217)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"234\" data-hit=\"self\" class=\"empty\" data-a11y-name=\"Torsdag middag är tom\" data-a11y-role=\"button\" sty"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "vmbtom",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "namn": "Måndag middag är tom",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "vmbtom",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "namn": "Tisdag middag är tom",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "vmbtom",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "namn": "Torsdag middag är tom",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "vmbtom",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "namn": "Fredag middag är tom",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "vmbtom",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "namn": "Lördag middag är tom",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "vmbtom",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "namn": "Söndag middag är tom",
+     "state": null,
+     "kvot": 1.11
+    }
+   ]
+  },
+  {
+   "id": "NRC-11",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "ram",
+   "mekanism": "inline style: border: 1px solid rgba(245, 244, 237, 0.18)  mot  rgb(23, 37, 29)",
+   "kalldeklaration_forgrund": "border: 1px solid rgba(245, 244, 237, 0.18)",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(23, 37, 29)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(23, 37, 29)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(63, 74, 66)"
+   ],
+   "bakgrund": [
+    "rgb(23, 37, 29)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 6,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 6,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "onballergimorkt"
+   ],
+   "filer": 1,
+   "kvot_min": 1.72,
+   "kvot_max": 1.72,
+   "states": [],
+   "roller": [
+    "checkbox"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 6,
+   "write_scope": {
+    "sokmonster": [
+     "border:1px solid rgba(245, 244, 237, 0.18)",
+     "border: 1px solid rgba(245, 244, 237, 0.18)",
+     "border:1px solid rgba(245, 244, 237,.18)",
+     "border: 1px solid rgba(245, 244, 237,.18)",
+     "border:1px solid rgba(245,244,237,0.18)",
+     "border: 1px solid rgba(245,244,237,0.18)",
+     "border:1px solid rgba(245,244,237,.18)",
+     "border: 1px solid rgba(245,244,237,.18)"
+    ],
+    "forekomster_i_kallan_st": 23,
+    "utanfor_fynden_st": 17,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "onballergimorkt",
+     "namn": "Mjölk",
+     "kvot": 1.72,
+     "farg": "rgb(63, 74, 66)",
+     "angransande": "rgb(23, 37, 29)",
+     "tagg": "<span data-dc-tpl=\"740\" data-a11y-name=\"Mjölk\" data-a11y-role=\"checkbox\" data-hit=\"self\" style=\"display: flex; align-ite"
+    },
+    {
+     "art": "onballergimorkt",
+     "namn": "Ägg",
+     "kvot": 1.72,
+     "farg": "rgb(63, 74, 66)",
+     "angransande": "rgb(23, 37, 29)",
+     "tagg": "<span data-dc-tpl=\"746\" data-a11y-name=\"Ägg\" data-a11y-role=\"checkbox\" data-hit=\"self\" style=\"display: flex; align-items"
+    },
+    {
+     "art": "onballergimorkt",
+     "namn": "Soja",
+     "kvot": 1.72,
+     "farg": "rgb(63, 74, 66)",
+     "angransande": "rgb(23, 37, 29)",
+     "tagg": "<span data-dc-tpl=\"748\" data-a11y-name=\"Soja\" data-a11y-role=\"checkbox\" data-hit=\"self\" style=\"display: flex; align-item"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "onballergimorkt",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Mjölk",
+     "state": null,
+     "kvot": 1.72
+    },
+    {
+     "art": "onballergimorkt",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Ägg",
+     "state": null,
+     "kvot": 1.72
+    },
+    {
+     "art": "onballergimorkt",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Soja",
+     "state": null,
+     "kvot": 1.72
+    },
+    {
+     "art": "onballergimorkt",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Fisk",
+     "state": null,
+     "kvot": 1.72
+    },
+    {
+     "art": "onballergimorkt",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Skaldjur",
+     "state": null,
+     "kvot": 1.72
+    },
+    {
+     "art": "onballergimorkt",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Sesam",
+     "state": null,
+     "kvot": 1.72
+    }
+   ]
+  },
+  {
+   "id": "NRC-12",
+   "population": "A",
+   "bararroll": "stateCarrier",
+   "typ": "bock",
+   "mekanism": "svg-attribut: stroke=\"#F5F4ED\"  mot  rgb(230, 234, 217)",
+   "kalldeklaration_forgrund": "stroke=\"#F5F4ED\"",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(36, 56, 44)"
+   ],
+   "matartefakt": true,
+   "artefaktklass": "fel angransande yta",
+   "faktisk_angransande_yta": [
+    "rgb(36, 56, 44)"
+   ],
+   "adjudicering": "MATARTEFAKT: mats mot ytan utanfor kontrollen, men ligger pa kontrollens egen yta.",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "bakgrund": [
+    "rgb(230, 234, 217)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 6,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 6,
+   "antal_artefakter": 3,
+   "artefakter": [
+    "impassist1",
+    "impassist2",
+    "cooksnapsynlighet"
+   ],
+   "filer": 2,
+   "kvot_min": 1.11,
+   "kvot_max": 1.11,
+   "states": [
+    "checked"
+   ],
+   "roller": [
+    "checkbox",
+    "radio"
+   ],
+   "ikoner": [
+    "check"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 6,
+   "write_scope": {
+    "sokmonster": [
+     "stroke=\"#F5F4ED\""
+    ],
+    "forekomster_i_kallan_st": 272,
+    "utanfor_fynden_st": 266,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "impassist1",
+     "namn": "Vald rad: 500 g blandfärs",
+     "kvot": 1.11,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(230, 234, 217)",
+     "tagg": "<svg data-dc-tpl=\"298\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F4ED\" stroke-width=\"1.75\" strok"
+    },
+    {
+     "art": "impassist1",
+     "namn": "Vald rad: 1 gul lök",
+     "kvot": 1.11,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(230, 234, 217)",
+     "tagg": "<svg data-dc-tpl=\"304\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F4ED\" stroke-width=\"1.75\" strok"
+    },
+    {
+     "art": "impassist1",
+     "namn": "Vald rad: 3 dl grädde",
+     "kvot": 1.11,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(230, 234, 217)",
+     "tagg": "<svg data-dc-tpl=\"310\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F4ED\" stroke-width=\"1.75\" strok"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "impassist1",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "namn": "Vald rad: 500 g blandfärs",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "impassist1",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "namn": "Vald rad: 1 gul lök",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "impassist1",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "namn": "Vald rad: 3 dl grädde",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "impassist2",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "namn": "Vald rad: Blanda färsen med ägg och st",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "impassist2",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "namn": "Vald rad: Stek köttbullarna i smör.",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "cooksnapsynlighet",
+     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+     "namn": "Samma som receptet — Anna, Erik och Malin ser bilden",
+     "state": "checked",
+     "kvot": 1.11
+    }
+   ]
+  },
+  {
+   "id": "NRC-13",
+   "population": "B",
+   "bararroll": "graphicalObjectRequired",
+   "typ": "objekt",
+   "mekanism": "svg-attribut: fill=\"#ccd1c2\"  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "fill=\"#ccd1c2\"",
+   "kalldeklaration_bakgrund": [
+    "(css-regel eller arv)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(204, 209, 194)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 5,
+   "enhet": "grafiska objekt",
+   "antal_kontroller": null,
+   "antal_artefakter": 2,
+   "artefakter": [
+    "familjebetyg",
+    "betygsammanslaget"
+   ],
+   "filer": 2,
+   "kvot_min": 1.41,
+   "kvot_max": 1.41,
+   "states": [],
+   "roller": [],
+   "ikoner": [
+    "star"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 5,
+   "write_scope": {
+    "sokmonster": [
+     "fill=\"#ccd1c2\""
+    ],
+    "forekomster_i_kallan_st": 14,
+    "utanfor_fynden_st": 9,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 2,
+   "exempel": [
+    {
+     "art": "familjebetyg",
+     "namn": null,
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"81\" data-graphic-role=\"required\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"#ccd1c2\" data-icon=\""
+    },
+    {
+     "art": "familjebetyg",
+     "namn": null,
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"95\" data-graphic-role=\"required\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"#ccd1c2\" data-icon=\""
+    },
+    {
+     "art": "familjebetyg",
+     "namn": null,
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"97\" data-graphic-role=\"required\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"#ccd1c2\" data-icon=\""
+    }
+   ],
+   "fynd": [
+    {
+     "art": "familjebetyg",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "familjebetyg",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "familjebetyg",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "betygsammanslaget",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "betygsammanslaget",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 1.41
+    }
+   ]
+  },
+  {
+   "id": "NRC-14",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "ram",
+   "mekanism": "inline style: border: 1.5px solid rgb(204, 209, 194)  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "border: 1.5px solid rgb(204, 209, 194)",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(245, 244, 237)",
+    "(css-regel eller arv)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(204, 209, 194)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 5,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 5,
+   "antal_artefakter": 2,
+   "artefakter": [
+    "veckorostning",
+    "impassist3"
+   ],
+   "filer": 2,
+   "kvot_min": 1.41,
+   "kvot_max": 1.41,
+   "states": [],
+   "roller": [
+    "radio"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 5,
+   "write_scope": {
+    "sokmonster": [
+     "border:1.5px solid #ccd1c2",
+     "border: 1.5px solid #ccd1c2"
+    ],
+    "forekomster_i_kallan_st": 17,
+    "utanfor_fynden_st": 12,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 2,
+   "exempel": [
+    {
+     "art": "veckorostning",
+     "namn": "Rösta på Ugnslax med potatis",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"1853\" data-hit=\"self\" data-a11y-name=\"Rösta på Ugnslax med potatis\" data-a11y-role=\"radio\" style=\"dis"
+    },
+    {
+     "art": "impassist3",
+     "namn": "Måltidstyp Frukost",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"415\" data-hit=\"self\" data-a11y-name=\"Måltidstyp Frukost\" data-a11y-role=\"radio\" style=\"display: inlin"
+    },
+    {
+     "art": "impassist3",
+     "namn": "Måltidstyp Lunch",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"416\" data-hit=\"self\" data-a11y-name=\"Måltidstyp Lunch\" data-a11y-role=\"radio\" style=\"display: inline-"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "veckorostning",
+     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+     "namn": "Rösta på Ugnslax med potatis",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "impassist3",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "namn": "Måltidstyp Frukost",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "impassist3",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "namn": "Måltidstyp Lunch",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "impassist3",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "namn": "Måltidstyp Mellanmål",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "impassist3",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "namn": "Måltidstyp Efterrätt",
+     "state": null,
+     "kvot": 1.41
+    }
+   ]
+  },
+  {
+   "id": "NRC-15",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "ikon",
+   "mekanism": "svg-attribut: fill=\"#a9b2a0\"  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "fill=\"#a9b2a0\"",
+   "kalldeklaration_bakgrund": [
+    "(css-regel eller arv)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(169, 178, 160)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 3,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 1,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "skrivsjalv"
+   ],
+   "filer": 1,
+   "kvot_min": 1.99,
+   "kvot_max": 1.99,
+   "states": [],
+   "roller": [
+    "button"
+   ],
+   "ikoner": [
+    "drag"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 3,
+   "write_scope": {
+    "sokmonster": [
+     "fill=\"#a9b2a0\""
+    ],
+    "forekomster_i_kallan_st": 3,
+    "utanfor_fynden_st": 0,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "skrivsjalv",
+     "namn": "Flytta rad",
+     "kvot": 1.99,
+     "farg": "rgb(169, 178, 160)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"947\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"#a9b2a0\" data-icon=\"drag\">"
+    },
+    {
+     "art": "skrivsjalv",
+     "namn": "Flytta rad",
+     "kvot": 1.99,
+     "farg": "rgb(169, 178, 160)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"962\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"#a9b2a0\" data-icon=\"drag\">"
+    },
+    {
+     "art": "skrivsjalv",
+     "namn": "Flytta rad",
+     "kvot": 1.99,
+     "farg": "rgb(169, 178, 160)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"979\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"#a9b2a0\" data-icon=\"drag\">"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "skrivsjalv",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": "Flytta rad",
+     "state": null,
+     "kvot": 1.99
+    },
+    {
+     "art": "skrivsjalv",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": "Flytta rad",
+     "state": null,
+     "kvot": 1.99
+    },
+    {
+     "art": "skrivsjalv",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": "Flytta rad",
+     "state": null,
+     "kvot": 1.99
+    }
+   ]
+  },
+  {
+   "id": "NRC-16",
+   "population": "B",
+   "bararroll": "graphicalObjectRequired",
+   "typ": "objekt",
+   "mekanism": "svg-attribut: stroke=\"#F5F4ED\"  mot  rgb(206, 124, 30)",
+   "kalldeklaration_forgrund": "stroke=\"#F5F4ED\"",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(206, 124, 30)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(206, 124, 30)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "bakgrund": [
+    "rgb(206, 124, 30)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 3,
+   "enhet": "grafiska objekt",
+   "antal_kontroller": null,
+   "antal_artefakter": 3,
+   "artefakter": [
+    "chatt",
+    "chattmorkt",
+    "chatt320"
+   ],
+   "filer": 1,
+   "kvot_min": 2.92,
+   "kvot_max": 2.92,
+   "states": [],
+   "roller": [],
+   "ikoner": [
+    "send"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 3,
+   "write_scope": {
+    "sokmonster": [
+     "stroke=\"#F5F4ED\""
+    ],
+    "forekomster_i_kallan_st": 272,
+    "utanfor_fynden_st": 269,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "chatt",
+     "namn": null,
+     "kvot": 2.92,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(206, 124, 30)",
+     "tagg": "<svg data-dc-tpl=\"1626\" data-graphic-role=\"required\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F"
+    },
+    {
+     "art": "chattmorkt",
+     "namn": null,
+     "kvot": 2.92,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(206, 124, 30)",
+     "tagg": "<svg data-dc-tpl=\"1698\" data-graphic-role=\"required\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F"
+    },
+    {
+     "art": "chatt320",
+     "namn": null,
+     "kvot": 2.92,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(206, 124, 30)",
+     "tagg": "<svg data-dc-tpl=\"1861\" data-graphic-role=\"required\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "chatt",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    },
+    {
+     "art": "chattmorkt",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    },
+    {
+     "art": "chatt320",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    }
+   ]
+  },
+  {
+   "id": "NRC-17",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "ram",
+   "mekanism": "inline style: border-top: 1px solid rgb(204, 209, 194)  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "border-top: 1px solid rgb(204, 209, 194)",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(245, 244, 237)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(204, 209, 194)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 3,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 3,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "skafferiflerval"
+   ],
+   "filer": 1,
+   "kvot_min": 1.41,
+   "kvot_max": 1.41,
+   "states": [
+    "checked"
+   ],
+   "roller": [
+    "checkbox"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 3,
+   "write_scope": {
+    "sokmonster": [
+     "border-top:1px solid #ccd1c2",
+     "border-top: 1px solid #ccd1c2"
+    ],
+    "forekomster_i_kallan_st": 170,
+    "utanfor_fynden_st": 167,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 2,
+   "exempel": [
+    {
+     "art": "skafferiflerval",
+     "namn": "Grädde, vald",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"483\" data-a11y-name=\"Grädde, vald\" data-state-group=\"skafferiflerval-varurad\" data-a11y-role=\"checkbo"
+    },
+    {
+     "art": "skafferiflerval",
+     "namn": "Parmesan",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"490\" data-a11y-name=\"Parmesan\" data-a11y-role=\"checkbox\" data-hit=\"self\" style=\"display: flex; align-"
+    },
+    {
+     "art": "skafferiflerval",
+     "namn": "Färsk basilika, vald",
+     "kvot": 1.41,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"496\" data-a11y-name=\"Färsk basilika, vald\" data-state-group=\"skafferiflerval-varurad\" data-a11y-role="
+    }
+   ],
+   "fynd": [
+    {
+     "art": "skafferiflerval",
+     "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+     "namn": "Grädde, vald",
+     "state": "checked",
+     "kvot": 1.41
+    },
+    {
+     "art": "skafferiflerval",
+     "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+     "namn": "Parmesan",
+     "state": null,
+     "kvot": 1.41
+    },
+    {
+     "art": "skafferiflerval",
+     "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+     "namn": "Färsk basilika, vald",
+     "state": "checked",
+     "kvot": 1.41
+    }
+   ]
+  },
+  {
+   "id": "NRC-18",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "fyllning",
+   "mekanism": "inline style: background: rgb(206, 124, 30)  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "background: rgb(206, 124, 30)",
+   "kalldeklaration_bakgrund": [
+    "(css-regel eller arv)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(206, 124, 30)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 3,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 3,
+   "antal_artefakter": 2,
+   "artefakter": [
+    "skafferibas",
+    "kontonotiser"
+   ],
+   "filer": 2,
+   "kvot_min": 2.92,
+   "kvot_max": 2.92,
+   "states": [
+    "checked"
+   ],
+   "roller": [
+    "switch"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 3,
+   "write_scope": {
+    "sokmonster": [
+     "background:#ce7c1e",
+     "background: #ce7c1e"
+    ],
+    "forekomster_i_kallan_st": 362,
+    "utanfor_fynden_st": 359,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 3,
+   "exempel": [
+    {
+     "art": "skafferibas",
+     "namn": "Basvara — håll borta från veckans lista",
+     "kvot": 2.92,
+     "farg": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"605\" data-component=\"toggle\" style=\"width: 34px; height: 20px; border-radius: 999px; background: rgb("
+    },
+    {
+     "art": "kontonotiser",
+     "namn": "Notiser från Butlery",
+     "kvot": 2.92,
+     "farg": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"373\" data-component=\"toggle\" style=\"width: 34px; height: 20px; border-radius: 999px; background: rgb("
+    },
+    {
+     "art": "kontonotiser",
+     "namn": "Om kontot och appen",
+     "kvot": 2.92,
+     "farg": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"419\" data-component=\"toggle\" style=\"width: 34px; height: 20px; border-radius: 999px; background: rgb("
+    }
+   ],
+   "fynd": [
+    {
+     "art": "skafferibas",
+     "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+     "namn": "Basvara — håll borta från veckans lista",
+     "state": "checked",
+     "kvot": 2.92
+    },
+    {
+     "art": "kontonotiser",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Notiser från Butlery",
+     "state": "checked",
+     "kvot": 2.92
+    },
+    {
+     "art": "kontonotiser",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Om kontot och appen",
+     "state": "checked",
+     "kvot": 2.92
+    }
+   ]
+  },
+  {
+   "id": "NRC-19",
+   "population": "A",
+   "bararroll": "stateCarrier",
+   "typ": "thumb",
+   "mekanism": "inline style: background: rgb(245, 244, 237)  mot  rgb(206, 124, 30)",
+   "kalldeklaration_forgrund": "background: rgb(245, 244, 237)",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(206, 124, 30)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(206, 124, 30)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "bakgrund": [
+    "rgb(206, 124, 30)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 3,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 3,
+   "antal_artefakter": 2,
+   "artefakter": [
+    "skafferibas",
+    "kontonotiser"
+   ],
+   "filer": 2,
+   "kvot_min": 2.92,
+   "kvot_max": 2.92,
+   "states": [
+    "checked"
+   ],
+   "roller": [
+    "switch"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 3,
+   "write_scope": {
+    "sokmonster": [
+     "background:#f5f4ed",
+     "background: #f5f4ed"
+    ],
+    "forekomster_i_kallan_st": 19,
+    "utanfor_fynden_st": 16,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "skafferibas",
+     "namn": "Basvara — håll borta från veckans lista",
+     "kvot": 2.92,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(206, 124, 30)",
+     "tagg": "<span data-dc-tpl=\"606\" style=\"position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; border-radius: 999px"
+    },
+    {
+     "art": "kontonotiser",
+     "namn": "Notiser från Butlery",
+     "kvot": 2.92,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(206, 124, 30)",
+     "tagg": "<span data-dc-tpl=\"374\" style=\"position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; border-radius: 999px"
+    },
+    {
+     "art": "kontonotiser",
+     "namn": "Om kontot och appen",
+     "kvot": 2.92,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(206, 124, 30)",
+     "tagg": "<span data-dc-tpl=\"420\" style=\"position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; border-radius: 999px"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "skafferibas",
+     "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+     "namn": "Basvara — håll borta från veckans lista",
+     "state": "checked",
+     "kvot": 2.92
+    },
+    {
+     "art": "kontonotiser",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Notiser från Butlery",
+     "state": "checked",
+     "kvot": 2.92
+    },
+    {
+     "art": "kontonotiser",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "Om kontot och appen",
+     "state": "checked",
+     "kvot": 2.92
+    }
+   ]
+  },
+  {
+   "id": "NRC-20",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "fyllning",
+   "mekanism": "inline style: background: rgb(230, 234, 217)  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "background: rgb(230, 234, 217)",
+   "kalldeklaration_bakgrund": [
+    "(css-regel eller arv)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(230, 234, 217)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 3,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 3,
+   "antal_artefakter": 2,
+   "artefakter": [
+    "veckorostavgor",
+    "samtyckeai"
+   ],
+   "filer": 2,
+   "kvot_min": 1.11,
+   "kvot_max": 1.11,
+   "states": [],
+   "roller": [
+    "radio",
+    "switch"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 3,
+   "write_scope": {
+    "sokmonster": [
+     "background:#e6ead9",
+     "background: #e6ead9"
+    ],
+    "forekomster_i_kallan_st": 647,
+    "utanfor_fynden_st": 644,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 2,
+   "exempel": [
+    {
+     "art": "veckorostavgor",
+     "namn": "Välj Krämig svamppasta som vinnare, 2 röster",
+     "kvot": 1.11,
+     "farg": "rgb(230, 234, 217)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"1964\" data-a11y-name=\"Välj Krämig svamppasta som vinnare, 2 röster\" data-a11y-role=\"radio\" data-hit=\""
+    },
+    {
+     "art": "veckorostavgor",
+     "namn": "Välj Fiskgratäng som vinnare, 2 röster",
+     "kvot": 1.11,
+     "farg": "rgb(230, 234, 217)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"1968\" data-a11y-name=\"Välj Fiskgratäng som vinnare, 2 röster\" data-a11y-role=\"radio\" data-hit=\"self\" "
+    },
+    {
+     "art": "samtyckeai",
+     "namn": "AI-tolkning av recept, avstängd",
+     "kvot": 1.11,
+     "farg": "rgb(230, 234, 217)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<div data-dc-tpl=\"143\" data-a11y-name=\"AI-tolkning av recept, avstängd\" data-a11y-role=\"switch\" data-hit=\"self\" style=\"m"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "veckorostavgor",
+     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+     "namn": "Välj Krämig svamppasta som vinnare, 2 röster",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "veckorostavgor",
+     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+     "namn": "Välj Fiskgratäng som vinnare, 2 röster",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "samtyckeai",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "AI-tolkning av recept, avstängd",
+     "state": null,
+     "kvot": 1.11
+    }
+   ]
+  },
+  {
+   "id": "NRC-21",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "fyllning",
+   "mekanism": "css-regel: (ingen inline background)  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "(ingen inline background)",
+   "kalldeklaration_bakgrund": [
+    "(css-regel eller arv)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [
+    "sc-skeleton"
+   ],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(230, 234, 217)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 3,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 3,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "behfoton"
+   ],
+   "filer": 1,
+   "kvot_min": 1.11,
+   "kvot_max": 1.11,
+   "states": [],
+   "roller": [
+    "button"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 3,
+   "write_scope": {
+    "sokmonster": [],
+    "forekomster_i_kallan_st": null,
+    "utanfor_fynden_st": null,
+    "$not": "deklarationen kommer inte fran en inline-deklaration och gar inte att raka i kallan"
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "behfoton",
+     "namn": "Delad bild 1",
+     "kvot": 1.11,
+     "farg": "rgb(230, 234, 217)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"907\" class=\"sc-skeleton\" data-a11y-name=\"Delad bild 1\" data-a11y-role=\"button\" data-hit=\"self\" style="
+    },
+    {
+     "art": "behfoton",
+     "namn": "Delad bild 2",
+     "kvot": 1.11,
+     "farg": "rgb(230, 234, 217)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"908\" class=\"sc-skeleton\" data-a11y-name=\"Delad bild 2\" data-a11y-role=\"button\" data-hit=\"self\" style="
+    },
+    {
+     "art": "behfoton",
+     "namn": "Delad bild 3",
+     "kvot": 1.11,
+     "farg": "rgb(230, 234, 217)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"909\" class=\"sc-skeleton\" data-a11y-name=\"Delad bild 3\" data-a11y-role=\"button\" data-hit=\"self\" style="
+    }
+   ],
+   "fynd": [
+    {
+     "art": "behfoton",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Delad bild 1",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "behfoton",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Delad bild 2",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "behfoton",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+     "namn": "Delad bild 3",
+     "state": null,
+     "kvot": 1.11
+    }
+   ]
+  },
+  {
+   "id": "NRC-22",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "ikon",
+   "mekanism": "svg-attribut: stroke=\"#24382c\"  mot  rgb(36, 56, 44)",
+   "kalldeklaration_forgrund": "stroke=\"#24382c\"",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(245, 244, 237)"
+   ],
+   "matartefakt": true,
+   "artefaktklass": "fel angransande yta",
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "MATARTEFAKT: mats mot ytan utanfor kontrollen, men ligger pa kontrollens egen yta.",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(36, 56, 44)"
+   ],
+   "bakgrund": [
+    "rgb(36, 56, 44)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 2,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 2,
+   "antal_artefakter": 2,
+   "artefakter": [
+    "lgbrotation",
+    "lgbtimer"
+   ],
+   "filer": 1,
+   "kvot_min": 1,
+   "kvot_max": 1,
+   "states": [],
+   "roller": [
+    "button"
+   ],
+   "ikoner": [
+    "x",
+    "arrow-right"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 2,
+   "write_scope": {
+    "sokmonster": [
+     "stroke=\"#24382c\""
+    ],
+    "forekomster_i_kallan_st": 321,
+    "utanfor_fynden_st": 319,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "lgbrotation",
+     "namn": "Stäng matlagningsläget",
+     "kvot": 1,
+     "farg": "rgb(36, 56, 44)",
+     "angransande": "rgb(36, 56, 44)",
+     "tagg": "<svg data-dc-tpl=\"1615\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#24382c\" stroke-width=\"2\" stroke-"
+    },
+    {
+     "art": "lgbtimer",
+     "namn": "Nästa steg",
+     "kvot": 1,
+     "farg": "rgb(36, 56, 44)",
+     "angransande": "rgb(36, 56, 44)",
+     "tagg": "<svg data-dc-tpl=\"1774\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#24382c\" stroke-width=\"2\" stroke-"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "lgbrotation",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "namn": "Stäng matlagningsläget",
+     "state": null,
+     "kvot": 1
+    },
+    {
+     "art": "lgbtimer",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "namn": "Nästa steg",
+     "state": null,
+     "kvot": 1
+    }
+   ]
+  },
+  {
+   "id": "NRC-23",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "ikon",
+   "mekanism": "svg-attribut: stroke=\"#F5F4ED\"  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "stroke=\"#F5F4ED\"",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(36, 56, 44)"
+   ],
+   "matartefakt": true,
+   "artefaktklass": "fel angransande yta",
+   "faktisk_angransande_yta": [
+    "rgb(36, 56, 44)"
+   ],
+   "adjudicering": "MATARTEFAKT: mats mot ytan utanfor kontrollen, men ligger pa kontrollens egen yta.",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 2,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 2,
+   "antal_artefakter": 2,
+   "artefakter": [
+    "skafferivyn",
+    "sokpanel"
+   ],
+   "filer": 2,
+   "kvot_min": 1,
+   "kvot_max": 1,
+   "states": [
+    "expanded"
+   ],
+   "roller": [
+    "button"
+   ],
+   "ikoner": [
+    "plus",
+    "filter"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 2,
+   "write_scope": {
+    "sokmonster": [
+     "stroke=\"#F5F4ED\""
+    ],
+    "forekomster_i_kallan_st": 272,
+    "utanfor_fynden_st": 270,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "skafferivyn",
+     "namn": "Lägg till i skafferiet",
+     "kvot": 1,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"460\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F4ED\" stroke-width=\"2\" stroke-l"
+    },
+    {
+     "art": "sokpanel",
+     "namn": "Filter, 3 aktiva",
+     "kvot": 1,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"856\" width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F4ED\" stroke-width=\"1.8\" stroke"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "skafferivyn",
+     "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+     "namn": "Lägg till i skafferiet",
+     "state": null,
+     "kvot": 1
+    },
+    {
+     "art": "sokpanel",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "Filter, 3 aktiva",
+     "state": "expanded",
+     "kvot": 1
+    }
+   ]
+  },
+  {
+   "id": "NRC-24",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "ikon",
+   "mekanism": "svg-attribut: stroke=\"#F5F4ED\"  mot  rgb(230, 234, 217)",
+   "kalldeklaration_forgrund": "stroke=\"#F5F4ED\"",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(230, 234, 217)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(230, 234, 217)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "bakgrund": [
+    "rgb(230, 234, 217)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 2,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 2,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "cooksnapgalleri"
+   ],
+   "filer": 1,
+   "kvot_min": 1.11,
+   "kvot_max": 1.11,
+   "states": [],
+   "roller": [
+    "button"
+   ],
+   "ikoner": [
+    "more-vertical"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 2,
+   "write_scope": {
+    "sokmonster": [
+     "stroke=\"#F5F4ED\""
+    ],
+    "forekomster_i_kallan_st": 272,
+    "utanfor_fynden_st": 270,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "cooksnapgalleri",
+     "namn": "Alternativ för din bild",
+     "kvot": 1.11,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(230, 234, 217)",
+     "tagg": "<svg data-dc-tpl=\"816\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F4ED\" stroke-width=\"2\" stroke-l"
+    },
+    {
+     "art": "cooksnapgalleri",
+     "namn": "Alternativ för Annas bild",
+     "kvot": 1.11,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(230, 234, 217)",
+     "tagg": "<svg data-dc-tpl=\"825\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#F5F4ED\" stroke-width=\"2\" stroke-l"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "cooksnapgalleri",
+     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+     "namn": "Alternativ för din bild",
+     "state": null,
+     "kvot": 1.11
+    },
+    {
+     "art": "cooksnapgalleri",
+     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+     "namn": "Alternativ för Annas bild",
+     "state": null,
+     "kvot": 1.11
+    }
+   ]
+  },
+  {
+   "id": "NRC-25",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "fyllning",
+   "mekanism": "inline style: background: rgb(169, 178, 160)  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "background: rgb(169, 178, 160)",
+   "kalldeklaration_bakgrund": [
+    "(css-regel eller arv)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(169, 178, 160)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 2,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 2,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "socintegritet"
+   ],
+   "filer": 1,
+   "kvot_min": 1.99,
+   "kvot_max": 1.99,
+   "states": [
+    "on"
+   ],
+   "roller": [
+    "switch"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 2,
+   "write_scope": {
+    "sokmonster": [
+     "background:#a9b2a0",
+     "background: #a9b2a0"
+    ],
+    "forekomster_i_kallan_st": 18,
+    "utanfor_fynden_st": 16,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "socintegritet",
+     "namn": "När jag lagat något",
+     "kvot": 1.99,
+     "farg": "rgb(169, 178, 160)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"366\" style=\"width: 48px; height: 28px; border-radius: 999px; background: rgb(169, 178, 160); display:"
+    },
+    {
+     "art": "socintegritet",
+     "namn": "När jag delat ett recept",
+     "kvot": 1.99,
+     "farg": "rgb(169, 178, 160)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<span data-dc-tpl=\"371\" style=\"width: 48px; height: 28px; border-radius: 999px; background: rgb(169, 178, 160); display:"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "När jag lagat något",
+     "state": "on",
+     "kvot": 1.99
+    },
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "När jag delat ett recept",
+     "state": "on",
+     "kvot": 1.99
+    }
+   ]
+  },
+  {
+   "id": "NRC-26",
+   "population": "A",
+   "bararroll": "stateCarrier",
+   "typ": "thumb",
+   "mekanism": "inline style: background: rgb(245, 244, 237)  mot  rgb(169, 178, 160)",
+   "kalldeklaration_forgrund": "background: rgb(245, 244, 237)",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(169, 178, 160)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(169, 178, 160)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "bakgrund": [
+    "rgb(169, 178, 160)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 2,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 2,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "socintegritet"
+   ],
+   "filer": 1,
+   "kvot_min": 1.99,
+   "kvot_max": 1.99,
+   "states": [
+    "on"
+   ],
+   "roller": [
+    "switch"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 2,
+   "write_scope": {
+    "sokmonster": [
+     "background:#f5f4ed",
+     "background: #f5f4ed"
+    ],
+    "forekomster_i_kallan_st": 19,
+    "utanfor_fynden_st": 17,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "socintegritet",
+     "namn": "När jag lagat något",
+     "kvot": 1.99,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(169, 178, 160)",
+     "tagg": "<span data-dc-tpl=\"367\" style=\"width: 20px; height: 20px; border-radius: 999px; background: rgb(245, 244, 237);\">"
+    },
+    {
+     "art": "socintegritet",
+     "namn": "När jag delat ett recept",
+     "kvot": 1.99,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(169, 178, 160)",
+     "tagg": "<span data-dc-tpl=\"372\" style=\"width: 20px; height: 20px; border-radius: 999px; background: rgb(245, 244, 237);\">"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "När jag lagat något",
+     "state": "on",
+     "kvot": 1.99
+    },
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "När jag delat ett recept",
+     "state": "on",
+     "kvot": 1.99
+    }
+   ]
+  },
+  {
+   "id": "NRC-27",
+   "population": "B",
+   "bararroll": "graphicalObjectRequired",
+   "typ": "objekt",
+   "mekanism": "currentColor: stroke=\"currentColor\"  mot  rgb(206, 124, 30)",
+   "kalldeklaration_forgrund": "stroke=\"currentColor\"",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(206, 124, 30)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(206, 124, 30)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": {
+    "tagg": "<svg data-dc-tpl=\"284\" data-graphic-role=\"required\" width=\"13\" height=\"13\" viewBox=\"0 0 24",
+    "decl": "color: rgb(245, 244, 237)"
+   },
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "bakgrund": [
+    "rgb(206, 124, 30)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 1,
+   "enhet": "grafiska objekt",
+   "antal_kontroller": null,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "sortera"
+   ],
+   "filer": 1,
+   "kvot_min": 2.92,
+   "kvot_max": 2.92,
+   "states": [],
+   "roller": [],
+   "ikoner": [
+    "check"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 1,
+   "write_scope": {
+    "sokmonster": [
+     "stroke=\"currentColor\""
+    ],
+    "forekomster_i_kallan_st": 180,
+    "utanfor_fynden_st": 179,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "sortera",
+     "namn": null,
+     "kvot": 2.92,
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(206, 124, 30)",
+     "tagg": "<svg data-dc-tpl=\"284\" data-graphic-role=\"required\" width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"curre"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "sortera",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.92
+    }
+   ]
+  },
+  {
+   "id": "NRC-28",
+   "population": "B",
+   "bararroll": "graphicalObjectRequired",
+   "typ": "objekt",
+   "mekanism": "svg-attribut: fill=\"#ce7c1e\"  mot  rgb(230, 234, 217)",
+   "kalldeklaration_forgrund": "fill=\"#ce7c1e\"",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(230, 234, 217)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(230, 234, 217)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(206, 124, 30)"
+   ],
+   "bakgrund": [
+    "rgb(230, 234, 217)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 1,
+   "enhet": "grafiska objekt",
+   "antal_kontroller": null,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "skrivsjalv"
+   ],
+   "filer": 1,
+   "kvot_min": 2.63,
+   "kvot_max": 2.63,
+   "states": [],
+   "roller": [],
+   "ikoner": [
+    "star"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 1,
+   "write_scope": {
+    "sokmonster": [
+     "fill=\"#ce7c1e\""
+    ],
+    "forekomster_i_kallan_st": 39,
+    "utanfor_fynden_st": 38,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "skrivsjalv",
+     "namn": null,
+     "kvot": 2.63,
+     "farg": "rgb(206, 124, 30)",
+     "angransande": "rgb(230, 234, 217)",
+     "tagg": "<svg data-dc-tpl=\"928\" data-graphic-role=\"required\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"#ce7c1e\" data-icon="
+    }
+   ],
+   "fynd": [
+    {
+     "art": "skrivsjalv",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.63
+    }
+   ]
+  },
+  {
+   "id": "NRC-29",
+   "population": "B",
+   "bararroll": "graphicalObjectRequired",
+   "typ": "objekt",
+   "mekanism": "currentColor: stroke=\"currentColor\"  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "stroke=\"currentColor\"",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(245, 244, 237)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(245, 244, 237)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": {
+    "tagg": "<svg data-dc-tpl=\"1349\" data-graphic-role=\"required\" width=\"12\" height=\"12\" viewBox=\"0 0 2",
+    "decl": "color: rgb(147, 164, 141)"
+   },
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(147, 164, 141)"
+   ],
+   "bakgrund": [
+    "rgb(245, 244, 237)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 1,
+   "enhet": "grafiska objekt",
+   "antal_kontroller": null,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "dialogvara"
+   ],
+   "filer": 1,
+   "kvot_min": 2.4,
+   "kvot_max": 2.4,
+   "states": [],
+   "roller": [],
+   "ikoner": [
+    "chevron-down"
+   ],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 1,
+   "write_scope": {
+    "sokmonster": [
+     "stroke=\"currentColor\""
+    ],
+    "forekomster_i_kallan_st": 180,
+    "utanfor_fynden_st": 179,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "dialogvara",
+     "namn": null,
+     "kvot": 2.4,
+     "farg": "rgb(147, 164, 141)",
+     "angransande": "rgb(245, 244, 237)",
+     "tagg": "<svg data-dc-tpl=\"1349\" data-graphic-role=\"required\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"curr"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "dialogvara",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "namn": null,
+     "state": null,
+     "kvot": 2.4
+    }
+   ]
+  },
+  {
+   "id": "NRC-30",
+   "population": "A",
+   "bararroll": "stateCarrier",
+   "typ": "thumb",
+   "mekanism": "css-regel: (ingen inline background)  mot  rgb(230, 234, 217)",
+   "kalldeklaration_forgrund": "(ingen inline background)",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(230, 234, 217)"
+   ],
+   "matartefakt": true,
+   "artefaktklass": "barare utan egen farg",
+   "faktisk_angransande_yta": [
+    "rgb(230, 234, 217)"
+   ],
+   "adjudicering": "MATARTEFAKT: bararen malar ingenting. Kvoten kommer ur underlaget, inte ur designen.",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(230, 234, 217)"
+   ],
+   "bakgrund": [
+    "rgb(230, 234, 217)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 1,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 1,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "samtyckeai"
+   ],
+   "filer": 1,
+   "kvot_min": 1,
+   "kvot_max": 1,
+   "states": [],
+   "roller": [
+    "switch"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 1,
+   "write_scope": {
+    "sokmonster": [],
+    "forekomster_i_kallan_st": null,
+    "utanfor_fynden_st": null,
+    "$not": "deklarationen kommer inte fran en inline-deklaration och gar inte att raka i kallan"
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "samtyckeai",
+     "namn": "AI-tolkning av recept, avstängd",
+     "kvot": 1,
+     "farg": "rgb(230, 234, 217)",
+     "angransande": "rgb(230, 234, 217)",
+     "tagg": "<span data-dc-tpl=\"144\" style=\"flex: 1 1 0%;\">"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "samtyckeai",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "AI-tolkning av recept, avstängd",
+     "state": null,
+     "kvot": 1
+    }
+   ]
+  },
+  {
+   "id": "NRC-31",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "ram",
+   "mekanism": "inline style: border: 1.5px solid rgb(125, 137, 124)  mot  rgb(230, 234, 217)",
+   "kalldeklaration_forgrund": "border: 1.5px solid rgb(125, 137, 124)",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(230, 234, 217)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(230, 234, 217)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(125, 137, 124)"
+   ],
+   "bakgrund": [
+    "rgb(230, 234, 217)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 1,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 1,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "fbanmal"
+   ],
+   "filer": 1,
+   "kvot_min": 2.98,
+   "kvot_max": 2.98,
+   "states": [
+    "unchecked"
+   ],
+   "roller": [
+    "checkbox"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 1,
+   "write_scope": {
+    "sokmonster": [
+     "border:1.5px solid #7d897c",
+     "border: 1.5px solid #7d897c"
+    ],
+    "forekomster_i_kallan_st": 62,
+    "utanfor_fynden_st": 61,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "fbanmal",
+     "namn": "Blockera Johan samtidigt",
+     "kvot": 2.98,
+     "farg": "rgb(125, 137, 124)",
+     "angransande": "rgb(230, 234, 217)",
+     "tagg": "<span data-dc-tpl=\"1132\" data-a11y-name=\"Blockera Johan samtidigt\" data-state-group=\"fbanmal-blockeraruta\" data-a11y-rol"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "fbanmal",
+     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+     "namn": "Blockera Johan samtidigt",
+     "state": "unchecked",
+     "kvot": 2.98
+    }
+   ]
+  },
+  {
+   "id": "NRC-32",
+   "population": "A",
+   "bararroll": "componentIdentityCarrier",
+   "typ": "fyllning",
+   "mekanism": "inline style: background: rgb(204, 209, 194)  mot  rgb(230, 234, 217)",
+   "kalldeklaration_forgrund": "background: rgb(204, 209, 194)",
+   "kalldeklaration_bakgrund": [
+    "background: rgb(230, 234, 217)"
+   ],
+   "matartefakt": false,
+   "artefaktklass": null,
+   "faktisk_angransande_yta": [
+    "rgb(230, 234, 217)"
+   ],
+   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
+   "arvsKalla": null,
+   "klasser": [],
+   "kravd_kvot": 3,
+   "forgrund": [
+    "rgb(204, 209, 194)"
+   ],
+   "bakgrund": [
+    "rgb(230, 234, 217)"
+   ],
+   "alfa_kompositering": false,
+   "antal_fynd": 1,
+   "enhet": "grafiska delar",
+   "antal_kontroller": 1,
+   "antal_artefakter": 1,
+   "artefakter": [
+    "socintegritet"
+   ],
+   "filer": 1,
+   "kvot_min": 1.27,
+   "kvot_max": 1.27,
+   "states": [
+    "off"
+   ],
+   "roller": [
+    "switch"
+   ],
+   "ikoner": [],
+   "implementation": "upprepad implementation",
+   "rotorsakspopulation_st": 1,
+   "write_scope": {
+    "sokmonster": [
+     "background:#ccd1c2",
+     "background: #ccd1c2"
+    ],
+    "forekomster_i_kallan_st": 117,
+    "utanfor_fynden_st": 116,
+    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
+   },
+   "distinkta_stilstrangar": 1,
+   "exempel": [
+    {
+     "art": "socintegritet",
+     "namn": "Dela det jag gör i flödet",
+     "kvot": 1.27,
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(230, 234, 217)",
+     "tagg": "<span data-dc-tpl=\"354\" data-a11y-name=\"Dela det jag gör i flödet\" data-state-group=\"socintegritet-integritetsreglage\" d"
+    }
+   ],
+   "fynd": [
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "Dela det jag gör i flödet",
+     "state": "off",
+     "kvot": 1.27
+    }
+   ]
+  }
+ ]
+}

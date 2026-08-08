@@ -104,6 +104,7 @@ export const NONTEXT_MEASURE = `(() => {
   }
 
   const ut = [];
+  window.__NT_EL = [];
   for (const c of document.querySelectorAll('[data-a11y-role]')) {
     const it = c.closest('.sc-item'); if (!it) continue;
     const roll = c.getAttribute('data-a11y-role');
@@ -235,6 +236,10 @@ export const NONTEXT_MEASURE = `(() => {
         form: rect(bararEl).w + 'x' + rect(bararEl).h,
         bararArAgaren: bararEl === c },
       delar: matta });
+    // Elementreferenserna lamnas kvar i sidan sa att kallrotorsaksanalysen
+    // kan lasa VILKET element varje del avser utan att gissa. Detta paverkar
+    // inte returvardet och darmed inte baslinjen.
+    (window.__NT_EL = window.__NT_EL || []).push(delar.map(d => d.el || null));
   }
   return ut;
 })()`;
