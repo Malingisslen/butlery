@@ -18,32 +18,11 @@
 // bakgrundsupplosning. Text-run-modellen anvands inte: ett grafiskt element
 // malas av nagot annat an en textnod.
 
+import { FARGMOTOR } from './colour-engine.mjs';
+
 export const NONTEXT_MEASURE = `(() => {
-  /* ── Fargmotorn, oforandrad fran R-01 ─────────────────────────────────── */
-  const srgb = c => { c /= 255; return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
-  const lum = ([r,g,b]) => 0.2126*srgb(r) + 0.7152*srgb(g) + 0.0722*srgb(b);
-  const parse = s => { if (!s) return null;
-    const m = String(s).match(/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)(?:,\\s*([\\d.]+))?\\)/);
-    if (m) return [ +m[1], +m[2], +m[3], m[4] === undefined ? 1 : +m[4] ];
-    const h = String(s).trim().match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
-    if (!h) return null;
-    const v = h[1].length === 3 ? h[1].split('').map(c => c + c).join('') : h[1];
-    return [parseInt(v.slice(0,2),16), parseInt(v.slice(2,4),16), parseInt(v.slice(4,6),16), 1]; };
-  const over = (fg, bg) => { const a = fg[3]; return [0,1,2].map(i => Math.round(fg[i]*a + bg[i]*(1-a))); };
-  function bakgrundBakom(el) { let n = el, stack = [], oreducerbar = null;
-    while (n && n !== document.documentElement) {
-      const cs = getComputedStyle(n);
-      if (cs.backgroundImage && cs.backgroundImage !== 'none') { oreducerbar = cs.backgroundImage.slice(0,60); break; }
-      const c = parse(cs.backgroundColor);
-      if (c && c[3] > 0) { stack.push(c); if (c[3] === 1) break; }
-      n = n.parentElement; }
-    if (oreducerbar) return { oreducerbar };
-    let base = [255,255,255];
-    for (let i = stack.length - 1; i >= 0; i--) base = over(stack[i], base);
-    return { rgb: base }; }
-  const kvot = (f, b) => { const L1 = lum(f), L2 = lum(b);
-    return +(((Math.max(L1,L2)+0.05)/(Math.min(L1,L2)+0.05))).toFixed(2); };
-  const fargRgb = c => 'rgb(' + c.join(', ') + ')';
+  /* ── Fargmotorn, delad med grafik utanfor kontroller ─────────────────── */
+  ${FARGMOTOR}
 
   /* ── Hjalpare for struktur, inte for farg ─────────────────────────────── */
   const synligText = el => {
@@ -67,13 +46,6 @@ export const NONTEXT_MEASURE = `(() => {
     return true; };
   const glyfer = el => [...el.querySelectorAll('svg, [data-icon]')]
     .filter(e => (e.tagName.toLowerCase() === 'svg' || e.hasAttribute('data-icon')) && egenSubtrad(e, el));
-  const glyfFarg = svg => { const st = svg.getAttribute('stroke'), fi = svg.getAttribute('fill');
-    if (st && st !== 'none') return st;
-    if (fi && fi !== 'none') return fi;
-    const cs = getComputedStyle(svg);
-    if (cs.stroke && cs.stroke !== 'none') return cs.stroke;
-    if (cs.fill && cs.fill !== 'none') return cs.fill;
-    return null; };
   const harRam = el => { const c = getComputedStyle(el);
     return ['borderTopWidth','borderBottomWidth','borderLeftWidth','borderRightWidth']
       .some(k => parseFloat(c[k]) > 0); };
@@ -126,6 +98,31 @@ export const NONTEXT_MEASURE = `(() => {
     return { identitet: null, tillstand: bockar[0] || null, grund: 'varken avgransad form eller glyf i kontrollens subtrad' };
   }
 
+  /* ── STATE FAMILY IDENTITY · bara deklarerad struktur ─────────────────── */
+  //
+  // Color-only jamfor tva TILLSTAND av SAMMA komponent. I en ritningssvit ar
+  // de tva tillstanden tva olika element, och det enda som far knyta ihop dem
+  // ar en deklaration i kallan. Accessible name, nth-child, geometri,
+  // DOM-position och textmatchning ar alla otillatna: de parar ihop saker som
+  // rakar likna varandra.
+  //
+  // Deklarationen ar data-component, pa kontrollen sjalv eller pa exakt ETT
+  // element i dess egen subtrad. Allt annat ar pairingUnknown.
+  function familjIdentitet(c, roll) {
+    if (c.hasAttribute('data-component'))
+      return { id: c.getAttribute('data-component') + ' ‖ ' + roll, status: 'deklarerad',
+        varfor: 'data-component pa kontrollen sjalv' };
+    const inom = [...c.querySelectorAll('[data-component]')].filter(e => egenSubtrad(e, c));
+    if (inom.length === 1)
+      return { id: inom[0].getAttribute('data-component') + ' ‖ ' + roll, status: 'deklarerad',
+        varfor: 'data-component pa ett element i kontrollens egen subtrad' };
+    if (inom.length > 1)
+      return { id: null, status: 'pairingUnknown',
+        varfor: inom.length + ' olika data-component i subtradet — vilken komponent kontrollen ar gar inte att avgora' };
+    return { id: null, status: 'pairingUnknown',
+      varfor: 'ingen deklarerad data-component — kontrollen kan inte knytas till nagon tillstandsfamilj' };
+  }
+
   const ut = [];
   for (const c of document.querySelectorAll('[data-a11y-role]')) {
     const it = c.closest('.sc-item'); if (!it) continue;
@@ -138,6 +135,10 @@ export const NONTEXT_MEASURE = `(() => {
     const harEgenText = text.length > 0;
     const g = glyfer(c);
     const delar = [];
+    // De icke-fargbaserade signalerna ska lasas av den nod som FAKTISKT malar
+    // kontrollen. Lases de av den genomskinliga agaren blir varje form- och
+    // lagesskillnad osynlig, och allt ser ut som color-only.
+    let bararEl = c;
 
     /* ── STEG 1 · ROLLEN. Ingen kontrast lases har. ────────────────────── */
 
@@ -148,6 +149,7 @@ export const NONTEXT_MEASURE = `(() => {
       const form = visuellForm(c);
       if (form.identitet) {
         const e = form.identitet;
+        bararEl = e;
         const typ = harRam(e) ? 'ram' : harFyllning(e) ? 'fyllning' : 'glyf';
         delar.push({ typ, roll_i_kontrollen: 'componentIdentityCarrier',
           motivering: 'valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — ' + form.grund,
@@ -179,6 +181,7 @@ export const NONTEXT_MEASURE = `(() => {
         el: e, mot: 'yttre' });
       else {
         const form = visuellForm(c);
+        if (form.identitet) bararEl = form.identitet;
         if (form.identitet) delar.push({ typ: harRam(form.identitet) ? 'ram' : 'fyllning',
           roll_i_kontrollen: 'componentIdentityCarrier',
           motivering: 'kontrollen har varken text eller glyf — dess egen yta ar det som identifierar den — ' + form.grund,
@@ -235,15 +238,17 @@ export const NONTEXT_MEASURE = `(() => {
     });
 
     ut.push({ art: it.id, roll, namn: namn || null, state, disabled,
+      familj: familjIdentitet(c, roll),
       harEgenText, text: text.slice(0, 30),
       glyfer: g.map(e => e.getAttribute('data-icon') || '(namnlos)'),
       // Icke-fargbaserade signaler, for color-only-sparet.
       signaler: { bock: g.some(e => BOCK.test(e.getAttribute('data-icon') || '')),
         chevron: g.some(e => CHEVRON.test(e.getAttribute('data-icon') || '')),
         text: harEgenText, glyfNamn: g.map(e => e.getAttribute('data-icon') || '').filter(Boolean).sort().join(','),
-        barnAntal: c.children.length,
-        thumbLage: roll === 'switch' ? getComputedStyle(c).justifyContent : null,
-        form: rect(c).w + 'x' + rect(c).h },
+        barnAntal: bararEl.children.length,
+        thumbLage: roll === 'switch' ? getComputedStyle(bararEl).justifyContent : null,
+        form: rect(bararEl).w + 'x' + rect(bararEl).h,
+        bararArAgaren: bararEl === c },
       delar: matta });
   }
   return ut;

@@ -1,42 +1,36 @@
 #!/usr/bin/env node
-// F2-NT · BASLINJE FOR ICKE-TEXTUELL KONTRAST OCH COLOR-ONLY.
+// F2-NT · BASLINJE FOR ICKE-TEXTUELL KONTRAST OCH ANVANDNING AV FARG.
 //
 // Kör: node tools/nontext-baseline.mjs [--out=<fil>]
 //
-// Tva SKILDA rapporter som aldrig slas ihop:
-//   NON-TEXT CONTRAST  carriers mot sin angransande yta, troskel 3:1
-//   USE OF COLOR       skiljs tva tillstand enbart av farg?
+// TRE SKILDA RAPPORTER. De slas aldrig ihop och summeras aldrig.
 //
-// Scopet ar UI-komponenter. Meningsbarande grafik utanfor kontroller
-// inventeras separat och ingar inte i kontrollpopulationen.
+//   A  ICKE-TEXTUELL KONTRAST I UI-KOMPONENTER   1.4.11, troskel 3:1
+//   B  ANVANDNING AV FARG                        1.4.1, parvis per komponent
+//   C  GRAFISKA OBJEKT UTANFOR KONTROLLER        1.4.11, egen modell
+//
+// VARJE TAL BAR SIN ENHET. Fyra olika enheter forekommer och far aldrig
+// laggas ihop:
+//   kontroller        element med data-a11y-role
+//   grafiska delar    barare/supplement inuti dessa kontroller
+//   tillstandspar     tva tillstand av samma deklarerade komponent
+//   grafiska objekt   grafik utanfor alla kontroller
+//
+// Kontrastvardet avgor aldrig nagon roll. Det lases forst i steg 2.
 
 import { spawn } from 'node:child_process';
 import { readdirSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { resolve, join } from 'node:path';
 import { NONTEXT_MEASURE } from './nontext-measure.mjs';
+import { GRAPHIC_OBJECTS } from './graphic-objects.mjs';
+import { parbilda } from './colour-only.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const CHROME = process.env.CHROME_BIN || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const port = 9580 + (process.pid % 100);
-
-// Meningsbarande grafik UTANFOR kontroller — separat population.
-const UTANFOR = `(() => {
-  const ut = [];
-  for (const it of document.querySelectorAll('.sc-item')) {
-    for (const g of it.querySelectorAll('svg, [data-icon], [data-illustration]')) {
-      if (g.closest('[data-a11y-role]')) continue;      // hor till en kontroll
-      const r = g.getBoundingClientRect();
-      if (!(r.width > 0 && r.height > 0)) continue;
-      ut.push({ art: it.id, tag: g.tagName.toLowerCase(),
-        ikon: g.getAttribute('data-icon') || g.getAttribute('data-illustration') || null,
-        w: +r.width.toFixed(1), h: +r.height.toFixed(1) });
-    }
-  }
-  return ut;
-})()`;
 
 const filer = readdirSync('.').filter(f => f.endsWith('.dc.html'));
 const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=' + port,
@@ -65,9 +59,10 @@ try {
     await s('Runtime.evaluate', { expression: 'document.fonts.ready', awaitPromise: true });
     await sleep(650);
     const a = await s('Runtime.evaluate', { expression: NONTEXT_MEASURE, returnByValue: true });
-    if (a.exceptionDetails) throw new Error('matskriptet kastade i ' + f);
+    if (a.exceptionDetails) throw new Error('kontrollmatningen kastade i ' + f);
     K.push(...(a.result.value || []).map(x => ({ ...x, fil: f })));
-    const b = await s('Runtime.evaluate', { expression: UTANFOR, returnByValue: true });
+    const b = await s('Runtime.evaluate', { expression: GRAPHIC_OBJECTS, returnByValue: true });
+    if (b.exceptionDetails) throw new Error('objektmatningen kastade i ' + f);
     G.push(...(b.result.value || []).map(x => ({ ...x, fil: f })));
   }
 } catch (e) { verktygsfel = e.message; }
@@ -78,78 +73,135 @@ if (verktygsfel) {
   console.log('NT-BASLINJE status=VERKTYGSFEL'); process.exit(2);
 }
 
-const delar = K.flatMap(x => x.delar.map(d => ({ ...d, art: x.art, roll: x.roll, namn: x.namn,
-  state: x.state, disabled: x.disabled })));
-const per = {}; for (const d of delar) per[d.carrier] = (per[d.carrier] || 0) + 1;
+/* ── A · ICKE-TEXTUELL KONTRAST I UI-KOMPONENTER ────────────────────────── */
+const delar = K.flatMap(x => x.delar.map(d => ({ ...d, art: x.art, fil: x.fil, roll: x.roll,
+  namn: x.namn, state: x.state, disabled: x.disabled })));
+const perRoll = {}; for (const d of delar) perRoll[d.carrier] = (perRoll[d.carrier] || 0) + 1;
 const carriers = delar.filter(d => d.carrier === 'componentIdentityCarrier' || d.carrier === 'stateCarrier');
+const okandaDelar = delar.filter(d => d.carrier === 'unknown');
 const matta = carriers.filter(d => d.status === 'matt');
-const okanda = carriers.filter(d => d.status === 'unknown');
+const ejMatta = carriers.filter(d => d.status !== 'matt');
 const undantagna = matta.filter(d => d.disabled);
 const bedomda = matta.filter(d => !d.disabled);
-const fynd = bedomda.filter(d => d.kvot < 3);
+const fynd = bedomda.filter(d => d.kvot < 3).sort((a, b) => a.kvot - b.kvot);
+const fyndPerBararroll = {}; for (const d of fynd) fyndPerBararroll[d.carrier] = (fyndPerBararroll[d.carrier] || 0) + 1;
+const fyndPerTyp = {}; for (const d of fynd) fyndPerTyp[d.typ] = (fyndPerTyp[d.typ] || 0) + 1;
 
-// COLOR-ONLY · parvis per komponentfamilj och tillstandspar.
-const familj = new Map();
-for (const x of K) { if (!x.state) continue;
-  const k = x.roll + ' ‖ ' + (x.namn || '').replace(/\d+/g, '#');
-  if (!familj.has(k)) familj.set(k, []); familj.get(k).push(x); }
-const parbedomning = [];
-for (const [k, v] of familj) {
-  const states = [...new Set(v.map(x => x.state))];
-  if (states.length < 2) continue;
-  for (let i = 0; i < states.length; i++) for (let j = i + 1; j < states.length; j++) {
-    const a = v.find(x => x.state === states[i]), b = v.find(x => x.state === states[j]);
-    const skillnader = [];
-    if (a.signaler.bock !== b.signaler.bock) skillnader.push('bock tillkommer eller forsvinner');
-    if (a.signaler.chevron !== b.signaler.chevron) skillnader.push('chevron byts');
-    if (a.signaler.glyfNamn !== b.signaler.glyfNamn) skillnader.push('glyfuppsattningen skiljer');
-    if (a.signaler.thumbLage !== b.signaler.thumbLage) skillnader.push('knoppens lage skiljer');
-    if (a.signaler.barnAntal !== b.signaler.barnAntal) skillnader.push('antal synliga delar skiljer');
-    if (a.signaler.form !== b.signaler.form) skillnader.push('formen skiljer');
-    if (a.text !== b.text) skillnader.push('texten skiljer');
-    parbedomning.push({ familj: k, stateA: states[i], stateB: states[j],
-      artA: a.art, artB: b.art, ickeFargSignaler: skillnader,
-      colorOnly: skillnader.length === 0 });
-  }
-}
-const colorOnly = parbedomning.filter(x => x.colorOnly);
+/* ── B · ANVANDNING AV FARG ─────────────────────────────────────────────── */
+const co = parbilda(K);
 
-const doc = { $schema: 'butlery-nt-baslinje/1', kontroll: 'CHK-NT-01',
-  $regel: 'Rollen avgors ur strukturen, aldrig ur kontrastvardet. Icke-textuell kontrast och color-only ar skilda rapporter och slas aldrig ihop.',
-  kontrollgrafik: { kontroller_st: K.length, grafiska_delar_st: delar.length, perRoll: per },
-  ickeTextuellKontrast: { carriers_st: carriers.length, matta_st: matta.length,
-    unknown_st: okanda.length, undantagna_disabled_st: undantagna.length,
-    bedomda_st: bedomda.length, fynd_under_3_st: fynd.length,
-    berorda_kontroller_st: new Set(fynd.map(d => d.art + '|' + d.namn)).size,
+/* ── C · GRAFISKA OBJEKT UTANFOR KONTROLLER ─────────────────────────────── */
+const objPerRoll = {}; for (const g of G) objPerRoll[g.carrier] = (objPerRoll[g.carrier] || 0) + 1;
+const objBarare = G.filter(g => g.carrier === 'graphicalObjectCarrier');
+const objMatta = objBarare.filter(g => g.status === 'matt');
+const objFynd = objMatta.filter(g => g.kvot < 3).sort((a, b) => a.kvot - b.kvot);
+const objOkanda = G.filter(g => g.status === 'unknown');
+
+const artefakter = new Set(K.map(x => x.art));
+const doc = {
+  $schema: 'butlery-nt-baslinje/2', kontroll: 'CHK-NT-01',
+  $regel: 'Rollen avgors ur strukturen, aldrig ur kontrastvardet. A, B och C ar tre skilda rapporter och slas aldrig ihop.',
+  $enheter: {
+    kontroller: 'element med data-a11y-role',
+    grafiskaDelar: 'barare eller supplement inuti en kontroll — flera per kontroll',
+    tillstandspar: 'tva tillstand av samma deklarerade komponent',
+    grafiskaObjekt: 'grafik utanfor alla kontroller',
+    artefakter: 'sc-item, en skarmbild',
+  },
+  matpunkt: { viewport: '390x844', deviceScaleFactor: 2, filer_st: filer.length },
+  population: { artefakter_st: artefakter.size, kontroller_st: K.length,
+    grafiskaDelar_st: delar.length, grafiskaObjekt_st: G.length },
+
+  A_ickeTextuellKontrastIKomponenter: {
+    $enhet: 'grafiska delar',
+    grafiskaDelar_st: delar.length,
+    perBararroll_grafiskaDelar: perRoll,
+    unknown_grafiskaDelar_st: okandaDelar.length,
+    barare_grafiskaDelar_st: carriers.length,
+    matta_grafiskaDelar_st: matta.length,
+    ejMatta_grafiskaDelar_st: ejMatta.length,
+    undantagna_disabled_grafiskaDelar_st: undantagna.length,
+    bedomda_grafiskaDelar_st: bedomda.length,
+    fynd_under_3_grafiskaDelar_st: fynd.length,
+    fynd_perBararroll_grafiskaDelar: fyndPerBararroll,
+    fynd_perTyp_grafiskaDelar: fyndPerTyp,
+    berorda_kontroller_st: new Set(fynd.map(d => d.art + '|' + d.roll + '|' + d.namn)).size,
     berorda_artefakter_st: new Set(fynd.map(d => d.art)).size,
-    fynd: fynd.sort((a, b) => a.kvot - b.kvot).slice(0, 60),
-    unknown: okanda.slice(0, 30) },
-  colorOnly: { familjer_st: familj.size, jamforda_par_st: parbedomning.length,
-    med_ickefarg_signal_st: parbedomning.length - colorOnly.length,
-    colorOnly_st: colorOnly.length, colorOnly, alla: parbedomning },
-  grafikUtanforKontroller: { st: G.length, artefakter_st: new Set(G.map(x => x.art)).size,
-    $not: 'Separat population. Ingar aldrig i kontrollpopulationen och ar annu inte matt — WCAG 1.4.11 kan darfor inte kallas stangd.',
-    exempel: G.slice(0, 20) },
-  status: (okanda.length + fynd.length) ? 'FÄLLD' : 'godkänd' };
+    $not: 'fynd_perBararroll summerar till fynd_under_3 i enheten grafiska delar. Beror kontroller och artefakter ar ANDRA enheter och far aldrig laggas till.',
+    fynd: fynd.slice(0, 80),
+    unknown: okandaDelar.slice(0, 30),
+  },
+
+  B_anvandningAvFarg: {
+    $enhet: 'tillstandspar',
+    kontrollerMedTillstand_st: co.kontroller_med_tillstand_st,
+    kontrollerIFamilj_st: co.kontroller_i_familj_st,
+    pairingUnknown_kontroller_st: co.pairingUnknown_st,
+    tillstandsfamiljer_st: co.familjer_st,
+    familjerUtanMotpart_st: co.familjer_utan_motpart_st,
+    tillstandspar_st: co.par_st,
+    colorOnly_tillstandspar_st: co.colorOnly_st,
+    $not: 'Familjidentiteten ar deklarerad data-component. Accessible name, geometri och DOM-position ar otillatna som identitet. Kontroller utan deklaration blir pairingUnknown — aldrig "ingen skillnad".',
+    colorOnly: co.colorOnly,
+    par: co.par,
+    utanMotpart: co.utanMotpart,
+    pairingUnknown_exempel: co.pairingUnknown.slice(0, 30),
+  },
+
+  C_grafiskaObjektUtanforKontroller: {
+    $enhet: 'grafiska objekt',
+    grafiskaObjekt_st: G.length,
+    artefakter_st: new Set(G.map(g => g.art)).size,
+    perRoll_grafiskaObjekt: objPerRoll,
+    barare_grafiskaObjekt_st: objBarare.length,
+    matta_grafiskaObjekt_st: objMatta.length,
+    unknown_grafiskaObjekt_st: objOkanda.length,
+    fynd_under_3_grafiskaObjekt_st: objFynd.length,
+    $not: 'Rollen kravs som deklaration, precis som data-hit i R-02. data-icon namnger formen, inte funktionen, och raknas darfor inte.',
+    fynd: objFynd.slice(0, 40),
+    unknown_exempel: objOkanda.slice(0, 20),
+  },
+};
+doc.status = (okandaDelar.length + fynd.length + co.pairingUnknown_st + co.colorOnly_st +
+  objOkanda.length + objFynd.length) ? 'FÄLLD' : 'godkänd';
+doc.$avgransning = 'WCAG 1.4.11 kan inte kallas stangd sa lange nagon population har unknown.';
 if (OUT) writeFileSync(OUT, JSON.stringify(doc, null, 1) + '\n');
 
-console.log('KONTROLLGRAFIK  kontroller ' + K.length + ' · grafiska delar ' + delar.length);
-console.log('  per roll: ' + JSON.stringify(per));
+const rad = (etikett, tal, enhet) =>
+  console.log('  ' + etikett.padEnd(34) + String(tal).padStart(6) + '  ' + enhet);
+
+console.log('MATPUNKT  390x844 · dsf 2 · ' + filer.length + ' filer · ' + artefakter.size + ' artefakter');
 console.log('');
-console.log('ICKE-TEXTUELL KONTRAST');
-console.log('  carriers            ' + carriers.length);
-console.log('  matta               ' + matta.length);
-console.log('  unknown             ' + okanda.length);
-console.log('  undantagna disabled ' + undantagna.length);
-console.log('  bedomda             ' + bedomda.length);
-console.log('  fynd under 3:1      ' + fynd.length + ' i ' + new Set(fynd.map(d => d.art)).size + ' artefakter');
+console.log('A · ICKE-TEXTUELL KONTRAST I UI-KOMPONENTER');
+rad('kontroller', K.length, 'kontroller');
+rad('grafiska delar', delar.length, 'grafiska delar');
+rad('  varav barare', carriers.length, 'grafiska delar');
+rad('  varav unknown', okandaDelar.length, 'grafiska delar');
+rad('matta', matta.length, 'grafiska delar');
+rad('undantagna disabled', undantagna.length, 'grafiska delar');
+rad('bedomda', bedomda.length, 'grafiska delar');
+rad('fynd under 3:1', fynd.length, 'grafiska delar');
+console.log('    per bararroll: ' + JSON.stringify(fyndPerBararroll));
+console.log('    per typ:       ' + JSON.stringify(fyndPerTyp));
+rad('beror', new Set(fynd.map(d => d.art + '|' + d.roll + '|' + d.namn)).size, 'kontroller');
+rad('beror', new Set(fynd.map(d => d.art)).size, 'artefakter');
 console.log('');
-console.log('COLOR-ONLY');
-console.log('  familjer            ' + familj.size);
-console.log('  jamforda par        ' + parbedomning.length);
-console.log('  med ickefarg-signal ' + (parbedomning.length - colorOnly.length));
-console.log('  color-only          ' + colorOnly.length);
+console.log('B · ANVANDNING AV FARG');
+rad('kontroller med tillstand', co.kontroller_med_tillstand_st, 'kontroller');
+rad('  knutna till en familj', co.kontroller_i_familj_st, 'kontroller');
+rad('  pairingUnknown', co.pairingUnknown_st, 'kontroller');
+rad('tillstandsfamiljer', co.familjer_st, 'familjer');
+rad('  utan motpart i sviten', co.familjer_utan_motpart_st, 'familjer');
+rad('jamforda par', co.par_st, 'tillstandspar');
+rad('color-only', co.colorOnly_st, 'tillstandspar');
 console.log('');
-console.log('GRAFIK UTANFOR KONTROLLER  ' + G.length + ' i ' + new Set(G.map(x => x.art)).size + ' artefakter (ej matt)');
+console.log('C · GRAFISKA OBJEKT UTANFOR KONTROLLER');
+rad('grafiska objekt', G.length, 'grafiska objekt');
+console.log('    per roll: ' + JSON.stringify(objPerRoll));
+rad('deklarerade barare', objBarare.length, 'grafiska objekt');
+rad('matta', objMatta.length, 'grafiska objekt');
+rad('unknown', objOkanda.length, 'grafiska objekt');
+rad('fynd under 3:1', objFynd.length, 'grafiska objekt');
+console.log('');
 console.log('NT-BASLINJE status=' + doc.status);
 process.exit(doc.status === 'godkänd' ? 0 : 1);
