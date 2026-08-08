@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=369-->
+<!--manifest:files=371-->
 
 ## Reporoten
 
@@ -230,6 +230,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/kontrastprov.json` | `453d9d62ce512d55bff07494a9eccb65f76a424b26b498c15608f9f6d461001c` |
 | `fas2/nav-add-delta.json` | `0a8748d9f2059c0dc9e187db3824d62f691872cd456f24fca2df370fccc8f22c` |
 | `fas2/negativa-prov.json` | `5ac71e2542a1c9b66427a154f591650f9da433e035e8f5c89d512e520cf658a0` |
+| `fas2/nt-baslinje.json` | `74d90dc4916f59cbddf54142566a40091f623253b4a50c43bb2d331383587145` |
 | `fas2/nt-prov.json` | `f6a7c499e12297cacf0e581139659cd28aa3841617af8903ffab82bfc37a7318` |
 | `fas2/r01-baslinje.json` | `d0f89a18c48f6d0e159f64b8f487c9417d26cc2272d06cce77aef58f0c2ca61c` |
 | `fas2/r02-b9-overlappkontroll.json` | `8a595213f993f37b69f4191448cce345fc948b5e79e73a59cbd1b1c2db737f78` |
@@ -367,6 +368,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/lint-core.mjs` | `3b2a022f92648daf14b34d99cded4175ec3a95489570efc03be11fab2262ec20` |
 | `tools/manifest-contract.mjs` | `e5b69a41062031b0c15868d4de9673d7f3645256e3cb5c8da66ea79ec83c368d` |
 | `tools/metatest.mjs` | `29e5741faad10c4c250afac5c4a308d0f9ffd7a90ba681cf159ceb281bea1165` |
+| `tools/nontext-baseline.mjs` | `eff25c8642c3dbb2836ee65acf828cbc27f3c5715974eee8134dec5e7b433259` |
 | `tools/nontext-fixtures.mjs` | `a8090b52254f7ce51bdea1adabca7f0c2f39eb6c5ea17f8aa60e6bf1834f038a` |
 | `tools/nontext-measure.mjs` | `62b708a8cfc2dc37b7e3d6cb1b9eb7d6e93cc3ed3341def17e3ef85d6d7a01d1` |
 | `tools/overlap-fixtures.mjs` | `3e4db603b5f5c691b331cab431bda9fe1fddb84849666df8d96f93f8e86046f3` |
