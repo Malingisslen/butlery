@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=350-->
+<!--manifest:files=351-->
 
 ## Reporoten
 
@@ -44,7 +44,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `Butlery Skarmar v12 del 3 sok och skalbevis.dc.html` | `678bf20b992ec3cf9b7e6a1454e3569e7e4c5b6baaf4c344eb065875ceb10ece` |
 | `Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html` | `733527919d0c6ab84b6a7acd22652006203aa5e58097be1209a828c9838a613b` |
 | `Butlery Skarmar v12 etapp 10 bred layout.dc.html` | `6e2c0a0d1ff2edf84d132c0b411029284c55da85d1ca2fd45bc16c047200af1c` |
-| `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `db6989bcb8a40ee6ae040831acb5cdc4cfe0333ef24439059c1bab204c2ecefb` |
+| `Butlery Skarmar v12 etapp 11 breda vyer.dc.html` | `1bc2c49d09459f8edef565814424c6d1a2876008d532bf1ab2ccef2b689c6a48` |
 | `Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html` | `a3ab5be9018777e88e9402fbac57e7b2d6ce68dd6b57dc3515e873809ac2d325` |
 | `Butlery Skarmar v12 etapp 2.dc.html` | `19443f56eb9ba7e208c038eff01f89e77c9728c57af0e6c0c120cf0a62fdc469` |
 | `Butlery Skarmar v12 etapp 3 onboarding.dc.html` | `6c29f2fb8167064b6b90525f004a74c94356a1e47efc938bc8e20975afe6aeaf` |
@@ -247,6 +247,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r02-delta-rc13.json` | `ed3f4e8ed855b3756e31cf245e0126e8ef7d6d36799561d392d79b473d34d7fe` |
 | `fas2/r02-delta-rc14-15-16.json` | `c187416752652ccafd65cb9af376728eb179c554e8c1546ce7116f9b01f83966` |
 | `fas2/r02-delta-socintegritet.json` | `31501130b4339bad195035ad3e310c642c0e4103464006b1e72054a6136e9854` |
+| `fas2/r02-delta-vmbkonflikt.json` | `34b6b657995a6e3ab94596a14d7eeb69b6425fe2ada7de9bbee7cc71a498a85a` |
 | `fas2/r02-fix04-logg.json` | `a76fd39a7266255ff27741514841d78910ceb56cee35f6b8648f42197a27d12c` |
 | `fas2/r02-fix0910-logg.json` | `ff3c355ac8d37733ceb03a29f3bd09ba6187ee822cead5006141b6dc21359e80` |
 | `fas2/r02-fix15-logg.json` | `c337382340d6eeb315bd78e5cd693327d298a6c0263f7fc8b77901961a3de9de` |
