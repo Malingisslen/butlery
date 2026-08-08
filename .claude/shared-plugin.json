@@ -137,7 +137,7 @@
     "note": "Per memory/feedback_agent_timeout.md, agents stall on >3 files. Either split this commit, or run agents in batches and touch the marker after the final batch."
   },
   "stopCheck": {
-    "command": "dart analyze --fatal-infos",
+    "command": "dart analyze --fatal-infos {files}",
     "filePattern": "\\.dart$",
     "errorPathRegex": "^\\s*\\S+\\s+-\\s+(\\S+\\.dart):\\d+:\\d+\\s+-\\s+",
     "ticketAdvice": "create a Linear ticket with label 'bug' for this issue, then inform the user what was filed",
