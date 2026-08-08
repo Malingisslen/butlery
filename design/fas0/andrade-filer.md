@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=328-->
+<!--manifest:files=329-->
 
 ## Reporoten
 
@@ -239,6 +239,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r02-delta-rc07.json` | `d0f053efdfb574a05b1da0e31f80ac84d8c483941f6796633d285bf293093796` |
 | `fas2/r02-fix04-logg.json` | `a76fd39a7266255ff27741514841d78910ceb56cee35f6b8648f42197a27d12c` |
 | `fas2/r02-fix44-logg.json` | `7b649c9a69cc9fbfa0b82a98394f88c442baad389275f5352721beef05ea80a5` |
+| `fas2/r02-rotorsaker-2.json` | `16cee297c483df2008e25ea1acad56b0d88184a00d99aad91cce65fb03b17a26` |
 | `fas2/r02-rotorsaker.json` | `b2ad1b9d988bd8a1a7bdbacdbb37209b3309d25e81d422878e13c7e55a88d3c5` |
 | `fas2/r02-snapshot-batch-b.json` | `e95c5e15aece6133feecb74e6dfd8ae5cb076fe6cb2dbab915855ab9c7540ad8` |
 | `fas2/r02-snapshot-batch-d.json` | `e5d2a59995aa0567a6bfa10530b5c46316fafc68a3ba434eb2addda2be3a3d1a` |
