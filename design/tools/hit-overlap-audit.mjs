@@ -3,23 +3,30 @@
 //
 // Kör: node tools/hit-overlap-audit.mjs [--out=<fil>]
 //
-// En traffyta kan klara 48 x 48 och anda ta klick som var avsedda for
-// grannen. Bagge matningarna ser da gronа ut var for sig.
+// FRAGAN AR INTE "vem vinner punkten". Den fragan ar cirkular: i varje
+// DOM-overlapp vinner exakt ett element i varje punkt, sa den kan aldrig
+// avsloja ett fel. Fyra negativa prov faller den modellen, och den ar borta.
 //
-// TVA SKILDA BEGREPP, och bara det andra ar ett produktfel:
+// Fragan ar i stallet: FORLORAR en kontroll delar av sin egen deklarerade
+// traffyta till en annan sjalvstandig kontroll?
 //
-//   geometricOverlap        rektanglarna skar varandra.
-//   simultaneousHitOverlap  tva sjalvstandiga kontroller ar SAMTIDIGT
-//                           traffbara i samma interaktionslager, och deras
-//                           traffytor skar varandra.
+//   lostOwnHitArea = area(H(C) ∩ H(D)) for tva SKILDA semantiska kontroller
 //
-// Skillnaden avgors av webblasarens EGEN traffning, inte av en gissning:
-// elementsFromPoint fragas i den overlappande ytan. Svarar den bara med den
-// ena kontrollen ligger den andra bakom ett hogre lager och kan inte traffas
-// dar. Det ar ett avsiktligt overlager, inte ett fel.
+// Ar den arean storre an noll konkurrerar de om samma yta. Ingen
+// z-index-vinnare gor det acceptabelt.
 //
-// Ingen artefaktspecifik logik. Ingen id-lista. Utfallet kommer ur mataren.
-// Saknas evidens ar utfallet unresolved — aldrig godkant.
+// Geometrisk overlapp klassas forst efter RELATION:
+//   sameActiveLayer      bagge samtidigt aktiva i samma lager  → produktfynd
+//   intentionalOverlay   underlaget ar BELAGT suspenderat      → inte fynd
+//   notSimultaneous      kan aldrig vara synliga samtidigt     → inte fynd
+//   unresolved           relationen kan inte belaggas          → inte godkant
+//
+// Overlager kraver POSITIV evidens. Att ligga sist i DOM, ha hogre z-index
+// eller vinna traffningen ar ingen evidens. Ingen artefaktlista finns.
+//
+// Separat fraga: isOwnTargetHitTestable. En kontroll vars egen yta har
+// pointer-events: none kan inte godkannas darfor att nagot under den tar
+// klicket — det ar ett fel pa den ovre kontrollens egen aktiveringsyta.
 
 import { spawn } from 'node:child_process';
 import { readdirSync, writeFileSync } from 'node:fs';
@@ -33,10 +40,8 @@ const CHROME = process.env.CHROME_BIN || 'C:\\Program Files\\Google\\Chrome\\App
 const port = 9210 + (process.pid % 120);
 
 export const OVERLAP_AUDIT = `(() => {
-  const R = el => { const r = el.getBoundingClientRect();
-    return { x:+r.left.toFixed(2), y:+r.top.toFixed(2), w:+r.width.toFixed(2), h:+r.height.toFixed(2),
-             right:+r.right.toFixed(2), bottom:+r.bottom.toFixed(2) }; };
-  // Ytan kontrollen FAKTISKT ager: self ger elementet, target ger noden.
+  const D = el => el.getBoundingClientRect();     // orundad DOMRect
+  const fx = n => +n.toFixed(3);
   const agarElement = c => {
     const h = c.getAttribute('data-hit') || '';
     if (h === 'self') return c;
@@ -53,107 +58,107 @@ export const OVERLAP_AUDIT = `(() => {
       n = n.parentElement; }
     return null; };
   const synligIPort = (el, p) => { if (!p) return true;
-    const e = R(el), q = R(p);
-    return e.bottom > q.y + 0.01 && e.y < q.bottom - 0.01 &&
-           e.right > q.x + 0.01 && e.x < q.right - 0.01; };
+    const e = D(el), q = D(p);
+    return e.bottom > q.top + 0.001 && e.top < q.bottom - 0.001 &&
+           e.right > q.left + 0.001 && e.left < q.right - 0.001; };
 
-  // Vem traffas HAR? Webblasarens egen traffning, inte var tolkning.
-  function traffas(A, B, snitt) {
-    const pts = [];
-    for (const fx of [0.25, 0.5, 0.75]) for (const fy of [0.25, 0.5, 0.75])
-      pts.push([snitt.x + snitt.w * fx, snitt.y + snitt.h * fy]);
-    let iA = 0, iB = 0, annat = 0, utanfor = 0;
-    for (const [x, y] of pts) {
-      if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) { utanfor++; continue; }
-      const kedja = document.elementsFromPoint(x, y);
-      if (!kedja.length) { utanfor++; continue; }
-      // Det OVERSTA elementet avgor. Ligger det i A traffas A, i B traffas B.
-      const topp = kedja[0];
-      if (A.contains(topp) || topp === A) iA++;
-      else if (B.contains(topp) || topp === B) iB++;
-      else annat++;
-    }
-    return { punkter: pts.length, traffarA: iA, traffarB: iB, traffarAnnat: annat, utanforVyn: utanfor };
-  }
+  // Egen traffbarhet: pointer-events pa ytan sjalv eller nagon forfader.
+  const traffbar = el => { let n = el;
+    while (n && n !== document.documentElement) {
+      if (getComputedStyle(n).pointerEvents === 'none') return false;
+      n = n.parentElement; }
+    return true; };
 
- // Traffningen kraver att snittet rullas in i vyn. Scrollagen maste
-  // aterstallas efter varje par — annars blir resultatet beroende av i
-  // vilken ordning paren provades, och det ar inget matvarde.
-  const scrollbara = [...document.querySelectorAll("*")].filter(e => e.scrollTop > 0 ||
-    /auto|scroll/.test(getComputedStyle(e).overflowY));
-  const spara = () => scrollbara.map(e => [e, e.scrollTop, e.scrollLeft])
-    .concat([[document.scrollingElement, document.scrollingElement.scrollTop, document.scrollingElement.scrollLeft]]);
-  const aterstall = s => { for (const [e, t, l] of s) { e.scrollTop = t; e.scrollLeft = l; } };
+  // POSITIV evidens for att underlaget ar suspenderat i detta tillstand.
+  // Bara uttalade markorer duger. DOM-ordning, z-index och traffning gor det
+  // inte. Saknas markoren ar relationen unresolved, aldrig intentional.
+  const SUSPENDERAD = /(suspended|blocked|inert|bakom|overlay-blocked)/i;
+  const suspenderad = el => { let n = el;
+    while (n && n !== document.documentElement) {
+      if (n.hasAttribute('inert')) return { ja: true, via: 'inert', pa: n.tagName.toLowerCase() };
+      if (n.getAttribute('aria-hidden') === 'true') return { ja: true, via: 'aria-hidden', pa: n.tagName.toLowerCase() };
+      const st = n.getAttribute('data-a11y-state') || '';
+      if (SUSPENDERAD.test(st)) return { ja: true, via: 'data-a11y-state=' + st, pa: n.tagName.toLowerCase() };
+      const lg = n.getAttribute('data-layer-state') || '';
+      if (SUSPENDERAD.test(lg)) return { ja: true, via: 'data-layer-state=' + lg, pa: n.tagName.toLowerCase() };
+      n = n.parentElement; }
+    return { ja: false, via: null, pa: null };
+  };
 
-  const ut = { artefakter: 0, verifierade: 0, par: [] };
+  const ut = { artefakter: 0, verifierade: 0, ejTraffbara: [], par: [] };
   for (const it of document.querySelectorAll('.sc-item')) {
     ut.artefakter++;
     const v = [];
     for (const c of it.querySelectorAll('[data-a11y-role]')) {
       const a = agarElement(c);
       if (!a) continue;
-      v.push({ el: a, namn: c.getAttribute('data-a11y-name'), roll: c.getAttribute('data-a11y-role'),
-        r: R(a), p: port(a) });
+      const rr = D(a);
+      v.push({ c, el: a, namn: c.getAttribute('data-a11y-name'), roll: c.getAttribute('data-a11y-role'),
+        r: { x: fx(rr.left), y: fx(rr.top), w: fx(rr.width), h: fx(rr.height),
+             right: fx(rr.right), bottom: fx(rr.bottom), area: fx(rr.width * rr.height) },
+        p: port(a), traffbar: traffbar(a) });
     }
     ut.verifierade += v.length;
+    for (const x of v) if (!x.traffbar)
+      ut.ejTraffbara.push({ art: it.id, namn: x.namn, roll: x.roll,
+        evidens: 'pointer-events: none pa ytan eller en forfader — den egna aktiveringsytan ar inte traffbar' });
+
     for (let i = 0; i < v.length; i++) for (let j = i + 1; j < v.length; j++) {
-      if (v[i].el === v[j].el) {
-        ut.par.push({ art: it.id, typ: 'delad agaryta', a: v[i].namn, b: v[j].namn,
-          geometricOverlap: true, simultaneousHitOverlap: true,
-          adjudication: 'sharedOwner', evidens: 'tva kontroller pekar ut samma agaryta' });
+      const A = v[i], B = v[j];
+      // SAMMA KONTROLLIDENTITET. En glyf och dess agare, eller tva
+      // kontroller som pekar ut samma yta, jamfors inte som tva ytor.
+      if (A.el === B.el) {
+        ut.par.push({ art: it.id, a: A.namn, b: B.namn, relation: 'sharedOwner',
+          geometricOverlap: true, produktfynd: true,
+          evidens: 'tva skilda semantiska kontroller pekar ut samma agaryta' });
         continue;
       }
-      const A = v[i].r, B = v[j].r;
-      const ow = Math.min(A.right, B.right) - Math.max(A.x, B.x);
-      const oh = Math.min(A.bottom, B.bottom) - Math.max(A.y, B.y);
-      if (ow <= 0.01 || oh <= 0.01) continue;
-      const snitt = { x: Math.max(A.x, B.x), y: Math.max(A.y, B.y), w: ow, h: oh };
-
-      // Kan de over huvud taget vara samtidigt synliga?
-      const aSyn = synligIPort(v[i].el, v[i].p), bSyn = synligIPort(v[j].el, v[j].p);
-      if (!aSyn || !bSyn) {
-        ut.par.push({ art: it.id, typ: 'geometrisk overlapp', a: v[i].namn, b: v[j].namn,
-          rollA: v[i].roll, rollB: v[j].roll,
-          overlapp: { w: +ow.toFixed(2), h: +oh.toFixed(2), area: +(ow * oh).toFixed(1) },
-          geometricOverlap: true, simultaneousHitOverlap: false,
-          adjudication: 'differentScrollState',
-          evidens: 'minst en av ytorna ar bortscrollad i sin port och kan inte traffas samtidigt som den andra',
-          aSynlig: aSyn, bSynlig: bSyn });
+      if (A.el.contains(B.el) || B.el.contains(A.el)) {
+        ut.par.push({ art: it.id, a: A.namn, b: B.namn, relation: 'nestedOwners',
+          geometricOverlap: true, produktfynd: true,
+          evidens: 'den ena ytan ligger inuti den andra — tva sjalvstandiga kontroller kan inte dela yta pa det sattet' });
         continue;
       }
+      const iw = Math.min(A.r.right, B.r.right) - Math.max(A.r.x, B.r.x);
+      const ih = Math.min(A.r.bottom, B.r.bottom) - Math.max(A.r.y, B.r.y);
+      if (!(iw > 0 && ih > 0)) continue;          // ingen tolerans: >0 racker
+      const area = iw * ih;
 
-      // Rulla in snittet i vyn och fraga webblasaren vem som traffas.
-      const laget = spara();
-      v[i].el.scrollIntoView({ block: 'center' });
-      const A2 = R(v[i].el), B2 = R(v[j].el);
-      const ow2 = Math.min(A2.right, B2.right) - Math.max(A2.x, B2.x);
-      const oh2 = Math.min(A2.bottom, B2.bottom) - Math.max(A2.y, B2.y);
-      const t = (ow2 > 0.01 && oh2 > 0.01)
-        ? traffas(v[i].el, v[j].el, { x: Math.max(A2.x, B2.x), y: Math.max(A2.y, B2.y), w: ow2, h: oh2 })
-        : null;
-
-      aterstall(laget);
-      let sim = null, adj = 'unresolved', ev = 'traffningen kunde inte avgoras';
-      if (t && t.utanforVyn === t.punkter) { sim = null; adj = 'unresolved'; ev = 'snittet gick inte att rulla in i vyn'; }
-      else if (t && t.traffarA > 0 && t.traffarB > 0) {
-        sim = true; adj = 'produktfel';
-        ev = 'bagge kontrollerna traffas inom den overlappande ytan (' + t.traffarA + ' respektive ' + t.traffarB + ' av ' + t.punkter + ' punkter)';
-      } else if (t && (t.traffarA > 0) !== (t.traffarB > 0)) {
-        sim = false; adj = 'intentionalOverlay';
-        ev = 'endast ' + (t.traffarA > 0 ? 'den ovre' : 'den andra') + ' kontrollen traffas i den overlappande ytan; den underliggande ligger bakom ett hogre lager och ar inte traffbar dar';
-      } else if (t && t.traffarAnnat === t.punkter - t.utanforVyn && t.punkter > t.utanforVyn) {
-        sim = null; adj = 'unresolved';
-        ev = 'ett tredje element ligger overst i hela snittet — agarskapet i ytan gar inte att avgora';
+      const samtidigt = synligIPort(A.el, A.p) && synligIPort(B.el, B.p);
+      const sA = suspenderad(A.el), sB = suspenderad(B.el);
+      let relation, fynd, ev;
+      if (!samtidigt) {
+        relation = 'notSimultaneous'; fynd = false;
+        ev = 'minst en av ytorna ar bortscrollad i sin port och kan inte vara aktiv samtidigt som den andra';
+      } else if (sA.ja !== sB.ja) {
+        relation = 'intentionalOverlay'; fynd = false;
+        ev = 'underlaget ar belagt suspenderat via ' + (sA.ja ? sA.via : sB.via) +
+             ' — det ligger i ett lagre interaktionslager och ar inte aktivt inom den tackta ytan';
+      } else if (sA.ja && sB.ja) {
+        relation = 'unresolved'; fynd = false;
+        ev = 'bagge ytorna ar markta suspenderade — lagerrelationen gar inte att avgora';
+      } else {
+        // Ingen lagerevidens alls. Da kan vi inte pasta overlager, men vi kan
+        // heller inte pasta att de ar samtidigt aktiva. Fail closed.
+        relation = 'unresolved'; fynd = false;
+        ev = 'ingen uttalad lagerevidens: inget inert, aria-hidden eller state-markering visar att underlaget ar suspenderat. Relationen kan inte belaggas.';
       }
-      ut.par.push({ art: it.id, typ: 'geometrisk overlapp', a: v[i].namn, b: v[j].namn,
-        rollA: v[i].roll, rollB: v[j].roll,
-        overlapp: { w: +ow.toFixed(2), h: +oh.toFixed(2), area: +(ow * oh).toFixed(1) },
-        geometricOverlap: true, simultaneousHitOverlap: sim, adjudication: adj,
-        evidens: ev, traffning: t });
+      ut.par.push({ art: it.id, a: A.namn, b: B.namn, rollA: A.roll, rollB: B.roll,
+        geometricOverlap: true, relation, produktfynd: fynd, evidens: ev,
+        rektA: A.r, rektB: B.r,
+        intersection: { w: fx(iw), h: fx(ih), area: fx(area) },
+        lostOwnHitArea: { A: fx(area / A.r.area), B: fx(area / B.r.area) },
+        samtidigtSynliga: samtidigt,
+        suspenderadA: sA, suspenderadB: sB });
     }
   }
   return ut;
 })()`;
+
+// sameActiveLayer kan bara pastas nar bagge ar bevisat aktiva. Sa lange
+// ritningarna saknar lagermarkorer blir utfallet unresolved i stallet, och
+// det ar avsiktligt: ett obelagt produktfynd ar lika fel som ett obelagt
+// godkannande.
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const filer = readdirSync('.').filter(f => f.endsWith('.dc.html'));
@@ -162,7 +167,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     '--force-device-scale-factor=2',
     '--user-data-dir=' + join(process.env.TEMP || '.', 'butlery-overlap'), 'about:blank'],
     { stdio: 'ignore' });
-  let par = [], artefakter = 0, verifierade = 0, verktygsfel = null;
+  let par = [], ejTraff = [], artefakter = 0, verifierade = 0, verktygsfel = null;
   try {
     let ws = null;
     for (let k = 0; k < 60 && !ws; k++) { await sleep(250);
@@ -188,6 +193,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
       const v = r.result.value;
       artefakter += v.artefakter; verifierade += v.verifierade;
       par.push(...v.par.map(x => ({ ...x, fil: f })));
+      ejTraff.push(...v.ejTraffbara.map(x => ({ ...x, fil: f })));
     }
   } catch (e) { verktygsfel = e.message; }
   finally { try { chrome.kill(); } catch {} }
@@ -197,35 +203,32 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     console.log('OVERLAPP-AUDIT status=VERKTYGSFEL'); process.exit(2);
   }
 
-  const fel = par.filter(x => x.simultaneousHitOverlap === true);
-  const olost = par.filter(x => x.simultaneousHitOverlap === null);
-  const avsiktliga = par.filter(x => x.adjudication === 'intentionalOverlay');
-  const scroll = par.filter(x => x.adjudication === 'differentScrollState');
-  const doc = { $schema: 'butlery-overlap-audit/2', kontroll: 'CHK-R-02',
-    $regel: 'geometricOverlap ar att rektanglarna skar varandra. simultaneousHitOverlap ar att bagge kontrollerna faktiskt kan traffas i samma yta. Endast det andra ar ett produktfel. Skillnaden avgors av webblasarens egen traffning, aldrig av en artefaktlista.',
+  const per = {}; for (const x of par) per[x.relation] = (per[x.relation] || 0) + 1;
+  const fynd = par.filter(x => x.produktfynd);
+  const olost = par.filter(x => x.relation === 'unresolved');
+  const doc = { $schema: 'butlery-overlap-audit/3', kontroll: 'CHK-R-02',
+    $regel: 'lostOwnHitArea = arean av snittet mellan tva SKILDA semantiska kontrollers traffytor. Ar den storre an noll konkurrerar de om samma yta. Ingen z-index-vinnare gor det acceptabelt, och ingen tolerans finns. Overlager kraver POSITIV evidens for att underlaget ar suspenderat.',
     artefakter_st: artefakter, verifierade_traffytor_st: verifierade,
     geometricOverlap_st: par.length,
-    simultaneousHitOverlap_st: fel.length,
-    intentionalOverlay_st: avsiktliga.length,
-    differentScrollState_st: scroll.length,
+    relationer: per,
+    produktfynd_st: fynd.length,
     unresolved_st: olost.length,
-    berorda_artefakter: [...new Set(fel.map(x => x.art))],
-    produktfel: fel, unresolved: olost, avsiktliga, olikaScroll: scroll,
-    status: (fel.length + olost.length) ? 'FÄLLD' : 'godkänd' };
+    egenYtaEjTraffbar_st: ejTraff.length,
+    egenYtaEjTraffbar: ejTraff,
+    produktfynd: fynd, unresolved: olost, alla: par,
+    status: (fynd.length + olost.length + ejTraff.length) ? 'FÄLLD' : 'godkänd' };
   if (OUT) writeFileSync(OUT, JSON.stringify(doc, null, 1) + '\n');
 
   console.log('OVERLAPP-AUDIT · ' + artefakter + ' artefakter · ' + verifierade + ' verifierade traffytor');
   console.log('  geometricOverlap        ' + par.length);
-  console.log('  simultaneousHitOverlap  ' + fel.length + '   ← enda produktfelet');
-  console.log('  intentionalOverlay      ' + avsiktliga.length);
-  console.log('  differentScrollState    ' + scroll.length);
+  console.log('  relationer              ' + JSON.stringify(per));
+  console.log('  produktfynd             ' + fynd.length);
   console.log('  unresolved              ' + olost.length);
-  for (const x of [...fel, ...olost].slice(0, 20))
-    console.log('  ✖ ' + x.art.padEnd(18) + JSON.stringify((x.a || '').slice(0, 22)).padEnd(26) +
-      ' × ' + JSON.stringify((x.b || '').slice(0, 22)).padEnd(26) + x.adjudication);
-  for (const x of avsiktliga)
-    console.log('  · ' + x.art.padEnd(18) + JSON.stringify((x.a || '').slice(0, 22)).padEnd(26) +
-      ' × ' + JSON.stringify((x.b || '').slice(0, 22)).padEnd(26) + 'avsiktligt overlager');
+  console.log('  egen yta ej traffbar    ' + ejTraff.length);
+  for (const x of [...fynd, ...olost].slice(0, 20))
+    console.log('  · ' + x.art.padEnd(16) + JSON.stringify((x.a || '').slice(0, 22)).padEnd(26) +
+      ' × ' + JSON.stringify((x.b || '').slice(0, 22)).padEnd(26) + x.relation +
+      (x.intersection ? '  ' + x.intersection.w + '×' + x.intersection.h + ' = ' + x.intersection.area : ''));
   console.log('OVERLAPP-AUDIT status=' + doc.status);
   process.exit(doc.status === 'godkänd' ? 0 : 1);
 }

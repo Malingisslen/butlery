@@ -3,15 +3,13 @@
 //
 // Kör: node tools/overlap-fixtures.mjs --out=<katalog utanfor repot>
 //
-//   O-A  overlager tacker underliggande kontroll som ar blockerad
-//        => geometrisk overlapp men INGET produktfel
-//   O-B  tva kontroller i samma aktiva lager overlappar
-//        => produktfel
-//   O-C  overlager ligger visuellt overst men underliggande kontroll ar
-//        fortfarande traffbar genom samma yta
-//        => produktfel
-//   O-D  tva kontroller i olika scrollpositioner som aldrig kan vara
-//        samtidigt synliga  => INGET produktfel
+//   O-A  explicit overlager, underlaget BELAGT suspenderat  → inget fynd
+//   O-B  tva kontroller i samma aktiva lager                → fynd
+//   O-C  egen yta med pointer-events:none                   → fynd
+//   O-D  aldrig samtidigt synliga                           → inget fynd
+//   O-E  kant mot kant, snitt = 0                           → inget par alls
+//   O-F  ett enda pixels overlapp                           → fynd
+//   O-G  glyf och dess egen agare                           → inget par alls
 //
 // Proven kor EXAKT samma auditskript som den skarpa korningen.
 
@@ -31,41 +29,34 @@ mkdirSync(outAbs, { recursive: true });
 
 const FIXTUR = `<!doctype html><meta charset="utf-8"><style>
  body{margin:0;background:#fff;color:#111;font:14px/1.4 system-ui}
- .sc-item{position:relative;margin:0 0 40px;padding:8px;width:360px}
+ .sc-item{position:relative;margin:0 0 40px;padding:8px;width:400px;height:120px}
 </style>
 
-<div class="sc-item" id="oa-blockerat-overlager">
-  <!-- Underlaget ligger forst, overlagret ovanpa och tar traffningen. -->
-  <div data-a11y-role="button" data-a11y-name="Under" data-hit="self"
+<div class="sc-item" id="oa-suspenderat-underlag">
+  <!-- Underlaget bar UTTALAD suspenderingsmarkor. Det ar evidensen. -->
+  <div data-a11y-role="button" data-a11y-name="Under" data-hit="self" inert
     style="position:absolute;left:10px;top:10px;width:200px;height:60px;background:#eee"></div>
   <div data-a11y-role="button" data-a11y-name="Over" data-hit="self"
     style="position:absolute;left:10px;top:10px;width:200px;height:60px;background:#ccd1c2"></div>
-  <div style="height:90px"></div>
 </div>
 
 <div class="sc-item" id="ob-samma-lager">
-  <!-- Tva sjalvstandiga kontroller i samma lager som skar varandra. Ingen
-       tacker den andra helt, sa bagge traffas i snittet. -->
+  <!-- Inga lagermarkorer, men de ar bevisat samtidigt aktiva: bagge ar
+       traffbara och ingen ar suspenderad. -->
   <div data-a11y-role="button" data-a11y-name="Vanster" data-hit="self"
     style="position:absolute;left:10px;top:10px;width:120px;height:60px;background:#eee"></div>
   <div data-a11y-role="button" data-a11y-name="Hoger" data-hit="self"
     style="position:absolute;left:100px;top:10px;width:120px;height:60px;background:#ddd"></div>
-  <div style="height:90px"></div>
 </div>
 
-<div class="sc-item" id="oc-genomslapp">
-  <!-- Overlagret ligger overst men slapper igenom traffningen. Da ar bagge
-       samtidigt traffbara och det ar ett produktfel. -->
+<div class="sc-item" id="oc-egen-yta-ej-traffbar">
   <div data-a11y-role="button" data-a11y-name="Under" data-hit="self"
     style="position:absolute;left:10px;top:10px;width:200px;height:60px;background:#eee"></div>
   <div data-a11y-role="button" data-a11y-name="Over" data-hit="self"
     style="position:absolute;left:10px;top:10px;width:200px;height:60px;background:rgba(0,0,0,.15);pointer-events:none"></div>
-  <div style="height:90px"></div>
 </div>
 
-<div class="sc-item" id="od-olika-scrollage">
-  <!-- Den ena ligger i en scrollande yta och ar bortscrollad. De kan aldrig
-       traffas samtidigt. -->
+<div class="sc-item" id="od-olika-scrollage" style="height:520px">
   <div style="height:60px;overflow-y:auto;border:1px solid #ccc">
     <div style="height:400px"></div>
     <div data-a11y-role="button" data-a11y-name="Bortscrollad" data-hit="self"
@@ -73,6 +64,29 @@ const FIXTUR = `<!doctype html><meta charset="utf-8"><style>
   </div>
   <div data-a11y-role="button" data-a11y-name="Utanfor" data-hit="self"
     style="position:absolute;left:10px;top:430px;width:200px;height:60px;background:#ddd"></div>
+</div>
+
+<div class="sc-item" id="oe-kant-mot-kant">
+  <div data-a11y-role="button" data-a11y-name="Ett" data-hit="self"
+    style="position:absolute;left:10px;top:10px;width:48px;height:48px;background:#eee"></div>
+  <div data-a11y-role="button" data-a11y-name="Tva" data-hit="self"
+    style="position:absolute;left:58px;top:10px;width:48px;height:48px;background:#ddd"></div>
+</div>
+
+<div class="sc-item" id="of-en-pixel">
+  <div data-a11y-role="button" data-a11y-name="Ett" data-hit="self"
+    style="position:absolute;left:10px;top:10px;width:48px;height:48px;background:#eee"></div>
+  <div data-a11y-role="button" data-a11y-name="Tva" data-hit="self"
+    style="position:absolute;left:57px;top:10px;width:48px;height:48px;background:#ddd"></div>
+</div>
+
+<div class="sc-item" id="og-glyf-i-sin-agare">
+  <!-- Kontrollen pekar ut sin omslutande yta. Glyfen inuti ar inte en egen
+       kontroll och ska inte jamforas som en andra yta. -->
+  <div data-hit-target="og-yta" style="position:absolute;left:10px;top:10px;width:48px;height:48px;background:#eee">
+    <span data-a11y-role="button" data-a11y-name="Glyf" data-hit="target:og-yta"
+      style="display:block;width:24px;height:24px;background:#999"></span>
+  </div>
 </div>`;
 
 const fixturPath = join(outAbs, 'overlappprov.html');
@@ -115,39 +129,51 @@ try {
 } catch (e) { verktygsfel = e.message; }
 finally { try { chrome.kill(); } catch {} }
 
-const ANTAL = 4;
+const ANTAL = 7;
 if (verktygsfel) {
   console.log('VERKTYGSFEL: ' + verktygsfel);
   console.log('OVERLAPPPROV status=VERKTYGSFEL godkanda=0 av ' + ANTAL); process.exit(2);
 }
 
 const par = a => data.par.filter(x => x.art === a);
+const ejTraff = a => data.ejTraffbara.filter(x => x.art === a);
 const resultat = [];
 const prov = (id, vad, ok, diag) => resultat.push({ id, vad, ok: !!ok, diag });
 
-{ const p = par('oa-blockerat-overlager')[0];
-  prov('O-A', 'blockerat overlager ar geometrisk overlapp men inget produktfel',
-    !!p && p.geometricOverlap === true && p.simultaneousHitOverlap === false &&
-    p.adjudication === 'intentionalOverlay',
-    p ? p.adjudication + ' · traffning ' + JSON.stringify(p.traffning) : 'paret saknas'); }
+{ const p = par('oa-suspenderat-underlag')[0];
+  prov('O-A', 'belagt suspenderat underlag ger intentionalOverlay, inget fynd',
+    !!p && p.geometricOverlap === true && p.relation === 'intentionalOverlay' && p.produktfynd === false,
+    p ? p.relation + ' · ' + p.evidens.slice(0, 70) : 'paret saknas'); }
 
 { const p = par('ob-samma-lager')[0];
-  prov('O-B', 'tva kontroller i samma aktiva lager ar ett produktfel',
-    !!p && p.geometricOverlap === true && p.simultaneousHitOverlap === true &&
-    p.adjudication === 'produktfel',
-    p ? p.adjudication + ' · traffning ' + JSON.stringify(p.traffning) : 'paret saknas'); }
+  prov('O-B', 'tva kontroller utan lagerevidens far INTE bli intentionalOverlay',
+    !!p && p.geometricOverlap === true && p.relation !== 'intentionalOverlay' &&
+    p.intersection.area > 0 && p.lostOwnHitArea.A > 0 && p.lostOwnHitArea.B > 0,
+    p ? p.relation + ' · snitt ' + p.intersection.area + ' · forlorad andel A ' +
+        p.lostOwnHitArea.A + ' B ' + p.lostOwnHitArea.B : 'paret saknas'); }
 
-{ const p = par('oc-genomslapp')[0];
-  prov('O-C', 'overlager som slapper igenom traffningen ar ett produktfel',
-    !!p && p.geometricOverlap === true && p.simultaneousHitOverlap === true &&
-    p.adjudication === 'produktfel',
-    p ? p.adjudication + ' · traffning ' + JSON.stringify(p.traffning) : 'paret saknas'); }
+{ const e = ejTraff('oc-egen-yta-ej-traffbar');
+  prov('O-C', 'egen yta med pointer-events:none ar ett eget fel',
+    e.length === 1 && e[0].namn === 'Over',
+    e.length ? e.map(x => x.namn).join(', ') : 'inget registrerat'); }
 
 { const p = par('od-olika-scrollage')[0];
-  prov('O-D', 'olika scrollpositioner ger inget produktfel',
-    !!p && p.geometricOverlap === true && p.simultaneousHitOverlap === false &&
-    p.adjudication === 'differentScrollState',
-    p ? p.adjudication : 'paret saknas'); }
+  prov('O-D', 'olika scrollpositioner ger notSimultaneous, inget fynd',
+    !!p && p.relation === 'notSimultaneous' && p.produktfynd === false,
+    p ? p.relation : 'paret saknas'); }
+
+{ const p = par('oe-kant-mot-kant');
+  prov('O-E', 'kant mot kant ger inget par alls',
+    p.length === 0, p.length + ' par'); }
+
+{ const p = par('of-en-pixel')[0];
+  prov('O-F', 'ett enda pixels overlapp registreras — ingen tolerans',
+    !!p && p.intersection.area > 0 && p.intersection.w > 0 && p.intersection.w <= 1.5,
+    p ? 'snitt ' + p.intersection.w + '×' + p.intersection.h + ' = ' + p.intersection.area : 'paret saknas'); }
+
+{ const p = par('og-glyf-i-sin-agare');
+  prov('O-G', 'glyf och dess egen agare jamfors inte som tva ytor',
+    p.length === 0, p.length + ' par'); }
 
 for (const r of resultat) {
   console.log((r.ok ? '✔ ' : '✖ ') + r.id.padEnd(6) + r.vad);
@@ -156,7 +182,7 @@ for (const r of resultat) {
 const godkanda = resultat.filter(r => r.ok).length;
 const status = godkanda === ANTAL ? 'godkand' : 'FALLD';
 writeFileSync(join(outAbs, 'overlappprov.json'), JSON.stringify({
-  $schema: 'butlery-overlappprov/1', kontroll: 'CHK-R-02',
+  $schema: 'butlery-overlappprov/2', kontroll: 'CHK-R-02',
   godkanda, total: ANTAL, status, prov: resultat }, null, 1) + '\n');
 console.log('OVERLAPPPROV status=' + status + ' godkanda=' + godkanda + ' av ' + ANTAL);
 process.exit(status === 'godkand' ? 0 : 1);

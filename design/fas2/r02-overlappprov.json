@@ -1,33 +1,51 @@
 {
- "$schema": "butlery-overlappprov/1",
+ "$schema": "butlery-overlappprov/2",
  "kontroll": "CHK-R-02",
- "godkanda": 2,
- "total": 4,
- "status": "FALLD",
+ "godkanda": 7,
+ "total": 7,
+ "status": "godkand",
  "prov": [
   {
    "id": "O-A",
-   "vad": "blockerat overlager ar geometrisk overlapp men inget produktfel",
+   "vad": "belagt suspenderat underlag ger intentionalOverlay, inget fynd",
    "ok": true,
-   "diag": "intentionalOverlay · traffning {\"punkter\":9,\"traffarA\":0,\"traffarB\":9,\"traffarAnnat\":0,\"utanforVyn\":0}"
+   "diag": "intentionalOverlay · underlaget ar belagt suspenderat via inert — det ligger i ett lagre in"
   },
   {
    "id": "O-B",
-   "vad": "tva kontroller i samma aktiva lager ar ett produktfel",
-   "ok": false,
-   "diag": "intentionalOverlay · traffning {\"punkter\":9,\"traffarA\":0,\"traffarB\":9,\"traffarAnnat\":0,\"utanforVyn\":0}"
+   "vad": "tva kontroller utan lagerevidens far INTE bli intentionalOverlay",
+   "ok": true,
+   "diag": "unresolved · snitt 1800 · forlorad andel A 0.25 B 0.25"
   },
   {
    "id": "O-C",
-   "vad": "overlager som slapper igenom traffningen ar ett produktfel",
-   "ok": false,
-   "diag": "intentionalOverlay · traffning {\"punkter\":9,\"traffarA\":9,\"traffarB\":0,\"traffarAnnat\":0,\"utanforVyn\":0}"
+   "vad": "egen yta med pointer-events:none ar ett eget fel",
+   "ok": true,
+   "diag": "Over"
   },
   {
    "id": "O-D",
-   "vad": "olika scrollpositioner ger inget produktfel",
+   "vad": "olika scrollpositioner ger notSimultaneous, inget fynd",
    "ok": true,
-   "diag": "differentScrollState"
+   "diag": "notSimultaneous"
+  },
+  {
+   "id": "O-E",
+   "vad": "kant mot kant ger inget par alls",
+   "ok": true,
+   "diag": "0 par"
+  },
+  {
+   "id": "O-F",
+   "vad": "ett enda pixels overlapp registreras — ingen tolerans",
+   "ok": true,
+   "diag": "snitt 1×48 = 48"
+  },
+  {
+   "id": "O-G",
+   "vad": "glyf och dess egen agare jamfors inte som tva ytor",
+   "ok": true,
+   "diag": "0 par"
   }
  ]
 }
