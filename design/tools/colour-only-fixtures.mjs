@@ -97,6 +97,12 @@ const FIXTUR = `<!doctype html><meta charset="utf-8"><style>
 <div class="sc-item" id="co11a">${ruta('Ensam ett', 'checked', 'coprov-singel', 'background:#24382c', BOCK)}</div>
 <div class="sc-item" id="co11b">${ruta('Ensam tva', 'checked', 'coprov-singel', 'background:#24382c', BOCK)}</div>
 
+<!-- CO-13 · samma tillstand, olika lang etikett: bredden skiljer men
+     tillstandet ar detsamma. Far INTE bli tvetydig. -->
+<div class="sc-item" id="co13a"><span style="display:inline-flex;align-items:center;gap:8px">${ruta('Kort', 'checked', 'coprov-bredd', 'background:#24382c', BOCK)}<span>Ris</span></span></div>
+<div class="sc-item" id="co13b"><span style="display:inline-flex;align-items:center;gap:8px">${ruta('Lang', 'checked', 'coprov-bredd', 'background:#24382c', BOCK)}<span>Krossade tomater med basilika och vitlok</span></span></div>
+<div class="sc-item" id="co13c">${ruta('Obockad', 'unchecked', 'coprov-bredd', 'border:1px solid #7d897c')}</div>
+
 <!-- CO-12 · flera instanser per tillstand som ser LIKADANA ut: paras anda -->
 <div class="sc-item" id="co12a">${ruta('Vara ett', 'unchecked', 'coprov-lista', 'border:1px solid #7d897c')}</div>
 <div class="sc-item" id="co12b">${ruta('Vara tva', 'unchecked', 'coprov-lista', 'border:1px solid #7d897c')}</div>
@@ -142,7 +148,7 @@ try {
 } catch (e) { verktygsfel = e.message; }
 finally { try { chrome.kill(); } catch {} }
 
-const ANTAL = 12;
+const ANTAL = 13;
 if (verktygsfel) {
   console.log('VERKTYGSFEL: ' + verktygsfel);
   console.log('COLORONLYPROV status=VERKTYGSFEL godkanda=0 av ' + ANTAL); process.exit(2);
@@ -216,6 +222,12 @@ const prov = (n, vad, ok, diag) => resultat.push({ id: n, vad, ok: !!ok, diag })
   prov('CO-12', 'flera likadana instanser per tillstand paras anda',
     !!p && p.colorOnly === false && r.tvetydiga.every(x => x.familj !== 'coprov-lista'),
     p ? 'par ' + p.stateA + '/' + p.stateB + ' · ' + p.ickeFargSignaler.map(s => s.nyckel).join(', ') : 'inget par bildades'); }
+
+{ const p = par('coprov-bredd')[0];
+  const t = r.tvetydiga.filter(x => x.familj === 'coprov-bredd');
+  prov('CO-13', 'olika lang etikett gor inte representanten tvetydig',
+    !!p && t.length === 0,
+    t.length ? 'FEL: blev tvetydig pa bredden' : (p ? 'par ' + p.stateA + '/' + p.stateB : 'inget par bildades')); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);

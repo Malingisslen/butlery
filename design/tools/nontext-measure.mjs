@@ -46,6 +46,11 @@ export const NONTEXT_MEASURE = `(() => {
     return true; };
   const glyfer = el => [...el.querySelectorAll('svg, [data-icon]')]
     .filter(e => (e.tagName.toLowerCase() === 'svg' || e.hasAttribute('data-icon')) && egenSubtrad(e, el));
+  // OFORANDRAD i den har fasen. En kant pa vilken sida som helst raknas som
+  // ram. Migrationen visade att det ar for grovt — en border-bottom pa en
+  // listrad ar en avdelare, inte en kontrollform — men att skarpa kravet till
+  // alla fyra sidor flyttar 145 fynd till 166 och skapar 10 nya unknown i
+  // rapport A. Den andringen ar en egen metodfraga och gors inte har.
   const harRam = el => { const c = getComputedStyle(el);
     return ['borderTopWidth','borderBottomWidth','borderLeftWidth','borderRightWidth']
       .some(k => parseFloat(c[k]) > 0); };

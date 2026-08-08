@@ -63,7 +63,13 @@ export const SIGNALER = [
 // tillstandet skiljer sig. Text ar darfor ingen tillstandssignal och far inte
 // rakna som icke-fargbaserad skillnad.
 
-const signatur = x => SIGNALER.map(s => s.nyckel + '=' + String(s.las(x))).join('|');
+// Signaturen svarar pa EN fraga: avbildar de har instanserna samma tillstand?
+// Den raa pixelstorleken gor inte det. Tva obockade rader i samma lista ar
+// olika breda for att etiketterna ar olika langa, och det sager ingenting om
+// tillstandet. Storleken ar kvar som PARSIGNAL — den skiljer tillstand fran
+// tillstand — men ingar inte i representantens signatur.
+export const SIGNATURSIGNALER = SIGNALER.filter(s => s.nyckel !== 'form');
+const signatur = x => SIGNATURSIGNALER.map(s => s.nyckel + '=' + String(s.las(x))).join('|');
 
 export function jamfor(a, b) {
   const skillnader = [];
