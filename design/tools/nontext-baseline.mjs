@@ -97,7 +97,8 @@ const objRedundant = G.filter(g => g.carrier === 'redundant');
 const objDecorative = G.filter(g => g.carrier === 'decorative');
 const objMatta = objRequired.filter(g => g.status === 'matt');
 const objFynd = objMatta.filter(g => g.kvot < 3).sort((a, b) => a.kvot - b.kvot);
-const objOkanda = G.filter(g => g.status === 'unknown');
+const objRollOkand = G.filter(g => g.carrier === 'unknown');
+const objEjMatbara = objRequired.filter(g => g.status === 'unknown');
 
 const artefakter = new Set(K.map(x => x.art));
 const doc = {
@@ -164,19 +165,23 @@ const doc = {
     required_st: objRequired.length,
     redundant_st: objRedundant.length,
     decorative_st: objDecorative.length,
-    unknown_st: objOkanda.length,
-    summa_kontroll: objRequired.length + objRedundant.length + objDecorative.length + objOkanda.length,
-    populationsinvariant_ok: objRequired.length + objRedundant.length + objDecorative.length + objOkanda.length === G.length,
+    unknown_st: objRollOkand.length,
+    summa_kontroll: objRequired.length + objRedundant.length + objDecorative.length + objRollOkand.length,
+    populationsinvariant_ok: objRequired.length + objRedundant.length + objDecorative.length + objRollOkand.length === G.length,
     required_matta_st: objMatta.length,
+    required_ejMatbara_st: objEjMatbara.length,
+    $notMatning: 'unknown_st ar objekt UTAN giltig roll. required_ejMatbara_st ar required-objekt vars farg inte kunde losas — tva skilda saker som aldrig slas ihop.',
+    ejMatbara: objEjMatbara.slice(0, 20),
     fynd_under_3_grafiskaObjekt_st: objFynd.length,
     berorda_artefakter_st: new Set(objFynd.map(g => g.art)).size,
     $not: 'Rollen kravs som deklaration, precis som data-hit i R-02. data-icon namnger formen, inte funktionen, och raknas darfor inte. required + redundant + decorative + unknown motsvarar exakt populationen.',
     fynd: objFynd.slice(0, 40),
-    unknown_exempel: objOkanda.slice(0, 20),
+    unknown_exempel: objRollOkand.slice(0, 20),
   },
 };
 doc.status = (okandaDelar.length + fynd.length + co.pairingUnknown_kontroller_st +
-  co.grupper_tvetydiga_st + co.colorOnly_st + objOkanda.length + objFynd.length) ? 'FÄLLD' : 'godkänd';
+  co.grupper_tvetydiga_st + co.colorOnly_st + objRollOkand.length + objEjMatbara.length +
+  objFynd.length) ? 'FÄLLD' : 'godkänd';
 doc.$avgransning = 'WCAG 1.4.11 kan inte kallas stangd sa lange nagon population har unknown.';
 if (OUT) writeFileSync(OUT, JSON.stringify(doc, null, 1) + '\n');
 
@@ -217,10 +222,11 @@ rad('grafiska objekt', G.length, 'grafiska objekt');
 rad('  required', objRequired.length, 'grafiska objekt');
 rad('  redundant', objRedundant.length, 'grafiska objekt');
 rad('  decorative', objDecorative.length, 'grafiska objekt');
-rad('  unknown', objOkanda.length, 'grafiska objekt');
+rad('  unknown roll', objRollOkand.length, 'grafiska objekt');
 console.log('    summa ' + doc.C_grafiskaObjektUtanforKontroller.summa_kontroll +
   (doc.C_grafiskaObjektUtanforKontroller.populationsinvariant_ok ? '  ✔ invariant' : '  ✖ INVARIANT BRUTEN'));
 rad('required matta', objMatta.length, 'grafiska objekt');
+rad('required ej matbara', objEjMatbara.length, 'grafiska objekt');
 rad('fynd under 3:1', objFynd.length, 'grafiska objekt');
 rad('beror', new Set(objFynd.map(g => g.art)).size, 'artefakter');
 console.log('');

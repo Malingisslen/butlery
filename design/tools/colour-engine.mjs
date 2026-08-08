@@ -33,11 +33,17 @@ export const FARGMOTOR = `
   const kvot = (f, b) => { const L1 = lum(f), L2 = lum(b);
     return +(((Math.max(L1,L2)+0.05)/(Math.min(L1,L2)+0.05))).toFixed(2); };
   const fargRgb = c => 'rgb(' + c.join(', ') + ')';
+  // En glyf malas av stroke eller fill. Attributet kan vara ett nyckelord —
+  // currentColor forekommer 180 ganger i sviten — och da ar den raa strangen
+  // ingen farg. Ta attributet bara om det GAR att tolka, annars den beraknade
+  // stilen, som har lost currentColor mot arvd color.
   const glyfFarg = svg => { const st = svg.getAttribute('stroke'), fi = svg.getAttribute('fill');
-    if (st && st !== 'none') return st;
-    if (fi && fi !== 'none') return fi;
+    if (st && st !== 'none' && parse(st)) return st;
+    if (fi && fi !== 'none' && parse(fi)) return fi;
     const cs = getComputedStyle(svg);
-    if (cs.stroke && cs.stroke !== 'none') return cs.stroke;
-    if (cs.fill && cs.fill !== 'none') return cs.fill;
+    if (st !== 'none' && cs.stroke && cs.stroke !== 'none' && parse(cs.stroke)) return cs.stroke;
+    if (fi !== 'none' && cs.fill && cs.fill !== 'none' && parse(cs.fill)) return cs.fill;
+    if (cs.stroke && cs.stroke !== 'none' && parse(cs.stroke)) return cs.stroke;
+    if (cs.fill && cs.fill !== 'none' && parse(cs.fill)) return cs.fill;
     return null; };
 `;

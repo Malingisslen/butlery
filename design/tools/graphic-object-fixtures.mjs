@@ -69,6 +69,12 @@ const FIXTUR = `<!doctype html><meta charset="utf-8"><style>
   ${SVG('data-icon="lock" data-graphic-role="supplemental"', '#24382c')}
 </div>
 
+<div class="sc-item" id="go09-currentcolor">
+  <!-- stroke="currentColor" ar inget fargvarde. Motorn maste ga vidare till
+       den beraknade stilen i stallet for att ge upp. -->
+  <div style="color:#8f3324">${SVG('data-icon="triangle-alert" data-graphic-role="required"', 'currentColor')}</div>
+</div>
+
 <div class="sc-item" id="go08-tom-markning">
   ${SVG('data-icon="clock" data-graphic-role=""', '#24382c')}
 </div>`;
@@ -113,7 +119,7 @@ try {
 } catch (e) { verktygsfel = e.message; }
 finally { try { chrome.kill(); } catch {} }
 
-const ANTAL = 8;
+const ANTAL = 9;
 if (verktygsfel) {
   console.log('VERKTYGSFEL: ' + verktygsfel);
   console.log('GRAFIKOBJEKTPROV status=VERKTYGSFEL godkanda=0 av ' + ANTAL); process.exit(2);
@@ -162,6 +168,11 @@ const prov = (n, vad, ok, diag) => resultat.push({ id: n, vad, ok: !!ok, diag })
   prov('GO-08', 'tom markning blir unknown',
     !!d && d.carrier === 'unknown' && d.status === 'unknown',
     d ? d.carrier + ' · ' + d.motivering.slice(0, 70) : 'objektet saknas'); }
+
+{ const d = o('go09-currentcolor');
+  prov('GO-09', 'stroke="currentColor" loses mot arvd color i stallet for unknown',
+    !!d && d.carrier === 'required' && d.status === 'matt' && d.farg === 'rgb(143, 51, 36)',
+    d ? d.status + ' · ' + (d.farg || d.varfor) : 'objektet saknas'); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
