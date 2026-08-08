@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=359-->
+<!--manifest:files=361-->
 
 ## Reporoten
 
@@ -258,7 +258,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/r02-fix44-logg.json` | `7b649c9a69cc9fbfa0b82a98394f88c442baad389275f5352721beef05ea80a5` |
 | `fas2/r02-fix6-logg.json` | `e266c08e46bda22846b4cd6b82209b1cc455cb7d6fbd0b7bce9bdc779adfbbd1` |
 | `fas2/r02-monster-613.json` | `a28cfbd08955bfeda04e9c94b38467286742239ef685b15809143472db24d82b` |
-| `fas2/r02-overlap-audit.json` | `51af4a1fab426c5fd1de432054bad506164109a3c9e1a92503ee6c3694f8769c` |
+| `fas2/r02-overlap-audit.json` | `2249892fbe18e70df0e4b3da4588ec66e87f2516ab02573d0e2d08bd33666169` |
+| `fas2/r02-overlappprov.json` | `c1519a2c989705c946614164f202a0d3e7a74e4aafd662bb512fc1afd6a2e4bd` |
 | `fas2/r02-partition-667.json` | `148e6aeda18c445a3f571fc6fc1a2a48d379cf0b9f65385d7be43763333d05a4` |
 | `fas2/r02-rc11-matning.json` | `0aa2386aad74afd56f38d378947c16be3d6e2e73384c5a31722e683c3957c4c0` |
 | `fas2/r02-rotorsaker-2.json` | `f07cdad43cfd7986ff3a22b0c7e0ee7c204beb11ac1338bfa96e3824fa6ccce3` |
@@ -349,7 +350,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/hit-contract.mjs` | `c0f29eb0cb3ae8017b70a3fea31c037390749491c62043a465d6d5025b77d43a` |
 | `tools/hit-fixtures.mjs` | `26121493020c91084d81863fe70a1fb5d2add6af0340c92e7a231ae0f9d70216` |
 | `tools/hit-measure.mjs` | `fc5427c382cd90495a16cf501bf1c73f60b2a90b2b8f525d6e9f37901a48cf8a` |
-| `tools/hit-overlap-audit.mjs` | `ec6257ce8d61ea597632777f42fd6adc0b70192f78721f358605faea92c72ce7` |
+| `tools/hit-overlap-audit.mjs` | `ddb22e0f0d14e6fef03a901c353462bcaa0ce9a2e448bdd8a389701e20b001ca` |
 | `tools/hit-population.mjs` | `e9b78e6d1ad9b38fa5bf6d8560961629ce2f647fad7ab33f28cf226ecee7bffa` |
 | `tools/icon-geometry.mjs` | `650276031635e06c81f678a89464c4baf8242b02bb45846bdb49a430822da62a` |
 | `tools/identity-audit-lib.mjs` | `3c6cf596618e27ef724be2f59c15bb30bafcc3efdfdae82e572319864ac5a51c` |
@@ -360,6 +361,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/lint-core.mjs` | `3b2a022f92648daf14b34d99cded4175ec3a95489570efc03be11fab2262ec20` |
 | `tools/manifest-contract.mjs` | `e5b69a41062031b0c15868d4de9673d7f3645256e3cb5c8da66ea79ec83c368d` |
 | `tools/metatest.mjs` | `29e5741faad10c4c250afac5c4a308d0f9ffd7a90ba681cf159ceb281bea1165` |
+| `tools/overlap-fixtures.mjs` | `71aadda949ca1b363bef21d1dd685db7b59b676d7c0f0d053c8b2990e265b329` |
 | `tools/preflight.mjs` | `3fe3bfa0e6f92fcb71ca5d19aa2c8e5e9df307f80eb3c8fe4dee09f173d5f3af` |
 | `tools/preview-affordance.mjs` | `d90ad9347cef19d5077f9475e0a0f4c01ce82345cc96929fe9a662831baeb34a` |
 | `tools/render-analyze-lib.mjs` | `5608257ad1b50b6487b0a0b8958930bf07fe4c639e80a6b08acec3707322a6a2` |

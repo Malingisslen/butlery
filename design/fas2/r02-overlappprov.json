@@ -1,0 +1,33 @@
+{
+ "$schema": "butlery-overlappprov/1",
+ "kontroll": "CHK-R-02",
+ "godkanda": 2,
+ "total": 4,
+ "status": "FALLD",
+ "prov": [
+  {
+   "id": "O-A",
+   "vad": "blockerat overlager ar geometrisk overlapp men inget produktfel",
+   "ok": true,
+   "diag": "intentionalOverlay · traffning {\"punkter\":9,\"traffarA\":0,\"traffarB\":9,\"traffarAnnat\":0,\"utanforVyn\":0}"
+  },
+  {
+   "id": "O-B",
+   "vad": "tva kontroller i samma aktiva lager ar ett produktfel",
+   "ok": false,
+   "diag": "intentionalOverlay · traffning {\"punkter\":9,\"traffarA\":0,\"traffarB\":9,\"traffarAnnat\":0,\"utanforVyn\":0}"
+  },
+  {
+   "id": "O-C",
+   "vad": "overlager som slapper igenom traffningen ar ett produktfel",
+   "ok": false,
+   "diag": "intentionalOverlay · traffning {\"punkter\":9,\"traffarA\":9,\"traffarB\":0,\"traffarAnnat\":0,\"utanforVyn\":0}"
+  },
+  {
+   "id": "O-D",
+   "vad": "olika scrollpositioner ger inget produktfel",
+   "ok": true,
+   "diag": "differentScrollState"
+  }
+ ]
+}
