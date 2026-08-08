@@ -747,6 +747,13 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
           // navigator subtree so Esc / Cmd+K / Cmd+1-3 etc. work on every
           // route. `Focus(autofocus)` is required so the Shortcuts widget
           // is the focus root that receives unhandled key events.
+          //
+          // Must stay INSIDE this builder. Being here puts it below
+          // `DefaultTextEditingShortcuts`, hence nearer a focused field, so it
+          // sees editing keys first — `_NavigateBackAction` in
+          // `core/keyboard/app_actions.dart` compensates by disabling itself
+          // while a text field has focus. Hoisting this above `MaterialApp`
+          // inverts that ordering and silently makes the guard pointless.
           return MaintenanceModeGate(
             child: Shortcuts(
               shortcuts: AppShortcuts.bindings,

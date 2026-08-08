@@ -1,15 +1,26 @@
 // test/unit/core/keyboard/app_shortcuts_test.dart
 //
-// BUT-521: behavioral tests for the top-level keyboard layer. Each test
-// pumps a minimal MaterialApp wrapped in `Shortcuts` + `Actions`, simulates
-// a key press via `tester.sendKeyEvent`, and asserts the corresponding
-// `Intent` was dispatched (via a tracked override action) — proving the
-// activator → intent → action chain is wired correctly.
+// BUT-521: behavioral tests for the top-level keyboard layer. The
+// `Shortcuts → Actions dispatch` group pumps a minimal MaterialApp wrapped in
+// `Shortcuts` + `Actions`, simulates a key press via `tester.sendKeyEvent`,
+// and asserts the corresponding `Intent` was dispatched (via a tracked
+// override action) — proving the activator → intent → action chain is wired
+// correctly. The `AppShortcuts.bindings` and `mainTabSwitchRequest` groups
+// pump nothing: they are plain unit tests over the binding map and the
+// notifier.
 //
 // We override the top-level Actions inside the test tree so the assertion
 // is "the right Intent fired", not "a real navigator pop happened" — that
 // would require a full app shell and wouldn't add coverage of the shortcut
 // layer itself.
+//
+// The `Backspace vs. text editing` group is the deliberate exception: it uses
+// the REAL `AppActions.dispatch()` map and asserts a real pop. What it proves
+// is that the production NavigateBack action DISABLES itself in a text field,
+// and a capturing stub is always enabled — so a stub there could never fail,
+// however the production action behaved. It also mounts the layer via
+// `MaterialApp.builder`, because that placement is the whole cause of the
+// conflict being tested.
 
 import 'package:butlery/core/keyboard/app_actions.dart';
 import 'package:butlery/core/keyboard/app_shortcuts.dart';

@@ -64,8 +64,10 @@ class SubmitFormIntent extends Intent {
   const SubmitFormIntent();
 }
 
-/// Static binding map consumed by the top-level `Shortcuts` widget in
-/// `main.dart`. Built once at process start — the platform doesn't change
+/// Static binding map consumed by the `Shortcuts` widget in
+/// `MaterialApp.builder` (`lib/app/butlery_app.dart`) — deliberately not above
+/// `MaterialApp`; see `NavigateBackIntent` for what that position costs and how
+/// the action compensates. Built once at process start — the platform doesn't change
 /// during the app lifetime, so allocating a fresh map per build would be
 /// wasted work.
 class AppShortcuts {

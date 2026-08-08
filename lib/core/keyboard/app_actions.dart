@@ -30,7 +30,8 @@ import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 final ValueNotifier<int> mainTabSwitchRequest = ValueNotifier<int>(0);
 
 /// Maps every `Intent` in `app_shortcuts.dart` to a callable action.
-/// Bound at the top of the widget tree by the app shell.
+/// Bound inside `MaterialApp.builder` (`lib/app/butlery_app.dart`), which is
+/// below the framework's own text-editing shortcuts — see `_NavigateBackAction`.
 class AppActions {
   AppActions._();
 
@@ -117,10 +118,14 @@ class AppActions {
 /// Disabling the action rather than handling it is what makes the key fall
 /// through: `ShortcutManager` treats a disabled action as unhandled and keeps
 /// propagating up to the text-editing shortcuts.
+///
+/// Accepted consequence: in a `readOnly` field Backspace becomes a dead key —
+/// disabled here, nothing to delete there. That matches how browsers have
+/// treated Backspace since 2016 and is preferred over navigating away from a
+/// field the user is reading.
 class _NavigateBackAction extends Action<NavigateBackIntent> {
   @override
-  bool isEnabled(NavigateBackIntent intent, [BuildContext? context]) =>
-      !_focusIsInsideTextField();
+  bool isEnabled(NavigateBackIntent intent) => !_focusIsInsideTextField();
 
   @override
   Object? invoke(NavigateBackIntent intent) => AppActions._maybePop();
