@@ -57,6 +57,8 @@ lessons that only matter while writing or running tests.
 
 - `BaseViewModel.executeAsync` fails LOUD (throws `StateError`) on a disposed VM BY DESIGN — its non-nullable `Future<T>` can't return a fake `null`; the fail-silent siblings differ only because their return types allow it. Don't "harmonise" it; guard callers with `if (isDisposed) return;` (BUT-1462, sweep in BUT-1628).
 
+- A global `Shortcuts` layer in `MaterialApp.builder` is BELOW `DefaultTextEditingShortcuts`, so it beats the framework for a focused field — a bare Backspace→back binding stopped every text field on web/desktop from deleting, for months, behind a comment claiming the opposite. Bind only chords, or make the action DISABLE itself in an `EditableText` (a disabled action propagates; handle-and-return-null does not). A key test focusing a `SizedBox`, or using a capturing stub Actions map, cannot catch this — focus a real `TextField` against the REAL actions map, mounted via `builder:` like production (BUT — login password field, 2026-08-07).
+
 ## UI/UX
 
 - Heuristic/LLM-derived visible content (headings, tags, parsed amounts) ships WITH its correction UI in the MVP — "display now, correct later" is never a valid phasing.
