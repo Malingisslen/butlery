@@ -1,0 +1,4202 @@
+{
+ "$schema": "butlery-coverage-batch/1",
+ "kontroll": "CHK-R-02",
+ "batch": "De 299 beslutade · F-A, E1, E2, E4, E5",
+ "self_st": 299,
+ "target_st": 0,
+ "perMonster": {
+  "F-A": 223,
+  "E1": 42,
+  "E2": 25,
+  "E4": 6,
+  "E5": 3
+ },
+ "poster": [
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "artifactId": "lagastaende",
+   "elementOrdinal": 21,
+   "role": "button",
+   "accessibleName": "Textstorlek",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "artifactId": "lagastaende",
+   "elementOrdinal": 23,
+   "role": "button",
+   "accessibleName": "Föregående steg",
+   "monster": "E4",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "artifactId": "lagamorkt",
+   "elementOrdinal": 24,
+   "role": "button",
+   "accessibleName": "Textstorlek",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "artifactId": "lagamorkt",
+   "elementOrdinal": 26,
+   "role": "button",
+   "accessibleName": "Föregående steg",
+   "monster": "E4",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "artifactId": "inkopmerge",
+   "elementOrdinal": 0,
+   "role": "button",
+   "accessibleName": "Visa detaljer om sammanslagningen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 50
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "artifactId": "inkopmergeoppen",
+   "elementOrdinal": 3,
+   "role": "button",
+   "accessibleName": "Dölj detaljer om sammanslagningen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 50
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "artifactId": "lagastaende320",
+   "elementOrdinal": 24,
+   "role": "button",
+   "accessibleName": "Textstorlek",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "artifactId": "lagastaende320",
+   "elementOrdinal": 27,
+   "role": "button",
+   "accessibleName": "Föregående steg",
+   "monster": "E4",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "tangentbord",
+   "elementOrdinal": 28,
+   "role": "textbox",
+   "accessibleName": "Skriv ett meddelande",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 276,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "lagaliggande",
+   "elementOrdinal": 36,
+   "role": "button",
+   "accessibleName": "Textstorlek",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "arkmorkt",
+   "elementOrdinal": 5,
+   "role": "radio",
+   "accessibleName": "Senast tillagda",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "arkmorkt",
+   "elementOrdinal": 6,
+   "role": "radio",
+   "accessibleName": "Namn A–Ö",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "arkmorkt",
+   "elementOrdinal": 7,
+   "role": "radio",
+   "accessibleName": "Högst betyg",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "arkmorkt",
+   "elementOrdinal": 8,
+   "role": "radio",
+   "accessibleName": "Kortast tid",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "arkmorkt",
+   "elementOrdinal": 9,
+   "role": "button",
+   "accessibleName": "Använd sorteringen",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "okandingrediens",
+   "elementOrdinal": 11,
+   "role": "button",
+   "accessibleName": "Hoppa över just nu",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 179.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "veckoallergi",
+   "elementOrdinal": 17,
+   "role": "button",
+   "accessibleName": "Släng förslaget",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 179.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "veckoallergi",
+   "elementOrdinal": 18,
+   "role": "button",
+   "accessibleName": "Spara de tre placerade rätterna",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 176.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "synkko",
+   "elementOrdinal": 20,
+   "role": "button",
+   "accessibleName": "Släng — Ditt betyg på Citronrisotto",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 67.86,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "synkko",
+   "elementOrdinal": 24,
+   "role": "button",
+   "accessibleName": "Försök synka nu",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "chattmeny",
+   "elementOrdinal": 40,
+   "role": "button",
+   "accessibleName": "Redigera meddelandet",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "chattmeny",
+   "elementOrdinal": 41,
+   "role": "button",
+   "accessibleName": "Kopiera texten",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "chattmeny",
+   "elementOrdinal": 42,
+   "role": "button",
+   "accessibleName": "Ta bort meddelandet",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 77.8
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "safeareaios",
+   "elementOrdinal": 46,
+   "role": "button",
+   "accessibleName": "Börja laga",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "safeareaandroid",
+   "elementOrdinal": 50,
+   "role": "button",
+   "accessibleName": "Dela listan",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hem",
+   "elementOrdinal": 52,
+   "role": "button",
+   "accessibleName": "Laga Ugnsbakad rotselleri",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 274,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hem",
+   "elementOrdinal": 55,
+   "role": "button",
+   "accessibleName": "Fre · Krämig svamppasta",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hem",
+   "elementOrdinal": 56,
+   "role": "button",
+   "accessibleName": "Lör · Rester",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hem",
+   "elementOrdinal": 57,
+   "role": "button",
+   "accessibleName": "Sön · Linsgryta med spetskål",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hem",
+   "elementOrdinal": 58,
+   "role": "button",
+   "accessibleName": "Inköpslistan, 18 varor varav 6 kvar",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 61
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemmorkt",
+   "elementOrdinal": 65,
+   "role": "button",
+   "accessibleName": "Laga Ugnsbakad rotselleri",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 274,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemmorkt",
+   "elementOrdinal": 68,
+   "role": "button",
+   "accessibleName": "Fre · Krämig svamppasta",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemmorkt",
+   "elementOrdinal": 69,
+   "role": "button",
+   "accessibleName": "Lör · Rester",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemmorkt",
+   "elementOrdinal": 70,
+   "role": "button",
+   "accessibleName": "Sön · Linsgryta med spetskål",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemmorkt",
+   "elementOrdinal": 71,
+   "role": "button",
+   "accessibleName": "Inköpslistan, 18 varor varav 6 kvar",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 61
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemtom",
+   "elementOrdinal": 78,
+   "role": "button",
+   "accessibleName": "Lägg till ditt första recept",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 322,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemtom",
+   "elementOrdinal": 79,
+   "role": "button",
+   "accessibleName": "Klistra in en länk",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 65
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemtom",
+   "elementOrdinal": 80,
+   "role": "button",
+   "accessibleName": "Fota en receptsida",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 65
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemtom",
+   "elementOrdinal": 81,
+   "role": "button",
+   "accessibleName": "Skriv själv",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 65
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemoffline",
+   "elementOrdinal": 96,
+   "role": "button",
+   "accessibleName": "Laga Ugnsbakad rotselleri",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 274,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemoffline",
+   "elementOrdinal": 98,
+   "role": "button",
+   "accessibleName": "Fre · Krämig svamppasta",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemoffline",
+   "elementOrdinal": 99,
+   "role": "button",
+   "accessibleName": "Lör · Rester",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemfel",
+   "elementOrdinal": 109,
+   "role": "button",
+   "accessibleName": "128 · Krämig svamppasta",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemfel",
+   "elementOrdinal": 110,
+   "role": "button",
+   "accessibleName": " · Ugnsbakad rotselleri",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptcooksnap",
+   "elementOrdinal": 123,
+   "role": "button",
+   "accessibleName": "Lägg till en bild av din version",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "receptbildfel",
+   "elementOrdinal": 135,
+   "role": "button",
+   "accessibleName": "Laga Krämig svamppasta",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "lagasubst",
+   "elementOrdinal": 138,
+   "role": "button",
+   "accessibleName": "Byt ut kantareller",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 67.27,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "lagasubst",
+   "elementOrdinal": 141,
+   "role": "radio",
+   "accessibleName": "Byt till champinjoner",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 85
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "lagasubst",
+   "elementOrdinal": 142,
+   "role": "radio",
+   "accessibleName": "Byt till portabello",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 85
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "lagasubst",
+   "elementOrdinal": 143,
+   "role": "radio",
+   "accessibleName": "Byt till torkad karljohan",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 85
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "lagasubst",
+   "elementOrdinal": 144,
+   "role": "button",
+   "accessibleName": "Använd bytet",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "lagatimers",
+   "elementOrdinal": 147,
+   "role": "button",
+   "accessibleName": "Pausa timern Pastan",
+   "monster": "E4",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "lagatimers",
+   "elementOrdinal": 148,
+   "role": "button",
+   "accessibleName": "Pausa timern Svampen",
+   "monster": "E4",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "betygvemat",
+   "elementOrdinal": 158,
+   "role": "button",
+   "accessibleName": "Fortsätt till betygsättning för tre personer",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "betygperperson",
+   "elementOrdinal": 176,
+   "role": "button",
+   "accessibleName": "Spara betygen",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "betygsammanslaget",
+   "elementOrdinal": 178,
+   "role": "button",
+   "accessibleName": "Ändra betygen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 180.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "betygsammanslaget",
+   "elementOrdinal": 179,
+   "role": "button",
+   "accessibleName": "Planera in igen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 177.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "familjmedlemsamtycke",
+   "elementOrdinal": 200,
+   "role": "button",
+   "accessibleName": "Spara Elsa",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "artifactId": "bredskal",
+   "elementOrdinal": 5,
+   "role": "button",
+   "accessibleName": "Sök",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 82.87,
+    "h": 51
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "artifactId": "bredrecept",
+   "elementOrdinal": 15,
+   "role": "button",
+   "accessibleName": "Lägg allt i inköpslistan",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 263,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "artifactId": "bredmeny",
+   "elementOrdinal": 16,
+   "role": "button",
+   "accessibleName": "Skapa inköpslista av veckan",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 133.49,
+    "h": 51
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "artifactId": "bredgrans",
+   "elementOrdinal": 28,
+   "role": "textbox",
+   "accessibleName": "Titel",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 600,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "artifactId": "bredgrans",
+   "elementOrdinal": 29,
+   "role": "textbox",
+   "accessibleName": "Gör så här",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 600,
+    "h": 96
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbnormal",
+   "elementOrdinal": 1,
+   "role": "tab",
+   "accessibleName": "Visa som vecka",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 69.45,
+    "h": 44
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbnormal",
+   "elementOrdinal": 2,
+   "role": "textbox",
+   "accessibleName": "Beskriv veckan du vill ha",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 203,
+    "h": 76
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbnormal",
+   "elementOrdinal": 3,
+   "role": "button",
+   "accessibleName": "Föreslå en vecka",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 203,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbtom",
+   "elementOrdinal": 10,
+   "role": "textbox",
+   "accessibleName": "Beskriv veckan du vill ha",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 203,
+    "h": 76
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbtom",
+   "elementOrdinal": 12,
+   "role": "button",
+   "accessibleName": "Måndag middag är tom",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.28,
+    "h": 116
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbtom",
+   "elementOrdinal": 13,
+   "role": "button",
+   "accessibleName": "Tisdag middag är tom",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.29,
+    "h": 116
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbtom",
+   "elementOrdinal": 14,
+   "role": "button",
+   "accessibleName": "I dag, onsdag middag. Lägg något här",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.28,
+    "h": 116
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbtom",
+   "elementOrdinal": 15,
+   "role": "button",
+   "accessibleName": "Torsdag middag är tom",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.29,
+    "h": 116
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbtom",
+   "elementOrdinal": 16,
+   "role": "button",
+   "accessibleName": "Fredag middag är tom",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.28,
+    "h": 116
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbtom",
+   "elementOrdinal": 17,
+   "role": "button",
+   "accessibleName": "Lördag middag är tom",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.29,
+    "h": 116
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbtom",
+   "elementOrdinal": 18,
+   "role": "button",
+   "accessibleName": "Söndag middag är tom",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.28,
+    "h": 116
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbgenererar",
+   "elementOrdinal": 20,
+   "role": "button",
+   "accessibleName": "Skriv över de fyra",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 126.16,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbdelvis",
+   "elementOrdinal": 30,
+   "role": "button",
+   "accessibleName": "Lägg de tre i vecka 32",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 99.25,
+    "h": 51
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbflytta",
+   "elementOrdinal": 34,
+   "role": "button",
+   "accessibleName": "Torsdag middag, ledig. Släpp här",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 126,
+    "h": 116
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbflytta",
+   "elementOrdinal": 35,
+   "role": "button",
+   "accessibleName": "Fredag middag, ledig. Släpp här",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 126,
+    "h": 116
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbnormal",
+   "elementOrdinal": 38,
+   "role": "button",
+   "accessibleName": "Börja laga",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 91.28,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbnormal",
+   "elementOrdinal": 42,
+   "role": "button",
+   "accessibleName": "Lägg allt i inköpslistan",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 259,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbofullstandigt",
+   "elementOrdinal": 46,
+   "role": "button",
+   "accessibleName": "Fyll i det som saknas",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 59.32,
+    "h": 51
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbofullstandigt",
+   "elementOrdinal": 47,
+   "role": "button",
+   "accessibleName": "Mängd smör saknas. Fyll i",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 65,
+    "h": 47
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbofullstandigt",
+   "elementOrdinal": 48,
+   "role": "button",
+   "accessibleName": "Mängd kanel saknas. Fyll i",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 65,
+    "h": 47
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcblaser",
+   "elementOrdinal": 49,
+   "role": "button",
+   "accessibleName": "Spara till mitt kök",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 172.48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcblaser",
+   "elementOrdinal": 52,
+   "role": "button",
+   "accessibleName": "Lägg allt i inköpslistan",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 259,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbarvegods",
+   "elementOrdinal": 54,
+   "role": "button",
+   "accessibleName": "Sida 2",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 56,
+    "h": 72
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbarvegods",
+   "elementOrdinal": 55,
+   "role": "button",
+   "accessibleName": "Sida 3",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 56,
+    "h": 72
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbkommentar",
+   "elementOrdinal": 58,
+   "role": "button",
+   "accessibleName": "Gillar, 3, du har reagerat",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 62.15,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcboffline",
+   "elementOrdinal": 60,
+   "role": "button",
+   "accessibleName": "Börja laga",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 60.05,
+    "h": 44
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "ikbnormal",
+   "elementOrdinal": 63,
+   "role": "button",
+   "accessibleName": "Lägg till en vara",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 80.73,
+    "h": 51
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "ikbdelad",
+   "elementOrdinal": 71,
+   "role": "checkbox",
+   "accessibleName": "Gul lök, inte bockad",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 27,
+    "h": 27
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "ikbdelad",
+   "elementOrdinal": 72,
+   "role": "button",
+   "accessibleName": "Ta gul lök",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 70,
+    "h": 46
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbrotation",
+   "elementOrdinal": 78,
+   "role": "button",
+   "accessibleName": "Ändra textstorlek",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 44,
+    "h": 44
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbrotation",
+   "elementOrdinal": 81,
+   "role": "button",
+   "accessibleName": "Ändra textstorlek",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 44,
+    "h": 44
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbgester",
+   "elementOrdinal": 87,
+   "role": "button",
+   "accessibleName": "Byt ut ströbröd",
+   "monster": "E4",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbgester",
+   "elementOrdinal": 89,
+   "role": "button",
+   "accessibleName": "Byt till filmjölk",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 420,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbgester",
+   "elementOrdinal": 90,
+   "role": "button",
+   "accessibleName": "Byt till havredryck",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 420,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbtimer",
+   "elementOrdinal": 96,
+   "role": "button",
+   "accessibleName": "Timer steg 1, 4 minuter 12 sekunder kvar",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 105.68,
+    "h": 51
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbtimer",
+   "elementOrdinal": 97,
+   "role": "button",
+   "accessibleName": "Timer steg 4, 12 minuter kvar",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 112.41,
+    "h": 50
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbtimer",
+   "elementOrdinal": 98,
+   "role": "button",
+   "accessibleName": "Timern för steg 2 är klar. Kvittera",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 121.79,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "artifactId": "inkopkategoriordning",
+   "elementOrdinal": 8,
+   "role": "button",
+   "accessibleName": "Spara ordningen",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "artifactId": "inkopgenererad",
+   "elementOrdinal": 34,
+   "role": "button",
+   "accessibleName": "Generera om listan",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 316,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatinkorg",
+   "elementOrdinal": 1,
+   "role": "button",
+   "accessibleName": "Gå med i Helgens inköp",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 244.55,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatinkorg",
+   "elementOrdinal": 2,
+   "role": "button",
+   "accessibleName": "Avvisa Helgens inköp",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 81.45,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatinkorg",
+   "elementOrdinal": 3,
+   "role": "button",
+   "accessibleName": "Gå med i Fredagstacos",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 244.55,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatinkorg",
+   "elementOrdinal": 4,
+   "role": "button",
+   "accessibleName": "Avvisa Fredagstacos",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 81.45,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatlistaaktiv",
+   "elementOrdinal": 10,
+   "role": "button",
+   "accessibleName": "Anna tar gul lök, tryck för att ta över",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 103.2,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatlistaaktiv",
+   "elementOrdinal": 13,
+   "role": "button",
+   "accessibleName": "Tar jag champinjoner",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 64.44,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatlistaaktiv",
+   "elementOrdinal": 16,
+   "role": "button",
+   "accessibleName": "Lägg till vara",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatmindel",
+   "elementOrdinal": 23,
+   "role": "tab",
+   "accessibleName": "Visa Allt",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 51.63,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatmindel",
+   "elementOrdinal": 24,
+   "role": "tab",
+   "accessibleName": "Visa Min del",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 73.97,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatmindel",
+   "elementOrdinal": 25,
+   "role": "tab",
+   "accessibleName": "Visa Avdelning",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 93.45,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatmindel",
+   "elementOrdinal": 29,
+   "role": "button",
+   "accessibleName": "Anna tar gul lök, tryck för att ta över",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 103.2,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatmindel",
+   "elementOrdinal": 30,
+   "role": "button",
+   "accessibleName": "Anna tar potatis, tryck för att ta över",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 103.2,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatmindel",
+   "elementOrdinal": 32,
+   "role": "button",
+   "accessibleName": "Tar jag smör",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 68.44,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatmindel",
+   "elementOrdinal": 34,
+   "role": "button",
+   "accessibleName": "Tar jag vitlök",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 68.44,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatnarvaro",
+   "elementOrdinal": 37,
+   "role": "tab",
+   "accessibleName": "Visa Allt",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 51.63,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatnarvaro",
+   "elementOrdinal": 38,
+   "role": "tab",
+   "accessibleName": "Visa Min del",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 75.12,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatnarvaro",
+   "elementOrdinal": 39,
+   "role": "tab",
+   "accessibleName": "Visa Avdelning",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.81,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatnarvaro",
+   "elementOrdinal": 40,
+   "role": "button",
+   "accessibleName": "Anna tar gul lök, tryck för att ta över",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 103.2,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatnarvaro",
+   "elementOrdinal": 42,
+   "role": "button",
+   "accessibleName": "Tar jag champinjoner",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 68.44,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatclaimkonflikt",
+   "elementOrdinal": 47,
+   "role": "tab",
+   "accessibleName": "Visa Allt",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 50.35,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatclaimkonflikt",
+   "elementOrdinal": 48,
+   "role": "tab",
+   "accessibleName": "Visa Min del",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 75.12,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatclaimkonflikt",
+   "elementOrdinal": 49,
+   "role": "tab",
+   "accessibleName": "Visa Avdelning",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 93.45,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatclaimkonflikt",
+   "elementOrdinal": 50,
+   "role": "button",
+   "accessibleName": "Anna tar gul lök, tryck för att ta över",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 103.2,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatclaimkonflikt",
+   "elementOrdinal": 52,
+   "role": "button",
+   "accessibleName": "Tar jag champinjoner",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 68.44,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "delatlasare",
+   "elementOrdinal": 55,
+   "role": "button",
+   "accessibleName": "Be Anna om redigeringsrätt",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoprompt",
+   "elementOrdinal": 57,
+   "role": "tab",
+   "accessibleName": "Visa lista",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoprompt",
+   "elementOrdinal": 62,
+   "role": "button",
+   "accessibleName": "Välj recept själv",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckogenererar",
+   "elementOrdinal": 64,
+   "role": "tab",
+   "accessibleName": "Visa lista",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckochips",
+   "elementOrdinal": 67,
+   "role": "tab",
+   "accessibleName": "Visa lista",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoresultat",
+   "elementOrdinal": 71,
+   "role": "tab",
+   "accessibleName": "Visa lista",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoresultat",
+   "elementOrdinal": 85,
+   "role": "button",
+   "accessibleName": "Placera menyn automatiskt i veckan",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoresultat",
+   "elementOrdinal": 86,
+   "role": "button",
+   "accessibleName": "Placera recepten själv",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckodolda",
+   "elementOrdinal": 88,
+   "role": "tab",
+   "accessibleName": "Visa lista",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckofel",
+   "elementOrdinal": 98,
+   "role": "tab",
+   "accessibleName": "Visa lista",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckofel",
+   "elementOrdinal": 101,
+   "role": "button",
+   "accessibleName": "Försök generera igen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 344,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckobyt",
+   "elementOrdinal": 104,
+   "role": "tab",
+   "accessibleName": "Visa lista",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplacering",
+   "elementOrdinal": 122,
+   "role": "button",
+   "accessibleName": "Välj Tacos med svartbönor att placera",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 112,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplacering",
+   "elementOrdinal": 123,
+   "role": "button",
+   "accessibleName": "Välj Ugnslax att placera",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 112,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplacering",
+   "elementOrdinal": 124,
+   "role": "button",
+   "accessibleName": "Välj Räkmacka att placera",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 112,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplaceringvald",
+   "elementOrdinal": 134,
+   "role": "button",
+   "accessibleName": "Vald: Tacos med svartbönor",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 112,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplaceringvald",
+   "elementOrdinal": 135,
+   "role": "button",
+   "accessibleName": "Välj Ugnslax",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 112,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplaceringvald",
+   "elementOrdinal": 136,
+   "role": "button",
+   "accessibleName": "Välj Räkmacka",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 112,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplaceringavbryt",
+   "elementOrdinal": 140,
+   "role": "button",
+   "accessibleName": "Fortsätt placera",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 151.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplaceringavbryt",
+   "elementOrdinal": 141,
+   "role": "button",
+   "accessibleName": "Lämna utan att spara",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 154.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoautoplacerad",
+   "elementOrdinal": 144,
+   "role": "tab",
+   "accessibleName": "Visa kalender",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckokalender",
+   "elementOrdinal": 154,
+   "role": "tab",
+   "accessibleName": "Visa kalender",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckokalender",
+   "elementOrdinal": 172,
+   "role": "button",
+   "accessibleName": "Lägg till mer i övrigt på fredag",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 108.66,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckonarvaro",
+   "elementOrdinal": 175,
+   "role": "tab",
+   "accessibleName": "Visa kalender",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckonarvarooversikt",
+   "elementOrdinal": 188,
+   "role": "tab",
+   "accessibleName": "Visa kalender",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckooverflow",
+   "elementOrdinal": 192,
+   "role": "tab",
+   "accessibleName": "Visa kalender",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoskrivover",
+   "elementOrdinal": 215,
+   "role": "tab",
+   "accessibleName": "Visa kalender",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoskrivover",
+   "elementOrdinal": 216,
+   "role": "button",
+   "accessibleName": "Avbryt",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 153,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoskrivover",
+   "elementOrdinal": 217,
+   "role": "button",
+   "accessibleName": "Fortsätt och skriv över veckan",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 153,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoinkop",
+   "elementOrdinal": 220,
+   "role": "tab",
+   "accessibleName": "Visa kalender",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoinkop",
+   "elementOrdinal": 226,
+   "role": "button",
+   "accessibleName": "Skapa inköpslista för veckan",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 103.52,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostning",
+   "elementOrdinal": 228,
+   "role": "tab",
+   "accessibleName": "Visa lista",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 206,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostning",
+   "elementOrdinal": 234,
+   "role": "radio",
+   "accessibleName": "Rösta på Krämig svamppasta",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 344,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostning",
+   "elementOrdinal": 235,
+   "role": "radio",
+   "accessibleName": "Rösta på Ugnslax med potatis",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 344,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostning",
+   "elementOrdinal": 236,
+   "role": "button",
+   "accessibleName": "Avgör röstningen",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 344,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostlagg",
+   "elementOrdinal": 241,
+   "role": "button",
+   "accessibleName": "Föreslå ett eget alternativ",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostlagg",
+   "elementOrdinal": 242,
+   "role": "button",
+   "accessibleName": "Rösta, avstängd till dess ett alternativ är valt",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostavgor",
+   "elementOrdinal": 246,
+   "role": "button",
+   "accessibleName": "Avgör med det valda alternativet",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 165,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostavgor",
+   "elementOrdinal": 247,
+   "role": "button",
+   "accessibleName": "Förläng röstningen ett dygn",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 168,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostutgang",
+   "elementOrdinal": 249,
+   "role": "button",
+   "accessibleName": "Avgör efter rösterna som finns",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 164.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostutgang",
+   "elementOrdinal": 250,
+   "role": "button",
+   "accessibleName": "Förläng röstningen ett dygn",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 167.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostutgang",
+   "elementOrdinal": 251,
+   "role": "button",
+   "accessibleName": "Välj själv vad som ska stå på platsen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 167.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "authglomt",
+   "elementOrdinal": 18,
+   "role": "button",
+   "accessibleName": "Skicka återställningslänk",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 152.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "authepost",
+   "elementOrdinal": 19,
+   "role": "button",
+   "accessibleName": "Skicka länken igen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "authepost",
+   "elementOrdinal": 20,
+   "role": "button",
+   "accessibleName": "Fortsätt utan att bekräfta adressen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbalderblock",
+   "elementOrdinal": 28,
+   "role": "button",
+   "accessibleName": "En vuxen i hushållet kan skapa kontot",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbhoppa",
+   "elementOrdinal": 63,
+   "role": "button",
+   "accessibleName": "Avsluta guiden utan allergener",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 316,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbfel",
+   "elementOrdinal": 65,
+   "role": "button",
+   "accessibleName": "Fortsätt utan att spara nu",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbsenare",
+   "elementOrdinal": 81,
+   "role": "button",
+   "accessibleName": "Spara kostpreferenser",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 163.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbsenare",
+   "elementOrdinal": 82,
+   "role": "button",
+   "accessibleName": "Ingen särskild kost",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 166.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "onbfelmorkt",
+   "elementOrdinal": 98,
+   "role": "button",
+   "accessibleName": "Fortsätt utan att spara nu",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "behkamera",
+   "elementOrdinal": 100,
+   "role": "button",
+   "accessibleName": "Tillåt kameran",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 152.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "artifactId": "behlarm",
+   "elementOrdinal": 112,
+   "role": "button",
+   "accessibleName": "Använd ungefärlig tid",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 316,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist1",
+   "elementOrdinal": 25,
+   "role": "button",
+   "accessibleName": "Avbryt assisterad import",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 182,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist2",
+   "elementOrdinal": 31,
+   "role": "button",
+   "accessibleName": "Tillbaka till ingredienserna",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 182,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "elementOrdinal": 34,
+   "role": "textbox",
+   "accessibleName": "Receptets namn",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "elementOrdinal": 37,
+   "role": "radio",
+   "accessibleName": "Måltidstyp Frukost",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 78,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "elementOrdinal": 38,
+   "role": "radio",
+   "accessibleName": "Måltidstyp Lunch",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 68.98,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "elementOrdinal": 39,
+   "role": "radio",
+   "accessibleName": "Måltidstyp Middag",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 77.91,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "elementOrdinal": 40,
+   "role": "radio",
+   "accessibleName": "Måltidstyp Mellanmål",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 94.77,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "elementOrdinal": 41,
+   "role": "radio",
+   "accessibleName": "Måltidstyp Efterrätt",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 82.3,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "elementOrdinal": 45,
+   "role": "button",
+   "accessibleName": "Lägg till ingrediens",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "elementOrdinal": 46,
+   "role": "button",
+   "accessibleName": "Tillbaka till instruktionerna",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 182,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "elementOrdinal": 47,
+   "role": "button",
+   "accessibleName": "Spara receptet",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 182,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassistavbryt",
+   "elementOrdinal": 49,
+   "role": "button",
+   "accessibleName": "Fortsätt tolka",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 153,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassistavbryt",
+   "elementOrdinal": 50,
+   "role": "button",
+   "accessibleName": "Avbryt tolkningen",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 153,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impurl",
+   "elementOrdinal": 54,
+   "role": "button",
+   "accessibleName": "Hämta receptet från adressen",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impfoto",
+   "elementOrdinal": 60,
+   "role": "button",
+   "accessibleName": "Läs texten i fotot",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 182,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impfil",
+   "elementOrdinal": 66,
+   "role": "button",
+   "accessibleName": "Spara de sju tolkade recepten",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impgrans",
+   "elementOrdinal": 68,
+   "role": "button",
+   "accessibleName": "Tolka receptet själv utan kvot",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 352,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impgrans",
+   "elementOrdinal": 69,
+   "role": "button",
+   "accessibleName": "Vänta och försök igen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 352,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impgransai",
+   "elementOrdinal": 71,
+   "role": "button",
+   "accessibleName": "Tolka receptet utan AI",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 352,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impgransai",
+   "elementOrdinal": 72,
+   "role": "button",
+   "accessibleName": "Peka ut raderna själv",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 352,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impdubblett",
+   "elementOrdinal": 80,
+   "role": "button",
+   "accessibleName": "Slå ihop recepten fält för fält",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impdubblett",
+   "elementOrdinal": 81,
+   "role": "button",
+   "accessibleName": "Ersätt det befintliga receptet",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impdubblett",
+   "elementOrdinal": 82,
+   "role": "button",
+   "accessibleName": "Spara som ett nytt recept",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impinget",
+   "elementOrdinal": 85,
+   "role": "button",
+   "accessibleName": "Importera genom att fotografera skärmen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 356,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impinget",
+   "elementOrdinal": 86,
+   "role": "button",
+   "accessibleName": "Klistra in receptets text",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 356,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impcache",
+   "elementOrdinal": 88,
+   "role": "button",
+   "accessibleName": "Hämta om från sidan",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 182,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impcache",
+   "elementOrdinal": 89,
+   "role": "button",
+   "accessibleName": "Granska det sparade svaret",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 182,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impdelning",
+   "elementOrdinal": 91,
+   "role": "button",
+   "accessibleName": "Hämta receptet från webbplatsen",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impdelningsocial",
+   "elementOrdinal": 93,
+   "role": "button",
+   "accessibleName": "Försök hämta igen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "imparkiv",
+   "elementOrdinal": 101,
+   "role": "button",
+   "accessibleName": "Återställ de tre valda recepten",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "editorutkastval",
+   "elementOrdinal": 113,
+   "role": "button",
+   "accessibleName": "Börja på ett nytt recept i stället",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 183.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 5,
+   "role": "button",
+   "accessibleName": "Jämförelse för Tid",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 173,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 6,
+   "role": "textbox",
+   "accessibleName": "Värde för Tid",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 173,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 8,
+   "role": "button",
+   "accessibleName": "Jämförelse för Betyg",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 173,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 9,
+   "role": "textbox",
+   "accessibleName": "Värde för Betyg",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 173,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 11,
+   "role": "button",
+   "accessibleName": "Jämförelse för Ingrediens",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 173,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 12,
+   "role": "textbox",
+   "accessibleName": "Värde för Ingrediens",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 173,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 13,
+   "role": "button",
+   "accessibleName": "Lägg till ett villkor",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 380,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 15,
+   "role": "button",
+   "accessibleName": "Spara regeln",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 380,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggkalla",
+   "elementOrdinal": 34,
+   "role": "button",
+   "accessibleName": "Lägg till en tagg",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 380,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggexklusiv",
+   "elementOrdinal": 37,
+   "role": "button",
+   "accessibleName": "Öppna gruppen Tillfälle",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 352,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "kontodelvis",
+   "elementOrdinal": 47,
+   "role": "button",
+   "accessibleName": "Kontakta support med revisions-id",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 380,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "adminskal",
+   "elementOrdinal": 50,
+   "role": "tab",
+   "accessibleName": "Flik Import",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 120,
+    "h": 56
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modrapporter",
+   "elementOrdinal": 57,
+   "role": "button",
+   "accessibleName": "Flytta fram rec_8f21a",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 149,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modrapporter",
+   "elementOrdinal": 58,
+   "role": "button",
+   "accessibleName": "Radera rec_8f21a",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 149,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modrapporter",
+   "elementOrdinal": 60,
+   "role": "button",
+   "accessibleName": "Flytta fram com_5512b",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 149,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modrapporter",
+   "elementOrdinal": 61,
+   "role": "button",
+   "accessibleName": "Radera com_5512b",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 149,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modrapporter",
+   "elementOrdinal": 63,
+   "role": "button",
+   "accessibleName": "Flytta fram usr_71f0c",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 149,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modrapporter",
+   "elementOrdinal": 64,
+   "role": "button",
+   "accessibleName": "Dölj usr_71f0c",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 149,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modminderarig",
+   "elementOrdinal": 67,
+   "role": "button",
+   "accessibleName": "Flytta fram snp_3a19f",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 177,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modminderarig",
+   "elementOrdinal": 68,
+   "role": "button",
+   "accessibleName": "Radera snp_3a19f",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 177,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "moddolj",
+   "elementOrdinal": 70,
+   "role": "button",
+   "accessibleName": "Avbryt",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 153,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "moddolj",
+   "elementOrdinal": 71,
+   "role": "button",
+   "accessibleName": "Dölj profilen",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 153,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modradera",
+   "elementOrdinal": 73,
+   "role": "button",
+   "accessibleName": "Avbryt",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 153,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modradera",
+   "elementOrdinal": 74,
+   "role": "button",
+   "accessibleName": "Radera receptet",
+   "monster": "E2",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 153,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "modtom",
+   "elementOrdinal": 76,
+   "role": "button",
+   "accessibleName": "Visa stängda rapporter",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 348,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "cooksnapsynlighet",
+   "elementOrdinal": 80,
+   "role": "button",
+   "accessibleName": "Lägg upp bilden",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 156.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "vanprofildelning",
+   "elementOrdinal": 91,
+   "role": "button",
+   "accessibleName": "Skicka meddelande till Anna",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 183.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "vanprofildelning",
+   "elementOrdinal": 92,
+   "role": "button",
+   "accessibleName": "Dela ett recept med Anna",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 180.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "vanprofildelning",
+   "elementOrdinal": 94,
+   "role": "button",
+   "accessibleName": "Ta bort Anna som vän",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "samtyckeai",
+   "elementOrdinal": 10,
+   "role": "button",
+   "accessibleName": "Slå på AI-tolkning igen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "samtyckefornya",
+   "elementOrdinal": 12,
+   "role": "button",
+   "accessibleName": "Godkänn de ändrade villkoren",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 324,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "samtyckefornya",
+   "elementOrdinal": 13,
+   "role": "button",
+   "accessibleName": "Gå igenom ändamålen ett för ett",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 324,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "kontodataexport",
+   "elementOrdinal": 16,
+   "role": "button",
+   "accessibleName": "Spara filen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 165,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "kontodataexport",
+   "elementOrdinal": 17,
+   "role": "button",
+   "accessibleName": "Dela filen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 168,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "dataexportfel",
+   "elementOrdinal": 18,
+   "role": "button",
+   "accessibleName": "Avbryt och gå tillbaka",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "artifactId": "dataexportfel",
+   "elementOrdinal": 19,
+   "role": "button",
+   "accessibleName": "Försök exportera igen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 412,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "globsession",
+   "elementOrdinal": 3,
+   "role": "button",
+   "accessibleName": "Fortsätt, jag är kvar",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 316,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flerbar",
+   "elementOrdinal": 34,
+   "role": "menuitem",
+   "accessibleName": "Exportera de valda",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 250,
+    "h": 49
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flermeny",
+   "elementOrdinal": 45,
+   "role": "button",
+   "accessibleName": "Måndag middag, upptagen av Fisksoppa",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 64.84,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flermeny",
+   "elementOrdinal": 46,
+   "role": "button",
+   "accessibleName": "Tisdag middag, vald, plats 1",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48.19,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flermeny",
+   "elementOrdinal": 47,
+   "role": "button",
+   "accessibleName": "Onsdag middag, vald, plats 2",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48.2,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flermeny",
+   "elementOrdinal": 48,
+   "role": "button",
+   "accessibleName": "Torsdag middag, vald, plats 3",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48.2,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flermeny",
+   "elementOrdinal": 49,
+   "role": "button",
+   "accessibleName": "Fredag middag, vald, plats 4",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48.2,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flermeny",
+   "elementOrdinal": 50,
+   "role": "button",
+   "accessibleName": "Lördag middag, vald, plats 5",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48.2,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flermeny",
+   "elementOrdinal": 51,
+   "role": "button",
+   "accessibleName": "Söndag middag, vald, plats 6",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48.2,
+    "h": 64
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flermeny",
+   "elementOrdinal": 52,
+   "role": "button",
+   "accessibleName": "Lägg sex nu och tre i vecka 32",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 341,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flertaggsam",
+   "elementOrdinal": 55,
+   "role": "radio",
+   "accessibleName": "Behåll Vardag, 7 recept",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 328,
+    "h": 57
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flertaggsam",
+   "elementOrdinal": 56,
+   "role": "radio",
+   "accessibleName": "Behåll Snabbt på vardagar, 6 recept",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 328,
+    "h": 56
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flertaggsam",
+   "elementOrdinal": 57,
+   "role": "radio",
+   "accessibleName": "Behåll Vardagsmat, 5 recept",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 328,
+    "h": 56
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "flertaggsam",
+   "elementOrdinal": 58,
+   "role": "button",
+   "accessibleName": "Slå samman och radera två taggar",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 328,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbformular",
+   "elementOrdinal": 73,
+   "role": "combobox",
+   "accessibleName": "Vad gäller det: Ett fel",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 380,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbformular",
+   "elementOrdinal": 74,
+   "role": "textbox",
+   "accessibleName": "Vad hände",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 380,
+    "h": 88
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbformular",
+   "elementOrdinal": 80,
+   "role": "textbox",
+   "accessibleName": "Din e-post, frivillig",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 380,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbinkorgvy",
+   "elementOrdinal": 82,
+   "role": "tab",
+   "accessibleName": "Visa alla",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 47.91,
+    "h": 46
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbinkorgvy",
+   "elementOrdinal": 83,
+   "role": "tab",
+   "accessibleName": "Visa nya",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 65.59,
+    "h": 46
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbinkorgvy",
+   "elementOrdinal": 84,
+   "role": "tab",
+   "accessibleName": "Visa triagerade",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.56,
+    "h": 46
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbinkorgvy",
+   "elementOrdinal": 85,
+   "role": "tab",
+   "accessibleName": "Visa lösta",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 60.31,
+    "h": 46
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbinkorgvy",
+   "elementOrdinal": 89,
+   "role": "button",
+   "accessibleName": "Ladda fler rapporter",
+   "monster": "E1",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 109.73,
+    "h": 51
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbanmal",
+   "elementOrdinal": 95,
+   "role": "textbox",
+   "accessibleName": "Beskriv vad som är fel, krävs",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 328,
+    "h": 72
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socflode",
+   "elementOrdinal": 4,
+   "role": "button",
+   "accessibleName": "Visa allt",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 49.63,
+    "h": 50
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socflode",
+   "elementOrdinal": 5,
+   "role": "button",
+   "accessibleName": "Visa lagat",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 67.17,
+    "h": 50
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socflode",
+   "elementOrdinal": 6,
+   "role": "button",
+   "accessibleName": "Visa delat",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 64.59,
+    "h": 50
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socflode",
+   "elementOrdinal": 7,
+   "role": "button",
+   "accessibleName": "Visa satte igång",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 103.23,
+    "h": 50
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socintegritet",
+   "elementOrdinal": 21,
+   "role": "switch",
+   "accessibleName": "När jag lagat något",
+   "monster": "E5",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 28
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socintegritet",
+   "elementOrdinal": 22,
+   "role": "switch",
+   "accessibleName": "När jag delat ett recept",
+   "monster": "E5",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 28
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socintegritet",
+   "elementOrdinal": 23,
+   "role": "switch",
+   "accessibleName": "När jag satt igång med något",
+   "monster": "E5",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 28
+   },
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socomrostning",
+   "elementOrdinal": 25,
+   "role": "button",
+   "accessibleName": "Ugnspannkaka, din röst, 60 procent",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 300,
+    "h": 55
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socomrostning",
+   "elementOrdinal": 26,
+   "role": "button",
+   "accessibleName": "Ärtsoppa, 40 procent",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 300,
+    "h": 54
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socreaktion",
+   "elementOrdinal": 30,
+   "role": "button",
+   "accessibleName": "Gillar, 3, du har reagerat",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 62.15,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socreaktion",
+   "elementOrdinal": 31,
+   "role": "button",
+   "accessibleName": "Mums, 1",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 61.15,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socgruppinfo",
+   "elementOrdinal": 42,
+   "role": "button",
+   "accessibleName": "Ta bort ur samtalet",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 265.38,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socoverlat",
+   "elementOrdinal": 43,
+   "role": "button",
+   "accessibleName": "Lämna över till Sara Ek",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 328,
+    "h": 56
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socoverlat",
+   "elementOrdinal": 44,
+   "role": "button",
+   "accessibleName": "Lämna över till Johan Lind",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 328,
+    "h": 56
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "jurriktlinjer",
+   "elementOrdinal": 56,
+   "role": "link",
+   "accessibleName": "Till avsnittet Vad du får dela",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 378,
+    "h": 49
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "jurriktlinjer",
+   "elementOrdinal": 57,
+   "role": "link",
+   "accessibleName": "Till avsnittet Andras recept",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 378,
+    "h": 49
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "jurriktlinjer",
+   "elementOrdinal": 58,
+   "role": "link",
+   "accessibleName": "Till avsnittet Bilder på människor",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 378,
+    "h": 49
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "sokpanel",
+   "elementOrdinal": 68,
+   "role": "button",
+   "accessibleName": "30 till 60 minuter",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 90.97,
+    "h": 50
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "sokpanel",
+   "elementOrdinal": 70,
+   "role": "button",
+   "accessibleName": "Med taggen Vardag",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 92.36,
+    "h": 50
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "sokpanel",
+   "elementOrdinal": 71,
+   "role": "button",
+   "accessibleName": "Utan taggen Sött",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 53.37,
+    "h": 50
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompbild",
+   "elementOrdinal": 77,
+   "role": "button",
+   "accessibleName": "Bild 5 gick inte upp. Försök igen",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 118,
+    "h": 96
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompdubblett",
+   "elementOrdinal": 79,
+   "role": "radio",
+   "accessibleName": "Behåll 35 minuter",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 181.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompdubblett",
+   "elementOrdinal": 80,
+   "role": "radio",
+   "accessibleName": "Använd 45 minuter",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 180.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompdubblett",
+   "elementOrdinal": 81,
+   "role": "radio",
+   "accessibleName": "Behåll fyra portioner",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 180.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompdubblett",
+   "elementOrdinal": 82,
+   "role": "radio",
+   "accessibleName": "Använd sex portioner",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 181.5,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompdubblett",
+   "elementOrdinal": 83,
+   "role": "radio",
+   "accessibleName": "Behåll ditt steg 4",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 181.5,
+    "h": 54
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompdubblett",
+   "elementOrdinal": 84,
+   "role": "radio",
+   "accessibleName": "Använd det nya steg 4",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 180.5,
+    "h": 54
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompmallar",
+   "elementOrdinal": 91,
+   "role": "button",
+   "accessibleName": "Använd Veckohandling",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 344,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompkalla",
+   "elementOrdinal": 95,
+   "role": "button",
+   "accessibleName": "Jämför med receptet som det är nu",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "kompkallahel",
+   "elementOrdinal": 98,
+   "role": "button",
+   "accessibleName": "Jämför med receptet som det är nu",
+   "monster": "F-A",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "uppfyller48": true
+  }
+ ]
+}
