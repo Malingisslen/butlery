@@ -17,8 +17,11 @@ export function produktElementIKallan(blk) {
       ? blk.lastIndexOf('<', blk.indexOf('class="sc-card"'))
       : -1;
   if (y < 0) return null;
-  const VOID = new Set(['br', 'img', 'input', 'hr', 'meta', 'link', 'source',
-    'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'use', 'stop']);
+  // ENDAST akta void-element. svg-barn som path, circle och rect skrivs med
+  // explicit sluttagg i den har sviten. Att behandla dem som void raknade ner
+  // djupet utan att ha raknat upp det, och vandringen avslutades for tidigt.
+  // Sjalvstangande form fangas anda av endsWith('/').
+  const VOID = new Set(['br', 'img', 'input', 'hr', 'meta', 'link', 'source']);
   // Ytans egen subtrad, avgransad genom taggdjup.
   const re = /<\/?([a-zA-Z][a-zA-Z0-9-]*)([^>]*)>/g;
   re.lastIndex = y;
@@ -35,9 +38,9 @@ export function produktElementIKallan(blk) {
   const element = [];
   const re2 = /<([a-zA-Z][a-zA-Z0-9-]*)([^>]*)>/g;
   re2.lastIndex = y;
-  let forst = true;
+  // Ytan SJALV ar med. Rollkartans iProdukt slapper igenom ytan (y === el),
+  // sa listorna maste borja pa samma element.
   while ((m = re2.exec(blk)) && m.index < slut) {
-    if (forst) { forst = false; continue; }   // sjalva ytan raknas inte
     element.push({ start: m.index, slut: re2.lastIndex, tagg: m[1].toLowerCase(), text: m[0] });
   }
   return element;
@@ -78,20 +81,33 @@ export function skrivITagg(taggtext, post, token) {
 export function migreraBlock(blk, poster, tokenAv) {
   const element = produktElementIKallan(blk);
   if (!element) return { blk, skrivna: 0, hoppade: poster.map(p => ({ ...p, skal: 'ingen produktyta i kallan' })) };
-  const skrivna = [], hoppade = [];
-  // Bakifran sa att index halIer.
-  const sorterade = [...poster].sort((a, b) => b.ankare.elementOrdinal - a.ankare.elementOrdinal);
+  const skrivna = [], hoppade = [], tackta = [];
+  // ETT element i taget. Flera egenskaper pa samma tagg maste skrivas mot
+  // SAMMA arbetskopia — annars laser den andra skrivningen en foraldrad
+  // taggtext och hittar varken stilattribut eller fargvarde.
+  const perElement = new Map();
+  for (const p of poster) { const o = p.ankare.elementOrdinal;
+    if (!perElement.has(o)) perElement.set(o, []); perElement.get(o).push(p); }
   let ut = blk;
-  for (const p of sorterade) {
-    const e = element[p.ankare.elementOrdinal];
-    if (!e) { hoppade.push({ ...p, skal: 'elementordinal ' + p.ankare.elementOrdinal + ' finns inte i kallan' }); continue; }
-    if (e.tagg !== p.ankare.tagg) { hoppade.push({ ...p, skal: 'taggen skiljer: kartan sager ' + p.ankare.tagg + ', kallan ' + e.tagg }); continue; }
-    const token = tokenAv(p);
-    if (!token) { hoppade.push({ ...p, skal: 'ingen token for rollen ' + p.roll + ' med vardet ' + p.beraknat }); continue; }
-    const r = skrivITagg(ut.slice(e.start, e.slut), p, token);
-    if (!r.ok) { hoppade.push({ ...p, skal: r.skal }); continue; }
-    ut = ut.slice(0, e.start) + r.text + ut.slice(e.slut);
-    skrivna.push({ ...p, token });
+  // Bakifran sa att index halIer for lagre ordinaler.
+  for (const o of [...perElement.keys()].sort((a, b) => b - a)) {
+    const e = element[o], mina = perElement.get(o);
+    if (!e) { for (const p of mina) hoppade.push({ ...p, skal: 'elementordinal ' + o + ' finns inte i kallan' }); continue; }
+    if (e.tagg !== mina[0].ankare.tagg) {
+      for (const p of mina) hoppade.push({ ...p, skal: 'taggen skiljer: kartan sager ' + p.ankare.tagg + ', kallan ' + e.tagg }); continue; }
+    let taggtext = ut.slice(e.start, e.slut);
+    for (const p of mina) {
+      const token = tokenAv(p);
+      if (!token) { hoppade.push({ ...p, skal: 'ingen token for rollen ' + p.roll + ' med vardet ' + p.beraknat }); continue; }
+      const r = skrivITagg(taggtext, p, token);
+      if (r.ok) { taggtext = r.text; skrivna.push({ ...p, token }); continue; }
+      // En kortform kan redan ha ersatts av en annan sida av samma ram. Da ar
+      // deklarationen TACKT, inte hoppad.
+      if (taggtext.indexOf('var(' + token + ')') >= 0)
+        tackta.push({ ...p, token, skal: 'tackt av samma deklaration som en annan sida av ramen' });
+      else hoppade.push({ ...p, skal: r.skal });
+    }
+    ut = ut.slice(0, e.start) + taggtext + ut.slice(e.slut);
   }
-  return { blk: ut, skrivna, hoppade };
+  return { blk: ut, skrivna, hoppade, tackta };
 }

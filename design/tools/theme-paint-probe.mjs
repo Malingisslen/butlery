@@ -49,6 +49,22 @@ export const PAINT_PROBE = `(() => {
     return bast;
   }
 
+  // ROLLEN HARLEDS HAR, en enda gang. Konsumenterna far den fardig och far
+  // aldrig rakna ut den pa nytt — det var precis den dubbleringen som lat
+  // migratorn kalla en ikon i en kontroll for fristaende.
+  const rollAv = (egenskap, arSvg, arKontroll, telefonram, skelett) => {
+    if (arSvg) return arKontroll ? 'ikon-kontroll' : 'ikon-fristaende';
+    if (egenskap === 'color') return arKontroll ? 'text-kontroll' : 'text-innehall';
+    if (egenskap === 'background-color') {
+      if (telefonram) return 'yta-app';
+      if (skelett) return 'yta-platshallare';
+      return arKontroll ? 'yta-kontroll' : 'yta-upphojd'; }
+    if (/^border-(top|right|bottom|left)-color$/.test(egenskap)) {
+      if (telefonram) return 'ram-app';
+      return arKontroll ? 'ram-kontroll' : 'ram-behallare'; }
+    return 'ospecificerad';
+  };
+
   const FARGADE = ['background-color', 'border-top-color', 'border-right-color',
     'border-bottom-color', 'border-left-color', 'color', 'fill', 'stroke'];
   const genomskinlig = v => /rgba\\(0,\\s*0,\\s*0,\\s*0\\)|^transparent$|^none$/.test(v);
@@ -114,7 +130,10 @@ export const PAINT_PROBE = `(() => {
           arvd, arKontroll, arSvg,
           klass: el.getAttribute('class') || null,
           telefonram: el.classList.contains('sc-phone'),
-          skelett: /sc-skeleton|sc-loader/.test(el.className || '') });
+          skelett: /sc-skeleton|sc-loader/.test(el.className || ''),
+          roll: rollAv(egenskap, arSvg, arKontroll,
+            el.classList.contains('sc-phone'),
+            /sc-skeleton|sc-loader/.test(el.className || '')) });
       }
     }
   }
