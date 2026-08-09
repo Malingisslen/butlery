@@ -2,10 +2,10 @@
  "$schema": "butlery-nt-fixmanifest/1",
  "$regel": "rotorsakspopulation, source occurrence population och write scope ar tre olika tal. Endast bevisat delad implementation andras gemensamt.",
  "krav_kvot": 3,
- "rotorsaker_st": 21,
- "verifierade_fynd_st": 72,
- "source_occurrences_totalt": 2078,
- "write_scope_totalt": 70,
+ "rotorsaker_st": 18,
+ "verifierade_fynd_st": 58,
+ "source_occurrences_totalt": 1876,
+ "write_scope_totalt": 56,
  "shared_implementations_st": 1,
  "utan_forslag_st": 1,
  "manifest": [
@@ -129,81 +129,6 @@
    "enhet": "grafiska delar",
    "artefakter_st": 1,
    "artefakter": [
-    "betygperperson"
-   ],
-   "kontroller_st": 6,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "glyf",
-   "nuvarande_forgrund": "rgb(204, 209, 194)",
-   "faktisk_angransande_farg": "rgb(245, 244, 237)",
-   "nuvarande_kvot": 1.41,
-   "kvot_min": 1.41,
-   "kvot_max": 1.41,
-   "kalldeklaration": "fill=\"#ccd1c2\"",
-   "source_occurrence_population_st": 14,
-   "write_scope_st": 6,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#86916e",
-   "forslagets_ursprung": "minsta ljushetsjustering med bevarad kulor",
-   "forvantad_kvot": 3.03,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — svg-attribut och fyllningar pa grafik pavarkar inte textkontrast",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "betygperperson",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "5 av 5 för Per",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "betygperperson",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "1 av 5 för Ida",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "betygperperson",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "2 av 5 för Ida",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "betygperperson",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "3 av 5 för Ida",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "betygperperson",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "4 av 5 för Ida",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "betygperperson",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "5 av 5 för Ida",
-     "state": null,
-     "kvot": 1.41
-    }
-   ]
-  },
-  {
-   "id": "NRC-03",
-   "verifierade_fynd_st": 6,
-   "enhet": "grafiska delar",
-   "artefakter_st": 1,
-   "artefakter": [
     "vmbtom"
    ],
    "kontroller_st": 6,
@@ -276,7 +201,7 @@
    ]
   },
   {
-   "id": "NRC-04",
+   "id": "NRC-03",
    "verifierade_fynd_st": 6,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -351,7 +276,7 @@
    ]
   },
   {
-   "id": "NRC-05",
+   "id": "NRC-04",
    "verifierade_fynd_st": 5,
    "enhet": "grafiska objekt",
    "artefakter_st": 2,
@@ -368,7 +293,7 @@
    "kvot_min": 1.41,
    "kvot_max": 1.41,
    "kalldeklaration": "fill=\"#ccd1c2\"",
-   "source_occurrence_population_st": 14,
+   "source_occurrence_population_st": 8,
    "write_scope_st": 5,
    "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
    "shared_implementation": false,
@@ -420,76 +345,7 @@
    ]
   },
   {
-   "id": "NRC-06",
-   "verifierade_fynd_st": 5,
-   "enhet": "grafiska delar",
-   "artefakter_st": 2,
-   "artefakter": [
-    "veckorostning",
-    "impassist3"
-   ],
-   "kontroller_st": 5,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "ram",
-   "nuvarande_forgrund": "rgb(204, 209, 194)",
-   "faktisk_angransande_farg": "rgb(245, 244, 237)",
-   "nuvarande_kvot": 1.41,
-   "kvot_min": 1.41,
-   "kvot_max": 1.41,
-   "kalldeklaration": "border: 1.5px solid rgb(204, 209, 194)",
-   "source_occurrence_population_st": 17,
-   "write_scope_st": 5,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#86916e",
-   "forslagets_ursprung": "minsta ljushetsjustering med bevarad kulor",
-   "forvantad_kvot": 3.03,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "veckorostning",
-     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
-     "namn": "Rösta på Ugnslax med potatis",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "impassist3",
-     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
-     "namn": "Måltidstyp Frukost",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "impassist3",
-     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
-     "namn": "Måltidstyp Lunch",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "impassist3",
-     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
-     "namn": "Måltidstyp Mellanmål",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "impassist3",
-     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
-     "namn": "Måltidstyp Efterrätt",
-     "state": null,
-     "kvot": 1.41
-    }
-   ]
-  },
-  {
-   "id": "NRC-07",
+   "id": "NRC-05",
    "verifierade_fynd_st": 4,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -550,7 +406,7 @@
    ]
   },
   {
-   "id": "NRC-08",
+   "id": "NRC-06",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -604,7 +460,7 @@
    ]
   },
   {
-   "id": "NRC-09",
+   "id": "NRC-07",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska objekt",
    "artefakter_st": 3,
@@ -660,7 +516,7 @@
    ]
   },
   {
-   "id": "NRC-10",
+   "id": "NRC-08",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -714,7 +570,7 @@
    ]
   },
   {
-   "id": "NRC-11",
+   "id": "NRC-09",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -737,7 +593,7 @@
    "klasser": [],
    "andrad_sida": "bararens egen farg",
    "foreslagen_farg": "#7d897c",
-   "forslagets_ursprung": "befintlig designfarg, anvand 441 ganger i sviten",
+   "forslagets_ursprung": "befintlig designfarg, anvand 455 ganger i sviten",
    "forvantad_kvot": 3.42,
    "klarar_kravet": true,
    "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
@@ -768,61 +624,7 @@
    ]
   },
   {
-   "id": "NRC-12",
-   "verifierade_fynd_st": 3,
-   "enhet": "grafiska delar",
-   "artefakter_st": 1,
-   "artefakter": [
-    "skafferiflerval"
-   ],
-   "kontroller_st": 3,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "ram",
-   "nuvarande_forgrund": "rgb(204, 209, 194)",
-   "faktisk_angransande_farg": "rgb(245, 244, 237)",
-   "nuvarande_kvot": 1.41,
-   "kvot_min": 1.41,
-   "kvot_max": 1.41,
-   "kalldeklaration": "border-top: 1px solid rgb(204, 209, 194)",
-   "source_occurrence_population_st": 170,
-   "write_scope_st": 3,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#86916e",
-   "forslagets_ursprung": "minsta ljushetsjustering med bevarad kulor",
-   "forvantad_kvot": 3.03,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "skafferiflerval",
-     "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
-     "namn": "Grädde, vald",
-     "state": "checked",
-     "kvot": 1.41
-    },
-    {
-     "art": "skafferiflerval",
-     "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
-     "namn": "Parmesan",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "skafferiflerval",
-     "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
-     "namn": "Färsk basilika, vald",
-     "state": "checked",
-     "kvot": 1.41
-    }
-   ]
-  },
-  {
-   "id": "NRC-13",
+   "id": "NRC-10",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -878,7 +680,7 @@
    ]
   },
   {
-   "id": "NRC-14",
+   "id": "NRC-11",
    "verifierade_fynd_st": 2,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -925,7 +727,7 @@
    ]
   },
   {
-   "id": "NRC-15",
+   "id": "NRC-12",
    "verifierade_fynd_st": 2,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -972,7 +774,7 @@
    ]
   },
   {
-   "id": "NRC-16",
+   "id": "NRC-13",
    "verifierade_fynd_st": 2,
    "enhet": "grafiska delar",
    "artefakter_st": 2,
@@ -1020,7 +822,7 @@
    ]
   },
   {
-   "id": "NRC-17",
+   "id": "NRC-14",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska objekt",
    "artefakter_st": 1,
@@ -1060,7 +862,7 @@
    ]
   },
   {
-   "id": "NRC-18",
+   "id": "NRC-15",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska objekt",
    "artefakter_st": 1,
@@ -1100,7 +902,7 @@
    ]
   },
   {
-   "id": "NRC-19",
+   "id": "NRC-16",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska objekt",
    "artefakter_st": 1,
@@ -1140,7 +942,7 @@
    ]
   },
   {
-   "id": "NRC-20",
+   "id": "NRC-17",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1180,7 +982,7 @@
    ]
   },
   {
-   "id": "NRC-21",
+   "id": "NRC-18",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1196,7 +998,7 @@
    "kvot_min": 2.98,
    "kvot_max": 2.98,
    "kalldeklaration": "border: 1.5px solid rgb(125, 137, 124)",
-   "source_occurrence_population_st": 62,
+   "source_occurrence_population_st": 67,
    "write_scope_st": 1,
    "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
    "shared_implementation": false,
@@ -1231,5 +1033,12 @@
    "motiv": "Write scope vida overstiger fyndpopulationen. En andring skulle andra hela laddningssprakets utseende for att ratta 3 fynd.",
    "ej": "inte pass, inte exempt, inte ignored, inte matartefakt — fynden ar aktiva"
   }
+ },
+ "$kallankare": {
+  "regel": "Ordinalen bland data-a11y-role=\"-forekomster ar ankaret. Antalet stammer exakt mellan kalla och DOM i samtliga 23 filer.",
+  "fonster": "Kontrollens EGEN subtrad, avgransad genom taggdjup. Inte fram till nasta kontroll: daremellan ligger syskonmarkup.",
+  "krav": "Exakt en traff pa deklarationen i fonstret. Flera traffar eller noll ger fail closed.",
+  "forbjudet": "Ordinal bland style-attribut, textmatchning och geometri. style=\"-antalet i kallan skiljer sig fran DOM i fyra filer.",
+  "historik": "NRC-01 skrevs med style-ordinal men ar oberord: ingen av dess atta filer finns bland de fyra med avvikelse, och varje skrivning validerades mot elementets egna attributvarde."
  }
 }
