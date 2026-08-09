@@ -2,311 +2,15 @@
  "$schema": "butlery-nt-fixmanifest/1",
  "$regel": "rotorsakspopulation, source occurrence population och write scope ar tre olika tal. Endast bevisat delad implementation andras gemensamt.",
  "krav_kvot": 3,
- "rotorsaker_st": 29,
- "verifierade_fynd_st": 154,
- "source_occurrences_totalt": 3137,
- "write_scope_totalt": 152,
+ "rotorsaker_st": 28,
+ "verifierade_fynd_st": 118,
+ "source_occurrences_totalt": 2736,
+ "write_scope_totalt": 116,
  "shared_implementations_st": 1,
  "utan_forslag_st": 1,
  "manifest": [
   {
    "id": "NRC-01",
-   "verifierade_fynd_st": 36,
-   "enhet": "grafiska delar",
-   "artefakter_st": 12,
-   "artefakter": [
-    "veckoallergi",
-    "familjmedlemsamtycke",
-    "lgbgester",
-    "veckorostlagg",
-    "onballergi",
-    "onbateruppta",
-    "onbsenare",
-    "taggregel",
-    "cooksnapsynlighet",
-    "notisertyp",
-    "flertaggsam",
-    "kompdubblett"
-   ],
-   "kontroller_st": 36,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "ram",
-   "nuvarande_forgrund": "rgb(204, 209, 194)",
-   "faktisk_angransande_farg": "rgb(245, 244, 237)",
-   "nuvarande_kvot": 1.41,
-   "kvot_min": 1.41,
-   "kvot_max": 1.41,
-   "kalldeklaration": "border: 1px solid rgb(204, 209, 194)",
-   "source_occurrence_population_st": 401,
-   "write_scope_st": 36,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#86916e",
-   "forslagets_ursprung": "minsta ljushetsjustering med bevarad kulor",
-   "forvantad_kvot": 3.03,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "veckoallergi",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "Släpp kravet mindre kött",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "familjmedlemsamtycke",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "0 till 2 år",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "familjmedlemsamtycke",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "3 till 6 år",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "familjmedlemsamtycke",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "13 till 17 år",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "familjmedlemsamtycke",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "Vuxen",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "familjmedlemsamtycke",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "Gluten",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "familjmedlemsamtycke",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "Mjölk",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "familjmedlemsamtycke",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "Oliver",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "familjmedlemsamtycke",
-     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-     "namn": "Koriander",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "lgbgester",
-     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
-     "namn": "Ändra receptet för alltid",
-     "state": "unchecked",
-     "kvot": 1.41
-    },
-    {
-     "art": "veckorostlagg",
-     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
-     "namn": "Rösta på Krämig svamppasta, föreslagen av Anna, 2 röster",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "veckorostlagg",
-     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
-     "namn": "Rösta på Fiskgratäng, föreslagen av Malin, 1 röst",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onballergi",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Mjölk",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onballergi",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Ägg",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onballergi",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Soja",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onballergi",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Fisk",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onballergi",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Skaldjur",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onballergi",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Sesam",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onbateruppta",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Gluten",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onbateruppta",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Mjölk",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onbateruppta",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Nötter",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onbateruppta",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Ägg",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onbsenare",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Vegetariskt",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onbsenare",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Veganskt",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onbsenare",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Glutenfritt",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "onbsenare",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Laktosfritt",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "taggregel",
-     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
-     "namn": "Något villkor",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "cooksnapsynlighet",
-     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
-     "namn": "Bara jag ser bilden",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "notisertyp",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Samlat, högst en gång i timmen",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "notisertyp",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "En sammanfattning per dag",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "notisertyp",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Inget om samarbete",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "flertaggsam",
-     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
-     "namn": "Behåll Snabbt på vardagar, 6 recept",
-     "state": "unchecked",
-     "kvot": 1.41
-    },
-    {
-     "art": "flertaggsam",
-     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
-     "namn": "Behåll Vardagsmat, 5 recept",
-     "state": "unchecked",
-     "kvot": 1.41
-    },
-    {
-     "art": "kompdubblett",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "Använd 45 minuter",
-     "state": "unchecked",
-     "kvot": 1.41
-    },
-    {
-     "art": "kompdubblett",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "Behåll fyra portioner",
-     "state": "unchecked",
-     "kvot": 1.41
-    },
-    {
-     "art": "kompdubblett",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "Använd det nya steg 4",
-     "state": "unchecked",
-     "kvot": 1.41
-    }
-   ]
-  },
-  {
-   "id": "NRC-02",
    "verifierade_fynd_st": 11,
    "enhet": "grafiska objekt",
    "artefakter_st": 5,
@@ -420,7 +124,7 @@
    ]
   },
   {
-   "id": "NRC-03",
+   "id": "NRC-02",
    "verifierade_fynd_st": 10,
    "enhet": "grafiska delar",
    "artefakter_st": 3,
@@ -525,7 +229,7 @@
    ]
   },
   {
-   "id": "NRC-04",
+   "id": "NRC-03",
    "verifierade_fynd_st": 10,
    "enhet": "grafiska delar",
    "artefakter_st": 3,
@@ -630,7 +334,7 @@
    ]
   },
   {
-   "id": "NRC-05",
+   "id": "NRC-04",
    "verifierade_fynd_st": 7,
    "enhet": "grafiska delar",
    "artefakter_st": 3,
@@ -714,7 +418,7 @@
    ]
   },
   {
-   "id": "NRC-06",
+   "id": "NRC-05",
    "verifierade_fynd_st": 7,
    "enhet": "grafiska delar",
    "artefakter_st": 4,
@@ -799,7 +503,7 @@
    ]
   },
   {
-   "id": "NRC-07",
+   "id": "NRC-06",
    "verifierade_fynd_st": 6,
    "enhet": "grafiska delar",
    "artefakter_st": 3,
@@ -876,7 +580,7 @@
    ]
   },
   {
-   "id": "NRC-08",
+   "id": "NRC-07",
    "verifierade_fynd_st": 6,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -951,7 +655,7 @@
    ]
   },
   {
-   "id": "NRC-09",
+   "id": "NRC-08",
    "verifierade_fynd_st": 6,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1028,7 +732,7 @@
    ]
   },
   {
-   "id": "NRC-10",
+   "id": "NRC-09",
    "verifierade_fynd_st": 6,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1103,7 +807,7 @@
    ]
   },
   {
-   "id": "NRC-11",
+   "id": "NRC-10",
    "verifierade_fynd_st": 6,
    "enhet": "grafiska delar",
    "artefakter_st": 3,
@@ -1180,7 +884,7 @@
    ]
   },
   {
-   "id": "NRC-12",
+   "id": "NRC-11",
    "verifierade_fynd_st": 5,
    "enhet": "grafiska objekt",
    "artefakter_st": 2,
@@ -1249,7 +953,7 @@
    ]
   },
   {
-   "id": "NRC-13",
+   "id": "NRC-12",
    "verifierade_fynd_st": 5,
    "enhet": "grafiska delar",
    "artefakter_st": 2,
@@ -1318,7 +1022,7 @@
    ]
   },
   {
-   "id": "NRC-14",
+   "id": "NRC-13",
    "verifierade_fynd_st": 4,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1379,7 +1083,7 @@
    ]
   },
   {
-   "id": "NRC-15",
+   "id": "NRC-14",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1433,7 +1137,7 @@
    ]
   },
   {
-   "id": "NRC-16",
+   "id": "NRC-15",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska objekt",
    "artefakter_st": 3,
@@ -1489,7 +1193,7 @@
    ]
   },
   {
-   "id": "NRC-17",
+   "id": "NRC-16",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1543,7 +1247,7 @@
    ]
   },
   {
-   "id": "NRC-18",
+   "id": "NRC-17",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1566,7 +1270,7 @@
    "klasser": [],
    "andrad_sida": "bararens egen farg",
    "foreslagen_farg": "#7d897c",
-   "forslagets_ursprung": "befintlig designfarg, anvand 391 ganger i sviten",
+   "forslagets_ursprung": "befintlig designfarg, anvand 427 ganger i sviten",
    "forvantad_kvot": 3.42,
    "klarar_kravet": true,
    "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
@@ -1597,7 +1301,7 @@
    ]
   },
   {
-   "id": "NRC-19",
+   "id": "NRC-18",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1651,7 +1355,7 @@
    ]
   },
   {
-   "id": "NRC-20",
+   "id": "NRC-19",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1707,7 +1411,7 @@
    ]
   },
   {
-   "id": "NRC-21",
+   "id": "NRC-20",
    "verifierade_fynd_st": 2,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1754,7 +1458,7 @@
    ]
   },
   {
-   "id": "NRC-22",
+   "id": "NRC-21",
    "verifierade_fynd_st": 2,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1801,7 +1505,7 @@
    ]
   },
   {
-   "id": "NRC-23",
+   "id": "NRC-22",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska objekt",
    "artefakter_st": 1,
@@ -1841,7 +1545,7 @@
    ]
   },
   {
-   "id": "NRC-24",
+   "id": "NRC-23",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska objekt",
    "artefakter_st": 1,
@@ -1881,7 +1585,7 @@
    ]
   },
   {
-   "id": "NRC-25",
+   "id": "NRC-24",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska objekt",
    "artefakter_st": 1,
@@ -1921,7 +1625,7 @@
    ]
   },
   {
-   "id": "NRC-26",
+   "id": "NRC-25",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1961,7 +1665,7 @@
    ]
   },
   {
-   "id": "NRC-27",
+   "id": "NRC-26",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -2001,7 +1705,7 @@
    ]
   },
   {
-   "id": "NRC-28",
+   "id": "NRC-27",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -2041,7 +1745,7 @@
    ]
   },
   {
-   "id": "NRC-29",
+   "id": "NRC-28",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -2080,5 +1784,17 @@
     }
    ]
   }
- ]
+ ],
+ "$uppskjutna": {
+  "sc-skeleton": {
+   "status": "DESIGN DECISION PENDING",
+   "regel": ".sc-skeleton{background:#e6ead9 !important}",
+   "verifierade_fynd_st": 3,
+   "artefakt": "behfoton",
+   "source_occurrences_st": 57,
+   "filer_st": 10,
+   "motiv": "Write scope ar mycket storre an fyndpopulationen. En andring skulle andra hela laddningssprakets utseende for att ratta 3 fynd.",
+   "ej": "inte pass, inte exempt, inte ignored, inte matartefakt — fynden ar aktiva"
+  }
+ }
 }
