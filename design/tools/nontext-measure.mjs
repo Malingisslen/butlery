@@ -44,8 +44,11 @@ export const NONTEXT_MEASURE = `(() => {
   const egenSubtrad = (el, rot) => { let n = el;
     while (n && n !== rot) { if (n.hasAttribute('data-a11y-role')) return false; n = n.parentElement; }
     return true; };
+  const UNDANTAGEN = e => { const v = e.getAttribute('data-graphic-role');
+    return v === 'redundant' || v === 'decorative'; };
   const glyfer = el => [...el.querySelectorAll('svg, [data-icon]')]
-    .filter(e => (e.tagName.toLowerCase() === 'svg' || e.hasAttribute('data-icon')) && egenSubtrad(e, el));
+    .filter(e => (e.tagName.toLowerCase() === 'svg' || e.hasAttribute('data-icon')) &&
+      egenSubtrad(e, el) && !UNDANTAGEN(e));
   const harRam = el => { const c = getComputedStyle(el);
     return ['borderTopWidth','borderBottomWidth','borderLeftWidth','borderRightWidth']
       .some(k => parseFloat(c[k]) > 0); };
@@ -81,8 +84,14 @@ export const NONTEXT_MEASURE = `(() => {
   // ram runt om. En textkolumn har varken, och en avdelarlinje under raden ar
   // ingen form. Ingen geometri, ingen DOM-position, ingen kontrast anvands.
   function visuellForm(c) {
-    const omslutande = e => harOmslutandeRam(e) || harFyllning(e);
-    const inomAlla = [...c.querySelectorAll('*')].filter(e => egenSubtrad(e, c));
+    // AUTHORED UNDANTAG. Ett element inuti en kontroll kan vara deklarerat som
+    // redundant eller decorative. Da ar det inte kontrollens form, hur fylld
+    // det an ar. Samma attribut och samma semantik som for grafik utanfor
+    // kontroller — ingen ny mekanism, ingen artefaktspecifik regel.
+    const undantagen = e => { const v = e.getAttribute('data-graphic-role');
+      return v === 'redundant' || v === 'decorative'; };
+    const omslutande = e => !undantagen(e) && (harOmslutandeRam(e) || harFyllning(e));
+    const inomAlla = [...c.querySelectorAll('*')].filter(e => egenSubtrad(e, c) && !undantagen(e));
     const inreFormer = inomAlla.filter(omslutande);
 
     // AUTHORED EVIDENS FORST. Ritningen kan sjalv peka ut vilket element som

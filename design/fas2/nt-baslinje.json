@@ -25,16 +25,15 @@
   "grafiskaDelar_st": 1640,
   "perBararroll_grafiskaDelar": {
    "supplemental": 1001,
-   "componentIdentityCarrier": 543,
-   "stateCarrier": 95,
-   "unknown": 1
+   "componentIdentityCarrier": 544,
+   "stateCarrier": 95
   },
-  "unknown_grafiskaDelar_st": 1,
-  "barare_grafiskaDelar_st": 638,
-  "matta_grafiskaDelar_st": 638,
+  "unknown_grafiskaDelar_st": 0,
+  "barare_grafiskaDelar_st": 639,
+  "matta_grafiskaDelar_st": 639,
   "ejMatta_grafiskaDelar_st": 0,
   "undantagna_disabled_grafiskaDelar_st": 6,
-  "bedomda_grafiskaDelar_st": 632,
+  "bedomda_grafiskaDelar_st": 633,
   "fynd_under_3_grafiskaDelar_st": 132,
   "fynd_perBararroll_grafiskaDelar": {
    "componentIdentityCarrier": 108,
@@ -1492,23 +1491,7 @@
     "disabled": false
    }
   ],
-  "unknown": [
-   {
-    "typ": "saknas",
-    "carrier": "unknown",
-    "motivering": "valkontrollens form gar inte att avgora: tva avgransade former som syskon i behallaren — vilken som ar kontrollen gar inte att avgora",
-    "ikon": null,
-    "descent": false,
-    "kvot": null,
-    "status": "unknown",
-    "art": "inkopkategoribyte",
-    "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
-    "roll": "radio",
-    "namn": "Mejeri, nuvarande kategori",
-    "state": "checked",
-    "disabled": false
-   }
-  ]
+  "unknown": []
  },
  "B_anvandningAvFarg": {
   "$enhet": "tillstandspar",

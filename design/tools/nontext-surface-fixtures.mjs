@@ -108,6 +108,17 @@ const FIXTUR = `<!doctype html><meta charset="utf-8"><style>
   </div>
 </div>
 
+<!-- SW-R08 · rad dar de fyllda syskonen ar deklarerat redundanta. De far da
+     aldrig valjas som kontrollens form. -->
+<div class="sc-item" id="swr08-undantagna-syskon">
+  <div data-a11y-role="radio" data-a11y-name="Mejeri, nuvarande" data-a11y-state="checked"
+    data-hit="self" data-state-group="swrprov-kategorival" style="${RAD}">
+    <span data-graphic-role="redundant" style="width:3px;height:24px;background:#627061;flex:none"></span>
+    <span style="${TEXTKOL}">Mejeri</span>
+    <span data-graphic-role="redundant" style="background:#e6ead9;padding:3px 9px;border-radius:999px">NU</span>
+  </div>
+</div>
+
 <!-- AC-01 · ikon pa massiv knappfyllning. Mats mot fyllningen. -->
 <div class="sc-item" id="ac01-ikon-pa-fyllning">
   <span data-a11y-role="button" data-a11y-name="Lagg till" data-hit="self"
@@ -191,7 +202,7 @@ try {
 } catch (e) { verktygsfel = e.message; }
 finally { try { chrome.kill(); } catch {} }
 
-const ANTAL = 13;
+const ANTAL = 14;
 if (verktygsfel) {
   console.log('VERKTYGSFEL: ' + verktygsfel);
   console.log('YTPROV status=VERKTYGSFEL godkanda=0 av ' + ANTAL); process.exit(2);
@@ -250,6 +261,15 @@ const prov = (n, vad, ok, diag) => resultat.push({ id: n, vad, ok: !!ok, diag })
   prov('SW-R07', 'tva deklarerade komponenter i samma rad ger unknown',
     !!u && !id('swr07-tva-deklarerade'),
     u ? u.motivering.slice(0, 80) : 'ingen unknown — modellen valde en av dem'); }
+
+{ const c = k('swr08-undantagna-syskon');
+  const barare = c ? c.delar.filter(d => d.carrier === 'componentIdentityCarrier' ||
+    d.carrier === 'stateCarrier') : [];
+  // De undantagna syskonen ar fyllda. Ingen barare far vara en fyllning, och
+  // ingen descent far ske ner till dem.
+  prov('SW-R08', 'deklarerat redundanta syskon valjs aldrig som kontrollens form',
+    !!c && barare.every(d => d.typ !== 'fyllning' && d.descent === false),
+    c ? barare.map(d => d.typ + (d.descent ? ' via descent' : ' pa agaren')).join(', ') || 'ingen barare' : 'kontrollen saknas'); }
 
 { const d = del('ac01-ikon-pa-fyllning', x => x.typ === 'ikon');
   prov('AC-01', 'ikon pa massiv knappfyllning mats mot fyllningen',
