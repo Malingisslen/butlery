@@ -143,8 +143,10 @@ const rapport = {
 };
 
 const fel = [];
-if (populationer.registrerade_produktartefakter_st !== 310)
-  fel.push('produktpopulationen är ' + populationer.registrerade_produktartefakter_st + ', förväntat 310');
+// 319 sedan de nio komponentpanelerna fick viewportprofil. Fore det var
+// namnaren 310 och de nio matt es inte av nagon motor alls.
+if (populationer.registrerade_produktartefakter_st !== 319)
+  fel.push('produktpopulationen är ' + populationer.registrerade_produktartefakter_st + ', förväntat 319');
 if (mätningar.some(m => !m.applicability))
   fel.push('en kontrollmätning saknar applicability — fail closed');
 if (mätningar.some(m => m.applicability === 'applicable' && m.kvot === null))

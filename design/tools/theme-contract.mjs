@@ -99,3 +99,114 @@ export function parbilda(artefakter) {
       [...familjer.values()].reduce((n, v) => n + v.length, 0),
   };
 }
+
+/* ── HYBRIDMODELLEN · tva giltiga former av tackning ───────────────────────
+   A  explicitPair      en authored light-artefakt och en authored
+                        dark-artefakt med samma data-theme-family
+   B  dualThemeRender   en authored temakapabel kalla som EXPLICIT renderats
+                        och verifierats i bada temana
+
+   Bada ger samma conformancekontroller. Ingen heuristisk parning.
+
+   Stodet maste vara FORFATTAT. Verifieraren far aldrig sluta sig till att
+   morkt lage stods bara for att kallan rakar anvanda tokens.               */
+
+export const STODVARDEN = new Set(['light', 'dark']);
+
+export function parseStod(varde) {
+  if (varde === null || varde === undefined)
+    return { form: 'saknas', teman: [], varfor: 'ingen data-theme-support' };
+  const delar = String(varde).trim().split(/\s+/).filter(Boolean);
+  if (!delar.length) return { form: 'ogiltig', teman: [], varfor: 'data-theme-support ar tom' };
+  const okanda = delar.filter(d => !STODVARDEN.has(d));
+  if (okanda.length) return { form: 'ogiltig', teman: [],
+    varfor: 'data-theme-support innehaller ' + okanda.join(', ') + ' som inte ar light eller dark' };
+  if (new Set(delar).size !== delar.length) return { form: 'ogiltig', teman: [],
+    varfor: 'data-theme-support upprepar ett varde' };
+  return { form: 'giltig', teman: delar, varfor: 'authored data-theme-support' };
+}
+
+// renderade = de temainstanser som faktiskt kordes och mattes for en kalla.
+// Verifieraren far bara rakna det som RENDERATS, aldrig det som deklarerats.
+export function tackning(artefakter) {
+  const rader = [], perFamilj = new Map();
+  for (const a of artefakter) {
+    const t = parseTema(a.tema), f = parseFamilj(a.familj), st = parseStod(a.stod);
+    const harInstans = t.form === 'giltig';
+    const harStod = st.form === 'giltig';
+    let rad;
+    if (harInstans && harStod)
+      rad = { art: a.art, modell: 'ambiguous',
+        varfor: 'artefakten deklarerar bade data-theme och data-theme-support — agarskapet gar inte att avgora' };
+    else if (harStod) {
+      if (f.form !== 'giltig') rad = { art: a.art, modell: 'unknown', varfor: f.varfor };
+      else {
+        const renderade = Array.isArray(a.renderade) ? a.renderade.filter(x => STODVARDEN.has(x)) : [];
+        const saknade = st.teman.filter(x => !renderade.includes(x));
+        rad = saknade.length
+          ? { art: a.art, familj: f.id, modell: 'ejRenderad', stod: st.teman, renderade,
+              varfor: 'deklarerat stod for ' + st.teman.join(' och ') + ' men ' +
+                saknade.join(', ') + ' har inte renderats och matts' }
+          : { art: a.art, familj: f.id, modell: 'dualThemeRender', stod: st.teman, renderade,
+              varfor: 'temakapabel kalla renderad och matt i ' + renderade.join(' och ') };
+      }
+    } else if (harInstans) {
+      if (t.tema === 'neutral') rad = { art: a.art, modell: 'neutral', varfor: 'deklarerad theme-neutral' };
+      else if (f.form !== 'giltig') rad = { art: a.art, modell: 'unknown', varfor: f.varfor };
+      else rad = { art: a.art, familj: f.id, modell: 'explicitInstans', tema: t.tema };
+    } else rad = { art: a.art, modell: 'unknown', varfor: t.varfor };
+    rader.push(rad);
+    if (rad.familj) { if (!perFamilj.has(rad.familj)) perFamilj.set(rad.familj, []); perFamilj.get(rad.familj).push(rad); }
+  }
+
+  const familjer = [];
+  for (const [id, v] of perFamilj) {
+    const instanser = v.filter(x => x.modell === 'explicitInstans');
+    const duala = v.filter(x => x.modell === 'dualThemeRender');
+    const ejRend = v.filter(x => x.modell === 'ejRenderad');
+    // Bade en explicit mork artefakt och en dual-render for samma familj:
+    // vem ager det morka tillstandet? Fail closed tills det ar bestamt.
+    if (duala.length && instanser.length)
+      { familjer.push({ familj: id, status: 'ambiguous',
+        varfor: 'bade explicit artefakt och dual render for samma familj — agarskapet ar inte bestamt',
+        medlemmar: v.map(x => x.art) }); continue; }
+    if (duala.length > 1)
+      { familjer.push({ familj: id, status: 'ambiguous',
+        varfor: duala.length + ' temakapabla kallor i samma familj', medlemmar: duala.map(x => x.art) }); continue; }
+    if (duala.length === 1) {
+      const d = duala[0];
+      familjer.push(d.renderade.includes('light') && d.renderade.includes('dark')
+        ? { familj: id, status: 'covered', modell: 'dualThemeRender', kalla: d.art, renderade: d.renderade }
+        : { familj: id, status: 'coverageGap', modell: 'dualThemeRender', kalla: d.art,
+            varfor: 'renderad bara i ' + d.renderade.join(', ') });
+      continue; }
+    if (ejRend.length) { familjer.push({ familj: id, status: 'coverageGap', modell: 'ejRenderad',
+      varfor: ejRend[0].varfor, medlemmar: ejRend.map(x => x.art) }); continue; }
+    const per = new Map();
+    for (const x of instanser) { if (!per.has(x.tema)) per.set(x.tema, []); per.get(x.tema).push(x); }
+    if ([...per.values()].some(l => l.length > 1))
+      { familjer.push({ familj: id, status: 'ambiguous',
+        varfor: 'flera artefakter deklarerar samma tema i familjen', medlemmar: instanser.map(x => x.art) }); continue; }
+    const l = per.get('light'), d = per.get('dark');
+    if (l && d) familjer.push({ familj: id, status: 'covered', modell: 'explicitPair',
+      light: l[0].art, dark: d[0].art });
+    else if (l) familjer.push({ familj: id, status: 'coverageGap', modell: 'lightOnly', art: l[0].art });
+    else if (d) familjer.push({ familj: id, status: 'coverageGap', modell: 'darkOnly', art: d[0].art });
+  }
+
+  const rakna = f => familjer.filter(f).length;
+  return {
+    artefakter_st: artefakter.length,
+    familjer_st: familjer.length,
+    covered_st: rakna(x => x.status === 'covered'),
+    covered_explicitPair_st: rakna(x => x.modell === 'explicitPair' && x.status === 'covered'),
+    covered_dualThemeRender_st: rakna(x => x.modell === 'dualThemeRender' && x.status === 'covered'),
+    coverageGap_st: rakna(x => x.status === 'coverageGap'),
+    lightOnly_st: rakna(x => x.modell === 'lightOnly'),
+    darkOnly_st: rakna(x => x.modell === 'darkOnly'),
+    ambiguous_st: rakna(x => x.status === 'ambiguous'),
+    unknown_artefakter_st: rader.filter(x => x.modell === 'unknown').length,
+    neutral_st: rader.filter(x => x.modell === 'neutral').length,
+    familjer, rader,
+  };
+}
