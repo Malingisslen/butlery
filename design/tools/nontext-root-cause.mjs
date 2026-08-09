@@ -38,7 +38,9 @@ const KALLPROB = `(() => {
   // Vilken deklaration satte fargen? Attribut, inline-stil eller arv.
   function fgKalla(el, typ) {
     if (typ === 'ram') { const s = stilrad(el);
-      const m = s.match(/border(?:-top)?\\s*:\\s*[^;]*/i) || s.match(/border-top-color\\s*:\\s*[^;]*/i);
+      // border-color maste med: den overskrider klassens border-shorthand.
+      const m = s.match(/border-color\s*:\s*[^;]*/i) || s.match(/border-top-color\s*:\s*[^;]*/i) ||
+        s.match(/border(?:-top)?\s*:\s*[^;]*/i);
       return { satt: m ? m[0].trim() : '(ingen inline border)', var: m ? 'inline style' : 'css-regel',
         varde: getComputedStyle(el).borderTopColor }; }
     if (typ === 'fyllning' || typ === 'thumb') { const s = stilrad(el);

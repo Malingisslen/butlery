@@ -1372,8 +1372,8 @@
    "population": "A",
    "bararroll": "componentIdentityCarrier",
    "typ": "ram",
-   "mekanism": "css-regel: (ingen inline border)  mot  rgb(245, 244, 237)",
-   "kalldeklaration_forgrund": "(ingen inline border)",
+   "mekanism": "inline style: border-color: rgb(230, 234, 217)  mot  rgb(245, 244, 237)",
+   "kalldeklaration_forgrund": "border-color: rgb(230, 234, 217)",
    "kalldeklaration_bakgrund": [
     "(css-regel eller arv)"
    ],

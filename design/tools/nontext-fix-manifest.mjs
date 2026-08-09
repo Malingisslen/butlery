@@ -98,7 +98,12 @@ function ljushetsforslag(fg, bg) {
   return null;
 }
 
-const DELADE = new Set(['.empty', '.sc-skeleton']);
+// En klass ar en DELAD implementation for FARGEN bara om klassen faktiskt
+// deklarerar den OCH ingen inline-deklaration overskrider den. .empty ser
+// delad ut, men varje element har en egen inline border-color, sa klassens
+// farg anvands aldrig. Provet ar kallans deklaration, inte klassnamnet.
+const KLASSREGEL = new Set(['empty', 'sc-skeleton']);
+const utanInline = d => String(d).startsWith('(ingen inline');
 
 const manifest = rc.rotorsaker.map(r => {
   const fg = parse(r.forgrund[0]), bg = parse(r.bakgrund[0]);
@@ -112,7 +117,8 @@ const manifest = rc.rotorsaker.map(r => {
   const p = kalla && motpart ? palettforslag(kalla.slice(0, 3), motpart.slice(0, 3)) : null;
   const j = !p && kalla && motpart ? ljushetsforslag(kalla.slice(0, 3), motpart.slice(0, 3)) : null;
   const forslag = p || j;
-  const delad = r.klasser.some(k => k.split(/\s+/).some(x => DELADE.has('.' + x)));
+  const delad = utanInline(r.kalldeklaration_forgrund) &&
+    r.klasser.some(k => k.split(/\s+/).some(x => KLASSREGEL.has(x)));
 
   // Vilka ANDRA verifierade element traffas av exakt samma skrivning? Bara de
   // som delar implementation. Upprepade strangar ar separata skrivstallen.

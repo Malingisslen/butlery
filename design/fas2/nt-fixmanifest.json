@@ -5,8 +5,8 @@
  "rotorsaker_st": 29,
  "verifierade_fynd_st": 154,
  "source_occurrences_totalt": 3137,
- "write_scope_totalt": 147,
- "shared_implementations_st": 2,
+ "write_scope_totalt": 152,
+ "shared_implementations_st": 1,
  "utan_forslag_st": 1,
  "manifest": [
   {
@@ -966,11 +966,11 @@
    "nuvarande_kvot": 1.11,
    "kvot_min": 1.11,
    "kvot_max": 1.11,
-   "kalldeklaration": "(ingen inline border)",
+   "kalldeklaration": "border-color: rgb(230, 234, 217)",
    "source_occurrence_population_st": null,
-   "write_scope_st": 1,
-   "write_scope_grund": "bevisat delad implementation — en enda deklaration andras",
-   "shared_implementation": true,
+   "write_scope_st": 6,
+   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
+   "shared_implementation": false,
    "klasser": [
     "empty"
    ],
@@ -979,9 +979,9 @@
    "forslagets_ursprung": "minsta ljushetsjustering med bevarad kulor",
    "forvantad_kvot": 3.07,
    "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "alla instanser som klassen traffar — maste efterverifieras",
+   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
    "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "klassen kan traffa element som i dag klarar kravet; efterverifiering kravs",
+   "risk_ovriga_nontext": "begransad till de listade fynden",
    "fynd": [
     {
      "art": "vmbtom",
