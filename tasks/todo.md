@@ -259,6 +259,58 @@ particular) live here, and here only.
       fix ar en schemaandring, och just nar ett utkast behovs (processen dog)
       ar OCR-cachen tom, sa omkorningen kan bli ett BETALT anrop. Eget arende.
 
+- [x] Steg 9: kantbeskarningen (`lib/services/ocr/edge_crop.dart`). KLART,
+      d034c5ece pa main. Slapper grannsidans remsa vid bildkanten.
+
+- [x] Steg 10: `withoutOrphanTail` — den foraldralosa svansrubriken.
+      Godkand av Malin 2026-08-09 efter en fall-for-fall-granskning MOT BILDERNA.
+      Planens andra halva ligger i `tasks/butlery-1816-orphan-tail-plan.md`.
+
+      **Grinden i planens ⑤ stangde: bara `drop`-bandet byggs.** Bandet 120-200
+      lamnas som `none` och UI-halvan (`uncertainIndices`, ARB-strangen,
+      widget-testet) byggs darfor inte alls, precis som planen foreskrev.
+
+      **De nio svansarna i bandet ar OMLASTA 2026-08-09, mot fotona den har
+      gangen.** Verdiktet star, skalet var fel: `Chokladkram` ar ett HELT litet
+      recept (titel, tva ingredienser, en not, allt synligt pa sidan) och
+      `I stallet for sas` ar en ny avsnittsrubrik med eget stycke och punktlista.
+      Ingendera ar en "underrubrik inne i ett recept", som forsta granskningen
+      pastod. Ratt skal: **i bandet finns lasbar text under rubriken; under 120
+      tecken finns bara sonderklippt skrap.** Teckenbudgeten ar en PROXY for den
+      egenskapen — det ar den formuleringen som ska overleva, inte den gamla.
+
+      **Alla tio sidor som regeln ror ar granskade mot bild: 10 av 10 ratt.**
+      En tidigare textbaserad granskning sa 8 av 10; den var fel pa bada, och
+      Malin fangade det. Tva av de tio ar inte ens ur kokboken — det ar
+      baksidestexten pa en annan bok som ligger bakom pa bordet.
+
+- [ ] Steg 11 (NYTT, eget arende): **korpusens facit har ett systematiskt fel.**
+      Upptackt 2026-08-09 nar Malin papekade att facitet ar granskat av MIG, inte
+      av henne. Halva recept som bildkanten skurit av ar inskrivna som HELA
+      recept: 2 av 7 handgranskade sidor, minst 12 av alla 242 verifierade enligt
+      en maskinell screening (som bara ser sista meningen och titeln, alltsa ett
+      GOLV). Exempel: `Mixade vitaminer` (1 instruktion, avhuggen mitt i),
+      `Annas fisks` (titeln sjalv ar avhuggen, 24 instruktioner ur en spalt som
+      ligger utanfor bilden), `Dillstuvad potatis` + `Hasselbackspotatis` pa
+      samma sida som ett komplett recept.
+
+      **Vad som HALLER:** de recept som ligger helt pa bilden ar korrekt
+      avskrivna (inga fel mangder, inga tappade steg), en fyrareceptssida hade
+      alla fyra inskrivna, och facitet ar verkligen handrattat — 158 av 158
+      jamforbara skiljer sig fran parserns egen gissning, alltsa noll stampling.
+
+      **Vad det gor med siffrorna:** recall BELONAR appen for att behalla
+      avskuren text, eftersom facitet pastar att den ar ett riktigt recept.
+      Klippet tar bort exakt sadan text och straffas alltsa for att gora ratt —
+      de 0,02 procentenheterna "forlorad riktig text" ar OVERDRIVNA, inte
+      underskattade. Jamforelser mellan tva varianter (steg 8, enblocksregeln)
+      matte samma facit pa bada sidor och star sig; de ABSOLUTA procenttalen ar
+      mjukare an de ser ut.
+
+      Atgard: markera varje avskuret fragment med ett eget falt i stallet for att
+      radera det, sa kan matningen valja att rakna dem eller inte. Blockerar inte
+      steg 10.
+
 ---
 
 # Butlery — Plan: låt sidans utseende följa med från kameran

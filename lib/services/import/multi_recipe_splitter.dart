@@ -14,8 +14,24 @@ import 'package:butlery/services/ocr/text_layout.dart';
 ///
 /// Pure-compute, no async, no Firebase — intentionally NOT a `BaseService`
 /// (same rationale as `ingredient_categorizer.dart`). When it cannot find ≥2
-/// confident blocks it returns `[input]` unchanged, so the single-recipe import
-/// path is guaranteed untouched.
+/// confident blocks it returns `[input]` unchanged — it never hands back a
+/// single, SHORTENED block.
+///
+/// That is a narrow promise, and the narrowness matters. When it DOES split it
+/// drops page furniture and blocks that fail their tests. On the LAYOUT path
+/// that loss is bounded by the discard budget; on the TEXT path it is NOT
+/// bounded at all — everything before the first boundary goes, and so does any
+/// block failing `_isCompleteRecipeBlock`, at any size. A whole recipe whose
+/// title the detector refused can vanish there. So "the splitter never deletes
+/// text" is false; "the splitter never returns one shortened block" is what
+/// holds.
+///
+/// And it is a promise about `split`, not about the import. Since 2026-08-08 the
+/// caller may hand it less: `ImportManager.autoParseMulti` runs
+/// `withoutOrphanTail` first, which cuts a heading the camera frame separated
+/// from its own recipe off the end of a page. The trim sits there rather than
+/// here precisely so this contract survives — and so the corpus arm can measure
+/// the trim against an untrimmed column.
 class MultiRecipeSplitter {
   /// How many following non-empty lines to scan for an ingredient cluster when
   /// deciding whether a title-like line really opens a recipe.

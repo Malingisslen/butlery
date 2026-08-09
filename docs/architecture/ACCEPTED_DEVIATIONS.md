@@ -931,4 +931,97 @@ off — the code default — `OCRExtractionService` ships `providerText`, which 
 has no geometry to crop against. So the built half is dark by default until that flag flips,
 by construction rather than by oversight.
 
-Re-open only with a corpus that contains the case, not with an argument that it must exist.
+**CORRECTED the same day, 2026-08-08.** This entry originally closed on "re-open only with a
+corpus that contains the case". The corpus DOES contain it, and the corpus is Malin's own
+Pixel photos (`PXL_*.jpg`, thumb and cushion visible in frame) rather than the scans an
+earlier draft called them — a claim that was never checked against the images and was simply
+wrong.
+
+Measured on ALL 247 stored captures — a one-off probe, not the eval arms, which score only
+the 181 pages that carry gold: **19 of 247 end their import on a next-recipe heading**
+(`Inlagd sill`, `Mandelforell`, `Annas hurtbullar`, plus frame-cut titles like `Provensa`,
+`Köttsa/l`). All 19 arrive because the layout path declined — but the gate this entry tested
+is not the one that declines:
+
+| why the layout path gave up on those 19 | pages |
+|---|---|
+| `flat.length < 2` — only the orphan title was detected | **14** |
+| the discard budget was blown | 3 |
+| only one block survived — **the gate measured above** | **2** |
+
+So the verdict stands for the single-block rule and is worth what it says, but it covers 2 of
+19 cases. The generalisation it invited — "the case is not there" — was false, and it would
+have stopped the next session from looking.
+
+**What the symptom actually needs is a TRIM, not a split** — and that is now BUILT.
+`withoutOrphanTail` (`lib/services/import/layout/orphan_tail.dart`) cuts the page at its
+last detected heading when under 120 characters follow it. `ImportManager` applies it
+before `split`, so `MultiRecipeSplitter` keeps its "never hands back a single SHORTENED
+block" contract untouched (it still drops furniture when it splits — a separate promise,
+stated on `split`) and `corpus_split_eval.dart --trim` can still compare two columns.
+Shipped: 10 pages trimmed, precision 66.64 -> 66.77 %, recall 91.54 -> 91.52 %, right
+block counts unchanged at 139. `--trim` now prints WHICH ten pages, with the heading text
+and the character count under it, so the list in `orphan_tail.dart` is verifiable by
+command rather than by trust.
+
+**The recall column is biased AGAINST this rule — BUT-1818, filed the same day.** The gold
+records frame-cut half recipes as complete ones (>=12 of 242 verified entries, by a screen
+that only inspects the last instruction and the title, so a floor). Recall therefore scores
+retained frame-cut debris as a hit, and the trim is penalised for removing exactly what it
+exists to remove. Read `91.54 -> 91.52` as an UPPER BOUND on the content cost, and the 200
+row's `-> 91.33 %` as the figure most exposed. None of the verdicts in this entry rest on
+that column: all 10 shipped tails and all 9 band tails were graded against the
+PHOTOGRAPHS. Comparisons between two arms (column ordering, the single-block rule) scored
+the same gold on both sides and survive; the ABSOLUTE percentages are softer than they look.
+
+**The gate on the 120-200 band closed.** That band was designed as a third outcome — show
+the tail unticked in the picker so Malin could judge it — and the plan pre-committed to
+reading the nine tails by hand first, with a sharp threshold: one tail that would lose real
+content and the band stays off.
+
+**CORRECTED 2026-08-09, and the correction is the more useful record.** The first reading
+was done on 2026-08-08 from the bare TEXT and reported two "subheadings inside a recipe"
+(`I stället för sås`, `Chokladkräm`). Both labels were wrong. Re-read against the
+PHOTOGRAPHS the next day: `Chokladkräm` is a whole small recipe — title, two ingredients, a
+parenthetical note, all of it on the page — so cutting it would delete a recipe outright;
+`I stället för sås` is a new SECTION's display heading with its own paragraph and bullet
+list under it. Neither is a subheading. The verdict survived; the reason did not.
+
+The right reason is simpler and covers all nine rather than two: **every tail in the band
+carries readable content under the heading** — a whole recipe (`Chokladkräm`), an intro
+paragraph (`Annas hurtbullar`), the start of the next recipe (`Inlagd sill`,
+`Mixade vitaminer`, `Hallonsmoothie`, plus frame-cut `Provensa`, `Pott`, `Indi`), or a tip
+section with a list (`I stället för sås`). Below 120 characters the corpus holds only
+frame-cut debris. The character budget is a PROXY for that distinction and nothing more; do
+not re-derive it from the retracted "subheading" wording. So the band stays `none`, and the
+UI half it existed for — `uncertainIndices` through the viewmodel to the picker, an ARB
+string, a widget test — was never built rather than shipped dark and untriggerable.
+
+**The same text-only reading also mis-graded the SHIPPED window, in Malin's favour and
+against the feature.** It reported 8 of 10 correct, calling the two section headings
+(`Olika fyllningar med vaniljkräm`, `Djupfrysning av tårtor`) in-recipe subheadings. Malin
+pushed back on the report — "i dessa båda fall ser kapningen rätt ut för mig" — and she was
+right. All ten were then opened as images: **10 of 10 are correct cuts**, and two of them
+(`Sina ingredienser`, `Sina ingr`) are not from the cookbook at all but from the back-cover
+blurb of a different book lying on the table behind it. The per-case record with the
+photographs is `claude-reports/butlery/2026-08-09-klippet-fall-for-fall.html`.
+
+**One behaviour deliberately left unpinned, with its failure mode recorded rather than
+guessed.** `ImportManager` hands `split` the TRIMMED layout, and nothing at the unit,
+wiring or corpus level fails if that is swapped for the stale one — the unit tests never
+call the manager, the eval arm builds and passes its own trimmed pair and never calls
+`autoParseMulti` at all — so it does not measure that pairing either — and the wiring spy sees
+only text. Measured 2026-08-08: with the stale layout, `matchesLineCountOf` refuses the
+mismatched pair and `split` returns byte-identically to a run with no geometry at all. So
+the whole effect is that the layout path goes DARK on exactly the pages the trim fires on
+— silent, but fail-safe: the output degrades to today's shipped text-rule behaviour and
+nothing new is lost. A fixture that would pin it exists (two headings whose blocks each
+clear `_minLayoutBlockChars` and carry an instruction signal, plus the tail; the tell is
+which row the SECOND block opens on, never the block count), and it was priced rather than
+written. Write it if this ever stops being fail-safe.
+
+**Re-open the band when the picker can MERGE two blocks (BUT-1817).** The whole reason a
+wrong cut is expensive is that `BatchImportPreview` cannot rejoin what it was handed. Make
+that undoable and this trade is a different one.
+
+Re-open the single-block rule only with a new measurement of THAT gate.

@@ -8,6 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/import/layout/orphan_tail.dart';
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
@@ -600,8 +601,21 @@ class ImportManager {
   /// [MultiRecipeSplitter] segments the text; when it finds a single recipe it
   /// returns `[input]`, so this collapses to exactly the existing
   /// [autoParseOnly] behaviour (wrapped in a 1-element [BatchImportResult]).
-  /// The single-recipe import path is therefore unchanged. Callers that want a
-  /// picker check `successfulRecipes.length > 1`.
+  /// Callers that want a picker check `successfulRecipes.length > 1`.
+  ///
+  /// **The single-recipe path is no longer byte-unchanged, and that is
+  /// deliberate.** This method now trims an orphan trailing heading off the
+  /// input before splitting (`withoutOrphanTail`), so a page whose photo caught
+  /// the next recipe's title loses that title. The splitter keeps its own
+  /// contract — it still never hands back one shortened block; what it is handed
+  /// can now be shorter. (It does drop furniture when it splits — bounded by
+  /// the discard budget on the LAYOUT path only, and NOT bounded at all on the
+  /// text path, where a block failing its tests vanishes at any size; that is a
+  /// separate promise, stated on `split`.) Trimming
+  /// happens HERE rather than inside
+  /// `split` for two reasons: the splitter's guarantee is worth keeping, and
+  /// the eval arm can only measure the trim if it sits outside `split`.
+  /// A run without a [layout] is still byte-identical to before.
   Future<BatchImportResult> autoParseMulti(
     String input, {
     ImportStrategy? preferredStrategy,
@@ -611,7 +625,22 @@ class ImportManager {
     // [layout] is where the words sat on the page, when a reader measured
     // them. Only the photo path can supply it; the paste path never can, so it
     // stays optional and null reproduces today's behaviour exactly.
-    final blocks = MultiRecipeSplitter().split(input, layout: layout);
+    //
+    // Trim first, split second. A heading the frame cut off from its own
+    // recipe is not this page's content, and removing it needs no split — so
+    // it also reaches the pages where the splitter declines for want of a
+    // second heading, which no change to the splitting rules could. How many
+    // pages that is, and over which population, lives in `withoutOrphanTail`'s
+    // own doc and is deliberately not restated here: it is two different
+    // measurements over two different populations, and copying either one out
+    // is how three drifting copies of a figure get made.
+    // `withoutOrphanTail` returns the originals untouched whenever it cannot
+    // tell.
+    final trimmed = withoutOrphanTail(input, layout);
+    final blocks = MultiRecipeSplitter().split(
+      trimmed.text,
+      layout: trimmed.layout,
+    );
 
     final results = <ImportManagerResult>[];
     final recipes = <Recipe>[];

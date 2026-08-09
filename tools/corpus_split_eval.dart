@@ -27,8 +27,9 @@
 ///
 /// `ocr.txt` and `layout-winocr.json` come from DIFFERENT engines (the paid
 /// tier's text, Windows' offline geometry — see `CorpusPaths.ocrLayout`), so a
-/// heading index from the capture does not address the stored text: 0 of 247
-/// pages are byte-identical and only 34 share a row count. Feeding the two
+/// heading index from the capture does not address the stored text: as of
+/// 2026-08-08, 0 of 247 pages are byte-identical and only 34 share a row count
+/// (the corpus is live, so date any count taken from it). Feeding the two
 /// together would measure `matchesLineCountOf` refusing them, not the splitter.
 ///
 /// So `--layout` derives the input from the capture itself — `DocumentLayout
@@ -51,8 +52,26 @@
 /// sliver rarely changes how many blocks come out, it changes what is IN them —
 /// so this arm scores gold-token recall and precision as well as the block
 /// count, before and after cropping the same capture. It is where every figure
-/// in `edge_crop.dart`'s doc and in the BUT-1816 deviation entry comes from, so
-/// those stay re-derivable after the throwaway probes are gone.
+/// in `edge_crop.dart`'s doc comes from, so those stay re-derivable after the
+/// throwaway probes are gone. (The BUT-1816 deviation entry draws on THREE arms,
+/// not this one alone: its block counts come from `--layout`, its crop figures
+/// from here, its trim figures from `--trim`.)
+///
+/// ## `--trim`: scoring the orphan-tail cut
+///
+///   dart run tools/corpus_split_eval.dart --trim
+///
+/// Implies `--edge-crop`, because the BEFORE column has to be what production
+/// stores WHEN GEOMETRY IS ATTACHED, i.e. with `enable_layout_recipe_split`
+/// on. With the flag off — the code default — production ships uncropped
+/// `providerText` and NEITHER column describes that run. Scores
+/// `withoutOrphanTail` — dropping a heading the frame cut off from its own
+/// recipe — before and after, over the same capture.
+///
+/// It can only compare two columns because that function lives OUTSIDE
+/// `MultiRecipeSplitter.split`, in `ImportManager`. Move it inside and both
+/// columns trim, the difference vanishes, and the gate passes while measuring
+/// nothing. Two drafts had that shape.
 ///
 /// ## Size
 ///
@@ -72,6 +91,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:butlery/services/import/layout/orphan_tail.dart';
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
 import 'package:butlery/services/ocr/edge_crop.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
@@ -79,7 +99,8 @@ import 'package:butlery/services/ocr/text_layout.dart';
 import 'corpus/corpus_paths.dart';
 
 void main(List<String> args) {
-  final edgeCropMode = args.contains('--edge-crop');
+  final trimMode = args.contains('--trim');
+  final edgeCropMode = args.contains('--edge-crop') || trimMode;
   // The crop only exists on the geometry path, so its arm implies `--layout`'s
   // loading. Block counts alone cannot see it — it changes block CONTENT — which
   // is why this arm scores tokens instead.
@@ -132,14 +153,24 @@ void main(List<String> args) {
     stdout.writeln(crop.text);
   }
 
+  if (trimMode) {
+    final trim = _formatTrim(pages, splitter);
+    report['trimArm'] = trim.summary;
+    stdout.writeln(trim.text);
+  }
+
   final ts = DateTime.now().toIso8601String().replaceAll(':', '-');
-  final suffix = edgeCropMode ? 'edge-crop' : (layoutMode ? 'layout' : 'text');
+  final suffix = trimMode
+      ? 'trim'
+      : (edgeCropMode ? 'edge-crop' : (layoutMode ? 'layout' : 'text'));
   final file = File('${paths.reportsDir()}/split-eval-$suffix-$ts.json');
   file.parent.createSync(recursive: true);
   report['generatedAt'] = ts;
-  report['arm'] = edgeCropMode
-      ? 'winocr-text, paired + edge-crop'
-      : (layoutMode ? 'winocr-text, paired' : 'ocr.txt, text rules');
+  report['arm'] = trimMode
+      ? 'winocr-text, paired + edge-crop + orphan-tail trim'
+      : (edgeCropMode
+            ? 'winocr-text, paired + edge-crop'
+            : (layoutMode ? 'winocr-text, paired' : 'ocr.txt, text rules'));
   file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(report));
   stdout.writeln('Report written: ${file.path}');
 }
@@ -318,6 +349,158 @@ void main(List<String> args) {
       'bandRecallAfter': bandAfter,
       'bandEmittedBefore': bandEmitBefore,
       'bandEmittedAfter': bandEmitAfter,
+    },
+  );
+}
+
+/// The `--trim` arm: what dropping an orphan trailing heading does to the TEXT.
+///
+/// Measures on top of the shipped edge crop, because that is what production
+/// stores whenever geometry is attached (flag on; see the file header for the
+/// flag-off caveat) — so this arm implies `--edge-crop`, which implies
+/// `--layout`.
+///
+/// It can only compare two columns because `withoutOrphanTail` lives OUTSIDE
+/// `MultiRecipeSplitter.split`, in `ImportManager`. Move it inside `split` and
+/// both columns trim, the difference vanishes, and the gate below would pass by
+/// construction while measuring nothing. That is not hypothetical — it was the
+/// shape of two drafts.
+({String text, Map<String, dynamic> summary}) _formatTrim(
+  List<_Page> pages,
+  MultiRecipeSplitter splitter,
+) {
+  var scored = 0, trimmed = 0;
+  var goldTot = 0, hitBefore = 0, hitAfter = 0, emitBefore = 0, emitAfter = 0;
+  var alignedBefore = 0, alignedAfter = 0;
+  // An aggregate "139 -> 139" cannot tell "nothing moved" from "one page fixed,
+  // one broken" — and this file's own header says that average is exactly what
+  // must never hide the trade. `_formatPaired` already prints fixed/broke; so
+  // does this arm now.
+  var fixed = 0, broke = 0;
+  // WHICH pages, not just how many. `orphan_tail.dart` documents all ten tails
+  // by name and character count, and until this list existed those names came
+  // from a throwaway probe that was then deleted — the exact defect the header
+  // of this file and `edge_crop.dart` both name in their own words ("a number
+  // in a doc that no shipped command emits"). Now `--trim` emits them.
+  final trimmedPages = <({String id, String head, int chars})>[];
+
+  for (final page in pages) {
+    final doc = page.layout;
+    final gold = page.goldTokens;
+    if (doc == null || gold.isEmpty) continue;
+    final single = doc.pages.first;
+    if (single == null) continue;
+
+    // Both columns start from what tier 0 actually stores: edge-cropped.
+    final croppedDoc = DocumentLayout([cropEdgeBleed(single)]);
+    final baseText = croppedDoc.text;
+    if (baseText == null) continue;
+
+    final cut = withoutOrphanTail(baseText, croppedDoc);
+    if (!identical(cut.text, baseText)) {
+      trimmed++;
+      // The tail is a strict suffix, so its first non-blank row is the heading
+      // that was cut and the rest is what the budget counted.
+      final tailRows = baseText
+          .substring(cut.text.length)
+          .split('\n')
+          .map((r) => r.trim())
+          .where((r) => r.isNotEmpty)
+          .toList();
+      trimmedPages.add((
+        id: '${page.bookSlug}/${page.imageId}',
+        head: tailRows.isEmpty ? '(blank)' : tailRows.first,
+        chars: tailRows.skip(1).fold<int>(0, (a, r) => a + r.length),
+      ));
+    }
+    scored++;
+
+    final before = splitter.split(baseText, layout: croppedDoc);
+    final after = splitter.split(cut.text, layout: cut.layout);
+    final rightBefore = before.length == page.goldRecipes;
+    final rightAfter = after.length == page.goldRecipes;
+    if (rightBefore) alignedBefore++;
+    if (rightAfter) alignedAfter++;
+    if (!rightBefore && rightAfter) fixed++;
+    if (rightBefore && !rightAfter) broke++;
+
+    final tB = _tokens(before.join('\n')), tA = _tokens(after.join('\n'));
+    goldTot += gold.length;
+    hitBefore += tB.intersection(gold).length;
+    hitAfter += tA.intersection(gold).length;
+    emitBefore += tB.length;
+    emitAfter += tA.length;
+  }
+
+  String pct(int a, int b) =>
+      b == 0 ? '   -  ' : '${(100 * a / b).toStringAsFixed(2)} %';
+
+  final b = StringBuffer()
+    ..writeln('\nOrphan-tail trim vs gold tokens — $scored pages')
+    ..writeln()
+    ..writeln(
+      '  Measured ON TOP of the shipped edge crop, so the BEFORE column',
+    )
+    ..writeln('  is what tier 0 stores WHENEVER GEOMETRY IS ATTACHED, i.e.')
+    ..writeln('  with enable_layout_recipe_split ON. With the flag off — the')
+    ..writeln('  code default — production ships uncropped providerText with')
+    ..writeln('  no geometry, and NEITHER column describes that run. Same')
+    ..writeln('  PROXY caveat: the geometry is the winocr capture, not ML Kit.')
+    ..writeln()
+    ..writeln(
+      '  recall is biased AGAINST the trim — the gold records frame-cut',
+    )
+    ..writeln('  half recipes as complete ones (BUT-1818), so retained debris')
+    ..writeln('  scores as a hit. Read the recall delta as an upper bound.')
+    ..writeln()
+    ..writeln('  trimmed pages        : $trimmed')
+    ..writeln(
+      '  right block count    : $alignedBefore -> $alignedAfter '
+      'of $scored   (fixed $fixed, broke $broke)',
+    )
+    ..writeln()
+    ..writeln('                       before     after')
+    ..writeln(
+      '    recall             : ${pct(hitBefore, goldTot)}    '
+      '${pct(hitAfter, goldTot)}',
+    )
+    ..writeln(
+      '    precision          : ${pct(hitBefore, emitBefore)}    '
+      '${pct(hitAfter, emitAfter)}',
+    )
+    ..writeln('    tokens emitted     : $emitBefore -> $emitAfter');
+
+  if (trimmedPages.isNotEmpty) {
+    b
+      ..writeln()
+      ..writeln('  every page trimmed, and what came off it:');
+    for (final t in trimmedPages..sort((x, y) => x.chars.compareTo(y.chars))) {
+      b.writeln(
+        '    ${t.chars.toString().padLeft(3)} chars after  '
+        '${t.head.length > 34 ? '${t.head.substring(0, 33)}…' : t.head}'
+        '   ${t.id}',
+      );
+    }
+  }
+
+  return (
+    text: b.toString(),
+    summary: {
+      'scoredPages': scored,
+      'trimmedPages': trimmed,
+      'trimmedDetail': [
+        for (final t in trimmedPages)
+          {'page': t.id, 'heading': t.head, 'charsAfter': t.chars},
+      ],
+      'alignedBefore': alignedBefore,
+      'alignedAfter': alignedAfter,
+      'pagesFixed': fixed,
+      'pagesBroken': broke,
+      'goldTokens': goldTot,
+      'recallBefore': hitBefore,
+      'recallAfter': hitAfter,
+      'emittedBefore': emitBefore,
+      'emittedAfter': emitAfter,
     },
   );
 }
@@ -507,8 +690,13 @@ bool _isVerified(String goldPath) {
 
 /// One stored capture as a single-page document. Every corpus image is one
 /// photographed page, so the multi-page arithmetic in `DocumentLayout` is NOT
-/// exercised here — that gap is covered by a synthetic two-page unit test and
-/// can never be covered by this corpus.
+/// exercised here, and never can be by this corpus.
+///
+/// The gap is covered by synthetic two-page unit tests — plural, and worth
+/// counting rather than assuming: `orphan_tail_test.dart` pins the last-page
+/// rule, the flat-index offset, and the first-row guard, each with its own
+/// two-page fixture. A single one covered only the first two, and the third
+/// looked redundant because of it.
 DocumentLayout? _loadLayout(String path) {
   final f = File(path);
   if (!f.existsSync()) return null;

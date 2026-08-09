@@ -88,7 +88,7 @@ Already modular services or well-organized modules within service facades. Furth
 |------|-------|--------|
 | `personal_recipe_module.dart` | 1,100 | Recipe CRUD + tagging + sync — methods deeply coupled via shared state |
 | `unified_recipe_service.dart` | 1182 | Service facade coordinating 4 modules |
-| `import_manager.dart` | 888 | Import pipeline orchestrator — multi-format, multi-tier |
+| `import_manager.dart` | 1,111 | Import pipeline orchestrator — multi-format, multi-tier |
 | `social_recipe_coordinator.dart` | 706 | Social recipe sharing/rating coordinator |
 | `unified_menu_service.dart` | 708 | Menu service facade |
 | `recipe_discovery_service.dart` | 655 | Focused discovery/recommendation module; explicit "does not contain" SRP comment |
@@ -193,7 +193,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `edit_recipe_view.dart` | 707 | Recipe editing screen (drifted +29 from 639 — BUT-550 reconciled 2026-05-28) |
 | `user_profile_edit_view.dart` | 390 | Facade-extracted to `lib/views/social/user_profile_edit/` per BUT-1154 (was 832, now 390 — well under 500; kept in table for history) |
 | `ocr_extraction_service.dart` | 1,253 | OCR-based recipe image extraction (+121 for the free on-device tier 0, 2026-08-02) |
-| `text_layout.dart` (`lib/services/ocr/`) | 550 | The OCR page model: pure value types plus the contract prose every consumer defers to (line-index-is-row-number, the sanitize law, capture-vs-reading order, which figures are proxy). ~55 % is doc comment, and that is the point — the split path has already shipped four false comments about this file, so the prose is load-bearing. `glyph_metrics.dart` was extracted from it 2026-08-07; what remains is one cohesive contract that a facade would only scatter. 2026-08-08 |
+| `text_layout.dart` (`lib/services/ocr/`) | 558 | The OCR page model: pure value types plus the contract prose every consumer defers to (line-index-is-row-number, the sanitize law, capture-vs-reading order, which figures are proxy). ~55 % is doc comment, and that is the point — the split path has already shipped four false comments about this file, so the prose is load-bearing. `glyph_metrics.dart` was extracted from it 2026-08-07; what remains is one cohesive contract that a facade would only scatter. 2026-08-08 |
 | `auth_view.dart` | 780 | Login/signup screen (drifted +61 from 631 — BUT-550 reconciled 2026-05-28) |
 | `smart_import_view.dart` | 383 | Facade-extracted to `lib/views/smart_import/` per BUT-1154 (was 817, now 383 — well under 500; kept in table for history) |
 | `recipe_form_viewmodel.dart` | 729 | Recipe form VM — delegates to 6 managers |
@@ -212,7 +212,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `menu_viewmodel.dart` | 608 | Weekly menu VM |
 | `receive_share_view.dart` | 562 | Incoming share intent handler |
 | `shopping_member_management_dialog.dart` | 562 | Shopping list member management dialog |
-| `photo_import_view.dart` | 610 | Photo import screen |
+| `photo_import_view.dart` | 648 | Photo import screen |
 | `social_invitation_components.dart` | 520 | Pure facade delegating to focused invitation sub-modules |
 | `social_builder_components.dart` | 512 | Pure static facade delegating to SocialFacade; no direct logic |
 | `friend_category_manager.dart` | 519 | **candidate**: stateful widget mixing friend-selection and category-management UI — splittable into picker + management sub-widgets |

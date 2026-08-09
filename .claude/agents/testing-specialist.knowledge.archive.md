@@ -16250,3 +16250,1264 @@ End-of-round hashes:
 `photo_import_layout_thread_test.dart f31e81334b4e0db06fd80cb90ac6ef32`.
 Probe deleted; `git status test` shows only the three suites already in scope.
 Verdict: pass (0 blocking).
+
+## 2026-08-07 — OCR layout chain, round 5 (frozen-bytes verification pass)
+
+Trigger: parent asked for a verification-only pass on the final staged bytes after a
+parallel code review's four repairs. Scope: `lib/services/ocr/text_layout.dart`,
+`lib/services/ocr_extraction_service.dart` (comment-only motion),
+`test/unit/services/ocr_extraction_service_test.dart`,
+`test/unit/viewmodels/photo_import_viewmodel_multi_test.dart`,
+`test/unit/viewmodels/photo_import_layout_thread_test.dart`,
+`test/unit/viewmodels/photo_import/photo_import_draft_test.dart`,
+`test/unit/viewmodels/photo_import_offline_test.dart`.
+
+Three questions asked, all three measured rather than reasoned.
+
+1. Do the repaired `verifyNever(() => autoParseMulti(any(), layout: any(named: 'layout')))`
+   calls match the production call? Probe: `test/unit/viewmodels/_zz_probe_mocktail_layout_test.dart`,
+   4 arms over the real `MockImportManager`, deleted after the run.
+   - `autoParseMulti('x', layout: null)` -> repaired `verify(...).called(1)` PASSES.
+   - `autoParseMulti('x', layout: DocumentLayout([]))` -> repaired matcher PASSES.
+   - control: repaired `verifyNever` after a real call THROWS (threw=true), i.e. not vacuous.
+   - MUTANT (the pre-repair bare form) vs a `layout: null` call: `verifyNever(() => f(any()))`
+     FAILED with `Unexpected calls: MockImportManager.autoParseMulti(x, {preferredStrategy: null,
+     options: null, layout: null})` — so the bare matcher STILL MATCHED. It went vacuous only
+     against a NON-NULL layout (printed `BARE-vs-NONNULL verifyNever threw=false`).
+   Mechanism: Dart's noSuchMethod forwarding materialises every omitted named parameter with
+   its default, so both the recorded invocation and the matcher invocation always carry the
+   full key set; the discriminator is the VALUE, not the key set. Production call site is
+   `photo_import_viewmodel.dart:760`, `importManager.autoParseMulti(text, layout: layout)` —
+   the named argument is always present, value nullable.
+   Verdict: repair correct and strictly stronger. The NOTE comment at
+   `photo_import_offline_test.dart:73-81` explains it wrongly ("mocktail matches on the
+   named-argument KEY SET ... stops matching the moment that call gains a named argument").
+   Non-blocking prose finding.
+
+2. Does the draft test's poll still redden when the discard never runs? Probe:
+   `test/unit/viewmodels/photo_import/_zz_probe_draft_poll_test.dart` — byte replica of the
+   shipped test with `vm.clearPhoto()` deleted. Result: RED at 00:05 with
+   `Expected: null / Actual: <Instance of 'PhotoImportDraft'>`. `clearPhoto` does nothing
+   synchronous to SharedPreferences (`lib/viewmodels/photo_import_viewmodel.dart:391`,
+   `unawaited(discardPersistedDraft())`), so the polled observable has exactly one producer.
+   Comment accurate. Probe deleted.
+
+3. Comment scan. Two cross-file claims checked and TRUE: `grep -rl "RecognitionResult("
+   test/` returns exactly the two files the layout-thread header names; the sibling
+   `_FakeDeviceRecognizer` in `ocr_extraction_service_test.dart:2911-2924` really does
+   document the trailing-row difference as a STAND-IN (real adapter trims; the genuine
+   device difference is ML Kit's blank row between blocks), so the layout-thread fake's
+   pointer at it is honest. Optional: the layout-thread fake repeats the "cheapest
+   difference" line without repeating the stand-in caveat.
+   `scripts/check_test_real_time.sh` run clean ("OK — no real-time regressions"); its
+   `DateTime.now()` rule is a textual grep (fires inside comments) and its delay rule is
+   `Future\.delayed\(\s*(const\s+)?Duration\(\s*(seconds|minutes|hours)\s*:` — the draft
+   test's 10 ms poll interval and its `Duration(seconds: 5)` Stopwatch ceiling are both clean.
+
+Suites run serially, all green: layout_thread 2, multi 16, draft+offline 12, ocr service 127.
+
+Tree did not move during the round. Closing md5:
+c5d06e7e779afce274fa160ba5095d26  lib/services/ocr/text_layout.dart (528 lines)
+17aa1ab30ea2375273b8c54e03077872  lib/services/ocr_extraction_service.dart (1253 lines)
+0449dfb6f781d3808d301d7a957588f5  test/unit/services/ocr_extraction_service_test.dart
+83121fe975b0cff72436ca0c88cd35b6  test/unit/viewmodels/photo_import_viewmodel_multi_test.dart
+2a7e0053cc6294b7a49f9da8f46de4e8  test/unit/viewmodels/photo_import_layout_thread_test.dart
+2d8edca3b328f5e730152bf4469bce10  test/unit/viewmodels/photo_import/photo_import_draft_test.dart
+ddbd35b36c8ff24e753b2f22b4bfa4a7  test/unit/viewmodels/photo_import_offline_test.dart
+
+Verdict: pass, 0 blocking. One non-blocking prose correction (item 1's NOTE comment).
+
+## 2026-08-08 — layout step 8 "measured and declined" commit (comments only, no behaviour, no new test)
+
+Trigger: review of the STAGED diff recording the column-ordering / deskew verdict
+(`.claude/rules/accepted-deviations.md`, `docs/architecture/ACCEPTED_DEVIATIONS.md`,
+`lib/services/ocr/text_layout.dart`, `tasks/todo.md`,
+`test/unit/services/import/layout/heading_detector_test.dart`). Brief: the known-miss
+test is the decision, do not file it as missing coverage; check whether the COMMENTS are
+true and whether any proxy figure is described as on-device.
+
+Start hashes: `text_layout.dart` bee8a401807b69f155625f3155142d1e,
+`heading_detector_test.dart` 19e621b1e91de8c2d62a8c72b41e72e6,
+`heading_detector.dart` f89bbabe2897385efd7b24f087dc9afb. Tree had parallel unstaged work
+in unrelated areas (`lib/core/keyboard/*`), none in scope.
+
+### Verified TRUE by probe (throwaway `_zz_probe_review*_test.dart`, both deleted)
+
+Printed from the real classes over the real `realSpread()` fixture:
+
+    typeH  = [105.9, 49.7, 47.6, 51.0, 89.0, 46.2, 48.6, 51.0]  body = 49.14
+    words line 0: Provençalska = 137.9, ägg = 73.9
+    line0/line4 ratio = 1.190   floor@1.10 = 96.3   floor@1.15 = 92.1
+    floor@1.20 = 88.3           bar = 73.7
+
+So every figure the known-miss comment states reproduces exactly: 137.9/73.9 (factor
+1.87 ~ "1.9", against 200/133 = 1.50 raw), 105.9 vs 89.0, ratio 1.19, and "1.15 does NOT
+recover this page (its floor is 92.1) and 1.20 would" (88.3 < 89.0). The fixture claim
+"every word box here is 40 wide" is true — the `line` helper hardcodes `width: 40`, and
+the LINE box width (`text.length * 18`) is not read by the detector.
+
+### Finding 1 (blocking, production comment) — the replacement victim is as unmeasured as the retired one
+
+`text_layout.dart:290-294`, the zero-box rescue in `OcrLine.fromJson`. The diff replaces
+"would hand the column orderer an empty page" with "would hand the heading detector a page
+it cannot measure". Measured false: probe 2 built the same page twice, once with the union
+box and once with the zero box a no-rescue decoder produces, words identical —
+
+    zeroLineBox=false headings=[0] body=50.34 doc=[0]
+    zeroLineBox=true  headings=[0] body=50.34 doc=[0]
+
+Mechanism: `OcrLine.typeHeight` reads `box.height` only when `words.isEmpty`, and the
+rescue only fires when words are present (`_union([])` returns a zero box anyway).
+`hasMeasuredWords`, `wordCount` and `bodyTypeHeight` never touch the line box.
+`grep '\.box\b' lib/` returns only `text_layout.dart` itself, so NOTHING under `lib/`
+reads a line box; the only assertions on it live in `text_layout_test.dart`.
+
+### Finding 2 (blocking, fixed here — test-only) — the twin copy was left behind
+
+`test/unit/services/ocr/text_layout_test.dart:801-804` carried the identical retired claim
+("would hand the column orderer a page whose lines all sit at the origin"). Rewritten to
+state what is true and why, with the measurement and an instruction not to re-name a
+consumer without calling it. Test-only comment, applied in the review pass.
+
+### Finding 3 (fixed here — test-only) — the provenance disclaimer was itself wrong
+
+The staged parenthetical in `realSpread()`'s doc said the transcribed heights are
+Windows-offline-OCR proxy figures and that "other figures in this file come from
+corpus-wide runs, from the hand-verified golds, or from the synthetic fixtures, so do not
+read this label as covering them". `tools/corpus_split_eval.dart --layout` scores
+`layout-winocr.json` — the SAME engine — so the corpus-wide numbers are proxy figures too,
+which the same test's own deskew paragraph says 50 lines below. Replaced with a positive
+statement (everything corpus-wide is proxy; the gold-derived 59-character bound and the
+synthetic fixtures are engine-independent). Also widened "the effect is encoded only
+through the transcribed heights 200/133" to name both pairs, since the miss is the ratio
+between the two lines' medians.
+
+No figure anywhere in the diff is described as on-device: the deskew paragraph, both
+deviation entries and `tasks/todo.md` all carry an explicit PROXY label.
+
+### Not filed
+
+The known-miss test itself (`equals(['Provençalska ägg'])`, exact list equality, reddens in
+either direction) — that is the decision, per the deviation entry, and it is non-vacuous.
+The deskew corpus figures (136/181, 42 lost, 0 fixed, 2 broken; median 1.02 over 6,280
+samples) are unverifiable here by design — both probes were throwaway — and
+`ACCEPTED_DEVIATIONS.md` carries re-derivation instructions, which is the right shape.
+
+Verification: `flutter analyze --fatal-infos` clean on both edited files;
+`flutter test test/unit/services/ocr/ test/unit/services/import/layout/` = 92 passing,
+matching the count in the brief.
+
+End hashes: `lib/services/ocr/text_layout.dart` bee8a401807b69f155625f3155142d1e (UNMOVED
+— not edited in a review pass), `heading_detector_test.dart`
+666472db75f379458b6da80dd4726ee9, `text_layout_test.dart`
+154b47c3dc36271566a8174ab76e9439 (unstaged, must be staged with this commit).
+
+Verdict: fail, 1 blocking (finding 1 — production comment, needs the author).
+
+## 2026-08-08 — text_layout zero-box comment, round 2 (the fix, and the sibling copy of the same error)
+
+Trigger: re-review of the staged comment-only commit after round 1's single blocking
+finding (the `OcrLine.fromJson` zero-box rescue naming the heading detector as its
+beneficiary, measured false) was addressed. Files read in full: `lib/services/ocr/
+text_layout.dart`, `test/unit/services/ocr/text_layout_test.dart`,
+`test/unit/services/import/layout/heading_detector_test.dart`.
+
+### Round-1 finding: closed
+
+The production comment now says nothing under `lib/` reads a line box, that `typeHeight`
+falls back to it only for a WORD-LESS line where the rescue is a no-op (`_union(const [])`
+is the same zero box `LayoutBox.fromJson` would decode), that the rescue is wire fidelity
+rather than a live dependency, that `text_layout_test.dart` pins it, and it records BOTH
+retired beneficiaries with "do not name a third without measuring it".
+
+Re-verified structurally, not from the round-1 note: `grep` for box reads across `lib/`
+returns only `text_layout.dart` itself (`OcrWord.typeHeight`, `_union`, the two
+`toJson`s). `heading_detector.dart` mentions boxes in prose only; the ML Kit adapter
+WRITES `box: _box(line.boundingBox)` and reads nothing. So no consumer can see the
+difference between a decoded zero and a word union, and "measured: identical output either
+way" holds by construction.
+
+Two of the comment's factual claims are reproducible against the raw corpus and both
+reproduce EXACTLY:
+- "no capture records a line box" / "0 in 10,986 stored capture lines" — scanned all 250
+  `layout-winocr.json` files: 10,986 lines, 0 carrying `x`/`y`/`w`/`h`/`box` at line level
+  (words carry all four). The figure is not stale.
+- my own round-1 carve-out "the gold-derived bounds (the 59-character longest title)" —
+  max title over the verified golds is 59 chars, the exact string in the test, and 242
+  verified golds (my glob double-counted to 484 by matching each file twice). So the
+  carve-out is true and so is the pre-existing "nothing in the corpus is longer".
+
+Agreement between the two files: same claim, same disjointness argument (`typeHeight`
+reads the box only for a word-less line; the rescue only changes anything for a line WITH
+words), same measurement, same do-not-name-a-consumer instruction. They teach ONE answer.
+
+### Fixed in this round (test-only, comment-only, applied by me)
+
+My own round-1 test comment carried a softer instance of the very error round 1 blocked:
+it justified the rescue as fidelity "for `tools/` and for whatever reads geometry next" —
+naming a consumer without calling it. Called it: `tools/corpus_split_eval.dart` decodes
+`PageLayout.fromJson`, reads `page.lines.isEmpty`, then uses `DocumentLayout.text` and the
+splitter; it touches no box. Rewritten to name no reader and to record the check. Now
+mirrors production's "wire fidelity, not a live dependency". Staged by explicit pathspec.
+
+### Not filed
+
+- "keeps a replayed capture geometrically identical to a live one" (in BOTH files,
+  identically). A live line's box is ML Kit's own `line.boundingBox`; a replayed one is a
+  union of word boxes from a DIFFERENT engine, so "identical" is loose and is unmeasurable
+  on this host (platform gate). Left alone deliberately: it is the shared rationale, it is
+  not a behaviour claim, the code's behaviour is pinned by the test, and sharpening the
+  test copy alone would re-open the divergence this round exists to check. Non-blocking
+  observation for whoever next edits the production comment.
+- The provenance paragraph's blanket "every corpus-wide number in this file is proxy". The
+  other stored input is `ocr.txt` (the PAID tier's text, per `corpus_split_eval`'s doc),
+  not ML Kit either, so the conclusion holds for both sources even though the sentence
+  names only the geometry half. The one figure with no recorded provenance anywhere
+  (`looksLikeIngredient` "rejected 15 of the 16 real titles") is labelled proxy by that
+  blanket — the conservative direction, i.e. the opposite of the round-1 error.
+- No test added, no behaviour changed: the known-miss test staying green is the recorded
+  decision (`ACCEPTED_DEVIATIONS.md`, column ordering measured and declined), not a gap.
+
+Verification: `flutter test test/unit/services/ocr/ test/unit/services/import/layout/` =
+92 passing after my edit; `flutter analyze --fatal-infos` clean on the edited file.
+
+End hashes: `text_layout.dart` b228fe608d607e51aad544049fd4a94b (MOVED from round 1's
+bee8a401 — the fix landed), `heading_detector_test.dart`
+666472db75f379458b6da80dd4726ee9 (UNMOVED), `text_layout_test.dart`
+79cc8ab448cf316b28971e6df108aa93 (moved by my one-clause fix, now staged). Line counts
+541 / 616 / 904.
+
+Verdict: pass, 0 blocking.
+
+## 2026-08-08 — OCR layout: round 4 of the comments-only commit (trigger: gate re-review, fileset grew by two)
+
+Scope: `device_text_recognizer_mlkit_test.dart`, `device_text_recognizer_mlkit.dart`,
+`text_layout.dart`, `text_layout_test.dart`, `heading_detector_test.dart`. All five read in
+full. Staged diff is COMMENT-ONLY in every one (`git diff --cached` verified line by line);
+no assertion, fixture or production statement moved, so round 3's measured kill sets still
+apply to these bytes and no mutant battery was re-run.
+
+Motion since my round-11 close: `text_layout.dart` b228fe60/541 -> 752497a5/544 and
+`text_layout_test.dart` 79cc8ab4/904 -> 6cc8756f/906. Both gained a parenthetical after I
+signed off — production: "a line storing `x`/`y` but no `w`/`h` decodes at its stored
+origin, and the union returns the origin. Only the height is read"; test: "(it runs either
+way; with no words it yields the same zero height)". Both checked against the code and
+CORRECT (`_union(const [])` is zero-height; the `flat.width > 0 || flat.height > 0` branch
+never reaches the stored origin for a word-less line).
+
+The brief's question — does the rewritten rationale still justify the test's existence?
+YES. The `capture order, never reading order` test now reads: rule ("the mapper must not
+sort"), the retraction of the two false halves with the measurement that replaced them
+(116/181 pages rewritten, 139 vs 138 block counts, 5 fixed / 4 broken), then the load-bearing
+paragraph kept intact and promoted to its own block — a sort added here would be invisible,
+every row still present, every other test in the file green — then the fixture note (block
+two printed at top 20 against 300, so sort-by-top and capture order disagree). Assertion
+`['Vänster spalt', 'Höger spalt']` still discriminates a top-sort.
+
+Claims verified rather than trusted:
+- No pending-step language left in any of the five (grep `not yet|later step|planned|will
+  be|coming|future|column order|orderer|re-order|sort`): every hit is past tense or a
+  numeric sort of heights.
+- "nothing here or downstream re-sorts a spread" — `\.sort\(` over `lib/services/{ocr,import}`:
+  the only sorts are `text_layout.dart:243` (word heights) and `:386` (body heights);
+  `heading_detector.dart` and `multi_recipe_splitter.dart` contain none.
+- "NOTHING under `lib/` reads a line box today" — same sweep for `\.box`: no line-box read
+  outside `text_layout.dart` itself (`typeHeight`'s word-less fallback, named in the comment).
+- "`tools/` is not that reader either" — `corpus_split_eval.dart` has no `.box`; its two
+  sorts order pages by slug.
+- The provenance paragraph's engine claim — `corpus_split_eval.dart`'s own doc: `--layout`
+  derives its input from `layout-winocr.json` (Windows offline), the same proxy engine as
+  the transcribed heights. This is the round-11 correction landing correctly.
+- Deviation figures quoted in both test files match `docs/architecture/ACCEPTED_DEVIATIONS.md`
+  (116/181, 139 vs 138, 5/4; deskew 136/181, 42 lost, 0 fixed, 2 broken).
+
+### Not filed (non-blocking)
+
+- "capture order is the contract for good" is a shade stronger than the entry it cites,
+  which names a re-opening condition (a device measurement of ML Kit's block ordering). The
+  sibling known-miss test handles the same risk better ("if this ever returns BOTH titles,
+  update the expectation and the deviation entry").
+- `text_layout.dart`'s library doc still carries "12 of the 48 multi-recipe spreads, 46
+  recipes never emitted" beside a deviation table reading 39/47 for the same arms —
+  undated and unlabelled, probably an earlier corpus state. Pre-existing, untouched by this
+  diff.
+- `text_layout_test.dart:818` cites "the library warns" for WORD order within a line; the
+  library's statement is about LINE order across a page. Pre-existing; the fixture is built
+  correctly (first word interior on all four edges).
+
+Verification: `flutter test test/unit/services/ocr/ test/unit/services/import/layout/` = 92
+passing, run on these exact bytes.
+
+End hashes (unchanged start to end of round, worktree == index): mlkit lib
+6dac604a09e46edf516b937814cafadc / 184, `text_layout.dart`
+752497a5512c603fc66f1fe94d0ecccb / 544, mlkit test 4fc2d5c272980d666b6ebf919d06aa54 / 251,
+`text_layout_test.dart` 6cc8756fd9eacb8578b797f4bc67f1bd / 906,
+`heading_detector_test.dart` 666472db75f379458b6da80dd4726ee9 / 616.
+
+Verdict: pass, 0 blocking.
+
+## 2026-08-08 — mlkit adapter + feature-flag comments, round 6 (trigger: gate re-review, two production files added to the fileset)
+
+Scope handed to me: `lib/services/feature_flags/feature_flag_service.dart` and
+`lib/services/ocr/device_text_recognizer_mlkit.dart`, both comment-only. Two questions:
+(a) do the flag comments claim TEST coverage not backed by a fixture, (b) does the mapper's
+doc still match `device_text_recognizer_mlkit_test.dart`, particularly capture order / no sort.
+
+Motion since round 5: mlkit lib 6dac604a/184 -> f24be8d6/186 (+2, the comment edit). Suite
+4fc2d5c2/251 and `text_layout.dart` 752497a5 both UNCHANGED from the round-5 closing hashes,
+so the round-4 measurement of the six mapper mutants still applies to these bytes and was not
+re-run. `git status` column 1 `M` on all three: worktree == index.
+
+(a) TEST-COVERAGE CLAIMS IN THE FLAG COMMENTS — none unbacked.
+- The retired text cited `integration_test/ocr_engine_comparison_test.dart` as "pending a
+  device". That citation is gone. The surviving claim — the harness fed RAW bytes and "was
+  fixed and re-run" — is true of the file today: line 106 calls
+  `OCRExtractionService.preprocessImageForOcr(...)` before `recognizer.recognize(...)`, with
+  a comment naming exactly that artifact.
+- No sentence claims a unit test proves anything. The one behavioural claim a test must back
+  ("off, the free tier still runs and stores byte-identical text to what it stored before the
+  seam widened") is pinned at the layer that owns it, `test/unit/services/ocr_extraction_service_test.dart`:
+  :2075 literal RC key, :2631 which of the two strings is stored, :2682 fail-closed with no
+  flag service, :2782 a cached page hands back the SAME pair.
+- 96.1 vs 96.6 over 39 verified recipes: matches ACCEPTED_DEVIATIONS.md:511-521 and
+  `.claude/rules/accepted-deviations.md:149-150`.
+- The corpus figures were RE-DERIVED live, not inherited. `dart run tools/corpus_split_eval.dart
+  --layout` today prints: single-recipe text 122/133 (92 %) / layout 122/133 (92 %);
+  multi-recipe text 9/48 (19 %) / layout 16/48 (33 %); never emitted text 47 / layout 39;
+  spurious 14 / 13. Exactly the comment's "19 % -> 33 %, 47 -> 39, single-recipe unchanged at
+  92 %", and the PROXY label is right (the run scores `layout-winocr.json`).
+- Chain named by the comment verified: `ocr_extraction_service.dart:350` reads the flag,
+  `photo_import_viewmodel.dart:205/747/760` carries the layout across pages,
+  `import_manager.dart:614` calls `MultiRecipeSplitter().split(input, layout: layout)`.
+  Commit 248481c83 exists and is "feat(import): carry the page geometry from the camera to
+  the splitter".
+
+(b) MAPPER DOC vs SUITE — matches, including the order claim.
+- "The line ORDER is still ML Kit's … no such step exists, and none is coming" and the body's
+  "no re-ordering happens anywhere" <-> `device_text_recognizer_mlkit_test.dart:180-208`, whose
+  fixture prints block 2 HIGHER (top 20) than block 1 (top 300), so sort-by-top dies and
+  capture order passes. Round 4's probe already showed this is the sole killer of that mutant.
+- The "anywhere" half re-grepped today: the only `.sort(` under `lib/services/ocr` and
+  `lib/services/import` reachable from this data are HEIGHT medians (`text_layout.dart:243`,
+  `:386`) and `import_manager.dart:676` sorting parse SUGGESTIONS by confidence. Nothing
+  re-orders lines or blocks.
+- Other doc claims each map to a fixture: per-line join != ML Kit assembly (:65-108);
+  unsegmented line still a row, following row unmoved, typeHeight 64 (:110-152); embedded
+  newline occupies ONE row (:154-178); raw word boxes carried across, all four edges, line box
+  played no part (:210-250). The `@visibleForTesting` justification ("nothing off-device could
+  prove `layout.text` is a faithful per-line join") is demonstrated by the fixtures themselves.
+
+RESOLVED FROM ROUND 5 (my own residue, and it was wrong): I filed `text_layout.dart`'s
+"12 of the 48 multi-recipe spreads, 46 recipes never emitted" as "probably an earlier corpus
+state". It is not stale — it is the DEFAULT arm. `dart run tools/corpus_split_eval.dart` with
+no flag scores `ocr.txt` and prints 12/48 (25 %) and 46 today, byte-for-byte with the comment;
+`--layout` scores a different engine's own text and prints 9/48 (19 %) and 47 for the same
+"text" arm. The tool itself prints the caveat ("A different OCR engine, so these absolutes are
+NOT the default run's"). Two sibling comments disagreeing about a same-sounding metric was an
+INPUT difference, not a stale figure, and 40 s of re-derivation was the only way to tell.
+
+NON-BLOCKING, reported not fixed (all production comments; a review pass does not edit `lib/`):
+1. "A line whose box or elements are missing still becomes a line" — `TextLine.boundingBox` is
+   a non-nullable `final Rect` in google_mlkit_text_recognition 0.16.0
+   (`lib/src/text_recognizer.dart:124/188`), so the BOX half cannot arrive absent at this
+   adapter; the reachable shape is a degenerate rect, handled by `text_layout.dart`. Only the
+   ELEMENTS half is pinned by a fixture. Pre-existing, unchanged by this diff, and the outcome
+   claim holds either way.
+2. "none is coming" / "capture order is the contract, not a pending step" (prod) and "the
+   contract for good" (test:186) run slightly ahead of the deviation entry, which declines the
+   sorter but names a re-opening condition (a device measurement of ML Kit's own ordering plus
+   a gain bigger than one page). Both files point at ACCEPTED_DEVIATIONS.md, so a reader who
+   follows the pointer gets it. Round 5 raised this for the test copy; the production copy now
+   inherits it.
+3. The flag comment's "19 %" baseline and `text_layout.dart`'s "25 %/46" are both correct on
+   different eval inputs, and nothing in either file says so. One clause ("both arms scored on
+   the layout capture's own text, not the default `ocr.txt` run") would stop a future session
+   "correcting" one into the other — which is precisely the error I made in round 5.
+
+Verification: `flutter test test/unit/services/ocr/ test/unit/services/import/layout/
+test/unit/services/feature_flags/` = 97 passing, on these exact bytes. Both eval arms run
+clean. No test changes made or owed: the commit is comment-only and every behaviour its
+comments name is already pinned.
+
+End hashes (unchanged start to end of round, worktree == index): feature_flag_service.dart
+5c3dbfaa0591b4be6fa4b741494a8d01 / 398, device_text_recognizer_mlkit.dart
+f24be8d6d3a3aeed49c656d8ee5bc46a / 186, device_text_recognizer_mlkit_test.dart
+4fc2d5c272980d666b6ebf919d06aa54 / 251, text_layout.dart 752497a5512c603fc66f1fe94d0ecccb.
+
+Verdict: pass, 0 blocking.
+
+## 2026-08-08 — BUT-1816 edge crop: test-strength review of a new pure-compute rule (trigger: staged-diff review, "be hardest on test strength")
+
+Scope: `lib/services/ocr/edge_crop.dart` (new), `test/unit/services/ocr/edge_crop_test.dart`
+(new), `lib/services/ocr/device_text_recognizer_mlkit.dart` + its suite (the `layoutFor`
+wiring), `tools/corpus_split_eval.dart` (`--edge-crop` arm). The brief supplied three
+mutants it had already run (outside-margins `if`, one-third cap, imageWidth carry) and asked
+which of the UNMUTATED tests are vacuous.
+
+Method: `test/`-side replica of `edge_crop.dart` as a `Cfg`-parameterised copy
+(`_zz_probe_edge_crop_test.dart`, deleted after), 21 mutants x 14 checks in one process,
+~7 s per run, no `lib/` write and no auto-mode refusal. Baseline killed by nothing.
+
+Kill counts on the SHIPPED suite:
+
+| test | kills |
+|---|---|
+| drops a bleed band | 4 |
+| KEEPS a narrow line inside the margins | 1 (outside-margins `if` deleted) |
+| keeps a full-width line | **0** |
+| keeps a line with no word boxes | 1 (`_inkSpan` falls back to `line.box`) |
+| crops nothing when more than a third | 1 |
+| crops correctly when imageWidth is 0 | 5 |
+| carries imageWidth and imageHeight | 6 |
+| crops nothing when too few BODY lines | **0** |
+| crops nothing when too few MEASURABLE lines | 2 |
+| returns the identical object | 1 |
+| a left-margin bleed band | 3 |
+
+Three notes on the mutant set itself. (1) Modelling "remove the outside-margins check" as
+"both disjuncts always false" is the WRONG mutant — it makes the rule crop nothing, which
+the KEEPS test passes. The real one is deleting the `if` so `bleed.add(row)` runs
+unconditionally after the width gate; that is what reddens KEEPS, exactly as the brief
+claimed. (2) `if (line.words.isEmpty) return null;` is killed by nothing and CANNOT be:
+with an empty word list the loop leaves `left = +inf`, `right = -inf`, and the
+`right <= left ? null` two lines below returns null anyway — totally subsumed, a dead
+decider, a production observation rather than a test gap. The test named after it is
+non-vacuous because it kills the mutant that matters (falling back to `line.box` when the
+words are missing). (3) `if (kept.isEmpty) return page;` and `if (widest <= 0)` are
+unreachable for the same kind of reason (all-bleed always trips the one-third cap first;
+`_inkSpan` never returns a non-positive span).
+
+FINDING 1 (blocking, fixed here, test-only). "crops nothing when there are too few body
+lines" was VACUOUS: 3 body lines + 3 slivers means the would-be crop is 3 of 6 rows, and
+the one-third cap refuses it independently, so deleting `if (body.length < _minBodyLines)`
+left it green. Repaired to 3 body + one narrow line INSIDE the margins + 2 slivers (2 of 6,
+under the cap) — now kills the guard deletion and `_bodyWidthShare -> 0`. Generalised as
+knowledge principle (h): in a fail-closed chain every guard returns the same observable, so
+a guard's fixture must clear every DOWNSTREAM refusal, not just the preconditions above it.
+
+FINDING 2 (fixed here, test-only). "keeps a full-width line" killed nothing — it is a
+uniform page, i.e. the same fact as "returns the identical object", whose kill set strictly
+contains it. Replaced with a WIDE line lying entirely outside the body margins (2700..4400
+against a 500..2600 body), which is the only fixture that kills deletion of the
+`span.width > _bleedWidthShare * bodySpan` gate. That mutant is the catastrophic one: a
+genuine second column is "outside the margins" by exactly the same test a four-character
+sliver is, and only its width separates them.
+
+FINDING 3 (fixed here, test-only, new test). `_bodyWidthShare = 0.30` — "narrow furniture
+must not get to define the margin it is then measured against" — was pinned by nothing in
+either direction. Medians are robust, so only a fixture where the short rows OUTNUMBER the
+running text can move them: 4 body lines + 6 short ingredient rows + 1 sliver. With the
+share at 0 the short rows vote, `bodyRight` collapses 2600 -> 700, every span is then "wide"
+against the shrunken body span and the sliver survives. Kills `_bodyWidthShare -> 0`.
+
+Still unpinned, reported not fixed: `_bodyWidthShare -> 0.99` (tightening) and
+`_bleedWidthShare -> 0.5` (loosening) kill nothing. The bleed-width constant is pinned from
+BELOW only — 0.12 -> 0.01 reddens four tests, 0.12 -> 0.5 reddens none — the familiar
+one-sided-bound shape.
+
+FINDING 4 (blocking, NOT fixed — production). The staged hunk in
+`device_text_recognizer_mlkit.dart` inserted `layoutFor`'s new doc lines directly after
+`toPageLayout`'s existing doc comment with no blank line between them, so lines 128-166 are
+now ONE doc comment attached to `layoutFor`, and `toPageLayout` has NO doc comment at all.
+`layoutFor` therefore now claims to be "a faithful, lossless mapping", that "the BLOCK level
+is dropped on purpose", and that "a line whose box or elements are missing still becomes a
+line" — the last of which is false of a function whose whole job is dropping lines. Its own
+new text ("Composition rather than a step inside [toPageLayout], so that method keeps its
+documented contract") is self-refuting in place, because that method's documented contract
+is what just moved onto the wrapper. Fix is to move the mapper's doc block down to sit
+directly above `toPageLayout`.
+
+Confirmed for the brief: the deliberately-wrong full-page `OcrLine.box` in the fixture
+helper DOES bite — reading `box` instead of walking words reddens 4 of the 11 shipped tests
+(bleed band, imageWidth-0, carry, left-margin). It does not redden the KEEPS/no-words/
+fail-closed tests, which keep everything either way, so the helper's "these tests go red"
+is true of the file and not of every fixture.
+
+Observations, not findings. `drops a bleed band` and `a left-margin bleed band` each sit
+EXACTLY on the one-third boundary (4 bleed rows of 12; the cap refuses only strictly more
+than 4), so adding a fifth sliver to either flips it to a no-crop page. In the wiring group,
+`the stored text drops the bleed rows with the lines` has the same kill set as
+`drops the edge bleed that toPageLayout faithfully kept` through the same seam
+(`PageLayout.text` IS the join and `OcrLine` refuses an embedded newline) — the same
+subsumption two earlier rounds already deleted assertions from that file for; and
+`a page with nothing to crop comes through the mapper unchanged` survives deleting
+`cropEdgeBleed` from `layoutFor` entirely, i.e. it is a no-false-positive control, not a
+wiring pin. The wiring pin itself is sound: deleting the crop from `layoutFor` reddens
+`drops the edge bleed that toPageLayout faithfully kept`.
+
+Suite after the repairs: `flutter test test/unit/services/ocr/ test/unit/services/import/`
+= 1111 passing (was 1110; +1 new test). `flutter analyze --fatal-infos` clean on both
+changed files. NOTE: `edge_crop_test.dart` is `AM` — my repairs are unstaged on top of the
+staged add and must be re-staged, or the vacuous fixture is what ships.
+
+Closing hashes:
+191ee2ed83005fb0c452d34402a3a68b / 164, edge_crop.dart
+19956d13fa075ee0fc6ad0690e6f3de6 / 223, edge_crop_test.dart (post-repair, unstaged)
+df0f565ccd5433c38427d72d1433936e / 204, device_text_recognizer_mlkit.dart
+273efcc9701c5417eace6d4221ca30e2 / 328, device_text_recognizer_mlkit_test.dart
+
+Verdict: fail, 1 blocking (finding 4; findings 1-3 fixed in place).
+
+---
+
+## 2026-08-08 — BUT-1816 round 2 (trigger: re-review after fixes; staged diff)
+
+Files read in full: `test/unit/services/ocr/edge_crop_test.dart`,
+`test/unit/services/ocr/device_text_recognizer_mlkit_test.dart`,
+`lib/services/ocr/edge_crop.dart`, `lib/services/ocr/device_text_recognizer_mlkit.dart`,
+`lib/services/ocr/device_text_recognizer.dart`, `tools/corpus_split_eval.dart`.
+
+Round-1 blocking finding CLEARED. `layoutFor` now sits BELOW `toPageLayout`, each with its
+own doc; `layoutFor`'s no longer claims to map the block tree or to preserve a row whose
+box is missing — the self-refuting sentence is gone.
+
+Staged == worktree == my repairs, proven by hash rather than by diff reading:
+`edge_crop_test.dart` md5 19956d13fa075ee0fc6ad0690e6f3de6 / 223 L and
+`device_text_recognizer_mlkit_test.dart` md5 273efcc9701c5417eace6d4221ca30e2 / 329 L are
+BYTE-IDENTICAL to the post-repair hashes recorded in round 1, and
+`git diff --name-only` lists nothing unstaged under either OCR directory. Only production
+comments moved between rounds.
+
+Re-derived all eleven `edge_crop_test` fixtures against the current constants by hand, and
+each repair still kills its mutant: `_bodyWidthShare`→0 collapses bodyRight 2600→700 so the
+sliver survives (11 != 10, red); deleting the width clause drops the wide right column
+(8 != 9, red); `_minBodyLines` 4→3 crops 2 of 6 rows, which is UNDER the strict-`>` cap
+(4 != 6, red). The `_minMeasurableLines` fixture (5 rows) and the one-third cap fixture
+(6+6) each redden on their own constant too.
+
+Comment claims verified against code, not accepted on their face:
+`matchesLineCountOf` is `_newlineCount(own) == _newlineCount(input)` (text_layout.dart:517)
+— a row count, as the new `edge_crop.dart` doc says — and the "HtmlSanitizer rewrites bytes
+between the two" half is real: `ocr_extraction_service.dart:535` sanitizes the on-device
+text while the layout travels untouched, so byte equality really would disable the path.
+`--edge-crop` really does print the block-count pair it is cited for
+(`alignedBefore -> alignedAfter of scoredPages`) and writes `edgeCropArm` into the report,
+so `edge_crop.dart`'s 138 -> 139 is re-derivable from the shipped tool.
+
+Agreed with both non-actions, and one is worth keeping as a principle. Leaving
+`_bleedWidthShare`'s PERMISSIVE direction unpinned (0.5 survives every fixture) is the
+right call: a fixture that killed it would have to encode "how wide is a narrow second
+column", a threshold no user experiences and the next tuning pass would break. The
+existence of the clause is pinned; the value is covered by the corpus arm instead, which is
+exactly why making that arm re-derivable mattered. Keeping `the stored text drops the bleed
+rows with the lines` is also fine — same kill set today, but its stated intent (the
+text/lines pairing `matchesLineCountOf` rests on) is distinct, and subsumption is not
+wrongness.
+
+Non-blocking observations, unchanged verdict: `_tokenPattern` `[a-z0-9åäö]{3,}` also drops
+é/ü/ç, so "Provençalska" tokenises as `proven` + `alska` — a second blind spot of the same
+class as the 3-char floor now documented, though symmetric across both arms so the paired
+before/after is unaffected; and `device_text_recognizer.dart:48` is a 120-char unwrapped
+doc line left by the edit (dart format does not reflow comments, so analyze stays clean).
+
+`flutter test test/unit/services/ocr test/unit/services/import` = 1111 passing, matching
+the brief. `flutter analyze` clean over `lib/services/ocr`, `test/unit/services/ocr`,
+`tools/corpus_split_eval.dart`.
+
+Closing hashes:
+f33713bff56c0adfb97aaa9f09b14efb / 178, edge_crop.dart
+19956d13fa075ee0fc6ad0690e6f3de6 / 223, edge_crop_test.dart (staged, = round-1 repair)
+eb24ad9da1bda759e4c68a4da8a96953 / 216, device_text_recognizer_mlkit.dart
+273efcc9701c5417eace6d4221ca30e2 / 329, device_text_recognizer_mlkit_test.dart
+3c4d0ace9bf5cee8e81c088b1a1f5ced / 67, device_text_recognizer.dart
+af78c9b3076dd6219fb9f77a84d78eff / 538, corpus_split_eval.dart
+
+Verdict: pass, 0 blocking.
+
+## 2026-08-08 — BUT-1816 round 3 (edge crop; fileset 9 -> 12, one fixture moved)
+
+Tree HAD moved since round 2: `edge_crop.dart` 178 -> 190 lines
+(f33713bf -> be634796), `edge_crop_test.dart` 223 -> 227 (19956d13 -> 9d646932),
+`corpus_split_eval.dart` 538 -> 595 (af78c9b3 -> dabf40d9).
+`device_text_recognizer_mlkit_test.dart` byte-identical to round 2 (273efcc9), which
+matches the brief's "the mlkit wiring fixture is untouched". Three siblings joined the
+commit comment-only (`multi_recipe_splitter`, `text_layout`, `ocr_extraction_service`).
+
+**Mid-round motion, and it matters for staging.** `git status` showed `AM
+lib/services/ocr/edge_crop.dart`: the worktree gained a 6-line paragraph
+("this runs on every tier-0 recognition, but only REACHES an import on the geometry
+arm...") that the INDEX does not have. My first Read caught the pre-edit bytes, i.e. the
+staged ones; I re-read after. The paragraph is accurate — `ocr_extraction_service.dart`
+:516-521 ships `raw.providerText` with the flag off and `layout: useLayout ? raw?.layout :
+null` at :574 — but it must be staged with the rest or the committed doc is the older one.
+
+### Q1 — does the moved fixture kill `_minBodyLines` 4 -> 3? YES, measured.
+
+`test/`-side replica (`lib/` copied with renamed privates, three arms: base,
+minBody3, capGe) over three fixtures:
+
+    tooFewBody(2 of 7)       in=7  base=7  minBody3=5  capGe=7
+    tooFewBodyOld(2 of 6)    in=6  base=6  minBody3=4  capGe=6
+    mlkitWiring(4 of 12)     in=12 base=8  minBody3=8  capGe=12
+
+The shipped test asserts 7, the mutant yields 5 -> red. Note the OLD 2-of-6 fixture also
+killed it (6 -> 4), so the move was not kill/no-kill; what it bought is slack. At 2-of-6
+the cap evaluates `2 > 2` — an exact tie — so `>`->`>=` plus the guard deletion is GREEN,
+while at 2-of-7 (`2 > 2.333`) it stays red. Right change, understated reason.
+
+### Q2 — `_shortTokenPattern` for Swedish? Correct. Ran it:
+
+    mjöl -> {}           2 dl mjöl -> {2, dl}     ÖL -> {öl}      Ångad lök -> {}
+    idé  -> {id}         à la carte -> {la}       2,5 dl -> {2,5,dl}   Vispa 30 min -> {30}
+
+`mjöl` yields nothing, which is exactly the ASCII-`\b` hazard the comment claims to dodge
+(`\b[a-z0-9åäö]{1,2}\b` would emit `mj`, since `ö` is a non-word char to ASCII `\b`), so
+the justification is real and not merely plausible. Dart lookbehind works — and the corpus
+run below executed the pattern 10k+ times without throwing. Blind spots, both symmetric
+across gold and page so the counter stays self-consistent: é/ü/ç are outside the class
+(`idé` -> spurious `id`), and DIGITS are inside it.
+
+### Q3 — the `--edge-crop` counting logic. Ran the shipped command; everything reproduces:
+
+    cropped pages 132 (496 rows) | right block count 138 -> 139 of 181
+    recall 91.56 -> 91.54 | precision 66.26 -> 66.64 | BLIND SPOT 62
+    REAL EDGE COLUMN 45 pages | precision 66.65 -> 67.70
+
+Every figure in `edge_crop.dart`'s doc, plus `text_layout.dart`'s new "132 of 181".
+
+Then reconstructed the blind-spot counter independently (probe under `test/`, importing
+`tools/corpus/corpus_paths.dart`): `droppedRows=496 blindSpot=62` — exact match, so the
+arithmetic is right — **and partitioned it: 37 of the 62 are rows with NO letters at all**
+(`50`, `3`, `13`, `2-3`, `1/2`, `12`), 25 carry letters. So "the loss is small and mostly
+stray marginal words" (edge_crop.dart:43-44) is false in the direction that reassures: the
+majority is the bare-numeral quantity-column shape the same paragraph names as the danger
+two sentences earlier. It also over-counts by construction — digits 1-5 are in nearly every
+page's gold, so any dropped numeral row qualifies whether it was this page's quantity or
+the neighbour's correctly-deleted one. That non-disclosure is the round's one blocking
+finding; fix is one sentence (and optionally printing the split).
+
+Ordering nit, unreachable today: the blind-spot block runs BEFORE the
+`beforeText == null` continue, so in principle numerator and denominator could come from
+different page populations. `doc.pages.first != null` already forces `isComplete`, so it
+cannot fire.
+
+Non-blocking: three crop-happens fixtures sit exactly on `bleed == lines/3`
+(edge_crop_test's marquee band, and the mlkit wiring fixture). Correct today and it pins
+`>` vs `>=` for free; one more body line each (`i < 8` -> `i < 9`) buys slack, and the
+failure direction is loud, so it is optional. The mlkit fixture does NOT need the
+body-lines treatment — its 8 body lines clear `_minBodyLines` with room.
+
+`flutter test test/unit/services/ocr/edge_crop_test.dart
+test/unit/services/ocr/device_text_recognizer_mlkit_test.dart` = 20/20. Probes deleted
+(`git status` clean of `_zz_probe_*`).
+
+Closing hashes:
+be634796da893bc762ccd7dc1135e471 / 190, edge_crop.dart (worktree; INDEX is 184 lines)
+9d646932af9430b1728fdfece19feb6d / 227, edge_crop_test.dart
+273efcc9701c5417eace6d4221ca30e2 / 329, device_text_recognizer_mlkit_test.dart
+672515d536f9cd5befcf5bd2041d23cd / 556, text_layout.dart
+b6a83611f6c6e03426cfef2359316e90 / 345, multi_recipe_splitter.dart
+8b88e408b247f19e9e32e25e9f41d488 / 1256, ocr_extraction_service.dart
+dabf40d90f35ba06ddb01ab2947ec215 / 595, corpus_split_eval.dart
+
+Verdict: fail, 1 blocking (the "mostly stray marginal words" clause).
+
+### Round 3 addendum — the tool moved again at round end (dabf40d9 -> ae404442)
+
+`tools/corpus_split_eval.dart` 595 -> 614 lines mid-round, UNSTAGED over the staged copy:
+a size waiver in the library doc, and the blind-spot block hoisted below the
+`beforeText == null` continue (the ordering nit above, now closed by construction rather
+than by loop order). Re-read and re-ran the arm on the new bytes — every printed figure
+identical (132/496, 138 -> 139, 91.56/91.54, 66.26/66.64, 62, 45 pages, 66.65/67.70), so
+the reorder is semantics-preserving on today's corpus, as its own comment claims.
+Two in-scope files are now `AM`: `edge_crop.dart` (index 184 lines, worktree 190) and
+`corpus_split_eval.dart` (index 595, worktree 614). They must be re-staged together.
+Closing: be634796 / 190 edge_crop.dart, ae40444255b5c45f9759f39bfbab9e0e / 614
+corpus_split_eval.dart.
+
+### 2026-08-08 — BUT-1816 round 4 (edge crop, final): the blocking clause closed, and a boundary fixture I nearly told them to weaken
+
+Trigger: re-review of `git diff --cached` after round 3's one blocking finding was fixed.
+All four in-scope files fully staged this time (`A `/`M ` — column 2 blank, worktree ==
+index), which was round 3's other complaint.
+
+**Round 3's blocking finding is properly closed.** `_formatEdgeCrop` now COUNTS the shape
+split (`shortNumeralsOnly`, printed as `of which bare numerals: 37   carrying letters: 25`
+and derived as `shortOnlyInGold - shortNumeralsOnly`, so the two halves cannot drift), and
+`edge_crop.dart:45-51` states it in both directions — numerals are the quantity-column
+shape most worth worrying about AND the shape most likely counted by coincidence — and
+records that an earlier draft said "mostly stray marginal words", which was false in the
+reassuring direction. Keeping the retracted claim in the doc is the right call: it is the
+only thing that stops the next reader re-deriving the comfortable version.
+
+**Verified the classifier by EXECUTION, not by reading it** (throwaway probe, deleted):
+`_anyLetter = RegExp(r'[a-zåäö]')` over `row.toLowerCase()`, with `_tokens` empty and
+`_shortTokens` non-empty as preconditions. `50` -> shorts {50}, `3` -> {3}, `1/2` -> {1,2},
+`2-3` -> {2,3}; all four have no 3+ token and no letter, so all four land in the numerals
+bucket exactly as the doc claims. Two shapes worth knowing: `½` alone yields NO short token
+(not in the class) so the row is skipped entirely rather than mis-bucketed; and `2 é`
+counts as a bare numeral although it carries a letter, because `é` is outside the class the
+`_tokens` doc already caveats. That errs toward the "likely coincidence" bucket, i.e. the
+non-reassuring direction, and it needs a row of 1-2 in-class chars plus an isolated
+out-of-class letter to occur at all — any 3+ in-class run hits the `_tokens` continue
+first. Not filed. `removed` (multiset difference by line TEXT, `List.remove` per kept line)
+is correct even with duplicate row texts, since kept is a sub-multiset of single.
+
+**Round 3's optional slack suggestion was DECLINED, and the decline is right — I checked
+the float rather than the intuition.** `12 * (1/3)` is EXACTLY `4.0` in IEEE754 (the true
+product `4 - 2^-52` is a tie between `4 - 2^-51` and `4.0`, and ties-to-even picks `4.0`),
+so `4 > 4.0` is deterministically false and `4 >= 4.0` is true. That makes the marquee band
+fixture (4 dropped of 12) plus `crops nothing when the rule would claim more than a third`
+(6 of 12) a PAIR that kills the `>` -> `>=` mutant on `_maxCropShare`. Adding the slack I
+offered would have deleted that kill for nothing. Lesson recorded in the knowledge file: a
+fixture sitting exactly on a fraction cap is usually load-bearing, and the boundary is an
+execution question, never a reading one.
+
+**The `_minBodyLines` fixture comment matches the code**, hand-executed: 3 body lines (500..2600,
+width 2100) + `2 dl`/`1 tsk` (inside the margins) + 2 slivers = 7 measurable, body = 3 < 4,
+so the guard returns `{}`. With the guard removed, bleed = 2 and `2 > 7*(1/3) = 2.333` is
+false, so the crop lands and the test reddens — the guard is the only refusal on this
+fixture. The retired 2-of-6 shape also killed it (`2 > 2.0` false), but a `>=` cap would
+have silently disarmed it; "the move bought margin, not a new kill" is exactly right.
+
+**Sibling comment in `ocr_extraction_service_test.dart:2744-2747` is now accurate**:
+verified `DeviceTextRecognizerMlkit.layoutFor = cropEdgeBleed(toPageLayout(...))`, so the
+shipped layout string really can lose rows, and "makes `matchesLineCountOf` stricter without
+making it sufficient" holds (an uncropped page's counts still match).
+
+Standing gap, NOT filed: `_formatEdgeCrop`, `_anyLetter`, `_shortTokens` are private to a
+`tools/` CLI scoring a corpus that is not in the repo, so nothing in `flutter test` can
+redden if the regexes regress — and 62/37/25 are quoted in a `lib/` doc comment. Correct
+call is the one already made (the arm PRINTS every quoted figure, so the doc is
+command-re-derivable); a unit test would have to restate the regexes in a fixture and would
+pin a copy, not the tool. Watch it only if a fourth figure from this arm reaches a doc.
+
+`flutter test test/unit/services/ocr/edge_crop_test.dart
+test/unit/services/ocr_extraction_service_test.dart` = 139/139.
+
+Closing hashes (all four staged, worktree == index):
+9a9145cac8b3e221de633c114554ddbd / 197, lib/services/ocr/edge_crop.dart
+6420cdaebbf7a71db1f1a3cc1050b2e0 / 626, tools/corpus_split_eval.dart
+91f848818236ed55a63a436364819b3a / 228, test/unit/services/ocr/edge_crop_test.dart
+1dd4240bf327df75f09eb5bcb2ebb162 / 2933, test/unit/services/ocr_extraction_service_test.dart
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-08 — BUT-1816 round 5 (final): the FIFTH copy of the retired row-count premise, and the stopword correction [Review]
+
+Trigger: two files changed after the round-4 pass. Read in full: `ocr_extraction_service_test.dart`
+(2936 lines), `lib/services/ocr/edge_crop.dart` (201), `tools/corpus_split_eval.dart` (634).
+
+**The corrected `_FakeDeviceRecognizer` comment is accurate, checked against the fake's body.**
+The fake returns `providerText: '${text!}\n'` and a layout of one `OcrLine` per row of `text`,
+uncropped — so its two strings differ by exactly one trailing blank row that `providerText`
+carries and `layout.text` does not. That is the separator difference's DIRECTION (extra blank
+rows on the provider side) and it models nothing of the crop, whose signature is rows MISSING
+from the layout string. "This fake models the separator half alone" is exactly right, and the
+surrounding sentences already label the trailing row a stand-in and state that the real
+`providerText` is `recognized.text.trim()` and so can carry no trailing blank row.
+
+**No test depends on the retired reading.** Every assertion that can see the two strings
+(`the flag decides WHICH of the two strings is stored` -> `off.text == '$page\n'` and
+`on.text == onRecognizer.lastLayout!.text`; `the geometry travels WITH the text`;
+`sanitizing the page ... never the ROW the layout indexed`; `a cached page hands back the SAME
+pair`) reads the fake's own objects, never a premise about what a device emits. The one test
+comment that DID reason about production row counts (2744-2747) was fixed in round 4 and still
+holds.
+
+Production claims spot-checked rather than inherited: `MlKitTextRecognizer.layoutFor =
+cropEdgeBleed(toPageLayout(...))` and `providerText = recognized.text.trim()`, so "removes rows
+from the layout string only" is true at the adapter. 132/496 reproduce my own round-2 arm output
+(`cropped pages 132 (496 rows)`), and `_formatEdgeCrop`'s `shortNumeralsOnly` split (no
+`[a-zåäö]` -> numerals) gives the printed 37/25.
+
+Two ADVISORY nits, neither blocking, both in comments:
+1. The test comment quotes "132 of 181 corpus pages" inside a sentence framed "on a device",
+   with no PROXY tag — the figure is WinOCR geometry cropped against itself. Literally true of
+   the corpus, and both files that OWN the number (`edge_crop.dart`, the adapter) carry the
+   caveat; a reader could still carry the device frame over.
+2. `edge_crop.dart` lists four stopwords (`i`, `en`, `de`, `är`); `corpus_split_eval.dart` lists
+   five for the same 24 rows (adds `på`). Same fact, two enumerations — drift-in-waiting.
+
+`// claude:large-file-ok` on line 1 of the CLI sits above the `///` library doc; the doc still
+attaches to `library;` and analyze is clean.
+
+`flutter analyze` (3 files) clean; `flutter test test/unit/services/ocr_extraction_service_test.dart`
+= 127/127.
+
+Closing hashes (worktree == index for all three):
+9576d826ba146ed7527fd00ddc0dc356 / 201, lib/services/ocr/edge_crop.dart
+7b3c5e3a6b0f86e581c1a7ca4adda4b1 / 634, tools/corpus_split_eval.dart
+55025ab4f70568801b2d8a2500112504 / 2936, test/unit/services/ocr_extraction_service_test.dart
+
+Verdict: pass, 0 blocking.
+
+## 2026-08-08 — BUT-1816 round 6 (edge crop): both round-5 advisories applied; every quoted figure re-derived from the shipped tool
+
+Trigger: sign-off round 6 on the staged diff, asked two questions — (a) does the fake's reworded
+comment still describe the fake, (b) does the new `feature_flag_service.dart` comment claim
+anything about tests or coverage that no fixture backs.
+
+Tree motion since round 5 (my closing hashes there): all three in-scope files moved, which is
+consistent with the two advisories landing, and `feature_flag_service.dart` joined the commit.
+`git status` column 1 is `M`/`A ` for every in-scope path, so worktree == index.
+
+  9576d826… /201  -> f63983f7df357b89a4dc896c814d6fc7  lib/services/ocr/edge_crop.dart
+  7b3c5e3a… /634  -> ffc13696b106f3bf4b803faad2178082  tools/corpus_split_eval.dart
+  55025ab4… /2936 -> c173ae08b8164f88752cfe3f74f3ba9e  test/unit/services/ocr_extraction_service_test.dart
+  (new to the commit)  f3ddf148277007da6a966147ffec1cf8  lib/services/feature_flags/feature_flag_service.dart
+
+Advisory 1 (missing PROXY tag) — APPLIED. The fake's comment now reads: two things separate the
+strings on a device (ML Kit's blank row between blocks; `edge_crop.dart` removing rows from the
+layout string only), "(That fires on 132 of 181 corpus pages, but PROXY: the corpus is WinOCR
+geometry cropped against itself, not ML Kit. The rate on a device is unmeasured.) This fake models
+the separator half alone." Accurate against the fake it sits on: `providerText: '${text}\n'` vs a
+layout of one line per row, i.e. a row-count difference, and the two sentences around it already
+say STAND-IN / "do not read it as documentation of what a device produces". Accurate against
+production too — `layoutFor = cropEdgeBleed(toPageLayout(...))` and `providerText =
+recognized.text.trim()`, so "layout string only" is unqualifiedly true at the adapter.
+
+Advisory 2 (two unequal stopword enumerations) — APPLIED. `edge_crop.dart:48-50` and
+`corpus_split_eval.dart:218-220` now carry the same six-item list, both hedged "e.g.", so neither
+reads as exhaustive and there is nothing to drift.
+
+New this round: instead of cross-reading the four files that quote each other, I RAN the arm.
+`dart run tools/corpus_split_eval.dart --edge-crop` over the live corpus reproduced every figure
+exactly — cropped pages 132 (496 rows), right block count 138 -> 139 of 181, recall 91.56 ->
+91.54, precision 66.26 -> 66.64, BLIND SPOT 62 (37 numerals / 25 letters), REAL EDGE COLUMN 45
+pages 66.65 -> 67.70; the paired block report in the same run gives 122/133, 9/48 -> 16/48, 47 ->
+39, which is what the flag comment's split-path paragraph and the BUT-1816 deviation entry quote.
+So the numbers are not merely consistent across files, they are the tool's.
+
+Question (b): the new flag comment makes NO claim about tests, coverage or what any fixture
+proves. Its claims are (i) the crop reaches an import only via `enable_layout_recipe_split` —
+true of `ocr_extraction_service.dart:516-521` (`useLayout ? (raw.layoutText ?? raw.providerText)
+: raw.providerText`) and pinned by the existing 'the flag decides WHICH of the two strings is
+stored' test, whose off arm asserts the provider string exactly; and (ii) the corpus figures
+above. One ADVISORY: it quotes "at a recall cost of 0.02 points" without the upper-bound caveat
+its own source doc insists on (62 dropped rows are invisible to that pair). Not false — the pair
+is what the tool prints, the paragraph names `edge_crop.dart`, and PROXY is tagged — but it is the
+reassuring direction that file records getting wrong twice.
+
+Also read this round and unchanged in intent: `edge_crop_test.dart` (rule) and
+`device_text_recognizer_mlkit_test.dart` (`layoutFor` WIRING, which is what makes a deleted crop
+visible off-device).
+
+`flutter test test/unit/services/ocr/ test/unit/services/ocr_extraction_service_test.dart
+test/unit/services/feature_flags/` = 213/213. `flutter analyze --fatal-infos` over the five paths:
+clean. Closing hashes are the four above, re-taken AFTER the run and unchanged.
+
+Verdict: pass, 0 blocking (1 advisory, comment-only).
+
+## 2026-08-08 — keyboard Backspace guard, comment-only follow-up to 4e739b702 (review)
+
+**Trigger:** review the staged diff (comment corrections in `butlery_app.dart`,
+`app_shortcuts.dart`, `app_actions.dart`, `app_shortcuts_test.dart`, plus removing the
+unused `[BuildContext? context]` from `_NavigateBackAction.isEnabled`).
+
+Opening hashes = closing hashes, tree unmoved across the round:
+7e594519e3044d112b6f873a7ecaa908  lib/app/butlery_app.dart (868 lines)
+b2eb01c92c780b47ae8382c3fdb05ee2  lib/core/keyboard/app_actions.dart (138)
+3d7c39b52993a6d0acdc803e266947a7  lib/core/keyboard/app_shortcuts.dart (127)
+7593ae9d70729cb4382fec6502f7608f  test/unit/core/keyboard/app_shortcuts_test.dart (221)
+All four staged (`M ` in column 1), worktree == index. The unstaged `ACCEPTED_DEVIATIONS.md`
+churn is a parallel session's OCR edge-crop entry, unrelated; no keyboard/Backspace/readOnly
+entry exists there, so nothing in this review contradicts a decided call.
+
+`flutter test test/unit/core/keyboard/` -> 15/15. `flutter analyze` on the three in-scope
+paths -> "No issues found" (80.8 s).
+
+### SDK facts (read, not remembered) — `packages/flutter/lib/src/widgets/actions.dart`
+- `:244  bool isEnabled(T intent) => isActionEnabled;`   <- the base signature
+- `:246  bool _isEnabled(T intent, BuildContext? context) => switch (this) {
+           final ContextAction<T> action => action.isEnabled(intent, context),
+           _ => isEnabled(intent), };`
+- `:519  ContextAction.isEnabled(T intent, [BuildContext? context])`
+- `:658  invokeActionIfEnabled(...)` calls `action._isEnabled(intent, target)`
+So for a plain `Action` the optional param was NEVER passed by anything — the removal is
+behaviour-neutral, and `@override` makes any future drift a compile error rather than a
+silent unbinding. Also grepped: `NavigateBackIntent` has no other reference in `lib/`, there
+is no custom `ActionDispatcher`, and `Shortcuts(` is mounted at exactly one site
+(`butlery_app.dart:758`).
+
+### Probe 1 — `test/unit/core/keyboard/_zz_probe_backspace_test.dart` (written, run, deleted)
+Replica of `_NavigateBackAction` (private, so copied rather than imported) with the narrowed
+signature, plus an always-enabled mutant, both mounted through the real `AppShortcuts.bindings`
+in a `MaterialApp.builder`:
+- ARM1a replica (narrowed sig): `text=ab popped=0`  -> the dispatcher DOES consult the narrowed
+  overload; the key falls through to `DefaultTextEditingShortcuts`.
+- ARM1b mutant (`isEnabled => true`): `text=abc popped=1` -> reproduces the pre-fix bug exactly,
+  confirming the brief's mutation claim ON TODAY'S BYTES, i.e. the signature narrowing did not
+  weaken the kill set.
+- ARM2 readOnly field + REAL `AppActions.dispatch()`, route pushed: premise
+  `insideEditable=true`, `routeStillThere=true` -> the new "accepted consequence: in a
+  `readOnly` field Backspace becomes a dead key" comment is TRUE, and untested.
+- ARM3 control, same fixture with no field focused: `routeStillThere=false` -> ARM2's non-pop is
+  attributable to the guard, not to a broken fixture.
+
+### Probe 2 — `_zz_probe_hoist_test.dart` (written, run, deleted)
+Same layer HOISTED above `MaterialApp` (the arrangement `butlery_app.dart`'s new comment warns
+against): HOIST-A `text=ab` (shipped test asserts `'ab'`), HOIST-B `stillPushed=false` (shipped
+test asserts `findsNothing`). Both shipped assertions PASS under the wrong placement, because a
+hoist puts `DefaultTextEditingShortcuts` nearer the field and simply makes the guard dead code.
+So the word "silently" in that comment is exact, and no behavioural test can defend the
+placement — the comment is the control.
+
+### Verdict
+Pass, 0 blocking. Two advisories, both non-blocking on a comment-only commit:
+1. The test header's pre-existing first paragraph still says "Each test pumps a minimal
+   MaterialApp ... and asserts the corresponding Intent was dispatched". The new paragraph
+   correctly carves out the `Backspace vs. text editing` group, but 4 of the file's 10 tests
+   (the 3 `AppShortcuts.bindings` map-contract tests and the `mainTabSwitchRequest` test) pump
+   nothing and assert no dispatch. The commit set out to fix stale comments and left an equally
+   stale over-claim one paragraph above the one it fixed.
+2. The `readOnly` dead-key consequence (ARM2) is pinned by nothing; the realistic future mutant
+   is `&& !readOnly` added to `_focusIsInsideTextField`'s caller, which all 15 tests survive.
+   ~12 lines of `testWidgets` would pin it. Recommendation, not a gate.
+
+## 2026-08-08 — BUT-1816 second half: `withoutOrphanTail` (trigger: review of a staged diff, "be hardest on test strength")
+
+Scope: `lib/services/import/layout/orphan_tail.dart` (new), `test/unit/services/import/layout/
+orphan_tail_test.dart` (new), `test/unit/services/import/import_manager_orphan_tail_test.dart`
+(new, spy-strategy wiring), `lib/services/import/import_manager.dart`, `tools/corpus_split_eval.dart`.
+
+### Tree motion (twice, mid-round)
+Start-of-round md5 `orphan_tail.dart` `39a9bce9`; a parallel session then moved it to `4d7b0fe9`
+and again to `9762f606`, moved the unit suite `6d624418` -> `04ed880a`, and the tool
+`ba2e7fb4` -> `a653f667` -> `3608490e`. Both `lib` moves were COMMENT-ONLY (verified by diffing
+with `///`/`//` lines filtered out), so the battery measured on `4d7b0fe9` still applies. The
+suite move ADDED a test. The tool move landed `fixed`/`broke` counters in two steps: I read the
+file between them and saw both variables declared, printed and NEVER incremented — a real
+"prints (fixed 0, broke 0) by construction" defect that had self-healed 4 minutes later. Recorded
+as motion, NOT filed. Lesson re-confirmed: re-read before writing a word, and a partial edit read
+mid-flight looks exactly like a shipped bug.
+
+Also: my `test/_zz_probe_orphan/` directory was DELETED mid-run by something outside the driver
+(round-1 battery died at mutant 17 with FileNotFoundError after two "loading ..." errors). Round 1
+mutants 13/16/17/18 are therefore void; round 2 re-ran them.
+
+### Battery (replica under `test/_zz_probe_orphan/src/`, function renamed, driver with
+`finally` + signal restore, md5-verified identical after; 19 + 7 serial runs)
+
+Shipped-suite kills, round 1 (measured on `4d7b0fe9`, suite `6d624418`):
+
+| mutant | shipped-suite reds |
+|---|---|
+| `pages.last` -> `pages.first` | 2 (last-page, flat-index) |
+| byte comparison instead of `matchesLineCountOf` | 1 (BYTES) |
+| return text re-derived from the trimmed layout | 1 (BYTES) |
+| drop the flat-index offset | 1 (flat-index) |
+| page `sublist(0,pageRow)` -> `+1` | 3 |
+| text `sublist(0,textRow)` -> `+1` | 4 |
+| drop earlier pages from `trimmedPages` | 1 |
+| drop `imageWidth`/`imageHeight` | 1 |
+| **`headings.last` -> `headings.first`** | **0** |
+| **drop `if (pageRow == 0)`** | **0** |
+| **drop the `matchesLineCountOf` gate entirely** | **0** |
+| budget `>=` -> `>`; sum from `pageRow`; drop `.trim()` | 0 each |
+| drop `last.lines.isEmpty` guard | 0 |
+
+Round 2 (on `9762f606`/`04ed880a`, i.e. after the parallel session's fix) with three candidate
+fixtures added:
+- drop `pageRow == 0` -> killed ONLY by CAND-A (2-page doc, heading on page TWO's row 0).
+- `headings.last` -> `first` -> killed ONLY by CAND-B (two headings on one page).
+- drop the row-count gate -> killed by the session's NEW test "input has MORE rows than the
+  layout". Their fix works; my independent CAND-C found the same hole.
+- drop the budget -> killed by KEEPS **and** by "never cuts at a heading that is not the LAST
+  one" — i.e. that test's ENTIRE kill set is `{budget}`, a strict subset of KEEPS's, through the
+  same seam. Its fixture holds ONE heading, so the behaviour its name promises is untested.
+- drop `headings.isEmpty` -> 2 reds. drop `last.lines.isEmpty` -> 0 (subsumed).
+
+### Fixture trap measured (controlled pair)
+CAND-B FAILED at baseline with headings `Annas hurtbullar` + `Inlagd sill`, and PASSED with
+`Inlagd gurka` + `Inlagd sill`. Only the mid-heading's first token changed. Cause:
+`heading()` sets `words: 1`, so the line's type height is `145 / glyphSpan(tokens[0])`, and
+`Inlagd` (cap + descender) and `Annas` (cap, no descender) sit in DIFFERENT glyph buckets — the
+lower one falls under `HeadingDetector.titleSizeSpread`'s page-relative floor and is silently
+dropped from `headingLines`. The helper's own comment ("Every token is lowercase and
+letterless-free so `glyphSpan` is the same for all of them") is false for every heading fixture
+in the file, and it is exactly the trap the next person adding a second heading will hit.
+
+### Wiring test verified WITHOUT a mutant
+Probe `wiring_check_test.dart`: `MultiRecipeSplitter().split(pageWithTailText, layout: doc)` on
+the wiring fixture returns `BLOCKS=1 ANY_CONTAINS_TAIL=true` — so with the `withoutOrphanTail`
+line deleted the spy WOULD see `Inlagd sill` and the test reddens. The author's "two earlier
+versions asserted over the parsed recipe and both stayed green" is consistent with this: the
+parser drops the fragment, the splitter does not. Spy-on-the-input is the right shape.
+
+### Corpus figures re-derived (`dart run tools/corpus_split_eval.dart --trim`, ~90 s)
+10 trimmed pages; `139 -> 139 (fixed 0, broke 0)`; precision 66.64 -> 66.77 %; recall
+91.54 -> 91.52 %; tokens 24192 -> 24139 (= the 53 the wiring test's comment quotes). Every figure
+in `orphan_tail.dart`'s doc and in both deviation entries reproduces exactly, and the new
+fixed/broke pair CONFIRMS "unchanged at 139" rather than hiding a cancelling trade.
+
+### Three-level gap that nothing covers
+`ImportManager` passes `trimmed.layout` (not the stale `layout`) to `split`. Mutating that to
+`layout` makes `_splitByLayout` bail on `matchesLineCountOf` and silently drops the geometry path
+on exactly the pages the feature touches — and all three levels stay green: the unit tests never
+call the manager, the corpus arm passes `cut.layout` itself, and the spy observes only text.
+
+### Verdict
+Fail, 2 blocking (both test-strength, production behaviour correct): the "not the LAST one" test
+proves only the budget, and the `pageRow == 0` comment's "removing this line reddens nothing" is
+true only of the single-page fixtures present. Plus 4 advisories.
+
+### Closing hashes
+`orphan_tail.dart` 9762f606fb052d6dbbb8d3a9b62dfdcd (147 lines);
+`orphan_tail_test.dart` 04ed880acdcb2cc1fda7f8650f24c543 (247);
+`import_manager_orphan_tail_test.dart` e10bb75a21c9520c0010d3b10a8b27a8 (145);
+`import_manager.dart` f5ad2deb84fe756adec86ae9fc4a39af;
+`corpus_split_eval.dart` 3608490eed8624dc2d115079fdc89696.
+`flutter analyze` on all five: clean. The two suites: 14/14 green.
+
+## 2026-08-09 — BUT-1816 orphan-tail, round 2 (trigger: re-review after both blocking findings applied)
+
+Scope: `orphan_tail.dart`, `orphan_tail_test.dart`, `import_manager.dart`,
+`import_manager_orphan_tail_test.dart`, `corpus_split_eval.dart`. Verdict: pass, 0 blocking.
+
+**Tree moved TWICE mid-round, both times unstaged over the staged diff I was asked to judge.**
+Start-of-round `Read` returned index-matching bytes; by the first `md5sum` a parallel edit had
+renamed every fixture heading `Inlagd sill`/`Inlagd gurka` -> `Mandelforell`/`Mandelbiskvi`
+(both test files) and reworded two `import_manager.dart` comments; later `orphan_tail.dart`
+grew 147 -> 164 lines (comment-only). `git status` showed `MM`/`AM` on four of five. Re-read
+everything; the measurements below are on the FINAL worktree bytes.
+
+**B1 verified fixed, and re-verified after the rename.** `test/`-side replica of
+`withoutOrphanTail` with a `headings.first` switch. Staged fixture: `headingLines = [6, 13]`
+(both headings really detected, so `.first`/`.last` differ). Base cuts at 13 — sill gone, gurka
+kept, mid-page body kept. `.first` mutant: `after` exceeds the 120 budget at row 6, so it
+returns the input UNCHANGED and `expect(contains('Inlagd sill'), isFalse)` reddens. Killed.
+After the rename, re-probed: `glyphSpan('Mandelbiskvi') == glyphSpan('Mandelforell') == 1.45`,
+`headingLines = [6, 13]` again — still non-vacuous.
+
+**B2 verified fixed.** Same replica with a `dropPageRowGuard` switch, two-page fixture, heading
+at page two row 0. Base: unchanged. Mutant: trims 14 -> 9 rows and returns a pair with
+`matchesLineCountOf == false` — exactly the silent-decline the new source comment describes.
+Nothing else in the suite kills it. Page two's `bodyTypeHeight = 48.28` and its
+`headingLines = [0]`, so the fixture's premise holds. The rewritten source comment (an
+equivalence-domain claim, not a "this line is redundant" claim) is accurate.
+
+**A2 fixed but the repair mis-stated its own rule, and the rename then falsified it — fixed by
+me (test-only).** The repair wrote "any fixture with two headings must SHARE THEIR FIRST TOKEN".
+That is sufficient, not necessary: the real invariant is that both first tokens land in the same
+`glyphSpan` BUCKET. The rename to `Mandelbiskvi`/`Mandelforell` (one token each, sharing only a
+prefix) satisfies the real rule and contradicts the stated one — while the two-heading test's
+comment still opened "Both headings share their FIRST token on purpose" and then compared
+`Mandel` against `Inlagd`, a word the rename had removed from the file; the `line()` helper's
+copy still named `Inlagd`/`Annas`, neither of which appears any more. Rewrote both to state the
+bucket rule with the measured table (Mandelbiskvi = Mandelforell = Annas = 1.45, Inlagd = 1.80,
+a descender widening the span) and the consequence a future editor needs: rename either heading
+to anything carrying g/j/p/q/y and the test silently disarms.
+
+**A1 (`layout: trimmed.layout` pinned nowhere) — measured, and graded ADVISORY not blocking.**
+Probe: `split(cut.text, layout: staleLayout)` is BYTE-IDENTICAL to `split(cut.text)` — the
+row-count gate refuses the mismatched pair, so the mutant's whole effect is that the geometry
+path goes dark on exactly the pages the trim fires on. Silent, but fail-safe (output degrades to
+today's shipped text-rule behaviour; no new loss). Neither suite nor the eval arm can see it —
+`_formatTrim` pairs `cut.text` with `cut.layout` itself. A cheap honest fixture DOES exist and I
+measured it: two headings whose bodies each clear `_minLayoutBlockChars` (200) AND carry an
+instruction signal, plus the orphan tail, gives correct = 2 blocks opening `Inlagd gurka` /
+`Inlagd sill` against stale = 2 blocks opening `Inlagd gurka` / `Ror ner mjolet...`. Two traps:
+the obvious short fixture fails the layout path's own acceptance bars and prints 1/1/1 on all
+three arms (reads as "no fixture exists" — my first probe did exactly that); and block COUNT
+never separates them, only which row the second block OPENS on. Recorded so the deviation entry
+can say the measured failure mode rather than "unmeasurable".
+
+**Corpus figures re-derived, not cross-read.** `--trim` (~90 s, `BUTLERY_CORPUS_DIR=../butlery-corpus`,
+`/c/tools/flutter/bin/dart.bat`): trimmed 10, `139 -> 139 (fixed 0, broke 0)`, recall
+91.54 -> 91.52, precision 66.64 -> 66.77 — every figure in the task message and in the file's 120
+row, exact. The `--edge-crop` half printed 132/496, blind spot 62 = 37 + 25, precision
+66.26 -> 66.64, band 45 pages 66.65 -> 67.70, i.e. identical to my round-6 numbers, so
+"`--edge-crop` unchanged" holds. The 60 and 200 rows need `_tailBudget` edited and were NOT
+re-derived this round; the file now says so itself, which is the right caveat.
+
+Verified independently: `headingLinesForDocument` does return null when any page's
+`bodyTypeHeight` is null (`heading_detector.dart:254`), so the new multi-page paragraph in
+`withoutOrphanTail`'s doc is accurate.
+
+`flutter analyze --fatal-infos` on all five: clean. Both suites: 15/15 green on the final bytes.
+Two comment lines (`import_manager.dart` 612, 629) run past 80 chars; the analyzer does not flag
+them and `dart format` does not reflow comments — cosmetic, not a finding.
+
+End-of-round md5 (worktree):
+`orphan_tail.dart` 5d148ca4a5c634773730f21e3eeebcdc (164 lines);
+`orphan_tail_test.dart` b5154480c26c88c3b0da93257497856a (293 lines);
+`import_manager_orphan_tail_test.dart` 4dd3b388d50d8e5a67863df782fb4baa (145);
+`import_manager.dart` 8dd54b711413e9e669cd88ee70fb9515;
+`corpus_split_eval.dart` 493ed50241fa848194354b73ebb6c829.
+NOTE: four of five are `MM`/`AM` — the index does NOT contain the rename or the comment
+corrections. All five paths must be staged together.
+
+## 2026-08-09 — BUT-1816 orphan-tail, round 3 (trigger: "prove every guard has a test that reddens when that guard alone is removed"; read-only, no edits permitted)
+
+Scope: `lib/services/import/layout/orphan_tail.dart`, `test/unit/services/import/layout/
+orphan_tail_test.dart`, `test/unit/services/import/import_manager_orphan_tail_test.dart`,
+`lib/services/import/import_manager.dart`. Suites 15/15 green on the bytes reviewed.
+
+### Tree motion
+Round 2 closed `orphan_tail.dart` at `5d148ca4` (164 lines). Start of this round: `3e5b7efa`
+(190). End of this round: `a777d30b` (212) — it moved again WHILE I was measuring, and
+`import_manager.dart` went `8dd54b71` -> `8948bc5e` with it. Both moves COMMENT-ONLY apart from a
+local rename `after` -> `tailChars` and `const` -> `const int`, so the matrix below still applies.
+BOTH SUITES were byte-identical to round 2's closing hashes throughout (`b5154480`, `4dd3b388`) —
+i.e. ~48 lines of new prose landed under a frozen suite, which is precisely the "unasserted lines"
+signal, and one of those lines is the round's blocking finding. `orphan_tail.dart` is `AM`: the
+INDEX still holds the pre-correction doc (diffed — comments only, no guard differs).
+
+### Technique that made this round cheap: the scratchpad kill matrix
+No repo file may be written in a read-only review, and auto-mode refuses `lib/` mutants anyway.
+Instead: three throwaway files in the session scratchpad, run with
+`C:\tools\flutter\bin\dart.bat --packages=C:/Butlery/butlery/.dart_tool/package_config.json <f>.dart`.
+`package:butlery/...` resolves from outside the tree; the whole
+`text_layout`/`glyph_metrics`/`heading_detector`/`orphan_tail`/`multi_recipe_splitter` cluster is
+deliberately Flutter-free, so it runs under plain `dart`. A replica of `withoutOrphanTail` taking
+`Set<String> off`, plus all 13 tests replicated as named checks, printed the full matrix in one
+~15 s run. Round 1 needed 26 serial `flutter test` runs and lost 4 mutants to its probe directory
+being deleted mid-run; that cannot happen outside the tree.
+
+### The matrix (guard switched off ALONE -> which tests redden)
+
+| guard | killed by |
+|---|---|
+| null-layout gate (as the `layout!` bang mutant) | T5 no-layout |
+| `matchesLineCountOf` | **T7 MORE rows only** — NOT T6 FEWER |
+| `pages.isEmpty` | *nothing* |
+| `last == null` or `last.lines.isEmpty` | *nothing* |
+| `headings.isEmpty` | T9 last-page, T12 no-headings |
+| `pageRow == 0` | **T4 two-page only** — NOT T11 single-page |
+| `_tailBudget` | T2 KEEPS |
+| `textRow == null` | *nothing* |
+| `textRow <= 0` / `textRow > rows.length` | *nothing* |
+| flat offset | T10 flattened-index |
+| `headings.last` -> `.first` | T3 cuts-at-LAST |
+| `pages.last` -> `.first` | T9, T10 |
+
+Compound {row-count gate, bound} off -> T6 and T7 both redden. So T6 pins the bound's SHAPE only,
+exactly as its own comment says. Round 1's battery agrees where the two overlap.
+
+### Unreachable, not untested — the distinction the matrix forces
+Four guards redden nothing because no input can reach them in a state where they change the answer:
+- `pages.isEmpty` and `last == null`: `matchesLineCountOf` calls `text`, which is null unless
+  `isComplete`, which is false for an empty page list and for any null page. Measured:
+  `DocumentLayout([]).matchesLineCountOf('a\nb') == false`, `[page,null]` likewise.
+- `last.lines.isEmpty`: REACHABLE (`[emptyPage].isComplete == true`, `matchesLineCountOf('')` true)
+  but unobservable — `bodyTypeHeight` is null for an empty page so `headingLines` returns `[]` and
+  the NEXT guard returns the same `unchanged`. Equivalent mutant, matching round 1's "0 reds".
+- `textRow == null` and `textRow > rows.length`: once the row-count gate passed,
+  `rows.length == totalRows` and `textRow <= lineOffsets.last + lastPage.lines.length - 1`, which
+  is `totalRows - 1`. Swept 252 generated shapes (1-3 pages, 4-7 body lines, heading at every
+  position, 0-2 tail rows, with and without an empty MIDDLE page): 0 nulls, 0 out-of-bounds, 0
+  non-positive. `textRow <= 0` is separately impossible because `pageRow >= 1`.
+
+### BLOCKING — a false coverage claim that landed after round 2 passed
+`orphan_tail.dart` :191-194 (new this round):
+
+> "`textRow > rows.length` is live and load-bearing: a text with fewer rows than the geometry
+> claims reaches here, and `orphan_tail_test.dart` pins it."
+
+Both halves are false. A text with fewer rows than the geometry is refused 56 lines earlier by
+`matchesLineCountOf` and never reaches the bound; and no test reddens when the bound alone is
+removed. It reads as a garbled inversion of the TEST file's own accurate comment (:169-172, "its
+sibling above is answered by the `textRow > rows.length` bound EVEN WITH THE GATE DELETED, so it
+pins the gate's SHAPE and not its existence"). The sibling comment two guards up (:145-150,
+"`pages.isEmpty` and `last == null` cannot fire once the gate above passed") is correct and is the
+model the bound's comment should follow. Filed as blocking because this ticket's whole review
+history is about coverage claims that are not true, and a future reader deletes or trusts a guard
+on the strength of exactly this sentence.
+
+### Advisories
+1. T11 "does nothing when the heading is the page first row" is VACUOUS for `pageRow == 0`:
+   its tail is 132 chars so the BUDGET answers it, and with the budget also off `textRow == 0`
+   answers it — three guards must go before it reddens. T4 (two pages) is the sole killer.
+2. T4 is therefore a single point of failure and asserts only `pageTwo.bodyTypeHeight != null`.
+   That premise does cover the nearest real risk (page two has exactly 4 body lines, the exact
+   `_minBodyLines`), but not the detector's size bar. One `expect(HeadingDetector.headingLines(
+   pageTwo), [0])` would lock it.
+3. The 120 boundary is unpinned: measured tails are 4 / 88 / 132 / 232 chars, so 120 could drift to
+   200 — the value the deviations file DECLINED — with the suite green. A 119-cuts / 120-keeps pair
+   costs two fixtures (verified by probe those are the real outcomes).
+4. The corpus's own commonest documented shape is untested: a heading that IS the last row, 0 chars
+   after it (`IAUS`, `Sina ingredienser`, `Sina ingr` — 3 of the 10 tails the doc lists). Verified
+   by probe that it works (9 rows -> 8, invariant holds); nothing in the suite builds it.
+5. The wiring fixture's own recipe title `Frukostgrot med havre` is NOT detected as a heading —
+   `glyphSpan('Frukostgrot')` is 1.80 (the `g`), so typeHeight 80.56 falls under the page-relative
+   floor of 90.91 and `headingLines` returns `[7]`, not `[0,7]`. Harmless for what that test
+   asserts, but it is the same descender trap `orphan_tail_test.dart`'s helper carries a long
+   warning comment about, and the wiring file carries none.
+
+### Wiring test verified without touching production
+`MultiRecipeSplitter().split(...)` run directly on the wiring fixture: shipped path (trim first)
+-> 1 block, 7 rows, `Mandelforell=false`, `havregryn=true`. Mutant path (raw input, i.e. the
+`withoutOrphanTail` line deleted) -> 1 block, 9 rows, `Mandelforell=true`. So the spy would receive
+the tail and `expect(received.contains('Mandelforell'), isFalse)` reddens. It asserts on
+`spy.seen` — what `canHandle`/`import` RECEIVE — not on parse output, which is the right shape and
+matches the docstring's account of two earlier versions failing. The no-layout test is a control
+and correctly does NOT redden under that mutant.
+
+### Verdict
+Fail, 1 blocking (the false coverage claim at `orphan_tail.dart` :191-194), 5 advisories.
+Production behaviour is correct; every guard that CAN be pinned is pinned by at least one test.
+
+### Closing hashes
+`orphan_tail.dart` a777d30b0955cf2f46fc8e0b42742f0f (212 lines, `AM`);
+`orphan_tail_test.dart` b5154480c26c88c3b0da93257497856a (293, `A`);
+`import_manager_orphan_tail_test.dart` 4dd3b388d50d8e5a67863df782fb4baa (145, `A`);
+`import_manager.dart` 8948bc5e7a6c4dee6d1fa071e0455a16.
+Suites: 15/15 green. The index does NOT hold the current comments on either `lib` file — stage all
+four paths together.
+
+## 2026-08-09 — BUT-1816 orphan-tail, round 5 (trigger: re-review after a comment-only diff invalidated the round-4 pass; three files, no edits, no in-repo mutants)
+
+Scope: `lib/services/import/layout/orphan_tail.dart`, `lib/services/import/import_manager.dart`,
+`lib/services/import/multi_recipe_splitter.dart`. Verdict: pass, 0 blocking, 2 advisories.
+Told as already verified and not redone: `dart analyze --fatal-infos` clean; 35 tests green;
+`_tailBudget` 120 -> 200 reddens exactly one test, file restored byte-identical.
+
+### What moved since round 3, and how it was graded
+Five comment-only changes. Round 3's kill matrix (see that entry) still applies unchanged — the
+suites are the same shape, `orphan_tail_test.dart` has grown to close round 3's advisories 1-4
+(honest T11 comment, `headingLines(pageTwo) == [0]` premise on T4, the 119/120 boundary pair, and
+the zero-char `IAUS` tail). So COVERAGE and REACHABILITY claims were answered from the matrix, and
+only the one MECHANISM claim needed a fresh measurement.
+
+| new prose | class | verdict |
+|---|---|---|
+| `import_manager.dart` :611-617 discard budget scoped LAYOUT-bounded / TEXT-unbounded | mechanism | true — `_splitByLayout` bails on `discarded >= _minLayoutBlockChars`; the text path drops `rawLines[0..boundaries.first]` and every block failing `_isCompleteRecipeBlock`, at any size |
+| `multi_recipe_splitter.dart` :20-27 same scoping on the class doc | mechanism | true, same reading |
+| `orphan_tail.dart` :163-172 all three page guards "removable without effect", two reasons distinguished | reachability | matches the matrix exactly: `pages.isEmpty`/`last == null` cannot fire (`matchesLineCountOf` implies `isComplete`), `lines.isEmpty` fires and is unobservable (empty page -> no `bodyTypeHeight` -> `headingLines` empty -> next guard returns the same `unchanged`) |
+| `orphan_tail.dart` :137-145 sanitizer paragraph naming `sourceUrl` | fact about other files | true — `FirebaseRecipeRepository._sanitizeRecipe` :200-209 copies title, description, `sourceUrl` and nothing else; `OCRExtractionService` :533-535 sanitizes the text only; `corpus_split_eval.dart` :382 derives its input from `croppedDoc.text`, so the harness really is always byte-identical |
+| `orphan_tail.dart` :128-135 "THIS RULE CAN UN-JUDGE THE PAGE IT JUST TRIMMED" | mechanism, NEW | true — measured, below |
+
+### The witness for the un-judge claim (scratchpad, round 3's technique)
+`dart --packages=<repo>/.dart_tool/package_config.json scratchpad/unjudge_probe.dart`, one page:
+2 body rows (4 words each) + `Mandelforell` heading + 3 SHORT body rows (22 chars each, 66 total).
+
+    BEFORE bodyTypeHeight 48.28   headingLines [2]   forDocument [2]
+    trim fired true   tail chars 66   rows 6 -> 2   row-count invariant holds true
+    AFTER  bodyTypeHeight null    forDocument null
+    split(cut.text, layout: cut.layout) == split(cut.text)  ->  true
+    CONTROL (4 body rows before the heading): trim fires, bodyTypeHeight 48.28, forDocument []
+
+So every clause holds: the page it just trimmed becomes unjudgeable, `headingLinesForDocument`
+goes null for the WHOLE document, the pair still passes the row-count gate, and the splitter's
+output is byte-identical to a run with no geometry — i.e. the text rules, which is what the
+paragraph calls "today's shipped behaviour". The control matters as much as the witness: a page
+retaining 4 body rows stays judgeable, so the paragraph says CAN and not DOES.
+
+### Advisories (neither blocking, neither needs a test)
+1. The un-judge trigger is narrower than "measurable rows": the tail must contain BODY-qualifying
+   rows (`PageLayout._minBodyWords`, 4 words, with word boxes). A one- or two-word tail cannot fire
+   it — which is 3 of the 10 corpus tails the same file lists (`IAUS`, `Sina ingredienser`,
+   `Sina ingr`), and the shape every budget fixture in the suite uses. Naming `_minBodyWords` beside
+   `_minBodyLines` would make the sentence as checkable as the rest of the file.
+2. No test pins the un-judge path, and that is right: its outcome is the documented fail-safe
+   (fall back to the text rules), and ACCEPTED_DEVIATIONS.md :997-1008 already records the adjacent
+   trimmed-vs-stale-layout behaviour as deliberately unpinned for the same reason. A test here would
+   pin a degradation, not a promise.
+
+### Cross-checks that could have gone wrong and did not
+- The 120-200 band story in `orphan_tail.dart` :67-81 now matches BOTH deviation files: the
+  "subheadings inside a recipe" wording is retracted in all three places (docs :970-986, the rules
+  file :139-147, the library doc), and the retraction is recorded rather than deleted. My loaded
+  copy of `.claude/rules/accepted-deviations.md` was the STALE pre-correction text — the on-disk
+  staged copy is correct. Re-grep the file rather than trusting session context on a day the entry
+  moved.
+- The shipped/declined figures agree everywhere: 10 pages trimmed, 66.64 -> 66.77 % precision,
+  91.54 -> 91.52 % recall, 139 block counts unchanged; 200 costs recall 91.33 % and one page.
+
+### Closing hashes
+`orphan_tail.dart` 557b28de59377f247fc0e97d5c02a347 (245 lines);
+`import_manager.dart` 8ab06d19ff3f022bcfa5249686f67f01 (1111);
+`multi_recipe_splitter.dart` afee76e48a959b8e67b1831858b92bc6 (360);
+suites unchanged this round: `orphan_tail_test.dart` e2bc21ebf5032822ec8fb5c01bfc1ff3 (366),
+`import_manager_orphan_tail_test.dart` 4dd3b388d50d8e5a67863df782fb4baa (145).

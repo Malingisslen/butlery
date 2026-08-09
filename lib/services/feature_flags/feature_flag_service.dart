@@ -113,15 +113,64 @@ class FeatureFlagService {
     //
     // THE SPLIT PATH IS LIVE behind this flag as of 248481c83 (2026-08-07):
     // `ocr_extraction_service` attaches the `PageLayout`, `photo_import_viewmodel`
-    // carries it across pages, and `import_manager` hands it to
-    // `MultiRecipeSplitter.split(input, layout: layout)`, which opens a block
-    // per heading found by TYPE SIZE — where the text rules need a title-shaped
-    // line with an ingredient cluster AFTER it. Measured on 181 hand-verified
-    // corpus pages: multi-recipe spreads 19 % -> 33 % correct, recipes never
-    // emitted 47 -> 39, single-recipe pages unchanged at 92 %. PROXY figures —
-    // Windows offline OCR, not ML Kit. The one step that remained after it,
-    // ordering two-column pages, was measured and DECLINED on 2026-08-07
-    // (ACCEPTED_DEVIATIONS.md), so there is no "later step" to wait for.
+    // carries it across pages, and `import_manager` runs `withoutOrphanTail`
+    // and then hands the result to `MultiRecipeSplitter.split(input, layout:)`,
+    // which opens a block per heading found by TYPE SIZE — where the text rules
+    // need a title-shaped line with an ingredient cluster AFTER it. Measured on
+    // 181 hand-verified corpus pages: multi-recipe spreads 19 % -> 33 % correct,
+    // recipes never emitted 47 -> 39, single-recipe pages unchanged at 92 %.
+    // PROXY figures — Windows offline OCR, not ML Kit.
+    //
+    // **This flag also switches on a rule that DELETES text from an import**
+    // (`orphan_tail.dart`, 2026-08-08): a heading the camera frame separated
+    // from its own recipe is cut off the end of the LAST page when under 120
+    // characters follow it. Measured: 10 of 181 pages trimmed, precision
+    // 66.64 -> 66.77 %, recall 91.54 -> 91.52 %, right block counts unchanged
+    // (fixed 0, broke 0). All 10 trimmed pages were read against the PHOTOS on
+    // 2026-08-09 and all 10 are correct cuts. The 120-200 band was designed and
+    // then DECLINED by its own gate — every tail up there carries readable
+    // content under the heading, in one case a whole small recipe. (An earlier
+    // version of this line called those tails "subheadings inside a recipe",
+    // read off the bare text and wrong on both examples it named.)
+    //
+    // **The recall figure UNDERSTATES the trim, and the reason is BUT-1818.**
+    // The corpus gold records frame-cut half recipes as complete ones (>=12 of
+    // 242 verified entries), so recall scores retained debris as a hit and the
+    // trim is penalised for removing exactly what it was built to remove. Read
+    // `91.54 -> 91.52` as an upper bound on the cost, not the cost.
+    //
+    // **OFF is the code default, and off means nothing is cut.** No geometry is
+    // attached (`OCRExtractionService._layoutEnabled`), so `withoutOrphanTail`
+    // no-ops on a null layout and the splitter never sees a layout either.
+    //
+    // **But turning it off does not undo what is already cached.** The FLAG
+    // itself does propagate without a restart — `MaintenanceModeGate`
+    // (`butlery_app.dart`, inside `MaterialApp.builder`, so app-wide) holds the
+    // one `addOnConfigUpdatedListener` subscription, and the subscription's
+    // handler IN THIS FILE calls `activate()`, which swaps the whole config.
+    //
+    // Where real-time updates are unsupported or unreachable, there is NO
+    // mid-session fallback: nothing re-fetches on a timer or on foreground.
+    // `fetchAndActivate` runs in exactly two places — `initialize()` at app
+    // start, and `refresh()`, reachable only from the maintenance blocker's
+    // retry button. `minimumFetchInterval` (1 h) THROTTLES those fetches; it
+    // does not schedule one. So on that path the flag lands at the next app
+    // start. (A draft of this paragraph said "the fallback is one hour", which
+    // reads as a poll and is not what the constant does.)
+    //
+    // What survives either way is the OCR CACHE: it is keyed on the hash of the
+    // preprocessed image, not on the flag, so a photo already read while the
+    // flag was on keeps its stored geometry and keeps being trimmed. It leaves
+    // that cache only on app restart, on the 24 h TTL, or by LRU eviction past
+    // 100 distinct images. In memory only.
+    //
+    // So the honest instruction is the same either way: flip the flag, then
+    // restart the app. Where real-time works the restart is for the cached
+    // images; where it does not, it is for the flag as well. Say that to Malin
+    // rather than "flip the flag and it's as before".
+    // (An earlier version of this block said "there is no later step to wait
+    // for", about column ordering. That was true of column ordering and went
+    // false the moment this step landed behind the same flag.)
     //
     // **Keep the Remote Config description in step with this block** — the
     // console shows the key, not this comment, and Malin reads the description

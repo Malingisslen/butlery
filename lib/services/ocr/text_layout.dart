@@ -83,13 +83,16 @@
 ///     text under one image-hash key) -> `_PhotoPage.layout` ->
 ///     `DocumentLayout` built in `_recombineAndParse` ->
 ///     `ImportManager.autoParseMulti(layout:)` ->
+///     `withoutOrphanTail(input, layout)` (since 2026-08-08) ->
 ///     `MultiRecipeSplitter.split(input, layout:)`
 ///
-/// All of it behind `enable_layout_recipe_split`, default off. The LAST hop
-/// declines unless [DocumentLayout.matchesLineCountOf] accepts the string it
-/// is handed — the earlier ones decline for their own reasons (a null
-/// `PageLayout`, [DocumentLayout.isComplete], a page the detector cannot
-/// judge), so do not go looking for this check in `_recombineAndParse`.
+/// All of it behind `enable_layout_recipe_split`, default off. The last TWO
+/// hops each decline unless [DocumentLayout.matchesLineCountOf] accepts the
+/// string they are handed — the trim consults the same gate one hop earlier,
+/// and hands the splitter a pair that still satisfies it. The earlier hops
+/// decline for their own reasons (a null `PageLayout`,
+/// [DocumentLayout.isComplete], a page the detector cannot judge), so do not go
+/// looking for this check in `_recombineAndParse`.
 ///
 /// Scoped to the ViewModel path. `PhotoImportStrategy` is the OTHER photo
 /// route (`importSinglePhoto`, the handwriting loops) and calls the text

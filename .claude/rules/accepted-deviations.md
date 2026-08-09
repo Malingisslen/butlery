@@ -115,6 +115,46 @@ files in the same edit.
 
 ## Engineering
 
+- **TRIMMING a trailing orphan heading is BUILT at a 120-character budget; the
+  120-200 band is MEASURED AND DECLINED.** `withoutOrphanTail` cuts a page at its last
+  detected heading when under 120 characters follow it, applied by `ImportManager`
+  BEFORE `split` — so `MultiRecipeSplitter` keeps its "never hands back a single
+  SHORTENED block" contract (it does drop furniture when it splits; that is a separate
+  promise on `split`) and the eval arm can still measure. Shipped figures over 181 gold pages,
+  on top of the edge crop, from `corpus_split_eval.dart --trim`: 10 pages trimmed,
+  precision 66.64 -> 66.77 %, recall 91.54 -> 91.52 %, right block counts unchanged
+  at 139 (fixed 0, broke 0 — the arm prints the split, so "unchanged" is not a
+  masked swap). The arm also prints WHICH ten pages, with each heading and its
+  character count, so `orphan_tail.dart`'s list is checkable by command.
+  **RECALL IS BIASED AGAINST THIS RULE (BUT-1818):** the gold records frame-cut half
+  recipes as complete ones (>=12 of 242), so retained debris scores as a hit and the
+  trim is penalised for doing its job. `91.54 -> 91.52` is an upper bound on the cost,
+  not the cost. The verdicts rest on the PHOTOGRAPHS, not on that column.
+  **Dark until the geometry flag is on:** with
+  `enable_layout_recipe_split` false — the code default — no layout reaches the
+  splitter, so `withoutOrphanTail` returns its input untouched and nothing is cut.
+  Do not read "BUILT" as "live for every user".
+  **The 120-200 band was designed as a third outcome (show it unticked in the picker)
+  and then declined by its own gate.** Every tail in that band carries READABLE CONTENT
+  under the heading — a whole small recipe (`Chokladkräm`), an intro paragraph
+  (`Annas hurtbullar`), the start of the next recipe (`Inlagd sill`, `Mixade vitaminer`),
+  a tip section with its own list (`I stället för sås`). Below 120 there is only
+  frame-cut debris. The budget is a PROXY for exactly that, so the band stays off and
+  the UI half (`uncertainIndices` through the viewmodel to the picker, an ARB string, a
+  widget test) was never built.
+  **CORRECTED 2026-08-09 — the verdict stands, the stated reason was wrong.** The
+  2026-08-08 reading was done on the bare TEXT and called those two "subheadings inside
+  a recipe"; re-read against the PHOTOGRAPHS, `Chokladkräm` is a complete little recipe
+  and `I stället för sås` is a new section's display heading. The same text-only pass
+  mis-graded the SHIPPED window too (reported 8 of 10; Malin objected; all ten opened as
+  images are 10 of 10 CORRECT, and two are the back-cover blurb of a different book
+  lying behind the cookbook). Never re-judge either set from the text — open the images.
+  Do not raise the budget above 120 without re-reading those nine that way; the corpus
+  measurement at 200 shows the cost — recall 91.33 %, one page lost.
+  Re-open the band the day the picker can MERGE two blocks (BUT-1817): a wrong guess
+  becomes undoable and the trade changes. PROXY — Windows offline OCR, not ML Kit.
+  BUT-1816, 2026-08-08, corrected 2026-08-09
+
 - **Letting a SINGLE surviving layout block stand, instead of falling back to the text
   rules, is MEASURED AND DECLINED — do not build it.** `MultiRecipeSplitter._splitByLayout`
   ends on `if (blocks.length < 2) return null`, so a page whose orphan trailing heading was
@@ -123,8 +163,14 @@ files in the same edit.
   (single pages 122/133, spreads 16/48, 39 lost — all identical to today) and BREAKS at the
   live 200-char budget (spreads 15/48, 40 lost, one page broken). It is also worth nothing:
   gold-token recall unchanged at 91.56 %, precision 66.26 -> 66.27 %, **four tokens across
-  181 pages**. The corpus does not contain the case in measurable quantity. Re-derive with a
-  mutation probe on that one line, reading the BLOCK counts off
+  181 pages**. **CORRECTED 2026-08-08, same day:** that last figure is right but its
+  generalisation was wrong. The entry originally read "the corpus does not contain the case
+  in measurable quantity" — it does. 19 of 247 captures END their import on a next-recipe
+  heading (`Inlagd sill`, `Mandelforell`, `Annas hurtbullar`), and ALL 19 reach the import
+  because the layout path declined. This gate is simply not the one that declines: 14 of the
+  19 bail on `flat.length < 2` and only **2** on the single-block rule. So the verdict
+  below stands for THIS gate and says nothing about the symptom — see the trim entry.
+  Re-derive with a mutation probe on that one line, reading the BLOCK counts off
   `corpus_split_eval.dart --layout` and the TOKEN figures off `--edge-crop`. (That arm also
   prints the paired block report, because it implies `--layout`; `--layout` alone prints no
   tokens.) PROXY figures — Windows offline OCR, not ML Kit. BUT-1816, 2026-08-08
