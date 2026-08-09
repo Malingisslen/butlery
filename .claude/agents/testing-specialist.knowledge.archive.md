@@ -17511,3 +17511,178 @@ retaining 4 body rows stays judgeable, so the paragraph says CAN and not DOES.
 `multi_recipe_splitter.dart` afee76e48a959b8e67b1831858b92bc6 (360);
 suites unchanged this round: `orphan_tail_test.dart` e2bc21ebf5032822ec8fb5c01bfc1ff3 (366),
 `import_manager_orphan_tail_test.dart` 4dd3b388d50d8e5a67863df782fb4baa (145).
+
+## 2026-08-09 — BUT-1818 closing gate: the per-page zero claim, measured (trigger: review round on `orphan_tail.dart` + `feature_flag_service.dart`)
+
+Round asked for one thing: confirm the newly-asserted sentence "per page under `--no-frame-cut`,
+ZERO pages lose a gold token and ZERO gain one, so the aggregate is not hiding a trade either"
+(`orphan_tail.dart` :141-144). It holds, and so does everything else quoted in the two files.
+
+### How it was measured, without touching the tree
+Three throwaway probes in the scratchpad, run with
+`dart --packages=C:/Butlery/butlery/.dart_tool/package_config.json <probe>.dart` — the ladder's
+step (2). Nothing in the repo or the corpus was written; the shipped CLI was deliberately NOT run,
+because it writes a report file.
+
+1. `trim_perpage_probe.dart` — replays the `--trim` loop (crop -> `withoutOrphanTail` -> `split`)
+   and prints EVERY page whose gold-token intersection moves.
+2. `frag_detail_probe.dart` — fragment/tail counts per page, the gold-vs-gold movement table, and
+   the actual block texts of the one page the unbiased gold loses.
+3. `budget_sweep_probe.dart` — a byte-faithful copy of `withoutOrphanTail` with `_tailBudget`
+   turned into a PARAMETER, so all three rows of the doc's table (60/120/200) come out of one run
+   with no `lib/` mutation. This is the reusable trick of the round.
+
+### Results — every figure in the two files reproduces
+```
+budget=60  pages=181 trimmed=7  recall 91.54 -> 91.52  precision 66.64 -> 66.67  aligned 139 -> 139 (fixed 0, broke 0)
+budget=120 pages=181 trimmed=10 recall 91.54 -> 91.52  precision 66.64 -> 66.77  aligned 139 -> 139 (fixed 0, broke 0)
+budget=200 pages=181 trimmed=19 recall 91.54 -> 91.33  precision 66.64 -> 66.98  aligned 139 -> 138 (fixed 0, broke 1)
+budget=120 --no-frame-cut       recall 91.59 -> 91.59  precision 66.03 -> 66.18  aligned 144 -> 144 (fixed 0, broke 0)
+```
+- **The claim under review:** `--no-frame-cut` → `hits 15974 -> 15974 of 17441`, **pagesLosing=0,
+  pagesGaining=0**. Not a rounded zero and not a masked swap. CONFIRMED.
+- Biased run: `16121 -> 16118 of 17611`, and the whole delta is ONE page
+  (`blandat-svart/PXL_20260803_204356897_MACRO_FOCUS`, 84 -> 81) carrying exactly
+  `mandelforell`, `räkna`, `rensad`. Its gold `recipe-02` is titled `Mandelforell`, has 0
+  ingredients and one instruction `Räkna med en (rensad och sköljd...` — so the three
+  tokens and the "zero ingredients, one truncated instruction" sentence are the same fact.
+- Advisory 1 (applied this round) is exact: 11 `fragment` entries sit on 8 pages, and **exactly one
+  of those 8 is also a trimmed page** — the Mandelforell one, which carries exactly 1 fragment. So
+  "only ONE of the 11" is literally true, not approximately.
+- Movement table: gained 6, lost 1, the lost being `PXL_20260803_204205028`; the eighth page
+  `PXL_20260803_204143402` is gold 5 -> 2, blocks 1, wrong under both golds — moves nothing.
+- The blocking finding from the previous round re-reproduces verbatim out of the real splitter:
+  block 1 `Potatis- och purjogratäng` (45 rows) CONTAINS `Dillstuvad`; block 2
+  `Med mangold eller nässlor` (12 rows); block 3 `Hasselbackspotatis` (13 rows).
+- The 10 trimmed tails and their character counts match the library doc one for one
+  (`Sina ingredienser` 0, `Sina ingr` 0, `IAUS` 0, `Köttsa/l` 8, `Olika fyllningar…` 8, `Vard{` 22,
+  `Mandelforell` 24, `Kraftf` 70, `Varm` 98, `Djupfrysning av tårtor` 98). The 120-200 band holds
+  exactly the 9 tails both deviation files name.
+- Corpus totals: 361 entries, **242 verified**, 181 pages with verified gold — the denominators the
+  docs use. `layout-winocr.json` files = **250**, of which **247** decode to a non-empty page: that
+  is the whole 250-vs-247 discrepancy between the column-ordering entry and this one. Both figures
+  are right under their own definition; do not file it.
+
+### Source claims spot-checked (all true)
+`_minLayoutBlockChars` 200, `_maxTitleChars` 60, `PageLayout._minBodyLines` 4; the discard budget
+IS checked before `blocks.length < 2` (splitter :245 then :247) and `flat.length < 2` is :202;
+`ImportManager` :639-643 trims then passes the TRIMMED layout; `headingLinesForDocument` returns
+null on any page with a null `bodyTypeHeight` (:254); `OCRExtractionService` sanitizes the TEXT
+only (:533-535); `FirebaseRecipeRepository._sanitizeRecipe` rewrites title, description, sourceUrl
+and nothing else (:200-209).
+
+### Advisories (non-blocking, no test owed)
+1. **Wording drift, one site.** The corrected phrase ("debris of the KIND this trim removes —
+   though only ONE of the 11 sits on a page the trim actually cuts") landed in `orphan_tail.dart`
+   :107-110 only. `feature_flag_service.dart` :148 still reads "(`frameCut: fragment` — debris the
+   trim removes)". Same sentence the advisory was about; a reader of the flag file infers the trim
+   explains the whole 0.02 when ten of the eleven bias the LEVEL instead.
+2. **Unrelated, found while checking the sanitizer claim.** `FirebaseRecipeRepository.create`
+   :264-273 assigns `recipeToSave = _sanitizeRecipe(entity)` and then, when normalization is
+   needed, rebuilds from `entity.copyWith(...)` — discarding the sanitized title/description on
+   that branch. `update` :326-333 rebuilds from `recipeToSave` and is correct. Pre-existing, out of
+   this ticket's scope, strengthens rather than falsifies the orphan_tail sentence.
+3. "35 tests green" could not be matched to a suite: `orphan_tail_test.dart` is 16 tests and
+   `heading_detector_test.dart` 26; both run green together (42). Not contested — just not the
+   number I can reproduce.
+
+### Verdict
+No FALSE claim found in either reviewed file. `dart analyze --fatal-infos` clean over both plus the
+suite and the eval tool; non-ASCII scan of both files shows only å/ä/ö/Å, em-dash, en-dash and an
+ellipsis — no control or invisible characters.
+
+### Closing hashes
+`orphan_tail.dart` 6d43f7448d31e6a9c79236568d1b4cf0 (359 lines);
+`feature_flag_service.dart` 5cdfd966213ea6bb986ca4fcf9a5de4a (470);
+`orphan_tail_test.dart` e654a1747afd37f2bfefe03b1251d08e (425, unchanged this round);
+`corpus_split_eval.dart` a3478d3d2cd0151246141ca98d428096 (1031).
+
+## 2026-08-09 — BUT-1818 closing commit-gate read: every quoted figure re-derived from the shipped tool
+
+Trigger: second (closing) review pass over `orphan_tail.dart` and `feature_flag_service.dart`
+after the fixes landed. The previous pass had been launched against pre-fix bytes; this one
+re-read what ships (hashes below).
+
+### What I ran, and what it settled
+
+1. `dart run tools/corpus_split_eval.dart --trim` — 181 pages, 10 trimmed, right block count
+   `139 -> 139 (fixed 0, broke 0)`, recall `91.54 -> 91.52`, precision `66.64 -> 66.77`,
+   tokens `24192 -> 24139`. The printed "every page trimmed" list matches the ten tails
+   enumerated in `orphan_tail.dart` VERBATIM, char counts included (0/0/0/8/8/22/24/70/98/98,
+   `Sina ingredienser`, `Sina ingr`, `IAUS`, `Köttsa/l`, `Olika fyllningar med vaniljkräm`,
+   `Vard{`, `Mandelforell`, `Kraftf`, `Varm`, `Djupfrysning av tårtor`). Longest heading is 31
+   chars, so the doc's "none of these ten reach the 34-char truncation" holds.
+2. `--trim --no-frame-cut` — `144 -> 144 (fixed 0, broke 0)`, recall `91.59 -> 91.59`,
+   precision `66.03 -> 66.18`, and the per-page table: 8 pages carry a dropped fragment,
+   gained 6, lost 1 (`PXL_20260803_204205028`, gold 3 -> 1, blocks 3). Raw integers read out of
+   the JSON reports: biased `16121 -> 16118 of 17611`, corrected `15974 -> 15974 of 17441` —
+   both exactly as quoted in both files.
+3. Corpus population walk (python, mirroring `recipeEntries`' flat-vs-block rule): 361 entries,
+   **242 verified**, 14 `frameCut` = **11 fragment + 3 tail**, fragments on **8 pages**. Set
+   intersection with the trimmed page list: exactly ONE fragment sits on a trimmed page
+   (`PXL_20260803_204356897_MACRO_FOCUS`), as the doc says. That page's gold entry is titled
+   `Mandelforell`, `ingredients: []`, one truncated instruction — as described. All three `tail`
+   entries are flat (single-recipe) golds, one of them on the trimmed `Köttsa/l` page, which is
+   why dropping them would have changed the population.
+4. Replica probe (scratchpad, `dart --packages=<repo>/.dart_tool/package_config.json`, nothing
+   written in the tree) with `_tailBudget` as a PARAMETER — reproduces all three budget-table
+   rows: 60 -> 7 pages / 66.67 / 91.52 / 139; 120 -> 10 / 66.77 / 91.52 / 139; 200 -> 19 /
+   66.98 / **91.33** / **138**. Same probe printed the per-page token movement: at 120 the
+   ENTIRE corpus-wide delta is one page losing exactly `mandelforell`, `räkna`, `rensad` — the
+   three tokens the doc names. At 200 five pages lose gold tokens, four of them the band tails
+   the doc calls readable content (`Inlagd sill`, `Mixade vitaminer`, `Chokladkräm`, a
+   hallonsmoothie page) — independent corroboration of a grading done from photographs.
+5. Band probe: exactly **9** tails in the 120-200 band, `Inlagd sill` at 159 chars and
+   `Annas hurtbullar` at 143 — both as quoted — plus `Chokladkräm` 153, `I stället för sås` 150,
+   `Mixade vitaminer` 166 and four unnamed ones.
+6. Block composition of the one lost page, read out of the real splitter: block 1
+   `Potatis- och purjogratäng` (45 rows) CONTAINS `Dillstuvad potatis`; block 2
+   `Med mangold eller nässlor` (12 rows); block 3 `Hasselbackspotatis` (13 rows). Identical to
+   the previous round and to both documents.
+7. Mechanism greps: `flat.length < 2` is the splitter's real gate name and the discard budget
+   IS checked before `blocks.length < 2`; `_minLayoutBlockChars` 200; `_maxTitleChars` 60;
+   `PageLayout._minBodyLines` 4; `DocumentLayout.text` null unless `isComplete`, so
+   `matchesLineCountOf` implies it; `_sanitizeRecipe` rewrites title/description/sourceUrl only;
+   `cropEdgeBleed` is applied in `layoutFor`, i.e. to the layout string only; `_layoutEnabled`
+   reads `enable_layout_recipe_split` and fails closed; `fetchAndActivate` has exactly two call
+   sites and `refresh()` only one caller (`MaintenanceModeGate._onRetry` -> the blocker's retry
+   button); the gate sits inside `MaterialApp.builder` in `butlery_app.dart:757` and holds the
+   only `addOnConfigUpdatedListener` subscription in `lib/`; the OCR cache is an `LruMap`
+   maxSize 100 with a 24 h expiry keyed on the SHA-256 of the PREPROCESSED bytes, in memory;
+   commit `248481c83` exists with the subject the comment implies. `orphan_tail_test.dart`
+   carries three two-page fixtures (last-page rule :255, flat-index offset :295, `pageRow == 0`
+   :154) — both the doc's and the eval tool's claims about it hold.
+
+### The corrected sentence
+`feature_flag_service.dart` now says the `139 -> 144` move is the GOLD moving, not the
+splitter, "and the trim's own effect on right block counts is zero under either gold
+(139 -> 139 and 144 -> 144, fixed 0 / broke 0 in each)". Both pairs printed by the shipped
+tool in this round. The previous wording ("the splitter's own score rises 139 -> 144") would
+have read to Malin as a benefit of enabling the flag; it is not one.
+
+### The withdrawn per-page sentence — my judgement, asked for explicitly
+The withdrawal is right AS THE RULE IS WRITTEN, and I re-measured that the withdrawn claim was
+TRUE: under `--no-frame-cut` at budget 120, **0 pages lose a gold token and 0 gain one**. But a
+replica probe should NOT count as re-derivable — that is precisely the deleted-throwaway-probe
+defect this file and `corpus_split_eval.dart:449-452` both name. The residual cost is real
+though: what survives is `15974 -> 15974`, and this repo's own doctrine says a numerator
+equality still fits "one page lost three, another gained three". The cheap repair is in
+`_formatTrim`, which ALREADY computes `tB`/`tA` per page and only sums them — two counters and
+one print line make the sentence re-derivable by shipped command. Recommended, not filed as a
+finding, and out of scope for a read-only round.
+
+### Not re-derived this round (stated, not contested)
+The 19/14/3/2 partition over all 247 captures (its population is hand-identified, so there is
+no command to re-run); the "252 generated shapes" bounds probe; the photograph gradings
+themselves — though item 4 above corroborates the 120-vs-200 verdict from the token side.
+
+### Verdict
+No FALSE claim in either reviewed file. BUT-1819 (`FirebaseRecipeRepository.create` rebuilding
+`recipeToSave` from the unsanitized `entity` on the normalization branch, :264-273) is still
+live and still out of scope — re-confirmed by reading the file this round.
+
+### Closing hashes
+`orphan_tail.dart` e7c287bd223f30e2216e2497acbeaff0 (360 lines);
+`feature_flag_service.dart` dd665c8c9c14d72a62c5fd08e3377d70 (476);
+`corpus_split_eval.dart` 8e1948c772187bd97cf1576ae1e45509 (1034);
+`orphan_tail_test.dart` e654a1747afd37f2bfefe03b1251d08e (425, unchanged this round).

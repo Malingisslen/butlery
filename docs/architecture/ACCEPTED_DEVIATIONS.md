@@ -966,13 +966,76 @@ command rather than by trust.
 
 **The recall column is biased AGAINST this rule — BUT-1818, filed the same day.** The gold
 records frame-cut half recipes as complete ones (>=12 of 242 verified entries, by a screen
-that only inspects the last instruction and the title, so a floor). Recall therefore scores
+that only inspects the last instruction and the title, so a floor). **SUPERSEDED by the
+paragraph below:** hand grading against the photographs put it at 14 entries, of which 11
+bias recall. The `>=12` is the screen's number and is left here as the record of what was
+known before the grading. Recall therefore scores
 retained frame-cut debris as a hit, and the trim is penalised for removing exactly what it
 exists to remove. Read `91.54 -> 91.52` as an UPPER BOUND on the content cost, and the 200
 row's `-> 91.33 %` as the figure most exposed. None of the verdicts in this entry rest on
 that column: all 10 shipped tails and all 9 band tails were graded against the
 PHOTOGRAPHS. Comparisons between two arms (column ordering, the single-block rule) scored
 the same gold on both sides and survive; the ABSOLUTE percentages are softer than they look.
+
+**BUT-1818 re-measured the recall column, and the trim's content cost is ZERO.** 14 verified
+gold entries were graded against their PHOTOGRAPHS on 2026-08-09 and marked `frameCut` in the
+corpus: 11 `fragment` (the whole entry is a frame-cut sliver of the next recipe — `Mästerkockens f`,
+`Den gl`, `Enkla fisken`, `Kavling av mandelmassa`, `Mandelforell`, `Mixade vitaminer`,
+`Dillstuvad potatis`, `Hasselbackspotatis`, `Sallad med vita bönor`, `Böngryta`,
+`Soppa med vita bönor`) and 3 `tail` (a real recipe whose last line the frame took —
+`Hembakad pasta`, `Madames saffransfisk`, `Lammstek`). `corpus_split_eval.dart --no-frame-cut`
+drops the 11 `fragment` ones — see the next paragraph for why never the 3 `tail`. It is OFF
+by default so every figure quoted elsewhere keeps reproducing.
+
+**Only the 11 `fragment` entries are dropped, never the 3 `tail` ones.** A `tail` gold is a real
+recipe the page holds whose last line the frame took, so it is SHORT of tokens, not long —
+dropping it removes no bias, only a page. All three are flat single-recipe pages, so an earlier
+draft that dropped them moved the population 181 -> 178 and took one TRIMMED page (`Köttsa/l`)
+with it; the conclusion survived but the comparison ran across two populations, which is not a
+measurement. On a multi-recipe page it would be worse: a dropped `tail` lowers the expected count
+while the recipe is still there, marking a CORRECT split as spurious.
+
+Scoped to `fragment`, the two columns are ONE population — same 181 pages, same 10 trimmed:
+
+| arm | biased gold | `--no-frame-cut` |
+|---|---|---|
+| trim recall | 91.54 -> 91.52 % | **91.59 -> 91.59 %** |
+| trim precision | 66.64 -> 66.77 % | 66.03 -> 66.18 % |
+| right block counts | 139 of 181 | **144 of 181** |
+
+**Exactly zero, not a rounded 0.00** — the report carries raw integers: `15974 -> 15974 of
+17441` gold tokens, against the biased run's `16121 -> 16118 of 17611`. A percentage pair
+reading `X -> X` never proves zero on its own. Note also that the 11 are the recall-BIASING
+subset; the other 3 (`tail`) bias nothing, and both numbers are floors rather than counts,
+since an unfound fragment only makes the trim look worse.
+
+So the 0.02 points were the biased gold, in full. **The block counts move 139 -> 144 as SIX pages
+gained and ONE lost, not five clean gains** — an aggregate that hides a swap is the one thing this
+tool exists to prevent, so `--trim --no-frame-cut` prints the per-page movement (`gold N -> M, blocks B`)
+rather than leaving it to a probe — the table lives in the trim arm, so the flag alone does not
+emit it. The six are pages where the splitter emitted one block fewer
+than the biased gold demanded: it correctly declined to make a recipe out of a sliver. The one
+lost, `PXL_20260803_204205028`, is the opposite and the more useful case — the splitter emitted 3
+blocks on a page holding 1 real recipe — and NOT one per sliver, which is what a block COUNT
+tempts you to assume. Read out of the real splitter: block 1 is the recipe with the
+`Dillstuvad potatis` sliver swallowed INSIDE it, block 2 is that recipe's own variant subsection
+`Med mangold eller nässlor` opened as a second recipe, block 3 is the `Hasselbackspotatis` sliver.
+One sliver opens nothing, the false split is INSIDE a real recipe, and the biased gold had been
+scoring all of it as RIGHT. (A first draft said "one per sliver", inferred from the count. A count
+matching gold never tells you WHICH blocks came out.) So removing the bias
+does not only stop punishing correct declines; it stops rewarding a real false split. Eight
+pages carry a dropped fragment, not seven: the eighth, `PXL_20260803_204143402` (gold 5 -> 2,
+the most-biased page in the corpus), is wrong under BOTH golds and so moves nothing — named
+because six plus one otherwise leaves a case unaccounted for. The
+200-budget row has NOT been re-measured and remains the figure most exposed. The run prints how many entries
+it dropped and writes a `-nofc` report file, so the two populations can never be confused after
+the fact.
+
+**A zero-ingredient gold entry is NOT a defect signal** — `Fisk i ugn` and `Koka piggvar` are
+complete recipes that genuinely carry no ingredient list, and the screen that reads only the last
+instruction plus the title flags 89 false positives on word-shape alone (`deg`, `cm`, `bär`). The
+14 above were each opened as an image. Do not re-derive this set from any text screen.
+
 
 **The gate on the 120-200 band closed.** That band was designed as a third outcome — show
 the tail unticked in the picker so Malin could judge it — and the plan pre-committed to

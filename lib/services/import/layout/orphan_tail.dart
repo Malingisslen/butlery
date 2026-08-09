@@ -101,12 +101,17 @@
 /// `_tailBudget` edited and `--trim` re-run — same caveat `heading_detector.dart`
 /// carries on its own tables.
 ///
-/// **The RECALL column is biased AGAINST this rule, by at least 12 known cases
+/// **The RECALL column is biased AGAINST this rule, by 11 known cases
 /// corpus-wide — BUT-1818.** The gold records frame-cut half recipes as complete
-/// ones. At least 12 of the 242 verified entries are that; the screen that found
-/// them inspects only the last instruction and the title, so 12 is a FLOOR and
-/// not a count. Recall therefore scores retained debris as a hit, and the trim
-/// is penalised for removing precisely what it exists to remove.
+/// ones. 14 of the 242 verified entries were graded that way against their
+/// photographs, of which **11 bias recall** (`frameCut: fragment`, debris of
+/// the KIND this trim removes — though only ONE of the 11 sits on a page the
+/// trim actually cuts; the other ten bias the recall LEVEL and the block counts,
+/// not the trim's before/after delta); the other 3 are `tail` and bias nothing.
+/// Both numbers are FLOORS, not counts — they came from a hand grading of what a
+/// text screen surfaced, and an unfound fragment only makes the trim look worse.
+/// Recall therefore scores retained debris as a hit, and the trim is penalised
+/// for removing precisely what it exists to remove.
 ///
 /// That general figure reaches THIS delta directly, which is why the caveat is
 /// not hand-waving: `PXL_20260803_204356897_MACRO_FOCUS` is one of the ten pages
@@ -114,13 +119,65 @@
 /// `Mandelforell` with zero ingredients and one truncated instruction — the very
 /// debris this rule removes, scored as gold. And the whole delta is THREE gold
 /// tokens corpus-wide (16121 -> 16118 of 17611) — `mandelforell`, `räkna`,
-/// `rensad` — every one of them carried by that same tail. So `91.54 -> 91.52`
-/// is an UPPER BOUND on the content cost, and the 200 row's `-> 91.33 %` is the
-/// figure most exposed. **Do not upgrade this to "zero content cost":** the
-/// attribution comes from the stored capture, not from the splitter's per-page
-/// output. The verdicts here rest on the PHOTOGRAPHS, not on this column: all
-/// 10 shipped tails and all 9 band tails were graded that way. Do not re-derive
-/// the budget from recall alone until BUT-1818 lands.
+/// `rensad` — every one of them carried by that same tail.
+///
+/// **BUT-1818 has since MEASURED it, and the cost is zero.** 14 gold entries
+/// were graded against their photographs and marked `frameCut`: 11 `fragment`
+/// (the whole entry is a sliver of the next recipe) and 3 `tail` (a real recipe
+/// whose last line the frame took). `--no-frame-cut` drops the 11 — and ONLY
+/// the 11, because a `tail` gold is SHORT of tokens rather than long, so
+/// dropping it would remove no bias and would remove a whole page. Same 181
+/// pages, same 10 trimmed pages, so the two columns are one population:
+///
+/// |            | biased gold | `--no-frame-cut` |
+/// |------------|-------------|------------------|
+/// | recall     | 91.54 -> 91.52 % | **91.59 -> 91.59 %** |
+/// | precision  | 66.64 -> 66.77 % | 66.03 -> 66.18 % |
+/// | right block counts | 139 of 181 | **144 of 181** |
+///
+/// And it is exactly zero, not a rounded 0.00: the report carries the raw
+/// integers, **15974 -> 15974 of 17441** gold tokens, against the biased run's
+/// 16121 -> 16118 of 17611. A percentage pair reading `X -> X` never proves
+/// zero on its own; read the numerator. (A draft added "and per page, zero pages lose
+/// a gold token and zero gain one" — true when measured, but NO shipped command
+/// emits it, and this file's own rule is that a figure must stay re-derivable.
+/// The integers above are emitted; that sentence was not, so it is gone.)
+///
+/// So the 0.02 points were the biased gold, in full. The block counts move
+/// 139 -> 144 as **SIX pages gained and ONE lost**, not five clean gains — the
+/// aggregate is a masked swap, and `--trim --no-frame-cut` now prints the
+/// per-page movement so it stays re-derivable (the table lives in the trim
+/// arm, so the flag alone does not emit it). The six are pages where the splitter
+/// emitted one block fewer than the biased gold demanded: it correctly declined
+/// to make a recipe out of a sliver. The one lost,
+/// `PXL_20260803_204205028`, is the opposite and the more useful case — the
+/// splitter emitted 3 blocks on a page holding 1 real recipe — and NOT one per
+/// sliver, which is what a block COUNT tempts you to assume. Read out of the
+/// real splitter: block 1 is the recipe itself with the `Dillstuvad potatis`
+/// sliver swallowed INSIDE it, block 2 is that recipe's own variant subsection
+/// `Med mangold eller nässlor` opened as a second recipe, block 3 is the
+/// `Hasselbackspotatis` sliver. So one sliver opens nothing and the false split
+/// is INSIDE a real recipe — and the biased gold had been scoring all of it as
+/// RIGHT. Removing the bias does not only stop punishing correct declines; it
+/// stops rewarding a real false split.
+///
+/// A first draft of this sentence said "one block per sliver", inferred from
+/// the count. **A count that matches gold never tells you WHICH blocks came
+/// out** — print them, or run the splitter.
+/// (Eight pages carry a dropped fragment, not seven: the eighth,
+/// `PXL_20260803_204143402`, is the most-biased page in the corpus — gold 5 -> 2
+/// — and is wrong under BOTH golds, so it moves nothing. Named because six
+/// plus one leaves a case unaccounted for, and this file's whole discipline is
+/// that an aggregate must not hide one.)
+/// The BUDGET table at the top of this section (not the comparison just above)
+/// keeps the biased figures because
+/// they are what every other document quotes and they still reproduce with the
+/// flag off; read them as the UPPER BOUND they are. The 200 row is
+/// unre-measured and stays the figure most exposed. **An earlier draft of this
+/// paragraph compared 181 pages against 178** — it dropped the `tail` entries
+/// too, which took three whole pages out, one of them a trimmed one. Same
+/// conclusion, but across two different populations, which is not a
+/// measurement. The verdicts here rest on the PHOTOGRAPHS either way.
 ///
 /// At 200 the rule starts eating READABLE CONTENT. That is not a guess: all 9
 /// tails in the 120-200 band were re-read AGAINST THE PHOTOGRAPHS on 2026-08-09,

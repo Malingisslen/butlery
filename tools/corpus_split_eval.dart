@@ -73,6 +73,24 @@
 /// columns trim, the difference vanishes, and the gate passes while measuring
 /// nothing. Two drafts had that shape.
 ///
+/// ## `--no-frame-cut`: scoring against gold that is not frame-cut debris
+///
+///   dart run tools/corpus_split_eval.dart --trim --no-frame-cut
+///
+/// The only flag that changes the POPULATION rather than the algorithm, which
+/// is why it is documented here and not just where it is parsed. BUT-1818
+/// graded 14 verified gold entries against their PHOTOGRAPHS and marked them
+/// `frameCut`. This drops the 11 `fragment` ones — an entry that is not a
+/// recipe the page holds at all, just the sliver of the next one — and keeps
+/// the 3 `tail` ones, which are real recipes whose last line the frame took.
+/// Off by default, so every figure quoted elsewhere keeps reproducing.
+///
+/// Prints how many entries it dropped and how many pages remain; add `--trim`
+/// and that arm also prints the per-page gold-vs-gold movement for every page
+/// that lost a fragment, and carries it in the report. That last table
+/// exists because the aggregate lies: `139 -> 144` is six pages gained and one
+/// lost, and the lost one is the case worth reading.
+///
 /// ## Size
 ///
 /// This file is past the repo's 500-line guideline, and stays that way
@@ -82,10 +100,27 @@
 /// The three arms are one measurement seen three ways: they share the corpus
 /// loader, the `_Page` model, the gold tokeniser and the same
 /// `MultiRecipeSplitter` instance, and each exists to be comparable with the
-/// others. Splitting the newest arm into its own file would move ~150 lines
-/// without reducing what a reader has to hold — they would still need both
+/// others. Splitting the newest arm into its own file would move `_formatTrim`
+/// plus its doc — the largest of the three, and still growing — without
+/// reducing what a reader has to hold — they would still need both
 /// halves to know which population a number describes, which is the one mistake
 /// this tool exists to prevent. Revisit if a FOURTH arm lands.
+///
+/// No line count is quoted here on purpose, and the two that were are named so
+/// the retraction is itself checkable. `~150` shipped in `d034c5ece`, when the
+/// newest arm was `_formatEdgeCrop` at 177 doc-inclusive lines — wrong when
+/// written, though it became accidentally right once `_formatTrim` landed at
+/// 151. Its replacement, `237`, was a BOUNDARY MISCOUNT: it measured to the next
+/// declaration instead of the closing brace and swept in `_goldTextOf`'s doc;
+/// the honest span was 233 at that moment. (That one is a live measurement of a
+/// function this same paragraph calls still growing, so treat it as the size of
+/// the miscount, not as the current span.)
+///
+/// Note what those two failures were NOT: neither was decay. A per-function span
+/// does not move when an unrelated part of this file changes. One was wrong on
+/// arrival and one was measured against the wrong boundary — which is the better
+/// argument for leaving the number out, in the file whose whole thesis is that a
+/// figure must stay re-derivable. Measure it when you need it.
 library;
 
 import 'dart:convert';
@@ -99,6 +134,24 @@ import 'package:butlery/services/ocr/text_layout.dart';
 import 'corpus/corpus_paths.dart';
 
 void main(List<String> args) {
+  // BUT-1818: the gold records 11 frame-cut SLIVERS as complete recipes
+  // (`frameCut: fragment`, graded against the photographs 2026-08-09). Scoring
+  // them rewards KEEPING debris, which is the opposite of what the splitter and
+  // the orphan-tail trim are for. Off by default so every figure already quoted
+  // in the docs keeps reproducing; pass the flag to see the run without that
+  // bias.
+  //
+  // **`frameCut: tail` is NOT dropped, and that is the whole design.** A `tail`
+  // entry is a real recipe the page holds whose LAST LINE the frame took, so its
+  // gold is SHORT of tokens, not long — dropping it removes no bias. It would
+  // only remove a page: all three `tail` entries are flat single-recipe pages,
+  // so an earlier draft that dropped them took the population 181 -> 178 and
+  // took one TRIMMED page (`Köttsa/l`) with it, which made the two columns of
+  // the comparison different populations. Worse on a multi-recipe page: a
+  // dropped `tail` lowers the expected count while the recipe is still there,
+  // marking a CORRECT split as spurious — the opposite bias, introduced by the
+  // fix.
+  final dropFrameCut = args.contains('--no-frame-cut');
   final trimMode = args.contains('--trim');
   final edgeCropMode = args.contains('--edge-crop') || trimMode;
   // The crop only exists on the geometry path, so its arm implies `--layout`'s
@@ -112,7 +165,11 @@ void main(List<String> args) {
     exit(1);
   }
 
-  final pages = _loadPages(paths, layoutMode: layoutMode);
+  final pages = _loadPages(
+    paths,
+    layoutMode: layoutMode,
+    dropFrameCut: dropFrameCut,
+  );
   if (pages.isEmpty) {
     stderr.writeln(
       layoutMode
@@ -148,22 +205,23 @@ void main(List<String> args) {
   }
 
   if (edgeCropMode) {
-    final crop = _formatEdgeCrop(pages, splitter);
+    final crop = _formatEdgeCrop(pages, splitter, dropFrameCut: dropFrameCut);
     report['edgeCropArm'] = crop.summary;
     stdout.writeln(crop.text);
   }
 
   if (trimMode) {
-    final trim = _formatTrim(pages, splitter);
+    final trim = _formatTrim(pages, splitter, dropFrameCut: dropFrameCut);
     report['trimArm'] = trim.summary;
     stdout.writeln(trim.text);
   }
 
   final ts = DateTime.now().toIso8601String().replaceAll(':', '-');
+  final fc = dropFrameCut ? '-nofc' : '';
   final suffix = trimMode
       ? 'trim'
       : (edgeCropMode ? 'edge-crop' : (layoutMode ? 'layout' : 'text'));
-  final file = File('${paths.reportsDir()}/split-eval-$suffix-$ts.json');
+  final file = File('${paths.reportsDir()}/split-eval-$suffix$fc-$ts.json');
   file.parent.createSync(recursive: true);
   report['generatedAt'] = ts;
   report['arm'] = trimMode
@@ -190,8 +248,9 @@ void main(List<String> args) {
 /// hole `ACCEPTED_DEVIATIONS.md` had to patch after the fact once already.
 ({String text, Map<String, dynamic> summary}) _formatEdgeCrop(
   List<_Page> pages,
-  MultiRecipeSplitter splitter,
-) {
+  MultiRecipeSplitter splitter, {
+  bool dropFrameCut = false,
+}) {
   var scoredPages = 0, croppedPages = 0, droppedLines = 0;
   var goldTot = 0, hitBefore = 0, hitAfter = 0, emitBefore = 0, emitAfter = 0;
   var bandPages = 0, bandGold = 0, bandBefore = 0, bandAfter = 0;
@@ -294,6 +353,13 @@ void main(List<String> args) {
     ..writeln('  Same PROXY caveat as --layout: the geometry is the stored')
     ..writeln('  winocr capture, not ML Kit. Both arms share one input, so the')
     ..writeln('  difference between them is the crop and nothing else.')
+    ..write(
+      dropFrameCut
+          ? '  --no-frame-cut is ON: this arm is scored against the'
+                ' corrected gold too, so these figures are NOT the ones'
+                ' quoted elsewhere.\n'
+          : '',
+    )
     ..writeln()
     ..writeln('  cropped pages        : $croppedPages   ($droppedLines rows)')
     ..writeln(
@@ -333,6 +399,7 @@ void main(List<String> args) {
     text: b.toString(),
     summary: {
       'scoredPages': scoredPages,
+      'frameCutFragmentsDropped': dropFrameCut,
       'croppedPages': croppedPages,
       'droppedRows': droppedLines,
       'droppedRowsShortOnlyInGold': shortOnlyInGold,
@@ -367,8 +434,9 @@ void main(List<String> args) {
 /// shape of two drafts.
 ({String text, Map<String, dynamic> summary}) _formatTrim(
   List<_Page> pages,
-  MultiRecipeSplitter splitter,
-) {
+  MultiRecipeSplitter splitter, {
+  bool dropFrameCut = false,
+}) {
   var scored = 0, trimmed = 0;
   var goldTot = 0, hitBefore = 0, hitAfter = 0, emitBefore = 0, emitAfter = 0;
   var alignedBefore = 0, alignedAfter = 0;
@@ -383,6 +451,14 @@ void main(List<String> args) {
   // of this file and `edge_crop.dart` both name in their own words ("a number
   // in a doc that no shipped command emits"). Now `--trim` emits them.
   final trimmedPages = <({String id, String head, int chars})>[];
+  // Captured, never recomputed. The gold-vs-gold table below needs each page's
+  // AFTER block count, and reconstructing the crop -> trim -> split chain a
+  // second time is only correct while the two copies stay identical — a step
+  // added here and not there would print a table describing a DIFFERENT
+  // pipeline than the aggregate came from, silently.
+  final blocksAfterByPage = <String, int>{};
+  final movement = <Map<String, dynamic>>[];
+  var movementGained = 0, movementLost = 0;
 
   for (final page in pages) {
     final doc = page.layout;
@@ -417,6 +493,7 @@ void main(List<String> args) {
 
     final before = splitter.split(baseText, layout: croppedDoc);
     final after = splitter.split(cut.text, layout: cut.layout);
+    blocksAfterByPage['${page.bookSlug}/${page.imageId}'] = after.length;
     final rightBefore = before.length == page.goldRecipes;
     final rightAfter = after.length == page.goldRecipes;
     if (rightBefore) alignedBefore++;
@@ -448,10 +525,18 @@ void main(List<String> args) {
     ..writeln('  PROXY caveat: the geometry is the winocr capture, not ML Kit.')
     ..writeln()
     ..writeln(
-      '  recall is biased AGAINST the trim — the gold records frame-cut',
+      dropFrameCut
+          ? '  --no-frame-cut is ON: the `frameCut: fragment` gold entries'
+                ' are excluded, so the figures below carry no KNOWN frame-cut'
+                ' bias — 14 were found by hand and that is a floor, not a'
+                ' count. Residual bias only makes the trim look WORSE.'
+                ' `frameCut: tail` entries are still scored, on purpose.'
+          : '  recall is biased AGAINST the trim — the gold records'
+                ' frame-cut slivers as complete recipes, so retained debris'
+                ' scores as a hit. 11 are marked `frameCut: fragment`'
+                ' (BUT-1818); pass --no-frame-cut to drop them. The figures'
+                ' below KEEP that bias and are an upper bound on the cost.',
     )
-    ..writeln('  half recipes as complete ones (BUT-1818), so retained debris')
-    ..writeln('  scores as a hit. Read the recall delta as an upper bound.')
     ..writeln()
     ..writeln('  trimmed pages        : $trimmed')
     ..writeln(
@@ -470,6 +555,74 @@ void main(List<String> args) {
     )
     ..writeln('    tokens emitted     : $emitBefore -> $emitAfter');
 
+  // Gold-vs-gold movement, printed rather than left to a probe. The shipped
+  // fixed/broke counters compare BEFORE and AFTER the trim within ONE gold;
+  // this is the other axis — the same blocks scored against the biased count
+  // and the unbiased one. Without it `139 -> 144` reads as five clean gains
+  // when it is six gained and one lost, and the one lost is the informative
+  // case — the biased gold was scoring a real false split as RIGHT.
+  // `orphan_tail.dart` and the BUT-1818 entry in
+  // `docs/architecture/ACCEPTED_DEVIATIONS.md` carry the block-by-block reading
+  // of that page — two copies, agreeing in substance but not word for word, so
+  // do not diff them for drift; read either. It is the one claim in this batch
+  // that NO printed table can re-derive (the photograph gradings are hand work
+  // too, but those are recorded per entry in the corpus). Do not add a third
+  // copy here, and above all do not infer it from these counts. A count
+  // matching gold never tells you WHICH blocks came out, which is the whole
+  // reason this table exists.
+  if (dropFrameCut) {
+    final moved = <({String id, int biased, int now, int blocks})>[];
+    for (final page in pages) {
+      if (page.frameCutDropped == 0) continue;
+      // Same admission test the scoring loop above applies, so the table and
+      // the aggregate can never describe different page sets. `goldTokens`
+      // matters: a page that lost its last gold entry sits outside
+      // alignedBefore/alignedAfter and must sit outside this too.
+      if (page.goldTokens.isEmpty) continue;
+      final blocks = blocksAfterByPage['${page.bookSlug}/${page.imageId}'];
+      if (blocks == null) continue;
+      moved.add((
+        id: '${page.bookSlug}/${page.imageId}',
+        biased: page.goldRecipes + page.frameCutDropped,
+        now: page.goldRecipes,
+        blocks: blocks,
+      ));
+    }
+    var gained = 0, lost = 0;
+    for (final m in moved) {
+      final wasRight = m.blocks == m.biased;
+      final isRight = m.blocks == m.now;
+      if (!wasRight && isRight) gained++;
+      if (wasRight && !isRight) lost++;
+    }
+    b
+      ..writeln()
+      ..writeln(
+        '  pages carrying a dropped fragment: ${moved.length}  '
+        '(gained $gained, lost $lost)',
+      );
+    for (final m in moved) {
+      final was = m.blocks == m.biased ? 'ok ' : '   ';
+      final now = m.blocks == m.now ? 'ok ' : '   ';
+      b.writeln(
+        '    gold ${m.biased} -> ${m.now}   blocks ${m.blocks}   '
+        '$was-> $now  ${m.id}',
+      );
+    }
+    movement.addAll(
+      moved.map(
+        (m) => {
+          'page': m.id,
+          'goldBiased': m.biased,
+          'goldUnbiased': m.now,
+          'blocks': m.blocks,
+        },
+      ),
+    );
+    movementGained = gained;
+    movementLost = lost;
+  }
+
   if (trimmedPages.isNotEmpty) {
     b
       ..writeln()
@@ -486,6 +639,10 @@ void main(List<String> args) {
   return (
     text: b.toString(),
     summary: {
+      'frameCutFragmentsDropped': dropFrameCut,
+      'frameCutMovement': movement,
+      'frameCutPagesGained': movementGained,
+      'frameCutPagesLost': movementLost,
       'scoredPages': scored,
       'trimmedPages': trimmed,
       'trimmedDetail': [
@@ -524,6 +681,21 @@ String _goldTextOf(String goldPath) {
     return parts.join(' ');
   } catch (_) {
     return '';
+  }
+}
+
+/// `fragment`, `tail`, or null. Written by hand against the PHOTOGRAPH, never
+/// inferred from the text — the whole point of BUT-1818 is that a text-only
+/// reading is what recorded these as complete recipes in the first place.
+String? _frameCutOf(String goldPath) {
+  final f = File(goldPath);
+  if (!f.existsSync()) return null;
+  try {
+    final m = jsonDecode(f.readAsStringSync()) as Map<String, dynamic>;
+    final v = m['frameCut'];
+    return v is String && v.isNotEmpty ? v : null;
+  } catch (_) {
+    return null;
   }
 }
 
@@ -566,6 +738,13 @@ class _Page {
   final String bookSlug;
   final String imageId;
   final int goldRecipes;
+
+  /// How many `frameCut: fragment` entries `--no-frame-cut` removed from THIS
+  /// page. Zero on a default run. Carried so the arm can print the gold-vs-gold
+  /// movement instead of leaving it to a probe — an aggregate `139 -> 144` is a
+  /// MASKED SWAP (measured: six pages gained, one lost), and this file's whole
+  /// thesis is that an average must never hide the trade.
+  final int frameCutDropped;
   final String ocrText;
 
   /// The stored geometry, in `--layout` runs only. [ocrText] is then derived
@@ -587,6 +766,7 @@ class _Page {
     required this.bookSlug,
     required this.imageId,
     required this.goldRecipes,
+    this.frameCutDropped = 0,
     required this.ocrText,
     this.layout,
     this.goldTokens = const {},
@@ -621,16 +801,41 @@ class _Scored {
 
 /// Groups `recipeEntries` back up to the PAGE level — the eval engine flattens
 /// a spread into one entry per recipe, but a splitter is judged per page.
-List<_Page> _loadPages(CorpusPaths paths, {required bool layoutMode}) {
+List<_Page> _loadPages(
+  CorpusPaths paths, {
+  required bool layoutMode,
+  bool dropFrameCut = false,
+}) {
   final pages = <String, _Page>{};
+  // Printed below. A run whose POPULATION changed silently is the one mistake
+  // this whole file exists to prevent — see the header.
+  var dropped = 0;
   for (final bookDir in paths.books()) {
     final bookSlug = _basename(bookDir.path);
     final byImage = <String, int>{};
+    final droppedByImage = <String, int>{};
     final ocrPathByImage = <String, String>{};
     final goldByImage = <String, Set<String>>{};
     final goldShortByImage = <String, Set<String>>{};
     for (final entry in paths.recipeEntries(bookSlug)) {
       if (!_isVerified(entry.goldPath)) continue;
+      // Only `fragment`: an entry that is not a recipe this page holds at all,
+      // just the sliver of the next one. Dropping it lowers the page's expected
+      // COUNT and removes its tokens together, so a splitter that correctly
+      // emits nothing for a sliver stops being marked wrong for it. `tail` is
+      // deliberately kept — see the flag's own comment in `main`.
+      //
+      // A page whose EVERY verified entry is a fragment would leave the
+      // population entirely, breaking the one-population property this scoping
+      // exists to protect. None today — the 11 fragments sit on 8 pages and
+      // each keeps a non-fragment entry — and the printed page count is the
+      // guard: if it ever falls below the default run's, that is why.
+      if (dropFrameCut && _frameCutOf(entry.goldPath) == 'fragment') {
+        dropped++;
+        droppedByImage[entry.imageId] =
+            (droppedByImage[entry.imageId] ?? 0) + 1;
+        continue;
+      }
       byImage[entry.imageId] = (byImage[entry.imageId] ?? 0) + 1;
       ocrPathByImage[entry.imageId] = entry.ocrTextPath;
       final gold = _goldTextOf(entry.goldPath);
@@ -650,6 +855,7 @@ List<_Page> _loadPages(CorpusPaths paths, {required bool layoutMode}) {
           bookSlug: bookSlug,
           imageId: imageId,
           goldRecipes: count,
+          frameCutDropped: droppedByImage[imageId] ?? 0,
           ocrText: derived,
           layout: doc,
           goldTokens: goldByImage[imageId] ?? const {},
@@ -665,9 +871,16 @@ List<_Page> _loadPages(CorpusPaths paths, {required bool layoutMode}) {
         bookSlug: bookSlug,
         imageId: imageId,
         goldRecipes: count,
+        frameCutDropped: droppedByImage[imageId] ?? 0,
         ocrText: text,
       );
     });
+  }
+  if (dropFrameCut) {
+    stdout.writeln(
+      '  --no-frame-cut: dropped $dropped `frameCut: fragment` gold entries; '
+      '${pages.length} pages scored.',
+    );
   }
   return pages.values.toList()..sort(
     (a, b) =>

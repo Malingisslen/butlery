@@ -127,9 +127,20 @@ files in the same edit.
   masked swap). The arm also prints WHICH ten pages, with each heading and its
   character count, so `orphan_tail.dart`'s list is checkable by command.
   **RECALL IS BIASED AGAINST THIS RULE (BUT-1818):** the gold records frame-cut half
-  recipes as complete ones (>=12 of 242), so retained debris scores as a hit and the
-  trim is penalised for doing its job. `91.54 -> 91.52` is an upper bound on the cost,
-  not the cost. The verdicts rest on the PHOTOGRAPHS, not on that column.
+  recipes as complete ones (14 of 242 graded, of which 11 bias recall — both FLOORS, not
+  counts, since an unfound fragment only makes the trim look worse), so retained
+  debris scores as a hit and the
+  trim is penalised for doing its job. **RE-MEASURED 2026-08-09 (BUT-1818): the cost is
+  ZERO.** 14 gold entries were graded against their photographs and marked `frameCut`;
+  `--no-frame-cut` drops the 11 `fragment` ones — never the 3 `tail` ones, which are real
+  recipes and whose removal would only cost a page — and over the SAME 181 pages the trim
+  then scores 91.59 -> 91.59 %, with block counts moving 139 -> 144 BETWEEN THE TWO GOLDS
+  (the trim itself moves them 144 -> 144) as SIX pages gained
+  and ONE lost — the arm prints the per-page movement, because the lost one is the
+  informative case (the splitter made 3 blocks of a 1-recipe page and the biased gold
+  called that right). The table's `91.54 -> 91.52` keeps the bias
+  and is an upper bound. A zero-ingredient gold entry is NOT a defect signal, and no text
+  screen reproduces the 14 — each was opened as an image.
   **Dark until the geometry flag is on:** with
   `enable_layout_recipe_split` false — the code default — no layout reaches the
   splitter, so `withoutOrphanTail` returns its input untouched and nothing is cut.
@@ -150,7 +161,9 @@ files in the same edit.
   images are 10 of 10 CORRECT, and two are the back-cover blurb of a different book
   lying behind the cookbook). Never re-judge either set from the text — open the images.
   Do not raise the budget above 120 without re-reading those nine that way; the corpus
-  measurement at 200 shows the cost — recall 91.33 %, one page lost.
+  measurement at 200 shows the cost — recall 91.33 %, one page lost. That row has NOT
+  been re-measured against the corrected gold and is the most bias-exposed figure in this
+  entry; do not cite it as a clean cost when re-opening the band.
   Re-open the band the day the picker can MERGE two blocks (BUT-1817): a wrong guess
   becomes undoable and the trade changes. PROXY — Windows offline OCR, not ML Kit.
   BUT-1816, 2026-08-08, corrected 2026-08-09
