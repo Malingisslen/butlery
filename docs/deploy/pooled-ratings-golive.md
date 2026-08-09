@@ -1,7 +1,7 @@
 # Pooled Ratings ("Butlery-betyget") — Go-Live Runbook
 
 Operator checklist to take the feature live. Companion to
-[`../../tasks/pooled-ratings-plan.md`](../../tasks/pooled-ratings-plan.md) (decisions)
+[`../../tasks/archive/pooled-ratings-plan.md`](../../tasks/archive/pooled-ratings-plan.md) (decisions)
 and the LIA [`../legal/pooled-ratings-lia.md`](../legal/pooled-ratings-lia.md) (signed 2026-07-04).
 
 ## Pre-flight — VERIFIED deploy-ready 2026-07-04

@@ -79,9 +79,9 @@ exercise or defence of legal claims". The retention windows above
 *are* the erasure schedule for audit data — eventual deletion via this
 purge CF, not synchronous deletion at account-close time.
 
-This is documented in
-[`account_deletion_residual_test.dart`](../../test/unit/services/account/account_deletion_residual_test.dart)
-under "Retention exceptions documented inline".
+Nothing in `test/` documents these exceptions today: the test that did was
+deleted with the client-side deletion path in BUT-788, and no successor took
+the section over.
 
 ## Operational
 

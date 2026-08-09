@@ -139,7 +139,7 @@ This LIA + the Art. 30 record are the proportionate documentation.
 
 ## 8. Linked artifacts
 - Art. 30 record + retention: [`../security/pooled-ratings-retention.md`](../security/pooled-ratings-retention.md)
-- Plan + all 16 decisions: [`../../tasks/pooled-ratings-plan.md`](../../tasks/pooled-ratings-plan.md)
+- Plan + all 16 decisions: [`../../tasks/archive/pooled-ratings-plan.md`](../../tasks/archive/pooled-ratings-plan.md)
 - Event storage shape: ADR-0004 (branch `docs/org/adr/`)
 - Privacy policy §4 (legal basis) + §5.2 (pooled ratings) + §8 (retention).
 - Family-rating DPIA (template + the separate, household-scoped rating path): [`family-rating-dpia.md`](family-rating-dpia.md)
