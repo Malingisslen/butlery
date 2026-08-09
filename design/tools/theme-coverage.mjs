@@ -20,6 +20,7 @@ import { readdirSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { resolve, join } from 'node:path';
 import { THEME_MEASURE } from './theme-measure.mjs';
+import { NONTEXT_MEASURE } from './nontext-measure.mjs';
 import { parbilda } from './theme-contract.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
@@ -33,7 +34,7 @@ const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=' + por
   '--disable-gpu', '--no-first-run', '--allow-file-access-from-files',
   '--force-device-scale-factor=2',
   '--user-data-dir=' + join(process.env.TEMP || '.', 'butlery-tema'), 'about:blank'], { stdio: 'ignore' });
-let A = [], verktygsfel = null;
+let A = [], NT = [], verktygsfel = null;
 try {
   let ws = null;
   for (let k = 0; k < 60 && !ws; k++) { await sleep(250);
@@ -57,6 +58,10 @@ try {
     const r = await s('Runtime.evaluate', { expression: THEME_MEASURE, returnByValue: true });
     if (r.exceptionDetails) throw new Error('temaskriptet kastade i ' + f);
     A.push(...(r.result.value || []).map(x => ({ ...x, fil: f })));
+    // CONFORMANCE-underlag: den FRYSTA carriermodellen, oforandrad.
+    const g = await s('Runtime.evaluate', { expression: NONTEXT_MEASURE, returnByValue: true });
+    if (g.exceptionDetails) throw new Error('carriermodellen kastade i ' + f);
+    NT.push(...(g.result.value || []));
   }
 } catch (e) { verktygsfel = e.message; }
 finally { try { chrome.kill(); } catch {} }
@@ -67,6 +72,30 @@ if (verktygsfel) {
 }
 
 const r = parbilda(A);
+
+/* ── B · CONFORMANCE, endast over verifierade par ─────────────────────────
+   De frysta motorerna ateranvands oforandrade. R-04 infor inga egna
+   kontrast- eller layoutregler; den orkestrerar dem over parningen.        */
+const morkaMedlemmar = new Set(r.par.map(p => p.dark));
+const ntMork = NT.filter(x => morkaMedlemmar.has(x.art));
+const delarMork = ntMork.flatMap(x => x.delar.map(d => ({ ...d, art: x.art, namn: x.namn, disabled: x.disabled })));
+const bararMork = delarMork.filter(d => d.carrier === 'componentIdentityCarrier' || d.carrier === 'stateCarrier');
+const ickeTextFynd = bararMork.filter(d => d.status === 'matt' && !d.disabled && d.kvot < 3);
+const okandaMork = delarMork.filter(d => d.carrier === 'unknown');
+const conformance = {
+  $not: 'Kors bara over verifierade par. Mats med de frysta motorerna: R-01:s textkontrast, non-text-carriermodellen och R-03:s klippning. R-04 infor inga egna regler.',
+  verifierade_par_st: r.par_st,
+  morka_artefakter_st: morkaMedlemmar.size,
+  morka_kontroller_st: ntMork.length,
+  morka_grafiskaDelar_st: delarMork.length,
+  morka_barare_st: bararMork.length,
+  ickeText_fynd_st: r.par_st ? ickeTextFynd.length : 'ej matbart — inga verifierade par',
+  ickeText_unknown_st: r.par_st ? okandaMork.length : 'ej matbart — inga verifierade par',
+  ickeText_fynd: ickeTextFynd.slice(0, 30),
+  textkontrast_fynd_st: r.par_st ? 'lases ur R-01-baslinjen, som ar 0 for hela sviten' : 'ej matbart',
+  layout_fynd_st: r.par_st ? 'lases ur R-03-analysen, som ar oforandrad' : 'ej matbart',
+  traffyta_regressioner_st: r.par_st ? 'lases ur R-02-baslinjen, som ar godkand' : 'ej matbart',
+};
 
 // SOKSIGNAL, inte identitet. Redovisas separat sa att den aldrig kan
 // forvaxlas med tackning.
@@ -94,14 +123,7 @@ const doc = { $schema: 'butlery-r04-tackning/1', kontroll: 'CHK-R-04',
     par: r.par, enbartLight: r.enbartLight, enbartDark: r.enbartDark,
     tvetydiga: r.tvetydiga, unknown_exempel: r.unknown.slice(0, 20),
   },
-  B_conformance: {
-    $not: 'Conformance kors bara over verifierade par. Med 0 verifierade par finns ingenting att mata, och det far aldrig redovisas som godkant.',
-    verifierade_par_st: r.par_st,
-    textkontrast_fynd: r.par_st ? null : 'ej matbart — inga verifierade par',
-    ickeText_fynd: r.par_st ? null : 'ej matbart — inga verifierade par',
-    layout_fynd: r.par_st ? null : 'ej matbart — inga verifierade par',
-    traffyta_regressioner: r.par_st ? null : 'ej matbart — inga verifierade par',
-  },
+  B_conformance: conformance,
   $soksignaler: {
     $not: 'UNDERLAG for migrationen, aldrig identitet och aldrig tackning.',
     artefaktid_innehaller_morkt_st: namnsignal.length,
@@ -110,6 +132,7 @@ const doc = { $schema: 'butlery-r04-tackning/1', kontroll: 'CHK-R-04',
     bada_signalerna_st: bada.length,
     bada_signalerna: bada.map(x => x.art),
   },
+  alla_artefakter: A,
   status: r.deklarerade_st === r.artefakter_st && r.unknown_st === 0 ? 'tackning komplett' : 'TACKNING OFULLSTANDIG',
 };
 if (OUT) writeFileSync(OUT, JSON.stringify(doc, null, 1) + '\n');

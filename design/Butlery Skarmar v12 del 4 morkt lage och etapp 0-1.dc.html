@@ -55,7 +55,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-title" style="margin:44px 0 24px;border-top:1px solid rgba(0,0,0,.1);padding-top:28px">Mörkt läge — formulär och ark. De två familjer som tidigare bara sades ”följa matrisen mekaniskt”. Ritade så att villkoret i <b>testmatris.md § 3</b> går att pröva: varje färgat element finns som rad i komponentark 13.</div>
 <div class="sc-row">
 
-<div class="sc-item" id="formularmorkt" data-screen-label="Recepteditor — mörkt läge">
+<div class="sc-item" id="formularmorkt" data-theme="dark" data-theme-family="recepteditor-default-412" data-screen-label="Recepteditor — mörkt läge">
   <div class="sc-label"><a class="sc-id" href="#formularmorkt">Formulär mörkt</a>Recepteditor i mörkt läge: fält, fokus, hjälptext, fel, disabled och destruktiv åtgärd. Fältkanten är <code>border-on-dark</code>, aldrig skugga; felet bärs av text + glyf, aldrig av enbart färg.</div>
   <div class="sc-phone" style="width:412px;height:924px;display:flex;flex-direction:column;background:#17251d;color:#F5F4ED">
     <div style="display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid rgba(245,244,237,.18);flex:none">
@@ -98,7 +98,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="arkmorkt" data-screen-label="Bottom sheet — mörkt läge">
+<div class="sc-item" id="arkmorkt" data-theme="dark" data-theme-family="bottomark-default-412" data-screen-label="Bottom sheet — mörkt läge">
   <div class="sc-label"><a class="sc-id" href="#arkmorkt">Ark mörkt</a>Bottom sheet i mörkt läge: scrim, 12 px överkant och handtag, radioval med bock, klistrad primärhandling. Arkets yta är <code>surface</code>, inte <code>bg</code> — separationen bärs av ytnivå och kant.</div>
   <div class="sc-phone" style="width:412px;height:924px;display:flex;flex-direction:column;background:#17251d;color:#F5F4ED;position:relative">
     <div style="padding:24px 24px 0;color:#C9D3C4">
@@ -129,7 +129,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-title" style="margin:44px 0 24px;border-top:1px solid rgba(0,0,0,.1);padding-top:28px">Säkerhet och kö — de tre vyer som produktreglerna kräver men specen saknade. <b>produktregler.md § 1.3b</b> (okänt tillstånd), <b>§ 1</b> (automatisk planering i allergihushåll) och <b>§ 3.1</b> (offlinekön).</div>
 <div class="sc-row">
 
-<div class="sc-item" id="okandingrediens" data-screen-label="Okänd allergenuppgift — granskning">
+<div class="sc-item" id="okandingrediens" data-theme="light" data-theme-family="okandingrediens-414" data-screen-label="Okänd allergenuppgift — granskning">
   <div class="sc-label"><a class="sc-id" href="#okandingrediens">Okänd</a>Granskningsvyn för ett <code>okänd</code>-tillstånd. Bär alla fem uppgifter produktreglerna kräver: varför, vilken ingrediens, vem och vilket krav, datakälla med datum, och vad som krävs för att räkna om. Ordet ”okänd” utan de fem är inte en märkning — det är en gåta.</div>
   <div class="sc-phone" style="width:412px;height:820px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none">
@@ -178,7 +178,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="veckoallergi" data-screen-label="Veckogenerering — allergihushåll">
+<div class="sc-item" id="veckoallergi" data-theme="light" data-theme-family="veckoallergi-414" data-screen-label="Veckogenerering — allergihushåll">
   <div class="sc-label"><a class="sc-id" href="#veckoallergi">Allergi</a>Genereringsresultat i ett hushåll med allergikrav. <b>Automatisk planering tar endast <code>säker</code></b> — <code>okänd</code> planeras inte, men göms inte heller: den ligger i en egen grupp med väg till granskning. Låsta krav har ingen kryssruta, för de kan inte släppas.</div>
   <div class="sc-phone" style="width:412px;height:820px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none">
@@ -215,7 +215,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="synkko" data-screen-label="Väntar på synk — offlinekön">
+<div class="sc-item" id="synkko" data-theme="light" data-theme-family="synkko-414" data-screen-label="Väntar på synk — offlinekön">
   <div class="sc-label"><a class="sc-id" href="#synkko">Kö</a>Offlinekön som användarens vy, inte som implementationsdetalj (<code>produktregler.md</code> § 3.1). Permanenta fel ligger först och har alltid en handling. Ingen post får försvinna utan serverbekräftelse eller ett synligt fel.</div>
   <div class="sc-phone" style="width:412px;height:820px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none">
@@ -276,7 +276,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-title" style="margin:44px 0 24px;border-top:1px solid rgba(0,0,0,.1);padding-top:28px">Etapp 0 — de tre kraven som var beslutade men saknade ritning. <b>C-05</b> utloggning med osparade ändringar, <b>C-06</b> chattens redigering och radering, <b>R-08</b> safe area. Efter dessa har designen inga egna hål kvar i det befintliga systemet.</div>
 <div class="sc-row">
 
-<div class="sc-item" id="utloggningko" data-screen-label="Utloggning med osparade ändringar">
+<div class="sc-item" id="utloggningko" data-theme="light" data-theme-family="utloggningko-414" data-screen-label="Utloggning med osparade ändringar">
   <div class="sc-label"><a class="sc-id" href="#utloggningko">Utloggning</a>Utloggning blockeras när kön inte är tömd (<code>produktregler.md</code> § 3.1). Antalet och vad det rör står i klartext — ”osparade ändringar” utan innehåll är samma sak som att inte varna. Destruktiv väg finns, men är namngiven och inte förvald.</div>
   <div class="sc-phone" style="width:412px;height:546px;position:relative;background:#24382c">
     <div style="position:absolute;inset:0;background:rgba(36,56,44,.4)"></div>
@@ -300,7 +300,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="utloggningtom" data-screen-label="Utloggning — kön tömd">
+<div class="sc-item" id="utloggningtom" data-theme="light" data-theme-family="utloggningtom-414" data-screen-label="Utloggning — kön tömd">
   <div class="sc-label"><a class="sc-id" href="#utloggningtom">Utloggning tom</a>Samma handling när kön är tom: en vanlig bekräftelse utan varning. Skillnaden är avsiktlig — en dialog som alltid ser allvarlig ut slutar betyda något.</div>
   <div class="sc-phone" style="width:412px;height:546px;position:relative;background:#24382c">
     <div style="position:absolute;inset:0;background:rgba(36,56,44,.4)"></div>
@@ -315,7 +315,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="chattredigerat" data-screen-label="Chatt — redigerat och borttaget">
+<div class="sc-item" id="chattredigerat" data-theme="light" data-theme-family="chattredigerat-414" data-screen-label="Chatt — redigerat och borttaget">
   <div class="sc-label"><a class="sc-id" href="#chattredigerat">Chatt ops</a>Chatten är append-only för <i>meddelanden</i>, men redigering och radering är egna operationer (<code>produktregler.md</code> § 2.3). Ett redigerat meddelande märks; ett borttaget lämnar sin plats kvar — försvinner den blir samtalet obegripligt för alla andra.</div>
   <div class="sc-phone" style="width:412px;height:640px;display:flex;flex-direction:column">
       <div style="padding:8px 12px;border-bottom:1px solid #ccd1c2;display:flex;align-items:center;gap:8px;flex:none">
@@ -357,7 +357,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="chattmeny" data-screen-label="Chatt — avsändarens meddelandemeny">
+<div class="sc-item" id="chattmeny" data-theme="light" data-theme-family="chattmeny-414" data-screen-label="Chatt — avsändarens meddelandemeny">
   <div class="sc-label"><a class="sc-id" href="#chattmeny">Meddelandemeny</a>Långtryck är genvägen; menyn är den synliga vägen. Radera ligger sist och avskild, och texten namnger vad som händer med platsen. 7 sekunders Ångra enligt konfliktmatrisen.</div>
   <div class="sc-phone" style="width:412px;height:640px;display:flex;flex-direction:column;position:relative">
       <div style="padding:8px 12px;border-bottom:1px solid #ccd1c2;display:flex;align-items:center;gap:8px;flex:none">
@@ -395,7 +395,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="safeareaios" data-screen-label="Safe area — iOS, ljust">
+<div class="sc-item" id="safeareaios" data-theme="light" data-theme-family="safeareaios-414" data-screen-label="Safe area — iOS, ljust">
   <div class="sc-label"><a class="sc-id" href="#safeareaios">Safe area iOS</a>Bevis för <b>R-08</b>. Dynamic Island uppe, hemindikator nere. Klamrarna visar insetet: <b>ingen text och ingen kontroll</b> inom det. Den klistrade åtgärdsraden ligger ovanför indikatorn, inte under den.</div>
   <div class="sc-phone" style="width:412px;height:820px;display:flex;flex-direction:column;position:relative;background:#F5F4ED">
       <div style="height:59px;flex:none;position:relative;display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px 6px;background:#e6ead9">
@@ -429,7 +429,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="safeareaandroid" data-screen-label="Safe area — Android, mörkt">
+<div class="sc-item" id="safeareaandroid" data-theme="light" data-theme-family="safeareaandroid-414" data-screen-label="Safe area — Android, mörkt">
   <div class="sc-label"><a class="sc-id" href="#safeareaandroid">Safe area Android</a>Samma krav i mörkt läge med hålkamera och treknappsnavigering. Systemfältet är den bredaste botteninsetet vi möter — den klistrade raden mäter aldrig med ett antaget värde.</div>
   <div class="sc-phone" style="width:412px;height:820px;display:flex;flex-direction:column;background:#17251d;color:#F5F4ED">
       <div style="height:44px;flex:none;position:relative;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#24382c">
@@ -469,7 +469,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-title" style="margin:44px 0 24px;border-top:1px solid rgba(0,0,0,.1);padding-top:28px">Etapp 1 · Hem — <b>appens enda helt nya vy</b>. Finns inte i koden: dagens flik 1 är receptbiblioteket. Hem svarar på en fråga — <i>vad äter vi ikväll</i> — och allt annat på skärmen är underordnat den. Här blir också navigationsbeslutet <b>K-03</b> verkligt: fem platser, med veckomenyn som andra flik.</div>
 <div class="sc-row">
 
-<div class="sc-item" id="hem" data-screen-label="Hem · 412 · ljust">
+<div class="sc-item" id="hem" data-theme="light" data-theme-family="hem-default-412" data-screen-label="Hem · 412 · ljust">
   <div class="sc-label"><a class="sc-id" href="#hem">Hem</a>Normalläget. Ett hjältekort för ikväll med <b>en</b> saffranshandling, veckan som tre rader, och en rad som förklarar inköpslistans läge. Hälsningen byter med tiden på dygnet; datumet är proportionellt (fristående datum är aldrig tabulärt).</div>
   <div class="sc-phone" style="width:412px;height:924px;display:flex;flex-direction:column">
     <div style="padding:24px 24px 0;flex:none;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
@@ -516,7 +516,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="hemmorkt" data-screen-label="Hem · mörkt läge">
+<div class="sc-item" id="hemmorkt" data-theme="dark" data-theme-family="hem-default-412" data-screen-label="Hem · mörkt läge">
   <div class="sc-label"><a class="sc-id" href="#hemmorkt">Hem mörkt</a>Samma vy i mörkt läge. Saffran behåller sin fyllning på hjälteknappen; länkarna går till <code>text.accent.dark</code> #DCA968. Notispricken blir papper-kantad ink så den syns mot den mörka ytan utan att bli en andra hjältefärg.</div>
   <div class="sc-phone" style="width:412px;height:924px;display:flex;flex-direction:column;background:#17251d;color:#F5F4ED">
     <div style="padding:24px 24px 0;flex:none;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
@@ -563,7 +563,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="hemtom" data-screen-label="Hem · tomt (ny användare)">
+<div class="sc-item" id="hemtom" data-theme="light" data-theme-family="hemtom-414" data-screen-label="Hem · tomt (ny användare)">
   <div class="sc-label"><a class="sc-id" href="#hemtom">Hem tomt</a>Första dagen, inga recept. Tomläget beskriver <b>läget</b>, inte problemet, och har exakt en väg vidare. De tre vägarna under är genvägar — inte tre likvärdiga hjältar. Ingen illustration av en tom tallrik: clochen är varumärke, aldrig statusbild.</div>
   <div class="sc-phone" style="width:412px;height:924px;display:flex;flex-direction:column">
     <div style="padding:24px 24px 0;flex:none;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
@@ -590,7 +590,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="hemladdar" data-screen-label="Hem · laddar">
+<div class="sc-item" id="hemladdar" data-theme="light" data-theme-family="hemladdar-414" data-screen-label="Hem · laddar">
   <div class="sc-label"><a class="sc-id" href="#hemladdar">Hem laddar</a>Kall start. Tallrikslinje med text som säger vad som hämtas, och <b>stillastående</b> skelett där formen redan är känd. Skelettet visas först efter 300 ms — en snabb start ska aldrig blinka.</div>
   <div class="sc-phone" style="width:412px;height:924px;display:flex;flex-direction:column">
     <div style="padding:24px 24px 0;flex:none;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
@@ -623,7 +623,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="hemoffline" data-screen-label="Hem · offline">
+<div class="sc-item" id="hemoffline" data-theme="light" data-theme-family="hemoffline-414" data-screen-label="Hem · offline">
   <div class="sc-label"><a class="sc-id" href="#hemoffline">Hem offline</a>Offline är en <b>banner</b>, aldrig en dialog. Det som finns i cache visas som vanligt och märks med tidsstämpel — inte med grå text. Kön syns i toppen och leder till <a href="#synkko">synkko</a>.</div>
   <div class="sc-phone" style="width:412px;height:924px;display:flex;flex-direction:column">
     <div style="flex:nonedisplay:flex;align-items:center;gap:9px;min-height:48px;padding:0 24px;background:#e6ead9;box-sizing:border-box" data-a11y-name="Ingen anslutning, 3 ändringar väntar" data-hit="self"; data-a11y-role="button">
@@ -674,7 +674,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="hemfel" data-screen-label="Hem · fel">
+<div class="sc-item" id="hemfel" data-theme="light" data-theme-family="hemfel-414" data-screen-label="Hem · fel">
   <div class="sc-label"><a class="sc-id" href="#hemfel">Hem fel</a>Felvägen säger tre saker: <b>vad hände</b>, <b>vad bevarades</b>, <b>vad du kan göra</b>. Ingen illustration. Resten av vyn står kvar — ett fel i en sektion får inte tömma hela skärmen.</div>
   <div class="sc-phone" style="width:412px;height:924px;display:flex;flex-direction:column">
     <div style="padding:24px 24px 0;flex:none;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
@@ -716,7 +716,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-title" style="margin:44px 0 24px;border-top:1px solid rgba(0,0,0,.1);padding-top:28px">Etapp 1 · resten av flöde A — receptdetaljens sociala lager, bildfelläget, och matlagning till betyg. Efter dessa är <i>öppna appen → se ikväll → laga → betygsätt</i> ritat hela vägen.</div>
 <div class="sc-row">
 
-<div class="sc-item" id="receptkommentarer" data-screen-label="Receptdetalj — kommentarer">
+<div class="sc-item" id="receptkommentarer" data-theme="light" data-theme-family="receptkommentarer-414" data-screen-label="Receptdetalj — kommentarer">
   <div class="sc-label"><a class="sc-id" href="#receptkommentarer">Kommentarer</a>Kommentarer på ett <b>delat</b> recept. Publiken är receptets ägare + samarbetsmedlemmar minus dig själv (<code>comment_visibility.dart</code>) — inte hushållet. På ett <b>personligt</b> recept finns ingen publik och då <b>döljs</b> raden helt. Etiketten underdriver aldrig: högst tre namn + ”+N” mot den sanna storleken.</div>
   <div class="sc-phone" style="width:412px;height:820px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none">
@@ -777,7 +777,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="receptcooksnap" data-screen-label="Receptdetalj — cook snaps">
+<div class="sc-item" id="receptcooksnap" data-theme="light" data-theme-family="receptcooksnap-414" data-screen-label="Receptdetalj — cook snaps">
   <div class="sc-label"><a class="sc-id" href="#receptcooksnap">Cook snaps</a>Bilder från dem som lagat rätten. <b>Avstämd mot <code>cook_snap.dart</code>:</b> en snap ärver receptets publik (<code>sameAsRecipe</code>) och kan bara göras <i>mer</i> privat (<code>onlyMe</code>) — aldrig mer publik. Därför varnas man <b>före uppladdning</b> när receptet är publikt: värsta fallet är att ett publikt recept tyst gör ett köksfoto publikt. Album högst 5 bilder, bildtext högst 200 tecken.</div>
   <div class="sc-phone" style="width:412px;height:820px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none">
@@ -816,7 +816,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="receptdelningsstatus" data-screen-label="Receptdetalj — delningsstatus (ägaren)">
+<div class="sc-item" id="receptdelningsstatus" data-theme="light" data-theme-family="receptdelningsstatus-414" data-screen-label="Receptdetalj — delningsstatus (ägaren)">
   <div class="sc-label"><a class="sc-id" href="#receptdelningsstatus">Delning</a><b>Ombyggd 2026-07-26 efter läsning av <code>recipe_detail_sharing_status.dart</code>.</b> Komponenten är <b>ägarens</b> vy och visas bara för den som skapat receptet — <code>if (recipe.createdBy != currentUserId) return SizedBox.shrink()</code>. Den listar vem receptet delats med, vän för vän och grupp för grupp, med <b>återkallande per rad</b> och en destruktiv ”sluta dela med alla”. Den tidigare ramen visade en påhittad behörighetstabell för ett recept man <i>inte</i> äger; den vyn finns inte i koden och är struken.</div>
   <div class="sc-phone" style="width:412px;height:760px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none">
@@ -849,7 +849,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="receptbildfel" data-screen-label="Receptdetalj — bilden kunde inte laddas">
+<div class="sc-item" id="receptbildfel" data-theme="light" data-theme-family="receptbildfel-414" data-screen-label="Receptdetalj — bilden kunde inte laddas">
   <div class="sc-label"><a class="sc-id" href="#receptbildfel">Bildfel</a>Regeln komponentarket kräver men ingen ram visade: <b>saknad bild kollapsar, misslyckad bild behåller ytan.</b> Layouten får inte hoppa när nätet vacklar, så ytan står kvar med förklaring och tyst omförsök. Jämför <a href="Butlery Skarmar v12 del 3 sok och skalbevis.dc.html#lagastaende320">receptdetalj320</a>, där bilden inte finns alls.</div>
   <div class="sc-phone" style="width:412px;height:820px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none">
@@ -883,7 +883,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 
 <div class="sc-row">
 
-<div class="sc-item" id="lagasubst" data-screen-label="Matlagning — byt ingrediens">
+<div class="sc-item" id="lagasubst" data-theme="light" data-theme-family="lagasubst-414" data-screen-label="Matlagning — byt ingrediens">
   <div class="sc-label"><a class="sc-id" href="#lagasubst">Byten</a>Substitutioner mitt i matlagningen. Långtryck är genvägen; <b>byt-knappen på raden är den synliga vägen</b> (tillgänglighetshandoffen kräver det). Förslag som ändrar allergenbilden märks — ett byte får aldrig tysta en varning (<code>produktregler.md</code> § 1.3).</div>
   <div class="sc-phone" style="width:412px;height:760px;display:flex;flex-direction:column;background:#17251d;color:#F5F4ED;position:relative">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(245,244,237,.18);flex:none">
@@ -935,7 +935,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="lagatimers" data-screen-label="Matlagning — flera timers">
+<div class="sc-item" id="lagatimers" data-theme="light" data-theme-family="lagatimers-414" data-screen-label="Matlagning — flera timers">
   <div class="sc-label"><a class="sc-id" href="#lagatimers">Timers</a>Flera timers samtidigt, <b>namngivna efter sitt steg</b> — ”Timer 2” säger ingenting när potatisen kokar. Tid annonseras vid start, halvtid och slut, aldrig löpande. Saknas notisbehörighet varnas man <i>innan</i> timern startas, inte efteråt.</div>
   <div class="sc-phone" style="width:412px;height:760px;display:flex;flex-direction:column;background:#17251d;color:#F5F4ED">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(245,244,237,.18);flex:none">
@@ -980,7 +980,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="betygvemat" data-screen-label="Betyg — vem åt">
+<div class="sc-item" id="betygvemat" data-theme="light" data-theme-family="betygvemat-414" data-screen-label="Betyg — vem åt">
   <div class="sc-label"><a class="sc-id" href="#betygvemat">Vem åt</a>Första steget i betygsflödet. <b>Avstämd mot <code>diner_profile.dart</code>:</b> gäster och barn är <b>sparade</b> hushållsprofiler (<code>DinerProfile</code>) — <code>DinerAgeBand.adult</code> är just en vuxen gäst utan konto. De delas i hushållet så alla ser samma profil och betygen slås samman. Ett betyg kräver ett stabilt <code>memberId</code>, så en osparad gäst kan inte bära ett betyg.</div>
   <div class="sc-phone" style="width:412px;height:700px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none">
@@ -1024,7 +1024,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="betygperperson" data-screen-label="Betyg — per person">
+<div class="sc-item" id="betygperperson" data-theme="light" data-theme-family="betygperperson-414" data-screen-label="Betyg — per person">
   <div class="sc-label"><a class="sc-id" href="#betygperperson">Betyg</a>Ett betyg per person <b>och recept</b> — dokument-id är <code>recipeId|memberId</code>, så ett nytt betyg <b>skriver över</b> det gamla. Stjärnor är 1–5; ”inte satt” är avsaknad av rad, aldrig värdet 0. Radiogrupp med 48 dp per stjärna. <b>Barn under 15 har inga konton</b> — vårdnadshavaren matar in betyget på en förvaltad profil (DPIA godkänd 2026-06-29).</div>
   <div class="sc-phone" style="width:412px;height:700px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none">
@@ -1074,7 +1074,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="betygsammanslaget" data-screen-label="Betyg — sammanslaget">
+<div class="sc-item" id="betygsammanslaget" data-theme="light" data-theme-family="betygsammanslaget-414" data-screen-label="Betyg — sammanslaget">
   <div class="sc-label"><a class="sc-id" href="#betygsammanslaget">Sammanslaget</a>Familjebetyget efter sparning. Snittet är <b>ink</b>, inte saffran — det är data, och det är ett <b>enkelt medelvärde där varje ätande väger lika</b> (<code>FamilyRatingSummary</code>). Spridningen visas i ord när den är stor: 3,7 kan betyda ”alla tyckte okej” eller ”två älskade och en avskydde”. Raden ”inmatat av” visas när <code>enteredByUid ≠ memberId</code> — ett betyg som satts av någon annan får inte se ut som personens eget.</div>
   <div class="sc-phone" style="width:412px;height:700px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none">
@@ -1118,7 +1118,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 </div>
 
 
-<div class="sc-item" id="betygvemarket" data-screen-label="Betyg — vem åt, arket i sin verkliga form">
+<div class="sc-item" id="betygvemarket" data-theme="light" data-theme-family="betygvemarket-414" data-screen-label="Betyg — vem åt, arket i sin verkliga form">
   <div class="sc-label"><a class="sc-id" href="#betygvemarket">vem åt · arket avstämt</a><b>B-01 stängd: <code>who_is_eating_sheet.dart</code> är läst, och den bär två upptäckter.</b> <b>Ett:</b> det här arket och veckomenyns <a href="Butlery Skarmar v12 etapp 2.dc.html">närvaroark</a> är <b>samma komponent</b> med olika copy — skillnaden är att betygsflödet har <i>Hoppa över</i> och kräver minst en person, medan närvaron har <i>Hela dagen</i> och tillåter <b>uttryckligen tomt</b>. Två flöden, en yta, och det ska ritas som en. <b>Två:</b> arket visas <b>inte alls</b> för ett solohushåll (roster ≤ 1) — och <b>inte heller när rosterladdningen misslyckas</b>. Båda returnerar <i>hoppat över</i>, alltså loggas maten utan närvaro och <b>ingen får veta vilket som hände</b>. Kodkommentaren säger själv att orsakerna ska hållas åtskilda; ramen gör det (se noten). Tre mått rättade mot koden: ovalda rader ligger på <b>opacitet 0,5</b> — hela raden, inklusive namnet — vilket både bryter opacitetsstegen och gör namnet oläsbart; kryssrutan är 26 px mot tokens 24; och <i>Hela dagen</i> (44) och <i>Hoppa över</i> (40) ligger under träffytegolvet.</div>
   <div class="sc-phone" style="width:412px;height:780px;display:flex;flex-direction:column;justify-content:flex-end">
     <div style="position:absolute;inset:0;background:rgba(36,56,44,.35)"></div>
@@ -1141,7 +1141,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="familjmedlemsamtycke" data-screen-label="Familjemedlem — två samtycken och en mjuk preferens">
+<div class="sc-item" id="familjmedlemsamtycke" data-theme="light" data-theme-family="familjmedlemsamtycke-414" data-screen-label="Familjemedlem — två samtycken och en mjuk preferens">
   <div class="sc-label"><a class="sc-id" href="#familjmedlemsamtycke">två samtycken · en mjuk preferens</a><b>B-08 och B-11 stängda i samma läsning: <code>family_member_form_view.dart</code> har redan modellen — och den är bättre än specen påstod.</b> Formuläret skiljer <b>tre</b> slags uppgifter med tre olika friktionsnivåer. <b>Vårdnadshavarens samtycke</b> (art. 6) är <b>obligatoriskt</b> för en minderårig och spärrar sparning. <b>Allergener</b> är hälsouppgifter (art. 9) och kräver ett <b>eget, uttryckligt</b> samtycke — <i>inte</i> samma kryss: har man valt allergener utan att kryssa går det inte att spara, och avbockning <b>raderar valen på plats</b>. <b>Ogillade ingredienser</b> har <b>ingen</b> friktion alls, för de är en planeringspreferens och inte hälsodata — och det är själva poängen som specen saknade. Återkallandet ligger <i>inne i</i> allergenkortet, där uppgifterna syns. Två mått rättade: chipsen är ~28 px höga (under träffytegolvet) och bär <b>färg som enda skillnad</b>; här får de 48 dp och en bock.</div>
   <div class="sc-phone" style="width:412px;height:940px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none;background:#24382c"><span data-hit="self" style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span><span style="flex:1;font-size:14px;font-weight:700;color:#F5F4ED;min-width:0">Elsa</span></div>

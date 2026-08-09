@@ -41,6 +41,11 @@ export const THEME_MEASURE = `(() => {
         storstaYtaFarg: storst ? fargRgb(storst.slice(0, 3)) : null,
         kontroller_st: it.querySelectorAll('[data-a11y-role]').length,
         namnsignal_morkt: /morkt|dark/i.test(it.id),
+        // Ramens bredd ar UNDERLAG for att forfatta familjens formfaktor.
+        // Den avgor aldrig nagot vid korning.
+        ramBredder: [...it.querySelectorAll('.sc-phone')]
+          .map(e => Math.round(e.getBoundingClientRect().width))
+          .filter((v, i, a) => a.indexOf(v) === i),
       },
     });
   }

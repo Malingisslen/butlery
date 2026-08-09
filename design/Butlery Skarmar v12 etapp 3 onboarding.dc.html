@@ -45,7 +45,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-title">Etapp 3 · <b>MINIMAL</b>. Guiden har i dag <b>fem sidor</b> i ordningen <i>åldersgrind → välkomst → allergener → kost → import</i> — inte välkomst först, som arbetsplanen påstod. MINIMAL behåller <b>fyra</b>: åldersgrinden (den är juridik, inte ett steg), en välkomst som säger vad appen gör, allergenerna (säkerhet, och de propageras till allt annat) och första importen. <b>Kostpreferenserna flyttas ut</b> och ställs när de första gången betyder något: efter första menygenereringen. Den enda frågan i planen var <i>hur lite kan vi fråga innan första receptet</i> — svaret är två frågor, varav en är obligatorisk av lag.<br><br>Tre saker i koden gör den korta vägen möjlig utan att lova något falskt: <b>att hoppa över slutför guiden</b> (den skriver <code>onboardingSkippedAt</code>, den avbryter inte), <b>appen såddas</b> med startrecept <i>och</i> en exempelvecka med inköpslista (BUT-926, BUT-930), och <b>framstegen sparas per steg</b> (BUT-675) så en avbruten guide återupptas där den slutade. Reglerna i <code>produktregler.md</code> § 13.<br><br><b>Före guiden ligger auth.</b> Sex ramar: inloggning, kontoskapande, glömt lösenord, e-postverifieringens mjuka spärr och dess bekräftelse — plus <b>MFA-utmaningen, som inte finns i koden alls</b>. Tjänsten kan lösa en utmaning och inställningarna kan slå på tvåstegsverifiering, men ingen vy tar emot den: den som aktiverar MFA kan låsa sig ut. Den ramen är ett kravunderlag, inte en avbild.</div>
 <div class="sc-row">
 
-<div class="sc-item" id="authlogga" data-screen-label="Auth — logga in">
+<div class="sc-item" id="authlogga" data-theme="light" data-theme-family="authlogga-414" data-screen-label="Auth — logga in">
   <div class="sc-label"><a class="sc-id" href="#authlogga">logga in</a><b>Ritad efter <code>auth_view.dart</code>. Vyn är <i>ett</i> formulär i två lägen</b> — inte två skärmar — och läget växlas av en konturknapp under en <i>eller</i>-avdelare. Två saker koden gör som ritningen måste bära: <b>lösenord och namn rensas vid växling</b> (inget släpper igenom mellan lägena), och <b>inloggning navigerar direkt</b> till skalet på flik 1, medan registrering <i>inte</i> navigerar alls — auth-tillståndet driver <code>AuthWrapper</code> vidare till e-postverifiering, åldersgrind och guide. Det som ändras mot koden: gröna huvudets ordmärke ritas som <b>låst vektor</b>, inte som text i vikt 400 med 38 px och 1 px spärr, och broccolibilden utgår — illustrationssystemet har egna motiv. Fältradien följer <code>radius.control</code> 8; koden har <code>BorderRadius.zero</code>, vilket är en <b>ändring i koden</b>.</div>
   <div class="sc-phone" style="width:412px;height:860px;display:flex;flex-direction:column">
     <div style="flex:none;background:#24382c;padding:32px 24px 28px;display:flex;flex-direction:column;align-items:center;gap:16px">
@@ -76,7 +76,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="authskapa" data-screen-label="Auth — skapa konto">
+<div class="sc-item" id="authskapa" data-theme="light" data-theme-family="authskapa-414" data-screen-label="Auth — skapa konto">
   <div class="sc-label"><a class="sc-id" href="#authskapa">skapa konto</a><b>Här ligger etappens allvarligaste fynd: <i>åldern frågas två gånger, och den första frågan betyder ingenting.</i></b> Registreringen har en kryssruta där användaren själv intygar 15 år — och <b>samma ålder kontrolleras strax efter</b> av <code>verifySignupAge</code> i guiden, som är den enda auktoriteten och den enda som skriver <code>birthYear</code>. Självintyget stängdes uttryckligen som kringgående väg (BUT-1384); att låta det stå kvar som en ruta ber om ett svar vi inte tror på, och två frågor om samma sak lär användaren att ingen av dem spelar roll. <b>Ramen tar bort åldersrutan</b> och behåller villkorsrutan, som är ett verkligt samtycke. Kvar som ändring i koden: samtyckena bekräftas i dag <i>efter</i> tryck med en varningssnackbar — ritningen håller knappen avstängd i stället, för ett krav som syns före är inte ett fel som kommer efter. Villkorslänkarna finns dessutom <b>två gånger</b> i vyn (i raden och i foten); ramen behåller foten.</div>
   <div class="sc-phone" style="width:412px;height:860px;display:flex;flex-direction:column">
     <div style="flex:none;background:#24382c;padding:24px;display:flex;justify-content:center">
@@ -113,7 +113,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="authglomt" data-screen-label="Auth — glömt lösenordet">
+<div class="sc-item" id="authglomt" data-theme="light" data-theme-family="authglomt-414" data-screen-label="Auth — glömt lösenordet">
   <div class="sc-label"><a class="sc-id" href="#authglomt">glömt lösenordet</a><b>En dialog, inte en vy — och kvittot är medvetet intetsägande.</b> Adressen valideras <i>inne i</i> dialogen innan något skickas (<code>ValidationUtils.validateEmail</code>), så ett stavfel fångas där i stället för att belönas med ett falskt &quot;skickat&quot;. Därefter säger snackbaren <b>samma sak oavsett om kontot finns</b> — det är kontouppräkningsskyddet, och copyn får därför inte lova att ett brev är på väg till just den adressen. Formuleringen är alltså inte otydlig av slarv: den är otydlig med avsikt, och ramen skriver ut varför så att ingen &quot;förbättrar&quot; den senare.</div>
   <div class="sc-phone" style="width:412px;height:560px;display:flex;flex-direction:column;justify-content:center">
     <div style="position:absolute;inset:0;background:rgba(36,56,44,.35)"></div>
@@ -134,7 +134,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="authepost" data-screen-label="Auth — e-postverifiering">
+<div class="sc-item" id="authepost" data-theme="light" data-theme-family="authepost-462" data-screen-label="Auth — e-postverifiering">
   <div class="sc-label"><a class="sc-id" href="#authepost">e-postverifiering</a><b>En <i>mjuk</i> spärr, och det är ett medvetet val i koden — inte en lucka.</b> Vyn kan lämnas med <i>Fortsätt ändå</i>; det som stoppas utan verifierad adress avgörs längre in. Tre mekanismer ritningen måste visa: skärmen <b>frågar av sig själv var femte sekund</b> och går vidare i samma ögonblick adressen bekräftas (ingen knapp att trycka på — därför står det utskrivet att jag håller koll), pollningen <b>pausar i bakgrunden</b> och återupptas när appen kommer fram, och <b>omsändning har 60 sekunders karens</b> med tiden kvar <i>i knappens etikett</i>. Ramen flyttar nedräkningen till en rad under knappen: en knapp vars namn ändras varje sekund är en knapp skärmläsaren aldrig hinner läsa upp. Det är en <b>ändring i koden</b>.</div>
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column;justify-content:center;padding:0 24px">
     <div style="text-align:center"><svg data-graphic-role="redundant" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto" data-icon="mail"><rect x="3" y="5.5" width="18" height="13" rx="1.5"></rect><path d="M3.5 6.5L12 13l8.5-6.5"></path></svg></div>
@@ -149,7 +149,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="authepostklar" data-screen-label="Auth — adressen bekräftad">
+<div class="sc-item" id="authepostklar" data-theme="light" data-theme-family="authepostklar-462" data-screen-label="Auth — adressen bekräftad">
   <div class="sc-label"><a class="sc-id" href="#authepostklar">adressen bekräftad</a><b>Den kortaste vyn i systemet, och den enda ingen trycker på.</b> Tillståndet visas när pollningen upptäcker bekräftelsen och varar bara till nästa navigering — därför bär den en glyf, en rad, och ingenting annat. Två regler gäller ändå: bekräftelsen är <code>text.success</code>, inte saffran (saffran betyder handling, och här finns ingen), och den får <b>inte</b> vara enda beskedet om vad som händer sedan — raden under säger vart användaren är på väg, för en skärm som byts av sig själv utan att ha sagt vart är ett hopp, inte ett steg.</div>
   <div class="sc-phone" style="width:412px;height:420px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 24px">
     <svg data-graphic-role="redundant" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#3f6b4f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block" data-icon="circle-check"><circle cx="12" cy="12" r="7.5"></circle><path d="M8.5 12.3l2.4 2.4 4.6-4.6"></path></svg>
@@ -158,7 +158,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="authmfa" data-screen-label="Auth — MFA-utmaning (finns inte i koden)">
+<div class="sc-item" id="authmfa" data-theme="light" data-theme-family="authmfa-414" data-screen-label="Auth — MFA-utmaning (finns inte i koden)">
   <div class="sc-label"><a class="sc-id" href="#authmfa">MFA-utmaningen</a><b>⚠ Fyndet som gör den här ramen brådskande: utmaningen finns inte.</b> <code>auth_mfa_service.dart</code> har hela kedjan — <code>createMfaResolver</code>, <code>startMfaSignIn</code>, <code>completeMfaSignIn</code> — och <code>mfa_settings_view.dart</code> låter användaren <b>slå på</b> tvåstegsverifiering. Men <code>MfaResolverInfo</code> nämns ingen annanstans i <code>lib/</code> än i sin egen fil: <b>ingen vy och ingen viewmodel tar emot en utmaning</b>, och <code>AuthViewModel.signIn</code> har ingen väg att lämna den vidare. Den som aktiverar MFA i inställningarna kan därför <b>låsa sig ut ur sin egen app</b>. Ramen är alltså inte en avbild — den är ett <b>kravspecifikationsunderlag</b>. Måtten som är kodens: SMS med <b>60 sekunders</b> timeout, numret kommer som <b>maskerad ledtråd</b> ur resolvern (appen känner inte hela numret), och <b>automatisk verifiering</b> kan lösa utmaningen utan att någon skriver något — därför måste fältet tåla att fyllas i av sig själv och skärmen att bytas mitt i en inmatning. Sex rutor, <b>en kontroll</b>: T-06 säger att koden läses som <i>ett</i> fält, och rutorna är därför bara geometri utan egen roll — sex fält skulle läsas upp sex gånger och ta emot autofyllen i den första.</div>
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none"><span data-hit="self" style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Avbryt inloggningen" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span><span style="flex:1;font-size:14px;font-weight:700;min-width:0">Tvåstegsverifiering</span></div>
@@ -176,7 +176,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbalder" data-screen-label="Onboarding — åldersgrind">
+<div class="sc-item" id="onbalder" data-theme="light" data-theme-family="onboarding-aldersgrind-412" data-screen-label="Onboarding — åldersgrind">
   <div class="sc-label"><a class="sc-id" href="#onbalder">åldersgrinden</a><b>Sida 0 och den enda sidan utan <i>Hoppa över</i>.</b> Grinden är <code>Dataskyddslag 2 kap. 4 §</code>, inte GDPR art. 8 — svensk golv för tjänster med socialt inslag är <b>15</b>, och det är appens enda åldersgräns (<code>minAgeYears = 15</code>, ADR-0001). Bara <b>födelseår</b> samlas in: årsgranularitet räcker enligt DI:s vägledning och samlar minst möjliga personuppgift. <b>Inget år är förvalt</b> — ett förvalt vuxenår skulle låta vem som helst trycka <i>Nästa</i> utan att uppge sin ålder, så <i>Nästa</i> är avstängd till dess användaren väljer. Listan erbjuder ned till <b>13</b>, medvetet under golvet: en trettonåring ska kunna uppge sin verkliga ålder och få det vänliga nejet i stället för att luras att ljuga.</div>
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
     <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none;min-height:48px;align-items:center"><span style="font-size:12px;font-weight:400;color:#627061">Åldersgrinden går inte att hoppa över</span></div>
@@ -196,7 +196,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbalderblock" data-screen-label="Onboarding — under 15">
+<div class="sc-item" id="onbalderblock" data-theme="light" data-theme-family="onbalderblock-414" data-screen-label="Onboarding — under 15">
   <div class="sc-label"><a class="sc-id" href="#onbalderblock">under 15</a><b>Två vägar leder hit, och de betyder olika saker.</b> Väljer användaren ett år som ger under 15 kortsluter vyn <i>före varje skrivning</i> (<code>_OnboardingContentState.build</code>) — inget har hänt, kontot finns kvar. Passerar hon klientgrinden men nekas av <code>verifySignupAge</code> har servern <b>redan raderat auth-kontot</b>; då är detta ett besked, inte en fråga. Ramen ritar det första fallet. <b>Utloggningen är inte det enda erbjudandet:</b> BUT-946 lade en föräldraväg — en upplysning om att en vuxen kan skapa ett eget konto och lägga barnet som matgäst i hushållet, vilket är den funktion som redan finns (<code>diner_profile.dart</code>). Låset är 72 px, den enda ikonen i systemet i den storleken, och den bär hela beskedet.</div>
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px;text-align:center">
@@ -212,7 +212,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbaldrefel" data-screen-label="Onboarding — grinden nås inte">
+<div class="sc-item" id="onbaldrefel" data-theme="light" data-theme-family="onbaldrefel-414" data-screen-label="Onboarding — grinden nås inte">
   <div class="sc-label"><a class="sc-id" href="#onbaldrefel">grinden nås inte</a><b>Tredje utfallet, och det som glöms.</b> <code>verifyAgeGate</code> har tre svar: <code>compliant</code>, <code>rejected</code> och <code>error</code> — det sista är infrastruktur, inte ålder (timeout på <b>20 s</b>, funktionen onåbar). Då <b>passeras inte grinden</b>: användaren står kvar på sida 0 med sitt val kvar och kan försöka igen. Det är därför beskedet är en snackbar och inte en vy: ingenting har gått sönder, och året behöver inte väljas om. Att förväxla detta med ett nej vore det värsta felet i hela guiden — vi skulle spärra en vuxen för att nätet fladdrade.</div>
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
     <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none;min-height:48px;align-items:center"><span style="font-size:12px;font-weight:400;color:#627061">Åldersgrinden går inte att hoppa över</span></div>
@@ -233,7 +233,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbvalkommen" data-screen-label="Onboarding — välkomst">
+<div class="sc-item" id="onbvalkommen" data-theme="light" data-theme-family="onbvalkommen-414" data-screen-label="Onboarding — välkomst">
   <div class="sc-label"><a class="sc-id" href="#onbvalkommen">välkomsten</a><b>Sida 1, och den enda sidan som inte frågar något.</b> Koden har en broccoli-illustration på 120 px och tre textblock; MINIMAL byter illustrationen mot systemets egen (<code>butlery-ill-cookbook</code>) och kortar de tre blocken till <b>ett löfte och en förväntan</b>. <i>Hoppa över</i> dyker upp här — från och med nu går guiden att lämna, och att lämna den <b>slutför</b> den (se <a href="#onbhoppa">onbhoppa</a>). Sidan bär också det enda stället i appen där vi får säga vad Butlery är innan användaren vet det: att den planerar veckan, inte bara sparar recept.</div>
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
     <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none"><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 8px;font-size:14px;font-weight:600;color:#627061" data-a11y-name="Hoppa över" data-a11y-role="button" data-hit="self">Hoppa över</span></div>
@@ -250,7 +250,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onballergi" data-screen-label="Onboarding — allergener">
+<div class="sc-item" id="onballergi" data-theme="light" data-theme-family="onboarding-allergener-412" data-screen-label="Onboarding — allergener">
   <div class="sc-label"><a class="sc-id" href="#onballergi">allergenerna</a><b>Sida 2 — den fråga MINIMAL behåller, för den är den enda som gör resten säker.</b> Koden visar <b>åtta</b> vanliga och veckar ut till <b>sjutton</b> (EU:s fjorton plus laktos, jordnötter och trädnötter som egna rader) via en toggle som ligger som sista cell i rutnätet. Valen propageras framåt till importens allergenbanner, receptets märken och menygenereringens filter — och i ett allergihushåll blockeras <b>okänt</b> allergentillstånd från automatisk planering (<code>produktregler.md</code> § 1). Kortet är därför en <b>kryssruta i kortform</b>, inte ett chip: den bär tillståndet <i>valt</i>, inte en filtrering. Träffytan är hela kortet, 56 px, och markeringen har både ram, ton och bock — aldrig färg enbart. <b>Kodens åtta Material-glyfer utgår</b>: Butlery har inga mat- eller kostikoner (beslut B-07), och åtta dekorativa märken som inte skiljer gluten från sesam är täthet utan information.</div>
   <div class="sc-phone" style="width:412px;height:800px;display:flex;flex-direction:column">
     <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none"><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 8px;font-size:14px;font-weight:600;color:#627061" data-a11y-name="Hoppa över" data-a11y-role="button" data-hit="self">Hoppa över</span></div>
@@ -277,7 +277,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbimport" data-screen-label="Onboarding — första receptet">
+<div class="sc-item" id="onbimport" data-theme="light" data-theme-family="onbimport-414" data-screen-label="Onboarding — första receptet">
   <div class="sc-label"><a class="sc-id" href="#onbimport">första receptet</a><b>Sida 3, sista sidan, och den enda som gör något irreversibelt bra.</b> Koden gör två saker specen inte kände till: fältet <b>fylls i förväg från urklipp</b> om det ligger en länk där (<code>checkClipboardForUrl</code> i första framen efter montering), och en lyckad import <b>öppnar recepteditorn</b> med det tolkade receptet i stället för att spara tyst — med <code>navigateToDetailOnSave:false</code>, så att spara lämnar dig kvar i guiden. Fotovägen navigerar bort ur guiden; MINIMAL behåller den som <i>ett</i> alternativ, inte som ett rutnät av fyra. Knappen är avstängd tills fältet håller något importerbart (<code>canImport</code>), och under den står vad som händer om man inte vill: <b>inget dåligt</b>.</div>
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
     <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none"><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 8px;font-size:14px;font-weight:600;color:#627061" data-a11y-name="Hoppa över" data-a11y-role="button" data-hit="self">Hoppa över</span></div>
@@ -300,7 +300,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbimportklar" data-screen-label="Onboarding — importen landade">
+<div class="sc-item" id="onbimportklar" data-theme="light" data-theme-family="onbimportklar-414" data-screen-label="Onboarding — importen landade">
   <div class="sc-label"><a class="sc-id" href="#onbimportklar">importen landade</a><b>Utfallet är inte en bekräftelse — det är en editor.</b> <code>ImportSucceeded</code> skickar receptet vidare till <code>Routes.manualEntry</code> med <code>initialRecipe</code>, alltså <b>samma granskningssteg som etapp 4:s mönster</b> (<a href="Butlery Skarmar v12 etapp 4 import.dc.html">etapp 4</a>). Det är rätt: en tolkning ska granskas, och första receptet är det sämsta tillfället att bryta den regeln. Två saker skiljer från etapp 4: rubriken säger att detta är <i>ditt</i> första recept, och <i>Spara</i> går tillbaka in i guiden i stället för till receptdetaljen (<code>navigateToDetailOnSave:false</code>). Trycket loggas som <code>onboarding_import_succeeded</code>, vilket är det enda mått som skiljer en aktiverad användare från en registrerad.</div>
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none;background:#24382c"><span data-hit="self" style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka till guiden" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span><span style="flex:1;font-size:14px;font-weight:700;color:#F5F4ED;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ditt första recept</span></div>
@@ -324,7 +324,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbhoppa" data-screen-label="Onboarding — hoppa över">
+<div class="sc-item" id="onbhoppa" data-theme="light" data-theme-family="onbhoppa-414" data-screen-label="Onboarding — hoppa över">
   <div class="sc-label"><a class="sc-id" href="#onbhoppa">hoppa över</a><b>Ett fynd i koden som ändrar copyn helt: <i>Hoppa över</i> slutför guiden.</b> <code>_skipOnboarding</code> kallar samma <code>completeOnboarding</code> som <i>Klar</i>, med <code>onboardingSkippedAt</code> satt och händelsen <code>onboarding_skipped</code> loggad. Guiden återkommer alltså <b>inte</b> — och därför får dialogen inte antyda &quot;senare&quot;. Bekräftelsen finns för att det som hoppas över har en <b>säkerhetskonsekvens</b>: utan allergener planerar jag utan att veta. Den säger vad som går förlorat och var det finns i stället, och den destruktiva formuleringen ligger på handlingen — inte på avbryt.</div>
   <div class="sc-phone" style="width:412px;height:620px;display:flex;flex-direction:column;justify-content:flex-end">
     <div style="position:absolute;inset:0;background:rgba(36,56,44,.35)"></div>
@@ -340,7 +340,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbklar" data-screen-label="Onboarding — förbereder appen">
+<div class="sc-item" id="onbklar" data-theme="light" data-theme-family="onbklar-462" data-screen-label="Onboarding — förbereder appen">
   <div class="sc-label"><a class="sc-id" href="#onbklar">väntan som betyder något</a><b>Den enda väntan i Butlery som får vara lång — och koden gör den ärlig.</b> BUT-926 gjorde såddningen <i>inväntad</i> i stället för avfyrad-och-glömd, just för att användare annars landade i en tom app medan skrivningarna pågick. BUT-930 lade till en exempelvecka och dess inköpslista. Slutförandeskrivningen har ett <b>tak på 20 sekunder</b> (<code>_completionTimeout</code>); per-recept-fel tolereras tyst och sänker bara antalet. Därför är detta inget spinnerläge utan en <b>kvittolista</b>: tre rader som fylls i tur och ordning, med sitt slut synligt. En förlopplinje utan slut är en lögn; den här har ett.</div>
   <div class="sc-phone" style="width:412px;height:620px;display:flex;flex-direction:column;justify-content:center;padding:0 24px">
     <div style="text-align:center"><img src="assets/illustrations/butlery-ill-grocery-bag.svg" alt="" width="96" height="96" style="display:block;margin:0 auto"></div>
@@ -355,7 +355,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbfel" data-screen-label="Onboarding — slutförandet gick inte">
+<div class="sc-item" id="onbfel" data-theme="light" data-theme-family="onboarding-slutforande-fel-460" data-screen-label="Onboarding — slutförandet gick inte">
   <div class="sc-label"><a class="sc-id" href="#onbfel">slutförandet gick inte</a><b>Tre utfall delar i dag en enda generisk snackbar — och det är fel.</b> <code>completeOnboarding</code> returnerar <code>false</code> vid infrastrukturfel, vid <b>timeout på 20 s</b> och vid åldersavslag; bara det sista har en egen väg (<code>ageRejected</code>). Ramen skiljer de två återstående: allt användaren <i>valt</i> ligger kvar i minnet och behöver inte väljas om, så åtgärden är <b>Försök igen</b>, inte <i>Börja om</i>. Framstegsdokumentet är dessutom redan skrivet per steg (BUT-675), så en användare som stänger appen här återupptas — hon förlorar ingenting utom tid. Såddningen är oberoende och kan ha lyckats; därför lovar texten inte att appen är tom.</div>
   <div class="sc-phone" style="width:412px;height:620px;display:flex;flex-direction:column;justify-content:center;padding:0 24px">
     <div style="text-align:center"><svg data-graphic-role="redundant" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9C3B23" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto" data-icon="triangle-alert"><path d="M12 4.5L20.5 19.5H3.5z"></path><path d="M12 10v4"></path><path d="M12 16.6v.4"></path></svg></div>
@@ -369,7 +369,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbateruppta" data-screen-label="Onboarding — återupptagen">
+<div class="sc-item" id="onbateruppta" data-theme="light" data-theme-family="onbateruppta-414" data-screen-label="Onboarding — återupptagen">
   <div class="sc-label"><a class="sc-id" href="#onbateruppta">återupptagen guide</a><b>Ritad därför att koden har den och specen inte hade den.</b> <code>OnboardingProgressService</code> skriver <code>users/{uid}/onboarding/progress</code> vid varje framåtsteg (BUT-675), och <code>AuthWrapper</code> öppnar guiden på det sparade steget. Två konsekvenser gränssnittet måste bära: användaren återkommer <b>bakom åldersgrinden</b> — anspråket <code>ageCompliant</code> präglades redan i den session som passerade den, och året finns inte kvar i minnet — och den återupptagna sidan räknas som <i>anländ</i>, inte <i>avklarad</i>, så stegräkningen inte hoppar. Raden överst är därför en orientering, inte ett fel: <b>vi säger var hon är</b>, inte att hon avbröt.</div>
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
     <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none"><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 8px;font-size:14px;font-weight:600;color:#627061" data-a11y-name="Hoppa över" data-a11y-role="button" data-hit="self">Hoppa över</span></div>
@@ -391,7 +391,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbsenare" data-screen-label="Onboarding — den uppskjutna frågan">
+<div class="sc-item" id="onbsenare" data-theme="light" data-theme-family="onbsenare-414" data-screen-label="Onboarding — den uppskjutna frågan">
   <div class="sc-label"><a class="sc-id" href="#onbsenare">den uppskjutna frågan</a><b>Det här är hela MINIMAL-beslutet, ritat.</b> Kostsidan lyfts ur guiden och ställs efter <b>första menygenereringen</b> — det första ögonblick där svaret får en synlig konsekvens användaren kan bedöma. Fältet finns redan i modellen (<code>trackedDietary</code> i <code>UserAllergenPreferences</code>) och sparas via samma väg som från inställningarna, så ingen backend-ändring krävs; det som ändras är <b>när</b> vi frågar. Kortet ligger i menyresultatet, inte som en dialog: en fråga som avbryter är en fråga som avvisas. Att avstå har en egen, jämnvärdig knapp — inte ett kryss i hörnet.</div>
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none;background:#24382c"><span data-hit="self" style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span><span style="flex:1;font-size:14px;font-weight:700;color:#F5F4ED;min-width:0">Veckomeny</span><span style="font-size:10.5px;font-weight:700;letter-spacing:.5px;color:#F5F4ED;border:1px solid rgba(245,244,237,.4);padding:3px 9px;border-radius:999px;flex:none;font-variant-numeric:tabular-nums">v31 · 5 rätter</span></div>
@@ -420,7 +420,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbaldermorkt" data-screen-label="Onboarding — åldersgrinden, mörkt läge">
+<div class="sc-item" id="onbaldermorkt" data-theme="dark" data-theme-family="onboarding-aldersgrind-412" data-screen-label="Onboarding — åldersgrinden, mörkt läge">
   <div class="sc-label"><a class="sc-id" href="#onbaldermorkt">åldersgrinden mörkt</a><b>Guiden är den enda vy i appen som möter en användare utan sparad temainställning</b> — läget kommer från systemet, och första gången är därför lika ofta mörk som ljus. Tre ting bevisas här: fältet i vila bär <code>border.control</code> (<code>rgba(245,244,237,.35)</code>), <b>inte</b> <code>border.subtle</code> — en kant som går att trycka på ska synas; platshållaren är <code>text.secondary</code> #93A48D på papper, aldrig <code>text.disabled</code>, för ett tomt fält är inte avstängt; och <b>den avstängda knappen</b> är ritad ur det deklarerade paret <code>text.disabled</code> mot papper (3,04:1 i mörkt, 3,32:1 i ljust) med <code>border.control</code> som kant — ingen rå opacitet, ingen fylld yta. Golvet för inaktiverad text är eget: 3:1, så att den går att läsa men inte inbjuder. Punkterna behåller radie 0 i båda lägena.</div>
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column;background:#17251d;color:#F5F4ED">
     <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none;min-height:48px;align-items:center"><span style="font-size:12px;font-weight:400;color:#93a48d">Åldersgrinden går inte att hoppa över</span></div>
@@ -440,7 +440,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onballergimorkt" data-screen-label="Onboarding — allergenerna, mörkt läge">
+<div class="sc-item" id="onballergimorkt" data-theme="dark" data-theme-family="onboarding-allergener-412" data-screen-label="Onboarding — allergenerna, mörkt läge">
   <div class="sc-label"><a class="sc-id" href="#onballergimorkt">allergenerna mörkt</a><b>Markeringen är hela provet.</b> I ljust läge skiljs valt från ovalt av ton, ram <i>och</i> bock; i mörkt läge räcker tonen sämre — <code>surface.selected</code> är #2F4437 mot papperets #17251D, alltså under ett halvt steg. Därför bär det valda kortet en <b>1,5 px saffranspale kant</b> (#DCA968) och bocken i samma ton, och ovalda kort en 1 px <code>border.subtle</code>. Två regler följer med: texten på det valda kortet ligger på en upphöjd yta och använder <code>text.secondary.onRaised</code> #A9B2A0 — #93A48D ger 3,96:1 där och underkänns — och <b>saffran är kant och glyf, aldrig text</b>. Etiketterna står i #F5F4ED i båda tillstånden.</div>
   <div class="sc-phone" style="width:412px;height:800px;display:flex;flex-direction:column;background:#17251d;color:#F5F4ED">
     <div style="display:flex;justify-content:flex-end;padding:4px 20px;flex:none"><span style="min-height:48px;display:inline-flex;align-items:center;padding:0 8px;font-size:14px;font-weight:600;color:#93a48d" data-a11y-name="Hoppa över" data-a11y-role="button" data-hit="self">Hoppa över</span></div>
@@ -467,7 +467,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbfelmorkt" data-screen-label="Onboarding — slutförandet gick inte, mörkt läge">
+<div class="sc-item" id="onbfelmorkt" data-theme="dark" data-theme-family="onboarding-slutforande-fel-460" data-screen-label="Onboarding — slutförandet gick inte, mörkt läge">
   <div class="sc-label"><a class="sc-id" href="#onbfelmorkt">felet mörkt</a><b>Det svåraste kontrastparet i hela guiden.</b> <code>text.danger</code> är #DE9078 i mörkt läge och gäller <b>endast på papper</b> #17251D — på en upphöjd yta ger den 4,18:1 och ersätts av #E5A08A. Ramen visar båda: rubriken ligger på papper, den upphöjda rutan med rådet under bär <code>.onRaised</code>-varianten. Varningsglyfen är 48 px och står i danger, inte i saffran: saffran betyder <i>handling</i> i det här systemet, aldrig <i>fara</i>. Primärknappen är saffran med ink-text i båda lägena — den enda färgen som inte byter roll när läget byter.</div>
   <div class="sc-phone" style="width:412px;height:620px;display:flex;flex-direction:column;justify-content:center;padding:0 24px;background:#17251d;color:#F5F4ED">
     <div style="text-align:center"><svg data-graphic-role="redundant" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#de9078" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto" data-icon="triangle-alert"><path d="M12 4.5L20.5 19.5H3.5z"></path><path d="M12 10v4"></path><path d="M12 16.6v.4"></path></svg></div>
@@ -482,7 +482,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbjamforelse" data-screen-label="Onboarding — MINIMAL mot koden">
+<div class="sc-item" id="onbjamforelse" data-theme="light" data-theme-family="onbjamforelse-panel" data-screen-label="Onboarding — MINIMAL mot koden">
   <div class="sc-label"><a class="sc-id" href="#onbjamforelse">MINIMAL mot koden</a><b>Vad ändringen kostar och vad den ger.</b> Inte en ram utan en räkning: de fem sidorna i dag mot de fyra i MINIMAL, med vad som händer med den femte. Ingen av raderna kräver ett backend-arbete — kostfältet skrivs redan från två håll — men <b>tre</b> kräver ny copy och <b>en</b> kräver en ny plats i veckomenyn (<a href="#onbsenare">onbsenare</a>). Sidordningen i tabellens vänsterkolumn är kodens verkliga, hämtad ur <code>onboarding_view.dart</code>: åldersgrinden ligger <b>först</b>, inte välkomsten.</div>
   <div style="width:412px;border:1px solid #ccd1c2;border-radius:12px;padding:20px;background:#F5F4ED;box-sizing:border-box">
     <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Fem sidor blir fyra</div>
@@ -497,7 +497,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="behkamera" data-screen-label="Behörighet — kamera, förklaring före frågan">
+<div class="sc-item" id="behkamera" data-theme="light" data-theme-family="behkamera-414" data-screen-label="Behörighet — kamera, förklaring före frågan">
   <div class="sc-label"><a class="sc-id" href="#behkamera">kameran · förklaringen före frågan</a><b>Ritad efter <code>os_permission_helper.dart</code>, som är appens uttalade behörighetskontrakt:</b> <i>förklaring → OS-frågan → inställningslänk vid permanent nej → aldrig hårt spärrad funktion</i>. Det viktigaste i koden är <b>varför</b> förklaringen kommer först: systemets fråga har en budget — säger användaren nej två gånger får appen aldrig fråga igen — och därför anropas OS:et <b>bara om användaren tryckt Tillåt här</b>. Vår dialog bränner ingenting; systemets gör det. Andra nej ger <b>tyst hopp</b>, inte ett fel: funktionen finns kvar, den kan bara inte göra just det här. Ramen ändrar två saker mot koden: dialogen får kortradien 12 och ordentliga knappar i stället för två textknappar i höger hörn, och texten säger vad kameran används <i>till</i> — inte att behörighet krävs.</div>
   <div class="sc-phone" style="width:412px;height:560px;display:flex;flex-direction:column;justify-content:center">
     <div style="position:absolute;inset:0;background:rgba(36,56,44,.35)"></div>
@@ -514,7 +514,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="behfoton" data-screen-label="Behörighet — foton, valda bilder">
+<div class="sc-item" id="behfoton" data-theme="light" data-theme-family="behfoton-414" data-screen-label="Behörighet — foton, valda bilder">
   <div class="sc-label"><a class="sc-id" href="#behfoton">fotona · &quot;bara de valda&quot;</a><b>Två fynd, och det andra är en bugg.</b> Kontraktet räknar tre statusar som beviljade — <code>granted</code>, <b><code>limited</code></b> (iOS: användaren delade bara <i>några</i> bilder) och <code>provisional</code> (iOS push) — och kommentaren i koden säger uttryckligen att <code>limited</code> finns med &quot;så att fotobiblioteksflöden fungerar&quot;. <b>Men fotoimporten går inte genom kontraktet.</b> <code>image_picker_service.dart</code> har en egen, naken väg (<code>PermissionProvider</code>: bara <code>status</code> och <code>request</code>) utan förklaring, utan inställningslänk och utan <code>limited</code>. Den som delar tre bilder på iOS behandlas alltså som om hon sagt nej. Ramen ritar det tillstånd som saknas: <b>begränsad åtkomst är ett eget läge</b>, med en väg att välja fler bilder — inte ett fel, och inte en tigande tom lista.</div>
   <div class="sc-phone" style="width:412px;height:640px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none;background:#24382c"><span data-hit="self" style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span><span style="flex:1;font-size:14px;font-weight:700;color:#F5F4ED;min-width:0">Välj en bild</span></div>
@@ -532,7 +532,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="behnotiser" data-screen-label="Behörighet — notiser, permanent nej">
+<div class="sc-item" id="behnotiser" data-theme="light" data-theme-family="behnotiser-414" data-screen-label="Behörighet — notiser, permanent nej">
   <div class="sc-label"><a class="sc-id" href="#behnotiser">notiserna · permanent nej</a><b>Den enda behörighet som i dag följer kontraktet — och den enda som är plattformsberoende ända in i frågan.</b> På iOS och Android 12 eller lägre frågas inte alls (behörigheten är implicit eller ges vid installation); <b>bara Android 13+</b> har en körningsfråga, och tjänsten kortsluter till <i>ja</i> för allt annat. Vid <b>permanent nej</b> finns ingen väg tillbaka i appen: kontraktet visar en snackbar med <i>Öppna inställningar</i>, för det är enda stället beslutet går att ändra. Ramen behåller den formen men skriver konsekvensen i klartext ovanför reglagen — <b>en avstängd inställning som ser påslagbar ut är ett löfte som bryts vid varje tryck</b>. Reglagen är därför inaktiverade, inte gömda: användaren ska se vad hon får tillbaka om hon ändrar sig.</div>
   <div class="sc-phone" style="width:412px;height:640px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #ccd1c2;flex:none;background:#24382c"><span data-hit="self" style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span><span style="flex:1;font-size:14px;font-weight:700;color:#F5F4ED;min-width:0">Notiser</span></div>
@@ -550,7 +550,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="behlarm" data-screen-label="Behörighet — exakta larm (finns inte)">
+<div class="sc-item" id="behlarm" data-theme="light" data-theme-family="behlarm-414" data-screen-label="Behörighet — exakta larm (finns inte)">
   <div class="sc-label"><a class="sc-id" href="#behlarm">exakta larm · finns inte</a><b>⚠ Arbetsplanen räknade fyra behörigheter. Den fjärde ber appen aldrig om.</b> Ingen sökning i <code>lib/</code> hittar <code>scheduleExactAlarm</code> eller <code>Permission.scheduleExactAlarm</code> — och på Android 13 och senare får en app <b>inte</b> lägga ett exakt larm utan den behörigheten. Konsekvensen är inte teoretisk: timern i matlagningsläget (<a href="Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html">se <code>#lagatimers</code></a>) kan då fyra på minuten <i>när systemet råkar vakna</i>, inte när pastan är klar. En timer som ringer när som helst är ingen timer. Ramen är därför ett <b>krav</b>, inte en avbild — och den ställer frågan där konsekvensen är begriplig: när användaren startar sin första timer, inte i guiden.<br><br><b>Uppdaterat 2026-07-30 (T-06).</b> Det här är <b>väg A</b> av tre, och den svåraste: för appar som riktar sig mot <b>Android 14+</b> är behörigheten <b>nekad som standard</b>, så knappen leder ut i en systeminställning. Systerbehörigheten <code>USE_EXACT_ALARM</code> ges automatiskt men bara till appar vars kärnfunktion är larm eller kalender, och Play granskar anspråket. De tre vägarna är ritade: <a href="#behlarmnekat">A · nekat</a>, <a href="#lagatimerlofte">B · sänkt löfte</a>, <a href="#lagatimernotis">C · förgrundstjänst</a> och <a href="#lagatimerutgangen">C · kvittering</a>. <b>Nej-vägen måste finnas i alla tre.</b></div>
   <div class="sc-phone" style="width:412px;height:560px;display:flex;flex-direction:column;justify-content:center">
     <div style="position:absolute;inset:0;background:rgba(36,56,44,.35)"></div>
@@ -573,7 +573,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-title" style="margin-top:24px"><b>Timerns exakta tid · tre vägar, alla ritade (T-06).</b> Matlagningslägets timer lovar en ringning på sekunden, men appen ber aldrig om <code>SCHEDULE_EXACT_ALARM</code> — och på Android 13+ får den då inte lägga ett exakt larm. Frågan är inte teknisk utan ett löfte: <i>vad säger vi att timern gör</i>.<br><br><b>Varför tre och inte två.</b> Utöver behörigheten (A) och det sänkta löftet (B) finns en tredje väg vi förbisåg: en <b>förgrundstjänst</b> medan matlagningsläget är aktivt. Den ger exakt tid <i>utan</i> behörighetsdialog, och den matchar bruket — användaren står i köket, sessionen är minuter till en timme, och skärmen hålls redan vaken. Notisen är i det läget en funktion: tiden syns från andra sidan köket.<br><br><b>Designens hållning:</b> C som förstahandsval, med B:s copy som fallback när tjänsten inte kan startas. A bara om ni ändå söker <code>USE_EXACT_ALARM</code>. Men <b>nej-vägen är obligatorisk i alla tre</b> — en timer får aldrig lova en tid den inte kan hålla, och det är hela kravet.<br><br>Krav <b>BH-08…BH-12</b>, regler i <code>produktregler.md</code> § 22.21.</div>
 <div class="sc-row">
 
-<div class="sc-item" id="behlarmnekat" data-screen-label="Väg A — behörigheten nekad">
+<div class="sc-item" id="behlarmnekat" data-theme="light" data-theme-family="behlarmnekat-414" data-screen-label="Väg A — behörigheten nekad">
   <div class="sc-label"><a class="sc-id" href="#behlarmnekat">väg A · nekat</a><b>Det läge väg A alltid hamnar i för någon.</b> På Android 14+ är behörigheten nekad som standard, och dialogens knapp leder till en systeminställning — alltså ut ur appen, mitt i en matlagning. Ramen visar vad timern säger <i>efteråt</i>: löftet sänks på plats, vägen tillbaka finns kvar som en <b>rad, inte en påminnelse</b>. Butlery frågar <b>en gång</b>. En app som ber om samma behörighet vid varje timer har inte accepterat svaret.</div>
   <div class="sc-phone" style="width:412px;height:420px;display:flex;flex-direction:column">
     <div style="flex:none;display:flex;align-items:center;gap:4px;padding:8px 8px 8px 4px;border-bottom:1px solid #ccd1c2">
@@ -595,7 +595,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="lagatimerlofte" data-screen-label="Väg B — det sänkta löftet">
+<div class="sc-item" id="lagatimerlofte" data-theme="light" data-theme-family="lagatimerlofte-414" data-screen-label="Väg B — det sänkta löftet">
   <div class="sc-label"><a class="sc-id" href="#lagatimerlofte">väg B · sänkt löfte</a><b>Ingen behörighet, ingen dialog, ingen tjänst — bara ett ärligt löfte.</b> Timern säger vad den faktiskt gör och slutar utlova sekunden. Billigast att bygga och underhålla, och det enda alternativet som inte kan gå sönder av en OS-uppdatering.<br><br><b>Kostnaden, uttalad:</b> en kokningstimer som är en minut sen har misslyckats med sitt enda jobb. Pasta är sextio sekunder från <i>al dente</i> till välling. Därför står tiden i <b>ord</b> och inte som en exakt siffra i vilan — <i>ringer strax efter</i> är en förväntan, <i>08:00</i> är ett kontrakt.</div>
   <div class="sc-phone" style="width:412px;height:420px;display:flex;flex-direction:column">
     <div style="flex:none;display:flex;align-items:center;gap:4px;padding:8px 8px 8px 4px;border-bottom:1px solid #ccd1c2">
@@ -616,7 +616,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="lagatimernotis" data-screen-label="Väg C — förgrundstjänsten">
+<div class="sc-item" id="lagatimernotis" data-theme="light" data-theme-family="lagatimernotis-414" data-screen-label="Väg C — förgrundstjänsten">
   <div class="sc-label"><a class="sc-id" href="#lagatimernotis">väg C · förgrundstjänsten</a><b>Designens förstahandsval.</b> En förgrundstjänst medan matlagningsläget är aktivt ger <b>exakt tid utan behörighetsdialog</b> — och notisen är inte ett pris utan poängen: tiden syns från andra sidan köket, på en låst telefon, utan att någon torkar av händerna.<br><br><b>Fyra regler ramen visar.</b> Notisen finns <b>bara medan en timer går</b> och försvinner med den sista · den visar <b>vilket steg</b> timern hör till, aldrig bara en siffra · handlingarna är <i>+1 min</i> och <i>Pausa</i>, för det är vad man gör med en hand · och <b>flera timrar samlas i en notis</b> med den närmaste först — tre notiser för tre timrar är tre larm att sortera.<br><br>Kvar för dev: <code>foregroundServiceType</code> ska deklareras, tjänsten stoppas när sista timern kvitterats, och Play behöver en motivering. Om tjänsten inte kan startas gäller <a href="#lagatimerlofte">väg B</a>:s copy — det är fallbacken, inte ett fel.</div>
   <div class="sc-phone" style="width:412px;height:420px;display:flex;flex-direction:column;background:#17251D">
     <div style="flex:none;padding:18px 20px 0;text-align:center">
@@ -644,7 +644,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="lagatimerutgangen" data-screen-label="Väg C — den utgångna timern kvitteras">
+<div class="sc-item" id="lagatimerutgangen" data-theme="light" data-theme-family="lagatimerutgangen-414" data-screen-label="Väg C — den utgångna timern kvitteras">
   <div class="sc-label"><a class="sc-id" href="#lagatimerutgangen">väg C · kvitteringen</a><b>Den utgångna timern står kvar tills den kvitteras</b> — i notisen <i>och</i> i listen i appen (§ 22.21). En snackbar är fel kanal för något man ska höra tvärs över ett kök, och en timer som tystar sig själv efter tio sekunder har inte sagt något till den som stod vid diskbänken.<br><br><b>Tre saker skiljer den från en vanlig notis.</b> Den säger <b>vad</b> som är klart, inte att en timer gick ut · den bär <i>Kvittera</i> som enda handling, för det finns inget annat att göra · och den <b>namnger steget</b> så att den som kommer tillbaka till telefonen vet var i receptet hon var. Med reducerad rörelse pulserar ingenting; texten och ljudet bär.</div>
   <div class="sc-phone" style="width:412px;height:420px;display:flex;flex-direction:column;background:#17251D">
     <div style="flex:none;padding:18px 20px 0;text-align:center">

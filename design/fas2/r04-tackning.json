@@ -9,310 +9,1623 @@
  },
  "A_tackning": {
   "artefakter_totalt": 329,
-  "deklarerade_st": 0,
-  "unknown_st": 329,
-  "notApplicable_neutral_st": 0,
-  "temafamiljer_st": 0,
-  "parade_st": 0,
-  "enbartLight_st": 0,
-  "enbartDark_st": 0,
+  "deklarerade_st": 329,
+  "unknown_st": 0,
+  "notApplicable_neutral_st": 3,
+  "temafamiljer_st": 317,
+  "parade_st": 9,
+  "enbartLight_st": 306,
+  "enbartDark_st": 2,
   "tvetydiga_st": 0,
-  "tackning_procent": 0,
+  "tackning_procent": 100,
   "invariant_ok": true,
-  "par": [],
-  "enbartLight": [],
-  "enbartDark": [],
-  "tvetydiga": [],
-  "unknown_exempel": [
+  "par": [
    {
-    "art": "start",
-    "skarmetikett": "Startskärm",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.034,
-     "storstaYtaFarg": "rgb(36, 56, 44)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
+    "familj": "matlagningslage-staende-412",
+    "light": "lagastaende",
+    "dark": "lagamorkt"
    },
    {
-    "art": "tomtrecept",
-    "skarmetikett": "Tomt läge — recept",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
+    "familj": "chatt-default-412",
+    "light": "chatt",
+    "dark": "chattmorkt"
    },
    {
-    "art": "offline",
-    "skarmetikett": "Frånkopplat läge",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
+    "familj": "inloggning-default-412",
+    "light": "inloggning",
+    "dark": "inloggningmorkt"
    },
    {
-    "art": "hemrecept",
-    "skarmetikett": "Hem + Recept sammanslagna",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 1,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
+    "familj": "integritetspolicy-default-412",
+    "light": "juridik412",
+    "dark": "juridikmorkt"
    },
    {
-    "art": "sortera",
-    "skarmetikett": "Recept — sortering",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
+    "familj": "adminpanel-default-660",
+    "light": "admin",
+    "dark": "adminmorkt"
    },
    {
-    "art": "laga",
-    "skarmetikett": "Matlagningsläge",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.034,
-     "storstaYtaFarg": "rgb(36, 56, 44)",
-     "kontroller_st": 2,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
+    "familj": "hem-default-412",
+    "light": "hem",
+    "dark": "hemmorkt"
    },
    {
-    "art": "lagastaende",
-    "skarmetikett": "Matlagningsläge — stående",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.034,
-     "storstaYtaFarg": "rgb(36, 56, 44)",
-     "kontroller_st": 3,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
+    "familj": "onboarding-aldersgrind-412",
+    "light": "onbalder",
+    "dark": "onbaldermorkt"
    },
    {
-    "art": "lagamorkt",
-    "skarmetikett": "Matlagningsläge — mörkt läge",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.016,
-     "storstaYtaFarg": "rgb(23, 37, 29)",
-     "kontroller_st": 3,
-     "namnsignal_morkt": true
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
+    "familj": "onboarding-allergener-412",
+    "light": "onballergi",
+    "dark": "onballergimorkt"
    },
    {
-    "art": "plussheet",
-    "skarmetikett": "Lägg till-ark",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
-   },
-   {
-    "art": "snabbspara",
-    "skarmetikett": "Snabbspara",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
-   },
-   {
-    "art": "smartimport",
-    "skarmetikett": "Importera länk",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
-   },
-   {
-    "art": "skafferi",
-    "skarmetikett": "Skafferiet",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 1,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
-   },
-   {
-    "art": "familj",
-    "skarmetikett": "Min familj",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
-   },
-   {
-    "art": "installningar",
-    "skarmetikett": "Inställningar",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 1,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
-   },
-   {
-    "art": "notiser",
-    "skarmetikett": "Notiser",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
-   },
-   {
-    "art": "vemat",
-    "skarmetikett": "Vem åt?",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
-   },
-   {
-    "art": "familjebetyg",
-    "skarmetikett": "Familjebetyg",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
-   },
-   {
-    "art": "placera",
-    "skarmetikett": "Placera i veckan",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
-   },
-   {
-    "art": "kalender",
-    "skarmetikett": "Veckomeny — kalender",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 0,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
-   },
-   {
-    "art": "inkopmerge",
-    "skarmetikett": "Till inköpslistan — sammanslagning",
-    "tema": null,
-    "familj": null,
-    "diagnostik": {
-     "storstaYtaLuminans": 0.902,
-     "storstaYtaFarg": "rgb(245, 244, 237)",
-     "kontroller_st": 3,
-     "namnsignal_morkt": false
-    },
-    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
-    "varfor": "ingen data-theme pa artefakten"
+    "familj": "onboarding-slutforande-fel-460",
+    "light": "onbfel",
+    "dark": "onbfelmorkt"
    }
-  ]
+  ],
+  "enbartLight": [
+   {
+    "familj": "start-414",
+    "art": "start",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "tomtrecept-414",
+    "art": "tomtrecept",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "offline-414",
+    "art": "offline",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "hemrecept-414",
+    "art": "hemrecept",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "sortera-414",
+    "art": "sortera",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "laga-926",
+    "art": "laga",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "plussheet-414",
+    "art": "plussheet",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "snabbspara-414",
+    "art": "snabbspara",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "smartimport-414",
+    "art": "smartimport",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "skafferi-414",
+    "art": "skafferi",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "familj-414",
+    "art": "familj",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "installningar-414",
+    "art": "installningar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "notiser-414",
+    "art": "notiser",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "vemat-414",
+    "art": "vemat",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "familjebetyg-414",
+    "art": "familjebetyg",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "placera-414",
+    "art": "placera",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kalender-414",
+    "art": "kalender",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "inkopmerge-414",
+    "art": "inkopmerge",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "inkopmergeoppen-414",
+    "art": "inkopmergeoppen",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "onboarding-414",
+    "art": "onboarding",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "mer-414",
+    "art": "mer",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "vanner-414",
+    "art": "vanner",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "meddelanden-414",
+    "art": "meddelanden",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "menysmak-414",
+    "art": "menysmak",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "statistik-414",
+    "art": "statistik",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "skrivsjalv-414",
+    "art": "skrivsjalv",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "fotoimport-414",
+    "art": "fotoimport",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "arkivimport-414",
+    "art": "arkivimport",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "taggar-414",
+    "art": "taggar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "allergener-414",
+    "art": "allergener",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delatlista-414",
+    "art": "delatlista",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delatmedmig-414",
+    "art": "delatmedmig",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "lagastaende320-322",
+    "art": "lagastaende320",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "chatt320-322",
+    "art": "chatt320",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kontosakerhet-414",
+    "art": "kontosakerhet",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "grupp-414",
+    "art": "grupp",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "dataexport-414",
+    "art": "dataexport",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "ingredienssok-414",
+    "art": "ingredienssok",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "notisinstallningar-414",
+    "art": "notisinstallningar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "faq-414",
+    "art": "faq",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "profil-414",
+    "art": "profil",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "familjeform-414",
+    "art": "familjeform",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "betygsoversikt-414",
+    "art": "betygsoversikt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "forfragningar-414",
+    "art": "forfragningar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "vanprofil-414",
+    "art": "vanprofil",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "publikprofil-414",
+    "art": "publikprofil",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "laggtillmedlemmar-414",
+    "art": "laggtillmedlemmar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "nygruppchatt-414",
+    "art": "nygruppchatt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "menyforhands-414",
+    "art": "menyforhands",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "tadelning-414",
+    "art": "tadelning",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "nydelatlista-414",
+    "art": "nydelatlista",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delatlistor-414",
+    "art": "delatlistor",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "skafferivara-414",
+    "art": "skafferivara",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "redigera-414",
+    "art": "redigera",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "taggdetalj-414",
+    "art": "taggdetalj",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "aldersgrans-414",
+    "art": "aldersgrans",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "onboardingimport-414",
+    "art": "onboardingimport",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "epostverif-414",
+    "art": "epostverif",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "mfa-414",
+    "art": "mfa",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "samtycke-414",
+    "art": "samtycke",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "rapporter-322",
+    "art": "rapporter",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "rapporter412-414",
+    "art": "rapporter412",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "juridik-322",
+    "art": "juridik",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "konflikt-414",
+    "art": "konflikt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "statetom-322",
+    "art": "statetom",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "statetom412-414",
+    "art": "statetom412",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "stateladdar-322",
+    "art": "stateladdar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "stateladdar412-414",
+    "art": "stateladdar412",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "statefel-322",
+    "art": "statefel",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "statefel412-414",
+    "art": "statefel412",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "dialogradera-414",
+    "art": "dialogradera",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "dialogosparat-414",
+    "art": "dialogosparat",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "dialogratelimit-414",
+    "art": "dialogratelimit",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delaark-414",
+    "art": "delaark",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "dialogvara-414",
+    "art": "dialogvara",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "dialogsparameny-414",
+    "art": "dialogsparameny",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "snackbars-450",
+    "art": "snackbars",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kontextmeny-414",
+    "art": "kontextmeny",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "hem360-362",
+    "art": "hem360",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "storsttext-414",
+    "art": "storsttext",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "tangentbord-414",
+    "art": "tangentbord",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "langavarden-362",
+    "art": "langavarden",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "lagaliggande-926",
+    "art": "lagaliggande",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "okandingrediens-414",
+    "art": "okandingrediens",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckoallergi-414",
+    "art": "veckoallergi",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "synkko-414",
+    "art": "synkko",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "utloggningko-414",
+    "art": "utloggningko",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "utloggningtom-414",
+    "art": "utloggningtom",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "chattredigerat-414",
+    "art": "chattredigerat",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "chattmeny-414",
+    "art": "chattmeny",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "safeareaios-414",
+    "art": "safeareaios",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "safeareaandroid-414",
+    "art": "safeareaandroid",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "hemtom-414",
+    "art": "hemtom",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "hemladdar-414",
+    "art": "hemladdar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "hemoffline-414",
+    "art": "hemoffline",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "hemfel-414",
+    "art": "hemfel",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "receptkommentarer-414",
+    "art": "receptkommentarer",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "receptcooksnap-414",
+    "art": "receptcooksnap",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "receptdelningsstatus-414",
+    "art": "receptdelningsstatus",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "receptbildfel-414",
+    "art": "receptbildfel",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "lagasubst-414",
+    "art": "lagasubst",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "lagatimers-414",
+    "art": "lagatimers",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "betygvemat-414",
+    "art": "betygvemat",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "betygperperson-414",
+    "art": "betygperperson",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "betygsammanslaget-414",
+    "art": "betygsammanslaget",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "betygvemarket-414",
+    "art": "betygvemarket",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "familjmedlemsamtycke-414",
+    "art": "familjmedlemsamtycke",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "bredskal-panel",
+    "art": "bredskal",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "bredlandskap-panel",
+    "art": "bredlandskap",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "bredrecept-panel",
+    "art": "bredrecept",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "bredmeny-panel",
+    "art": "bredmeny",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "bredinkop-panel",
+    "art": "bredinkop",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "bredgrans-panel",
+    "art": "bredgrans",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "vmbnormal-panel",
+    "art": "vmbnormal",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "vmbtom-panel",
+    "art": "vmbtom",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "vmbgenererar-panel",
+    "art": "vmbgenererar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "vmbomrostning-panel",
+    "art": "vmbomrostning",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "vmbkonflikt-panel",
+    "art": "vmbkonflikt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "vmbdelvis-panel",
+    "art": "vmbdelvis",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "vmboffline-panel",
+    "art": "vmboffline",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "vmbflytta-panel",
+    "art": "vmbflytta",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "rcbnormal-panel",
+    "art": "rcbnormal",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "rcbportion-panel",
+    "art": "rcbportion",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "rcbofullstandigt-panel",
+    "art": "rcbofullstandigt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "rcblaser-panel",
+    "art": "rcblaser",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "rcbarvegods-panel",
+    "art": "rcbarvegods",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "rcbkommentar-panel",
+    "art": "rcbkommentar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "rcboffline-panel",
+    "art": "rcboffline",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "ikbnormal-panel",
+    "art": "ikbnormal",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "ikbtom-panel",
+    "art": "ikbtom",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "ikbdelad-panel",
+    "art": "ikbdelad",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "ikboffline-panel",
+    "art": "ikboffline",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "lgbrotation-panel",
+    "art": "lgbrotation",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "lgbgester-panel",
+    "art": "lgbgester",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "lgbtimer-panel",
+    "art": "lgbtimer",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "lgbutan-panel",
+    "art": "lgbutan",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "inkopkategoriordning-414",
+    "art": "inkopkategoriordning",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "inkopflerval-414",
+    "art": "inkopflerval",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "inkopkategoribyte-414",
+    "art": "inkopkategoribyte",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "inkopbockad-414",
+    "art": "inkopbockad",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "inkoputeslutna-414",
+    "art": "inkoputeslutna",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "inkopgenererad-414",
+    "art": "inkopgenererad",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "skafferivyn-414",
+    "art": "skafferivyn",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "skafferiflerval-414",
+    "art": "skafferiflerval",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "skafferilagg-414",
+    "art": "skafferilagg",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "skafferibas-414",
+    "art": "skafferibas",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delatinkorg-414",
+    "art": "delatinkorg",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delatvidare-414",
+    "art": "delatvidare",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delatlistaaktiv-414",
+    "art": "delatlistaaktiv",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delatlamna-414",
+    "art": "delatlamna",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delatlamnaagare-414",
+    "art": "delatlamnaagare",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delatmindel-414",
+    "art": "delatmindel",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delatnarvaro-414",
+    "art": "delatnarvaro",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delatclaimkonflikt-414",
+    "art": "delatclaimkonflikt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "delatlasare-414",
+    "art": "delatlasare",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckoprompt-414",
+    "art": "veckoprompt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckogenererar-414",
+    "art": "veckogenererar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckochips-414",
+    "art": "veckochips",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckoresultat-414",
+    "art": "veckoresultat",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckodolda-414",
+    "art": "veckodolda",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckofel-414",
+    "art": "veckofel",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckobyt-414",
+    "art": "veckobyt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckoplacering-414",
+    "art": "veckoplacering",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckoplaceringvald-414",
+    "art": "veckoplaceringvald",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckoplaceringavbryt-414",
+    "art": "veckoplaceringavbryt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckoautoplacerad-414",
+    "art": "veckoautoplacerad",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckokalender-414",
+    "art": "veckokalender",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckonarvaro-414",
+    "art": "veckonarvaro",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckonarvarooversikt-414",
+    "art": "veckonarvarooversikt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckooverflow-414",
+    "art": "veckooverflow",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckoflytta-414",
+    "art": "veckoflytta",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckoskrivover-414",
+    "art": "veckoskrivover",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckoinkop-414",
+    "art": "veckoinkop",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckorostning-414",
+    "art": "veckorostning",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckorostlagg-414",
+    "art": "veckorostlagg",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckorostavgor-414",
+    "art": "veckorostavgor",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckorostutgang-414",
+    "art": "veckorostutgang",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "veckorosthistorik-414",
+    "art": "veckorosthistorik",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "authlogga-414",
+    "art": "authlogga",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "authskapa-414",
+    "art": "authskapa",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "authglomt-414",
+    "art": "authglomt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "authepost-462",
+    "art": "authepost",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "authepostklar-462",
+    "art": "authepostklar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "authmfa-414",
+    "art": "authmfa",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "onbalderblock-414",
+    "art": "onbalderblock",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "onbaldrefel-414",
+    "art": "onbaldrefel",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "onbvalkommen-414",
+    "art": "onbvalkommen",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "onbimport-414",
+    "art": "onbimport",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "onbimportklar-414",
+    "art": "onbimportklar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "onbhoppa-414",
+    "art": "onbhoppa",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "onbklar-462",
+    "art": "onbklar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "onbateruppta-414",
+    "art": "onbateruppta",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "onbsenare-414",
+    "art": "onbsenare",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "onbjamforelse-panel",
+    "art": "onbjamforelse",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "behkamera-414",
+    "art": "behkamera",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "behfoton-414",
+    "art": "behfoton",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "behnotiser-414",
+    "art": "behnotiser",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "behlarm-414",
+    "art": "behlarm",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "behlarmnekat-414",
+    "art": "behlarmnekat",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "lagatimerlofte-414",
+    "art": "lagatimerlofte",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "lagatimernotis-414",
+    "art": "lagatimernotis",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "lagatimerutgangen-414",
+    "art": "lagatimerutgangen",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "imp1kalla-414",
+    "art": "imp1kalla",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "imp2hamtar-414",
+    "art": "imp2hamtar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "imp3granska-414",
+    "art": "imp3granska",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "imp4sparad-414",
+    "art": "imp4sparad",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impassist1-414",
+    "art": "impassist1",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impassist2-414",
+    "art": "impassist2",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impassist3-414",
+    "art": "impassist3",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impassistavbryt-414",
+    "art": "impassistavbryt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impurl-414",
+    "art": "impurl",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impsocial-414",
+    "art": "impsocial",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impfoto-414",
+    "art": "impfoto",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impfil-414",
+    "art": "impfil",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impgrans-414",
+    "art": "impgrans",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impgransai-414",
+    "art": "impgransai",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impoffline-414",
+    "art": "impoffline",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impdubblett-414",
+    "art": "impdubblett",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impinget-414",
+    "art": "impinget",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impcache-414",
+    "art": "impcache",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impdelning-414",
+    "art": "impdelning",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "impdelningsocial-414",
+    "art": "impdelningsocial",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "imparkiv-414",
+    "art": "imparkiv",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "editorutkast-414",
+    "art": "editorutkast",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "editorutkastval-414",
+    "art": "editorutkastval",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "editorfelkontrakt-panel",
+    "art": "editorfelkontrakt",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "taggregel-414",
+    "art": "taggregel",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "taggvillkor-414",
+    "art": "taggvillkor",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "taggkalla-414",
+    "art": "taggkalla",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "taggexklusiv-414",
+    "art": "taggexklusiv",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kontoradera-414",
+    "art": "kontoradera",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kontoreauth-414",
+    "art": "kontoreauth",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kontovantan-414",
+    "art": "kontovantan",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kontodelvis-414",
+    "art": "kontodelvis",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "adminskal-926",
+    "art": "adminskal",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "adminej-414",
+    "art": "adminej",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "modrapporter-414",
+    "art": "modrapporter",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "modminderarig-414",
+    "art": "modminderarig",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "moddolj-414",
+    "art": "moddolj",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "modradera-414",
+    "art": "modradera",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "modtom-414",
+    "art": "modtom",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "cooksnapsynlighet-414",
+    "art": "cooksnapsynlighet",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "cooksnapgalleri-414",
+    "art": "cooksnapgalleri",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "vanprofildelning-414",
+    "art": "vanprofildelning",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kontosamtycke-414",
+    "art": "kontosamtycke",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "samtyckeai-414",
+    "art": "samtyckeai",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "samtyckefornya-414",
+    "art": "samtyckefornya",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kontodataexport-414",
+    "art": "kontodataexport",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "dataexportfel-462",
+    "art": "dataexportfel",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kontosakerhetsvy-414",
+    "art": "kontosakerhetsvy",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kontonotiser-414",
+    "art": "kontonotiser",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "notisertyp-414",
+    "art": "notisertyp",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "mfalagg-414",
+    "art": "mfalagg",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "mfaaktiv-414",
+    "art": "mfaaktiv",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "notiscentral-414",
+    "art": "notiscentral",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "notisrensa-414",
+    "art": "notisrensa",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "minaanmalningar-414",
+    "art": "minaanmalningar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kontojuridik-414",
+    "art": "kontojuridik",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kontostatistik-414",
+    "art": "kontostatistik",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "statistikfullstandighet-414",
+    "art": "statistikfullstandighet",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "globunderhall-414",
+    "art": "globunderhall",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "globsession-414",
+    "art": "globsession",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "globsessiontyst-414",
+    "art": "globsessiontyst",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "globinstallera-414",
+    "art": "globinstallera",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "globceremoni-414",
+    "art": "globceremoni",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "globsvep-panel",
+    "art": "globsvep",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "flervalingang-414",
+    "art": "flervalingang",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "flerbar-414",
+    "art": "flerbar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "flertagg-414",
+    "art": "flertagg",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "flermeny-414",
+    "art": "flermeny",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "flertaggsam-414",
+    "art": "flertaggsam",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "flergrupp-414",
+    "art": "flergrupp",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "fbknapp-414",
+    "art": "fbknapp",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "fbformular-414",
+    "art": "fbformular",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "fbinkorgvy-panel",
+    "art": "fbinkorgvy",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "fbkortmonster-panel",
+    "art": "fbkortmonster",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "fbanmal-414",
+    "art": "fbanmal",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "fbblockerade-414",
+    "art": "fbblockerade",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "socflode-414",
+    "art": "socflode",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "soctomtingavanner-412",
+    "art": "soctomtingavanner",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "soctomttyst-412",
+    "art": "soctomttyst",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "socknuff-414",
+    "art": "socknuff",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "socbegar-414",
+    "art": "socbegar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "socintegritet-414",
+    "art": "socintegritet",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "socomrostning-414",
+    "art": "socomrostning",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "socreaktion-panel",
+    "art": "socreaktion",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "socgruppinfo-414",
+    "art": "socgruppinfo",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "socoverlat-414",
+    "art": "socoverlat",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "socdelatvan-414",
+    "art": "socdelatvan",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "insthushall-414",
+    "art": "insthushall",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "instportion-panel",
+    "art": "instportion",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "jurriktlinjer-414",
+    "art": "jurriktlinjer",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "sokpanel-414",
+    "art": "sokpanel",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "admmatning-panel",
+    "art": "admmatning",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "admdrift-panel",
+    "art": "admdrift",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kompbild-panel",
+    "art": "kompbild",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kompdubblett-panel",
+    "art": "kompdubblett",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "komprelaterade-panel",
+    "art": "komprelaterade",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kompmallar-panel",
+    "art": "kompmallar",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "komprost-414",
+    "art": "komprost",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kompsason-panel",
+    "art": "kompsason",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kompkalla-414",
+    "art": "kompkalla",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "kompkallahel-414",
+    "art": "kompkallahel",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "komparvegods-panel",
+    "art": "komparvegods",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "installergen-panel",
+    "art": "installergen",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   },
+   {
+    "familj": "surfplatta-panel",
+    "art": "surfplatta",
+    "varfor": "ingen mork representation finns i sviten — coveragelucka, inte ett kontrastfel"
+   }
+  ],
+  "enbartDark": [
+   {
+    "familj": "recepteditor-default-412",
+    "art": "formularmorkt",
+    "varfor": "ingen ljus representation finns i sviten"
+   },
+   {
+    "familj": "bottomark-default-412",
+    "art": "arkmorkt",
+    "varfor": "ingen ljus representation finns i sviten"
+   }
+  ],
+  "tvetydiga": [],
+  "unknown_exempel": []
  },
  "B_conformance": {
-  "$not": "Conformance kors bara over verifierade par. Med 0 verifierade par finns ingenting att mata, och det far aldrig redovisas som godkant.",
-  "verifierade_par_st": 0,
-  "textkontrast_fynd": "ej matbart — inga verifierade par",
-  "ickeText_fynd": "ej matbart — inga verifierade par",
-  "layout_fynd": "ej matbart — inga verifierade par",
-  "traffyta_regressioner": "ej matbart — inga verifierade par"
+  "$not": "Kors bara over verifierade par. Mats med de frysta motorerna: R-01:s textkontrast, non-text-carriermodellen och R-03:s klippning. R-04 infor inga egna regler.",
+  "verifierade_par_st": 9,
+  "morka_artefakter_st": 9,
+  "morka_kontroller_st": 32,
+  "morka_grafiskaDelar_st": 41,
+  "morka_barare_st": 15,
+  "ickeText_fynd_st": 0,
+  "ickeText_unknown_st": 0,
+  "ickeText_fynd": [],
+  "textkontrast_fynd_st": "lases ur R-01-baslinjen, som ar 0 for hela sviten",
+  "layout_fynd_st": "lases ur R-03-analysen, som ar oforandrad",
+  "traffyta_regressioner_st": "lases ur R-02-baslinjen, som ar godkand"
  },
  "$soksignaler": {
   "$not": "UNDERLAG for migrationen, aldrig identitet och aldrig tackning.",
@@ -346,5 +1659,5173 @@
    "onbfelmorkt"
   ]
  },
- "status": "TACKNING OFULLSTANDIG"
+ "alla_artefakter": [
+  {
+   "art": "start",
+   "skarmetikett": "Startskärm",
+   "tema": "light",
+   "familj": "start-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "tomtrecept",
+   "skarmetikett": "Tomt läge — recept",
+   "tema": "light",
+   "familj": "tomtrecept-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "offline",
+   "skarmetikett": "Frånkopplat läge",
+   "tema": "light",
+   "familj": "offline-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "hemrecept",
+   "skarmetikett": "Hem + Recept sammanslagna",
+   "tema": "light",
+   "familj": "hemrecept-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "sortera",
+   "skarmetikett": "Recept — sortering",
+   "tema": "light",
+   "familj": "sortera-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "laga",
+   "skarmetikett": "Matlagningsläge",
+   "tema": "light",
+   "familj": "laga-926",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     926
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "lagastaende",
+   "skarmetikett": "Matlagningsläge — stående",
+   "tema": "light",
+   "familj": "matlagningslage-staende-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "lagamorkt",
+   "skarmetikett": "Matlagningsläge — mörkt läge",
+   "tema": "dark",
+   "familj": "matlagningslage-staende-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": true,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "plussheet",
+   "skarmetikett": "Lägg till-ark",
+   "tema": "light",
+   "familj": "plussheet-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "snabbspara",
+   "skarmetikett": "Snabbspara",
+   "tema": "light",
+   "familj": "snabbspara-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "smartimport",
+   "skarmetikett": "Importera länk",
+   "tema": "light",
+   "familj": "smartimport-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "skafferi",
+   "skarmetikett": "Skafferiet",
+   "tema": "light",
+   "familj": "skafferi-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "familj",
+   "skarmetikett": "Min familj",
+   "tema": "light",
+   "familj": "familj-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "installningar",
+   "skarmetikett": "Inställningar",
+   "tema": "light",
+   "familj": "installningar-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "notiser",
+   "skarmetikett": "Notiser",
+   "tema": "light",
+   "familj": "notiser-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "art": "vemat",
+   "skarmetikett": "Vem åt?",
+   "tema": "light",
+   "familj": "vemat-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "familjebetyg",
+   "skarmetikett": "Familjebetyg",
+   "tema": "light",
+   "familj": "familjebetyg-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "placera",
+   "skarmetikett": "Placera i veckan",
+   "tema": "light",
+   "familj": "placera-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "kalender",
+   "skarmetikett": "Veckomeny — kalender",
+   "tema": "light",
+   "familj": "kalender-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "inkopmerge",
+   "skarmetikett": "Till inköpslistan — sammanslagning",
+   "tema": "light",
+   "familj": "inkopmerge-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "inkopmergeoppen",
+   "skarmetikett": "Till inköpslistan — detaljer öppna",
+   "tema": "light",
+   "familj": "inkopmergeoppen-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "onboarding",
+   "skarmetikett": "Onboarding — allergener",
+   "tema": "light",
+   "familj": "onboarding-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "mer",
+   "skarmetikett": "Mer",
+   "tema": "light",
+   "familj": "mer-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "vanner",
+   "skarmetikett": "Vänner & grupper",
+   "tema": "light",
+   "familj": "vanner-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "meddelanden",
+   "skarmetikett": "Meddelanden",
+   "tema": "light",
+   "familj": "meddelanden-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "menysmak",
+   "skarmetikett": "Menysmak",
+   "tema": "light",
+   "familj": "menysmak-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "statistik",
+   "skarmetikett": "Samlingsstatistik",
+   "tema": "light",
+   "familj": "statistik-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "skrivsjalv",
+   "skarmetikett": "Skriv själv",
+   "tema": "light",
+   "familj": "skrivsjalv-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "fotoimport",
+   "skarmetikett": "Från bild",
+   "tema": "light",
+   "familj": "fotoimport-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "arkivimport",
+   "skarmetikett": "Från arkiv",
+   "tema": "light",
+   "familj": "arkivimport-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "taggar",
+   "skarmetikett": "Egna taggar",
+   "tema": "light",
+   "familj": "taggar-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "allergener",
+   "skarmetikett": "Allergener",
+   "tema": "light",
+   "familj": "allergener-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "delatlista",
+   "skarmetikett": "Delad inköpslista",
+   "tema": "light",
+   "familj": "delatlista-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "delatmedmig",
+   "skarmetikett": "Delat med mig",
+   "tema": "light",
+   "familj": "delatmedmig-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "chatt",
+   "skarmetikett": "Chatt",
+   "tema": "light",
+   "familj": "chatt-default-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "inloggningmorkt",
+   "skarmetikett": "Inloggning — mörkt läge",
+   "tema": "dark",
+   "familj": "inloggning-default-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": true,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "chattmorkt",
+   "skarmetikett": "Chatt — mörkt läge",
+   "tema": "dark",
+   "familj": "chatt-default-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": true,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "juridikmorkt",
+   "skarmetikett": "Integritetspolicy — mörkt läge",
+   "tema": "dark",
+   "familj": "integritetspolicy-default-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": true,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "adminmorkt",
+   "skarmetikett": "Adminpanel — mörkt läge",
+   "tema": "dark",
+   "familj": "adminpanel-default-660",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": true,
+    "ramBredder": [
+     662
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "lagastaende320",
+   "skarmetikett": "Matlagningsläge — stående · 320",
+   "tema": "light",
+   "familj": "lagastaende320-322",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     322
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "chatt320",
+   "skarmetikett": "Chatt · 320",
+   "tema": "light",
+   "familj": "chatt320-322",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     322
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "kontosakerhet",
+   "skarmetikett": "Kontosäkerhet",
+   "tema": "light",
+   "familj": "kontosakerhet-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "inloggning",
+   "skarmetikett": "Inloggning",
+   "tema": "light",
+   "familj": "inloggning-default-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "grupp",
+   "skarmetikett": "Gruppdetalj",
+   "tema": "light",
+   "familj": "grupp-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "dataexport",
+   "skarmetikett": "Dataexport",
+   "tema": "light",
+   "familj": "dataexport-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "ingredienssok",
+   "skarmetikett": "Ingredienssök",
+   "tema": "light",
+   "familj": "ingredienssok-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "notisinstallningar",
+   "skarmetikett": "Notisinställningar",
+   "tema": "light",
+   "familj": "notisinstallningar-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "faq",
+   "skarmetikett": "FAQ",
+   "tema": "light",
+   "familj": "faq-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "profil",
+   "skarmetikett": "Redigera profil",
+   "tema": "light",
+   "familj": "profil-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "familjeform",
+   "skarmetikett": "Familjeprofil — formulär",
+   "tema": "light",
+   "familj": "familjeform-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "betygsoversikt",
+   "skarmetikett": "Familjebetyg — översikt",
+   "tema": "light",
+   "familj": "betygsoversikt-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "forfragningar",
+   "skarmetikett": "Vänförfrågningar",
+   "tema": "light",
+   "familj": "forfragningar-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "vanprofil",
+   "skarmetikett": "Vänprofil",
+   "tema": "light",
+   "familj": "vanprofil-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "publikprofil",
+   "skarmetikett": "Publik profil",
+   "tema": "light",
+   "familj": "publikprofil-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "laggtillmedlemmar",
+   "skarmetikett": "Lägg till medlemmar",
+   "tema": "light",
+   "familj": "laggtillmedlemmar-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "nygruppchatt",
+   "skarmetikett": "Ny gruppchatt",
+   "tema": "light",
+   "familj": "nygruppchatt-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "menyforhands",
+   "skarmetikett": "Delad meny — förhandsvisning",
+   "tema": "light",
+   "familj": "menyforhands-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "tadelning",
+   "skarmetikett": "Ta emot delning",
+   "tema": "light",
+   "familj": "tadelning-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "nydelatlista",
+   "skarmetikett": "Ny delad inköpslista",
+   "tema": "light",
+   "familj": "nydelatlista-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "delatlistor",
+   "skarmetikett": "Delade listor",
+   "tema": "light",
+   "familj": "delatlistor-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "skafferivara",
+   "skarmetikett": "Lägg till skafferivara",
+   "tema": "light",
+   "familj": "skafferivara-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "redigera",
+   "skarmetikett": "Redigera recept — delat",
+   "tema": "light",
+   "familj": "redigera-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "taggdetalj",
+   "skarmetikett": "Taggdetalj",
+   "tema": "light",
+   "familj": "taggdetalj-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "aldersgrans",
+   "skarmetikett": "Åldersspärr",
+   "tema": "light",
+   "familj": "aldersgrans-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "onboardingimport",
+   "skarmetikett": "Onboarding — import",
+   "tema": "light",
+   "familj": "onboardingimport-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "epostverif",
+   "skarmetikett": "E-postverifiering",
+   "tema": "light",
+   "familj": "epostverif-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "mfa",
+   "skarmetikett": "Tvåfaktor",
+   "tema": "light",
+   "familj": "mfa-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "samtycke",
+   "skarmetikett": "Samtycken",
+   "tema": "light",
+   "familj": "samtycke-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "rapporter",
+   "skarmetikett": "Mina rapporter",
+   "tema": "light",
+   "familj": "rapporter-322",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     322
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "rapporter412",
+   "skarmetikett": "Mina rapporter · 412",
+   "tema": "light",
+   "familj": "rapporter412-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "juridik",
+   "skarmetikett": "Integritetspolicy",
+   "tema": "light",
+   "familj": "juridik-322",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     322
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "juridik412",
+   "skarmetikett": "Integritetspolicy · 412",
+   "tema": "light",
+   "familj": "integritetspolicy-default-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "konflikt",
+   "skarmetikett": "Redigeringskonflikt",
+   "tema": "light",
+   "familj": "konflikt-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "admin",
+   "skarmetikett": "Adminpanel",
+   "tema": "light",
+   "familj": "adminpanel-default-660",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     662
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "statetom",
+   "skarmetikett": "State — tomt bibliotek",
+   "tema": "light",
+   "familj": "statetom-322",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     322
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "statetom412",
+   "skarmetikett": "State — tomt bibliotek · 412",
+   "tema": "light",
+   "familj": "statetom412-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "stateladdar",
+   "skarmetikett": "State — laddar (stillastående skelett)",
+   "tema": "light",
+   "familj": "stateladdar-322",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     322
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "stateladdar412",
+   "skarmetikett": "State — laddar (stillastående skelett) · 412",
+   "tema": "light",
+   "familj": "stateladdar412-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "statefel",
+   "skarmetikett": "State — fel + offline",
+   "tema": "light",
+   "familj": "statefel-322",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     322
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "statefel412",
+   "skarmetikett": "State — fel + offline · 412",
+   "tema": "light",
+   "familj": "statefel412-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "dialogradera",
+   "skarmetikett": "Dialog — radera",
+   "tema": "light",
+   "familj": "dialogradera-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "dialogosparat",
+   "skarmetikett": "Dialog — osparade ändringar",
+   "tema": "light",
+   "familj": "dialogosparat-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "dialogratelimit",
+   "skarmetikett": "Dialog — importgräns",
+   "tema": "light",
+   "familj": "dialogratelimit-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "delaark",
+   "skarmetikett": "Dela-ark",
+   "tema": "light",
+   "familj": "delaark-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "dialogvara",
+   "skarmetikett": "Dialog — lägg till vara",
+   "tema": "light",
+   "familj": "dialogvara-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "dialogsparameny",
+   "skarmetikett": "Dialog — spara meny",
+   "tema": "light",
+   "familj": "dialogsparameny-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "snackbars",
+   "skarmetikett": "Snackbar-varianter",
+   "tema": "light",
+   "familj": "snackbars-450",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     450
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "kontextmeny",
+   "skarmetikett": "Komponent — öppen kontextmeny",
+   "tema": "light",
+   "familj": "kontextmeny-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "hem360",
+   "skarmetikett": "Hem · 360",
+   "tema": "light",
+   "familj": "hem360-362",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     362
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "storsttext",
+   "skarmetikett": "Receptdetalj · största systemtext 2,0×",
+   "tema": "light",
+   "familj": "storsttext-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "tangentbord",
+   "skarmetikett": "Chatt · tangentbord öppet",
+   "tema": "light",
+   "familj": "tangentbord-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "langavarden",
+   "skarmetikett": "Långa värden",
+   "tema": "light",
+   "familj": "langavarden-362",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     362
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "lagaliggande",
+   "skarmetikett": "Matlagning · landskap",
+   "tema": "light",
+   "familj": "lagaliggande-926",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     926
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "formularmorkt",
+   "skarmetikett": "Recepteditor — mörkt läge",
+   "tema": "dark",
+   "familj": "recepteditor-default-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": true,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "arkmorkt",
+   "skarmetikett": "Bottom sheet — mörkt läge",
+   "tema": "dark",
+   "familj": "bottomark-default-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": true,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "okandingrediens",
+   "skarmetikett": "Okänd allergenuppgift — granskning",
+   "tema": "light",
+   "familj": "okandingrediens-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "veckoallergi",
+   "skarmetikett": "Veckogenerering — allergihushåll",
+   "tema": "light",
+   "familj": "veckoallergi-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "synkko",
+   "skarmetikett": "Väntar på synk — offlinekön",
+   "tema": "light",
+   "familj": "synkko-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "utloggningko",
+   "skarmetikett": "Utloggning med osparade ändringar",
+   "tema": "light",
+   "familj": "utloggningko-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "utloggningtom",
+   "skarmetikett": "Utloggning — kön tömd",
+   "tema": "light",
+   "familj": "utloggningtom-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "chattredigerat",
+   "skarmetikett": "Chatt — redigerat och borttaget",
+   "tema": "light",
+   "familj": "chattredigerat-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "chattmeny",
+   "skarmetikett": "Chatt — avsändarens meddelandemeny",
+   "tema": "light",
+   "familj": "chattmeny-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "safeareaios",
+   "skarmetikett": "Safe area — iOS, ljust",
+   "tema": "light",
+   "familj": "safeareaios-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "safeareaandroid",
+   "skarmetikett": "Safe area — Android, mörkt",
+   "tema": "light",
+   "familj": "safeareaandroid-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "hem",
+   "skarmetikett": "Hem · 412 · ljust",
+   "tema": "light",
+   "familj": "hem-default-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 13,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "hemmorkt",
+   "skarmetikett": "Hem · mörkt läge",
+   "tema": "dark",
+   "familj": "hem-default-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 13,
+    "namnsignal_morkt": true,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "hemtom",
+   "skarmetikett": "Hem · tomt (ny användare)",
+   "tema": "light",
+   "familj": "hemtom-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 11,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "hemladdar",
+   "skarmetikett": "Hem · laddar",
+   "tema": "light",
+   "familj": "hemladdar-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "hemoffline",
+   "skarmetikett": "Hem · offline",
+   "tema": "light",
+   "familj": "hemoffline-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 11,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "hemfel",
+   "skarmetikett": "Hem · fel",
+   "tema": "light",
+   "familj": "hemfel-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 11,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "receptkommentarer",
+   "skarmetikett": "Receptdetalj — kommentarer",
+   "tema": "light",
+   "familj": "receptkommentarer-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "receptcooksnap",
+   "skarmetikett": "Receptdetalj — cook snaps",
+   "tema": "light",
+   "familj": "receptcooksnap-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "receptdelningsstatus",
+   "skarmetikett": "Receptdetalj — delningsstatus (ägaren)",
+   "tema": "light",
+   "familj": "receptdelningsstatus-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "receptbildfel",
+   "skarmetikett": "Receptdetalj — bilden kunde inte laddas",
+   "tema": "light",
+   "familj": "receptbildfel-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "lagasubst",
+   "skarmetikett": "Matlagning — byt ingrediens",
+   "tema": "light",
+   "familj": "lagasubst-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 9,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "lagatimers",
+   "skarmetikett": "Matlagning — flera timers",
+   "tema": "light",
+   "familj": "lagatimers-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "betygvemat",
+   "skarmetikett": "Betyg — vem åt",
+   "tema": "light",
+   "familj": "betygvemat-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "betygperperson",
+   "skarmetikett": "Betyg — per person",
+   "tema": "light",
+   "familj": "betygperperson-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 18,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "betygsammanslaget",
+   "skarmetikett": "Betyg — sammanslaget",
+   "tema": "light",
+   "familj": "betygsammanslaget-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "betygvemarket",
+   "skarmetikett": "Betyg — vem åt, arket i sin verkliga form",
+   "tema": "light",
+   "familj": "betygvemarket-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "familjmedlemsamtycke",
+   "skarmetikett": "Familjemedlem — två samtycken och en mjuk preferens",
+   "tema": "light",
+   "familj": "familjmedlemsamtycke-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 16,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "art": "bredbrytpunkter",
+   "skarmetikett": "Brytpunkterna",
+   "tema": "neutral",
+   "familj": null,
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+  },
+  {
+   "art": "bredskal",
+   "skarmetikett": "Skalet — skenan",
+   "tema": "light",
+   "familj": "bredskal-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+  },
+  {
+   "art": "bredlandskap",
+   "skarmetikett": "Liggande telefon behåller bottenraden",
+   "tema": "light",
+   "familj": "bredlandskap-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+  },
+  {
+   "art": "bredrecept",
+   "skarmetikett": "Receptet brett",
+   "tema": "light",
+   "familj": "bredrecept-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+  },
+  {
+   "art": "bredmeny",
+   "skarmetikett": "Veckomenyn brett",
+   "tema": "light",
+   "familj": "bredmeny-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+  },
+  {
+   "art": "bredinkop",
+   "skarmetikett": "Inköpslistan brett",
+   "tema": "light",
+   "familj": "bredinkop-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+  },
+  {
+   "art": "bredgrid",
+   "skarmetikett": "Rutnätet och kortet",
+   "tema": "neutral",
+   "familj": null,
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+  },
+  {
+   "art": "bredgrans",
+   "skarmetikett": "Vad som förblir en spalt",
+   "tema": "light",
+   "familj": "bredgrans-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+  },
+  {
+   "art": "bredarbete",
+   "skarmetikett": "Vad detta kostar",
+   "tema": "neutral",
+   "familj": null,
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+  },
+  {
+   "art": "vmbnormal",
+   "skarmetikett": "Veckan brett — normalläget",
+   "tema": "light",
+   "familj": "vmbnormal-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 10,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "vmbtom",
+   "skarmetikett": "Veckan brett — tom",
+   "tema": "light",
+   "familj": "vmbtom-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 9,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "vmbgenererar",
+   "skarmetikett": "Veckan brett — genererar och skriver över",
+   "tema": "light",
+   "familj": "vmbgenererar-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "vmbomrostning",
+   "skarmetikett": "Veckan brett — aktiv omröstning",
+   "tema": "light",
+   "familj": "vmbomrostning-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "vmbkonflikt",
+   "skarmetikett": "Veckan brett — konflikt i en cell",
+   "tema": "light",
+   "familj": "vmbkonflikt-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "vmbdelvis",
+   "skarmetikett": "Veckan brett — delvis utfall",
+   "tema": "light",
+   "familj": "vmbdelvis-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "vmboffline",
+   "skarmetikett": "Veckan brett — frånkopplat",
+   "tema": "light",
+   "familj": "vmboffline-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "vmbflytta",
+   "skarmetikett": "Veckan brett — flytta en måltid",
+   "tema": "light",
+   "familj": "vmbflytta-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "rcbnormal",
+   "skarmetikett": "Receptet brett — normalläget",
+   "tema": "light",
+   "familj": "rcbnormal-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "rcbportion",
+   "skarmetikett": "Receptet brett — skalningen syns",
+   "tema": "light",
+   "familj": "rcbportion-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "rcbofullstandigt",
+   "skarmetikett": "Receptet brett — ofullständigt",
+   "tema": "light",
+   "familj": "rcbofullstandigt-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "rcblaser",
+   "skarmetikett": "Receptet brett — någon annans",
+   "tema": "light",
+   "familj": "rcblaser-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "rcbarvegods",
+   "skarmetikett": "Receptet brett — arvegods",
+   "tema": "light",
+   "familj": "rcbarvegods-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "rcbkommentar",
+   "skarmetikett": "Receptet brett — kommentarsbandet",
+   "tema": "light",
+   "familj": "rcbkommentar-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "rcboffline",
+   "skarmetikett": "Receptet brett — frånkopplat",
+   "tema": "light",
+   "familj": "rcboffline-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "ikbnormal",
+   "skarmetikett": "Inköpslistan brett — normalläget",
+   "tema": "light",
+   "familj": "ikbnormal-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "ikbtom",
+   "skarmetikett": "Inköpslistan brett — två tomma lägen",
+   "tema": "light",
+   "familj": "ikbtom-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "ikbdelad",
+   "skarmetikett": "Inköpslistan brett — delad lista",
+   "tema": "light",
+   "familj": "ikbdelad-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "ikboffline",
+   "skarmetikett": "Inköpslistan brett — frånkopplat i affären",
+   "tema": "light",
+   "familj": "ikboffline-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "lgbrotation",
+   "skarmetikett": "Matlagningsläget — rotation och skala",
+   "tema": "light",
+   "familj": "lgbrotation-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "lgbgester",
+   "skarmetikett": "Matlagningsläget — de två gesterna",
+   "tema": "light",
+   "familj": "lgbgester-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "lgbtimer",
+   "skarmetikett": "Matlagningsläget — timrar och röst",
+   "tema": "light",
+   "familj": "lgbtimer-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "lgbutan",
+   "skarmetikett": "Matlagningsläget — receptet utan steg",
+   "tema": "light",
+   "familj": "lgbutan-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "art": "inkopkategoriordning",
+   "skarmetikett": "Inköp — kategoriordningen",
+   "tema": "light",
+   "familj": "inkopkategoriordning-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 9,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "art": "inkopflerval",
+   "skarmetikett": "Inköp — flerval",
+   "tema": "light",
+   "familj": "inkopflerval-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "art": "inkopkategoribyte",
+   "skarmetikett": "Inköp — byt kategori",
+   "tema": "light",
+   "familj": "inkopkategoribyte-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "art": "inkopbockad",
+   "skarmetikett": "Inköp — bockad vara till skafferiet",
+   "tema": "light",
+   "familj": "inkopbockad-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "art": "inkoputeslutna",
+   "skarmetikett": "Inköp — uteslutna basvaror",
+   "tema": "light",
+   "familj": "inkoputeslutna-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "art": "inkopgenererad",
+   "skarmetikett": "Inköp — den genererade listan",
+   "tema": "light",
+   "familj": "inkopgenererad-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "art": "skafferivyn",
+   "skarmetikett": "Skafferiet — fyra platser",
+   "tema": "light",
+   "familj": "skafferivyn-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "art": "skafferiflerval",
+   "skarmetikett": "Skafferiet — flerval och Ångra",
+   "tema": "light",
+   "familj": "skafferiflerval-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "art": "skafferilagg",
+   "skarmetikett": "Skafferiet — lägg till eller ändra",
+   "tema": "light",
+   "familj": "skafferilagg-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 9,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "art": "skafferibas",
+   "skarmetikett": "Skafferiet — basvaran som inte går att sätta",
+   "tema": "light",
+   "familj": "skafferibas-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "art": "delatinkorg",
+   "skarmetikett": "Delat med mig — erbjudanden",
+   "tema": "light",
+   "familj": "delatinkorg-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "delatvidare",
+   "skarmetikett": "Delat med mig — vidaredelad",
+   "tema": "light",
+   "familj": "delatvidare-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "delatlistaaktiv",
+   "skarmetikett": "Delad lista — gått med",
+   "tema": "light",
+   "familj": "delatlistaaktiv-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 11,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "delatlamna",
+   "skarmetikett": "Delad lista — lämna",
+   "tema": "light",
+   "familj": "delatlamna-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "delatlamnaagare",
+   "skarmetikett": "Delad lista — ägaren kan inte lämna",
+   "tema": "light",
+   "familj": "delatlamnaagare-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "delatmindel",
+   "skarmetikett": "Delad lista — Min del",
+   "tema": "light",
+   "familj": "delatmindel-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 14,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "delatnarvaro",
+   "skarmetikett": "Delad lista — närvaro och avdelning",
+   "tema": "light",
+   "familj": "delatnarvaro-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 11,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "delatclaimkonflikt",
+   "skarmetikett": "Delad lista — någon hann först",
+   "tema": "light",
+   "familj": "delatclaimkonflikt-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "delatlasare",
+   "skarmetikett": "Delad lista — läsare utan redigeringsrätt",
+   "tema": "light",
+   "familj": "delatlasare-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckoprompt",
+   "skarmetikett": "Veckomeny — prompt och tomt läge",
+   "tema": "light",
+   "familj": "veckoprompt-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckogenererar",
+   "skarmetikett": "Veckomeny — genererar",
+   "tema": "light",
+   "familj": "veckogenererar-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckochips",
+   "skarmetikett": "Veckomeny — vad tolkningen förstod",
+   "tema": "light",
+   "familj": "veckochips-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckoresultat",
+   "skarmetikett": "Veckomeny — resultat och placeringsval",
+   "tema": "light",
+   "familj": "veckoresultat-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 17,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckodolda",
+   "skarmetikett": "Veckomeny — färre recept av allergiskäl",
+   "tema": "light",
+   "familj": "veckodolda-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 10,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckofel",
+   "skarmetikett": "Veckomeny — genereringen misslyckades",
+   "tema": "light",
+   "familj": "veckofel-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckobyt",
+   "skarmetikett": "Veckomeny — byte och slut på alternativ",
+   "tema": "light",
+   "familj": "veckobyt-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckoplacering",
+   "skarmetikett": "Veckomeny — placera själv",
+   "tema": "light",
+   "familj": "veckoplacering-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 17,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckoplaceringvald",
+   "skarmetikett": "Veckomeny — rätt vald för placering",
+   "tema": "light",
+   "familj": "veckoplaceringvald-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 12,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckoplaceringavbryt",
+   "skarmetikett": "Veckomeny — lämna placeringen",
+   "tema": "light",
+   "familj": "veckoplaceringavbryt-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckoautoplacerad",
+   "skarmetikett": "Veckomeny — automatiskt placerad",
+   "tema": "light",
+   "familj": "veckoautoplacerad-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 10,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckokalender",
+   "skarmetikett": "Veckomeny — kalendervecka",
+   "tema": "light",
+   "familj": "veckokalender-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 21,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckonarvaro",
+   "skarmetikett": "Veckomeny — vem är hemma per måltid",
+   "tema": "light",
+   "familj": "veckonarvaro-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 13,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckonarvarooversikt",
+   "skarmetikett": "Veckomeny — närvaro, veckoöversikt",
+   "tema": "light",
+   "familj": "veckonarvarooversikt-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckooverflow",
+   "skarmetikett": "Veckomeny — rätter som inte fick plats",
+   "tema": "light",
+   "familj": "veckooverflow-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 11,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckoflytta",
+   "skarmetikett": "Veckomeny — flytta flera",
+   "tema": "light",
+   "familj": "veckoflytta-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 12,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckoskrivover",
+   "skarmetikett": "Veckomeny — skriva över veckan",
+   "tema": "light",
+   "familj": "veckoskrivover-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckoinkop",
+   "skarmetikett": "Veckomeny — inköpslista från veckan",
+   "tema": "light",
+   "familj": "veckoinkop-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 9,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckorostning",
+   "skarmetikett": "Veckomeny — rösta om en rätt",
+   "tema": "light",
+   "familj": "veckorostning-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 10,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckorostlagg",
+   "skarmetikett": "Röstning — lägg till ett alternativ",
+   "tema": "light",
+   "familj": "veckorostlagg-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckorostavgor",
+   "skarmetikett": "Röstning — avgörandet och oavgjort",
+   "tema": "light",
+   "familj": "veckorostavgor-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckorostutgang",
+   "skarmetikett": "Röstning — tiden gick ut",
+   "tema": "light",
+   "familj": "veckorostutgang-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckorosthistorik",
+   "skarmetikett": "Röstning — historiken",
+   "tema": "light",
+   "familj": "veckorosthistorik-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "authlogga",
+   "skarmetikett": "Auth — logga in",
+   "tema": "light",
+   "familj": "authlogga-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "authskapa",
+   "skarmetikett": "Auth — skapa konto",
+   "tema": "light",
+   "familj": "authskapa-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "authglomt",
+   "skarmetikett": "Auth — glömt lösenordet",
+   "tema": "light",
+   "familj": "authglomt-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "authepost",
+   "skarmetikett": "Auth — e-postverifiering",
+   "tema": "light",
+   "familj": "authepost-462",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     462
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "authepostklar",
+   "skarmetikett": "Auth — adressen bekräftad",
+   "tema": "light",
+   "familj": "authepostklar-462",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     462
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "authmfa",
+   "skarmetikett": "Auth — MFA-utmaning (finns inte i koden)",
+   "tema": "light",
+   "familj": "authmfa-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbalder",
+   "skarmetikett": "Onboarding — åldersgrind",
+   "tema": "light",
+   "familj": "onboarding-aldersgrind-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbalderblock",
+   "skarmetikett": "Onboarding — under 15",
+   "tema": "light",
+   "familj": "onbalderblock-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbaldrefel",
+   "skarmetikett": "Onboarding — grinden nås inte",
+   "tema": "light",
+   "familj": "onbaldrefel-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbvalkommen",
+   "skarmetikett": "Onboarding — välkomst",
+   "tema": "light",
+   "familj": "onbvalkommen-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onballergi",
+   "skarmetikett": "Onboarding — allergener",
+   "tema": "light",
+   "familj": "onboarding-allergener-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 12,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbimport",
+   "skarmetikett": "Onboarding — första receptet",
+   "tema": "light",
+   "familj": "onbimport-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbimportklar",
+   "skarmetikett": "Onboarding — importen landade",
+   "tema": "light",
+   "familj": "onbimportklar-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbhoppa",
+   "skarmetikett": "Onboarding — hoppa över",
+   "tema": "light",
+   "familj": "onbhoppa-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbklar",
+   "skarmetikett": "Onboarding — förbereder appen",
+   "tema": "light",
+   "familj": "onbklar-462",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     462
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbfel",
+   "skarmetikett": "Onboarding — slutförandet gick inte",
+   "tema": "light",
+   "familj": "onboarding-slutforande-fel-460",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     462
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbateruppta",
+   "skarmetikett": "Onboarding — återupptagen",
+   "tema": "light",
+   "familj": "onbateruppta-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbsenare",
+   "skarmetikett": "Onboarding — den uppskjutna frågan",
+   "tema": "light",
+   "familj": "onbsenare-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 10,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbaldermorkt",
+   "skarmetikett": "Onboarding — åldersgrinden, mörkt läge",
+   "tema": "dark",
+   "familj": "onboarding-aldersgrind-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": true,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onballergimorkt",
+   "skarmetikett": "Onboarding — allergenerna, mörkt läge",
+   "tema": "dark",
+   "familj": "onboarding-allergener-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 12,
+    "namnsignal_morkt": true,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbfelmorkt",
+   "skarmetikett": "Onboarding — slutförandet gick inte, mörkt läge",
+   "tema": "dark",
+   "familj": "onboarding-slutforande-fel-460",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": true,
+    "ramBredder": [
+     462
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbjamforelse",
+   "skarmetikett": "Onboarding — MINIMAL mot koden",
+   "tema": "light",
+   "familj": "onbjamforelse-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "behkamera",
+   "skarmetikett": "Behörighet — kamera, förklaring före frågan",
+   "tema": "light",
+   "familj": "behkamera-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "behfoton",
+   "skarmetikett": "Behörighet — foton, valda bilder",
+   "tema": "light",
+   "familj": "behfoton-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "behnotiser",
+   "skarmetikett": "Behörighet — notiser, permanent nej",
+   "tema": "light",
+   "familj": "behnotiser-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "behlarm",
+   "skarmetikett": "Behörighet — exakta larm (finns inte)",
+   "tema": "light",
+   "familj": "behlarm-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "behlarmnekat",
+   "skarmetikett": "Väg A — behörigheten nekad",
+   "tema": "light",
+   "familj": "behlarmnekat-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "lagatimerlofte",
+   "skarmetikett": "Väg B — det sänkta löftet",
+   "tema": "light",
+   "familj": "lagatimerlofte-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "lagatimernotis",
+   "skarmetikett": "Väg C — förgrundstjänsten",
+   "tema": "light",
+   "familj": "lagatimernotis-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "lagatimerutgangen",
+   "skarmetikett": "Väg C — den utgångna timern kvitteras",
+   "tema": "light",
+   "familj": "lagatimerutgangen-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.016,
+    "storstaYtaFarg": "rgb(23, 37, 29)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "imp1kalla",
+   "skarmetikett": "Import — steg 1, varifrån",
+   "tema": "light",
+   "familj": "imp1kalla-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 9,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "imp2hamtar",
+   "skarmetikett": "Import — steg 2, hämtar och tolkar",
+   "tema": "light",
+   "familj": "imp2hamtar-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "imp3granska",
+   "skarmetikett": "Import — steg 3, granska tolkningen",
+   "tema": "light",
+   "familj": "imp3granska-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "imp4sparad",
+   "skarmetikett": "Import — sparad, med allergenupplysning",
+   "tema": "light",
+   "familj": "imp4sparad-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impassist1",
+   "skarmetikett": "Assisterad import — steg 1, ingredienserna",
+   "tema": "light",
+   "familj": "impassist1-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 9,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impassist2",
+   "skarmetikett": "Assisterad import — steg 2, instruktionerna",
+   "tema": "light",
+   "familj": "impassist2-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impassist3",
+   "skarmetikett": "Assisterad import — steg 3, granska och rätta",
+   "tema": "light",
+   "familj": "impassist3-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 15,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impassistavbryt",
+   "skarmetikett": "Assisterad import — avbryta med val gjorda",
+   "tema": "light",
+   "familj": "impassistavbryt-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impurl",
+   "skarmetikett": "Import — länk med känd sida",
+   "tema": "light",
+   "familj": "impurl-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impsocial",
+   "skarmetikett": "Import — Instagram och TikTok",
+   "tema": "light",
+   "familj": "impsocial-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impfoto",
+   "skarmetikett": "Import — foto, med arvegods",
+   "tema": "light",
+   "familj": "impfoto-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impfil",
+   "skarmetikett": "Import — fil med flera recept",
+   "tema": "light",
+   "familj": "impfil-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impgrans",
+   "skarmetikett": "Import — hastighetsgräns",
+   "tema": "light",
+   "familj": "impgrans-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impgransai",
+   "skarmetikett": "Import — AI-kvoten slut",
+   "tema": "light",
+   "familj": "impgransai-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impoffline",
+   "skarmetikett": "Import — offline",
+   "tema": "light",
+   "familj": "impoffline-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impdubblett",
+   "skarmetikett": "Import — receptet finns redan",
+   "tema": "light",
+   "familj": "impdubblett-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impinget",
+   "skarmetikett": "Import — inget recept i sidan",
+   "tema": "light",
+   "familj": "impinget-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impcache",
+   "skarmetikett": "Import — redan tolkad nyligen",
+   "tema": "light",
+   "familj": "impcache-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impdelning",
+   "skarmetikett": "Import — ta emot en delning",
+   "tema": "light",
+   "familj": "impdelning-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "impdelningsocial",
+   "skarmetikett": "Import — delning från socialt, hämtningen misslyckades",
+   "tema": "light",
+   "familj": "impdelningsocial-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "imparkiv",
+   "skarmetikett": "Import — ur arkivet",
+   "tema": "light",
+   "familj": "imparkiv-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "editorutkast",
+   "skarmetikett": "Recepteditor — utkastet som sparas åt dig",
+   "tema": "light",
+   "familj": "editorutkast-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "editorutkastval",
+   "skarmetikett": "Recepteditor — återuppta ett utkast",
+   "tema": "light",
+   "familj": "editorutkastval-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "editorfelkontrakt",
+   "skarmetikett": "Recepteditor — samma fel, fyra besked",
+   "tema": "light",
+   "familj": "editorfelkontrakt-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+  },
+  {
+   "art": "taggregel",
+   "skarmetikett": "Taggregel — bygga en regel",
+   "tema": "light",
+   "familj": "taggregel-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 16,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "taggvillkor",
+   "skarmetikett": "Taggregel — villkorets typ",
+   "tema": "light",
+   "familj": "taggvillkor-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 14,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "taggkalla",
+   "skarmetikett": "Taggar — varför sitter den här?",
+   "tema": "light",
+   "familj": "taggkalla-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "taggexklusiv",
+   "skarmetikett": "Taggar — exklusiv grupp avgjorde",
+   "tema": "light",
+   "familj": "taggexklusiv-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "kontoradera",
+   "skarmetikett": "Konto — begära radering",
+   "tema": "light",
+   "familj": "kontoradera-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "kontoreauth",
+   "skarmetikett": "Konto — logga in igen först",
+   "tema": "light",
+   "familj": "kontoreauth-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "kontovantan",
+   "skarmetikett": "Konto — raderingen pågår",
+   "tema": "light",
+   "familj": "kontovantan-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "kontodelvis",
+   "skarmetikett": "Konto — delvis raderat",
+   "tema": "light",
+   "familj": "kontodelvis-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "adminskal",
+   "skarmetikett": "Admin — skalet och flikarna",
+   "tema": "light",
+   "familj": "adminskal-926",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     926
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "adminej",
+   "skarmetikett": "Admin — inte behörig",
+   "tema": "light",
+   "familj": "adminej-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "modrapporter",
+   "skarmetikett": "Moderering — öppna rapporter",
+   "tema": "light",
+   "familj": "modrapporter-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 10,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "modminderarig",
+   "skarmetikett": "Moderering — minderårigt konto",
+   "tema": "light",
+   "familj": "modminderarig-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "moddolj",
+   "skarmetikett": "Moderering — dölja en profil",
+   "tema": "light",
+   "familj": "moddolj-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "modradera",
+   "skarmetikett": "Moderering — radera innehåll",
+   "tema": "light",
+   "familj": "modradera-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "modtom",
+   "skarmetikett": "Moderering — inga öppna rapporter",
+   "tema": "light",
+   "familj": "modtom-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "cooksnapsynlighet",
+   "skarmetikett": "Cook snap — synligheten före uppladdning",
+   "tema": "light",
+   "familj": "cooksnapsynlighet-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "cooksnapgalleri",
+   "skarmetikett": "Cook snaps — galleriet med synliga val",
+   "tema": "light",
+   "familj": "cooksnapgalleri-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "vanprofildelning",
+   "skarmetikett": "Vänprofil — delningslagret i två riktningar",
+   "tema": "light",
+   "familj": "vanprofildelning-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 9,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "kontosamtycke",
+   "skarmetikett": "Samtycke — sju ändamål",
+   "tema": "light",
+   "familj": "kontosamtycke-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "samtyckeai",
+   "skarmetikett": "Samtycke — ändamålet som tappas",
+   "tema": "light",
+   "familj": "samtyckeai-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "samtyckefornya",
+   "skarmetikett": "Samtycke — villkoren har ändrats",
+   "tema": "light",
+   "familj": "samtyckefornya-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "kontodataexport",
+   "skarmetikett": "Dataexport — allt du lagt in",
+   "tema": "light",
+   "familj": "kontodataexport-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "dataexportfel",
+   "skarmetikett": "Dataexport — tre orsaker",
+   "tema": "light",
+   "familj": "dataexportfel-462",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     462
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "kontosakerhetsvy",
+   "skarmetikett": "Kontosäkerhet — fyra avsnitt",
+   "tema": "light",
+   "familj": "kontosakerhetsvy-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 10,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "kontonotiser",
+   "skarmetikett": "Notiser — kategorier och tysta timmar",
+   "tema": "light",
+   "familj": "kontonotiser-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 11,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "notisertyp",
+   "skarmetikett": "Notiser — den andra matrisen",
+   "tema": "light",
+   "familj": "notisertyp-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "mfalagg",
+   "skarmetikett": "MFA — lägg till telefon",
+   "tema": "light",
+   "familj": "mfalagg-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "mfaaktiv",
+   "skarmetikett": "MFA — påslagen och reservvägen",
+   "tema": "light",
+   "familj": "mfaaktiv-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "notiscentral",
+   "skarmetikett": "Notiscentral — inkorgen",
+   "tema": "light",
+   "familj": "notiscentral-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "notisrensa",
+   "skarmetikett": "Notiscentral — rensa utan Ångra",
+   "tema": "light",
+   "familj": "notisrensa-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "minaanmalningar",
+   "skarmetikett": "Mina anmälningar — status utan besked",
+   "tema": "light",
+   "familj": "minaanmalningar-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "kontojuridik",
+   "skarmetikett": "Juridik — dokumentet som visas som källkod",
+   "tema": "light",
+   "familj": "kontojuridik-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "kontostatistik",
+   "skarmetikett": "Samlingsstatistik — fem avsnitt",
+   "tema": "light",
+   "familj": "kontostatistik-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "statistikfullstandighet",
+   "skarmetikett": "Samlingsstatistik — fullständighet",
+   "tema": "light",
+   "familj": "statistikfullstandighet-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "art": "globunderhall",
+   "skarmetikett": "Globalt — underhållsläge",
+   "tema": "light",
+   "familj": "globunderhall-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "globsession",
+   "skarmetikett": "Globalt — sessionen håller på att gå ut",
+   "tema": "light",
+   "familj": "globsession-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "globsessiontyst",
+   "skarmetikett": "Globalt — utloggad utan varning (kravunderlag)",
+   "tema": "light",
+   "familj": "globsessiontyst-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "globinstallera",
+   "skarmetikett": "Globalt — installationsbannern",
+   "tema": "light",
+   "familj": "globinstallera-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "globceremoni",
+   "skarmetikett": "Globalt — första receptet är sparat",
+   "tema": "light",
+   "familj": "globceremoni-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "globsvep",
+   "skarmetikett": "Globalt — gesttipset behålls med villkor",
+   "tema": "light",
+   "familj": "globsvep-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "flervalingang",
+   "skarmetikett": "Flerval — den synliga ingången",
+   "tema": "light",
+   "familj": "flervalingang-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "flerbar",
+   "skarmetikett": "Flerval — receptlistan, sex handlingar",
+   "tema": "light",
+   "familj": "flerbar-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 11,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "flertagg",
+   "skarmetikett": "Flerval — tagga många recept",
+   "tema": "light",
+   "familj": "flertagg-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "flermeny",
+   "skarmetikett": "Flerval — lägg många i menyn, överfyllnad",
+   "tema": "light",
+   "familj": "flermeny-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 12,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "flertaggsam",
+   "skarmetikett": "Flerval — slå samman taggar",
+   "tema": "light",
+   "familj": "flertaggsam-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "flergrupp",
+   "skarmetikett": "Flerval — gruppmedlemmar, delvis utfall",
+   "tema": "light",
+   "familj": "flergrupp-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "fbknapp",
+   "skarmetikett": "Feedback — knappen på varje skärm",
+   "tema": "light",
+   "familj": "fbknapp-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "fbformular",
+   "skarmetikett": "Feedback — formuläret och vad som följer med",
+   "tema": "light",
+   "familj": "fbformular-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 10,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "fbinkorgvy",
+   "skarmetikett": "Admin — feedbackinkorgen (sidnivå)",
+   "tema": "light",
+   "familj": "fbinkorgvy-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "fbkortmonster",
+   "skarmetikett": "Feedbackkortsmönster",
+   "tema": "light",
+   "familj": "fbkortmonster-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.807,
+    "storstaYtaFarg": "rgb(230, 234, 217)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "fbanmal",
+   "skarmetikett": "Anmäl innehåll",
+   "tema": "light",
+   "familj": "fbanmal-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "fbblockerade",
+   "skarmetikett": "Blockerade — och den sjätte flervalsytan",
+   "tema": "light",
+   "familj": "fbblockerade-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 7,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "art": "socflode",
+   "skarmetikett": "Aktivitetsflödet",
+   "tema": "light",
+   "familj": "socflode-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 10,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "soctomtingavanner",
+   "skarmetikett": "Flödet — tomt: inga vänner än",
+   "tema": "light",
+   "familj": "soctomtingavanner-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     412
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "soctomttyst",
+   "skarmetikett": "Flödet — tomt: tyst så här långt",
+   "tema": "light",
+   "familj": "soctomttyst-412",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     412
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "socknuff",
+   "skarmetikett": "Knuffen — påminnelsen mellan människor som bor ihop",
+   "tema": "light",
+   "familj": "socknuff-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "socbegar",
+   "skarmetikett": "Begär receptet av ägaren",
+   "tema": "light",
+   "familj": "socbegar-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "socintegritet",
+   "skarmetikett": "Vad andra får se om dig",
+   "tema": "light",
+   "familj": "socintegritet-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "socomrostning",
+   "skarmetikett": "Omröstning i chatten",
+   "tema": "light",
+   "familj": "socomrostning-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 6,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "socreaktion",
+   "skarmetikett": "Emoji-reaktioner — regeln skrivs om",
+   "tema": "light",
+   "familj": "socreaktion-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 9,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "socgruppinfo",
+   "skarmetikett": "Chattens gruppinfo",
+   "tema": "light",
+   "familj": "socgruppinfo-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 4,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "socoverlat",
+   "skarmetikett": "Lämna över ägarskapet",
+   "tema": "light",
+   "familj": "socoverlat-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "socdelatvan",
+   "skarmetikett": "Delat av en vän",
+   "tema": "light",
+   "familj": "socdelatvan-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "insthushall",
+   "skarmetikett": "Hushållsstorlek",
+   "tema": "light",
+   "familj": "insthushall-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "instportion",
+   "skarmetikett": "Portionsskalning",
+   "tema": "light",
+   "familj": "instportion-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "jurriktlinjer",
+   "skarmetikett": "Communityriktlinjer",
+   "tema": "light",
+   "familj": "jurriktlinjer-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 5,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "sokpanel",
+   "skarmetikett": "Sök- och filterpanelen",
+   "tema": "light",
+   "familj": "sokpanel-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 16,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "admmatning",
+   "skarmetikett": "Admin — mätvärden och diagram",
+   "tema": "light",
+   "familj": "admmatning-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "admdrift",
+   "skarmetikett": "Admin — driftlogg och parsningsdetaljer",
+   "tema": "light",
+   "familj": "admdrift-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "kompbild",
+   "skarmetikett": "Bilduppladdning med förlopp",
+   "tema": "light",
+   "familj": "kompbild-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "kompdubblett",
+   "skarmetikett": "Dubblettsammanslagning",
+   "tema": "light",
+   "familj": "kompdubblett-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 8,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "komprelaterade",
+   "skarmetikett": "Relaterade recept",
+   "tema": "light",
+   "familj": "komprelaterade-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "kompmallar",
+   "skarmetikett": "Inköpsmallar",
+   "tema": "light",
+   "familj": "kompmallar-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "komprost",
+   "skarmetikett": "Röstassistans i matlagningsläget",
+   "tema": "light",
+   "familj": "komprost-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.034,
+    "storstaYtaFarg": "rgb(36, 56, 44)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "kompsason",
+   "skarmetikett": "Säsongshero på hem",
+   "tema": "light",
+   "familj": "kompsason-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 0,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "kompkalla",
+   "skarmetikett": "Receptets källa",
+   "tema": "light",
+   "familj": "kompkalla-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "kompkallahel",
+   "skarmetikett": "Receptets källa",
+   "tema": "light",
+   "familj": "kompkallahel-414",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 3,
+    "namnsignal_morkt": false,
+    "ramBredder": [
+     414
+    ]
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "komparvegods",
+   "skarmetikett": "Arvegods — flersidig fotoimport",
+   "tema": "light",
+   "familj": "komparvegods-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 2,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "installergen",
+   "skarmetikett": "Hushållets allergenfilter",
+   "tema": "light",
+   "familj": "installergen-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "art": "surfplatta",
+   "skarmetikett": "Surfplatta — vad designen inte täcker",
+   "tema": "light",
+   "familj": "surfplatta-panel",
+   "diagnostik": {
+    "storstaYtaLuminans": 0.902,
+    "storstaYtaFarg": "rgb(245, 244, 237)",
+    "kontroller_st": 1,
+    "namnsignal_morkt": false,
+    "ramBredder": []
+   },
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  }
+ ],
+ "status": "tackning komplett"
 }
