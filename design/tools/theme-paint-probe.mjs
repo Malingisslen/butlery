@@ -26,10 +26,20 @@ export const PAINT_PROBE = `(() => {
     const inline = el.style && el.style.getPropertyValue(egenskap);
     if (inline) return { ursprung: 'INLINE', varde: inline.trim(), selector: null,
       viktig: el.style.getPropertyPriority(egenskap) === 'important' };
+    // Kortformer maste med: border och background exponerar inte sina
+    // langformer nar vardet innehaller var().
+    const KORT = { 'border-top-color': 'border', 'border-right-color': 'border',
+      'border-bottom-color': 'border', 'border-left-color': 'border',
+      'background-color': 'background' };
     let bast = null;
     for (const r of regler) {
-      const v = r.style.getPropertyValue(egenskap);
+      let v = r.style.getPropertyValue(egenskap);
+      let viaKort = false;
+      if (!v && KORT[egenskap]) { const k = r.style.getPropertyValue(KORT[egenskap]);
+        if (k && k.indexOf('var(') >= 0) { v = k; viaKort = true; } }
       if (!v) continue;
+      if (viaKort) { let matchar = false; try { matchar = el.matches(r.selector); } catch { continue; }
+        if (matchar) return { ursprung: 'TOKEN_HOOK', varde: v.trim(), selector: r.selector }; }
       let matchar = false; try { matchar = el.matches(r.selector); } catch { continue; }
       if (!matchar) continue;
       const viktig = r.style.getPropertyPriority(egenskap) === 'important';
@@ -47,7 +57,13 @@ export const PAINT_PROBE = `(() => {
   const ut = [];
   for (const it of document.querySelectorAll('.sc-item')) {
     if (pilot.length && !pilot.includes(it.id)) continue;
-    for (const el of [it, ...it.querySelectorAll('*')]) {
+    // PRODUKTYTAN, inte ritningens bildtext. Varje artefakt bestar av en
+    // forklarande etikett (.sc-label, .sc-id) och sjalva den avbildade
+    // produktytan (.sc-phone eller .sc-card). Bara den senare ar UI som ska
+    // tematiseras; etiketten ar dokumentets egen text.
+    const ytor = [...it.querySelectorAll('.sc-phone, .sc-card')];
+    const iProdukt = el => el === it ? false : ytor.some(y => y === el || y.contains(el));
+    for (const el of [...it.querySelectorAll('*')].filter(iProdukt)) {
       const cs = getComputedStyle(el);
       const taggen = el.outerHTML.slice(0, el.outerHTML.indexOf('>') + 1);
       const arKontroll = el.hasAttribute('data-a11y-role') || !!el.closest('[data-a11y-role]');
