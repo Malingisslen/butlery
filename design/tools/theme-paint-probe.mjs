@@ -63,7 +63,12 @@ export const PAINT_PROBE = `(() => {
     // tematiseras; etiketten ar dokumentets egen text.
     const ytor = [...it.querySelectorAll('.sc-phone, .sc-card')];
     const iProdukt = el => el === it ? false : ytor.some(y => y === el || y.contains(el));
-    for (const el of [...it.querySelectorAll('*')].filter(iProdukt)) {
+    // KALLANKARE. Elementets ordinal i produktytans dokumentordning ar samma
+    // ordning som oppningstaggarna i kallan. Migratorn far darmed en entydig
+    // plats och behover aldrig harleda nagot pa nytt.
+    const produktElement = [...it.querySelectorAll('*')].filter(iProdukt);
+    const ordinalAv = new Map(produktElement.map((e, i) => [e, i]));
+    for (const el of produktElement) {
       const cs = getComputedStyle(el);
       const taggen = el.outerHTML.slice(0, el.outerHTML.indexOf('>') + 1);
       const arKontroll = el.hasAttribute('data-a11y-role') || !!el.closest('[data-a11y-role]');
@@ -95,7 +100,15 @@ export const PAINT_PROBE = `(() => {
         if (arSvg && (egenskap === 'fill' || egenskap === 'stroke') && el.hasAttribute(egenskap))
           v = { ursprung: 'SVG_ATTRIBUTE', varde: el.getAttribute(egenskap), selector: null };
 
+        // Skrivbar bara nar deklarationen sitter pa elementet sjalv.
+        // Arvd farg sitter pa en FORFADER. Da ar barnet inget skrivstalle.
+        const skrivbar = v && !arvd && (v.ursprung === 'INLINE' || v.ursprung === 'SVG_ATTRIBUTE');
         ut.push({ art: it.id, egenskap, beraknat: berak.trim(),
+          ankare: skrivbar ? { elementOrdinal: ordinalAv.get(el),
+            tagg: el.tagName.toLowerCase(),
+            egenskap: v.ursprung === 'SVG_ATTRIBUTE' ? egenskap : egenskap,
+            form: v.ursprung } : null,
+          produktElement_st: produktElement.length,
           ursprung: v ? (arvd ? 'INHERITED' : v.ursprung) : 'OKAND',
           deklaration: v ? v.varde : null, selector: v ? v.selector || null : null,
           arvd, arKontroll, arSvg,
