@@ -1,0 +1,350 @@
+{
+ "$schema": "butlery-r04-tackning/1",
+ "kontroll": "CHK-R-04",
+ "$regel": "Identiteten ar authored data-theme och data-theme-family. Luminans, filnamn, rubriktext, DOM-position och geometri far aldrig avgora tema eller parning. Ett saknat morkt tillstand ar en coveragelucka, aldrig ett kontrastfel.",
+ "$enheter": {
+  "artefakter": "sc-item",
+  "temafamiljer": "samma skarm, tillstand och variant i tva teman",
+  "par": "en light och en dark i samma familj"
+ },
+ "A_tackning": {
+  "artefakter_totalt": 329,
+  "deklarerade_st": 0,
+  "unknown_st": 329,
+  "notApplicable_neutral_st": 0,
+  "temafamiljer_st": 0,
+  "parade_st": 0,
+  "enbartLight_st": 0,
+  "enbartDark_st": 0,
+  "tvetydiga_st": 0,
+  "tackning_procent": 0,
+  "invariant_ok": true,
+  "par": [],
+  "enbartLight": [],
+  "enbartDark": [],
+  "tvetydiga": [],
+  "unknown_exempel": [
+   {
+    "art": "start",
+    "skarmetikett": "Startskärm",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.034,
+     "storstaYtaFarg": "rgb(36, 56, 44)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "tomtrecept",
+    "skarmetikett": "Tomt läge — recept",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "offline",
+    "skarmetikett": "Frånkopplat läge",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "hemrecept",
+    "skarmetikett": "Hem + Recept sammanslagna",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 1,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "sortera",
+    "skarmetikett": "Recept — sortering",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "laga",
+    "skarmetikett": "Matlagningsläge",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.034,
+     "storstaYtaFarg": "rgb(36, 56, 44)",
+     "kontroller_st": 2,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "lagastaende",
+    "skarmetikett": "Matlagningsläge — stående",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.034,
+     "storstaYtaFarg": "rgb(36, 56, 44)",
+     "kontroller_st": 3,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "lagamorkt",
+    "skarmetikett": "Matlagningsläge — mörkt läge",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.016,
+     "storstaYtaFarg": "rgb(23, 37, 29)",
+     "kontroller_st": 3,
+     "namnsignal_morkt": true
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "plussheet",
+    "skarmetikett": "Lägg till-ark",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "snabbspara",
+    "skarmetikett": "Snabbspara",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "smartimport",
+    "skarmetikett": "Importera länk",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "skafferi",
+    "skarmetikett": "Skafferiet",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 1,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "familj",
+    "skarmetikett": "Min familj",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "installningar",
+    "skarmetikett": "Inställningar",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 1,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "notiser",
+    "skarmetikett": "Notiser",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "vemat",
+    "skarmetikett": "Vem åt?",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "familjebetyg",
+    "skarmetikett": "Familjebetyg",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "placera",
+    "skarmetikett": "Placera i veckan",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "kalender",
+    "skarmetikett": "Veckomeny — kalender",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 0,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   },
+   {
+    "art": "inkopmerge",
+    "skarmetikett": "Till inköpslistan — sammanslagning",
+    "tema": null,
+    "familj": null,
+    "diagnostik": {
+     "storstaYtaLuminans": 0.902,
+     "storstaYtaFarg": "rgb(245, 244, 237)",
+     "kontroller_st": 3,
+     "namnsignal_morkt": false
+    },
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "varfor": "ingen data-theme pa artefakten"
+   }
+  ]
+ },
+ "B_conformance": {
+  "$not": "Conformance kors bara over verifierade par. Med 0 verifierade par finns ingenting att mata, och det far aldrig redovisas som godkant.",
+  "verifierade_par_st": 0,
+  "textkontrast_fynd": "ej matbart — inga verifierade par",
+  "ickeText_fynd": "ej matbart — inga verifierade par",
+  "layout_fynd": "ej matbart — inga verifierade par",
+  "traffyta_regressioner": "ej matbart — inga verifierade par"
+ },
+ "$soksignaler": {
+  "$not": "UNDERLAG for migrationen, aldrig identitet och aldrig tackning.",
+  "artefaktid_innehaller_morkt_st": 11,
+  "artefaktid_innehaller_morkt": [
+   "lagamorkt",
+   "inloggningmorkt",
+   "chattmorkt",
+   "juridikmorkt",
+   "adminmorkt",
+   "formularmorkt",
+   "arkmorkt",
+   "hemmorkt",
+   "onbaldermorkt",
+   "onballergimorkt",
+   "onbfelmorkt"
+  ],
+  "storsta_yta_luminans_under_0_2_st": 39,
+  "bada_signalerna_st": 11,
+  "bada_signalerna": [
+   "lagamorkt",
+   "inloggningmorkt",
+   "chattmorkt",
+   "juridikmorkt",
+   "adminmorkt",
+   "formularmorkt",
+   "arkmorkt",
+   "hemmorkt",
+   "onbaldermorkt",
+   "onballergimorkt",
+   "onbfelmorkt"
+  ]
+ },
+ "status": "TACKNING OFULLSTANDIG"
+}
