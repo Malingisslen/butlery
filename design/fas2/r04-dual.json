@@ -2,8 +2,8 @@
  "$schema": "butlery-r04-dual/1",
  "$regel": "Temat satts explicit pa de kallor som deklarerar stod. Ingen rendering fabriceras. Conformance mats med de frysta motorerna.",
  "renderingar": {
-  "light_st": 13,
-  "dark_st": 13,
+  "light_st": 45,
+  "dark_st": 45,
   "kallor": [
    {
     "art": "arkivimport",
@@ -55,7 +55,35 @@
     ]
    },
    {
+    "art": "inkopflerval",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "inkoputeslutna",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
     "art": "delatlasare",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "veckorostavgor",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "veckorosthistorik",
     "renderade": [
      "light",
      "dark"
@@ -76,6 +104,20 @@
     ]
    },
    {
+    "art": "onbimportklar",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "onbsenare",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
     "art": "behlarmnekat",
     "renderade": [
      "light",
@@ -84,6 +126,188 @@
    },
    {
     "art": "lagatimerlofte",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "imp1kalla",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "imp4sparad",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "impurl",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "impsocial",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "impgrans",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "impgransai",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "impinget",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "impcache",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "impdelning",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "impdelningsocial",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "imparkiv",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "editorutkast",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "taggvillkor",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "taggkalla",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "taggexklusiv",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "kontoradera",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "kontoreauth",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "kontovantan",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "adminej",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "modtom",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "notisertyp",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "mfaaktiv",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "notiscentral",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "notisrensa",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "minaanmalningar",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "kontojuridik",
     "renderade": [
      "light",
      "dark"
@@ -100,11 +324,11 @@
  },
  "tackning": {
   "familjer_st": 317,
-  "covered_st": 22,
+  "covered_st": 54,
   "explicitPair_st": 9,
-  "dualThemeRender_st": 13,
-  "coverageGap_st": 295,
-  "lightOnly_st": 293,
+  "dualThemeRender_st": 45,
+  "coverageGap_st": 263,
+  "lightOnly_st": 261,
   "darkOnly_st": 2,
   "ambiguous_st": 0,
   "neutral_st": 3,
@@ -181,10 +405,50 @@
     ]
    },
    {
+    "familj": "inkopflerval-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "inkopflerval",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "inkoputeslutna-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "inkoputeslutna",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
     "familj": "delatlasare-414",
     "status": "covered",
     "modell": "dualThemeRender",
     "kalla": "delatlasare",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "veckorostavgor-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "veckorostavgor",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "veckorosthistorik-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "veckorosthistorik",
     "renderade": [
      "light",
      "dark"
@@ -211,6 +475,26 @@
     ]
    },
    {
+    "familj": "onbimportklar-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "onbimportklar",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "onbsenare-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "onbsenare",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
     "familj": "behlarmnekat-414",
     "status": "covered",
     "modell": "dualThemeRender",
@@ -231,6 +515,266 @@
     ]
    },
    {
+    "familj": "imp1kalla-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "imp1kalla",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "imp4sparad-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "imp4sparad",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "impurl-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "impurl",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "impsocial-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "impsocial",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "impgrans-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "impgrans",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "impgransai-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "impgransai",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "impinget-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "impinget",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "impcache-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "impcache",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "impdelning-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "impdelning",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "impdelningsocial-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "impdelningsocial",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "imparkiv-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "imparkiv",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "editorutkast-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "editorutkast",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "taggvillkor-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "taggvillkor",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "taggkalla-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "taggkalla",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "taggexklusiv-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "taggexklusiv",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "kontoradera-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "kontoradera",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "kontoreauth-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "kontoreauth",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "kontovantan-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "kontovantan",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "adminej-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "adminej",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "modtom-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "modtom",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "notisertyp-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "notisertyp",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "mfaaktiv-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "mfaaktiv",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "notiscentral-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "notiscentral",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "notisrensa-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "notisrensa",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "minaanmalningar-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "minaanmalningar",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "kontojuridik-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "kontojuridik",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
     "familj": "komprelaterade-panel",
     "status": "covered",
     "modell": "dualThemeRender",
@@ -243,13 +787,284 @@
   ]
  },
  "morkBaslinje": {
-  "kallor_st": 13,
-  "kontroller_st": 27,
-  "grafiskaDelar_st": 25,
-  "barare_st": 13,
-  "ickeText_fynd_st": 0,
+  "kallor_st": 45,
+  "kontroller_st": 179,
+  "grafiskaDelar_st": 230,
+  "barare_st": 86,
+  "ickeText_fynd_st": 18,
   "unknown_st": 0,
-  "fynd": []
+  "fynd": [
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — exakt ett element i kontrollens subtrad ar deklarerat med data-component",
+    "ikon": null,
+    "descent": true,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "inkoputeslutna",
+    "namn": "Gul lök 3 stycken",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — exakt ett element i kontrollens subtrad ar deklarerat med data-component",
+    "ikon": null,
+    "descent": true,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "inkoputeslutna",
+    "namn": "Karljohansvamp 300 gram",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — agaren ar sjalv formen och har ett avgransat barn som bar tillstandet",
+    "ikon": null,
+    "descent": false,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "veckorostavgor",
+    "namn": "Välj Krämig svamppasta som vinnare, 2 röster",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — agaren ar sjalv formen och har ett avgransat barn som bar tillstandet",
+    "ikon": null,
+    "descent": false,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "veckorostavgor",
+    "namn": "Välj Fiskgratäng som vinnare, 2 röster",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — agaren har egen omslutande boundary",
+    "ikon": null,
+    "descent": false,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "onbsenare",
+    "namn": "Vegetariskt",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — agaren har egen omslutande boundary",
+    "ikon": null,
+    "descent": false,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "onbsenare",
+    "namn": "Veganskt",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — agaren har egen omslutande boundary",
+    "ikon": null,
+    "descent": false,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "onbsenare",
+    "namn": "Glutenfritt",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — agaren har egen omslutande boundary",
+    "ikon": null,
+    "descent": false,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "onbsenare",
+    "namn": "Laktosfritt",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — exakt ett element i kontrollens subtrad ar deklarerat med data-component",
+    "ikon": null,
+    "descent": true,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "imparkiv",
+    "namn": "Vald: Ärtsoppa",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — exakt ett element i kontrollens subtrad ar deklarerat med data-component",
+    "ikon": null,
+    "descent": true,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "imparkiv",
+    "namn": "Vald: Fiskgratäng",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — exakt ett element i kontrollens subtrad ar deklarerat med data-component",
+    "ikon": null,
+    "descent": true,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "imparkiv",
+    "namn": "Vald: Kanelbullar",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — exakt ett element i kontrollens subtrad ar deklarerat med data-component",
+    "ikon": null,
+    "descent": true,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "imparkiv",
+    "namn": "Välj Pannkakor",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — exakt ett element i kontrollens subtrad ar deklarerat med data-component",
+    "ikon": null,
+    "descent": true,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "imparkiv",
+    "namn": "Välj Lasagne",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — track och knopp i nastlad kedja — den yttre ar formen, den inre bar tillstandet",
+    "ikon": null,
+    "descent": true,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "notisertyp",
+    "namn": "Direkt, varje händelse",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — agaren ar sjalv formen och har ett avgransat barn som bar tillstandet",
+    "ikon": null,
+    "descent": false,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "notisertyp",
+    "namn": "Samlat, högst en gång i timmen",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — agaren ar sjalv formen och har ett avgransat barn som bar tillstandet",
+    "ikon": null,
+    "descent": false,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "notisertyp",
+    "namn": "En sammanfattning per dag",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — agaren ar sjalv formen och har ett avgransat barn som bar tillstandet",
+    "ikon": null,
+    "descent": false,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "notisertyp",
+    "namn": "Inget om samarbete",
+    "disabled": false
+   },
+   {
+    "typ": "ram",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — exakt ett element i kontrollens egen subtrad ritar en omslutande form",
+    "ikon": null,
+    "descent": true,
+    "kvot": 2.98,
+    "status": "matt",
+    "farg": "rgb(101, 109, 102)",
+    "angransande": "rgb(23, 37, 29)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "notisrensa",
+    "namn": "Erik vill bli vän",
+    "disabled": false
+   }
+  ]
  },
  "status": "reproducerbar"
 }
