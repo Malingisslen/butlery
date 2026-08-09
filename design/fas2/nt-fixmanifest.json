@@ -2,92 +2,15 @@
  "$schema": "butlery-nt-fixmanifest/1",
  "$regel": "rotorsakspopulation, source occurrence population och write scope ar tre olika tal. Endast bevisat delad implementation andras gemensamt.",
  "krav_kvot": 3,
- "rotorsaker_st": 12,
- "verifierade_fynd_st": 36,
- "source_occurrences_totalt": 1158,
- "write_scope_totalt": 34,
+ "rotorsaker_st": 6,
+ "verifierade_fynd_st": 21,
+ "source_occurrences_totalt": 742,
+ "write_scope_totalt": 19,
  "shared_implementations_st": 1,
- "utan_forslag_st": 1,
+ "utan_forslag_st": 0,
  "manifest": [
   {
    "id": "NRC-01",
-   "verifierade_fynd_st": 6,
-   "enhet": "grafiska delar",
-   "artefakter_st": 1,
-   "artefakter": [
-    "vmbtom"
-   ],
-   "kontroller_st": 6,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "ram",
-   "nuvarande_forgrund": "rgb(230, 234, 217)",
-   "faktisk_angransande_farg": "rgb(245, 244, 237)",
-   "nuvarande_kvot": 1.11,
-   "kvot_min": 1.11,
-   "kvot_max": 1.11,
-   "kalldeklaration": "border-color: rgb(230, 234, 217)",
-   "source_occurrence_population_st": null,
-   "write_scope_st": 6,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [
-    "empty"
-   ],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#839251",
-   "forslagets_ursprung": "minsta ljushetsjustering med bevarad kulor",
-   "forvantad_kvot": 3.07,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "vmbtom",
-     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
-     "namn": "Måndag middag är tom",
-     "state": null,
-     "kvot": 1.11
-    },
-    {
-     "art": "vmbtom",
-     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
-     "namn": "Tisdag middag är tom",
-     "state": null,
-     "kvot": 1.11
-    },
-    {
-     "art": "vmbtom",
-     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
-     "namn": "Torsdag middag är tom",
-     "state": null,
-     "kvot": 1.11
-    },
-    {
-     "art": "vmbtom",
-     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
-     "namn": "Fredag middag är tom",
-     "state": null,
-     "kvot": 1.11
-    },
-    {
-     "art": "vmbtom",
-     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
-     "namn": "Lördag middag är tom",
-     "state": null,
-     "kvot": 1.11
-    },
-    {
-     "art": "vmbtom",
-     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
-     "namn": "Söndag middag är tom",
-     "state": null,
-     "kvot": 1.11
-    }
-   ]
-  },
-  {
-   "id": "NRC-02",
    "verifierade_fynd_st": 6,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -162,7 +85,7 @@
    ]
   },
   {
-   "id": "NRC-03",
+   "id": "NRC-02",
    "verifierade_fynd_st": 4,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -223,61 +146,7 @@
    ]
   },
   {
-   "id": "NRC-04",
-   "verifierade_fynd_st": 3,
-   "enhet": "grafiska delar",
-   "artefakter_st": 1,
-   "artefakter": [
-    "skrivsjalv"
-   ],
-   "kontroller_st": 1,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "ikon",
-   "nuvarande_forgrund": "rgb(169, 178, 160)",
-   "faktisk_angransande_farg": "rgb(245, 244, 237)",
-   "nuvarande_kvot": 1.99,
-   "kvot_min": 1.99,
-   "kvot_max": 1.99,
-   "kalldeklaration": "fill=\"#a9b2a0\"",
-   "source_occurrence_population_st": 3,
-   "write_scope_st": 3,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#4a5c43",
-   "forslagets_ursprung": "befintlig designfarg, anvand 59 ganger i sviten",
-   "forvantad_kvot": 6.56,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — svg-attribut och fyllningar pa grafik pavarkar inte textkontrast",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "skrivsjalv",
-     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
-     "namn": "Flytta rad",
-     "state": null,
-     "kvot": 1.99
-    },
-    {
-     "art": "skrivsjalv",
-     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
-     "namn": "Flytta rad",
-     "state": null,
-     "kvot": 1.99
-    },
-    {
-     "art": "skrivsjalv",
-     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
-     "namn": "Flytta rad",
-     "state": null,
-     "kvot": 1.99
-    }
-   ]
-  },
-  {
-   "id": "NRC-05",
+   "id": "NRC-03",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -300,7 +169,7 @@
    "klasser": [],
    "andrad_sida": "bararens egen farg",
    "foreslagen_farg": "#627061",
-   "forslagets_ursprung": "befintlig designfarg, anvand 1769 ganger i sviten",
+   "forslagets_ursprung": "befintlig designfarg, anvand 1775 ganger i sviten",
    "forvantad_kvot": 3.04,
    "klarar_kravet": true,
    "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
@@ -331,7 +200,7 @@
    ]
   },
   {
-   "id": "NRC-06",
+   "id": "NRC-04",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -354,7 +223,7 @@
    "klasser": [],
    "andrad_sida": "bararens egen farg",
    "foreslagen_farg": "#7d897c",
-   "forslagets_ursprung": "befintlig designfarg, anvand 460 ganger i sviten",
+   "forslagets_ursprung": "befintlig designfarg, anvand 465 ganger i sviten",
    "forvantad_kvot": 3.42,
    "klarar_kravet": true,
    "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
@@ -385,7 +254,7 @@
    ]
   },
   {
-   "id": "NRC-07",
+   "id": "NRC-05",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -441,7 +310,7 @@
    ]
   },
   {
-   "id": "NRC-08",
+   "id": "NRC-06",
    "verifierade_fynd_st": 2,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -486,201 +355,26 @@
      "kvot": 1.11
     }
    ]
-  },
-  {
-   "id": "NRC-09",
-   "verifierade_fynd_st": 2,
-   "enhet": "grafiska delar",
-   "artefakter_st": 1,
-   "artefakter": [
-    "cooksnapgalleri"
-   ],
-   "kontroller_st": 2,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "ikon",
-   "nuvarande_forgrund": "rgb(245, 244, 237)",
-   "faktisk_angransande_farg": "rgb(230, 234, 217)",
-   "nuvarande_kvot": 1.11,
-   "kvot_min": 1.11,
-   "kvot_max": 1.11,
-   "kalldeklaration": "stroke=\"#F5F4ED\"",
-   "source_occurrence_population_st": 272,
-   "write_scope_st": 2,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": null,
-   "forslagets_ursprung": null,
-   "forvantad_kvot": null,
-   "klarar_kravet": false,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — svg-attribut och fyllningar pa grafik pavarkar inte textkontrast",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "cooksnapgalleri",
-     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
-     "namn": "Alternativ för din bild",
-     "state": null,
-     "kvot": 1.11
-    },
-    {
-     "art": "cooksnapgalleri",
-     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
-     "namn": "Alternativ för Annas bild",
-     "state": null,
-     "kvot": 1.11
-    }
-   ]
-  },
-  {
-   "id": "NRC-10",
-   "verifierade_fynd_st": 2,
-   "enhet": "grafiska delar",
-   "artefakter_st": 2,
-   "artefakter": [
-    "samtyckeai",
-    "socintegritet"
-   ],
-   "kontroller_st": 2,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "fyllning",
-   "nuvarande_forgrund": "rgb(125, 137, 124)",
-   "faktisk_angransande_farg": "rgb(230, 234, 217)",
-   "nuvarande_kvot": 2.98,
-   "kvot_min": 2.98,
-   "kvot_max": 2.98,
-   "kalldeklaration": "background: rgb(125, 137, 124)",
-   "source_occurrence_population_st": 31,
-   "write_scope_st": 2,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#627061",
-   "forslagets_ursprung": "befintlig designfarg, anvand 1769 ganger i sviten",
-   "forvantad_kvot": 4.27,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "samtyckeai",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "AI-tolkning av recept, avstängd",
-     "state": null,
-     "kvot": 2.98
-    },
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "Dela det jag gör i flödet",
-     "state": "off",
-     "kvot": 2.98
-    }
-   ]
-  },
-  {
-   "id": "NRC-11",
-   "verifierade_fynd_st": 1,
-   "enhet": "grafiska delar",
-   "artefakter_st": 1,
-   "artefakter": [
-    "fbinkorgvy"
-   ],
-   "kontroller_st": 1,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "ikon",
-   "nuvarande_forgrund": "rgb(125, 137, 124)",
-   "faktisk_angransande_farg": "rgb(230, 234, 217)",
-   "nuvarande_kvot": 2.98,
-   "kvot_min": 2.98,
-   "kvot_max": 2.98,
-   "kalldeklaration": "stroke=\"#7d897c\"",
-   "source_occurrence_population_st": 43,
-   "write_scope_st": 1,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#627061",
-   "forslagets_ursprung": "befintlig designfarg, anvand 1769 ganger i sviten",
-   "forvantad_kvot": 4.27,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — svg-attribut och fyllningar pa grafik pavarkar inte textkontrast",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "fbinkorgvy",
-     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
-     "namn": "Öppna skärmdumpen",
-     "state": null,
-     "kvot": 2.98
-    }
-   ]
-  },
-  {
-   "id": "NRC-12",
-   "verifierade_fynd_st": 1,
-   "enhet": "grafiska delar",
-   "artefakter_st": 1,
-   "artefakter": [
-    "fbanmal"
-   ],
-   "kontroller_st": 1,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "ram",
-   "nuvarande_forgrund": "rgb(125, 137, 124)",
-   "faktisk_angransande_farg": "rgb(230, 234, 217)",
-   "nuvarande_kvot": 2.98,
-   "kvot_min": 2.98,
-   "kvot_max": 2.98,
-   "kalldeklaration": "border: 1.5px solid rgb(125, 137, 124)",
-   "source_occurrence_population_st": 67,
-   "write_scope_st": 1,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#627061",
-   "forslagets_ursprung": "befintlig designfarg, anvand 1769 ganger i sviten",
-   "forvantad_kvot": 4.27,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "fbanmal",
-     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
-     "namn": "Blockera Johan samtidigt",
-     "state": "unchecked",
-     "kvot": 2.98
-    }
-   ]
   }
  ],
  "$uppskjutna": {
   "sc-skeleton": {
    "status": "DESIGN DECISION PENDING",
-   "population": "kontrollgrafik, inte standalone",
-   "regel": ".sc-skeleton{background:#e6ead9 !important}",
-   "verifierade_fynd_st": 3,
+   "rc": "NRC-05",
+   "fynd": 3,
    "artefakt": "behfoton",
-   "source_occurrences_st": 57,
-   "filer_st": 10,
-   "motiv": "Write scope vida overstiger fyndpopulationen; en andring skulle andra hela laddningssprakets utseende for att ratta 3 fynd.",
-   "ej": "inte pass, inte exempt, inte ignored, inte matartefakt — fynden ar aktiva"
+   "analys": "Av 39 element med class=\"sc-skeleton\" ar exakt 3 markta som kontroller — de tre i behfoton. Ovriga 36 ar vanliga platshallare vars fyllning aldrig ar en required carrier. Det ar alltsa kontexten, inte den globala skeletonfargen, som skiljer.",
+   "forsokt": "Lokal override background:#7d897c !important pa de tre elementen. Fungerar i webblasaren men overlever inte: ritningarnas support.js skriver om inline-stilar efter laddning och tar bort !important. Aterstalld.",
+   "kvar": "Tva mojligheter, bada kraver beslut: ta bort sc-skeleton-klassen fran de tre och satta fyllningen inline, eller andra den globala regeln."
+  },
+  "veckorostavgor": {
+   "status": "DESIGN DECISION PENDING",
+   "rc": "NRC-06",
+   "fynd": 2,
+   "artefakt": "veckorostavgor",
+   "analys": "Fyllningen #e6ead9 ar BADE kontrollens identitetsbarare mot ytan omkring OCH bakgrund for text i rgb(36,56,44).",
+   "forsokt": "Morkning till #7d897c gav 3,32 mot ytan men sankte textkontrasten till 3,42 mot kravet 4,5. R-01 gick fran 0 till 2 fynd. Aterstalld.",
+   "kvar": "Kraver att bada sidorna losas samtidigt, eller att ytan omkring andras i stallet. Beslut behovs."
   }
- },
- "$kallankare": {
-  "kontroller": "ordinal bland data-a11y-role=\"; stammer exakt i alla 23 filer",
-  "objekt": "ordinal bland <svg; stammer exakt i alla 23 filer",
-  "fonster": "kontrollens egen subtrad via taggdjup, respektive svg:ns egen tagg eller dess foralders tagg",
-  "krav": "exakt en traff pa deklarationen, annars fail closed",
-  "forbjudet": "ordinal bland style-attribut (avviker i fyra filer), textmatchning, geometri"
  }
 }
