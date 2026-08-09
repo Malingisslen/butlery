@@ -2,21 +2,21 @@
  "$schema": "butlery-nt-rotorsak/1",
  "$regel": "Grupperingen ar mekanisk. Samma RGB pa olika bakgrunder ar inte samma rotorsak. Rotorsakspopulation och write scope halIs isar.",
  "population": {
-  "A_kontrollgrafik_grafiskaDelar_st": 21,
-  "A_componentIdentityCarrier_st": 21,
+  "A_kontrollgrafik_grafiskaDelar_st": 18,
+  "A_componentIdentityCarrier_st": 18,
   "A_stateCarrier_st": 0,
   "B_fristaende_grafiskaObjekt_st": 0,
-  "totalt_raa_fynd_st": 21
+  "totalt_raa_fynd_st": 18
  },
  "adjudicering": {
-  "giltiga_fynd_st": 21,
+  "giltiga_fynd_st": 18,
   "matartefakter_st": 0,
   "artefakt_barare_utan_egen_farg_st": 0,
   "artefakt_fel_angransande_yta_st": 0,
   "$not": "Matartefakter ar bundna till en rotorsak som alla andra, men de ar inte designfel och ska inte fargrattas. De kraver ett metodbeslut."
  },
- "rotorsaker_st": 6,
- "bundna_fynd_st": 21,
+ "rotorsaker_st": 5,
+ "bundna_fynd_st": 18,
  "oforklarade_st": 0,
  "rotorsaker": [
   {
@@ -485,108 +485,6 @@
   },
   {
    "id": "NRC-05",
-   "population": "A",
-   "bararroll": "componentIdentityCarrier",
-   "typ": "fyllning",
-   "mekanism": "css-regel: (ingen inline background)  mot  rgb(245, 244, 237)",
-   "kalldeklaration_forgrund": "(ingen inline background)",
-   "kalldeklaration_bakgrund": [
-    "(css-regel eller arv)"
-   ],
-   "matartefakt": false,
-   "artefaktklass": null,
-   "faktisk_angransande_yta": [
-    "rgb(245, 244, 237)"
-   ],
-   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
-   "arvsKalla": null,
-   "klasser": [
-    "sc-skeleton"
-   ],
-   "kravd_kvot": 3,
-   "forgrund": [
-    "rgb(230, 234, 217)"
-   ],
-   "bakgrund": [
-    "rgb(245, 244, 237)"
-   ],
-   "alfa_kompositering": false,
-   "antal_fynd": 3,
-   "enhet": "grafiska delar",
-   "antal_kontroller": 3,
-   "antal_artefakter": 1,
-   "artefakter": [
-    "behfoton"
-   ],
-   "filer": 1,
-   "kvot_min": 1.11,
-   "kvot_max": 1.11,
-   "states": [],
-   "roller": [
-    "button"
-   ],
-   "ikoner": [],
-   "implementation": "upprepad implementation",
-   "rotorsakspopulation_st": 3,
-   "write_scope": {
-    "sokmonster": [],
-    "forekomster_i_kallan_st": null,
-    "utanfor_fynden_st": null,
-    "$not": "deklarationen kommer inte fran en inline-deklaration och gar inte att raka i kallan"
-   },
-   "distinkta_stilstrangar": 1,
-   "exempel": [
-    {
-     "art": "behfoton",
-     "namn": "Delad bild 1",
-     "kvot": 1.11,
-     "farg": "rgb(230, 234, 217)",
-     "angransande": "rgb(245, 244, 237)",
-     "tagg": "<span data-dc-tpl=\"907\" class=\"sc-skeleton\" data-a11y-name=\"Delad bild 1\" data-a11y-role=\"button\" data-hit=\"self\" style="
-    },
-    {
-     "art": "behfoton",
-     "namn": "Delad bild 2",
-     "kvot": 1.11,
-     "farg": "rgb(230, 234, 217)",
-     "angransande": "rgb(245, 244, 237)",
-     "tagg": "<span data-dc-tpl=\"908\" class=\"sc-skeleton\" data-a11y-name=\"Delad bild 2\" data-a11y-role=\"button\" data-hit=\"self\" style="
-    },
-    {
-     "art": "behfoton",
-     "namn": "Delad bild 3",
-     "kvot": 1.11,
-     "farg": "rgb(230, 234, 217)",
-     "angransande": "rgb(245, 244, 237)",
-     "tagg": "<span data-dc-tpl=\"909\" class=\"sc-skeleton\" data-a11y-name=\"Delad bild 3\" data-a11y-role=\"button\" data-hit=\"self\" style="
-    }
-   ],
-   "fynd": [
-    {
-     "art": "behfoton",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Delad bild 1",
-     "state": null,
-     "kvot": 1.11
-    },
-    {
-     "art": "behfoton",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Delad bild 2",
-     "state": null,
-     "kvot": 1.11
-    },
-    {
-     "art": "behfoton",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Delad bild 3",
-     "state": null,
-     "kvot": 1.11
-    }
-   ]
-  },
-  {
-   "id": "NRC-06",
    "population": "A",
    "bararroll": "componentIdentityCarrier",
    "typ": "fyllning",

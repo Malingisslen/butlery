@@ -2,11 +2,11 @@
  "$schema": "butlery-nt-fixmanifest/1",
  "$regel": "rotorsakspopulation, source occurrence population och write scope ar tre olika tal. Endast bevisat delad implementation andras gemensamt.",
  "krav_kvot": 3,
- "rotorsaker_st": 6,
- "verifierade_fynd_st": 21,
+ "rotorsaker_st": 5,
+ "verifierade_fynd_st": 18,
  "source_occurrences_totalt": 742,
- "write_scope_totalt": 19,
- "shared_implementations_st": 1,
+ "write_scope_totalt": 18,
+ "shared_implementations_st": 0,
  "utan_forslag_st": 0,
  "manifest": [
   {
@@ -223,7 +223,7 @@
    "klasser": [],
    "andrad_sida": "bararens egen farg",
    "foreslagen_farg": "#7d897c",
-   "forslagets_ursprung": "befintlig designfarg, anvand 465 ganger i sviten",
+   "forslagets_ursprung": "befintlig designfarg, anvand 468 ganger i sviten",
    "forvantad_kvot": 3.42,
    "klarar_kravet": true,
    "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
@@ -255,62 +255,6 @@
   },
   {
    "id": "NRC-05",
-   "verifierade_fynd_st": 3,
-   "enhet": "grafiska delar",
-   "artefakter_st": 1,
-   "artefakter": [
-    "behfoton"
-   ],
-   "kontroller_st": 3,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "fyllning",
-   "nuvarande_forgrund": "rgb(230, 234, 217)",
-   "faktisk_angransande_farg": "rgb(245, 244, 237)",
-   "nuvarande_kvot": 1.11,
-   "kvot_min": 1.11,
-   "kvot_max": 1.11,
-   "kalldeklaration": "(ingen inline background)",
-   "source_occurrence_population_st": null,
-   "write_scope_st": 1,
-   "write_scope_grund": "bevisat delad implementation — en enda deklaration andras",
-   "shared_implementation": true,
-   "klasser": [
-    "sc-skeleton"
-   ],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#839251",
-   "forslagets_ursprung": "minsta ljushetsjustering med bevarad kulor",
-   "forvantad_kvot": 3.07,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "alla instanser som klassen traffar — maste efterverifieras",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "klassen kan traffa element som i dag klarar kravet; efterverifiering kravs",
-   "fynd": [
-    {
-     "art": "behfoton",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Delad bild 1",
-     "state": null,
-     "kvot": 1.11
-    },
-    {
-     "art": "behfoton",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Delad bild 2",
-     "state": null,
-     "kvot": 1.11
-    },
-    {
-     "art": "behfoton",
-     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-     "namn": "Delad bild 3",
-     "state": null,
-     "kvot": 1.11
-    }
-   ]
-  },
-  {
-   "id": "NRC-06",
    "verifierade_fynd_st": 2,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -358,23 +302,13 @@
   }
  ],
  "$uppskjutna": {
-  "sc-skeleton": {
-   "status": "DESIGN DECISION PENDING",
-   "rc": "NRC-05",
-   "fynd": 3,
-   "artefakt": "behfoton",
-   "analys": "Av 39 element med class=\"sc-skeleton\" ar exakt 3 markta som kontroller — de tre i behfoton. Ovriga 36 ar vanliga platshallare vars fyllning aldrig ar en required carrier. Det ar alltsa kontexten, inte den globala skeletonfargen, som skiljer.",
-   "forsokt": "Lokal override background:#7d897c !important pa de tre elementen. Fungerar i webblasaren men overlever inte: ritningarnas support.js skriver om inline-stilar efter laddning och tar bort !important. Aterstalld.",
-   "kvar": "Tva mojligheter, bada kraver beslut: ta bort sc-skeleton-klassen fran de tre och satta fyllningen inline, eller andra den globala regeln."
-  },
   "veckorostavgor": {
    "status": "DESIGN DECISION PENDING",
-   "rc": "NRC-06",
    "fynd": 2,
    "artefakt": "veckorostavgor",
-   "analys": "Fyllningen #e6ead9 ar BADE kontrollens identitetsbarare mot ytan omkring OCH bakgrund for text i rgb(36,56,44).",
-   "forsokt": "Morkning till #7d897c gav 3,32 mot ytan men sankte textkontrasten till 3,42 mot kravet 4,5. R-01 gick fran 0 till 2 fynd. Aterstalld.",
-   "kvar": "Kraver att bada sidorna losas samtidigt, eller att ytan omkring andras i stallet. Beslut behovs."
+   "bevis": "Ytan #f5f4ed har luminans 0,902 och texten #24382c har 0,034. Krav A (fyllning mot yta >= 3,0) taker fyllningens luminans vid 0,2674. Krav B (text mot fyllning >= 4,5) kraver minst 0,3273. Fonstren ar disjunkta: ingen fargkod alls, befintlig eller ny, klarar bada sa lange texten ar mork.",
+   "medLjusText": "Med ljus text #F5F4ED finns 12 befintliga kandidater, vanligast #24382c. Men mork platta med ljus text ar i den har sviten rubrik- och valt-sprak; att ge tva ovalda radioalternativ det utseendet andrar komponentens semantik och riskerar tillstandssprakets lasbarhet.",
+   "slutsats": "Stoppat enligt stoppregeln. Kraver designbeslut om radgruppens fargpar."
   }
  }
 }

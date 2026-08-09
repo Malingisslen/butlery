@@ -34,16 +34,16 @@
   "ejMatta_grafiskaDelar_st": 0,
   "undantagna_disabled_grafiskaDelar_st": 6,
   "bedomda_grafiskaDelar_st": 633,
-  "fynd_under_3_grafiskaDelar_st": 21,
+  "fynd_under_3_grafiskaDelar_st": 18,
   "fynd_perBararroll_grafiskaDelar": {
-   "componentIdentityCarrier": 21
+   "componentIdentityCarrier": 18
   },
   "fynd_perTyp_grafiskaDelar": {
-   "fyllning": 5,
+   "fyllning": 2,
    "ram": 16
   },
-  "berorda_kontroller_st": 21,
-  "berorda_artefakter_st": 6,
+  "berorda_kontroller_st": 18,
+  "berorda_artefakter_st": 5,
   "$not": "fynd_perBararroll summerar till fynd_under_3 i enheten grafiska delar. Beror kontroller och artefakter ar ANDRA enheter och far aldrig laggas till.",
   "fynd": [
    {
@@ -79,60 +79,6 @@
     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
     "roll": "radio",
     "namn": "Välj Fiskgratäng som vinnare, 2 röster",
-    "state": null,
-    "disabled": false
-   },
-   {
-    "typ": "fyllning",
-    "carrier": "componentIdentityCarrier",
-    "motivering": "kontrollen har varken text eller glyf — dess egen yta ar det som identifierar den — agaren har egen omslutande boundary",
-    "ikon": null,
-    "descent": false,
-    "kvot": 1.11,
-    "status": "matt",
-    "farg": "rgb(230, 234, 217)",
-    "angransande": "rgb(245, 244, 237)",
-    "motYta": "ytan utanfor kontrollen",
-    "art": "behfoton",
-    "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-    "roll": "button",
-    "namn": "Delad bild 1",
-    "state": null,
-    "disabled": false
-   },
-   {
-    "typ": "fyllning",
-    "carrier": "componentIdentityCarrier",
-    "motivering": "kontrollen har varken text eller glyf — dess egen yta ar det som identifierar den — agaren har egen omslutande boundary",
-    "ikon": null,
-    "descent": false,
-    "kvot": 1.11,
-    "status": "matt",
-    "farg": "rgb(230, 234, 217)",
-    "angransande": "rgb(245, 244, 237)",
-    "motYta": "ytan utanfor kontrollen",
-    "art": "behfoton",
-    "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-    "roll": "button",
-    "namn": "Delad bild 2",
-    "state": null,
-    "disabled": false
-   },
-   {
-    "typ": "fyllning",
-    "carrier": "componentIdentityCarrier",
-    "motivering": "kontrollen har varken text eller glyf — dess egen yta ar det som identifierar den — agaren har egen omslutande boundary",
-    "ikon": null,
-    "descent": false,
-    "kvot": 1.11,
-    "status": "matt",
-    "farg": "rgb(230, 234, 217)",
-    "angransande": "rgb(245, 244, 237)",
-    "motYta": "ytan utanfor kontrollen",
-    "art": "behfoton",
-    "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
-    "roll": "button",
-    "namn": "Delad bild 3",
     "state": null,
     "disabled": false
    },
