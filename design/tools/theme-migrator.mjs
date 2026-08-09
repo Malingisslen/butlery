@@ -48,12 +48,15 @@ export function produktElementIKallan(blk) {
 
 // Skriv en enskild deklaration i en tagg.
 export function skrivITagg(taggtext, post, token) {
+  // ANKARETS egenskap, inte postens. En currentColor-ikon malar fill eller
+  // stroke men skrivstallet ar color-deklarationen.
+  const egenskap = post.ankare.egenskap || post.egenskap;
   if (post.ankare.form === 'SVG_ATTRIBUTE') {
-    const attr = post.egenskap;   // fill eller stroke
+    const attr = egenskap;   // fill eller stroke
     const re = new RegExp(attr + '="(#[0-9a-fA-F]{6}|rgba?\\([^)]*\\))"');
     const m = taggtext.match(re);
     if (!m) return { ok: false, skal: 'svg-attributet ' + attr + ' finns inte i taggen' };
-    return { ok: true, text: taggtext.replace(m[0], attr + '="var(' + token + ')"') };
+    return { ok: true, namn: attr, text: taggtext.replace(m[0], attr + '="var(' + token + ')"') };
   }
   const st = taggtext.match(/style="([^"]*)"/);
   if (!st) return { ok: false, skal: 'inget stilattribut i taggen' };
@@ -64,7 +67,7 @@ export function skrivITagg(taggtext, post, token) {
     'border-bottom-color': ['border-bottom-color', 'border-bottom', 'border'],
     'border-left-color': ['border-left-color', 'border-left', 'border'],
     'color': ['color'] };
-  const namn = KORT[post.egenskap] || [post.egenskap];
+  const namn = KORT[egenskap] || [egenskap];
   const delar = st[1].split(';');
   for (let i = 0; i < delar.length; i++) {
     const kv = delar[i].trim().match(/^([a-z-]+)\s*:\s*(.+)$/);
@@ -72,9 +75,38 @@ export function skrivITagg(taggtext, post, token) {
     const farg = kv[2].match(/#[0-9a-fA-F]{6}|rgba?\([^)]*\)/);
     if (!farg) continue;
     delar[i] = delar[i].replace(farg[0], 'var(' + token + ')');
-    return { ok: true, text: taggtext.replace(/style="[^"]*"/, 'style="' + delar.join(';') + '"') };
+    return { ok: true, namn: kv[1],
+      text: taggtext.replace(/style="[^"]*"/, 'style="' + delar.join(';') + '"') };
   }
-  return { ok: false, skal: 'ingen deklaration for ' + post.egenskap + ' med fargvarde i taggen' };
+  return { ok: false, skal: 'ingen deklaration for ' + egenskap + ' med fargvarde i taggen' };
+}
+
+// EN KALLA, FLERA MALADE DELAR.
+//
+// Samma color-deklaration kan mala bade text och en ikon via currentColor,
+// och flera svg-delar samtidigt. Deklarationen kan bara byta varde en gang.
+// Darfor maste samtliga beroende delar krava ett KOMPATIBELT morkt varde.
+// Skiljer de sig ar det ett verkligt kall- och arkitekturproblem, och da far
+// ingen av kandidaterna goras till vinnare: fail closed.
+export function deladKallaKonflikt(poster, morkAv) {
+  const grupp = new Map();
+  for (const p of poster) {
+    if (!p.ankare) continue;
+    const k = p.art + '#' + p.ankare.elementOrdinal + '#' + (p.ankare.egenskap || p.egenskap);
+    if (!grupp.has(k)) grupp.set(k, []);
+    grupp.get(k).push(p);
+  }
+  const delade = [], konflikter = [];
+  for (const [nyckel, ps] of grupp) {
+    if (ps.length < 2) continue;
+    const morka = [...new Set(ps.map(p => String(morkAv(p))))];
+    const rad = { nyckel, art: ps[0].art, elementOrdinal: ps[0].ankare.elementOrdinal,
+      egenskap: ps[0].ankare.egenskap || ps[0].egenskap, beroende: ps.length,
+      roller: [...new Set(ps.map(p => p.roll))],
+      egenskaper: [...new Set(ps.map(p => p.egenskap))], morkvarden: morka };
+    (morka.length > 1 ? konflikter : delade).push(rad);
+  }
+  return { delade, konflikter };
 }
 
 // Full migration av en artefakts kallblock utifran rollkartans poster.
@@ -96,13 +128,26 @@ export function migreraBlock(blk, poster, tokenAv) {
     if (e.tagg !== mina[0].ankare.tagg) {
       for (const p of mina) hoppade.push({ ...p, skal: 'taggen skiljer: kartan sager ' + p.ankare.tagg + ', kallan ' + e.tagg }); continue; }
     let taggtext = ut.slice(e.start, e.slut);
+    // Vilka deklarationsnamn i taggen som redan bytts i den har vandan. En
+    // deklaration kan bara skrivas en gang; ovriga delar den malar ar
+    // TACKTA. Det galler bade en ram-kortform som malar fyra sidor och en
+    // color-deklaration som malar text och en currentColor-ikon.
+    const bytta = new Set();
+    const KORTNAMN = { 'background-color': ['background-color', 'background'],
+      'border-top-color': ['border-top-color', 'border-top', 'border'],
+      'border-right-color': ['border-right-color', 'border-right', 'border'],
+      'border-bottom-color': ['border-bottom-color', 'border-bottom', 'border'],
+      'border-left-color': ['border-left-color', 'border-left', 'border'],
+      'color': ['color'] };
     for (const p of mina) {
+      const eg = p.ankare.egenskap || p.egenskap;
       const token = tokenAv(p);
       if (!token) { hoppade.push({ ...p, skal: 'ingen token for rollen ' + p.roll + ' med vardet ' + p.beraknat }); continue; }
+      if ((KORTNAMN[eg] || [eg]).some(n => bytta.has(n))) {
+        tackta.push({ ...p, token, skal: 'tackt av samma deklaration som en tidigare post pa taggen' });
+        continue; }
       const r = skrivITagg(taggtext, p, token);
-      if (r.ok) { taggtext = r.text; skrivna.push({ ...p, token }); continue; }
-      // En kortform kan redan ha ersatts av en annan sida av samma ram. Da ar
-      // deklarationen TACKT, inte hoppad.
+      if (r.ok) { taggtext = r.text; bytta.add(r.namn); skrivna.push({ ...p, token }); continue; }
       if (taggtext.indexOf('var(' + token + ')') >= 0)
         tackta.push({ ...p, token, skal: 'tackt av samma deklaration som en annan sida av ramen' });
       else hoppade.push({ ...p, skal: r.skal });

@@ -14,7 +14,7 @@ import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { PAINT_PROBE } from './theme-paint-probe.mjs';
-import { produktElementIKallan, migreraBlock, skrivITagg } from './theme-migrator.mjs';
+import { produktElementIKallan, migreraBlock, skrivITagg, deladKallaKonflikt } from './theme-migrator.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -41,6 +41,25 @@ const FIXTUR = `<!doctype html><meta charset="utf-8"><style>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#37453a" data-icon="info"><path d="M6 12h12"></path></svg>
     <div style="border-top:2px solid #7d897c;border-bottom:2px solid #7d897c;color:#627061">Tva sidor och en text</div>
     <div style="background:#e6ead9;border:1px solid #ccd1c2">Kortform som tacker fyra sidor</div>
+  </div>
+</div>
+
+<div class="sc-item" id="ccprov">
+  <div class="sc-label"><a class="sc-id" href="#ccprov">dokumentation</a>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" data-icon="dok"><path d="M6 12h12"></path></svg>
+    Dokumentationsikonen anvander ocksa currentColor.</div>
+  <div class="sc-phone">
+    <svg id="cc1" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:#3f6b4f" data-icon="cc1"><path d="M6 12h12"></path></svg>
+    <div id="cc2f" style="color:#627061"><svg id="cc2" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" data-icon="cc2"><path d="M6 12h12"></path></svg></div>
+    <svg id="cc3" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color:#37453a" data-icon="cc3"><path d="M6 12h12"></path></svg>
+    <svg id="cc4" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" data-icon="cc4"><path d="M6 12h12"></path></svg>
+    <div id="cc5f" data-a11y-role="button" data-a11y-name="Delad kalla" data-hit="self" style="color:#556b2f">Text och ikon delar kalla<svg id="cc5" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" data-icon="cc5"><path d="M6 12h12"></path></svg></div>
+  </div>
+</div>
+
+<div class="sc-item" id="cc7prov">
+  <div class="sc-card">
+    <svg id="cc7" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" data-icon="cc7"><path d="M6 12h12"></path></svg>
   </div>
 </div>`;
 
@@ -90,21 +109,26 @@ try {
 } catch (e) { verktygsfel = e.message; }
 finally { try { chrome.kill(); } catch {} }
 
-const ANTAL = 16;
+const ANTAL = 24;
 if (verktygsfel) {
   console.log('VERKTYGSFEL: ' + verktygsfel);
   console.log('MIGRATIONSPROV status=VERKTYGSFEL godkanda=0 av ' + ANTAL); process.exit(2);
 }
 
-const blk = FIXTUR.slice(FIXTUR.indexOf('<div class="sc-item" id="mrprov"'));
+const styck = id => { const i = FIXTUR.indexOf('<div class="sc-item" id="' + id + '"');
+  const j = FIXTUR.indexOf('<div class="sc-item" id="', i + 10);
+  return FIXTUR.slice(i, j < 0 ? FIXTUR.length : j); };
+const blk = styck('mrprov');
 const kallSekvens = (produktElementIKallan(blk) || []).map(e => e.tagg);
-const skrivbara = karta.filter(x => x.ankare);
+const skrivbara = karta.filter(x => x.art === 'mrprov' && x.ankare);
 const tokenAv = p => '--prov-' + p.roll;
 const mig = migreraBlock(blk, skrivbara, tokenAv);
 
 const resultat = [];
 const prov = (n, vad, ok, diag) => resultat.push({ id: n, vad, ok: !!ok, diag });
-const poster = f => karta.filter(f);
+const poster = f => karta.filter(x => x.art === 'mrprov' && f(x));
+const alla = f => karta.filter(f);
+const cc = id => karta.filter(x => x.viaCurrentColor && x.elementId === id);
 
 /* ── MR · rollen kommer fran kartan, aldrig fran taggen ─────────────────── */
 { const p = poster(x => x.arSvg && x.arKontroll && x.egenskap === 'stroke');
@@ -216,6 +240,85 @@ const poster = f => karta.filter(f);
   prov('PS-01', 'dokumentationslagret ingar aldrig i rollkartan, aven vid samma farg',
     iDok.length === 0,
     iDok.length ? iDok.length + ' dokumentationsposter i kartan' : 'inga dokumentationsposter'); }
+
+/* ── CC · currentColor ar en hanvisning, inte ett fargvarde ─────────────── */
+// Felklassen som var belagd: proben pekade ut svg-attributet som skrivstalle
+// trots att attributet inte bar nagon farg alls.
+
+{ const p = cc('cc1')[0];
+  prov('CC-01', 'fill=currentColor med lokal inline color: skrivstallet ar color-deklarationen, inte fill-attributet',
+    !!p && p.egenskap === 'fill' && p.ursprung === 'INLINE' && p.kalla.upplost &&
+    p.kalla.egenskap === 'color' && p.kalla.arvd === false &&
+    p.ankare && p.ankare.egenskap === 'color' && p.ankare.form === 'INLINE' &&
+    p.beraknat === 'rgb(63, 107, 79)',
+    p ? p.ursprung + ' · kalla ' + p.kalla.varde + ' · ankare ' + JSON.stringify(p.ankare) : 'posten saknas'); }
+
+{ const p = cc('cc2')[0];
+  const foralder = karta.find(x => x.elementId === 'cc2f');
+  prov('CC-02', 'arvd color: proveniensen gar till forfaderns deklaration och ankaret pekar pa forfadern',
+    !!p && p.kalla.upplost && p.kalla.arvd === true && p.kalla.tagg === 'div' &&
+    p.ursprung === 'INLINE' && p.ankare && p.ankare.egenskap === 'color' &&
+    p.ankare.elementOrdinal !== null && p.beraknat === 'rgb(98, 112, 97)' &&
+    (!foralder || p.ankare.elementOrdinal < karta.filter(x => x.art === 'ccprov' && x.ankare)
+      .reduce((m, x) => Math.max(m, x.ankare.elementOrdinal), 0) + 1),
+    p ? 'arvd ' + p.kalla.arvd + ' fran ' + p.kalla.tagg + ' · ordinal ' + (p.ankare && p.ankare.elementOrdinal) : 'posten saknas'); }
+
+{ const p = cc('cc3')[0];
+  prov('CC-03', 'stroke=currentColor foljer samma provenienskedja som fill',
+    !!p && p.egenskap === 'stroke' && p.kalla.upplost && p.kalla.egenskap === 'color' &&
+    p.ursprung === 'INLINE' && p.ankare && p.ankare.egenskap === 'color' &&
+    p.kalla.hanvisning.ursprung === 'SVG_ATTRIBUTE' && p.beraknat === 'rgb(55, 69, 58)',
+    p ? p.egenskap + ' -> ' + p.kalla.egenskap + ' · hanvisning ur ' + p.kalla.hanvisning.ursprung : 'posten saknas'); }
+
+{ const p = cc('cc4')[0];
+  prov('CC-04', 'nar color kommer ur en tokenhook klassas posten som TOKEN_HOOK och far inget fabricerat inline-ankare',
+    !!p && p.ursprung === 'TOKEN_HOOK' && p.kalla.upplost && /var\(/.test(p.kalla.varde) &&
+    p.ankare === null,
+    p ? p.ursprung + ' · ' + p.kalla.varde + ' · ankare ' + p.ankare : 'posten saknas'); }
+
+{ // En och samma color-deklaration malar bade texten och ikonen.
+  const ccBlk = styck('ccprov');
+  const ccSkrivbara = karta.filter(x => x.art === 'ccprov' && x.ankare);
+  const r = migreraBlock(ccBlk, ccSkrivbara, tokenAv);
+  const ikon = cc('cc5')[0];
+  const text = karta.find(x => x.elementId === 'cc5f' && x.egenskap === 'color');
+  const sammaAnkare = !!ikon && !!text && ikon.ankare && text.ankare &&
+    ikon.ankare.elementOrdinal === text.ankare.elementOrdinal &&
+    ikon.ankare.egenskap === text.ankare.egenskap;
+  const gruppen = [...r.skrivna, ...(r.tackta || [])].filter(x =>
+    text && x.ankare.elementOrdinal === text.ankare.elementOrdinal && (x.ankare.egenskap || x.egenskap) === 'color');
+  const skrivna = gruppen.filter(x => r.skrivna.includes(x)).length;
+  prov('CC-05', 'en color-deklaration som malar bade text och ikon skrivs en gang, ovriga beroende blir COVERED_BY_SAME_DECLARATION',
+    sammaAnkare && gruppen.length === 2 && skrivna === 1 && r.hoppade.length === 0 &&
+    ikon.roll === 'ikon-kontroll' && text.roll === 'text-kontroll',
+    (sammaAnkare ? 'samma ankare' : 'olika ankare') + ' · beroende ' + gruppen.length +
+    ' · skrivna ' + skrivna + ' · hoppade ' + r.hoppade.length +
+    ' · roller ' + (ikon ? ikon.roll : '?') + '/' + (text ? text.roll : '?')); }
+
+{ // Samma kalla, men beroendena kraver olika morka varden.
+  const ccSkrivbara = karta.filter(x => x.art === 'ccprov' && x.ankare);
+  const morkOlika = p => p.roll === 'ikon-kontroll' ? '#a8c0aa' : '#c9d3c4';
+  const morkLika = () => '#c9d3c4';
+  const k = deladKallaKonflikt(ccSkrivbara, morkOlika);
+  const d = deladKallaKonflikt(ccSkrivbara, morkLika);
+  prov('CC-06', 'tva beroende med olika morka varden pa samma deklaration ger fail closed, ingen kandidat vinner',
+    k.konflikter.length === 1 && k.konflikter[0].morkvarden.length === 2 &&
+    k.delade.length === 0 && d.konflikter.length === 0 && d.delade.length === 1,
+    'olika: ' + k.konflikter.length + ' konflikt / ' + k.delade.length + ' delade · ' +
+    'lika: ' + d.konflikter.length + ' konflikt / ' + d.delade.length + ' delade'); }
+
+{ const p = cc('cc7')[0];
+  prov('CC-07', 'currentColor utan entydig authored kalla ger fail closed, ingen svg-kalla fabriceras',
+    !!p && p.kalla.upplost === false && p.ursprung === 'OKAND_CURRENTCOLOR' &&
+    p.ankare === null && p.deklaration === null,
+    p ? p.ursprung + ' · ankare ' + p.ankare + ' · ' + p.kalla.skal : 'posten saknas'); }
+
+{ const dok = alla(x => x.viaCurrentColor && /sc-label|sc-id/.test(x.klass || ''));
+  const produkt = alla(x => x.viaCurrentColor && x.art === 'ccprov');
+  const svgKallor = alla(x => x.viaCurrentColor && x.ankare && x.ankare.form === 'SVG_ATTRIBUTE');
+  prov('CC-08', 'dokumentationslagrets currentColor-ikon dras aldrig in, och ingen currentColor-post far en svg-kalla',
+    dok.length === 0 && produkt.length >= 4 && svgKallor.length === 0,
+    'dokumentation ' + dok.length + ' · produkt ' + produkt.length + ' · svg-kallor ' + svgKallor.length); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);

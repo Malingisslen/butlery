@@ -1,32 +1,11 @@
 {
  "familjer": [
-  "delatmedmig",
-  "kontosakerhet",
   "aldersgrans",
   "epostverif",
   "rapporter",
   "rapporter412",
-  "veckoprompt",
-  "veckochips",
-  "veckoresultat",
-  "veckodolda",
-  "veckofel",
-  "veckorostning",
-  "veckorostutgang",
   "authepostklar",
   "onbalderblock",
-  "impassist1",
-  "impassist2",
-  "impassist3",
-  "impfoto",
-  "impoffline",
-  "taggregel",
-  "adminskal",
-  "modrapporter",
-  "modminderarig",
-  "kontosakerhetsvy",
-  "flervalingang",
-  "soctomttyst",
-  "socknuff"
+  "soctomttyst"
  ]
 }

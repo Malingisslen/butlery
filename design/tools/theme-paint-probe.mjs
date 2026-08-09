@@ -43,8 +43,12 @@ export const PAINT_PROBE = `(() => {
       let matchar = false; try { matchar = el.matches(r.selector); } catch { continue; }
       if (!matchar) continue;
       const viktig = r.style.getPropertyPriority(egenskap) === 'important';
-      if (!bast || viktig || !bast.viktig) bast = { ursprung: 'CLASS_RULE', varde: v.trim(),
-        selector: r.selector, viktig };
+      // En langform som redan laser sitt varde ur en variabel ar lika mycket
+      // en tokenhook som kortformen. Skillnaden var bara att kortformen inte
+      // exponerar sina langformer, aldrig att den ena vore mer tokeniserad.
+      const hook = v.indexOf('var(') >= 0;
+      if (!bast || viktig || !bast.viktig) bast = { ursprung: hook ? 'TOKEN_HOOK' : 'CLASS_RULE',
+        varde: v.trim(), selector: r.selector, viktig };
     }
     return bast;
   }
@@ -113,20 +117,67 @@ export const PAINT_PROBE = `(() => {
           while (n && !v) { v = vinnare(n, egenskap); if (v) { arvd = true; v.arvdFran = n.tagName.toLowerCase(); } n = n.parentElement; }
         }
         // svg-attribut ar en egen ursprungsklass.
-        if (arSvg && (egenskap === 'fill' || egenskap === 'stroke') && el.hasAttribute(egenskap))
+        if (arSvg && (egenskap === 'fill' || egenskap === 'stroke') && el.hasAttribute(egenskap)) {
           v = { ursprung: 'SVG_ATTRIBUTE', varde: el.getAttribute(egenskap), selector: null };
+          arvd = false; }
+
+        // CURRENTCOLOR AR EN HANVISNING, INTE ETT FARGVARDE.
+        //
+        // fill="currentColor" sager bara "ta den farg elementet redan har".
+        // Deklarationen som FAKTISKT bestammer fargen ar color-deklarationen,
+        // och den kan sitta pa elementet sjalv eller pa en forfader. Att peka
+        // ut svg-attributet som skrivstalle ar att peka ut fel kalla: dar
+        // finns inget fargvarde att byta.
+        //
+        // Proveniensen foljer alltsa hanvisningen hela vagen till den
+        // vinnande color-deklarationen och behaller dess ursprung. Finns
+        // ingen entydig authored kalla: fail closed, ingen fabricerad kalla.
+        let kalla = null;
+        if (v && /^currentcolor$/i.test(String(v.varde).trim())) {
+          const hanvisning = { ursprung: v.ursprung, varde: v.varde, selector: v.selector || null };
+          let barare = el, c = vinnare(el, 'color'), arvdC = false;
+          while (!c && barare.parentElement) {
+            barare = barare.parentElement;
+            c = vinnare(barare, 'color');
+            if (c) arvdC = true; }
+          if (!c) {
+            kalla = { hanvisning, upplost: false, skal: 'ingen authored color-deklaration i kedjan' };
+            v = null; arvd = false;
+          } else {
+            const iYtan = iProdukt(barare);
+            kalla = { hanvisning, upplost: true, egenskap: 'color', ursprung: c.ursprung,
+              varde: c.varde, selector: c.selector || null, arvd: arvdC,
+              tagg: barare.tagName.toLowerCase(), iProduktytan: iYtan,
+              elementOrdinal: iYtan ? ordinalAv.get(barare) : null,
+              skal: iYtan ? null : 'color-deklarationen ligger utanfor produktytan' };
+            v = { ursprung: c.ursprung, varde: c.varde, selector: c.selector || null };
+            arvd = arvdC; }
+        }
 
         // Skrivbar bara nar deklarationen sitter pa elementet sjalv.
         // Arvd farg sitter pa en FORFADER. Da ar barnet inget skrivstalle.
-        const skrivbar = v && !arvd && (v.ursprung === 'INLINE' || v.ursprung === 'SVG_ATTRIBUTE');
+        // Undantaget ar currentColor: dar ar bararen av color-deklarationen
+        // ett exakt utpekat skrivstalle, inte en gissning ur DOM-narhet.
+        let ankare = null;
+        if (kalla) {
+          if (kalla.upplost && kalla.ursprung === 'INLINE' && kalla.iProduktytan)
+            ankare = { elementOrdinal: kalla.elementOrdinal, tagg: kalla.tagg,
+              egenskap: 'color', form: 'INLINE' };
+        } else if (v && !arvd && (v.ursprung === 'INLINE' || v.ursprung === 'SVG_ATTRIBUTE')) {
+          ankare = { elementOrdinal: ordinalAv.get(el), tagg: el.tagName.toLowerCase(),
+            egenskap, form: v.ursprung };
+        }
         ut.push({ art: it.id, egenskap, beraknat: berak.trim(),
-          ankare: skrivbar ? { elementOrdinal: ordinalAv.get(el),
-            tagg: el.tagName.toLowerCase(),
-            egenskap: v.ursprung === 'SVG_ATTRIBUTE' ? egenskap : egenskap,
-            form: v.ursprung } : null,
+          ankare,
           produktElement_st: produktElement.length,
-          ursprung: v ? (arvd ? 'INHERITED' : v.ursprung) : 'OKAND',
+          // Proveniensen bevaras. En currentColor-post far kallans ursprung,
+          // aldrig INHERITED: att deklarationen sitter pa en forfader ar en
+          // egenskap hos kallan (kalla.arvd), inte ett okant ursprung.
+          ursprung: kalla ? (kalla.upplost ? kalla.ursprung : 'OKAND_CURRENTCOLOR')
+            : v ? (arvd ? 'INHERITED' : v.ursprung) : 'OKAND',
           deklaration: v ? v.varde : null, selector: v ? v.selector || null : null,
+          viaCurrentColor: !!kalla, kalla,
+          elementId: el.id || null,
           arvd, arKontroll, arSvg,
           klass: el.getAttribute('class') || null,
           telefonram: el.classList.contains('sc-phone'),
