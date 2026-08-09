@@ -1,0 +1,451 @@
+{
+ "$schema": "butlery-r04-dual/1",
+ "$regel": "Temat satts explicit pa de kallor som deklarerar stod. Ingen rendering fabriceras. Conformance mats med de frysta motorerna.",
+ "renderingar": {
+  "light_st": 13,
+  "dark_st": 13,
+  "kallor": [
+   {
+    "art": "arkivimport",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "stateladdar",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "stateladdar412",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "statefel",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "statefel412",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "synkko",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "receptdelningsstatus",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "delatlasare",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "authepost",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "authmfa",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "behlarmnekat",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "lagatimerlofte",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "art": "komprelaterade",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   }
+  ]
+ },
+ "tackning": {
+  "familjer_st": 317,
+  "covered_st": 22,
+  "explicitPair_st": 9,
+  "dualThemeRender_st": 13,
+  "coverageGap_st": 295,
+  "lightOnly_st": 293,
+  "darkOnly_st": 2,
+  "ambiguous_st": 0,
+  "neutral_st": 3,
+  "unknown_artefakter_st": 0,
+  "duala_familjer": [
+   {
+    "familj": "arkivimport-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "arkivimport",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "stateladdar-322",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "stateladdar",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "stateladdar412-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "stateladdar412",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "statefel-322",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "statefel",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "statefel412-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "statefel412",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "synkko-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "synkko",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "receptdelningsstatus-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "receptdelningsstatus",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "delatlasare-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "delatlasare",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "authepost-462",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "authepost",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "authmfa-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "authmfa",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "behlarmnekat-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "behlarmnekat",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "lagatimerlofte-414",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "lagatimerlofte",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   },
+   {
+    "familj": "komprelaterade-panel",
+    "status": "covered",
+    "modell": "dualThemeRender",
+    "kalla": "komprelaterade",
+    "renderade": [
+     "light",
+     "dark"
+    ]
+   }
+  ]
+ },
+ "morkBaslinje": {
+  "kallor_st": 13,
+  "kontroller_st": 27,
+  "grafiskaDelar_st": 25,
+  "barare_st": 13,
+  "ickeText_fynd_st": 13,
+  "unknown_st": 0,
+  "fynd": [
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "arrow-left",
+    "descent": false,
+    "kvot": 1.4,
+    "status": "matt",
+    "farg": "rgb(201, 211, 196)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "synkko",
+    "namn": "Tillbaka till Mer",
+    "disabled": false
+   },
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "arrow-left",
+    "descent": false,
+    "kvot": 1.4,
+    "status": "matt",
+    "farg": "rgb(201, 211, 196)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "receptdelningsstatus",
+    "namn": "Tillbaka",
+    "disabled": false
+   },
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "arrow-left",
+    "descent": false,
+    "kvot": 1.4,
+    "status": "matt",
+    "farg": "rgb(201, 211, 196)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "delatlasare",
+    "namn": "Tillbaka",
+    "disabled": false
+   },
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "arrow-left",
+    "descent": false,
+    "kvot": 1.4,
+    "status": "matt",
+    "farg": "rgb(201, 211, 196)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "authmfa",
+    "namn": "Avbryt inloggningen",
+    "disabled": false
+   },
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "chevron-left",
+    "descent": false,
+    "kvot": 1.4,
+    "status": "matt",
+    "farg": "rgb(201, 211, 196)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "behlarmnekat",
+    "namn": "Tillbaka",
+    "disabled": false
+   },
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "chevron-left",
+    "descent": false,
+    "kvot": 1.4,
+    "status": "matt",
+    "farg": "rgb(201, 211, 196)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "lagatimerlofte",
+    "namn": "Tillbaka",
+    "disabled": false
+   },
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "x",
+    "descent": false,
+    "kvot": 2.28,
+    "status": "matt",
+    "farg": "rgb(222, 144, 120)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "receptdelningsstatus",
+    "namn": "Sluta dela med Anna Lindqvist",
+    "disabled": false
+   },
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "x",
+    "descent": false,
+    "kvot": 2.28,
+    "status": "matt",
+    "farg": "rgb(222, 144, 120)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "receptdelningsstatus",
+    "namn": "Sluta dela med Per Sjögren",
+    "disabled": false
+   },
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "x",
+    "descent": false,
+    "kvot": 2.28,
+    "status": "matt",
+    "farg": "rgb(222, 144, 120)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "receptdelningsstatus",
+    "namn": "Sluta dela med Ida Holm",
+    "disabled": false
+   },
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "x",
+    "descent": false,
+    "kvot": 2.28,
+    "status": "matt",
+    "farg": "rgb(222, 144, 120)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "receptdelningsstatus",
+    "namn": "Sluta dela med gruppen Söndagsmiddag",
+    "disabled": false
+   },
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "x",
+    "descent": false,
+    "kvot": 2.28,
+    "status": "matt",
+    "farg": "rgb(222, 144, 120)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "receptdelningsstatus",
+    "namn": "Sluta dela med gruppen Kollegorna",
+    "disabled": false
+   },
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "x",
+    "descent": false,
+    "kvot": 2.4,
+    "status": "matt",
+    "farg": "rgb(147, 164, 141)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "komprelaterade",
+    "namn": "Ta bort kopplingen till Brunsås",
+    "disabled": false
+   },
+   {
+    "typ": "ikon",
+    "carrier": "componentIdentityCarrier",
+    "motivering": "kontrollen har ingen synlig text — glyfen ar det enda som identifierar den",
+    "ikon": "x",
+    "descent": false,
+    "kvot": 2.4,
+    "status": "matt",
+    "farg": "rgb(147, 164, 141)",
+    "angransande": "rgb(245, 244, 237)",
+    "motYta": "ytan utanfor kontrollen",
+    "art": "komprelaterade",
+    "namn": "Ta bort kopplingen till Rårörda lingon",
+    "disabled": false
+   }
+  ]
+ },
+ "status": "reproducerbar"
+}
