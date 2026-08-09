@@ -195,7 +195,8 @@ const prov = (n, vad, ok, diag) => resultat.push({ id: n, vad, ok: !!ok, diag })
 
 { const d = id('nd08-egen-ram-vinner');
   prov('ND-08', 'agarens egen ram vinner; ingen descent sker',
-    !!d && d.descent === false && d.typ === 'ram' && /egen boundary/.test(d.motivering || ''),
+    !!d && d.descent === false && d.typ === 'ram' &&
+    /egen (omslutande )?boundary|agaren ar sjalv formen/.test(d.motivering || ''),
     d ? d.typ + ' · descent ' + d.descent : 'ingen barare'); }
 
 { const u = okand('nd09-tva-glyfer');

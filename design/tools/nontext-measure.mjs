@@ -46,14 +46,16 @@ export const NONTEXT_MEASURE = `(() => {
     return true; };
   const glyfer = el => [...el.querySelectorAll('svg, [data-icon]')]
     .filter(e => (e.tagName.toLowerCase() === 'svg' || e.hasAttribute('data-icon')) && egenSubtrad(e, el));
-  // OFORANDRAD i den har fasen. En kant pa vilken sida som helst raknas som
-  // ram. Migrationen visade att det ar for grovt — en border-bottom pa en
-  // listrad ar en avdelare, inte en kontrollform — men att skarpa kravet till
-  // alla fyra sidor flyttar 145 fynd till 166 och skapar 10 nya unknown i
-  // rapport A. Den andringen ar en egen metodfraga och gors inte har.
   const harRam = el => { const c = getComputedStyle(el);
     return ['borderTopWidth','borderBottomWidth','borderLeftWidth','borderRightWidth']
       .some(k => parseFloat(c[k]) > 0); };
+  // En OMSLUTANDE kant ritar en form. En kant pa en enda sida ar en avdelare
+  // mellan rader och ritar ingen kontroll. Skillnaden anvands nar en
+  // valkontrolls visuella struktur ska letas upp i en storre behallare: en
+  // listrad med border-bottom far aldrig raknas som sjalva reglaget.
+  const harOmslutandeRam = el => { const c = getComputedStyle(el);
+    return ['borderTopWidth','borderBottomWidth','borderLeftWidth','borderRightWidth']
+      .every(k => parseFloat(c[k]) > 0); };
   const harFyllning = el => { const c = parse(getComputedStyle(el).backgroundColor);
     return !!c && c[3] > 0; };
   const rect = el => { const r = el.getBoundingClientRect();
@@ -72,9 +74,74 @@ export const NONTEXT_MEASURE = `(() => {
   // Regeln "forsta barnet med ram eller fyllning" anvands INTE. Den skulle
   // valja nagot aven nar ritningen inte pekar ut nagot, och det ar precis vad
   // fail closed ska hindra. Kontrast lases aldrig har.
+  //
+  // ROW-OWNED CONTROL: rollen kan sitta pa hela listraden. Raden innehaller
+  // da bade en textkolumn och den verkliga visuella kontrollen. Formen letas
+  // darfor bland element med en OMSLUTANDE avgransning — en fyllning eller en
+  // ram runt om. En textkolumn har varken, och en avdelarlinje under raden ar
+  // ingen form. Ingen geometri, ingen DOM-position, ingen kontrast anvands.
   function visuellForm(c) {
+    const omslutande = e => harOmslutandeRam(e) || harFyllning(e);
+    const inomAlla = [...c.querySelectorAll('*')].filter(e => egenSubtrad(e, c));
+    const inreFormer = inomAlla.filter(omslutande);
+
+    // AUTHORED EVIDENS FORST. Ritningen kan sjalv peka ut vilket element som
+    // ar komponenten, med data-component. Det ar en deklaration i kallan av
+    // samma slag som data-hit och data-state-group, inte en heuristik, och
+    // den gar fore all harledning. En listrad kan ha egen fyllning och egen
+    // avdelarlinje utan att vara kontrollen; deklarationen avgor.
+    if (!c.hasAttribute('data-component')) {
+      const deklarerade = inomAlla.filter(e => e.hasAttribute('data-component'));
+      if (deklarerade.length === 1) {
+        const form = deklarerade[0];
+        const inuti = inreFormer.filter(e => e !== form && form.contains(e));
+        return { identitet: form, tillstand: inuti.length === 1 ? inuti[0] : null,
+          grund: 'exakt ett element i kontrollens subtrad ar deklarerat med data-component' };
+      }
+      if (deklarerade.length > 1)
+        return { identitet: null, tillstand: null,
+          grund: deklarerade.length + ' element i subtradet ar deklarerade med data-component — vilket som ar kontrollen gar inte att avgora' };
+    }
+    // Agaren ar sjalv formen bara om den ar omslutande avgransad OCH inte ar
+    // en behallare med en egen avgransad kontroll i sig.
+    if (omslutande(c) && inreFormer.length <= 1)
+      return { identitet: c, tillstand: inreFormer[0] || null,
+        grund: inreFormer.length ? 'agaren ar sjalv formen och har ett avgransat barn som bar tillstandet'
+          : 'agaren har egen omslutande boundary' };
+    if (inreFormer.length === 1 && !omslutande(c))
+      return { identitet: inreFormer[0], tillstand: null,
+        grund: 'exakt ett element i kontrollens egen subtrad ritar en omslutande form' };
+    if (inreFormer.length === 2) {
+      const [a, b] = inreFormer;
+      if (a.contains(b)) return { identitet: a, tillstand: b,
+        grund: 'track och knopp i nastlad kedja — den yttre ar formen, den inre bar tillstandet' };
+      if (b.contains(a)) return { identitet: b, tillstand: a,
+        grund: 'track och knopp i nastlad kedja — den yttre ar formen, den inre bar tillstandet' };
+    }
+    if (inreFormer.length >= 2) {
+      // AUTHORED EVIDENS. Ritningen kan sjalv peka ut vilken form som ar
+      // komponenten, med data-component. Det ar en deklaration i kallan, av
+      // samma slag som data-hit och data-state-group, och inte en heuristik.
+      // Den anvands bara nar strukturen ar tvetydig, och bara nar den ar
+      // entydig i sig.
+      const deklarerade = inreFormer.filter(e => e.hasAttribute('data-component'));
+      if (deklarerade.length === 1) {
+        const form = deklarerade[0];
+        const inuti = inreFormer.filter(e => e !== form && form.contains(e));
+        return { identitet: form, tillstand: inuti.length === 1 ? inuti[0] : null,
+          grund: 'flera avgransade former i behallaren, men exakt en ar deklarerad med data-component' };
+      }
+      if (inreFormer.length === 2)
+        return { identitet: null, tillstand: null,
+          grund: 'tva avgransade former som syskon i behallaren — vilken som ar kontrollen gar inte att avgora' };
+      return { identitet: null, tillstand: null,
+        grund: inreFormer.length + ' avgransade former i behallaren — flera plausibla kontrollstrukturer' };
+    }
+    // Ingen omslutande form. Fall tillbaka pa den ursprungliga modellen, som
+    // ocksa accepterar en ram pa en enda sida — for kontroller som INTE ar
+    // rader utan sjalva ar den lilla rutan.
     if (harRam(c) || harFyllning(c)) return { identitet: c, tillstand: null, grund: 'agaren har egen boundary' };
-    const inom = [...c.querySelectorAll('*')].filter(e => egenSubtrad(e, c));
+    const inom = inomAlla;
     const avgransade = inom.filter(e => harRam(e) || harFyllning(e));
     const g = glyfer(c);
     const bockar = g.filter(e => BOCK.test(e.getAttribute('data-icon') || ''));
@@ -138,17 +205,22 @@ export const NONTEXT_MEASURE = `(() => {
       } else delar.push({ typ: 'saknas', roll_i_kontrollen: 'unknown',
         motivering: 'valkontrollens form gar inte att avgora: ' + form.grund,
         el: c, mot: null });
-      // Tillstandsgrafiken matas mot den yta den ligger PA — formen, inte agaren.
+      // Tillstandsgrafiken matas mot den yta den faktiskt ligger PA. Det ar
+      // elementet som direkt innehaller den, inte kontrollens identitetsform:
+      // i ett radiokort ligger bocken i en liten fylld prick inuti kortet, och
+      // det ar prickens farg den ska sta emot.
       const inreYta = form.identitet || c;
       if (bock) delar.push({ typ: 'bock', roll_i_kontrollen: 'stateCarrier',
         motivering: 'bocken ar den grafik som visar att kontrollen ar ikryssad',
-        el: bock, motEl: inreYta, mot: 'inre' });
-      const thumb = roll === 'switch'
-        ? (form.tillstand && form.tillstand !== bock ? form.tillstand : [...c.children].find(e => e !== bock))
-        : null;
+        el: bock, motEl: bock.parentElement || inreYta, mot: 'inre' });
+      // Knoppen kommer BARA fran den strukturella analysen. Ingen fallback
+      // till "forsta barnet": i en listrad ar forsta barnet textkolumnen, och
+      // den malar ingenting.
+      const thumb = roll === 'switch' && form.tillstand && form.tillstand !== bock
+        ? form.tillstand : null;
       if (thumb) delar.push({ typ: 'thumb', roll_i_kontrollen: 'stateCarrier',
         motivering: 'reglagets knopp och dess lage visar on eller off',
-        el: thumb, motEl: inreYta, mot: 'inre' });
+        el: thumb, motEl: thumb.parentElement || inreYta, mot: 'inre' });
       const anvand = new Set([form.identitet, bock, thumb].filter(Boolean));
       for (const e of g) if (!anvand.has(e)) delar.push({ typ: 'ikon',
         roll_i_kontrollen: 'supplemental',
@@ -159,7 +231,7 @@ export const NONTEXT_MEASURE = `(() => {
       if (g.length) for (const e of g) delar.push({ typ: 'ikon',
         roll_i_kontrollen: 'componentIdentityCarrier',
         motivering: 'kontrollen har ingen synlig text — glyfen ar det enda som identifierar den',
-        el: e, mot: 'yttre' });
+        el: e, motEl: e.parentElement || c, mot: 'yttre' });
       else {
         const form = visuellForm(c);
         if (form.identitet) bararEl = form.identitet;
@@ -184,7 +256,7 @@ export const NONTEXT_MEASURE = `(() => {
           motivering: barState
             ? 'kontrollen har ett tillstand och glyfen ar riktningsbarande — den visar oppet eller stangt'
             : 'kontrollen identifieras av sin synliga text; glyfen forstarker men behovs inte for identiteten',
-          el: e, mot: 'yttre' });
+          el: e, motEl: e.parentElement || c, mot: 'yttre' });
       }
       if (harFyllning(c)) delar.push({ typ: 'fyllning', roll_i_kontrollen: 'supplemental',
         motivering: 'kontrollen identifieras av sin synliga text; fyllningen forstarker',
@@ -202,7 +274,11 @@ export const NONTEXT_MEASURE = `(() => {
       if (d.roll_i_kontrollen === 'supplemental' || d.roll_i_kontrollen === 'decorative' ||
           d.roll_i_kontrollen === 'unknown' || !d.mot)
         return { ...bas, kvot: null, status: d.roll_i_kontrollen === 'unknown' ? 'unknown' : 'ejKravd' };
-      // Vilken yta ska den kontrastera MOT? Aldrig godtycklig forfader.
+      // Vilken yta ska den kontrastera MOT? Den yta som FAKTISKT ar malad
+      // direkt bakom bararen, enligt malnings- och innehallsstrukturen. En
+      // ikon som ligger pa knappens egen fyllning jamfors med fyllningen,
+      // aldrig med ytan utanfor knappen. Ingen "narmsta farg"-heuristik:
+      // bakgrundBakom foljer foraldrakedjan tills nagot faktiskt ar malat.
       const motEl = d.motEl || (d.mot === 'inre' ? c : (c.parentElement || c));
       const bg = bakgrundBakom(motEl);
       if (bg.oreducerbar) return { ...bas, kvot: null, status: 'unknown',
