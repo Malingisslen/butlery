@@ -2,10 +2,10 @@
  "$schema": "butlery-nt-fixmanifest/1",
  "$regel": "rotorsakspopulation, source occurrence population och write scope ar tre olika tal. Endast bevisat delad implementation andras gemensamt.",
  "krav_kvot": 3,
- "rotorsaker_st": 28,
- "verifierade_fynd_st": 118,
- "source_occurrences_totalt": 2736,
- "write_scope_totalt": 116,
+ "rotorsaker_st": 21,
+ "verifierade_fynd_st": 72,
+ "source_occurrences_totalt": 2078,
+ "write_scope_totalt": 70,
  "shared_implementations_st": 1,
  "utan_forslag_st": 1,
  "manifest": [
@@ -37,7 +37,7 @@
    "klasser": [],
    "andrad_sida": "bararens egen farg",
    "foreslagen_farg": "#8a5212",
-   "forslagets_ursprung": "befintlig designfarg, anvand 323 ganger i sviten",
+   "forslagets_ursprung": "befintlig designfarg, anvand 333 ganger i sviten",
    "forvantad_kvot": 5.78,
    "klarar_kravet": true,
    "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
@@ -125,462 +125,6 @@
   },
   {
    "id": "NRC-02",
-   "verifierade_fynd_st": 10,
-   "enhet": "grafiska delar",
-   "artefakter_st": 3,
-   "artefakter": [
-    "skafferibas",
-    "kontosamtycke",
-    "kontonotiser"
-   ],
-   "kontroller_st": 10,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "fyllning",
-   "nuvarande_forgrund": "rgb(206, 124, 30)",
-   "faktisk_angransande_farg": "rgb(245, 244, 237)",
-   "nuvarande_kvot": 2.92,
-   "kvot_min": 2.92,
-   "kvot_max": 2.92,
-   "kalldeklaration": "background: rgb(206, 124, 30)",
-   "source_occurrence_population_st": 362,
-   "write_scope_st": 10,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#8a5212",
-   "forslagets_ursprung": "befintlig designfarg, anvand 323 ganger i sviten",
-   "forvantad_kvot": 5.78,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "skafferibas",
-     "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
-     "namn": "Basvara — håll borta från veckans lista",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontosamtycke",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Sociala funktioner",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontosamtycke",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Push-notiser",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontosamtycke",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "AI-tolkning av recept",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Notiser från Butlery",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Vänner och förfrågningar",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Delade recept",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Samarbete i listor och menyer",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Meddelanden",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Om kontot och appen",
-     "state": "checked",
-     "kvot": 2.92
-    }
-   ]
-  },
-  {
-   "id": "NRC-03",
-   "verifierade_fynd_st": 10,
-   "enhet": "grafiska delar",
-   "artefakter_st": 3,
-   "artefakter": [
-    "skafferibas",
-    "kontosamtycke",
-    "kontonotiser"
-   ],
-   "kontroller_st": 10,
-   "bararroll": "stateCarrier",
-   "typ": "thumb",
-   "nuvarande_forgrund": "rgb(245, 244, 237)",
-   "faktisk_angransande_farg": "rgb(206, 124, 30)",
-   "nuvarande_kvot": 2.92,
-   "kvot_min": 2.92,
-   "kvot_max": 2.92,
-   "kalldeklaration": "background: rgb(245, 244, 237)",
-   "source_occurrence_population_st": 19,
-   "write_scope_st": 10,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "den angransande banan — knoppen ar per design den ljusa ytan",
-   "foreslagen_farg": "#8a5212",
-   "forslagets_ursprung": "befintlig designfarg, anvand 323 ganger i sviten",
-   "forvantad_kvot": 5.78,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "skafferibas",
-     "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
-     "namn": "Basvara — håll borta från veckans lista",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontosamtycke",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Sociala funktioner",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontosamtycke",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Push-notiser",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontosamtycke",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "AI-tolkning av recept",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Notiser från Butlery",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Vänner och förfrågningar",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Delade recept",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Samarbete i listor och menyer",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Meddelanden",
-     "state": "checked",
-     "kvot": 2.92
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Om kontot och appen",
-     "state": "checked",
-     "kvot": 2.92
-    }
-   ]
-  },
-  {
-   "id": "NRC-04",
-   "verifierade_fynd_st": 7,
-   "enhet": "grafiska delar",
-   "artefakter_st": 3,
-   "artefakter": [
-    "allergener",
-    "notisinstallningar",
-    "socintegritet"
-   ],
-   "kontroller_st": 6,
-   "bararroll": "stateCarrier",
-   "typ": "thumb",
-   "nuvarande_forgrund": "rgb(245, 244, 237)",
-   "faktisk_angransande_farg": "rgb(204, 209, 194)",
-   "nuvarande_kvot": 1.41,
-   "kvot_min": 1.41,
-   "kvot_max": 1.41,
-   "kalldeklaration": "background: rgb(245, 244, 237)",
-   "source_occurrence_population_st": 19,
-   "write_scope_st": 7,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "den angransande banan — knoppen ar per design den ljusa ytan",
-   "foreslagen_farg": "#86916e",
-   "forslagets_ursprung": "minsta ljushetsjustering med bevarad kulor",
-   "forvantad_kvot": 3.03,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "allergener",
-     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
-     "namn": "Reglage",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "notisinstallningar",
-     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
-     "namn": "Reglage",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "notisinstallningar",
-     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
-     "namn": "Reglage",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "Sökbar via e-post",
-     "state": "off",
-     "kvot": 1.41
-    },
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "Visa när jag är online",
-     "state": "off",
-     "kvot": 1.41
-    },
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "Dela det jag gör i flödet",
-     "state": "off",
-     "kvot": 1.41
-    },
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "När jag satt igång med något",
-     "state": "off",
-     "kvot": 1.41
-    }
-   ]
-  },
-  {
-   "id": "NRC-05",
-   "verifierade_fynd_st": 7,
-   "enhet": "grafiska delar",
-   "artefakter_st": 4,
-   "artefakter": [
-    "kontosamtycke",
-    "samtyckeai",
-    "kontonotiser",
-    "socintegritet"
-   ],
-   "kontroller_st": 7,
-   "bararroll": "stateCarrier",
-   "typ": "thumb",
-   "nuvarande_forgrund": "rgb(245, 244, 237)",
-   "faktisk_angransande_farg": "rgb(169, 178, 160)",
-   "nuvarande_kvot": 1.99,
-   "kvot_min": 1.99,
-   "kvot_max": 1.99,
-   "kalldeklaration": "background: rgb(245, 244, 237)",
-   "source_occurrence_population_st": 19,
-   "write_scope_st": 7,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "den angransande banan — knoppen ar per design den ljusa ytan",
-   "foreslagen_farg": "#4a5c43",
-   "forslagets_ursprung": "befintlig designfarg, anvand 59 ganger i sviten",
-   "forvantad_kvot": 6.56,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "kontosamtycke",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Analys av hur appen används",
-     "state": null,
-     "kvot": 1.99
-    },
-    {
-     "art": "kontosamtycke",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Utskick och nyheter",
-     "state": null,
-     "kvot": 1.99
-    },
-    {
-     "art": "samtyckeai",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "AI-tolkning av recept, avstängd",
-     "state": null,
-     "kvot": 1.99
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Inköpslistan, av som standard",
-     "state": null,
-     "kvot": 1.99
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Aktivitet från andra, av som standard",
-     "state": null,
-     "kvot": 1.99
-    },
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "När jag lagat något",
-     "state": "on",
-     "kvot": 1.99
-    },
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "När jag delat ett recept",
-     "state": "on",
-     "kvot": 1.99
-    }
-   ]
-  },
-  {
-   "id": "NRC-06",
-   "verifierade_fynd_st": 6,
-   "enhet": "grafiska delar",
-   "artefakter_st": 3,
-   "artefakter": [
-    "allergener",
-    "notisinstallningar",
-    "socintegritet"
-   ],
-   "kontroller_st": 5,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "fyllning",
-   "nuvarande_forgrund": "rgb(204, 209, 194)",
-   "faktisk_angransande_farg": "rgb(245, 244, 237)",
-   "nuvarande_kvot": 1.41,
-   "kvot_min": 1.41,
-   "kvot_max": 1.41,
-   "kalldeklaration": "background: rgb(204, 209, 194)",
-   "source_occurrence_population_st": 117,
-   "write_scope_st": 6,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#86916e",
-   "forslagets_ursprung": "minsta ljushetsjustering med bevarad kulor",
-   "forvantad_kvot": 3.03,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "allergener",
-     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
-     "namn": "Reglage",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "notisinstallningar",
-     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
-     "namn": "Reglage",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "notisinstallningar",
-     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
-     "namn": "Reglage",
-     "state": null,
-     "kvot": 1.41
-    },
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "Sökbar via e-post",
-     "state": "off",
-     "kvot": 1.41
-    },
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "Visa när jag är online",
-     "state": "off",
-     "kvot": 1.41
-    },
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "När jag satt igång med något",
-     "state": "off",
-     "kvot": 1.41
-    }
-   ]
-  },
-  {
-   "id": "NRC-07",
    "verifierade_fynd_st": 6,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -655,7 +199,7 @@
    ]
   },
   {
-   "id": "NRC-08",
+   "id": "NRC-03",
    "verifierade_fynd_st": 6,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -732,7 +276,7 @@
    ]
   },
   {
-   "id": "NRC-09",
+   "id": "NRC-04",
    "verifierade_fynd_st": 6,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -807,84 +351,7 @@
    ]
   },
   {
-   "id": "NRC-10",
-   "verifierade_fynd_st": 6,
-   "enhet": "grafiska delar",
-   "artefakter_st": 3,
-   "artefakter": [
-    "kontosamtycke",
-    "kontonotiser",
-    "socintegritet"
-   ],
-   "kontroller_st": 6,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "fyllning",
-   "nuvarande_forgrund": "rgb(169, 178, 160)",
-   "faktisk_angransande_farg": "rgb(245, 244, 237)",
-   "nuvarande_kvot": 1.99,
-   "kvot_min": 1.99,
-   "kvot_max": 1.99,
-   "kalldeklaration": "background: rgb(169, 178, 160)",
-   "source_occurrence_population_st": 18,
-   "write_scope_st": 6,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#4a5c43",
-   "forslagets_ursprung": "befintlig designfarg, anvand 59 ganger i sviten",
-   "forvantad_kvot": 6.56,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "kontosamtycke",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Analys av hur appen används",
-     "state": null,
-     "kvot": 1.99
-    },
-    {
-     "art": "kontosamtycke",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Utskick och nyheter",
-     "state": null,
-     "kvot": 1.99
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Inköpslistan, av som standard",
-     "state": null,
-     "kvot": 1.99
-    },
-    {
-     "art": "kontonotiser",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "Aktivitet från andra, av som standard",
-     "state": null,
-     "kvot": 1.99
-    },
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "När jag lagat något",
-     "state": "on",
-     "kvot": 1.99
-    },
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "När jag delat ett recept",
-     "state": "on",
-     "kvot": 1.99
-    }
-   ]
-  },
-  {
-   "id": "NRC-11",
+   "id": "NRC-05",
    "verifierade_fynd_st": 5,
    "enhet": "grafiska objekt",
    "artefakter_st": 2,
@@ -953,7 +420,7 @@
    ]
   },
   {
-   "id": "NRC-12",
+   "id": "NRC-06",
    "verifierade_fynd_st": 5,
    "enhet": "grafiska delar",
    "artefakter_st": 2,
@@ -1022,7 +489,7 @@
    ]
   },
   {
-   "id": "NRC-13",
+   "id": "NRC-07",
    "verifierade_fynd_st": 4,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1083,7 +550,7 @@
    ]
   },
   {
-   "id": "NRC-14",
+   "id": "NRC-08",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1137,7 +604,7 @@
    ]
   },
   {
-   "id": "NRC-15",
+   "id": "NRC-09",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska objekt",
    "artefakter_st": 3,
@@ -1193,7 +660,7 @@
    ]
   },
   {
-   "id": "NRC-16",
+   "id": "NRC-10",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1247,7 +714,7 @@
    ]
   },
   {
-   "id": "NRC-17",
+   "id": "NRC-11",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1270,7 +737,7 @@
    "klasser": [],
    "andrad_sida": "bararens egen farg",
    "foreslagen_farg": "#7d897c",
-   "forslagets_ursprung": "befintlig designfarg, anvand 427 ganger i sviten",
+   "forslagets_ursprung": "befintlig designfarg, anvand 441 ganger i sviten",
    "forvantad_kvot": 3.42,
    "klarar_kravet": true,
    "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
@@ -1301,7 +768,7 @@
    ]
   },
   {
-   "id": "NRC-18",
+   "id": "NRC-12",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1355,7 +822,7 @@
    ]
   },
   {
-   "id": "NRC-19",
+   "id": "NRC-13",
    "verifierade_fynd_st": 3,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1411,7 +878,7 @@
    ]
   },
   {
-   "id": "NRC-20",
+   "id": "NRC-14",
    "verifierade_fynd_st": 2,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1458,7 +925,7 @@
    ]
   },
   {
-   "id": "NRC-21",
+   "id": "NRC-15",
    "verifierade_fynd_st": 2,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1505,7 +972,55 @@
    ]
   },
   {
-   "id": "NRC-22",
+   "id": "NRC-16",
+   "verifierade_fynd_st": 2,
+   "enhet": "grafiska delar",
+   "artefakter_st": 2,
+   "artefakter": [
+    "samtyckeai",
+    "socintegritet"
+   ],
+   "kontroller_st": 2,
+   "bararroll": "componentIdentityCarrier",
+   "typ": "fyllning",
+   "nuvarande_forgrund": "rgb(125, 137, 124)",
+   "faktisk_angransande_farg": "rgb(230, 234, 217)",
+   "nuvarande_kvot": 2.98,
+   "kvot_min": 2.98,
+   "kvot_max": 2.98,
+   "kalldeklaration": "background: rgb(125, 137, 124)",
+   "source_occurrence_population_st": 31,
+   "write_scope_st": 2,
+   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
+   "shared_implementation": false,
+   "klasser": [],
+   "andrad_sida": "bararens egen farg",
+   "foreslagen_farg": "#627061",
+   "forslagets_ursprung": "befintlig designfarg, anvand 1768 ganger i sviten",
+   "forvantad_kvot": 4.27,
+   "klarar_kravet": true,
+   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
+   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
+   "risk_ovriga_nontext": "begransad till de listade fynden",
+   "fynd": [
+    {
+     "art": "samtyckeai",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+     "namn": "AI-tolkning av recept, avstängd",
+     "state": null,
+     "kvot": 2.98
+    },
+    {
+     "art": "socintegritet",
+     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+     "namn": "Dela det jag gör i flödet",
+     "state": "off",
+     "kvot": 2.98
+    }
+   ]
+  },
+  {
+   "id": "NRC-17",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska objekt",
    "artefakter_st": 1,
@@ -1545,7 +1060,7 @@
    ]
   },
   {
-   "id": "NRC-23",
+   "id": "NRC-18",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska objekt",
    "artefakter_st": 1,
@@ -1568,7 +1083,7 @@
    "klasser": [],
    "andrad_sida": "bararens egen farg",
    "foreslagen_farg": "#8a5212",
-   "forslagets_ursprung": "befintlig designfarg, anvand 323 ganger i sviten",
+   "forslagets_ursprung": "befintlig designfarg, anvand 333 ganger i sviten",
    "forvantad_kvot": 5.2,
    "klarar_kravet": true,
    "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
@@ -1585,7 +1100,7 @@
    ]
   },
   {
-   "id": "NRC-24",
+   "id": "NRC-19",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska objekt",
    "artefakter_st": 1,
@@ -1625,47 +1140,7 @@
    ]
   },
   {
-   "id": "NRC-25",
-   "verifierade_fynd_st": 1,
-   "enhet": "grafiska delar",
-   "artefakter_st": 1,
-   "artefakter": [
-    "samtyckeai"
-   ],
-   "kontroller_st": 1,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "fyllning",
-   "nuvarande_forgrund": "rgb(169, 178, 160)",
-   "faktisk_angransande_farg": "rgb(230, 234, 217)",
-   "nuvarande_kvot": 1.79,
-   "kvot_min": 1.79,
-   "kvot_max": 1.79,
-   "kalldeklaration": "background: rgb(169, 178, 160)",
-   "source_occurrence_population_st": 18,
-   "write_scope_st": 1,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#4a5c43",
-   "forslagets_ursprung": "befintlig designfarg, anvand 59 ganger i sviten",
-   "forvantad_kvot": 5.9,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "samtyckeai",
-     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
-     "namn": "AI-tolkning av recept, avstängd",
-     "state": null,
-     "kvot": 1.79
-    }
-   ]
-  },
-  {
-   "id": "NRC-26",
+   "id": "NRC-20",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1705,7 +1180,7 @@
    ]
   },
   {
-   "id": "NRC-27",
+   "id": "NRC-21",
    "verifierade_fynd_st": 1,
    "enhet": "grafiska delar",
    "artefakter_st": 1,
@@ -1743,46 +1218,6 @@
      "kvot": 2.98
     }
    ]
-  },
-  {
-   "id": "NRC-28",
-   "verifierade_fynd_st": 1,
-   "enhet": "grafiska delar",
-   "artefakter_st": 1,
-   "artefakter": [
-    "socintegritet"
-   ],
-   "kontroller_st": 1,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "fyllning",
-   "nuvarande_forgrund": "rgb(204, 209, 194)",
-   "faktisk_angransande_farg": "rgb(230, 234, 217)",
-   "nuvarande_kvot": 1.27,
-   "kvot_min": 1.27,
-   "kvot_max": 1.27,
-   "kalldeklaration": "background: rgb(204, 209, 194)",
-   "source_occurrence_population_st": 117,
-   "write_scope_st": 1,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#7e8967",
-   "forslagets_ursprung": "minsta ljushetsjustering med bevarad kulor",
-   "forvantad_kvot": 3.03,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "socintegritet",
-     "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
-     "namn": "Dela det jag gör i flödet",
-     "state": "off",
-     "kvot": 1.27
-    }
-   ]
   }
  ],
  "$uppskjutna": {
@@ -1793,7 +1228,7 @@
    "artefakt": "behfoton",
    "source_occurrences_st": 57,
    "filer_st": 10,
-   "motiv": "Write scope ar mycket storre an fyndpopulationen. En andring skulle andra hela laddningssprakets utseende for att ratta 3 fynd.",
+   "motiv": "Write scope vida overstiger fyndpopulationen. En andring skulle andra hela laddningssprakets utseende for att ratta 3 fynd.",
    "ej": "inte pass, inte exempt, inte ignored, inte matartefakt — fynden ar aktiva"
   }
  }
