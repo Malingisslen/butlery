@@ -34,54 +34,13 @@
   "ejMatta_grafiskaDelar_st": 0,
   "undantagna_disabled_grafiskaDelar_st": 6,
   "bedomda_grafiskaDelar_st": 633,
-  "fynd_under_3_grafiskaDelar_st": 2,
-  "fynd_perBararroll_grafiskaDelar": {
-   "componentIdentityCarrier": 2
-  },
-  "fynd_perTyp_grafiskaDelar": {
-   "fyllning": 2
-  },
-  "berorda_kontroller_st": 2,
-  "berorda_artefakter_st": 1,
+  "fynd_under_3_grafiskaDelar_st": 0,
+  "fynd_perBararroll_grafiskaDelar": {},
+  "fynd_perTyp_grafiskaDelar": {},
+  "berorda_kontroller_st": 0,
+  "berorda_artefakter_st": 0,
   "$not": "fynd_perBararroll summerar till fynd_under_3 i enheten grafiska delar. Beror kontroller och artefakter ar ANDRA enheter och far aldrig laggas till.",
-  "fynd": [
-   {
-    "typ": "fyllning",
-    "carrier": "componentIdentityCarrier",
-    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — agaren ar sjalv formen och har ett avgransat barn som bar tillstandet",
-    "ikon": null,
-    "descent": false,
-    "kvot": 1.11,
-    "status": "matt",
-    "farg": "rgb(230, 234, 217)",
-    "angransande": "rgb(245, 244, 237)",
-    "motYta": "ytan utanfor kontrollen",
-    "art": "veckorostavgor",
-    "fil": "Butlery Skarmar v12 etapp 2.dc.html",
-    "roll": "radio",
-    "namn": "Välj Krämig svamppasta som vinnare, 2 röster",
-    "state": null,
-    "disabled": false
-   },
-   {
-    "typ": "fyllning",
-    "carrier": "componentIdentityCarrier",
-    "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — agaren ar sjalv formen och har ett avgransat barn som bar tillstandet",
-    "ikon": null,
-    "descent": false,
-    "kvot": 1.11,
-    "status": "matt",
-    "farg": "rgb(230, 234, 217)",
-    "angransande": "rgb(245, 244, 237)",
-    "motYta": "ytan utanfor kontrollen",
-    "art": "veckorostavgor",
-    "fil": "Butlery Skarmar v12 etapp 2.dc.html",
-    "roll": "radio",
-    "namn": "Välj Fiskgratäng som vinnare, 2 röster",
-    "state": null,
-    "disabled": false
-   }
-  ],
+  "fynd": [],
   "unknown": []
  },
  "B_anvandningAvFarg": {
@@ -1280,6 +1239,6 @@
   "fynd": [],
   "unknown_exempel": []
  },
- "status": "FÄLLD",
+ "status": "godkänd",
  "$avgransning": "WCAG 1.4.11 kan inte kallas stangd sa lange nagon population har unknown."
 }

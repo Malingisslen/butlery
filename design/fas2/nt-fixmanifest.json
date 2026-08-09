@@ -2,69 +2,11 @@
  "$schema": "butlery-nt-fixmanifest/1",
  "$regel": "rotorsakspopulation, source occurrence population och write scope ar tre olika tal. Endast bevisat delad implementation andras gemensamt.",
  "krav_kvot": 3,
- "rotorsaker_st": 1,
- "verifierade_fynd_st": 2,
- "source_occurrences_totalt": 647,
- "write_scope_totalt": 2,
+ "rotorsaker_st": 0,
+ "verifierade_fynd_st": 0,
+ "source_occurrences_totalt": 0,
+ "write_scope_totalt": 0,
  "shared_implementations_st": 0,
  "utan_forslag_st": 0,
- "manifest": [
-  {
-   "id": "NRC-01",
-   "verifierade_fynd_st": 2,
-   "enhet": "grafiska delar",
-   "artefakter_st": 1,
-   "artefakter": [
-    "veckorostavgor"
-   ],
-   "kontroller_st": 2,
-   "bararroll": "componentIdentityCarrier",
-   "typ": "fyllning",
-   "nuvarande_forgrund": "rgb(230, 234, 217)",
-   "faktisk_angransande_farg": "rgb(245, 244, 237)",
-   "nuvarande_kvot": 1.11,
-   "kvot_min": 1.11,
-   "kvot_max": 1.11,
-   "kalldeklaration": "background: rgb(230, 234, 217)",
-   "source_occurrence_population_st": 647,
-   "write_scope_st": 2,
-   "write_scope_grund": "upprepad implementation — endast de verifierade fynden skrivs om, aldrig alla forekomster",
-   "shared_implementation": false,
-   "klasser": [],
-   "andrad_sida": "bararens egen farg",
-   "foreslagen_farg": "#839251",
-   "forslagets_ursprung": "minsta ljushetsjustering med bevarad kulor",
-   "forvantad_kvot": 3.07,
-   "klarar_kravet": true,
-   "paverkade_andra_verifierade_element": "inga, skrivningen ar riktad",
-   "risk_R01": "ingen — ram- och fyllningsfarger pa kontroller ar inte textfarger",
-   "risk_ovriga_nontext": "begransad till de listade fynden",
-   "fynd": [
-    {
-     "art": "veckorostavgor",
-     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
-     "namn": "Välj Krämig svamppasta som vinnare, 2 röster",
-     "state": null,
-     "kvot": 1.11
-    },
-    {
-     "art": "veckorostavgor",
-     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
-     "namn": "Välj Fiskgratäng som vinnare, 2 röster",
-     "state": null,
-     "kvot": 1.11
-    }
-   ]
-  }
- ],
- "$uppskjutna": {
-  "veckorostavgor": {
-   "status": "DESIGN DECISION PENDING",
-   "fynd": 2,
-   "artefakt": "veckorostavgor",
-   "ej": "inte measurement artifact, inte exempt, inte unresolved source, inte fargsokningsproblem",
-   "bevis": "yta #f5f4ed L=0,902 · text #24382c L=0,034. Krav non-text: contrast(F,yta)>=3,0 => L(F)<=0,2674. Krav text: contrast(text,F)>=4,5 => L(F)>=0,3273. Intervallen overlappar inte.",
-   "slutsats": "Ingen fill-farg kan uppfylla bada kraven med nuvarande morka text och nuvarande modell dar fyllningen ar componentIdentityCarrier. En framtida losning maste andra komponentens visuella modell, till exempel separera identity carrier fran textbakgrund."
-  }
- }
+ "manifest": []
 }

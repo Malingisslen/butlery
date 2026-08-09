@@ -2,110 +2,21 @@
  "$schema": "butlery-nt-rotorsak/1",
  "$regel": "Grupperingen ar mekanisk. Samma RGB pa olika bakgrunder ar inte samma rotorsak. Rotorsakspopulation och write scope halIs isar.",
  "population": {
-  "A_kontrollgrafik_grafiskaDelar_st": 2,
-  "A_componentIdentityCarrier_st": 2,
+  "A_kontrollgrafik_grafiskaDelar_st": 0,
+  "A_componentIdentityCarrier_st": 0,
   "A_stateCarrier_st": 0,
   "B_fristaende_grafiskaObjekt_st": 0,
-  "totalt_raa_fynd_st": 2
+  "totalt_raa_fynd_st": 0
  },
  "adjudicering": {
-  "giltiga_fynd_st": 2,
+  "giltiga_fynd_st": 0,
   "matartefakter_st": 0,
   "artefakt_barare_utan_egen_farg_st": 0,
   "artefakt_fel_angransande_yta_st": 0,
   "$not": "Matartefakter ar bundna till en rotorsak som alla andra, men de ar inte designfel och ska inte fargrattas. De kraver ett metodbeslut."
  },
- "rotorsaker_st": 1,
- "bundna_fynd_st": 2,
+ "rotorsaker_st": 0,
+ "bundna_fynd_st": 0,
  "oforklarade_st": 0,
- "rotorsaker": [
-  {
-   "id": "NRC-01",
-   "population": "A",
-   "bararroll": "componentIdentityCarrier",
-   "typ": "fyllning",
-   "mekanism": "inline style: background: rgb(230, 234, 217)  mot  rgb(245, 244, 237)",
-   "kalldeklaration_forgrund": "background: rgb(230, 234, 217)",
-   "kalldeklaration_bakgrund": [
-    "(css-regel eller arv)"
-   ],
-   "matartefakt": false,
-   "artefaktklass": null,
-   "faktisk_angransande_yta": [
-    "rgb(245, 244, 237)"
-   ],
-   "adjudicering": "giltigt fynd — bararen malar sin farg och mats mot ratt yta",
-   "arvsKalla": null,
-   "klasser": [],
-   "kravd_kvot": 3,
-   "forgrund": [
-    "rgb(230, 234, 217)"
-   ],
-   "bakgrund": [
-    "rgb(245, 244, 237)"
-   ],
-   "alfa_kompositering": false,
-   "antal_fynd": 2,
-   "enhet": "grafiska delar",
-   "antal_kontroller": 2,
-   "antal_artefakter": 1,
-   "artefakter": [
-    "veckorostavgor"
-   ],
-   "filer": 1,
-   "kvot_min": 1.11,
-   "kvot_max": 1.11,
-   "states": [],
-   "roller": [
-    "radio"
-   ],
-   "ikoner": [],
-   "implementation": "upprepad implementation",
-   "rotorsakspopulation_st": 2,
-   "write_scope": {
-    "sokmonster": [
-     "background:#e6ead9",
-     "background: #e6ead9"
-    ],
-    "forekomster_i_kallan_st": 647,
-    "utanfor_fynden_st": 645,
-    "$not": "forekomster_i_kallan ar write scope. antal_fynd ar rotorsakspopulationen. De ar olika tal."
-   },
-   "distinkta_stilstrangar": 1,
-   "exempel": [
-    {
-     "art": "veckorostavgor",
-     "namn": "Välj Krämig svamppasta som vinnare, 2 röster",
-     "kvot": 1.11,
-     "farg": "rgb(230, 234, 217)",
-     "angransande": "rgb(245, 244, 237)",
-     "tagg": "<span data-dc-tpl=\"1964\" data-a11y-name=\"Välj Krämig svamppasta som vinnare, 2 röster\" data-a11y-role=\"radio\" data-hit=\""
-    },
-    {
-     "art": "veckorostavgor",
-     "namn": "Välj Fiskgratäng som vinnare, 2 röster",
-     "kvot": 1.11,
-     "farg": "rgb(230, 234, 217)",
-     "angransande": "rgb(245, 244, 237)",
-     "tagg": "<span data-dc-tpl=\"1968\" data-a11y-name=\"Välj Fiskgratäng som vinnare, 2 röster\" data-a11y-role=\"radio\" data-hit=\"self\" "
-    }
-   ],
-   "fynd": [
-    {
-     "art": "veckorostavgor",
-     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
-     "namn": "Välj Krämig svamppasta som vinnare, 2 röster",
-     "state": null,
-     "kvot": 1.11
-    },
-    {
-     "art": "veckorostavgor",
-     "fil": "Butlery Skarmar v12 etapp 2.dc.html",
-     "namn": "Välj Fiskgratäng som vinnare, 2 röster",
-     "state": null,
-     "kvot": 1.11
-    }
-   ]
-  }
- ]
+ "rotorsaker": []
 }
