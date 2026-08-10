@@ -190,23 +190,25 @@
   "namn": "--ram-behallare-a",
   "roll": "ram-behallare",
   "ljus": "#24382c",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 11,
   "artefakter": 8,
   "evidens": "6 befintliga morka par stodjer mappningen",
   "provisorisk_variant": true,
-  "normaliseringsgrupp": "ram-behallare"
+  "normaliseringsgrupp": "ram-behallare",
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-behallare-b",
   "roll": "ram-behallare",
   "ljus": "#7d897c",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 3,
   "artefakter": 8,
   "evidens": "3 befintliga morka par stodjer mappningen",
   "provisorisk_variant": true,
-  "normaliseringsgrupp": "ram-behallare"
+  "normaliseringsgrupp": "ram-behallare",
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-behallare-c",
@@ -289,23 +291,25 @@
   "namn": "--ram-kontroll-a",
   "roll": "ram-kontroll",
   "ljus": "#24382c",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 5,
   "artefakter": 6,
   "evidens": "6 befintliga morka par stodjer mappningen",
   "provisorisk_variant": true,
-  "normaliseringsgrupp": "ram-kontroll"
+  "normaliseringsgrupp": "ram-kontroll",
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-kontroll-b",
   "roll": "ram-kontroll",
   "ljus": "#7d897c",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 2,
   "artefakter": 6,
   "evidens": "3 befintliga morka par stodjer mappningen",
   "provisorisk_variant": true,
-  "normaliseringsgrupp": "ram-kontroll"
+  "normaliseringsgrupp": "ram-kontroll",
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-kontroll-c",

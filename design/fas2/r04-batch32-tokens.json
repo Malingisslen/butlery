@@ -3,19 +3,21 @@
   "namn": "--ram-kontroll-a",
   "roll": "ram-kontroll",
   "ljus": "#24382c",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 101,
   "artefakter": 16,
-  "ateranvand": true
+  "ateranvand": true,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-kontroll-b",
   "roll": "ram-kontroll",
   "ljus": "#7d897c",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 60,
   "artefakter": 7,
-  "ateranvand": true
+  "ateranvand": true,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-kontroll-c",
@@ -30,19 +32,21 @@
   "namn": "--ram-kontroll-b4",
   "roll": "ram-kontroll",
   "ljus": "#d8b784",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 4,
   "artefakter": 1,
-  "ateranvand": false
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-kontroll-b5",
   "roll": "ram-kontroll",
   "ljus": "#9c3b23",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 4,
   "artefakter": 1,
-  "ateranvand": false
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--text-kontroll-a",
@@ -228,28 +232,31 @@
   "namn": "--ram-behallare-a",
   "roll": "ram-behallare",
   "ljus": "#24382c",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 28,
   "artefakter": 8,
-  "ateranvand": true
+  "ateranvand": true,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-behallare-b3",
   "roll": "ram-behallare",
   "ljus": "#d8b784",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 24,
   "artefakter": 6,
-  "ateranvand": false
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-behallare-b4",
   "roll": "ram-behallare",
   "ljus": "rgba(245,244,237,0.4)",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 12,
   "artefakter": 3,
-  "ateranvand": false
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-behallare-d",
@@ -264,37 +271,41 @@
   "namn": "--ram-behallare-b6",
   "roll": "ram-behallare",
   "ljus": "#8a5212",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 5,
   "artefakter": 2,
-  "ateranvand": false
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-behallare-b7",
   "roll": "ram-behallare",
   "ljus": "#3f6b4f",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 4,
   "artefakter": 1,
-  "ateranvand": false
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-behallare-b",
   "roll": "ram-behallare",
   "ljus": "#7d897c",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 4,
   "artefakter": 1,
-  "ateranvand": true
+  "ateranvand": true,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--ram-behallare-b9",
   "roll": "ram-behallare",
   "ljus": "#627061",
-  "mork": "rgba(245,244,237,.35)",
+  "mork": "rgba(245,244,237,.4)",
   "deklarationer": 1,
   "artefakter": 1,
-  "ateranvand": false
+  "ateranvand": false,
+  "morkRattad": "ramkontrastbeslutet .35 -> .4, redan skrivet och verifierat i ritningarna"
  },
  {
   "namn": "--yta-upphojd",

@@ -28,6 +28,13 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
    ar en override. */
 .sc-item{--text-innehall-a:#627061;--text-innehall-b:#24382c;--text-innehall-c:#37453a;--text-innehall-d:#5b6959;--text-innehall-e:#8a5212;--text-innehall-f:#9c3b23;--text-innehall-g:#a15a0a;--ikon-fristaende-a:#24382c;--ikon-fristaende-b:#9c3b23;--ikon-fristaende-c:#37453a;--ikon-fristaende-d:#5b6959;--ikon-fristaende-e:#8a5212;--ikon-fristaende-f:#627061;--ikon-fristaende-g:#a15a0a;--ram-avdelare-a:#ccd1c2;--ram-avdelare-b:rgba(0,0,0,.1);--ram-avdelare-c:#e6ead9;--ram-behallare-a:#24382c;--ram-behallare-b:#7d897c;--ram-behallare-c:#ccd1c2;--ram-behallare-d:#9c3b23;--yta-platshallare:#e6ead9;--yta-upphojd:#e6ead9;--text-kontroll-a:#24382c;--text-kontroll-b:#9c3b23;--text-kontroll-c:#7d897c;--ram-kontroll-a:#24382c;--ram-kontroll-b:#7d897c;--ram-kontroll-c:#ccd1c2}
 .sc-item[data-theme="dark"]{--surface-app:#17251d;--border-app:rgba(245,244,237,.18);--text-app:#c9d3c4;--text-innehall-a:#93a48d;--text-innehall-b:#c9d3c4;--text-innehall-c:#93a48d;--text-innehall-d:#93a48d;--text-innehall-e:#dca968;--text-innehall-f:#de9078;--text-innehall-g:#dca968;--ikon-fristaende-a:#c9d3c4;--ikon-fristaende-b:#de9078;--ikon-fristaende-c:#93a48d;--ikon-fristaende-d:#93a48d;--ikon-fristaende-e:#dca968;--ikon-fristaende-f:#93a48d;--ikon-fristaende-g:#dca968;--ram-avdelare-a:rgba(245,244,237,.18);--ram-avdelare-b:rgba(245,244,237,.18);--ram-avdelare-c:rgba(245,244,237,.18);--ram-behallare-a:rgba(245,244,237,.4);--ram-behallare-b:rgba(245,244,237,.4);--ram-behallare-c:rgba(245,244,237,.18);--ram-behallare-d:#de9078;--yta-platshallare:#17251d;--yta-upphojd:#17251d;--text-kontroll-a:#c9d3c4;--text-kontroll-b:#de9078;--text-kontroll-c:#93a48d;--ram-kontroll-a:rgba(245,244,237,.4);--ram-kontroll-b:rgba(245,244,237,.4);--ram-kontroll-c:rgba(245,244,237,.18)}
+
+/* R-04 A-batch · redan etablerade fargroller, ateranvanda i den har
+   filen. Ljusvardena ar default pa .sc-item, sa en kalla utan data-theme
+   renderas exakt som fore. Bara det morka temat ar en override. Inga nya
+   varden och inga nya mappningar. */
+.sc-item{--yta-upphojd-b2:#24382c;--text-innehall-b4:#f5f4ed;--ikon-fristaende-b6:#f5f4ed;--ram-behallare-b3:#d8b784;--text-innehall-b8:#3f6b4f;--ikon-fristaende-b5:#3f6b4f;--yta-kontroll-b2:#24382c;--text-kontroll-b4:#f5f4ed;--ikon-fristaende-b7:#7d897c}
+.sc-item[data-theme="dark"]{--yta-upphojd-b2:#17251d;--text-innehall-b4:#f5f4ed;--ikon-fristaende-b6:#f5f4ed;--ram-behallare-b3:rgba(245,244,237,.4);--text-innehall-b8:#8fb89a;--ikon-fristaende-b5:#8fb89a;--yta-kontroll-b2:#17251d;--text-kontroll-b4:#f5f4ed;--ikon-fristaende-b7:#c9d3c4}
 </style>
 <style>
 .sc-wrap{padding:40px 44px 60px}
@@ -883,15 +890,15 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-row" style="margin-top:36px">
 
 <!-- ================= ÅLDERSSPÄRR ================= -->
-<div class="sc-item" id="aldersgrans" data-theme="light" data-theme-family="aldersgrans-414" data-screen-label="Åldersspärr">
+<div class="sc-item" id="aldersgrans" data-theme-support="light dark" data-theme-family="aldersgrans-414" data-screen-label="Åldersspärr">
   <div class="sc-label"><a class="sc-id" href="#aldersgrans">Åldersspärr</a>Spärrskärm under 15 år (GDPR art. 8) — går ej att backa ur, logga ut + föräldra-alternativ (ur onboarding_age_gate_blocked_view).</div>
   <div class="sc-phone" style="width:412px;height:820px">
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px;text-align:center">
-      <svg data-graphic-role="redundant" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:52px;height:52px;color:#24382c"   data-icon="lock"><rect x="5" y="10.6" width="14" height="9.4" rx="2"></rect><path d="M8.4 10.6V7.8a3.6 3.6 0 0 1 7.2 0v2.8"></path></svg>
+      <svg data-graphic-role="redundant" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:52px;height:52px;color:var(--ikon-fristaende-a)"   data-icon="lock"><rect x="5" y="10.6" width="14" height="9.4" rx="2"></rect><path d="M8.4 10.6V7.8a3.6 3.6 0 0 1 7.2 0v2.8"></path></svg>
       <div style="font-family:'Butlery Sans';font-size:22px;font-weight:700;letter-spacing:-.3px;margin-top:18px">Butlery kräver att du fyllt 15</div>
-      <div style="font-size:13px;color:#627061;line-height:1.55;margin-top:10px">Vi får inte spara dina uppgifter ännu. Kontot du påbörjade har raderats — inget finns kvar hos oss.</div>
-      <div style="width:100%;margin-top:26px;background:#24382c;color:#f5f4ed;font-size:14px;font-weight:600;padding:12px;border-radius:8px">Logga ut</div>
-      <div style="margin-top:12px;font-size:12px;font-weight:700;color:#a15a0a">Be en förälder skapa ett familjekonto i stället</div>
+      <div style="font-size:13px;color:var(--text-innehall-a);line-height:1.55;margin-top:10px">Vi får inte spara dina uppgifter ännu. Kontot du påbörjade har raderats — inget finns kvar hos oss.</div>
+      <div style="width:100%;margin-top:26px;background:var(--yta-upphojd-b2);color:var(--text-innehall-b4);font-size:14px;font-weight:600;padding:12px;border-radius:8px">Logga ut</div>
+      <div style="margin-top:12px;font-size:12px;font-weight:700;color:var(--text-innehall-g)">Be en förälder skapa ett familjekonto i stället</div>
     </div>
   </div>
 </div>
@@ -930,15 +937,15 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 </div>
 
 <!-- ================= E-POSTVERIFIERING ================= -->
-<div class="sc-item" id="epostverif" data-theme="light" data-theme-family="epostverif-414" data-screen-label="E-postverifiering">
+<div class="sc-item" id="epostverif" data-theme-support="light dark" data-theme-family="epostverif-414" data-screen-label="E-postverifiering">
   <div class="sc-label"><a class="sc-id" href="#epostverif">E-postverif</a>Mjuk grind efter registrering — skickat-till-adress, skicka igen med nedräkning, fortsätt utan (ur email_verification_view).</div>
   <div class="sc-phone" style="width:412px;height:820px">
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 32px;text-align:center">
-      <svg data-graphic-role="redundant" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:52px;height:52px;color:#24382c"   data-icon="mail"><rect x="3.6" y="6" width="16.8" height="12" rx="2"></rect><path d="M4.2 7.3L12 12.8l7.8-5.5"></path></svg>
+      <svg data-graphic-role="redundant" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:52px;height:52px;color:var(--ikon-fristaende-a)"   data-icon="mail"><rect x="3.6" y="6" width="16.8" height="12" rx="2"></rect><path d="M4.2 7.3L12 12.8l7.8-5.5"></path></svg>
       <div style="font-family:'Butlery Sans';font-size:22px;font-weight:700;letter-spacing:-.3px;margin-top:18px">Bekräfta din e-post</div>
-      <div style="font-size:13px;color:#627061;line-height:1.55;margin-top:10px">Vi har skickat en länk till <b style="color:#24382c">malin@butlery.se</b>. Skärmen går vidare av sig själv när du klickat.</div>
-      <div style="width:100%;margin-top:26px;border:1.5px solid #24382c;color:#627061;font-size:14px;font-weight:600;padding:12px;border-radius:8px">Skicka igen (42 s)</div>
-      <div style="margin-top:12px;font-size:12px;font-weight:600;color:#627061">Fortsätt utan att bekräfta</div>
+      <div style="font-size:13px;color:var(--text-innehall-a);line-height:1.55;margin-top:10px">Vi har skickat en länk till <b style="color:var(--text-innehall-b)">malin@butlery.se</b>. Skärmen går vidare av sig själv när du klickat.</div>
+      <div style="width:100%;margin-top:26px;border:1.5px solid var(--ram-behallare-a);color:var(--text-innehall-a);font-size:14px;font-weight:600;padding:12px;border-radius:8px">Skicka igen (42 s)</div>
+      <div style="margin-top:12px;font-size:12px;font-weight:600;color:var(--text-innehall-a)">Fortsätt utan att bekräfta</div>
     </div>
   </div>
 </div>
@@ -1028,65 +1035,65 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 </div>
 
 <!-- ================= MINA RAPPORTER ================= -->
-<div class="sc-item" id="rapporter" data-theme="light" data-theme-family="rapporter-322" data-screen-label="Mina rapporter">
+<div class="sc-item" id="rapporter" data-theme-support="light dark" data-theme-family="rapporter-322" data-screen-label="Mina rapporter">
   <div class="sc-label"><a class="sc-id" href="#rapporter">Rapporter</a>Mina rapporter — inskickade anmälningar med typ-ikon, tid och statusbadge Väntar/Granskas/Åtgärdad/Stängd (ur my_reports_view).</div>
   <div class="sc-phone" style="width:320px;height:520px">
-    <div style="background:#24382c;color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
-      <svg data-graphic-role="required" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:#F5F4ED"   data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg>
+    <div style="background:var(--yta-upphojd-b2);color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
+      <svg data-graphic-role="required" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:var(--ikon-fristaende-b6)"   data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg>
       <span style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Mina rapporter</span>
     </div>
     <div style="padding:8px 24px 0">
-      <div style="padding:12px 0;border-bottom:1px solid #ccd1c2;display:flex;align-items:center;gap:11px">
-        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:#627061"   data-icon="user"><circle cx="12" cy="9.4" r="3.4"></circle><path d="M5.6 19.8a6.4 6.4 0 0 1 12.8 0"></path></svg>
-        <div style="flex:1"><div style="font-size:13px;font-weight:700">Olämpligt profilnamn</div><div style="font-size:12px;color:#627061">10 juli · profil</div></div>
-        <span style="font-size:10.5px;font-weight:700;background:#24382c;color:#f5f4ed;padding:3px 9px;border-radius:999px">VÄNTAR</span>
+      <div style="padding:12px 0;border-bottom:1px solid var(--ram-behallare-c);display:flex;align-items:center;gap:11px">
+        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:var(--ikon-fristaende-f)"   data-icon="user"><circle cx="12" cy="9.4" r="3.4"></circle><path d="M5.6 19.8a6.4 6.4 0 0 1 12.8 0"></path></svg>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Olämpligt profilnamn</div><div style="font-size:12px;color:var(--text-innehall-a)">10 juli · profil</div></div>
+        <span style="font-size:10.5px;font-weight:700;background:var(--yta-upphojd-b2);color:var(--text-innehall-b4);padding:3px 9px;border-radius:999px">VÄNTAR</span>
       </div>
-      <div style="padding:12px 0;border-bottom:1px solid #ccd1c2;display:flex;align-items:center;gap:11px">
-        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:#627061"   data-icon="message-square"><path d="M4.5 6.6A2 2 0 0 1 6.5 4.6h11a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H9.4L5.6 19.4v-3.6h.9a2 2 0 0 1-2-2z"></path><circle cx="9.2" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="12" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="14.8" cy="10.2" r="1" fill="currentColor" stroke="none"></circle></svg>
-        <div style="flex:1"><div style="font-size:13px;font-weight:700">Kränkande kommentar</div><div style="font-size:12px;color:#627061">6 juli · kommentar</div></div>
-        <span style="font-size:10.5px;font-weight:700;border:1px solid #d8b784;color:#8a5212;padding:3px 9px;border-radius:999px">GRANSKAS</span>
+      <div style="padding:12px 0;border-bottom:1px solid var(--ram-behallare-c);display:flex;align-items:center;gap:11px">
+        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:var(--ikon-fristaende-f)"   data-icon="message-square"><path d="M4.5 6.6A2 2 0 0 1 6.5 4.6h11a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H9.4L5.6 19.4v-3.6h.9a2 2 0 0 1-2-2z"></path><circle cx="9.2" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="12" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="14.8" cy="10.2" r="1" fill="currentColor" stroke="none"></circle></svg>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Kränkande kommentar</div><div style="font-size:12px;color:var(--text-innehall-a)">6 juli · kommentar</div></div>
+        <span style="font-size:10.5px;font-weight:700;border:1px solid var(--ram-behallare-b3);color:var(--text-innehall-e);padding:3px 9px;border-radius:999px">GRANSKAS</span>
       </div>
-      <div style="padding:12px 0;border-bottom:1px solid #ccd1c2;display:flex;align-items:center;gap:11px">
-        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:#627061;flex:none"  data-icon="file"><path d="M6.5 3.5h7L18 8v11.5a1 1 0 0 1-1 1H6.5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"></path><path d="M13.5 3.5V8H18"></path><path d="M8.5 13h7M8.5 16.5h4.5"></path></svg>
-        <div style="flex:1"><div style="font-size:13px;font-weight:700">Spam-recept med reklam</div><div style="font-size:12px;color:#627061">28 juni · recept</div></div>
-        <span style="font-size:10.5px;font-weight:700;border:1px solid #ccd1c2;color:#3f6b4f;padding:3px 9px;border-radius:999px;flex:none">ÅTGÄRDAD</span>
+      <div style="padding:12px 0;border-bottom:1px solid var(--ram-behallare-c);display:flex;align-items:center;gap:11px">
+        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:var(--ikon-fristaende-f);flex:none"  data-icon="file"><path d="M6.5 3.5h7L18 8v11.5a1 1 0 0 1-1 1H6.5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"></path><path d="M13.5 3.5V8H18"></path><path d="M8.5 13h7M8.5 16.5h4.5"></path></svg>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Spam-recept med reklam</div><div style="font-size:12px;color:var(--text-innehall-a)">28 juni · recept</div></div>
+        <span style="font-size:10.5px;font-weight:700;border:1px solid var(--ram-behallare-c);color:var(--text-innehall-b8);padding:3px 9px;border-radius:999px;flex:none">ÅTGÄRDAD</span>
       </div>
       <div style="padding:12px 0;display:flex;align-items:center;gap:11px">
-        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:#627061"   data-icon="message-square"><path d="M4.5 6.6A2 2 0 0 1 6.5 4.6h11a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H9.4L5.6 19.4v-3.6h.9a2 2 0 0 1-2-2z"></path><circle cx="9.2" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="12" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="14.8" cy="10.2" r="1" fill="currentColor" stroke="none"></circle></svg>
-        <div style="flex:1"><div style="font-size:13px;font-weight:700">Vilseledande meddelande</div><div style="font-size:12px;color:#627061">14 maj · meddelande</div></div>
-        <span style="font-size:10.5px;font-weight:700;border:1px solid #ccd1c2;color:#627061;padding:3px 9px;border-radius:999px">STÄNGD</span>
+        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:var(--ikon-fristaende-f)"   data-icon="message-square"><path d="M4.5 6.6A2 2 0 0 1 6.5 4.6h11a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H9.4L5.6 19.4v-3.6h.9a2 2 0 0 1-2-2z"></path><circle cx="9.2" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="12" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="14.8" cy="10.2" r="1" fill="currentColor" stroke="none"></circle></svg>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Vilseledande meddelande</div><div style="font-size:12px;color:var(--text-innehall-a)">14 maj · meddelande</div></div>
+        <span style="font-size:10.5px;font-weight:700;border:1px solid var(--ram-behallare-c);color:var(--text-innehall-a);padding:3px 9px;border-radius:999px">STÄNGD</span>
       </div>
     </div>
   </div>
 </div>
 
-<div class="sc-item" id="rapporter412" data-theme="light" data-theme-family="rapporter412-414" data-screen-label="Mina rapporter · 412">
+<div class="sc-item" id="rapporter412" data-theme-support="light dark" data-theme-family="rapporter412-414" data-screen-label="Mina rapporter · 412">
   <div class="sc-label"><a class="sc-id" href="#rapporter412">Rapporter 412</a>Mina rapporter — inskickade anmälningar med typ-ikon, tid och statusbadge Väntar/Granskas/Åtgärdad/Stängd i referensbredd 412 × 924 (ur my_reports_view).</div>
   <div class="sc-phone" style="width:412px;height:924px">
-    <div style="background:#24382c;color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
-      <svg data-graphic-role="required" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:#F5F4ED"   data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg>
+    <div style="background:var(--yta-upphojd-b2);color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
+      <svg data-graphic-role="required" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:var(--ikon-fristaende-b6)"   data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg>
       <span style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Mina rapporter</span>
     </div>
     <div style="padding:8px 24px 0">
-      <div style="padding:12px 0;border-bottom:1px solid #ccd1c2;display:flex;align-items:center;gap:11px">
-        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:#627061"   data-icon="user"><circle cx="12" cy="9.4" r="3.4"></circle><path d="M5.6 19.8a6.4 6.4 0 0 1 12.8 0"></path></svg>
-        <div style="flex:1"><div style="font-size:13px;font-weight:700">Olämpligt profilnamn</div><div style="font-size:12px;color:#627061">10 juli · profil</div></div>
-        <span style="font-size:10.5px;font-weight:700;background:#24382c;color:#f5f4ed;padding:3px 9px;border-radius:999px">VÄNTAR</span>
+      <div style="padding:12px 0;border-bottom:1px solid var(--ram-behallare-c);display:flex;align-items:center;gap:11px">
+        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:var(--ikon-fristaende-f)"   data-icon="user"><circle cx="12" cy="9.4" r="3.4"></circle><path d="M5.6 19.8a6.4 6.4 0 0 1 12.8 0"></path></svg>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Olämpligt profilnamn</div><div style="font-size:12px;color:var(--text-innehall-a)">10 juli · profil</div></div>
+        <span style="font-size:10.5px;font-weight:700;background:var(--yta-upphojd-b2);color:var(--text-innehall-b4);padding:3px 9px;border-radius:999px">VÄNTAR</span>
       </div>
-      <div style="padding:12px 0;border-bottom:1px solid #ccd1c2;display:flex;align-items:center;gap:11px">
-        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:#627061"   data-icon="message-square"><path d="M4.5 6.6A2 2 0 0 1 6.5 4.6h11a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H9.4L5.6 19.4v-3.6h.9a2 2 0 0 1-2-2z"></path><circle cx="9.2" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="12" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="14.8" cy="10.2" r="1" fill="currentColor" stroke="none"></circle></svg>
-        <div style="flex:1"><div style="font-size:13px;font-weight:700">Kränkande kommentar</div><div style="font-size:12px;color:#627061">6 juli · kommentar</div></div>
-        <span style="font-size:10.5px;font-weight:700;border:1px solid #d8b784;color:#8a5212;padding:3px 9px;border-radius:999px">GRANSKAS</span>
+      <div style="padding:12px 0;border-bottom:1px solid var(--ram-behallare-c);display:flex;align-items:center;gap:11px">
+        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:var(--ikon-fristaende-f)"   data-icon="message-square"><path d="M4.5 6.6A2 2 0 0 1 6.5 4.6h11a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H9.4L5.6 19.4v-3.6h.9a2 2 0 0 1-2-2z"></path><circle cx="9.2" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="12" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="14.8" cy="10.2" r="1" fill="currentColor" stroke="none"></circle></svg>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Kränkande kommentar</div><div style="font-size:12px;color:var(--text-innehall-a)">6 juli · kommentar</div></div>
+        <span style="font-size:10.5px;font-weight:700;border:1px solid var(--ram-behallare-b3);color:var(--text-innehall-e);padding:3px 9px;border-radius:999px">GRANSKAS</span>
       </div>
-      <div style="padding:12px 0;border-bottom:1px solid #ccd1c2;display:flex;align-items:center;gap:11px">
-        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:#627061;flex:none"  data-icon="file"><path d="M6.5 3.5h7L18 8v11.5a1 1 0 0 1-1 1H6.5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"></path><path d="M13.5 3.5V8H18"></path><path d="M8.5 13h7M8.5 16.5h4.5"></path></svg>
-        <div style="flex:1"><div style="font-size:13px;font-weight:700">Spam-recept med reklam</div><div style="font-size:12px;color:#627061">28 juni · recept</div></div>
-        <span style="font-size:10.5px;font-weight:700;border:1px solid #ccd1c2;color:#3f6b4f;padding:3px 9px;border-radius:999px;flex:none">ÅTGÄRDAD</span>
+      <div style="padding:12px 0;border-bottom:1px solid var(--ram-behallare-c);display:flex;align-items:center;gap:11px">
+        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:var(--ikon-fristaende-f);flex:none"  data-icon="file"><path d="M6.5 3.5h7L18 8v11.5a1 1 0 0 1-1 1H6.5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"></path><path d="M13.5 3.5V8H18"></path><path d="M8.5 13h7M8.5 16.5h4.5"></path></svg>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Spam-recept med reklam</div><div style="font-size:12px;color:var(--text-innehall-a)">28 juni · recept</div></div>
+        <span style="font-size:10.5px;font-weight:700;border:1px solid var(--ram-behallare-c);color:var(--text-innehall-b8);padding:3px 9px;border-radius:999px;flex:none">ÅTGÄRDAD</span>
       </div>
       <div style="padding:12px 0;display:flex;align-items:center;gap:11px">
-        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:#627061"   data-icon="message-square"><path d="M4.5 6.6A2 2 0 0 1 6.5 4.6h11a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H9.4L5.6 19.4v-3.6h.9a2 2 0 0 1-2-2z"></path><circle cx="9.2" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="12" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="14.8" cy="10.2" r="1" fill="currentColor" stroke="none"></circle></svg>
-        <div style="flex:1"><div style="font-size:13px;font-weight:700">Vilseledande meddelande</div><div style="font-size:12px;color:#627061">14 maj · meddelande</div></div>
-        <span style="font-size:10.5px;font-weight:700;border:1px solid #ccd1c2;color:#627061;padding:3px 9px;border-radius:999px">STÄNGD</span>
+        <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:var(--ikon-fristaende-f)"   data-icon="message-square"><path d="M4.5 6.6A2 2 0 0 1 6.5 4.6h11a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H9.4L5.6 19.4v-3.6h.9a2 2 0 0 1-2-2z"></path><circle cx="9.2" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="12" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="14.8" cy="10.2" r="1" fill="currentColor" stroke="none"></circle></svg>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Vilseledande meddelande</div><div style="font-size:12px;color:var(--text-innehall-a)">14 maj · meddelande</div></div>
+        <span style="font-size:10.5px;font-weight:700;border:1px solid var(--ram-behallare-c);color:var(--text-innehall-a);padding:3px 9px;border-radius:999px">STÄNGD</span>
       </div>
     </div>
   </div>

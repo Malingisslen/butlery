@@ -28,6 +28,13 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
    ar en override. */
 .sc-item{--text-innehall-a:#627061;--text-innehall-b:#24382c;--text-innehall-c:#37453a;--text-innehall-d:#5b6959;--text-innehall-e:#8a5212;--text-innehall-f:#9c3b23;--text-innehall-g:#a15a0a;--ikon-fristaende-a:#24382c;--ikon-fristaende-b:#9c3b23;--ikon-fristaende-c:#37453a;--ikon-fristaende-d:#5b6959;--ikon-fristaende-e:#8a5212;--ikon-fristaende-f:#627061;--ikon-fristaende-g:#a15a0a;--ram-avdelare-a:#ccd1c2;--ram-avdelare-b:rgba(0,0,0,.1);--ram-avdelare-c:#e6ead9;--ram-behallare-a:#24382c;--ram-behallare-b:#7d897c;--ram-behallare-c:#ccd1c2;--ram-behallare-d:#9c3b23;--yta-platshallare:#e6ead9;--yta-upphojd:#e6ead9;--text-kontroll-a:#24382c;--text-kontroll-b:#9c3b23;--text-kontroll-c:#7d897c;--ram-kontroll-a:#24382c;--ram-kontroll-b:#7d897c;--ram-kontroll-c:#ccd1c2}
 .sc-item[data-theme="dark"]{--surface-app:#17251d;--border-app:rgba(245,244,237,.18);--text-app:#c9d3c4;--text-innehall-a:#93a48d;--text-innehall-b:#c9d3c4;--text-innehall-c:#93a48d;--text-innehall-d:#93a48d;--text-innehall-e:#dca968;--text-innehall-f:#de9078;--text-innehall-g:#dca968;--ikon-fristaende-a:#c9d3c4;--ikon-fristaende-b:#de9078;--ikon-fristaende-c:#93a48d;--ikon-fristaende-d:#93a48d;--ikon-fristaende-e:#dca968;--ikon-fristaende-f:#93a48d;--ikon-fristaende-g:#dca968;--ram-avdelare-a:rgba(245,244,237,.18);--ram-avdelare-b:rgba(245,244,237,.18);--ram-avdelare-c:rgba(245,244,237,.18);--ram-behallare-a:rgba(245,244,237,.4);--ram-behallare-b:rgba(245,244,237,.4);--ram-behallare-c:rgba(245,244,237,.18);--ram-behallare-d:#de9078;--yta-platshallare:#17251d;--yta-upphojd:#17251d;--text-kontroll-a:#c9d3c4;--text-kontroll-b:#de9078;--text-kontroll-c:#93a48d;--ram-kontroll-a:rgba(245,244,237,.4);--ram-kontroll-b:rgba(245,244,237,.4);--ram-kontroll-c:rgba(245,244,237,.18)}
+
+/* R-04 A-batch · redan etablerade fargroller, ateranvanda i den har
+   filen. Ljusvardena ar default pa .sc-item, sa en kalla utan data-theme
+   renderas exakt som fore. Bara det morka temat ar en override. Inga nya
+   varden och inga nya mappningar. */
+.sc-item{--yta-upphojd-b2:#24382c;--text-innehall-b4:#f5f4ed;--ikon-fristaende-b6:#f5f4ed;--ram-behallare-b3:#d8b784;--text-innehall-b8:#3f6b4f;--ikon-fristaende-b5:#3f6b4f;--yta-kontroll-b2:#24382c;--text-kontroll-b4:#f5f4ed;--ikon-fristaende-b7:#7d897c}
+.sc-item[data-theme="dark"]{--yta-upphojd-b2:#17251d;--text-innehall-b4:#f5f4ed;--ikon-fristaende-b6:#f5f4ed;--ram-behallare-b3:rgba(245,244,237,.4);--text-innehall-b8:#8fb89a;--ikon-fristaende-b5:#8fb89a;--yta-kontroll-b2:#17251d;--text-kontroll-b4:#f5f4ed;--ikon-fristaende-b7:#c9d3c4}
 </style>
 <style>
 .sc-wrap{padding:40px 44px 60px}
@@ -110,16 +117,16 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
     
 </div>
 </div>
-<div class="sc-item" id="soctomttyst" data-theme="light" data-theme-family="soctomttyst-412" data-screen-label="Flödet — tomt: tyst så här långt" data-lineage-from="soctomt">
+<div class="sc-item" id="soctomttyst" data-theme-support="light dark" data-theme-family="soctomttyst-412" data-screen-label="Flödet — tomt: tyst så här långt" data-lineage-from="soctomt">
 <div class="sc-label"><a class="sc-id" href="#soctomttyst">soctomttyst</a><b>Koden skiljer dem redan, och det är ovanligt nog att förtjäna en ram.</b> <code>hasFriends</code> väljer mellan <i>inga vänner än</i> — med en uppmaning som byter till vänfliken — och <i>tyst så här långt</i>, <b>utan</b> uppmaning. Det är precis rätt: när tomheten beror på andra människors tystnad finns ingen handling att erbjuda, och en knapp där vore att lägga ansvaret på fel person.<br><br>Ramen håller den skillnaden och skärper språket. Den övre säger vad flödet <i>är</i> innan man har någon att se det från. Den nedre säger att det inte är något fel — <b>tomhet som är väntad ska inte se ut som ett fel</b> (K-09), och därför ingen varningsfärg, ingen glyf med utropstecken, ingen uppmaning att göra något åt saken.<br><br><b>Ett tredje tomt läge saknas i koden:</b> filtret. Har man vänner och aktivitet men väljer <i>Lagat</i> och ingen har lagat något, faller vyn tillbaka på samma text som <i>tyst så här långt</i> — vilket är fel, för flödet <i>är</i> inte tyst, filtret är smalt. Ramen ger det egen copy och en väg tillbaka till <i>Allt</i>.</div>
   <div style="display:flex;flex-direction:column;gap:14px">
     
 <!-- F2-A03 · delad ur soctomt 2026-08-05: två tomma lägen är två tillstånd, och koden skiljer redan på dem (hasFriends). Det här är läget UTAN uppmaning — medvetet, se prosan. -->
 <div class="sc-phone" style="width:412px;height:300px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 40px;text-align:center;box-sizing:border-box">
-      <svg data-graphic-role="redundant" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#7d897c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" data-icon="list"><rect x="4" y="5.5" width="16" height="13" rx="1.5"></rect><path d="M7.5 10h6"></path><path d="M7.5 13.5h9"></path></svg>
+      <svg data-graphic-role="redundant" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="var(--ikon-fristaende-b7)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" data-icon="list"><rect x="4" y="5.5" width="16" height="13" rx="1.5"></rect><path d="M7.5 10h6"></path><path d="M7.5 13.5h9"></path></svg>
       <div style="font-size:19px;font-weight:700;letter-spacing:-.2px;margin-top:16px">Tyst i köken så här långt</div>
-      <div style="font-size:14px;font-weight:400;color:#37453a;line-height:1.55;margin-top:10px">Dina fyra vänner har inte lagat något på ett par dagar. Det dyker upp här när de gör det.</div>
-      <div style="font-size:12px;font-weight:600;color:#627061;line-height:1.5;margin-top:14px;font-style:italic">Ingen knapp här med flit: det finns inget du kan göra åt det, och att antyda det vore oärligt.</div>
+      <div style="font-size:14px;font-weight:400;color:var(--text-innehall-c);line-height:1.55;margin-top:10px">Dina fyra vänner har inte lagat något på ett par dagar. Det dyker upp här när de gör det.</div>
+      <div style="font-size:12px;font-weight:600;color:var(--text-innehall-a);line-height:1.5;margin-top:14px;font-style:italic">Ingen knapp här med flit: det finns inget du kan göra åt det, och att antyda det vore oärligt.</div>
     </div>
   </div>
 </div>

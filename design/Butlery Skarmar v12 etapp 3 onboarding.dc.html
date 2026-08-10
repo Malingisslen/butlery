@@ -165,12 +165,12 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="authepostklar" data-theme="light" data-theme-family="authepostklar-462" data-screen-label="Auth — adressen bekräftad">
+<div class="sc-item" id="authepostklar" data-theme-support="light dark" data-theme-family="authepostklar-462" data-screen-label="Auth — adressen bekräftad">
   <div class="sc-label"><a class="sc-id" href="#authepostklar">adressen bekräftad</a><b>Den kortaste vyn i systemet, och den enda ingen trycker på.</b> Tillståndet visas när pollningen upptäcker bekräftelsen och varar bara till nästa navigering — därför bär den en glyf, en rad, och ingenting annat. Två regler gäller ändå: bekräftelsen är <code>text.success</code>, inte saffran (saffran betyder handling, och här finns ingen), och den får <b>inte</b> vara enda beskedet om vad som händer sedan — raden under säger vart användaren är på väg, för en skärm som byts av sig själv utan att ha sagt vart är ett hopp, inte ett steg.</div>
   <div class="sc-phone" style="width:412px;height:420px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 24px">
-    <svg data-graphic-role="redundant" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#3f6b4f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block" data-icon="circle-check"><circle cx="12" cy="12" r="7.5"></circle><path d="M8.5 12.3l2.4 2.4 4.6-4.6"></path></svg>
+    <svg data-graphic-role="redundant" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--ikon-fristaende-b5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block" data-icon="circle-check"><circle cx="12" cy="12" r="7.5"></circle><path d="M8.5 12.3l2.4 2.4 4.6-4.6"></path></svg>
     <div style="font-size:17px;font-weight:600;line-height:1.35;text-align:center;margin-top:16px">Adressen är bekräftad</div>
-    <div style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.55;text-align:center;margin-top:8px">Jag tar dig vidare till åldersfrågan.</div>
+    <div style="font-size:12.5px;font-weight:600;color:var(--text-innehall-a);line-height:1.55;text-align:center;margin-top:8px">Jag tar dig vidare till åldersfrågan.</div>
   </div>
 </div>
 
@@ -212,18 +212,18 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="onbalderblock" data-theme="light" data-theme-family="onbalderblock-414" data-screen-label="Onboarding — under 15">
+<div class="sc-item" id="onbalderblock" data-theme-support="light dark" data-theme-family="onbalderblock-414" data-screen-label="Onboarding — under 15">
   <div class="sc-label"><a class="sc-id" href="#onbalderblock">under 15</a><b>Två vägar leder hit, och de betyder olika saker.</b> Väljer användaren ett år som ger under 15 kortsluter vyn <i>före varje skrivning</i> (<code>_OnboardingContentState.build</code>) — inget har hänt, kontot finns kvar. Passerar hon klientgrinden men nekas av <code>verifySignupAge</code> har servern <b>redan raderat auth-kontot</b>; då är detta ett besked, inte en fråga. Ramen ritar det första fallet. <b>Utloggningen är inte det enda erbjudandet:</b> BUT-946 lade en föräldraväg — en upplysning om att en vuxen kan skapa ett eget konto och lägga barnet som matgäst i hushållet, vilket är den funktion som redan finns (<code>diner_profile.dart</code>). Låset är 72 px, den enda ikonen i systemet i den storleken, och den bär hela beskedet.</div>
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 24px;text-align:center">
-      <svg data-graphic-role="redundant" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-icon="lock"><rect x="4.5" y="10.5" width="15" height="9" rx="1.5"></rect><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"></path></svg>
+      <svg data-graphic-role="redundant" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="var(--ikon-fristaende-a)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-icon="lock"><rect x="4.5" y="10.5" width="15" height="9" rx="1.5"></rect><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"></path></svg>
       <div style="font-size:22px;font-weight:700;letter-spacing:-.3px;line-height:1.3;margin-top:24px">Butlery är för 15 år och uppåt</div>
-      <div style="font-size:16px;font-weight:400;color:#37453a;line-height:1.55;margin-top:12px">Det är inget vi valt själva. Svensk lag sätter gränsen för tjänster med ett socialt inslag, och Butlery har det.</div>
+      <div style="font-size:16px;font-weight:400;color:var(--text-innehall-c);line-height:1.55;margin-top:12px">Det är inget vi valt själva. Svensk lag sätter gränsen för tjänster med ett socialt inslag, och Butlery har det.</div>
       <div style="width:100%;margin-top:32px;display:flex;flex-direction:column;gap:12px">
-        <span data-hit="self" style="display:flex;align-items:center;justify-content:center;min-height:48px;background:#24382c;color:#F5F4ED;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Logga ut" data-a11y-role="button">Logga ut</span>
-        <span data-hit="self" style="display:flex;align-items:center;justify-content:center;min-height:48px;color:#24382c;border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="En vuxen i hushållet kan skapa kontot" data-a11y-role="button">En vuxen kan skapa kontot</span>
+        <span data-hit="self" style="display:flex;align-items:center;justify-content:center;min-height:48px;background:var(--yta-kontroll-b2);color:var(--text-kontroll-b4);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Logga ut" data-a11y-role="button">Logga ut</span>
+        <span data-hit="self" style="display:flex;align-items:center;justify-content:center;min-height:48px;color:var(--text-kontroll-a);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="En vuxen i hushållet kan skapa kontot" data-a11y-role="button">En vuxen kan skapa kontot</span>
       </div>
-      <div style="font-size:12.5px;font-weight:600;color:#627061;line-height:1.55;margin-top:24px">Kontot du började skapa tas bort. Inget sparas.</div>
+      <div style="font-size:12.5px;font-weight:600;color:var(--text-innehall-a);line-height:1.55;margin-top:24px">Kontot du började skapa tas bort. Inget sparas.</div>
     </div>
   </div>
 </div>
