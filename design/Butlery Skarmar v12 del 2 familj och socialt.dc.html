@@ -28,6 +28,13 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
    ar en override. */
 .sc-item{--text-innehall-a:#627061;--text-innehall-b:#24382c;--text-innehall-c:#37453a;--text-innehall-d:#5b6959;--text-innehall-e:#8a5212;--text-innehall-f:#9c3b23;--text-innehall-g:#a15a0a;--ikon-fristaende-a:#24382c;--ikon-fristaende-b:#9c3b23;--ikon-fristaende-c:#37453a;--ikon-fristaende-d:#5b6959;--ikon-fristaende-e:#8a5212;--ikon-fristaende-f:#627061;--ikon-fristaende-g:#a15a0a;--ram-avdelare-a:#ccd1c2;--ram-avdelare-b:rgba(0,0,0,.1);--ram-avdelare-c:#e6ead9;--ram-behallare-a:#24382c;--ram-behallare-b:#7d897c;--ram-behallare-c:#ccd1c2;--ram-behallare-d:#9c3b23;--yta-platshallare:#e6ead9;--yta-upphojd:#e6ead9;--text-kontroll-a:#24382c;--text-kontroll-b:#9c3b23;--text-kontroll-c:#7d897c;--ram-kontroll-a:#24382c;--ram-kontroll-b:#7d897c;--ram-kontroll-c:#ccd1c2}
 .sc-item[data-theme="dark"]{--surface-app:#17251d;--border-app:rgba(245,244,237,.18);--text-app:#c9d3c4;--text-innehall-a:#93a48d;--text-innehall-b:#c9d3c4;--text-innehall-c:#93a48d;--text-innehall-d:#93a48d;--text-innehall-e:#dca968;--text-innehall-f:#de9078;--text-innehall-g:#dca968;--ikon-fristaende-a:#c9d3c4;--ikon-fristaende-b:#de9078;--ikon-fristaende-c:#93a48d;--ikon-fristaende-d:#93a48d;--ikon-fristaende-e:#dca968;--ikon-fristaende-f:#93a48d;--ikon-fristaende-g:#dca968;--ram-avdelare-a:rgba(245,244,237,.18);--ram-avdelare-b:rgba(245,244,237,.18);--ram-avdelare-c:rgba(245,244,237,.18);--ram-behallare-a:rgba(245,244,237,.4);--ram-behallare-b:rgba(245,244,237,.4);--ram-behallare-c:rgba(245,244,237,.18);--ram-behallare-d:#de9078;--yta-platshallare:#17251d;--yta-upphojd:#17251d;--text-kontroll-a:#c9d3c4;--text-kontroll-b:#de9078;--text-kontroll-c:#93a48d;--ram-kontroll-a:rgba(245,244,237,.4);--ram-kontroll-b:rgba(245,244,237,.4);--ram-kontroll-c:rgba(245,244,237,.18)}
+
+/* R-04 beslutsbatch B+C · fargroller ur registrerade designbeslut och
+   redan etablerade kandidater. Ljusvardena ar default pa .sc-item, sa en
+   kalla utan data-theme renderas exakt som fore. Varje beslut har egen
+   token aven nar morkvardet sammanfaller med en annan. */
+.sc-item{--yta-upphojd-b3:#ce7c1e;--yta-upphojd-b2:#24382c;--ikon-fristaende-b5:#3f6b4f;--text-innehall-b8:#3f6b4f;--ikon-fristaende-b6:#f5f4ed;--text-kontroll-b3:#627061;--yta-upphojd-b4:rgba(36,56,44,0.18);--yta-kontroll-b2:#24382c;--text-kontroll-b4:#f5f4ed}
+.sc-item[data-theme="dark"]{--yta-upphojd-b3:#ce7c1e;--yta-upphojd-b2:#17251d;--ikon-fristaende-b5:#8fb89a;--text-innehall-b8:#8fb89a;--ikon-fristaende-b6:#f5f4ed;--text-kontroll-b3:#93a48d;--yta-upphojd-b4:rgba(245,244,237,0.18);--yta-kontroll-b2:#17251d;--text-kontroll-b4:#f5f4ed}
 </style>
 <style>
 .sc-wrap{padding:40px 44px 60px}
@@ -1535,30 +1542,30 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   </div>
 </div>
 
-<div class="sc-item" id="dataexport" data-theme="light" data-theme-family="dataexport-414" data-screen-label="Dataexport">
+<div class="sc-item" id="dataexport" data-theme-support="light dark" data-theme-family="dataexport-414" data-screen-label="Dataexport">
   <div class="sc-label"><a class="sc-id" href="#dataexport">Export</a>Dataexport (GDPR art. 20) — exportera, spara/dela JSON, vad som ingår (ur data_export_view).</div>
   <div class="sc-phone" style="width:412px;height:924px">
-    <div style="padding:24px 24px 0;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#37453a">
-      <svg data-graphic-role="required" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:#37453a"   data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg>
+    <div style="padding:24px 24px 0;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text-innehall-c)">
+      <svg data-graphic-role="required" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:var(--ikon-fristaende-c)"   data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg>
       Ladda ner mina data
     </div>
     <div style="padding:16px 24px 0">
-      <div style="display:flex;align-items:center;gap:12px;margin:0 0 12px"><span style="width:22px;height:4px;background:#ce7c1e;border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:#24382c"></span></div>
+      <div style="display:flex;align-items:center;gap:12px;margin:0 0 12px"><span style="width:22px;height:4px;background:var(--yta-upphojd-b3);border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:var(--yta-upphojd-b2)"></span></div>
       <div style="padding-top:10px;display:flex;gap:10px;align-items:flex-start">
-        <svg data-graphic-role="redundant" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;color:#24382c;flex:none;box-sizing:border-box"   data-icon="export"><path d="M12 19.5V8.5"></path><path d="M7.5 13L12 8.5l4.5 4.5"></path><path d="M5 4.5h14"></path></svg>
-        <div style="font-size:12px;color:#37453a;line-height:1.55">Du har rätt att få ut allt vi sparat om dig. Exporten skapas som en JSON-fil du kan spara eller dela.</div>
+        <svg data-graphic-role="redundant" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;color:var(--ikon-fristaende-a);flex:none;box-sizing:border-box"   data-icon="export"><path d="M12 19.5V8.5"></path><path d="M7.5 13L12 8.5l4.5 4.5"></path><path d="M5 4.5h14"></path></svg>
+        <div style="font-size:12px;color:var(--text-innehall-c);line-height:1.55">Du har rätt att få ut allt vi sparat om dig. Exporten skapas som en JSON-fil du kan spara eller dela.</div>
       </div>
-      <div style="margin-top:14px;background:#e6ead9;border-radius:12px;padding:14px;text-align:center">
-        <svg data-graphic-role="redundant" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:30px;height:30px;color:#3f6b4f"   data-icon="circle-check"><circle cx="12" cy="12" r="8.5"></circle><path d="M8 12.2l2.8 2.8 5.2-5.6"></path></svg>
+      <div style="margin-top:14px;background:var(--yta-upphojd);border-radius:12px;padding:14px;text-align:center">
+        <svg data-graphic-role="redundant" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:30px;height:30px;color:var(--ikon-fristaende-b5)"   data-icon="circle-check"><circle cx="12" cy="12" r="8.5"></circle><path d="M8 12.2l2.8 2.8 5.2-5.6"></path></svg>
         <div style="font-size:13px;font-weight:700;margin-top:6px">Exporten är klar</div>
-        <div style="font-size:12px;color:#37453a;margin-top:2px">12 juli 2026 07:41 · 2,4 MB</div>
+        <div style="font-size:12px;color:var(--text-innehall-c);margin-top:2px">12 juli 2026 07:41 · 2,4 MB</div>
         <div style="margin-top:10px;display:flex;gap:8px">
-          <div style="flex:1;border:1.5px solid #24382c;text-align:center;font-size:14px;font-weight:600;padding:9px;border-radius:8px">Spara fil</div>
-          <div style="flex:1;border:1.5px solid #24382c;text-align:center;font-size:14px;font-weight:600;padding:9px;border-radius:8px">Dela</div>
+          <div style="flex:1;border:1.5px solid var(--ram-behallare-a);text-align:center;font-size:14px;font-weight:600;padding:9px;border-radius:8px">Spara fil</div>
+          <div style="flex:1;border:1.5px solid var(--ram-behallare-a);text-align:center;font-size:14px;font-weight:600;padding:9px;border-radius:8px">Dela</div>
         </div>
-        <div style="font-size:12px;color:#9c3b23;margin-top:8px">Rensa exporterade data</div>
+        <div style="font-size:12px;color:var(--text-innehall-f);margin-top:8px">Rensa exporterade data</div>
       </div>
-      <div style="margin-top:14px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#3f6b4f">Detta ingår</div>
+      <div style="margin-top:14px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-innehall-b8)">Detta ingår</div>
       <div style="margin-top:6px;font-size:12px;line-height:1.95;color:#37453a">
         <div>✓ Profil och inställningar</div>
         <div>✓ Alla recept och betyg</div>
@@ -1567,7 +1574,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
         <div>✓ Inköpslistor och menyer</div>
         <div>✓ Kommentarer och aktivitet</div>
       </div>
-      <div style="font-size:12px;color:#627061;margin-top:8px;font-style:normal">Endast dina egna uppgifter ingår — aldrig andras.</div>
+      <div style="font-size:12px;color:var(--text-innehall-a);margin-top:8px;font-style:normal">Endast dina egna uppgifter ingår — aldrig andras.</div>
     </div>
   </div>
 </div>
