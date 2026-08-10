@@ -25,7 +25,7 @@ Do these in order. The flag is the last step and is instantly reversible.
 3. **Deploy the rules:** `firebase deploy --only firestore:rules`.
 4. **Deploy the functions:** `firebase deploy --only functions` — brings up the mirror
    (`onRecipeRatingWrittenForPool`), the pool aggregator (`onPooledRatingEventWritten` +
-   `drainPooledRatingAggregations`), and the (dormant) backfill. Region `europe-west1`.
+   `drainPoolAggregationQueue`), and the (dormant) backfill. Region `europe-west1`.
 5. **Ship a store build** carrying the client display (card pill + detail scorebar) AND the
    updated privacy policy (v1.3.0 pooling disclosure must be LIVE in the app users run, not just
    in the repo). NOTE: gated by the store-submission hold.

@@ -146,7 +146,6 @@ firebase_storage_repository.dart operates on a **completely different Firebase s
 
 - [lib/repositories/firebase/firebase_storage_repository.dart](../../lib/repositories/firebase/firebase_storage_repository.dart) - Storage repository (if exists)
 - [lib/repositories/firebase/base_firebase_repository.dart](../../lib/repositories/firebase/base_firebase_repository.dart) - Firestore repository pattern
-- [docs/ultimate/MASTERPLAN.md](../ultimate/MASTERPLAN.md) - Issue #017 tracking
 
 ## References
 
