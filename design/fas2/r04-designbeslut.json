@@ -1,0 +1,395 @@
+{
+ "$schema": "butlery-r04-designbeslut/1",
+ "$regel": "Ett beslut i detta register ar AUKTORITET, inte observation. Det far aldrig bakatklassificeras som EXPLICIT_PAIR_TRANSFORM, DIRECT_SEMANTIC_EVIDENCE eller nagon annan harledd evidens.",
+ "$rackvidd": "Ett beslut galler exakt det kandidat-id det ar fattat for. Samma ljusvarde i en annan roll, en annan semantisk undergrupp eller en annan kandidat ar INTE beslutat genom detta.",
+ "$ejEvidens": "Ett registrerat beslut far inte bli automatisk evidens for en annan kandidat med samma ljusa hex, samma morka hex, samma grova roll eller liknande komponenttyp.",
+ "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
+ "$tokenidentitet": "Tva kandidater med samma morka varde behaller separata tokens.",
+ "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
+ "antal": 8,
+ "perTyp": {
+  "temavaxlande": 3,
+  "temainvariant": 5
+ },
+ "beslut": [
+  {
+   "kandidatId": "CAND-ram-kontroll-#3f6b4f",
+   "roll": "ram-kontroll",
+   "ljusvarde": "#3f6b4f",
+   "morkvarde": "rgba(245,244,237,0.4)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "ram-kontroll",
+    "button",
+    "nastlad-yta",
+    "utan-state",
+    "hel-ram",
+    "stor-yta"
+   ],
+   "beslutadUndergrupp": "kontroll:button · nastlad-yta · utan-state · hel-ram · stor-yta",
+   "motivering": [
+    "ramen ar barare och ska klara minst 3:1 mot sitt faktiska underlag",
+    "partiell observerad evidens finns for exakt detta morka varde i annan authored kontext",
+    "vardet ar redan etablerat i morksystemet"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PARTIAL_CONTEXT_MATCH",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [
+     "rgba(245,244,237,0.4)"
+    ]
+   },
+   "constraints": [
+    {
+     "vad": "ramen mot sitt underlag",
+     "troskel": 3,
+     "kallaTilKrav": "non-text 1.4.11 nar ramen ar barare",
+     "uppmatt_ljus": {
+      "minsta": 1.41,
+      "storsta": 1.41,
+      "antal": 1
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "flertagg"
+   ]
+  },
+  {
+   "kandidatId": "CAND-yta-kontroll-#17251d",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#17251d",
+   "morkvarde": "#17251d",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temainvariant",
+   "semantiskKontext": [
+    "yta-kontroll",
+    "switch",
+    "nastlad-yta",
+    "liten-yta",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "kontroll:switch · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "motivering": [
+    "intern mork kontrollyta mot orange kontrollsurface",
+    "nuvarande relation ar cirka 4.95:1 mot #ce7c1e",
+    "ingen semantisk anledning finns att invertera denna interna morka komponentdel"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "ytan mot sitt underlag",
+     "troskel": null,
+     "kallaTilKrav": "visuell hierarki — inget last golv om ytan inte bar identitet",
+     "uppmatt_ljus": {
+      "minsta": 4.95,
+      "storsta": 4.95,
+      "antal": 1
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "formularmorkt"
+   ]
+  },
+  {
+   "kandidatId": "CAND-text-kontroll-#a9b2a0",
+   "roll": "text-kontroll",
+   "ljusvarde": "#a9b2a0",
+   "morkvarde": "#a9b2a0",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temainvariant",
+   "semantiskKontext": [
+    "text-kontroll",
+    "textbox",
+    "direkt-pa-appytan",
+    "liten-text",
+    "normal"
+   ],
+   "beslutadUndergrupp": "kontroll:textbox · direkt-pa-appytan · utan-state · liten-text · normal",
+   "motivering": [
+    "fungerar redan som dampad foreground i mork kontext",
+    "faktisk kontrast cirka 4.77:1 och ska fortsatt vara minst 4.5",
+    "ljusa inte automatiskt till #c9d3c4 eller #93a48d — det skulle andra visuell emfas"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "texten mot sin bakgrund",
+     "troskel": 4.5,
+     "kallaTilKrav": "R-01",
+     "uppmatt_ljus": {
+      "minsta": 4.77,
+      "storsta": 4.77,
+      "antal": 1
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "formularmorkt"
+   ]
+  },
+  {
+   "kandidatId": "CAND-ram-kontroll-#de9078",
+   "roll": "ram-kontroll",
+   "ljusvarde": "#de9078",
+   "morkvarde": "#de9078",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temainvariant",
+   "semantiskKontext": [
+    "ram-kontroll",
+    "button",
+    "direkt-pa-appytan",
+    "hel-ram",
+    "stor-yta"
+   ],
+   "beslutadUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · hel-ram · stor-yta",
+   "motivering": [
+    "temainvariant status- och destruktivfarg",
+    "faktisk kontrast cirka 6.34:1 mot mork surface",
+    "morksystemet anvander redan #de9078 som status- och destruktivfarg",
+    "tokenen halls separat fran andra kandidater aven nar samma morka hex anvands"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "ramen mot sitt underlag",
+     "troskel": 3,
+     "kallaTilKrav": "non-text 1.4.11 nar ramen ar barare",
+     "uppmatt_ljus": {
+      "minsta": 6.34,
+      "storsta": 6.34,
+      "antal": 4
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "formularmorkt"
+   ]
+  },
+  {
+   "kandidatId": "CAND-text-kontroll-#de9078",
+   "roll": "text-kontroll",
+   "ljusvarde": "#de9078",
+   "morkvarde": "#de9078",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temainvariant",
+   "semantiskKontext": [
+    "text-kontroll",
+    "button",
+    "direkt-pa-appytan",
+    "liten-text",
+    "halvfet"
+   ],
+   "beslutadUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · liten-text · halvfet",
+   "motivering": [
+    "temainvariant status- och destruktivfarg",
+    "texten ska klara minst 4.5",
+    "bevarar samma statusfarg som den relaterade ramen",
+    "tokenidentiteten ar fortsatt separat fran ramtokenen"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "texten mot sin bakgrund",
+     "troskel": 4.5,
+     "kallaTilKrav": "R-01",
+     "uppmatt_ljus": {
+      "minsta": 6.34,
+      "storsta": 6.34,
+      "antal": 1
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "formularmorkt"
+   ]
+  },
+  {
+   "kandidatId": "CAND-text-kontroll-#8fb89a",
+   "roll": "text-kontroll",
+   "ljusvarde": "#8fb89a",
+   "morkvarde": "#8fb89a",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temainvariant",
+   "semantiskKontext": [
+    "text-kontroll",
+    "radio",
+    "nastlad-yta",
+    "liten-text",
+    "halvfet"
+   ],
+   "beslutadUndergrupp": "kontroll:radio · nastlad-yta · utan-state · liten-text · halvfet",
+   "motivering": [
+    "temainvariant dampad gron foreground",
+    "faktisk kontrast cirka 5.66:1",
+    "texten ska fortsatt klara minst 4.5",
+    "ljusa inte automatiskt till en starkare foreground — den lagre emfasen ar avsiktlig"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "texten mot sin bakgrund",
+     "troskel": 4.5,
+     "kallaTilKrav": "R-01",
+     "uppmatt_ljus": {
+      "minsta": 5.66,
+      "storsta": 5.66,
+      "antal": 2
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "lagasubst"
+   ]
+  },
+  {
+   "kandidatId": "CAND-yta-kontroll-#93a48d",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#93a48d",
+   "morkvarde": "#4a5c43",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "yta-kontroll",
+    "checkbox",
+    "direkt-pa-appytan"
+   ],
+   "beslutadUndergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "motivering": [
+    "representativ forekomst visar den dampade avatar- eller subytan i raden",
+    "nytt designbeslut, inte harledd mappning",
+    "avsikten ar att behalla en dampad fargad subyta i morkt lage",
+    "#4a5c43 ger ungefar motsvarande visuell separation fran mork appyta som #93a48d har fran ljus appyta"
+   ],
+   "villkor": [
+    "text eller foreground pa ytan maste verifieras mot minst 4.5 dar textkontraktet galler",
+    "ar foregrundsfargen fortfarande en obeslutad C-kandidat far skarmen inte skrivas partiellt — beroendet ska redovisas"
+   ],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "ytan mot sitt underlag",
+     "troskel": null,
+     "kallaTilKrav": "visuell hierarki — inget last golv om ytan inte bar identitet",
+     "uppmatt_ljus": {
+      "minsta": 2.4,
+      "storsta": 2.4,
+      "antal": 1
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "betygvemat"
+   ],
+   "villkorsstatus": "OPPET — foregrunden #17251d ar en obeslutad C-kandidat och ger 2.2:1 mot #4a5c43. Beslutet star kvar, men far inte migreras forran foregrunden ar beslutad."
+  },
+  {
+   "kandidatId": "CAND-yta-kontroll-#37453a",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#37453a",
+   "morkvarde": "#93a48d",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "yta-kontroll",
+    "button",
+    "nastlad-yta",
+    "liten-yta",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "kontroll:button · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "motivering": [
+    "nytt designbeslut, inte harledd mappning",
+    "i ljust lage ar kontrollen mork mot en ljus nastlad yta",
+    "i morkt lage ska relationen inverteras sa att kontrollen fortsatt ar tydligt avlasbar",
+    "#93a48d anvands som den ljusare dampade grona nivan",
+    "anvand inte #17251d har — det skulle kollapsa separationen mot morka ytor"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "ytan mot sitt underlag",
+     "troskel": null,
+     "kallaTilKrav": "visuell hierarki — inget last golv om ytan inte bar identitet",
+     "uppmatt_ljus": {
+      "minsta": 8.26,
+      "storsta": 8.26,
+      "antal": 1
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "inkopkategoriordning"
+   ]
+  }
+ ]
+}
