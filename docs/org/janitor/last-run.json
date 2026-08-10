@@ -1,8 +1,8 @@
 {
-  "lastRun": "2026-08-03",
+  "lastRun": "2026-08-10",
   "dossiersRefreshed": 0,
   "worldWatchRoles": 2,
   "retroDue": true,
-  "acceptRate": 0.857,
-  "notes": "Cross-repo weekly janitor (butlery+binge+synat). No stale dossier markers. World-watch: 2/2 due roles scanned (Legal Counsel is monthly, not due until 2026-08-26). Security Architect: no material finding. Release/App-Store Compliance Manager: no new material finding this cycle -- prior Android Developer Verification deadline (issue #223) and Apple's 2026-06-08 App Review Guidelines/DPLA revision remain unflagged as already covered/out of window. Retro: full retro (afterDays=28 from goLive 2026-06-27) was due 2026-07-25 and STILL has not been run (only shakedown-mode events exist in events.jsonl, now 9 days overdue) -- flagged for Malin, not run here (interactive by design). accept-rate 85.7% (42 autonomous commits/30d, 6 reworked) -- healthy, appended to accept-rate.jsonl. Cruft sweep: no tasks/*-plan.md files present, nothing to archive this cycle."
+  "acceptRate": 0.689,
+  "notes": "No stale dossier markers. Security Architect + Release/App-Store Compliance Manager weekly world-watch scans due and run. Full org-retro due (44d since go-live, no full-mode event logged). Accept-rate 0.689, down from 0.857 last week but above the 0.5 floor."
 }
