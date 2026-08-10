@@ -166,7 +166,11 @@ export const PAINT_PROBE = `(() => {
         if (v && v.ursprung === 'AMBIGUOUS') {
           ut.push({ art: it.id, egenskap, beraknat: berak.trim(), ankare: null,
             block: null, kortform: null, deklarationsnamn: null,
-            produktElement_st: produktElement.length, ursprung: 'AMBIGUOUS',
+            // Elementets ordinal star pa VARJE post, aven nar posten inte ar
+          // skrivbar. Annars gar en redan tokeniserad yta inte att joina mot
+          // sin roll i en senare analys.
+          elementOrdinal: ordinalAv.get(el),
+          produktElement_st: produktElement.length, ursprung: 'AMBIGUOUS',
             deklaration: null, selector: null, viaCurrentColor: false, kalla: null,
             skal: v.skal, elementId: el.id || null, arvd: false, arKontroll, arSvg,
             klass: el.getAttribute('class') || null,
@@ -190,9 +194,15 @@ export const PAINT_PROBE = `(() => {
               if (v) { arvd = true; v.arvdFran = n.tagName.toLowerCase(); } n = n.parentElement; }
           }
         }
-        // svg-attribut ar en egen ursprungsklass.
+        // svg-attribut ar en egen ursprungsklass — men bar det redan en
+        // variabelreferens ar deklarationen REDAN TOKENISERAD, precis som en
+        // inline langform eller en klassregel med var(). Regeln far inte
+        // gora halt vid attributgransen: annars raknas ett redan migrerat
+        // ikonattribut som skrivbart och en omkorning ar inte idempotent.
         if (arSvg && (egenskap === 'fill' || egenskap === 'stroke') && el.hasAttribute(egenskap)) {
-          v = { ursprung: 'SVG_ATTRIBUTE', varde: el.getAttribute(egenskap), selector: null };
+          const attr = el.getAttribute(egenskap);
+          v = { ursprung: attr.indexOf('var(') >= 0 ? 'TOKEN_HOOK' : 'SVG_ATTRIBUTE',
+            varde: attr, selector: null, block: 'svg-attribut' };
           arvd = false; }
 
         // CURRENTCOLOR AR EN HANVISNING, INTE ETT FARGVARDE.
@@ -249,6 +259,10 @@ export const PAINT_PROBE = `(() => {
           block: v ? v.block || null : null,
           kortform: v ? v.kortform || null : null,
           deklarationsnamn: v ? v.deklarationsnamn || egenskap : null,
+          // Elementets ordinal star pa VARJE post, aven nar posten inte ar
+          // skrivbar. Annars gar en redan tokeniserad yta inte att joina mot
+          // sin roll i en senare analys.
+          elementOrdinal: ordinalAv.get(el),
           produktElement_st: produktElement.length,
           // Proveniensen bevaras. En currentColor-post far kallans ursprung,
           // aldrig INHERITED: att deklarationen sitter pa en forfader ar en

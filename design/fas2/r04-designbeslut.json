@@ -65,7 +65,8 @@
    "semantiskUndergrupp": "kontroll:button · nastlad-yta · utan-state · hel-ram · stor-yta",
    "status": "ACTIVE",
    "aktiv": true,
-   "tokenNamn": "--ram-kontroll-d1"
+   "tokenNamn": "--ram-kontroll-d1",
+   "revision": 1
   },
   {
    "kandidatId": "CAND-yta-kontroll-#17251d",
@@ -117,7 +118,8 @@
    "semantiskUndergrupp": "kontroll:switch · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
    "status": "ACTIVE",
    "aktiv": true,
-   "tokenNamn": "--yta-kontroll-d1"
+   "tokenNamn": "--yta-kontroll-d1",
+   "revision": 1
   },
   {
    "kandidatId": "CAND-text-kontroll-#a9b2a0",
@@ -169,7 +171,8 @@
    "semantiskUndergrupp": "kontroll:textbox · direkt-pa-appytan · utan-state · liten-text · normal",
    "status": "ACTIVE",
    "aktiv": true,
-   "tokenNamn": "--text-kontroll-d1"
+   "tokenNamn": "--text-kontroll-d1",
+   "revision": 1
   },
   {
    "kandidatId": "CAND-ram-kontroll-#de9078",
@@ -222,7 +225,8 @@
    "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · hel-ram · stor-yta",
    "status": "ACTIVE",
    "aktiv": true,
-   "tokenNamn": "--ram-kontroll-d2"
+   "tokenNamn": "--ram-kontroll-d2",
+   "revision": 1
   },
   {
    "kandidatId": "CAND-text-kontroll-#de9078",
@@ -275,7 +279,8 @@
    "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · liten-text · halvfet",
    "status": "ACTIVE",
    "aktiv": true,
-   "tokenNamn": "--text-kontroll-d2"
+   "tokenNamn": "--text-kontroll-d2",
+   "revision": 1
   },
   {
    "kandidatId": "CAND-text-kontroll-#8fb89a",
@@ -328,7 +333,8 @@
    "semantiskUndergrupp": "kontroll:radio · nastlad-yta · utan-state · liten-text · halvfet",
    "status": "ACTIVE",
    "aktiv": true,
-   "tokenNamn": "--text-kontroll-d3"
+   "tokenNamn": "--text-kontroll-d3",
+   "revision": 1
   },
   {
    "kandidatId": "CAND-yta-kontroll-#93a48d",
@@ -383,7 +389,8 @@
    "semantiskUndergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
    "status": "ACTIVE",
    "aktiv": true,
-   "tokenNamn": "--yta-kontroll-d2"
+   "tokenNamn": "--yta-kontroll-d2",
+   "revision": 1
   },
   {
    "kandidatId": "CAND-yta-kontroll-#37453a",
@@ -437,7 +444,8 @@
    "semantiskUndergrupp": "kontroll:button · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
    "status": "ACTIVE",
    "aktiv": true,
-   "tokenNamn": "--yta-kontroll-d3"
+   "tokenNamn": "--yta-kontroll-d3",
+   "revision": 1
   },
   {
    "beslutsId": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
@@ -487,12 +495,13 @@
    ],
    "tokenIdentitet": "egen token for exakt denna undergrupp",
    "status": "SUPERSEDED",
-   "ersattAv": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande (#24382c)",
+   "ersattAv": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande @r2",
    "ersattDatum": "2026-08-10",
    "reason": "FAILED_DARK_TEXT_CONTRAST",
    "reasonDetalj": "#93a48d gav 3.96:1 och #de9078 gav 4.18:1 mot #2f4437, bada under 4.5. 8 textkontrastfynd i den aterstallda korningen.",
    "aktiv": false,
-   "tokenNamn": null
+   "tokenNamn": null,
+   "revision": 1
   },
   {
    "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
@@ -540,7 +549,8 @@
    "tokenIdentitet": "egen token for exakt denna undergrupp",
    "status": "ACTIVE",
    "aktiv": true,
-   "tokenNamn": "--yta-upphojd-b3"
+   "tokenNamn": "--yta-upphojd-b3",
+   "revision": 1
   },
   {
    "beslutsId": "CAND-yta-upphojd-rgba(36,56,44,0.18)",
@@ -582,7 +592,8 @@
    "tokenIdentitet": "egen token for exakt denna undergrupp",
    "status": "ACTIVE",
    "aktiv": true,
-   "tokenNamn": "--yta-upphojd-b4"
+   "tokenNamn": "--yta-upphojd-b4",
+   "revision": 1
   },
   {
    "beslutsId": "CAND-text-kontroll-#17251d ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · liten-text · halvfet",
@@ -625,7 +636,8 @@
    "tokenIdentitet": "egen token for exakt denna undergrupp",
    "status": "ACTIVE",
    "aktiv": true,
-   "tokenNamn": "--text-kontroll-d4"
+   "tokenNamn": "--text-kontroll-d4",
+   "revision": 1
   },
   {
    "beslutsId": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
@@ -677,8 +689,9 @@
    "tokenIdentitet": "egen token for exakt denna semantiska yta, aven om morkvardet sammanfaller med andra",
    "status": "ACTIVE",
    "aktiv": true,
-   "ersatter": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande (#2f4437)",
-   "tokenNamn": "--yta-upphojd-d1"
+   "ersatter": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande @r1",
+   "tokenNamn": "--yta-upphojd-d1",
+   "revision": 2
   }
  ],
  "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
@@ -688,5 +701,6 @@
  },
  "$status": "Ett beslut har status ACTIVE eller SUPERSEDED. Ett ersatt beslut raderas aldrig — det star kvar med reason och vilket beslut som ersatte det. Bara ACTIVE-beslut far anvandas vid migrering.",
  "aktiva": 12,
- "ersatta": 1
+ "ersatta": 1,
+ "$identitet": "beslutsId ar scopet (kandidat och eventuell undergrupp). Lagringsidentiteten ar scope + revision. Tokennamnet tilldelas en gang och ar persistent; varken supersede, insattning eller omsortering far andra ett befintligt namn."
 }

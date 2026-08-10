@@ -76,6 +76,8 @@ const FIXTUR = `<!doctype html><meta charset="utf-8"><style>
     <div id="sh6" style="background:var(--prov-yta)"><span id="sh6b">barn utan egen bakgrund</span></div>
     <div id="sh7" style="color:#8a5212"><span id="sh7b">arvd text</span></div>
     <div id="sh8" style="border-width:1px;border-style:solid">ram utan fargdeklaration</div>
+    <svg id="sh11" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--prov-ram)" data-icon="sh11"><path d="M6 12h12"></path></svg>
+    <svg id="sh12" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7d897c" data-icon="sh12"><path d="M6 12h12"></path></svg>
   </div>
 </div>`;
 
@@ -125,7 +127,7 @@ try {
 } catch (e) { verktygsfel = e.message; }
 finally { try { chrome.kill(); } catch {} }
 
-const ANTAL = 34;
+const ANTAL = 36;
 if (verktygsfel) {
   console.log('VERKTYGSFEL: ' + verktygsfel);
   console.log('MIGRATIONSPROV status=VERKTYGSFEL godkanda=0 av ' + ANTAL); process.exit(2);
@@ -410,6 +412,26 @@ const sh = (id, eg) => karta.filter(x => x.elementId === id && (!eg || x.egenska
     b.ursprung !== 'INHERITED',
     a && b ? 'fore ' + a.ursprung + '/' + a.block + ' · efter ' + b.ursprung + '/' + b.block +
       ' kortform ' + b.kortform : 'poster saknas'); }
+
+/* ── TK · redan tokeniserade kallor klassas aldrig som skrivbara ────────── */
+// Felklassen: SVG_ATTRIBUTE-grenen saknade var-regeln som alla andra ursprung
+// har, sa ett redan migrerat ikonattribut raknades som skrivbart.
+{ const a = sh('sh11', 'stroke')[0], b = sh('sh12', 'stroke')[0];
+  prov('TK-01', 'ett svg-attribut som redan bar en variabelreferens klassas TOKEN_HOOK, inte skrivbart',
+    !!a && a.ursprung === 'TOKEN_HOOK' && a.ankare === null && /var\(/.test(a.deklaration || '') &&
+    !!b && b.ursprung === 'SVG_ATTRIBUTE' && !!b.ankare,
+    (a ? 'med var: ' + a.ursprung + ' · ankare ' + a.ankare : 'sh11 saknas') + ' · ' +
+    (b ? 'med literal: ' + b.ursprung + ' · ankare ' + (b.ankare ? 'finns' : 'null') : 'sh12 saknas')); }
+
+{ // Idempotens. En omkorning over en redan migrerad kalla ger 0 nya skrivningar.
+  const blkSh = styck('shprov');
+  const skrivbaraSh = karta.filter(x => x.art === 'shprov' && x.ankare);
+  const ett = migreraBlock(blkSh, skrivbaraSh, tokenAv);
+  const redanTokMedAnkare = karta.filter(x => x.art === 'shprov' && x.ursprung === 'TOKEN_HOOK' && x.ankare).length;
+  const tva = migreraBlock(ett.blk, skrivbaraSh.filter(x => x.ursprung === 'TOKEN_HOOK'), tokenAv);
+  prov('TK-02', 'redan tokeniserade kallor ger 0 nya skrivningar vid en omkorning',
+    redanTokMedAnkare === 0 && tva.skrivna.length === 0,
+    'tokeniserade med ankare ' + redanTokMedAnkare + ' · omkorningen skrev ' + tva.skrivna.length); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
