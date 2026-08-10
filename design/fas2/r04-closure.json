@@ -1,7 +1,7 @@
 {
  "$regel": "Closure pa forekomstniva. En post ar beslutad nar hela kandidaten eller just dess semantiska undergrupp ar beslutad. Ett undergruppsbeslut smittar aldrig ett syskon.",
  "registret": {
-  "beslut": 12,
+  "beslut": 13,
   "perOmfattning": {
    "WHOLE_CANDIDATE": 9,
    "SUBGROUP": 3
@@ -110,85 +110,5 @@
  "undergruppsinstanser": {
   "totalt": 295,
   "obeslutade": 283
- },
- "skrivforsok": {
-  "status": "GENOMFORT OCH ATERSTALLT — batchen var inte gron",
-  "skrivet": {
-   "skarmar": 12,
-   "filer": 5,
-   "skrivningar": 278,
-   "tackta": 84,
-   "summa": 362,
-   "hoppade": 0,
-   "konflikter": 0,
-   "nyaTokens": 3
-  },
-  "ljusgrind": {
-   "fargavvikelser": 0,
-   "geometriavvikelser": 0
-  },
-  "morkbaslinje": {
-   "kallor": 64,
-   "kontroller": 229,
-   "grafiskaDelar": 270,
-   "barare": 103,
-   "ickeTextFynd": 0,
-   "unknown": 0,
-   "textFynd": 8
-  },
-  "fynd": [
-   {
-    "yta": "#2f4437",
-    "foregrund": "#93a48d",
-    "kvot": 3.96,
-    "krav": 4.5,
-    "skarmar": [
-     "veckochips",
-     "veckoresultat",
-     "veckofel"
-    ]
-   },
-   {
-    "yta": "#2f4437",
-    "foregrund": "#de9078",
-    "kvot": 4.18,
-    "krav": 4.5,
-    "skarmar": [
-     "veckorostutgang",
-     "modrapporter",
-     "modminderarig"
-    ]
-   }
-  ],
-  "rotorsak": "Beslutet #f5f4ed -> #2f4437 infor en ANDRA mork ytniva. I allt verifierat morkt material finns bara en enda renderad mork ytniva, #17251d, och samtliga etablerade dampade foregrundstokens ar kalibrerade mot den. Pa #2f4437 faller #93a48d till 3.96 och #de9078 till 4.18.",
-  "omfattning": "Endast paket A, de sex skarmarna ur #f5f4ed-undergruppen, faller. Paket B (fem skarmar ur #ce7c1e) och paket C (onbvalkommen) hade 0 fynd.",
-  "atgard": "Samtliga fem ritningsfiler aterstallda. Ingen produktcommit. Ingen fix uppfunnen.",
-  "underlagForNyttBeslut": {
-   "krav": "Med den svagaste foregrunden #93a48d far ytans relativa luminans vara hogst 0.0382 for att na 4.5.",
-   "uppmatt": {
-    "#17251d": {
-     "luminans": 0.0159,
-     "#93a48d": 6.02,
-     "#de9078": 6.34
-    },
-    "#24382c": {
-     "luminans": 0.0339,
-     "#93a48d": 4.73,
-     "#de9078": 4.99
-    },
-    "#2f4437": {
-     "luminans": 0.0501,
-     "#93a48d": 3.96,
-     "#de9078": 4.18
-    },
-    "#4a5c43": {
-     "luminans": 0.0952,
-     "#93a48d": 2.73,
-     "#de9078": 2.88
-    }
-   },
-   "not": "Redovisade matvarden, inga forslag. Vilket varde som valjs ar ett designbeslut."
-  },
-  "berordaEtableradeTokens": 27
  }
 }

@@ -4,9 +4,9 @@
  "$rackvidd": "Ett beslut galler exakt det kandidat-id det ar fattat for. Samma ljusvarde i en annan roll, en annan semantisk undergrupp eller en annan kandidat ar INTE beslutat genom detta.",
  "$ejEvidens": "Ett registrerat beslut far inte bli automatisk evidens for en annan kandidat med samma ljusa hex, samma morka hex, samma grova roll eller liknande komponenttyp.",
  "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
- "$tokenidentitet": "Tva kandidater med samma morka varde behaller separata tokens.",
+ "$tokenidentitet": "Tokennamnet lases i registret vid forsta tilldelningen och andras aldrig. Tva beslut delar aldrig namn, aven nar morkvardet sammanfaller. Ett ersatt beslut behaller inget namn.",
  "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
- "antal": 12,
+ "antal": 13,
  "perTyp": {
   "temavaxlande": 6,
   "temainvariant": 6
@@ -62,7 +62,10 @@
    ],
    "omfattning": "WHOLE_CANDIDATE",
    "beslutsId": "CAND-ram-kontroll-#3f6b4f",
-   "semantiskUndergrupp": "kontroll:button · nastlad-yta · utan-state · hel-ram · stor-yta"
+   "semantiskUndergrupp": "kontroll:button · nastlad-yta · utan-state · hel-ram · stor-yta",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ram-kontroll-d1"
   },
   {
    "kandidatId": "CAND-yta-kontroll-#17251d",
@@ -111,7 +114,10 @@
    ],
    "omfattning": "WHOLE_CANDIDATE",
    "beslutsId": "CAND-yta-kontroll-#17251d",
-   "semantiskUndergrupp": "kontroll:switch · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+   "semantiskUndergrupp": "kontroll:switch · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-kontroll-d1"
   },
   {
    "kandidatId": "CAND-text-kontroll-#a9b2a0",
@@ -160,7 +166,10 @@
    ],
    "omfattning": "WHOLE_CANDIDATE",
    "beslutsId": "CAND-text-kontroll-#a9b2a0",
-   "semantiskUndergrupp": "kontroll:textbox · direkt-pa-appytan · utan-state · liten-text · normal"
+   "semantiskUndergrupp": "kontroll:textbox · direkt-pa-appytan · utan-state · liten-text · normal",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-kontroll-d1"
   },
   {
    "kandidatId": "CAND-ram-kontroll-#de9078",
@@ -210,7 +219,10 @@
    ],
    "omfattning": "WHOLE_CANDIDATE",
    "beslutsId": "CAND-ram-kontroll-#de9078",
-   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · hel-ram · stor-yta"
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · hel-ram · stor-yta",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ram-kontroll-d2"
   },
   {
    "kandidatId": "CAND-text-kontroll-#de9078",
@@ -260,7 +272,10 @@
    ],
    "omfattning": "WHOLE_CANDIDATE",
    "beslutsId": "CAND-text-kontroll-#de9078",
-   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · liten-text · halvfet"
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · liten-text · halvfet",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-kontroll-d2"
   },
   {
    "kandidatId": "CAND-text-kontroll-#8fb89a",
@@ -310,7 +325,10 @@
    ],
    "omfattning": "WHOLE_CANDIDATE",
    "beslutsId": "CAND-text-kontroll-#8fb89a",
-   "semantiskUndergrupp": "kontroll:radio · nastlad-yta · utan-state · liten-text · halvfet"
+   "semantiskUndergrupp": "kontroll:radio · nastlad-yta · utan-state · liten-text · halvfet",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-kontroll-d3"
   },
   {
    "kandidatId": "CAND-yta-kontroll-#93a48d",
@@ -362,7 +380,10 @@
    "villkorsstatus": "RESOLVED — foregrunden ar beslutad genom CAND-text-kontroll-#17251d ‖ kontroll:checkbox …, #17251d -> #f5f4ed. Mork kontrast #f5f4ed pa #4a5c43 ar cirka 6.56:1 mot kravet 4.5. Skarmen betygvemat far anda inte skrivas sa lange andra blockerare finns kvar.",
    "omfattning": "WHOLE_CANDIDATE",
    "beslutsId": "CAND-yta-kontroll-#93a48d",
-   "semantiskUndergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+   "semantiskUndergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-kontroll-d2"
   },
   {
    "kandidatId": "CAND-yta-kontroll-#37453a",
@@ -413,7 +434,10 @@
    ],
    "omfattning": "WHOLE_CANDIDATE",
    "beslutsId": "CAND-yta-kontroll-#37453a",
-   "semantiskUndergrupp": "kontroll:button · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+   "semantiskUndergrupp": "kontroll:button · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-kontroll-d3"
   },
   {
    "beslutsId": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
@@ -462,7 +486,13 @@
     "modminderarig"
    ],
    "tokenIdentitet": "egen token for exakt denna undergrupp",
-   "migrationsstatus": "BLOCKERAD — beslutet star kvar i registret, men skrivningen aterstalldes. Pa #2f4437 faller de etablerade foregrunderna #93a48d (3.96) och #de9078 (4.18) under 4.5. Kraver antingen ett annat morkt ytvarde eller avdelade beslut for foregrunderna pa just denna yta."
+   "status": "SUPERSEDED",
+   "ersattAv": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande (#24382c)",
+   "ersattDatum": "2026-08-10",
+   "reason": "FAILED_DARK_TEXT_CONTRAST",
+   "reasonDetalj": "#93a48d gav 3.96:1 och #de9078 gav 4.18:1 mot #2f4437, bada under 4.5. 8 textkontrastfynd i den aterstallda korningen.",
+   "aktiv": false,
+   "tokenNamn": null
   },
   {
    "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
@@ -507,7 +537,10 @@
     "juridik",
     "onbklar"
    ],
-   "tokenIdentitet": "egen token for exakt denna undergrupp"
+   "tokenIdentitet": "egen token for exakt denna undergrupp",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-upphojd-b3"
   },
   {
    "beslutsId": "CAND-yta-upphojd-rgba(36,56,44,0.18)",
@@ -546,7 +579,10 @@
    "forvantadeFulltBeslutadeSkarmar": [
     "onbvalkommen"
    ],
-   "tokenIdentitet": "egen token for exakt denna undergrupp"
+   "tokenIdentitet": "egen token for exakt denna undergrupp",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-upphojd-b4"
   },
   {
    "beslutsId": "CAND-text-kontroll-#17251d ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · liten-text · halvfet",
@@ -586,12 +622,71 @@
    "forvantadeFulltBeslutadeSkarmar": [
     "betygvemat"
    ],
-   "tokenIdentitet": "egen token for exakt denna undergrupp"
+   "tokenIdentitet": "egen token for exakt denna undergrupp",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-kontroll-d4"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#f5f4ed",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#f5f4ed",
+   "morkvarde": "#24382c",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "kopplatTill": null,
+   "motivering": [
+    "rollen ar en stor, tackande, textbarande upphojd yta direkt pa appytan",
+    "#17251d klarar foregrunderna men ger 1.00:1 mot appytan och upphaver surfacehierarkin",
+    "#2f4437 ger tydligare separation, 1.52:1, men underkanner befintliga morka foregrunder: #93a48d 3.96:1 och #de9078 4.18:1",
+    "#24382c ger en separat mork ytniva, 1.27:1 mot appytan, samtidigt som befintliga foregrunder klarar kontraktet: #93a48d 4.73:1 och #de9078 4.99:1",
+    "analysen har verifierat att inga andra foregrundsrelationer pa de sex skarmarna faller",
+    "nytt designbeslut, inte observerad mappningsevidens"
+   ],
+   "evidenssparr": "Befintlig anvandning av #24382c pa andra morka element far INTE anvandas som automatisk evidens for andra ytkandidater. Beslutet galler exakt denna undergrupp.",
+   "evidensvidBeslut": {
+    "styrka": "DIRECT_SEMANTIC_EVIDENCE",
+    "observeradeMalDirekt": [
+     "#17251d"
+    ],
+    "observeradeMalAllaKontexter": [
+     "#17251d"
+    ],
+    "not": "Redovisad bevisbild. Aldrig grund for beslutet."
+   },
+   "undergruppensOmfattning": {
+    "deklarationer": 98,
+    "familjer": 82
+   },
+   "foraldernsUndergrupper_st": 12,
+   "foraldernsFamiljer_st": 115,
+   "forvantadeFulltBeslutadeSkarmar": [
+    "veckochips",
+    "veckoresultat",
+    "veckofel",
+    "veckorostutgang",
+    "modrapporter",
+    "modminderarig"
+   ],
+   "tokenIdentitet": "egen token for exakt denna semantiska yta, aven om morkvardet sammanfaller med andra",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "ersatter": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande (#2f4437)",
+   "tokenNamn": "--yta-upphojd-d1"
   }
  ],
  "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
  "perOmfattning": {
   "WHOLE_CANDIDATE": 9,
   "SUBGROUP": 3
- }
+ },
+ "$status": "Ett beslut har status ACTIVE eller SUPERSEDED. Ett ersatt beslut raderas aldrig — det star kvar med reason och vilket beslut som ersatte det. Bara ACTIVE-beslut far anvandas vid migrering.",
+ "aktiva": 12,
+ "ersatta": 1
 }
