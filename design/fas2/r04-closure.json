@@ -1,379 +1,194 @@
 {
- "$regel": "Dependency closure. Ingen produktandring, ingen kandidat flyttad ur C.",
- "besluteradeKandidater": [
-  "CAND-ram-kontroll-#3f6b4f",
-  "CAND-yta-kontroll-#17251d",
-  "CAND-text-kontroll-#a9b2a0",
-  "CAND-ram-kontroll-#de9078",
-  "CAND-text-kontroll-#de9078",
-  "CAND-text-kontroll-#8fb89a",
-  "CAND-yta-kontroll-#93a48d",
-  "CAND-yta-kontroll-#37453a"
- ],
- "kandidater": {
-  "fore": 111,
-  "efter": 111,
-  "beslutade_fore": 0,
-  "beslutade_efter": 8,
-  "obeslutade_fore": 111,
-  "obeslutade_efter": 103
- },
- "cSkarmar": {
-  "totalt": 219,
-  "fulltBeslutade_fore": 0,
-  "fulltBeslutade_efter": 0
- },
- "skarmarMedDeAtta": [
-  {
-   "art": "betygvemat",
-   "familj": "betygvemat-414",
-   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-   "beslutadeHar": [
-    "CAND-yta-kontroll-#93a48d"
-   ],
-   "kvarvarandeBlockerare": [
-    "CAND-yta-kontroll-#4a5c43",
-    "CAND-yta-kontroll-#627061",
-    "CAND-yta-kontroll-#3f6b4f",
-    "CAND-text-kontroll-#17251d",
-    "CAND-yta-kontroll-#ce7c1e"
-   ],
-   "fulltBeslutad": false
-  },
-  {
-   "art": "flertagg",
-   "familj": "flertagg-414",
-   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
-   "beslutadeHar": [
-    "CAND-ram-kontroll-#3f6b4f"
-   ],
-   "kvarvarandeBlockerare": [
-    "CAND-yta-upphojd-rgba(36,56,44,0.35)",
-    "CAND-yta-upphojd-#f5f4ed",
-    "CAND-yta-upphojd-#7d897c",
-    "CAND-yta-kontroll-#f5f4ed",
-    "CAND-ram-kontroll-#ce7c1e",
-    "CAND-ram-kontroll-#a15a0a",
-    "CAND-ram-kontroll-#627061"
-   ],
-   "fulltBeslutad": false
-  },
-  {
-   "art": "formularmorkt",
-   "familj": "recepteditor-default-412",
-   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-   "beslutadeHar": [
-    "CAND-yta-kontroll-#17251d",
-    "CAND-text-kontroll-#a9b2a0",
-    "CAND-ram-kontroll-#de9078",
-    "CAND-text-kontroll-#de9078"
-   ],
-   "kvarvarandeBlockerare": [
-    "CAND-ram-behallare-rgba(245,244,237,0.18)",
-    "CAND-text-kontroll-#93a48d",
-    "CAND-text-innehall-#c9d3c4",
-    "CAND-ram-behallare-rgba(245,244,237,0.35)",
-    "CAND-ram-behallare-#f5f4ed",
-    "CAND-text-innehall-#93a48d",
-    "CAND-ram-behallare-#de9078",
-    "CAND-ikon-fristaende-#de9078",
-    "CAND-text-innehall-#de9078",
-    "CAND-yta-kontroll-#ce7c1e",
-    "CAND-yta-kontroll-#2f4437",
-    "CAND-ram-kontroll-rgba(245,244,237,0.18)"
-   ],
-   "fulltBeslutad": false
-  },
-  {
-   "art": "inkopkategoriordning",
-   "familj": "inkopkategoriordning-414",
-   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
-   "beslutadeHar": [
-    "CAND-yta-kontroll-#37453a"
-   ],
-   "kvarvarandeBlockerare": [
-    "CAND-yta-upphojd-rgba(36,56,44,0.35)",
-    "CAND-yta-upphojd-#f5f4ed",
-    "CAND-yta-upphojd-#ccd1c2",
-    "CAND-yta-kontroll-#4a5c50",
-    "CAND-yta-kontroll-#8a5212",
-    "CAND-yta-kontroll-#f5f4ed",
-    "CAND-yta-kontroll-#627061",
-    "CAND-yta-kontroll-#9c3b23",
-    "CAND-yta-kontroll-#5b6959",
-    "CAND-yta-kontroll-#7d897c",
-    "CAND-yta-kontroll-#ce7c1e",
-    "CAND-text-kontroll-#17251d"
-   ],
-   "fulltBeslutad": false
-  },
-  {
-   "art": "lagasubst",
-   "familj": "lagasubst-414",
-   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-   "beslutadeHar": [
-    "CAND-text-kontroll-#8fb89a"
-   ],
-   "kvarvarandeBlockerare": [
-    "CAND-ram-behallare-rgba(245,244,237,0.18)",
-    "CAND-text-innehall-#93a48d",
-    "CAND-ram-kontroll-rgba(245,244,237,0.35)",
-    "CAND-text-kontroll-#93a48d",
-    "CAND-yta-upphojd-rgba(23,37,29,0.6)",
-    "CAND-yta-upphojd-rgba(245,244,237,0.35)",
-    "CAND-text-innehall-#c9d3c4",
-    "CAND-ram-kontroll-rgba(245,244,237,0.18)",
-    "CAND-ram-kontroll-rgba(245,244,237,0.4)",
-    "CAND-text-kontroll-#c9d3c4",
-    "CAND-ikon-kontroll-#dca968",
-    "CAND-yta-kontroll-#ce7c1e",
-    "CAND-text-kontroll-#17251d"
-   ],
-   "fulltBeslutad": false
+ "$regel": "Closure pa forekomstniva. En post ar beslutad nar hela kandidaten eller just dess semantiska undergrupp ar beslutad. Ett undergruppsbeslut smittar aldrig ett syskon.",
+ "registret": {
+  "beslut": 12,
+  "perOmfattning": {
+   "WHOLE_CANDIDATE": 9,
+   "SUBGROUP": 3
   }
- ],
- "narmastFulltBeslutade": [
-  {
-   "art": "delatmedmig",
-   "familj": "delatmedmig-414",
-   "kvar": [
-    "CAND-yta-upphojd-#f5f4ed"
-   ],
-   "dekl": 1
-  },
+ },
+ "syskonsmitta": 0,
+ "fulltBeslutadeSkarmar": [
   {
    "art": "dataexport",
    "familj": "dataexport-414",
-   "kvar": [
-    "CAND-yta-upphojd-#ce7c1e"
-   ],
-   "dekl": 1
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
   },
   {
    "art": "faq",
    "familj": "faq-414",
-   "kvar": [
-    "CAND-yta-upphojd-#ce7c1e"
-   ],
-   "dekl": 1
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
   },
   {
    "art": "samtycke",
    "familj": "samtycke-414",
-   "kvar": [
-    "CAND-yta-upphojd-#ce7c1e"
-   ],
-   "dekl": 1
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
   },
   {
    "art": "juridik",
    "familj": "juridik-322",
-   "kvar": [
-    "CAND-yta-upphojd-#ce7c1e"
-   ],
-   "dekl": 1
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
   },
   {
    "art": "veckochips",
    "familj": "veckochips-414",
-   "kvar": [
-    "CAND-yta-upphojd-#f5f4ed"
-   ],
-   "dekl": 1
-  },
-  {
-   "art": "veckofel",
-   "familj": "veckofel-414",
-   "kvar": [
-    "CAND-yta-upphojd-#f5f4ed"
-   ],
-   "dekl": 1
-  },
-  {
-   "art": "onbklar",
-   "familj": "onbklar-462",
-   "kvar": [
-    "CAND-yta-upphojd-#ce7c1e"
-   ],
-   "dekl": 1
-  },
-  {
-   "art": "imp2hamtar",
-   "familj": "imp2hamtar-414",
-   "kvar": [
-    "CAND-yta-upphojd-#ce7c1e"
-   ],
-   "dekl": 1
-  },
-  {
-   "art": "impfoto",
-   "familj": "impfoto-414",
-   "kvar": [
-    "CAND-yta-kontroll-#f5f4ed"
-   ],
-   "dekl": 1
-  },
-  {
-   "art": "adminskal",
-   "familj": "adminskal-926",
-   "kvar": [
-    "CAND-yta-upphojd-#f5f4ed"
-   ],
-   "dekl": 1
-  },
-  {
-   "art": "modminderarig",
-   "familj": "modminderarig-414",
-   "kvar": [
-    "CAND-yta-upphojd-#f5f4ed"
-   ],
-   "dekl": 1
-  },
-  {
-   "art": "cooksnapgalleri",
-   "familj": "cooksnapgalleri-414",
-   "kvar": [
-    "CAND-yta-upphojd-rgba(23,37,29,0.6)"
-   ],
-   "dekl": 1
-  },
-  {
-   "art": "socknuff",
-   "familj": "socknuff-414",
-   "kvar": [
-    "CAND-yta-upphojd-#f5f4ed"
-   ],
-   "dekl": 1
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
   },
   {
    "art": "veckoresultat",
    "familj": "veckoresultat-414",
-   "kvar": [
-    "CAND-yta-upphojd-#f5f4ed"
-   ],
-   "dekl": 2
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckofel",
+   "familj": "veckofel-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
   },
   {
    "art": "veckorostutgang",
    "familj": "veckorostutgang-414",
-   "kvar": [
-    "CAND-yta-upphojd-#f5f4ed"
-   ],
-   "dekl": 2
-  },
-  {
-   "art": "kontodelvis",
-   "familj": "kontodelvis-414",
-   "kvar": [
-    "CAND-yta-upphojd-#8a5212"
-   ],
-   "dekl": 2
-  },
-  {
-   "art": "kontosakerhetsvy",
-   "familj": "kontosakerhetsvy-414",
-   "kvar": [
-    "CAND-yta-upphojd-#ccd1c2"
-   ],
-   "dekl": 2
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
   },
   {
    "art": "onbvalkommen",
    "familj": "onbvalkommen-414",
-   "kvar": [
-    "CAND-yta-upphojd-rgba(36,56,44,0.18)"
-   ],
-   "dekl": 3
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
   },
   {
-   "art": "behfoton",
-   "familj": "behfoton-414",
-   "kvar": [
-    "CAND-yta-kontroll-#7d897c"
-   ],
-   "dekl": 3
-  },
-  {
-   "art": "impoffline",
-   "familj": "impoffline-414",
-   "kvar": [
-    "CAND-yta-upphojd-#f5f4ed"
-   ],
-   "dekl": 3
+   "art": "onbklar",
+   "familj": "onbklar-462",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
   },
   {
    "art": "modrapporter",
    "familj": "modrapporter-414",
-   "kvar": [
-    "CAND-yta-upphojd-#f5f4ed"
-   ],
-   "dekl": 3
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
   },
   {
-   "art": "jurriktlinjer",
-   "familj": "jurriktlinjer-414",
-   "kvar": [
-    "CAND-ram-kontroll-#e6ead9"
-   ],
-   "dekl": 3
-  },
-  {
-   "art": "kontosakerhet",
-   "familj": "kontosakerhet-414",
-   "kvar": [
-    "CAND-yta-upphojd-#f5f4ed"
-   ],
-   "dekl": 4
-  },
-  {
-   "art": "menysmak",
-   "familj": "menysmak-414",
-   "kvar": [
-    "CAND-yta-upphojd-#ce7c1e",
-    "CAND-text-innehall-#17251d"
-   ],
-   "dekl": 2
+   "art": "modminderarig",
+   "familj": "modminderarig-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
   }
  ],
- "stangbaraMedEnbartReady": [
-  {
-   "art": "onbvalkommen",
-   "familj": "onbvalkommen-414",
-   "kvar": 1,
-   "klaraForBeslut": 1,
-   "needsSplit": 0,
-   "kandidater": [
-    {
-     "id": "CAND-yta-upphojd-rgba(36,56,44,0.18)",
-     "rek": "READY_FOR_HUMAN_DECISION",
-     "undergrupper": 1,
-     "familjer": 4
+ "vantade": [
+  "veckochips",
+  "veckoresultat",
+  "veckofel",
+  "veckorostutgang",
+  "modrapporter",
+  "modminderarig",
+  "dataexport",
+  "faq",
+  "samtycke",
+  "juridik",
+  "onbklar",
+  "onbvalkommen"
+ ],
+ "saknas": [],
+ "ovantade": [],
+ "betygvemat": {
+  "kvarvarandeBlockerare": [
+   "CAND-yta-kontroll-#4a5c43 ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "CAND-yta-kontroll-#627061 ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "CAND-yta-kontroll-#3f6b4f ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "CAND-yta-kontroll-#ce7c1e ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "CAND-text-kontroll-#17251d ‖ kontroll:button · direkt-pa-appytan · utan-state · liten-text · halvfet"
+  ],
+  "morkKontrastParet": 6.56,
+  "fulltBeslutad": false
+ },
+ "fore": {
+  "helaKandidater": 8,
+  "undergruppsinstanser": 0,
+  "fulltBeslutadeSkarmar": 0
+ },
+ "efter": {
+  "helaKandidater": 9,
+  "undergruppsinstanser": 3,
+  "fulltBeslutadeSkarmar": 12
+ },
+ "undergruppsinstanser": {
+  "totalt": 295,
+  "obeslutade": 283
+ },
+ "skrivforsok": {
+  "status": "GENOMFORT OCH ATERSTALLT — batchen var inte gron",
+  "skrivet": {
+   "skarmar": 12,
+   "filer": 5,
+   "skrivningar": 278,
+   "tackta": 84,
+   "summa": 362,
+   "hoppade": 0,
+   "konflikter": 0,
+   "nyaTokens": 3
+  },
+  "ljusgrind": {
+   "fargavvikelser": 0,
+   "geometriavvikelser": 0
+  },
+  "morkbaslinje": {
+   "kallor": 64,
+   "kontroller": 229,
+   "grafiskaDelar": 270,
+   "barare": 103,
+   "ickeTextFynd": 0,
+   "unknown": 0,
+   "textFynd": 8
+  },
+  "fynd": [
+   {
+    "yta": "#2f4437",
+    "foregrund": "#93a48d",
+    "kvot": 3.96,
+    "krav": 4.5,
+    "skarmar": [
+     "veckochips",
+     "veckoresultat",
+     "veckofel"
+    ]
+   },
+   {
+    "yta": "#2f4437",
+    "foregrund": "#de9078",
+    "kvot": 4.18,
+    "krav": 4.5,
+    "skarmar": [
+     "veckorostutgang",
+     "modrapporter",
+     "modminderarig"
+    ]
+   }
+  ],
+  "rotorsak": "Beslutet #f5f4ed -> #2f4437 infor en ANDRA mork ytniva. I allt verifierat morkt material finns bara en enda renderad mork ytniva, #17251d, och samtliga etablerade dampade foregrundstokens ar kalibrerade mot den. Pa #2f4437 faller #93a48d till 3.96 och #de9078 till 4.18.",
+  "omfattning": "Endast paket A, de sex skarmarna ur #f5f4ed-undergruppen, faller. Paket B (fem skarmar ur #ce7c1e) och paket C (onbvalkommen) hade 0 fynd.",
+  "atgard": "Samtliga fem ritningsfiler aterstallda. Ingen produktcommit. Ingen fix uppfunnen.",
+  "underlagForNyttBeslut": {
+   "krav": "Med den svagaste foregrunden #93a48d far ytans relativa luminans vara hogst 0.0382 for att na 4.5.",
+   "uppmatt": {
+    "#17251d": {
+     "luminans": 0.0159,
+     "#93a48d": 6.02,
+     "#de9078": 6.34
+    },
+    "#24382c": {
+     "luminans": 0.0339,
+     "#93a48d": 4.73,
+     "#de9078": 4.99
+    },
+    "#2f4437": {
+     "luminans": 0.0501,
+     "#93a48d": 3.96,
+     "#de9078": 4.18
+    },
+    "#4a5c43": {
+     "luminans": 0.0952,
+     "#93a48d": 2.73,
+     "#de9078": 2.88
     }
-   ]
-  }
- ],
- "villkorsutfall": [
-  {
-   "beslut": "CAND-yta-kontroll-#93a48d",
-   "villkor": "text eller foreground pa ytan maste verifieras mot minst 4.5 dar textkontraktet galler",
-   "utfall": "VILLKORET UPPFYLLS INTE MED NUVARANDE FOREGRUND",
-   "skarm": "betygvemat",
-   "undergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
-   "foregrund": {
-    "farg": "#17251d",
-    "kandidat": "CAND-text-kontroll-#17251d",
-    "status": "obeslutad C-kandidat",
-    "rekommendation": "NEEDS_SEMANTIC_SPLIT",
-    "familjer": 58,
-    "undergrupper": 6
    },
-   "kontrast": {
-    "ljus_idag": "6.02:1 mot #93a48d",
-    "mork_med_beslutad_yta": "2.2:1 mot #4a5c43",
-    "krav": "4.5:1"
-   },
-   "slutsats": "Skarmen betygvemat far inte skrivas partiellt. Ytbeslutet och ett beslut for foregrunden maste fattas ihop, annars faller R-01 i morkt lage."
-  }
- ],
- "$villkorsregel": "Ett registrerat beslut med villkor ar giltigt som beslut men far inte migreras forran villkoret ar uppfyllt."
+   "not": "Redovisade matvarden, inga forslag. Vilket varde som valjs ar ett designbeslut."
+  },
+  "berordaEtableradeTokens": 27
+ }
 }

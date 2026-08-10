@@ -6,10 +6,10 @@
  "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
  "$tokenidentitet": "Tva kandidater med samma morka varde behaller separata tokens.",
  "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
- "antal": 8,
+ "antal": 12,
  "perTyp": {
-  "temavaxlande": 3,
-  "temainvariant": 5
+  "temavaxlande": 6,
+  "temainvariant": 6
  },
  "beslut": [
   {
@@ -59,7 +59,10 @@
    "berordaFamiljer": 1,
    "berordaArtefakter": [
     "flertagg"
-   ]
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-ram-kontroll-#3f6b4f",
+   "semantiskUndergrupp": "kontroll:button · nastlad-yta · utan-state · hel-ram · stor-yta"
   },
   {
    "kandidatId": "CAND-yta-kontroll-#17251d",
@@ -105,7 +108,10 @@
    "berordaFamiljer": 1,
    "berordaArtefakter": [
     "formularmorkt"
-   ]
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-yta-kontroll-#17251d",
+   "semantiskUndergrupp": "kontroll:switch · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande"
   },
   {
    "kandidatId": "CAND-text-kontroll-#a9b2a0",
@@ -151,7 +157,10 @@
    "berordaFamiljer": 1,
    "berordaArtefakter": [
     "formularmorkt"
-   ]
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-text-kontroll-#a9b2a0",
+   "semantiskUndergrupp": "kontroll:textbox · direkt-pa-appytan · utan-state · liten-text · normal"
   },
   {
    "kandidatId": "CAND-ram-kontroll-#de9078",
@@ -198,7 +207,10 @@
    "berordaFamiljer": 1,
    "berordaArtefakter": [
     "formularmorkt"
-   ]
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-ram-kontroll-#de9078",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · hel-ram · stor-yta"
   },
   {
    "kandidatId": "CAND-text-kontroll-#de9078",
@@ -245,7 +257,10 @@
    "berordaFamiljer": 1,
    "berordaArtefakter": [
     "formularmorkt"
-   ]
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-text-kontroll-#de9078",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · liten-text · halvfet"
   },
   {
    "kandidatId": "CAND-text-kontroll-#8fb89a",
@@ -292,7 +307,10 @@
    "berordaFamiljer": 1,
    "berordaArtefakter": [
     "lagasubst"
-   ]
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-text-kontroll-#8fb89a",
+   "semantiskUndergrupp": "kontroll:radio · nastlad-yta · utan-state · liten-text · halvfet"
   },
   {
    "kandidatId": "CAND-yta-kontroll-#93a48d",
@@ -341,7 +359,10 @@
    "berordaArtefakter": [
     "betygvemat"
    ],
-   "villkorsstatus": "OPPET — foregrunden #17251d ar en obeslutad C-kandidat och ger 2.2:1 mot #4a5c43. Beslutet star kvar, men far inte migreras forran foregrunden ar beslutad."
+   "villkorsstatus": "RESOLVED — foregrunden ar beslutad genom CAND-text-kontroll-#17251d ‖ kontroll:checkbox …, #17251d -> #f5f4ed. Mork kontrast #f5f4ed pa #4a5c43 ar cirka 6.56:1 mot kravet 4.5. Skarmen betygvemat far anda inte skrivas sa lange andra blockerare finns kvar.",
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-yta-kontroll-#93a48d",
+   "semantiskUndergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
   },
   {
    "kandidatId": "CAND-yta-kontroll-#37453a",
@@ -389,7 +410,188 @@
    "berordaFamiljer": 1,
    "berordaArtefakter": [
     "inkopkategoriordning"
-   ]
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-yta-kontroll-#37453a",
+   "semantiskUndergrupp": "kontroll:button · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#f5f4ed",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#f5f4ed",
+   "morkvarde": "#2f4437",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "kopplatTill": null,
+   "motivering": [
+    "stor opak textbarande yta direkt ovanpa appytan",
+    "ska behalla en tydlig upphojd surfaceniva i morkt lage",
+    "mork appyta ar den lagre nivan; denna yta ska inte kollapsa till samma niva",
+    "#2f4437 ar den etablerade morka upphojda surfacenivan",
+    "foraldrakandidaten har flera olika observerade morka mal, darfor ar detta uttryckligen ett undergruppsbeslut"
+   ],
+   "evidenssparr": "Eventuell DIRECT_SEMANTIC_EVIDENCE pa foraldraniva far INTE registreras som bevis for denna undergrupp utan evidens i samma kontext.",
+   "evidensvidBeslut": {
+    "styrka": "DIRECT_SEMANTIC_EVIDENCE",
+    "observeradeMalDirekt": [
+     "#17251d"
+    ],
+    "observeradeMalAllaKontexter": [
+     "#17251d"
+    ],
+    "not": "Redovisad bevisbild. Aldrig grund for beslutet."
+   },
+   "undergruppensOmfattning": {
+    "deklarationer": 98,
+    "familjer": 82
+   },
+   "foraldernsUndergrupper_st": 12,
+   "foraldernsFamiljer_st": 115,
+   "forvantadeFulltBeslutadeSkarmar": [
+    "veckochips",
+    "veckoresultat",
+    "veckofel",
+    "veckorostutgang",
+    "modrapporter",
+    "modminderarig"
+   ],
+   "tokenIdentitet": "egen token for exakt denna undergrupp",
+   "migrationsstatus": "BLOCKERAD — beslutet star kvar i registret, men skrivningen aterstalldes. Pa #2f4437 faller de etablerade foregrunderna #93a48d (3.96) och #de9078 (4.18) under 4.5. Kraver antingen ett annat morkt ytvarde eller avdelade beslut for foregrunderna pa just denna yta."
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#ce7c1e",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "#ce7c1e",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temainvariant",
+   "themeInvariant": true,
+   "kopplatTill": null,
+   "motivering": [
+    "liten opak accent- eller surfaceform direkt pa appytan",
+    "bar varken text eller ikon, alltsa inget last kontrastgolv mot underlaget",
+    "#ce7c1e har redan tydlig separation fran mork appyta",
+    "ingen funktionell anledning att ljusa den till exempelvis #dca968",
+    "en ljusare orange skulle oka emfasen jamfort med ljust lage",
+    "accentens identitet bevaras temainvariant",
+    "rent designbeslut — foraldrakandidaten saknar observerad mappning"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna undergrupp. Ovriga undergrupper under samma foraldrakandidat ar obeslutade.",
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "not": "Redovisad bevisbild. Aldrig grund for beslutet."
+   },
+   "undergruppensOmfattning": {
+    "deklarationer": 26,
+    "familjer": 19
+   },
+   "foraldernsUndergrupper_st": 9,
+   "foraldernsFamiljer_st": 66,
+   "forvantadeFulltBeslutadeSkarmar": [
+    "dataexport",
+    "faq",
+    "samtycke",
+    "juridik",
+    "onbklar"
+   ],
+   "tokenIdentitet": "egen token for exakt denna undergrupp"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-rgba(36,56,44,0.18)",
+   "kandidatId": "CAND-yta-upphojd-rgba(36,56,44,0.18)",
+   "omfattning": "WHOLE_CANDIDATE",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · genomskinlig",
+   "roll": "yta-upphojd",
+   "ljusvarde": "rgba(36,56,44,0.18)",
+   "morkvarde": "rgba(245,244,237,0.18)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "kopplatTill": null,
+   "motivering": [
+    "entydig semantisk undergrupp: direkt pa appytan, liten, genomskinlig, utan text, utan ikon",
+    "ljust lage anvander en svag mork overlay pa ljus surface",
+    "morkt lage anvander motsvarande svaga ljusa overlay pa mork surface",
+    "alfa 0.18 behalls",
+    "inget last surfacekontrastgolv"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna undergrupp. Ovriga undergrupper under samma foraldrakandidat ar obeslutade.",
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "not": "Redovisad bevisbild. Aldrig grund for beslutet."
+   },
+   "undergruppensOmfattning": {
+    "deklarationer": 12,
+    "familjer": 4
+   },
+   "foraldernsUndergrupper_st": 1,
+   "foraldernsFamiljer_st": 4,
+   "forvantadeFulltBeslutadeSkarmar": [
+    "onbvalkommen"
+   ],
+   "tokenIdentitet": "egen token for exakt denna undergrupp"
+  },
+  {
+   "beslutsId": "CAND-text-kontroll-#17251d ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · liten-text · halvfet",
+   "kandidatId": "CAND-text-kontroll-#17251d",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · liten-text · halvfet",
+   "roll": "text-kontroll",
+   "ljusvarde": "#17251d",
+   "morkvarde": "#f5f4ed",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "kopplatTill": "CAND-yta-kontroll-#93a48d",
+   "motivering": [
+    "foregrund och yta ar ett kopplat designpar",
+    "ljust: #17251d pa #93a48d ar cirka 6.02:1",
+    "den tidigare oppna morka kombinationen #17251d pa #4a5c43 ar cirka 2.20:1 och ar underkand",
+    "beslutad mork foregrund #f5f4ed pa #4a5c43 ar cirka 6.56:1 mot kravet 4.5",
+    "bevarar ungefar samma hierarki mellan foregrund och bakgrund som i ljust lage",
+    "vardet ar valt som primar mork foregrund pa kontrollytan, inte for att precis na 4.5"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna undergrupp. Ovriga undergrupper under samma foraldrakandidat ar obeslutade.",
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "not": "Redovisad bevisbild. Aldrig grund for beslutet."
+   },
+   "undergruppensOmfattning": {
+    "deklarationer": 1,
+    "familjer": 1
+   },
+   "foraldernsUndergrupper_st": 6,
+   "foraldernsFamiljer_st": 58,
+   "forvantadeFulltBeslutadeSkarmar": [
+    "betygvemat"
+   ],
+   "tokenIdentitet": "egen token for exakt denna undergrupp"
   }
- ]
+ ],
+ "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
+ "perOmfattning": {
+  "WHOLE_CANDIDATE": 9,
+  "SUBGROUP": 3
+ }
 }
