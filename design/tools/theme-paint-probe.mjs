@@ -20,37 +20,85 @@ export const PAINT_PROBE = `(() => {
         viktig: [...rule.style].some(p => rule.style.getPropertyPriority(p) === 'important') });
     }
   }
-  // Vilken regel VINNER for en egenskap pa ett element? Kaskaden approximeras:
-  // inline forst, sedan viktiga regler, sedan sist matchande regel.
-  function vinnare(el, egenskap) {
-    const inline = el.style && el.style.getPropertyValue(egenskap);
-    if (inline) return { ursprung: 'INLINE', varde: inline.trim(), selector: null,
-      viktig: el.style.getPropertyPriority(egenskap) === 'important' };
-    // Kortformer maste med: border och background exponerar inte sina
-    // langformer nar vardet innehaller var().
-    const KORT = { 'border-top-color': 'border', 'border-right-color': 'border',
-      'border-bottom-color': 'border', 'border-left-color': 'border',
-      'background-color': 'background' };
-    let bast = null;
-    for (const r of regler) {
-      let v = r.style.getPropertyValue(egenskap);
-      let viaKort = false;
-      if (!v && KORT[egenskap]) { const k = r.style.getPropertyValue(KORT[egenskap]);
-        if (k && k.indexOf('var(') >= 0) { v = k; viaKort = true; } }
-      if (!v) continue;
-      if (viaKort) { let matchar = false; try { matchar = el.matches(r.selector); } catch { continue; }
-        if (matchar) return { ursprung: 'TOKEN_HOOK', varde: v.trim(), selector: r.selector }; }
-      let matchar = false; try { matchar = el.matches(r.selector); } catch { continue; }
-      if (!matchar) continue;
-      const viktig = r.style.getPropertyPriority(egenskap) === 'important';
-      // En langform som redan laser sitt varde ur en variabel ar lika mycket
-      // en tokenhook som kortformen. Skillnaden var bara att kortformen inte
-      // exponerar sina langformer, aldrig att den ena vore mer tokeniserad.
-      const hook = v.indexOf('var(') >= 0;
-      if (!bast || viktig || !bast.viktig) bast = { ursprung: hook ? 'TOKEN_HOOK' : 'CLASS_RULE',
-        varde: v.trim(), selector: r.selector, viktig };
+  // KORTFORMER. En langform kan malas av en kortform, och CSSOM slutar
+  // exponera langformen sa fort kortformens varde innehaller var(). Den tomma
+  // langformen ar da SIGNALEN att en kortform vann, inte franvaro av
+  // deklaration. Ordningen ar fran mest till minst specifik kortform.
+  const KORT = { 'border-top-color': ['border-top-color', 'border-top', 'border'],
+    'border-right-color': ['border-right-color', 'border-right', 'border'],
+    'border-bottom-color': ['border-bottom-color', 'border-bottom', 'border'],
+    'border-left-color': ['border-left-color', 'border-left', 'border'],
+    'background-color': ['background-color', 'background'] };
+
+  // Vilken deklaration i ETT deklarationsblock malar egenskapen?
+  function iBlock(style, egenskap) {
+    if (!style) return null;
+    const rak = style.getPropertyValue(egenskap);
+    if (rak) return { varde: rak.trim(), namn: egenskap, kortform: null,
+      viktig: style.getPropertyPriority(egenskap) === 'important' };
+    const kandidater = (KORT[egenskap] || []).filter(n => n !== egenskap)
+      .filter(n => { const v = style.getPropertyValue(n); return v && v.indexOf('var(') >= 0; });
+    if (!kandidater.length) return null;
+    if (kandidater.length > 1) {
+      // Inom ett block vinner den sist deklarerade. Gar ordningen inte att
+      // faststalla: fail closed, ingen heuristik.
+      const lista = [...style];
+      const idx = kandidater.map(n => lista.indexOf(n));
+      if (idx.some(i => i < 0)) return { tvetydig: true, kandidater };
+      const v = kandidater[idx.indexOf(Math.max.apply(null, idx))];
+      return { varde: style.getPropertyValue(v).trim(), namn: v, kortform: v,
+        viktig: style.getPropertyPriority(v) === 'important' };
+    }
+    const n = kandidater[0];
+    return { varde: style.getPropertyValue(n).trim(), namn: n, kortform: n,
+      viktig: style.getPropertyPriority(n) === 'important' };
+  }
+
+  // Specificitet for den del av en selektorlista som faktiskt matchar.
+  function specificitet(sel, el) {
+    let bast = -1;
+    for (const del of String(sel).split(',')) {
+      const d = del.trim(); if (!d) continue;
+      let m = false; try { m = el.matches(d); } catch { continue; }
+      if (!m) continue;
+      const a = (d.match(/#[\\w-]+/g) || []).length;
+      const b = (d.match(/\\.[\\w-]+|\\[[^\\]]*\\]|:(?!:)[\\w-]+(\\([^)]*\\))?/g) || []).length;
+      const c = (d.match(/(^|[\\s>+~])[a-zA-Z][\\w-]*/g) || []).length;
+      const v = a * 10000 + b * 100 + c;
+      if (v > bast) bast = v;
     }
     return bast;
+  }
+
+  // Vilken deklaration VINNER kaskaden for egenskapen pa elementet?
+  // Ordningen ar den riktiga: !important sist, darefter specificitet,
+  // darefter kallordning. Inline behandlas som hogsta specificitet.
+  // Ingen tidig retur pa forsta traff — en senare langform kan sla en
+  // tidigare kortform.
+  function vinnare(el, egenskap) {
+    const kandidater = [];
+    const inline = iBlock(el.style, egenskap);
+    if (inline && inline.tvetydig) return { ursprung: 'AMBIGUOUS', varde: null, selector: null,
+      skal: 'flera kortformer i stilattributet kan mala ' + egenskap + ' och ordningen gar inte att faststalla' };
+    if (inline) kandidater.push({ ...inline, block: 'inline', spec: Infinity, ordning: Infinity, selector: null });
+    for (let i = 0; i < regler.length; i++) {
+      const r = regler[i];
+      const t = iBlock(r.style, egenskap);
+      if (!t || t.tvetydig) continue;
+      const sp = specificitet(r.selector, el);
+      if (sp < 0) continue;
+      kandidater.push({ ...t, block: 'class', spec: sp, ordning: i, selector: r.selector });
+    }
+    if (!kandidater.length) return null;
+    kandidater.sort((a, b) => (a.viktig === b.viktig ? 0 : a.viktig ? 1 : -1) ||
+      (a.spec - b.spec) || (a.ordning - b.ordning));
+    const v = kandidater[kandidater.length - 1];
+    // Ett varde som laser sig ur en variabel ar redan tokeniserat, oavsett om
+    // det star inline eller i en klassregel. Var det star bevaras i block.
+    const hook = v.varde.indexOf('var(') >= 0;
+    return { ursprung: hook ? 'TOKEN_HOOK' : (v.block === 'inline' ? 'INLINE' : 'CLASS_RULE'),
+      varde: v.varde, selector: v.selector, viktig: v.viktig,
+      block: v.block, kortform: v.kortform || null, deklarationsnamn: v.namn };
   }
 
   // ROLLEN HARLEDS HAR, en enda gang. Konsumenterna far den fardig och far
@@ -71,6 +119,9 @@ export const PAINT_PROBE = `(() => {
 
   const FARGADE = ['background-color', 'border-top-color', 'border-right-color',
     'border-bottom-color', 'border-left-color', 'color', 'fill', 'stroke'];
+  // Bara dessa arvs i CSS. En forfaders background eller ram kan aldrig vara
+  // kallan till ett barns malade farg.
+  const ARVDA = new Set(['color', 'fill', 'stroke']);
   const genomskinlig = v => /rgba\\(0,\\s*0,\\s*0,\\s*0\\)|^transparent$|^none$/.test(v);
 
   const pilot = window.__PILOT || [];
@@ -110,11 +161,34 @@ export const PAINT_PROBE = `(() => {
           if (!egenText) continue; }
 
         let v = vinnare(el, egenskap);
+        // Tvetydig vinnare: fail closed. Ingen kalla fabriceras, inget arv
+        // gissas fram.
+        if (v && v.ursprung === 'AMBIGUOUS') {
+          ut.push({ art: it.id, egenskap, beraknat: berak.trim(), ankare: null,
+            block: null, kortform: null, deklarationsnamn: null,
+            produktElement_st: produktElement.length, ursprung: 'AMBIGUOUS',
+            deklaration: null, selector: null, viaCurrentColor: false, kalla: null,
+            skal: v.skal, elementId: el.id || null, arvd: false, arKontroll, arSvg,
+            klass: el.getAttribute('class') || null,
+            telefonram: el.classList.contains('sc-phone'),
+            skelett: /sc-skeleton|sc-loader/.test(el.className || ''),
+            roll: rollAv(egenskap, arSvg, arKontroll, el.classList.contains('sc-phone'),
+              /sc-skeleton|sc-loader/.test(el.className || '')) });
+          continue; }
         let arvd = false;
         if (!v) {
-          // Ingen egen deklaration: fargen ar arvd. Folj arvet uppat.
-          let n = el.parentElement;
-          while (n && !v) { v = vinnare(n, egenskap); if (v) { arvd = true; v.arvdFran = n.tagName.toLowerCase(); } n = n.parentElement; }
+          // ARVET SIST. Bara nar egenskapen saknar egen deklaration — och
+          // efter att bade langform och tokeniserad kortform provats — ar
+          // fargen arvd. En tokeniserad kortform ar aldrig ett arv.
+          if (!ARVDA.has(egenskap)) {
+            // Egenskapen arvs inte i CSS. Da kan en forfaders deklaration
+            // aldrig vara kallan.
+          } else {
+            let n = el.parentElement;
+            while (n && !v) { v = vinnare(n, egenskap);
+              if (v && v.ursprung === 'AMBIGUOUS') { v = null; break; }
+              if (v) { arvd = true; v.arvdFran = n.tagName.toLowerCase(); } n = n.parentElement; }
+          }
         }
         // svg-attribut ar en egen ursprungsklass.
         if (arSvg && (egenskap === 'fill' || egenskap === 'stroke') && el.hasAttribute(egenskap)) {
@@ -169,6 +243,12 @@ export const PAINT_PROBE = `(() => {
         }
         ut.push({ art: it.id, egenskap, beraknat: berak.trim(),
           ankare,
+          // Kallans form bevaras: var deklarationen star (inline/class) och
+          // om den kom via en kortform. En tokeniserad kortform tappar aldrig
+          // sitt ursprung och blir aldrig INHERITED.
+          block: v ? v.block || null : null,
+          kortform: v ? v.kortform || null : null,
+          deklarationsnamn: v ? v.deklarationsnamn || egenskap : null,
           produktElement_st: produktElement.length,
           // Proveniensen bevaras. En currentColor-post far kallans ursprung,
           // aldrig INHERITED: att deklarationen sitter pa en forfader ar en

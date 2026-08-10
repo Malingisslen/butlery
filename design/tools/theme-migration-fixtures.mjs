@@ -30,6 +30,9 @@ const FIXTUR = `<!doctype html><meta charset="utf-8"><style>
  .sc-label{color:#37453a}
  .sc-id{color:#24382c}
  .sc-phone{background:var(--surface-app,#F5F4ED);border:1px solid var(--border-app,#ccd1c2);color:var(--text-app,#24382c);width:300px;padding:10px;box-sizing:border-box}
+ .sc-item{--prov-ram:#7d897c;--prov-yta:#e6ead9}
+ .sh-klass{border:1px solid var(--prov-ram)}
+ .sh-langform{border-top-color:#3f6b4f}
 </style>
 
 <div class="sc-item" id="mrprov">
@@ -60,6 +63,19 @@ const FIXTUR = `<!doctype html><meta charset="utf-8"><style>
 <div class="sc-item" id="cc7prov">
   <div class="sc-card">
     <svg id="cc7" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" data-icon="cc7"><path d="M6 12h12"></path></svg>
+  </div>
+</div>
+
+<div class="sc-item" id="shprov">
+  <div class="sc-phone">
+    <div id="sh1" style="border:1px solid #ccd1c2">literal kortform</div>
+    <div id="sh2" style="border:1px solid var(--prov-ram)">tokeniserad kortform</div>
+    <div id="sh3" class="sh-klass">klassregel med kortform och var</div>
+    <div id="sh4" class="sh-langform" style="border:1px solid var(--prov-ram)">inline kortform mot klassens langform</div>
+    <div id="sh5" class="sh-klass" style="border-top-color:#9c3b23">klassens kortform mot inline langform</div>
+    <div id="sh6" style="background:var(--prov-yta)"><span id="sh6b">barn utan egen bakgrund</span></div>
+    <div id="sh7" style="color:#8a5212"><span id="sh7b">arvd text</span></div>
+    <div id="sh8" style="border-width:1px;border-style:solid">ram utan fargdeklaration</div>
   </div>
 </div>`;
 
@@ -109,7 +125,7 @@ try {
 } catch (e) { verktygsfel = e.message; }
 finally { try { chrome.kill(); } catch {} }
 
-const ANTAL = 24;
+const ANTAL = 34;
 if (verktygsfel) {
   console.log('VERKTYGSFEL: ' + verktygsfel);
   console.log('MIGRATIONSPROV status=VERKTYGSFEL godkanda=0 av ' + ANTAL); process.exit(2);
@@ -319,6 +335,81 @@ const cc = id => karta.filter(x => x.viaCurrentColor && x.elementId === id);
   prov('CC-08', 'dokumentationslagrets currentColor-ikon dras aldrig in, och ingen currentColor-post far en svg-kalla',
     dok.length === 0 && produkt.length >= 4 && svgKallor.length === 0,
     'dokumentation ' + dok.length + ' · produkt ' + produkt.length + ' · svg-kallor ' + svgKallor.length); }
+
+/* ── SH · kortformer som malar langformer, aven med var() ───────────────── */
+// Felklassen som var belagd: efter tokenisering slutade CSSOM exponera
+// langformen och posten foll till INHERITED trots att deklarationen stod kvar
+// i taggen.
+const sh = (id, eg) => karta.filter(x => x.elementId === id && (!eg || x.egenskap === eg));
+
+{ const p = sh('sh1', 'border-top-color')[0];
+  prov('SH-01', 'literal kortform: border-*-color pekar pa samma kortformsdeklaration',
+    !!p && p.ursprung === 'INLINE' && p.block === 'inline' && p.deklarationsnamn === 'border-top-color' &&
+    p.beraknat === 'rgb(204, 209, 194)' && !!p.ankare,
+    p ? p.ursprung + ' · block ' + p.block + ' · namn ' + p.deklarationsnamn + ' · kortform ' + p.kortform : 'posten saknas'); }
+
+{ const p = sh('sh2', 'border-top-color')[0];
+  prov('SH-02', 'tokeniserad kortform: posten behaller sin kalla och blir ALDRIG INHERITED',
+    !!p && p.ursprung === 'TOKEN_HOOK' && p.block === 'inline' && p.kortform === 'border' &&
+    p.arvd === false && /var\(/.test(p.deklaration || '') && p.beraknat === 'rgb(125, 137, 124)',
+    p ? p.ursprung + ' · block ' + p.block + ' · kortform ' + p.kortform + ' · arvd ' + p.arvd : 'posten saknas'); }
+
+{ const p = sh('sh3', 'border-top-color')[0];
+  prov('SH-03', 'klassregel med kortform och var: proveniensen ar klassregeln, inte arv',
+    !!p && p.ursprung === 'TOKEN_HOOK' && p.block === 'class' && p.selector === '.sh-klass' &&
+    p.kortform === 'border' && p.arvd === false && p.ankare === null,
+    p ? p.ursprung + ' · block ' + p.block + ' · ' + p.selector : 'posten saknas'); }
+
+{ const p = sh('sh4', 'border-top-color')[0];
+  prov('SH-04', 'inline kortform slar klassens langform — den faktiska kaskadvinnaren anvands',
+    !!p && p.block === 'inline' && p.kortform === 'border' && p.beraknat === 'rgb(125, 137, 124)',
+    p ? p.block + ' · ' + p.beraknat + ' (klassens langform ar #3f6b4f)' : 'posten saknas'); }
+
+{ const p = sh('sh5', 'border-top-color')[0];
+  prov('SH-05', 'inline langform slar klassens kortform — den faktiska kaskadvinnaren anvands',
+    !!p && p.ursprung === 'INLINE' && p.block === 'inline' && p.kortform === null &&
+    p.beraknat === 'rgb(156, 59, 35)',
+    p ? p.ursprung + ' · kortform ' + p.kortform + ' · ' + p.beraknat : 'posten saknas'); }
+
+{ const barn = sh('sh6b', 'background-color');
+  const foralder = sh('sh6', 'background-color')[0];
+  prov('SH-06', 'en kortform pa foraldern tillskrivs aldrig barnet nar egenskapen inte arvs',
+    barn.length === 0 && !!foralder && foralder.kortform === 'background',
+    'barnposter ' + barn.length + ' · foralderns kortform ' + (foralder ? foralder.kortform : '-')); }
+
+{ const p = sh('sh7b', 'color')[0];
+  prov('SH-07', 'genuint arvd color klassas fortfarande INHERITED',
+    !!p && p.ursprung === 'INHERITED' && p.arvd === true && p.ankare === null &&
+    p.beraknat === 'rgb(138, 82, 18)',
+    p ? p.ursprung + ' · arvd ' + p.arvd : 'posten saknas'); }
+
+{ const p = sh('sh8', 'border-top-color')[0];
+  prov('SH-08', 'ram utan nagon fargdeklaration ger fail closed, ingen kalla fabriceras',
+    !!p && (p.ursprung === 'OKAND' || p.ursprung === 'AMBIGUOUS') && p.ankare === null &&
+    p.deklaration === null,
+    p ? p.ursprung + ' · ankare ' + p.ankare + ' · deklaration ' + p.deklaration : 'posten saknas'); }
+
+{ const sidor = sh('sh1').filter(x => /border-\w+-color/.test(x.egenskap));
+  const blkSh = styck('shprov');
+  const r = migreraBlock(blkSh, karta.filter(x => x.art === 'shprov' && x.ankare), tokenAv);
+  const mina = [...r.skrivna, ...(r.tackta || [])].filter(x => /border-\w+-color/.test(x.egenskap) &&
+    x.beraknat === 'rgb(204, 209, 194)');
+  const skrivna = mina.filter(x => r.skrivna.includes(x)).length;
+  prov('SH-09', 'en kortform som malar fyra langformer ger fyra poster men EN skrivning',
+    sidor.length === 4 && sidor.every(x => x.kortform === null || x.kortform === 'border') &&
+    mina.length === 4 && skrivna === 1 && r.hoppade.length === 0,
+    sidor.length + ' poster · ' + mina.length + ' i migreringen · ' + skrivna + ' skrivna · ' +
+    r.hoppade.length + ' hoppade'); }
+
+{ // sh1 och sh2 ar samma markup fore och efter tokenisering av kortformen.
+  const a = sh('sh1', 'border-left-color')[0], b = sh('sh2', 'border-left-color')[0];
+  prov('SH-10', 'tokenisering av en kortform behaller kallans identitet: samma block, samma deklaration, aldrig INHERITED',
+    !!a && !!b && a.block === b.block && a.block === 'inline' &&
+    b.kortform === 'border' && a.arvd === false && b.arvd === false &&
+    a.ursprung === 'INLINE' && b.ursprung === 'TOKEN_HOOK' &&
+    b.ursprung !== 'INHERITED',
+    a && b ? 'fore ' + a.ursprung + '/' + a.block + ' · efter ' + b.ursprung + '/' + b.block +
+      ' kortform ' + b.kortform : 'poster saknas'); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
