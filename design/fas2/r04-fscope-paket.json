@@ -1601,5 +1601,49 @@
   "A": "2 familjer blir eligible for coverage nar ytan ar deklarerad. De blir inte covered forran de uppfyller explicitPair eller dualThemeRender.",
   "B": "30 familjer ar redan strukturellt matbara for TEXT. For R-04-coverage kravs anda faktisk dual rendering — scopebeslut ar inte coverage.",
   "C_D_E": "inga familjer i dessa klasser."
+ },
+ "$rattelse": {
+  "datum": "2026-08-11",
+  "vad": "A/B-granssnittet vilade pa 4 textfragment som antogs vara produkttext. De ar det inte.",
+  "fragmenten": [
+   {
+    "familj": "bredlandskap",
+    "tagg": "div.sc-cap",
+    "text": "Ratt · en spalt, bottenrad"
+   },
+   {
+    "familj": "bredlandskap",
+    "tagg": "div.sc-cap",
+    "text": "Fel · vad koden gor i dag"
+   },
+   {
+    "familj": "lgbrotation",
+    "tagg": "div.sc-cap",
+    "text": "Surfplatta i portratt · 76"
+   },
+   {
+    "familj": "lgbrotation",
+    "tagg": "div.sc-cap",
+    "text": "Liggande · 35/65 som i dag"
+   }
+  ],
+  "fynd": "Samtliga fyra ar annoteringsetiketter som beskriver RITNINGENS jamforelsefall — vilken layout som ar ratt och vilken som ar fel, och vilket enhetslage som avbildas. De ar dokumentation om ritningen, inte produkt-UI.",
+  "konsekvens": "Bada A-familjerna ar i sak B. Varje faktiskt produkttextfragment i samtliga 32 har redan positivt bestambar malad bakgrund. Ingen av de 32 kraver data-product-surface for att produkttexten ska kunna matas.",
+  "orsak": "Adjudiceringsregeln raknade allt som varken lag i .sc-label/.sc-id eller i en kontroll som produkttext. .sc-cap ligger utanfor bada.",
+  "starkerArkitekturen": ".sc-cap anvands BADE som produktrubrik inuti telefonramar, till exempel \"SA TOLKADE JAG BESKRIVNINGEN\" i veckochips, och som ritningsannotering i de breda layouterna. Samma klass, tva helt olika betydelser. Klassen ensam kan aldrig avgora scope — vilket ar precis argumentet for positiv authored metadata, och det galler bade produktrot och dokumentationslager.",
+  "starFast": {
+   "produktUI": "32 av 32 ramlosa familjer ar produkt-UI",
+   "dokumentationSomHelArtefakt": 0,
+   "harness": 0,
+   "semantisktUnresolved": 0,
+   "not": "Samtliga har interaktiva kontroller och renderar produkttext."
+  },
+  "ejLangreBelagt": [
+   "fordelningen 2 A / 30 B",
+   "att 4 fragment kraver authored ytidentitet",
+   "antalet fristaende produkttextfragment: 763 innehaller minst 4 annoteringar"
+  ],
+  "kravForeMetadatawrite": "Ett beslut om hur dokumentationslagret ska deklareras. Dagens regel kanner bara .sc-label och .sc-id. Utan en positiv regel for ritningsannotering raknas de som produkttext i varje matning.",
+  "status": "INGEN METADATA SKRIVEN. Kraver beslut."
  }
 }
