@@ -17,7 +17,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
-import 'package:butlery/services/parsing/sanitizers/html_sanitizer.dart';
+import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
 
 /// Firebase Firestore implementation for recipe data operations and real-time synchronization.
 /// This repository implements the [RecipeRepository] interface using Firebase Firestore
@@ -110,8 +110,39 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Recipe fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
       Recipe.fromFirestore(doc);
 
+  /// BUT-1819: the sanitization CHOKEPOINT for this collection.
+  ///
+  /// `BaseFirebaseRepository` serializes through this override in `create`
+  /// (:118), `update` (:228) and `createBatch` (:292) — THREE paths, not four.
+  /// `updateBatch` lives on `BatchOperationsFirebaseRepository`, a mixin this
+  /// repository does not use, so it cannot be called here at all; an earlier
+  /// version of this comment listed it and would have sent a reader looking for
+  /// a chokepoint that does not exist. `createBatch`'s only entry point,
+  /// `addRecipes`, has no production caller today, so that arm is defence in
+  /// depth rather than an open hole.
+  ///
+  /// It does NOT cover `OfflineSyncManager`, which writes to the same
+  /// collection without touching this repository; that path calls
+  /// `sanitizeRecipeText` itself. Those two are the complete set of writers of
+  /// the WHOLE document, in the Dart client AND in `functions/src` — no Cloud
+  /// Function writes a whole recipe. Everything else writes PARTIAL field
+  /// updates that never carry `title`, `description` or `sourceUrl`, so they
+  /// need no sanitizing: on the client `rating_statistics.dart`,
+  /// `family_rating_service.dart`, `recipe_tag_operations.dart` (which does
+  /// write user-authored tag NAMES — its own judgement, not this ticket's) and
+  /// `addIncrementCookCountToBatch` further down this file; in `functions/src`,
+  /// `admin/bulk-retag.ts`, `family/purge-dormant-family-data.ts` and the two
+  /// ingredient triggers.
+  ///
+  /// The property that matters is the one to re-check if you add a writer, and
+  /// it is deliberately stated WITHOUT naming which field each one touches:
+  /// two attempts to enumerate the fields put a wrong one against a named file
+  /// both times. Verify the property, not the list — grep the collection
+  /// CONSTANT, not the literal, and check whether the new writer's payload can
+  /// carry free text.
   @override
-  Map<String, dynamic> toFirestore(Recipe entity) => entity.toFirestore();
+  Map<String, dynamic> toFirestore(Recipe entity) =>
+      sanitizeRecipeText(entity).toFirestore();
 
   @override
   String getId(Recipe entity) => entity.id;
@@ -196,25 +227,20 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     }
   }
 
-  /// Sanitize user-supplied text fields before writing to Firestore.
-  Recipe _sanitizeRecipe(Recipe recipe) {
-    final sanitizer = HtmlSanitizer.instance;
-    return recipe.copyWith(
-      title: sanitizer.sanitizeText(recipe.title),
-      description: sanitizer.sanitizeText(recipe.description),
-      sourceUrl: recipe.core.sourceUrl != null
-          ? sanitizer.sanitizeUrl(recipe.core.sourceUrl!)
-          : null,
-    );
-  }
-
   /// BUT-955: defense-in-depth cap on the share-set size of a Recipe document.
   /// All service-layer share entry points should fail-fast with a localized
   /// error before reaching this guard — but multiple writer paths
   /// (addMemberToRecipe, addMember, addCollaborators, repo.addCollaborator,
   /// shareRecipe, shareRecipeWithUsers) feed update/create, and capping at
-  /// every callsite is bypass-prone. This is the chokepoint that closes
-  /// the bug for real: every Firestore write goes through here.
+  /// every callsite is bypass-prone. This is the chokepoint for every write
+  /// THROUGH THIS REPOSITORY.
+  ///
+  /// BUT-1819 correction: it is not every Firestore write. `OfflineSyncManager`
+  /// pushes the whole document — `socialData`, and therefore
+  /// `memberPermissions` — straight at the collection without touching this
+  /// class, so an over-cap recipe synced from offline storage is not capped
+  /// here, and `firestore.rules` declares no cap of its own. Recorded rather
+  /// than fixed: closing it belongs with the offline path, not with a comment.
   void _enforceShareCap(Recipe entity) {
     final members = entity.socialData?.memberPermissions;
     if (members == null) return;
@@ -248,12 +274,21 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
           operation: 'create recipe',
         );
 
-        // Validate required fields - extract core data for validation
-        final firestoreData = entity.toFirestore();
+        // BUT-1819: sanitize FIRST, so the map that is validated is the map
+        // that gets written. This does NOT reject anything it used to accept:
+        // `validateRequiredFields` tests key PRESENCE only, and
+        // `RecipeCore.toFirestore` always emits `title`, so a title of pure
+        // control characters passed before and still passes — it just stores as
+        // `''`. Rejecting that would be a behaviour change on every untitled
+        // draft and is Malin's call, not a quiet addition here. An earlier
+        // version of this comment claimed the rejection happened; a reviewer
+        // opened the mixin and disproved it.
+        Recipe recipeToSave = sanitizeRecipeText(entity);
+
+        final firestoreData = recipeToSave.toFirestore();
         final coreData = (firestoreData['core'] as Map<String, dynamic>?)
             .orEmpty();
 
-        // Check for required fields in core data
         validateRequiredFields(
           data: coreData,
           requiredFields: ['title', 'createdBy', 'createdAt', 'updatedAt'],
@@ -261,14 +296,33 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         );
 
         // MODUL1 Phase 3: Auto-populate normalized ingredients for advanced features
-        Recipe recipeToSave = _sanitizeRecipe(entity);
-        if (IngredientProcessor.needsNormalization(entity)) {
+        // BUT-1819: build on the SANITIZED copy, not on `entity`.
+        //
+        // This branch used to rebuild from `entity`, which threw the
+        // sanitization away — and it is not an edge case: `needsNormalization`
+        // is true whenever `ingredientsNormalized` is null, which is its
+        // default and which nothing on a LIVE create path populates. (Two copy
+        // factories do carry it forward. `recipe_factory.dart:340` has no
+        // production caller at all. `realtime_recipe.dart:527` DOES have
+        // callers — `recipe_content_operations.dart:427` ←
+        // `realtime_recipe_service.dart:405` — but that chain is dead at the
+        // top, so it reaches no live create either. Wiring either would make
+        // this branch skippable; do not read the claim as stronger than "no
+        // live path".) So it ran on every create,
+        // and the sanitize line above it (added 2026-03-15, over a branch from
+        // 2025-11-14) never had an effect here.
+        //
+        // The write itself is now safe regardless, because `toFirestore`
+        // sanitizes. This keeps the object returned to the CALLER in step with
+        // what Firestore holds, and restores the symmetry with `update` below —
+        // the identical twin sixty lines down that always did it correctly.
+        if (IngredientProcessor.needsNormalization(recipeToSave)) {
           final normalizedIngredients =
               IngredientProcessor.normalizeIngredientsForRecipe(
-                entity.core.ingredients,
+                recipeToSave.core.ingredients,
               );
 
-          recipeToSave = entity.copyWith(
+          recipeToSave = recipeToSave.copyWith(
             ingredientsNormalized: normalizedIngredients,
           );
         }
@@ -323,7 +377,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         );
 
         // MODUL1 Phase 3: Auto-populate normalized ingredients for advanced features
-        Recipe recipeToSave = _sanitizeRecipe(entity);
+        Recipe recipeToSave = sanitizeRecipeText(entity);
         if (IngredientProcessor.needsNormalization(recipeToSave)) {
           final normalizedIngredients =
               IngredientProcessor.normalizeIngredientsForRecipe(

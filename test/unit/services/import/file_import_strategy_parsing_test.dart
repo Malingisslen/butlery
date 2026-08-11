@@ -43,6 +43,41 @@ void main() {
     });
 
     group('CSV Import Tests', () {
+      test(
+        'a CSV with no source column stores NO provenance (BUT-1819)',
+        () async {
+          // Since BUT-1819 a non-link `sourceUrl` is drawn as READABLE TEXT under
+          // the recipe title instead of a dead tappable link. This row used to
+          // fall back to the literal `'file_import'`, which would now appear on
+          // screen under every recipe imported from a file. Nothing in the repo
+          // asserted this field at all, so reintroducing the token reddened
+          // nothing across 17,000 tests.
+          final csvContent = '''Title,Ingredients,Instructions
+Pannkakor,"2 ägg;3 dl mjölk","Vispa;Stek"''';
+          final bytes = Uint8List.fromList(utf8.encode(csvContent));
+
+          final result = await strategy.importFromContent(bytes, 'csv');
+
+          expect(result.isSuccess, isTrue);
+          expect(result.recipe!.sourceUrl, isNull);
+        },
+      );
+
+      test('a Swedish "Källa" column IS stored as provenance', () async {
+        // The positive control, and the load-bearing half: without it the
+        // `isNull` above would also pass if no column could ever populate the
+        // field. Headers are lower-cased before lookup, so this also pins the
+        // Swedish alias beside the English `source`.
+        final csvContent = '''Namn,Ingredienser,Instruktioner,Källa
+Pannkakor,"2 ägg;3 dl mjölk","Vispa;Stek",https://ica.se/pannkakor''';
+        final bytes = Uint8List.fromList(utf8.encode(csvContent));
+
+        final result = await strategy.importFromContent(bytes, 'csv');
+
+        expect(result.isSuccess, isTrue);
+        expect(result.recipe!.sourceUrl, equals('https://ica.se/pannkakor'));
+      });
+
       test('should import recipe from basic CSV content', () async {
         // Arrange
         final csvContent = '''Title,Ingredients,Instructions,Servings,Time

@@ -356,7 +356,11 @@ class FileImportStrategy extends ImportStrategy {
         timeMinutes: _parseCookingTime(data),
         personalTagIds: _parseTags(data),
         rating: _parseRating(data),
-        sourceUrl: data['source'] ?? data['källa'] ?? 'file_import',
+        // BUT-1819: no fallback token here. `sourceUrl` is rendered to the
+        // user as provenance text whenever it is not a link, so a developer
+        // string like 'file_import' would appear verbatim under the title.
+        // Absent provenance is `null`, and the row then draws nothing.
+        sourceUrl: data['source'] ?? data['källa'],
         imageUrls: _parseImageUrls(data),
         createdBy: null,
         isPublic: false,

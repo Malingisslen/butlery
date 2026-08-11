@@ -1088,3 +1088,48 @@ wrong cut is expensive is that `BatchImportPreview` cannot rejoin what it was ha
 that undoable and this trade is a different one.
 
 Re-open the single-block rule only with a new measurement of THAT gate.
+
+## BUT-1819 — `sanitizeUrl` blanks a provenance sentence that merely CONTAINS `data:`
+
+**Decision: accepted, and deliberately not fixed in this ticket. 2026-08-10.**
+
+`HtmlSanitizer.sanitizeUrl` matches `javascript:`, `data:` and `vbscript:` as
+**unanchored** substrings (`html_sanitizer.dart` :40-44). Turning the recipe
+sanitizer on — which BUT-1819 did, after five months in which it silently never
+ran — means a `sourceUrl` is blanked in full whenever those five characters
+appear anywhere in it. `sourceUrl` is a PROVENANCE field for a dozen writers, so
+the value being destroyed is often a Swedish sentence rather than a URL, and the
+destruction is total, silent, and repeats on every subsequent write.
+
+Why it stands:
+
+- The plan Malin approved names this consequence explicitly and defers the fix.
+  Anchoring the pattern edits `html_sanitizer.dart`, which is shared and has
+  other callers, and it is a separate judgement about how aggressive URL
+  blocking should be across the app — not a detail of this ticket.
+- The probability is low. It needs the literal `data:` inside a free-text
+  provenance value.
+- The user-facing protection is the render guard, not this. Since BUT-1819 the
+  recipe detail view draws a source as a link only when `isSafeExternalUrl`
+  accepts it (http/https with a non-empty host), so a hostile value is inert on
+  screen whether or not storage blanked it.
+
+**The counter-argument, recorded because it is strong.** The security review of
+2026-08-10 pointed out that `isSafeExternalUrl` is a positive allowlist that
+strictly dominates this blocklist for the threat it was aimed at, so the
+blocklist's only remaining NET effect is destroying provenance. Anchoring to
+`^\s*(javascript|data|vbscript):` would keep 100 % of the scheme protection at
+zero cost. That is a real improvement and it is written down here rather than
+lost; it needs its own ticket, its own sweep of `sanitizeUrl`'s other callers,
+and Malin's call — not a quiet widening of this commit.
+
+**One neighbouring effect, recorded so it is a known gap rather than an assumed
+one:** `sanitizeUrl` also runs `normalizeHomoglyphs`, so a `sourceUrl`
+containing Cyrillic lookalikes is silently rewritten to a DIFFERENT url rather
+than blanked. Near-zero probability for Swedish provenance text, and it is not
+what this entry decides — but do not read the entry as covering it.
+
+Pinned by `test/unit/repositories/firebase_recipe_repository_sanitize_test.dart`
+(`a sentence CONTAINING data: is blanked`), which also carries a discriminator
+fixture proving a bare colon is harmless, so a future reader cannot mistake the
+rule for "any colon blanks the field". BUT-1819, 2026-08-10

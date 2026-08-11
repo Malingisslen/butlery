@@ -4,6 +4,8 @@
 // Eliminates ~170 lines of duplication between recipe_detail_view.dart and
 // recipe_detail_tablet_content.dart.
 
+import 'package:butlery/core/utils/external_link.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -23,10 +25,81 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 /// Shared widget builders for recipe detail layouts (mobile + tablet).
 abstract final class RecipeDetailSharedWidgets {
+  /// The provenance row under the title. Extracted from [buildTitleSection] so
+  /// the link-vs-text decision is testable on its own: the parent composes
+  /// `RecipeDetailMetadata`, which resolves services, and proving one branch
+  /// should not require standing up a service locator.
+  ///
+  /// BUT-1819: `sourceUrl` is a PROVENANCE field, not a URL field. A dozen
+  /// writers put a sentence in it — `'Butlerys receptsamling'` on the seeds,
+  /// `'Från Butlerys arkiv'` on an archive import. `recipeCopiedFrom(title)`
+  /// is written only by `RecipeFactory.createPersonalCopy`, which nothing calls
+  /// today — the realtime copy uses a different sentence and copy-on-write
+  /// keeps the original value, so no live path produces it.
+  /// Accounts seeded before this ticket still hold the English
+  /// `'Butlery recipe collection'`; nothing backfills them.
+  /// Drawing all of them as links produced two dead affordances: a bare
+  /// "Från " (empty host) and a doubled "Från Kopierat från: X" (`tryParse`
+  /// returns null, so the `?? url` fallback prints the whole sentence — the
+  /// SPACE before the colon breaks the parse, not the colon itself).
+  ///
+  /// Gating on the value BEING a link also makes a hostile `javascript:` source
+  /// untappable rather than tappable-and-refused — the real protection for
+  /// anything stored before the repository sanitizer started running.
+  static Widget buildSourceRow(BuildContext context, Recipe recipe) {
+    final cs = Theme.of(context).colorScheme;
+    final url = recipe.sourceUrl;
+    if (url == null || url.isEmpty) return const SizedBox.shrink();
+
+    if (!isSafeExternalUrl(url)) {
+      // Plain text: no link semantics, no tap target, no icon, and NOT wrapped
+      // in `recipeSourceFrom` — the raw value already reads as a sentence, and
+      // that wrapper is what produced "Från ".
+      return Padding(
+        padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+        child: Text(
+          url,
+          style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+      child: Semantics(
+        link: true,
+        child: GestureDetector(
+          onTap: () => launchSourceUrl(context, url),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // BUT-1041: platform-aware leading icon so video imports read as
+              // media at a glance, generic links as external.
+              Icon(
+                sourceIcon(url),
+                size: AppDimensions.iconSizeS,
+                color: cs.onSurfaceVariant,
+              ),
+              const SizedBox(width: AppDimensions.spacingXxs),
+              Flexible(
+                child: Text(
+                  context.l10n.recipeSourceFrom(Uri.tryParse(url)?.host ?? url),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: cs.onSurfaceVariant,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Title section: title, source URL, metadata row, allergen badges, description.
   /// Wrapped in a decorated container with green bottom border.
   static Widget buildTitleSection({
@@ -61,40 +134,7 @@ abstract final class RecipeDetailSharedWidgets {
               ),
             ),
           ),
-          if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingXs),
-            Semantics(
-              link: true,
-              child: GestureDetector(
-                onTap: () => launchSourceUrl(context, recipe.sourceUrl!),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // BUT-1041: platform-aware leading icon so video imports
-                    // read as media at a glance, generic links as external.
-                    Icon(
-                      sourceIcon(recipe.sourceUrl!),
-                      size: AppDimensions.iconSizeS,
-                      color: cs.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingXxs),
-                    Flexible(
-                      child: Text(
-                        context.l10n.recipeSourceFrom(
-                          Uri.tryParse(recipe.sourceUrl!)?.host ??
-                              recipe.sourceUrl!,
-                        ),
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: cs.onSurfaceVariant,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          buildSourceRow(context, recipe),
           const SizedBox(height: AppDimensions.spacingSm),
           RecipeDetailMetadata(
             viewModel: viewModel,
@@ -226,18 +266,26 @@ abstract final class RecipeDetailSharedWidgets {
     return Icons.open_in_new;
   }
 
-  /// Launches an external URL (best-effort, silent failure).
+  /// Launches an external URL, telling the user when it does not open.
+  ///
+  /// BUT-1819: routed through `openExternalLink`, which refuses anything that
+  /// is not http/https with a host. `buildSourceRow` draws the tap target ONLY
+  /// for values that predicate accepts, so a `false` here means the OS refused
+  /// a link the user could see and reasonably expect to work. This used to
+  /// fail silently, which made that case a dead tap with no explanation — the
+  /// same shape of lie the render guard was built to remove. Mirrors
+  /// `RecipeDetailActions.handleSourceUrlClick`, which had the message already.
   static Future<void> launchSourceUrl(
     BuildContext context,
     String url,
   ) async {
     try {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
+      if (await openExternalLink(Uri.parse(url))) return;
+      if (!context.mounted) return;
+      SnackBarUtils.showError(context, context.l10n.errorCouldNotOpenLink);
     } catch (_) {
-      // Best-effort — silently ignore
+      if (!context.mounted) return;
+      SnackBarUtils.showError(context, context.l10n.errorInvalidLink);
     }
   }
 

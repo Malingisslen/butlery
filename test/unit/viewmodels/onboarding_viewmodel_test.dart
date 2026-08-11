@@ -796,7 +796,7 @@ void main() {
         mealType: mealType,
         portions: 2,
         timeMinutes: 10,
-        sourceUrl: 'Butlery starter recipes',
+        sourceUrl: 'Butlerys startrecept',
         createdAt: DateTime(2026, 1, 1),
         updatedAt: DateTime(2026, 1, 1),
         createdBy: 'system',

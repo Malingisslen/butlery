@@ -83,14 +83,42 @@ if [ "$SELF_TEST" -eq 1 ]; then
 
   FAILURES=0
 
-  if "${BASH_SOURCE[0]}" "$FIXTURE_DIR/violating.dart" >/dev/null 2>&1; then
-    echo "SELF-TEST FAIL: a literal-null filter was NOT detected." >&2
-    FAILURES=$((FAILURES + 1))
-  fi
+  # `bash "$GUARD"`, never `"$GUARD"` directly: the file is committed mode 644,
+  # so on Linux a direct call exits 126 (Permission denied) before reading a
+  # single line — and the old self-test scored that as case 2 failing, i.e. it
+  # blamed the comment filter for a harness it could not start. Windows ignores
+  # the exec bit, so it passed locally and only ever reddened in CI (main red
+  # 2026-07-30 .. 2026-08-11). Invoking through the interpreter makes the check
+  # independent of file mode on every platform.
+  GUARD="${BASH_SOURCE[0]}"
 
-  if ! "${BASH_SOURCE[0]}" "$FIXTURE_DIR/clean.dart" >/dev/null 2>&1; then
-    echo "SELF-TEST FAIL: a WHY-comment or isNull: false was flagged." >&2
-    FAILURES=$((FAILURES + 1))
+  bash "$GUARD" "$FIXTURE_DIR/violating.dart" >/dev/null 2>&1
+  VIOLATING_RC=$?
+  bash "$GUARD" "$FIXTURE_DIR/clean.dart" >/dev/null 2>&1
+  CLEAN_RC=$?
+
+  # The guard's exit contract is 0 (clean) or 1 (violations found). Any other
+  # code means it never reached the scan, which is a broken harness rather than
+  # a verdict about the fixtures — report it as itself instead of mapping it
+  # onto whichever case happens to read a non-zero code as failure.
+  for rc in "$VIOLATING_RC" "$CLEAN_RC"; do
+    if [ "$rc" -ne 0 ] && [ "$rc" -ne 1 ]; then
+      echo "SELF-TEST FAIL: the guard could not be run (exit $rc)." >&2
+      echo "This is the harness, not the fixtures — check permissions on $GUARD." >&2
+      FAILURES=$((FAILURES + 1))
+    fi
+  done
+
+  if [ "$FAILURES" -eq 0 ]; then
+    if [ "$VIOLATING_RC" -ne 1 ]; then
+      echo "SELF-TEST FAIL: a literal-null filter was NOT detected." >&2
+      FAILURES=$((FAILURES + 1))
+    fi
+
+    if [ "$CLEAN_RC" -ne 0 ]; then
+      echo "SELF-TEST FAIL: a WHY-comment or isNull: false was flagged." >&2
+      FAILURES=$((FAILURES + 1))
+    fi
   fi
 
   if [ "$FAILURES" -ne 0 ]; then

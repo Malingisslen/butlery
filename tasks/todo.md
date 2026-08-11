@@ -1,3 +1,377 @@
+# IN EXECUTION 2026-08-09 — BUT-1819, saneringen av nya recept har aldrig körts
+
+Approved by Malin via ExitPlanMode 2026-08-09; scope question answered the same
+day ("allt sökningen hittade"). The APPROVAL snapshot is
+`C:/Users/malla/.claude/plans/sunny-wondering-creek.md`, mirrored to the
+gitignored `tasks/butlery-1819-sanitize-plan.md`. THIS file is the live
+execution copy, and it is deliberately not kept byte-identical to the snapshot —
+corrections found during execution are recorded here.
+
+## State on 2026-08-10
+
+Built, analyzed clean, 1934 tests green, all four guards mutation-tested with
+byte-identical restores. Three commit gates run; two returned blocking findings
+and the third is still running. Working through them:
+
+- ① sanitize in `FirebaseRecipeRepository.toFirestore` — DONE
+- ①b `OfflineSyncManager` sanitizes at its own call site — DONE
+- ② `create` builds on the sanitized copy — DONE
+- ③ shared-recipe `toFirestore` cleans the two denormalized text fields — DONE
+- ④ the source row is drawn as a link only when `isSafeExternalUrl` accepts —
+  DONE, extracted to `RecipeDetailSharedWidgets.buildSourceRow` so the branch is
+  testable without a service locator
+
+### Review findings being worked (2026-08-10)
+
+From `code-reviewer` (7 blocking) and `testing-specialist` (2 blocking):
+
+1. `external_link.dart`'s "why another scheme check" justification was FALSE —
+   `FormValidators.url()` is public, view-callable and stricter. Rewritten.
+2. `recipe_sanitizer.dart` cited a BUT-1819 accepted-deviation entry that did not
+   exist. The entry is real and approved in the plan; it is being appended to
+   both deviation files.
+3. A `core/utils` import count in a comment was wrong. Corrected.
+4. `sanitizeRecipeText` silently bumped `updatedAt` and recomputed
+   `dataChecksum` via `copyWith`. On the offline path that rewrites the field a
+   last-write-wins reconciliation keys on. `updatedAt` is now passed through.
+5. `buildSourceRow` inherited `buildTitleSection`'s doc comment. Moved back.
+6. `firebase_recipe_repository_sanitize_test.dart` shipped RAW control bytes and
+   git stored it as a BINARY blob. Respelled as `\u0000` escapes; `file` now
+   reports text and `--numstat` reports real line counts.
+7. The non-link branch renders developer tokens (`file_import`) and English seed
+   strings as body text in a Swedish UI. Fixed at the writers.
+8. `offline_sync_sanitize_test.dart` fails `scripts/check_test_real_time.sh` —
+   literal `DateTime.now()` in fixture seeds. Replaced with fixed dates.
+9. Four test-quality findings: a self-contradicting comment on the first create
+   test, an over-reach pair that cannot distinguish "contains `data:`" from
+   "contains a colon", a link assertion that both branches satisfy, and an
+   unfalsifiable empty-source assertion. All being repaired.
+
+### CODE FROZEN 2026-08-10 for the final gate sweep
+
+Fourteen review passes produced zero logic defects after the first and
+thirty-eight false comment claims, several introduced while repairing an
+earlier one. Every repair invalidated the content-addressed review markers for
+the files it touched, so the gate keeps asking for re-reads.
+
+**Stopping rule from here:** the final sweep runs all four reviewer types over
+the full staged set. A BLOCKING finding (a real defect, a security or data
+issue) is fixed and its file re-read. A non-blocking finding — comment
+precision, an enumeration one item short, a stale count — is RECORDED below and
+shipped, not fixed. That is a deliberate call: the marginal value of the
+thirty-ninth comment correction is below the cost of another full sweep.
+
+### Recorded by the frozen sweep, shipped unfixed (2026-08-10)
+
+- **`recipe_detail_shared_widgets.dart` names the WRONG legacy seed string.** It
+  says accounts seeded before this ticket hold `'Butlery recipe collection'`.
+  They hold `'Butlery starter recipes'` — the seed constant was never persisted
+  by any path (all three writers override it, and `git log -S "sourceUrl: seed"`
+  finds nothing). Consequence, and why this is written down rather than left in
+  a review report: **a future backfill written from that comment would target a
+  value no document contains.** The same wrong string is also in
+  `external_link.dart` and two test fixtures, where it is harmless — the tests
+  only need a non-URL sentence.
+- `file_import_strategy.dart` still renders four English developer strings into
+  the Swedish UI (`'Imported Recipe'`, `'Imported from file'`, and two
+  placeholder lines). Same class as the `'file_import'` token this ticket
+  removed; pre-existing.
+- `sourceUrl: data['source'] ?? data['källa']` — an EMPTY `source` cell shadows
+  the Swedish `källa` fallback, since `''` is non-null. Five more sites in the
+  same file share the shape. Pre-existing.
+- The file-import `sourceUrl` change is unpinned; no test asserts it.
+- `_seedStarterRecipes` hardcodes its own provenance instead of using
+  `seed.core.sourceUrl`, so editing `recipe_seeds.dart` never changes what a
+  user sees in their own library.
+
+**Second sweep round, also shipped unfixed:**
+
+- The import DUPLICATE CHECK can miss after this ticket. `findBySourceUrl` and
+  `findByTitle` compare an incoming RAW value against a STORED SANITIZED one,
+  so for the inputs the sanitizer rewrites (a `sourceUrl` containing `data:`,
+  or Cyrillic homoglyphs in either field) the equality misses and the import
+  creates a duplicate instead of offering the merge. Same tiny probability the
+  accepted `data:` deviation already carries, but that entry does not name this
+  consequence — which is why it is here.
+- The shared-recipe repository sanitizes inside `toFirestore` only, so the
+  in-memory `SharedRecipe` keeps the raw text while `FirebaseRecipeRepository`
+  deliberately keeps its returned object in step. Harmless (the caller gets an
+  id and list views re-read), but it is the one place the two files' stated
+  principles differ.
+- Three test-comment over-claims: a stale test name in the sanitize suite's
+  header, an "nothing else reaches that line" that the accepting fixtures do
+  reach, and a header claiming every fixture is a stored value when
+  `'Importerat från: …'` is a DISPLAY string, never stored.
+- `value.isEmpty` in `isSafeExternalUrl` has no killing fixture — an empty
+  string already fails the scheme line. Redundant short-circuit, not a gap.
+- `SourceUrlDisplay` is a fourth place a raw `sourceUrl` reaches the screen.
+  Plain `Text`, not tappable, so neither a security gap nor a dead affordance —
+  but no comment mentions it and a future audit will find it.
+- In `external_link_test.dart` the ONLY fixture pinning the scheme check is
+  `ftp://example.com`; every other rejected value also has an empty host.
+  Trimming it as "redundant scheme cases" would silently unpin that comparison.
+
+**Third sweep round. One item was taken despite the freeze; the rest shipped:**
+
+- **TAKEN — the `updatedAt` guard was pinned only on a DEAD path.** Its sole
+  assertion ran through `addRecipes`, which this repo documents as having no
+  production caller, so a "delete tests for dead code" pass would have unpinned
+  it silently. The live offline path now asserts it too, and the mutation
+  reddens there. Broke the freeze because the regression's cost is real: every
+  reconnect would jump the whole synced set to the top of "Mina recept".
+- `openExternalLink`'s `PlatformException -> false` branch has no test. The two
+  recipe call sites both catch, so a regression shows the WRONG message rather
+  than an unhandled error — the third branch of a message contract whose other
+  two are pinned. ~6 lines with the doubles that already exist.
+- No fixture pins the host DISPLAY contract. `Uri.tryParse(url)?.host ?? url`
+  correctly shows "Från evil.com" for `https://ica.se@evil.com/x`; a refinement
+  to `uri.authority` would survive every shipped test.
+- `LaunchMode.externalApplication` is unpinned — both doubles ignore
+  `LaunchOptions`, so a swap to an in-app WebView passes everything.
+  `linkified_text.dart` states why the mode matters.
+- `offline_sync_manager`'s write loop has no coverage beyond this one sanitize
+  assertion: not the failure/continue path, the `needsSync == false` dequeue,
+  the sync mutex, or the un-awaited recursive retry. Highest raw user cost on
+  the list (a bug there loses queued offline edits) and its own ticket.
+- `legal_contact_footer.dart:57` still gates on `canLaunchUrl` — the exact trap
+  `external_link.dart` now documents, with `LSApplicationQueriesSchemes` absent
+  from `Info.plist`, so "Kontakta oss" can report failure on iOS with mail
+  installed.
+- Do NOT write a `dataChecksum`/`dataIntegrityStatus` test: neither field has a
+  reader outside the model, so it would pin dead data.
+
+**Fourth sweep round, shipped unfixed — one is a live bug:**
+
+- **Manager-written shares are INVISIBLE to search.** `firebase_search_repository.dart:59-61`
+  reads `recipeTitle`/`recipeDescription` off `shared_content`, but
+  `recipe_sharing_manager.dart:746` writes that row's text as `title`/`description`.
+  So such a row has an empty title AND description, matches no non-empty query,
+  and is filtered out silently. Pre-existing, not caused by this ticket — but
+  the new shared-sanitizer doc says the two writers implement one decision
+  without naming the reader that has already picked a side. Worth a ticket:
+  unify the spellings, or make the reader accept both.
+- `legal_contact_footer.dart:57` gates on `canLaunchUrl`, which this ticket
+  removed elsewhere for being a permission answer that returns false on iOS.
+  It launches `mailto:`, so it cannot adopt `openExternalLink`. Two answers to
+  one question. Also worth one line in `openExternalLink`'s doc naming the
+  three deliberate `mailto:` hold-outs, so nobody migrates them "for
+  consistency" and kills the appeal, privacy and share-by-email paths.
+- `external_link.dart` and `recipe_detail_shared_widgets.dart` assert the same
+  three provenance facts independently. Both accurate today — which is when two
+  copies start to drift. The predicate should own the account; the widget doc
+  should point at it.
+- `debounced_sync_operations.dart:290` keys `shouldSyncRecipe` on
+  `core.updatedAt`, and this ticket changed when that stamp advances. No
+  production caller today, so nothing fires — recorded so a future wiring does
+  not inherit a premise that changed under it.
+
+**Fifth sweep round. Two more taken despite the freeze:**
+
+- **TAKEN, blocking — `description` was cleaned on the recipe write path and
+  pinned by NO test anywhere.** Delete that line and nothing reddened, on
+  `create`, `update` or the offline sync. This ticket's own failure mode (a
+  sanitize line nothing exercises) reproduced one field over, so it was fixed
+  rather than recorded. Now pinned with a BEL fixture carrying å/ä/ö, and the
+  arm mutation-tested on its own.
+- **TAKEN — the `updatedAt` pin discriminated on two wall-clock reads about a
+  millisecond apart**, not on the fixed stamp its comment named: the factory
+  defaults `updatedAt` to `DateTime.now()`, so the mutation kill was luck. The
+  fixture now passes an explicit `DateTime.utc(2026, 1, 1)` and the kill is
+  structural.
+- The "which mutant does this kill" comment on the first create test was wrong
+  a THIRD time, in the opposite direction again. Corrected by running the three
+  mutants: that test kills the sanitizer's own `sourceUrl` arm, not either
+  structural guard. The comment now says so and tells the next reader to run
+  the mutants rather than reason.
+
+**Shipped unfixed from the same round:**
+
+- The `toFirestore` chokepoint's only killing test runs through `addRecipes`,
+  which has no production caller. Deliberately NOT taken: both live writers
+  sanitize on their own, so the chokepoint's live regression cost today is nil,
+  and a dead-path test is proportionate. The pointer is in the test's comment.
+- The accepted "a title of pure control characters still stores as `''`"
+  consequence is unpinned; if `validateRequiredFields` is ever hardened, every
+  untitled draft create starts throwing with nothing to catch it.
+- The `is String` write-back guards in the shared repository are unpinned —
+  every fixture goes through a helper that always supplies a String.
+- A THIRD unsanitized copy of the recipe title leaves `recipe_sharing_manager`:
+  `:250` hands it raw to the activity feed, which persists it as `recipeTitle`
+  on a document other users read. Belongs in the "other collections" list below.
+
+**Sixth sweep round. One more taken; one earlier CLAIM retracted:**
+
+- **TAKEN, blocking — file-import `sourceUrl` had zero assertions anywhere.**
+  Reintroducing the `'file_import'` token, deleting the Swedish `källa`
+  fallback, or misspelling `source` all reddened nothing across 17,000 tests,
+  while the render change means the token would now appear on screen under
+  every file-imported recipe. Two tests added to the existing CSV group: absent
+  source stores `null`, and a `Källa` column IS stored — the second is the
+  load-bearing half, since without it the first also passes when no column can
+  populate the field at all.
+- **RETRACTED — the duplicate-candidate hazard is LATENT, not live.** An earlier
+  round reported that the shared `'file_import'` token made every file import a
+  duplicate candidate for every other at score 1.0, and that "replace" then
+  overwrote an unrelated recipe. The mechanism is real but no path reaches it:
+  `checkForDuplicates` has one caller (`smart_import_view.dart:263`),
+  `ImportManager` does not register `FileImportStrategy`, and
+  `FileImportViewModel` saves with no duplicate check. **This was reported to
+  Malin as a live win and is corrected here.** The reason the change is right
+  stands on its own: the token was about to become visible text.
+- The same shared-constant shape still exists on the archive and onboarding
+  writers (one value across all six seeds, one across every archive import).
+  Also not live in the duplicate path. Recorded so the asymmetry — dev token
+  removed, user-facing sentence kept — is not re-discovered as an oversight.
+- `external_link.dart` and `recipe_detail_shared_widgets.dart` both restate
+  `'Butlerys receptsamling'` as "on the seeds". True of the constant, false of
+  every stored document: a real library holds `'Butlerys startrecept'`, `'Från
+  Butlerys arkiv'`, or the legacy English value. One edit to the seed constant
+  drifts three comments. Fix by stating the rule, not the constants.
+- Two stale claims in `firebase_recipe_repository_sanitize_test.dart`: the
+  header quotes the OLD name of a renamed test, and "the only create-path
+  fixture carrying å/ä/ö" was falsified by the description test added beside it
+  in the same change.
+
+**Seventh round, shipped unfixed:**
+
+- The new import test's comment says "nothing in the repo asserted this field
+  at all". False as written — `sourceUrl` appears in 65 test files. The verified
+  claim is narrower: nothing asserted `FileImportStrategy`'s `sourceUrl`, which
+  is what made the token reintroduction silent.
+- Its sibling says the pair "pins the Swedish alias beside the English
+  `source`". Only `källa` is covered; misspelling `data['source']` leaves both
+  new tests green, and the English key carries the Paprika/JSON provenance
+  (`_createRecipeFromPaprikaJson` funnels `source_url` through it). One extra
+  fixture with a `Source` header would close it.
+- A present-but-empty `Källa` column yields `''`. `buildSourceRow` guards on
+  `isEmpty`, not `trim().isEmpty`, so a whitespace-only provenance value would
+  draw an empty text row under the title. Cosmetic.
+
+**Eighth round, shipped unfixed — two deserve their own tickets:**
+
+- **TICKET: the notification and activity-feed titles are still raw.**
+  `recipe_sharing_manager.dart:245` and `:250-255` hand `recipeToShare.title`
+  unsanitized to a notification document and an `activity_events` row, ten
+  lines above the sanitized `shared_content` payload. Coherent with what the
+  comments claim (both scope themselves to "the same collection"), but the
+  residual is real: a recipe still in memory from a just-finished OCR import
+  can put a control character or a Cyrillic homoglyph into both.
+- **TICKET: the two `shared_content` writers still use different KEY spellings**
+  under the same `contentType: 'recipe'`. `SharedRecipe.fromMap` reads only
+  `recipeTitle`/`recipeDescription`, so a manager-written row deserializes with
+  an empty title for every `SharedRecipe` reader — the same shape as the
+  retired `sharedToUserIds`/`sharedWithUserIds` drift the deviations file
+  records. The sanitize on `title` still earns its keep through the Art. 15
+  export, which dumps the document's own keys.
+- The English `data['source']` alias is unpinned repo-wide: both new import
+  tests use only `Källa`, and that English key is how the whole Paprika path
+  carries provenance. One `source_url` field on an existing Paprika fixture
+  would close it.
+- Two comment lines run ~100 characters in files otherwise wrapped at 80
+  (`orphan_tail.dart:259`, `recipe_sharing_manager.dart:704`); the first also
+  puts a path inside backticks, making it a non-resolvable dartdoc reference.
+
+**Ninth round, shipped unfixed:**
+
+- "Nothing writes a `recipeSnapshot` any more" is true of the FIRESTORE path,
+  but `SharedRecipe.toJson()` still emits the key when non-null. The sentence
+  is guarded by "no one serializes a `SharedRecipe` to JSON into storage"
+  rather than by anything structural. Durable phrasing is the rule — the
+  Firestore serializer omits the key — not the roster of writers.
+- The `updatedAt` pin in the repository suite and the one on the live offline
+  path are a comment-level dependency PAIR: if `addRecipes` is ever tidied
+  away, the repository test goes with it and the offline comment silently
+  becomes stale. Keep them in step.
+- The render suite's non-link fixtures are entirely HISTORICAL — it covers the
+  old English seed string but not the value production now writes. Behaviour is
+  identical and the live value is covered at the predicate layer, so nothing is
+  unguarded; swap a fixture rather than add a sixth test.
+- A source-less file import now stores no provenance at all, while the archive
+  and text importers still store a Swedish sentence. One concept, two answers
+  across sibling strategies. Decide once.
+
+**Tenth round — the sweep is complete, all four reviewers pass. Shipped unfixed:**
+
+- **My "too expensive to test" claim was FALSE, and the corrected reason is
+  recorded so nobody re-derives the non-decision.** `recipe_source_call_sites_test.dart`
+  says a real test of the hidden menu entry "costs the whole detail-view DI
+  stack". It does not: `recipe_detail_read_only_test.dart` already pumps the
+  whole view with the full stack, and `recipe_detail_view_test.dart:686` already
+  has an `openSourceSheet` helper that taps the overflow menu. Two test bodies
+  reusing those would close it. Left for e2e-test-specialist's territory.
+- The two source guards are now COUPLED and fail silent: with the entry gate
+  correct, the action's own `if` is dead code — but if the gate ever regresses
+  to `isNotEmpty`, the item reappears and tapping it does NOTHING, which is
+  worse than before this ticket (the wrapper used to show an error). Calling
+  the wrapper unconditionally would degrade louder.
+- The two `is String` write-back guards are NOT the same guard: `recipeTitle`'s
+  false branch is unreachable by construction, `recipeDescription`'s is live
+  (via `startCollaborativeEditing` re-serializing a row whose key was absent).
+  User cost of the live one is zero — every reader resolves both to `''`.
+- `sanitizeRecipeText` asserts nothing about ingredients/instructions passing
+  through untouched, and that property has a live consumer: `needsNormalization`
+  reads an ingredient-derived predicate off the sanitized copy. One verbatim
+  list assertion would close it.
+- The sibling writers into the same `shared_content` collection
+  (`firebase_shared_menu_repository`, `firebase_shared_shopping_repository`)
+  denormalize user text uncleaned — the same "one decision in N places" hazard,
+  for a third content type.
+
+**Post-format round, shipped unfixed:**
+
+- `getImportedRecipesForUser` runs a `collectionGroup('engagements')` query with
+  equality on BOTH `userId` and `action`, but `firestore.indexes.json` declares
+  a collection-group override only for `userId`. Collection-group scope is not
+  automatic, so this would fail against a real backend. Harmless today — the
+  method has zero production callers — and it rethrows rather than failing
+  silently.
+- `logPermissionCheck` at `firebase_shared_recipe_repository.dart:308` is
+  neither awaited nor `unawaited(...)`, so an audit-write failure surfaces as an
+  unhandled async error. Pre-existing.
+- `createSharedContent` calls `toFirestore(entity)` TWICE — once to validate,
+  once to write — so the map that is validated is a different object from the
+  one written, and the sanitizer runs twice per create. Identical today because
+  `toFirestore` is pure and `sanitizeText` deterministic; nothing pins that the
+  two agree, so a future timestamp or random id inside `toFirestore` would make
+  validation stop describing the document.
+- An EMPTY `Källa` column stores `''`, not `null`, so "no provenance" has two
+  spellings in storage. The render guard treats them alike; a future consumer
+  branching on `!= null` would not.
+- The widget suite has `setUpAll` with no matching `tearDownAll`, unlike its
+  sibling import suite.
+- A stale test name survives in `firebase_recipe_repository_sanitize_test.dart`'s
+  library header — it quotes the pre-rename name of a test that was renamed
+  during review. The in-test comment 60 lines below quotes it correctly.
+
+- Utskriften av ett recept skriver "Källa: " och sedan ingenting för ett
+  Paprika-importerat recept utan källa: that path stores `''` while CSV/JSON now
+  store `null`, and `recipe_print_html_builder.dart:48` gates on `!= null`. Same
+  dead-affordance class this ticket removed from the detail view, one surface
+  over. Fix: pass the nullable through, or use the detail view's
+  `null || isEmpty` guard.
+
+### Found during review, deferred deliberately (2026-08-10)
+
+- **`OfflineSyncManager` bypasses `_enforceShareCap`.** It pushes the whole
+  document, `socialData` included, straight at the collection, and
+  `firestore.rules` declares no cap of its own. So an over-cap recipe synced
+  from offline storage is not capped. Found by the fourth code-review pass while
+  checking a comment; recorded in the guard's own doc. Its fix belongs with the
+  offline path, not with this ticket. **Worth a ticket.**
+- Six sanitizers with zero callers; `addRecipes` skips `_enforceShareCap`;
+  three other collections embed unsanitized recipe text
+  (`collaborative_recipe_repository.dart:109,128`, `shared_menu.dart:254`,
+  `firebase_menu_collaboration_repository.dart:199`); the menu and
+  shopping-list legs of `shared_content` write denormalized user text
+  unsanitized; no backfill of already-stored `sourceUrl`.
+- Anchoring `sanitizeUrl`'s pattern — the security review's counter-argument,
+  recorded in full in `docs/architecture/ACCEPTED_DEVIATIONS.md`. Malin's call.
+
+Remaining before commit: the two untested call sites the plan named
+(`handleSourceUrlClick` and the hidden menu entry), then re-run the gates.
+
+---
+
 # IN EXECUTION 2026-08-05 — layout-aware recipe splitting
 
 Approved by Malin ("a", 2026-08-05) after the measured report on why cookbook

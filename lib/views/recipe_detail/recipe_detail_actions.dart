@@ -2,7 +2,6 @@
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -17,6 +16,7 @@ import 'package:butlery/views/recipe_detail/handlers/recipe_tagging_handler.dart
 import 'package:butlery/views/recipe_detail/handlers/recipe_personal_tag_handler.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/external_link.dart';
 
 /// Recipe detail actions facade
 /// **SRP Compliance:** This facade coordinates action handlers and manages view state.
@@ -269,9 +269,11 @@ class RecipeDetailActions {
 
     try {
       final Uri uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
+      // BUT-1819: `openExternalLink` refuses anything that is not http/https
+      // with a host, so a `javascript:` source cannot be launched from here
+      // either. The menu entry is hidden for such values, making this the
+      // second of two guards rather than the only one.
+      if (!await openExternalLink(uri)) {
         if (!context.mounted) return;
         SnackBarUtils.showError(context, context.l10n.errorCouldNotOpenLink);
       }

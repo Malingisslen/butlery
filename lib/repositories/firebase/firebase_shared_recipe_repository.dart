@@ -59,6 +59,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/extensions/iterable_extensions.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
 
 /// Firebase repository for shared recipe operations with consistent API patterns
 class FirebaseSharedRecipeRepository
@@ -144,9 +146,47 @@ class FirebaseSharedRecipeRepository
     return SharedRecipe.fromMap(doc.id, doc.data()!);
   }
 
+  /// BUT-1819: clean the DENORMALIZED recipe text on the way out.
+  ///
+  /// This path writes no recipe copy and no `sourceUrl` — `SharedRecipe.create`
+  /// lifts five scalars off the source recipe, and `toFirestore` emits
+  /// `recipeTitle`, `recipeImageUrl`, `recipePortions`, `recipeTimeMinutes` and
+  /// `recipeDescription`. The one URL among them, `recipeImageUrl`, is never
+  /// passed to a launcher by any reader of this collection — see the note on
+  /// `sanitizeSharedRecipeText`, which owns that claim for both writers. So
+  /// there is no link vector here; this is hygiene, not a hole.
+  ///
+  /// That is a claim about the WRITE. On the read side a legacy V1
+  /// `recipeSnapshot` would deserialize a `sourceUrl` that `contentSnapshot`
+  /// hands to the detail view — inert today, because nothing writes a snapshot
+  /// any more AND `isSafeExternalUrl` guards both the draw and the launch.
+  ///
+  /// It matters PRINCIPALLY for source recipes created before the repository
+  /// chokepoint landed — not only: the text is lifted from an in-memory
+  /// `Recipe`, and a recipe created offline lives in Drift as raw JSON that has
+  /// never round-tripped through the repository, so sharing one denormalizes
+  /// raw text today.
+  ///
+  /// Scope: this cleans the RECIPE-DERIVED fields. `shareMessage`, the sharer's
+  /// own free-typed message, comes from `getCommonFirestoreFields()` and is not
+  /// touched here — its own judgement, not this ticket's.
+  ///
+  /// Applied on the MAP rather than the entity because `SharedRecipe.copyWith`
+  /// exposes neither field.
   @override
   Map<String, dynamic> toFirestore(SharedRecipe entity) {
-    return entity.toFirestore();
+    final data = entity.toFirestore();
+    final clean = sanitizeSharedRecipeText(
+      (data['recipeTitle'] as String?).orEmpty(),
+      (data['recipeDescription'] as String?).orEmpty(),
+    );
+    // Only write back what was there: `recipeDescription` is nullable on the
+    // model, and coercing a missing key to `''` would change the document.
+    if (data['recipeTitle'] is String) data['recipeTitle'] = clean.title;
+    if (data['recipeDescription'] is String) {
+      data['recipeDescription'] = clean.description;
+    }
+    return data;
   }
 
   @override

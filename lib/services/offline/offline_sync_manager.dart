@@ -16,6 +16,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/offline/sync_result.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
 
 /// Handles sync operations for offline service
 /// Now uses Drift database instead of Hive
@@ -144,9 +145,23 @@ class OfflineSyncManager {
 
               // Use retry logic for Firebase operations
               await RetryHelper.retryFirebaseOperation(() async {
+                // BUT-1819: this write goes STRAIGHT at `/users/{uid}/recipes`
+                // and never touches `FirebaseRecipeRepository`, so that class's
+                // `toFirestore` override — the sanitization chokepoint for this
+                // collection — does not run. Sanitize here or a recipe created
+                // offline syncs with its raw title, description and sourceUrl,
+                // which is the path most likely to be carrying unreviewed
+                // imported text.
+                //
+                // Deliberately NOT routed through the repository instead:
+                // `update()` reads the doc first (a read per synced recipe),
+                // enforces ownership and runs `_enforceShareCap`, which throws
+                // inside this retry loop; and an offline-CREATED recipe has no
+                // document yet, so `update()` would throw outright. The
+                // create-or-update `setDocument` is the right primitive here.
                 await _firestoreRepository.setDocument(
                   userRecipesRef.doc(recipe!.id),
-                  recipe.toFirestore(),
+                  sanitizeRecipeText(recipe).toFirestore(),
                 );
               });
 

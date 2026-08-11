@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/parsing/sanitizers/recipe_sanitizer.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -698,9 +699,9 @@ class RecipeSharingManager {
       // also the correct semantics: `sharedAt` is when the recipe was first
       // shared, and the create rule's `hasRequiredFields` still gets it.
       //
-      // The probe must fail OPEN toward "new". `firestore.rules` :723 dereferences
-      // `resource.data.sharedByUserId` in `allow get`, and on a document that does
-      // not exist `resource` is null — so the very FIRST share of a recipe gets
+      // The probe must fail OPEN toward "new". The `allow get` branch in
+      // `firestore.rules` (:724) dereferences `resource.data.sharedByUserId`
+      // at :725, and on a document that does not exist `resource` is null — so the very FIRST share of a recipe gets
       // PERMISSION_DENIED here, the catch below swallows it, and the row is never
       // created. That is the exact failure create-only stamping exists to prevent,
       // just moved one line up. `fake_cloud_firestore` evaluates no rules, so no
@@ -734,11 +735,23 @@ class RecipeSharingManager {
         );
       }
 
+      final cleanText = sanitizeSharedRecipeText(
+        recipeTitle,
+        recipeData.description,
+      );
+
       final payload = <String, dynamic>{
         'contentType': 'recipe',
         'recipeId': recipeId,
-        'title': recipeTitle,
-        'description': recipeData.description,
+        // BUT-1819: this manager builds its own payload and never touches
+        // `FirebaseSharedRecipeRepository.toFirestore`, so the sanitization
+        // there does not reach it — a second writer of the same denormalized
+        // text into the same collection, found by the security review. Both now
+        // call `sanitizeSharedRecipeText`, so the DECISION lives in one place
+        // even though the key spellings differ (`title`/`description` here,
+        // `recipeTitle`/`recipeDescription` there); those predate this ticket.
+        'title': cleanText.title,
+        'description': cleanText.description,
         'sharedByUserId': currentUserId,
         // BUT-1775, applying BUT-1705/BUT-1736: `profileDisplayName`, NOT
         // `permissionService.currentUser`. The latter is built straight from

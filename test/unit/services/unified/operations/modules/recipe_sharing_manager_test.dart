@@ -32,6 +32,7 @@ void main() {
     late RecipeSharingManager sharingManager;
     late List<Recipe> savedRecipes;
     late Recipe testPersonalRecipe;
+    late Recipe testDirtyTitleRecipe;
     late Recipe testCollaborativeRecipe;
 
     setUpAll(() async {
@@ -139,11 +140,46 @@ void main() {
         ),
       );
 
+      // BUT-1819: its own recipe, so the shared fixture's title stays clean —
+      // 'should share personal recipe successfully' below asserts on the RAW
+      // title reaching the parent service. That is the seam ABOVE that path's
+      // own chokepoint — the recipe it creates is sanitized later, by
+      // `FirebaseRecipeRepository.toFirestore`, which this same ticket adds —
+      // so the raw value there is correct and must not move. (No count in this
+      // comment on purpose: three earlier versions got the number wrong, which
+      // is what a count in a comment does.)
+      // Built out rather than copied because `RecipeCore.copyWith` exposes no
+      // `id`. Explicit escape, never a pasted invisible byte.
+      testDirtyTitleRecipe = Recipe(
+        core: RecipeCore(
+          id: 'personal_dirty',
+          // \u0007, not \u0000: `sanitizeText` strips NUL twice (an explicit
+          // replaceAll AND the control-character class), so a NUL fixture
+          // survives deletion of the class and pins nothing. BEL is only in
+          // the class. Explicit escapes, never pasted invisible bytes.
+          title: 'Räksmörgås\u0007 på rågbröd',
+          description: 'En helt vanlig\u0007 beskrivning',
+          ingredients: ['ingredient 1'],
+          instructions: ['step 1'],
+          mealType: 'Middag',
+          portions: 4,
+          timeMinutes: 30,
+          createdBy: 'user_123',
+          createdAt: DateTime(2026, 1, 1),
+          updatedAt: DateTime(2026, 1, 1),
+        ),
+        type: RecipeType.personal,
+      );
+
       // Configure mocks using setRecipeState method
       mockParentService.setRecipeState(
         currentUserId: 'user_123',
         currentUserDisplayName: 'Current User',
-        recipes: [testPersonalRecipe, testCollaborativeRecipe],
+        recipes: [
+          testPersonalRecipe,
+          testCollaborativeRecipe,
+          testDirtyTitleRecipe,
+        ],
         isInitialized: true,
       );
       // No need to stub recipes - it's a concrete getter that returns the configured value
@@ -307,6 +343,62 @@ void main() {
             reason:
                 'the recipient must be listed under the rules-sanctioned '
                 'membership field, the one the rules and the export both read',
+          );
+        },
+      );
+
+      test(
+        'BUT-1819: sanitizes its OWN shared_content payload, and does not '
+        'mangle Swedish doing it',
+        () async {
+          // This manager builds its payload by hand and never touches
+          // `FirebaseSharedRecipeRepository.toFirestore`, so the sanitization
+          // there does not reach it. Both now call `sanitizeSharedRecipeText`
+          // — this pins the manager half. Without it, deleting that call left
+          // every suite green while the repository half had four tests, which
+          // is exactly the drift the shared helper exists to prevent.
+          mockParentService.setCollaborativeState(shouldSucceed: true);
+          when(
+            () => mockNotificationService.sendImmediateNotification(
+              targetUserIds: any(named: 'targetUserIds'),
+              strategy: any(named: 'strategy'),
+              variables: any(named: 'variables'),
+              additionalData: any(named: 'additionalData'),
+              imageUrl: any(named: 'imageUrl'),
+              actions: any(named: 'actions'),
+            ),
+          ).thenAnswer((_) async {});
+
+          await sharingManager.shareRecipe(
+            recipeId: 'personal_dirty',
+            memberIds: ['user_456'],
+            memberDisplayNames: {'user_456': 'Member One'},
+          );
+
+          final repository =
+              app_provider.ServiceLocator.get<FirestoreRepository>()
+                  as FakeFirestoreRepository;
+          final docs = await repository.collection('shared_content').get();
+          expect(
+            docs.docs,
+            isNotEmpty,
+            reason: 'premise: the shared_content write must have landed',
+          );
+          expect(
+            docs.docs.first.data()['title'],
+            'Räksmörgås på rågbröd',
+            reason:
+                'the control character is stripped AND å/ä/ö survive — a '
+                'sanitizer that mangled Swedish would pass a stripping-only '
+                'assertion and quietly damage every shared title',
+          );
+          expect(
+            docs.docs.first.data()['description'],
+            'En helt vanlig beskrivning',
+            reason:
+                'the OTHER arm. Asserting only the title let the description '
+                'line be deleted with every suite green, and a compound '
+                'mutation of both lines could not tell the two apart',
           );
         },
       );
@@ -578,7 +670,7 @@ void main() {
         expect(mockParentService.createCollaborativeRecipeCalls, isEmpty);
       });
 
-      // BUT-1797. The FOUR tests immediately below assert on `savedRecipes`,
+      // BUT-1797. The tests immediately below assert on `savedRecipes`,
       // which the `updateRecipe` seam fills — not everything in the rest of this
       // file. Until they existed the seam was installed and never read: a
       // recorder with no assertion, which reads as coverage to a reviewer and to

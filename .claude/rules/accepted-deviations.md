@@ -243,3 +243,14 @@ files in the same edit.
   via `arrayUnion` (safe); tick/amend/remove queues the cached base, because Firestore has
   no offline-replayable per-row primitive and refusing offline ticks breaks the shop-aisle
   case. BUT-1683, 2026-07-26
+
+- **A recipe `sourceUrl` containing `data:` anywhere is blanked in full on write** —
+  `sanitizeUrl`'s patterns are UNANCHORED substrings, and `sourceUrl` is a free-text
+  PROVENANCE field for a dozen writers, so the value lost is usually a Swedish sentence.
+  Accepted knowingly: low probability, and the user-facing protection is the RENDER guard
+  (`isSafeExternalUrl`), not storage blanking. The 2026-08-10 security review's
+  counter-argument — that the render allowlist now dominates the storage blocklist, so
+  anchoring the pattern would keep all the protection at no cost to provenance — is
+  recorded in the full entry and needs its own ticket, not a quiet widening. Do not file
+  this as a bug; do not "simplify" the discriminator fixture that proves a bare colon is
+  harmless. BUT-1819, 2026-08-10

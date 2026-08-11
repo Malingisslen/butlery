@@ -256,7 +256,7 @@ const int _tailBudget = 120;
 /// text and not over the page, so re-deriving would swap the sanitized parser
 /// input for the unsanitized one across the WHOLE document — and of the body
 /// text this rule touches, nothing is re-sanitized when the recipe is saved.
-/// `FirebaseRecipeRepository._sanitizeRecipe` rewrites the title, the
+/// `sanitizeRecipeText (services/parsing/sanitizers/recipe_sanitizer.dart)` rewrites the title, the
 /// description and `sourceUrl`, and no ingredient or instruction row.
 ///
 /// For the same reason the gate below is [DocumentLayout.matchesLineCountOf],

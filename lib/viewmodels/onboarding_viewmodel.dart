@@ -446,7 +446,7 @@ class OnboardingViewModel extends BaseViewModel {
             mealType: seed.core.mealType,
             portions: seed.core.portions,
             timeMinutes: seed.core.timeMinutes,
-            sourceUrl: 'Butlery starter recipes',
+            sourceUrl: 'Butlerys startrecept',
           );
           if (id != null) seededIds.add(id);
         } catch (e) {

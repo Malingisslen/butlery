@@ -55,6 +55,7 @@ import 'package:butlery/models/social_request.dart';
 import 'package:butlery/services/recipe_print_service.dart' as print_service;
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/widgets/image/image_picker_dialogs.dart';
+import 'package:butlery/core/utils/external_link.dart';
 
 /// BUT-403 identifier scheme for this view (browser a11y tree hooks):
 ///  - `btn-edit-recipe`     → overflow menu → Edit
@@ -682,8 +683,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                   ],
                                 ),
                               ),
-                            if (recipe.sourceUrl != null &&
-                                recipe.sourceUrl!.isNotEmpty)
+                            // BUT-1819: hidden unless the value is a real
+                            // link. Otherwise the menu offers an action that
+                            // can only produce an error — the same dead
+                            // affordance the source ROW just stopped drawing.
+                            if (isSafeExternalUrl(recipe.sourceUrl))
                               PopupMenuItem(
                                 value: _MenuAction.source,
                                 child: Row(
@@ -1080,7 +1084,11 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
       case _MenuAction.toggleCollaboration:
         await _actions.toggleCollaboration(context);
       case _MenuAction.source:
-        if (recipe.sourceUrl != null && recipe.sourceUrl!.isNotEmpty) {
+        // BUT-1819: the SAME predicate the menu item is gated on (:690). It
+        // used to be `isNotEmpty` here, which is weaker — harmless, since a
+        // hidden item cannot be dispatched, but it is the version a future
+        // editor reads as the rule.
+        if (isSafeExternalUrl(recipe.sourceUrl)) {
           _actions.handleSourceUrlClick(context, recipe.sourceUrl!);
         }
       case _MenuAction.viewSourceArtefact:
