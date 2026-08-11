@@ -1,0 +1,1605 @@
+{
+ "$schema": "butlery-r04-fscope/1",
+ "$regel": "Ingen heuristisk produktytedetektion infors. Klassificering sker ur observerad struktur och semantik, aldrig ur filnamn eller enbart avsaknad av .sc-phone/.sc-card.",
+ "$klasser": {
+  "A_PRODUCT_SURFACE_REQUIRED": "produkt-UI som behover explicit authored ytidentitet",
+  "B_PRODUCT_UI_NO_CONTAINER_SURFACE": "produkt-UI utan gemensam container, men varje texts bakgrund kan bestammas positivt",
+  "C_EXPLANATORY_DOCUMENTATION": "forklarande panel eller dokumentation — utanfor produktpopulationen",
+  "D_HARNESS_PROBE": "teknisk verifieringsyta, inte produkt-UI",
+  "E_UNRESOLVED": "otillracklig evidens, fail closed"
+ },
+ "sammanfattning": {
+  "familjer": 32,
+  "perKlass": {
+   "B_PRODUCT_UI_NO_CONTAINER_SURFACE": 30,
+   "A_PRODUCT_SURFACE_REQUIRED": 2
+  },
+  "fristaendeText": {
+   "iAB": 763,
+   "iAB_medBakgrund": 759,
+   "iAB_utanBakgrund": 4,
+   "iCD": 0,
+   "iE": 0
+  }
+ },
+ "familjer": [
+  {
+   "familj": "lgbrotation-panel",
+   "art": "lgbrotation",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 88,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-cap",
+     "sc-tab",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "lgbrotation-panel"
+   },
+   "kontroller": {
+    "antal": 7,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 39,
+    "dokumentation": 13,
+    "iKontroll": 2,
+    "fristaende": 24,
+    "fristaendeMedMaladBakgrund": 22,
+    "fristaendeUtanMaladBakgrund": 2,
+    "bakgrundsbarare": [
+     "sc-tab rgb(36, 56, 44)",
+     "div rgb(47, 68, 55)",
+     "span rgb(245, 244, 237)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "A_PRODUCT_SURFACE_REQUIRED",
+   "skal": "interaktiva produktkontroller finns (button), men 2 fristaende textfragment saknar positivt malad bakgrund — kraver authored ytidentitet"
+  },
+  {
+   "familj": "bredlandskap-panel",
+   "art": "bredlandskap",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 78,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-cap",
+     "sc-tab",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "bredlandskap-panel"
+   },
+   "kontroller": {
+    "antal": 5,
+    "roller": [
+     "tab",
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 29,
+    "dokumentation": 11,
+    "iKontroll": 4,
+    "fristaende": 14,
+    "fristaendeMedMaladBakgrund": 12,
+    "fristaendeUtanMaladBakgrund": 2,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "A_PRODUCT_SURFACE_REQUIRED",
+   "skal": "interaktiva produktkontroller finns (tab, button), men 2 fristaende textfragment saknar positivt malad bakgrund — kraver authored ytidentitet"
+  },
+  {
+   "familj": "vmbnormal-panel",
+   "art": "vmbnormal",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 137,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap",
+     "av",
+     "g7",
+     "dh",
+     "rl",
+     "cell",
+     "ct",
+     "cm",
+     "pr"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "vmbnormal-panel"
+   },
+   "kontroller": {
+    "antal": 10,
+    "roller": [
+     "tab",
+     "textbox",
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 71,
+    "dokumentation": 13,
+    "iKontroll": 4,
+    "fristaende": 54,
+    "fristaendeMedMaladBakgrund": 54,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "av rgb(204, 209, 194)",
+     "cell rgb(247, 232, 210)",
+     "av rgb(230, 234, 217)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "vmbgenererar-panel",
+   "art": "vmbgenererar",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 92,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap",
+     "g7",
+     "dh",
+     "rl",
+     "cell",
+     "ct",
+     "cm",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "vmbgenererar-panel"
+   },
+   "kontroller": {
+    "antal": 3,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 57,
+    "dokumentation": 13,
+    "iKontroll": 3,
+    "fristaende": 41,
+    "fristaendeMedMaladBakgrund": 41,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "div rgb(240, 238, 226)",
+     "sc-tab rgb(245, 244, 237)",
+     "cell rgb(230, 234, 217)",
+     "cell rgb(245, 244, 237)",
+     "cell rgb(240, 238, 226)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "vmboffline-panel",
+   "art": "vmboffline",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 85,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap",
+     "g7",
+     "dh",
+     "rl",
+     "cell",
+     "ct",
+     "cm",
+     "empty"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "vmboffline-panel"
+   },
+   "kontroller": {
+    "antal": 2,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 51,
+    "dokumentation": 13,
+    "iKontroll": 2,
+    "fristaende": 36,
+    "fristaendeMedMaladBakgrund": 36,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "div rgb(230, 234, 217)",
+     "sc-tab rgb(245, 244, 237)",
+     "span rgb(230, 234, 217)",
+     "cell rgb(247, 232, 210)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "bredmeny-panel",
+   "art": "bredmeny",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 106,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "bredmeny-panel"
+   },
+   "kontroller": {
+    "antal": 8,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 50,
+    "dokumentation": 14,
+    "iKontroll": 1,
+    "fristaende": 35,
+    "fristaendeMedMaladBakgrund": 35,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "span rgb(204, 209, 194)",
+     "span rgb(247, 232, 210)",
+     "span rgb(230, 234, 217)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "rcbnormal-panel",
+   "art": "rcbnormal",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 94,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "rcbnormal-panel"
+   },
+   "kontroller": {
+    "antal": 6,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 48,
+    "dokumentation": 11,
+    "iKontroll": 2,
+    "fristaende": 35,
+    "fristaendeMedMaladBakgrund": 35,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "span rgb(245, 244, 237)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "vmbdelvis-panel",
+   "art": "vmbdelvis",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 91,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "g7",
+     "dh",
+     "rl",
+     "cell",
+     "ct",
+     "cm",
+     "empty",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "vmbdelvis-panel"
+   },
+   "kontroller": {
+    "antal": 5,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 50,
+    "dokumentation": 12,
+    "iKontroll": 5,
+    "fristaende": 33,
+    "fristaendeMedMaladBakgrund": 33,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "div rgb(230, 234, 217)",
+     "sc-tab rgb(245, 244, 237)",
+     "cell rgb(230, 234, 217)",
+     "cell rgb(247, 232, 210)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "bredrecept-panel",
+   "art": "bredrecept",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 97,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "bredrecept-panel"
+   },
+   "kontroller": {
+    "antal": 5,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 55,
+    "dokumentation": 23,
+    "iKontroll": 2,
+    "fristaende": 30,
+    "fristaendeMedMaladBakgrund": 30,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "span rgb(245, 244, 237)",
+     "div rgb(245, 244, 237)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "vmbomrostning-panel",
+   "art": "vmbomrostning",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 82,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "g7",
+     "dh",
+     "rl",
+     "cell",
+     "ct",
+     "cm",
+     "empty",
+     "plus"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": false
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "vmbomrostning-panel"
+   },
+   "kontroller": {
+    "antal": 3,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 48,
+    "dokumentation": 16,
+    "iKontroll": 2,
+    "fristaende": 30,
+    "fristaendeMedMaladBakgrund": 30,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "cell rgb(247, 232, 210)",
+     "cell rgb(230, 234, 217)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "vmbflytta-panel",
+   "art": "vmbflytta",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 80,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "g7",
+     "dh",
+     "rl",
+     "cell",
+     "ct",
+     "cm",
+     "empty",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "vmbflytta-panel"
+   },
+   "kontroller": {
+    "antal": 3,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 47,
+    "dokumentation": 16,
+    "iKontroll": 3,
+    "fristaende": 28,
+    "fristaendeMedMaladBakgrund": 28,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "cell rgb(230, 234, 217)",
+     "cell rgb(247, 232, 210)",
+     "cell rgb(245, 244, 237)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "ikbnormal-panel",
+   "art": "ikbnormal",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 79,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "ikbnormal-panel"
+   },
+   "kontroller": {
+    "antal": 6,
+    "roller": [
+     "button",
+     "checkbox"
+    ]
+   },
+   "text": {
+    "totalt": 36,
+    "dokumentation": 8,
+    "iKontroll": 1,
+    "fristaende": 27,
+    "fristaendeMedMaladBakgrund": 27,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "span rgb(230, 234, 217)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "bredinkop-panel",
+   "art": "bredinkop",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 81,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "bredinkop-panel"
+   },
+   "kontroller": {
+    "antal": 4,
+    "roller": [
+     "checkbox"
+    ]
+   },
+   "text": {
+    "totalt": 41,
+    "dokumentation": 15,
+    "iKontroll": 0,
+    "fristaende": 26,
+    "fristaendeMedMaladBakgrund": 26,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "span rgb(230, 234, 217)",
+     "div rgb(245, 244, 237)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "vmbkonflikt-panel",
+   "art": "vmbkonflikt",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 70,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "g7",
+     "dh",
+     "rl",
+     "cell",
+     "ct",
+     "cm",
+     "empty",
+     "plus"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": false
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "vmbkonflikt-panel"
+   },
+   "kontroller": {
+    "antal": 2,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 40,
+    "dokumentation": 13,
+    "iKontroll": 1,
+    "fristaende": 26,
+    "fristaendeMedMaladBakgrund": 26,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "div rgb(230, 234, 217)",
+     "sc-tab rgb(245, 244, 237)",
+     "cell rgb(247, 232, 210)",
+     "span rgb(245, 244, 237)",
+     "span rgb(230, 234, 217)",
+     "span rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "rcbofullstandigt-panel",
+   "art": "rcbofullstandigt",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 62,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "rcbofullstandigt-panel"
+   },
+   "kontroller": {
+    "antal": 3,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 40,
+    "dokumentation": 11,
+    "iKontroll": 3,
+    "fristaende": 26,
+    "fristaendeMedMaladBakgrund": 26,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "span rgb(245, 244, 237)",
+     "div rgb(240, 238, 226)",
+     "sc-tab rgb(245, 244, 237)",
+     "span rgb(240, 238, 226)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "rcboffline-panel",
+   "art": "rcboffline",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 78,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "rcboffline-panel"
+   },
+   "kontroller": {
+    "antal": 3,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 37,
+    "dokumentation": 10,
+    "iKontroll": 1,
+    "fristaende": 26,
+    "fristaendeMedMaladBakgrund": 26,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "div rgb(230, 234, 217)",
+     "sc-tab rgb(245, 244, 237)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "rcbportion-panel",
+   "art": "rcbportion",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 62,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "rcbportion-panel"
+   },
+   "kontroller": {
+    "antal": 3,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 37,
+    "dokumentation": 11,
+    "iKontroll": 1,
+    "fristaende": 25,
+    "fristaendeMedMaladBakgrund": 25,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "div rgb(245, 244, 237)",
+     "div rgb(230, 234, 217)",
+     "b rgb(247, 232, 210)",
+     "sc-tab rgb(245, 244, 237)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "rcbarvegods-panel",
+   "art": "rcbarvegods",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 78,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "rcbarvegods-panel"
+   },
+   "kontroller": {
+    "antal": 5,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 40,
+    "dokumentation": 11,
+    "iKontroll": 4,
+    "fristaende": 25,
+    "fristaendeMedMaladBakgrund": 25,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "div rgb(230, 234, 217)",
+     "span rgb(36, 56, 44)",
+     "div rgb(240, 238, 226)",
+     "div rgb(245, 244, 237)",
+     "sc-tab rgb(245, 244, 237)",
+     "span rgb(247, 232, 210)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "ikbdelad-panel",
+   "art": "ikbdelad",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 69,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "av",
+     "sc-cap"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "ikbdelad-panel"
+   },
+   "kontroller": {
+    "antal": 4,
+    "roller": [
+     "checkbox",
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 37,
+    "dokumentation": 12,
+    "iKontroll": 1,
+    "fristaende": 24,
+    "fristaendeMedMaladBakgrund": 24,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "div rgb(230, 234, 217)",
+     "av rgb(204, 209, 194)",
+     "sc-tab rgb(245, 244, 237)",
+     "span rgb(240, 238, 226)",
+     "span rgb(230, 234, 217)",
+     "div rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "rcblaser-panel",
+   "art": "rcblaser",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 67,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "rcblaser-panel"
+   },
+   "kontroller": {
+    "antal": 4,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 36,
+    "dokumentation": 11,
+    "iKontroll": 2,
+    "fristaende": 23,
+    "fristaendeMedMaladBakgrund": 23,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "span rgb(204, 209, 194)",
+     "div rgb(230, 234, 217)",
+     "sc-tab rgb(245, 244, 237)",
+     "div rgb(240, 238, 226)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "bredgrans-panel",
+   "art": "bredgrans",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 66,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-cap"
+    ],
+    "harBild": false,
+    "harTabb": false,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "bredgrans-panel"
+   },
+   "kontroller": {
+    "antal": 2,
+    "roller": [
+     "textbox"
+    ]
+   },
+   "text": {
+    "totalt": 37,
+    "dokumentation": 13,
+    "iKontroll": 2,
+    "fristaende": 22,
+    "fristaendeMedMaladBakgrund": 22,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "div rgb(245, 244, 237)",
+     "div rgb(230, 234, 217)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "ikboffline-panel",
+   "art": "ikboffline",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 65,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "ikboffline-panel"
+   },
+   "kontroller": {
+    "antal": 3,
+    "roller": [
+     "checkbox"
+    ]
+   },
+   "text": {
+    "totalt": 31,
+    "dokumentation": 11,
+    "iKontroll": 0,
+    "fristaende": 20,
+    "fristaendeMedMaladBakgrund": 20,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "div rgb(230, 234, 217)",
+     "sc-tab rgb(245, 244, 237)",
+     "div rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "surfplatta-panel",
+   "art": "surfplatta",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "viewportProfil": null,
+   "iDe31": false,
+   "struktur": {
+    "element": 52,
+    "klasser": [
+     "sc-label",
+     "sc-id"
+    ],
+    "harBild": false,
+    "harTabb": false,
+    "harNot": false
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "surfplatta-panel"
+   },
+   "kontroller": {
+    "antal": 1,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 32,
+    "dokumentation": 11,
+    "iKontroll": 1,
+    "fristaende": 20,
+    "fristaendeMedMaladBakgrund": 20,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "span rgb(245, 244, 237)",
+     "div rgb(245, 244, 237)",
+     "div rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "rcbkommentar-panel",
+   "art": "rcbkommentar",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 57,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-cap",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "rcbkommentar-panel"
+   },
+   "kontroller": {
+    "antal": 2,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 30,
+    "dokumentation": 9,
+    "iKontroll": 2,
+    "fristaende": 19,
+    "fristaendeMedMaladBakgrund": 19,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "span rgb(204, 209, 194)",
+     "span rgb(230, 234, 217)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "lgbgester-panel",
+   "art": "lgbgester",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 78,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "lgbgester-panel"
+   },
+   "kontroller": {
+    "antal": 8,
+    "roller": [
+     "button",
+     "radio"
+    ]
+   },
+   "text": {
+    "totalt": 41,
+    "dokumentation": 19,
+    "iKontroll": 5,
+    "fristaende": 17,
+    "fristaendeMedMaladBakgrund": 17,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(36, 56, 44)",
+     "span rgb(47, 68, 55)",
+     "span rgb(245, 244, 237)",
+     "div rgb(47, 68, 55)",
+     "div rgb(245, 244, 237)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "bredskal-panel",
+   "art": "bredskal",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 103,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "bredskal-panel"
+   },
+   "kontroller": {
+    "antal": 6,
+    "roller": [
+     "button",
+     "tab"
+    ]
+   },
+   "text": {
+    "totalt": 41,
+    "dokumentation": 19,
+    "iKontroll": 6,
+    "fristaende": 16,
+    "fristaendeMedMaladBakgrund": 16,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "vmbtom-panel",
+   "art": "vmbtom",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 60,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "g7",
+     "dh",
+     "rl",
+     "empty",
+     "plus"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": false
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "vmbtom-panel"
+   },
+   "kontroller": {
+    "antal": 9,
+    "roller": [
+     "textbox",
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 26,
+    "dokumentation": 9,
+    "iKontroll": 3,
+    "fristaende": 14,
+    "fristaendeMedMaladBakgrund": 14,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "div rgb(230, 234, 217)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "globsvep-panel",
+   "art": "globsvep",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 63,
+    "klasser": [
+     "sc-label",
+     "sc-id"
+    ],
+    "harBild": false,
+    "harTabb": false,
+    "harNot": false
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "globsvep-panel"
+   },
+   "kontroller": {
+    "antal": 2,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 30,
+    "dokumentation": 17,
+    "iKontroll": 0,
+    "fristaende": 13,
+    "fristaendeMedMaladBakgrund": 13,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "div rgb(245, 244, 237)",
+     "div rgb(230, 234, 217)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "lgbtimer-panel",
+   "art": "lgbtimer",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 74,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "lgbtimer-panel"
+   },
+   "kontroller": {
+    "antal": 7,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 31,
+    "dokumentation": 16,
+    "iKontroll": 3,
+    "fristaende": 12,
+    "fristaendeMedMaladBakgrund": 12,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(36, 56, 44)",
+     "span rgb(245, 244, 237)",
+     "div rgb(47, 68, 55)",
+     "div rgb(36, 56, 44)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "lgbutan-panel",
+   "art": "lgbutan",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 34,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "lgbutan-panel"
+   },
+   "kontroller": {
+    "antal": 2,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 23,
+    "dokumentation": 13,
+    "iKontroll": 2,
+    "fristaende": 8,
+    "fristaendeMedMaladBakgrund": 8,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(36, 56, 44)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "ikbtom-panel",
+   "art": "ikbtom",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "viewportProfil": "expanded-1180",
+   "iDe31": true,
+   "struktur": {
+    "element": 34,
+    "klasser": [
+     "sc-label",
+     "sc-id",
+     "sc-tab",
+     "sc-note"
+    ],
+    "harBild": false,
+    "harTabb": true,
+    "harNot": true
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "ikbtom-panel"
+   },
+   "kontroller": {
+    "antal": 2,
+    "roller": [
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 18,
+    "dokumentation": 9,
+    "iKontroll": 2,
+    "fristaende": 7,
+    "fristaendeMedMaladBakgrund": 7,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "sc-tab rgb(245, 244, 237)",
+     "sc-note rgb(240, 238, 226)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  },
+  {
+   "familj": "fbinkorgvy-panel",
+   "art": "fbinkorgvy",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "viewportProfil": "expanded-desktop-1440",
+   "iDe31": true,
+   "struktur": {
+    "element": 53,
+    "klasser": [
+     "sc-label",
+     "sc-id"
+    ],
+    "harBild": false,
+    "harTabb": false,
+    "harNot": false
+   },
+   "temakapabilitet": {
+    "theme": "light",
+    "support": null,
+    "familj": "fbinkorgvy-panel"
+   },
+   "kontroller": {
+    "antal": 8,
+    "roller": [
+     "tab",
+     "combobox",
+     "button"
+    ]
+   },
+   "text": {
+    "totalt": 32,
+    "dokumentation": 18,
+    "iKontroll": 7,
+    "fristaende": 7,
+    "fristaendeMedMaladBakgrund": 7,
+    "fristaendeUtanMaladBakgrund": 0,
+    "bakgrundsbarare": [
+     "div rgb(36, 56, 44)",
+     "div rgb(245, 244, 237)"
+    ]
+   },
+   "varforOklassificerbar": "produktytedetektorn kraver .sc-phone eller .sc-card. Artefakten har ingen av dem, sa produktytan gar inte att peka ut med den frysta regeln.",
+   "klass": "B_PRODUCT_UI_NO_CONTAINER_SURFACE",
+   "skal": "produkt-UI med kontroller, och VARJE fristaende textfragment har en positivt malad bakgrund i sin egen kedja — bakgrunden kan bestammas utan heuristik"
+  }
+ ],
+ "$avstamning": "De 31 breda ar en delmangd: dok 410 · kontrolltext 76 · fristaende 743 = 1229, identiskt med den tidigare matningen. surfplatta ar den 32:a och tillfor 20 fristaende. 743 + 20 = 763.",
+ "$enhet": "Ett textfragment = ett MALANDE ELEMENT, samma enhet som R-01:s frysta motor. Tva textnoder i samma element ar ett fragment.",
+ "foreslagenMetadata": {
+  "konvention": "data-product-surface pa det element som ar artefaktens produktyta",
+  "regel": "Positiv deklaration i kallan. Ingen geometri-, viewport- eller fargheuristik. Samma attribut agerar agare for text, R-04 och all framtida matning.",
+  "forA": "artefakten far ett data-product-surface pa den container som faktiskt ar produktytan",
+  "forB": "inget nytt attribut kravs — varje fristaende text har redan en positivt malad bakgrund i sin egen kedja och kan stratifieras deterministiskt utan container",
+  "varfor": "Regeln .sc-phone/.sc-card ar en KLASSKONVENTION for telefonram och kort. De 32 ramlosa ar breda layouter och paneler som legitimt saknar bada. Ett eget attribut skiljer produktyta fran ramtyp."
+ },
+ "r04Konsekvens": {
+  "A": "2 familjer blir eligible for coverage nar ytan ar deklarerad. De blir inte covered forran de uppfyller explicitPair eller dualThemeRender.",
+  "B": "30 familjer ar redan strukturellt matbara for TEXT. For R-04-coverage kravs anda faktisk dual rendering — scopebeslut ar inte coverage.",
+  "C_D_E": "inga familjer i dessa klasser."
+ }
+}
