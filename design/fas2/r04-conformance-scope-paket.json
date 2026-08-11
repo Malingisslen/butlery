@@ -51,8 +51,8 @@
   "ritningsetikett_sc_label": 421,
   "produktKontrolltext": 77,
   "fristaendeTidigareRaknat": 763,
-  "darav_annotation": 139,
-  "darav_produkt": 624,
+  "darav_annotation": 138,
+  "darav_produkt": 625,
   "darav_oresolverat": 0,
   "kandidaterInutiMockGranskadeOchAvforda": 27,
   "UNRESOLVED": 0
@@ -139,8 +139,8 @@
    "art": "globsvep",
    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
    "fristaende": 13,
-   "annotation": 11,
-   "produkt": 2,
+   "annotation": 10,
+   "produkt": 3,
    "oresolverat": 0,
    "kontrolltext": 0,
    "ritningstext": 17,
@@ -2262,19 +2262,14 @@
    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
    "barare": "ingen .sc-tab/.sc-phone/.sc-card — produktmocken ar en oklassad div",
    "fragment": 13,
-   "annotation": 11,
-   "produkt": 2,
+   "annotation": 10,
+   "produkt": 3,
    "kontroller": 0,
    "ankare": [
     {
      "art": "globsvep",
      "ordinal": 24,
      "text": "Tipset och kontrollen i samma vy"
-    },
-    {
-     "art": "globsvep",
-     "ordinal": 43,
-     "text": "35 min · fyra portioner"
     },
     {
      "art": "globsvep",
