@@ -6,7 +6,7 @@
  "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
  "$tokenidentitet": "Tokennamnet lases i registret vid forsta tilldelningen och andras aldrig. Tva beslut delar aldrig namn, aven nar morkvardet sammanfaller. Ett ersatt beslut behaller inget namn.",
  "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
- "antal": 13,
+ "antal": 32,
  "perTyp": {
   "temavaxlande": 6,
   "temainvariant": 6
@@ -692,15 +692,776 @@
    "ersatter": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande @r1",
    "tokenNamn": "--yta-upphojd-d1",
    "revision": 2
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-01",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-01: fyllningen ar i ljust lage barare av GROUPING + COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING + COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 31,
+    "skarmar": 27,
+    "artefakter": [
+     "inkopflerval",
+     "veckochips",
+     "veckorostavgor",
+     "veckorostutgang",
+     "veckorosthistorik",
+     "authepost",
+     "authmfa",
+     "onbimportklar",
+     "lagatimerlofte",
+     "imp1kalla",
+     "imp4sparad",
+     "impurl",
+     "impsocial",
+     "impcache",
+     "impdelning",
+     "impdelningsocial",
+     "imparkiv",
+     "editorutkast",
+     "taggkalla",
+     "taggexklusiv",
+     "kontoradera",
+     "modminderarig",
+     "notisertyp",
+     "notiscentral",
+     "notisrensa",
+     "minaanmalningar",
+     "kontojuridik"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d2"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-02",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-02: fyllningen ar i ljust lage barare av GROUPING",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B1 · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 19,
+    "skarmar": 3,
+    "artefakter": [
+     "inkoputeslutna",
+     "imp1kalla",
+     "taggvillkor"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d4"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#24382c ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-03",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-03: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B1 · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 12,
+    "skarmar": 12,
+    "artefakter": [
+     "veckorostavgor",
+     "onbalderblock",
+     "onbvalkommen",
+     "onbimportklar",
+     "onbsenare",
+     "impurl",
+     "impgrans",
+     "impgransai",
+     "impcache",
+     "impdelning",
+     "imparkiv",
+     "kontoreauth"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d5"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-04",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-04: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 11,
+    "skarmar": 11,
+    "artefakter": [
+     "arkivimport",
+     "veckofel",
+     "impgrans",
+     "impgransai",
+     "impinget",
+     "impdelning",
+     "impdelningsocial",
+     "kontoreauth",
+     "adminej",
+     "modtom",
+     "mfaaktiv"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d3"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-05",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-05: fyllningen ar i ljust lage barare av GROUPING + COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING + COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 10,
+    "skarmar": 9,
+    "artefakter": [
+     "dataexport",
+     "receptdelningsstatus",
+     "delatlasare",
+     "onbimportklar",
+     "behlarmnekat",
+     "impurl",
+     "impsocial",
+     "impcache",
+     "kontovantan"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d4"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-06",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-06: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 9,
+    "skarmar": 3,
+    "artefakter": [
+     "arkivimport",
+     "veckoresultat",
+     "komprelaterade"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d5"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-07",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-07: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 8,
+    "skarmar": 3,
+    "artefakter": [
+     "veckochips",
+     "veckorostavgor",
+     "minaanmalningar"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d6"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-08",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-08: fyllningen ar i ljust lage barare av ELEVATION",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (ELEVATION). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 5,
+    "skarmar": 5,
+    "artefakter": [
+     "dataexport",
+     "faq",
+     "samtycke",
+     "juridik",
+     "onbvalkommen"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d7"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-09",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-09: fyllningen ar i ljust lage barare av GROUPING",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 5,
+    "skarmar": 5,
+    "artefakter": [
+     "faq",
+     "samtycke",
+     "rapporter",
+     "rapporter412",
+     "juridik"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d8"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-10",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-10: fyllningen ar i ljust lage barare av GROUPING + ACTIVE_STATE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B3 · fyllningen uttrycker BADE tillstand och radens eller komponentens visuella gruppering. Tillstandsglyfen racker inte for grupperingen.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 5,
+    "skarmar": 2,
+    "artefakter": [
+     "imp1kalla",
+     "notiscentral"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d6"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#24382c ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-11",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-11: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B1 · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 4,
+    "skarmar": 4,
+    "artefakter": [
+     "veckofel",
+     "impsocial",
+     "impinget",
+     "impdelningsocial"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d7"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-12",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-12: fyllningen ar i ljust lage barare av GROUPING + COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING + COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 3,
+    "skarmar": 3,
+    "artefakter": [
+     "aldersgrans",
+     "inkopflerval",
+     "notisrensa"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d9"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-13",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-13: fyllningen ar i ljust lage barare av GROUPING + COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING + COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 3,
+    "skarmar": 2,
+    "artefakter": [
+     "synkko",
+     "veckochips"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d10"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-14",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-14: fyllningen ar i ljust lage barare av GROUPING",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B1 · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 3,
+    "skarmar": 1,
+    "artefakter": [
+     "onbsenare"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d8"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-15",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-15: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 2,
+    "skarmar": 2,
+    "artefakter": [
+     "rapporter",
+     "rapporter412"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d11"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-16",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-16: fyllningen ar i ljust lage barare av ELEVATION",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B1 · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (ELEVATION). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 2,
+    "skarmar": 1,
+    "artefakter": [
+     "veckorosthistorik"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d9"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-17",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-17: fyllningen ar i ljust lage barare av ELEVATION",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (ELEVATION). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 1,
+    "skarmar": 1,
+    "artefakter": [
+     "kontovantan"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d12"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-18",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-18: fyllningen ar i ljust lage barare av ELEVATION",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (ELEVATION). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 1,
+    "skarmar": 1,
+    "artefakter": [
+     "kontovantan"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d13"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#24382c ‖ kontroll:radio · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:radio · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-19",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-19: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B1 · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 1,
+    "skarmar": 1,
+    "artefakter": [
+     "notisertyp"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d10"
   }
  ],
  "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
  "perOmfattning": {
   "WHOLE_CANDIDATE": 9,
-  "SUBGROUP": 3
+  "SUBGROUP": 22
  },
  "$status": "Ett beslut har status ACTIVE eller SUPERSEDED. Ett ersatt beslut raderas aldrig — det star kvar med reason och vilket beslut som ersatte det. Bara ACTIVE-beslut far anvandas vid migrering.",
- "aktiva": 12,
+ "aktiva": 31,
  "ersatta": 1,
  "$identitet": "beslutsId ar scopet (kandidat och eventuell undergrupp). Lagringsidentiteten ar scope + revision. Tokennamnet tilldelas en gang och ar persistent; varken supersede, insattning eller omsortering far andra ett befintligt namn."
 }
