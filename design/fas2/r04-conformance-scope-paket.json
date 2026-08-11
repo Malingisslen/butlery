@@ -1,0 +1,2585 @@
+{
+ "$schema": "butlery-r04-conformance-scope/1",
+ "$datum": "2026-08-11",
+ "$regel": "CSS-klassnamn ar aldrig tillracklig positiv evidens for product/annotation/harness scope. Klassnamn och visuell signatur anvands enbart for kandidatupptackt. Klassificeringen sker pa faktisk semantisk funktion, kallstruktur, visuell kontext och relation till produktkontroller.",
+ "$attribut": {
+  "namn": "data-conformance-scope",
+  "varden": [
+   "product",
+   "annotation",
+   "harness"
+  ],
+  "upplosning": "narmaste explicita grans i forfaderkedjan vinner; symmetrisk at bada hallen",
+  "legacy": ".sc-phone/.sc-card ar product-root-signal dar ingen explicit grans finns; explicit slar alltid legacy",
+  "integritet": "produktkontroll under annotation utan narmare product-grans => SCOPE_CONFLICT, fail closed",
+  "harness": "reserverat. Ingen faktisk harness-population hittad, sa ingen harness-metadata foreslas.",
+  "coverage": "ett scopebeslut ger 0 coverage credit och andrar ingen theme-coverage-klass"
+ },
+ "$rattelse": {
+  "vad": "Exemplet i foregaende rapport var fel.",
+  "tidigare": "\"SA TOLKADE JAG BESKRIVNINGEN\" i veckochips angavs som genuine product text i klassen .sc-cap.",
+  "faktiskt": "Den raden ar en inline-stilad div utan klass (etapp 2, rad 419). Den ar inte .sc-cap.",
+  "kontroll": "Samtliga 51 .sc-cap-fragment i korpusen ligger utanfor .sc-phone/.sc-card.",
+  "slutsats": "Slutsatsen att .sc-cap ar semantiskt polymorf STAR KVAR, men bevisas av andra fall: samma klass bar bade produktrubriker (\"Ingredienser\", \"Gor sa har\", \"Frukt och gront\" i bredrecept, rcbnormal, ikbnormal) och ritningsannotering (\"Ratt · en spalt, bottenrad\", \"Surfplatta i portratt · 768\")."
+ },
+ "$fynd_legacyregeln": {
+  "vad": ".sc-label/.sc-id-undantaget i textmotorn ar inert.",
+  "matning": "KLASSUNDANTAG_DOK = 0 fragment i hela korpusen. Ingen .sc-label eller .sc-id ligger nagonsin inuti .sc-phone eller .sc-card.",
+  "innebord": "Den faktiska exkluderingen gors av legacy-rotkravet, inte av klassregeln. Klassregeln kan avvecklas utan denominatorforandring — men den maste ersattas av authored metadata, inte bara tas bort."
+ },
+ "$fynd_scTab": {
+  "vad": "De 32 \"ramlosa\" familjerna ar inte ramlosa.",
+  "matning": "30 av dem har en .sc-tab-mock; 4 har en oklassad div som mock. 632 av 763 fristaende fragment ligger inuti en .sc-tab.",
+  "innebord": "Legacy-rotkonventionen kanner .sc-phone och .sc-card men inte .sc-tab. Det ar hela skalet till att populationen sag ramlos ut."
+ },
+ "namnareKorpus": {
+  "matt_textfragment_vid_390": 8095,
+  "gammal_STANDALONE_TEXT": 3303,
+  "gammal_CONTROL_TEXT": 1191,
+  "gammal_UTANFOR_POPULATION": 3601,
+  "gammal_KLASSUNDANTAG_DOK": 0,
+  "notrutor_i_legacy_produktyta": 21,
+  "notrutor_i_legacy_fragment": 85,
+  "notrutor_i_legacy_ANNOTATION": 17,
+  "notrutor_i_legacy_ANNOTATION_fragment": 67,
+  "notrutor_i_legacy_PRODUKT": 4,
+  "notrutor_i_legacy_PRODUKT_fragment": 18
+ },
+ "sammanfattning": {
+  "artefakter": 32,
+  "fragmentTotalt": 1261,
+  "ritningsetikett_sc_label": 421,
+  "produktKontrolltext": 77,
+  "fristaendeTidigareRaknat": 763,
+  "darav_annotation": 139,
+  "darav_produkt": 624,
+  "darav_oresolverat": 0,
+  "kandidaterInutiMockGranskadeOchAvforda": 27,
+  "UNRESOLVED": 0
+ },
+ "perArtefakt": [
+  {
+   "art": "bredgrans",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "fristaende": 22,
+   "annotation": 14,
+   "produkt": 8,
+   "oresolverat": 0,
+   "kontrolltext": 2,
+   "ritningstext": 13,
+   "mockar": 0
+  },
+  {
+   "art": "bredinkop",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "fristaende": 26,
+   "annotation": 1,
+   "produkt": 25,
+   "oresolverat": 0,
+   "kontrolltext": 0,
+   "ritningstext": 15,
+   "mockar": 1
+  },
+  {
+   "art": "bredlandskap",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "fristaende": 14,
+   "annotation": 7,
+   "produkt": 7,
+   "oresolverat": 0,
+   "kontrolltext": 4,
+   "ritningstext": 11,
+   "mockar": 2
+  },
+  {
+   "art": "bredmeny",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "fristaende": 35,
+   "annotation": 3,
+   "produkt": 32,
+   "oresolverat": 0,
+   "kontrolltext": 1,
+   "ritningstext": 14,
+   "mockar": 1
+  },
+  {
+   "art": "bredrecept",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "fristaende": 30,
+   "annotation": 5,
+   "produkt": 25,
+   "oresolverat": 0,
+   "kontrolltext": 2,
+   "ritningstext": 23,
+   "mockar": 1
+  },
+  {
+   "art": "bredskal",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "fristaende": 16,
+   "annotation": 3,
+   "produkt": 13,
+   "oresolverat": 0,
+   "kontrolltext": 6,
+   "ritningstext": 19,
+   "mockar": 1
+  },
+  {
+   "art": "fbinkorgvy",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "fristaende": 7,
+   "annotation": 0,
+   "produkt": 7,
+   "oresolverat": 0,
+   "kontrolltext": 7,
+   "ritningstext": 18,
+   "mockar": 0
+  },
+  {
+   "art": "globsvep",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "fristaende": 13,
+   "annotation": 11,
+   "produkt": 2,
+   "oresolverat": 0,
+   "kontrolltext": 0,
+   "ritningstext": 17,
+   "mockar": 0
+  },
+  {
+   "art": "ikbdelad",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 24,
+   "annotation": 2,
+   "produkt": 22,
+   "oresolverat": 0,
+   "kontrolltext": 1,
+   "ritningstext": 12,
+   "mockar": 1
+  },
+  {
+   "art": "ikbnormal",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 27,
+   "annotation": 0,
+   "produkt": 27,
+   "oresolverat": 0,
+   "kontrolltext": 1,
+   "ritningstext": 8,
+   "mockar": 1
+  },
+  {
+   "art": "ikboffline",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 20,
+   "annotation": 3,
+   "produkt": 17,
+   "oresolverat": 0,
+   "kontrolltext": 0,
+   "ritningstext": 11,
+   "mockar": 1
+  },
+  {
+   "art": "ikbtom",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 7,
+   "annotation": 3,
+   "produkt": 4,
+   "oresolverat": 0,
+   "kontrolltext": 2,
+   "ritningstext": 9,
+   "mockar": 1
+  },
+  {
+   "art": "lgbgester",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 17,
+   "annotation": 8,
+   "produkt": 9,
+   "oresolverat": 0,
+   "kontrolltext": 5,
+   "ritningstext": 19,
+   "mockar": 1
+  },
+  {
+   "art": "lgbrotation",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 24,
+   "annotation": 5,
+   "produkt": 19,
+   "oresolverat": 0,
+   "kontrolltext": 2,
+   "ritningstext": 13,
+   "mockar": 2
+  },
+  {
+   "art": "lgbtimer",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 12,
+   "annotation": 3,
+   "produkt": 9,
+   "oresolverat": 0,
+   "kontrolltext": 3,
+   "ritningstext": 16,
+   "mockar": 1
+  },
+  {
+   "art": "lgbutan",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 8,
+   "annotation": 6,
+   "produkt": 2,
+   "oresolverat": 0,
+   "kontrolltext": 2,
+   "ritningstext": 13,
+   "mockar": 1
+  },
+  {
+   "art": "rcbarvegods",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 25,
+   "annotation": 3,
+   "produkt": 22,
+   "oresolverat": 0,
+   "kontrolltext": 4,
+   "ritningstext": 11,
+   "mockar": 1
+  },
+  {
+   "art": "rcbkommentar",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 19,
+   "annotation": 3,
+   "produkt": 16,
+   "oresolverat": 0,
+   "kontrolltext": 2,
+   "ritningstext": 9,
+   "mockar": 1
+  },
+  {
+   "art": "rcblaser",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 23,
+   "annotation": 4,
+   "produkt": 19,
+   "oresolverat": 0,
+   "kontrolltext": 2,
+   "ritningstext": 11,
+   "mockar": 1
+  },
+  {
+   "art": "rcbnormal",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 35,
+   "annotation": 7,
+   "produkt": 28,
+   "oresolverat": 0,
+   "kontrolltext": 2,
+   "ritningstext": 11,
+   "mockar": 1
+  },
+  {
+   "art": "rcboffline",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 26,
+   "annotation": 3,
+   "produkt": 23,
+   "oresolverat": 0,
+   "kontrolltext": 1,
+   "ritningstext": 10,
+   "mockar": 1
+  },
+  {
+   "art": "rcbofullstandigt",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 26,
+   "annotation": 5,
+   "produkt": 21,
+   "oresolverat": 0,
+   "kontrolltext": 3,
+   "ritningstext": 11,
+   "mockar": 1
+  },
+  {
+   "art": "rcbportion",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 25,
+   "annotation": 4,
+   "produkt": 21,
+   "oresolverat": 0,
+   "kontrolltext": 1,
+   "ritningstext": 11,
+   "mockar": 1
+  },
+  {
+   "art": "surfplatta",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "fristaende": 20,
+   "annotation": 3,
+   "produkt": 17,
+   "oresolverat": 0,
+   "kontrolltext": 1,
+   "ritningstext": 11,
+   "mockar": 0
+  },
+  {
+   "art": "vmbdelvis",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 33,
+   "annotation": 5,
+   "produkt": 28,
+   "oresolverat": 0,
+   "kontrolltext": 5,
+   "ritningstext": 12,
+   "mockar": 1
+  },
+  {
+   "art": "vmbflytta",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 28,
+   "annotation": 6,
+   "produkt": 22,
+   "oresolverat": 0,
+   "kontrolltext": 3,
+   "ritningstext": 16,
+   "mockar": 1
+  },
+  {
+   "art": "vmbgenererar",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 41,
+   "annotation": 9,
+   "produkt": 32,
+   "oresolverat": 0,
+   "kontrolltext": 3,
+   "ritningstext": 13,
+   "mockar": 1
+  },
+  {
+   "art": "vmbkonflikt",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 26,
+   "annotation": 2,
+   "produkt": 24,
+   "oresolverat": 0,
+   "kontrolltext": 1,
+   "ritningstext": 13,
+   "mockar": 1
+  },
+  {
+   "art": "vmbnormal",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 54,
+   "annotation": 2,
+   "produkt": 52,
+   "oresolverat": 0,
+   "kontrolltext": 4,
+   "ritningstext": 13,
+   "mockar": 1
+  },
+  {
+   "art": "vmboffline",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 36,
+   "annotation": 5,
+   "produkt": 31,
+   "oresolverat": 0,
+   "kontrolltext": 2,
+   "ritningstext": 13,
+   "mockar": 1
+  },
+  {
+   "art": "vmbomrostning",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 30,
+   "annotation": 3,
+   "produkt": 27,
+   "oresolverat": 0,
+   "kontrolltext": 2,
+   "ritningstext": 16,
+   "mockar": 1
+  },
+  {
+   "art": "vmbtom",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "fristaende": 14,
+   "annotation": 1,
+   "produkt": 13,
+   "oresolverat": 0,
+   "kontrolltext": 3,
+   "ritningstext": 9,
+   "mockar": 1
+  }
+ ],
+ "grupper": [
+  {
+   "id": "AG-NOT-bredbrytpunkter-63",
+   "typ": "notruta",
+   "artefakter": [
+    "bredbrytpunkter"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "ankare": [
+    {
+     "art": "bredbrytpunkter",
+     "ordinal": 63
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 4,
+   "representativText": "Max radlängd gäller alltid, även på mobil: infinity går bort. Löptext får aldrig gå bredare än 72 tecken — det",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-bredskal-100",
+   "typ": "notruta",
+   "artefakter": [
+    "bredskal"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "ankare": [
+    {
+     "art": "bredskal",
+     "ordinal": 100
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Skenan vid 768, utfälld vid 1024. Här visas den smala (etikett under ikon). Vid 1024 fälls den ut till 240 px ",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-bredlandskap-75",
+   "typ": "notruta",
+   "artefakter": [
+    "bredlandskap"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "ankare": [
+    {
+     "art": "bredlandskap",
+     "ordinal": 75
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Två villkor, inte ett: skena kräver bredd ≥ 768 och höjd ≥ 500. Under 500 px höjd gäller en spalt och bottenra",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-bredrecept-94",
+   "typ": "notruta",
+   "artefakter": [
+    "bredrecept"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "ankare": [
+    {
+     "art": "bredrecept",
+     "ordinal": 94
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Delningen går efter läsning, inte efter datamodell. Ingredienser (smalt) och steg (brett) sida vid sida; socia",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-bredmeny-103",
+   "typ": "notruta",
+   "artefakter": [
+    "bredmeny"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "ankare": [
+    {
+     "art": "bredmeny",
+     "ordinal": 103
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Rutnätet finns bara över 768 px. Närvaroraden är en kontroll även i en smal kolumn (48 dp, avatarer 26, max tr",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-bredarbete-29",
+   "typ": "notruta",
+   "artefakter": [
+    "bredarbete"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "ankare": [
+    {
+     "art": "bredarbete",
+     "ordinal": 29
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 5,
+   "representativText": "Specen måste rättas först00-spec-index.md säger att tablet- och desktoplayout är uttalat out of scope. Det stä",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-vmbnormal-135",
+   "typ": "notruta",
+   "artefakter": [
+    "vmbnormal"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbnormal",
+     "ordinal": 135
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 2,
+   "representativText": "Kalenderläget lyder inte under textbredden. Maxbredden 900 finns för radlängd; ett rutnät är inte löptext. Pro",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-vmbgenererar-87",
+   "typ": "notruta",
+   "artefakter": [
+    "vmbgenererar"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbgenererar",
+     "ordinal": 87
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 5,
+   "representativText": "Bekräftelsen är en markering, inte en dialog. _confirmOverwrite ber i dag om ett Fortsätt utan att säga vad so",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-vmbkonflikt-55",
+   "typ": "notruta",
+   "artefakter": [
+    "vmbkonflikt"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbkonflikt",
+     "ordinal": 55
+    }
+   ],
+   "barare": "span (inline notstil)",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 2,
+   "representativText": "JOHANS · GÄLLERTacos",
+   "scope": "PRODUCT_CONTENT",
+   "skal": "produktinnehall i notliknande yta — riktat till anvandaren, inte till lasaren av ritningen",
+   "grans": null
+  },
+  {
+   "id": "AG-NOT-vmbdelvis-89",
+   "typ": "notruta",
+   "artefakter": [
+    "vmbdelvis"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbdelvis",
+     "ordinal": 89
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 2,
+   "representativText": "Brickan är ett arbetsförråd, inte en notis. Den överlever omladdning, ligger kvar tills den töms, och säger va",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-vmbflytta-76",
+   "typ": "notruta",
+   "artefakter": [
+    "vmbflytta"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbflytta",
+     "ordinal": 76
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 4,
+   "representativText": "Varför dragning här men inte svep där: målet syns. Fjorton mål ligger på samma skärm som handen, alltså förkla",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-rcbnormal-91",
+   "typ": "notruta",
+   "artefakter": [
+    "rcbnormal"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "rcbnormal",
+     "ordinal": 91
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Omslaget sträcker sig över båda spalterna — det hör till receptet, inte till stegen. Det aktiva steget bär sam",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-rcbofullstandigt-18",
+   "typ": "notruta",
+   "artefakter": [
+    "rcbofullstandigt"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "rcbofullstandigt",
+     "ordinal": 18
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 1,
+   "fragment": 6,
+   "representativText": "Tre saker saknas i receptetMängd på smör och kanel, och tid i ugnen. Utan tid kan jag inte föreslå kakan när d",
+   "scope": "PRODUCT_CONTENT",
+   "skal": "produktinnehall i notliknande yta — riktat till anvandaren, inte till lasaren av ritningen",
+   "grans": null
+  },
+  {
+   "id": "AG-NOT-rcbofullstandigt-59",
+   "typ": "notruta",
+   "artefakter": [
+    "rcbofullstandigt"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "rcbofullstandigt",
+     "ordinal": 59
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Banderollen gäller receptet, inte stegen — den flyttas över båda spalterna och pekar på fälten. Och det som sa",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-rcblaser-61",
+   "typ": "notruta",
+   "artefakter": [
+    "rcblaser"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "rcblaser",
+     "ordinal": 61
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 2,
+   "representativText": "Sparar du den blir kopian din. Dina ändringar syns inte hos Sara, och hennes ändringar kommer inte till dig. V",
+   "scope": "PRODUCT_CONTENT",
+   "skal": "produktinnehall i notliknande yta — riktat till anvandaren, inte till lasaren av ritningen",
+   "grans": null
+  },
+  {
+   "id": "AG-NOT-rcblaser-63",
+   "typ": "notruta",
+   "artefakter": [
+    "rcblaser"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "rcblaser",
+     "ordinal": 63
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 4,
+   "representativText": "Läsläget byter ut, det tar inte bort. Redigering, radering och taggning ersätts av härkomst, spara till mitt k",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-rcbarvegods-75",
+   "typ": "notruta",
+   "artefakter": [
+    "rcbarvegods"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "rcbarvegods",
+     "ordinal": 75
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Handskriften och avskriften sida vid sida — det enda i etapp 11 som är omöjligt smalt. Bilden ligger där omsla",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-rcbkommentar-54",
+   "typ": "notruta",
+   "artefakter": [
+    "rcbkommentar"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "rcbkommentar",
+     "ordinal": 54
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Ett medvetet nej till en tredje spalt. Kommentarer bredvid stegen betyder en tråd i syne medan man steker. Ban",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-rcboffline-75",
+   "typ": "notruta",
+   "artefakter": [
+    "rcboffline"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "rcboffline",
+     "ordinal": 75
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Dela skärmen efter vad som är sant, inte efter en varning över allt. Laga-knappen fungerar offline — matlagnin",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-ikbtom-31",
+   "typ": "notruta",
+   "artefakter": [
+    "ikbtom"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "ikbtom",
+     "ordinal": 31
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Högerspalten finns inte förrän det finns något att förklara. Ingen rubrik, ingen tom ram, ingen platshållare. ",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-ikbdelad-67",
+   "typ": "notruta",
+   "artefakter": [
+    "ikbdelad"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "ikbdelad",
+     "ordinal": 67
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 2,
+   "representativText": "Nytt krav: ett anspråk förfaller efter ett dygn och släpps tillbaka. En glömd markering får inte blockera vara",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-ikboffline-62",
+   "typ": "notruta",
+   "artefakter": [
+    "ikboffline"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "ikboffline",
+     "ordinal": 62
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Kvar för dev: när listan synkar och två personer bockat samma vara ska listan säga det — en rad om vad som slo",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-lgbrotation-85",
+   "typ": "notruta",
+   "artefakter": [
+    "lgbrotation"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "lgbrotation",
+     "ordinal": 85
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Tvinga rotation bara under 768 px kortaste sida. En surfplatta i porträtt står redan i ett stativ — porträtt g",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-lgbgester-72",
+   "typ": "notruta",
+   "artefakter": [
+    "lgbgester"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "lgbgester",
+     "ordinal": 72
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 6,
+   "representativText": "§ 16.5 kan stängas här i dag: tidsfrasen är redan en tryckbar chip (InlineTimerText), alltså kan SwipeHintBann",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-lgbtimer-71",
+   "typ": "notruta",
+   "artefakter": [
+    "lgbtimer"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "lgbtimer",
+     "ordinal": 71
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Tre saker slutar konkurrera om samma hörn: timrarna får en egen list över hela bredden, röstknappen sitter i s",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-lgbutan-28",
+   "typ": "notruta",
+   "artefakter": [
+    "lgbutan"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "lgbutan",
+     "ordinal": 28
+    }
+   ],
+   "barare": "div.sc-note",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 6,
+   "representativText": "Vägen ut går till redigeringen, inte bara till stäng. Och en tom vy ska inte tvinga rotation, hålla skärmen va",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-globsession-37",
+   "typ": "notruta",
+   "artefakter": [
+    "globsession"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "ankare": [
+    {
+     "art": "globsession",
+     "ordinal": 37
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Tre ändringar har inte skickats än: Pannbiffar med lök, veckan 28 juli, inköpslistan Hemma. De ligger kvar på ",
+   "scope": "PRODUCT_CONTENT",
+   "skal": "sync-status riktad till anvandaren: \"Tre andringar har inte skickats an\" med namngivna poster och tva knappar bredvid",
+   "grans": null
+  },
+  {
+   "id": "AG-NOT-globsessiontyst-43",
+   "typ": "notruta",
+   "artefakter": [
+    "globsessiontyst"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "ankare": [
+    {
+     "art": "globsessiontyst",
+     "ordinal": 43
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 5,
+   "representativText": "Kvar att lösa i koden: skälet (background_timeout mot timeout mot user_requested) syns inte i något gränssnitt",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-flerbar-94",
+   "typ": "notruta",
+   "artefakter": [
+    "flerbar"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "ankare": [
+    {
+     "art": "flerbar",
+     "ordinal": 94
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 4,
+   "representativText": "Kvar för dev: markera alla ska kunna avmarkera, och massdelningens catch (_) ska visa ett fel i stället för en",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-flermeny-61",
+   "typ": "notruta",
+   "artefakter": [
+    "flermeny"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "ankare": [
+    {
+     "art": "flermeny",
+     "ordinal": 61
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 3,
+   "fragment": 8,
+   "representativText": "Sex platser, nio recept Tre får inte plats i vecka 31: Ugnspannkaka, Ärtsoppa och Rotsakslåda. Välj vad som sk",
+   "scope": "PRODUCT_CONTENT",
+   "skal": "arbetsbricka med tre kontroller — \"Valj vad som ska handa med dem, sedan skriver jag\"",
+   "grans": null
+  },
+  {
+   "id": "AG-NOT-flertaggsam-47",
+   "typ": "notruta",
+   "artefakter": [
+    "flertaggsam"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "ankare": [
+    {
+     "art": "flertaggsam",
+     "ordinal": 47
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 5,
+   "representativText": "Efteråt: Snabbt på vardagar och Vardagsmat finns inte längre, och 11 recept bär Vardag i stället. Deras andra ",
+   "scope": "PRODUCT_CONTENT",
+   "skal": "forhandsbesked infor en taggsammanslagning: \"Efterat: ... 11 recept bar Vardag i stallet. Deras andra taggar berors inte.\"",
+   "grans": null
+  },
+  {
+   "id": "AG-NOT-flergrupp-74",
+   "typ": "notruta",
+   "artefakter": [
+    "flergrupp"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "ankare": [
+    {
+     "art": "flergrupp",
+     "ordinal": 74
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Nytt krav I-29: delvis utfall är ett tredje utfall — det namnger vad som gick, vad som inte gick och varför, l",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-fbknapp-38",
+   "typ": "notruta",
+   "artefakter": [
+    "fbknapp"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "ankare": [
+    {
+     "art": "fbknapp",
+     "ordinal": 38
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 2,
+   "representativText": "Snackbaren har företräde. Knappen viker uppåt när ångerkanalen syns, döljs helt när ett ark är öppet, och finn",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-fbformular-88",
+   "typ": "notruta",
+   "artefakter": [
+    "fbformular"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "ankare": [
+    {
+     "art": "fbformular",
+     "ordinal": 88
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 5,
+   "representativText": "Kvar för dev: tom beskrivning ska visa felet vid fältet, inte i en snackbar (I-23). Kvittot ska skilja skickat",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-fbblockerade-74",
+   "typ": "notruta",
+   "artefakter": [
+    "fbblockerade"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "ankare": [
+    {
+     "art": "fbblockerade",
+     "ordinal": 74
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 4,
+   "representativText": "Sjätte flervalsytan. Massavblockeringen kvitteras i dag med 3 av 5 utan namn — I-29 gäller här också. Räknaren",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-socflode-91",
+   "typ": "notruta",
+   "artefakter": [
+    "socflode"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "socflode",
+     "ordinal": 91
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 10,
+   "representativText": "Fem typer, fem verb. lagade · delade · satte igång med · lade upp bilder på · sparade. Titeln skrivs som den h",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-socintegritet-75",
+   "typ": "notruta",
+   "artefakter": [
+    "socintegritet"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "socintegritet",
+     "ordinal": 75
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 5,
+   "representativText": "Kvar för dev: undervalen ska visa sitt eget sparade värde när huvudreglaget är av, inte masterOn && enabled. K",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-socomrostning-59",
+   "typ": "notruta",
+   "artefakter": [
+    "socomrostning"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "socomrostning",
+     "ordinal": 59
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "Ärver MR-01…MR-09. Sluttid krävs och sluttiden avgör. Oavgjort: skaparen väljer eller slumpar, och kortet säge",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-socreaktion-60",
+   "typ": "notruta",
+   "artefakter": [
+    "socreaktion"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "socreaktion",
+     "ordinal": 60
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 4,
+   "representativText": "Regeln, i två delar. Vår typografi bär inga emoji — inte i knappar, rubriker, tomma lägen eller etiketter (det",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-socgruppinfo-51",
+   "typ": "notruta",
+   "artefakter": [
+    "socgruppinfo"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "socgruppinfo",
+     "ordinal": 51
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 5,
+   "representativText": "K-11 i praktiken: ingen människa raderas. Ordet är ta bort, och texten säger vad som blir kvar. Chattens grupp",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-socoverlat-36",
+   "typ": "notruta",
+   "artefakter": [
+    "socoverlat"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "socoverlat",
+     "ordinal": 36
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 3,
+   "representativText": "E-postadresserna går bort — de visas i dag som underrubrik per medlem, vilket är den enda platsen i appen där ",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-insthushall-48",
+   "typ": "notruta",
+   "artefakter": [
+    "insthushall"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "insthushall",
+     "ordinal": 48
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 2,
+   "representativText": "En sanning, en plats. Profilredigeringen ska peka hit, inte ha en egen steppare (B-39).",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-instportion-49",
+   "typ": "notruta",
+   "artefakter": [
+    "instportion"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "instportion",
+     "ordinal": 49
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": false,
+   "kontrollerIBlocket": 0,
+   "fragment": 2,
+   "representativText": "Regel: växeln syns bara när receptet faktiskt har amerikanska enheter — och när den syns förklarar den sig. En",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-sokpanel-76",
+   "typ": "notruta",
+   "artefakter": [
+    "sokpanel"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "sokpanel",
+     "ordinal": 76
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 2,
+   "representativText": "Trelägeschippen löser en motsägelse i koden: vald och utesluten ligger i två separata mängder, så samma tagg k",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-admmatning-77",
+   "typ": "notruta",
+   "artefakter": [
+    "admmatning"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "admmatning",
+     "ordinal": 77
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 6,
+   "representativText": "Två regler: varje mätvärde bär sin definition (informationsknappen är obligatorisk), och ingen data skrivs som",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-kompbild-42",
+   "typ": "notruta",
+   "artefakter": [
+    "kompbild"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "kompbild",
+     "ordinal": 42
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 2,
+   "representativText": "Regel: per-bild-tillstånd, aldrig en samlad stapel. Faller den primära bilden flyttas omslaget och det sägs i ",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-kompmallar-42",
+   "typ": "notruta",
+   "artefakter": [
+    "kompmallar"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "kompmallar",
+     "ordinal": 42
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 2,
+   "representativText": "Mallen läggs till — den ersätter inte listan, och dubbletter slås samman. Det står i bekräftelsen innan.",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar om ritningen, kravet eller koden — riktad till lasaren av designspecen",
+   "grans": {
+    "plats": "blockelementet sjalvt",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-NOT-installergen-29",
+   "typ": "notruta",
+   "artefakter": [
+    "installergen"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "ankare": [
+    {
+     "art": "installergen",
+     "ordinal": 29
+    }
+   ],
+   "barare": "div (inline notstil)",
+   "iProduktyta": true,
+   "kontrollerIBlocket": 0,
+   "fragment": 2,
+   "representativText": "Filtret är ingen säkerhet. Det bygger på vad som står i recepten. Lagar du åt någon med allergi — läs förpackn",
+   "scope": "PRODUCT_CONTENT",
+   "skal": "produktens egen sakerhetstext: \"Lagar du at nagon med allergi — las forpackningen\"",
+   "grans": null
+  },
+  {
+   "id": "AG-05-bredlandskap",
+   "typ": "paneletikett",
+   "artefakter": [
+    "bredlandskap"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "ankare": [
+    {
+     "art": "bredlandskap",
+     "ordinal": 17,
+     "klass": "sc-cap"
+    },
+    {
+     "art": "bredlandskap",
+     "ordinal": 63,
+     "klass": "sc-cap"
+    }
+   ],
+   "barare": "div.sc-cap utanfor mocken",
+   "fragment": 2,
+   "representativText": "Rätt · en spalt, bottenrad | Fel · vad koden gör i dag",
+   "scope": "ANNOTATION",
+   "skal": "etiketten namnger ritningens jamforelsefall — vilken layout som ar ratt och vilken som ar fel, respektive vilket enhetslage som avbildas. Den ar inget anvandaren skulle se i produkten.",
+   "grans": {
+    "plats": "sc-cap-elementet, eller den gemensamma panelcontainern om bada etiketterna hor ihop",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-05-lgbrotation",
+   "typ": "paneletikett",
+   "artefakter": [
+    "lgbrotation"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "lgbrotation",
+     "ordinal": 21,
+     "klass": "sc-cap"
+    },
+    {
+     "art": "lgbrotation",
+     "ordinal": 49,
+     "klass": "sc-cap"
+    }
+   ],
+   "barare": "div.sc-cap utanfor mocken",
+   "fragment": 2,
+   "representativText": "Surfplatta i porträtt · 768 | Liggande · 35/65 som i dag",
+   "scope": "ANNOTATION",
+   "skal": "etiketten namnger ritningens jamforelsefall — vilken layout som ar ratt och vilken som ar fel, respektive vilket enhetslage som avbildas. Den ar inget anvandaren skulle se i produkten.",
+   "grans": {
+    "plats": "sc-cap-elementet, eller den gemensamma panelcontainern om bada etiketterna hor ihop",
+    "attribut": "data-conformance-scope=\"annotation\""
+   }
+  },
+  {
+   "id": "AG-06-bredlandskap-70",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "bredlandskap"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "ankare": [
+    {
+     "art": "bredlandskap",
+     "ordinal": 70,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 2,
+   "tackerEnligtSond": 2,
+   "representativText": "Skena redan vid 600 px — navigationen hamnar under handloven, och Material-formen ersätter vår.Tumme",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-bredrecept-91",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "bredrecept"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "ankare": [
+    {
+     "art": "bredrecept",
+     "ordinal": 91,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 2,
+   "tackerEnligtSond": 2,
+   "representativText": "Under stegenkommentarer · delning · relaterade recept — fullbrett, inte i en spalt",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-bredinkop-52",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "bredinkop"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "ankare": [
+    {
+     "art": "bredinkop",
+     "ordinal": 52,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 1,
+   "tackerEnligtSond": 1,
+   "representativText": "En kolumn bred, alltid. Bockning får inte flytta ögat i sidled.",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-vmbtom-59",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "vmbtom"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbtom",
+     "ordinal": 59,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 1,
+   "tackerEnligtSond": 1,
+   "representativText": "Alla rutor går att trycka på — men bara en är framhävd. Fjorton lika starka uppmaningar är ingen upp",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-vmbgenererar-43",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "vmbgenererar"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbgenererar",
+     "ordinal": 43,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 2,
+   "tackerEnligtSond": 2,
+   "representativText": "Ingen overlay: du ser veckan fyllas. Avbryt stannar där den är, och det som lagts ligger kvar.",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-vmbgenererar-85",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "vmbgenererar"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbgenererar",
+     "ordinal": 85,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 2,
+   "tackerEnligtSond": 2,
+   "representativText": "Rost betyder att något försvinner, ink att något nytt lagts, saffran att det pågår. Tre tillstånd, t",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-vmbomrostning-79",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "vmbomrostning"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbomrostning",
+     "ordinal": 79,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 3,
+   "tackerEnligtSond": 3,
+   "representativText": "Cellen svarar på är dagen avgjord. Alternativen ligger ett tryck bort, i röstningsarket. Fredag är M",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-vmbomrostning-81",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "vmbomrostning"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbomrostning",
+     "ordinal": 81,
+     "tagg": "b",
+     "klass": null
+    }
+   ],
+   "barare": "<b> inuti mocken",
+   "fragment": 1,
+   "tackerEnligtSond": 1,
+   "representativText": "Fredag är MR-07:",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-vmbkonflikt-68",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "vmbkonflikt"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbkonflikt",
+     "ordinal": 68,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 2,
+   "tackerEnligtSond": 2,
+   "representativText": "Cellen breddar sig över två kolumner medan konflikten står öppen — den enda plats i systemet där en ",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-vmbdelvis-86",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "vmbdelvis"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbdelvis",
+     "ordinal": 86,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 3,
+   "tackerEnligtSond": 3,
+   "representativText": "Siffrorna visar ordningen som placeringen följde, så resultatet inte är en gissning. Söndagen hoppad",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-vmbdelvis-88",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "vmbdelvis"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbdelvis",
+     "ordinal": 88,
+     "tagg": "b",
+     "klass": null
+    }
+   ],
+   "barare": "<b> inuti mocken",
+   "fragment": 1,
+   "tackerEnligtSond": 1,
+   "representativText": "generering skriver aldrig över en manuell placering utan att säga det",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-vmboffline-80",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "vmboffline"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmboffline",
+     "ordinal": 80,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 5,
+   "tackerEnligtSond": 5,
+   "representativText": "Streckad kant och klocka = väntar på att skickas. Aldrig samma form som i dag (saffranskant) eller s",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-vmbflytta-68",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "vmbflytta"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "vmbflytta",
+     "ordinal": 68,
+     "tagg": "span",
+     "klass": null
+    }
+   ],
+   "barare": "<span> inuti mocken",
+   "fragment": 2,
+   "tackerEnligtSond": 2,
+   "representativText": "Upptagna rutor byter plats — de skriver inte över. Passerade dagar är inte mål. Släpper du utanför n",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-rcbnormal-87",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "rcbnormal"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "rcbnormal",
+     "ordinal": 87,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 4,
+   "tackerEnligtSond": 4,
+   "representativText": "Under stegen, fullbrett: kommentarer · delningsstatus · relaterade recept. Tidsfrasen är en knapp (d",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-rcbportion-58",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "rcbportion"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "rcbportion",
+     "ordinal": 58,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 4,
+   "tackerEnligtSond": 4,
+   "representativText": "Grå tal i parentes är receptets egna. De står kvar tills du återställer — så syns skillnaden mellan ",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-rcbofullstandigt-44",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "rcbofullstandigt"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "rcbofullstandigt",
+     "ordinal": 44,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 2,
+   "tackerEnligtSond": 2,
+   "representativText": "Luckan är tryckbar och står i listan — det som saknas syns där det saknas.",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-ikbdelad-67",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "ikbdelad"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "ikbdelad",
+     "ordinal": 67,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 2,
+   "tackerEnligtSond": 2,
+   "representativText": "Nytt krav: ett anspråk förfaller efter ett dygn och släpps tillbaka. En glömd markering får inte blo",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-ikboffline-62",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "ikboffline"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "ikboffline",
+     "ordinal": 62,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 3,
+   "tackerEnligtSond": 3,
+   "representativText": "Kvar för dev: när listan synkar och två personer bockat samma vara ska listan säga det — en rad om v",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-06-lgbgester-70",
+   "typ": "annotation-inuti-produkt",
+   "artefakter": [
+    "lgbgester"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "ankare": [
+    {
+     "art": "lgbgester",
+     "ordinal": 70,
+     "tagg": "div",
+     "klass": null
+    }
+   ],
+   "barare": "<div> inuti mocken",
+   "fragment": 2,
+   "tackerEnligtSond": 2,
+   "representativText": "Bara i dag rör inte receptet. Koden sparar i dag alltid i receptet — det är det som ska ändras.",
+   "scope": "ANNOTATION",
+   "skal": "designkommentar som ligger inuti produktmocken: den beskriver ritningens regel, kravet eller vad koden gor i dag — inte vad anvandaren ser.",
+   "grans": {
+    "plats": "containern ovan — hogsta forfader utan produktinnehall och utan kontroll",
+    "attribut": "data-conformance-scope=\"annotation\"",
+    "not": "symmetrifallet: annotation som skar ut en del av en produktsubtrad"
+   }
+  },
+  {
+   "id": "AG-07-bredgrans",
+   "typ": "mocklos-artefakt",
+   "artefakter": [
+    "bredgrans"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "barare": "ingen .sc-tab/.sc-phone/.sc-card — produktmocken ar en oklassad div",
+   "fragment": 22,
+   "annotation": 14,
+   "produkt": 8,
+   "kontroller": 2,
+   "ankare": [
+    {
+     "art": "bredgrans",
+     "ordinal": 24,
+     "text": "Får bred layout · fyra"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 27,
+     "text": "Receptet"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 28,
+     "text": "ingredienser · steg"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 30,
+     "text": "Veckomenyn"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 31,
+     "text": "sju dagar samtidigt"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 33,
+     "text": "Inköpslistan"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 34,
+     "text": "listan · härkomst"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 36,
+     "text": "Adminpanelen"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 37,
+     "text": "tabeller · redan i drift"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 39,
+     "text": "Förblir en spalt · max 600"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 40,
+     "text": "Inloggning och konto · familj och medlem"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 41,
+     "text": "editorn"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 43,
+     "text": "Editorn brett · texten smal, kontexten i"
+    },
+    {
+     "art": "bredgrans",
+     "ordinal": 65,
+     "text": "Marginalen bär kontext — aldrig tips, fö"
+    }
+   ],
+   "scope": "BLANDAD",
+   "skal": "de tva forsta panelerna ar en uppraknande specifikationstabell over vilka ytor som far bred layout och vilka som forblir en spalt. Den tredje panelen bar en verklig editormock med tva kontroller — den ar produkt.",
+   "grans": {
+    "plats": "produktgrans pa den oklassade mockcontainern, annotationsgrans pa kommentarsblocken",
+    "attribut": "data-conformance-scope=\"product\" respektive \"annotation\""
+   }
+  },
+  {
+   "id": "AG-07-globsvep",
+   "typ": "mocklos-artefakt",
+   "artefakter": [
+    "globsvep"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "barare": "ingen .sc-tab/.sc-phone/.sc-card — produktmocken ar en oklassad div",
+   "fragment": 13,
+   "annotation": 11,
+   "produkt": 2,
+   "kontroller": 0,
+   "ankare": [
+    {
+     "art": "globsvep",
+     "ordinal": 24,
+     "text": "Tipset och kontrollen i samma vy"
+    },
+    {
+     "art": "globsvep",
+     "ordinal": 43,
+     "text": "35 min · fyra portioner"
+    },
+    {
+     "art": "globsvep",
+     "ordinal": 49,
+     "text": "Ordet gör hela skillnaden: kebaben är vä"
+    },
+    {
+     "art": "globsvep",
+     "ordinal": 50,
+     "text": "snabbare"
+    },
+    {
+     "art": "globsvep",
+     "ordinal": 52,
+     "text": "När det slutar visas"
+    },
+    {
+     "art": "globsvep",
+     "ordinal": 55,
+     "text": "1"
+    },
+    {
+     "art": "globsvep",
+     "ordinal": 56,
+     "text": "gång gesten används — då är den inlärd, "
+    },
+    {
+     "art": "globsvep",
+     "ordinal": 58,
+     "text": "3"
+    },
+    {
+     "art": "globsvep",
+     "ordinal": 59,
+     "text": "visningar är taket om den inte används. "
+    },
+    {
+     "art": "globsvep",
+     "ordinal": 61,
+     "text": "0"
+    },
+    {
+     "art": "globsvep",
+     "ordinal": 62,
+     "text": "tips under första sessionen, och aldrig "
+    }
+   ],
+   "scope": "BLANDAD",
+   "skal": "panelrubriken namnger vad ritningen visar; regeltabellen \"Nar det slutar visas\" ar visningsregler for lasaren, inte UI. Sjalva tipsbannern och receptraden ar produkt.",
+   "grans": {
+    "plats": "produktgrans pa den oklassade mockcontainern, annotationsgrans pa kommentarsblocken",
+    "attribut": "data-conformance-scope=\"product\" respektive \"annotation\""
+   }
+  },
+  {
+   "id": "AG-07-fbinkorgvy",
+   "typ": "mocklos-artefakt",
+   "artefakter": [
+    "fbinkorgvy"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "barare": "ingen .sc-tab/.sc-phone/.sc-card — produktmocken ar en oklassad div",
+   "fragment": 7,
+   "annotation": 0,
+   "produkt": 7,
+   "kontroller": 7,
+   "ankare": [],
+   "scope": "BLANDAD",
+   "skal": "hela artefakten ar en renderad adminvy med sju kontroller. Raden \"Kategori, tid, enhet ... Kopieringen loggas\" star direkt under kopieringsknappen och forklarar vad knappen gor — produktens egen hjalptext.",
+   "grans": {
+    "plats": "produktgrans pa den oklassade mockcontainern, annotationsgrans pa kommentarsblocken",
+    "attribut": "data-conformance-scope=\"product\" respektive \"annotation\""
+   }
+  },
+  {
+   "id": "AG-07-surfplatta",
+   "typ": "mocklos-artefakt",
+   "artefakter": [
+    "surfplatta"
+   ],
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "barare": "ingen .sc-tab/.sc-phone/.sc-card — produktmocken ar en oklassad div",
+   "fragment": 20,
+   "annotation": 3,
+   "produkt": 17,
+   "kontroller": 1,
+   "ankare": [
+    {
+     "art": "surfplatta",
+     "ordinal": 50,
+     "text": "Skiss, inte ritning."
+    },
+    {
+     "art": "surfplatta",
+     "ordinal": 49,
+     "text": "Regeln: bred yta lägger sida vid sida i "
+    },
+    {
+     "art": "surfplatta",
+     "ordinal": 51,
+     "text": "kolumnen"
+    }
+   ],
+   "scope": "BLANDAD",
+   "skal": "receptinnehallet ar produkt; det avslutande fardbandet ar ritningens egen kommentar om vad skissen ar och vilken regel den visar.",
+   "grans": {
+    "plats": "produktgrans pa den oklassade mockcontainern, annotationsgrans pa kommentarsblocken",
+    "attribut": "data-conformance-scope=\"product\" respektive \"annotation\""
+   }
+  }
+ ],
+ "granskadeOchAvforda": {
+  "$vad": "Prosameningar inuti en produktmock som kandidatsoket flaggade, men som vid lasning ar produktinnehall.",
+  "$verdikt": "Samtliga ar receptsteg, meddelanden riktade till anvandaren, tomlagestext eller en anvandarkommentar. Ingen av dem beskriver ritningen. PRODUCT_CONTENT.",
+  "$antal": 27,
+  "poster": [
+   {
+    "art": "bredrecept",
+    "ordinal": 81,
+    "klass": "span",
+    "text": "Blanda ströbröd och mjölk i en bunke. Låt svälla i tio minuter — det är det som gör bullar",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "bredrecept",
+    "ordinal": 87,
+    "klass": "span",
+    "text": "Rör ihop färs, lök och ströbrödsblandning. Salta och peppra ordentligt.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "bredrecept",
+    "ordinal": 90,
+    "klass": "span",
+    "text": "Rulla bullar med blöta händer och stek dem runda i rikligt med smör.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "bredinkop",
+    "ordinal": 78,
+    "klass": "div",
+    "text": "Skafferiet är och utesluter inget automatiskt — det står här så att du ser det du går.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "vmbtom",
+    "ordinal": 23,
+    "klass": "div",
+    "text": "Säg vad ni är på humör för, så föreslår jag ur dina egna recept. Eller tryck i en ruta och",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "vmbgenererar",
+    "ordinal": 25,
+    "klass": "span",
+    "text": "— Fisksoppa, Linsgryta, Ärtsoppa och Rotsakslåda. Tre dagar rörs inte.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "vmbkonflikt",
+    "ordinal": 25,
+    "klass": "span",
+    "text": "Johans ändring gäller just nu — din finns kvar och går att ta tillbaka.",
+    "iInlineNotruta": true
+   },
+   {
+    "art": "vmbdelvis",
+    "ordinal": 20,
+    "klass": "span",
+    "text": "Sex platser var lediga i vecka 31. De här ligger kvar tills du placerar dem — eller lägger",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "vmboffline",
+    "ordinal": 33,
+    "klass": "div",
+    "text": "— jag läser dina recept i molnet. Att flytta och lägga rätter fungerar som vanligt.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "rcbnormal",
+    "ordinal": 76,
+    "klass": "span",
+    "text": "Blanda ströbröd och mjölk i en bunke. Låt svälla i — det är det som gör bullarna mjuka.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "rcbnormal",
+    "ordinal": 83,
+    "klass": "span",
+    "text": "Rör ihop färs, lök och ströbrödsblandning. Salta och peppra ordentligt.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "rcbnormal",
+    "ordinal": 86,
+    "klass": "span",
+    "text": "Rulla bullar med blöta händer och stek dem runda i rikligt med smör.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "rcbportion",
+    "ordinal": 47,
+    "klass": "div",
+    "text": "Fyra minuter per sida gäller oavsett hur många bullar du rullar.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "rcbofullstandigt",
+    "ordinal": 23,
+    "klass": "span",
+    "text": "Mängd på och , och . Utan tid kan jag inte föreslå kakan när du har bråttom.",
+    "iInlineNotruta": true
+   },
+   {
+    "art": "rcblaser",
+    "ordinal": 60,
+    "klass": "span",
+    "text": "Tillsätt resten av mjölken och äggen. Låt stå en halvtimme.",
+    "iInlineNotruta": true
+   },
+   {
+    "art": "rcblaser",
+    "ordinal": 61,
+    "klass": "div",
+    "text": "Dina ändringar syns inte hos Sara, och hennes ändringar kommer inte till dig. Vill du följ",
+    "iInlineNotruta": true
+   },
+   {
+    "art": "rcbarvegods",
+    "ordinal": 40,
+    "klass": "div",
+    "text": "600 g blandfärs 1 gul lök, riven 1 dl ströbröd 1½ dl mjölk 1 ägg salt, vitpeppar, allspice",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "rcbarvegods",
+    "ordinal": 49,
+    "klass": "div",
+    "text": "Texten här är min avskrift — hittar du fel rättar du dem till höger, och kortet ligger kva",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "rcbkommentar",
+    "ordinal": 25,
+    "klass": "span",
+    "text": "Vi tog dubbel lök och det blev mycket bättre 😄 rekommenderar!",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "rcboffline",
+    "ordinal": 23,
+    "klass": "span",
+    "text": "Receptet och stegen finns i telefonen — väntar på att skickas.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "rcboffline",
+    "ordinal": 55,
+    "klass": "div",
+    "text": "— förslagen ligger i molnet. Det du redan öppnat finns kvar.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "rcboffline",
+    "ordinal": 73,
+    "klass": "span",
+    "text": "De fyra som lagat receptet finns kvar — jag kan bara inte hämta vad de skrev just nu.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "ikbnormal",
+    "ordinal": 76,
+    "klass": "div",
+    "text": "Skafferiet är och utesluter inget automatiskt — det står här så att du ser det du går.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "ikbtom",
+    "ordinal": 24,
+    "klass": "div",
+    "text": "Har du planerat veckan skriver jag listan ur den — mängderna räknas efter hur många som ät",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "ikboffline",
+    "ordinal": 60,
+    "klass": "div",
+    "text": "se vad Johan och Sara gör i realtid, och lägga varor som de ser direkt. Allt du bockar och",
+    "iInlineNotruta": true
+   },
+   {
+    "art": "lgbtimer",
+    "ordinal": 52,
+    "klass": "span",
+    "text": "Rör ihop färs, lök och ströbrödsblandning. Salta och peppra ordentligt.",
+    "iInlineNotruta": false
+   },
+   {
+    "art": "lgbutan",
+    "ordinal": 24,
+    "klass": "div",
+    "text": "Ingredienserna finns — men ingen har skrivit hur man gör. Skriv stegen, eller ta ingredien",
+    "iInlineNotruta": false
+   }
+  ]
+ }
+}
