@@ -42,6 +42,13 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
    token aven nar morkvardet sammanfaller med en annan. */
 .sc-item{--yta-upphojd-b3:#ce7c1e;--text-kontroll-b3:#627061;--yta-upphojd-b4:rgba(36,56,44,0.18)}
 .sc-item[data-theme="dark"]{--yta-upphojd-b3:#ce7c1e;--text-kontroll-b3:#93a48d;--yta-upphojd-b4:rgba(245,244,237,0.18)}
+
+/* R-04 ythierarki och textkontrast · semantiska beslut ur
+   fas2/r04-designbeslut.json. Ljusvardet ar det uppmatta fore migrationen,
+   sa ljusrenderingen ar oforandrad per konstruktion. Varje beslut har egen
+   token aven nar malvardet sammanfaller med ett annat. */
+.sc-item{--yta-upphojd-d7:rgb(36, 56, 44);--yta-upphojd-d8:rgb(36, 56, 44);--yta-upphojd-d9:rgb(36, 56, 44);--yta-upphojd-d11:rgb(36, 56, 44);--text-innehall-d2:rgb(98, 112, 97);--text-innehall-d5:#627061}
+.sc-item[data-theme="dark"]{--yta-upphojd-d7:#24382c;--yta-upphojd-d8:#24382c;--yta-upphojd-d9:#24382c;--yta-upphojd-d11:#24382c;--text-innehall-d2:#c9d3c4;--text-innehall-d5:#627061}
 </style>
 <style>
 .sc-wrap{padding:40px 44px 60px}
@@ -153,12 +160,12 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-item" id="faq" data-theme-support="light dark" data-theme-family="faq-414" data-screen-label="FAQ">
   <div class="sc-label"><a class="sc-id" href="#faq">FAQ</a>Vanliga frågor — mörkgrön rubrikbar, utfällbara frågor (ur faq_view).</div>
   <div class="sc-phone" style="width:412px;height:820px">
-    <div style="background:var(--yta-upphojd-b2);color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
+    <div style="background:var(--yta-upphojd-d8);color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
       <svg data-graphic-role="required" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:var(--ikon-fristaende-b6)"   data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg>
       <span style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Vanliga frågor</span>
     </div>
     <div style="padding:14px 24px 0;flex:1">
-      <div style="display:flex;align-items:center;gap:12px;margin:0 0 12px"><span style="width:22px;height:4px;background:var(--yta-upphojd-b3);border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:var(--yta-upphojd-b2)"></span></div>
+      <div style="display:flex;align-items:center;gap:12px;margin:0 0 12px"><span style="width:22px;height:4px;background:var(--yta-upphojd-b3);border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:var(--yta-upphojd-d7)"></span></div>
       <div style="padding:13px 0;border-bottom:1px solid var(--ram-behallare-c)">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:13px;font-weight:700">Hur importerar jag ett recept?</span>
@@ -772,9 +779,9 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
         <div style="flex:1">
           <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959;font-weight:700">Mängd</div>
           <div style="margin-top:6px;display:flex;align-items:center;border:1px solid #7d897c;border-radius:8px;background:#F5F4ED">
-            <span style="flex:none;width:34px;text-align:center;font-size:16px;color:#93A48D">−</span>
+            <span style="flex:none;width:34px;text-align:center;font-size:16px;color:var(--text-innehall-d5)">−</span>
             <span style="font-variant-numeric:tabular-nums;flex:1;text-align:center;font-size:14px;font-weight:600;border-left:1px solid #ccd1c2;border-right:1px solid #ccd1c2;padding:9px 0">2 st</span>
-            <span style="flex:none;width:34px;text-align:center;font-size:16px;color:#93A48D">+</span>
+            <span style="flex:none;width:34px;text-align:center;font-size:16px;color:var(--text-innehall-d5)">+</span>
           </div>
         </div>
         <div style="flex:1">
@@ -904,7 +911,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       <svg data-graphic-role="redundant" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:52px;height:52px;color:var(--ikon-fristaende-a)"   data-icon="lock"><rect x="5" y="10.6" width="14" height="9.4" rx="2"></rect><path d="M8.4 10.6V7.8a3.6 3.6 0 0 1 7.2 0v2.8"></path></svg>
       <div style="font-family:'Butlery Sans';font-size:22px;font-weight:700;letter-spacing:-.3px;margin-top:18px">Butlery kräver att du fyllt 15</div>
       <div style="font-size:13px;color:var(--text-innehall-a);line-height:1.55;margin-top:10px">Vi får inte spara dina uppgifter ännu. Kontot du påbörjade har raderats — inget finns kvar hos oss.</div>
-      <div style="width:100%;margin-top:26px;background:var(--yta-upphojd-b2);color:var(--text-innehall-b4);font-size:14px;font-weight:600;padding:12px;border-radius:8px">Logga ut</div>
+      <div style="width:100%;margin-top:26px;background:var(--yta-upphojd-d9);color:var(--text-innehall-b4);font-size:14px;font-weight:600;padding:12px;border-radius:8px">Logga ut</div>
       <div style="margin-top:12px;font-size:12px;font-weight:700;color:var(--text-innehall-g)">Be en förälder skapa ett familjekonto i stället</div>
     </div>
   </div>
@@ -998,11 +1005,11 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-item" id="samtycke" data-theme-support="light dark" data-theme-family="samtycke-414" data-screen-label="Samtycken">
   <div class="sc-label"><a class="sc-id" href="#samtycke">Samtycke</a>Samtyckeshantering — varje samtycke med datum, version och återkalla-knapp; historik längst ned (ur consent_management_view).</div>
   <div class="sc-phone" style="width:412px;height:820px">
-    <div style="background:var(--yta-upphojd-b2);color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
+    <div style="background:var(--yta-upphojd-d8);color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
       <svg data-graphic-role="required" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:var(--ikon-fristaende-b6)"   data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg>
       <span style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Mina samtycken</span>
     </div>
-    <div style="padding:14px 24px 0"><div style="display:flex;align-items:center;gap:12px;margin:0 0 12px"><span style="width:22px;height:4px;background:var(--yta-upphojd-b3);border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:var(--yta-upphojd-b2)"></span></div></div>
+    <div style="padding:14px 24px 0"><div style="display:flex;align-items:center;gap:12px;margin:0 0 12px"><span style="width:22px;height:4px;background:var(--yta-upphojd-b3);border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:var(--yta-upphojd-d7)"></span></div></div>
     <div style="padding:0 24px;font-size:12px;color:var(--text-innehall-a);line-height:1.5">Du kan ta tillbaka ett samtycke när som helst — uppgifterna raderas då direkt.</div>
     <div style="padding:12px 24px 0">
       <div style="border-top:1px solid var(--ram-behallare-c);padding:18px 0">
@@ -1033,9 +1040,9 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
     <div style="padding:22px 24px 0">
       <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-innehall-a);font-weight:700">Historik</div>
       <div style="margin-top:6px;font-size:12px;color:#627061;line-height:1.9">
-        <div>14 apr 2026 · Gav samtycke — Sigrids profil</div>
-        <div>2 mar 2026 · Gav samtycke — Mina allergener</div>
-        <div>2 mar 2026 · Nekade — Användningsstatistik</div>
+        <div style="color:var(--text-innehall-d2)">14 apr 2026 · Gav samtycke — Sigrids profil</div>
+        <div style="color:var(--text-innehall-d2)">2 mar 2026 · Gav samtycke — Mina allergener</div>
+        <div style="color:var(--text-innehall-d2)">2 mar 2026 · Nekade — Användningsstatistik</div>
       </div>
     </div>
   </div>
@@ -1045,7 +1052,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-item" id="rapporter" data-theme-support="light dark" data-theme-family="rapporter-322" data-screen-label="Mina rapporter">
   <div class="sc-label"><a class="sc-id" href="#rapporter">Rapporter</a>Mina rapporter — inskickade anmälningar med typ-ikon, tid och statusbadge Väntar/Granskas/Åtgärdad/Stängd (ur my_reports_view).</div>
   <div class="sc-phone" style="width:320px;height:520px">
-    <div style="background:var(--yta-upphojd-b2);color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
+    <div style="background:var(--yta-upphojd-d8);color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
       <svg data-graphic-role="required" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:var(--ikon-fristaende-b6)"   data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg>
       <span style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Mina rapporter</span>
     </div>
@@ -1053,7 +1060,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       <div style="padding:12px 0;border-bottom:1px solid var(--ram-behallare-c);display:flex;align-items:center;gap:11px">
         <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:var(--ikon-fristaende-f)"   data-icon="user"><circle cx="12" cy="9.4" r="3.4"></circle><path d="M5.6 19.8a6.4 6.4 0 0 1 12.8 0"></path></svg>
         <div style="flex:1"><div style="font-size:13px;font-weight:700">Olämpligt profilnamn</div><div style="font-size:12px;color:var(--text-innehall-a)">10 juli · profil</div></div>
-        <span style="font-size:10.5px;font-weight:700;background:var(--yta-upphojd-b2);color:var(--text-innehall-b4);padding:3px 9px;border-radius:999px">VÄNTAR</span>
+        <span style="font-size:10.5px;font-weight:700;background:var(--yta-upphojd-d11);color:var(--text-innehall-b4);padding:3px 9px;border-radius:999px">VÄNTAR</span>
       </div>
       <div style="padding:12px 0;border-bottom:1px solid var(--ram-behallare-c);display:flex;align-items:center;gap:11px">
         <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:var(--ikon-fristaende-f)"   data-icon="message-square"><path d="M4.5 6.6A2 2 0 0 1 6.5 4.6h11a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H9.4L5.6 19.4v-3.6h.9a2 2 0 0 1-2-2z"></path><circle cx="9.2" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="12" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="14.8" cy="10.2" r="1" fill="currentColor" stroke="none"></circle></svg>
@@ -1077,7 +1084,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-item" id="rapporter412" data-theme-support="light dark" data-theme-family="rapporter412-414" data-screen-label="Mina rapporter · 412">
   <div class="sc-label"><a class="sc-id" href="#rapporter412">Rapporter 412</a>Mina rapporter — inskickade anmälningar med typ-ikon, tid och statusbadge Väntar/Granskas/Åtgärdad/Stängd i referensbredd 412 × 924 (ur my_reports_view).</div>
   <div class="sc-phone" style="width:412px;height:924px">
-    <div style="background:var(--yta-upphojd-b2);color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
+    <div style="background:var(--yta-upphojd-d8);color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
       <svg data-graphic-role="required" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:var(--ikon-fristaende-b6)"   data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg>
       <span style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Mina rapporter</span>
     </div>
@@ -1085,7 +1092,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       <div style="padding:12px 0;border-bottom:1px solid var(--ram-behallare-c);display:flex;align-items:center;gap:11px">
         <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:var(--ikon-fristaende-f)"   data-icon="user"><circle cx="12" cy="9.4" r="3.4"></circle><path d="M5.6 19.8a6.4 6.4 0 0 1 12.8 0"></path></svg>
         <div style="flex:1"><div style="font-size:13px;font-weight:700">Olämpligt profilnamn</div><div style="font-size:12px;color:var(--text-innehall-a)">10 juli · profil</div></div>
-        <span style="font-size:10.5px;font-weight:700;background:var(--yta-upphojd-b2);color:var(--text-innehall-b4);padding:3px 9px;border-radius:999px">VÄNTAR</span>
+        <span style="font-size:10.5px;font-weight:700;background:var(--yta-upphojd-d11);color:var(--text-innehall-b4);padding:3px 9px;border-radius:999px">VÄNTAR</span>
       </div>
       <div style="padding:12px 0;border-bottom:1px solid var(--ram-behallare-c);display:flex;align-items:center;gap:11px">
         <svg data-graphic-role="redundant" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;color:var(--ikon-fristaende-f)"   data-icon="message-square"><path d="M4.5 6.6A2 2 0 0 1 6.5 4.6h11a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H9.4L5.6 19.4v-3.6h.9a2 2 0 0 1-2-2z"></path><circle cx="9.2" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="12" cy="10.2" r="1" fill="currentColor" stroke="none"></circle><circle cx="14.8" cy="10.2" r="1" fill="currentColor" stroke="none"></circle></svg>
@@ -1110,13 +1117,13 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-item" id="juridik" data-theme-support="light dark" data-theme-family="juridik-322" data-screen-label="Integritetspolicy">
   <div class="sc-label"><a class="sc-id" href="#juridik">Juridik</a>Dokumentläsare för villkor/integritetspolicy/riktlinjer — rubriker, brödtext, senast uppdaterad (ur privacy_policy_view + markdown_body).</div>
   <div class="sc-phone" style="width:320px;height:520px">
-    <div style="background:var(--yta-upphojd-b2);color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
+    <div style="background:var(--yta-upphojd-d8);color:#F5F4ED;padding:18px 24px 14px;display:flex;align-items:center;gap:8px">
       <svg data-graphic-role="required" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;color:var(--ikon-fristaende-b6)"   data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg>
       <span style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Integritetspolicy</span>
     </div>
     <div style="padding:16px 24px 0">
       <div style="font-size:12px;color:var(--text-innehall-a)">Senast uppdaterad 3 maj 2026 · gäller Butlery 2.4</div>
-      <div style="display:flex;align-items:center;gap:12px;margin:2px 0 12px"><span style="width:22px;height:4px;background:var(--yta-upphojd-b3);border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:var(--yta-upphojd-b2)"></span></div>
+      <div style="display:flex;align-items:center;gap:12px;margin:2px 0 12px"><span style="width:22px;height:4px;background:var(--yta-upphojd-b3);border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:var(--yta-upphojd-d7)"></span></div>
       <div style="font-size:16px;font-weight:700;letter-spacing:-.3px;margin-top:12px">1. Vilka uppgifter vi sparar</div>
       <div style="font-size:12px;color:var(--text-innehall-c);line-height:1.65;margin-top:7px">Vi sparar det du själv lägger in: recept, menyer, inköpslistor och din profil. Allergener är hälsouppgifter och sparas bara med ditt uttryckliga samtycke.</div>
       <div style="font-size:16px;font-weight:700;letter-spacing:-.3px;margin-top:16px">2. Familjeprofiler</div>

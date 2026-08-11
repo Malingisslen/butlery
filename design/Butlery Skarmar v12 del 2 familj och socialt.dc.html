@@ -35,6 +35,13 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
    token aven nar morkvardet sammanfaller med en annan. */
 .sc-item{--yta-upphojd-b3:#ce7c1e;--yta-upphojd-b2:#24382c;--ikon-fristaende-b5:#3f6b4f;--text-innehall-b8:#3f6b4f;--ikon-fristaende-b6:#f5f4ed;--text-kontroll-b3:#627061;--yta-upphojd-b4:rgba(36,56,44,0.18);--yta-kontroll-b2:#24382c;--text-kontroll-b4:#f5f4ed}
 .sc-item[data-theme="dark"]{--yta-upphojd-b3:#ce7c1e;--yta-upphojd-b2:#17251d;--ikon-fristaende-b5:#8fb89a;--text-innehall-b8:#8fb89a;--ikon-fristaende-b6:#f5f4ed;--text-kontroll-b3:#93a48d;--yta-upphojd-b4:rgba(245,244,237,0.18);--yta-kontroll-b2:#17251d;--text-kontroll-b4:#f5f4ed}
+
+/* R-04 ythierarki och textkontrast · semantiska beslut ur
+   fas2/r04-designbeslut.json. Ljusvardet ar det uppmatta fore migrationen,
+   sa ljusrenderingen ar oforandrad per konstruktion. Varje beslut har egen
+   token aven nar malvardet sammanfaller med ett annat. */
+.sc-item{--yta-upphojd-d3:rgb(230, 234, 217);--yta-upphojd-d4:rgb(230, 234, 217);--yta-upphojd-d5:rgb(230, 234, 217);--yta-upphojd-d7:rgb(36, 56, 44);--text-innehall-d1:rgb(55, 69, 58)}
+.sc-item[data-theme="dark"]{--yta-upphojd-d3:#24382c;--yta-upphojd-d4:#24382c;--yta-upphojd-d5:#24382c;--yta-upphojd-d7:#24382c;--text-innehall-d1:#8fb89a}
 </style>
 <style>
 .sc-wrap{padding:40px 44px 60px}
@@ -710,7 +717,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
     <div style="padding:12px 24px 0;font-size:12px;color:var(--text-innehall-a);line-height:1.5">Recept du delat till Butlery från Instagram, TikTok eller filer — importera när du vill.</div>
     <div style="padding:12px 24px 0;flex:1">
       <div style="padding:11px 0;border-bottom:1px solid var(--ram-avdelare-a);display:flex;gap:12px;align-items:center">
-        <div style="flex:none;width:48px;height:48px;background:var(--yta-upphojd);border-radius:8px"></div>
+        <div style="flex:none;width:48px;height:48px;background:var(--yta-upphojd-d5);border-radius:8px"></div>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:700">Pasta alla vodka</div>
           <div style="font-size:12px;color:var(--text-innehall-a);margin-top:2px">Instagram · delad i går</div>
@@ -718,7 +725,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
         <span style="border:1.5px solid var(--ram-behallare-a);font-size:14px;font-weight:600;padding:6px 12px;border-radius:8px">Importera</span>
       </div>
       <div style="padding:11px 0;border-bottom:1px solid var(--ram-avdelare-a);display:flex;gap:12px;align-items:center">
-        <div style="flex:none;width:48px;height:48px;background:var(--yta-upphojd);border-radius:8px"></div>
+        <div style="flex:none;width:48px;height:48px;background:var(--yta-upphojd-d5);border-radius:8px"></div>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:700">Krispiga smashed potatoes</div>
           <div style="font-size:12px;color:var(--text-innehall-a);margin-top:2px">TikTok · delad i tisdags</div>
@@ -726,7 +733,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
         <span style="border:1.5px solid var(--ram-behallare-a);font-size:14px;font-weight:600;padding:6px 12px;border-radius:8px">Importera</span>
       </div>
       <div style="padding:11px 0;display:flex;gap:12px;align-items:center">
-        <div style="flex:none;width:48px;height:48px;background:var(--yta-upphojd);border-radius:8px;display:flex;align-items:center;justify-content:center"><svg data-graphic-role="redundant" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--ikon-fristaende-d)"   data-icon="file"><path d="M6.5 3.5h7L18 8v11.5a1 1 0 0 1-1 1H6.5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"></path><path d="M13.5 3.5V8H18"></path><path d="M8.5 13h7M8.5 16.5h4.5"></path></svg></div>
+        <div style="flex:none;width:48px;height:48px;background:var(--yta-upphojd-d3);border-radius:8px;display:flex;align-items:center;justify-content:center"><svg data-graphic-role="redundant" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;color:var(--ikon-fristaende-d)"   data-icon="file"><path d="M6.5 3.5h7L18 8v11.5a1 1 0 0 1-1 1H6.5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"></path><path d="M13.5 3.5V8H18"></path><path d="M8.5 13h7M8.5 16.5h4.5"></path></svg></div>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:700">mammas-recept.pdf</div>
           <div style="font-size:12px;color:var(--text-innehall-a);margin-top:2px">Fil · uppladdad 2 juli</div>
@@ -1550,12 +1557,12 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       Ladda ner mina data
     </div>
     <div style="padding:16px 24px 0">
-      <div style="display:flex;align-items:center;gap:12px;margin:0 0 12px"><span style="width:22px;height:4px;background:var(--yta-upphojd-b3);border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:var(--yta-upphojd-b2)"></span></div>
+      <div style="display:flex;align-items:center;gap:12px;margin:0 0 12px"><span style="width:22px;height:4px;background:var(--yta-upphojd-b3);border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:var(--yta-upphojd-d7)"></span></div>
       <div style="padding-top:10px;display:flex;gap:10px;align-items:flex-start">
         <svg data-graphic-role="redundant" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;color:var(--ikon-fristaende-a);flex:none;box-sizing:border-box"   data-icon="export"><path d="M12 19.5V8.5"></path><path d="M7.5 13L12 8.5l4.5 4.5"></path><path d="M5 4.5h14"></path></svg>
         <div style="font-size:12px;color:var(--text-innehall-c);line-height:1.55">Du har rätt att få ut allt vi sparat om dig. Exporten skapas som en JSON-fil du kan spara eller dela.</div>
       </div>
-      <div style="margin-top:14px;background:var(--yta-upphojd);border-radius:12px;padding:14px;text-align:center">
+      <div style="margin-top:14px;background:var(--yta-upphojd-d4);border-radius:12px;padding:14px;text-align:center">
         <svg data-graphic-role="redundant" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:30px;height:30px;color:var(--ikon-fristaende-b5)"   data-icon="circle-check"><circle cx="12" cy="12" r="8.5"></circle><path d="M8 12.2l2.8 2.8 5.2-5.6"></path></svg>
         <div style="font-size:13px;font-weight:700;margin-top:6px">Exporten är klar</div>
         <div style="font-size:12px;color:var(--text-innehall-c);margin-top:2px">12 juli 2026 07:41 · 2,4 MB</div>
@@ -1567,12 +1574,12 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       </div>
       <div style="margin-top:14px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-innehall-b8)">Detta ingår</div>
       <div style="margin-top:6px;font-size:12px;line-height:1.95;color:#37453a">
-        <div>✓ Profil och inställningar</div>
-        <div>✓ Alla recept och betyg</div>
-        <div>✓ Vänner och grupper</div>
-        <div>✓ Meddelanden</div>
-        <div>✓ Inköpslistor och menyer</div>
-        <div>✓ Kommentarer och aktivitet</div>
+        <div style="color:var(--text-innehall-d1)">✓ Profil och inställningar</div>
+        <div style="color:var(--text-innehall-d1)">✓ Alla recept och betyg</div>
+        <div style="color:var(--text-innehall-d1)">✓ Vänner och grupper</div>
+        <div style="color:var(--text-innehall-d1)">✓ Meddelanden</div>
+        <div style="color:var(--text-innehall-d1)">✓ Inköpslistor och menyer</div>
+        <div style="color:var(--text-innehall-d1)">✓ Kommentarer och aktivitet</div>
       </div>
       <div style="font-size:12px;color:var(--text-innehall-a);margin-top:8px;font-style:normal">Endast dina egna uppgifter ingår — aldrig andras.</div>
     </div>

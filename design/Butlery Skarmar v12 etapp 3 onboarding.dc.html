@@ -42,6 +42,13 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
    token aven nar morkvardet sammanfaller med en annan. */
 .sc-item{--yta-upphojd-b3:#ce7c1e;--yta-upphojd-b4:rgba(36,56,44,0.18)}
 .sc-item[data-theme="dark"]{--yta-upphojd-b3:#ce7c1e;--yta-upphojd-b4:rgba(245,244,237,0.18)}
+
+/* R-04 ythierarki och textkontrast · semantiska beslut ur
+   fas2/r04-designbeslut.json. Ljusvardet ar det uppmatta fore migrationen,
+   sa ljusrenderingen ar oforandrad per konstruktion. Varje beslut har egen
+   token aven nar malvardet sammanfaller med ett annat. */
+.sc-item{--yta-upphojd-d2:rgb(230, 234, 217);--yta-kontroll-d5:rgb(36, 56, 44);--yta-upphojd-d4:rgb(230, 234, 217);--yta-upphojd-d7:rgb(36, 56, 44);--yta-kontroll-d8:rgb(230, 234, 217);--text-innehall-d7:#ccd1c2}
+.sc-item[data-theme="dark"]{--yta-upphojd-d2:#24382c;--yta-kontroll-d5:#24382c;--yta-upphojd-d4:#24382c;--yta-upphojd-d7:#24382c;--yta-kontroll-d8:#24382c;--text-innehall-d7:#ccd1c2}
 </style>
 <style>
 .sc-wrap{padding:40px 44px 60px}
@@ -168,7 +175,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       <div style="font-size:12.5px;font-weight:600;color:var(--text-innehall-a);text-align:center;font-variant-numeric:tabular-nums" aria-live="polite">Går att skicka igen om 47 s</div>
       <span data-hit="self" style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:8px;color:var(--text-kontroll-a);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Fortsätt utan att bekräfta adressen" data-a11y-role="button">Fortsätt ändå</span>
     </div>
-    <div style="margin-top:24px;background:var(--yta-upphojd);border-radius:8px;padding:12px;font-size:12px;color:var(--text-innehall-c);line-height:1.5">Hittar du inget brev: kolla skräpposten, och kontrollera att adressen stämmer. Är den fel skapar du kontot igen — jag kan inte byta adress innan den är bekräftad.</div>
+    <div style="margin-top:24px;background:var(--yta-upphojd-d2);border-radius:8px;padding:12px;font-size:12px;color:var(--text-innehall-c);line-height:1.5">Hittar du inget brev: kolla skräpposten, och kontrollera att adressen stämmer. Är den fel skapar du kontot igen — jag kan inte byta adress innan den är bekräftad.</div>
   </div>
 </div>
 
@@ -194,7 +201,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       <div style="font-size:12.5px;font-weight:600;color:var(--text-innehall-a);line-height:1.55;margin-top:12px;font-variant-numeric:tabular-nums" aria-live="polite">Koden gäller i 60 sekunder. 38 s kvar.</div>
       <span data-hit="self" style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:24px;border:1.5px solid var(--ram-kontroll-b);color:var(--text-kontroll-c);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Verifiera, avstängd till dess sex siffror är ifyllda" data-state-group="authmfa-verifieraknapp" data-a11y-role="button" data-a11y-state="disabled">Verifiera</span>
       <span data-hit="self" style="display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:8px;color:var(--text-kontroll-a);font-size:14px;font-weight:600;box-sizing:border-box;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="Skicka en ny kod" data-a11y-role="button">Skicka en ny kod</span>
-      <div style="margin-top:24px;background:var(--yta-upphojd);border-radius:8px;padding:12px;font-size:12px;color:var(--text-innehall-c);line-height:1.5"><b>Kvar att lösa i backend, inte i ritningen:</b> vad som händer när telefonen är borta. Koden har ingen reservväg — ingen återställningskod, inget andra faktorsalternativ. Utan en sådan är <i>Skicka en ny kod</i> hela nödutgången, och det räcker inte för ett konto som bär hushållets recept.</div>
+      <div style="margin-top:24px;background:var(--yta-upphojd-d2);border-radius:8px;padding:12px;font-size:12px;color:var(--text-innehall-c);line-height:1.5"><b>Kvar att lösa i backend, inte i ritningen:</b> vad som händer när telefonen är borta. Koden har ingen reservväg — ingen återställningskod, inget andra faktorsalternativ. Utan en sådan är <i>Skicka en ny kod</i> hela nödutgången, och det räcker inte för ett konto som bär hushållets recept.</div>
     </div>
   </div>
 </div>
@@ -227,7 +234,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       <div style="font-size:22px;font-weight:700;letter-spacing:-.3px;line-height:1.3;margin-top:24px">Butlery är för 15 år och uppåt</div>
       <div style="font-size:16px;font-weight:400;color:var(--text-innehall-c);line-height:1.55;margin-top:12px">Det är inget vi valt själva. Svensk lag sätter gränsen för tjänster med ett socialt inslag, och Butlery har det.</div>
       <div style="width:100%;margin-top:32px;display:flex;flex-direction:column;gap:12px">
-        <span data-hit="self" style="display:flex;align-items:center;justify-content:center;min-height:48px;background:var(--yta-kontroll-b2);color:var(--text-kontroll-b4);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Logga ut" data-a11y-role="button">Logga ut</span>
+        <span data-hit="self" style="display:flex;align-items:center;justify-content:center;min-height:48px;background:var(--yta-kontroll-d5);color:var(--text-kontroll-b4);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Logga ut" data-a11y-role="button">Logga ut</span>
         <span data-hit="self" style="display:flex;align-items:center;justify-content:center;min-height:48px;color:var(--text-kontroll-a);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box;text-decoration:underline;text-underline-offset:.16em" data-a11y-name="En vuxen i hushållet kan skapa kontot" data-a11y-role="button">En vuxen kan skapa kontot</span>
       </div>
       <div style="font-size:12.5px;font-weight:600;color:var(--text-innehall-a);line-height:1.55;margin-top:24px">Kontot du började skapa tas bort. Inget sparas.</div>
@@ -267,8 +274,8 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       <div style="font-size:12.5px;font-weight:600;color:var(--text-innehall-a);line-height:1.55;margin-top:16px">Två frågor kvar. Sedan är du inne.</div>
     </div>
     <div style="flex:none;padding:24px 24px 32px">
-      <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:24px"><span style="width:8px;height:8px;background:var(--yta-upphojd-b4)"></span><span style="width:24px;height:8px;background:var(--yta-upphojd-b2)"></span><span style="width:8px;height:8px;background:var(--yta-upphojd-b4)"></span><span style="width:8px;height:8px;background:var(--yta-upphojd-b4)"></span></div>
-      <div style="display:flex;gap:8px"><span data-hit="self" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid var(--ram-kontroll-a);color:var(--text-kontroll-a);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Tillbaka" data-a11y-role="button">Tillbaka</span><span data-hit="self" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;background:var(--yta-kontroll-b2);color:var(--text-kontroll-b4);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Nästa" data-a11y-role="button">Nästa</span></div>
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:24px"><span style="width:8px;height:8px;background:var(--yta-upphojd-b4)"></span><span style="width:24px;height:8px;background:var(--yta-upphojd-d7)"></span><span style="width:8px;height:8px;background:var(--yta-upphojd-b4)"></span><span style="width:8px;height:8px;background:var(--yta-upphojd-b4)"></span></div>
+      <div style="display:flex;gap:8px"><span data-hit="self" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid var(--ram-kontroll-a);color:var(--text-kontroll-a);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Tillbaka" data-a11y-role="button">Tillbaka</span><span data-hit="self" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;background:var(--yta-kontroll-d5);color:var(--text-kontroll-b4);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Nästa" data-a11y-role="button">Nästa</span></div>
     </div>
   </div>
 </div>
@@ -328,7 +335,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
   <div class="sc-phone" style="width:412px;height:720px;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid var(--ram-behallare-c);flex:none;background:var(--yta-upphojd-b2)"><span data-hit="self" style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka till guiden" data-a11y-role="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ikon-kontroll-b1)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span><span style="flex:1;font-size:14px;font-weight:700;color:var(--text-innehall-b4);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ditt första recept</span></div>
     <div style="flex:1;padding:16px 24px;overflow:hidden">
-      <div style="display:flex;align-items:center;gap:10px;background:var(--yta-upphojd);padding:12px 14px"><svg data-graphic-role="redundant" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ikon-fristaende-a)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="circle-check"><circle cx="12" cy="12" r="7.5"></circle><path d="M8.5 12.3l2.4 2.4 4.6-4.6"></path></svg><span style="flex:1;font-size:13px;font-weight:600;color:var(--text-innehall-b);line-height:1.5">Läst från koket.se. Granska och spara.</span></div>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--yta-upphojd-d4);padding:12px 14px"><svg data-graphic-role="redundant" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ikon-fristaende-a)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="circle-check"><circle cx="12" cy="12" r="7.5"></circle><path d="M8.5 12.3l2.4 2.4 4.6-4.6"></path></svg><span style="flex:1;font-size:13px;font-weight:600;color:var(--text-innehall-b);line-height:1.5">Läst från koket.se. Granska och spara.</span></div>
       <div style="margin-top:20px;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-innehall-a)">Titel</div>
       <span style="display:flex;align-items:center;min-height:48px;padding:0 12px;border:1px solid var(--ram-kontroll-c);border-radius:8px;box-sizing:border-box;margin-top:6px;font-size:16px;font-weight:400" data-a11y-name="Titel" data-a11y-role="textbox" data-hit="self">Krämig svamppasta</span>
       <div style="display:flex;gap:8px;margin-top:12px">
@@ -341,9 +348,9 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
         <span style="display:flex;align-items:center;gap:10px;min-height:48px;border-bottom:1px solid var(--ram-kontroll-c);box-sizing:border-box" data-a11y-name="Ingrediens: karljohansvamp 300 g" data-a11y-role="textbox" data-hit="self"><span style="flex:1;font-size:13px;font-weight:600">Karljohansvamp</span><span style="font-size:12.5px;font-weight:600;color:var(--text-kontroll-b2);font-variant-numeric:tabular-nums">300 g</span></span>
         <span style="display:flex;align-items:center;gap:10px;min-height:48px;border-bottom:1px solid var(--ram-kontroll-c);box-sizing:border-box" data-a11y-name="Ingrediens: grädde 3 deciliter" data-a11y-role="textbox" data-hit="self"><span style="flex:1;font-size:13px;font-weight:600">Grädde</span><span style="font-size:12.5px;font-weight:600;color:var(--text-kontroll-b2);font-variant-numeric:tabular-nums">3 dl</span></span>
       </div>
-      <div style="margin-top:14px;background:var(--yta-upphojd);border-radius:8px;padding:12px;font-size:12px;color:var(--text-innehall-c);line-height:1.5">Innehåller <b>mjölk</b> och <b>gluten</b> — du har inte markerat något av dem. Hade du gjort det stod varningen här, inte som en färg på raden.</div>
+      <div style="margin-top:14px;background:var(--yta-upphojd-d2);border-radius:8px;padding:12px;font-size:12px;color:var(--text-innehall-c);line-height:1.5">Innehåller <b>mjölk</b> och <b>gluten</b> — du har inte markerat något av dem. Hade du gjort det stod varningen här, inte som en färg på raden.</div>
     </div>
-    <div style="flex:none;padding:12px 24px 32px"><span data-hit="self" style="display:flex;align-items:center;justify-content:center;min-height:48px;background:var(--yta-kontroll-b2);color:var(--text-kontroll-b4);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Spara receptet och fortsätt i guiden" data-a11y-role="button">Spara och fortsätt</span></div>
+    <div style="flex:none;padding:12px 24px 32px"><span data-hit="self" style="display:flex;align-items:center;justify-content:center;min-height:48px;background:var(--yta-kontroll-d5);color:var(--text-kontroll-b4);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Spara receptet och fortsätt i guiden" data-a11y-role="button">Spara och fortsätt</span></div>
   </div>
 </div>
 
@@ -421,9 +428,9 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
     <div style="flex:1;padding:16px 20px;overflow:hidden">
       <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-innehall-a)">Din första vecka</div>
       <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
-        <span style="display:flex;align-items:center;gap:10px;min-height:56px;padding:0 12px;background:var(--yta-kontroll-b1);box-sizing:border-box" data-a11y-name="Måndag middag: Krämig svamppasta" data-a11y-role="button" data-hit="self"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-kontroll-b2);width:34px;flex:none">mån</span><span style="flex:1;min-width:0;font-size:13px;font-weight:600">Krämig svamppasta</span><span style="font-size:12.5px;font-weight:600;color:var(--text-kontroll-b2);font-variant-numeric:tabular-nums">25 min</span></span>
-        <span style="display:flex;align-items:center;gap:10px;min-height:56px;padding:0 12px;background:var(--yta-kontroll-b1);box-sizing:border-box" data-a11y-name="Tisdag middag: Ärtsoppa" data-a11y-role="button" data-hit="self"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-kontroll-b2);width:34px;flex:none">tis</span><span style="flex:1;min-width:0;font-size:13px;font-weight:600">Ärtsoppa med pannkakor</span><span style="font-size:12.5px;font-weight:600;color:var(--text-kontroll-b2);font-variant-numeric:tabular-nums">40 min</span></span>
-        <span style="display:flex;align-items:center;gap:10px;min-height:56px;padding:0 12px;background:var(--yta-kontroll-b1);box-sizing:border-box" data-a11y-name="Onsdag middag: Fiskgratäng" data-a11y-role="button" data-hit="self"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-kontroll-b2);width:34px;flex:none">ons</span><span style="flex:1;min-width:0;font-size:13px;font-weight:600">Fiskgratäng</span><span style="font-size:12.5px;font-weight:600;color:var(--text-kontroll-b2);font-variant-numeric:tabular-nums">35 min</span></span>
+        <span style="display:flex;align-items:center;gap:10px;min-height:56px;padding:0 12px;background:var(--yta-kontroll-d8);box-sizing:border-box" data-a11y-name="Måndag middag: Krämig svamppasta" data-a11y-role="button" data-hit="self"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-kontroll-b2);width:34px;flex:none">mån</span><span style="flex:1;min-width:0;font-size:13px;font-weight:600">Krämig svamppasta</span><span style="font-size:12.5px;font-weight:600;color:var(--text-kontroll-b2);font-variant-numeric:tabular-nums">25 min</span></span>
+        <span style="display:flex;align-items:center;gap:10px;min-height:56px;padding:0 12px;background:var(--yta-kontroll-d8);box-sizing:border-box" data-a11y-name="Tisdag middag: Ärtsoppa" data-a11y-role="button" data-hit="self"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-kontroll-b2);width:34px;flex:none">tis</span><span style="flex:1;min-width:0;font-size:13px;font-weight:600">Ärtsoppa med pannkakor</span><span style="font-size:12.5px;font-weight:600;color:var(--text-kontroll-b2);font-variant-numeric:tabular-nums">40 min</span></span>
+        <span style="display:flex;align-items:center;gap:10px;min-height:56px;padding:0 12px;background:var(--yta-kontroll-d8);box-sizing:border-box" data-a11y-name="Onsdag middag: Fiskgratäng" data-a11y-role="button" data-hit="self"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-kontroll-b2);width:34px;flex:none">ons</span><span style="flex:1;min-width:0;font-size:13px;font-weight:600">Fiskgratäng</span><span style="font-size:12.5px;font-weight:600;color:var(--text-kontroll-b2);font-variant-numeric:tabular-nums">35 min</span></span>
       </div>
       <div style="margin-top:20px;border:1px solid var(--ram-behallare-c);border-radius:12px;padding:16px">
         <div style="font-size:15px;font-weight:600;line-height:1.35">Ska jag ta hänsyn till hur ni äter?</div>
@@ -435,7 +442,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
           <span data-component="chip" style="display:inline-flex;align-items:center;min-height:48px;padding:7px 13px;border:1px solid var(--ram-kontroll-b);border-radius:999px;font-size:12px;font-weight:600;box-sizing:border-box" data-a11y-name="Laktosfritt" data-a11y-role="checkbox" data-hit="self">Laktosfritt</span>
         </div>
         <div style="display:flex;gap:8px;margin-top:16px">
-          <span data-hit="self" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;background:var(--yta-kontroll-b2);color:var(--text-kontroll-b4);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Spara kostpreferenser" data-a11y-role="button">Spara</span>
+          <span data-hit="self" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;background:var(--yta-kontroll-d5);color:var(--text-kontroll-b4);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Spara kostpreferenser" data-a11y-role="button">Spara</span>
           <span data-hit="self" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:48px;border:1.5px solid var(--ram-kontroll-a);color:var(--text-kontroll-a);border-radius:8px;font-size:14px;font-weight:600;box-sizing:border-box" data-a11y-name="Ingen särskild kost" data-a11y-role="button">Vi äter allt</span>
         </div>
       </div>
@@ -607,7 +614,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       <div style="border:1.5px solid var(--ram-behallare-a);padding:14px">
         <div style="display:flex;align-items:baseline;gap:10px"><span style="flex:1;font-size:15px;font-weight:600">Koka pastan</span><span style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px">08:00</span></div>
         <div style="font-size:12.5px;font-weight:600;color:var(--text-innehall-a);margin-top:4px">Steg 3 av 6</div>
-        <div style="display:flex;align-items:flex-start;gap:9px;margin-top:12px;background:var(--yta-upphojd);padding:10px 12px">
+        <div style="display:flex;align-items:flex-start;gap:9px;margin-top:12px;background:var(--yta-upphojd-d4);padding:10px 12px">
           <svg data-graphic-role="redundant" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ikon-fristaende-c)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px" data-icon="info"><circle cx="12" cy="12" r="7.5"></circle><path d="M12 11v5"></path><path d="M12 8.4h.01"></path></svg>
           <span style="flex:1;font-size:12.5px;font-weight:600;color:var(--text-innehall-c);line-height:1.5">Med låst telefon ringer den <b>inom en minut</b> efter tiden. Har du appen framme räknar den rätt.</span>
         </div>
@@ -634,7 +641,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
         <div style="display:flex;align-items:baseline;gap:10px"><span style="flex:1;font-size:15px;font-weight:600">Vila köttet</span><span style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;color:var(--text-innehall-a)">05:00</span></div>
         <div style="font-size:12.5px;font-weight:600;color:var(--text-innehall-a);margin-top:4px">Steg 5 av 6</div>
       </div>
-      <div style="margin-top:14px;background:var(--yta-upphojd);padding:12px;font-size:12.5px;color:var(--text-innehall-c);line-height:1.55"><b>Regeln:</b> när appen är framme räknar timern på sekunden och får visa siffror. Är telefonen låst är löftet <i>strax efter</i> — och den formuleringen står i vyn, inte i ett hjälpavsnitt.</div>
+      <div style="margin-top:14px;background:var(--yta-upphojd-d2);padding:12px;font-size:12.5px;color:var(--text-innehall-c);line-height:1.55"><b>Regeln:</b> när appen är framme räknar timern på sekunden och får visa siffror. Är telefonen låst är löftet <i>strax efter</i> — och den formuleringen står i vyn, inte i ett hjälpavsnitt.</div>
     </div>
   </div>
 </div>
@@ -687,7 +694,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
         </div>
       </div>
       <div style="margin-top:12px;background:rgba(245,244,237,.18);border-radius:8px;padding:12px">
-        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(245,244,237,.60)">Samtidigt i appen</div>
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-innehall-d7)">Samtidigt i appen</div>
         <div style="display:flex;align-items:center;gap:10px;margin-top:8px;min-height:48px;background:#F5F4ED;padding:0 12px;box-sizing:border-box">
           <span style="width:8px;height:8px;border-radius:4px;background:#9c3b23;flex:none"></span>
           <span style="flex:1;font-size:13.5px;font-weight:600;color:#24382c">Koka pastan · klar</span>
