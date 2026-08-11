@@ -29,21 +29,15 @@
   }
  },
  "ythierarki": {
-  "losta": 159,
+  "losta": 138,
   "nya11": 0,
-  "beslutadeSomAndaAr11": 1,
-  "detaljer": [
-   {
-    "art": "kontovantan",
-    "ordinal": 29,
-    "olost": true
-   }
-  ]
+  "beslutadeSomAndaAr11": 0,
+  "detaljer": []
  },
  "fargandringar": {
-  "textnoder": 270,
-  "ytor": 160,
-  "kollateralaTextandringar": 248,
+  "textnoder": 244,
+  "ytor": 138,
+  "kollateralaTextandringar": 222,
   "kollateralaDetaljer": [
    {
     "tema": "dark",
