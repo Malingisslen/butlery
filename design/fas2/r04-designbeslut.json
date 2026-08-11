@@ -6,7 +6,7 @@
  "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
  "$tokenidentitet": "Tokennamnet lases i registret vid forsta tilldelningen och andras aldrig. Tva beslut delar aldrig namn, aven nar morkvardet sammanfaller. Ett ersatt beslut behaller inget namn.",
  "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
- "antal": 32,
+ "antal": 41,
  "perTyp": {
   "temavaxlande": 6,
   "temainvariant": 6
@@ -1453,6 +1453,386 @@
    },
    "kopplatVillkor": null,
    "tokenNamn": "--yta-kontroll-d10"
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-D01",
+   "kandidatId": "TEXTRC ‖ RC-TX-D01",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-D01",
+   "roll": "text-innehall",
+   "ljusvarde": "#37453a",
+   "morkvarde": "#8fb89a",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "dark",
+   "textRotorsaker": [
+    "RC-TX-D01"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "#37453a",
+   "till": "#8fb89a",
+   "motBakgrund": "#17251d",
+   "angivenKvot": 7.2,
+   "uppmattKvot": 7.2,
+   "motivering": [
+    "positiv listsemantik med bockmarkering; behaller gron karaktar utan att bli primartext"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "dataexport"
+    ],
+    "instanser": 6
+   },
+   "tokenNamn": "--text-innehall-d1"
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-D02",
+   "kandidatId": "TEXTRC ‖ RC-TX-D02",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-D02",
+   "roll": "text-innehall",
+   "ljusvarde": "#627061",
+   "morkvarde": "#c9d3c4",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "dark",
+   "textRotorsaker": [
+    "RC-TX-D02"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "#627061",
+   "till": "#c9d3c4",
+   "motBakgrund": "#17251d",
+   "angivenKvot": 10.31,
+   "uppmattKvot": 10.31,
+   "motivering": [
+    "neutral historik och metadata som innehaller bade \"Gav samtycke\" och \"Nekade\"; far inte ge statusbetydelse via gron eller varm accent"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "samtycke"
+    ],
+    "instanser": 3
+   },
+   "tokenNamn": "--text-innehall-d2"
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-D03",
+   "kandidatId": "TEXTRC ‖ RC-TX-D03",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-D03",
+   "roll": "text-innehall",
+   "ljusvarde": "#8a5212",
+   "morkvarde": "#de9078",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "dark",
+   "textRotorsaker": [
+    "RC-TX-D03"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "#8a5212",
+   "till": "#de9078",
+   "motBakgrund": "#24382c",
+   "angivenKvot": 4.99,
+   "uppmattKvot": 4.99,
+   "motivering": [
+    "notisrensa ar action och accent och ska behalla varm semantik"
+   ],
+   "kopplatVillkor": "RC-YH-01 i notiscentral. Ytan och forgrunden maste skrivas atomiskt.",
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "notiscentral"
+    ],
+    "instanser": 1
+   },
+   "tokenNamn": "--text-innehall-d3"
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-D04",
+   "kandidatId": "TEXTRC ‖ RC-TX-D04",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-D04",
+   "roll": "text-innehall",
+   "ljusvarde": "#8a5212",
+   "morkvarde": "#93a48d",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "dark",
+   "textRotorsaker": [
+    "RC-TX-D04"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "#8a5212",
+   "till": "#93a48d",
+   "motBakgrund": "#17251d",
+   "angivenKvot": 6.02,
+   "uppmattKvot": 6.02,
+   "motivering": [
+    "forklarande stodtext, inte action eller status; dampad sekundartext ar semantiskt riktigare an varm accent"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "kontojuridik"
+    ],
+    "instanser": 1
+   },
+   "tokenNamn": "--text-innehall-d4"
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-L01",
+   "kandidatId": "TEXTRC ‖ RC-TX-L01",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-L01",
+   "roll": "text-innehall",
+   "ljusvarde": "#93a48d",
+   "morkvarde": "#93a48d",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "light",
+   "textRotorsaker": [
+    "RC-TX-L01"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "#93a48d",
+   "till": "#627061",
+   "motBakgrund": "#f5f4ed",
+   "angivenKvot": 4.75,
+   "uppmattKvot": 4.75,
+   "motivering": [
+    "kraver egen semantisk token scopad till denna rotorsak; ingen global ersattning av #93a48d"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "skafferivara",
+     "delatlamna",
+     "delatlamnaagare"
+    ],
+    "instanser": 4
+   },
+   "tokenNamn": "--text-innehall-d5"
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-L02",
+   "kandidatId": "TEXTRC ‖ RC-TX-L02",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-L02",
+   "roll": "text-innehall",
+   "ljusvarde": "#93a48d",
+   "morkvarde": "#93a48d",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "light",
+   "textRotorsaker": [
+    "RC-TX-L02"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "#93a48d",
+   "till": "#5b6959",
+   "motBakgrund": "#e6ead9",
+   "angivenKvot": 4.75,
+   "uppmattKvot": 4.75,
+   "motivering": [
+    "kraver egen semantisk token scopad till denna rotorsak; ingen global ersattning av #93a48d"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "impdubblett"
+    ],
+    "instanser": 3
+   },
+   "tokenNamn": "--text-innehall-d6"
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-L03 + RC-TX-L04",
+   "kandidatId": "TEXTRC ‖ RC-TX-L03 + RC-TX-L04",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-L03 + RC-TX-L04",
+   "roll": "yta-upphojd",
+   "ljusvarde": "rgba(36,56,44,0.6)",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "bakgrund",
+   "tema": "light",
+   "textRotorsaker": [
+    "RC-TX-L03",
+    "RC-TX-L04"
+   ],
+   "gemensamtBeslut": true,
+   "fran": "rgba(36,56,44,0.6)",
+   "till": "#24382c",
+   "motBakgrund": null,
+   "angivenKvot": null,
+   "uppmattKvot": [
+    {
+     "rc": "RC-TX-L03",
+     "kvot": 11.36,
+     "krav": 4.5
+    },
+    {
+     "rc": "RC-TX-L04",
+     "kvot": 5.19,
+     "krav": 4.5
+    }
+   ],
+   "motivering": [
+    "L03 och L04 delar EN faktisk ytidentitet: veckogenererar, elementordinal 11, en enda inline-deklaration. Ett gemensamt scopat ytbeslut, aldrig tva konkurrerande bakgrundstokens."
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "veckogenererar"
+    ],
+    "instanser": 2
+   },
+   "tokenNamn": "--yta-upphojd-d14"
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-L05",
+   "kandidatId": "TEXTRC ‖ RC-TX-L05",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-L05",
+   "roll": "text-innehall",
+   "ljusvarde": "rgba(245,244,237,0.6)",
+   "morkvarde": "rgba(245,244,237,0.6)",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "light",
+   "textRotorsaker": [
+    "RC-TX-L05"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "rgba(245,244,237,0.6)",
+   "till": "#ccd1c2",
+   "motBakgrund": "#3f4a42",
+   "angivenKvot": 5.93,
+   "uppmattKvot": 5.93,
+   "motivering": [
+    "behaller sekundar och dampad hierarki battre an full #f5f4ed; kraver scopad semantisk token"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "lagatimerutgangen"
+    ],
+    "instanser": 1
+   },
+   "tokenNamn": "--text-innehall-d7"
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-L06",
+   "kandidatId": "TEXTRC ‖ RC-TX-L06",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-L06",
+   "roll": "yta-upphojd",
+   "ljusvarde": "rgba(23,37,29,0.6)",
+   "morkvarde": "#627061",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "bakgrund",
+   "tema": "light",
+   "textRotorsaker": [
+    "RC-TX-L06"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "rgba(23,37,29,0.6)",
+   "till": "#627061",
+   "motBakgrund": null,
+   "angivenKvot": 4.75,
+   "uppmattKvot": [
+    {
+     "rc": "RC-TX-L06",
+     "kvot": 4.75,
+     "krav": 4.5
+    }
+   ],
+   "motivering": [
+    "forgrunden #f5f4ed behalls; elementets egen halvgenomskinliga bakgrund byts mot ett opakt palettvarde"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "cooksnapgalleri"
+    ],
+    "instanser": 1
+   },
+   "tokenNamn": "--yta-upphojd-d15"
   }
  ],
  "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
@@ -1461,7 +1841,11 @@
   "SUBGROUP": 22
  },
  "$status": "Ett beslut har status ACTIVE eller SUPERSEDED. Ett ersatt beslut raderas aldrig — det star kvar med reason och vilket beslut som ersatte det. Bara ACTIVE-beslut far anvandas vid migrering.",
- "aktiva": 31,
+ "aktiva": 40,
  "ersatta": 1,
- "$identitet": "beslutsId ar scopet (kandidat och eventuell undergrupp). Lagringsidentiteten ar scope + revision. Tokennamnet tilldelas en gang och ar persistent; varken supersede, insattning eller omsortering far andra ett befintligt namn."
+ "$identitet": "beslutsId ar scopet (kandidat och eventuell undergrupp). Lagringsidentiteten ar scope + revision. Tokennamnet tilldelas en gang och ar persistent; varken supersede, insattning eller omsortering far andra ett befintligt namn.",
+ "perTyp2": {
+  "YTA": 31,
+  "TEXTKONTRAST": 9
+ }
 }
