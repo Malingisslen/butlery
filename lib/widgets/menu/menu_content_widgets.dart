@@ -186,9 +186,17 @@ class MenuContentWidgets {
     return ListView(
       children: [
         buildMenuSummary(context, viewModel: viewModel),
+        // BUT-1685: a run built on a household roster we could not fully read
+        // was filtered by a widened safety floor, not by the family's real
+        // allergies — saying "familjens allergier" would claim a precision
+        // this menu does not have. The warning is keyed to the ROSTER, not to
+        // the hidden count: the uncertainty exists even when nothing was
+        // hidden.
+        if (viewModel.hiddenPrefSource == MenuPrefSource.householdIncomplete)
+          _buildRosterIncompleteHint(context)
         // BUT-1464 (PM condition 1): explain the pool shrink — a menu made
         // smaller by allergen filtering must never look like a bug.
-        if (viewModel.hiddenByFamilyCount > 0)
+        else if (viewModel.hiddenByFamilyCount > 0)
           _buildHiddenByFamilyHint(
             context,
             viewModel.hiddenByFamilyCount,
@@ -296,6 +304,37 @@ class MenuContentWidgets {
               isFamilyScope
                   ? context.l10n.menuHiddenByFamilyAllergies(count)
                   : context.l10n.menuHiddenByOwnAllergies(count),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Warning row for a menu generated while at least one household member's
+  /// profile could not be read (BUT-1663 → BUT-1685). Replaces the hidden-count
+  /// hint rather than joining it: attributing the shrink to the family's
+  /// allergies would over-claim, since the floor did part of the filtering.
+  static Widget _buildRosterIncompleteHint(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.warning_amber,
+            size: AppDimensions.iconSizeS,
+            color: cs.secondary,
+          ),
+          const SizedBox(width: AppDimensions.spacingXs),
+          Expanded(
+            child: Text(
+              context.l10n.householdAllergenRosterIncomplete,
               style: AppTextStyles.bodySmall.copyWith(
                 color: cs.onSurfaceVariant,
               ),

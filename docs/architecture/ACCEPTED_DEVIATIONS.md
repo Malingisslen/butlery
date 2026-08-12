@@ -501,6 +501,50 @@ top-level profile collection — so a TTL fieldOverride on that collectionGroup 
 delete policy over real user documents. The cascade step is the only safe erasure route here;
 a TTL must not be proposed as a "simpler" substitute. — 2026-08-01
 
+### [Tagging/Safety] An unreadable household member WIDENS the allergen union with a common-allergen floor instead of being skipped (BUT-1663)
+`HouseholdService._aggregatePreferences` resolves every household member's profile. When a
+read FAILS (`ProfileLookupStatus.unavailable` or `foundSettingsUnavailable`), that member is
+**not** dropped from the aggregate: the union keeps every allergen that DID resolve, adds
+`UserAllergenPreferences.defaults.trackedAllergens` on top as a floor, and closes the UNKNOWN
+escape hatch (`includeUnknownInMenu: false`) so only recipes proven free reach the menu. The
+same floor is the whole answer on the two total-failure paths (aggregation threw, roster
+resolved to no members) and for a member whose profile loaded without its private settings
+sub-doc (`settingsMerged == false` — always the case for another account holder, since
+`firestore.rules` lets only the owner read that doc). The result is a **superset** of the
+household's real preferences: some recipes are hidden from a household nobody in it is
+allergic to.
+**Why:** the alternative — skipping the unread member — silently filters as if they had no
+allergies, which on a children's allergen app is the one failure mode that can hurt someone.
+Over-filtering costs dinner variety for as long as the read keeps failing; under-filtering
+costs a reaction. The floor is deliberately a WIDENING and never a replacement, so a member
+who did resolve never loses an allergen to it. The degradation is not silent: the aggregate
+carries `isRosterComplete: false` and `unresolvedMemberIds`, the service logs a warning, the
+allergen opt-out dialog appends `householdAllergenRosterIncomplete`, and — since **BUT-1685** —
+the generated menu shows that same warning instead of the healthy-run "familjens allergier"
+attribution. A profile that simply does NOT exist (`ProfileLookupStatus.missing`) is the
+opposite call and does **not** degrade the roster: nobody is at that seat to protect, and
+treating a stale roster entry as unknown-forever would hold the household in a safety crouch
+it can never leave. Do NOT file "unread members should be excluded from the union", "the floor
+over-filters", or "the fallback should trust the resolved members only" — decided. BUT-1693
+(part 2 — members sharing their own allergen list) is what makes the guess unnecessary; until
+it ships, the floor is the only protection this household has. — shipped 2026-07-26, recorded
+here 2026-08-11 (BUT-1685)
+
+### [Tagging/Safety] The safety floor takes allergens only — `trackedDietary` is deliberately NOT inherited from the defaults (BUT-1663)
+`HouseholdService._allergenSafetyFloor` is `UserAllergenPreferences.defaults.trackedAllergens`
+and nothing else. `defaults` also carries `trackedDietary: {vegetarisk, vegansk}`, and every
+floor-applying path above passes `dietary: unionDietary` (or `const {}`) rather than folding
+the defaults in.
+**Why:** the menu's dietary filter treats a tracked diet as a **hard requirement**, not a
+warning. Inheriting the defaults would restrict an omnivore household to vegan dishes the
+moment one profile read failed — that is not a safety property, it just empties the menu, and
+an empty menu teaches the user to switch the household filter off entirely, which removes the
+real allergen protection with it. Widening the ALLERGEN set only ever removes dishes that
+might hurt someone; widening the DIETARY set removes dishes nobody objects to. Do NOT
+"harmonise" the floor with `defaults` or file "the floor drops the default dietary
+restrictions" — the asymmetry is the decision. — shipped 2026-07-26, recorded here 2026-08-11
+(BUT-1685)
+
 ---
 
 ## The free on-device OCR tier ships ON despite losing the measured comparison — 2026-08-03

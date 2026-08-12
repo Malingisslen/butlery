@@ -61,6 +61,24 @@ precision, an enumeration one item short, a stale count — is RECORDED below an
 shipped, not fixed. That is a deliberate call: the marginal value of the
 thirty-ninth comment correction is below the cost of another full sweep.
 
+### SHIPPED 2026-08-11 — pushed as cc45d5c83 (in 8bf8934da)
+
+BUT-1819 is on main. Everything below is the recorded backlog it produced; none
+of it blocks anything shipped.
+
+**Two things about the commit itself, for whoever reads it back:**
+
+- It carries two files that are NOT BUT-1819 — `android/app/proguard-rules.pro`
+  and `tools/check_null_filter.sh` — swept in from a parallel session's working
+  tree by a `git add` on a shared checkout. Both were verified individually
+  sound and inert with respect to this change; the second re-arms a CI gate that
+  had been red since 2026-07-30, and it does not fire on this diff. The commit
+  message does not mention them. History is not rewritten to fix that.
+- It was committed with `LEFTHOOK_EXCLUDE=analyze` on Malin's explicit
+  instruction. `dart analyze --fatal-infos` was run standalone over all 23
+  staged Dart files first and reported no issues; the gate was timing out on
+  machine memory (1.7 GB free of 16), not on findings. Every other gate passed.
+
 ### Recorded by the frozen sweep, shipped unfixed (2026-08-10)
 
 - **`recipe_detail_shared_widgets.dart` names the WRONG legacy seed string.** It

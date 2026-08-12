@@ -1,6 +1,9 @@
 // BUT-1464: rendering coverage for the hidden-recipes hint row and the
 // "allergener okända" chip in the generated-menu list, including the
 // family-vs-neutral wording split (review M2) and the plural forms.
+//
+// BUT-1685: and the roster-incomplete warning that replaces the family
+// attribution when a household member's profile could not be read.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -115,6 +118,50 @@ void main() {
       );
       expect(find.textContaining('familjens allergier'), findsNothing);
       expect(find.text('allergener okända'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'an incomplete household roster warns instead of attributing the '
+    'shrink to the family allergies',
+    (tester) async {
+      final vm = vmWith(
+        hiddenCount: 2,
+        prefSource: MenuPrefSource.householdIncomplete,
+        unknownSoft: false,
+        recipe: RecipeFactory.build(id: 'r1', title: 'Köttbullar'),
+      );
+
+      await pumpMenuContent(tester, vm);
+
+      expect(
+        find.text(
+          'Vi kunde inte läsa alla i hushållet just nu, så listan över '
+          'allergier kan vara ofullständig.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('familjens allergier'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'the roster warning is keyed to the roster, not the hidden count — it '
+    'shows even when nothing was hidden',
+    (tester) async {
+      final vm = vmWith(
+        hiddenCount: 0,
+        prefSource: MenuPrefSource.householdIncomplete,
+        unknownSoft: false,
+        recipe: RecipeFactory.build(id: 'r1', title: 'Köttbullar'),
+      );
+
+      await pumpMenuContent(tester, vm);
+
+      expect(
+        find.textContaining('listan över allergier kan vara ofullständig'),
+        findsOneWidget,
+      );
     },
   );
 

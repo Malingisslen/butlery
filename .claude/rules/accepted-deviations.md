@@ -80,6 +80,15 @@ files in the same edit.
   branch in BOTH directions** — refusing the heading is not sufficient on its own, and the
   rescue is colon-terminated-only. Do not "simplify" the three exemptions back into one flag;
   each one drops the gluten row on its own. BUT-1727, 2026-07-30
+- **A household member whose profile cannot be READ WIDENS the allergen union with a
+  common-allergen floor (and shuts the UNKNOWN hatch) instead of being skipped — and that
+  floor is ALLERGENS ONLY, never `defaults.trackedDietary`** — skipping the member would
+  filter as if they had no allergies; inheriting the two default diets would make a hard
+  requirement out of "vegansk" and empty the menu of an omnivore household. A profile that
+  does not EXIST (`missing`) is the opposite call and does not degrade the roster. The user
+  is told: `isRosterComplete: false` drives `householdAllergenRosterIncomplete` in the
+  opt-out dialog and, since BUT-1685, on the menu itself. BUT-1663, 2026-07-26
+
 - **`socialFeatures` consent gates nothing, by design** — social runs on the GDPR contract
   basis, not consent; wiring it would be consent theatre and would fail closed for every
   existing user. BUT-1523, 2026-07-12
