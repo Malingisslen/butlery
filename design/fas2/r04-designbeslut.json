@@ -6,10 +6,11 @@
  "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
  "$tokenidentitet": "Tokennamnet lases i registret vid forsta tilldelningen och andras aldrig. Tva beslut delar aldrig namn, aven nar morkvardet sammanfaller. Ett ersatt beslut behaller inget namn.",
  "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
- "antal": 42,
+ "antal": 44,
  "perTyp": {
-  "temavaxlande": 6,
-  "temainvariant": 6
+  "temavaxlande": 27,
+  "temainvariant": 6,
+  "undefined": 9
  },
  "beslut": [
   {
@@ -1872,19 +1873,272 @@
    "ersattSkal": "NESTED_SURFACE_COLLISION",
    "ersatter": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande @r1",
    "tokenNamn": "--yta-upphojd-d16"
+  },
+  {
+   "kandidatId": "CAND-yta-kontroll-#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "#4a5c43",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-12",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "kontroll:button",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08 — INTE samma vokabular som besluten fran 2026-08-10",
+   "motivering": [
+    "#24382c tappar for mycket separation mot appytan och mot brodtexten",
+    "rgba(245,244,237,0.18) laser visuellt som neutral eller inaktiv yta, inte som primar atgard",
+    "#4a5c43 bevarar bast primar kontrollidentitet i faktisk mork kontext",
+    "all relevant text klarar sitt kontrastkrav pa ytan",
+    "ingen numerisk yttroskel infors — ljusets 2.92 ar referens, inte krav"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Beslutet ar auktoritet, inte harledd evidens. Ingen instans i scopet hade ett authored morkervarde vid beslutstillfallet."
+   },
+   "beslutsunderlag": {
+    "typ": "HONEST_FULL_DARK_SIMULATION",
+    "scen": "soctomtingavanner",
+    "artefakt": "fas2/r04-forsta-preview.json",
+    "undecidedPaintedElements": 0,
+    "kollateralaAndringar": 0,
+    "$not": "Simulering, inte authored dark product coverage. Ger 0 R-04 coverage credit."
+   },
+   "constraints": [
+    {
+     "vad": "kontrollytan mot appytan",
+     "troskel": null,
+     "kallaTilKrav": "ingen troskel infors — ljusets 2.92 ar referens",
+     "uppmatt_ljus": 2.92,
+     "uppmatt_mork": 2.2
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 29,
+   "berordaArtefakter": [
+    "skafferi",
+    "vanner",
+    "meddelanden",
+    "taggar",
+    "hem360",
+    "okandingrediens",
+    "veckoallergi",
+    "safeareaandroid",
+    "hem",
+    "hemmorkt",
+    "hemoffline",
+    "receptbildfel",
+    "betygvemat",
+    "betygperperson",
+    "betygsammanslaget",
+    "familjmedlemsamtycke",
+    "inkopbockad",
+    "delatinkorg",
+    "authlogga",
+    "authskapa",
+    "onballergimorkt",
+    "kontosamtycke",
+    "samtyckeai",
+    "mfalagg",
+    "globsessiontyst",
+    "fbformular",
+    "soctomtingavanner",
+    "insthushall",
+    "kompdubblett",
+    "komparvegods"
+   ],
+   "instanserIScope": 30,
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-yta-kontroll-#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-kontroll-d11",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-kontroll-#17251d",
+   "roll": "text-kontroll",
+   "ljusvarde": "#17251d",
+   "morkvarde": "#c9d3c4",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-12",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "kontroll:button",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08 — INTE samma vokabular som besluten fran 2026-08-10",
+   "motivering": [
+    "COMMON_PASS_LABELS over de tre ytkandidaterna var exakt #c9d3c4",
+    "pa den valda ytan #4a5c43 ar kontrasten 4.68 mot kravet 4.5",
+    "neutral ljus forgrund ar forenlig med rollen som atgardsetikett"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Beslutet ar auktoritet, inte harledd evidens. Ingen instans i scopet hade ett authored morkervarde vid beslutstillfallet."
+   },
+   "beslutsunderlag": {
+    "typ": "HONEST_FULL_DARK_SIMULATION",
+    "scen": "soctomtingavanner",
+    "artefakt": "fas2/r04-forsta-preview.json",
+    "undecidedPaintedElements": 0,
+    "kollateralaAndringar": 0,
+    "$not": "Simulering, inte authored dark product coverage. Ger 0 R-04 coverage credit."
+   },
+   "constraints": [
+    {
+     "vad": "etiketten mot sin slutliga kontrollyta",
+     "troskel": 4.5,
+     "kallaTilKrav": "text 1.4.3",
+     "uppmatt_mork": {
+      "varde": 4.68,
+      "yta": "#4a5c43"
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 29,
+   "berordaArtefakter": [
+    "skafferi",
+    "vanner",
+    "meddelanden",
+    "taggar",
+    "hem360",
+    "okandingrediens",
+    "veckoallergi",
+    "safeareaandroid",
+    "hem",
+    "hemmorkt",
+    "hemoffline",
+    "receptbildfel",
+    "betygvemat",
+    "betygperperson",
+    "betygsammanslaget",
+    "familjmedlemsamtycke",
+    "inkopbockad",
+    "delatinkorg",
+    "authlogga",
+    "authskapa",
+    "onballergimorkt",
+    "kontosamtycke",
+    "samtyckeai",
+    "mfalagg",
+    "globsessiontyst",
+    "fbformular",
+    "soctomtingavanner",
+    "insthushall",
+    "kompdubblett",
+    "komparvegods"
+   ],
+   "instanserIScope": 30,
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-text-kontroll-#17251d ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-kontroll-d5",
+   "revision": 1
   }
  ],
  "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
  "perOmfattning": {
   "WHOLE_CANDIDATE": 9,
-  "SUBGROUP": 22
+  "SUBGROUP": 33
  },
  "$status": "Ett beslut har status ACTIVE eller SUPERSEDED. Ett ersatt beslut raderas aldrig — det star kvar med reason och vilket beslut som ersatte det. Bara ACTIVE-beslut far anvandas vid migrering.",
- "aktiva": 40,
+ "aktiva": 42,
  "ersatta": 2,
  "$identitet": "beslutsId ar scopet (kandidat och eventuell undergrupp). Lagringsidentiteten ar scope + revision. Tokennamnet tilldelas en gang och ar persistent; varken supersede, insattning eller omsortering far andra ett befintligt namn.",
  "perTyp2": {
   "YTA": 31,
   "TEXTKONTRAST": 9
+ },
+ "$halllsTillbaka": {
+  "$datum": "2026-08-12",
+  "$regel": "Ett godkant beslut skrivs INTE nar dess scope innehaller instanser som redan har ett authored morkervarde som skiljer sig fran beslutet. Den skillnaden maste adjudiceras forst.",
+  "poster": [
+   {
+    "namn": "rubrik",
+    "roll": "text-innehall",
+    "ljusvarde": "#24382c",
+    "godkantMorkvarde": "#8fb89a",
+    "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "instanserIScope": 791,
+    "familjerIScope": 205,
+    "instanserUtanforScope": 45,
+    "medBefintligtAuthoredMorkervarde": 96,
+    "uppmattaAuthoredVarden": [
+     {
+      "varde": "rgb(201,211,196)",
+      "instanser": 96
+     }
+    ],
+    "kalla": "provisoriska pilottokens (fas2/r04-pilottokens.json, provisorisk_variant: true) — INTE ett registrerat beslut",
+    "fraga": "Ska beslutet ersatta det provisoriska pilottokenvardet for dessa instanser, eller ska scopet delas sa att de undantas?"
+   },
+   {
+    "namn": "brodtext",
+    "roll": "text-innehall",
+    "ljusvarde": "#37453a",
+    "godkantMorkvarde": "#93a48d",
+    "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "instanserIScope": 198,
+    "familjerIScope": 81,
+    "instanserUtanforScope": 113,
+    "medBefintligtAuthoredMorkervarde": 40,
+    "uppmattaAuthoredVarden": [
+     {
+      "varde": "rgb(147,164,141)",
+      "instanser": 34
+     },
+     {
+      "varde": "rgb(143,184,154)",
+      "instanser": 6
+     }
+    ],
+    "kalla": "provisoriska pilottokens (fas2/r04-pilottokens.json, provisorisk_variant: true) — INTE ett registrerat beslut",
+    "fraga": "Ska beslutet ersatta det provisoriska pilottokenvardet for dessa instanser, eller ska scopet delas sa att de undantas?"
+   },
+   {
+    "namn": "ikonlinje",
+    "roll": "ikon-fristaende",
+    "ljusvarde": "#7d897c",
+    "godkantMorkvarde": "rgba(245,244,237,0.4)",
+    "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+    "instanserIScope": 2,
+    "familjerIScope": 2,
+    "instanserUtanforScope": 0,
+    "medBefintligtAuthoredMorkervarde": 1,
+    "uppmattaAuthoredVarden": [
+     {
+      "varde": "rgb(201,211,196)",
+      "instanser": 1
+     }
+    ],
+    "kalla": "provisoriska pilottokens (fas2/r04-pilottokens.json, provisorisk_variant: true) — INTE ett registrerat beslut",
+    "fraga": "Ska beslutet ersatta det provisoriska pilottokenvardet for dessa instanser, eller ska scopet delas sa att de undantas?"
+   }
+  ]
  }
 }
