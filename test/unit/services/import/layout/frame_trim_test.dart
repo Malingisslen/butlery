@@ -7,8 +7,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Same fixture shape as `orphan_tail_test.dart` and `leading_noise_test.dart`
 /// — see either for the glyphSpan trap (a lowercase descender moves a token
-/// from the 1.45 bucket to 1.80 and silently drops the line out of
-/// `headingLines`). Every heading token below is descender-free on purpose.
+/// from the 1.45 bucket to 1.80, so the line measures ~20 % short and the
+/// page-relative floor can drop it out of `headingLines` silently). Only the
+/// FIRST token is measured, because `heading()` passes `words: 1`.
+///
+/// Every heading token here is descender-free, and that is load-bearing
+/// rather than decorative: `Recept` shipped in the spread fixture for a day
+/// and its `p` put it in the 1.80 bucket, which left page two's heading list
+/// as `[7]` instead of `[0, 7]`. The test still passed — the tail rule reads
+/// `headings.last` either way — so the fixture was not the two-heading page
+/// it read as. Hence the premise assertions on every firing test below.
 OcrLine line(String text, {required double wordHeight, int words = 4}) {
   final tokens = text.trim().split(RegExp(r'\s+'));
   return OcrLine(
@@ -64,24 +72,35 @@ void main() {
     test('cuts each end on the RIGHT page of a spread', () {
       final firstPage = [
         line('Kokboken 2024', wordHeight: 70, words: 2),
-        heading('Recept Ett'),
+        heading('Rabarber Ett'),
         ...body(),
       ];
       final secondPage = [
-        heading('Recept Tva'),
+        heading('Rabarber Tva'),
         ...body(),
         heading('Mandelforell'),
         line('2 dl', wordHeight: 70, words: 2),
       ];
       final layout = doc([page(firstPage), page(secondPage)]);
       final input = layout.text!;
+      expect(
+        HeadingDetector.headingLines(page(firstPage)),
+        [1],
+        reason: 'premise: page one has exactly its own title',
+      );
+      expect(
+        HeadingDetector.headingLines(page(secondPage)),
+        [0, 7],
+        reason: 'premise: page two really is the TWO-heading page it reads '
+            'as — this is what the `Recept` descender broke',
+      );
 
       final cut = withoutFrameNoise(input, layout);
 
       expect(cut.text.contains('Kokboken'), isFalse);
       expect(cut.text.contains('Mandelforell'), isFalse);
-      expect(cut.text.contains('Recept Ett'), isTrue);
-      expect(cut.text.contains('Recept Tva'), isTrue);
+      expect(cut.text.contains('Rabarber Ett'), isTrue);
+      expect(cut.text.contains('Rabarber Tva'), isTrue);
       expect(cut.layout!.pages.first!.lines.length, 7);
       expect(cut.layout!.pages.last!.lines.length, 7);
       expect(cut.layout!.matchesLineCountOf(cut.text), isTrue);
@@ -118,7 +137,8 @@ void main() {
       expect(cut.layout!.matchesLineCountOf(cut.text), isTrue);
     });
 
-    /// The crossing guard, which is a product decision with no other cover.
+    /// The crossing guard — an engineering call (judgment call (2) of the
+    /// approved plan) with no other cover.
     ///
     /// One heading, at row 1: it is `headings.first` AND `headings.last`, so
     /// both rules choose the same row and the two cuts meet. The rule is that
@@ -213,9 +233,12 @@ void main() {
       // `wordHeight / 1.45` and the arithmetic below is readable in raw
       // wordHeight units. `42` is the folio, and it sits outside that
       // arithmetic entirely: `glyphSpan` returns 0 for a word with no
-      // letters, so `OcrWord.typeHeight` keeps the raw box. It never matters —
-      // `_readsLikeTitle` rejects a leading digit, so the row is never a
-      // heading, and at one word it never enters `bodyTypeHeight` either.
+      // letters, so `OcrWord.typeHeight` keeps the raw box — 70, which does
+      // clear the bar. It is refused one step earlier, by
+      // `_readsLikeTitle`'s `_minTitleChars`: two characters is under the
+      // three-character floor, so the leading-digit rule beneath it never
+      // decides anything here. At one word it never enters `bodyTypeHeight`
+      // either.
       //
       // The numbers are solved, not guessed. Body median before the tail cut
       // is (70 + 30) / 2 = 50, so the heading bar is 75; after it, only the

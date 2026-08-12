@@ -768,7 +768,14 @@ void main(List<String> args) {
     // measure a pipeline nobody runs. `tailCut` stays the BEFORE column:
     // it is production minus this rule, so the delta is this rule alone.
     final cut = withoutFrameNoise(baseText, croppedDoc);
-    if (!identical(cut.text, tailCut.text)) {
+    // CONTENT, not identity. `_formatTrim` can use `identical` because it
+    // compares one applier's output with that applier's own input, and the
+    // rule returns the input object untouched when it declines. Here the two
+    // columns come from DIFFERENT calls, so they are always distinct objects
+    // on any tail-trimmed page and `identical` would count every one of them
+    // as a leading trim — inflating the headline number this arm exists to
+    // produce, with a `(blank)` 0-char row in the per-page list to match.
+    if (cut.text != tailCut.text) {
       trimmed++;
       // The removed span is a strict PREFIX here, the mirror of `_formatTrim`
       // reading a strict suffix — so it is recovered from the ROW COUNT

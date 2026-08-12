@@ -234,6 +234,49 @@ void main() {
     expect(seen.contains('havregryn'), isTrue, reason: 'the real recipe');
   });
 
+  /// The ORDER test, and the only thing in the repo that pins it.
+  ///
+  /// `frame_trim_test.dart` proves `withoutFrameNoise` is right, but that is
+  /// the callee: revert THIS file's one line to the old
+  /// `withoutOrphanTail` -> `withoutLeadingNoise` chain and every suite stays
+  /// green, because the composition fixture above is order-INSENSITIVE (both
+  /// orders produce byte-identical output on it). Measured, which is how the
+  /// gap was found.
+  ///
+  /// This fixture is not. It is `frame_trim_test.dart`'s regression fixture
+  /// replayed through the manager: the tail cut removes the four short rows
+  /// dragging the median down, the bar rises past the real title `Abb`, and
+  /// under the CHAINED order the leading rule then eats it. Under the shipped
+  /// single call it survives. See `frame_trim.dart` for the full mechanism and
+  /// the solved arithmetic.
+  test('a baseline shift cannot eat a real title through the MANAGER', () async {
+    final h = build();
+    final lines = [
+      line('42', wordHeight: 70, words: 1),
+      line('Abb', wordHeight: 100, words: 1),
+      for (var i = 0; i < 4; i++) line('ab ab ab ab', wordHeight: 70),
+      line('Ratt', wordHeight: 108, words: 1),
+      line('Katt', wordHeight: 108, words: 1),
+      for (var i = 0; i < 4; i++) line('ab ab ab ab', wordHeight: 30),
+    ];
+    final doc = DocumentLayout([PageLayout(lines: lines)]);
+    expect(
+      HeadingDetector.headingLines(PageLayout(lines: lines)),
+      [1, 6, 7],
+      reason: 'premise: all three titles detected on the UNTOUCHED page',
+    );
+
+    await h.manager.autoParseMulti(doc.text!, layout: doc);
+
+    expect(h.spy.seen, isNotEmpty);
+    final seen = h.spy.seen.join('\n');
+    // Reddens the moment `autoParseMulti` goes back to chaining the two
+    // appliers — that is this test's entire job.
+    expect(seen.contains('Abb'), isTrue, reason: 'the real title survives');
+    expect(seen.contains('Katt'), isFalse, reason: 'the orphan tail still goes');
+    expect(seen.contains('42'), isFalse, reason: 'the folio still goes');
+  });
+
   test('without a layout the text is handed on untouched', () async {
     final h = build();
     const input =

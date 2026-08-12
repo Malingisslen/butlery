@@ -30,8 +30,8 @@ OcrLine line(String text, {required double wordHeight, int words = 4}) {
 /// Six body lines — enough for a baseline, and 22 characters each, matching
 /// `orphan_tail_test.dart`'s `body()` exactly (the two suites' fixtures are
 /// deliberately kept in the same shape rather than shared, so each stays
-/// readable standalone — see the composition test in
-/// `import_manager_orphan_tail_test.dart` for where the two actually meet).
+/// readable standalone — see `frame_trim_test.dart` for where the two rules
+/// actually meet, and `import_manager_orphan_tail_test.dart` for the wiring).
 List<OcrLine> body({int count = 6, String text = 'brodtext rad med ord'}) => [
   for (var i = 0; i < count; i++) line('$text $i', wordHeight: 70),
 ];
