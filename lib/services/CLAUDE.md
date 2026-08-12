@@ -29,6 +29,8 @@ These services intentionally don't extend `BaseService` because they're pure-com
   titles on a photographed page by TYPE SIZE; same category as the splitter)
 - `lib/services/import/layout/orphan_tail.dart` (pure function — cuts a heading the
   camera frame separated from its own recipe off the end of a page; same category)
+- `lib/services/import/layout/leading_noise.dart` (pure function — cuts furniture
+  off the FRONT of the first page, before the recipe starts; mirror of `orphan_tail.dart`)
 - `lib/services/ocr/text_layout.dart` (value types only — the OCR page model; no Flutter
   and nothing third-party by design, so it runs under plain `dart test` and replays
   offline)

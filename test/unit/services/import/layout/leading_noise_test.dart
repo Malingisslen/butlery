@@ -1,0 +1,195 @@
+import 'package:butlery/services/import/layout/heading_detector.dart';
+import 'package:butlery/services/import/layout/leading_noise.dart';
+import 'package:butlery/services/ocr/text_layout.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+/// A line whose TYPE height is set by its word boxes, which is the only thing
+/// `HeadingDetector` MEASURES — it also READS the text, because
+/// `_readsLikeTitle` gates on length, word count, a quantity regex, terminal
+/// punctuation and a capital initial. A fixture heading has to satisfy both.
+///
+/// Body lines carry four words by default so they can establish the page's
+/// baseline; `words: 4` is `PageLayout._minBodyWords` EXACTLY, with no
+/// headroom — a furniture fixture deliberately uses FEWER words so it never
+/// contaminates the baseline median, same convention as `orphan_tail_test.dart`.
+OcrLine line(String text, {required double wordHeight, int words = 4}) {
+  final tokens = text.trim().split(RegExp(r'\s+'));
+  return OcrLine(
+    text: text,
+    box: LayoutBox(left: 0, top: 0, width: text.length * 18, height: wordHeight),
+    words: [
+      for (var i = 0; i < words; i++)
+        OcrWord(
+          text: i < tokens.length ? tokens[i] : 'ord',
+          box: LayoutBox(left: i * 200, top: 0, width: 180, height: wordHeight),
+        ),
+    ],
+  );
+}
+
+/// Six body lines — enough for a baseline, and 22 characters each, matching
+/// `orphan_tail_test.dart`'s `body()` exactly (the two suites' fixtures are
+/// deliberately kept in the same shape rather than shared, so each stays
+/// readable standalone — see the composition test in
+/// `import_manager_orphan_tail_test.dart` for where the two actually meet).
+List<OcrLine> body({int count = 6, String text = 'brodtext rad med ord'}) => [
+  for (var i = 0; i < count; i++) line('$text $i', wordHeight: 70),
+];
+
+/// A heading: same fixture shape, 2x the body's type height.
+OcrLine heading(String text) => line(text, wordHeight: 145, words: 1);
+
+DocumentLayout doc(List<PageLayout> pages) => DocumentLayout(pages);
+
+PageLayout page(List<OcrLine> lines) => PageLayout(lines: lines);
+
+void main() {
+  group('withoutLeadingNoise', () {
+    test('drops a short furniture line before the first heading', () {
+      final lines = [
+        // 13 characters, well under the 60-char budget, and not shaped like
+        // an ingredient or instruction — a running header/folio stand-in.
+        line('Kokboken 2024', wordHeight: 70, words: 2),
+        heading('Mandelforell'),
+        ...body(),
+      ];
+      final layout = doc([page(lines)]);
+      final input = layout.text!;
+      expect(
+        HeadingDetector.headingLines(page(lines)),
+        [1],
+        reason: 'premise: exactly one detected heading, at row 1',
+      );
+
+      final cut = withoutLeadingNoise(input, layout);
+
+      expect(cut.text.contains('Kokboken'), isFalse);
+      expect(cut.text.startsWith('Mandelforell'), isTrue);
+      expect(cut.layout!.pages.first!.lines.length, 7);
+      expect(cut.layout!.matchesLineCountOf(cut.text), isTrue);
+    });
+
+    test('keeps an ingredient-shaped leading line even under budget', () {
+      final lines = [
+        // Short (10 chars, under budget) but reads as an ingredient row via
+        // `RecipeSectionDetector.looksLikeIngredient`'s measurement pattern —
+        // the guard this rule carries specifically so a stray ingredient line
+        // is never mistaken for furniture.
+        line('2 dl mjolk', wordHeight: 70, words: 3),
+        heading('Mandelforell'),
+        ...body(),
+      ];
+      final layout = doc([page(lines)]);
+      final input = layout.text!;
+
+      final cut = withoutLeadingNoise(input, layout);
+
+      expect(identical(cut.text, input), isTrue);
+      expect(cut.text.contains('2 dl mjolk'), isTrue);
+    });
+
+    test('keeps an instruction-shaped leading line even under budget', () {
+      final lines = [
+        // Under budget, but contains a cooking-instruction keyword
+        // (`RecipeSectionDetector.hasInstructionKeywords`).
+        line('Koka upp vattnet', wordHeight: 70, words: 3),
+        heading('Mandelforell'),
+        ...body(),
+      ];
+      final layout = doc([page(lines)]);
+      final input = layout.text!;
+
+      final cut = withoutLeadingNoise(input, layout);
+
+      expect(identical(cut.text, input), isTrue);
+      expect(cut.text.contains('Koka upp vattnet'), isTrue);
+    });
+
+    test('leaves a long leading passage alone — over the budget', () {
+      final lines = [
+        // Three 22-character lines = 66 characters, over the 60-char budget,
+        // and shaped like neither an ingredient nor an instruction — isolates
+        // the budget gate from the content gate above.
+        line('brodtext rad med ord 0', wordHeight: 70),
+        line('brodtext rad med ord 1', wordHeight: 70),
+        line('brodtext rad med ord 2', wordHeight: 70),
+        heading('Mandelforell'),
+        ...body(),
+      ];
+      final layout = doc([page(lines)]);
+      final input = layout.text!;
+      expect(
+        HeadingDetector.headingLines(page(lines)),
+        [3],
+        reason: 'premise: exactly one detected heading, at row 3',
+      );
+
+      final cut = withoutLeadingNoise(input, layout);
+
+      expect(identical(cut.text, input), isTrue);
+    });
+
+    test('does nothing when the heading is already the first row', () {
+      final lines = [heading('Mandelforell'), ...body()];
+      final layout = doc([page(lines)]);
+      final input = layout.text!;
+
+      final cut = withoutLeadingNoise(input, layout);
+
+      expect(identical(cut.text, input), isTrue);
+      expect(identical(cut.layout, layout), isTrue);
+    });
+
+    test('does nothing when no heading is detected on the page', () {
+      final layout = doc([page(body())]);
+      final input = layout.text!;
+
+      final cut = withoutLeadingNoise(input, layout);
+
+      expect(identical(cut.text, input), isTrue);
+    });
+
+    test('only page zero is eligible — a later page keeps its furniture', () {
+      final firstPage = [heading('Recept Ett'), ...body()];
+      final secondPage = [
+        line('Kokboken 2024', wordHeight: 70, words: 2),
+        heading('Mandelforell'),
+        ...body(),
+      ];
+      final layout = doc([page(firstPage), page(secondPage)]);
+      final input = layout.text!;
+
+      final cut = withoutLeadingNoise(input, layout);
+
+      // Page zero already starts on its heading (nothing to cut there), and
+      // this rule never inspects any page but the first — so the second
+      // page's furniture survives untouched even though it is the same shape
+      // as the case this rule cuts on page zero.
+      expect(cut.text.contains('Kokboken'), isTrue);
+    });
+
+    test('a row-count mismatch between text and layout no-ops', () {
+      final lines = [
+        line('Kokboken 2024', wordHeight: 70, words: 2),
+        heading('Mandelforell'),
+        ...body(),
+      ];
+      final layout = doc([page(lines)]);
+      const input = 'not the same text\nat all';
+
+      final cut = withoutLeadingNoise(input, layout);
+
+      expect(identical(cut.text, input), isTrue);
+      expect(identical(cut.layout, layout), isTrue);
+    });
+
+    test('without a layout the text is handed back untouched', () {
+      const input = 'Kokboken 2024\nMandelforell\nnagot mer';
+
+      final cut = withoutLeadingNoise(input, null);
+
+      expect(identical(cut.text, input), isTrue);
+      expect(cut.layout, isNull);
+    });
+  });
+}

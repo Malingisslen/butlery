@@ -9,6 +9,7 @@ import 'package:butlery/services/unified/operations/personal_recipe_operations.d
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/layout/orphan_tail.dart';
+import 'package:butlery/services/import/layout/leading_noise.dart';
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
@@ -605,16 +606,18 @@ class ImportManager {
   ///
   /// **The single-recipe path is no longer byte-unchanged, and that is
   /// deliberate.** This method now trims an orphan trailing heading off the
-  /// input before splitting (`withoutOrphanTail`), so a page whose photo caught
-  /// the next recipe's title loses that title. The splitter keeps its own
-  /// contract — it still never hands back one shortened block; what it is handed
-  /// can now be shorter. (It does drop furniture when it splits — bounded by
-  /// the discard budget on the LAYOUT path only, and NOT bounded at all on the
-  /// text path, where a block failing its tests vanishes at any size; that is a
-  /// separate promise, stated on `split`.) Trimming
-  /// happens HERE rather than inside
-  /// `split` for two reasons: the splitter's guarantee is worth keeping, and
-  /// the eval arm can only measure the trim if it sits outside `split`.
+  /// end of the input (`withoutOrphanTail`) and furniture off the front of it
+  /// (`withoutLeadingNoise`) before splitting, so a page whose photo caught the
+  /// next recipe's title loses that title, and a page whose photo caught a
+  /// running header, a folio, or the previous recipe's tail loses that too.
+  /// The splitter keeps its own contract — it still never hands back one
+  /// shortened block; what it is handed can now be shorter. (It does drop
+  /// furniture when it splits — bounded by the discard budget on the LAYOUT
+  /// path only, and NOT bounded at all on the text path, where a block failing
+  /// its tests vanishes at any size; that is a separate promise, stated on
+  /// `split`.) Trimming happens HERE rather than inside `split` for two
+  /// reasons: the splitter's guarantee is worth keeping, and the eval arms can
+  /// only measure a trim if it sits outside `split`.
   /// A run without a [layout] is still byte-identical to before.
   Future<BatchImportResult> autoParseMulti(
     String input, {
@@ -636,7 +639,11 @@ class ImportManager {
     // is how three drifting copies of a figure get made.
     // `withoutOrphanTail` returns the originals untouched whenever it cannot
     // tell.
-    final trimmed = withoutOrphanTail(input, layout);
+    final tailTrimmed = withoutOrphanTail(input, layout);
+    // Leading furniture second, on the tail trim's own output — see
+    // `leading_noise.dart` for why the two rules compose safely on a
+    // single-page import where both trims touch the SAME page.
+    final trimmed = withoutLeadingNoise(tailTrimmed.text, tailTrimmed.layout);
     final blocks = MultiRecipeSplitter().split(
       trimmed.text,
       layout: trimmed.layout,
