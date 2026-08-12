@@ -67,8 +67,8 @@
 /// already be a different (smaller) median than before the tail was cut.
 /// Both rules independently re-derive their own heading list from whatever
 /// page they are handed, so this is safe by construction rather than by
-/// coincidence — but it is why `leading_noise_test.dart` carries a
-/// composition case exercising both rules on one page, not just each rule
+/// coincidence — but it is why `import_manager_orphan_tail_test.dart` carries
+/// a composition case exercising both rules on one page, not just each rule
 /// alone.
 library;
 
