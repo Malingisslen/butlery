@@ -148,12 +148,12 @@ class _HouseholdAllergenFilterTileState
     }
     final cs = Theme.of(context).colorScheme;
     final on = _userService.currentUserProfile?.useHouseholdAllergens ?? true;
-    final warning = context.butleryColors.warning;
+    final colors = context.butleryColors;
 
     return SwitchListTile(
       secondary: Icon(
         Icons.groups_outlined,
-        color: on ? cs.onSurfaceVariant : warning,
+        color: on ? cs.onSurfaceVariant : colors.warning,
       ),
       title: Text(
         context.l10n.householdAllergenFilterTitle,
@@ -172,13 +172,17 @@ class _HouseholdAllergenFilterTileState
                 Icon(
                   Icons.warning_amber,
                   size: AppDimensions.iconSizeS,
-                  color: warning,
+                  color: colors.warning,
                 ),
                 const SizedBox(width: AppDimensions.spacingXxs),
                 Expanded(
                   child: Text(
                     context.l10n.householdAllergenFilterSubtitleOff,
-                    style: AppTextStyles.bodySmall.copyWith(color: warning),
+                    // The gold is an icon/container colour; small text on cream
+                    // needs onWarningContainer to clear WCAG AA.
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: colors.onWarningContainer,
+                    ),
                   ),
                 ),
               ],

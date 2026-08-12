@@ -48,6 +48,14 @@ Primary palette (do not invent new colors — extend from these):
 | `warning` | `#D4A03C` | Warnings (warm gold, not amber) |
 | `success` | alias to `forestGreen` (`#4A7C59`) | Success states |
 
+**Warning icon/text always uses `context.butleryColors.warning`, never `cs.secondary`.**
+`cs.secondary` is `rust` (`AppColors.secondary = rust`), which is already the app's hard-error
+accent (`_buildInlineError`'s `Icons.error_outline`). Reusing it for a soft caution (e.g.
+`Icons.warning_amber`) collapses two different severities into one color. `warning` is used
+this way in ~50 call sites already (`household_allergen_filter_tile.dart`,
+`conflict_banner.dart`, `rate_limit_dialog.dart`, etc.) — grep `context.butleryColors.warning`
+for the reference pattern before wiring a new caution row.
+
 **Text colors** — use pure grays, NOT blue-gray tints:
 `#1A1A1A` / `#666666` / `#999999`.
 

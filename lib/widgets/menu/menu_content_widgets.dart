@@ -13,6 +13,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -319,7 +320,14 @@ class MenuContentWidgets {
   /// hint rather than joining it: attributing the shrink to the family's
   /// allergies would over-claim, since the floor did part of the filtering.
   static Widget _buildRosterIncompleteHint(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    // Same icon, size and gold as the settings tile's allergen-warning row
+    // (household_allergen_filter_tile) — one caution, two surfaces. NOT
+    // cs.secondary: `_buildInlineError` below paints hard failures in that
+    // rust, which app_colors.dart says is an accent and never an error colour,
+    // so don't copy it here — and a caution must not read as a failure anyway.
+    // The gold is icons-and-containers only (app_colors.dart), so the text
+    // takes onWarningContainer, which clears WCAG AA on cream.
+    final colors = context.butleryColors;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
@@ -329,14 +337,14 @@ class MenuContentWidgets {
           Icon(
             Icons.warning_amber,
             size: AppDimensions.iconSizeS,
-            color: cs.secondary,
+            color: colors.warning,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           Expanded(
             child: Text(
               context.l10n.householdAllergenRosterIncomplete,
               style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onSurfaceVariant,
+                color: colors.onWarningContainer,
               ),
             ),
           ),

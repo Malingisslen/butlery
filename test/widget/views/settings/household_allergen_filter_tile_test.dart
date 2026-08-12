@@ -19,6 +19,7 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_filter_tile.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -114,6 +115,43 @@ void main() {
         isTrue,
       );
     });
+
+    testWidgets(
+      'the filter-off warning row is drawn in the warning tokens, gold icon '
+      'and onWarningContainer text',
+      (tester) async {
+        // The gold is an icon/container colour: as small text on cream it
+        // measures ~2.2:1, well under WCAG AA. This row shipped that way, so
+        // the tokens are pinned rather than left to review.
+        when(() => household.hasHousehold).thenReturn(true);
+        when(
+          () => userService.currentUserProfile,
+        ).thenReturn(_profile(useHousehold: false));
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(child: const HouseholdAllergenFilterTile()),
+        );
+        await tester.pump();
+
+        // Scoped to the tile: the confirm dialog this suite opens elsewhere
+        // carries two more warning_amber icons, and an unscoped finder would
+        // crash rather than fail cleanly the day someone settles past it.
+        final icon = tester.widget<Icon>(
+          find.descendant(
+            of: find.byType(SwitchListTile),
+            matching: find.byIcon(Icons.warning_amber),
+          ),
+        );
+        expect(icon.color, ButleryColors.light.warning);
+        final subtitle = tester.widget<Text>(
+          find.text(sv.householdAllergenFilterSubtitleOff),
+        );
+        expect(
+          subtitle.style?.color,
+          ButleryColors.light.onWarningContainer,
+        );
+      },
+    );
 
     testWidgets('turning ON persists immediately with no dialog', (
       tester,

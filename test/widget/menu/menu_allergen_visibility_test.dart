@@ -12,6 +12,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart'
     show MenuPrefSource;
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/theme/butlery_colors_extension.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -142,6 +143,20 @@ void main() {
         findsOneWidget,
       );
       expect(find.textContaining('familjens allergier'), findsNothing);
+
+      // Pins the two design-system tokens, because six green tests once
+      // shipped this row's icon in the hard-error rust and its text in muted
+      // grey: the gold is icon-only, and small text on cream needs
+      // onWarningContainer for WCAG AA.
+      final icon = tester.widget<Icon>(find.byIcon(Icons.warning_amber));
+      expect(icon.color, ButleryColors.light.warning);
+      final warningText = tester.widget<Text>(
+        find.textContaining('listan över allergier kan vara ofullständig'),
+      );
+      expect(
+        warningText.style?.color,
+        ButleryColors.light.onWarningContainer,
+      );
     },
   );
 

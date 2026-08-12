@@ -17686,3 +17686,139 @@ live and still out of scope — re-confirmed by reading the file this round.
 `feature_flag_service.dart` dd665c8c9c14d72a62c5fd08e3377d70 (476);
 `corpus_split_eval.dart` 8e1948c772187bd97cf1576ae1e45509 (1034);
 `orphan_tail_test.dart` e654a1747afd37f2bfefe03b1251d08e (425, unchanged this round).
+
+## 2026-08-12 — Colour-token pins on the two allergen warning rows (BUT-1685 / BUT-1465 follow-up)
+
+**Trigger:** review of two new widget-test assertions added after a shipped visual defect —
+the roster-incomplete warning row rendered its icon in `cs.secondary` (the rust
+`_buildInlineError` uses for hard failures) and its text in `cs.onSurfaceVariant`; the
+settings tile's off-state subtitle rendered its TEXT in the warning gold. Six green tests in
+the menu suite and seven in the tile suite never asserted colour.
+
+### Scope
+- `test/widget/menu/menu_allergen_visibility_test.dart` (199 lines)
+- `test/widget/views/settings/household_allergen_filter_tile_test.dart` (332)
+- `lib/widgets/menu/menu_content_widgets.dart` — `_buildRosterIncompleteHint` (794)
+- `lib/views/settings/widgets/household_allergen_filter_tile.dart` — off-state subtitle (194)
+
+### What the production diff actually changed
+Menu row: icon `cs.secondary` → `colors.warning`, text `cs.onSurfaceVariant` →
+`colors.onWarningContainer`. Tile row: text `warning` → `colors.onWarningContainer` ONLY —
+its icon was gold before and after. So of the four new assertions, THREE kill the historical
+defect and one (the tile's icon) is a retention pin on a value that was never wrong. Worth
+saying out loud in a review, because "each suite now asserts both tokens" reads as four
+discriminators.
+
+### Discrimination, measured not argued
+Throwaway probe `test/widget/menu/zz_scratch_token_probe_test.dart` (written, run, deleted;
+`git status --porcelain test/` re-checked afterwards): a replica Row under
+`createLocalizedTestApp`, rendered once with the pre-fix menu colours and once with the
+pre-fix tile colours, running the suites' own finders and wrapping each `expect` in
+`expect(() => ..., throwsA(isA<TestFailure>()))`, plus a premise assert that the pre-fix
+value really rendered. Both probe tests pass → the three assertions redden on the exact
+historical regression, and the tile icon assert passes on gold as expected. This is probe
+ladder rung (3) and needed no `lib/` mutation, which matters because both production files
+were dirty and the classifier refuses `lib/` mutants.
+
+Value check (light scheme, `AppTheme.lightTheme` registers `ButleryColors.light` verbatim at
+`app_theme.dart:98-101`): warning `0xFFD4A03C`, onWarningContainer `0xFF7A5B10`; pre-fix
+secondary = rust `0xFF8B5A3C`, onSurfaceVariant = textMedium. No `ColorScheme` role in
+`AppColors.lightColorScheme` equals either expectation (`tertiary` is starGold `0xFFFBBF24`),
+so a swap to ANY scheme role reddens. The only same-value sibling is
+`ButleryColors.categoryDairy` (identical gold) — a semantically null mutant the user cannot
+see, so not a coverage hole.
+
+### Contrast arithmetic (the comments' claims, checked)
+`AppTextStyles.bodySmall` is fontSize 13 → normal text, AA floor 4.5:1. On cream
+`0xFFF8F4E8` (L=0.9049): gold `0xFFD4A03C` (L=0.3947) → **2.15:1**, matching the "~2.2:1"
+in both comments and failing AA; onWarningContainer `0xFF7A5B10` (L=0.1165) → **5.73:1**,
+clearing AA. Both production comments are accurate. Adjacent observation, not filed: the
+gold ICON on cream is also 2.15:1, under the WCAG 1.4.11 3:1 non-text floor — defensible
+only because the adjacent text carries the same message, i.e. the icon is decorative. A
+uiux question, not a test one.
+
+### Fixture reachability
+`_profile(useHousehold: false)` with `hasHousehold: true` is the persisted post-opt-out
+state: `UserProfile.useHouseholdAllergens` defaults `true` (`user_profile.dart:160`), the
+build reads `?? true`, and false is written only by the confirmed opt-out — which the SAME
+suite drives end-to-end (`verify(setUseHouseholdAllergens(false))`). Not a synthetic state.
+
+### Findings — all Low, none blocking
+1. `ButleryColors.light.warning` is a static const, not a `Builder`-captured
+   `context.butleryColors.warning`. It satisfies the rule's PURPOSE (a token retune moves
+   both sides; nothing reddens) because `lightTheme` registers exactly that instance — but
+   `AppTheme.lightThemeWith(accent)` exists for `SeasonalAccentService`, and a dark-mode or
+   accent-override fixture would silently pin the wrong value. The Builder form is free in
+   the menu suite (a `Builder` is already there).
+2. `find.byIcon(Icons.warning_amber)` in the TILE suite is unscoped, and that file's confirm
+   dialog carries `titleIcon: Icons.warning_amber` AND `primaryActionIcon: Icons.warning_amber`.
+   Safe today (the colour test never opens the dialog); a later `pumpAndSettle` past the
+   dialog turns the assert into a StateError crash. Scope to the `SwitchListTile`.
+3. The menu suite's two colour asserts were appended to the existing wording test rather than
+   given their own `test()` (which is what the tile suite did) — a colour regression reddens
+   a test named about attribution wording. Cosmetic; the inline comment carries the intent.
+
+Residual by construction: both suites read the DECLARED `Icon.color` / `Text.style.color`,
+not painted pixels, so a refactor that drops the explicit colour and inherits an ambient
+`IconTheme` of the same gold would false-red. Acceptable — the pin is "state the token
+explicitly", and pixels are golden-test territory.
+
+### Verdict
+Pass, 0 blocking. 14/14 green re-run locally (`flutter test` over both files, 00:10).
+
+### Closing hashes
+`menu_allergen_visibility_test.dart` c2e563f2e4195215aa30ead4be1dbef5 (199 lines);
+`household_allergen_filter_tile_test.dart` 1c08c25f7bb536d1fa20ec102427479f (332);
+`menu_content_widgets.dart` da7848ab8971b1bc6d9e825b2a94d8ed (794);
+`household_allergen_filter_tile.dart` 096904f77ac7cae85b44ab75da65225c (194).
+
+## 2026-08-12 — BUT-1685 colour pins, gate re-read after finding #2 applied
+
+Trigger: re-review request after the tile suite's `find.byIcon(Icons.warning_amber)` was
+scoped with `find.descendant(of: find.byType(SwitchListTile), ...)` (my finding #2 from the
+previous round). Findings #1 (capture `context.butleryColors` via a `Builder` instead of
+`ButleryColors.light`) and #3 (split the menu colour asserts into their own `test()`) were
+declined by the parent, with reasons.
+
+In scope, all four Read in full:
+- test/widget/menu/menu_allergen_visibility_test.dart (199 lines)
+- test/widget/views/settings/household_allergen_filter_tile_test.dart (340 lines)
+- lib/widgets/menu/menu_content_widgets.dart (795 lines)
+- lib/views/settings/widgets/household_allergen_filter_tile.dart (194 lines)
+
+Verified this round:
+- Scoped finder resolves to EXACTLY one Icon. Proven mechanically, not by reading:
+  `tester.widget<Icon>` throws `StateError` on 0 or >1 matches, and the suite is green
+  (14/14, run here). The tile's `secondary` is `Icons.groups_outlined`, so the subtitle's
+  warning icon is the only `warning_amber` under the `SwitchListTile`.
+- The scoping comment's factual half is TRUE: `base_dialog.dart` renders `Icon(titleIcon)`
+  (line 52) and, on the `isDangerous` branch, `Icon(primaryActionIcon ?? Icons.delete)`
+  (line 116) — two `warning_amber` icons for this tile's confirm dialog.
+- The hypothetical half is weaker than it reads: the warning ROW requires `on == false`
+  and the DIALOG requires turning off from `on == true`, so with this suite's stubbing the
+  two states are mutually exclusive and a bare `pumpAndSettle` could not actually collide
+  today. Scoping is defence-in-depth, costs nothing, and is still the right form. Not filed.
+- Finding #1 conceded. `AppTheme.lightTheme` registers `ButleryColors.light`
+  (app_theme.dart:100 fallback); `createLocalizedTestApp` pins `AppTheme.lightTheme`
+  (widget_test_app.dart:35); `context.butleryColors` itself falls back to
+  `ButleryColors.light` (butlery_colors_extension.dart:431). `SeasonalAccentService` was
+  read directly (lines 40-104): spring/autumn/winter `copyWith` only `navAccent`,
+  `recipeCardBottomBorder`, `categoryMeatFish` and (winter) `sharedRecipeBackground` —
+  `warning`/`onWarningContainer` are never touched. The pin names a TOKEN, not a hex, so a
+  retune moves both sides; the only breaking change would be a re-registration, which is a
+  behaviour change that SHOULD redden. Knowledge line already allowed this form ("or better
+  `context.butleryColors.x`"), so the declined finding was a preference, not a defect.
+- Finding #3 conceded: the colour asserts sit in the roster-warning test whose subject is
+  that row, and the tokens are part of what "warns" means (caution, not failure).
+- Re-ran the knowledge file's own discrimination check for colour pins. Neither
+  `0xFFD4A03C` (warning) nor `0xFF7A5B10` (onWarningContainer) is assigned to any
+  `ColorScheme` role, so a `cs.tertiary`/`cs.error` swap mutant reddens. NEW: `warning` and
+  `categoryDairy` are byte-identical in the LIGHT palette
+  (butlery_colors_extension.dart:136 and :156), so a `colors.warning -> colors.categoryDairy`
+  mutant survives every possible pin. Unavoidable palette coincidence, not a test defect;
+  folded into the principle so the next round does not re-derive it. They differ in dark
+  (0xFFE4C56B vs 0xFFE8C76E).
+- Dark mode is uncovered by both suites (dark's warning tokens differ), but both widgets
+  read `context.butleryColors`, so dark follows the theme by construction. Noted, not filed.
+
+Verdict: pass (0 blocking).
