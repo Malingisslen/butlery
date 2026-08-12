@@ -1,7 +1,7 @@
 # ADR-0005: Household allergen sharing — scope, recipients, and the minimisation premise
 
 - **Date:** 2026-08-12
-- **Status:** Escalated to Malin → decided (decisions 1–4); one sub-question open
+- **Status:** Escalated to Malin → decided (all five; the last on 2026-08-12)
 - **Trigger:** BUT-1693 — let a household member share their allergen list so
   menu generation stops guessing (Part 2 of BUT-1663). Plan:
   `tasks/butlery-1693-household-share-plan.md`
@@ -96,11 +96,14 @@ The June decision stands. This entry is the record so it is not re-litigated.
 privacy-policy clause are written and approved **before** any code. Not a
 build-behind-a-flag-and-paper-it-later.
 
-**Still open:** whether a member's Art. 15 export includes the *other* members'
-shared lists (which their own client can already read). Engineering recommends
-**no** — other people's allergies are not the requester's personal data. Recorded
-as R8 in the DPIA addendum, to be settled there rather than by analogy with the
-export precedents for display names and shopping lists.
+**D5 — escalated to Malin → the export carries the requester's OWN share and
+consent record only** (2026-08-12, accepting the engineering recommendation).
+Other members' shared lists stay out even though the requester's client can read
+them live. Reasoned on its own merits, not by analogy: BUT-1732/1772/1798 govern
+display names, conversation participants and shopping rows, and citing them for
+Art. 9 health data about another person is exactly the transfer error the
+BUT-1732 entry records having made once. Art. 15 does not reach data that is not
+the requester's.
 
 ## Stakes (per role)
 

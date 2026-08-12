@@ -3,16 +3,18 @@
 **Data Protection Impact Assessment (GDPR Article 35) — addendum to
 [`family-rating-dpia.md`](family-rating-dpia.md)**
 
-> ⏳ **DRAFT FOR REVIEW.** Written by engineering as a starting point for the
-> controller's review, not as legal advice. **No code ships until this is
-> signed off** — Malin's explicit sequencing call, 2026-08-11 (see §9).
+> ✅ **APPROVED** by Malin Gisslén (controller) on **2026-08-12**, including the
+> consent copy in Annex A and the policy clause in Annex B. Drafted by
+> engineering as a starting point for the controller's review, not as legal
+> advice. The build is cleared to start; the feature stays behind an off flag
+> until the policy clause is live (§9).
 
 - **Feature:** an adult household member opts in to share their own declared
   allergens and dietary choices with their household, so weekly-menu generation
   filters on the real list instead of a guessed common-allergen floor.
 - **Controller:** Butlery (Malin Gisslén, sole founder).
 - **Date drafted:** 2026-08-12
-- **Status:** ⏳ Draft — awaiting controller sign-off (§9)
+- **Status:** ✅ **APPROVED — 2026-08-12. Build cleared.**
 - **Why an addendum and not a new DPIA:** the parent DPIA already assesses
   household-scoped Art. 9 allergen data (for guardian-managed diner profiles)
   inside the same household boundary, with the same storage, the same rules
@@ -243,15 +245,17 @@ public.
 
 ---
 
-## 6. Outcome — for the controller to complete
+## 6. Outcome (reviewed and agreed 2026-08-12)
 
-- [ ] Lawful bases confirmed (§1.5).
-- [ ] Consent wording approved (**Annex A**).
-- [ ] Privacy-policy clause approved (**Annex B**).
-- [ ] R3 (later joiners see an earlier share) accepted.
-- [ ] R6 (dietary bundled, menu can narrow) accepted.
-- [ ] R8 (export scope for other members' lists) decided.
-- [ ] Residual risk accepted; feature cleared to build.
+- [x] Lawful bases confirmed (§1.5).
+- [x] Consent wording approved (**Annex A**).
+- [x] Privacy-policy clause approved (**Annex B**), to be applied to the shipping
+      policy when the feature flag goes on.
+- [x] R3 (later joiners see an earlier share) accepted.
+- [x] R6 (dietary bundled, menu can narrow) accepted.
+- [x] R8 decided — the export carries the requester's **own** share and consent
+      record only; other members' shared lists stay out.
+- [x] Residual risk accepted; feature cleared to build.
 
 ---
 
@@ -284,13 +288,21 @@ Decision 5 is open.
    per-member storage, combined-list display. §4.
 4. **Sequencing:** the papers come before the code. Nothing is built until this
    document, Annex A and Annex B are approved.
-5. **Export scope (open):** does a member's export include *other* members'
-   shared lists? Engineering recommends **no** (R8).
+5. **Export scope — decided 2026-08-12:** a member's export carries their **own**
+   shared list and consent record only. Other members' shared lists stay out,
+   even though the requester's client can read them live: they are health data
+   about other people, and Art. 15 does not reach them. This deliberately does
+   **not** follow the shared-list and conversation export precedents
+   (BUT-1732/1772/1798), which govern display names and shopping rows — the
+   asymmetry is the decision, per Malin's recommendation-accepted "ja".
 
-- **Reviewed & agreed:** ☐ pending — Malin Gisslén (controller)
-- **Date:** ______
-- **Decision:** ☐ Approved ☐ Approved with conditions ☐ Rejected
-- **Conditions / notes:**
+- **Reviewed & agreed:** ☑ Malin Gisslén (controller)
+- **Date:** 2026-08-12
+- **Decision:** ☑ **Approved**
+- **Conditions / notes:** the privacy-policy clause (Annex B) is applied to the
+  shipping policy before the feature flag is switched on, not at merge time; the
+  engineering attestation in §8 is filled in with the test evidence at that same
+  moment. No other conditions recorded.
 
 ---
 
