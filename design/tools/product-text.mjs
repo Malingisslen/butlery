@@ -87,6 +87,7 @@ ${KEDJA_KOD}
       else if (sc.scope === 'product') klass = ctl ? 'PRODUCT_CONTROL_TEXT' : 'PRODUCT_STANDALONE_TEXT';
       else klass = 'UTANFOR_PRODUKTROT';   // varken authored grans eller legacy root
       const bas = { art: it.id, klass, scope: sc.scope, scopeKalla: sc.kalla,
+        iRitningsetikett: !!el.closest('.sc-label, .sc-id'),
         scopeFel: integritet.ok ? null : integritet.kod,
         elementOrdinal: ordinalAv.has(el) ? ordinalAv.get(el) : null,
         tagg: el.tagName.toLowerCase(), klassnamn: el.getAttribute('class') || null,
