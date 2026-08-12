@@ -87,7 +87,12 @@ export const TEXT_POPULATION = `(() => {
         if (!t) continue;
         const m = n.parentElement;
         if (!m) continue;
-        if (m.closest('.sc-label, .sc-id')) continue;
+        // KLASSBASERAT UNDANTAG BORTTAGET 2026-08-11. Regeln hoppade over
+        // .sc-label och .sc-id. Den tranade aldrig: dokumentationslagret ligger
+        // per konstruktion utanfor .sc-phone/.sc-card, sa loopen ovan naddes
+        // aldrig av ett enda sadant element. Matt over hela korpusen: 0
+        // fragment. Populationen avgors nu enbart av produktrotupplosningen —
+        // authored data-conformance-scope, annars legacy .sc-phone/.sc-card.
         const rng = document.createRange();
         rng.selectNodeContents(n);
         const rects = [...rng.getClientRects()].filter(r => r.width > 0 && r.height > 0);

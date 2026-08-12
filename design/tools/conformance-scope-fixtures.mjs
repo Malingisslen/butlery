@@ -164,6 +164,20 @@ const nod = (o = {}) => ({ scope: o.scope ?? null, legacyRoot: !!o.legacyRoot,
     nara.kalla === 'ogiltig' && langtBort.kalla === 'ogiltig' && g.kod === 'SCOPE_INVALID',
     'narmast: ' + nara.kalla + ' · langre upp: ' + langtBort.kalla + ' · integritet: ' + g.kod); }
 
+/* ── CS-17 · efter klassstadningen avgor rotupplosningen ensam ────────── */
+{ // De fyra klassnamn som historiskt styrde populationen. Ingen av dem far
+  // langre andra vare sig scope eller medlemskap — bara roten avgor.
+  const KLASSER = ['sc-label', 'sc-id', 'sc-cap', 'sc-note', 'nagot-annat'];
+  const iRot = KLASSER.map(k => losScope([nod({ klass: k }), nod({ legacyRoot: true }), nod()]));
+  const utanRot = KLASSER.map(k => losScope([nod({ klass: k }), nod()]));
+  const iAuthored = KLASSER.map(k => losScope([nod({ klass: k }), nod({ scope: 'product' }), nod()]));
+  prov('CS-17', 'efter klassstadningen avgors populationen enbart av rotupplosningen',
+    iRot.every(r => r.scope === 'product' && r.kalla === 'legacy-root') &&
+    utanRot.every(r => r.scope === null && r.kalla === 'ingen') &&
+    iAuthored.every(r => r.scope === 'product' && r.kalla === 'explicit'),
+    KLASSER.length + ' klassnamn ger identiskt utfall: i legacy-rot ' + iRot[0].scope +
+    ' · utan rot ' + utanRot[0].kalla + ' · under authored product ' + iAuthored[0].scope); }
+
 /* ── SM · METADATAMIGRATORN ───────────────────────────────────────────── */
 // Skrivaren ror kallan. Proven kraver att den bara satter ETT attribut, att
 // ankaret ar samma ordning som DOM raknar, och att allt tvetydigt faller.
@@ -244,7 +258,7 @@ const FIX = `<div class="sc-item" id="prov" data-theme="light">
     r.logg.filter(x => x.utfall === 'HOPPAD').length === 2,
     r.logg.map(x => x.utfall + ':' + x.skal).join(' · ')); }
 
-const ANTAL = 25;
+const ANTAL = 26;
 for (const x of resultat) console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
 const ok = resultat.filter(x => x.ok).length;
 console.log('');
