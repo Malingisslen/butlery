@@ -83,9 +83,15 @@
 /// tail) off the FRONT of the first page — before and after, measured on top
 /// of BOTH the shipped edge crop and `withoutOrphanTail`, because that chain
 /// is what production runs, in that order, before this rule ever sees the
-/// page. Implies `--trim` for the same reason `--trim` implies `--edge-crop`:
-/// the BEFORE column has to be what the previous stage in the real pipeline
-/// actually hands this one, or the comparison measures a chain nobody runs.
+/// page. It applies both of those itself, unconditionally, so its BEFORE
+/// column is hard-coded and no flag can change it. What implying `--trim`
+/// actually buys is LOADING: the chain `--leading-trim` -> `--trim` ->
+/// `--edge-crop` -> `--layout` is what makes `_loadPages` attach geometry,
+/// and without it every page hits `if (doc == null) continue` and the arm
+/// scores zero pages. (An earlier draft of this sentence borrowed `--trim`'s
+/// own justification — "the BEFORE column has to be what the previous stage
+/// hands this one" — which is true of `--trim` and not of this arm, and
+/// contradicted the correct one-line comment beside the flag in `main`.)
 ///
 /// **`leading_noise.dart`'s own budget is unmeasured — this arm exists so it
 /// stops being unmeasured.** It was written without corpus access, using the
@@ -122,8 +128,12 @@
 /// **Revisited: a fourth arm landed (`_formatLeadingTrim`, BUT-1828) and this
 /// paragraph is the promised revisit, not a rewrite that pretends it never
 /// said "three".** The reasoning holds anyway: all four share the corpus
-/// loader, the `_Page` model, the gold tokeniser and the same
-/// `MultiRecipeSplitter` instance, and `_formatLeadingTrim` in particular
+/// loader, the `_Page` model and the same `MultiRecipeSplitter` instance, and
+/// the three token-scoring arms share the gold tokeniser too (the `--layout`
+/// arm does not use it — it compares block COUNTS through `_score`, which is
+/// why the inherited "three arms" wording could say "the gold tokeniser"
+/// without qualification and this one cannot). `_formatLeadingTrim` in
+/// particular
 /// reads `_formatTrim`'s own AFTER column as ITS before column — splitting it
 /// into a separate file would sever that dependency from the code that makes
 /// it true, not just from the doc that states it. A reader would still need

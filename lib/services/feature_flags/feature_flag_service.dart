@@ -212,9 +212,16 @@ class FeatureFlagService {
     // `withoutOrphanTail` then `withoutLeadingNoise`, cutting furniture (a
     // running header, a folio, the previous recipe's tail) off the FRONT of
     // the first page the same way the tail trim cuts an orphaned heading off
-    // the back of the last one. With this flag off, `layout` is null and both
-    // rules no-op — nothing about this paragraph changes while the flag stays
-    // off.
+    // the back of the last one. With this flag off both rules no-op, so
+    // nothing about this paragraph changes while the flag stays off — but NOT
+    // because the layout argument is null, which is what an earlier draft of
+    // this line claimed. `photo_import_viewmodel` builds and passes a
+    // `DocumentLayout` unconditionally; the flag nulls each PAGE's geometry
+    // (`ocr_extraction_service`, `layout: useLayout ? raw?.layout : null`),
+    // which makes `isComplete` false, `text` null, and therefore
+    // `matchesLineCountOf` false — the first gate in both rules. Right
+    // conclusion, wrong mechanism, and the mechanism is what a future reader
+    // would rely on.
     //
     // **UNMEASURED, unlike the tail trim above it.** `withoutLeadingNoise`'s
     // budget (`_leadingBudget`, 60 characters) was written without corpus
@@ -226,10 +233,16 @@ class FeatureFlagService {
     // and update `leading_noise.dart`'s doc with the result before trusting
     // this rule at scale. It also carries a safety guard the tail trim does
     // not need: it refuses to cut anything that reads like real ingredient or
-    // instruction content, because unlike the tail trim's cut (which is
-    // always a piece of a block the splitter would have discarded anyway),
-    // there is no equivalent proof at the front of the page — see
-    // `leading_noise.dart`'s library doc for why.
+    // instruction content. The reason is NOT that the tail trim's cut is
+    // "always a piece of a block the splitter would have discarded anyway" —
+    // an earlier draft said that and it is doubly wrong: `orphan_tail.dart`
+    // calls its own version of that argument a MARGIN and "not a theorem",
+    // and it measured that on 14 of 19 real pages the splitter never builds a
+    // block at all (it exits at `flat.length < 2`), which is the very reason
+    // the tail trim exists. Read `leading_noise.dart`'s library doc for the
+    // asymmetry that does hold, and for the ORDERING HAZARD the two rules
+    // have when a single photo makes page zero and the last page the same
+    // page — that one is a real, executed finding and it is unresolved.
     'enable_layout_recipe_split': false,
 
     // Gradual Rollout Flags

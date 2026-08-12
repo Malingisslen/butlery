@@ -172,8 +172,9 @@ void main() {
 
       final cut = withoutLeadingNoise(input, layout);
 
-      // If this ever regresses to `headings.last`, the region it would try
-      // to cut (row 0 through row 8) is 152 characters — over budget — so
+      // If this ever regresses to `headings.last`, `pageRow` becomes 8 and
+      // the region it would try to cut is `sublist(8)`, i.e. rows 0 THROUGH
+      // 7 — 152 characters (13 + 13 + 6x21), over budget — so
       // the function would return UNCHANGED instead of wrongly swallowing
       // the first recipe. Either way the correct behaviour and the `.last`
       // mutant disagree on whether "Kokboken" survives, which is what this
@@ -254,10 +255,47 @@ void main() {
       final cut = withoutLeadingNoise(input, layout);
 
       // Page zero already starts on its heading (nothing to cut there), and
-      // this rule never inspects any page but the first — so the second
-      // page's furniture survives untouched even though it is the same shape
-      // as the case this rule cuts on page zero.
+      // this rule never inspects any page but the first — so the whole
+      // document comes back UNTOUCHED and the second page's furniture
+      // survives, even though it is the same shape as the case this rule
+      // cuts on page zero.
+      //
+      // `identical` is the load-bearing assertion, and the weaker
+      // `contains('Kokboken')` alone was VACUOUS here — measured 2026-08-12.
+      // Under a `pages.first` -> `pages.last` mutant the rule reads page
+      // ONE's headings, gets `pageRow == 1`, and then feeds that PAGE index
+      // to `textLineIndex` as if it were a FLAT one — which lands inside
+      // page ZERO and cuts `Recept Ett` instead. `Kokboken` survives that
+      // too, so the old assertion passed on a mutant that both deleted a
+      // real heading AND broke the row-count invariant.
+      expect(identical(cut.text, input), isTrue);
+      expect(identical(cut.layout, layout), isTrue);
       expect(cut.text.contains('Kokboken'), isTrue);
+      expect(cut.text.contains('Recept Ett'), isTrue);
+    });
+
+    test('a trimmed page zero keeps the row-count invariant on a SPREAD', () {
+      // The invariant assertion elsewhere in this file is single-page, where
+      // it cannot see a page-separator mistake. Here page zero is really
+      // trimmed and a second page follows it, so the returned text and the
+      // returned geometry have to agree across the separator too — the gate
+      // `MultiRecipeSplitter` refuses geometry on when it fails.
+      final firstPage = [
+        line('Kokboken 2024', wordHeight: 70, words: 2),
+        heading('Recept Ett'),
+        ...body(),
+      ];
+      final secondPage = [heading('Recept Tva'), ...body()];
+      final layout = doc([page(firstPage), page(secondPage)]);
+      final input = layout.text!;
+
+      final cut = withoutLeadingNoise(input, layout);
+
+      expect(cut.text.contains('Kokboken'), isFalse);
+      expect(cut.text.contains('Recept Tva'), isTrue);
+      expect(cut.layout!.pages.first!.lines.length, 7);
+      expect(cut.layout!.pages.last!.lines.length, 7);
+      expect(cut.layout!.matchesLineCountOf(cut.text), isTrue);
     });
 
     test('a row-count mismatch between text and layout no-ops', () {
