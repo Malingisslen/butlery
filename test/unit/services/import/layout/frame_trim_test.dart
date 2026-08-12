@@ -16,7 +16,10 @@ import 'package:flutter_test/flutter_test.dart';
 /// and its `p` put it in the 1.80 bucket, which left page two's heading list
 /// as `[7]` instead of `[0, 7]`. The test still passed — the tail rule reads
 /// `headings.last` either way — so the fixture was not the two-heading page
-/// it read as. Hence the premise assertions on every firing test below.
+/// it read as. Hence a premise assertion on every test below whose fixture
+/// has to stage a particular heading list — and, where a fixture cannot drift
+/// that way, an assertion that a cut actually FIRED, since this function
+/// returns its input untouched when nothing does.
 OcrLine line(String text, {required double wordHeight, int words = 4}) {
   final tokens = text.trim().split(RegExp(r'\s+'));
   return OcrLine(
@@ -120,6 +123,11 @@ void main() {
       expect(cut.text.contains('Mandelforell'), isFalse);
       expect(cut.text.startsWith('Frukostmat'), isTrue);
       expect(cut.layout!.matchesLineCountOf(cut.text), isTrue);
+      // The appliers are duplicated code — `withoutOrphanTail` still owns the
+      // slicing for its own suite and the eval arm's BEFORE column. With no
+      // leading cut to apply, the two must agree exactly, so this pins the
+      // copy that production actually runs against the copy that is measured.
+      expect(cut.text, withoutOrphanTail(layout.text!, layout).text);
     });
 
     test('cuts the head alone when there is no orphan tail', () {
@@ -188,6 +196,11 @@ void main() {
 
       final cut = withoutFrameNoise(layout.text!, layout);
 
+      // Load-bearing: `withoutFrameNoise` returns the ORIGINAL layout when
+      // nothing fires, and that page already carries 3000x4000 — so without
+      // this line the two assertions below hold whether or not a cut
+      // happened, and the test would pass on a rule that stopped working.
+      expect(cut.layout!.pages.first!.lines.length, 7, reason: 'a cut fired');
       expect(cut.layout!.pages.first!.imageWidth, 3000);
       expect(cut.layout!.pages.first!.imageHeight, 4000);
     });

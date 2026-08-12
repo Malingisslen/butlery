@@ -341,8 +341,9 @@ int? orphanTailTextRow(DocumentLayout layout, int pageRow) {
 /// `sanitizeRecipeText (services/parsing/sanitizers/recipe_sanitizer.dart)` rewrites the title, the
 /// description and `sourceUrl`, and no ingredient or instruction row.
 ///
-/// For the same reason the gate below is [DocumentLayout.matchesLineCountOf],
-/// a ROW COUNT, and never a byte comparison: bytes differ on every page the
+/// For the same reason the gate — applied by [orphanTailCutRow], above — is
+/// [DocumentLayout.matchesLineCountOf], a ROW COUNT, and never a byte
+/// comparison: bytes differ on every page the
 /// sanitizer touched, so a byte gate would disable this silently — and the
 /// corpus could never show it, because the eval harness derives its input FROM
 /// `DocumentLayout.text` and is therefore always byte-identical.

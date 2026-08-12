@@ -135,7 +135,11 @@ files in the same edit.
 - **TRIMMING a trailing orphan heading is BUILT at a 120-character budget; the
   120-200 band is MEASURED AND DECLINED.** `withoutOrphanTail` cuts a page at its last
   detected heading when under 120 characters follow it, applied by `ImportManager`
-  BEFORE `split` — so `MultiRecipeSplitter` keeps its "never hands back a single
+  BEFORE `split` — **since 2026-08-12 through `withoutFrameNoise`
+  (`frame_trim.dart`), which takes this rule's decision (`orphanTailCutRow`) and
+  the leading rule's from the UNTOUCHED page and cuts once; this rule's decision
+  and therefore every figure below is unchanged by that, which is why the shape
+  was chosen** — so `MultiRecipeSplitter` keeps its "never hands back a single
   SHORTENED block" contract (it does drop furniture when it splits; that is a separate
   promise on `split`) and the eval arm can still measure. Shipped figures over 181 gold pages,
   on top of the edge crop, from `corpus_split_eval.dart --trim`: 10 pages trimmed,

@@ -232,8 +232,9 @@ class FeatureFlagService {
     // conclusion, wrong mechanism, and the mechanism is what a future reader
     // would rely on.
     //
-    // **UNMEASURED, unlike the tail trim above it.** `withoutLeadingNoise`'s
-    // budget (`_leadingBudget`, 60 characters) was written without corpus
+    // **UNMEASURED, unlike the tail trim above it.** The leading rule's
+    // budget (`_leadingBudget`, 60 characters, read by `leadingNoiseCutRow`)
+    // was written without corpus
     // access — it borrows the tail trim's OTHER measured row rather than an
     // invented number, but nobody has run `dart run
     // tools/corpus_split_eval.dart --leading-trim` against it. Do that, read

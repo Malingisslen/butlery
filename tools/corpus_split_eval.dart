@@ -488,8 +488,11 @@ void main(List<String> args) {
 /// flag-off caveat) — so this arm implies `--edge-crop`, which implies
 /// `--layout`.
 ///
-/// It can only compare two columns because `withoutOrphanTail` lives OUTSIDE
-/// `MultiRecipeSplitter.split`, in `ImportManager`. Move it inside `split` and
+/// It can only compare two columns because the tail rule lives OUTSIDE
+/// `MultiRecipeSplitter.split` — in `ImportManager`, through
+/// `withoutFrameNoise` since 2026-08-12; this arm still calls
+/// `withoutOrphanTail` because that applier is the rule ALONE, which is what
+/// a before/after pair needs. Move the rule inside `split` and
 /// both columns trim, the difference vanishes, and the gate below would pass by
 /// construction while measuring nothing. That is not hypothetical — it was the
 /// shape of two drafts.
@@ -756,8 +759,11 @@ void main(List<String> args) {
     final single = doc.pages.first;
     if (single == null) continue;
 
-    // Both columns start from what production actually hands this rule:
-    // edge-cropped, then tail-trimmed.
+    // Both columns start edge-cropped, which is what tier 0 stores. They
+    // then DIVERGE by this rule and nothing else: BEFORE applies the tail
+    // rule alone, AFTER applies both from the untouched page. Neither is
+    // "what this rule is fed in production" — since `frame_trim.dart` it is
+    // never fed the tail trim's output at all.
     final croppedDoc = DocumentLayout([cropEdgeBleed(single)]);
     final baseText = croppedDoc.text;
     if (baseText == null) continue;
@@ -820,10 +826,13 @@ void main(List<String> args) {
     ..writeln('\nLeading-noise trim vs gold tokens — $scored pages')
     ..writeln()
     ..writeln(
-      '  Measured ON TOP of the shipped edge crop AND the orphan-tail',
+      '  Both columns sit on the shipped edge crop. BEFORE is the orphan-tail',
     )
-    ..writeln('  trim, so the BEFORE column here is --trim\'s AFTER column —')
-    ..writeln('  the actual input this rule receives in production. Same')
+    ..writeln('  trim ALONE, i.e. production MINUS this rule; AFTER is')
+    ..writeln('  production. So the delta is this rule and nothing else.')
+    ..writeln('  BEFORE is NOT what this rule is fed in production: since')
+    ..writeln('  frame_trim.dart both cuts are decided from the untouched')
+    ..writeln('  page, so it is never handed the tail trim\'s output. Same')
     ..writeln('  PROXY caveat: the geometry is the winocr capture, not ML Kit.')
     ..writeln()
     ..writeln(

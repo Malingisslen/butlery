@@ -1026,7 +1026,12 @@ have stopped the next session from looking.
 **What the symptom actually needs is a TRIM, not a split** — and that is now BUILT.
 `withoutOrphanTail` (`lib/services/import/layout/orphan_tail.dart`) cuts the page at its
 last detected heading when under 120 characters follow it. `ImportManager` applies it
-before `split`, so `MultiRecipeSplitter` keeps its "never hands back a single SHORTENED
+before `split` — **AMENDED 2026-08-12: through `withoutFrameNoise`
+(`frame_trim.dart`) since that date, not by calling `withoutOrphanTail` itself, which now
+has no production caller. The rule's DECISION (`orphanTailCutRow`) is the old function's
+body gate for gate and still reads the untouched page, so every figure in this entry is
+unmoved — that is precisely why this shape was chosen over swapping the two trims, which
+would have changed this rule's input and silently un-measured it.** So, so `MultiRecipeSplitter` keeps its "never hands back a single SHORTENED
 block" contract untouched (it still drops furniture when it splits — a separate promise,
 stated on `split`) and `corpus_split_eval.dart --trim` can still compare two columns.
 Shipped: 10 pages trimmed, precision 66.64 -> 66.77 %, recall 91.54 -> 91.52 %, right

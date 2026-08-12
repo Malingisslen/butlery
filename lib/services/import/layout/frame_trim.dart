@@ -33,7 +33,11 @@
 /// `ACCEPTED_DEVIATIONS.md` still describe production. Only the leading trim's
 /// input moved, which was the bug. That asymmetry is the whole reason this
 /// shape was chosen over swapping the two calls, which WOULD have changed the
-/// tail trim's input and silently un-measured it (Malin's call, 2026-08-12).
+/// tail trim's input and silently un-measured it. Malin's call on 2026-08-12,
+/// made with the cheaper swap on the table and its cost stated — the approval
+/// snapshot is `tasks/frame-trim-composition-plan.md`, so this attribution is
+/// checkable rather than asserted. (The crossing guard below is an ENGINEERING
+/// call from the same plan; the two are labelled differently on purpose.)
 ///
 /// The leading trim's own budget remains unmeasured — see `leading_noise.dart`
 /// — and `dart run tools/corpus_split_eval.dart --leading-trim` is still owed
