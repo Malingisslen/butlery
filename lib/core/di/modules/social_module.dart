@@ -45,6 +45,9 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_household_repository.dart';
 import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_diner_profile_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/repositories/interfaces/household_allergen_share_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_household_allergen_share_repository.dart';
 import 'package:butlery/repositories/interfaces/family_rating_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_family_rating_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -117,6 +120,7 @@ class SocialModule implements DIModule {
     HouseholdService,
     HouseholdRepository,
     DinerProfileRepository,
+    HouseholdAllergenShareRepository,
     FamilyRatingRepository,
     HouseholdRosterService,
     FamilyRatingService,
@@ -153,6 +157,18 @@ class SocialModule implements DIModule {
       () => FirebaseDinerProfileRepository(
         authRepository: container<AuthRepository>(),
         householdRepository: container<HouseholdRepository>(),
+      ),
+    );
+
+    // The audit repository is not optional here the way it is for the siblings:
+    // without it `logPermissionCheck` persists nothing, and these rows are the
+    // only record of a share that outlives its own deletion. They are NOT yet
+    // the consent trail — see the interface doc for what is still missing.
+    container.registerLazySingleton<HouseholdAllergenShareRepository>(
+      () => FirebaseHouseholdAllergenShareRepository(
+        authRepository: container<AuthRepository>(),
+        householdRepository: container<HouseholdRepository>(),
+        auditRepository: container<FirebaseAuditRepository>(),
       ),
     );
 

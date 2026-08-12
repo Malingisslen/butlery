@@ -306,6 +306,71 @@ personal→collaborative leg only.
 - A collection with no rule block silently default-denies
   (`match /{document=**}{allow read,write:if false}`) — writes look implemented but are
   rejected. Grep `firestore.rules` for every new collection path in a diff first.
+- **A DETERMINISTIC COMPOSITE DOC ID (`{parentId}_{uid}`) is an identity claim only if
+  something BINDS the body to the path.** Butlery's models parse identity from the body
+  (`fromMap(String id, data)` routinely ignores its `id` parameter) while the rule that is
+  cheapest to write pins the PATH — so the two halves can disagree and every reader believes
+  the body. On a roster-scoped collection that is an ATTRIBUTION forgery: a legitimate member
+  writes their own doc carrying a peer's `userId`, and any aggregate keyed on the body field
+  attributes it to the peer (BUT-1693: it would retire that peer's BUT-1663 allergen floor).
+  Demand both halves: the rule concatenates
+  (`shareId == request.resource.data.householdId + '_' + request.auth.uid`), and the model
+  refuses a doc whose derived id != its own id, with the identity fields required NON-EMPTY
+  (`safeString` defaults to `''`, so a missing `userId` parses as a valid-looking share
+  belonging to nobody). Same review question wherever a doc id encodes a fact the body repeats.
+  **CLOSED 2026-08-12, and the closure shape is the reusable part.** Put the check in the
+  REPOSITORY's `fromFirestore` (the only path a stored doc takes into the app), not in `fromMap`,
+  which models legitimately call with hand-built maps; then make the LIST read parse per document
+  and SKIP an unusable row, so one forged row cannot return "nobody shared" and look like a healthy
+  empty collection. Two things to verify before copying it. (a) The catch is exhaustive only if
+  every serializer the model uses is TOTAL — `SerializationUtils`' `safe*` helpers are (garbage
+  parses to a default), `requiredString`/`requiredDateTime` are not, so `on FormatException` would
+  silently become the whole model's error channel. (b) **A skip fails safe PER FIELD, not per
+  collection**: dropping a row removes its contribution to a UNION (safe — the reader's floor
+  covers it) *and* to an AND-FOLD (a shared `false` disappears and the aggregate loosens), so name
+  the fields and say which way each one moves. The consumer must iterate the ROSTER, not the
+  returned list, or "skipped" reads as "declared nothing". Same for the roster the filter itself
+  uses: degrading an absent household doc to an empty member set discards every row silently —
+  a roster used to FILTER user data must refuse to run when it is empty or absent.
+  **Keep that identity check OUT of the DELETE decision, though (2026-08-12).** A
+  `validateDeletePermission` that parses the BODY to answer "is this yours" makes a corrupt or
+  forged row at the user's OWN path un-erasable: the parse throws before the ownership test runs,
+  so `revoke()` cannot delete the Art. 9 document it exists to remove. Where the path encodes the
+  owner, decide the delete from the PATH (the same fact the rule uses) and let the body check
+  govern reads only — a fail-loud read is protective, a fail-loud erasure is an Art. 17 defect.
+  Such a DELIBERATE ASYMMETRY (delete gated on ownership only while create/update also demand
+  membership) survives only if a test fails when it is "harmonised": demand one that erases as a
+  REMOVED member, and prove it by mutation — add the membership conjunct and require exactly that
+  test to redden (verified 2026-08-12, BUT-1693: 1 of 27 red, restore md5-checked). A code comment
+  saying "do not harmonise this" is not a control.
+- **A CONSENT RECORD stored in the same document as the data it authorizes must be immutable
+  on update, at both layers.** A model can make it un-`copyWith`-able and still lose it: a
+  public `update(entity)` that full-`set()`s a caller-built entity re-dates `consentGrantedAt`
+  and re-writes `consentVersion` on every ordinary edit, so the Art. 7(1) evidence drifts to
+  the last preference change and a version bump can be silently undone. The repository usually
+  already holds the stored doc (its update-permission check read it) — carry the stored consent
+  triple forward — and the rule pins
+  `request.resource.data.consentGrantedAt == resource.data.consentGrantedAt`. That rule is only
+  writable if the field is a TIMESTAMP: a client-set `toIso8601String()` string cannot be
+  type-checked, cannot be pinned to `request.time`, and `safeBool` accepts the STRING `'true'`
+  as a granted flag, so `is bool` belongs in the rule too.
+  **CLOSED for `update()` 2026-08-12 (BUT-1693) — and closing it moves the problem to `create()`.**
+  The shipped shape is `entity.withStoredConsent(stored)`: the repository already read the stored
+  doc for its permission check, so the consent triple is carried forward and the payload's is
+  discarded. Check the class's DECLARATION line for `BatchOperationsFirebaseRepository` before
+  filing the usual batch-bypass finding — without that mixin `updateBatch` does not exist, and
+  `createBatch` (which lives on the base class) is the only sibling to cover. Then follow the
+  RE-GRANT path, which is the door the fix leaves open: it is a `create()`, i.e. an unconditional
+  `set()`, so a stale client can re-date the record and write an OLDER `consentVersion`.
+  **CLOSED the same day (BUT-1693), and the shape generalises:** make `create()` REFUSE an
+  existing id and require `consentVersion == currentConsentVersion`, so a re-grant is always a
+  create on an ABSENT document (withdrawal deletes). That kills the stale re-date AND settles the
+  rules question — Firestore evaluates a `set()` over an existing doc as an UPDATE, so pinning
+  `consentGrantedAt == resource.data.consentGrantedAt` would otherwise make a withdrawal
+  irreversible; with no re-grant ever reaching `update`, the pin is free. Two details or the guard
+  is decorative: read the doc DIRECTLY, never the base `exists()` (it SWALLOWS a failed read and
+  answers false, so one offline blip waves the overwrite through), and re-apply both guards in
+  `createBatch`, whose `batch.set` runs past the `create()` override.
 - `allow list` and `allow get` are evaluated separately — a `get` rule granting
   `auth.uid in resource.data.arrayField` does not make the matching `list` pass; a
   membership-gated query needs its own `list` branch + composite index.
@@ -394,6 +459,24 @@ personal→collaborative leg only.
 - Overriding `create()`/`update()` for an invariant does NOT cover `createBatch`/`updateBatch` —
   those live on the base class and skip the override. Override the batch methods too, or hoist
   the assertion into a shared private method both call. Rules are the real backstop.
+  **The cheapest correct shape is the SERIALIZER override**: `BaseFirebaseRepository` funnels all
+  four write paths through `toFirestore(entity)` (`:118`, `:228`, `:292`, `:464`), so putting the
+  transform there covers create/update/createBatch/updateBatch by construction (BUT-1819). Two
+  things to check before accepting one. (a) It only covers writers that go through the base class —
+  grep the collection CONSTANT for hand-built `.set(`/`.update(` refs (`OfflineSyncManager` writes
+  `users/{uid}/recipes` via `FirestoreRepository.setDocument` and never touches the repository).
+  (b) A transform implemented with `copyWith` inherits every DEFAULT in that `copyWith`: Butlery's
+  `RecipeCore.copyWith` is `updatedAt ?? clock.now()`, so "cleaning" a document silently restamps
+  it — fatal on an offline replay whose `updatedAt` is the last-write-wins key. Passing the field
+  through explicitly fixes that AND silently changes the online path that used to rely on the
+  restamp; enumerate the callers that build the entity by CONSTRUCTOR rather than `copyWith`
+  (membership writers, re-share) — those are the ones whose timestamp now stops advancing.
+- **`validateRequiredFields` checks `containsKey` only** (`permission_validation_mixin.dart:290`),
+  and Butlery's `toFirestore()` serializers emit a FIXED key set — so it can never reject an empty,
+  blank or whitespace value, and reordering a sanitizer to run BEFORE it changes no verdict at all.
+  Any comment or ticket claiming "validate the sanitized copy so an empty title is rejected" is
+  false until a length/emptiness check is actually added; read the validator body before crediting
+  a validation-ordering fix with a security effect (BUT-1819).
 - On UPDATE, permission checks must load the STORED doc's ownership field, not the submitted
   entity's — else a caller who is a member of TWO groups can re-parent a doc between them by
   resubmitting it.
@@ -539,7 +622,15 @@ personal→collaborative leg only.
   `flutter analyze` and every test run actually executes, and ships the moment anyone runs
   `git add -A`. One was live during this review: `social_export_manager.dart`'s `_failed()`
   replaced by `'error': 'MUTANT raw exception: PERMISSION_DENIED blocks/<foreign uid>'` with
-  `error_code` deleted.
+  `error_code` deleted. **The INVERSE is the re-review shape (2026-08-12, BUT-1693): the FIX is
+  the unstaged half and the INDEX still holds the defect the last round asked to fix** — the
+  staged `validateDeletePermission` was the body-reading version whose parse throws before the
+  ownership test (un-erasable Art. 9 doc), while the tree carried the path-only repair. So on any
+  re-review, md5 the index (`git show :<path> | md5sum`) against the tree, scope the verdict to the
+  bytes reviewed by naming that md5, and state the re-stage as a precondition — a clean verdict on
+  tree bytes silently blesses whatever the index happens to hold. Same pass: verify the conditions
+  a handoff says were "carried into the plan" are literally IN it (grep the symbol) — two of that
+  round's were not, and an unrecorded carry is a finding that expires with the session.
   And the one-shot backfill needs a REQUEST-LEVEL RESUME CURSOR (`startAfter`/`nextCursor`, as
   `backfill-canonical-ratings.ts` has), not just a loop-local one: without it every invocation
   restarts at the top of the collection, so past `MAX_BATCHES × BATCH_SIZE` docs the documented
@@ -770,7 +861,22 @@ personal→collaborative leg only.
   regression — only a move to `global`/outside-EEA is; treat that as Critical.
 - Audit retention differentiates by category: consent events 24mo/730d (Art 7(1)); general 6mo/
   180d (Art 5(1)(c)) — the general purge must exclude fresh consent events, and every writer
-  must set the discriminator field.
+  must set the discriminator field. **In Butlery the discriminator is the `operation` string
+  itself** (`purgeExpiredAuditLogs` keeps `consent_*` for 730d, everything else 180d;
+  `audit_log.dart` is the single source of truth), so a `logPermissionCheck` row spelled
+  `create`/`update`/`delete` is NOT a consent record however consent-shaped the operation was —
+  it is purged at 180 days. Two traps when a DPIA/doc-comment claims "the grant and withdrawal
+  events are in the audit log": the `operation` spelling above, and the fact that
+  `auditRepository` is an OPTIONAL constructor arg that several DI modules simply do not pass
+  (`SocialModule` passes none), which makes every `logPermissionCheck` in those repositories
+  console-only. Check the DI registration, not the repository, before crediting an audit trail.
+  **Third trap, found 2026-08-12: the trail SPLITS on the resource string's first segment.**
+  `logPermissionCheck` derives `resourceType` from `resource.split('/').first`, and
+  `BaseFirebaseRepository` spells that `'${T.toString()}/$docId'` (the Dart type name) — so a
+  subclass that hand-rolls a call as `'$collectionName/$id'` files its rows under a different
+  `resourceType` than the create/read/delete rows for the same document, and a query
+  reconstructing one document's history finds half of it. Copy the base class's spelling verbatim
+  in any hand-rolled call.
 - A blocked/admin-only collection's Art-15 export goes through an admin-SDK callable scoped to
   `request.auth.uid`, never a widened user-side read rule.
 - TTL fields need THREE things: the `gcloud ... --enable-ttl` policy itself (separate admin
@@ -1131,6 +1237,14 @@ personal→collaborative leg only.
   "unknown" forever in production while every fake test passes (BUT-1723,
   `shopping_repository_query_module.dart:confirmPersistedItemCount`). The same rule explains the
   pre-existing `try/catch`-and-continue around the shared probe in `read()`/`delete()`.
+  **One level up, it invalidates the INTERFACE's contract (2026-08-12, BUT-1693):** a method that
+  branches on a bool derived from such a read (`if (!await isMember(hid, uid)) return [];`) has a
+  fake-only branch — in production the non-member's underlying `get()` is DENIED and throws, so the
+  empty-return path is dead and so is any "unavailable" branch below it that keys on
+  `exists == false`. A doc comment promising "returns empty when the caller is not a member" then
+  misleads the consumer that has to handle the throw. State the throw in the interface, or map the
+  denial to one typed unavailability signal the caller can catch; either way say which branch the
+  fake proves and which needs the emulator lane.
 - Prefer real-repository + fake-Firestore + auth-state-fake tests over side-effect stubs that
   mock away the boundary under test.
 - **Widening a bundle/aggregate "this failed" lift exposes FIXTURE defects, and the fix is the

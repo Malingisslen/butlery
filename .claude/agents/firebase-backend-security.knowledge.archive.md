@@ -2398,3 +2398,426 @@ toggle. Fail toward null.
 and throws from all four CRUD hooks. `removeParticipant` has no `logPermissionCheck` on either
 branch — the admin-removes-another-member path is a cross-user privileged mutation whose only trail
 is the CF's `logger.info` (same Medium as the previous round's note).
+
+### 2026-08-10 — BUT-1819 second-pass review: the serializer chokepoint, and two comments that outran the code
+
+Fileset: `firebase_recipe_repository.dart`, `offline_sync_manager.dart`,
+`recipe_sharing_manager.dart`, `recipe_sanitizer.dart` (new), `external_link.dart` (new),
+`firebase_shared_recipe_repository.dart`, plus render-guard adoption in the recipe detail views.
+**Verdict: pass, 0 blocking.** First pass had returned 2 blocking (binary blob, unstaged half);
+both verified repaired — `file` reports text on all new files, `git diff --cached --numstat` has no
+`-\t-` rows, `git status --porcelain` shows no `MM`/`AM` in the fileset, and the corrected
+`@sealed` comment (`offline_sync_sanitize_test.dart:40-43`) now names package:meta and the
+`subtype_of_sealed_class` diagnostic rather than claiming the Dart keyword.
+
+**The good shape, worth copying.** The sanitizer moved from a private `_sanitizeRecipe` (which
+`create` called into a local and then rebuilt from the UNSANITIZED entity — dead for five months)
+to the `toFirestore(Recipe)` override. `BaseFirebaseRepository` serializes through that override at
+`:118` (create `set`), `:228` (update `update`), `:292` (createBatch), `:464` (updateBatch), so one
+line covers the whole base-class write surface. The second writer — `OfflineSyncManager`, which
+`setDocument`s straight at `users/{uid}/recipes` and never touches the repository — calls the
+shared function itself. Enumeration re-derived independently: `FirestoreCollections.recipes` +
+the literal has three further writers (`rating_statistics` denormalize `.update()`,
+`family_rating_service` `txn.update`, `addIncrementCookCountToBatch`, plus the tag-operations
+batches), all field-scoped and text-free, so the coverage claim holds for TEXT. The code comment
+says "the complete set for this collection", which is broader than what was verified — filed Low.
+
+**Q1, `shared_content` writer enumeration.** Complete for recipe-derived text: exactly two —
+`FirebaseSharedRecipeRepository.toFirestore` (`recipeTitle`/`recipeDescription`, applied on the MAP
+because `SharedRecipe.copyWith` exposes neither) and
+`recipe_sharing_manager._writeToSharedRecipesCollection` (`title`/`description`, different key
+spellings, predates the ticket). `recipe_service_adapter.dart:174` looks like a third and is a
+DELETE sweep on `originalRecipeId`. The collection's MENU and SHOPPING-LIST legs
+(`social_menu_operations`, `shopping_social_share_module`, `firebase_shared_menu_repository`,
+`firebase_shared_shopping_repository`) write denormalized user text into the same collection
+unsanitized — pre-existing, out of BUT-1819's scope, named rather than fixed.
+
+**Q2, does sanitize-before-validate change which writes are ACCEPTED? No, and the comment says it
+does.** `validateRequiredFields` (`permission_validation_mixin.dart:290-292`) tests `containsKey`
+only, and `RecipeCore.toFirestore()` (`recipe_unified.dart:694`) emits `'title'` unconditionally —
+so a title of pure control characters passes identically before and after and still stores as `''`.
+The reorder is harmless and defensible on "validate what you write" grounds; the comment's stated
+defect-and-remedy is not real. Medium, non-blocking. This is the third instance in the repo of the
+lessons-digest class "a comment is an UNTESTED ASSERTION", and the second where the assertion was
+about a validator the author had not opened.
+
+**Q3, `_enforceShareCap` / `validateSelfOperation` on the RAW entity, before the sanitize.** Right
+order, and provably immaterial: `sanitizeRecipeText` touches `title`/`description`/`sourceUrl`/
+`updatedAt`; `Recipe.copyWith` preserves `socialData`, `type`, `realtimeData`, `offlineData` via
+`_sentinel` and `createdBy` likewise, and `RecipeCore.copyWith` passes `createdAt` straight through.
+So the guarded fields cannot move. Raw-first is also the better default — an authorization decision
+should not be taken on a transform's output. Note this is the MIRROR of the shopping-list rule
+(escalation guard must run on the payload actually written): that rule bites when the transform CAN
+change the guarded fields; here it provably cannot. Nothing pins the coupling, so a future
+`sanitizeRecipeText` that touched `socialData` would silently invalidate the cap guard — recommended
+a one-line assertion. Low.
+
+**Q4, weakenings: none.** Every render/launch change narrows (`isSafeExternalUrl` is a positive
+allowlist gating both the DRAW and the LAUNCH; the overflow menu entry is hidden, the source row
+degrades to plain text, `linkified_text` routes through the shared helper as defence in depth). The
+three near-misses: (a) `update()` no longer restamps `updatedAt` — the old `_sanitizeRecipe` used a
+bare `copyWith` so every update advanced it; the new explicit pass-through means callers that build
+`Recipe(core: recipe.core, …)` by CONSTRUCTOR — `recipe_member_manager.addMember/removeMember`,
+`recipe_sharing_manager._grantAccessOnReshare` — no longer advance it, and `watchRecipes`/
+`loadMoreRecipes` sort and page on `core.updatedAt`; unremarked and untested either way (Medium).
+(b) `sanitizeUrl` also runs `normalizeHomoglyphs`, so activating the sanitizer means a `sourceUrl`
+containing Cyrillic is silently rewritten to a DIFFERENT URL — not covered by the deviation, which
+covers only the `data:` blanking (Low). (c) `imageUrls` is unsanitized and rides into
+`shared_content` as `imageUrl`/`recipeImageUrl` from imported data; rendered as an image, not a
+link, so no launch vector today (Low, noted so it is a known gap rather than an assumed-covered one).
+
+**The `data:` blanking is an ACCEPTED DEVIATION as of this commit** (`BUT-1819`, both files), and
+the first pass's counter-argument is recorded verbatim inside it: `isSafeExternalUrl` is a positive
+allowlist that strictly dominates the `sanitizeUrl` blocklist for the threat it was aimed at, so
+the blocklist's only remaining NET effect is destroying Swedish provenance sentences, and anchoring
+to `^\s*(javascript|data|vbscript):` would keep 100 % of the scheme protection at zero cost. That
+needs its own ticket, its own sweep of `sanitizeUrl`'s other callers, and Malin's call. Do not file
+it as a bug again — the argument is already written down where the next reviewer will find it.
+
+---
+
+### 2026-08-12 — BUT-1693 household allergen sharing: the data layer, reviewed before it has a caller
+
+Fileset: `lib/models/household_allergen_share.dart`, `lib/repositories/interfaces/
+household_allergen_share_repository.dart`, `lib/repositories/firebase/
+firebase_household_allergen_share_repository.dart`, its unit test,
+`FirestoreCollections.householdAllergenShares`, and the `SocialModule` registration.
+Controller sign-off the same day in `docs/legal/dpia-household-allergen-sharing.md`.
+Top-level `household_allergen_shares`, one doc per member per household, id
+`{householdId}_{userId}`, scoped to the SYMMETRIC `households/{id}` roster. The
+`firestore.rules` block is deliberately in the NEXT commit (another session holds that file
+for BUT-1482's `configRevision` allowlist fix — verified in `git diff`, it is unrelated).
+
+**Sequencing verdict: agreed, and the reason is mechanical.** No rule block ⇒ catch-all
+default-deny ⇒ the collection cannot be written or read by any client, so nothing can land in
+the gap. The cost is that every fake-backed test in this commit describes behaviour that
+production cannot yet perform, and two of them describe behaviour production will REFUSE once
+the obvious rule shape lands (below).
+
+**The three findings that were local to this commit (blocking):**
+
+1. `HouseholdAllergenShare.fromMap(String id, Map data)` accepts the doc id and never uses it;
+   `householdId`/`userId` come from the body, and `id` is recomputed from them. `getByHousehold`
+   attributes each share to its BODY `userId`. The rule most likely to be written pins the PATH
+   (the model's own comment says "the rules can derive ownership from the path"), which leaves
+   the body unconstrained — so a legitimate household member can write their own doc carrying a
+   peer's `userId` and the aggregate reads a forged declaration for that peer, retiring their
+   BUT-1663 four-allergen floor. That is an allergen-safety failure reachable by a member, not
+   an outsider. Compounding: `isValidConsent` requires only `consentGranted && consentVersion
+   .isNotEmpty && consentGrantedAt != null`, and `SerializationUtils.safeString` defaults to
+   `''`, so a doc with NO `userId` is a "valid declaration" belonging to nobody.
+2. `update()` full-`set()`s `toFirestore(entity)`, consent triple included, from a
+   caller-supplied entity. `copyWith` deliberately refuses to change the consent fields, but the
+   public `update(entity)` takes any object — the test's own `_share()` helper builds a fresh one
+   — so an ordinary "I edited my allergies" write re-dates `consentGrantedAt` and can rewrite
+   `consentVersion`. `validateUpdatePermission` has ALREADY read the stored doc two lines
+   earlier; carrying its consent triple forward is free.
+3. `SocialModule` registers the repository without `auditRepository:` (every other audited
+   repository in `core_module`/`content_module` passes `container<FirebaseAuditRepository>()`),
+   so every `logPermissionCheck` here is console-only — while the interface doc comment says
+   "The grant/withdrawal events live in the audit log, which is what Art. 7(1) needs retained"
+   and the DPIA's R5 mitigation rests on exactly that sentence. Second, independent hole: the
+   730-day consent bucket in `purgeExpiredAuditLogs` is selected by the `operation` string
+   starting with `consent_`, and these rows are spelled `create`/`update`/`delete`, i.e. the
+   180-day general bucket. Both halves of R5 are unimplemented, asserted as implemented.
+
+**What must be true of the rules commit (handed to `firestore-rules-tester`):**
+
+- The `diner_profiles` precedent the DPIA §1.6 names (`allow read: if isHouseholdMember(
+  resource.data.householdId)`) dereferences `resource.data`, so a `get()` on a NONEXISTENT doc
+  is `permission-denied`, not `exists == false`. Copying it verbatim kills `getOwn()`'s
+  "has not shared yet" path — the commonest call in the feature — plus `validateUpdatePermission`'s
+  `if (!doc.exists) return false` and `validateDeletePermission`'s idempotent-withdrawal branch.
+  All four read green on `fake_cloud_firestore`. The own-doc read must be decided from the PATH
+  (`shareId == householdId + '_' + request.auth.uid`), not from `resource.data`.
+- `diner_profiles` also gates DELETE on membership. Copied here, a member removed from the
+  household could never erase their own Art. 9 data, and no one else may (the repository's
+  `validateDeletePermission` is ownership-only, correctly — but the class doc comment says
+  "write — ownership AND membership", which is the wrong summary of the one case that matters).
+  DPIA §2 and R7 both promise erasure on removal. Delete must be OWNER-ONLY, membership-free.
+- Consent immutability + `is bool` on `consentGranted` (`safeBool` accepts the STRING `'true'`)
+  + a `consentVersion` allowlist. Note `consentGrantedAt` ships as an ISO8601 STRING
+  (`toIso8601String()`), so the rule cannot type-check it or pin it to `request.time` at all.
+
+**Forward obligations, none of which exist yet and all of which the DPIA already promises:**
+`deleteFamilyData` in `account-deletion-cascade.ts` handles `households`/`diner_profiles`/
+`family_ratings` and not this collection (sole-member teardown deletes the household doc and
+orphans the shares permanently; the remaining-members branch leaves a deleted user's health data
+readable by the household). The collection carries a `userId` field, so it is one line in
+`probeResidualData`'s simple loop. Export: DPIA decision 5 says the requester's OWN share and
+consent record only — `FamilyExportManager` is the place. Leaving/being removed from a household
+needs a server-side sweep; `purge-dormant-family-data.ts` already does exactly this shape for
+`family_ratings` whose rater left the roster (BUT-1600). And DPIA R4's "the settings document and
+the share move in ONE atomic write" has no seam in this data layer — `createBatch` is
+single-collection, and the model's `updatedAt` comment asserts the atomic batch as existing fact.
+
+**One vacuous test, worth the note.** `'an edit REPLACES the stored list rather than merging it'`
+cannot fail: `toFirestore()` emits a FIXED key set, so `update()` would write the same nine keys
+and replace the array wholesale just as `set()` does. Swapping the implementation back to `update()`
+leaves it green. The override's stated justification ("a merge would leave the old value in place
+and keep filtering on a preference they have retracted") is therefore wrong for this serializer —
+the real (small) difference is that a no-merge `set()` also strips foreign/legacy keys, and that
+`update()` throws on a missing doc.
+
+### 2026-08-12 — BUT-1693 re-review: the three blocking items close, and what a per-row skip costs
+
+Re-review of the same fileset after the fix round (`household_allergen_share.dart`, its repository +
+interface, both test suites, the one-line DI change). **All three blocking items are closed**, and
+each closure is non-vacuous — reverting the guard reddens the named test.
+
+**B1 (body-over-path forgery).** The binding sits in the REPOSITORY's `fromFirestore`, not in
+`fromMap`: `HouseholdAllergenShare.fromMap` still ignores its `id` argument (deliberately — the
+model test builds documents by hand), and the repository compares the DERIVED id
+(`'{householdId}_{userId}'`) against `doc.id` and throws `FormatException`. That is the right seam:
+`fromFirestore` is the only path a stored document takes into the app. `isValidConsent` now also
+demands non-empty `householdId`/`userId`, closing the `safeString`-defaults-to-`''` hole. The
+forged-row test seeds `hh-1_forged` carrying Johan's body while Johan is a real member, so removing
+the check re-admits him and the test reddens. Worth recording: **every `SerializationUtils` helper
+this model uses is total** (`parseDateTimeValue` returns null on garbage, `safeList` swallows
+per-item converter throws), so `on FormatException` is an exhaustive catch here, not a partial one —
+verify that before copying the pattern to a model that uses `requiredString`/`requiredDateTime`.
+
+**B2 (consent rewritten by an ordinary edit).** `update()` reads the stored doc once, checks
+ownership/household/membership against it, and writes `entity.withStoredConsent(stored)`. The class
+declaration line does NOT mix in `BatchOperationsFirebaseRepository`, so `updateBatch`/`deleteBatch`
+do not exist on it and the usual "the override does not cover the batch path" finding does not
+apply — `createBatch` (which DOES live on the base class) is overridden. **The open door is
+`create()`**: `super.create()` is an unconditional `set()`, and the interface comment names create as
+the re-grant path. Two consequences. (a) A stale client can re-grant under an OLDER
+`consentVersion` and re-date `consentGrantedAt`; the cheap client guard is
+`entity.consentVersion == currentConsentVersion` on create. (b) **Firestore evaluates a `set()` on an
+EXISTING document as an UPDATE**, so the rules condition already recorded in the plan
+("`consentGrantedAt` immutable across an update") would deny every re-grant. The rules commit has to
+decide this explicitly — a `consentGranted` false→true transition exemption, a delete-then-create, or
+a distinct `grant()` method — or the feature ships with a revoke that cannot be undone.
+
+**B3 (the audit claim).** DI now passes `auditRepository: container<FirebaseAuditRepository>()`;
+`FirebaseAuditRepository` is registered in `CoreModule` (app scope) and get_it resolves it through
+the user scope, the same way the sibling registrations reach `AuthRepository`. The interface comment
+no longer claims a complete Art. 7(1) trail. **New defect the wiring exposes:**
+`PermissionValidationMixin.logPermissionCheck` derives `resourceType` from the FIRST SEGMENT of the
+`resource` string, and the base class spells that `'${T.toString()}/$docId'`
+(`HouseholdAllergenShare`) while this subclass's `update()` spells it `'$collectionName/${entity.id}'`
+(`household_allergen_shares`). So create/read/delete and update land under two different
+`resourceType` values, and any query that reconstructs "what happened to this consent" finds half of
+it. Whenever a subclass hand-rolls a `logPermissionCheck` call, copy the base class's resource
+spelling verbatim.
+
+**The read path's skip-and-continue: which way each field fails.** `getByHousehold` now parses per
+document and drops an unusable row, a consent-less row, and a row whose member has left the roster.
+For the ALLERGEN union that fails SAFE — a dropped member has no share, and BUT-1663's floor covers
+them — but only if the aggregate that consumes this iterates the ROSTER and treats "no share" as
+floor, rather than iterating the returned list. `includeUnknownInMenu` is the field that fails the
+other way: the aggregate AND-folds it, so dropping a member who shared `false` LOOSENS the result.
+Both are conditions on the aggregate commit, not defects here (no consumer exists yet — grep finds
+the type in nine files, none of them a service or viewmodel). The sharper hole is the roster source
+itself: `currentMembers` comes from `_householdRepository.read(householdId)` and degrades to
+`const <String>{}` when that returns null, which silently discards EVERY share and returns `[]` —
+indistinguishable from "nobody shared", and flatly contradicting the plan's own acceptance criterion
+("a failed query is not 'nobody shares'"). An empty roster is also self-contradictory, since
+`isMember` just returned true for the caller. Same shape as the keep-set principle: **a roster used to
+FILTER user data must refuse to run on an empty/absent roster**, not silently drop everything.
+
+Cost note: `getByHousehold` reads `households/{id}` TWICE — once inside `isMember` (`_loadRaw`) and
+again via `read()` for the roster. One read serves both; `read()` already denies a non-member through
+`validateReadPermission`.
+
+Smaller items, all non-blocking. `getOwn` calls `fromFirestore` WITHOUT the skip, so a forged own
+document throws out of the commonest call in the feature (the one whose null answer keeps the floor
+on) — fail-loud is defensible but has to be a decision, not an asymmetry. The
+"cannot re-point an existing share at another household" test drives `validateUpdatePermission`,
+which production's `update()` override never calls; and inside `update()` the
+`entity.householdId == stored.householdId` conjunct is UNREACHABLE, because `entity.id` is derived
+from the payload's `householdId`, so the doc read is always at the payload's household and
+`fromFirestore` has already pinned stored-to-path. The real protection against re-pointing is
+create-time `isMember(entity.householdId)`, which is tested. Warning logs interpolate `doc.id`
+(a raw uid) — device-local only, since `AppLogger.warning` writes to `developer.log` and never
+reaches Crashlytics, but the file already imports `maskedUserId`. And the collection still has NO
+`firestore.rules` block, so it is default-denied in production and every test here is
+`fake_cloud_firestore` — proving query shape, never access.
+
+### 2026-08-12 — BUT-1693 gate RE-READ of the household-allergen-share data layer (final bytes)
+
+Second pass over `lib/models/household_allergen_share.dart`,
+`lib/repositories/firebase/firebase_household_allergen_share_repository.dart`,
+`lib/repositories/interfaces/household_allergen_share_repository.dart`,
+`lib/core/di/modules/social_module.dart` and the two suites. Verdict: pass, 0 blocking.
+`flutter analyze` on the four production files clean (85s); the two suites 35/35 green, run
+by me, not taken on report.
+
+**Process note that decided the review.** The repository impl and its test file were rewritten
+by a parallel formatter/session at 16:31:18 and 16:31:52 — mid-review. The tell was the TEST
+RUN listing four test names that were not in the bytes I had read (`getOwn returns the member
+their own share`, `the query is scoped to the household it was asked for`, `an absent share can
+only be deleted at your OWN id`, `a member removed from the household can no longer EDIT their
+share into it`). Re-read both, then `stat`-ed every file in the fileset before and after the
+analysis. Generalisable: when a file may be written under you, a test/lint run's own OUTPUT is
+a cheap freshness oracle — compare what it enumerates against what you read — and `stat -c %y`
+before writing the report is cheaper than re-reading six files.
+
+**What the previous round's fixes actually look like in the final bytes (all verified, all
+sound):** create refuses an existing id via a DIRECT `collection.doc(id).get()` (not the base
+`exists()`, which swallows); the grant path requires `consentVersion == currentConsentVersion`;
+`createBatch` re-applies both; `update()` carries the stored consent triple forward via
+`withStoredConsent(stored)` and full-`set()`s; the hand-rolled audit row is spelled
+`'HouseholdAllergenShare/$id'`, matching the base class's `'${T}/$docId'`; a body/path mismatch
+in `getByHousehold` now writes a denied `logPermissionCheck` row and skips the ROW rather than
+the collection; `readAll`/`watchAll` throw `UnsupportedError`; `read`/`readCacheFirst` are
+consent-filtered. `SocialModule` passes a non-optional `auditRepository`
+(`FirebaseAuditRepository` is registered in `CoreModule.configure`, app scope, so the user-scope
+resolve falls through — checked, not assumed).
+
+**Non-blocking findings filed (all Medium or below, none reachable today because no production
+code calls this class and the collection has no rules block):**
+1. `validateDeletePermission` parses the BODY on the exists-branch, so `fromFirestore`'s
+   path/body identity check throws before the ownership test — a corrupt or forged row at the
+   user's own path cannot be deleted by `revoke()`. Art. 17 fails in the wrong direction. Fix:
+   decide from the path (`resourceId.endsWith('_$userId')`) or catch `FormatException` and fall
+   back to it. Promoted to a principle under the deterministic-doc-id bullet.
+2. Production/fake divergence in the read contract. `firestore.rules:965-968` gates
+   `households` read on `request.auth.uid in resource.data.memberUserIds`, which dereferences
+   `resource.data` — so for a NON-member, and for a household doc that does not exist,
+   `FirebaseHouseholdRepository.isMember` → `_loadRaw` → `get()` is DENIED and throws. Both
+   `if (!isMember) return []` and the `RepositoryException('household-roster-unavailable')`
+   branch below it are therefore fake-only, and the interface's "Returns empty when the caller
+   is not a member" is a promise production does not keep. Safe direction (loud), but the
+   consumer commit will be written against it. Promoted to a principle under the
+   fake-vs-`permission-denied` testing bullet.
+3. Cost: `getByHousehold` reads `households/{hid}` TWICE (`isMember`, then `read`) per call, and
+   once the planned `list` rule lands, `isHouseholdMember(resource.data.householdId)` adds one
+   rules `get()` per returned document. The query also carries no `.limit()` — bounded only by
+   the (future) rule's id pinning. One read can serve both ends if the code branches on the
+   thrown denial instead of on a bool.
+4. Two parallel implementations of the update rule: `update()` inlines
+   stored-owner + same-household + `isMember`, and `validateUpdatePermission` implements the
+   same triple; only tests reach the latter now (no `BatchOperationsFirebaseRepository` mixin,
+   so no `updateBatch`). Equivalent today; the inline copy exists to reuse the single stored
+   read. Drift risk only.
+5. `update()` writes the payload's `updatedAt` verbatim, and `toFirestore()` OMITS it when null,
+   so a caller that forgets it silently erases the staleness field DPIA R4 rests on. Right place
+   to fix is the atomic-write seam (plan condition 5), which does not exist yet.
+6. Inherited `exists()`/`count()` stay unfenced (no consent filter, no household scope);
+   `count()` would aggregate every household's Art. 9 rows. No callers; rules will deny.
+
+**Cross-file claims in comments, checked rather than trusted:** `household_service.dart:85-91`
+does catch `StateError` from `firstWhere` (so the "not a StateError" reasoning holds); the
+catch-all `match /{document=**} { allow read, write: if false; }` is at `firestore.rules:2618`;
+`Household.memberUserIds` is a getter derived from the same `members` list `isMember` reads, so
+the roster filter and the membership probe cannot diverge; household ids are `Uuid().v4()` and
+Firebase uids are alphanumeric, so the `endsWith('_$userId')` comment's "neither contains '_'"
+is true; every serializer `HouseholdAllergenShare.fromMap` uses is TOTAL (`safe*` only, no
+`requiredString`/`requiredDateTime`), so `on FormatException` catches exactly the deliberate
+identity throw and nothing else.
+
+**Conditions still riding on the rules/service/cascade commits (unchanged, H1–H5 in
+`tasks/butlery-1693-household-share-plan.md`):** own-document `get` and `delete` must be decided
+from the PATH, or `_assertNotAlreadyShared`, `update`'s existence read and an idempotent
+`revoke` all hit `permission-denied` on a non-existent doc; the consent-immutability pin is now
+free (see the create-side closure); erasure/export/probe/reset wiring; the consumer must iterate
+the ROSTER, not the returned list.
+
+### 2026-08-12 — BUT-1693 household allergen shares: third pass, final bytes (index held the defect)
+
+Gate re-read of the eight-file data-layer commit on tree bytes
+`10006e19e48c28d8f1157bb72bdfdc73` (repository impl). All eight opened with `Read`; base class,
+`permission_validation_mixin`, `serialization_utils`, `firebase_household_repository`,
+`firebase_diner_profile_repository`, `firestore.rules` and the plan file opened as corroboration.
+
+**Verdict: pass, 0 blocking, SCOPED TO THAT MD5** — because the index did not hold it. `git show
+:lib/repositories/firebase/firebase_household_allergen_share_repository.dart | md5sum` =
+`d4f405851cc4bc36f88df0c6c1baf524`, whose `validateDeletePermission` is the previous round's
+body-reading version (`final doc = await collection.doc(resourceId).get(); if (!doc.exists)
+return resourceId.endsWith('_$userId');` — i.e. `fromFirestore`'s identity check throws before the
+ownership test on exactly the corrupt/forged row a member most needs to erase, Art. 17). Model and
+repository test were `AM` too, so the erasability test would not have shipped either. Committing the
+staged set would have shipped the reviewed round's defect under a pass. Also present in the tree and
+NOT part of this commit: `?? test/unit/security/rules_allowlist_drift_test.dart` (the
+`hasOnly` allowlist-drift guard, a different initiative) and 175 unstaged lines in `firestore.rules`
+— so the re-stage has to be by explicit pathspec, never `git add -A`.
+
+**Confirmed on the final bytes, each against the source rather than the diff.**
+- Erasure from the PATH: `validateDeletePermission => resourceId.endsWith('_$userId')`, and
+  `BaseFirebaseRepository.delete` (`:238-258`) never calls `fromFirestore`, so the erasure path
+  genuinely cannot reach the identity check. Cross-user delete is impossible even if a
+  `householdId` DID contain `_`: `H_victimUid` ends with `_attackerUid` only when
+  `victimUid == attackerUid`, since auth uids carry no underscore — the shipped comment's
+  justification is sound and in fact stronger than it claims.
+- `updateBatch` does not exist on this class (it is on `mixin BatchOperationsFirebaseRepository`,
+  `base_firebase_repository.dart:442`, not mixed in); `createBatch` (`:267`, `batch.set`) is the
+  only `create()`-bypassing sibling and carries both guards.
+- `_assertNotAlreadyShared` reads the doc DIRECTLY, not base `exists()` (`:320-331`, swallows and
+  answers false).
+- The `on FormatException` per-row skip is exhaustive for the identity check because every
+  serializer the model uses is total (`safeString`/`safeStringList`/`safeBool`/`safeDateTime`) —
+  ONE exception found: `parseDateTimeValue` (`serialization_utils.dart:117`) casts
+  `value['seconds'] as int?`, so `consentGrantedAt: {seconds: 'x'}` throws `TypeError` past the
+  catch and takes the whole household read down. Fail-LOUD, so safe; it just falsifies the
+  "one bad row cannot take the household down" comment.
+- Audit resource spelled `'HouseholdAllergenShare/${entity.id}'`, matching the base's
+  `'${T.toString()}/$docId'`, so the resourceType split does not fork one document's history.
+  The skip-path audit row cannot throw: `logPermissionCheck` persists via
+  `unawaited(...).catchError` inside a `try` (`permission_validation_mixin.dart:417-458`).
+- DI now passes `auditRepository` (`social_module.dart:167-173`; `FirebaseAuditRepository`
+  registered `core_module.dart:190`, resolved exactly like the sibling's `container<AuthRepository>()`),
+  which closes the long-standing "SocialModule passes none" gap for this repository only.
+- `firestore.rules` really has no block for `household_allergen_shares` in the working tree, so
+  the class's "inert until the rules commit" comment is true today; and the class doc's claim about
+  `diner_profiles` is accurate (`firebase_diner_profile_repository.dart:156-164` gates delete on
+  membership after a body read).
+
+**Findings (none blocking).** (1) MEDIUM — the two conditions the handoff said were "recorded
+against the rules/service commits in the plan" are NOT in
+`tasks/butlery-1693-household-share-plan.md`: `grep getByHousehold tasks/ docs/` is empty, and the
+five carried conditions cover `getOwn`'s rules mechanism only. So the interface's
+"Returns empty when the caller is not a member" (`household_allergen_share_repository.dart:13`)
+is still a promise no production path keeps — `isMember` → `FirebaseHouseholdRepository._loadRaw`
+issues an unguarded `.get()` on `households/{id}`, which denies for a non-member — and the double
+household read (`:273` then `:285`) is recorded nowhere. (2) MEDIUM — `getOwn` throws a bare
+`FormatException` out of a repository by design, with no mapping arm anywhere yet. (3) LOW — the
+`where('householdId')` query has no `.limit()`; bounded only once the rules pin the body's
+`householdId` to membership. (4) LOW — raw uid inside `doc.id` in two log lines (`:316`, `:331`)
+while the same file masks it at `:90`/`:275`. (5) LOW — `readCacheFirst` has no test of its own.
+For the rules commit, one demand is missing from the plan's item 3: pin `consentGrantedAt` to
+`request.time` on CREATE (item 3 only makes it immutable across update), or a client can backdate
+the Art. 7(1) evidence it is trusted to write.
+
+### 2026-08-12 — BUT-1693 test-round re-review: the intentional-asymmetry guard, proven by mutation
+
+Fileset (index md5 == tree md5 for all five, checked before reading, so the verdict is scoped to
+the bytes reviewed): `lib/models/household_allergen_share.dart` abe20d46…,
+`lib/repositories/firebase/firebase_household_allergen_share_repository.dart`
+10006e19e48c28d8f1157bb72bdfdc73, `lib/repositories/interfaces/household_allergen_share_repository
+.dart` ae4b0418…, and the two new test files. Only the tests moved since the previous pass; the
+staging inversion that round found (index holding the body-reading `validateDeletePermission`,
+tree holding the path-only repair) is resolved — both now hold the path-only version.
+
+Two additions judged:
+
+(1) `withdrawal > a member removed from the household can still erase their own share`. This is
+the guard for a deliberate asymmetry — delete is ownership-only, create/update also require
+membership — which the previous round argued for and which nothing but a comment defended.
+MUTATION-PROBED: `validateDeletePermission` changed to
+`resourceId.endsWith('_$userId') && await _householdRepository.isMember(resourceId.substring(0,
+resourceId.lastIndexOf('_')), userId)` (the exact "harmonise it with its siblings" edit). Result:
+exactly ONE red, the new test; the three sibling withdrawal tests stayed green because their
+actor is still on the roster, i.e. the new test is the only thing standing between a future
+tidy-up and an un-erasable Art. 9 document. File restored from backup and md5-verified
+(`md5sum -c` OK). Full suite 39/39 green, re-run here, not taken from the handoff.
+
+(2) `toPreferences carries the three filtering fields through unchanged`. Allergens vs dietary are
+seeded with distinct values, so a swapped-set mutant dies. `includeUnknownInMenu` is asserted at
+`false` — which is ALSO `fromMap`'s fail-safe default for an absent key, so the fixture's explicit
+`false` adds nothing: a `toPreferences` that hardcodes `false`, or a `fromMap` that drops the
+field, survives the whole 39-test suite (no test anywhere asserts a `true` survives parse; the
+repository fixture sets it to `true` and never asserts it). The mutant that IS caught is the
+dangerous one (hardcoded `true` would discard a member's "exclude unverified recipes" caution and
+loosen an AND-fold), and the surviving mutants all fail toward over-filtering, so this is a LOW
+test-strength note, not a blocker. Remedy: assert the non-default value at least once.
+
+Carried conditions verified LITERALLY IN the plan this time, not asserted: `tasks/butlery-1693-
+household-share-plan.md` items 6 (the interface's "returns empty for a non-member" is a promise
+production will not keep, plus `getOwn`'s escaping `FormatException`) and 7 (double `households/
+{id}` read + missing `.limit()`), and `consentGrantedAt == request.time` on CREATE for the rules
+commit at :281. Still true and still not-yet-code: the interface sentence at
+`household_allergen_share_repository.dart:13` is wrong in production terms until the service
+commit maps the denial — recorded, so not re-filed.

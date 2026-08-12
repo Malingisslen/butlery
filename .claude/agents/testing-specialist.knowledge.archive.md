@@ -17822,3 +17822,252 @@ Verified this round:
   read `context.butleryColors`, so dark follows the theme by construction. Noted, not filed.
 
 Verdict: pass (0 blocking).
+
+## 2026-08-12 — BUT-1693 household allergen shares: data-layer coverage review (mutation-measured)
+
+Trigger: review the foundation commit's two suites (model + repository, 31 tests, both
+`fake_cloud_firestore`) before the firestore.rules block lands. Files reviewed at
+`lib/models/household_allergen_share.dart` (md5 6c9c9011, 208 lines),
+`lib/repositories/firebase/firebase_household_allergen_share_repository.dart`
+(md5 d6602c1b, 372 lines), `test/unit/models/household_allergen_share_test.dart`
+(md5 f261ea7c, 12 tests), `test/unit/repositories/firebase/firebase_household_allergen_share_repository_test.dart`
+(md5 4333ded3, 19 tests).
+
+### The tree moved three times DURING the round (parallel session, same ticket)
+Repository file went 14110 -> 14441 -> 15292 bytes inside ~4 minutes: `StateError` ->
+`RepositoryException(code: 'household-roster-unavailable')`; `_assertNotAlreadyShared`
+re-pointed off the base `exists()` (which swallows a failed read and answers false) onto a
+direct `get()` and re-typed `PermissionDeniedException` -> `ValidationException`; then
+`readAll`/`watchAll` overridden to `throw UnsupportedError`. The test file moved once, in
+step with the exception re-type.
+
+**New failure mode, not previously recorded: a FALSE KILL.** The first battery reported
+"M8 drop `where('householdId')` — killed". Re-running the same mutant on re-hashed bytes:
+SURVIVED. The red belonged to the parallel session's `PermissionDeniedException ->
+ValidationException` edit landing between my backup and my run (the failure text read
+`Expected: throws PermissionDeniedException / Actual: Future<HouseholdAllergenShare>`,
+i.e. a test in a completely different group). Existing knowledge covers a false RED and a
+false CRITICAL; a false KILL is worse, because it reports coverage that does not exist and
+nobody re-checks a kill.
+
+### Mutants (final verdicts, all re-run against current bytes; restore md5-verified)
+SURVIVED (green suite):
+1. `isValidConsent`: drop `householdId.isNotEmpty && userId.isNotEmpty` — the exact attack
+   the getter's own doc comment describes ("a share belonging to nobody").
+2. `withStoredConsent`: `updatedAt: stored.updatedAt` instead of the payload's. Cause: the
+   `_share()` factory hardcodes `updatedAt: DateTime.utc(2026, 8, 12)` with no override and
+   the same literal as `consentGrantedAt`, so no fixture holds two distinct timestamps.
+3. `toPreferences()`: `trackedDietary: trackedAllergens`. The only assertion on the method
+   is `isNot(UserAllergenPreferences.defaults.trackedAllergens)`; dietary and
+   `includeUnknownInMenu` are asserted nowhere.
+4. `update()`: drop `await _householdRepository.isMember(stored.householdId, userId)` — a
+   member removed from the household keeps writing Art. 9 data into it.
+5. `update()`: drop `entity.householdId == stored.householdId` — SUBSUMED, not a gap (see
+   the tautology note below).
+6. `getOwn()`: `return null` unconditionally. Both getOwn tests assert null; the positive
+   path has no test at all, and getOwn is the floor-vs-declaration oracle.
+7. `validateDeletePermission`: `if (!doc.exists) return true` — the id-binding the comment
+   exists to justify. `delete(id)` is public on `Repository<T>`.
+8. `getByHousehold`: drop `.where('householdId', isEqualTo: householdId)` — every fixture
+   lives in one household, so the one thing a fake CAN prove (query shape) is unpinned.
+9. `getByHousehold`: roster-unreadable throw -> `return []` — the fail-loud guard the
+   second review round added, invisible because the suite wires the REAL
+   `FirebaseHouseholdRepository` over the same fake, where `isMember` true implies `read`
+   non-null. A subclass spy over that class (`@override read => null`) stages it in ~6 lines.
+10. `getByHousehold`: drop the forgery-path `logPermissionCheck` — no test injects an audit
+    repository, though `SocialModule` wires one and its comment calls those rows "the only
+    record of a share that outlives its own deletion". `logPermissionCheck` persists nothing
+    when `auditRepository == null` (permission_validation_mixin.dart:417).
+
+KILLED (the suite has real teeth here): `fromFirestore` path/body check; `isValidConsent`
+filter in the read loop; roster-membership filter; `includeUnknownInMenu` default flipped
+to true; `_assertNotAlreadyShared` neutralised; ownership throw; consent-validity throw;
+consent-version throw (probed as `isGrant && false && ...` — deleting the block outright
+fails to compile and is not a usable mutant).
+
+### `expect(() => asyncFn(), throwsA(...))` — MEASURED, and the digest's warning did not apply
+Five tests use the non-awaited form. Removing the ownership throw reddened both tests that
+assert it (`+1 -1`, `+7 -2`); removing the consent-validity throw reddened both of its
+tests; the version mutant reddened its one test. package:test's `Throws` handles a Function
+returning a Future and registers an outstanding callback. So the form is weaker style but
+was NOT vacuous here — three mutants settled it in ~90 s.
+
+### Tautology by construction (why mutant 5 is not a finding)
+The id is `{householdId}_{userId}` and `fromFirestore` refuses any doc whose body-derived id
+differs from its path. Given no '_' in uids or household ids, `stored.id == doc.id ==
+entity.id` forces `stored.householdId == entity.householdId` AND `stored.userId ==
+entity.userId`. So both identity conjuncts inside `update()`'s `canUpdate` are
+unreachable-as-false; only the `isMember` conjunct can decide, and only that one is worth a
+test. Same reasoning retires the "an edit cannot re-point an existing share at another
+household" test as live-path coverage: it calls `validateUpdatePermission`, which nothing
+invokes on this class (base `update()` is fully overridden and the `BatchOperations` mixin
+is not applied), so it pins a method production never calls.
+
+### What the fake cannot stage honestly (for the rules commit's benefit)
+- No access control at all: `_repo(fs, authedUserId: _stranger).getByHousehold(...)`
+  returning `[]` proves the client guard, not that the stranger cannot read the docs
+  directly. Every "may not" test in the file is client-side only.
+- `_assertNotAlreadyShared` is check-then-set with no transaction, and the fake's
+  `runTransaction` could not prove atomicity anyway. Two concurrent grants, or an offline
+  grant whose `get()` misses the cache, both re-date the Art. 7(1) record. Only the rules'
+  consent-immutability clause closes it — the production comment already says so.
+- `read()` / `readCacheFirst()` remain inherited, unfenced and consent-blind: a household
+  member reading `hh_{peer}` by id gets a share whose `consentGranted` is false, which the
+  class docstring says must be "treated exactly like no share". The parallel session fenced
+  `readAll`/`watchAll` mid-round; those two new `UnsupportedError` overrides also have no test.
+- Brief said "45 tests green"; this tree runs 31 (12 + 19).
+
+Verdict: fail (4 blocking) — mutants 8, 6, 7, 4.
+
+## 2026-08-12 — BUT-1693 household allergen shares, final gate read (trigger: commit-gate review of the staged data-layer fileset)
+
+Follow-up to the earlier BUT-1693 battery. All four previously-unpinned guards are now covered,
+and two more tests landed DURING this round. Verified against the exact bytes now in the index:
+
+    test .../firebase_household_allergen_share_repository_test.dart  611a6568  523 lines
+    test .../models/household_allergen_share_test.dart               f261ea7c  199 lines
+    lib  .../firebase_household_allergen_share_repository.dart       10006e19  398 lines
+    lib  .../models/household_allergen_share.dart                    abe20d46  213 lines
+    lib  .../interfaces/household_allergen_share_repository.dart     ae4b0418   35 lines
+    lib  .../models/user_allergen_preferences.dart                   104a5288  264 lines (idx 05fa9cc5, CRLF-only)
+    lib  .../core/constants/firestore_collections.dart               0cea0635  153 lines (idx 85601d22, CRLF-only)
+    lib  .../core/di/modules/social_module.dart                      09ba88c4  593 lines (idx ec661b31, CRLF-only)
+
+37 tests green, `flutter analyze` clean over all 8.
+
+TREE MOTION, twice, mid-round. The detector was a mutation driver's ANCHOR-FAIL, not a hash
+check: `validateDeletePermission` had been rewritten from a body-reading branch to a one-line
+path rule between my Read and my battery. A second pass then found two new tests in the suite.
+Both landed unstaged first (`AM`), i.e. for ~20 minutes the index held the OLD delete
+implementation while the worktree held the fix; the parallel session staged both before I
+closed. Re-Read all three moved files at current bytes.
+
+Mutation matrix (M1/M2 measured on d4f40585, whose lines are byte-identical in 10006e19):
+
+    KILLED    M1  drop the householdId query scope            -> scoping test
+    KILLED    M2  getOwn returns null unconditionally         -> getOwn positive test
+    KILLED    M3a validateDeletePermission => true            -> 2 reds
+    KILLED    M3b validateDeletePermission => false           -> 3 reds
+    KILLED    M4  drop membership conjunct from update()      -> removed-member edit test
+    KILLED    M5  _onlyConsented => share (filter removed)    -> new read() test
+    KILLED    M6b delete REVERTED to reading the body         -> new forged-row-erasable test
+    KILLED    M10 fromMap skips allergen normalisation        -> legacy-ASCII test
+    SURVIVED  M3c endsWith -> contains
+    SURVIVED  M6  delete HARMONISED with a membership conjunct
+    SURVIVED  M8  toPreferences hardcodes includeUnknownInMenu: true
+    SURVIVED  M9  toPreferences swaps trackedDietary for trackedAllergens
+    SURVIVED  M12 isValidConsent drops the userId.isNotEmpty conjunct
+    EQUIVALENT M11 trackedDietary left un-normalised — `_asciiToSwedish` holds NO dietary
+                   keys, so the map is the identity over the whole dietary vocabulary. No
+                   test owed; recorded so a later session does not "add coverage" for it.
+
+M6b is the durable finding and generalised into the knowledge file: the staged-at-the-time
+implementation ran `fromFirestore(doc).userId == userId`, and `fromFirestore` THROWS
+`FormatException` on a body/path mismatch — so a forged row at your own id was the one
+document its owner could not erase. Fail-loud read = protective; fail-loud erasure = Art. 17.
+
+M6 is the remaining highest-value gap: the class docstring says "delete — ownership ONLY, with
+no membership conjunct ... Do not 'harmonise' this", and the suite's own comment at test
+lines 500-502 asserts "Deleting their own share stays possible — that is the erasure right"
+while no test enters it. Adding `&& isMember(...)` keeps all 37 green.
+
+Stale comment introduced by the same drift: test lines 470-471 still describe "the ownership
+test on the exists-branch", which the path-only rewrite deleted; the test NAME ("an absent
+share can only be deleted at...") also names a distinction the implementation no longer draws,
+though its two assertions remain the useful endsWith discriminator.
+
+On the recording audit repository (asked directly): worth ONE test now, and not the one the
+DPIA names. The `consent_granted`/`consent_withdrawn` rows have no writer, so they belong with
+the consent UI. But `getByHousehold`'s forgery branch already calls `logPermissionCheck(granted:
+false)` under a comment saying it "belongs in the audit trail, not only in a device-local log
+line nobody will ever read" — an untested claim, and the only durable trace of an insider
+forgery. Cost is ~15 lines: `MockAuditRepository extends Mock implements FirebaseAuditRepository
+{}` already exists in `firebase_activity_event_repository_test.dart`, the constructor param
+exists, and the call is made synchronously inside `unawaited(...)`, so a plain
+`verify(...).called(1)` needs no event-queue draining. It also pins the `resource:` literal —
+verified `'HouseholdAllergenShare/<id>'` does match the base class's `'${T.toString()}/$id'`
+(base_firebase_repository.dart:145), which is what keeps a share's audit history in one query.
+
+Also verified: `FirebaseAuditRepository` really is resolvable from the new DI registration —
+registered at `core_module.dart:190`, and SocialModule declares CoreModule as a dependency, so
+the `container<FirebaseAuditRepository>()` inside `configureUserScope` resolves via the parent
+scope.
+
+Did NOT edit the test file despite the fixes being one-liners: a parallel session landed two
+edits in it during this round, and colliding with a live writer costs more than the report.
+
+Verdict: pass (0 blocking).
+
+**CLOSED 2026-08-12, same day, same commit.** All four blocking mutants above are now
+covered by tests that redden when the guard is removed: the `householdId` query scope
+(pinned with a second household the SAME owner belongs to, so neither the roster nor the
+consent filter can be what excluded the other row), `getOwn`'s positive path,
+`validateDeletePermission` in both directions, and a removed member being unable to edit
+their share back into the household. The entry's line that `read()`/`readCacheFirst()`
+"remain inherited, unfenced and consent-blind" was true of the tree it measured and is
+false of the shipped one — both are consent-filtered through `_onlyConsented`, with a test.
+`validateDeletePermission` was also rewritten to decide from the PATH alone after the
+security review found that reading the body ran the identity check, which throws — leaving
+a corrupt row at a member's own id undeletable, an Art. 17 defect. Suite: 37 green.
+Read this closure before quoting the verdict above.
+
+## 2026-08-12 — BUT-1693 allergen-share round 3 (trigger: re-review after two mutants closed)
+
+Scope, all four opened with Read: `test/unit/models/household_allergen_share_test.dart`,
+`test/unit/repositories/firebase/firebase_household_allergen_share_repository_test.dart`,
+`lib/models/household_allergen_share.dart`,
+`lib/repositories/firebase/firebase_household_allergen_share_repository.dart`.
+
+**The two closures verified, and the base class read to check they are not vacuous.**
+`toPreferences` now has two arms ({'ägg'} vs {'vegansk'}, `includeUnknownInMenu` false in
+one and true in the other — the second arm arrived from the parallel session mid-round),
+which kills both the hardcode-true mutant (`defaults.includeUnknownInMenu` is `true`, so
+the flag is the seam) and the set-swap mutant. The removed-member erasure test is
+non-vacuous only because `BaseFirebaseRepository.delete` (base_firebase_repository.dart
+:238-258) really does call `validateDeletePermission` and throw on false — read it, do not
+assume it. Three comment claims about other files also checked and all TRUE: base
+`exists()` swallows and returns false (:320-331), base audit `resource` is `'${T}/$docId'`
+so the subclass's hand-rolled `'HouseholdAllergenShare/${entity.id}'` matches, and
+`firestore.rules` still has no `household_allergen_shares` block (the unstaged rules diff
+in the worktree is the BUT-1482 conversations sprint, not this ticket) — so the "inert"
+header is accurate.
+
+**A parallel session's mutation battery reddened the test I was grading.**
+First run: 42 green, 1 red — `a member removed from the household can still erase their
+own share`, failing with PermissionDenied out of base `delete`. Arithmetically impossible
+against the source I had read (`'hh-1_user-johan'.endsWith('_user-johan')`). `git diff` on
+the impl was EMPTY and the md5 matched the brief's hash exactly — but `stat` showed an
+mtime 68 seconds old, i.e. inside my test run. Someone mutated `validateDeletePermission`
+to the harmonised form and restored it while flutter was compiling. Re-run: 43 green,
+production hashes unchanged. So the red was not a finding — it was that test's kill proof,
+delivered free, and the tell was mtime-with-identical-md5.
+
+**One deferral overruled, as a test-only fix I applied myself (3 tests, +43 lines).**
+`readCacheFirst` and the two `UnsupportedError` fences (`readAll`, `watchAll`) were all
+deletable-green: delete the override and `read()`'s test stays green while a
+consent-withdrawn share reaches a caller through the cache path, or one call sweeps every
+household's Art. 9 data with no permission check at all (base `watchAll` runs none). Added
+`readCacheFirst applies the same consent filter as read()`, its positive control (without
+it an unconditional `return null` satisfies the first), and one test asserting both fences
+throw over a SEEDED collection so the refusal cannot read as emptiness. `flutter analyze`
+on both suites: no issues.
+
+**Two deferrals agreed, with reasons that are not "too small".**
+(1) The `endsWith` → `contains` discriminator is UNREACHABLE, not merely unwritten:
+household ids are `const Uuid().v4()` (household.dart:144) and Firebase uids are
+alphanumeric, so neither half of `{householdId}_{userId}` can contain `_` and no id the
+app can produce separates the two operators. The docstring's "neither half contains '_'"
+is therefore verified, and the right output is that verification, not a fixture built from
+an id nothing writes. (2) The audit row on `getByHousehold`'s forgery branch stays
+unpinned: the SKIP itself is pinned by the forgery test, only the `logPermissionCheck`
+call is not, the class is inert (no `lib/` callers, no rules block), and the consent-UI
+commit rewrites that call site. Condition on the deferral: pin it when the collection goes
+live, because the forged-row row is the one audit entry with a detection purpose.
+
+Closing hashes: impl `10006e19e48c28d8f1157bb72bdfdc73` (398 lines, unchanged all round),
+model `abe20d4609eb04766b48deeb53a5dd29` (213), model suite 235 lines / 13 tests,
+repository suite 593 lines / 30 tests. Both test files are `AM` — staged bytes plus
+worktree edits from this round and the parallel session's; they must be re-staged before
+the commit gate reads them.
+
+Verdict: pass (0 blocking).

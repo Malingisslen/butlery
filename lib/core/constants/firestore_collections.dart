@@ -31,6 +31,10 @@ abstract final class FirestoreCollections {
   // Family-rating feature (household-scoped, shared across household members).
   static const String households = 'households';
   static const String dinerProfiles = 'diner_profiles';
+
+  /// One household member's own allergen list, shared with their household by
+  /// explicit consent (BUT-1693). Household-scoped read, owner-only write.
+  static const String householdAllergenShares = 'household_allergen_shares';
   static const String familyRatings = 'family_ratings';
   static const String menuTemplates = 'menu_templates';
   static const String userNotifications = 'user_notifications';

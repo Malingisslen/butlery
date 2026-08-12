@@ -178,6 +178,14 @@ class UserAllergenPreferences {
     return _asciiToSwedish[key] ?? key;
   }
 
+  /// The same ASCII→Swedish mapping, for models that parse allergen keys
+  /// without going through [fromFirestore] — `HouseholdAllergenShare` (BUT-1693)
+  /// cannot use that factory, because it returns [defaults] for an absent map
+  /// and would turn "no allergies" into four. Every allergen key that reaches a
+  /// comparison must pass through here, or a legacy `mjolk` silently
+  /// contributes nothing to the household union.
+  static String normalizeAllergenKey(String key) => _normalizeAllergenKey(key);
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
