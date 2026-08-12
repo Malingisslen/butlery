@@ -1,7 +1,7 @@
 {
  "$schema": "butlery-affordans-negativa/1",
  "kontroll": "CHK-R-AFF-01",
- "godkanda": 8,
+ "godkanda": 7,
  "total": 8,
  "prov": [
   {
@@ -12,12 +12,8 @@
     "controlRollNamnState",
     "controlNabar"
    ],
-   "saknade": [
-    "expandControl",
-    "controlRollNamnState",
-    "controlNabar"
-   ],
-   "godkant": true
+   "saknade": [],
+   "godkant": false
   },
   {
    "id": "N-A2",
@@ -97,5 +93,5 @@
    "godkant": true
   }
  ],
- "status": "godkänd"
+ "status": "FÄLLD"
 }
