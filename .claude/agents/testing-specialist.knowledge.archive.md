@@ -18388,3 +18388,85 @@ green on the unmutated file, confirmed after every mutation-probe restore.
 Verdict: fail (3 blocking) — three named, sibling-documented mutants (`.first`/`.last`
 selector, exact budget boundary, `imageWidth`/`imageHeight` carry-through) confirmed to
 survive the full suite live.
+
+## 2026-08-12 — frame_trim.dart review (decision/applier split, chained-order regression)
+
+Trigger: commit-gate review of the staged diff introducing
+`lib/services/import/layout/frame_trim.dart` (`withoutFrameNoise`) plus the
+decision/applier split of `orphan_tail.dart` and `leading_noise.dart`, and the new
+`test/unit/services/import/layout/frame_trim_test.dart`.
+
+What the change does: `ImportManager.autoParseMulti` used to chain
+`withoutOrphanTail` then `withoutLeadingNoise`. On a single-photo import page zero and
+the last page are the SAME `PageLayout`, so the tail cut moved `bodyTypeHeight` (a
+median), which moved `HeadingDetector`'s absolute bar, evicted the page's real title
+from `headingLines`, and let the leading trim eat it. The fix takes both decisions
+(`orphanTailCutRow`, `leadingNoiseCutRow`) from the untouched document and cuts once.
+
+Arithmetic verification of the regression fixture (all re-derived by probe, not read):
+- `bodyTypeHeight` before the tail cut = median of four 70/1.45 and four 30/1.45
+  = 34.4828 (i.e. (70+30)/2 = 50 raw); bar = 51.724 (75 raw). After the cut only the
+  70s remain: 48.276 (70 raw), bar 72.414 (105 raw). `Abb` at 100 raw = 68.966 sits
+  above the first bar and below the second. CONFIRMED exactly.
+- Page-relative floor: tallest 108/1.45 = 74.483, floor /1.10 = 67.71 <= 68.966, so
+  `headingLines` really is `[1, 6, 7]` on the original page. The comment's `108 / 1.10
+  = 98.2` is correct read in raw wordHeight units. CONFIRMED.
+- The premise assertion (chained order LOSES `Abb`) reproduces live, and a replica
+  mutant taking the leading decision from the tail-cut document is KILLED by the test.
+  So the regression test is non-vacuous for the FUNCTION.
+
+Findings (probes, all test-side replicas; no `lib/` file mutated):
+1. CROSSING GUARD UNTESTED (blocking, since fixed in the worktree by the author).
+   Reachable exactly on a one-page import whose single heading is both
+   `headings.first` and `headings.last` (heading at row >= 1, tail under 120 chars,
+   furniture under 60). Probe: real code returns `Kokboken 2024`; the guard-deleted
+   replica returns the EMPTY string with a zero-line page — and
+   `matchesLineCountOf` still answers TRUE, so the splitter would receive an empty
+   document with a consistent layout. Silent total content loss, invariant-clean.
+2. THE REORDER IS UNPINNED AT THE CALL SITE (blocking, still open). The regression
+   test lives entirely inside `frame_trim.dart`'s own API. The only composition
+   fixture that drives `ImportManager` (`import_manager_orphan_tail_test.dart`,
+   'leading furniture and an orphan tail both get cut on one page') is order-
+   INSENSITIVE: probe ran chained-vs-frame over it and the two outputs are
+   `==`-identical, so reverting `autoParseMulti` to the chained pair reddens nothing
+   in the repo. Remedy proven by probe: replay the regression fixture through the
+   existing spy suite — `autoParseMulti` hands the strategy two blocks, both
+   containing `Abb`, `Katt`/`42` absent; under the chained order `Abb` is gone.
+3. `&&`->`||` on the composer's first early return survived all five originally
+   staged tests (every firing fixture fires BOTH rules). Killed only in the wiring
+   suite. The author's worktree added head-only and tail-only cases, which closes it
+   locally.
+4. False prose, staged bytes: "`42` ... spans 1.0" — `glyphSpan('42')` is 0.0 (no
+   letters), so the raw box stands. Same number by luck. Fixed in the worktree.
+5. False prose, still live: "`_readsLikeTitle` rejects a leading digit". `'42'` is
+   rejected by `_minTitleChars` (2 < 3); `_leadingDigit` never decides. It DOES reach
+   `_readsLikeTitle` — its raw-box 70 clears the 51.7 bar — so the sentence is right
+   about the function and wrong about the rule.
+6. False prose, still live: "Every heading token below is descender-free on purpose".
+   `Recept` (in `Recept Ett`/`Recept Tva`) carries a lowercase `p`, spans 1.80, and on
+   the spread's page 2 that puts it at 80.56 against a 90.91 floor — `headingLines` is
+   `[7]`, NOT `[0, 7]`. The spread test is also the only firing test with no
+   `headingLines` premise assertion, which is why the drift was invisible. The sibling
+   suite documents this exact trap (`Frukostgrot`).
+7. Advisory, unstaged `tools/corpus_split_eval.dart:768`: `identical(cut.text,
+   tailCut.text)` no longer means "the leading rule fired" — `cut` now comes from
+   `withoutFrameNoise(baseText, ...)` and `tailCut` from `withoutOrphanTail(baseText,
+   ...)`, so on every tail-trimmed page the two are distinct objects with equal
+   content, counting `trimmed++` with a `(blank)` 0-char entry. That inflates the
+   `--leading-trim` figure the plan still owes. `_formatLeadingTrim`'s own doc
+   (lines 728-731) also still says BEFORE is what `withoutLeadingNoise` receives
+   "in production ... runs the tail trim first", which is no longer true.
+
+Process note: the tree MOVED mid-round. `git status` went from clean-worktree to
+`AM`/`MM` on frame_trim.dart, leading_noise.dart, orphan_tail.dart,
+frame_trim_test.dart and import_manager_orphan_tail_test.dart while the probes ran —
+the author was repositioning doc comments that the decision/applier split had left
+attached to the WRONG declaration (in the staged bytes `withoutOrphanTail`'s whole
+library-doc section documents `orphanTailCutRow`), and adding four tests. Re-read every
+moved file at current bytes before filing; md5'd worktree against `git show :<path>`
+both ways. Suites green at 69 tests, `flutter analyze` clean, both probe files deleted
+and `git status` re-checked.
+
+Verdict: fail (2 blocking) — the stale index (crossing guard uncovered + misattached
+doc comments in the staged snapshot; remedy is `git add`), and the unpinned call-site
+reorder (remedy is one manager-level test, code supplied and probe-verified).

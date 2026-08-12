@@ -28,8 +28,11 @@ import 'package:butlery/services/ocr/text_layout.dart';
 ///
 /// And it is a promise about `split`, not about the import. Since 2026-08-08 the
 /// caller may hand it less: `ImportManager.autoParseMulti` runs
-/// `withoutOrphanTail` first, which cuts a heading the camera frame separated
-/// from its own recipe off the end of a page. The trim sits there rather than
+/// `withoutFrameNoise` first (`withoutOrphanTail` alone until 2026-08-12),
+/// which cuts a heading the camera frame separated from its own recipe off the
+/// end of a page, and furniture off the front of the first page. Both cuts are
+/// decided from the untouched page — see `frame_trim.dart`. The trims sit there
+/// rather than
 /// here precisely so this contract survives — and so the corpus arm can measure
 /// the trim against an untrimmed column.
 class MultiRecipeSplitter {

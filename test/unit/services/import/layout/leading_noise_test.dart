@@ -173,8 +173,8 @@ void main() {
       final cut = withoutLeadingNoise(input, layout);
 
       // If this ever regresses to `headings.last`, `pageRow` becomes 8 and
-      // the region it would try to cut is `sublist(8)`, i.e. rows 0 THROUGH
-      // 7 — 152 characters (13 + 13 + 6x21), over budget — so
+      // the region it would try to CUT is rows 0 through 7 — 152 characters
+      // (13 + 13 + 6x21), over budget — so
       // the function would return UNCHANGED instead of wrongly swallowing
       // the first recipe. Either way the correct behaviour and the `.last`
       // mutant disagree on whether "Kokboken" survives, which is what this

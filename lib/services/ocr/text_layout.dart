@@ -83,7 +83,8 @@
 ///     text under one image-hash key) -> `_PhotoPage.layout` ->
 ///     `DocumentLayout` built in `_recombineAndParse` ->
 ///     `ImportManager.autoParseMulti(layout:)` ->
-///     `withoutOrphanTail(input, layout)` (since 2026-08-08) ->
+///     `withoutFrameNoise(input, layout)` (since 2026-08-12; it was
+///     `withoutOrphanTail` alone from 2026-08-08) ->
 ///     `MultiRecipeSplitter.split(input, layout:)`
 ///
 /// All of it behind `enable_layout_recipe_split`, default off. The last TWO

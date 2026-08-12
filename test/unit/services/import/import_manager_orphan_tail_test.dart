@@ -14,10 +14,10 @@ import '../../../test_support/base_unit_test.dart';
 /// The WIRING test.
 ///
 /// `orphan_tail_test.dart` proves the RULE; nothing there proves the rule is
-/// CALLED. `withoutOrphanTail` is one line in `ImportManager.autoParseMulti`,
-/// and the corpus arm calls the function itself — so deleting that line would
-/// leave the unit tests and the eval both green while the feature was dead in
-/// the app.
+/// CALLED. The trims are one line in `ImportManager.autoParseMulti`
+/// (`withoutFrameNoise` since 2026-08-12), and the corpus arm calls the
+/// functions itself — so deleting that line would leave the unit tests and the
+/// eval both green while the feature was dead in the app.
 ///
 /// It asserts on what the strategy RECEIVES, not on what the parse emits. That
 /// is not a stylistic choice: two earlier versions asserted over the parsed
@@ -205,9 +205,11 @@ void main() {
   /// A single-photo import means page zero and the last page are the SAME
   /// [PageLayout] — this page carries furniture BEFORE its title AND an
   /// orphaned heading with almost nothing under it AFTER its body, so both
-  /// trims fire on one page in sequence. Proves the composition
-  /// `leading_noise.dart`'s library doc describes rather than just each rule
-  /// in isolation.
+  /// cuts land on one page. They are no longer applied in sequence: since
+  /// 2026-08-12 `withoutFrameNoise` decides both from the untouched page and
+  /// cuts once, and `frame_trim_test.dart` carries the case that forced that.
+  /// What this proves is the WIRING — that `autoParseMulti` still reaches both
+  /// ends of a real import.
   test('leading furniture and an orphan tail both get cut on one page', () async {
     final h = build();
     final lines = [

@@ -35,9 +35,13 @@
 /// (`test/unit/services/import/multi_recipe_splitter_layout_test.dart`) —
 /// only fires once TWO headings have been found, and so does the discard
 /// budget above: `_splitByLayout` returns at `flat.length < 2` before any
-/// discard accounting runs. On the single-heading page (one recipe per
-/// photo, the common case, and exactly the page population this rule
-/// targets) NEITHER exists. A real recipe whose title [HeadingDetector]
+/// discard accounting runs. Note `flat` is DOCUMENT-scoped
+/// (`headingLinesForDocument`), so a three-photo import of three
+/// single-heading pages still clears that gate and still gets the budget —
+/// the population with NEITHER is the single-heading DOCUMENT, i.e. the
+/// one-photo import, which is the common case and exactly what this rule is
+/// for. (An earlier draft said "the single-heading page", which is a
+/// different and larger set.) A real recipe whose title [HeadingDetector]
 /// refused (too long, lower-case first letter, a digit, a trailing colon)
 /// sitting before the first DETECTED heading would today be silently eaten
 /// with no other rule to catch it.
@@ -73,43 +77,36 @@
 /// instructions) — cutting that would be a plain content-loss bug, not a
 /// corpus-tunable trade-off, so this rule never looks past page zero.
 ///
-/// ## Composes with [withoutOrphanTail] on the same page
+/// ## Composing with [withoutOrphanTail] on the same page — do not chain
 ///
 /// A single-photo import means page zero and the last page are the SAME
-/// [PageLayout]. `ImportManager.autoParseMulti` runs the tail trim FIRST, so
-/// by the time this rule reads the page, [PageLayout.bodyTypeHeight] — a
-/// MEDIAN over the lines with four or more measured words — may already have
-/// moved. Either direction: removing lines below the median raises it.
+/// [PageLayout], so one trim's cut is an input to the other's decision.
+/// [PageLayout.bodyTypeHeight] is a MEDIAN over the lines with four or more
+/// measured words, and a cut moves it in either direction — removing lines
+/// below the median raises it.
 ///
-/// **This composition is NOT safe by construction, and an earlier version of
-/// this paragraph said it was.** Re-deriving the heading list from the page
-/// in hand buys index consistency — no rule ever addresses a row that moved —
-/// and nothing more. It does not fix WHICH row comes back as
-/// `headings.first`. When the tail trim's cut raises the median far enough,
-/// the absolute bar `bodyTypeHeight * headingSizeRatio` rises with it, the
-/// page's real title can drop OUT of the heading list, `headings.first` moves
-/// to a later title, and the region this rule then measures against
-/// [_leadingBudget] contains that real title and its opening lines.
-/// Constructed and executed on 2026-08-12: with a folio, a real title, four
-/// short content rows, a second title and an orphan tail, the shipped order
-/// emits the second title alone and the real recipe is gone. Running THIS
-/// rule first, on the untouched page, does not reproduce it.
+/// **They no longer run in sequence, and this paragraph is why.** Chaining
+/// the two appliers was measurably wrong: re-deriving the heading list from
+/// the page in hand buys index consistency and nothing more — it does not fix
+/// WHICH row comes back as `headings.first`. When the tail trim's cut raised
+/// the median far enough, the bar `bodyTypeHeight * headingSizeRatio` rose
+/// with it, the page's real title dropped OUT of the heading list,
+/// `headings.first` moved to a later title, and the region this rule measured
+/// against [_leadingBudget] then contained that real title and its opening
+/// lines. Constructed and executed on 2026-08-12; the fixture lives in
+/// `frame_trim_test.dart`, which asserts the fault through the OLD chained
+/// order before asserting the fix, so it cannot decay into a happy path.
 ///
-/// What actually bounds the damage is [_leadingBudget] and
-/// [_looksLikeRecipeContent] — two unmeasured heuristics — so the honest
-/// statement is that the composition is safe by budget, not by construction.
-/// The window is narrow (the eaten region must still come in under 60
-/// characters, which needs unusually short body rows), it is dark while
-/// `enable_layout_recipe_split` is off, and the fix — swapping the two rules,
-/// since furniture rarely carries the four-word lines that move a median —
-/// is deliberately NOT applied here: it would change the input
-/// `withoutOrphanTail` is measured on and silently invalidate every figure in
-/// that file's tables and in `ACCEPTED_DEVIATIONS.md` until the corpus is
-/// re-run. That trade is Malin's to make, not this file's.
+/// `frame_trim.dart` is the fix: [leadingNoiseCutRow] and `orphanTailCutRow`
+/// are both taken from the UNTOUCHED document and only then applied.
 ///
-/// `import_manager_orphan_tail_test.dart` carries a composition case
-/// exercising both rules on one page. It pins the ORDER, not this hazard —
-/// its fixture's baseline does not cross the heading bar.
+/// [withoutLeadingNoise] itself now has NO production and no tool caller —
+/// `ImportManager` goes through `withoutFrameNoise`, and the `--leading-trim`
+/// eval arm compares `withoutOrphanTail` alone against `withoutFrameNoise`.
+/// It survives for exactly two reasons: this rule's own unit suite exercises
+/// it in isolation, and `frame_trim_test.dart` uses it to REPRODUCE the
+/// chained-order fault before asserting the fix. Calling it on another trim's
+/// output still carries the hazard, which is what that fixture depends on.
 library;
 
 import 'package:butlery/services/import/layout/heading_detector.dart';
@@ -155,6 +152,54 @@ bool _looksLikeRecipeContent(List<String> lines) {
   return RecipeSectionDetector.hasInstructionKeywords(lines.join('\n'));
 }
 
+/// The row on page ZERO up to which leading furniture should be cut, or null
+/// when there is nothing to cut.
+///
+/// **This is [withoutLeadingNoise]'s decision, and nothing else**, split out
+/// so `frame_trim.dart` can take it from the UNTOUCHED document. That split is
+/// the fix for the ordering hazard described in the library doc above: taken
+/// here, on the original page, the tail trim's cut cannot have moved
+/// [PageLayout.bodyTypeHeight] out from under [HeadingDetector] first.
+int? leadingNoiseCutRow(String input, DocumentLayout? layout) {
+  if (layout == null || !layout.matchesLineCountOf(input)) return null;
+
+  // Only page ZERO may be trimmed — see the library doc for why that is a
+  // sharper claim than "the first page", not just the mirror of "the last
+  // page" the tail trim restricts itself to.
+  //
+  // Belt and braces, same convention as `withoutOrphanTail`: `pages.isEmpty`
+  // and `first == null` cannot fire once `matchesLineCountOf` passed
+  // (it implies `isComplete`); `lines.isEmpty` CAN fire, and just falls
+  // through to the next guard returning the same null one line later.
+  final pages = layout.pages;
+  if (pages.isEmpty) return null;
+  final first = pages.first;
+  if (first == null || first.lines.isEmpty) return null;
+
+  final headings = HeadingDetector.headingLines(first);
+  if (headings.isEmpty) return null;
+  final pageRow = headings.first;
+  // A heading already on the page's first row leaves nothing before it to
+  // cut.
+  if (pageRow == 0) return null;
+
+  final leadingLines = [
+    for (var i = 0; i < pageRow; i++) first.lines[i].text,
+  ];
+  final headChars = leadingLines.fold<int>(
+    0,
+    (sum, text) => sum + text.trim().length,
+  );
+  if (headChars >= _leadingBudget) return null;
+
+  // Refuse even an under-budget cut if what precedes the heading reads like
+  // real recipe content rather than furniture — see the library doc and
+  // [_looksLikeRecipeContent].
+  if (_looksLikeRecipeContent(leadingLines)) return null;
+
+  return pageRow;
+}
+
 /// [input] and [layout] with leading furniture removed from the front of the
 /// FIRST page, or both unchanged.
 ///
@@ -166,41 +211,12 @@ bool _looksLikeRecipeContent(List<String> lines) {
   DocumentLayout? layout,
 ) {
   final unchanged = (text: input, layout: layout);
-  if (layout == null || !layout.matchesLineCountOf(input)) return unchanged;
-
-  // Only page ZERO may be trimmed — see the library doc for why that is a
-  // sharper claim than "the first page", not just the mirror of "the last
-  // page" the tail trim restricts itself to.
-  //
-  // Belt and braces, same convention as `withoutOrphanTail`: `pages.isEmpty`
-  // and `first == null` cannot fire once `matchesLineCountOf` passed
-  // (it implies `isComplete`); `lines.isEmpty` CAN fire, and just falls
-  // through to the next guard returning the same `unchanged` one line later.
-  final pages = layout.pages;
-  if (pages.isEmpty) return unchanged;
-  final first = pages.first;
-  if (first == null || first.lines.isEmpty) return unchanged;
-
-  final headings = HeadingDetector.headingLines(first);
-  if (headings.isEmpty) return unchanged;
-  final pageRow = headings.first;
-  // A heading already on the page's first row leaves nothing before it to
-  // cut.
-  if (pageRow == 0) return unchanged;
-
-  final leadingLines = [
-    for (var i = 0; i < pageRow; i++) first.lines[i].text,
-  ];
-  final headChars = leadingLines.fold<int>(
-    0,
-    (sum, text) => sum + text.trim().length,
-  );
-  if (headChars >= _leadingBudget) return unchanged;
-
-  // Refuse even an under-budget cut if what precedes the heading reads like
-  // real recipe content rather than furniture — see the library doc and
-  // [_looksLikeRecipeContent].
-  if (_looksLikeRecipeContent(leadingLines)) return unchanged;
+  final pageRow = leadingNoiseCutRow(input, layout);
+  if (pageRow == null) return unchanged;
+  // Non-null once the decision returned a row — it is the decision's own
+  // first gate. Read back rather than re-derived so the two cannot drift.
+  final pages = layout!.pages;
+  final first = pages.first!;
 
   // `headingLines` indexes into the PAGE; `textLineIndex` wants an index
   // into the FLATTENED document. Page zero's own lines start the flattened

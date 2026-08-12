@@ -77,21 +77,26 @@
 ///
 ///   dart run tools/corpus_split_eval.dart --leading-trim
 ///
-/// The mirror of `--trim` at the OTHER edge of the page: scores
-/// `withoutLeadingNoise` (`lib/services/import/layout/leading_noise.dart`) —
-/// dropping furniture (a running header, a folio, the previous recipe's
-/// tail) off the FRONT of the first page — before and after, measured on top
-/// of BOTH the shipped edge crop and `withoutOrphanTail`, because that chain
-/// is what production runs, in that order, before this rule ever sees the
-/// page. It applies both of those itself, unconditionally, so its BEFORE
-/// column is hard-coded and no flag can change it. What implying `--trim`
-/// actually buys is LOADING: the chain `--leading-trim` -> `--trim` ->
-/// `--edge-crop` -> `--layout` is what makes `_loadPages` attach geometry,
-/// and without it every page hits `if (doc == null) continue` and the arm
-/// scores zero pages. (An earlier draft of this sentence borrowed `--trim`'s
-/// own justification — "the BEFORE column has to be what the previous stage
-/// hands this one" — which is true of `--trim` and not of this arm, and
-/// contradicted the correct one-line comment beside the flag in `main`.)
+/// The mirror of `--trim` at the OTHER edge of the page: what dropping
+/// furniture (a running header, a folio, the previous recipe's tail) off the
+/// FRONT of the first page costs or buys.
+///
+/// **AFTER is `withoutFrameNoise`, not `withoutLeadingNoise`.** Since
+/// `frame_trim.dart` the two page trims no longer run in sequence — both
+/// decisions are taken from the untouched page and applied together — so
+/// scoring the leading rule on the tail rule's OUTPUT would measure a
+/// pipeline nobody runs. BEFORE stays `withoutOrphanTail` alone: that is
+/// production minus this rule, so the delta is this rule and nothing else.
+/// Both columns sit on top of the shipped edge crop, which the arm applies
+/// itself.
+///
+/// Its columns are therefore hard-coded and no flag can change them. What
+/// implying `--trim` actually buys is LOADING: the chain `--leading-trim` ->
+/// `--trim` -> `--edge-crop` -> `--layout` is what makes `_loadPages` attach
+/// geometry, and without it every page hits `if (doc == null) continue` and
+/// the arm scores zero pages. (An earlier draft borrowed `--trim`'s own
+/// justification — "the BEFORE column has to be what the previous stage hands
+/// this one" — which is true of `--trim` and not of this arm.)
 ///
 /// **`leading_noise.dart`'s own budget is unmeasured — this arm exists so it
 /// stops being unmeasured.** It was written without corpus access, using the
@@ -160,7 +165,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:butlery/services/import/layout/leading_noise.dart';
+import 'package:butlery/services/import/layout/frame_trim.dart';
 import 'package:butlery/services/import/layout/orphan_tail.dart';
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
 import 'package:butlery/services/ocr/edge_crop.dart';
@@ -188,9 +193,10 @@ void main(List<String> args) {
   // fix.
   final dropFrameCut = args.contains('--no-frame-cut');
   final leadingTrimMode = args.contains('--leading-trim');
-  // The BEFORE column has to be what `withoutOrphanTail` actually hands this
-  // rule in production, so this arm implies `--trim`'s loading the same way
-  // `--trim` implies `--edge-crop`'s.
+  // Implies `--trim`'s LOADING — geometry has to be attached or the arm
+  // scores nothing. NOT its BEFORE column: since `frame_trim.dart` this arm
+  // compares `withoutOrphanTail` alone against `withoutFrameNoise`, and it
+  // applies both itself. See the flag's section in the file header.
   final trimMode = args.contains('--trim') || leadingTrimMode;
   final edgeCropMode = args.contains('--edge-crop') || trimMode;
   // The crop only exists on the geometry path, so its arm implies `--layout`'s
@@ -719,13 +725,16 @@ void main(List<String> args) {
 
 /// The `--leading-trim` arm: what dropping leading noise does to the TEXT.
 ///
-/// Measures on top of BOTH the shipped edge crop AND `withoutOrphanTail` —
-/// the BEFORE column here is `_formatTrim`'s AFTER column, because that is
-/// the actual input `withoutLeadingNoise` receives in production
-/// (`ImportManager.autoParseMulti` runs the tail trim first). See
-/// `leading_noise.dart` for why this rule's budget is a provisional
-/// placeholder rather than a measured one — running this arm and reading its
-/// output is the step that placeholder is waiting on.
+/// BEFORE is `withoutOrphanTail` alone on top of the shipped edge crop —
+/// production minus this rule. AFTER is `withoutFrameNoise`, which is
+/// production. So the delta is the leading rule and nothing else.
+///
+/// It is NOT "the leading trim applied to the tail trim's output": since
+/// `frame_trim.dart` the two no longer run in sequence, both decisions come
+/// from the untouched page, and measuring the old chain would measure a
+/// pipeline nobody runs. See `leading_noise.dart` for why this rule's budget
+/// is a provisional placeholder rather than a measured one — running this arm
+/// and reading its output is the step that placeholder is waiting on.
 ({String text, Map<String, dynamic> summary}) _formatLeadingTrim(
   List<_Page> pages,
   MultiRecipeSplitter splitter, {
@@ -754,7 +763,11 @@ void main(List<String> args) {
     if (baseText == null) continue;
     final tailCut = withoutOrphanTail(baseText, croppedDoc);
 
-    final cut = withoutLeadingNoise(tailCut.text, tailCut.layout);
+    // BOTH decisions from the untouched page, exactly as production does
+    // since `frame_trim.dart` — measuring the old chained order would
+    // measure a pipeline nobody runs. `tailCut` stays the BEFORE column:
+    // it is production minus this rule, so the delta is this rule alone.
+    final cut = withoutFrameNoise(baseText, croppedDoc);
     if (!identical(cut.text, tailCut.text)) {
       trimmed++;
       // The removed span is a strict PREFIX here, the mirror of `_formatTrim`

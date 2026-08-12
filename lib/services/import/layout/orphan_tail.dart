@@ -225,6 +225,88 @@ import 'package:butlery/services/ocr/text_layout.dart';
 /// the table shows.
 const int _tailBudget = 120;
 
+/// The row on the LAST page from which an orphan trailing heading should be
+/// cut, or null when there is nothing to cut.
+///
+/// **This is [withoutOrphanTail]'s decision, and nothing else.** It was split
+/// out so `frame_trim.dart` can take BOTH page trims' decisions from the
+/// UNTOUCHED document and only then cut. Chaining the two appliers instead
+/// let this rule's cut move `PageLayout.bodyTypeHeight` — a median — under
+/// the leading trim, evicting a real title from its heading list; that was
+/// constructed and executed on 2026-08-12, and `leading_noise.dart`'s library
+/// doc carries the case.
+///
+/// **The split is deliberately behaviour-preserving for THIS rule.** Every
+/// gate below, and their order, is what the applier ran before; the applier
+/// now calls this and does only the cutting. That is what lets the corpus
+/// figures in the library doc above and in `ACCEPTED_DEVIATIONS.md` stand
+/// without a re-run — this rule already decided on the untouched document,
+/// because it ran first. Only the leading trim's input changed.
+int? orphanTailCutRow(String input, DocumentLayout? layout) {
+  if (layout == null || !layout.matchesLineCountOf(input)) return null;
+
+  // Only the LAST page may be trimmed. Photograph three pages in a row and page
+  // one's trailing heading is continued on page two — it is spliced, not
+  // orphaned. Only the end of the document is a real end-of-window.
+  //
+  // Belt and braces: `pages.isEmpty` and `last == null` cannot fire once the
+  // gate above passed — `matchesLineCountOf` implies `isComplete`, which is
+  // false for an empty page list and for any null page. `lines.isEmpty` CAN
+  // fire, but removing it changes nothing either: an empty page has no
+  // `bodyTypeHeight`, so `headingLines` returns empty and the next guard
+  // returns the same null one line later. So all three are REMOVABLE
+  // WITHOUT EFFECT, though for two different reasons — the first two cannot
+  // fire, the third fires and changes nothing. Same convention as
+  // `MultiRecipeSplitter`, which labels its own guards rather than letting them
+  // read as live states.
+  final pages = layout.pages;
+  if (pages.isEmpty) return null;
+  final last = pages.last;
+  if (last == null || last.lines.isEmpty) return null;
+
+  final headings = HeadingDetector.headingLines(last);
+  if (headings.isEmpty) return null;
+  final pageRow = headings.last;
+  // A heading on the page's first row would leave nothing behind, and would
+  // also make the trimmed page contribute zero lines while still occupying one
+  // text row — the one case that breaks the applier's row-count invariant.
+  //
+  // NOT redundant with the applier's own bound, and the two part company on
+  // ANY multi-page document — an earlier version of this comment called the
+  // line redundant on the strength of single-page fixtures alone, which was
+  // false. With two pages the heading sits at the last page's row 0,
+  // `textRow` resolves to `lineOffsets.last` (positive), that bound never
+  // fires, and without this line the last page is emptied while the text
+  // keeps its rows. The counts then disagree and the splitter declines
+  // geometry for the whole import, silently. `orphan_tail_test.dart`'s
+  // two-page fixture pins THIS one.
+  if (pageRow == 0) return null;
+
+  var tailChars = 0;
+  for (var i = pageRow + 1; i < last.lines.length; i++) {
+    tailChars += last.lines[i].text.trim().length;
+  }
+  if (tailChars >= _tailBudget) return null;
+
+  return pageRow;
+}
+
+/// Where [orphanTailCutRow]'s cut lands in the FLATTENED text, or null.
+///
+/// `headingLines` indexes into the PAGE; [DocumentLayout.textLineIndex] wants
+/// an index into the flattened document. Passing one as the other would, on a
+/// two-page import, resolve to a row on page ONE — cutting the input
+/// mid-page-one and taking all of page two with it. Silently, and invisibly to
+/// a corpus of single-page captures. `heading_detector.dart` names this trap by
+/// hand. Shared with `frame_trim.dart` so the conversion exists once.
+int? orphanTailTextRow(DocumentLayout layout, int pageRow) {
+  final pages = layout.pages;
+  final offset = pages
+      .take(pages.length - 1)
+      .fold<int>(0, (sum, p) => sum + (p?.lines.length ?? 0));
+  return layout.textLineIndex(offset + pageRow);
+}
+
 /// [input] and [layout] with an orphan trailing heading removed, or both
 /// unchanged.
 ///
@@ -269,59 +351,14 @@ const int _tailBudget = 120;
   DocumentLayout? layout,
 ) {
   final unchanged = (text: input, layout: layout);
-  if (layout == null || !layout.matchesLineCountOf(input)) return unchanged;
+  final pageRow = orphanTailCutRow(input, layout);
+  if (pageRow == null) return unchanged;
+  // Non-null once the decision returned a row — it is the decision's own first
+  // gate. Read back rather than re-derived so the two cannot drift.
+  final pages = layout!.pages;
+  final last = pages.last!;
 
-  // Only the LAST page may be trimmed. Photograph three pages in a row and page
-  // one's trailing heading is continued on page two — it is spliced, not
-  // orphaned. Only the end of the document is a real end-of-window.
-  //
-  // Belt and braces: `pages.isEmpty` and `last == null` cannot fire once the
-  // gate above passed — `matchesLineCountOf` implies `isComplete`, which is
-  // false for an empty page list and for any null page. `lines.isEmpty` CAN
-  // fire, but removing it changes nothing either: an empty page has no
-  // `bodyTypeHeight`, so `headingLines` returns empty and the next guard
-  // returns the same `unchanged` one line later. So all three are REMOVABLE
-  // WITHOUT EFFECT, though for two different reasons — the first two cannot
-  // fire, the third fires and changes nothing. Same convention as
-  // `MultiRecipeSplitter`, which labels its own guards rather than letting them
-  // read as live states.
-  final pages = layout.pages;
-  if (pages.isEmpty) return unchanged;
-  final last = pages.last;
-  if (last == null || last.lines.isEmpty) return unchanged;
-
-  final headings = HeadingDetector.headingLines(last);
-  if (headings.isEmpty) return unchanged;
-  final pageRow = headings.last;
-  // A heading on the page's first row would leave nothing behind, and would
-  // also make the trimmed page contribute zero lines while still occupying one
-  // text row — the one case that breaks the row-count invariant below.
-  //
-  // The two guards COINCIDE on a one-page document and part company on ANY
-  // multi-page one — an earlier version of this comment called the line
-  // redundant on the strength of single-page fixtures alone, which was false.
-  // With two pages the heading sits at the last page's row 0, `textRow`
-  // resolves to `lineOffsets.last` (positive), the bound below never fires, and
-  // without this line the last page is emptied while the text keeps its rows.
-  // The counts then disagree and the splitter declines geometry for the whole
-  // import, silently. `orphan_tail_test.dart`'s two-page fixture pins THIS one.
-  if (pageRow == 0) return unchanged;
-
-  var tailChars = 0;
-  for (var i = pageRow + 1; i < last.lines.length; i++) {
-    tailChars += last.lines[i].text.trim().length;
-  }
-  if (tailChars >= _tailBudget) return unchanged;
-
-  // `headingLines` indexes into the PAGE; `textLineIndex` wants an index into
-  // the FLATTENED document. Passing one as the other would, on a two-page
-  // import, resolve to a row on page ONE — cutting the input mid-page-one and
-  // taking all of page two with it. Silently, and invisibly to a corpus of
-  // single-page captures. `heading_detector.dart` names this trap by hand.
-  final offset = pages
-      .take(pages.length - 1)
-      .fold<int>(0, (sum, p) => sum + (p?.lines.length ?? 0));
-  final textRow = layout.textLineIndex(offset + pageRow);
+  final textRow = orphanTailTextRow(layout, pageRow);
   // Also unreachable — the index is in range once the gate above passed; the
   // null is the return type's, not a state. Same belt-and-braces as the bound.
   if (textRow == null) return unchanged;

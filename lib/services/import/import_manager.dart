@@ -8,8 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
-import 'package:butlery/services/import/layout/orphan_tail.dart';
-import 'package:butlery/services/import/layout/leading_noise.dart';
+import 'package:butlery/services/import/layout/frame_trim.dart';
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
@@ -605,9 +604,10 @@ class ImportManager {
   /// Callers that want a picker check `successfulRecipes.length > 1`.
   ///
   /// **The single-recipe path is no longer byte-unchanged, and that is
-  /// deliberate.** This method now trims an orphan trailing heading off the
-  /// end of the input (`withoutOrphanTail`) and furniture off the front of it
-  /// (`withoutLeadingNoise`) before splitting, so a page whose photo caught the
+  /// deliberate.** This method now trims both ends of the input before
+  /// splitting (`withoutFrameNoise`, which owns the ORDER: it takes the orphan
+  /// trailing heading's decision and the leading furniture's decision from the
+  /// UNTOUCHED document, then cuts once). So a page whose photo caught the
   /// next recipe's title loses that title, and a page whose photo caught a
   /// running header, a folio, or the previous recipe's tail loses that too.
   /// The splitter keeps its own contract — it still never hands back one
@@ -637,13 +637,14 @@ class ImportManager {
     // own doc and is deliberately not restated here: it is two different
     // measurements over two different populations, and copying either one out
     // is how three drifting copies of a figure get made.
-    // `withoutOrphanTail` returns the originals untouched whenever it cannot
-    // tell.
-    final tailTrimmed = withoutOrphanTail(input, layout);
-    // Leading furniture second, on the tail trim's own output — see
-    // `leading_noise.dart` for why the two rules compose safely on a
-    // single-page import where both trims touch the SAME page.
-    final trimmed = withoutLeadingNoise(tailTrimmed.text, tailTrimmed.layout);
+    //
+    // ONE call, and that is the point: `withoutFrameNoise` takes BOTH trims'
+    // decisions from the untouched document and only then cuts, and it returns
+    // the originals untouched whenever neither rule can tell. Chaining the two
+    // appliers here — which these lines used to do — let the tail cut move the
+    // page's median type size under the leading trim and cost a real recipe
+    // title; `frame_trim.dart` carries the executed case.
+    final trimmed = withoutFrameNoise(input, layout);
     final blocks = MultiRecipeSplitter().split(
       trimmed.text,
       layout: trimmed.layout,

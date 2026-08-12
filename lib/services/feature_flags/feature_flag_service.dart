@@ -119,8 +119,10 @@ class FeatureFlagService {
     //
     // THE SPLIT PATH IS LIVE behind this flag as of 248481c83 (2026-08-07):
     // `ocr_extraction_service` attaches the `PageLayout`, `photo_import_viewmodel`
-    // carries it across pages, and `import_manager` runs `withoutOrphanTail`
-    // and then hands the result to `MultiRecipeSplitter.split(input, layout:)`,
+    // carries it across pages, and `import_manager` runs the page-edge trims
+    // (`withoutFrameNoise` since 2026-08-12; `withoutOrphanTail` alone before
+    // that) and then hands the result to `MultiRecipeSplitter.split(input,
+    // layout:)`,
     // which opens a block per heading found by TYPE SIZE — where the text rules
     // need a title-shaped line with an ingredient cluster AFTER it. Measured on
     // 181 hand-verified corpus pages: multi-recipe spreads 19 % -> 33 % correct,
@@ -166,9 +168,13 @@ class FeatureFlagService {
     // remove: read `91.54 -> 91.52` as an upper bound on the cost, not the
     // cost.
     //
-    // **OFF is the code default, and off means nothing is cut.** No geometry is
-    // attached (`OCRExtractionService._layoutEnabled`), so `withoutOrphanTail`
-    // no-ops on a null layout and the splitter never sees a layout either.
+    // **OFF is the code default, and off means nothing is cut.** No PER-PAGE
+    // geometry is attached (`OCRExtractionService._layoutEnabled`), so the
+    // `DocumentLayout` that still arrives is incomplete, its `text` is null,
+    // and `matchesLineCountOf` refuses — which is what makes both trims and
+    // the splitter's layout path decline. NOT "a null layout": the photo path
+    // passes a non-null object either way. See the paragraph on this flag's
+    // mirror rule below, which retracts the same wording.
     //
     // **But turning it off does not undo what is already cached.** The FLAG
     // itself does propagate without a restart — `MaintenanceModeGate`
@@ -209,14 +215,17 @@ class FeatureFlagService {
     //
     // **Since 2026-08-12 this flag also gates a MIRROR rule at the other edge
     // of the page** (`leading_noise.dart`): `import_manager.dart` runs
-    // `withoutOrphanTail` then `withoutLeadingNoise`, cutting furniture (a
+    // `withoutFrameNoise`, which takes BOTH cuts' decisions from the
+    // untouched page and applies them together, cutting furniture (a
     // running header, a folio, the previous recipe's tail) off the FRONT of
     // the first page the same way the tail trim cuts an orphaned heading off
     // the back of the last one. With this flag off both rules no-op, so
     // nothing about this paragraph changes while the flag stays off — but NOT
     // because the layout argument is null, which is what an earlier draft of
-    // this line claimed. `photo_import_viewmodel` builds and passes a
-    // `DocumentLayout` unconditionally; the flag nulls each PAGE's geometry
+    // this line claimed. On the multi-page photo path
+    // `photo_import_viewmodel._recombineAndParse` builds and passes a
+    // `DocumentLayout` unconditionally (the draft-restore and handwriting
+    // branches pass none at all); the flag nulls each PAGE's geometry
     // (`ocr_extraction_service`, `layout: useLayout ? raw?.layout : null`),
     // which makes `isComplete` false, `text` null, and therefore
     // `matchesLineCountOf` false — the first gate in both rules. Right
@@ -240,9 +249,14 @@ class FeatureFlagService {
     // and it measured that on 14 of 19 real pages the splitter never builds a
     // block at all (it exits at `flat.length < 2`), which is the very reason
     // the tail trim exists. Read `leading_noise.dart`'s library doc for the
-    // asymmetry that does hold, and for the ORDERING HAZARD the two rules
-    // have when a single photo makes page zero and the last page the same
-    // page — that one is a real, executed finding and it is unresolved.
+    // asymmetry that does hold. The ORDERING HAZARD it used to
+    // record — a single photo makes page zero and the last page the same
+    // page, so chaining the two trims let the first cut move the median under
+    // the second and cost a real recipe title — is FIXED: `frame_trim.dart`
+    // takes both decisions from the untouched page and cuts once, and
+    // `frame_trim_test.dart` pins the fault and the fix together. The tail
+    // trim's own decision is unchanged by that, which is why its measured
+    // figures above still stand.
     'enable_layout_recipe_split': false,
 
     // Gradual Rollout Flags
