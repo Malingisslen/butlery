@@ -1203,6 +1203,42 @@
   "@householdAllergenRosterIncomplete": {
     "description": "BUT-1663: warning appended to the opt-out dialog when at least one household member's profile could not be read, so the named allergens cannot be trusted"
   },
+  "householdAllergenShareTitle": "Share my allergies with the household",
+  "@householdAllergenShareTitle": {
+    "description": "BUT-1693: settings toggle that shares the member's own allergen list with their household (GDPR Art. 9 consent)"
+  },
+  "householdAllergenShareSubtitleOff": "The household is guessing on your behalf",
+  "@householdAllergenShareSubtitleOff": {
+    "description": "BUT-1693: toggle subtitle when the member has NOT shared — states what the household currently sees, not what the switch does"
+  },
+  "householdAllergenShareSubtitleOn": "The household's menu accounts for your allergies",
+  "@householdAllergenShareSubtitleOn": {
+    "description": "BUT-1693: toggle subtitle when the member HAS shared"
+  },
+  "householdAllergenShareConfirmTitle": "Share your allergy list",
+  "@householdAllergenShareConfirmTitle": {
+    "description": "BUT-1693: title of the explicit-consent dialog shown when turning sharing ON"
+  },
+  "householdAllergenShareConfirmBody": "Your household can see the allergies and dietary choices you have entered, so the weekly menu can be planned around them. Today Butlery guesses on your behalf — it assumes four common allergies and misses the rest.\n\nEveryone in the household sees the list, including anyone who joins later.\n\nIt is shown as one combined list for the whole household. Nobody sees which allergy belongs to whom.\n\nDietary choices count as a requirement when the menu is planned: if you share “vegan”, the whole household's menu is planned vegan.\n\nYou can stop sharing at any time. The list is removed immediately and the menu goes back to being cautious on your behalf.",
+  "@householdAllergenShareConfirmBody": {
+    "description": "BUT-1693: the Art. 9(2)(a) consent copy, approved in docs/legal/dpia-household-allergen-sharing.md Annex A — do not reword without re-approving it there"
+  },
+  "householdAllergenShareConfirmAction": "Share",
+  "@householdAllergenShareConfirmAction": {
+    "description": "BUT-1693: confirm button on the consent dialog"
+  },
+  "householdAllergenShareStopped": "Your allergy list is no longer shared. The menu is cautious on your behalf again.",
+  "@householdAllergenShareStopped": {
+    "description": "BUT-1693: confirmation shown after withdrawing consent — withdrawal has no dialog of its own (Art. 7(3))"
+  },
+  "householdAllergenShareSettingsUnread": "We could not read your own allergy settings. Check your connection and try again.",
+  "@householdAllergenShareSettingsUnread": {
+    "description": "BUT-1693: shown when sharing is refused because this device could not read the member's OWN allergen settings — the grant path re-reads the profile whenever the cached one carries no settings, so retrying is a real remedy there; a wholly absent profile is refused outright. The copy names no screen"
+  },
+  "householdAllergenShareFailed": "Could not change sharing just now. Please try again.",
+  "@householdAllergenShareFailed": {
+    "description": "BUT-1693: shown when granting or withdrawing the share could not be saved"
+  },
   "commonTurnOff": "Turn off",
   "@commonTurnOff": {
     "description": "Common action: turn a setting off"

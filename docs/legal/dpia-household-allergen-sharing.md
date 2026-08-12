@@ -175,7 +175,27 @@ leaves the household, and never contributes to any public or aggregate figure.
 - **Mitigation:** withdrawal deletes the **shared list**; the grant and
   withdrawal events are recorded in the existing audit log with version and
   timestamp, retained separately, and appear in the member's own data export.
-- **Residual:** Low.
+- **STATUS 2026-08-12 — this mitigation is NOT yet built, and the sentence above
+  describes the intended end state, not today's code.** What a withdrawal
+  actually leaves behind is a permission-check row (actor, resource,
+  `operation: 'delete'`, timestamp, granted) with **no `consentVersion`**, and
+  its operation spelling puts it in the 180-day general retention bucket rather
+  than the 730-day `consent_*` one. Since the share document is the only carrier
+  of `consentVersion` and `consentGrantedAt`, deleting it today removes the
+  record that consent was ever given. Building the real
+  `consent_granted` / `consent_revoked` pair is a **named gate on switching
+  the feature on** (`enable_household_allergen_sharing` is off, nothing writes
+  in production). Use those exact spellings: both are ALREADY carried by
+  `CONSENT_OPERATIONS` (`functions/src/audit_logs/purge-expired.ts`), so the
+  retention classification needs nothing new and no second token for "withdrawn"
+  should be minted. Note what that does NOT mean: nothing in this repo writes
+  either operation today — the existing consent repository writes
+  `consent_updated` and `consent_deleted` — so the writer itself is part of this
+  gate, not something already running. That list is
+  exhaustive by enumeration — an unlisted `consent_*` operation falls to the
+  180-day bucket and the trail is purged at six months, invisibly.
+- **Residual:** Low **once built**; until then the withdrawal half of the Art.
+  7(1) trail does not exist.
 
 ### R6 — Dietary choices are bundled with allergens, and can narrow the household's menu
 - **What happens:** the controller decided (§9, decision 1) that one toggle
@@ -198,7 +218,15 @@ leaves the household, and never contributes to any public or aggregate figure.
   stalled deletion, plus the admin reset tool). This is deliberate: the parent
   DPIA's R5 is the same risk, and this repo has a documented history of new
   collections being missed by exactly one of these paths.
-- **Residual:** Low, subject to the erasure tests passing before release.
+- **STATUS 2026-08-12:** none of the four is built. The mitigation above is written
+  in the present tense and describes the DESIGN, not the code: the consent UI shipped
+  with `enable_household_allergen_sharing` OFF and `grep household_allergen
+  functions/src` is empty, so there is no cascade step, no probe leg, no reset entry
+  and no export section. Nothing has leaked — with no `firestore.rules` block the
+  collection is default-denied, so no document can exist — but this risk is NOT
+  mitigated today and the four triggers are named gates on flipping the flag.
+- **Residual:** Low **once built**; today unmitigated-but-unreachable. Subject to the
+  erasure tests passing before release.
 
 ### R8 — The list leaks into a data export it does not belong in
 - **Position:** a member's own export contains their **own** shared list and
@@ -311,6 +339,11 @@ Decision 5 is open.
 Swedish is the app's language; the English column is the `app_en.arb` mirror.
 Butler voice: states the facts, no exclamation marks, no congratulation.
 
+The quotation marks here are the SHIPPED code points (Swedish ”…”, English “…”), not
+ASCII, so this annex can be compared byte-wise against the ARB — which is how a wrong
+opening quote (the German low-9 „) reached the generated file once and was caught. Do not
+normalise them back to `"`.
+
 ### The settings toggle
 
 | | Svenska | English |
@@ -335,7 +368,7 @@ Butler voice: states the facts, no exclamation marks, no congratulation.
 > Listan visas som en gemensam lista för hela hushållet. Ingen ser vilken allergi
 > som är vems.
 >
-> Kostval räknas som ett krav när menyn planeras: delar du "vegansk" planeras hela
+> Kostval räknas som ett krav när menyn planeras: delar du ”vegansk” planeras hela
 > hushållets meny vegansk.
 >
 > Du kan sluta dela när som helst. Då tas listan bort direkt, och menyn går
@@ -353,7 +386,7 @@ Butler voice: states the facts, no exclamation marks, no congratulation.
 > allergy belongs to whom.
 >
 > Dietary choices count as a requirement when the menu is planned: if you share
-> "vegan", the whole household's menu is planned vegan.
+> “vegan”, the whole household's menu is planned vegan.
 >
 > You can stop sharing at any time. The list is removed immediately and the menu
 > goes back to being cautious on your behalf.

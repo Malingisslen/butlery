@@ -208,7 +208,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `group_detail_view.dart` | 648 | Group social detail screen |
 | `tag_detail_view.dart` | 591 | Tag detail/editing screen |
 | `conversations_list_view.dart` | 564 | Conversations list screen |
-| `base_dialog.dart` | 524 | Base dialog widget |
+| `base_dialog.dart` | 541 | Base dialog widget |
 | `menu_viewmodel.dart` | 608 | Weekly menu VM |
 | `receive_share_view.dart` | 562 | Incoming share intent handler |
 | `shopping_member_management_dialog.dart` | 562 | Shopping list member management dialog |

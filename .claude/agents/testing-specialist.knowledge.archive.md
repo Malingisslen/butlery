@@ -18291,3 +18291,547 @@ No suite run this round and none claimed: the parent's 81/4 green and clean
 `dart analyze --fatal-infos` stand, and the hashes above are what they belong to.
 
 Verdict: pass (0 blocking).
+
+## 2026-08-12 — Review: rules_allowlist_drift_test.dart + tag_result.dart (BUT-1482 sprint)
+
+Trigger: review of two uncommitted files — the new `test/unit/security/rules_allowlist_drift_test.dart`
+(guard against `firestore.rules` `keys().hasOnly([...])` drifting from its writer) and
+`lib/models/tagging/tag_result.dart` (removed `includeDecisions` param + rewritten doc comment).
+Brief said 7/7 green, mutation-proven twice, and asked for an attack on vacuity, sentinels,
+the census regex, and every prose claim.
+
+### What was verified by command, not by reading
+
+Exact `hasOnly(` census of firestore.rules (139037 bytes, md5 9e2853f2ae2a3fd059315d4e56743e9e):
+30 total = 12 `.keys().hasOnly(` + 14 `affectedKeys().hasOnly(` + 1 `.values().hasOnly(` +
+2 set-difference `.hasOnly([request.auth.uid])` + 1 inside a comment. The census test's
+`_allowlists.length (6) + _knowinglyUncovered.length (6) == 12` is exact. All six anchor
+strings occur exactly ONCE in the file (`grep -Fc`), so `rules.indexOf(anchor)` cannot bind
+to a homonym.
+
+Mutation battery (8 new mutants, driver with `atexit` + SIGINT/SIGTERM/SIGBREAK restore,
+md5 re-verified identical afterwards, `git status --porcelain` unchanged). ALL 8 KILLED:
+P1 participants drop 'isMuted'; P2 participants drop 'avatarUrl' (the CONDITIONAL key —
+proves the fixture supplies it); P3 memberships drop 'isPinned'; P4 notification_history
+drop 'expireAt'; P5 participants `hasOnly` to `hasAll` (sentinel probe); P6 clicks
+`hasOnly` to `hasAll` (sentinel probe); P7 tagResult drop 'errorReason' (the second
+CONDITIONAL key); P8 counters drop 'unreadSharedShoppingLists'. P5/P6 each reddened TWO
+tests — the entry test via the WRONG-LIST sentinel message and the census — which is the
+documented failure mode firing loudly rather than rebinding silently.
+
+Sentinel load-bearing check, per entry, by working out the NEXT `hasOnly(` after the
+anchor (the extractor uses the plain substring `hasOnly(`, so it also lands on
+`affectedKeys().hasOnly(`):
+- tagResult (anchor :157 to :168) — next is `_isValidTriStateMap`'s `values().hasOnly` :202,
+  no `generatorVersion`. The header's claim "a sibling function carrying another" is TRUE.
+- counters (:527 to :539) — next :558 memberships, no `totalSharedContent`.
+- memberships (:550 to :558) — next :681 `affectedKeys().hasOnly(['friendsCount'])`.
+- participants (:1707 to :1709) — next :1785 `affectedKeys().hasOnly(['lastReadAt'])`, no
+  `displayName`. The header's "two hasOnly calls in the participants block" is TRUE.
+- notification_history (:2683 to :2692) — next :2710 notification_batches, no
+  `notificationId` (it IS in delivery :2727 and engagement :2753, i.e. three lists total as
+  the comment says, but neither is the next one along).
+- clicks (:2646 to :2658) — next :2692 notification_history, no `timestamp` (it IS in
+  engagement :2753, exactly as the comment says).
+None of the six shares its sentinel with the list its anchor scans into. The file's claim
+that no such entry exists HOLDS.
+
+Fixture widest-payload check, field by field:
+- `TagResult.toFirestore` 12 keys, both conditionals (`errorReason`, `configRevision`)
+  supplied — allowlist is exactly 12.
+- `ConversationMembership.toFirestore` — 9 keys, ALL unconditional, so the fixture's use of
+  defaults for `hasUnread/isMuted/isPinned/isArchived` is safe; allowlist exactly 9.
+- `ConversationParticipant.toFirestore` — 8 keys, `avatarUrl` the only conditional and the
+  fixture supplies it; allowlist exactly 8.
+- counters — union across the THREE `BaseSharedContentRepository` subclasses (verified:
+  shared_menu/shared_recipe/shared_shopping, exactly three `counterTypeKey =>` overrides)
+  plus `totalSharedContent` + `lastUpdated`; the decrement (:83) and recalculate (:271)
+  payloads are subsets.
+- notification_history — union of `recordNotification` (:92, 9 keys) + `markAsDelivered`
+  (:124) + `markAsOpened` (:136); there is a THIRD update site (`batch.update` :199) whose
+  payload duplicates the second, so "two update payloads" is right about SHAPES.
+- clicks — `{timestamp, userId}` exactly (`firebase_deeplink_repository.dart` :201-205).
+
+`_allowlistCall` regex `\.keys\(\)\s*\.hasOnly\(`: correct, and the LITERAL DOT is what
+saves it from `affectedKeys().hasOnly(` — there is no `.` immediately before `Keys()`.
+Case-sensitivity is a second, redundant guard; the regex would still exclude
+`affectedKeys` if someone made it case-insensitive. It also excludes `.values().hasOnly(`.
+Residual (no instance today): a rules author who binds `let k = data.keys();` and calls
+`k.hasOnly(` later would not be counted.
+
+"The other six were each checked against their writer on 2026-08-12 and none had drifted" —
+independently RE-VERIFIED, all six, today: likes `{userId, likedAt}` (comment_likes_operations
+:56-59) equals allowlist; `CookEvent.toFirestore` {recipeId, cookedAt, attendeeMemberIds?}
+inside :1436; `FeedbackEntry.toMap` 10 keys equals :2608; notification_batches set(:85-92)
+7 keys equals :2710 (append payload a subset); NotificationAnalyticsManager's delivery union
+inside :2726 and engagement union equals :2752. TRUE claim.
+
+`includeDecisions`: zero remaining references outside the doc comment and `tasks/todo.md`
+(D5). It defaulted `false`, so no caller's payload changes — behaviour genuinely unchanged.
+`configRevision` added to TagResult 2026-07-23 confirmed from git (`0ca51843f`).
+
+### The one blocking finding
+
+`tag_result.dart`'s new doc comment ends: "`toJson` is reached through `RecipeUnified.toJson`,
+which has around a dozen consumers — the Drift-backed caches, but also backup, offline
+storage and the sync modules. **None of them go through `firestore.rules`**, which is why
+the removal is Firestore-only." The bolded half is FALSE.
+`SocialMenuOperations.shareMenuWithFriends` (lib/services/unified/operations/social_menu_operations.dart
+:97-125) builds `menuData` with `recipes.map((recipe) => recipe.toJson())` and writes it
+`await sharedMenuRef.set(menuData)` into `shared_content` — governed by
+`match /shared_content/{contentId}` (firestore.rules:739). The chain is
+`RecipeUnified.toJson` to `RecipeSerialization.toJson` to `RecipeCore.toJson`
+(recipe_unified.dart:679 `'tagResult': tagResult?.toJson()`) to `TagResult.toJson`, which
+emits `decisions`. The CONCLUSION survives — `isValidTagResult` is invoked only at
+firestore.rules:381 and :390 inside the recipes block, and `shared_content` carries no
+`keys().hasOnly` — but the stated REASON is wrong, and it is exactly the sentence a future
+session would lean on when deciding whether a new `toJson` key is safe. Checked every other
+`recipe.toJson()` consumer: backup_service:38, offline_user_storage:56, local_recipe_cache:170,
+persistence_service:141, cache_operations:81, personal_recipe_module:586/:713,
+realtime_cache_manager:24, social_recipe_query_service:235, menu_storage:344 (SavedMenuData
+local JSON), social_recipe_operations:398 (in-memory list), shared_menu:425 (SharedMenu.toJson;
+the Firestore path is `SharedMenu.toFirestore`, which uses `recipe.core.toFirestore()`) —
+social_menu_operations is the ONLY one that reaches Firestore.
+
+### Non-blocking
+
+- "the file's ~19 `affectedKeys().hasOnly` update restrictions" — the exact count is 14.
+  (18 is `total hasOnly minus 12 covered`, which is probably where ~19 came from.) Not
+  load-bearing for any assertion.
+- `_knowinglyUncovered` labels `recipe_comment_likes` and `cook_events` are descriptive,
+  not the real paths (`recipe_comments/{id}/likes/{userId}` :1340 and
+  `recipe_cook_events/{userId}/events/{eventId}` :1436) — the census message sends a future
+  reader to find them.
+- Writer pointer `firebase_notification_history_repository.dart:99` names the `expireAt`
+  LINE; the payload starts at :92. And the test says deeplink `:203` where the rules comment
+  says `:201-205`. Naming the METHOD survives a refactor; a line number does not.
+- Counters fixture hardcodes the three `counterTypeKey` strings. Exactly three subclasses
+  exist today, but a fourth would ship unguarded — the same "convenient set" mistake the
+  comment above it records having already made twice. Closable with a source census in the
+  style the file already trusts (count `counterTypeKey =>` overrides under lib/repositories/).
+- The MIRROR family is uncovered and unmentioned: `d.keys().hasAll([...])` three lines below
+  the covered call at firestore.rules:1712-1714, plus `hasRequiredFields([...])` in feedback,
+  cook_events and deep_links. A model that STOPS emitting a required key is denied exactly as
+  silently. The fixture for it is already in hand (`allowedRequired.difference(sent)`), and it
+  belongs in a SEPARATE test, per the file's own one-red-means-one-thing rule.
+- `UserCounters.toFirestore()` (lib/models/user_counters.dart:84-94) emits `unreadMessages`
+  and `pendingFriendRequests`, neither in the counters allowlist. It has ZERO callers, so no
+  live drift — but because `request.resource.data.keys()` on an update is the POST-WRITE
+  document, the first write of that model to `users/{uid}/counters/shared_content` would deny
+  every counter write on that doc permanently. Loaded gun, not a bug.
+- Safe-direction property worth keeping: `_allowlistAfter`'s `indexOf('[')` to `indexOf(']')`
+  slice would TRUNCATE on a nested-bracket list, which drops keys from `allowed` and reddens.
+  It cannot fail green.
+- No Cloud Function writes fields into any of the six guarded docs today (checked
+  account-deletion-cascade, correlate-notifications, cleanup-old-notifications,
+  enforce-group-minor-membership — all reads or deletes).
+
+`flutter analyze` on both files: No issues found. Suite: 7/7 green.
+
+### Closing state
+
+test/unit/security/rules_allowlist_drift_test.dart blob `4fda700d8` (worktree) 308 lines
+lib/models/tagging/tag_result.dart blob `f98f0e035` (worktree) 919 lines
+firestore.rules md5 `9e2853f2ae2a3fd059315d4e56743e9e` 2817 lines — byte-identical after the battery
+
+Verdict: fail (1 blocking) — the false "none of them go through firestore.rules" sentence.
+
+
+## 2026-08-12 — BUT-1693 settings consent row: review of the tile suite + the base_dialog scroll fix
+
+**Trigger:** asked to review `test/widget/views/settings/household_allergen_sharing_tile_test.dart`
+(13 tests at hand-off, 14 by the time I finished), `lib/views/settings/widgets/household_allergen_sharing_tile.dart`
+and the two `SingleChildScrollView` additions in `lib/widgets/common/dialogs/base_dialog.dart`.
+Two named questions: is the "row DOES appear" reachability control sufficient, and does the
+base_dialog scroll fix deserve a permanent test. No production mutation allowed this run.
+
+### The tree moved twice DURING the round
+`household_allergen_sharing_tile.dart` md5 changed at 21:21 (gained `bool _resolving`), the suite
+at 21:23 (gained the M4 replace test, `verify(getForUser).called(1)`, and one
+`includeUnknownInMenu` assertion). I caught it only because two of my own probe runs disagreed:
+PROBE A at ~21:15 measured `getForUser=2, getOwn=2` for ONE mount; probes 2 and 3 after 21:21
+measured 1/1 with identical fixtures. The outlier was the truth about the OLD bytes — the parallel
+session had fixed the double read in between. Re-read both files, rebuilt the finding list.
+`StatefulElement._firstBuild()` calls `state.didChangeDependencies()` before `super._firstBuild()`,
+which is why the un-guarded version spent every mount's reads twice.
+
+### Measurements
+- **Retry liveness (current bytes):** stub `getOwn` to throw, mount (row hidden, forUser=1),
+  heal the stub, then pump a theme change, a `view.physicalSize` change and a locale change.
+  Result: `forUser=1 own=1 row=0` throughout. The `didChangeDependencies` retry NEVER fires again,
+  because the hidden branch of `build` returns `SizedBox.shrink()` before any `Theme.of` /
+  `context.l10n`, so the element registers no inherited dependency. Only a remount recovers.
+- **`_resolving` leak:** `if (households == null || shares == null || userId == null) return;`
+  sits above the `try/finally`, so the in-flight flag stays `true` forever when DI/auth is not
+  ready at mount. Latent only because the retry it would disable is already dead.
+- **base_dialog headroom:** pre-fix bare-`Column` replica with the real Art. 9 body overflows by
+  38px at 800x600, 464px at 390x844, 764px at 360x640, 1122px at 320x568 — but ONLY with
+  `AppTheme.lightTheme` mounted; under a bare `MaterialApp` the same replica reports no exception
+  at 800x600. So the brief's "the only thing that reddens is a tile test" was right, with 38px of
+  margin at the widget-test surface — one copy edit or type-scale tweak from silently retiring.
+
+### What was passing for a reason other than the one it names
+1. `includeUnknownInMenu`: the sole assertion (isTrue, on the null-prefs member) could not tell the
+   `?? UserAllergenPreferences.defaults.includeUnknownInMenu` fallback from a hardcoded `true`,
+   because `_defaultProfile`'s prefs used the class default, also `true`. This is the line the
+   parallel session had changed 2 minutes earlier (`?? false` -> `?? defaults...`), i.e. the newest
+   and least-pinned code in the file. Fixed by setting the fixture to `false` (also the direction
+   that TIGHTENS: the household AND-folds the flag) and asserting the pass-through.
+   Fixture-flip probe: reverting the fixture reddens exactly 2 tests, both at `Expected: false /
+   Actual: <true>`.
+2. Cancel test could not distinguish a refusal from a Cancel button that does nothing — both leave
+   the write unmade. Added `findsNothing` on the confirm title after the tap.
+3. M4 replace test asserted call COUNTS but not ORDER, and never captured the SECOND payload —
+   which is a hand-copied construction site (its comment block is visibly mis-indented from the
+   copy). Added `verifyInOrder` + assertions on the replacement's consent fields.
+4. `householdId` on the written share — the field deciding WHO may read the Art. 9 data — was
+   unasserted; `isValidConsent` only requires non-empty. One line.
+5. `UserService` is the one collaborator the reachability control does not cover (it is resolved
+   only inside `_grant`); its real control is the "confirming writes the share" test, whose
+   `trackedAllergens == {'agg'}` can only come from the profile. The `profile == null` half of the
+   refusal guard shares one observable with `!settingsMerged` and stays unpinned — acceptable,
+   same branch, same outcome.
+
+### mocktail gotcha
+`verify(() => shares.create(captureAny()))` marks both calls `[VERIFIED]`, and the later
+`verifyInOrder([...revoke, ...create])` then fails with "Matching call #1 not found" over a list
+where every entry prints `[VERIFIED]`. That red is bookkeeping, not a production ordering bug.
+Fix: capture through `verifyInOrder`'s returned `List<VerificationResult>` (`calls[2].captured`).
+
+### Delivered
+- `test/widget/common/dialogs/base_dialog_test.dart`: +2 tests (one per template class, because the
+  scroll fix landed twice), synthetic 42-line content at 320x568, asserting no overflow and that
+  `ensureVisible` brings the tail on screen. Non-vacuity proven with a `test/`-side pre-fix replica:
+  overflow error present, tail at y=1094 on a 568-tall screen. Also `contentChild` added to the two
+  local test dialog subclasses.
+- Tile suite: 4 strengthenings above. 14 tests green; 279 green across
+  `test/widget/views/settings` + `test/widget/common/dialogs` + `household_service_test.dart`,
+  5 skipped. `flutter analyze --fatal-infos` clean on both touched files.
+- Two untracked probe files under `test/` were DELETED by something in the environment within
+  minutes of being written (both had "probe" in the name). Write-then-run in the same call, or
+  create them with python inside the Bash call, if it recurs.
+
+### Reported, not fixed (no production mutation this run)
+- `_resolving` leaks true past the service-null early return.
+- The `didChangeDependencies` retry is dead in the state its comment describes; both comments
+  overstate the mechanism. Fixing the retry without fixing the leak makes the leak live.
+- `mine.first` silently picks which household sees the Art. 9 data when a member has several.
+
+Closing state: `household_allergen_sharing_tile.dart` md5 `3fa8111ce566a7d3a4a03f5f0ef522e6` 307 lines;
+`base_dialog.dart` md5 `8760a3fe40f700f00b06f716ceab1397` 541 lines;
+tile suite md5 `471382b7aa6be7c6077c32debd6c9e5e`.
+
+Verdict: fail (1 blocking) — the `_resolving` leak plus the two comments asserting an in-place
+recovery that no dependency change can trigger.
+
+## 2026-08-12 — BUT-1693 settings slice, gate re-read on final bytes (trigger: user correction + tree motion)
+
+### Correction to the previous entry (same day, same ticket)
+That entry recorded "two untracked probe files under `test/` were DELETED by something in the
+environment" and advised writing them faster to beat it. **Wrong on both halves.** Malin removed
+them by hand — `zz_probe_review_test.dart` and `overflow_discrimination_probe_test.dart`, both
+carrying a "delete after" header that never got honoured — and the advice amounted to routing
+around a human cleaning up after me. The rule now in the principles file: probes go to the session
+scratchpad and `flutter test` gets the absolute path; if a harness forces a probe into `test/`,
+create-run-delete in ONE Bash call. No probe files were written this round.
+
+### The brief's hash had already expired when I got it
+Brief pinned the tile at md5 `5590d31f82911eaac87f6e067dbd82da`. Disk read
+`6b616fa31f0025aa7aa7e0bf3d87ceb2` under every line-ending normalisation (file is LF-only,
+11642 bytes). My own first `Read` this round returned **290 lines**; `wc -l` minutes later said
+**285**. mtime 21:49:50, clock 21:51:21 — the edit landed mid-round, between my Read and my hash.
+Diff of the two versions I held:
+- `_resolving` deleted outright — field + doc comment, the `|| _resolving` guard, the assignment,
+  and the whole `finally { _resolving = false; }`. This pre-empted the finding I was drafting
+  (one call site in `initState`, so the flag guarded nothing and its comment claimed otherwise).
+- NEW `if (!mounted) return; // the screen left while the dialog was up` in `_onChanged`, between
+  the consent dialog's result and `await _grant()`. Correct: `_grant` touches `context` for both
+  `SnackBarUtils` and `context.l10n`. Untested, and honestly hard to stage — conscious skip.
+Re-ran everything against the FINAL bytes rather than trusting the earlier run: tile suite 14/14,
+`base_dialog_test.dart` 26/26 (40 in the paired run), `dart analyze` clean on both.
+
+### Verified, not assumed
+- `UserAllergenPreferences.defaults.includeUnknownInMenu` is `true` (model line 51), so the tile's
+  `?? defaults.includeUnknownInMenu` comment and the empty-profile test's `isTrue` both hold.
+- `HouseholdAllergenShare.fromMap` really does parse field-by-field and never routes through
+  `UserAllergenPreferences.fromFirestore`, so the tile comment "the read side refuses exactly this
+  substitution" is accurate. Both were cross-file claims in comments; both paid off.
+- The fixture flip lands: `_defaultProfile()` now carries `includeUnknownInMenu: false` against a
+  class default of `true`, so the confirm test's `isFalse` and the empty-profile test's `isTrue`
+  are the two arms that separate a member's own choice from the fallback.
+
+### Findings (all non-blocking, all comment-rot from the same edit)
+1. Tile suite ~L222: `"didChangeDependencies fires right after initState, so without the in-flight
+   guard every mount would spend its reads twice."` Both named mechanisms are now deleted. The
+   assertion `verify(() => households.getForUser(_userId)).called(1)` still earns its place (it
+   reddens if a second resolve call site appears); its stated reason is fiction, and it invites a
+   future session to either re-add the guard or delete the assertion as pointless.
+2. Tile suite ~L408: `"The replacement is built at a SECOND construction site"` — after the
+   `buildShare()` consolidation there is exactly one. The assertions stay (they prove the replace
+   path emits a VALID consent payload, and `verifyInOrder` pins revoke-before-create, which is the
+   real safety property), but the sentence would justify restoring a pasted second site.
+3. Agreed with the brief: finding 7 (no test for the retry path) is moot. With the retry deleted
+   there is no path; remount recovery is `initState`, which every pump in the suite already exercises.
+
+Closing state: `household_allergen_sharing_tile.dart` md5 `6b616fa31f0025aa7aa7e0bf3d87ceb2` 285 lines;
+`base_dialog.dart` md5 `8760a3fe40f700f00b06f716ceab1397` 541 lines;
+tile suite md5 `1fceea989ccf6adda8f2bb74d9bf623a` 482 lines;
+`base_dialog_test.dart` md5 `fec44723c1944dcf29c42a13ebf0e6eb` 697 lines.
+
+Verdict: pass (0 blocking).
+
+## 2026-08-12 — BUT-1482 sprint, round 3: final verification of `rules_allowlist_drift_test.dart` + `tag_result.dart`
+
+Read-only round. Files at close: drift suite md5 `20b169aaad6c27db80fb82b408945ad9` 353 lines;
+`tag_result.dart` md5 `bf23c002ae6df6bc6499f09fdc0f72a0` 930 lines; `firestore.rules` md5
+`c740081d75e7bc2df522d92876316e49`. 7 tests (not 8, as the brief said), all green in 0.5 s.
+
+### Non-vacuity proved ANALYTICALLY, no mutation run needed
+For all six entries `sent == allowed` EXACTLY — 12/5/9/8/11/2 keys — so deleting any key from any
+of the six rules allowlists reddens the matching test by construction. Cheaper and stronger than a
+sampled mutation battery, and it also answers "is the fixture narrower than the widest payload":
+it cannot be, or the sets would not be equal. Derivations checked one by one:
+`TagResult.toFirestore` 10 unconditional + `errorReason` + `configRevision` (fixture populates both);
+`ConversationMembership.toFirestore` 9, no conditionals; `ConversationParticipant.toFirestore` 8,
+`avatarUrl` the only conditional and the fixture supplies it; counters = `fieldForType` over all
+THREE `BaseSharedContentRepository` subclasses (verified: exactly three) + `totalSharedContent` +
+`lastUpdated`; notification_history = create's 9 ∪ the two updates' `deliveredAt`/`openedAt` = 11;
+clicks = `{userId, timestamp}` (`firebase_deeplink_repository.dart` :203).
+
+### The census classification is exactly right, and the extractor's sentinels are load-bearing
+30 `hasOnly(` = 12 `keys().hasOnly` + 14 `affectedKeys().hasOnly` + 1 `values().hasOnly` (:202)
++ 2 set differences (:507, :875) + 1 inside a comment (:857). All six anchors resolve to the
+intended list, and each `mustContain` is ABSENT from the next list the forward-scanning extractor
+would reach if its own rule were deleted (tagResult → the TriState `values()` list; counters →
+memberships; memberships → `friendsCount`; participants → `['lastReadAt']`; notification_history →
+notification_batches; clicks → notification_history). So the rebind guard fires in every direction
+that exists, not just in principle.
+
+### THE BLOCKING FINDING — a count census cannot see a SWAP, and the comment says it can
+`_knowinglyUncovered`'s docstring: *"NAMING them is what makes the census survive a SWAP — one
+allowlist deleted and another added in the same commit leaves the total unchanged, and a bare
+number would stay green."* The census only compares COUNTS
+(`total == _allowlists.length + _knowinglyUncovered.length`); the six names are never resolved
+against `firestore.rules`. Delete the `notification_batches` allowlist and add a new one in the
+same commit → total still 12, test still GREEN — identical to what a bare `expect(total, 12)`
+would do. The naming buys diagnosability, not detection.
+
+Precise scope of the real hole: a swap involving a GUARDED list IS caught, by that list's own
+`_allowlistAfter` anchor assertion ("anchor no longer appears in firestore.rules"). Only a swap
+among the six UNCOVERED lists is invisible. Fix is six lines — give each `_knowinglyUncovered`
+entry an anchor and assert `rules.contains(anchor)` — after which every swap is caught, because
+the two halves cover each other.
+
+### The six knowingly-uncovered allowlists re-checked independently — the header's claim holds
+likes `{userId, likedAt}` (`comment_likes_operations.dart`:56) ✓; `CookEvent.toFirestore` 3 ⊆ 3 ✓;
+`FeedbackEntry.toMap` 10 == 10 (`firebase_feedback_repository.dart:39` writes `toMap()` verbatim) ✓;
+notification_batches 7 == 7 ✓; notification_delivery create 9 + update keys 8 ⊆ 17 ✓;
+notification_engagement ⊆ 9 ✓. No drift in any of them.
+
+### `tag_result.dart`'s rewritten comment is now TRUE, checked limb by limb
+`shared_content` create is `hasRequiredFields(['sharedByUserId','contentType','sharedAt'])` only —
+no `keys().hasOnly`, no `isValidTagResult` (firestore.rules :757-760) ✓. `SocialMenuOperations`
+lives at `lib/services/unified/operations/social_menu_operations.dart` and :104 puts
+`recipe.toJson()` inside the map :125 writes to `shared_content` ✓. `Recipe.toJson` →
+`tagResult?.toJson()` (recipe_unified.dart:679) which emits `decisions`; :736's Firestore path uses
+`toFirestore()` and does not ✓. And "one of them is NOT local" is EXHAUSTIVELY true: every other
+`recipe.toJson()` site is a `JsonCacheHelper` cache, an export map, backup, or dead
+(`SavedMenuData.toJson`, zero callers) — `SharedMenu.toFirestore()` serialises via
+`recipe.core.toFirestore()`, and `MenuStorage.saveMenu` writes `sharedMenu.toFirestore()`.
+`includeDecisions` had zero callers at HEAD (only its own declaration) ✓.
+
+### Non-blocking
+- `tag_result.dart` :68-69 — the `decisions` field's doc comment now repeats its own first sentence
+  verbatim ("H3: Decision logs explaining why each allergen/dietary status was set." twice). Diff
+  artefact of the rewrite; one-line delete.
+- The brief said "eight tests"; there are seven. Nothing is missing — 1 census + 6 entries.
+- CI reaches the new file: `test.yml` :134 and :267 run `flutter test test/unit`, so the guard is
+  not an orphan suite.
+
+Verdict: fail (1 blocking) — the census's swap-detection claim is false as written.
+
+## 2026-08-12 — BUT-1693 settings commit, gate read of the seven comment-only / generated files
+
+Trigger: commit-gate read round. Scope: `settings_hub_view.dart`, the allergen-share repository +
+its interface, `feature_flag_service.dart`, and the three generated `lib/l10n/app_localizations*`
+files. Explicitly a READ round — no probe files in the tree, no production edits, no regeneration.
+
+### The question asked: does "every caller sits behind the flag" need a test, or is a comment enough?
+Answer: comment is enough, because both callers are already pinned at the layer that owns them, and
+a repository-level test would be a topology assert (the repository has no flag dependency — the flag
+lives in its callers).
+- `grep` says there are exactly two production consumers besides the DI module:
+  `HouseholdService._sharedListsByMember` (`household_service.dart`:167) and
+  `HouseholdAllergenSharingTile` (`:65`, then `:80/:131/:228` for the repository handle).
+- Service half pinned by `household_service_test.dart`: `useShares(..., enabled: false)` + a premise
+  assertion (`:169-173`) that the CONSTANT stub beats the wildcard, which is what defeats a
+  flag-repoint mutant; plus a test driving the REAL `FeatureFlagService` over a throwing
+  `_MockRemoteConfig` so the shipped `_defaults` false is pinned, not a stub.
+- Tile half pinned by `household_allergen_sharing_tile_test.dart:176-185`: flag off → no
+  `SwitchListTile` AND `verifyNever(() => households.getForUser(any()))`. The `verifyNever` is the
+  part that matters — it pins "spent no read", not merely "row hidden" — and it has its positive
+  control at `:211-227` (row appears, `called(1)`), so the hidden-row group cannot pass by every
+  collaborator failing to resolve.
+- `_grant`/`_revoke` do NOT re-read the flag; they are reachable only through the switch `build`
+  hides. Structurally sound, and the comment does not claim more.
+
+### Verified the comment claims that reach into other files
+- "firestore.rules has no match block for this collection" — TRUE at these bytes. `household_allergen_shares`
+  appears in `firestore_collections.dart`, the repository and its suite, and NOWHERE in `firestore.rules`,
+  even though that file is modified in this same commit (for the conversations/participants work).
+- The interface's Art. 7(1) gap statement — TRUE. `functions/src/audit_logs/purge-expired.ts` buckets on
+  `operation.startsWith('consent_')` (730d) vs 180d general, and this repository writes `operation: 'update'`
+  / `'read'` through `logPermissionCheck`, so those rows are 180d and carry no `consentVersion`. The comment
+  UNDERSTATES protection (flags a gap) rather than overstating it, which is the safe direction.
+- The repository's inherited-CRUD overrides are all pinned in its own suite: `read`/`readCacheFirst`
+  consent filter with a positive control, both `UnsupportedError` fences, the `createBatch` guard, `revoke`.
+
+### THE BLOCKING FINDING — a generated Swedish string diverges from its DPIA-pinned ARB source
+`householdAllergenShareConfirmBody`, the Art. 9(2)(a) consent copy whose ARB `@description` says
+"approved in docs/legal/dpia-household-allergen-sharing.md Annex A — do not reword without re-approving":
+- `lib/l10n/app_sv.arb`:1228 → `delar du ”vegansk”` (U+201D opening — correct Swedish)
+- `lib/l10n/app_localizations_sv.dart`:1895 → `delar du „vegansk”` (U+201E opening — German/Polish)
+The generated file is what ships. Confirmed at code-point level, not by rendering. Fix is `flutter gen-l10n`
++ re-stage the three generated files.
+
+How it was found without regenerating (regen is a tree write, forbidden in a read round): a value-level
+comparison of every simple `"key": "value"` in `app_sv.arb` against the generated `String get k => '...'`
+bodies. 3623 keys compared, ONE semantic drift — this one. The other 16 reported hits were my own
+un-escaping artefact (`\"` in the Dart literal vs `"` in the ARB); comparing code points at the first
+difference separates them in one line. English is in sync (`“vegan”` both sides).
+
+Why nothing caught it: `dart analyze` compiles a stale value fine; the tile test asserts copy by ROUTING
+(`find.text(sv.householdAllergenShareTitle)`), so both sides read the SAME generated getter and move
+together — the routing pattern is right for rewording freedom and structurally blind to ARB↔Dart drift.
+Left unfixed, the next unrelated `flutter gen-l10n` run silently rewrites approved consent copy in a
+commit that has nothing to do with BUT-1693.
+
+### Non-blocking
+- The flag claim is pinned PER CALLER, not as a census: a future third caller inherits no guard. If the
+  flag is ever turned on, the cheap mechanism is a source-text test asserting the set of `lib/` files
+  naming `HouseholdAllergenShareRepository`. Not worth adding while the collection is default-denied.
+- `_featureEnabled` is cached in `initState` and nothing rebuilds the tile on a Remote Config update, so
+  a row already on screen keeps working after a remote flip-off. The kill switch is not instantaneous for
+  a mounted row. The comment says "sits behind the flag", true at mount, so it is not a false claim —
+  production observation, Low.
+- The tile header's placement sentence ("directly under the household-allergen filter") is true at these
+  bytes (`settings_hub_view.dart`:60 then :64) and unpinned. Wrong placement is benign, and a hub-level
+  ordering test is the deleted-mechanical-test anti-pattern — comment, not test.
+
+Verdict: fail (1 blocking) — the shipped Swedish consent copy is not the ARB's approved wording.
+
+## 2026-08-12 — BUT-1693 gate RE-READ: l10n regeneration confirmed (trigger: fix round after a blocking finding)
+
+Re-read `lib/l10n/app_localizations.dart`, `_en.dart`, `_sv.dart` after `flutter gen-l10n` was re-run.
+Verified on the CURRENT bytes:
+- All 9 `householdAllergenShare*` values byte-equal ARB -> generated Dart in BOTH languages, and the
+  abstract file's doc comments (template is `app_sv.arb`) equal the sv ARB. U+201E count 0 in all three
+  generated files and both ARBs; sv ships U+201D twice, en ships U+201C + U+201D, correct per language.
+- Key parity: 4498 keys in sv ARB = en ARB = abstract members = sv impl = en impl, sets identical
+  (no orphan getter, no unimplemented member, no en-only or sv-only key).
+- `household_allergen_sharing_tile_test.dart` 14/14 green against the regenerated strings.
+
+Two things worth keeping:
+
+1. **The file set changed UNDER the review.** A parallel edit added a ninth key
+   (`householdAllergenShareSettingsUnread`) between my first grep and my first Read — the sv ARB stat
+   went 32 -> 36 inserted lines mid-round. Caught only because a later parity count disagreed with the
+   earlier diff stat. Re-read all three files and re-ran every check on the new bytes. In a byte-pinning
+   gate a stale Read is an unproved file, so: re-run the CHEAP census (key counts) last, and treat any
+   disagreement with an earlier number as "the tree moved", not as an arithmetic slip.
+
+2. **Do not normalise quotes when comparing against the approved source.** The shipped body is
+   word-for-word identical to DPIA Annex A in both languages (573 sv / 649 en chars, equal lengths),
+   and the ONLY divergence is typography: the annex, being markdown, authors `"vegansk"` / `"vegan"`
+   in ASCII while the ARB ships `”vegansk”` / `“vegan”`. Tempting fix is a quote-normalising comparison
+   — which would ALSO have passed the original `„vegansk”` bug, since `„` normalises to `"` just as
+   happily. Correct fix is to put the shipped code points into the annex and keep the comparison strict.
+   Un-wrapping the annex blockquote (strip `> `, join wrapped lines, split paragraphs on the blank `>`)
+   is what makes the strict comparison possible at all; a naive substring test fails on line wrapping and
+   says nothing. Confirmed the fix did NOT edit the annex — the DPIA diff touches no consent-copy line,
+   so the code moved to the approved text, not the reverse.
+
+`householdAllergenShareSettingsUnread` is a technical error message, not consent copy, so its absence
+from Annex A needs no approval. No exclamation marks in any of the nine new strings (butler voice).
+
+Carried forward unchanged: the mounted-row-survives-a-remote-flip-off note goes to the flag-flip ticket.
+
+Verdict: pass (0 blocking).
+
+## 2026-08-12 — BUT-1693 settings slice, gate round 4 (trigger: re-review after B1 + two fixes landed)
+
+Read-only round, 11 files. Tree did NOT move during it (opening and closing md5 identical on all 11).
+Suite 16/16 green in 4 s; `flutter analyze --fatal-infos` clean on the four Dart files.
+
+### The three landed fixes, each checked against its mutant
+- **B1 (consent BODY asserted).** `find.text(sv.householdAllergenShareConfirmBody)` sits beside the
+  title assertion. Non-vacuous: `ConfirmationDialog.buildContent` returns a bare `Text(message)`, so a
+  body swapped for another key finds nothing; the `SingleChildScrollView` added by the base_dialog fix
+  does not hide it (scrolled-out is not offstage). Its ONE structural blindness is the accepted
+  follow-up: production and test read the same generated getter, so ARB-to-Dart drift is invisible here.
+- **`status == found` comment reworded to defence-in-depth.** TRUE at these bytes, verified in
+  `user_service.dart:661-694`: for self an unmerged read really does return `foundSettingsUnavailable`
+  (both the cache branch :670 and the fetch branch :686), and for non-self `found` really does carry an
+  unmerged profile (:693). So the ternary and the `settingsMerged` re-check are interchangeable mutants
+  of one another — the subsumption the comment now names, instead of the old "load-bearing" claim.
+- **Busy latch before the profile re-read.** Pinned by the Completer-gated test: with the latch back at
+  its old position the `onChanged isNull` assertion reddens while the gate is open, and the
+  `isNotNull` + `create called(1)` half proves the latch clears and does not block the legitimate path.
+
+### THE BLOCKING FINDING — the new `profile.uid != userId` conjunct is justified by a downstream refusal that cannot happen
+Comment at `household_allergen_sharing_tile.dart` :174-178: *"The repository and the (future) rules both
+refuse such a write, so this only makes the two handles' agreement structural instead of incidental."*
+Traced both handles:
+- The tile builds the share as `HouseholdAllergenShare(userId: userId, ...)` where `userId` is
+  `PermissionService.currentUserId` -> `_authRepository.currentUserId` (permission_service.dart:120), i.e.
+  LIVE auth. Only the ALLERGENS come from the possibly-stale `UserService.currentUserProfile` (a plain
+  in-memory field, user_service.dart:80).
+- `FirebaseHouseholdAllergenShareRepository.create` guards `share.userId != requireCurrentUserId()`, and
+  `requireCurrentUserId()` is `_authRepository.currentUserId` (base_firebase_repository.dart:69-78) — the
+  SAME live source the tile just used. So the stale-profile write arrives as a perfectly self-consistent
+  self-declaration and is allowed. The rules half is the same shape (`request.auth.uid` vs the doc id /
+  `userId` field); neither layer can observe where the ALLERGENS came from.
+So the conjunct is not redundant defence in depth: it is the ONLY layer standing between a stale profile
+and one member's Art. 9 list being stored as another member's declaration. And it is mutation-dead across
+all 16 tests — every fixture builds its profile with `uid: _userId`, so deleting the conjunct reddens
+nothing. False justification + zero coverage is the exact shape that gets a guard deleted as noise.
+Closing fixture is two lines and separable (the other two limbs pass, so only this one decides):
+`refetch: ProfileLookup.found(_profile(prefs: <any>, settingsMerged: true))` built with a DIFFERENT uid ->
+`verifyNever(create)` + `find.text(sv.householdAllergenShareSettingsUnread)`.
+Reachability, for sizing not for the verdict: `authStateChanges` nulls the profile on sign-out
+(user_service.dart:129-137), so the window needs a uid swap with no intervening null (re-auth / credential
+swap) or a failed reload leaving the old value — narrow, not impossible.
+
+### Verified unchanged and still TRUE (all cross-file claims re-run, not inherited)
+- `household_allergen_shares` still appears NOWHERE in `firestore.rules` (which IS modified in this same
+  commit, for the conversations work), so the repository's "inert until the rules commit lands" header and
+  the feature flag's launch checklist both still hold. `grep household_allergen functions/src` still empty,
+  so checklist item (d) is still accurate.
+- l10n: all 9 `householdAllergenShare*` values byte-equal ARB -> generated Dart in both languages
+  (0 mismatches over a code-point comparison); U+201E count 0 in all five files; sv ships U+201D twice,
+  en U+201C + U+201D. Key parity 4498 = 4498 = 4498 abstract members, symmetric difference empty.
+- DPIA Annex A vs the ARB, strict code points, blockquote un-wrapped: sv EXACT (573 chars), en EXACT
+  (649 chars). The `@description`'s "approved in Annex A" claim survives this commit's DPIA edit.
+- `find.byType(AlertDialog), findsNothing` in the withdrawal test is a real discriminator, not a vacuous
+  one: `BaseDialog.build` returns an `AlertDialog` (base_dialog.dart:50), so the consent dialog would be
+  found if it opened.
+
+### Non-blocking
+- ARB `@description` for `householdAllergenShareSettingsUnread` says "the grant path re-reads the profile
+  on every tap". Only when `currentUserProfile` is non-null but unmerged; when it is NULL the tile refuses
+  with the same copy and no re-read, so "try again" is not a remedy on that limb. Overstated in the
+  description only — the shipped Swedish copy says nothing false to the member.
+- Carried, unchanged: the annex<->ARB code-point test and the replace-branch failure arm remain the two
+  accepted follow-ups. `_featureEnabled` cached in `initState` (mounted row survives a remote flip-off)
+  still belongs to the flag-flip ticket.
+
+Closing state (identical to opening): tile `fe8bde8e2e07276e28622f2132b4f14c` 308 lines; suite
+`54580925fe16a9554512c6544ebb4e88` 582 lines; `settings_hub_view.dart` `243bb51c96a26451adfe701eff4ae9c7`;
+repository `11ae5c4e0e42697fb6bc581b4668e026`; interface `7f5a06ed453a27507ea489a154b27b2c`;
+`feature_flag_service.dart` `59bd81ab6b0e04660b23a8b4b90196c8`; `app_sv.arb` `2cdaae17cefb7c3379e2110b08fa53a8`;
+`app_en.arb` `f38d0483a364ff4a67c14ca6f5f55dd8`; `app_localizations.dart` `8ebc16a9972d63bd70c93d47671276d8`;
+`_sv.dart` `1a1b60f5365465f535b76e316750f75a`; `_en.dart` `ebaaeef4ed41ae98a2d3962fdedebbdb`.
+No probe files written; no production or test bytes edited.
+
+Verdict: fail (1 blocking) — the account-switch conjunct's stated downstream backstop does not exist,
+and nothing in the suite pins the conjunct.

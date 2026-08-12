@@ -54,9 +54,11 @@ class HouseholdAllergenShare {
   /// as the member's own settings edit, because a share that lags behind is a
   /// household filtering on an allergen list its owner has already changed —
   /// on this field that is a safety defect, not an inconsistency (DPIA R4).
-  /// **That seam is not built yet**: nothing writes this collection, and the
-  /// repository has no method taking an externally-created `WriteBatch`. Do not
-  /// read this doc comment as a description of existing behaviour.
+  /// **That seam is not built yet.** The settings row (BUT-1693) writes this
+  /// field when a member grants consent, but nothing re-writes it when they
+  /// later edit their allergens, and the repository has no method taking an
+  /// externally-created `WriteBatch`. Do not read this doc comment as a
+  /// description of existing behaviour.
   final DateTime? updatedAt;
 
   const HouseholdAllergenShare({

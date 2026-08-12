@@ -407,6 +407,65 @@ personal→collaborative leg only.
   gap Critical or clean depending on which gate they happened to look at. Corollary from the one
   line that changed in this pass: a comment citing another FILE by LINE NUMBER drifts inside its
   own commit (`household_service.dart:89` → `HouseholdService.getHousehold`) — cite the SYMBOL.
+  **The gate count is per COMMIT, and one gate flipped from three to two on 2026-08-12 without
+  the rules or the flag moving:** the consent UI shipped, so `lib/` now holds WRITERS (create /
+  revoke, `household_allergen_sharing_tile.dart`), and only the flag and the absent rules block
+  still hold. Re-derive the caller list every pass by grepping the INTERFACE name, and check the
+  UI's own gate is unconditional (flag read once in `initState`, `build` returns
+  `SizedBox.shrink`, each handler re-guards on the state the gated resolve sets). **When a
+  comment names a REMAINING gate, verify its SINK too:** the missing `consent_granted` /
+  `consent_withdrawn` pair (DPIA R5) purges at the wrong horizon unless
+  `functions/src/audit_logs/purge-expired.ts` gains `consent_withdrawn` in `CONSENT_OPERATIONS`
+  — that `in`/`not-in` list is exhaustive-by-enumeration, so an unlisted `consent_*` op silently
+  falls to the 180-day general bucket, i.e. the Art. 7(1) trail is deleted at six months. Today
+  the only survivor of a withdrawal is the base class's `operation:'delete'` permission row
+  (audit repository IS injected in `social_module.dart` — check that before crediting even
+  that), which carries no `consentVersion` and is 180-day. And a DPIA/ADR that describes such a
+  mitigation in the PRESENT tense (R5: "the grant and withdrawal events are recorded … and
+  appear in the member's own data export") is an assertion about code with no expiry date —
+  when the code comment and the legal doc disagree, the code wins and the doc is the defect.
+  **GATES ARE NOT OF EQUAL STRENGTH, and the enumeration itself becomes the launch checklist
+  (2026-08-12, tile pass).** A feature FLAG is flippable from Remote Config with no code change
+  (`isEnabled` reads `_remoteConfig.getBool` and falls back to `_defaults` only in its catch),
+  so a code default of false gates a deploy, not an operator; the ABSENT rules block is the only
+  gate immune to a remote flip, because the catch-all `match /{document=**}` denies the write
+  whatever the client believes. Count them separately and say which one is load-bearing. Then
+  read any comment that lists "what is still missing before this may be flipped" as the
+  checklist someone will flip from: BUT-1693's names the rules block, the atomic settings+share
+  write and the consent audit pair, and OMITS the Art. 17 cascade step, the Art. 15 export
+  section and the `probeResidualData` entry (`grep household_allergen functions/src` → zero) —
+  the same three the DPIA's R7 asserts in the present tense. An incomplete gate list is worse
+  than none, and it is a Medium finding on a comment-only diff, not a nit. **FIXED 2026-08-12
+  (same slice) — and the fix exposes the next rule: a checklist's CITED EVIDENCE must reach every
+  item it justifies.** The list now names all four and cites `grep household_allergen
+  functions/src` → empty, which can only prove three of them: erasure lives in `functions/src`,
+  but Butlery's Art. 15 export is CLIENT-side (`lib/services/account/export/*`, the allergen
+  share's natural home being `family_export_manager.dart`, which today exports only diner
+  profiles + family ratings). A GDPR checklist spanning both halves must name BOTH greps, or a
+  reader re-runs the one command and credits a claim it structurally cannot reach. The same
+  wording has already propagated into the DPIA's R7 status line — check where a cited grep was
+  copied to, not only where it was written. Related same-day verification, cheap and worth
+  repeating: `CONSENT_OPERATIONS` in `purge-expired.ts` already carries BOTH `consent_granted`
+  and `consent_revoked`, so a doc prescribing a `consent_withdrawn` token would have minted a
+  second spelling for one act and dropped it into the 180-day bucket — read the enumerated list
+  before naming an audit operation in a comment, a DPIA or a ticket.
+  **Grade a "redundant" identity check by which HANDLE each layer reads, never by whether a
+  similar-looking check exists downstream (2026-08-12, tile re-read — a correction of my own
+  earlier verdict).** I graded `profile.uid != userId` in
+  `HouseholdAllergenSharingTile._grant` as "defence in depth; the repository's `create`
+  independently asserts self-declaration". It is not: the entity's `userId`, the deterministic
+  doc id, `validateCreatePermission` and `_assertSelfDeclaredWithConsent(requireCurrentUserId())`
+  all resolve to the SAME live `AuthRepository.currentUserId`, so they agree tautologically —
+  while the ALLERGENS come from `UserService._currentUserProfile`, a cached snapshot cleared
+  only on a NULL auth event and refilled asynchronously. In an A→B switch with no null tick,
+  that conjunct is the only comparison of two DIFFERENT handles, i.e. the only layer between one
+  person's Art. 9 list and another's declaration; rules cannot help, since `auth.uid` and the
+  path are both live too. General rule: when a guard compares a CACHED value's identity against
+  a LIVE one, no downstream layer that reads only the live one can replace it, and calling such
+  a guard "defence in depth" is itself a defect — that sentence is what licenses deleting it.
+  The stale `_householdId` beside it IS closed downstream (the membership conjunct of
+  `validateCreatePermission`), which is why the handle must be traced PER FIELD rather than per
+  call site.
 - **A CONSENT RECORD stored in the same document as the data it authorizes must be immutable
   on update, at both layers.** A model can make it un-`copyWith`-able and still lose it: a
   public `update(entity)` that full-`set()`s a caller-built entity re-dates `consentGrantedAt`

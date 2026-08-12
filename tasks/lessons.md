@@ -806,3 +806,135 @@ any review that says it mutation-probed production code, grep the file for the p
 shape (`if (false)`, `// MUTANT`, a commented-out guard) and re-run analyze before staging.
 The index saved this one — the good bytes were already staged, so `git checkout -- <file>`
 restored them exactly.
+
+**Three times in one day, not once.** Two more reviewer probes reached the tree as FILES:
+`zz_probe_review_test.dart` and `overflow_discrimination_probe_test.dart`, both opening with
+"THROWAWAY … delete after", both left behind by agents whose reports said the probe was
+removed. One was found by another reviewer reading `git status`, one by the analyzer warning
+about an unused import inside it. So the check is mechanical and belongs in the pre-commit
+routine, not in trust: after ANY review round that mentions probing, run
+`git status --porcelain` plus `find test -name "*probe*" -o -name "zz_*"` and
+`grep -rn "MUTANT\|THROWAWAY\|if (false)" lib/ test/`. A probe file is untracked, so it
+never shows in `git diff` — only `status` and the filesystem see it, and a parallel session's
+`git add .` would sweep it in.
+
+## A rules branch that keys on an ABSENT parent cannot tell "not yet" from "gone" (2026-08-12)
+
+`conversations/{id}/participants` got its first `match` block this sprint. Group creation
+writes the roster before the top-level conversation document exists, so the read rule needs
+a permissive branch: `parentNames(uid) || (parentDoc() == null && <you hold a row>)`. I
+scoped that branch deliberately, wrote a fixture (P12B) proving an evicted member with a
+LIVE parent is denied, and recorded in the block comment that the scoping "closes it".
+
+It does not. Firestore rules cannot distinguish a parent that has never been written from
+one that has been deleted, so `parentDoc() == null` becomes true again for any conversation
+somebody deletes — and the roster subcollection does not cascade. The reviewer probed it:
+after a parent delete, a member LISTs (allow), a stranger SEATS a row (allow), and then
+LISTs (allow).
+
+Two deleters, and the sharper one is the very Cloud Function the comment cites as the
+reason the branch needed scoping. `enforceGroupMinorMembership` evicts non-friend-added
+minors; when that leaves fewer than two members it deletes the whole conversation. So in
+its collapse branch the evicted MINOR keeps roster read on a group they were removed from,
+which is the exact child-safety outcome P12B was written to close, one subcase over.
+
+Three things worth keeping:
+
+1. **Enumerate every deleter of the parent before shipping a branch that keys on the
+   parent's absence** — the client `allow delete` rule and every CF, not just the writers.
+   The fix cannot live in rules; rules cannot delete and cannot see the difference. Here it
+   is a code fix: the CF now deletes the roster row alongside the membership mirror.
+2. **Seed the subcollection production really seeds.** The integration test created
+   conversations and membership mirrors but no roster rows, so a cleanup assertion would
+   have passed over an empty collection. I added the rows to the shared helper first, then
+   the assertions, then mutation-tested: with the roster delete removed, the update branch
+   and the collapse branch both redden and the keep path stays green.
+3. **"Closes it" in a comment is the claim most worth attacking**, and this one was written
+   by me in the same edit that created the hole it describes. The residual sentence now
+   names both remaining cases — the pre-seat hole and the user-initiated delete — rather
+   than asserting a closure that a five-minute probe disproves.
+
+## Fixing the ARB after running gen-l10n ships the OLD string (2026-08-12, BUT-1693)
+
+I corrected one character in `app_sv.arb` — a German low-9 opening quote `„` to the Swedish
+`”` — in an Art. 9 consent body, minutes after `flutter gen-l10n` had already run. The
+generated files kept the wrong character, and that is what the dialog renders. Nothing in
+the repo could catch it: `dart analyze` compiles a stale constant happily, and the widget
+tests assert copy by ROUTING (`find.text(sv.householdAllergenShareTitle)`), so test and
+production read the same generated getter and drift together. Two reviewers found it only by
+comparing every ARB key against its generated getter at code-point level.
+
+Two mechanical habits:
+- After ANY ARB edit, re-run `flutter gen-l10n` and grep the generated `app_localizations_*.dart`
+  for the changed substring. The repo's `regenerate-l10n.sh` hook `exit 0`s silently when
+  `flutter` is not on PATH (the standard Windows git-bash gotcha), so "the hook handles it"
+  is not true here.
+- For a string whose exact wording is legally load-bearing, compare it BYTE-WISE against its
+  source of truth (the approved annex), not visually — `„` and `”` are one glyph apart on
+  screen and one code point apart in the file.
+
+## A multi-edit script that asserts before it writes loses EVERY edit, silently (2026-08-12)
+
+Pattern used all sprint: read a file, apply N `assert old in s; s = s.replace(...)` pairs,
+write once at the end. It is atomic, which is the point — but the failure mode is that a
+single wrong search string aborts the run and **nothing is written, including the edits that
+matched**. Twice in one session I then told a reviewer the fixes were taken. Both times the
+reviewer read the bytes and told me they were not.
+
+The first loss was invisible because a later call fixed one of the three by hand, so a
+partial success masked a total failure of that script. The second was invisible because
+comment-only edits produce no test and no analyzer signal — there is nothing to go red.
+
+Three habits, in order of how much they buy:
+
+1. **Grep the changed TOKEN after every edit that carries no test.** Not the file, not the
+   comment beside it — a distinctive fragment of the new text, and print the count. Cheaper
+   than a review round and it cannot be argued with. Already a lesson for code; it applies
+   at least as hard to prose, because prose has no other verifier.
+2. **One edit per script when the edits are independent.** The atomicity a multi-edit script
+   buys is worth having when the edits must land together; when they are unrelated
+   corrections, it converts a typo in edit 3 into losing edits 1 and 2.
+3. **Never write "taken" in a handoff without the grep output.** A reviewer re-reading bytes
+   is the most expensive way to discover a failed `str.replace`.
+
+The deeper point is the one already in the digest and now proven from the other direction:
+an Edit tool success is not proof the bytes moved, and a claim about your own edits is a
+claim like any other — it needs evidence, and the evidence costs one command.
+
+## A rules block that ATTESTS on a parent must first establish WHERE that parent is written, and WHEN (2026-08-12)
+
+`conversations/{id}/participants/{participantId}` had no `match` block at all — it fell to the
+terminal default-deny, so `ConversationParticipantModule.addParticipants` was refused on every
+group and direct conversation create, and `batch.commit()` threw out of
+`createGroupConversation`. One of five `hasOnly`-family drifts found after the three-week
+recipe-save outage.
+
+The obvious rule — `get()` the conversation and check `participantIds` — denies GROUP creation
+permanently. `FirebaseMessagingRepository` mixes in `UserScopedFirebaseRepository`, so the
+group document is written under `users/{uid}/conversations/{id}`, while the roster goes to the
+TOP-LEVEL path, whose parent only materialises when the first real message is sent (BUT-1795).
+My stated premise — "same batch, so the parent isn't committed yet" — was wrong in a way that
+would still have produced a working-looking rule for direct chats and a permanently broken one
+for groups. Direct conversations write and AWAIT their parent before the batch; groups never
+write it at all.
+
+The shape that survived is `attested || unclaimed`: the parent names you, OR the parent is
+absent and you hold a row. Plus own-row read, and a narrower delete than the parent block.
+
+Four things worth keeping:
+
+1. **Establish the write ORDER before writing the predicate.** Not from the call site's shape
+   ("it's one batch") but from the repository: which mixin decides the path, and whether the
+   parent write is awaited.
+2. **Prove it by committing the writer's REAL `WriteBatch`**, not a hand-written fixture. A
+   hand-written payload is the mechanism that let all five drifts through in the first place.
+3. **Attribute a batch deny with a mutation probe.** The emulator prints a rule line for the
+   wrong row inside a failed batch, which reads exactly like a second, independent deny and is
+   not one.
+4. **A permissive branch keyed on an ABSENT parent has more actors than the one you designed
+   it for.** This one was written for the creating client; it also grants the outsider who
+   guesses the id, every conversation anyone later deletes, and — the one that took four
+   review rounds to surface — every seated member during the window before the first message,
+   including a minor the eviction trigger has not reached yet, because that trigger fires on
+   the parent document that does not exist yet. Enumerate actors and lifecycle states, not
+   just the happy path.

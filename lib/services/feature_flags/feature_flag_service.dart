@@ -99,10 +99,20 @@ class FeatureFlagService {
     // restores the previous chain exactly.
     'enable_on_device_ocr': false,
     // BUT-1693: lets a household member share their own allergen list so menu
-    // generation reads it instead of guessing a four-allergen floor. OFF until
-    // firestore.rules opens the collection and the consent UI ships — with it
-    // on and the rules absent, every aggregation would issue a denied query on
-    // a user-visible path and still learn nothing.
+    // generation reads it instead of guessing a four-allergen floor. The
+    // consent UI shipped 2026-08-12; what is still missing before this may be
+    // flipped is (a) the firestore.rules block for `household_allergen_shares`,
+    // (b) the atomic settings+share write, without which a shared list silently
+    // lags its owner's edits (DPIA R4), and (c) the
+    // consent_granted/consent_revoked audit pair (DPIA R5), and (d) the
+    // erasure and access wiring — the account-deletion cascade step, its
+    // probeResidualData leg, the reset-user-data entry and the GDPR export
+    // section, none of which exist (`grep household_allergen functions/src` is
+    // empty). This list is the launch checklist, so keep it exhaustive rather
+    // than naming the interesting items. With the rules
+    // absent, flipping this does not merely learn nothing: the denied query
+    // makes every multi-member household report an incomplete roster, which
+    // changes the menu and the opt-out dialog.
     'enable_household_allergen_sharing': false,
     // Decides WHICH of the on-device recognizer's two strings the parser sees —
     // the one built from its measured lines, or ML Kit's own assembly — AND
@@ -464,7 +474,8 @@ abstract final class FeatureFlags {
   // ACCEPTED_DEVIATIONS.md before changing it.
   static const enableOnDeviceOcr = 'enable_on_device_ocr';
   // Household allergen sharing (BUT-1693). OFF: the collection is default-denied
-  // until the rules block lands, and nothing writes a share yet.
+  // until the rules block lands. The settings row that writes a share and the
+  // menu aggregate that reads one both sit behind this flag.
   static const enableHouseholdAllergenSharing =
       'enable_household_allergen_sharing';
   // Layout-aware recipe splitting — the split path is LIVE behind this flag;

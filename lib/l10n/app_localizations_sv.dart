@@ -1877,6 +1877,39 @@ class AppLocalizationsSv extends AppLocalizations {
       'Vi kunde inte läsa alla i hushållet just nu, så listan över allergier kan vara ofullständig.';
 
   @override
+  String get householdAllergenShareTitle => 'Dela mina allergier med hushållet';
+
+  @override
+  String get householdAllergenShareSubtitleOff =>
+      'Hushållet gissar just nu åt dig';
+
+  @override
+  String get householdAllergenShareSubtitleOn =>
+      'Hushållets meny räknar med dina allergier';
+
+  @override
+  String get householdAllergenShareConfirmTitle => 'Dela din allergilista';
+
+  @override
+  String get householdAllergenShareConfirmBody =>
+      'Hushållet får se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. Idag gissar Butlery åt dig — den räknar med fyra vanliga allergier och missar resten.\n\nAlla som är med i hushållet ser listan, även den som går med senare.\n\nListan visas som en gemensam lista för hela hushållet. Ingen ser vilken allergi som är vems.\n\nKostval räknas som ett krav när menyn planeras: delar du ”vegansk” planeras hela hushållets meny vegansk.\n\nDu kan sluta dela när som helst. Då tas listan bort direkt, och menyn går tillbaka till att vara försiktig åt dig.';
+
+  @override
+  String get householdAllergenShareConfirmAction => 'Dela';
+
+  @override
+  String get householdAllergenShareStopped =>
+      'Din allergilista delas inte längre. Menyn är försiktig åt dig igen.';
+
+  @override
+  String get householdAllergenShareSettingsUnread =>
+      'Vi kunde inte läsa dina egna allergiinställningar. Kontrollera nätet och försök igen.';
+
+  @override
+  String get householdAllergenShareFailed =>
+      'Det gick inte att ändra delningen just nu. Försök igen.';
+
+  @override
   String get commonTurnOff => 'Stäng av';
 
   @override

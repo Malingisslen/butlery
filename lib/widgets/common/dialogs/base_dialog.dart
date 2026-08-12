@@ -58,24 +58,34 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
             )
           : null,
       title: Text(widget.title),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (widget.subtitle != null) ...[
-            Text(widget.subtitle!, style: AppTextStyles.bodyMediumMuted),
-            const SizedBox(height: AppDimensions.spacingM),
+      // Scrollable because the content is caller-supplied and some of it is
+      // long by law rather than by choice: BUT-1693's Art. 9 consent copy has
+      // to state what is shared, who sees it, what it costs and how to undo it,
+      // and a bare Column silently overflowed it by 198px on a phone. Short
+      // dialogs are unaffected — AlertDialog still sizes to its content. Note
+      // it makes the incoming height constraint UNBOUNDED, so a future
+      // `customContent` must not hand it an Expanded, a SizedBox.expand or a
+      // non-shrinkWrap ListView.
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.subtitle != null) ...[
+              Text(widget.subtitle!, style: AppTextStyles.bodyMediumMuted),
+              const SizedBox(height: AppDimensions.spacingM),
+            ],
+            widget.buildContent(context),
+            if (widget.buildAdditionalContent(context) != null) ...[
+              const SizedBox(height: AppDimensions.spacingM),
+              widget.buildAdditionalContent(context)!,
+            ],
+            if (_error != null) ...[
+              const SizedBox(height: AppDimensions.spacingM),
+              _buildErrorDisplay(),
+            ],
           ],
-          widget.buildContent(context),
-          if (widget.buildAdditionalContent(context) != null) ...[
-            const SizedBox(height: AppDimensions.spacingM),
-            widget.buildAdditionalContent(context)!,
-          ],
-          if (_error != null) ...[
-            const SizedBox(height: AppDimensions.spacingM),
-            _buildErrorDisplay(),
-          ],
-        ],
+        ),
       ),
       actions: [
         TextButton(
@@ -370,16 +380,23 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
     return AlertDialog(
       icon: widget.dialogIcon,
       title: Text(widget.dialogTitleText(context)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          widget.buildContent(context),
-          if (error != null) ...[
-            const SizedBox(height: AppDimensions.spacingM),
-            _buildErrorDisplay(),
+      // Scrollable for the same reason as the sibling above: caller-supplied
+      // content, and content that is long by law does not get to overflow in
+      // silence. Note this makes the incoming height constraint UNBOUNDED, so
+      // a future `buildContent` must not hand it an Expanded, a SizedBox
+      // .expand or a non-shrinkWrap ListView.
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            widget.buildContent(context),
+            if (error != null) ...[
+              const SizedBox(height: AppDimensions.spacingM),
+              _buildErrorDisplay(),
+            ],
           ],
-        ],
+        ),
       ),
       actions: [
         TextButton(
