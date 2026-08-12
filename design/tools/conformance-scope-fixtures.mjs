@@ -14,6 +14,7 @@ import { losScope, granskaIntegritet, maladBakgrund, arProdukt,
 import { tackning } from './theme-contract.mjs';
 import { artefaktBlock, elementIArtefakt, skrivScopeITagg, migreraFil } from './scope-migrator.mjs';
 import { PAINT_PROBE } from './theme-paint-probe.mjs';
+import { populationsgrind, kallfingeravtryck, APPLICERA_TEMA, BUTLERY_SENTINEL } from './authored-theme.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -273,7 +274,75 @@ const FIX = `<div class="sc-item" id="prov" data-theme="light">
     r.logg.filter(x => x.utfall === 'HOPPAD').length === 2,
     r.logg.map(x => x.utfall + ':' + x.skal).join(' · ')); }
 
-const ANTAL = 27;
+/* ── DT · MORKERKORNINGENS TVA GRINDAR ────────────────────────────────────
+   Felklassen: ett batchskript bad om morkt lage, fick ljusa varden och
+   rapporterade dem som morka. Ingenting i kedjan kravde bevis. Proven nedan
+   kraver bevis pa BADA nivaerna — vilken population som mats, och att temat
+   faktiskt slog igenom.                                                    */
+
+{ const f = kallfingeravtryck(['b', 'a', 'c']);
+  const g = kallfingeravtryck(['c', 'b', 'a']);
+  prov('DT-01', 'kallmangdens fingeravtryck ar ordningsoberoende och raknar unika',
+    f.fingeravtryck === g.fingeravtryck && f.antal === 3 && f.unika === 3,
+    f.fingeravtryck + ' = ' + g.fingeravtryck); }
+
+{ const de64 = Array.from({ length: 64 }, (_, i) => 'k' + i);
+  const r = populationsgrind(de64, de64);
+  prov('DT-02', 'forvantad kallmangd = faktisk kallmangd slapper igenom',
+    r.ok && r.forvantatAntal === 64 && r.faktisktAntal === 64,
+    'ok=' + r.ok + ' ' + r.forvantatAntal + '/' + r.faktisktAntal); }
+
+{ const de64 = Array.from({ length: 64 }, (_, i) => 'k' + i);
+  const hela = Array.from({ length: 329 }, (_, i) => 'k' + i);
+  const r = populationsgrind(de64, hela);
+  prov('DT-03', 'full ljuskorpus kan inte passera som morkbatch — 329 mot 64 faller',
+    !r.ok && r.ACTUAL_ONLY.length === 265 && r.EXPECTED_ONLY.length === 0,
+    'ACTUAL_ONLY ' + r.ACTUAL_ONLY.length + ' · ' + r.skal); }
+
+{ const r = populationsgrind(['a', 'b'], ['a', 'b', 'b']);
+  prov('DT-04', 'dubblerad kallidentitet faller closed',
+    !r.ok && r.dubbletter.length === 1, 'dubbletter ' + JSON.stringify(r.dubbletter)); }
+
+{ const r = populationsgrind(['a', 'b', 'c'], ['a', 'c']);
+  prov('DT-05', 'en saknad forvantad kalla faller closed',
+    !r.ok && r.EXPECTED_ONLY.join() === 'b', 'EXPECTED_ONLY ' + JSON.stringify(r.EXPECTED_ONLY)); }
+
+{ const kod = APPLICERA_TEMA('dark', BUTLERY_SENTINEL);
+  prov('DT-06', 'temaprimitiven satter data-theme och laser tillbaka attributet',
+    /setAttribute\('data-theme', TEMA\)/.test(kod) && /attributOk/.test(kod) &&
+    /getAttribute\('data-theme'\)/.test(kod),
+    'skriver och laser tillbaka'); }
+
+{ const kod = APPLICERA_TEMA('dark', BUTLERY_SENTINEL);
+  prov('DT-07', 'temaprimitiven vantar en animation frame fore den berknade sentinelen',
+    /requestAnimationFrame/.test(kod) && kod.indexOf('requestAnimationFrame') < kod.indexOf('const efter'),
+    'ramen ligger fore avlasningen'); }
+
+{ const kod = APPLICERA_TEMA('dark', BUTLERY_SENTINEL);
+  prov('DT-08', 'resultatet ar ok bara nar BADA sentinels haller',
+    /ok: attributOk && berknadOk/.test(kod) && /berknadOk = efter !== null && efter === vantat/.test(kod),
+    'attribut OCH berknat varde kravs'); }
+
+{ prov('DT-09', 'arkivimport-sentinelen ar frusen med bada varden',
+    BUTLERY_SENTINEL.art === 'arkivimport' && BUTLERY_SENTINEL.ljus === 'rgb(55, 69, 58)' &&
+    BUTLERY_SENTINEL.mork === 'rgb(147, 164, 141)' && BUTLERY_SENTINEL.egenskap === 'color',
+    BUTLERY_SENTINEL.ljus + ' -> ' + BUTLERY_SENTINEL.mork); }
+
+{ const kod = readFileSync(join(resolve('.'), 'tools', 'render-probe.mjs'), 'utf8');
+  prov('DT-10', 'render-probe satter inte langre systemets fargtema som morkerlage',
+    !/setEmulatedMedia[^\n]*prefers-color-scheme/.test(kod) &&
+    /system color scheme is not the product dark-theme mechanism/.test(kod) &&
+    /APPLICERA_TEMA\('dark', BUTLERY_SENTINEL\)/.test(kod),
+    'system-dark avvisas explicit, authored-dark gar via primitiven'); }
+
+{ const kod = readFileSync(join(resolve('.'), 'tools', 'dark-text-batch.mjs'), 'utf8');
+  prov('DT-11', 'morkbatchen skiljer urval fran textscope och faller closed pa bada',
+    /populationsgrind\(forvantade, matta\)/.test(kod) &&
+    /TEMAGRIND FALLER/.test(kod) && /process\.exit\(1\)/.test(kod) &&
+    /data-theme-support="\(\[\^"\]\*\)"/.test(kod.replace(/\\/g, '')),
+    'urval ur artefakternas egna temadeklarationer, tema bevisas per fil'); }
+
+const ANTAL = 38;
 for (const x of resultat) console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
 const ok = resultat.filter(x => x.ok).length;
 console.log('');

@@ -17,13 +17,23 @@ import { spawn } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { APPLICERA_TEMA, BUTLERY_SENTINEL } from './authored-theme.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
 const ONLY = arg('only');
 // R-04 · mörkt läge mäts genom att EMULERA prefers-color-scheme, inte genom att
 // hoppas att dokumentet har en mörk variant.
-const DARK = process.argv.includes('--dark');
+// TEMAMEKANISM. Morkt lage i den har korpusen aktiveras av authored
+// data-theme pa artefakten. prefers-color-scheme gor ingenting. Ett generiskt
+// --dark som tyst satte systemtemat matte ljust och kallade det morkt.
+const TEMAARG = (process.argv.find(a => a.startsWith('--theme=')) || '').split('=')[1] || null;
+if (TEMAARG && !['authored-dark', 'system-dark', 'light'].includes(TEMAARG)) {
+  console.error('✖ --theme maste vara authored-dark, system-dark eller light'); process.exit(2); }
+if (TEMAARG === 'system-dark') {
+  console.error('✖ system color scheme is not the product dark-theme mechanism for this corpus. Anvand --theme=authored-dark.');
+  process.exit(2); }
+const DARK = TEMAARG === 'authored-dark' || process.argv.includes('--dark');
 // F2-R03 · --at=<bredd> kör samtliga profiltilldelade artefakter på EN bredd.
 // Det är så en parvis jämförelse blir möjlig: samma artefakter, två bredder,
 // allt annat lika.
@@ -177,7 +187,8 @@ try {
   for (const [key, job] of byKey) {
     const label = job.probe ? 'PROB ' + job.probe.width : job.profile.id;
     try {
-      await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: DARK ? 'dark' : 'light' }] });
+      // Ingen setEmulatedMedia. Morkt lage satts efter navigering med den
+      // gemensamma authored-theme-primitiven, och bevisas med sentinel.
       await send('Emulation.setDeviceMetricsOverride', {
         width: job.profile.width, height: job.profile.height,
         deviceScaleFactor: DPR, mobile: false
@@ -188,6 +199,13 @@ try {
       if (nav.errorText) throw new Error('navigationsfel: ' + nav.errorText);
 
       // Vänta på dokument, typsnitt och bilder — var för sig, med egna fel.
+      if (DARK) {
+        const t = await send('Runtime.evaluate', { expression: APPLICERA_TEMA('dark', BUTLERY_SENTINEL), returnByValue: true, awaitPromise: true });
+        const tv = t.result && t.result.value;
+        const harSentinel = /id="arkivimport"/.test(readFileSync(job.file, 'utf8'));
+        if (!tv || !tv.attributSentinel || (harSentinel && !tv.berknadSentinel))
+          throw new Error('authored dark theme slog inte igenom: ' + ((tv && tv.skal) || 'ingen sentinel'));
+      }
       const ready = await send('Runtime.evaluate', {
         expression: `(async () => {
           if (document.readyState !== 'complete')
@@ -248,7 +266,7 @@ try {
 }
 
 writeFileSync(join(outAbs, 'render-raw.json'), JSON.stringify({
-  chrome: LC.render.chromeVersion, dpr: DPR, contractVersion: LC.version, colorScheme: DARK ? 'dark' : 'light',
+  chrome: LC.render.chromeVersion, dpr: DPR, contractVersion: LC.version, colorScheme: DARK ? 'authored-dark' : 'light', temamekanism: DARK ? 'data-theme' : 'ingen',
   plannedCases: byKey.size, ranCases, measured, failedCases: failed, plannedArtifacts: planned, toolErrors, results
 }, null, 1));
 
