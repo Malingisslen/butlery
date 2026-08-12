@@ -73,6 +73,28 @@
 /// columns trim, the difference vanishes, and the gate passes while measuring
 /// nothing. Two drafts had that shape.
 ///
+/// ## `--leading-trim`: scoring the leading-noise cut
+///
+///   dart run tools/corpus_split_eval.dart --leading-trim
+///
+/// The mirror of `--trim` at the OTHER edge of the page: scores
+/// `withoutLeadingNoise` (`lib/services/import/layout/leading_noise.dart`) —
+/// dropping furniture (a running header, a folio, the previous recipe's
+/// tail) off the FRONT of the first page — before and after, measured on top
+/// of BOTH the shipped edge crop and `withoutOrphanTail`, because that chain
+/// is what production runs, in that order, before this rule ever sees the
+/// page. Implies `--trim` for the same reason `--trim` implies `--edge-crop`:
+/// the BEFORE column has to be what the previous stage in the real pipeline
+/// actually hands this one, or the comparison measures a chain nobody runs.
+///
+/// **`leading_noise.dart`'s own budget is unmeasured — this arm exists so it
+/// stops being unmeasured.** It was written without corpus access, using the
+/// tail trim's OTHER measured row (60, not the shipped 120) as a
+/// deliberately conservative placeholder. Run this arm, read the printed
+/// per-page list of what was cut, sweep `_leadingBudget`, and update that
+/// constant's doc — not this comment — with the result. Nothing here should
+/// be trusted as a finding until that run has happened at least once.
+///
 /// ## `--no-frame-cut`: scoring against gold that is not frame-cut debris
 ///
 ///   dart run tools/corpus_split_eval.dart --trim --no-frame-cut
@@ -97,14 +119,16 @@
 /// deliberately. `ACCEPTED_LARGE_FILES.md` is scoped to `lib/`, so there is no
 /// row to add — the waiver is recorded here instead.
 ///
-/// The three arms are one measurement seen three ways: they share the corpus
+/// **Revisited: a fourth arm landed (`_formatLeadingTrim`, BUT-1828) and this
+/// paragraph is the promised revisit, not a rewrite that pretends it never
+/// said "three".** The reasoning holds anyway: all four share the corpus
 /// loader, the `_Page` model, the gold tokeniser and the same
-/// `MultiRecipeSplitter` instance, and each exists to be comparable with the
-/// others. Splitting the newest arm into its own file would move `_formatTrim`
-/// plus its doc — the largest of the three, and still growing — without
-/// reducing what a reader has to hold — they would still need both
-/// halves to know which population a number describes, which is the one mistake
-/// this tool exists to prevent. Revisit if a FOURTH arm lands.
+/// `MultiRecipeSplitter` instance, and `_formatLeadingTrim` in particular
+/// reads `_formatTrim`'s own AFTER column as ITS before column — splitting it
+/// into a separate file would sever that dependency from the code that makes
+/// it true, not just from the doc that states it. A reader would still need
+/// every arm to know which population a number describes, which is the one
+/// mistake this tool exists to prevent. Revisit again if a FIFTH arm lands.
 ///
 /// No line count is quoted here on purpose, and the two that were are named so
 /// the retraction is itself checkable. `~150` shipped in `d034c5ece`, when the
@@ -126,6 +150,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:butlery/services/import/layout/leading_noise.dart';
 import 'package:butlery/services/import/layout/orphan_tail.dart';
 import 'package:butlery/services/import/multi_recipe_splitter.dart';
 import 'package:butlery/services/ocr/edge_crop.dart';
@@ -152,7 +177,11 @@ void main(List<String> args) {
   // marking a CORRECT split as spurious — the opposite bias, introduced by the
   // fix.
   final dropFrameCut = args.contains('--no-frame-cut');
-  final trimMode = args.contains('--trim');
+  final leadingTrimMode = args.contains('--leading-trim');
+  // The BEFORE column has to be what `withoutOrphanTail` actually hands this
+  // rule in production, so this arm implies `--trim`'s loading the same way
+  // `--trim` implies `--edge-crop`'s.
+  final trimMode = args.contains('--trim') || leadingTrimMode;
   final edgeCropMode = args.contains('--edge-crop') || trimMode;
   // The crop only exists on the geometry path, so its arm implies `--layout`'s
   // loading. Block counts alone cannot see it — it changes block CONTENT — which
@@ -216,19 +245,35 @@ void main(List<String> args) {
     stdout.writeln(trim.text);
   }
 
+  if (leadingTrimMode) {
+    final leadingTrim = _formatLeadingTrim(
+      pages,
+      splitter,
+      dropFrameCut: dropFrameCut,
+    );
+    report['leadingTrimArm'] = leadingTrim.summary;
+    stdout.writeln(leadingTrim.text);
+  }
+
   final ts = DateTime.now().toIso8601String().replaceAll(':', '-');
   final fc = dropFrameCut ? '-nofc' : '';
-  final suffix = trimMode
-      ? 'trim'
-      : (edgeCropMode ? 'edge-crop' : (layoutMode ? 'layout' : 'text'));
+  final suffix = leadingTrimMode
+      ? 'leading-trim'
+      : (trimMode
+            ? 'trim'
+            : (edgeCropMode ? 'edge-crop' : (layoutMode ? 'layout' : 'text')));
   final file = File('${paths.reportsDir()}/split-eval-$suffix$fc-$ts.json');
   file.parent.createSync(recursive: true);
   report['generatedAt'] = ts;
-  report['arm'] = trimMode
-      ? 'winocr-text, paired + edge-crop + orphan-tail trim'
-      : (edgeCropMode
-            ? 'winocr-text, paired + edge-crop'
-            : (layoutMode ? 'winocr-text, paired' : 'ocr.txt, text rules'));
+  report['arm'] = leadingTrimMode
+      ? 'winocr-text, paired + edge-crop + orphan-tail trim + leading-noise trim'
+      : (trimMode
+            ? 'winocr-text, paired + edge-crop + orphan-tail trim'
+            : (edgeCropMode
+                  ? 'winocr-text, paired + edge-crop'
+                  : (layoutMode
+                        ? 'winocr-text, paired'
+                        : 'ocr.txt, text rules')));
   file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(report));
   stdout.writeln('Report written: ${file.path}');
 }
@@ -648,6 +693,167 @@ void main(List<String> args) {
       'trimmedDetail': [
         for (final t in trimmedPages)
           {'page': t.id, 'heading': t.head, 'charsAfter': t.chars},
+      ],
+      'alignedBefore': alignedBefore,
+      'alignedAfter': alignedAfter,
+      'pagesFixed': fixed,
+      'pagesBroken': broke,
+      'goldTokens': goldTot,
+      'recallBefore': hitBefore,
+      'recallAfter': hitAfter,
+      'emittedBefore': emitBefore,
+      'emittedAfter': emitAfter,
+    },
+  );
+}
+
+/// The `--leading-trim` arm: what dropping leading noise does to the TEXT.
+///
+/// Measures on top of BOTH the shipped edge crop AND `withoutOrphanTail` —
+/// the BEFORE column here is `_formatTrim`'s AFTER column, because that is
+/// the actual input `withoutLeadingNoise` receives in production
+/// (`ImportManager.autoParseMulti` runs the tail trim first). See
+/// `leading_noise.dart` for why this rule's budget is a provisional
+/// placeholder rather than a measured one — running this arm and reading its
+/// output is the step that placeholder is waiting on.
+({String text, Map<String, dynamic> summary}) _formatLeadingTrim(
+  List<_Page> pages,
+  MultiRecipeSplitter splitter, {
+  bool dropFrameCut = false,
+}) {
+  var scored = 0, trimmed = 0;
+  var goldTot = 0, hitBefore = 0, hitAfter = 0, emitBefore = 0, emitAfter = 0;
+  var alignedBefore = 0, alignedAfter = 0;
+  var fixed = 0, broke = 0;
+  // WHICH pages, mirroring `_formatTrim`'s own `trimmedPages` — a figure this
+  // file quotes anywhere must stay re-derivable by a printed list, not a
+  // throwaway probe.
+  final trimmedPages = <({String id, String firstLine, int chars})>[];
+
+  for (final page in pages) {
+    final doc = page.layout;
+    final gold = page.goldTokens;
+    if (doc == null || gold.isEmpty) continue;
+    final single = doc.pages.first;
+    if (single == null) continue;
+
+    // Both columns start from what production actually hands this rule:
+    // edge-cropped, then tail-trimmed.
+    final croppedDoc = DocumentLayout([cropEdgeBleed(single)]);
+    final baseText = croppedDoc.text;
+    if (baseText == null) continue;
+    final tailCut = withoutOrphanTail(baseText, croppedDoc);
+
+    final cut = withoutLeadingNoise(tailCut.text, tailCut.layout);
+    if (!identical(cut.text, tailCut.text)) {
+      trimmed++;
+      // The removed span is a strict PREFIX here, the mirror of `_formatTrim`
+      // reading a strict suffix — so it is recovered from the ROW COUNT
+      // difference rather than a substring length, which would be wrong the
+      // moment the cut removes a row shorter than the newline it replaces.
+      final beforeRows = tailCut.text.split('\n');
+      final afterRows = cut.text.split('\n');
+      final removed = beforeRows
+          .take(beforeRows.length - afterRows.length)
+          .map((r) => r.trim())
+          .where((r) => r.isNotEmpty)
+          .toList();
+      trimmedPages.add((
+        id: '${page.bookSlug}/${page.imageId}',
+        firstLine: removed.isEmpty ? '(blank)' : removed.first,
+        chars: removed.fold<int>(0, (a, r) => a + r.length),
+      ));
+    }
+    scored++;
+
+    final before = splitter.split(tailCut.text, layout: tailCut.layout);
+    final after = splitter.split(cut.text, layout: cut.layout);
+    final rightBefore = before.length == page.goldRecipes;
+    final rightAfter = after.length == page.goldRecipes;
+    if (rightBefore) alignedBefore++;
+    if (rightAfter) alignedAfter++;
+    if (!rightBefore && rightAfter) fixed++;
+    if (rightBefore && !rightAfter) broke++;
+
+    final tB = _tokens(before.join('\n')), tA = _tokens(after.join('\n'));
+    goldTot += gold.length;
+    hitBefore += tB.intersection(gold).length;
+    hitAfter += tA.intersection(gold).length;
+    emitBefore += tB.length;
+    emitAfter += tA.length;
+  }
+
+  String pct(int a, int b) =>
+      b == 0 ? '   -  ' : '${(100 * a / b).toStringAsFixed(2)} %';
+
+  final b = StringBuffer()
+    ..writeln('\nLeading-noise trim vs gold tokens — $scored pages')
+    ..writeln()
+    ..writeln(
+      '  Measured ON TOP of the shipped edge crop AND the orphan-tail',
+    )
+    ..writeln('  trim, so the BEFORE column here is --trim\'s AFTER column —')
+    ..writeln('  the actual input this rule receives in production. Same')
+    ..writeln('  PROXY caveat: the geometry is the winocr capture, not ML Kit.')
+    ..writeln()
+    ..writeln(
+      '  UNMEASURED BUDGET: _leadingBudget (60) was set without corpus',
+    )
+    ..writeln(
+      '  access, borrowed from the tail trim\'s OTHER measured row.',
+    )
+    ..writeln(
+      '  Read the per-page list below against the photographs before',
+    )
+    ..writeln('  trusting this rule at scale.')
+    ..writeln()
+    ..writeln(
+      dropFrameCut
+          ? '  --no-frame-cut is ON: the `frameCut: fragment` gold entries'
+                ' are excluded from this run\'s population.'
+          : '  recall may be biased against this trim the same way it is'
+                ' against the tail trim — pass --no-frame-cut to check.',
+    )
+    ..writeln()
+    ..writeln('  trimmed pages        : $trimmed')
+    ..writeln(
+      '  right block count    : $alignedBefore -> $alignedAfter '
+      'of $scored   (fixed $fixed, broke $broke)',
+    )
+    ..writeln()
+    ..writeln('                       before     after')
+    ..writeln(
+      '    recall             : ${pct(hitBefore, goldTot)}    '
+      '${pct(hitAfter, goldTot)}',
+    )
+    ..writeln(
+      '    precision          : ${pct(hitBefore, emitBefore)}    '
+      '${pct(hitAfter, emitAfter)}',
+    )
+    ..writeln('    tokens emitted     : $emitBefore -> $emitAfter');
+
+  if (trimmedPages.isNotEmpty) {
+    b
+      ..writeln()
+      ..writeln('  every page trimmed, and what came off its front:');
+    for (final t in trimmedPages..sort((x, y) => x.chars.compareTo(y.chars))) {
+      b.writeln(
+        '    ${t.chars.toString().padLeft(3)} chars removed  '
+        '${t.firstLine.length > 34 ? '${t.firstLine.substring(0, 33)}…' : t.firstLine}'
+        '   ${t.id}',
+      );
+    }
+  }
+
+  return (
+    text: b.toString(),
+    summary: {
+      'frameCutFragmentsDropped': dropFrameCut,
+      'scoredPages': scored,
+      'trimmedPages': trimmed,
+      'trimmedDetail': [
+        for (final t in trimmedPages)
+          {'page': t.id, 'firstLine': t.firstLine, 'charsRemoved': t.chars},
       ],
       'alignedBefore': alignedBefore,
       'alignedAfter': alignedAfter,

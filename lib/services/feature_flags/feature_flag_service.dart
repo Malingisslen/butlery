@@ -206,6 +206,30 @@ class FeatureFlagService {
     // Independent of enable_on_device_ocr on purpose: off, the free tier still
     // runs and stores byte-identical text to what it stored before the seam
     // widened, so a rollback never costs the free tier.
+    //
+    // **Since 2026-08-12 this flag also gates a MIRROR rule at the other edge
+    // of the page** (`leading_noise.dart`): `import_manager.dart` runs
+    // `withoutOrphanTail` then `withoutLeadingNoise`, cutting furniture (a
+    // running header, a folio, the previous recipe's tail) off the FRONT of
+    // the first page the same way the tail trim cuts an orphaned heading off
+    // the back of the last one. With this flag off, `layout` is null and both
+    // rules no-op — nothing about this paragraph changes while the flag stays
+    // off.
+    //
+    // **UNMEASURED, unlike the tail trim above it.** `withoutLeadingNoise`'s
+    // budget (`_leadingBudget`, 60 characters) was written without corpus
+    // access — it borrows the tail trim's OTHER measured row rather than an
+    // invented number, but nobody has run `dart run
+    // tools/corpus_split_eval.dart --leading-trim` against it. Do that, read
+    // the printed per-page list AGAINST THE PHOTOGRAPHS (same discipline as
+    // the tail trim's own history — a text-only read got two tails wrong),
+    // and update `leading_noise.dart`'s doc with the result before trusting
+    // this rule at scale. It also carries a safety guard the tail trim does
+    // not need: it refuses to cut anything that reads like real ingredient or
+    // instruction content, because unlike the tail trim's cut (which is
+    // always a piece of a block the splitter would have discarded anyway),
+    // there is no equivalent proof at the front of the page — see
+    // `leading_noise.dart`'s library doc for why.
     'enable_layout_recipe_split': false,
 
     // Gradual Rollout Flags

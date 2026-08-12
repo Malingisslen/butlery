@@ -163,6 +163,75 @@ void main() {
     expect(h.spy.seen.join('\n').contains('havregryn'), isTrue);
   });
 
+  PageLayout pageWithLeadingFurniture() => PageLayout(
+    lines: [
+      // A running header / folio stand-in: short, not ingredient- or
+      // instruction-shaped, well under the 60-char budget.
+      line('Kokboken 2024', wordHeight: 70, words: 2),
+      line('Frukostmat med havre', wordHeight: 145, words: 1),
+      line('2 dl havregryn i skalen', wordHeight: 70),
+      line('4 dl vatten i kastrullen', wordHeight: 70),
+      line('1 krm salt att strossla', wordHeight: 70),
+      line('Koka upp vattnet och salta', wordHeight: 70),
+      line('Ror ner grynen och koka', wordHeight: 70),
+      line('Servera med mjolk och bar', wordHeight: 70),
+    ],
+  );
+
+  test('the text handed on has the leading furniture cut off', () async {
+    final h = build();
+    final doc = DocumentLayout([pageWithLeadingFurniture()]);
+    final input = doc.text!;
+    expect(input.contains('Kokboken'), isTrue, reason: 'fixture premise');
+    expect(
+      HeadingDetector.headingLines(pageWithLeadingFurniture()),
+      [1],
+      reason: 'fixture premise: one detected heading, at row 1',
+    );
+
+    await h.manager.autoParseMulti(input, layout: doc);
+
+    expect(h.spy.seen, isNotEmpty);
+    for (final received in h.spy.seen) {
+      expect(
+        received.contains('Kokboken'),
+        isFalse,
+        reason: 'the running header reached the parser',
+      );
+    }
+    expect(h.spy.seen.join('\n').contains('havregryn'), isTrue);
+  });
+
+  /// A single-photo import means page zero and the last page are the SAME
+  /// [PageLayout] — this page carries furniture BEFORE its title AND an
+  /// orphaned heading with almost nothing under it AFTER its body, so both
+  /// trims fire on one page in sequence. Proves the composition
+  /// `leading_noise.dart`'s library doc describes rather than just each rule
+  /// in isolation.
+  test('leading furniture and an orphan tail both get cut on one page', () async {
+    final h = build();
+    final lines = [
+      line('Kokboken 2024', wordHeight: 70, words: 2),
+      ...pageWithTail().lines,
+    ];
+    final doc = DocumentLayout([PageLayout(lines: lines)]);
+    final input = doc.text!;
+    expect(
+      HeadingDetector.headingLines(PageLayout(lines: lines)),
+      [1, 8],
+      reason: 'fixture premise: two detected headings, shifted by the '
+          'furniture row',
+    );
+
+    await h.manager.autoParseMulti(input, layout: doc);
+
+    expect(h.spy.seen, isNotEmpty);
+    final seen = h.spy.seen.join('\n');
+    expect(seen.contains('Kokboken'), isFalse, reason: 'leading furniture');
+    expect(seen.contains('Mandelforell'), isFalse, reason: 'orphan tail');
+    expect(seen.contains('havregryn'), isTrue, reason: 'the real recipe');
+  });
+
   test('without a layout the text is handed on untouched', () async {
     final h = build();
     const input =
