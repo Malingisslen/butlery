@@ -8,8 +8,18 @@
 //   arvd farg                      -> proveniensen foljer arvet
 //
 // Ursprunget bevaras: INLINE · SVG_ATTRIBUTE · CLASS_RULE · INHERITED.
+//
+// PRODUKTYTAN kommer sedan 2026-08-11 ur conformance-scope-motorn, inte ur
+// klasserna .sc-phone/.sc-card. Den gamla regeln gjorde 35 familjer osynliga
+// for hela R-04-fargeanalysen — samma blinda flack som textmotorn hade fore
+// scopearbetet. Legacy-rotkonventionen galler fortfarande dar ingen authored
+// grans finns, sa den tidigare populationen ar oforandrad.
+
+import { SCOPE_KOD, KEDJA_KOD } from './conformance-scope.mjs';
 
 export const PAINT_PROBE = `(() => {
+${SCOPE_KOD}
+${KEDJA_KOD}
   // Alla regler i dokumentet, i kaskadordning.
   const regler = [];
   for (const ss of document.styleSheets) {
@@ -132,8 +142,9 @@ export const PAINT_PROBE = `(() => {
     // forklarande etikett (.sc-label, .sc-id) och sjalva den avbildade
     // produktytan (.sc-phone eller .sc-card). Bara den senare ar UI som ska
     // tematiseras; etiketten ar dokumentets egen text.
-    const ytor = [...it.querySelectorAll('.sc-phone, .sc-card')];
-    const iProdukt = el => el === it ? false : ytor.some(y => y === el || y.contains(el));
+    // PRODUKTSCOPE ur authored grans, annars legacy .sc-phone/.sc-card.
+    // Annotationssubtrader faller ut har och ar aldrig tokeniseringsmal.
+    const iProdukt = el => el === it ? false : losScope(kedjaFor(el, it)).scope === 'product';
     // KALLANKARE. Elementets ordinal i produktytans dokumentordning ar samma
     // ordning som oppningstaggarna i kallan. Migratorn far darmed en entydig
     // plats och behover aldrig harleda nagot pa nytt.

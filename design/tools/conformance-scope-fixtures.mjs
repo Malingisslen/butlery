@@ -13,6 +13,7 @@ import { losScope, granskaIntegritet, maladBakgrund, arProdukt,
   SCOPE_ATTRIBUT, SCOPEVARDEN } from './conformance-scope.mjs';
 import { tackning } from './theme-contract.mjs';
 import { artefaktBlock, elementIArtefakt, skrivScopeITagg, migreraFil } from './scope-migrator.mjs';
+import { PAINT_PROBE } from './theme-paint-probe.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -178,6 +179,20 @@ const nod = (o = {}) => ({ scope: o.scope ?? null, legacyRoot: !!o.legacyRoot,
     KLASSER.length + ' klassnamn ger identiskt utfall: i legacy-rot ' + iRot[0].scope +
     ' · utan rot ' + utanRot[0].kalla + ' · under authored product ' + iAuthored[0].scope); }
 
+/* ── CS-18 · fargsonden anvander scopemotorn, inte klasslistan ────────── */
+{ // Kopplingsprov. Att sonden FAKTISKT avgor produktyta med losScope kan bara
+  // visas i en riktig DOM; det harvarande provet hindrar att kopplingen tas
+  // bort tyst vid en refaktorering. Den semantiska korrektheten bevisas av
+  // CS-01…CS-17, och empiriskt av att 35 familjer gick fran 0 till 2070
+  // malande deklarationer nar kopplingen infordes.
+  const harMotor = PAINT_PROBE.includes('function losScope') && PAINT_PROBE.includes('function kedjaFor');
+  const anvander = /iProdukt\s*=\s*el\s*=>[^;]*losScope\(kedjaFor\(el, it\)\)\.scope === 'product'/.test(PAINT_PROBE);
+  const ingenKlasslista = !/querySelectorAll\('\.sc-phone, \.sc-card'\)/.test(PAINT_PROBE);
+  prov('CS-18', 'fargsonden avgor produktyta med scopemotorn och inte langre med klasslistan',
+    harMotor && anvander && ingenKlasslista,
+    'motor inbaddad ' + harMotor + ' · iProdukt via losScope ' + anvander +
+    ' · gammal klasslista borta ' + ingenKlasslista); }
+
 /* ── SM · METADATAMIGRATORN ───────────────────────────────────────────── */
 // Skrivaren ror kallan. Proven kraver att den bara satter ETT attribut, att
 // ankaret ar samma ordning som DOM raknar, och att allt tvetydigt faller.
@@ -258,7 +273,7 @@ const FIX = `<div class="sc-item" id="prov" data-theme="light">
     r.logg.filter(x => x.utfall === 'HOPPAD').length === 2,
     r.logg.map(x => x.utfall + ':' + x.skal).join(' · ')); }
 
-const ANTAL = 26;
+const ANTAL = 27;
 for (const x of resultat) console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
 const ok = resultat.filter(x => x.ok).length;
 console.log('');
