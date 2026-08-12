@@ -7,11 +7,12 @@
 // symmetrisk at bada hallen, att en annotationsgrans inte kan gomma produkt-UI,
 // och att scope aldrig lacker in i vare sig bakgrundsupplosning eller tackning.
 
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { losScope, granskaIntegritet, maladBakgrund, arProdukt,
   SCOPE_ATTRIBUT, SCOPEVARDEN } from './conformance-scope.mjs';
 import { tackning } from './theme-contract.mjs';
+import { artefaktBlock, elementIArtefakt, skrivScopeITagg, migreraFil } from './scope-migrator.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -163,7 +164,87 @@ const nod = (o = {}) => ({ scope: o.scope ?? null, legacyRoot: !!o.legacyRoot,
     nara.kalla === 'ogiltig' && langtBort.kalla === 'ogiltig' && g.kod === 'SCOPE_INVALID',
     'narmast: ' + nara.kalla + ' · langre upp: ' + langtBort.kalla + ' · integritet: ' + g.kod); }
 
-const ANTAL = 16;
+/* ── SM · METADATAMIGRATORN ───────────────────────────────────────────── */
+// Skrivaren ror kallan. Proven kraver att den bara satter ETT attribut, att
+// ankaret ar samma ordning som DOM raknar, och att allt tvetydigt faller.
+
+const FIX = `<div class="sc-item" id="prov" data-theme="light">
+  <div class="sc-label"><a class="sc-id" href="#prov">etikett</a>text</div>
+  <!-- <div class="lurendrejeri">kommentar med tagg</div> -->
+  <div class="sc-tab"><span data-a11y-role="button">Knapp</span><br>
+    <div class="sc-note"><b>Kommentar.</b> Prosa.</div></div>
+</div>`;
+// Forvantad ordning ur querySelectorAll('*'):
+//  0 div.sc-label · 1 a.sc-id · 2 div.sc-tab · 3 span · 4 br · 5 div.sc-note · 6 b
+
+{ const blk = artefaktBlock(FIX, 'prov');
+  const el = elementIArtefakt(FIX, blk);
+  const vantat = ['div', 'a', 'div', 'span', 'br', 'div', 'b'];
+  prov('SM-01', 'kallankaret raknar samma element i samma ordning som querySelectorAll("*")',
+    !!blk && el.length === 7 && el.every((e, i) => e.tagg === vantat[i]),
+    el.length + ' element: ' + el.map(e => e.tagg).join(' ')); }
+
+{ const el = elementIArtefakt(FIX, artefaktBlock(FIX, 'prov'));
+  prov('SM-02', 'en tagg inuti en HTML-kommentar raknas aldrig som element',
+    !el.some(e => e.text.includes('lurendrejeri')),
+    'kommentarens div finns inte bland de ' + el.length + ' elementen'); }
+
+{ const r = skrivScopeITagg('<div class="sc-note">', 'annotation');
+  const r2 = skrivScopeITagg('<img src="x.png" />', 'product');
+  prov('SM-03', 'attributet skrivs in i taggen och ror ingenting annat',
+    r.ok && r.ny && r.text === '<div class="sc-note" data-conformance-scope="annotation">' &&
+    r2.ok && r2.text === '<img src="x.png" data-conformance-scope="product"/>',
+    r.text + ' · ' + r2.text); }
+
+{ const r = skrivScopeITagg('<div data-conformance-scope="annotation">', 'annotation');
+  prov('SM-04', 'samma varde igen ar idempotent — ingen skrivning, ingen konflikt',
+    r.ok && r.ny === false && r.text === '<div data-conformance-scope="annotation">',
+    'ny=' + r.ny + ' · ' + r.skal); }
+
+{ const r = skrivScopeITagg('<div data-conformance-scope="product">', 'annotation');
+  prov('SM-05', 'ett annat varde pa samma element ar en konflikt — fail closed',
+    !r.ok && /finns redan/.test(r.skal), r.ok ? 'skrev anda' : r.skal); }
+
+{ const fel = ['produkt', 'PRODUCT', '', 'product annotation', null]
+    .map(v => skrivScopeITagg('<div>', v));
+  prov('SM-06', 'bara product, annotation och harness accepteras',
+    fel.every(r => !r.ok) && skrivScopeITagg('<div>', 'harness').ok,
+    fel.length + ' ogiltiga varden avvisade'); }
+
+{ const f = join(resolve(OUT || '.'), 'sm-prov.html');
+  writeFileSync(f, FIX);
+  const r = migreraFil(f, [{ art: 'prov', ordinal: 5, varde: 'annotation' },
+    { art: 'prov', ordinal: 2, varde: 'product' }]);
+  const efter = readFileSync(f, 'utf8');
+  const utan = efter.split(' data-conformance-scope="annotation"').join('')
+    .split(' data-conformance-scope="product"').join('');
+  prov('SM-07', 'tva skrivningar i samma fil andrar exakt tva taggar och inget annat',
+    r.skrivningar === 2 && utan === FIX &&
+    /class="sc-tab" data-conformance-scope="product"/.test(efter) &&
+    /class="sc-note" data-conformance-scope="annotation"/.test(efter),
+    r.skrivningar + ' skrivningar · resten av filen bit-identisk: ' + (utan === FIX)); }
+
+{ const f = join(resolve(OUT || '.'), 'sm-prov2.html');
+  writeFileSync(f, FIX);
+  migreraFil(f, [{ art: 'prov', ordinal: 5, varde: 'annotation' }]);
+  const efter1 = readFileSync(f, 'utf8');
+  const r2 = migreraFil(f, [{ art: 'prov', ordinal: 5, varde: 'annotation' }]);
+  const efter2 = readFileSync(f, 'utf8');
+  prov('SM-08', 'andra korningen skriver 0 och lamnar filen bit-identisk',
+    r2.skrivningar === 0 && efter1 === efter2 &&
+    r2.logg.every(x => x.utfall === 'OFORANDRAD'),
+    'skrivningar ' + r2.skrivningar + ' · utfall ' + r2.logg.map(x => x.utfall).join(',')); }
+
+{ const f = join(resolve(OUT || '.'), 'sm-prov3.html');
+  writeFileSync(f, FIX);
+  const r = migreraFil(f, [{ art: 'prov', ordinal: 99, varde: 'product' },
+    { art: 'finns-inte', ordinal: 0, varde: 'product' }]);
+  prov('SM-09', 'saknat ankare och saknad artefakt hoppas over utan att nagot skrivs',
+    r.skrivningar === 0 && readFileSync(f, 'utf8') === FIX &&
+    r.logg.filter(x => x.utfall === 'HOPPAD').length === 2,
+    r.logg.map(x => x.utfall + ':' + x.skal).join(' · ')); }
+
+const ANTAL = 25;
 for (const x of resultat) console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
 const ok = resultat.filter(x => x.ok).length;
 console.log('');

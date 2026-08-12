@@ -62,13 +62,13 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       <div style="flex:1;padding:14px;border-right:1px solid #ccd1c2;background:#e6ead9"><div style="font-size:12px;font-weight:700">768–1023</div><div style="font-size:12px;color:#37453a;line-height:1.55;margin-top:6px">Smal skena med etiketter under ikonen. Två spalter där innehållet har två slag. Rutnät: 2 kort.</div></div>
       <div style="flex:1;padding:14px;background:#e6ead9"><div style="font-size:12px;font-weight:700">1024 och upp</div><div style="font-size:12px;color:#37453a;line-height:1.55;margin-top:6px">Utfälld skena med ordmärket. Rutnät: 3 kort. <b>Ingen fjärde kolumn</b> — vi har inte innehåll till den.</div></div>
     </div>
-    <div class="sc-note" style="margin-top:16px;max-width:none"><b>Max radlängd gäller alltid</b>, även på mobil: <code>infinity</code> går bort. Löptext får aldrig gå bredare än <b>72 tecken</b> — det gäller kolumnen, inte sidan.</div>
+    <div class="sc-note" style="margin-top:16px;max-width:none" data-conformance-scope="annotation"><b>Max radlängd gäller alltid</b>, även på mobil: <code>infinity</code> går bort. Löptext får aldrig gå bredare än <b>72 tecken</b> — det gäller kolumnen, inte sidan.</div>
   </div>
 </div>
 
 <div class="sc-item" id="bredskal" data-theme="light" data-theme-family="bredskal-panel" data-screen-label="Skalet — skenan">
   <div class="sc-label"><a class="sc-id" href="#bredskal">skenan</a><b>Den enskilt viktigaste rättelsen i etapp 10: skenan måste vara vår, inte Materials.</b> Bottenraden är noggrant formad — <code>surfaceContainerLow</code> som botten, gemena etiketter, och en <b>rostmarkering exakt lika bred som etikettens text</b> (<code>_getTextWidth</code> mäter den). Skenan är en orörd <code>NavigationRail</code>: Material-indikator i kapselform, versal etikett, ingen rostmarkering. Vrider man surfplattan byter appen alltså grafisk identitet mitt i en session.<br><br>Ramen ger skenan bottenradens vokabulär: <b>samma botten, samma gemena etiketter, samma rostmarkering</b> — men liggande, som en list till vänster om den valda posten, eftersom en understrykning inte kan bära en vertikal lista.<br><br><b>Och en strukturell rättelse:</b> <i>lägg till</i> är i dag en <b>navigationsdestination</b> bland fyra. Det är fel redan på mobil (vi ritade den som en rund saffransknapp i mitten, inte som en flik) och blir tydligare fel i en skena, där destinationer är <i>platser</i> man är på. Ramen lyfter den till en <b>knapp överst i skenan</b>, ovanför destinationerna, avskild med luft — en handling, inte en plats.<br><br><b>Ordmärket är en vektor.</b> Den utfällda skenan skriver i dag <code>Text('Butlery')</code>; vi har <code>Butlery-wordmark</code> som SVG och en manual som säger hur den får sättas. Textrenderingen går bort.<br><br><b>Sist, en navigationsbugg som bred layout förstorar:</b> byte av destination sker med <code>pushReplacementNamed</code>, alltså utan historik. På en telefon känns det som flikar; med en <i>synlig</i> skena förväntar man sig att platsen man lämnade finns kvar — inklusive skrollposition och öppet filter.</div>
-  <div class="sc-tab" style="width:1024px;height:600px">
+  <div class="sc-tab" style="width:1024px;height:600px" data-conformance-scope="product">
     <div style="width:104px;flex:none;background:#24382c;display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:0">
       <span style="width:56px;height:56px;border-radius:999px;background:#ce7c1e;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Lägg till" data-a11y-role="button" data-hit="self"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#17251d" stroke-width="2" stroke-linecap="round" data-icon="plus"><path d="M12 6v12"></path><path d="M6 12h12"></path></svg></span>
       <span style="width:48px;height:1px;background:#3f5145;margin:16px 0"></span>
@@ -90,15 +90,15 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       </div>
     </div>
   </div>
-  <div class="sc-note" style="width:1024px;box-sizing:border-box"><b>Skenan vid 768, utfälld vid 1024.</b> Här visas den smala (etikett under ikon). Vid 1024 fälls den ut till 240 px med ordmärket som <b>vektor</b> överst och etiketterna intill ikonerna. Rostmarkeringen sitter till vänster om vald post — samma färg och betydelse som understrykningen i bottenraden.</div>
+  <div class="sc-note" style="width:1024px;box-sizing:border-box" data-conformance-scope="annotation"><b>Skenan vid 768, utfälld vid 1024.</b> Här visas den smala (etikett under ikon). Vid 1024 fälls den ut till 240 px med ordmärket som <b>vektor</b> överst och etiketterna intill ikonerna. Rostmarkeringen sitter till vänster om vald post — samma färg och betydelse som understrykningen i bottenraden.</div>
 </div>
 
 <div class="sc-item" id="bredlandskap" data-theme="light" data-theme-family="bredlandskap-panel" data-screen-label="Liggande telefon behåller bottenraden">
   <div class="sc-label"><a class="sc-id" href="#bredlandskap">liggande telefon</a><b>En rättelse som är billig i kod och stor för handen.</b> I dag byter <code>AdaptiveNavigationScaffold</code> till skena vid <b>600 px</b> — och en vanlig telefon i liggande läge är 780–930 px bred. Alltså får den <b>skena</b>, med navigationen längst till vänster, medan tummarna vilar mot nederkanten. Det är en layout som gör den vanligaste rörelsen svårast.<br><br>Regeln: <b>navigationens form följer bredd, men bara över 768 px <i>och</i> bara när höjden räcker</b>. En liggande telefon är bred men <b>låg</b> — 390–430 px hög. Där är två spalter också fel: raderna blir korta, och sidhuvudet äter en tredjedel av höjden. Därför gäller <b>en spalt, bottenrad, och ett komprimerat sidhuvud</b> under 500 px höjd, oavsett bredd.<br><br>Det är den enda platsen i hela systemet där <b>höjd</b> avgör en layout. Den förtjänar det: matlagningsläget och receptet läses ofta med telefonen liggande mot en kökshylla.</div>
   <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
     <div>
-      <div class="sc-cap" style="margin-bottom:6px">Rätt · en spalt, bottenrad</div>
-      <div class="sc-tab" style="width:760px;height:392px;flex-direction:column">
+      <div class="sc-cap" style="margin-bottom:6px" data-conformance-scope="annotation">Rätt · en spalt, bottenrad</div>
+      <div class="sc-tab" style="width:760px;height:392px;flex-direction:column" data-conformance-scope="product">
         <div style="flex:none;display:flex;align-items:center;gap:12px;padding:8px 20px;border-bottom:1px solid #ccd1c2"><span style="flex:1;font-size:17px;font-weight:700;letter-spacing:-.2px">Pannbiffar med lök</span><span style="font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;color:#627061">35 min · 4 port</span></div>
         <div style="flex:1;display:flex;min-height:0">
           <div style="flex:1;padding:14px 20px;overflow:hidden"><div class="sc-cap">Gör så här</div><div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;max-width:600px"><span style="display:flex;gap:10px;font-size:14px;line-height:1.5"><b style="width:16px;flex:none;font-variant-numeric:tabular-nums">1</b><span style="flex:1">Blanda ströbröd och mjölk. Låt svälla tio minuter.</span></span><span style="display:flex;gap:10px;font-size:14px;line-height:1.5"><b style="width:16px;flex:none;font-variant-numeric:tabular-nums">2</b><span style="flex:1">Finhacka löken och fräs den mjuk i smör.</span></span></div></div>
@@ -112,7 +112,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
         </div>
       </div>
     </div>
-    <div>
+    <div data-conformance-scope="annotation">
       <div class="sc-cap" style="margin-bottom:6px;color:#9C3B23">Fel · vad koden gör i dag</div>
       <div class="sc-tab" style="width:240px;height:392px;border-color:#9C3B23">
         <div style="width:72px;flex:none;background:#e6ead9;border-right:1px solid #ccd1c2;display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:14px">
@@ -125,12 +125,12 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       </div>
     </div>
   </div>
-  <div class="sc-note" style="width:1024px;box-sizing:border-box"><b>Två villkor, inte ett:</b> skena kräver bredd ≥ 768 <b>och</b> höjd ≥ 500. Under 500 px höjd gäller en spalt och bottenrad oavsett bredd — det är systemets enda höjdregel, och den finns för köket.</div>
+  <div class="sc-note" style="width:1024px;box-sizing:border-box" data-conformance-scope="annotation"><b>Två villkor, inte ett:</b> skena kräver bredd ≥ 768 <b>och</b> höjd ≥ 500. Under 500 px höjd gäller en spalt och bottenrad oavsett bredd — det är systemets enda höjdregel, och den finns för köket.</div>
 </div>
 
 <div class="sc-item" id="bredrecept" data-theme="light" data-theme-family="bredrecept-panel" data-screen-label="Receptet brett">
   <div class="sc-label"><a class="sc-id" href="#bredrecept">receptet brett</a><b>Koden har redan en tvåkolumnsvy, och den delar på fel ledd.</b> <code>RecipeDetailTabletContent</code> lägger <b>titel, arvegods, delningsstatus och kommentarer</b> till vänster (40 %) och <b>allt receptinnehåll</b> till höger (60 %) — alltså ingredienser <i>och</i> steg i samma spalt, medan det sociala får en egen. Det är en uppdelning efter <i>datamodell</i>, inte efter användning: i ett kök läser man ingredienslistan en gång och stegen tio gånger, och det är <b>de två</b> som vill ligga sida vid sida.<br><br>Ramen delar efter läsning: <b>ingredienserna som en smal spalt till vänster</b>, med portionsskalaren överst, <b>stegen brett till höger</b>. Kommentarer, delning och relaterade recept ligger i ett <b>fullbrett band under</b> — de tillhör receptet men inte lagandet, och en kommentarstråd i syna medan man steker är en distraktion.<br><br><b>Två mekaniska rättelser.</b> <b>Ett:</b> koden har <b>två oberoende <code>SingleChildScrollView</code></b> sida vid sida. Två skrollytor på samma skärm gör att musen eller fingret ger olika resultat beroende på var man råkar vara — och på en låg skärm kan vänsterspaltens kommentarer bli svåra att nå. Ramen har <b>en sidskroll</b> och en <b>klistrad ingrediensspalt</b>: listan följer med medan stegen rullar, vilket är exakt det man vill.<br><br><b>Två:</b> arvegodsskanningen (<code>maxHeight: 420</code>) ligger i den smala spalten <i>ovanför</i> delningsstatusen. Men skanningen <b>är</b> receptet (§ 20.14) — den hör överst, brett, som bilden. I den breda layouten ligger den där omslaget ligger.<br><br><b>Portionsskalaren blir bättre av bredden</b>, inte bara större: när ingredienserna står kvar i sin egen spalt ser man mängderna ändras medan man trycker — det är första gången skalningen är synlig som en handling.</div>
-  <div class="sc-tab" style="width:1024px;height:672px;flex-direction:column">
+  <div class="sc-tab" style="width:1024px;height:672px;flex-direction:column" data-conformance-scope="product">
     <div style="flex:none;display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid #ccd1c2"><span style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;flex:none" data-a11y-name="Tillbaka" data-a11y-role="button" data-hit="self"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-left"><path d="M14.5 6.5L9 12l5.5 5.5"></path></svg></span><span style="flex:1;font-size:15px;font-weight:600;color:#627061">Dina recept</span><span data-hit="self" style="min-height:48px;display:inline-flex;align-items:center;padding:0 14px;border:1.5px solid #24382c;font-size:13.5px;font-weight:600" data-a11y-name="Laga" data-a11y-role="button">Laga</span></div>
     <div style="flex:none;height:170px;background:#ccd1c2;display:flex;align-items:flex-end;padding:16px 24px"><span style="font-size:30px;font-weight:700;letter-spacing:-.7px;background:#F5F4ED;padding:6px 12px">Mormors köttbullar</span></div>
     <div style="flex:1;display:flex;min-height:0">
@@ -155,16 +155,16 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
           <span style="display:flex;gap:14px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums">3</b><span style="flex:1;font-size:14.5px;line-height:1.6">Rör ihop färs, lök och ströbrödsblandning. Salta och peppra ordentligt.</span></span>
           <span style="display:flex;gap:14px"><b style="width:20px;flex:none;font-size:15px;font-variant-numeric:tabular-nums">4</b><span style="flex:1;font-size:14.5px;line-height:1.6">Rulla bullar med blöta händer och stek dem runda i rikligt med smör.</span></span>
         </div>
-        <div style="margin-top:18px;padding-top:14px;border-top:1px solid #ccd1c2;display:flex;gap:16px;align-items:center"><span class="sc-cap">Under stegen</span><span style="font-size:12px;color:#627061">kommentarer · delning · relaterade recept — fullbrett, inte i en spalt</span></div>
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid #ccd1c2;display:flex;gap:16px;align-items:center" data-conformance-scope="annotation"><span class="sc-cap">Under stegen</span><span style="font-size:12px;color:#627061">kommentarer · delning · relaterade recept — fullbrett, inte i en spalt</span></div>
       </div>
     </div>
   </div>
-  <div class="sc-note" style="width:1024px;box-sizing:border-box"><b>Delningen går efter läsning, inte efter datamodell.</b> Ingredienser (smalt) och steg (brett) sida vid sida; socialt i ett fullbrett band under. <b>En sidskroll</b>, klistrad ingrediensspalt — inte två oberoende skrollytor. Arvegodsskanningen ligger där omslaget ligger, brett och överst.</div>
+  <div class="sc-note" style="width:1024px;box-sizing:border-box" data-conformance-scope="annotation"><b>Delningen går efter läsning, inte efter datamodell.</b> Ingredienser (smalt) och steg (brett) sida vid sida; socialt i ett fullbrett band under. <b>En sidskroll</b>, klistrad ingrediensspalt — inte två oberoende skrollytor. Arvegodsskanningen ligger där omslaget ligger, brett och överst.</div>
 </div>
 
 <div class="sc-item" id="bredmeny" data-theme="light" data-theme-family="bredmeny-panel" data-screen-label="Veckomenyn brett">
   <div class="sc-label"><a class="sc-id" href="#bredmeny">veckan brett</a><b>Den yta som vinner mest, och den enda där bredden ger något kvalitativt nytt.</b> På telefonen är veckomenyn en <b>lista av dagar</b> — man ser en dag i taget och minns resten. Bred layout gör den till vad den egentligen är: <b>en vecka man ser hela</b>, sju kolumner, måltiderna som rader.<br><br>Och först då syns sådant som listan gömmer: att onsdagen är tom, att det är fisk två dagar i rad, att helgen har fyra middagar planerade och tisdagen ingen. <b>Planering handlar om mönster, och mönster kräver samtidighet.</b><br><br><b>Två saker ärvs oförändrade.</b> Närvaroraden är en <b>kontroll</b> (B-40/41: 48 dp, avatarer 26, högst tre ansikten) — den krymper inte till dekoration bara för att kolumnen är smal; ryms den inte visas <i>en avatar plus antal</i>. Och en tom plats är en <b>knapp</b>, inte ett hål: samma slot-väljare som <a href="Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html#flermeny">flermeny</a> öppnar.<br><br><b>Under 768 finns rutnätet inte.</b> Sju kolumner på en telefon blir sju remsor på 44 px — smalare än en träffyta. Listan är inte en nödlösning för smala skärmar; den är den <b>rätta</b> formen där. Det är den viktigaste bredd-regeln vi har: <i>bred layout lägger till en vy, den räddar inte en dålig.</i></div>
-  <div class="sc-tab" style="width:1024px;height:520px;flex-direction:column">
+  <div class="sc-tab" style="width:1024px;height:520px;flex-direction:column" data-conformance-scope="product">
     <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid #ccd1c2"><span style="flex:1;font-size:24px;font-weight:700;letter-spacing:-.5px">Vecka 31</span><span style="font-size:13px;font-weight:600;color:#627061;font-variant-numeric:tabular-nums">27 juli – 2 aug</span><span data-hit="self" style="min-height:48px;display:inline-flex;align-items:center;padding:0 14px;border:1.5px solid #24382c;font-size:13.5px;font-weight:600" data-a11y-name="Skapa inköpslista av veckan" data-a11y-role="button">Till inköpslistan</span></div>
     <div style="flex:1;padding:16px 24px;overflow:hidden">
       <div style="display:grid;grid-template-columns:64px repeat(7,1fr);gap:6px">
@@ -199,12 +199,12 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       </div>
     </div>
   </div>
-  <div class="sc-note" style="width:1024px;box-sizing:border-box"><b>Rutnätet finns bara över 768 px.</b> Närvaroraden är en kontroll även i en smal kolumn (48 dp, avatarer 26, max tre ansikten, annars <i>en avatar plus antal</i> — B-40/41). Tom plats är en knapp med 44 px mål, aldrig ett hål.</div>
+  <div class="sc-note" style="width:1024px;box-sizing:border-box" data-conformance-scope="annotation"><b>Rutnätet finns bara över 768 px.</b> Närvaroraden är en kontroll även i en smal kolumn (48 dp, avatarer 26, max tre ansikten, annars <i>en avatar plus antal</i> — B-40/41). Tom plats är en knapp med 44 px mål, aldrig ett hål.</div>
 </div>
 
 <div class="sc-item" id="bredinkop" data-theme="light" data-theme-family="bredinkop-panel" data-screen-label="Inköpslistan brett">
   <div class="sc-label"><a class="sc-id" href="#bredinkop">listan brett</a><b>Här måste man vara försiktig, för den breda skärmen är den <i>fel</i> skärmen för den här ytan.</b> Inköpslistan används i affären, med en telefon i handen. På en surfplatta används den bara i ett läge: <b>hemma, när listan görs</b> — och då är frågan inte <i>vad ska jag köpa</i> utan <b>varför står det här på listan</b>.<br><br>Därför lägger ramen inte till kolumner för sakens skull. Den lägger till <b>en spalt som svarar på härkomst</b>: vilka recept och vilken vecka varje vara kommer ifrån, plus skafferiet, så att man ser vad man redan har innan man går. Det är samma information som telefonens rader bär i förkortad form (BUT-1613: mängderna skalas efter närvaro) — bara utan att behöva tryckas fram.<br><br><b>Två regler.</b> <b>Ett:</b> bockningen är fortfarande <b>en enda kolumn bred</b> — varorna får inte bli tvåspaltiga, för då tappar ögat sin plats när en rad försvinner vid bockning. Bred layout ger <i>mer information per rad</i>, inte fler rader per bredd. <b>Två:</b> allt som var flerval på telefonen är flerval här, med baren fäst i <b>listans</b> kolumn — inte över hela skärmen (§ 17.1: baren hör till listan den styr).<br><br><b>Och det stora argumentet mot att gå längre:</b> vi har medvetet inte gjort listan till ett skrivbordsverktyg med kolumnsortering och massredigering. Den ska kännas som samma lista, bara med sitt varför synligt.</div>
-  <div class="sc-tab" style="width:1024px;height:520px;flex-direction:column">
+  <div class="sc-tab" style="width:1024px;height:520px;flex-direction:column" data-conformance-scope="product">
     <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid #ccd1c2"><span style="flex:1;font-size:24px;font-weight:700;letter-spacing:-.5px">Inköpslista</span><span style="font-size:13px;font-weight:600;color:#627061;font-variant-numeric:tabular-nums">18 varor · 4 bockade</span></div>
     <div style="flex:1;display:flex;min-height:0">
       <div style="width:440px;flex:none;border-right:1px solid #ccd1c2;padding:16px 20px;box-sizing:border-box;overflow:hidden">
@@ -218,7 +218,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
         <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
           <span data-hit-target="bredinkop-checkbox-blandfars-inte-bockad" style="display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px"><span style="width:24px;height:24px;border:1.5px solid #7d897c;border-radius:4px;flex:none" data-a11y-name="Blandfärs, inte bockad" data-state-group="bredinkop-varurad" data-a11y-role="checkbox" data-hit="target:bredinkop-checkbox-blandfars-inte-bockad" data-a11y-state="unchecked"></span><span style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:600">Blandfärs</b><span style="font-variant-numeric:tabular-nums;display:block;font-size:11.5px;font-weight:600;color:#627061;margin-top:1px">900 g · Mormors köttbullar</span></span></span>
         </div>
-        <div style="font-size:11px;font-weight:600;color:#627061;line-height:1.5;margin-top:14px;font-style:italic">En kolumn bred, alltid. Bockning får inte flytta ögat i sidled.</div>
+        <div style="font-size:11px;font-weight:600;color:#627061;line-height:1.5;margin-top:14px;font-style:italic" data-conformance-scope="annotation">En kolumn bred, alltid. Bockning får inte flytta ögat i sidled.</div>
       </div>
       <div style="flex:1;min-width:0;padding:16px 20px;background:#F5F4ED;overflow:hidden">
         <div class="sc-cap">Varifrån varorna kommer</div>
@@ -269,7 +269,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
 <div class="sc-item" id="bredgrans" data-theme="light" data-theme-family="bredgrans-panel" data-screen-label="Vad som förblir en spalt">
   <div class="sc-label"><a class="sc-id" href="#bredgrans">gränsen</a><b>Den viktigaste ramen i etapp 10, för den hindrar arbetet från att växa.</b> Bred layout är frestande att applicera överallt; nästan ingenting behöver den. <b>Fyra ytor får bred layout</b> — receptet, veckomenyn, inköpslistan, adminpanelen. <b>Allt annat förblir en spalt</b>, centrerad, med max radlängd.<br><br><b>Och en spalt i mitten är inte ett misslyckande.</b> Ett formulär är en följd av frågor; två spalter formulär gör ordningen otydlig och tabbordningen värre. <code>getMaxFormWidth</code> säger redan <b>600 px</b> för allt över mobil, och det talet ska gälla: inloggning, kontoinställningar, familjemedlemmar, integritet, juridik, feedback, editorn.<br><br><b>Editorn är den svåraste och den tydligaste.</b> Ett recept man skriver är en text man skriver — och en textspalt på 1000 px är svårare att skriva i än en på 600. Bredden används i stället till <b>en marginal med kontext</b>: utkaststatus, bildhanteringen, källartefakten. Det som inte är text ligger utanför textens spalt, inte i den.<br><br><b>Tomma sidor på var sin sida ska bära något — eller vara tomma.</b> Vi fyller aldrig marginaler med tips, förslag eller reklam för egna funktioner. En tom marginal är vila, och vila är en del av det här gränssnittet.<br><br><b>320 px-golvet är oförändrat.</b> Det gäller fortfarande, och det gäller <i>först</i>: en layout som bara fungerar bred är trasig, en som bara fungerar smal är bara ofullständig.</div>
   <div style="width:1024px;border:1px solid #ccd1c2;border-radius:20px;background:#F5F4ED;box-sizing:border-box;font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382c;overflow:hidden">
-    <div style="display:flex">
+    <div style="display:flex" data-conformance-scope="annotation">
       <div style="flex:1;padding:20px;border-right:1px solid #ccd1c2">
         <div class="sc-cap" style="color:#a15a0a">Får bred layout · fyra</div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;font-size:13px">
@@ -285,8 +285,8 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
       </div>
     </div>
     <div style="border-top:1px solid #ccd1c2;padding:20px;background:#e6ead9">
-      <div class="sc-cap">Editorn brett · texten smal, kontexten i marginalen</div>
-      <div style="display:flex;gap:16px;margin-top:12px;align-items:flex-start">
+      <div class="sc-cap" data-conformance-scope="annotation">Editorn brett · texten smal, kontexten i marginalen</div>
+      <div style="display:flex;gap:16px;margin-top:12px;align-items:flex-start" data-conformance-scope="product">
         <div style="width:600px;flex:none;border:1px solid #ccd1c2;background:#F5F4ED;padding:14px">
           <span style="display:block;font-size:11.5px;font-weight:700;color:#5B6959">Titel</span>
           <span data-hit="self" style="display:flex;align-items:center;min-height:48px;padding:0 12px;margin-top:6px;border:1.5px solid #24382c;font-size:16px;font-weight:600;box-sizing:border-box" data-a11y-name="Titel" data-a11y-role="textbox">Mormors köttbullar</span>
@@ -299,7 +299,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
           <div style="border:1px solid #ccd1c2;background:#F5F4ED;padding:12px;font-size:12px;color:#37453a;line-height:1.5"><b>Källa:</b> fotograferat kort, 3 sidor · <a href="Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html#kompkalla">visa</a></div>
         </div>
       </div>
-      <div style="font-size:11.5px;font-weight:600;color:#37453a;line-height:1.5;margin-top:12px;font-style:italic">Marginalen bär kontext — aldrig tips, förslag eller reklam för egna funktioner. Är det inget att säga är den tom.</div>
+      <div style="font-size:11.5px;font-weight:600;color:#37453a;line-height:1.5;margin-top:12px;font-style:italic" data-conformance-scope="annotation">Marginalen bär kontext — aldrig tips, förslag eller reklam för egna funktioner. Är det inget att säga är den tom.</div>
     </div>
   </div>
 </div>
@@ -314,7 +314,7 @@ a{color:#8A5212;text-decoration:none}a:hover{color:#8A5212;text-decoration:under
     </div>
     <div style="display:flex;gap:14px;margin-top:16px;flex-wrap:wrap">
       <div style="flex:1;min-width:280px;background:#e6ead9;padding:14px"><div style="font-size:13px;font-weight:700">Ordning</div><div style="font-size:12.5px;color:#37453a;line-height:1.6;margin-top:6px"><b>1.</b> Rättelserna — de gör nuvarande beteende mindre fel utan ny yta. <b>2.</b> Skenan i vår form — annars byter appen identitet vid varje rotation. <b>3.</b> Veckomenyns rutnät — störst vinst. <b>4.</b> Receptet. <b>5.</b> Inköpslistan.</div></div>
-      <div style="flex:1;min-width:280px;background:#f0eee2;border-left:3px solid #a15a0a;padding:14px"><div style="font-size:13px;font-weight:700">Specen måste rättas först</div><div style="font-size:12.5px;color:#37453a;line-height:1.6;margin-top:6px"><code>00-spec-index.md</code> säger att tablet- och desktoplayout är <i>uttalat out of scope</i>. Det stämmer inte med koden och blir nu fel även mot designen. Raden ändras till: <b>bred layout gäller fyra ytor, allt annat är en spalt</b> (§ 21).</div></div>
+      <div style="flex:1;min-width:280px;background:#f0eee2;border-left:3px solid #a15a0a;padding:14px" data-conformance-scope="annotation"><div style="font-size:13px;font-weight:700">Specen måste rättas först</div><div style="font-size:12.5px;color:#37453a;line-height:1.6;margin-top:6px"><code>00-spec-index.md</code> säger att tablet- och desktoplayout är <i>uttalat out of scope</i>. Det stämmer inte med koden och blir nu fel även mot designen. Raden ändras till: <b>bred layout gäller fyra ytor, allt annat är en spalt</b> (§ 21).</div></div>
     </div>
   </div>
 </div>
