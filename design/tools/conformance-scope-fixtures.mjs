@@ -15,6 +15,7 @@ import { tackning } from './theme-contract.mjs';
 import { artefaktBlock, elementIArtefakt, skrivScopeITagg, migreraFil } from './scope-migrator.mjs';
 import { PAINT_PROBE } from './theme-paint-probe.mjs';
 import { populationsgrind, kallfingeravtryck, APPLICERA_TEMA, BUTLERY_SENTINEL } from './authored-theme.mjs';
+import { byggRegister, kandidatuniversum, kvot, rgbAv, overLagg } from './palette-registry.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -342,7 +343,84 @@ const FIX = `<div class="sc-item" id="prov" data-theme="light">
     /data-theme-support="\(\[\^"\]\*\)"/.test(kod.replace(/\\/g, '')),
     'urval ur artefakternas egna temadeklarationer, tema bevisas per fil'); }
 
-const ANTAL = 38;
+/* ── PC · KANDIDATKONTRAKTET ──────────────────────────────────────────────
+   Felklassen: kandidatuniversumet var de tva varden som rakade observeras for
+   samma grova roll. Da blev "enda overlevande" nastan automatiskt sant, och en
+   semantisk accent kunde overleva som neutral brodtext. Proven kraver att hela
+   paletten redovisas och att behorighet avgors semantiskt.                  */
+
+const PAL = byggRegister([
+  { varde: '#17251d', egenskap: 'background-color', roll: 'yta-app' },
+  { varde: '#24382c', egenskap: 'background-color', roll: 'yta-upphojd' },
+  { varde: '#93a48d', egenskap: 'color', roll: 'text-innehall' },
+  { varde: '#c9d3c4', egenskap: 'color', roll: 'text-innehall' },
+  { varde: '#de9078', egenskap: 'color', roll: 'text-status' },
+  { varde: '#ce7c1e', egenskap: 'background-color', roll: 'yta-kontroll' },
+  { varde: 'rgba(245,244,237,0.18)', egenskap: 'border-top-color', roll: 'ram-app' }]);
+
+{ const u = kandidatuniversum('P-TEXT-CONTENT', PAL);
+  const accent = u.rader.find(r => r.varde === '#de9078');
+  prov('PC-01', 'neutral innehallstext utesluter semantiska accenter',
+    !accent.behorig && /semantisk accent/.test(accent.skal),
+    '#de9078 -> ' + accent.klass + ' · ' + accent.skal); }
+
+{ const u = kandidatuniversum('P-TEXT-SEMANTIC', PAL);
+  const accent = u.rader.find(r => r.varde === '#de9078');
+  prov('PC-02', 'semantisk text kan acceptera ratt accent',
+    accent.behorig, '#de9078 -> ' + accent.klass); }
+
+{ const alla = ['P-SURFACE-APP', 'P-SURFACE-ELEVATED', 'P-SURFACE-CONTROL',
+    'P-TEXT-CONTENT', 'P-TEXT-SEMANTIC', 'P-GRAPHIC'].map(p => kandidatuniversum(p, PAL));
+  prov('PC-03', 'varje palettvarde redovisas som behorigt ELLER obehorigt med skal',
+    alla.every(u => u.summerar && u.rader.length === PAL.length &&
+      u.rader.every(r => r.behorig ? r.skal === null : typeof r.skal === 'string' && r.skal.length > 0)),
+    alla.map(u => u.princip.replace('P-', '') + ' ' + u.behoriga + '/' + u.totalt).join(' · ')); }
+
+{ const u = kandidatuniversum('P-SURFACE-ELEVATED', PAL);
+  prov('PC-04', 'ytkandidater begransas inte till tva observerade varden',
+    u.behoriga >= 3 && u.totalt === PAL.length,
+    u.behoriga + ' behoriga av ' + u.totalt + ' — hela paletten provas'); }
+
+{ // Samma palett, men med frekvenserna omkastade.
+  const vand = byggRegister([
+    { varde: '#93a48d', egenskap: 'color', roll: 'text-innehall' },
+    ...Array.from({ length: 40 }, () => ({ varde: '#c9d3c4', egenskap: 'color', roll: 'text-innehall' }))]);
+  const a = kandidatuniversum('P-TEXT-CONTENT', vand);
+  prov('PC-05', 'behorighet paverkas inte av hur vanligt ett varde ar',
+    a.rader.every(r => r.behorig) && a.behoriga === 2,
+    'bada behoriga trots 1 mot 40 i frekvens'); }
+
+{ const genom = PAL.find(p => p.varde === 'rgba(245,244,237,0.18)');
+  const komposit = overLagg(genom.rgba, rgbAv('#17251d'));
+  const k = kvot(komposit, rgbAv('#17251d'));
+  prov('PC-06', 'ett genomskinligt ytvarde bedoms som faktisk komposit mot sin foralder',
+    genom.genomskinlig && komposit[0] > genom.rgba[0] * 0 && k !== null && k > 1,
+    'rgba(245,244,237,0.18) mot #17251d -> rgb(' + komposit.join(', ') + ') · kvot ' + k); }
+
+{ const u = kandidatuniversum('P-SURFACE-APP', PAL);
+  const genom = u.rader.find(r => r.varde === 'rgba(245,244,237,0.18)');
+  prov('PC-07', 'appytan kan inte vara ett genomskinligt eller accentfargat varde',
+    !genom.behorig && !u.rader.find(r => r.varde === '#ce7c1e').behorig,
+    'genomskinligt: ' + genom.klass + ' · accent: ' + u.rader.find(r => r.varde === '#ce7c1e').klass); }
+
+{ // Determinans kraver ETT overlevande ur HELA det behoriga universumet.
+  const u = kandidatuniversum('P-TEXT-CONTENT', PAL);
+  prov('PC-08', 'determinans far bara pastas nar hela det behoriga universumet redovisats',
+    u.summerar && u.behoriga === 2 && u.obehoriga === PAL.length - 2,
+    u.behoriga + ' behoriga, ' + u.obehoriga + ' obehoriga, summa ' + u.totalt); }
+
+{ const u = kandidatuniversum('P-SURFACE-CONTROL', PAL);
+  const text = u.rader.find(r => r.varde === '#93a48d');
+  prov('PC-09', 'ett rent forgrundsvarde ar inte ytbehorigt bara for att det finns i paletten',
+    !text.behorig && /aldrig som malad yta/.test(text.skal),
+    '#93a48d -> ' + text.klass + ' · ' + text.skal); }
+
+{ const u = kandidatuniversum('P-TEXT-CONTENT', PAL);
+  prov('PC-10', 'behorighet sager ingenting om vilket varde som ska valjas',
+    u.rader.every(r => !('rekommendation' in r)) && u.rader.every(r => !('evidens' in r)),
+    'kontraktet returnerar bara behorighet och skal — aldrig ett val'); }
+
+const ANTAL = 48;
 for (const x of resultat) console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
 const ok = resultat.filter(x => x.ok).length;
 console.log('');
