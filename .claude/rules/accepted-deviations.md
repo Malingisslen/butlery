@@ -88,6 +88,14 @@ files in the same edit.
   does not EXIST (`missing`) is the opposite call and does not degrade the roster. The user
   is told: `isRosterComplete: false` drives `householdAllergenRosterIncomplete` in the
   opt-out dialog and, since BUT-1685, on the menu itself. BUT-1663, 2026-07-26
+  **AMENDED 2026-08-12 (BUT-1693):** the floor is now CONDITIONAL on opt-in — another account
+  holder, whose private settings this device may not read (`settingsMerged == false`), gets
+  their SHARED list instead of the floor if they have shared one. Three parts of the old rule survive deliberately:
+  a member who has not shared is unchanged; the signed-in user is never read from a share;
+  and a member whose profile READ FAILED still degrades the roster even when they shared, because until the settings edit and the share
+  move in one atomic write a share can lag behind the list its owner already changed. The
+  whole read sits behind `enable_household_allergen_sharing`, OFF — with the flag off
+  nobody can have shared, which is knowledge, not an outage, so it must never degrade.
 
 - **`socialFeatures` consent gates nothing, by design** — social runs on the GDPR contract
   basis, not consent; wiring it would be consent theatre and would fail closed for every

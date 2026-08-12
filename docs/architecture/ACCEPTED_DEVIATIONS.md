@@ -530,6 +530,32 @@ over-filters", or "the fallback should trust the resolved members only" — deci
 it ships, the floor is the only protection this household has. — shipped 2026-07-26, recorded
 here 2026-08-11 (BUT-1685)
 
+### [Tagging/Safety] The common-allergen floor is now CONDITIONAL on opt-in (BUT-1663 → BUT-1693)
+Supersedes the "unreadable member widens with the floor" entry ABOVE on one point only, and
+leaves the rest of it standing. As of 2026-08-12 a household member can share their own
+allergen list (`household_allergen_shares`, Art. 9(2)(a) consent). Where a share exists,
+`HouseholdService` uses the member's REAL list and does not add the floor on top — adding it
+would put four allergens back that the member has told the household they do not have.
+**Three parts of the old rule survive on purpose:**
+- a member who has NOT shared is unchanged: floor, exactly as before;
+- a member whose profile READ FAILED (`unavailable` / `foundSettingsUnavailable`) still
+  degrades the roster **even when they shared**. Their share contributes what it knows, but
+  it does not cancel the degradation: until the settings edit and the share move in one
+  atomic write (DPIA R4 — not built), a share can lag behind the list its owner has already
+  changed, so it is evidence rather than proof that this member is known;
+- the signed-in user is never read from a share. Their own device reads their real settings,
+  and no document written about them may stand in for that.
+**Why:** the floor exists because the app could not read another adult's allergies at all.
+Where it now can — because that adult chose to be read — guessing is strictly worse than
+knowing: it misses the allergens they actually have (egg, shellfish) and invents four they
+may not. **Also decided: a switched-off feature is knowledge, not an outage.** With
+`enable_household_allergen_sharing` false, `_sharedListsByMember` returns an EMPTY map
+rather than an unknown one, so a household where nobody could possibly have shared is not
+reported as incomplete — but a share read that FAILS while the flag is on returns null and
+does degrade, because someone may have shared a list the menu is now filtering without.
+Do NOT file "the floor is missing for member X" without first checking whether X shared.
+— 2026-08-12
+
 ### [Tagging/Safety] The safety floor takes allergens only — `trackedDietary` is deliberately NOT inherited from the defaults (BUT-1663)
 `HouseholdService._allergenSafetyFloor` is `UserAllergenPreferences.defaults.trackedAllergens`
 and nothing else. `defaults` also carries `trackedDietary: {vegetarisk, vegansk}`, and every

@@ -6,8 +6,13 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/repositories/interfaces/household_allergen_share_repository.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 
@@ -142,6 +147,76 @@ class HouseholdService extends BaseService {
     includeUnknown: false,
   );
 
+  /// Every household member who has SHARED their own allergen list, keyed by
+  /// uid (BUT-1693). These replace the safety floor for exactly those members —
+  /// they never override a member whose real preferences this device can
+  /// already read, and they never add the floor on top of themselves.
+  ///
+  /// Returns null when the shares could not be determined at all. That is NOT
+  /// the same as "nobody shared": treating a failed read as an empty result
+  /// would drop every real declaration and quietly hand those members the floor
+  /// while reporting the roster as healthy — the exact
+  /// unreadable-looks-like-a-declaration bug BUT-1663 exists to prevent.
+  Future<Map<String, HouseholdAllergenShare>?> _sharedListsByMember() async {
+    // A flag service that is not there is IGNORANCE — we cannot tell whether
+    // the feature is on — and must not be spelled the same way as a switch we
+    // read and found off.
+    final flags = ServiceLocator.tryGet<FeatureFlagService>();
+    if (flags == null) return null;
+
+    if (!flags.isEnabled(FeatureFlags.enableHouseholdAllergenSharing)) {
+      // Off is KNOWLEDGE, not ignorance: nobody can have shared, so this is an
+      // empty result rather than an unknown one, and it must not degrade the
+      // roster. It also spends nothing — with the rules block still absent the
+      // read below would be denied on a user-visible path and learn nothing.
+      return const {};
+    }
+
+    final shareRepository =
+        ServiceLocator.tryGet<HouseholdAllergenShareRepository>();
+    final householdRepository = ServiceLocator.tryGet<HouseholdRepository>();
+    // The PERMISSION handle, not `currentUserProfile`: `getForUser` refuses a
+    // caller that is not the named user, so this is an auth check, and the two
+    // handles disagreeing during an auth transition would read as "no
+    // household" — the footgun this file warns about further down.
+    final userId = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+    if (shareRepository == null ||
+        householdRepository == null ||
+        userId == null) {
+      return null;
+    }
+
+    try {
+      // Shares are scoped to the SYMMETRIC `households/{id}` roster, not to the
+      // owner-scoped FriendCategory household this service aggregates over —
+      // the two are different concepts and a category id passed here would
+      // match nothing and silently return no shares (ADR-0005 D1).
+      final households = await householdRepository.getForUser(userId);
+      if (households.isEmpty) return const {};
+      // `.first` over an unordered query: a user normally has 0 or 1. Picking
+      // the wrong one would read as "nobody shared" and keep the floor, which
+      // is the safe direction, but it is a silent one — so it is stated rather
+      // than assumed impossible.
+
+      final shares = await shareRepository.getByHousehold(households.first.id);
+      // `isValidConsent` is the model's contract for "may this count as a
+      // declaration at all". getByHousehold already filters on it; re-checked
+      // here because this service holds the INTERFACE, whose other reads do not
+      // all filter, and the precondition belongs beside the code that acts on
+      // it (GDPR Art. 9(2)(a)).
+      return {
+        for (final share in shares)
+          if (share.isValidConsent) share.userId: share,
+      };
+    } catch (e) {
+      AppLogger.warning(
+        'Could not read the shared allergen lists for this household: $e',
+        serviceName,
+      );
+      return null;
+    }
+  }
+
   Future<HouseholdAllergenAggregate> _aggregatePreferences() async {
     // BUT-1663: `allMemberIds` is `[ownerId, ...friendUserIds]` and
     // `migrateOwnersAsMembers()` appends the owner INTO `friendUserIds` on
@@ -182,13 +257,50 @@ class HouseholdService extends BaseService {
     // set unions plus an AND-fold, none of which depend on completion order.
     // `Future.wait` preserves input order, so the diagnostic lists still come
     // out in roster order.
+    // Started before the lookups rather than after them: it depends on none of
+    // them, and awaiting it afterwards would put its round trips in front of a
+    // user-visible wait for no reason.
+    final sharesFuture = _sharedListsByMember();
     final lookups = await Future.wait(
       memberIds.map(_userService.lookupUserProfile),
     );
 
+    // BUT-1693: the members who chose to be read instead of guessed at. NULL
+    // means the shares could not be determined, which is NOT the same as
+    // "nobody shared" — see [sharesUnavailable] at the end of this method.
+    final sharedLists = await sharesFuture;
+    final sharesUnavailable = sharedLists == null;
+
+    // The same handle the share read used, read again here. NOT
+    // `currentUserProfile`: a profile that is already null would leave `selfId`
+    // null and let the signed-in user's own share stand in for the real
+    // settings their device can read — the one substitution this feature must
+    // never make. A sign-out BETWEEN the two reads still nulls it; the window
+    // is a single aggregation and the outcome is their own data, so it is
+    // accepted rather than plumbed.
+    final selfId = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+
     for (var i = 0; i < memberIds.length; i++) {
       final memberId = memberIds[i];
       final lookup = lookups[i];
+
+      // A member's own shared list, if they have one. Never for the signed-in
+      // user: their own device reads their real settings, and no share written
+      // about them may stand in for that.
+      final shared = memberId == selfId ? null : sharedLists?[memberId];
+      // Applied unless the profile is KNOWN TO BE ABSENT — a failed read
+      // leaves existence unknown, which is not the same thing. BUT-1663
+      // decided that an absent person cannot be protected and must not shrink
+      // the menu; a share left behind by a deleted account is exactly that
+      // person, and letting it filter would restore the crouch that entry
+      // declined. The exclusion lives at the CALL SITES below, not in this
+      // closure — nothing inside it enforces the `missing` case.
+      void applyShare() {
+        if (shared == null) return;
+        unionAllergens.addAll(shared.trackedAllergens);
+        unionDietary.addAll(shared.trackedDietary);
+        if (!shared.includeUnknownInMenu) includeUnknown = false;
+      }
 
       // A failed read tells us nothing and may clear on its own — fail safe.
       // A profile that simply is not there is a roster-hygiene problem, not an
@@ -198,14 +310,22 @@ class HouseholdService extends BaseService {
         // Either the read failed outright, or the profile loaded while its
         // private settings did not — both leave this member's allergens absent
         // because of a failure, so both fail safe.
+        //
+        // A share still CONTRIBUTES (`applyShare()` below) but does not
+        // cancel the degradation: until
+        // the settings edit and the share move in one atomic write (DPIA R4,
+        // not built), a share can lag behind the list its owner has already
+        // changed, so it is evidence, not proof that this member is known.
         case ProfileLookupStatus.unavailable ||
             ProfileLookupStatus.foundSettingsUnavailable:
+          applyShare();
           unresolved.add(memberId);
           continue;
         case ProfileLookupStatus.missing:
           missing.add(memberId);
           continue;
         case ProfileLookupStatus.found:
+          applyShare();
           break;
       }
 
@@ -220,8 +340,9 @@ class HouseholdService extends BaseService {
         //    `allow read: if isOwner(userId)`), and `fetchProfile` merges it
         //    back only for the signed-in user. So it is ALWAYS null here, no
         //    matter what they declared. Keep the common-allergen floor — it is
-        //    the only protection this household has until BUT-1663 Part 2
-        //    lets members share their list.
+        //    the only protection this household has until that member SHARES
+        //    their list (BUT-1693, checked just below). With the sharing flag
+        //    off that is still every other account holder.
         //
         //  - The signed-in user themselves, who really did leave the screen
         //    untouched. That IS a declaration of "no allergies": the app asks
@@ -237,7 +358,10 @@ class HouseholdService extends BaseService {
         // directly. Comparing uids here instead would make the safety property
         // depend on two identity handles agreeing (this one and the lookup's),
         // which is the `currentUserProfile` vs `permissionService` footgun.
-        if (!profile.settingsMerged) {
+        // BUT-1693: unless they SHARED, in which case their real list is
+        // already in the union above and guessing on top of it would put four
+        // allergens back that they have told the household they do not have.
+        if (!profile.settingsMerged && shared == null) {
           unionAllergens.addAll(_allergenSafetyFloor);
         }
         continue;
@@ -245,6 +369,32 @@ class HouseholdService extends BaseService {
       unionAllergens.addAll(prefs.trackedAllergens);
       unionDietary.addAll(prefs.trackedDietary);
       if (!prefs.includeUnknownInMenu) includeUnknown = false;
+    }
+
+    // Nobody but the signed-in user is on this roster, so no share could have
+    // been missed and an unreadable read lost no information. Degrading here
+    // would put the four-allergen floor and the menu warning on a household
+    // that has nothing to tell us — the same principle as the flag-off path.
+    final othersOnRoster = memberIds.any((id) => id != selfId);
+
+    if (sharesUnavailable && othersOnRoster) {
+      // The shared lists could not be read at all. Some member may have shared
+      // one that this menu is now filtering without — so the household is NOT
+      // fully known, and saying so is what puts BUT-1685's warning on the menu.
+      AppLogger.warning(
+        'Household shared allergen lists could not be read; widening with the '
+        'common-allergen floor and reporting the roster as incomplete',
+        serviceName,
+      );
+      return HouseholdAllergenAggregate.degraded(
+        preferences: _buildPreferences(
+          allergens: {...unionAllergens, ..._allergenSafetyFloor},
+          dietary: unionDietary,
+          includeUnknown: false,
+        ),
+        unresolvedMemberIds: unresolved,
+        missingMemberIds: missing,
+      );
     }
 
     if (unresolved.isEmpty) {

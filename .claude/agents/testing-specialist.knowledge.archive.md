@@ -18071,3 +18071,223 @@ worktree edits from this round and the parallel session's; they must be re-stage
 the commit gate reads them.
 
 Verdict: pass (0 blocking).
+
+## 2026-08-12 — BUT-1693 household allergen sharing, service slice (gate review)
+
+Trigger: gate read of four files — `test/unit/services/household_service_test.dart`,
+`lib/services/household_service.dart`, `lib/services/feature_flags/feature_flag_service.dart`
+(one new flag + key constant, default false), `lib/repositories/firebase/firebase_household_allergen_share_repository.dart`
+(one comment line: no longer claims nothing calls the class). Brief asked whether any of
+the new tests is vacuous, and specifically whether the flag stubbing discriminates.
+
+### The tree moved three times mid-round
+
+Brief was pinned to "24 tests, 47 green". Opening hashes: lib `6df24970` (432 lines),
+suite `10100969` (721 lines) — 24/24 green, matching the brief. By the time my first
+mutation batch finished, the suite was `dd2f9616` (802 lines, 28 tests) and the lib had
+gone `6df24970` -> `1a1bdaff` -> `86eb20b5` -> `0cd23aca` (451 lines). A parallel session
+was implementing and probing at the same time; `tasklist` showed three live `dart.exe`.
+
+Consequence for my own battery: mutants B-F all reported the SAME three tests red,
+including "with the feature OFF nothing is read", which none of them can touch. That
+uniform red list is the tell — it was the parallel session's edits, not my kills. The
+batch is discarded as unattributable. Worse, my script's `finally` restore wrote
+`6df24970` back over whatever they had saved during the run; no lasting damage (their
+work is present and green now), but the hazard is real and one-directional: a review
+battery beside a live session can silently revert the code it is reviewing.
+
+Mutant A never ran at all — `PathExistsException` copying `flutter_test_compiler` output
+into `build/test_cache`, i.e. two concurrent `flutter test` processes racing the kernel
+cache. That is another symptom of the same condition, not a flake.
+
+### The transient that looked exactly like a Critical
+
+At lib `1a1bdaff` the flag-OFF branch read:
+
+```dart
+if (!flags.isEnabled(FeatureFlags.enableHouseholdAllergenSharing)) {
+  // Off is KNOWLEDGE, not ignorance: nobody can have shared, so this is an
+  // empty result rather than an unknown one, and it must not degrade the
+  // roster. ...
+  return null;
+}
+```
+
+Code contradicting its own comment, on the path EVERY user takes (the flag ships false),
+with the user-visible consequence of `isRosterComplete: false` + `includeUnknownInMenu:
+false` — the menu warning and the four-allergen crouch for everyone. The suite caught it:
+exactly one red, the OFF test, on `expect(aggregate.isRosterComplete, isTrue)`.
+
+I was about to file it. Re-read first, per the rule: it was back to `return const {}`
+minutes later. It was their `{} -> null` mutation probe caught mid-flight. Filing it would
+have been a false Critical. The right output is the opposite: that red is FREE kill-proof
+that the tri-state test the brief said earlier drafts could not make fail now does fail,
+measured on real bytes rather than a constructed mutant.
+
+New tell for the archive: a same-round md5 CHANGE whose new line contradicts the comment
+directly above it is as much a mutate-and-restore signature as an identical md5 with a
+fresh mtime.
+
+### The flag stubbing — answered with a production-free probe
+
+Because the tree was live, I answered the brief's specific question with a throwaway
+`test/unit/services/zz_probe_flag_stub_precedence_test.dart` (3 arms, green, deleted after
+reading) instead of another `lib/` battery:
+
+- wildcard-first + constant-last: `isEnabled(target)` = **true**, `isEnabled(decoy)` =
+  **false**. So a production repoint to another flag reads false under this suite, the
+  share read is skipped, and every "share replaces the floor" assertion reddens. **It
+  discriminates.** The `useShares` comment is correct.
+- reversed order: `isEnabled(target)` = **false**. mocktail is last-registered-wins, so
+  the ordering is load-bearing and nothing but a comment protects it. Swapping the two
+  `when` lines (a plausible "tidy the stubs" edit) turns the entire BUT-1693 group into a
+  second copy of the OFF test, silently green. Cheap hardening: assert the premise inside
+  the helper.
+- `'the feature ships OFF by default'` is a SECOND independent kill of the same repoint:
+  it drives the REAL `FeatureFlagService` with a `_MockRemoteConfig` stubbed only for the
+  household key, so a repointed key is unstubbed -> throws -> `isEnabled` falls back to
+  `_defaults`, and the decoy `enable_social_features` defaults **true**. Measured.
+
+### Vacuity verdicts on the named tests (current bytes)
+
+None vacuous. The three-valued distinction is covered on all three arms:
+empty/off (`verifyNever(getForUser)` + roster complete), read-failed (`useShares(null)` ->
+roster incomplete + UNKNOWN closed), flag-service-absent (`TestServiceLocator.unregister
+<FeatureFlagService>()` -> degrades). The third arrived mid-round and closed the gap I had
+identified from the first read — the "cannot read the switch != read it and found it off"
+line was mutation-dead in the 24-test version.
+
+Two-sided pairs, both good: `applyShare()` is called on `found` and `unavailable` but NOT
+on `missing` (pinned by the deleted-account share test at 470 and the lagging-share test
+at 389); `othersOnRoster` gates the degrade so a solo household is not degraded by an
+unreadable share read (455) while a multi-member one is (363).
+
+Weakest keeper: 'a member who has NOT shared keeps the floor, beside one who has' (344) is
+subsumed by 272 for the floor-drop mutant, but survives uniquely against a "one share
+disables the floor for everyone" mutant. Keep.
+
+### Unpinned lines (advisories, all unreachable while the flag ships OFF)
+
+1. `if (households.isEmpty) return const {};` — no fixture stages an empty `getForUser`.
+   This is the branch EVERY user takes the day the flag flips on, since nothing writes
+   `households/{id}` yet; mutating it to `null` degrades every household. Highest-value
+   missing fixture in the file.
+2. `if (share.isValidConsent)` in `_sharedListsByMember` — `_share()` always builds valid
+   consent, so this Art. 9(2)(a) filter is mutation-dead here. The repository filters too,
+   but in THIS suite the repository is a Mock, so one `consentGranted: false` fixture
+   discriminates the service's own line exactly.
+3. `shareRepository == null || householdRepository == null || userId == null -> null` —
+   same shape as the flag-absent test that was added, so the pattern is already in the file.
+
+### Closing state
+
+lib/services/household_service.dart `0cd23acadfaa2ad0dea9dbb1dc5e2279` 451 lines
+test/unit/services/household_service_test.dart `dd2f96165cc2ba2267ed9d6baa505ba5` 802 lines
+28/28 green; `flutter analyze --fatal-infos` over all four in-scope files: no issues (73.5s).
+Hashes bracketed the run unchanged, so the green belongs to these bytes.
+
+Staging caveat: the three `lib/` files are ` M` (worktree only) while
+`lib/models/tagging/tag_result.dart` is staged `M` — a commit taken as-is would ship the
+tag_result change WITHOUT the household work this review covers. Re-stage before the gate.
+
+Verdict: pass (0 blocking).
+
+## 2026-08-12 — BUT-1693 final gate read: coverage on the repository file (frozen bytes, no probes)
+
+Trigger: commit gate needed coverage on `firebase_household_allergen_share_repository.dart`
+at its current bytes. Explicitly barred from mutating production this round — a previous
+round's probe (`if (false) { // MUTANT: flag gate removed`) reached the tree in
+`household_service.dart` despite that round's report claiming both probes restored
+md5-identical. The analyzer caught it; the file was restored from the staged copy. So this
+round is reasoning + greps only.
+
+**First thing checked, and it should be the first thing every time after a probe escape:**
+`grep -n 'MUTANT|if \(false\)|if \(true\)' over all *.dart` -> zero hits, worktree-wide.
+`git status --porcelain` shows all four in-scope files as `M ` (staged, worktree clean), so
+index == worktree and the restore landed. My own closing hash for `household_service.dart`
+last round (`0cd23aca`, 451 lines) does NOT match today's (`16d5cb2d`, 451 lines) — same
+line count, different bytes, which is exactly the shape a mutate-and-restore-from-index
+leaves. The line count agreeing is why nobody noticed; only the hash separates them.
+
+### Cross-file claims in the repository header, re-verified by grep (not trusted)
+
+- "`firestore.rules` has no match block for this collection" — 0 hits for
+  `household_allergen|allergen_share|HouseholdAllergenShare` in `firestore.rules`. TRUE, so
+  the catch-all `match /{document=**}` still denies everything here.
+- "Its only caller is `HouseholdService._sharedListsByMember`" — TRUE. Across `lib/`, the
+  only call is `household_service.dart:201 shareRepository.getByHousehold(...)`;
+  `social_module.dart:167` only REGISTERS the class. `create`, `update`, `createBatch`,
+  `getOwn`, `revoke`, `read`, `readCacheFirst` have no live caller at all.
+- The advisory I filed last round landed: line 297 now cites `HouseholdService.getHousehold`
+  by NAME instead of `household_service.dart:89`. Verified against current bytes —
+  `getHousehold` is lines 89-97 and is exactly a `firstWhere` inside
+  `try { } on StateError { return null; }`. Name-anchored survives the next drift; the line
+  number would not have (it drifted inside this same commit).
+
+### Coverage grading of the repository file (403 lines) against its suite (592 lines)
+
+Covered, and non-vacuously: `fromFirestore`'s identity check (forged-row test); all three
+arms of `_assertSelfDeclaredWithConsent` INCLUDING the negative arm of `isGrant` (the
+re-date/re-version test drives `update` with `v99-from-a-stale-client` and it must be
+accepted); `_assertNotAlreadyShared` (second create -> `ValidationException`, plus the
+stored `consentGrantedAt` unchanged); `update`'s stored-consent gate and its `isMember`
+conjunct; `validateUpdatePermission`'s re-point refusal; both arms of
+`validateDeletePermission` plus the removed-member erasure; every branch of
+`getByHousehold` except one; both arms of `getOwn`'s consent filter; the two `_onlyConsented`
+overrides WITH a positive control; and both `UnsupportedError` fences.
+
+The household-scoping test is the strongest fixture in the file: same owner in two
+households, so neither the roster filter nor the consent filter can be what excluded the
+other row — only the `where('householdId')` can.
+
+### Unpinned lines (advisories — none is a production defect)
+
+1. **`getOwn`'s fail-loud branch. The best of the three.** The class documents a DELIBERATE
+   asymmetry: `getByHousehold` SKIPS a body/path-disagreeing row, `getOwn` throws on the
+   identical shape, because answering `null` "would read as you have not shared, turning a
+   broken document into a silent opt-out of your own allergen list". The SKIP has a
+   dedicated test; the LOUD half has none, here or anywhere (`grep getOwn test/` = 6 hits,
+   all consent/absent/present). Mutant that survives the whole suite: wrap
+   `fromFirestore(doc)` in `try/catch` returning null. The fixture already exists, four
+   lines away, inside the withdrawal group:
+   `.doc('${_householdId}_$_malin').set(_share(userId: _johan).toFirestore())` then
+   `expectLater(repo.getOwn(_householdId), throwsA(isA<FormatException>()))`.
+2. **`household == null -> RepositoryException('household-roster-unavailable')`.** Zero hits
+   for `RepositoryException` or that code across `test/`. Unreachable from any fixture using
+   the REAL `FirebaseHouseholdRepository` (if `isMember` read the doc, `read` finds it), but
+   the constructor takes the INTERFACE, so a mock with `isMember -> true, read -> null`
+   stages it exactly. Related: the service suite stages "shares unreadable" by throwing
+   `StateError` from its mock — the very type the repository's comment forbids for this
+   anomaly ("NOT a StateError"). `_sharedListsByMember` catches `catch (e)`, so today they
+   are equivalent; the surviving mutant is NARROWING that catch to `on StateError`, which
+   keeps the service suite green while a real `RepositoryException` escapes to
+   `executeServiceOperation` and collapses the resolved union to floor-only. Safe direction,
+   but it loses `unresolvedMemberIds`/`missingMemberIds`. Fix is one word in the fixture:
+   throw the production type and its `code`.
+3. **The audit-trail writes.** No test injects an `auditRepository`, so neither the `update`
+   audit line nor the forged-row audit line in `getByHousehold` is asserted — including the
+   `'HouseholdAllergenShare/${id}'` spelling the comment says makes one audit_logs query
+   return a share's whole history. Note the null-audit path IS exercised and does not throw
+   (the forged-row test runs through it green), so this is an assertion gap, not a crash
+   risk.
+4. Mutation-dead by construction, correctly so, and NOT worth a fixture: in `update()`, both
+   `stored.userId == userId` and `entity.householdId == stored.householdId` are TAUTOLOGIES
+   — the read is at `entity.id`, `fromFirestore` requires `stored.id == doc.id`, and neither
+   id half contains `_`, so both conjuncts are implied. The reachable copy of the second one
+   lives in `validateUpdatePermission`, where `resourceId` arrives independently, and THAT
+   copy has its own test. Same for `validateCreatePermission`'s ownership arm: backward-
+   subsumed through `create`, since `_assertSelfDeclaredWithConsent` throws first.
+5. `createBatch`'s happy path is untested, but the method has no live caller; that is a
+   dead-surface observation, not a coverage gap to fill.
+
+### Closing state
+
+lib/repositories/firebase/firebase_household_allergen_share_repository.dart `3c058ca9266a20976e50affa5f96be13` 403 lines
+lib/services/household_service.dart `16d5cb2d6cc6d77560efb21df9b4d18e` 451 lines
+lib/services/feature_flags/feature_flag_service.dart `0b092011bc3234f05ce16df24a31f7f3` 486 lines
+test/unit/services/household_service_test.dart `3f55363231725bc05e50967d12e92334` 812 lines
+test/unit/repositories/firebase/firebase_household_allergen_share_repository_test.dart `5c5e7d01a24987d273c3712a7d7d97f4` 592 lines (clean vs HEAD, already committed)
+No suite run this round and none claimed: the parent's 81/4 green and clean
+`dart analyze --fatal-infos` stand, and the hashes above are what they belong to.
+
+Verdict: pass (0 blocking).

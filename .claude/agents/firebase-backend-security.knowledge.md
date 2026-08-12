@@ -343,6 +343,70 @@ personal→collaborative leg only.
   REMOVED member, and prove it by mutation — add the membership conjunct and require exactly that
   test to redden (verified 2026-08-12, BUT-1693: 1 of 27 red, restore md5-checked). A code comment
   saying "do not harmonise this" is not a control.
+  **Then review the CONSUMER as its own change (2026-08-12, BUT-1693 service slice), because a
+  repository's fail-safe tri-state dies at the call site.** `HouseholdService._sharedListsByMember`
+  returns `null` for "unreadable" and `{}` for "nobody shared", but the consumer spells
+  `sharedLists?[uid]`, so both collapse to the same per-member fallback AND the aggregate still
+  reports `isRosterComplete: true` — the distinction its own doc comment calls the point of the
+  design never reaches an output, and the test named for it asserted only the values. Read the
+  CONSUMING EXPRESSION before crediting any null-vs-empty design, and require the difference to
+  land on the aggregate's reported HEALTH (the field the UI warns from), not just its values. Two
+  siblings from the same read: a consumer acting on Art. 9 data should re-assert the model's own
+  stated precondition (`isValidConsent` is enforced only in `getByHousehold`, while the interface
+  the service holds also exposes `read`/`getOwn`); and enumerate the OTHER consumers of the same
+  fact — `MenuGenerator._presentAllergenPrefs` takes PRIORITY over the household aggregate, sources
+  member allergens from `public_profiles` (where the rules deny `allergenPreferences`, so it is
+  structurally null for everyone including self), and is assigned only under `test/`: a dormant
+  twin that inherits neither the BUT-1663 floor nor the shares, and whose empty union would leave
+  the pool UNFILTERED (`!hasTrackedAllergens` → return everything) the day someone wires it.
+  **CLOSED 2026-08-12 (same slice); the KILL SWITCH in front of it is where the reusable shape
+  is.** The fix lands the distinction on the health field (`sharesUnavailable` → `degraded`
+  before the `unresolved.isEmpty` branch), and a default-OFF flag pays for the over-warning —
+  off is KNOWLEDGE (`return const {}`), an unreadable switch is IGNORANCE (`return null`, like
+  the sibling null-repository branches). Spelling those two alike is invisible while the flag's
+  code default is false and becomes a silent "nobody shared, roster healthy" the day it flips,
+  so a flag over a fail-safe tri-state is a FOURTH state that must be written out, with two
+  proofs: a test that UNREGISTERS the service (else that branch is unreachable in the suite),
+  and a stub that pins the flag CONSTANT rather than only `isEnabled(any())` (else repointing
+  the constant keeps every test green). Two more rules from the same closure. (a) **An unknown
+  degrades only where knowledge could have existed** — a household of ONE has no peer who could
+  have shared, so an unreadable share read there must not raise the floor and the menu warning;
+  scope the degradation by whether anyone other than the caller was on the roster, not by the
+  read's outcome alone. (b) **Read the identity that decides "self" from the SAME handle as the
+  gated read** (`PermissionService.currentUserId`, not `userService.currentUserProfile?.uid`):
+  coupled that way, the two nulls cannot disagree, so a null cached profile can never let a
+  document written ABOUT the signed-in user stand in for the settings their own device reads.
+  Third sibling, still open: the health bit must reach a surface that OUTLIVES the run —
+  Butlery's warning hangs off `MenuGenerator.lastPoolStats`, which is in-memory, so a menu
+  redisplayed after restart shows a degraded pool with no warning.
+  **VERIFIED CLOSED 2026-08-12, and it took three more rules to get there.** (a) A fail-safe
+  degrade must be gated on whether anything COULD have been missed, not on the read failing:
+  `sharesUnavailable && othersOnRoster` — a household of one has no peer share to lose, so
+  degrading it is a permanent four-allergen floor and a permanent menu warning charged to a
+  population with nothing to tell you. Spell the gate so a NULL identity counts everyone as
+  "other" (`memberIds.any((id) => id != selfId)`), i.e. it fails toward degrading. (b) An
+  AUXILIARY data source layered onto a tri-state lookup must be applied at the SWITCH'S CALL
+  SITES, never before it — the share was applied above the `switch (lookup.status)`, so a share
+  left by a DELETED account (`missing`) kept filtering the menu, re-enabling exactly the crouch
+  BUT-1663 declined, while the roster still reported complete. (c) **Do not review a fileset
+  another session is still writing.** These four files changed FOUR times mid-read; the handoff's
+  "28 green" was false against the bytes in front of me (25/3) and true three minutes later. Run
+  the suite the handoff cites YOURSELF, md5 the fileset before and after every `Read`, and on any
+  change re-read rather than re-reason — two of the three failures were fixes that had not landed
+  yet, and reporting them would have been a review of a file that no longer existed. Final state
+  pinned: index == tree for all four, 28/28 and 86/86 across the four household suites, analyze
+  clean.
+  **Gate-pass 2026-08-12 (same slice): the DARKNESS is what makes the GDPR gap non-blocking, so
+  COUNT the gates and name them.** `household_allergen_shares` has no `firestore.rules` match
+  block, the flag's CODE default is false, and the only caller in `lib/` is a READ (grep the
+  INTERFACE name: DI registration plus one read site, zero writers) — three independent gates,
+  and any one of them failing turns the missing Art. 17 cascade step, Art. 15 export section and
+  `probeResidualData` canary entry from a launch gate into a live violation of Art. 9 data.
+  Enumerate all three the moment the COLLECTION CONSTANT is introduced, not the day the rules
+  open, and state which you checked — a reviewer who opens only the rules file grades the same
+  gap Critical or clean depending on which gate they happened to look at. Corollary from the one
+  line that changed in this pass: a comment citing another FILE by LINE NUMBER drifts inside its
+  own commit (`household_service.dart:89` → `HouseholdService.getHousehold`) — cite the SYMBOL.
 - **A CONSENT RECORD stored in the same document as the data it authorizes must be immutable
   on update, at both layers.** A model can make it un-`copyWith`-able and still lose it: a
   public `update(entity)` that full-`set()`s a caller-built entity re-dates `consentGrantedAt`

@@ -32,9 +32,11 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 ///
 /// **Inert until the rules commit lands.** `firestore.rules` has no match block
 /// for this collection yet, so the catch-all `match /{document=**}` denies every
-/// read and write here in production. Nothing calls this class, so nothing
-/// breaks — but do not read the sentence above as describing a live control
-/// until the block and its emulator tests exist.
+/// read and write here in production. Its only caller is
+/// `HouseholdService._sharedListsByMember`, itself behind
+/// `enable_household_allergen_sharing` (OFF), so nothing reaches Firestore yet —
+/// but do not read the sentence above as describing a live control until the
+/// block and its emulator tests exist.
 class FirebaseHouseholdAllergenShareRepository
     extends BaseFirebaseRepository<HouseholdAllergenShare>
     implements HouseholdAllergenShareRepository {
@@ -287,9 +289,12 @@ class FirebaseHouseholdAllergenShareRepository
       // NOT an empty roster, and reachable only as an anomaly: `isMember` just
       // read this document successfully. Silently returning [] here would read
       // downstream as "nobody shared", dropping every real declaration without
-      // anyone knowing. Fail loud so the aggregate reports itself degraded.
+      // anyone knowing. Fail loud so the aggregate CAN report itself degraded
+      // — since BUT-1693's service slice it does so only when someone other
+      // than the caller is on the roster, because a household of one had no
+      // share to miss.
       // NOT a StateError: this cluster uses StateError as ordinary control
-      // flow for `firstWhere` (household_service.dart:89), so spelling an
+      // flow for `firstWhere` (HouseholdService.getHousehold), so spelling an
       // anomaly that way invites a caller to swallow it as "no household".
       throw const RepositoryException(
         'Household roster became unreadable between the membership check and '

@@ -98,6 +98,12 @@ class FeatureFlagService {
     // knowingly; see docs/architecture/ACCEPTED_DEVIATIONS.md. Flipping it off
     // restores the previous chain exactly.
     'enable_on_device_ocr': false,
+    // BUT-1693: lets a household member share their own allergen list so menu
+    // generation reads it instead of guessing a four-allergen floor. OFF until
+    // firestore.rules opens the collection and the consent UI ships — with it
+    // on and the rules absent, every aggregation would issue a denied query on
+    // a user-visible path and still learn nothing.
+    'enable_household_allergen_sharing': false,
     // Decides WHICH of the on-device recognizer's two strings the parser sees —
     // the one built from its measured lines, or ML Kit's own assembly — AND
     // whether the page geometry travels with it. The page model is always
@@ -457,6 +463,10 @@ abstract final class FeatureFlags {
   // ships anyway on Malin's 2026-08-03 call; read the defaults map above and
   // ACCEPTED_DEVIATIONS.md before changing it.
   static const enableOnDeviceOcr = 'enable_on_device_ocr';
+  // Household allergen sharing (BUT-1693). OFF: the collection is default-denied
+  // until the rules block lands, and nothing writes a share yet.
+  static const enableHouseholdAllergenSharing =
+      'enable_household_allergen_sharing';
   // Layout-aware recipe splitting — the split path is LIVE behind this flag;
   // see the defaults map above for the chain and the measured result.
   static const enableLayoutRecipeSplit = 'enable_layout_recipe_split';

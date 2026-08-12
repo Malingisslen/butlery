@@ -15,15 +15,22 @@
 /// not mocked here.
 library;
 
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/household.dart';
+import 'package:butlery/models/household_allergen_share.dart';
 import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/household_allergen_share_repository.dart';
+import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/household_service.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -37,6 +44,34 @@ class _MockFriendsService extends Mock implements UnifiedFriendsService {}
 class _MockCategoriesOps extends Mock implements FriendsCategoriesOperations {}
 
 class _MockUserService extends Mock implements UserService {}
+
+class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
+
+class _MockShareRepository extends Mock
+    implements HouseholdAllergenShareRepository {}
+
+class _MockFeatureFlags extends Mock implements FeatureFlagService {}
+
+class _MockRemoteConfig extends Mock implements FirebaseRemoteConfig {}
+
+class _MockPermissionService extends Mock implements PermissionService {}
+
+HouseholdAllergenShare _share(
+  String userId, {
+  Set<String> allergens = const {},
+  Set<String> dietary = const {},
+  bool includeUnknownInMenu = true,
+}) => HouseholdAllergenShare(
+  householdId: 'hh-doc',
+  userId: userId,
+  trackedAllergens: allergens,
+  trackedDietary: dietary,
+  includeUnknownInMenu: includeUnknownInMenu,
+  consentGranted: true,
+  consentVersion: HouseholdAllergenShare.currentConsentVersion,
+  consentGrantedAt: DateTime.utc(2026, 8, 12),
+  updatedAt: DateTime.utc(2026, 8, 12),
+);
 
 UserProfile _profile(
   String uid, {
@@ -108,6 +143,69 @@ void main() {
     service = HouseholdService();
   });
 
+  /// BUT-1693: wires the share repository so [shares] are what the household
+  /// has been told. Pass null to stage the shares being UNREADABLE, which must
+  /// never look like "nobody shared".
+  late _MockHouseholdRepository lastHouseholdRepository;
+
+  void useShares(List<HouseholdAllergenShare>? shares, {bool enabled = true}) {
+    final householdRepository = _MockHouseholdRepository();
+    final shareRepository = _MockShareRepository();
+    lastHouseholdRepository = householdRepository;
+
+    final flags = _MockFeatureFlags();
+    // The CONSTANT is stubbed last so it wins: with only a wildcard, repointing
+    // the constant at a different (default-true) flag would keep every test
+    // green while shipping the feature live against an absent rules block.
+    when(() => flags.isEnabled(any())).thenReturn(false);
+    when(
+      () => flags.isEnabled(FeatureFlags.enableHouseholdAllergenSharing),
+    ).thenReturn(enabled);
+    // mocktail is last-registered-wins, so the ORDER above is load-bearing:
+    // swapping the two `when` lines — a plausible tidy-up — would answer false
+    // for the real flag and turn every test in this group into a second copy
+    // of the flag-off one, silently green. A comment cannot hold that; this
+    // can.
+    expect(
+      flags.isEnabled(FeatureFlags.enableHouseholdAllergenSharing),
+      enabled,
+      reason: 'the stub for the real flag must win over the wildcard',
+    );
+    TestServiceLocator.registerSingleton<FeatureFlagService>(flags);
+
+    // The share read is permission-gated, so the service asks PermissionService
+    // for the caller's id rather than the cached profile.
+    final permissions = _MockPermissionService();
+    when(() => permissions.currentUserId).thenReturn('owner');
+    TestServiceLocator.registerSingleton<PermissionService>(permissions);
+
+    when(() => householdRepository.getForUser('owner')).thenAnswer(
+      (_) async => [
+        Household(
+          id: 'hh-doc',
+          name: Household.defaultName,
+          members: const [],
+          createdBy: 'owner',
+          createdAt: DateTime.utc(2026, 1, 1),
+          updatedAt: DateTime.utc(2026, 1, 1),
+        ),
+      ],
+    );
+    when(() => shareRepository.getByHousehold('hh-doc')).thenAnswer((_) async {
+      if (shares == null) {
+        throw StateError('the household roster could not be read');
+      }
+      return shares;
+    });
+
+    TestServiceLocator.registerSingleton<HouseholdRepository>(
+      householdRepository,
+    );
+    TestServiceLocator.registerSingleton<HouseholdAllergenShareRepository>(
+      shareRepository,
+    );
+  }
+
   void stubLookup(String uid, ProfileLookup lookup) {
     when(
       () => userService.lookupUserProfile(uid),
@@ -127,6 +225,308 @@ void main() {
       _profile('owner', prefs: prefs, settingsMerged: true),
     ),
   );
+
+  // Nobody has shared unless a test says so. Registered per test because the
+  // locator outlives a single case — without this, one test's shares would be
+  // read by the next one and the pre-1693 expectations would silently change.
+  setUp(() => useShares(const []));
+
+  group('a member who shared their own list (BUT-1693)', () {
+    test('the feature ships OFF by default', () {
+      // Asked of the REAL service with a remote config that has no value for
+      // it, which is what a device sees before any rollout — so this pins the
+      // shipped default, not a stub. It must stay false until the rules block
+      // lands and something writes a share.
+      final remoteConfig = _MockRemoteConfig();
+      when(
+        () => remoteConfig.getBool(
+          FeatureFlags.enableHouseholdAllergenSharing,
+        ),
+      ).thenThrow(Exception('no value'));
+
+      expect(
+        FeatureFlagService(remoteConfig: remoteConfig).isEnabled(
+          FeatureFlags.enableHouseholdAllergenSharing,
+        ),
+        isFalse,
+      );
+    });
+
+    test(
+      'with the feature OFF nothing is read and the household behaves exactly '
+      'as it did before sharing existed',
+      () async {
+        stubSelf();
+        stubOtherMember('partner');
+        stubOtherMember('kid');
+        useShares([
+          _share('partner', allergens: {'ägg'}),
+        ], enabled: false);
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(
+          aggregate.preferences.trackedAllergens,
+          containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+        );
+        expect(aggregate.preferences.trackedAllergens, isNot(contains('ägg')));
+        expect(
+          aggregate.isRosterComplete,
+          isTrue,
+          reason: 'a switched-off feature is knowledge, not an outage',
+        );
+        // The half of "nothing is read" that the preferences cannot show: no
+        // denied query on a user-visible path while the rules block is absent.
+        verifyNever(() => lastHouseholdRepository.getForUser(any()));
+      },
+    );
+
+    test(
+      'is read, not guessed at — their real allergens replace the floor and '
+      'the roster stays complete',
+      () async {
+        stubSelf();
+        stubOtherMember('partner');
+        stubOtherMember('kid');
+        useShares([
+          _share('partner', allergens: {'ägg'}),
+          _share('kid', allergens: {'skaldjur'}),
+        ]);
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(aggregate.preferences.trackedAllergens, {'ägg', 'skaldjur'});
+        expect(
+          aggregate.preferences.trackedAllergens,
+          isNot(contains('jordnötter')),
+          reason: 'the four-allergen floor must be gone for a shared member',
+        );
+        expect(aggregate.isRosterComplete, isTrue);
+      },
+    );
+
+    test(
+      'sharing an EMPTY list means "I have no allergies", not "unknown"',
+      () async {
+        stubSelf();
+        stubOtherMember('partner');
+        stubOtherMember('kid');
+        useShares([_share('partner'), _share('kid')]);
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(
+          aggregate.preferences.trackedAllergens,
+          isEmpty,
+          reason: 'the whole point of the collection: absent is not empty',
+        );
+        expect(aggregate.isRosterComplete, isTrue);
+      },
+    );
+
+    test('a shared dietary choice narrows the household menu', () async {
+      stubSelf();
+      stubOtherMember('partner');
+      stubOtherMember('kid');
+      useShares([
+        _share('partner', dietary: {'vegansk'}),
+        _share('kid'),
+      ]);
+
+      final aggregate = await service.aggregateAllergenPreferences();
+
+      expect(aggregate.preferences.trackedDietary, {'vegansk'});
+    });
+
+    test('a shared caution about unverified recipes tightens the whole '
+        'household', () async {
+      stubSelf();
+      stubOtherMember('partner');
+      stubOtherMember('kid');
+      useShares([
+        _share('partner', includeUnknownInMenu: false),
+        _share('kid'),
+      ]);
+
+      final aggregate = await service.aggregateAllergenPreferences();
+
+      expect(aggregate.preferences.includeUnknownInMenu, isFalse);
+    });
+
+    test(
+      'a member who has NOT shared keeps the floor, beside one who has',
+      () async {
+        stubSelf();
+        stubOtherMember('partner');
+        stubOtherMember('kid');
+        useShares([
+          _share('partner', allergens: {'ägg'}),
+        ]);
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(aggregate.preferences.trackedAllergens, contains('ägg'));
+        expect(
+          aggregate.preferences.trackedAllergens,
+          containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+          reason: 'kid never shared, so kid is still guessed at',
+        );
+      },
+    );
+
+    test(
+      'shares that cannot be READ are not "nobody shared" — the roster reports '
+      'itself INCOMPLETE so the menu says so',
+      () async {
+        stubSelf();
+        stubOtherMember('partner');
+        stubOtherMember('kid');
+        useShares(null);
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(
+          aggregate.preferences.trackedAllergens,
+          containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+        );
+        expect(
+          aggregate.isRosterComplete,
+          isFalse,
+          reason:
+              'someone may have shared a list this menu is filtering without; '
+              'reporting a healthy roster would hide that',
+        );
+        expect(aggregate.preferences.includeUnknownInMenu, isFalse);
+      },
+    );
+
+    test(
+      'a member whose profile read FAILED still degrades the roster even '
+      'though they shared — a share can lag behind the settings it mirrors',
+      () async {
+        stubSelf();
+        stubLookup('partner', ProfileLookup.unavailable());
+        stubOtherMember('kid');
+        useShares([
+          _share('partner', allergens: {'ägg'}),
+        ]);
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(
+          aggregate.preferences.trackedAllergens,
+          contains('ägg'),
+          reason: 'the share still contributes what it knows',
+        );
+        expect(aggregate.isRosterComplete, isFalse);
+        expect(aggregate.unresolvedMemberIds, contains('partner'));
+      },
+    );
+
+    test(
+      'a flag service that cannot be READ degrades the roster — not being able '
+      'to read the switch is not the same as reading it and finding it off',
+      () async {
+        stubSelf();
+        stubOtherMember('partner');
+        stubOtherMember('kid');
+        useShares([
+          _share('partner', allergens: {'ägg'}),
+        ]);
+        TestServiceLocator.unregister<FeatureFlagService>();
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(aggregate.isRosterComplete, isFalse);
+        expect(
+          aggregate.preferences.trackedAllergens,
+          containsAll(UserAllergenPreferences.defaults.trackedAllergens),
+        );
+        expect(aggregate.preferences.includeUnknownInMenu, isFalse);
+      },
+    );
+
+    test(
+      'a share about the signed-in user is ignored even when their cached '
+      'profile is missing — the auth handle decides who "self" is',
+      () async {
+        // The cached profile is the handle this must NOT depend on: with it
+        // null, a uid-by-profile comparison would fail to recognise the
+        // signed-in user and let a document written about them stand in for
+        // the settings their own device can read.
+        stubSelf(prefs: _prefs({'selleri'}));
+        stubOtherMember('partner');
+        stubOtherMember('kid');
+        useShares([
+          _share('owner', allergens: {'ägg'}),
+          _share('partner'),
+          _share('kid'),
+        ]);
+        when(() => userService.currentUserProfile).thenReturn(null);
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(aggregate.preferences.trackedAllergens, {'selleri'});
+      },
+    );
+
+    test(
+      'a household of one is not degraded by an unreadable share read — '
+      'nobody else could have shared, so nothing was missed',
+      () async {
+        useHousehold(const []);
+        stubSelf();
+        useShares(null);
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(aggregate.isRosterComplete, isTrue);
+        expect(aggregate.preferences.trackedAllergens, isEmpty);
+      },
+    );
+
+    test(
+      'a share left behind by a member whose profile does not EXIST does not '
+      'filter the menu',
+      () async {
+        // BUT-1663 decided an absent person cannot be protected and must not
+        // shrink the menu. A share from a deleted account is that person.
+        stubSelf();
+        stubLookup('partner', ProfileLookup.missing());
+        stubOtherMember('kid');
+        useShares([
+          _share('partner', allergens: {'selleri'}),
+        ]);
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(
+          aggregate.preferences.trackedAllergens,
+          isNot(contains('selleri')),
+        );
+        expect(aggregate.isRosterComplete, isTrue);
+      },
+    );
+
+    test(
+      'the signed-in user is read from their OWN settings, never from a share '
+      'someone could have written about them',
+      () async {
+        stubSelf(prefs: _prefs({'selleri'}));
+        stubOtherMember('partner');
+        stubOtherMember('kid');
+        useShares([
+          _share('owner', allergens: {'ägg'}),
+          _share('partner'),
+          _share('kid'),
+        ]);
+
+        final aggregate = await service.aggregateAllergenPreferences();
+
+        expect(aggregate.preferences.trackedAllergens, {'selleri'});
+      },
+    );
+  });
 
   group('what each member contributes', () {
     test(

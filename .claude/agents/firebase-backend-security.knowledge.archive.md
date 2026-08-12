@@ -2821,3 +2821,292 @@ production will not keep, plus `getOwn`'s escaping `FormatException`) and 7 (dou
 commit at :281. Still true and still not-yet-code: the interface sentence at
 `household_allergen_share_repository.dart:13` is wrong in production terms until the service
 commit maps the denial — recorded, so not re-filed.
+
+### 2026-08-12 — BUT-1693 service slice: the household aggregate consumes shared allergen lists
+
+Fileset reviewed (WORKING TREE, both files UNSTAGED — `git status` shows ` M`, so the index still
+equals HEAD and holds none of this change): `lib/services/household_service.dart`
+(md5 2a231e3f7c84566eafe47c8831f06a8b) and `test/unit/services/household_service_test.dart`
+(md5 e873fa265fda6e53799139f74d0772ff). Verdict scoped to those bytes; staging them unchanged is a
+precondition for the gate marker to mean anything.
+
+**BLOCKING — the null-vs-empty tri-state is not wired, and two comments in the same file
+contradict each other about it.** `_sharedListsByMember` returns `const {}` when the user has no
+`households/{id}` doc (:175) and `null` when the shares could not be read at all (:184). The
+consumer is `sharedLists?[memberId]` (:253), so BOTH produce `null` for every member: everyone
+falls to the pre-1693 floor and the run still returns `HouseholdAllergenAggregate.complete`, i.e.
+`isRosterComplete: true`. The method's doc comment (:155-157) says returning empty would "quietly
+hand those members the floor while reporting the roster as healthy — the exact
+unreadable-looks-like-a-declaration bug BUT-1663 exists to prevent", which is precisely what the
+null path does; the in-loop comment (:233-235) says the opposite and is accurate. The approved plan
+(`tasks/butlery-1693-household-share-plan.md`:154-158) requires "On failure the aggregate stays
+`degraded`, so BUT-1685's on-menu warning fires. There is a test for it." The test that carries that
+name (`test:288-304`) asserts only the floor allergens and never touches `isRosterComplete`, so both
+readings pass it — a vacuous pin in the sense the testing digest describes. Either implement the
+degrade (a typed unavailability signal, `ProfileLookup`-shaped, plus an `isRosterComplete: false`
+assertion) or record the counter-argument (degrading on every transient share-read blip over-warns
+every household, including those where nobody has shared) in the plan and the deviation files, and
+rewrite the comment. Not acceptable unresolved: the next reader cannot tell which of the two
+comments governs.
+
+**Verified SOUND, so it is not re-derived next time.** (a) A share can only widen/narrow through the
+member it names: the map is keyed by `share.userId` and the loop iterates the ROSTER, so a share for
+a uid outside the FriendCategory household contributes nothing, and `getByHousehold` has already
+dropped rows whose body disagrees with their path, rows without valid consent, and rows whose member
+has left the `households/{id}` roster. (b) Dietary is a UNION and `includeUnknownInMenu` an AND-fold,
+so a share can only tighten those two; only the allergen floor can be LOOSENED by a share, which is
+the design (ADR-0005) and is gated by consent + identity + membership. (c) Self-exclusion holds
+under the auth-null race by accident rather than by construction: `_sharedListsByMember` returns
+`null` when `currentUserProfile` is null, so no share is ever consulted in that window — but the
+loop re-reads `currentUserProfile` on EVERY iteration, and a profile that goes null AFTER a
+successful share read would let the signed-in user's own (possibly stale) share stand in for their
+settings. Capture `selfId` once before the loop. (d) Both identity handles in this file are
+`currentUserProfile`, never `permissionService` — the CLAUDE.md footgun is respected.
+
+**Cost, and the fact the class comment already concedes.** `firestore.rules` still has NO
+`household_allergen_shares` match block (grepped; the modified rules in this tree are the
+conversations/participants slice), so in production every aggregation now spends 1 `households`
+query (`getForUser`) + 1 `households` doc read (`isMember._loadRaw`) + 1 more (`read`) and then a
+DENIED shares query, on a path hit by every menu generation and by the settings tile. `FirebaseHouseholdRepository` is registered without an `auditRepository`, so none of that writes
+audit rows — checked, not assumed. The consumer is also un-flagged (`enable_household_allergen_sharing`
+does not exist yet in `feature_flag_service.dart`), and `_sharedListsByMember()` is awaited serially
+AFTER `Future.wait(lookups)` rather than alongside it, adding round-trips in front of two
+user-visible waits — the same argument the file's own comment makes for parallelising the lookups.
+
+**Still-open ritual items, all already carried in the plan (verified literally present, not
+asserted): 4 and 9** — no cascade step, no `probeResidualData` leg, no export leg and no
+`reset-user-data` entry for `household_allergen_shares`; the repository's roster filter HIDES a
+departed or deleted member's Art. 9 row, which is not erasure. **12** — this IS the consumer ticket
+the plan told to settle "two sources for one fact", and it did not: `HouseholdRosterService` still
+reads member allergens from `profile?.allergenPreferences`, and `MenuGenerator._presentAllergenPrefs`
+consumes that with PRIORITY over the household aggregate. That path is dormant
+(`presentMemberIds` is assigned only in `test/`, which is also what keeps the BUT-1625 deviation
+true), and its source is `fetchProfiles` → `public_profiles`, where the rules deny
+`allergenPreferences` — so its union is structurally empty for every member including self, and
+`_filterByPrefs`' `if (!prefs.hasTrackedAllergens) return recipes;` would return an UNFILTERED pool.
+Wiring who's-eating without fixing that would turn allergen filtering off, not merely miss the
+shares. Cheap guard: return null from `_presentAllergenPrefs` when the resolved union is empty, so
+it falls through to the household aggregate.
+
+Also unbuilt from the plan and needed by the UI slice: `flooredMemberIds` (plan :166), the field
+that lets the menu CTA invite sharing without mislabelling a privacy choice as an outage. And the
+BUT-1663 entry in both deviation files now has an exception it does not state — a member whose
+profile read FAILS but who has shared is neither floored nor counted unresolved.
+
+### 2026-08-12 — BUT-1693 service slice, RE-REVIEW: the tri-state landed, the kill switch opened a fourth state
+
+Re-review of the same three files after the blocking finding and both reviewers' Highs. Tree
+bytes reviewed (nothing staged for these — the index held the parallel BUT-1819/rules-drift
+session's work): `household_service.dart` 7e9b2c91fcd859cf8b5a1b8d7df41589,
+`feature_flag_service.dart` 0b092011bc3234f05ce16df24a31f7f3, `household_service_test.dart`
+150f0792cfa770524ae7f28ea54955f9. Suite re-run here: 23/23 green.
+
+**Fixed and verified by reading the consuming expression, not the diff.**
+- F1 (blocking, last round): `sharesUnavailable` is captured at the call site and returns
+  `HouseholdAllergenAggregate.degraded` BEFORE the `unresolved.isEmpty` branch, merging the
+  unresolved/missing lists. The health bit now reaches both live consumers:
+  `MenuGenerator._resolveActivePrefs` → `MenuPrefSource.householdIncomplete` →
+  `menu_content_widgets.dart:196`, which is keyed to the ROSTER and not to the hidden count
+  (so a degraded run that hid nothing still warns), and `household_allergen_filter_tile.dart:96`
+  appends `householdAllergenRosterIncomplete` unconditionally. Telemetry carries `pref_source`.
+- High-1: `getForUser` now takes `PermissionService.currentUserId`, which resolves to the same
+  `AuthRepository.currentUserId` as the repository's own `requireCurrentUserId()` — so the
+  caller-mismatch branch that silently returns `[]` is unreachable. Verified both handles.
+- High-3/F6: a share no longer cancels a FAILED profile read; both deviation files carry the
+  dated amendment and say the same thing as the code.
+- F4/F5: `isValidConsent` re-checked at the consumer; the share read starts before the lookups
+  and both are awaited together.
+
+**New (all latent — dark while the flag is off, none blocking).**
+1. `flags == null` (FeatureFlagService not in the locator) returns `const {}`, the same branch as
+   "the flag is off", while the sibling null-repository/null-uid branches return `null`. Reading
+   a switch is not the same as reading it as false. Safe today only because the flag's code
+   default is false and `core_module.dart:184` registers the service eagerly; the day the flag
+   flips it is a silent "nobody shared, roster healthy".
+2. The self-exclusion uses `_userService.currentUserProfile?.uid` while the share read uses the
+   permission handle — an identity test on the profile handle. Already-null profile (not the
+   mid-loop nulling the comment describes; the loop body has no await, so that hazard cannot
+   occur) applies the signed-in user's own share. Fail-safe and own-data, but it breaks the
+   deviation entry's third bullet.
+3. Test strength: `when(() => flags.isEnabled(any()))` pins no key, and every test registers the
+   flag service, so both the key and the missing-service branch are unproven. No test anywhere
+   references `enable_household_allergen_sharing`.
+4. `households.first` over an unordered `getForUser` (cap 50) picks an arbitrary household for a
+   consent record whose model scopes it to one `householdId`. Pre-existing idiom
+   (`menu_generator.dart:252` does the same).
+5. Cost at flip: ~4 uncached reads per aggregation (`getForUser` query, `isMember`'s doc read,
+   `getByHousehold`'s second read of the same doc, the shares query) on two user-visible paths.
+   `BaseService.getCachedOrExecute` exists.
+6. `MenuGenerator.lastPoolStats` is in-memory, so a menu redisplayed after restart shows a pool
+   built from a degraded aggregate with no warning (pre-existing, BUT-1685).
+
+**Unchanged and still gating the flag flip:** `household_allergen_shares` has no
+`firestore.rules` block, no cascade step, no `probeResidualData` leg, no export leg, no
+`reset-user-data` entry. All five are literally present in
+`tasks/butlery-1693-household-share-plan.md` (the four-part ritual + the DPO's fifth trigger),
+verified by grep rather than asserted.
+
+### 2026-08-12 — BUT-1693 service slice, FINAL gate read: a moving fileset, and the two gaps that closed while I read
+
+Fileset: `lib/services/household_service.dart`, `lib/services/feature_flags/feature_flag_service.dart`,
+`lib/repositories/firebase/firebase_household_allergen_share_repository.dart`,
+`test/unit/services/household_service_test.dart`.
+
+**The fileset moved four times during the read.** `household_service.dart` went
+6b2aeef -> 1a1bdaf -> 86eb20b -> 0cd23ac over roughly eight minutes; the repository went
+497521b -> d981529. The handoff said "28 tests in that suite, 51 green across four suites,
+dart analyze clean". Against the bytes actually in front of me that was FALSE: `flutter test
+test/unit/services/household_service_test.dart` returned **25 passed, 3 failed**, and the three
+failures were precisely three of the four behaviours the handoff claimed had landed:
+
+1. *"with the feature OFF nothing is read ..."* — expected `isRosterComplete: true`, got `false`.
+   The two flag branches were spelled INVERTED against their own comments: `flags == null`
+   returned `const {}` (knowledge) and `!isEnabled(...)` returned `null` (unknown). With the flag
+   default OFF that meant EVERY household aggregation in production degrades — four-allergen
+   floor, `includeUnknownInMenu: false`, and the BUT-1685 menu warning shown to 100 % of users
+   permanently.
+2. *"a household of one is not degraded by an unreadable share read"* — no `othersOnRoster` gate
+   existed at all.
+3. *"a share left behind by a member whose profile does not EXIST does not filter the menu"* —
+   the share was applied ABOVE `switch (lookup.status)`, so a `missing` member's share still
+   contributed (`selleri` present in the union).
+
+A trap-protected mutation probe (backup, `trap restore EXIT INT TERM HUP`, md5-verified restore)
+confirmed the anchors and left the file byte-identical. While I was diffing, the other session
+landed the real fixes; a re-run on the settled bytes gives **28/28**, and 86/86 over
+`household_service_test` + `firebase_household_allergen_share_repository_test` +
+`household_allergen_share_test` + `household_test`. `flutter analyze` on the four: clean.
+
+**Final shipped shape, reviewed on 0cd23ac / d981529 / 0b09201 / dd2f961 (index == tree, verified
+by `git show :<path> | md5sum`):**
+
+- `_sharedListsByMember` is a genuine four-state function. `tryGet<FeatureFlagService>() == null`
+  -> `null` (UNKNOWN, degrades); flag off -> `const {}` (knowledge, no degrade, and no Firestore
+  read at all while the rules block is absent); repositories/`PermissionService` absent -> `null`;
+  read threw -> `null`. `FeatureFlagService` is an eager `registerSingleton` in `core_module`, so
+  the UNKNOWN branch is defensive rather than a live over-warning path.
+- `final othersOnRoster = memberIds.any((id) => id != selfId);` and
+  `if (sharesUnavailable && othersOnRoster)`. Sound because the aggregation only ever consumes
+  shares KEYED BY the FriendCategory roster and deliberately ignores self's own share, so a
+  one-member roster provably lost nothing. A null `selfId` makes every id "other", i.e. the gate
+  fails toward degrading.
+- `void applyShare()` called from the `unavailable || foundSettingsUnavailable` arm and the
+  `found` arm, and NOT from `missing`. A share still contributes without cancelling degradation
+  (DPIA R4: a share can lag its owner's real settings), and a deleted account's share no longer
+  filters. The floor is still suppressed for a shared member (`!settingsMerged && shared == null`).
+- The `selfId` comment no longer claims the two `PermissionService` reads "cannot disagree"; it
+  names the sign-out window and accepts it (single aggregation, the user's own data).
+- Repository unchanged in substance: `validateDeletePermission` stays PATH-only
+  (`resourceId.endsWith('_$userId')`), per the closed Art. 17 finding; the only edit was the
+  `getByHousehold` fail-loud comment picking up the new "degraded only when someone else is on the
+  roster" caveat.
+
+Cross-file claims re-verified by grep rather than trusted: `household_allergen_shares` still has
+NO `firestore.rules` block in tree or index, the repository's only caller is still
+`HouseholdService._sharedListsByMember`, nothing in `lib/` writes a share, and both consumers of
+the aggregate (`menu_generator.dart:225`, `household_allergen_filter_tile.dart:96`) do read
+`isRosterComplete`.
+
+Non-blocking residuals carried forward, unchanged by this slice: the health bit still only reaches
+in-memory `MenuGenerator.lastPoolStats`; `MenuGenerator._presentAllergenPrefs` is still the dormant
+twin that inherits neither the floor nor the shares; and the flag flip still needs the rules block,
+the cascade step, the residual probe, the export leg and the `reset-user-data` entry.
+
+### 2026-08-12 — BUT-1693 service slice, second gate read on the SAME bytes (confirming, no new findings)
+
+Independent re-read of the settled fileset after the entry above, same md5s and index == tree
+(`household_service.dart` 0cd23ac…, repository d981529…, `feature_flag_service.dart` 0b09201…,
+test dd2f961…). `flutter test test/unit/services/household_service_test.dart`: **28/28**. The
+four branch behaviours were checked against the CODE, not the handoff prose, because a formatter
+race in this session had twice reverted logic while leaving the new comments in place — this time
+comments and code agree (`flags == null` -> `null`; `!isEnabled` -> `const {}`; `applyShare()`
+absent from the `missing` arm; `sharesUnavailable && othersOnRoster`).
+
+Two claims the previous entries asserted and this pass DISCHARGED by opening the cited code:
+
+- *"deciding delete from the PATH costs no read, so a corrupt row is still erasable"* —
+  `BaseFirebaseRepository.delete` (`base_firebase_repository.dart:238-265`) calls
+  `validateDeletePermission(userId, id)`, logs, then `ref.doc(id).delete()`; it never calls
+  `fromFirestore`, so `revoke()` cannot be blocked by the identity parse. `deleteBatch` (`:475`)
+  uses the same predicate. The Art. 17 closure is real, not a comment.
+- *"a missing `userId` cannot parse as a valid-looking share"* — `HouseholdAllergenShare
+  .isValidConsent` requires `householdId.isNotEmpty && userId.isNotEmpty` on top of the consent
+  triple, and the service re-applies it at the consumer, so a `safeString`-defaulted `''` row is
+  dropped by both layers.
+
+Also re-grepped: no `functions/src` reference to `household_allergen_shares` anywhere (no cascade,
+no probe, no export, no `reset-user-data`) — unchanged, still gating the flag flip, and harmless
+today because nothing in `lib/` writes a share and the collection is default-denied.
+
+One residual worth a line because it is cheap and latent: with the flag ON, one aggregation costs
+~4 uncached reads (`getForUser` query, `isMember`'s doc read, `getByHousehold`'s second read of the
+same household doc, the shares query) on two user-visible paths, and `BaseService.getCachedOrExecute`
+is right there. Not a defect while the flag is off; it is the first thing to fix at flip.
+
+### 2026-08-12 — BUT-1693 service slice, FINAL gate pass: three gates make an Art. 9 erasure gap a launch gate, not a violation
+
+Fileset reviewed at rest (index == tree, md5-pinned before and after every `Read`, unchanged
+across the whole pass): `firebase_household_allergen_share_repository.dart`,
+`household_service.dart`, `feature_flag_service.dart`, `household_service_test.dart`. Ran the
+suites myself rather than trusting the handoff's count — 87 green across the four household
+suites (handoff said 81 across "four suites", so it counted a different fourth; every one green
+either way), `flutter analyze --fatal-infos` clean on all three production files.
+
+**The reviewer's probe was gone.** The handoff warned that an `if (false) { // MUTANT: flag gate
+removed` had been left live in `household_service.dart` earlier in the day and restored from the
+staged copy. Verified from the bytes, not from the summary: no `if (false)`, no `MUTANT`, no
+stray TODO in any of the three production files, and the two flag branches are the right way
+round in `_sharedListsByMember` —
+
+- `ServiceLocator.tryGet<FeatureFlagService>() == null` → `return null` (IGNORANCE; the caller
+  spells it `sharesUnavailable` and, gated on `othersOnRoster`, degrades the roster);
+- `!flags.isEnabled(enableHouseholdAllergenSharing)` → `return const {}` (KNOWLEDGE; no degrade,
+  and it returns BEFORE either repository is resolved, so no denied query on a user-visible
+  path — pinned by `verifyNever(getForUser)` in the flag-off test).
+
+Had the mutant still been live the read would have run for every household with the feature
+switched off, against a collection the rules default-deny.
+
+**The finding worth keeping: why the missing GDPR machinery is not blocking here.**
+`household_allergen_shares` has NO deletion-cascade step, NO Art. 15 export section and NO
+`probeResidualData` canary entry (`grep -rn household_allergen_shares functions/src/` returns
+nothing). That is Art. 9 special-category data. It is nonetheless not a live violation, because
+three independent gates keep the collection empty:
+
+1. `firestore.rules` has no `match` block for it (`grep -ni allergen firestore.rules` finds only
+   the tagResult/diner-profile/user-settings blocks), so the catch-all `if false` denies every
+   read and write — and note this commit stages a 207-line rules change that does NOT touch it;
+2. `'enable_household_allergen_sharing': false` is the CODE default, so an unreachable Remote
+   Config cannot switch it on;
+3. nothing WRITES a share: grepping the interface name across `lib/` yields the DI registration
+   (`social_module.dart:167`) and exactly one call site, `HouseholdService._sharedListsByMember`,
+   which only ever calls `getByHousehold`.
+
+So the gap is a launch gate on the rules commit, not a defect in this one. The reusable part is
+that the verdict depends on which gate you happen to open: a reviewer who checks only the rules
+block, or only the flag, would grade the same code Critical or clean. Enumerate all three at the
+moment the collection CONSTANT is introduced and say which you checked.
+
+**The one line that changed since the previous pass** is a comment citation:
+`firebase_household_allergen_share_repository.dart` used to explain its `RepositoryException`
+choice by pointing at `household_service.dart:89`, and the line moved inside this same commit; it
+now cites `HouseholdService.getHousehold`, which is where `firstWhere`'s `StateError` really is
+(`household_service.dart:89-97` as of these bytes — the symbol will survive the next move, the
+number would not). The class docstring's other cross-file claim was re-derived rather than
+trusted: "Its only caller is `HouseholdService._sharedListsByMember`, itself behind
+`enable_household_allergen_sharing` (OFF)" is true against both greps above.
+
+Re-checked and still true, so not re-filed: `selfId` and the share read take identity from the
+SAME handle (`PermissionService.currentUserId`), so their nulls cannot disagree; `applyShare()`
+is invoked at the `switch (lookup.status)` CALL SITES and never for `missing`, so a share left by
+a deleted account cannot filter the menu; `othersOnRoster` is spelled
+`memberIds.any((id) => id != selfId)`, so a null identity counts everyone as other and the gate
+fails TOWARD degrading.
+
+Unchanged open items, none of them this slice's doing: `MenuGenerator._presentAllergenPrefs`
+still takes PRIORITY over the household aggregate and `MenuGenerator.presentMemberIds` is still
+declared (`:132`) and read (`:214`) with no assignment anywhere in `lib/` — a dormant twin that
+inherits neither the BUT-1663 floor nor the shares; and the degraded health bit still reaches
+only in-memory surfaces (`lastPoolStats` via `MenuPrefSource.householdIncomplete`, plus
+`household_allergen_filter_tile.dart:96`), so a menu redisplayed after restart shows a degraded
+pool with no warning. The ~4-uncached-reads-at-flip note from the previous entry stands.

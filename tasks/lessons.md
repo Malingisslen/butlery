@@ -772,3 +772,37 @@ Trigger: BUT-1482 added `configRevision` to `TagResult` on 2026-07-23 and did no
 Rule: A field added to a model that serializes into Firestore is a two-sided change — the model AND the rules — and the rules side has no compiler, no analyzer and no test unless you write one. `hasOnly` is the most dangerous shape in the file: it fails CLOSED, silently, on the WRITE, so nothing in the app logs an error the user would report; it simply stops working. So: (a) when you add a field to any model with a `toFirestore`, grep `firestore.rules` for that model's validator in the SAME edit; (b) a `hasOnly` allowlist gets a rules test the day it is written, asserting one allowed key set and one rejected extra key — the suite here had eleven recipe tests and none of them would have caught this; (c) "nobody has reported it" is not evidence a write path works, because a write path that nobody exercised for three weeks reports nothing. The generalisation of the wrong-path-Firestore-read lesson: a write that passes Dart and is denied by rules is invisible from the Dart side, and only a rules test or a real device sees it.
 Example: 2026-08-12 — `configRevision` added to the allowlist with a bounded-int check, two regression tests (one allow, one reject a non-int) in `firestore-rules.test.ts` naming the outage in their comment, rules deployed, and a real save on the device verified in Firestore carrying `configRevision: 999697`.
 
+
+## A formatter race can revert your CODE and keep your COMMENTS (2026-08-12, BUT-1693)
+
+Twice in one session an external writer (formatter hook, or the parallel session) rewrote
+`household_service.dart` from a stale buffer between my Edit and my next command. Both times
+the Edit tool reported success. The dangerous shape is not the plain revert — it is the
+HYBRID: the second time it restored the old code while keeping the new comments, leaving the
+flag-off branch returning `null` under a comment explaining why it returned an empty map.
+That is the exact ignorance-vs-knowledge conflation two reviewers had already made me fix,
+re-introduced silently, describing itself correctly the whole way down.
+
+What caught it: the SUITE, not the analyzer (the hybrid compiles clean) and not a re-read
+(the comments look right). What would have shipped it: trusting "the edit applied cleanly".
+
+So, in a repo where anything else writes files:
+- After an Edit that carries behaviour, `grep` for the changed TOKEN — not the comment
+  beside it — before moving on. A comment surviving is evidence of nothing.
+- Prefer one atomic write (a `python` patch script asserting its anchors) over several Edits
+  when the change spans a file; it fails loudly instead of half-landing.
+- `md5sum` the file, stage it, then compare `git show :<file> | md5sum` against the tree
+  before running the review gates. A verdict is scoped to bytes, and staging is what pins
+  them.
+- Re-run the suite after ANY edit to a file that has been reverted once, including a
+  comment-only edit. That is the run that found this.
+
+**Same day, same file, second source: a REVIEWER's mutation probe was left live.** The
+testing agent reported "both probes reverted byte-identical, md5sum -c OK" and the analyzer
+then found `if (false) {  // MUTANT: flag gate removed` in the shipped tree — which would
+have read every household's shared allergen lists with the feature switched off. So: a
+subagent's claim to have restored a file is a claim about ITS run, not about the file. After
+any review that says it mutation-probed production code, grep the file for the probe's
+shape (`if (false)`, `// MUTANT`, a commented-out guard) and re-run analyze before staging.
+The index saved this one — the good bytes were already staged, so `git checkout -- <file>`
+restored them exactly.
