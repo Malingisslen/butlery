@@ -13,7 +13,11 @@ const MUT = [
     ['expandControl', 'controlRollNamnState', 'controlNabar'],
     d => { const p = d + '/' + HTML; let s = readFileSync(p, 'utf8');
       const i = s.indexOf('id="kompkalla"'), j = s.indexOf('id="kompkallahel"');
-      const del = s.slice(i, j).replace(/<span style="display:inline-flex[^]*?<\/span>/, '');
+      // Mutationen maste tala attribut FORE style. Den forsta versionen band
+      // sig vid '<span style=' och slutade bita nar data-hit skrevs in vid
+      // traffyte-migrationen — negativprovet foll da utan att nagot skydd var
+      // trasigt. Skyddet ar oforandrat; det var mutationen som slutade mutera.
+      const del = s.slice(i, j).replace(/<span[^>]*style="display:inline-flex[^]*?<\/span>/, '');
       writeFileSync(p, s.slice(0, i) + del + s.slice(j)); }],
 
   ['N-A2', 'kontrollen saknar data-a11y-state', ['controlRollNamnState'],
