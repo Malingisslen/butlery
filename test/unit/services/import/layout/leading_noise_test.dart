@@ -173,7 +173,7 @@ void main() {
       final cut = withoutLeadingNoise(input, layout);
 
       // If this ever regresses to `headings.last`, the region it would try
-      // to cut (row 0 through row 8) is 158 characters — over budget — so
+      // to cut (row 0 through row 8) is 152 characters — over budget — so
       // the function would return UNCHANGED instead of wrongly swallowing
       // the first recipe. Either way the correct behaviour and the `.last`
       // mutant disagree on whether "Kokboken" survives, which is what this
