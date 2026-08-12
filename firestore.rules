@@ -157,10 +157,24 @@ service cloud.firestore {
     function isValidTagResult(tagResult) {
       return tagResult == null || (
         // Only allow known fields (including isPartial, schemaVersion added in v1.0)
+        //
+        // BUT-1482 added `configRevision` to TagResult on 2026-07-23 and did NOT
+        // add it here, so from that day every recipe create AND update was
+        // denied for any user whose tagConfigs load succeeded — which is all of
+        // them, since the five config docs exist and carry a `version`. It went
+        // unnoticed until 2026-08-12 because nobody saved a recipe in between.
+        // The lesson is in tasks/lessons.md: a model field that reaches
+        // Firestore is a RULES change too, and `hasOnly` fails closed silently.
         tagResult.keys().hasOnly(['tags', 'allergenStatus', 'dietaryStatus',
                                   'coverage', 'unknownIngredients', 'generatedAt',
                                   'generatorVersion', 'isPartial', 'schemaVersion',
-                                  'errorReason', 'hasDraftIngredients']) &&
+                                  'errorReason', 'hasDraftIngredients',
+                                  'configRevision']) &&
+        // BUT-1482: configRevision is the combined tagConfigs version the tags
+        // were generated under. Int, or absent when tagging ran on the static
+        // fallback. Bounded so it cannot be used as free storage.
+        (tagResult.get('configRevision', 0) is int &&
+         tagResult.get('configRevision', 0) >= 0) &&
         // Coverage must be valid percentage (0.0-1.0)
         (tagResult.get('coverage', 0) >= 0 && tagResult.get('coverage', 0) <= 1) &&
         // GeneratedAt must be a timestamp if present

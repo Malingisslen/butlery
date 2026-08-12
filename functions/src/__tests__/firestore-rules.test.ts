@@ -154,6 +154,67 @@ test(
   }
 );
 
+// R4b: a tagResult carrying `configRevision` is ACCEPTED.
+//
+// This is a regression test for a LIVE OUTAGE, not a hypothetical. BUT-1482
+// added `configRevision` to TagResult on 2026-07-23 without touching the
+// `hasOnly` allowlist in isValidTagResult, so from that day every recipe
+// create and update was denied for any user whose tagConfigs load succeeded.
+// It reached production and went unnoticed for three weeks because nobody
+// saved a recipe in between; it was found on 2026-08-12 by reading the rules
+// while planning something else, and confirmed on a real device
+// (PERMISSION_DENIED at users/{uid}/recipes/{id}, "Failed to create Recipe").
+//
+// If this test ever goes red, the rules and the model have drifted again.
+test(
+  "recipes: owner can create a recipe whose tagResult carries configRevision",
+  async () => {
+    const ctx = env.authenticatedContext(OWNER_UID);
+    await assertSucceeds(
+      ctx
+        .firestore()
+        .doc(`users/${OWNER_UID}/recipes/r-configrev-${RUN}`)
+        .set(validRecipeBody({ core: { title: "Köttbullar", tagResult: {
+          tags: [],
+          allergenStatus: { gluten: "free" },
+          dietaryStatus: { vegan: "contains" },
+          coverage: 1.0,
+          unknownIngredients: [],
+          generatedAt: new Date(),
+          generatorVersion: "test",
+          isPartial: false,
+          schemaVersion: 1,
+          configRevision: 42,
+        } } }))
+    );
+  }
+);
+
+// R4c: configRevision must still be a non-negative int — widening the
+// allowlist must not turn the field into free-form client storage.
+test(
+  "recipes: owner cannot write a non-int configRevision",
+  async () => {
+    const ctx = env.authenticatedContext(OWNER_UID);
+    await assertFails(
+      ctx
+        .firestore()
+        .doc(`users/${OWNER_UID}/recipes/r-configrev-bad-${RUN}`)
+        .set({ core: { title: "Bad", tagResult: {
+          tags: [],
+          allergenStatus: {},
+          dietaryStatus: {},
+          coverage: 1.0,
+          unknownIngredients: [],
+          generatedAt: new Date(),
+          generatorVersion: "test",
+          schemaVersion: 1,
+          configRevision: "not-an-int",
+        } } })
+    );
+  }
+);
+
 // R5: owner cannot write a recipe with a malformed tagResult (allergen-safety
 //     critical — the rules layer is the last line of defence against
 //     client-side tampering).
