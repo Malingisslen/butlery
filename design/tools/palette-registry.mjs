@@ -61,9 +61,21 @@ export function byggRegister(poster) {
  * KANDIDATKONTRAKT. Varje palettvarde hamnar exakt en gang i ELIGIBLE eller
  * INELIGIBLE, med skal. Ingen kandidat far tyst forsvinna.
  */
-export function behorighet(princip, post) {
+export function behorighet(princip, post, opt = {}) {
   const skal = [];
   switch (princip) {
+    // P-TEXT-BRAND · varumarkesstodjande text. Godkand som princip 2026-08-12.
+    // Brodtextens mappning far ALDRIG ateranvandas per automatik, och samma raa
+    // ljusfarg i brodtext och varumarkestext ar ingen ekvivalensevidens.
+    // Accenter ar tillatna DAR SEMANTIKEN STODJER DET — men aldrig som
+    // kontrastworkaround. Darfor kraver en accent explicit brandmotivering fran
+    // den anropande; utan den ar den obehorig. Fail closed.
+    case 'P-TEXT-BRAND':
+      if (!post.forgrundskapabel) skal.push('anvands aldrig som forgrund');
+      if (!opt.brandroll) skal.push('brandrollkontext saknas — P-TEXT-BRAND far inte tillampas utan den');
+      if (post.semantiskAccent && !opt.brandaccentMotiverad)
+        skal.push('semantisk accent utan explicit brandmotivering — far inte anvandas for att losa kontrast');
+      break;
     case 'P-TEXT-CONTENT':
       if (!post.forgrundskapabel) skal.push('anvands aldrig som forgrund i den verifierade morka populationen');
       if (post.semantiskAccent) skal.push('semantisk accent — far inte losa kontrast for neutral innehallstext');
