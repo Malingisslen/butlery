@@ -18291,3 +18291,100 @@ No suite run this round and none claimed: the parent's 81/4 green and clean
 `dart analyze --fatal-infos` stand, and the hashes above are what they belong to.
 
 Verdict: pass (0 blocking).
+
+## 2026-08-12 — leading-noise trim review (BUT — commit-gated, `leading_noise_test.dart`)
+
+Trigger: commit-gated `testing-specialist` review of a new OCR-import rule,
+`withoutLeadingNoise` (`lib/services/import/layout/leading_noise.dart`), explicitly built
+as the mirror of the existing `withoutOrphanTail`/`orphan_tail.dart` — cuts furniture off
+the FRONT of page zero (running header, folio, previous recipe's tail) instead of the tail
+trim's END-of-last-page. Wired into `ImportManager.autoParseMulti` right after the tail
+trim. New test file `test/unit/services/import/layout/leading_noise_test.dart` explicitly
+says in its header comment it "deliberately follows [`orphan_tail_test.dart`]'s
+fixture-builder conventions."
+
+### Tree motion during review
+
+The staged diff I was handed landed as commit `158da54` ("Trim leading noise before a
+recipe starts on OCR import") partway through my review — a parallel session committed it,
+then landed a sibling commit `be8bea0` ("Add corpus eval arm and wiring tests...", touching
+`tools/corpus_split_eval.dart` and `import_manager_orphan_tail_test.dart`, NOT
+`leading_noise_test.dart`), then a tiny doc-comment fix `3955971` (2 lines in
+`leading_noise.dart`, a stale cross-reference from `leading_noise_test.dart` to
+`import_manager_orphan_tail_test.dart` for where the composition test actually lives).
+`git diff --staged` went empty by the time I finished. Verified via `git diff 158da54 HEAD
+-- test/unit/services/import/layout/leading_noise_test.dart` (empty — the test file under
+review is byte-identical to what was originally staged) and `git show 3955971 -- lib/....
+leading_noise.dart` (confirmed the only post-review change to the production file is the
+2-line comment fix, touching neither `_leadingBudget`, `headings.first`, nor the
+`PageLayout(...)` reconstruction). So my findings below stand against current HEAD
+unchanged; the commit landing mid-review didn't invalidate the read.
+
+### Read in full via the Read tool
+`lib/services/import/layout/leading_noise.dart` (172 lines), `lib/services/import/layout/
+orphan_tail.dart` (360 lines, unstaged sibling), `test/unit/services/import/layout/
+leading_noise_test.dart` (195 lines), `test/unit/services/import/layout/orphan_tail_test.
+dart` (426 lines, unstaged sibling test), `lib/services/import/import_manager.dart` (1118
+lines, wiring). Grepped `RecipeSectionDetector.looksLikeIngredient`/`hasInstructionKeywords`
+and `HeadingDetector.headingLines`/`_readsLikeTitle` and `DocumentLayout.
+matchesLineCountOf`/`textLineIndex` in `lib/services/ocr/text_layout.dart` to confirm the
+guard mechanics the tests rely on.
+
+### Verdict-relevant finding: three named mutants from the sibling's own comments, unpinned
+
+`orphan_tail_test.dart` explicitly documents three vacuity traps it fixed with dedicated
+tests, each with a comment saying "an earlier version of this test killed no mutant" or
+equivalent:
+
+1. **`.first` vs `.last` heading selection.** `orphan_tail_test.dart`'s "cuts at the LAST
+   heading, never an earlier one" test uses a deliberate TWO-heading fixture, with the
+   comment: "a single-heading fixture cannot tell `headings.last` from `headings.first` —
+   proves only the budget... Measured — the earlier version of this test killed no mutant."
+   `leading_noise.dart` uses the mirror selector, `headings.first` (correct: cut everything
+   BEFORE the first title). Every fixture in `leading_noise_test.dart` has exactly ONE
+   detected heading on page zero — none distinguishes `.first` from `.last`.
+2. **Exact budget boundary.** `orphan_tail_test.dart` has a dedicated `group` pinning 119
+   vs 120 chars (`_tailBudget`), with the comment: "Without a boundary pair it could drift
+   to 200... with the suite green." `leading_noise_test.dart`'s under/over-budget tests use
+   13 chars (well under 60) and 66 chars (over by 6) — no pin at 59/60.
+3. **`imageWidth`/`imageHeight` carried through the rebuilt `PageLayout`.**
+   `orphan_tail_test.dart` has a dedicated "carries imageWidth and imageHeight across the
+   trim" test with nonzero dimensions. No fixture in `leading_noise_test.dart` sets nonzero
+   image dimensions or reads them back; `PageLayout`'s default is `0`, so a mutant dropping
+   those two named args from `withoutLeadingNoise`'s `PageLayout(...)` construction is fully
+   silent.
+
+### Live mutation probes (not inferred — run)
+
+Backed up `lib/services/import/layout/leading_noise.dart` to the scratchpad, mutated one
+line at a time, ran `flutter test test/unit/services/import/layout/leading_noise_test.dart`
+(via `PATH="$PATH:/root/flutter-sdk/bin"`, root-run warning is cosmetic), restored via `cp`
+and confirmed `cmp` identical to the backup after each:
+
+- `const int _leadingBudget = 60;` → `65`: **all 9 tests still pass.**
+- `final pageRow = headings.first;` → `headings.last;`: **all 9 tests still pass.**
+- Dropped `imageWidth: first.imageWidth, imageHeight: first.imageHeight,` from the
+  `PageLayout(...)` construction: **all 9 tests still pass.**
+
+All three mutants confirmed to survive live, not by inspection. No other functional defect
+found — `_looksLikeRecipeContent`'s two branches (`looksLikeIngredient` via the Swedish
+measurement pattern `dl`; `hasInstructionKeywords` via `'koka'`) were checked against
+`RecipeSectionDetector`'s actual word lists and confirmed genuinely disjoint for the two
+fixtures used (`'2 dl mjolk'` doesn't hit any `_ingredientWordPatterns` entry; `'vattnet'`
+isn't an ingredient word), so those two guard tests are NOT vacuous despite lacking an
+explicit `HeadingDetector.headingLines(...)` premise assertion (proved by construction: the
+same-shaped fixture in the file's own first test explicitly premises the heading is found
+at row 1, and these fixtures use the identical shape with one fewer filler word).
+
+### Closing state
+
+lib/services/import/layout/leading_noise.dart `d55d71ef7522c8c2fa88ba6f6463c596` 172 lines
+lib/services/import/import_manager.dart `5d837408629514741c95e37a40a1d316` 1118 lines
+test/unit/services/import/layout/leading_noise_test.dart `d09a4469b2034fde0e98772282fd7204` 195 lines
+lib/services/import/layout/orphan_tail.dart (unstaged sibling, context only) `c07abe84e9dad86d3c71298b67f84b8e` 360 lines
+Suite run: `flutter test test/unit/services/import/layout/leading_noise_test.dart` — 9/9
+green on the unmutated file, confirmed after every mutation-probe restore.
+
+Verdict: fail (3 blocking) — three named, sibling-documented mutants (`.first`/`.last`
+selector, exact budget boundary, `imageWidth`/`imageHeight` carry-through) confirmed to
+survive the full suite live.

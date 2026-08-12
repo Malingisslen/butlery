@@ -149,6 +149,98 @@ void main() {
       expect(identical(cut.text, input), isTrue);
     });
 
+    test('cuts at the FIRST heading, never a later one', () {
+      // TWO headings, which is the whole point: a single-heading fixture
+      // cannot tell `headings.first` from `headings.last` and proves only
+      // the budget — same trap `orphan_tail_test.dart` names for its own
+      // `.last` selection. Both headings sit in the same glyphSpan bucket
+      // (no lowercase descender in either), so both are really detected.
+      final lines = [
+        line('Kokboken 2024', wordHeight: 70, words: 2),
+        heading('Forsta Ratten'),
+        ...body(count: 6, text: 'forsta rattens text'),
+        heading('Andra Ratten'),
+        ...body(count: 6, text: 'andra rattens text'),
+      ];
+      final layout = doc([page(lines)]);
+      final input = layout.text!;
+      expect(
+        HeadingDetector.headingLines(page(lines)),
+        [1, 8],
+        reason: 'premise: BOTH titles must be detected headings',
+      );
+
+      final cut = withoutLeadingNoise(input, layout);
+
+      // If this ever regresses to `headings.last`, the region it would try
+      // to cut (row 0 through row 8) is 158 characters — over budget — so
+      // the function would return UNCHANGED instead of wrongly swallowing
+      // the first recipe. Either way the correct behaviour and the `.last`
+      // mutant disagree on whether "Kokboken" survives, which is what this
+      // test reads.
+      expect(cut.text.contains('Kokboken'), isFalse);
+      expect(cut.text.startsWith('Forsta Ratten'), isTrue);
+      expect(cut.text.contains('Andra Ratten'), isTrue);
+    });
+
+    group('the 60-character budget is the decision, so pin its edge', () {
+      // `_leadingBudget` is private and every claim in `leading_noise.dart`'s
+      // own doc about it ("half of `_tailBudget`", "the tail trim's OTHER
+      // measured row") rests on its value staying 60. Without a boundary
+      // pair it could drift with the suite green — same rationale
+      // `orphan_tail_test.dart` states for its own 119/120 pair.
+      //
+      // Filler is `l`, not `x`, for the same reason as the tail suite: `l`'s
+      // glyphSpan (1.45, ascender) keeps the row's TYPE height at the body
+      // baseline (~48.28) rather than drifting toward the heading threshold,
+      // so the filler can never be misread as a heading itself.
+      List<OcrLine> headOf(int chars) => [
+        line('l' * chars, wordHeight: 70, words: 1),
+      ];
+
+      test('a 59-character lead is furniture and goes', () {
+        final layout = doc([
+          page([...headOf(59), heading('Mandelforell'), ...body()]),
+        ]);
+        final input = layout.text!;
+
+        expect(
+          withoutLeadingNoise(input, layout).text.contains('l' * 59),
+          isFalse,
+        );
+      });
+
+      test('a 60-character lead is content and stays', () {
+        final layout = doc([
+          page([...headOf(60), heading('Mandelforell'), ...body()]),
+        ]);
+        final input = layout.text!;
+
+        expect(
+          identical(withoutLeadingNoise(input, layout).text, input),
+          isTrue,
+        );
+      });
+    });
+
+    test('carries imageWidth and imageHeight across the trim', () {
+      final pageLayout = PageLayout(
+        lines: [
+          line('Kokboken 2024', wordHeight: 70, words: 2),
+          heading('Mandelforell'),
+          ...body(),
+        ],
+        imageWidth: 3000,
+        imageHeight: 4000,
+      );
+      final layout = DocumentLayout([pageLayout]);
+
+      final cut = withoutLeadingNoise(layout.text!, layout);
+
+      expect(cut.layout!.pages.first!.imageWidth, 3000);
+      expect(cut.layout!.pages.first!.imageHeight, 4000);
+    });
+
     test('only page zero is eligible — a later page keeps its furniture', () {
       final firstPage = [heading('Recept Ett'), ...body()];
       final secondPage = [
