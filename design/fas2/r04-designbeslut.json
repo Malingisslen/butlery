@@ -6,9 +6,9 @@
  "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
  "$tokenidentitet": "Tokennamnet lases i registret vid forsta tilldelningen och andras aldrig. Tva beslut delar aldrig namn, aven nar morkvardet sammanfaller. Ett ersatt beslut behaller inget namn.",
  "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
- "antal": 44,
+ "antal": 47,
  "perTyp": {
-  "temavaxlande": 27,
+  "temavaxlande": 30,
   "temainvariant": 6,
   "undefined": 9
  },
@@ -2059,86 +2059,1757 @@
    "aktiv": true,
    "tokenNamn": "--text-kontroll-d5",
    "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-innehall-#24382c",
+   "roll": "text-innehall",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#8fb89a",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-12",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "neutral innehallstext pa den verifierade appytan #17251d",
+    "rubriken maste behalla hogre kontrast an brodtexten; 7.20 mot 6.02 bevarar hierarkin",
+    "relationen ligger narmast den uppmatta ljushierarkin 11.36 / 9.18 av de tre giltiga kombinationerna",
+    "typografin, 19 px halvfet mot 14 px normal, forstarker redan skillnaden",
+    "bada varden forblir neutrala, inga semantiska accenter"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Beslutet ar auktoritet, inte harledd evidens."
+   },
+   "beslutsunderlag": {
+    "typ": "HONEST_FULL_DARK_SIMULATION",
+    "scen": "soctomtingavanner",
+    "artefakt": "fas2/r04-forsta-preview.json",
+    "undecidedPaintedElements": 0,
+    "kollateralaAndringar": 0
+   },
+   "supersederar": {
+    "status": "SUPERSEDED_PROVISIONAL",
+    "$regel": "Provisoriska varden far aldrig vinna over HUMAN_APPROVED inom samma exakta beslutsscope. Historiken behalls och fas2/r04-pilottokens.json skrivs inte om.",
+    "pilottokens": [
+     {
+      "namn": "--text-innehall-b",
+      "morkvarde": "#c9d3c4",
+      "provisoriskVariant": true,
+      "deklarationer": 21
+     }
+    ],
+    "instanserMedProvisorisktVarde": 96,
+    "varavRedanLikaMedBeslutet": 0,
+    "varavFaktiskFargforandring": 96,
+    "forandradeFamiljer": [
+     "arkivimport-414",
+     "faq-414",
+     "aldersgrans-414",
+     "epostverif-414",
+     "samtycke-414",
+     "rapporter-322",
+     "rapporter412-414",
+     "juridik-322",
+     "statefel-322",
+     "statefel412-414",
+     "synkko-414",
+     "receptdelningsstatus-414",
+     "inkoputeslutna-414",
+     "delatlasare-414",
+     "veckorostavgor-414",
+     "authepost-462",
+     "authepostklar-462",
+     "authmfa-414",
+     "onbalderblock-414",
+     "onbvalkommen-414",
+     "onbklar-462",
+     "onbsenare-414",
+     "behlarmnekat-414",
+     "lagatimerlofte-414",
+     "imp4sparad-414",
+     "impgrans-414",
+     "impgransai-414",
+     "impdelning-414",
+     "kontoradera-414",
+     "kontoreauth-414",
+     "kontovantan-414",
+     "adminej-414",
+     "modtom-414",
+     "notisertyp-414",
+     "mfaaktiv-414",
+     "minaanmalningar-414",
+     "kontojuridik-414",
+     "soctomttyst-412",
+     "komprelaterade-panel"
+    ],
+    "forandradeArtefakter": [
+     "arkivimport",
+     "faq",
+     "aldersgrans",
+     "epostverif",
+     "samtycke",
+     "rapporter",
+     "rapporter412",
+     "juridik",
+     "statefel",
+     "statefel412",
+     "synkko",
+     "receptdelningsstatus",
+     "inkoputeslutna",
+     "delatlasare",
+     "veckorostavgor",
+     "authepost",
+     "authepostklar",
+     "authmfa",
+     "onbalderblock",
+     "onbvalkommen",
+     "onbklar",
+     "onbsenare",
+     "behlarmnekat",
+     "lagatimerlofte",
+     "imp4sparad",
+     "impgrans",
+     "impgransai",
+     "impdelning",
+     "kontoradera",
+     "kontoreauth",
+     "kontovantan",
+     "adminej",
+     "modtom",
+     "notisertyp",
+     "mfaaktiv",
+     "minaanmalningar",
+     "kontojuridik",
+     "soctomttyst",
+     "komprelaterade"
+    ],
+    "instanser": [
+     {
+      "art": "arkivimport",
+      "ordinal": 9,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "arkivimport",
+      "ordinal": 11,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "arkivimport",
+      "ordinal": 15,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "arkivimport",
+      "ordinal": 17,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "arkivimport",
+      "ordinal": 25,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "arkivimport",
+      "ordinal": 27,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "arkivimport",
+      "ordinal": 29,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "faq",
+      "ordinal": 11,
+      "familj": "faq-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "aldersgrans",
+      "ordinal": 5,
+      "familj": "aldersgrans-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "epostverif",
+      "ordinal": 5,
+      "familj": "epostverif-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "epostverif",
+      "ordinal": 7,
+      "familj": "epostverif-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "samtycke",
+      "ordinal": 13,
+      "familj": "samtycke-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "samtycke",
+      "ordinal": 19,
+      "familj": "samtycke-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "samtycke",
+      "ordinal": 25,
+      "familj": "samtycke-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "samtycke",
+      "ordinal": 28,
+      "familj": "samtycke-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter",
+      "ordinal": 11,
+      "familj": "rapporter-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter",
+      "ordinal": 21,
+      "familj": "rapporter-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter",
+      "ordinal": 30,
+      "familj": "rapporter-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter",
+      "ordinal": 40,
+      "familj": "rapporter-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter412",
+      "ordinal": 11,
+      "familj": "rapporter412-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter412",
+      "ordinal": 21,
+      "familj": "rapporter412-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter412",
+      "ordinal": 30,
+      "familj": "rapporter412-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter412",
+      "ordinal": 40,
+      "familj": "rapporter412-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "juridik",
+      "ordinal": 10,
+      "familj": "juridik-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "juridik",
+      "ordinal": 12,
+      "familj": "juridik-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "juridik",
+      "ordinal": 14,
+      "familj": "juridik-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "statefel",
+      "ordinal": 13,
+      "familj": "statefel-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "statefel",
+      "ordinal": 15,
+      "familj": "statefel-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "statefel412",
+      "ordinal": 13,
+      "familj": "statefel412-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "statefel412",
+      "ordinal": 15,
+      "familj": "statefel412-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "synkko",
+      "ordinal": 5,
+      "familj": "synkko-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "synkko",
+      "ordinal": 23,
+      "familj": "synkko-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "synkko",
+      "ordinal": 29,
+      "familj": "synkko-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "synkko",
+      "ordinal": 41,
+      "familj": "synkko-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "synkko",
+      "ordinal": 46,
+      "familj": "synkko-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "synkko",
+      "ordinal": 51,
+      "familj": "synkko-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "receptdelningsstatus",
+      "ordinal": 5,
+      "familj": "receptdelningsstatus-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "receptdelningsstatus",
+      "ordinal": 22,
+      "familj": "receptdelningsstatus-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "receptdelningsstatus",
+      "ordinal": 30,
+      "familj": "receptdelningsstatus-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "receptdelningsstatus",
+      "ordinal": 38,
+      "familj": "receptdelningsstatus-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "receptdelningsstatus",
+      "ordinal": 52,
+      "familj": "receptdelningsstatus-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "receptdelningsstatus",
+      "ordinal": 65,
+      "familj": "receptdelningsstatus-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "inkoputeslutna",
+      "ordinal": 7,
+      "familj": "inkoputeslutna-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 5,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 18,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 19,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 22,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 23,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 32,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 34,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "veckorostavgor",
+      "ordinal": 13,
+      "familj": "veckorostavgor-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "veckorostavgor",
+      "ordinal": 18,
+      "familj": "veckorostavgor-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "authepost",
+      "ordinal": 5,
+      "familj": "authepost-462",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "authepostklar",
+      "ordinal": 4,
+      "familj": "authepostklar-462",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "authmfa",
+      "ordinal": 5,
+      "familj": "authmfa-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "authmfa",
+      "ordinal": 11,
+      "familj": "authmfa-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "onbalderblock",
+      "ordinal": 5,
+      "familj": "onbalderblock-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "onbvalkommen",
+      "ordinal": 5,
+      "familj": "onbvalkommen-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "onbklar",
+      "ordinal": 3,
+      "familj": "onbklar-462",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "onbklar",
+      "ordinal": 10,
+      "familj": "onbklar-462",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "onbklar",
+      "ordinal": 15,
+      "familj": "onbklar-462",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "onbsenare",
+      "ordinal": 23,
+      "familj": "onbsenare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "behlarmnekat",
+      "ordinal": 5,
+      "familj": "behlarmnekat-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "behlarmnekat",
+      "ordinal": 9,
+      "familj": "behlarmnekat-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "behlarmnekat",
+      "ordinal": 10,
+      "familj": "behlarmnekat-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "lagatimerlofte",
+      "ordinal": 5,
+      "familj": "lagatimerlofte-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "lagatimerlofte",
+      "ordinal": 9,
+      "familj": "lagatimerlofte-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "lagatimerlofte",
+      "ordinal": 10,
+      "familj": "lagatimerlofte-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "lagatimerlofte",
+      "ordinal": 14,
+      "familj": "lagatimerlofte-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "imp4sparad",
+      "ordinal": 20,
+      "familj": "imp4sparad-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "impgrans",
+      "ordinal": 11,
+      "familj": "impgrans-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "impgrans",
+      "ordinal": 13,
+      "familj": "impgrans-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "impgransai",
+      "ordinal": 10,
+      "familj": "impgransai-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "impgransai",
+      "ordinal": 12,
+      "familj": "impgransai-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "impdelning",
+      "ordinal": 19,
+      "familj": "impdelning-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontoradera",
+      "ordinal": 20,
+      "familj": "kontoradera-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontoradera",
+      "ordinal": 29,
+      "familj": "kontoradera-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontoradera",
+      "ordinal": 38,
+      "familj": "kontoradera-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontoradera",
+      "ordinal": 47,
+      "familj": "kontoradera-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontoreauth",
+      "ordinal": 11,
+      "familj": "kontoreauth-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontovantan",
+      "ordinal": 12,
+      "familj": "kontovantan-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontovantan",
+      "ordinal": 17,
+      "familj": "kontovantan-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontovantan",
+      "ordinal": 20,
+      "familj": "kontovantan-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "adminej",
+      "ordinal": 11,
+      "familj": "adminej-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "modtom",
+      "ordinal": 11,
+      "familj": "modtom-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "notisertyp",
+      "ordinal": 7,
+      "familj": "notisertyp-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "mfaaktiv",
+      "ordinal": 17,
+      "familj": "mfaaktiv-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "mfaaktiv",
+      "ordinal": 26,
+      "familj": "mfaaktiv-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "minaanmalningar",
+      "ordinal": 12,
+      "familj": "minaanmalningar-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "minaanmalningar",
+      "ordinal": 18,
+      "familj": "minaanmalningar-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "minaanmalningar",
+      "ordinal": 26,
+      "familj": "minaanmalningar-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontojuridik",
+      "ordinal": 26,
+      "familj": "kontojuridik-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "soctomttyst",
+      "ordinal": 5,
+      "familj": "soctomttyst-412",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "komprelaterade",
+      "ordinal": 1,
+      "familj": "komprelaterade-panel",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "komprelaterade",
+      "ordinal": 6,
+      "familj": "komprelaterade-panel",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "komprelaterade",
+      "ordinal": 15,
+      "familj": "komprelaterade-panel",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     }
+    ]
+   },
+   "constraints": [
+    {
+     "vad": "texten mot appytan i morkt lage",
+     "troskel": 3,
+     "kallaTilKrav": "text 1.4.3",
+     "uppmatt_mork": {
+      "varde": 7.2,
+      "bakgrund": "#17251d"
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 205,
+   "berordaArtefakter": [
+    "tomtrecept",
+    "offline",
+    "hemrecept",
+    "sortera",
+    "plussheet",
+    "smartimport",
+    "skafferi",
+    "familj",
+    "installningar",
+    "notiser",
+    "vemat",
+    "familjebetyg",
+    "placera",
+    "kalender",
+    "onboarding",
+    "mer",
+    "vanner",
+    "meddelanden",
+    "menysmak",
+    "statistik",
+    "fotoimport",
+    "arkivimport",
+    "taggar",
+    "allergener",
+    "delatlista",
+    "delatmedmig",
+    "chatt",
+    "chatt320",
+    "kontosakerhet",
+    "inloggning",
+    "grupp",
+    "ingredienssok",
+    "notisinstallningar",
+    "faq",
+    "profil",
+    "familjeform",
+    "betygsoversikt",
+    "forfragningar",
+    "vanprofil",
+    "publikprofil",
+    "laggtillmedlemmar",
+    "nygruppchatt",
+    "menyforhands",
+    "nydelatlista",
+    "delatlistor",
+    "taggdetalj",
+    "aldersgrans",
+    "onboardingimport",
+    "epostverif",
+    "mfa",
+    "samtycke",
+    "rapporter",
+    "rapporter412",
+    "juridik",
+    "juridik412",
+    "konflikt",
+    "admin",
+    "statetom",
+    "statetom412",
+    "statefel",
+    "statefel412",
+    "kontextmeny",
+    "hem360",
+    "storsttext",
+    "tangentbord",
+    "langavarden",
+    "okandingrediens",
+    "veckoallergi",
+    "synkko",
+    "chattredigerat",
+    "chattmeny",
+    "safeareaios",
+    "hem",
+    "hemtom",
+    "hemladdar",
+    "hemoffline",
+    "hemfel",
+    "receptkommentarer",
+    "receptcooksnap",
+    "receptdelningsstatus",
+    "receptbildfel",
+    "betygvemat",
+    "betygperperson",
+    "betygsammanslaget",
+    "bredskal",
+    "bredlandskap",
+    "bredrecept",
+    "bredmeny",
+    "bredinkop",
+    "bredgrid",
+    "vmbnormal",
+    "vmbtom",
+    "vmbgenererar",
+    "vmbomrostning",
+    "vmbkonflikt",
+    "vmbdelvis",
+    "vmboffline",
+    "vmbflytta",
+    "rcbnormal",
+    "rcbportion",
+    "rcbofullstandigt",
+    "rcblaser",
+    "rcbarvegods",
+    "rcbkommentar",
+    "rcboffline",
+    "ikbnormal",
+    "ikbtom",
+    "ikbdelad",
+    "ikboffline",
+    "inkopbockad",
+    "inkoputeslutna",
+    "skafferibas",
+    "delatinkorg",
+    "delatvidare",
+    "delatlistaaktiv",
+    "delatmindel",
+    "delatnarvaro",
+    "delatclaimkonflikt",
+    "delatlasare",
+    "veckoprompt",
+    "veckodolda",
+    "veckoplacering",
+    "veckoplaceringvald",
+    "veckoautoplacerad",
+    "veckokalender",
+    "veckonarvaro",
+    "veckooverflow",
+    "veckoflytta",
+    "veckoinkop",
+    "veckorostlagg",
+    "veckorostavgor",
+    "authlogga",
+    "authskapa",
+    "authepost",
+    "authepostklar",
+    "authmfa",
+    "onbalder",
+    "onbalderblock",
+    "onbaldrefel",
+    "onbvalkommen",
+    "onballergi",
+    "onbimport",
+    "onbklar",
+    "onbfel",
+    "onbateruppta",
+    "onbsenare",
+    "behlarmnekat",
+    "lagatimerlofte",
+    "imp2hamtar",
+    "imp3granska",
+    "imp4sparad",
+    "impassist3",
+    "impfil",
+    "impgrans",
+    "impgransai",
+    "impdelning",
+    "kontoradera",
+    "kontoreauth",
+    "kontovantan",
+    "kontodelvis",
+    "adminskal",
+    "adminej",
+    "modtom",
+    "cooksnapgalleri",
+    "vanprofildelning",
+    "kontodataexport",
+    "dataexportfel",
+    "kontosakerhetsvy",
+    "notisertyp",
+    "mfalagg",
+    "mfaaktiv",
+    "minaanmalningar",
+    "kontojuridik",
+    "kontostatistik",
+    "statistikfullstandighet",
+    "globsessiontyst",
+    "globinstallera",
+    "flervalingang",
+    "flerbar",
+    "flergrupp",
+    "fbknapp",
+    "fbinkorgvy",
+    "fbblockerade",
+    "socflode",
+    "soctomtingavanner",
+    "soctomttyst",
+    "socknuff",
+    "socintegritet",
+    "socomrostning",
+    "socreaktion",
+    "socgruppinfo",
+    "socdelatvan",
+    "insthushall",
+    "instportion",
+    "jurriktlinjer",
+    "sokpanel",
+    "admmatning",
+    "admdrift",
+    "kompbild",
+    "kompdubblett",
+    "komprelaterade",
+    "kompmallar",
+    "kompsason",
+    "komparvegods",
+    "installergen",
+    "surfplatta"
+   ],
+   "instanserIScope": 791,
+   "utanforScope": {
+    "antal": 45,
+    "familjer": 30,
+    "status": "UNDECIDED",
+    "$not": "OTHER_FINAL_SURFACE. Ingen mappning antagen."
+   },
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-text-innehall-#24382c ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-innehall-d8",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-innehall-#37453a",
+   "roll": "text-innehall",
+   "ljusvarde": "#37453a",
+   "morkvarde": "#93a48d",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-12",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "neutral innehallstext pa den verifierade appytan #17251d",
+    "sekundar niva under rubriken; 6.02 mot rubrikens 7.20",
+    "vardet ar det vanligaste authored morka innehallstextvardet i systemet",
+    "neutralt, ingen semantisk accent"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Beslutet ar auktoritet, inte harledd evidens."
+   },
+   "beslutsunderlag": {
+    "typ": "HONEST_FULL_DARK_SIMULATION",
+    "scen": "soctomtingavanner",
+    "artefakt": "fas2/r04-forsta-preview.json",
+    "undecidedPaintedElements": 0,
+    "kollateralaAndringar": 0
+   },
+   "supersederar": {
+    "status": "SUPERSEDED_PROVISIONAL",
+    "$regel": "Provisoriska varden far aldrig vinna over HUMAN_APPROVED inom samma exakta beslutsscope. Historiken behalls och fas2/r04-pilottokens.json skrivs inte om.",
+    "pilottokens": [
+     {
+      "namn": "--text-innehall-c",
+      "morkvarde": "#93a48d",
+      "provisoriskVariant": true,
+      "deklarationer": 12
+     }
+    ],
+    "instanserMedProvisorisktVarde": 40,
+    "varavRedanLikaMedBeslutet": 34,
+    "varavFaktiskFargforandring": 6,
+    "forandradeFamiljer": [
+     "dataexport-414"
+    ],
+    "forandradeArtefakter": [
+     "dataexport"
+    ],
+    "instanser": [
+     {
+      "art": "dataexport",
+      "ordinal": 13,
+      "familj": "dataexport-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "dataexport",
+      "ordinal": 26,
+      "familj": "dataexport-414",
+      "nuvarande": "#8fb89a",
+      "blir": "#93a48d",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "dataexport",
+      "ordinal": 27,
+      "familj": "dataexport-414",
+      "nuvarande": "#8fb89a",
+      "blir": "#93a48d",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "dataexport",
+      "ordinal": 28,
+      "familj": "dataexport-414",
+      "nuvarande": "#8fb89a",
+      "blir": "#93a48d",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "dataexport",
+      "ordinal": 29,
+      "familj": "dataexport-414",
+      "nuvarande": "#8fb89a",
+      "blir": "#93a48d",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "dataexport",
+      "ordinal": 30,
+      "familj": "dataexport-414",
+      "nuvarande": "#8fb89a",
+      "blir": "#93a48d",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "dataexport",
+      "ordinal": 31,
+      "familj": "dataexport-414",
+      "nuvarande": "#8fb89a",
+      "blir": "#93a48d",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "faq",
+      "ordinal": 17,
+      "familj": "faq-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "faq",
+      "ordinal": 22,
+      "familj": "faq-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "faq",
+      "ordinal": 27,
+      "familj": "faq-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "faq",
+      "ordinal": 32,
+      "familj": "faq-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "juridik",
+      "ordinal": 11,
+      "familj": "juridik-322",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "juridik",
+      "ordinal": 13,
+      "familj": "juridik-322",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "juridik",
+      "ordinal": 15,
+      "familj": "juridik-322",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "veckorostavgor",
+      "ordinal": 19,
+      "familj": "veckorostavgor-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "veckorostavgor",
+      "ordinal": 32,
+      "familj": "veckorostavgor-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "authepost",
+      "ordinal": 6,
+      "familj": "authepost-462",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "authepost",
+      "ordinal": 7,
+      "familj": "authepost-462",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "authmfa",
+      "ordinal": 12,
+      "familj": "authmfa-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "authmfa",
+      "ordinal": 13,
+      "familj": "authmfa-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "onbalderblock",
+      "ordinal": 6,
+      "familj": "onbalderblock-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "onbvalkommen",
+      "ordinal": 6,
+      "familj": "onbvalkommen-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "onbklar",
+      "ordinal": 4,
+      "familj": "onbklar-462",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "onbklar",
+      "ordinal": 19,
+      "familj": "onbklar-462",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "onbsenare",
+      "ordinal": 24,
+      "familj": "onbsenare-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "impdelning",
+      "ordinal": 16,
+      "familj": "impdelning-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "impdelningsocial",
+      "ordinal": 16,
+      "familj": "impdelningsocial-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "kontoreauth",
+      "ordinal": 12,
+      "familj": "kontoreauth-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "kontoreauth",
+      "ordinal": 13,
+      "familj": "kontoreauth-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "adminej",
+      "ordinal": 12,
+      "familj": "adminej-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "modtom",
+      "ordinal": 12,
+      "familj": "modtom-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "notisertyp",
+      "ordinal": 8,
+      "familj": "notisertyp-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "mfaaktiv",
+      "ordinal": 27,
+      "familj": "mfaaktiv-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "mfaaktiv",
+      "ordinal": 28,
+      "familj": "mfaaktiv-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "minaanmalningar",
+      "ordinal": 7,
+      "familj": "minaanmalningar-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "kontojuridik",
+      "ordinal": 27,
+      "familj": "kontojuridik-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "kontojuridik",
+      "ordinal": 28,
+      "familj": "kontojuridik-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "soctomttyst",
+      "ordinal": 6,
+      "familj": "soctomttyst-412",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "komprelaterade",
+      "ordinal": 25,
+      "familj": "komprelaterade-panel",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "komprelaterade",
+      "ordinal": 26,
+      "familj": "komprelaterade-panel",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     }
+    ]
+   },
+   "constraints": [
+    {
+     "vad": "texten mot appytan i morkt lage",
+     "troskel": 4.5,
+     "kallaTilKrav": "text 1.4.3",
+     "uppmatt_mork": {
+      "varde": 6.02,
+      "bakgrund": "#17251d"
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 81,
+   "berordaArtefakter": [
+    "snabbspara",
+    "smartimport",
+    "notiser",
+    "placera",
+    "kalender",
+    "onboarding",
+    "meddelanden",
+    "menysmak",
+    "statistik",
+    "skrivsjalv",
+    "fotoimport",
+    "allergener",
+    "delatlista",
+    "inloggning",
+    "grupp",
+    "dataexport",
+    "faq",
+    "familjeform",
+    "menyforhands",
+    "tadelning",
+    "mfa",
+    "juridik",
+    "juridik412",
+    "konflikt",
+    "receptkommentarer",
+    "receptcooksnap",
+    "vmbnormal",
+    "vmbgenererar",
+    "vmboffline",
+    "vmbflytta",
+    "rcbnormal",
+    "rcbportion",
+    "rcbofullstandigt",
+    "rcblaser",
+    "rcbkommentar",
+    "rcboffline",
+    "ikbnormal",
+    "ikbtom",
+    "ikboffline",
+    "inkopbockad",
+    "veckorostavgor",
+    "authepost",
+    "authmfa",
+    "onbalder",
+    "onbalderblock",
+    "onbaldrefel",
+    "onbvalkommen",
+    "onballergi",
+    "onbimport",
+    "onbklar",
+    "onbfel",
+    "onbateruppta",
+    "onbsenare",
+    "impdelning",
+    "impdelningsocial",
+    "kontoreauth",
+    "adminej",
+    "modtom",
+    "vanprofildelning",
+    "samtyckeai",
+    "kontodataexport",
+    "dataexportfel",
+    "notisertyp",
+    "mfalagg",
+    "mfaaktiv",
+    "minaanmalningar",
+    "kontojuridik",
+    "kontostatistik",
+    "statistikfullstandighet",
+    "fbformular",
+    "fbinkorgvy",
+    "soctomtingavanner",
+    "soctomttyst",
+    "socreaktion",
+    "insthushall",
+    "sokpanel",
+    "admmatning",
+    "admdrift",
+    "kompdubblett",
+    "komprelaterade",
+    "installergen"
+   ],
+   "instanserIScope": 198,
+   "utanforScope": {
+    "antal": 113,
+    "familjer": 84,
+    "status": "UNDECIDED",
+    "$not": "OTHER_FINAL_SURFACE. Ingen mappning antagen."
+   },
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-text-innehall-#37453a ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-innehall-d9",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#7d897c",
+   "roll": "ikon-fristaende",
+   "ljusvarde": "#7d897c",
+   "morkvarde": "rgba(245,244,237,0.4)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-12",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "direkt-pa-appytan",
+    "utan-text",
+    "utan-ikon",
+    "tackande",
+    "grafik:redundant"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "authored data-graphic-role=\"redundant\" — ikonen upprepar information som star i text",
+    "ingen barare av icke-textinformation, darfor inget icke-textkrav",
+    "ska inte konkurrera med rubrik och brodtext",
+    "varma accenter avvisade semantiskt; opaka hogkontrastneutraler ger onodig visuell tyngd",
+    "40 % behaller synlighet men underordnar ikonen texten"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Beslutet ar auktoritet, inte harledd evidens."
+   },
+   "beslutsunderlag": {
+    "typ": "HONEST_FULL_DARK_SIMULATION",
+    "scen": "soctomtingavanner",
+    "artefakt": "fas2/r04-forsta-preview.json",
+    "undecidedPaintedElements": 0,
+    "kollateralaAndringar": 0
+   },
+   "supersederar": {
+    "status": "SUPERSEDED_PROVISIONAL",
+    "$regel": "Provisoriska varden far aldrig vinna over HUMAN_APPROVED inom samma exakta beslutsscope. Historiken behalls och fas2/r04-pilottokens.json skrivs inte om.",
+    "pilottokens": [],
+    "instanserMedProvisorisktVarde": 1,
+    "varavRedanLikaMedBeslutet": 0,
+    "varavFaktiskFargforandring": 1,
+    "forandradeFamiljer": [
+     "soctomttyst-412"
+    ],
+    "forandradeArtefakter": [
+     "soctomttyst"
+    ],
+    "instanser": [
+     {
+      "art": "soctomttyst",
+      "ordinal": 1,
+      "familj": "soctomttyst-412",
+      "nuvarande": "#c9d3c4",
+      "blir": "rgba(245,244,237,0.4)",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     }
+    ]
+   },
+   "constraints": [
+    {
+     "vad": "redundant grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — data-graphic-role=\"redundant\""
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 2,
+   "berordaArtefakter": [
+    "soctomtingavanner",
+    "soctomttyst"
+   ],
+   "instanserIScope": 2,
+   "utanforScope": {
+    "antal": 0,
+    "familjer": 0,
+    "status": "UNDECIDED",
+    "$not": "OTHER_FINAL_SURFACE. Ingen mappning antagen."
+   },
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#7d897c ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d1",
+   "revision": 1
   }
  ],
  "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
  "perOmfattning": {
   "WHOLE_CANDIDATE": 9,
-  "SUBGROUP": 33
+  "SUBGROUP": 36
  },
  "$status": "Ett beslut har status ACTIVE eller SUPERSEDED. Ett ersatt beslut raderas aldrig — det star kvar med reason och vilket beslut som ersatte det. Bara ACTIVE-beslut far anvandas vid migrering.",
- "aktiva": 42,
+ "aktiva": 45,
  "ersatta": 2,
  "$identitet": "beslutsId ar scopet (kandidat och eventuell undergrupp). Lagringsidentiteten ar scope + revision. Tokennamnet tilldelas en gang och ar persistent; varken supersede, insattning eller omsortering far andra ett befintligt namn.",
  "perTyp2": {
   "YTA": 31,
   "TEXTKONTRAST": 9
  },
- "$halllsTillbaka": {
+ "$statusmodell": {
   "$datum": "2026-08-12",
-  "$regel": "Ett godkant beslut skrivs INTE nar dess scope innehaller instanser som redan har ett authored morkervarde som skiljer sig fran beslutet. Den skillnaden maste adjudiceras forst.",
-  "poster": [
-   {
-    "namn": "rubrik",
-    "roll": "text-innehall",
-    "ljusvarde": "#24382c",
-    "godkantMorkvarde": "#8fb89a",
-    "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
-    "instanserIScope": 791,
-    "familjerIScope": 205,
-    "instanserUtanforScope": 45,
-    "medBefintligtAuthoredMorkervarde": 96,
-    "uppmattaAuthoredVarden": [
-     {
-      "varde": "rgb(201,211,196)",
-      "instanser": 96
-     }
-    ],
-    "kalla": "provisoriska pilottokens (fas2/r04-pilottokens.json, provisorisk_variant: true) — INTE ett registrerat beslut",
-    "fraga": "Ska beslutet ersatta det provisoriska pilottokenvardet for dessa instanser, eller ska scopet delas sa att de undantas?"
-   },
-   {
-    "namn": "brodtext",
-    "roll": "text-innehall",
-    "ljusvarde": "#37453a",
-    "godkantMorkvarde": "#93a48d",
-    "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
-    "instanserIScope": 198,
-    "familjerIScope": 81,
-    "instanserUtanforScope": 113,
-    "medBefintligtAuthoredMorkervarde": 40,
-    "uppmattaAuthoredVarden": [
-     {
-      "varde": "rgb(147,164,141)",
-      "instanser": 34
-     },
-     {
-      "varde": "rgb(143,184,154)",
-      "instanser": 6
-     }
-    ],
-    "kalla": "provisoriska pilottokens (fas2/r04-pilottokens.json, provisorisk_variant: true) — INTE ett registrerat beslut",
-    "fraga": "Ska beslutet ersatta det provisoriska pilottokenvardet for dessa instanser, eller ska scopet delas sa att de undantas?"
-   },
-   {
-    "namn": "ikonlinje",
-    "roll": "ikon-fristaende",
-    "ljusvarde": "#7d897c",
-    "godkantMorkvarde": "rgba(245,244,237,0.4)",
-    "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
-    "instanserIScope": 2,
-    "familjerIScope": 2,
-    "instanserUtanforScope": 0,
-    "medBefintligtAuthoredMorkervarde": 1,
-    "uppmattaAuthoredVarden": [
-     {
-      "varde": "rgb(201,211,196)",
-      "instanser": 1
-     }
-    ],
-    "kalla": "provisoriska pilottokens (fas2/r04-pilottokens.json, provisorisk_variant: true) — INTE ett registrerat beslut",
-    "fraga": "Ska beslutet ersatta det provisoriska pilottokenvardet for dessa instanser, eller ska scopet delas sa att de undantas?"
-   }
-  ]
+  "HUMAN_APPROVED": "ett registrerat designbeslut. Auktoritet.",
+  "VERIFIED_EXISTING_MAPPING": "en uppmatt ljus->mork-mappning i artefakter med authored dark, buren av ett bastoken (--surface-app, --border-app, --text-app). Ger beslutskredit.",
+  "PROVISIONAL": "ett pilottokenvarde markt provisorisk_variant i fas2/r04-pilottokens.json. Ger ALDRIG beslutskredit och far aldrig vinna over HUMAN_APPROVED inom samma exakta beslutsscope.",
+  "SUPERSEDED_PROVISIONAL": "ett provisoriskt varde som ligger inom ett registrerat besluts exakta scope och darmed ersatts av beslutet. Historiken behalls; pilottokenfilen skrivs inte om.",
+  "UNDECIDED": "inget varde ur nagon av ovanstaende kallor.",
+  "$kreditregel": "Endast HUMAN_APPROVED och VERIFIED_EXISTING_MAPPING ger completeness-kredit."
  }
 }
