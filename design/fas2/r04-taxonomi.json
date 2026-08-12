@@ -1,0 +1,3733 @@
+{
+ "$schema": "butlery-r04-taxonomi/1",
+ "$datum": "2026-08-12",
+ "$status": "TAXONOMI OCH OMRAKNING. Ingen registry-write, ingen produktwrite, ingen preview renderad, ingen farg vald.",
+ "A_nyRoll": {
+  "namn": "BRAND_SUPPORTING_TEXT",
+  "provenance": "HUMAN_APPROVED_TAXONOMY_DECISION",
+  "auktoritet": "Malin Gisslen",
+  "definition": [
+   "direkt knuten till wordmark, logotyp eller brand lockup",
+   "uttrycker varumarkesidentitet eller tagline",
+   "ar inte lopande produktinnehall",
+   "har egen visuell hierarki relativt wordmark och ovrig innehallstext"
+  ],
+  "galler": "Anvander INTE automatiskt P-TEXT-CONTENT och arver inte brodtextens mappning bara for att markupen anvander samma generiska textklass."
+ },
+ "B_nyPrincip": {
+  "namn": "P-TEXT-BRAND",
+  "provenance": "HUMAN_APPROVED_DESIGN_PRINCIPLE",
+  "typ": "PRINCIP, INTE FARGMAPPNING",
+  "regler": [
+   "brand-supporting text ska bevara sin relation till wordmark och brand lockup",
+   "den ska vara lasbar enligt tillampligt textkrav",
+   "den far vara visuellt mer identitetspraglad an neutral brodtext",
+   "neutrala brodtextmappningar far inte automatiskt ateranvandas",
+   "semantisk eller accentpalett far anvandas bara om det faktiskt ligger i brandrollen, aldrig som kontrastworkaround",
+   "samma raa ljusfarg i BRAND_SUPPORTING_TEXT och BODY_TEXT ar inte evidens for mappningsekvivalens",
+   "faktiskt morkervarde beslutas per beslutsenhet"
+  ],
+  "$not": "Ingen farg vald i detta block.",
+  "$registerstatus": "SKRIVEN TILL DENNA ARTEFAKT, INTE TILL fas2/r04-designbeslut.json. Punkt 15 forbjod registry-write. Principen ar redo att lankas in i registret pa ditt ord."
+ },
+ "C_de24": {
+  "$fraga": "Hur manga av de 24 flaggade enheterna byter beslutsroll av taxonomitillagget?",
+  "$svar": "INGEN.",
+  "varumarkestest": {
+   "instanserProvade": 169,
+   "iBrandLockup": 3,
+   "$metod": "element vars behallare inom fyra steg innehaller en img med wordmark, lockup eller alt=\"Butlery\"",
+   "traffar": [
+    {
+     "art": "authlogga",
+     "ordinal": 20,
+     "text": "Logga in",
+     "versal": false,
+     "vikt": "600"
+    },
+    {
+     "art": "authskapa",
+     "ordinal": 31,
+     "text": "Skapa konto",
+     "versal": false,
+     "vikt": "600"
+    },
+    {
+     "art": "globsessiontyst",
+     "ordinal": 25,
+     "text": "Logga in",
+     "versal": false,
+     "vikt": "600"
+    }
+   ],
+   "$slutsats": "De tre traffarna ar atgardsknappar — \"Logga in\" och \"Skapa konto\" — inte varumarkestext. De klassas SEMANTIC_ACTION."
+  },
+  "fordelning": {
+   "BODY_CONTENT": 1,
+   "OTHER_SURFACE": 22,
+   "OTHER_GRAPHIC": 1
+  },
+  "enheter": [
+   {
+    "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+    "roll": "text-innehall",
+    "ljus": "#17251d",
+    "klass": "BODY_CONTENT",
+    "grund": "roll text-innehall utan kontrollankare, utan state, utan komponent, och utan brand lockup i narheten",
+    "egetVardeArAccent": false,
+    "accentforaldrar": [
+     "#ce7c1e"
+    ]
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · ram",
+    "roll": "ram-behallare",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen ram-behallare galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande · ram",
+    "roll": "ram-behallare",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen ram-behallare galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande · ram",
+    "roll": "ram-behallare",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen ram-behallare galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "ikon-kontroll|#17251d ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad",
+    "roll": "ikon-kontroll",
+    "ljus": "#17251d",
+    "klass": "OTHER_GRAPHIC",
+    "grund": "ar ingen textenhet — rollen ikon-kontroll galler en grafisk del",
+    "egetVardeArAccent": false,
+    "accentforaldrar": [
+     "#ce7c1e"
+    ]
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · nastlad-yta · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#f5f4ed",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": false,
+    "accentforaldrar": [
+     "#f7e8d2"
+    ]
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · ram",
+    "roll": "ram-behallare",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen ram-behallare galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   },
+   {
+    "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:checked · nastlad-yta · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#f5f4ed",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": false,
+    "accentforaldrar": [
+     "#8a5212"
+    ]
+   },
+   {
+    "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljus": "#ce7c1e",
+    "klass": "OTHER_SURFACE",
+    "grund": "ar ingen textenhet — rollen yta-kontroll galler en malad yta",
+    "egetVardeArAccent": true,
+    "accentforaldrar": []
+   }
+  ],
+  "BRAND_SUPPORTING_TEXT": 0,
+  "$not": "Varumarkesraden i start ingar inte i de 24. Den ingar inte alls i 91-populationen."
+ },
+ "D_progress": {
+  "$rattelse": "Rollkartan sager yta-upphojd for bade sparet och fyllningen. Bada ar delar av en forloppsindikator, inte generiska upphojda ytor.",
+  "PROGRESS_TRACK": {
+   "tidigareRoll": "yta-upphojd",
+   "definition": "barande grafisk struktur som visar forloppets hela utstrackning",
+   "barare": false,
+   "instans": "start · produktordinal 18 · rgba(245,244,237,0.18) · 120×3 px, border-radius 999, overflow hidden"
+  },
+  "PROGRESS_VALUE": {
+   "tidigareRoll": "yta-upphojd",
+   "definition": "informationsbarande forloppsvarde — enda bararen av hur langt forloppet gatt",
+   "barare": true,
+   "bedomsMot": "PROGRESS_TRACK, aldrig direkt mot appbakgrunden",
+   "instans": "start · produktordinal 19 · #ce7c1e · bredd 46 % inuti sparet"
+  },
+  "$regel": "Exakt 1:1 mot sparet ar underkant eftersom fyllningen ar required carrier. Ingen generell numerisk yttroskel infors.",
+  "$ingenFargmappning": "Omklassningen beslutar ingen farg."
+ },
+ "E_verktyg": {
+  "tools/svg-paint-census.mjs": "malningscensus for svg-barn. Skiljer PAINT_CARRIER fran SOURCE_DECLARATION. Kallklasser ATTRIBUT, INLINE, CSS_REGEL, ARVD, OKAND.",
+  "tools/svg-paint-census-fixtures.mjs": "SVG-P-01 … SVG-P-12, alla grona",
+  "metodprovTotalt": {
+   "fore": 299,
+   "nya": 12,
+   "efter": 311
+  }
+ },
+ "F_avstamning": {
+  "$regel": "Ett arvt barn ar en paint carrier utan egen source declaration. Det far aldrig bli en egen skrivbar post eller en egen beslutsenhet.",
+  "totalt": 2383,
+  "ARVD": 2286,
+  "EGEN_KALLA": 97,
+  "OKAND": 0,
+  "summerar": true,
+  "perKallklass": {
+   "ATTRIBUT": 97,
+   "ARVD": 2286
+  },
+  "artefakterMedEgenKalla": 34,
+  "nyaSkrivbaraPoster": 97,
+  "nyaSkrivbaraPosterFranArvda": 0
+ },
+ "G_skarmar": {
+  "antal": 34,
+  "summering": {
+   "foreMalade": 1909,
+   "nyaBarn": 97,
+   "efterMalade": 2006,
+   "summerar": true,
+   "oforklarade": 0
+  },
+  "perSkarm": [
+   {
+    "art": "start",
+    "fore": {
+     "art": "start",
+     "malade": 9,
+     "DECIDED": 0,
+     "VERIFIED": 4,
+     "PROVISIONAL": 0,
+     "UNDECIDED": 5,
+     "utanKredit": 5,
+     "saknasLista": [
+      [
+       "yta-app #24382c",
+       1
+      ],
+      [
+       "text-innehall #dca968",
+       1
+      ],
+      [
+       "yta-upphojd rgba(245,244,237,0.18)",
+       1
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       1
+      ],
+      [
+       "text-innehall #c9d3c4",
+       1
+      ]
+     ],
+     "provLista": []
+    },
+    "nyaBarn": 8,
+    "efter": {
+     "malade": 17,
+     "DECIDED": 0,
+     "VERIFIED": 4,
+     "PROVISIONAL": 0,
+     "UNDECIDED": 13
+    },
+    "nyaVarden": [
+     "stroke rgb(245, 244, 237)",
+     "stroke rgb(147, 164, 141)",
+     "fill rgb(206, 124, 30)",
+     "fill rgb(161, 90, 10)",
+     "stroke rgb(206, 124, 30)"
+    ]
+   },
+   {
+    "art": "installningar",
+    "fore": {
+     "art": "installningar",
+     "malade": 67,
+     "DECIDED": 12,
+     "VERIFIED": 5,
+     "PROVISIONAL": 27,
+     "UNDECIDED": 23,
+     "utanKredit": 50,
+     "saknasLista": [
+      [
+       "text-innehall #3f6b4f",
+       4
+      ],
+      [
+       "yta-kontroll #24382c",
+       1
+      ],
+      [
+       "yta-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "ikon-fristaende #000000",
+       1
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "ikon-fristaende #93a48d",
+       3
+      ],
+      [
+       "text-innehall #93a48d",
+       3
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       2
+      ],
+      [
+       "text-innehall #17251d",
+       1
+      ],
+      [
+       "ram-behallare #f5f4ed",
+       4
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #37453a",
+       1
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       9
+      ],
+      [
+       "ikon-fristaende #627061",
+       11
+      ],
+      [
+       "text-innehall #627061",
+       3
+      ],
+      [
+       "text-innehall #9c3b23",
+       1
+      ],
+      [
+       "ikon-fristaende #9c3b23",
+       1
+      ]
+     ]
+    },
+    "nyaBarn": 7,
+    "efter": {
+     "malade": 74,
+     "DECIDED": 12,
+     "VERIFIED": 5,
+     "PROVISIONAL": 27,
+     "UNDECIDED": 30
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)",
+     "fill rgb(206, 124, 30)",
+     "stroke rgb(245, 244, 237)",
+     "stroke rgb(206, 124, 30)",
+     "fill rgb(147, 164, 141)"
+    ]
+   },
+   {
+    "art": "rapporter",
+    "fore": {
+     "art": "rapporter",
+     "malade": 40,
+     "DECIDED": 4,
+     "VERIFIED": 5,
+     "PROVISIONAL": 21,
+     "UNDECIDED": 10,
+     "utanKredit": 31,
+     "saknasLista": [
+      [
+       "yta-upphojd #24382c",
+       2
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       2
+      ],
+      [
+       "ram-behallare #d8b784",
+       4
+      ],
+      [
+       "text-innehall #3f6b4f",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ram-behallare #ccd1c2",
+       11
+      ],
+      [
+       "ikon-fristaende #627061",
+       4
+      ],
+      [
+       "text-innehall #627061",
+       5
+      ],
+      [
+       "text-innehall #8a5212",
+       1
+      ]
+     ]
+    },
+    "nyaBarn": 6,
+    "efter": {
+     "malade": 46,
+     "DECIDED": 4,
+     "VERIFIED": 5,
+     "PROVISIONAL": 21,
+     "UNDECIDED": 16
+    },
+    "nyaVarden": [
+     "fill rgb(98, 112, 97)"
+    ]
+   },
+   {
+    "art": "rapporter412",
+    "fore": {
+     "art": "rapporter412",
+     "malade": 40,
+     "DECIDED": 4,
+     "VERIFIED": 5,
+     "PROVISIONAL": 21,
+     "UNDECIDED": 10,
+     "utanKredit": 31,
+     "saknasLista": [
+      [
+       "yta-upphojd #24382c",
+       2
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       2
+      ],
+      [
+       "ram-behallare #d8b784",
+       4
+      ],
+      [
+       "text-innehall #3f6b4f",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ram-behallare #ccd1c2",
+       11
+      ],
+      [
+       "ikon-fristaende #627061",
+       4
+      ],
+      [
+       "text-innehall #627061",
+       5
+      ],
+      [
+       "text-innehall #8a5212",
+       1
+      ]
+     ]
+    },
+    "nyaBarn": 6,
+    "efter": {
+     "malade": 46,
+     "DECIDED": 4,
+     "VERIFIED": 5,
+     "PROVISIONAL": 21,
+     "UNDECIDED": 16
+    },
+    "nyaVarden": [
+     "fill rgb(98, 112, 97)"
+    ]
+   },
+   {
+    "art": "hem",
+    "fore": {
+     "art": "hem",
+     "malade": 73,
+     "DECIDED": 4,
+     "VERIFIED": 5,
+     "PROVISIONAL": 26,
+     "UNDECIDED": 38,
+     "utanKredit": 64,
+     "saknasLista": [
+      [
+       "ikon-kontroll #24382c",
+       2
+      ],
+      [
+       "yta-kontroll #24382c",
+       1
+      ],
+      [
+       "ram-kontroll #f5f4ed",
+       8
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       1
+      ],
+      [
+       "yta-upphojd #f5f4ed",
+       1
+      ],
+      [
+       "text-kontroll #a15a0a",
+       1
+      ],
+      [
+       "yta-kontroll #e6ead9",
+       3
+      ],
+      [
+       "text-kontroll #627061",
+       4
+      ],
+      [
+       "ikon-kontroll #627061",
+       4
+      ],
+      [
+       "ikon-kontroll #37453a",
+       1
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "ikon-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "text-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       2
+      ],
+      [
+       "ikon-kontroll #93a48d",
+       3
+      ],
+      [
+       "text-kontroll #93a48d",
+       3
+      ],
+      [
+       "ikon-kontroll #17251d",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #627061",
+       6
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       4
+      ],
+      [
+       "text-innehall #8a5212",
+       1
+      ],
+      [
+       "ram-kontroll #24382c",
+       4
+      ],
+      [
+       "ram-kontroll #ccd1c2",
+       7
+      ],
+      [
+       "text-kontroll #24382c",
+       4
+      ]
+     ]
+    },
+    "nyaBarn": 5,
+    "efter": {
+     "malade": 78,
+     "DECIDED": 4,
+     "VERIFIED": 5,
+     "PROVISIONAL": 26,
+     "UNDECIDED": 43
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "hemmorkt",
+    "fore": {
+     "art": "hemmorkt",
+     "malade": 73,
+     "DECIDED": 2,
+     "VERIFIED": 0,
+     "PROVISIONAL": 0,
+     "UNDECIDED": 71,
+     "utanKredit": 71,
+     "saknasLista": [
+      [
+       "yta-app #17251d",
+       1
+      ],
+      [
+       "ram-app rgba(245,244,237,0.18)",
+       4
+      ],
+      [
+       "text-innehall #93a48d",
+       3
+      ],
+      [
+       "text-innehall #f5f4ed",
+       2
+      ],
+      [
+       "ikon-kontroll #f5f4ed",
+       3
+      ],
+      [
+       "yta-kontroll #24382c",
+       1
+      ],
+      [
+       "ram-kontroll #17251d",
+       8
+      ],
+      [
+       "ram-behallare rgba(245,244,237,0.18)",
+       4
+      ],
+      [
+       "yta-upphojd #2f4437",
+       1
+      ],
+      [
+       "yta-upphojd #17251d",
+       1
+      ],
+      [
+       "text-innehall #dca968",
+       1
+      ],
+      [
+       "text-innehall #c9d3c4",
+       3
+      ],
+      [
+       "ram-kontroll rgba(245,244,237,0.35)",
+       4
+      ],
+      [
+       "text-kontroll #dca968",
+       1
+      ],
+      [
+       "ram-kontroll rgba(245,244,237,0.18)",
+       7
+      ],
+      [
+       "yta-kontroll #2f4437",
+       3
+      ],
+      [
+       "text-kontroll #93a48d",
+       7
+      ],
+      [
+       "text-kontroll #f5f4ed",
+       5
+      ],
+      [
+       "ikon-kontroll #93a48d",
+       7
+      ],
+      [
+       "ikon-kontroll #c9d3c4",
+       1
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       2
+      ],
+      [
+       "ikon-kontroll #17251d",
+       1
+      ]
+     ],
+     "provLista": []
+    },
+    "nyaBarn": 5,
+    "efter": {
+     "malade": 78,
+     "DECIDED": 2,
+     "VERIFIED": 0,
+     "PROVISIONAL": 0,
+     "UNDECIDED": 76
+    },
+    "nyaVarden": [
+     "fill rgb(245, 244, 237)"
+    ]
+   },
+   {
+    "art": "hemtom",
+    "fore": {
+     "art": "hemtom",
+     "malade": 53,
+     "DECIDED": 3,
+     "VERIFIED": 5,
+     "PROVISIONAL": 13,
+     "UNDECIDED": 32,
+     "utanKredit": 45,
+     "saknasLista": [
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       3
+      ],
+      [
+       "text-kontroll #17251d",
+       1
+      ],
+      [
+       "ikon-kontroll #17251d",
+       2
+      ],
+      [
+       "ikon-kontroll #37453a",
+       3
+      ],
+      [
+       "text-kontroll #627061",
+       3
+      ],
+      [
+       "ikon-kontroll #627061",
+       3
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       1
+      ],
+      [
+       "text-kontroll #8a5212",
+       1
+      ],
+      [
+       "ikon-kontroll #8a5212",
+       1
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "ikon-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "text-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "ikon-kontroll #93a48d",
+       3
+      ],
+      [
+       "text-kontroll #93a48d",
+       3
+      ],
+      [
+       "ram-kontroll #f5f4ed",
+       4
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #627061",
+       3
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       4
+      ],
+      [
+       "ram-kontroll #ccd1c2",
+       3
+      ],
+      [
+       "text-kontroll #24382c",
+       3
+      ]
+     ]
+    },
+    "nyaBarn": 5,
+    "efter": {
+     "malade": 58,
+     "DECIDED": 3,
+     "VERIFIED": 5,
+     "PROVISIONAL": 13,
+     "UNDECIDED": 37
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "hemladdar",
+    "fore": {
+     "art": "hemladdar",
+     "malade": 45,
+     "DECIDED": 1,
+     "VERIFIED": 5,
+     "PROVISIONAL": 10,
+     "UNDECIDED": 29,
+     "utanKredit": 39,
+     "saknasLista": [
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       1
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       1
+      ],
+      [
+       "yta-platshallare #e6ead9",
+       10
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "ikon-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "text-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       2
+      ],
+      [
+       "ikon-kontroll #93a48d",
+       3
+      ],
+      [
+       "text-kontroll #93a48d",
+       3
+      ],
+      [
+       "ram-kontroll #f5f4ed",
+       4
+      ],
+      [
+       "ikon-kontroll #17251d",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #627061",
+       3
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       7
+      ]
+     ]
+    },
+    "nyaBarn": 5,
+    "efter": {
+     "malade": 50,
+     "DECIDED": 1,
+     "VERIFIED": 5,
+     "PROVISIONAL": 10,
+     "UNDECIDED": 34
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "hemoffline",
+    "fore": {
+     "art": "hemoffline",
+     "malade": 66,
+     "DECIDED": 5,
+     "VERIFIED": 5,
+     "PROVISIONAL": 26,
+     "UNDECIDED": 30,
+     "utanKredit": 56,
+     "saknasLista": [
+      [
+       "yta-kontroll #e6ead9",
+       3
+      ],
+      [
+       "ikon-kontroll #37453a",
+       2
+      ],
+      [
+       "text-kontroll #37453a",
+       1
+      ],
+      [
+       "ikon-kontroll #24382c",
+       2
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       1
+      ],
+      [
+       "yta-upphojd #f5f4ed",
+       1
+      ],
+      [
+       "text-kontroll #627061",
+       2
+      ],
+      [
+       "ikon-kontroll #627061",
+       2
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "ikon-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "text-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       2
+      ],
+      [
+       "ikon-kontroll #93a48d",
+       3
+      ],
+      [
+       "text-kontroll #93a48d",
+       3
+      ],
+      [
+       "ram-kontroll #f5f4ed",
+       4
+      ],
+      [
+       "ikon-kontroll #17251d",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #627061",
+       8
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       8
+      ],
+      [
+       "text-innehall #8a5212",
+       1
+      ],
+      [
+       "ram-kontroll #24382c",
+       4
+      ],
+      [
+       "ram-kontroll #ccd1c2",
+       2
+      ],
+      [
+       "text-kontroll #24382c",
+       2
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ]
+     ]
+    },
+    "nyaBarn": 5,
+    "efter": {
+     "malade": 71,
+     "DECIDED": 5,
+     "VERIFIED": 5,
+     "PROVISIONAL": 26,
+     "UNDECIDED": 35
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "hemfel",
+    "fore": {
+     "art": "hemfel",
+     "malade": 51,
+     "DECIDED": 3,
+     "VERIFIED": 5,
+     "PROVISIONAL": 18,
+     "UNDECIDED": 25,
+     "utanKredit": 43,
+     "saknasLista": [
+      [
+       "ikon-kontroll #24382c",
+       2
+      ],
+      [
+       "text-kontroll #a15a0a",
+       2
+      ],
+      [
+       "yta-kontroll #e6ead9",
+       2
+      ],
+      [
+       "text-kontroll #627061",
+       1
+      ],
+      [
+       "ikon-kontroll #627061",
+       2
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "ikon-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "text-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       2
+      ],
+      [
+       "ikon-kontroll #93a48d",
+       3
+      ],
+      [
+       "text-kontroll #93a48d",
+       3
+      ],
+      [
+       "ram-kontroll #f5f4ed",
+       4
+      ],
+      [
+       "ikon-kontroll #17251d",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #627061",
+       4
+      ],
+      [
+       "ram-behallare #9c3b23",
+       4
+      ],
+      [
+       "ikon-fristaende #9c3b23",
+       1
+      ],
+      [
+       "text-kontroll #24382c",
+       3
+      ],
+      [
+       "ram-kontroll #24382c",
+       4
+      ],
+      [
+       "ram-kontroll #ccd1c2",
+       2
+      ]
+     ]
+    },
+    "nyaBarn": 5,
+    "efter": {
+     "malade": 56,
+     "DECIDED": 3,
+     "VERIFIED": 5,
+     "PROVISIONAL": 18,
+     "UNDECIDED": 30
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "notiser",
+    "fore": {
+     "art": "notiser",
+     "malade": 46,
+     "DECIDED": 5,
+     "VERIFIED": 5,
+     "PROVISIONAL": 18,
+     "UNDECIDED": 18,
+     "utanKredit": 36,
+     "saknasLista": [
+      [
+       "ikon-fristaende #dca968",
+       2
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "ikon-fristaende #93a48d",
+       3
+      ],
+      [
+       "text-innehall #93a48d",
+       3
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       2
+      ],
+      [
+       "text-innehall #17251d",
+       1
+      ],
+      [
+       "ram-behallare #f5f4ed",
+       4
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #37453a",
+       1
+      ],
+      [
+       "ikon-fristaende #37453a",
+       2
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       4
+      ],
+      [
+       "text-innehall #627061",
+       8
+      ],
+      [
+       "ikon-fristaende #627061",
+       3
+      ]
+     ]
+    },
+    "nyaBarn": 3,
+    "efter": {
+     "malade": 49,
+     "DECIDED": 5,
+     "VERIFIED": 5,
+     "PROVISIONAL": 18,
+     "UNDECIDED": 21
+    },
+    "nyaVarden": [
+     "fill rgb(98, 112, 97)",
+     "fill rgb(147, 164, 141)"
+    ]
+   },
+   {
+    "art": "langavarden",
+    "fore": {
+     "art": "langavarden",
+     "malade": 61,
+     "DECIDED": 8,
+     "VERIFIED": 5,
+     "PROVISIONAL": 25,
+     "UNDECIDED": 23,
+     "utanKredit": 48,
+     "saknasLista": [
+      [
+       "yta-upphojd #627061",
+       3
+      ],
+      [
+       "text-innehall #f5f4ed",
+       3
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       1
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "ikon-kontroll #93a48d",
+       3
+      ],
+      [
+       "text-kontroll #93a48d",
+       3
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       2
+      ],
+      [
+       "ram-kontroll #f5f4ed",
+       4
+      ],
+      [
+       "ikon-kontroll #17251d",
+       1
+      ],
+      [
+       "ikon-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "text-kontroll #f5f4ed",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #627061",
+       6
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       9
+      ],
+      [
+       "ram-behallare #7d897c",
+       8
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "text-innehall #37453a",
+       1
+      ]
+     ]
+    },
+    "nyaBarn": 3,
+    "efter": {
+     "malade": 64,
+     "DECIDED": 8,
+     "VERIFIED": 5,
+     "PROVISIONAL": 25,
+     "UNDECIDED": 26
+    },
+    "nyaVarden": [
+     "fill rgb(55, 69, 58)",
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "adminskal",
+    "fore": {
+     "art": "adminskal",
+     "malade": 69,
+     "DECIDED": 16,
+     "VERIFIED": 6,
+     "PROVISIONAL": 31,
+     "UNDECIDED": 16,
+     "utanKredit": 47,
+     "saknasLista": [
+      [
+       "yta-upphojd #e6ead9",
+       2
+      ],
+      [
+       "ram-behallare #8a5212",
+       1
+      ],
+      [
+       "yta-upphojd #f5f4ed",
+       1
+      ],
+      [
+       "ikon-kontroll #627061",
+       5
+      ],
+      [
+       "text-kontroll #627061",
+       5
+      ],
+      [
+       "yta-kontroll #e6ead9",
+       1
+      ],
+      [
+       "ikon-kontroll #24382c",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ikon-fristaende #8a5212",
+       1
+      ],
+      [
+       "text-kontroll #24382c",
+       2
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       21
+      ],
+      [
+       "ram-kontroll #24382c",
+       1
+      ],
+      [
+       "text-innehall #627061",
+       3
+      ],
+      [
+       "text-innehall #5b6959",
+       3
+      ]
+     ]
+    },
+    "nyaBarn": 3,
+    "efter": {
+     "malade": 72,
+     "DECIDED": 16,
+     "VERIFIED": 6,
+     "PROVISIONAL": 31,
+     "UNDECIDED": 19
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "tomtrecept",
+    "fore": {
+     "art": "tomtrecept",
+     "malade": 36,
+     "DECIDED": 3,
+     "VERIFIED": 5,
+     "PROVISIONAL": 7,
+     "UNDECIDED": 21,
+     "utanKredit": 28,
+     "saknasLista": [
+      [
+       "yta-upphojd #ce7c1e",
+       4
+      ],
+      [
+       "yta-upphojd #24382c",
+       2
+      ],
+      [
+       "yta-upphojd #f5f4ed",
+       1
+      ],
+      [
+       "text-innehall #17251d",
+       2
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       1
+      ],
+      [
+       "ikon-fristaende #93a48d",
+       3
+      ],
+      [
+       "text-innehall #93a48d",
+       3
+      ],
+      [
+       "ram-behallare #f5f4ed",
+       4
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #627061",
+       2
+      ],
+      [
+       "ikon-fristaende #627061",
+       1
+      ],
+      [
+       "ram-behallare #24382c",
+       4
+      ]
+     ]
+    },
+    "nyaBarn": 2,
+    "efter": {
+     "malade": 38,
+     "DECIDED": 3,
+     "VERIFIED": 5,
+     "PROVISIONAL": 7,
+     "UNDECIDED": 23
+    },
+    "nyaVarden": [
+     "fill rgb(245, 244, 237)",
+     "fill rgb(147, 164, 141)"
+    ]
+   },
+   {
+    "art": "offline",
+    "fore": {
+     "art": "offline",
+     "malade": 35,
+     "DECIDED": 2,
+     "VERIFIED": 6,
+     "PROVISIONAL": 9,
+     "UNDECIDED": 18,
+     "utanKredit": 27,
+     "saknasLista": [
+      [
+       "yta-upphojd #e6ead9",
+       2
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       1
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       2
+      ],
+      [
+       "ikon-fristaende #93a48d",
+       3
+      ],
+      [
+       "text-innehall #93a48d",
+       3
+      ],
+      [
+       "text-innehall #17251d",
+       1
+      ],
+      [
+       "ram-behallare #f5f4ed",
+       4
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #8a5212",
+       1
+      ],
+      [
+       "ikon-fristaende #8a5212",
+       1
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "text-innehall #627061",
+       1
+      ],
+      [
+       "ram-behallare #24382c",
+       4
+      ],
+      [
+       "ikon-fristaende #24382c",
+       1
+      ]
+     ]
+    },
+    "nyaBarn": 2,
+    "efter": {
+     "malade": 37,
+     "DECIDED": 2,
+     "VERIFIED": 6,
+     "PROVISIONAL": 9,
+     "UNDECIDED": 20
+    },
+    "nyaVarden": [
+     "fill rgb(245, 244, 237)",
+     "fill rgb(147, 164, 141)"
+    ]
+   },
+   {
+    "art": "hemrecept",
+    "fore": {
+     "art": "hemrecept",
+     "malade": 88,
+     "DECIDED": 4,
+     "VERIFIED": 6,
+     "PROVISIONAL": 37,
+     "UNDECIDED": 41,
+     "utanKredit": 78,
+     "saknasLista": [
+      [
+       "yta-upphojd #24382c",
+       3
+      ],
+      [
+       "text-innehall #e09d50",
+       1
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       4
+      ],
+      [
+       "text-innehall #f5f4ed",
+       4
+      ],
+      [
+       "text-innehall #17251d",
+       2
+      ],
+      [
+       "ram-behallare rgba(245,244,237,0.35)",
+       4
+      ],
+      [
+       "text-innehall #93a48d",
+       4
+      ],
+      [
+       "yta-upphojd #f5f4ed",
+       1
+      ],
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       3
+      ],
+      [
+       "ram-behallare #d8b784",
+       4
+      ],
+      [
+       "text-innehall #3f6b4f",
+       2
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ],
+      [
+       "ikon-fristaende #93a48d",
+       3
+      ],
+      [
+       "ram-behallare #f5f4ed",
+       4
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #627061",
+       6
+      ],
+      [
+       "ram-behallare #7d897c",
+       8
+      ],
+      [
+       "ikon-fristaende #627061",
+       1
+      ],
+      [
+       "text-innehall #37453a",
+       1
+      ],
+      [
+       "text-kontroll #24382c",
+       1
+      ],
+      [
+       "ram-kontroll #24382c",
+       4
+      ],
+      [
+       "ram-behallare #24382c",
+       1
+      ],
+      [
+       "ikon-fristaende #24382c",
+       1
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       10
+      ],
+      [
+       "ikon-fristaende #a15a0a",
+       3
+      ],
+      [
+       "text-innehall #8a5212",
+       1
+      ]
+     ]
+    },
+    "nyaBarn": 2,
+    "efter": {
+     "malade": 90,
+     "DECIDED": 4,
+     "VERIFIED": 6,
+     "PROVISIONAL": 37,
+     "UNDECIDED": 43
+    },
+    "nyaVarden": [
+     "fill rgb(245, 244, 237)",
+     "fill rgb(147, 164, 141)"
+    ]
+   },
+   {
+    "art": "skafferi",
+    "fore": {
+     "art": "skafferi",
+     "malade": 68,
+     "DECIDED": 9,
+     "VERIFIED": 9,
+     "PROVISIONAL": 28,
+     "UNDECIDED": 22,
+     "utanKredit": 50,
+     "saknasLista": [
+      [
+       "yta-upphojd #f5f4ed",
+       5
+      ],
+      [
+       "ram-behallare #ce7c1e",
+       1
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "ikon-fristaende #93a48d",
+       3
+      ],
+      [
+       "text-innehall #93a48d",
+       3
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       2
+      ],
+      [
+       "text-innehall #17251d",
+       1
+      ],
+      [
+       "ram-behallare #f5f4ed",
+       4
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #627061",
+       11
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       4
+      ],
+      [
+       "ram-behallare #24382c",
+       5
+      ],
+      [
+       "text-innehall #8a5212",
+       3
+      ],
+      [
+       "text-innehall #9c3b23",
+       1
+      ],
+      [
+       "ikon-fristaende #627061",
+       4
+      ]
+     ]
+    },
+    "nyaBarn": 2,
+    "efter": {
+     "malade": 70,
+     "DECIDED": 9,
+     "VERIFIED": 9,
+     "PROVISIONAL": 28,
+     "UNDECIDED": 24
+    },
+    "nyaVarden": [
+     "fill rgb(147, 164, 141)"
+    ]
+   },
+   {
+    "art": "familj",
+    "fore": {
+     "art": "familj",
+     "malade": 60,
+     "DECIDED": 9,
+     "VERIFIED": 5,
+     "PROVISIONAL": 23,
+     "UNDECIDED": 23,
+     "utanKredit": 46,
+     "saknasLista": [
+      [
+       "yta-upphojd #24382c",
+       2
+      ],
+      [
+       "text-innehall #f5f4ed",
+       3
+      ],
+      [
+       "text-innehall #3f6b4f",
+       1
+      ],
+      [
+       "yta-upphojd #4a5c43",
+       1
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       2
+      ],
+      [
+       "ikon-fristaende #93a48d",
+       3
+      ],
+      [
+       "text-innehall #93a48d",
+       3
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       2
+      ],
+      [
+       "text-innehall #17251d",
+       1
+      ],
+      [
+       "ram-behallare #f5f4ed",
+       4
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #37453a",
+       1
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "text-innehall #627061",
+       7
+      ],
+      [
+       "ram-behallare #24382c",
+       5
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       7
+      ],
+      [
+       "ikon-fristaende #627061",
+       2
+      ]
+     ]
+    },
+    "nyaBarn": 2,
+    "efter": {
+     "malade": 62,
+     "DECIDED": 9,
+     "VERIFIED": 5,
+     "PROVISIONAL": 23,
+     "UNDECIDED": 25
+    },
+    "nyaVarden": [
+     "fill rgb(147, 164, 141)"
+    ]
+   },
+   {
+    "art": "kalender",
+    "fore": {
+     "art": "kalender",
+     "malade": 105,
+     "DECIDED": 30,
+     "VERIFIED": 11,
+     "PROVISIONAL": 26,
+     "UNDECIDED": 38,
+     "utanKredit": 64,
+     "saknasLista": [
+      [
+       "yta-upphojd #ce7c1e",
+       3
+      ],
+      [
+       "yta-upphojd #24382c",
+       14
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       8
+      ],
+      [
+       "text-innehall #f5f4ed",
+       2
+      ],
+      [
+       "ikon-fristaende #93a48d",
+       3
+      ],
+      [
+       "text-innehall #93a48d",
+       3
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ],
+      [
+       "ram-behallare #f5f4ed",
+       4
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #627061",
+       15
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       3
+      ],
+      [
+       "ikon-fristaende #24382c",
+       3
+      ],
+      [
+       "ram-behallare #24382c",
+       2
+      ],
+      [
+       "text-innehall #a15a0a",
+       2
+      ],
+      [
+       "ikon-fristaende #627061",
+       1
+      ]
+     ]
+    },
+    "nyaBarn": 2,
+    "efter": {
+     "malade": 107,
+     "DECIDED": 30,
+     "VERIFIED": 11,
+     "PROVISIONAL": 26,
+     "UNDECIDED": 40
+    },
+    "nyaVarden": [
+     "fill rgb(147, 164, 141)",
+     "fill rgb(245, 244, 237)"
+    ]
+   },
+   {
+    "art": "mer",
+    "fore": {
+     "art": "mer",
+     "malade": 54,
+     "DECIDED": 9,
+     "VERIFIED": 5,
+     "PROVISIONAL": 13,
+     "UNDECIDED": 27,
+     "utanKredit": 40,
+     "saknasLista": [
+      [
+       "yta-upphojd #24382c",
+       2
+      ],
+      [
+       "text-innehall #f5f4ed",
+       2
+      ],
+      [
+       "text-innehall #3f6b4f",
+       3
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       5
+      ],
+      [
+       "text-innehall #17251d",
+       4
+      ],
+      [
+       "ikon-fristaende #93a48d",
+       3
+      ],
+      [
+       "text-innehall #93a48d",
+       3
+      ],
+      [
+       "ram-behallare #f5f4ed",
+       4
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ram-behallare #ccd1c2",
+       5
+      ],
+      [
+       "ikon-fristaende #627061",
+       8
+      ]
+     ]
+    },
+    "nyaBarn": 2,
+    "efter": {
+     "malade": 56,
+     "DECIDED": 9,
+     "VERIFIED": 5,
+     "PROVISIONAL": 13,
+     "UNDECIDED": 29
+    },
+    "nyaVarden": [
+     "fill rgb(147, 164, 141)"
+    ]
+   },
+   {
+    "art": "vanner",
+    "fore": {
+     "art": "vanner",
+     "malade": 89,
+     "DECIDED": 18,
+     "VERIFIED": 7,
+     "PROVISIONAL": 33,
+     "UNDECIDED": 31,
+     "utanKredit": 64,
+     "saknasLista": [
+      [
+       "yta-upphojd #ce7c1e",
+       3
+      ],
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "ram-behallare #ce7c1e",
+       4
+      ],
+      [
+       "yta-upphojd #4a5c43",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       5
+      ],
+      [
+       "yta-upphojd #24382c",
+       3
+      ],
+      [
+       "yta-upphojd #627061",
+       1
+      ],
+      [
+       "yta-upphojd #b4bfa6",
+       1
+      ],
+      [
+       "ikon-fristaende #93a48d",
+       3
+      ],
+      [
+       "text-innehall #93a48d",
+       3
+      ],
+      [
+       "text-innehall #17251d",
+       1
+      ],
+      [
+       "ram-behallare #f5f4ed",
+       4
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #37453a",
+       1
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       5
+      ],
+      [
+       "text-innehall #627061",
+       7
+      ],
+      [
+       "text-innehall #8a5212",
+       1
+      ],
+      [
+       "ikon-fristaende #8a5212",
+       2
+      ],
+      [
+       "text-kontroll #24382c",
+       3
+      ],
+      [
+       "ram-kontroll #24382c",
+       12
+      ],
+      [
+       "text-innehall #a15a0a",
+       1
+      ]
+     ]
+    },
+    "nyaBarn": 2,
+    "efter": {
+     "malade": 91,
+     "DECIDED": 18,
+     "VERIFIED": 7,
+     "PROVISIONAL": 33,
+     "UNDECIDED": 33
+    },
+    "nyaVarden": [
+     "fill rgb(147, 164, 141)"
+    ]
+   },
+   {
+    "art": "meddelanden",
+    "fore": {
+     "art": "meddelanden",
+     "malade": 65,
+     "DECIDED": 8,
+     "VERIFIED": 5,
+     "PROVISIONAL": 23,
+     "UNDECIDED": 29,
+     "utanKredit": 52,
+     "saknasLista": [
+      [
+       "yta-upphojd #f5f4ed",
+       1
+      ],
+      [
+       "yta-upphojd #24382c",
+       2
+      ],
+      [
+       "text-innehall #f5f4ed",
+       5
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       4
+      ],
+      [
+       "text-innehall #17251d",
+       3
+      ],
+      [
+       "yta-upphojd #4a5c43",
+       1
+      ],
+      [
+       "yta-upphojd #627061",
+       2
+      ],
+      [
+       "ikon-fristaende #93a48d",
+       3
+      ],
+      [
+       "text-innehall #93a48d",
+       3
+      ],
+      [
+       "ram-behallare #f5f4ed",
+       4
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #37453a",
+       1
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "ram-behallare #7d897c",
+       4
+      ],
+      [
+       "ikon-fristaende #627061",
+       4
+      ],
+      [
+       "text-innehall #627061",
+       9
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       4
+      ]
+     ]
+    },
+    "nyaBarn": 2,
+    "efter": {
+     "malade": 67,
+     "DECIDED": 8,
+     "VERIFIED": 5,
+     "PROVISIONAL": 23,
+     "UNDECIDED": 31
+    },
+    "nyaVarden": [
+     "fill rgb(147, 164, 141)"
+    ]
+   },
+   {
+    "art": "hem360",
+    "fore": {
+     "art": "hem360",
+     "malade": 55,
+     "DECIDED": 7,
+     "VERIFIED": 5,
+     "PROVISIONAL": 20,
+     "UNDECIDED": 23,
+     "utanKredit": 43,
+     "saknasLista": [
+      [
+       "yta-upphojd #e6ead9",
+       4
+      ],
+      [
+       "yta-upphojd #f5f4ed",
+       1
+      ],
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "text-kontroll #a15a0a",
+       1
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "ikon-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "text-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       2
+      ],
+      [
+       "ikon-kontroll #93a48d",
+       3
+      ],
+      [
+       "text-kontroll #93a48d",
+       3
+      ],
+      [
+       "ram-kontroll #f5f4ed",
+       4
+      ],
+      [
+       "ikon-kontroll #17251d",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "text-innehall #627061",
+       5
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       7
+      ],
+      [
+       "text-innehall #8a5212",
+       1
+      ],
+      [
+       "ram-kontroll #24382c",
+       4
+      ],
+      [
+       "ikon-fristaende #627061",
+       3
+      ]
+     ]
+    },
+    "nyaBarn": 2,
+    "efter": {
+     "malade": 57,
+     "DECIDED": 7,
+     "VERIFIED": 5,
+     "PROVISIONAL": 20,
+     "UNDECIDED": 25
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "betygsoversikt",
+    "fore": {
+     "art": "betygsoversikt",
+     "malade": 51,
+     "DECIDED": 8,
+     "VERIFIED": 9,
+     "PROVISIONAL": 18,
+     "UNDECIDED": 16,
+     "utanKredit": 34,
+     "saknasLista": [
+      [
+       "yta-upphojd #24382c",
+       3
+      ],
+      [
+       "ikon-fristaende #f5f4ed",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       6
+      ],
+      [
+       "ram-behallare #627061",
+       1
+      ],
+      [
+       "yta-upphojd #4a5c43",
+       2
+      ],
+      [
+       "yta-upphojd #627061",
+       2
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ikon-fristaende #627061",
+       2
+      ],
+      [
+       "ram-behallare #24382c",
+       1
+      ],
+      [
+       "text-innehall #627061",
+       7
+      ],
+      [
+       "ram-behallare #ccd1c2",
+       4
+      ],
+      [
+       "ikon-fristaende #8a5212",
+       4
+      ]
+     ]
+    },
+    "nyaBarn": 1,
+    "efter": {
+     "malade": 52,
+     "DECIDED": 8,
+     "VERIFIED": 9,
+     "PROVISIONAL": 18,
+     "UNDECIDED": 17
+    },
+    "nyaVarden": [
+     "fill rgb(98, 112, 97)"
+    ]
+   },
+   {
+    "art": "snackbars",
+    "fore": {
+     "art": "snackbars",
+     "malade": 28,
+     "DECIDED": 0,
+     "VERIFIED": 5,
+     "PROVISIONAL": 1,
+     "UNDECIDED": 22,
+     "utanKredit": 23,
+     "saknasLista": [
+      [
+       "yta-upphojd #24382c",
+       5
+      ],
+      [
+       "ram-behallare #3f6b4f",
+       1
+      ],
+      [
+       "ikon-fristaende #8fb89a",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       5
+      ],
+      [
+       "text-kontroll #dca968",
+       2
+      ],
+      [
+       "ikon-fristaende #de9078",
+       1
+      ],
+      [
+       "ram-behallare #ce7c1e",
+       1
+      ],
+      [
+       "ikon-fristaende #e09d50",
+       1
+      ],
+      [
+       "ram-behallare #93a48d",
+       2
+      ],
+      [
+       "ikon-fristaende #93a48d",
+       1
+      ],
+      [
+       "yta-upphojd rgba(245,244,237,0.18)",
+       1
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ram-behallare #9c3b23",
+       1
+      ]
+     ]
+    },
+    "nyaBarn": 1,
+    "efter": {
+     "malade": 29,
+     "DECIDED": 0,
+     "VERIFIED": 5,
+     "PROVISIONAL": 1,
+     "UNDECIDED": 23
+    },
+    "nyaVarden": [
+     "fill rgb(147, 164, 141)"
+    ]
+   },
+   {
+    "art": "okandingrediens",
+    "fore": {
+     "art": "okandingrediens",
+     "malade": 44,
+     "DECIDED": 9,
+     "VERIFIED": 5,
+     "PROVISIONAL": 26,
+     "UNDECIDED": 4,
+     "utanKredit": 30,
+     "saknasLista": [
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       1
+      ],
+      [
+       "yta-upphojd #627061",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ram-behallare #ccd1c2",
+       6
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "text-innehall #37453a",
+       3
+      ],
+      [
+       "text-innehall #627061",
+       9
+      ],
+      [
+       "text-innehall #8a5212",
+       1
+      ],
+      [
+       "ikon-fristaende #8a5212",
+       1
+      ],
+      [
+       "text-kontroll #24382c",
+       1
+      ],
+      [
+       "ram-kontroll #24382c",
+       4
+      ]
+     ]
+    },
+    "nyaBarn": 1,
+    "efter": {
+     "malade": 45,
+     "DECIDED": 9,
+     "VERIFIED": 5,
+     "PROVISIONAL": 26,
+     "UNDECIDED": 5
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "chattredigerat",
+    "fore": {
+     "art": "chattredigerat",
+     "malade": 53,
+     "DECIDED": 3,
+     "VERIFIED": 5,
+     "PROVISIONAL": 18,
+     "UNDECIDED": 27,
+     "utanKredit": 45,
+     "saknasLista": [
+      [
+       "ikon-kontroll #37453a",
+       3
+      ],
+      [
+       "yta-upphojd #4a5c43",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       3
+      ],
+      [
+       "text-innehall #3f6b4f",
+       1
+      ],
+      [
+       "text-innehall #4a5c43",
+       2
+      ],
+      [
+       "yta-upphojd #f5f4ed",
+       4
+      ],
+      [
+       "ram-behallare #e6ead9",
+       8
+      ],
+      [
+       "yta-upphojd #24382c",
+       1
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       1
+      ],
+      [
+       "text-kontroll #627061",
+       1
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       1
+      ],
+      [
+       "ikon-kontroll #17251d",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ram-behallare #ccd1c2",
+       2
+      ],
+      [
+       "text-innehall #627061",
+       6
+      ],
+      [
+       "ram-behallare #7d897c",
+       4
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "text-innehall #37453a",
+       1
+      ],
+      [
+       "ram-kontroll #7d897c",
+       4
+      ]
+     ]
+    },
+    "nyaBarn": 1,
+    "efter": {
+     "malade": 54,
+     "DECIDED": 3,
+     "VERIFIED": 5,
+     "PROVISIONAL": 18,
+     "UNDECIDED": 28
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "receptkommentarer",
+    "fore": {
+     "art": "receptkommentarer",
+     "malade": 43,
+     "DECIDED": 7,
+     "VERIFIED": 5,
+     "PROVISIONAL": 17,
+     "UNDECIDED": 14,
+     "utanKredit": 31,
+     "saknasLista": [
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "text-kontroll #a15a0a",
+       1
+      ],
+      [
+       "yta-upphojd #4a5c43",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       3
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       2
+      ],
+      [
+       "yta-upphojd #627061",
+       1
+      ],
+      [
+       "yta-upphojd #3f6b4f",
+       1
+      ],
+      [
+       "ikon-kontroll #627061",
+       1
+      ],
+      [
+       "text-kontroll #627061",
+       1
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       1
+      ],
+      [
+       "ikon-kontroll #17251d",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ram-behallare #ccd1c2",
+       5
+      ],
+      [
+       "text-innehall #627061",
+       4
+      ],
+      [
+       "text-innehall #8a5212",
+       1
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "text-innehall #37453a",
+       2
+      ],
+      [
+       "ram-kontroll #7d897c",
+       4
+      ]
+     ]
+    },
+    "nyaBarn": 1,
+    "efter": {
+     "malade": 44,
+     "DECIDED": 7,
+     "VERIFIED": 5,
+     "PROVISIONAL": 17,
+     "UNDECIDED": 15
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "receptdelningsstatus",
+    "fore": {
+     "art": "receptdelningsstatus",
+     "malade": 44,
+     "DECIDED": 6,
+     "VERIFIED": 5,
+     "PROVISIONAL": 25,
+     "UNDECIDED": 8,
+     "utanKredit": 33,
+     "saknasLista": [
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "ikon-kontroll #9c3b23",
+       6
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ram-behallare #ccd1c2",
+       6
+      ],
+      [
+       "ikon-fristaende #a15a0a",
+       1
+      ],
+      [
+       "text-innehall #a15a0a",
+       1
+      ],
+      [
+       "text-kontroll #9c3b23",
+       1
+      ],
+      [
+       "text-innehall #5b6959",
+       6
+      ],
+      [
+       "ikon-fristaende #5b6959",
+       6
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "text-innehall #37453a",
+       3
+      ]
+     ]
+    },
+    "nyaBarn": 1,
+    "efter": {
+     "malade": 45,
+     "DECIDED": 6,
+     "VERIFIED": 5,
+     "PROVISIONAL": 25,
+     "UNDECIDED": 9
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "lagatimers",
+    "fore": {
+     "art": "lagatimers",
+     "malade": 50,
+     "DECIDED": 0,
+     "VERIFIED": 4,
+     "PROVISIONAL": 0,
+     "UNDECIDED": 46,
+     "utanKredit": 46,
+     "saknasLista": [
+      [
+       "yta-app #17251d",
+       1
+      ],
+      [
+       "ram-behallare rgba(245,244,237,0.18)",
+       3
+      ],
+      [
+       "ikon-kontroll #f5f4ed",
+       4
+      ],
+      [
+       "text-innehall #93a48d",
+       1
+      ],
+      [
+       "text-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "yta-upphojd #2f4437",
+       2
+      ],
+      [
+       "text-innehall #a9b2a0",
+       1
+      ],
+      [
+       "text-innehall #f5f4ed",
+       5
+      ],
+      [
+       "yta-upphojd rgba(245,244,237,0.18)",
+       2
+      ],
+      [
+       "yta-upphojd #ce7c1e",
+       1
+      ],
+      [
+       "ram-kontroll rgba(245,244,237,0.35)",
+       16
+      ],
+      [
+       "yta-upphojd #dca968",
+       1
+      ],
+      [
+       "ikon-kontroll #dca968",
+       1
+      ],
+      [
+       "text-kontroll #dca968",
+       1
+      ],
+      [
+       "ikon-fristaende #c9d3c4",
+       1
+      ],
+      [
+       "text-innehall #c9d3c4",
+       1
+      ],
+      [
+       "text-innehall #dca968",
+       1
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       1
+      ],
+      [
+       "text-kontroll #17251d",
+       1
+      ],
+      [
+       "ikon-kontroll #17251d",
+       1
+      ]
+     ],
+     "provLista": []
+    },
+    "nyaBarn": 1,
+    "efter": {
+     "malade": 51,
+     "DECIDED": 0,
+     "VERIFIED": 4,
+     "PROVISIONAL": 0,
+     "UNDECIDED": 47
+    },
+    "nyaVarden": [
+     "fill rgb(245, 244, 237)"
+    ]
+   },
+   {
+    "art": "delatinkorg",
+    "fore": {
+     "art": "delatinkorg",
+     "malade": 52,
+     "DECIDED": 6,
+     "VERIFIED": 7,
+     "PROVISIONAL": 27,
+     "UNDECIDED": 12,
+     "utanKredit": 39,
+     "saknasLista": [
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "yta-upphojd #4a5c43",
+       2
+      ],
+      [
+       "text-innehall #f5f4ed",
+       3
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       2
+      ],
+      [
+       "yta-upphojd #f5f4ed",
+       1
+      ],
+      [
+       "yta-upphojd #627061",
+       1
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       1
+      ],
+      [
+       "text-kontroll #17251d",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ram-behallare #ccd1c2",
+       9
+      ],
+      [
+       "text-innehall #5b6959",
+       6
+      ],
+      [
+       "text-kontroll #24382c",
+       2
+      ],
+      [
+       "ram-kontroll #24382c",
+       8
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "text-innehall #37453a",
+       1
+      ]
+     ]
+    },
+    "nyaBarn": 1,
+    "efter": {
+     "malade": 53,
+     "DECIDED": 6,
+     "VERIFIED": 7,
+     "PROVISIONAL": 27,
+     "UNDECIDED": 13
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "delatlistaaktiv",
+    "fore": {
+     "art": "delatlistaaktiv",
+     "malade": 72,
+     "DECIDED": 7,
+     "VERIFIED": 5,
+     "PROVISIONAL": 36,
+     "UNDECIDED": 24,
+     "utanKredit": 60,
+     "saknasLista": [
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "ikon-kontroll #37453a",
+       2
+      ],
+      [
+       "yta-kontroll #e6ead9",
+       2
+      ],
+      [
+       "yta-kontroll #4a5c43",
+       2
+      ],
+      [
+       "text-kontroll #f5f4ed",
+       4
+      ],
+      [
+       "yta-kontroll #627061",
+       1
+      ],
+      [
+       "yta-kontroll #3f6b4f",
+       1
+      ],
+      [
+       "text-kontroll #37453a",
+       3
+      ],
+      [
+       "yta-kontroll #24382c",
+       2
+      ],
+      [
+       "ikon-kontroll #f5f4ed",
+       2
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       1
+      ],
+      [
+       "yta-kontroll #ce7c1e",
+       1
+      ],
+      [
+       "text-kontroll #17251d",
+       1
+      ],
+      [
+       "ikon-kontroll #17251d",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ram-behallare #ccd1c2",
+       7
+      ],
+      [
+       "text-innehall #5b6959",
+       4
+      ],
+      [
+       "ram-kontroll #7d897c",
+       12
+      ],
+      [
+       "text-innehall #627061",
+       4
+      ],
+      [
+       "ram-kontroll #ccd1c2",
+       4
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "text-innehall #37453a",
+       4
+      ]
+     ]
+    },
+    "nyaBarn": 1,
+    "efter": {
+     "malade": 73,
+     "DECIDED": 7,
+     "VERIFIED": 5,
+     "PROVISIONAL": 36,
+     "UNDECIDED": 25
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "delatnarvaro",
+    "fore": {
+     "art": "delatnarvaro",
+     "malade": 81,
+     "DECIDED": 7,
+     "VERIFIED": 5,
+     "PROVISIONAL": 46,
+     "UNDECIDED": 23,
+     "utanKredit": 69,
+     "saknasLista": [
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "yta-kontroll #e6ead9",
+       2
+      ],
+      [
+       "yta-kontroll #4a5c43",
+       1
+      ],
+      [
+       "text-kontroll #f5f4ed",
+       3
+      ],
+      [
+       "yta-kontroll #3f6b4f",
+       1
+      ],
+      [
+       "ram-kontroll #e6ead9",
+       4
+      ],
+      [
+       "text-kontroll #37453a",
+       5
+      ],
+      [
+       "ikon-kontroll #37453a",
+       1
+      ],
+      [
+       "yta-kontroll #24382c",
+       2
+      ],
+      [
+       "yta-kontroll #627061",
+       1
+      ],
+      [
+       "ikon-kontroll #f5f4ed",
+       1
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       1
+      ]
+     ],
+     "provLista": [
+      [
+       "ram-behallare #ccd1c2",
+       7
+      ],
+      [
+       "ram-kontroll #ccd1c2",
+       12
+      ],
+      [
+       "text-innehall #5b6959",
+       5
+      ],
+      [
+       "ram-behallare #7d897c",
+       4
+      ],
+      [
+       "ram-kontroll #7d897c",
+       12
+      ],
+      [
+       "text-innehall #627061",
+       2
+      ],
+      [
+       "ikon-fristaende #37453a",
+       1
+      ],
+      [
+       "text-innehall #37453a",
+       3
+      ]
+     ]
+    },
+    "nyaBarn": 1,
+    "efter": {
+     "malade": 82,
+     "DECIDED": 7,
+     "VERIFIED": 5,
+     "PROVISIONAL": 46,
+     "UNDECIDED": 24
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   },
+   {
+    "art": "delatlasare",
+    "fore": {
+     "art": "delatlasare",
+     "malade": 43,
+     "DECIDED": 7,
+     "VERIFIED": 5,
+     "PROVISIONAL": 28,
+     "UNDECIDED": 3,
+     "utanKredit": 31,
+     "saknasLista": [
+      [
+       "ikon-kontroll #24382c",
+       1
+      ],
+      [
+       "yta-upphojd #e6ead9",
+       2
+      ]
+     ],
+     "provLista": [
+      [
+       "ram-behallare #ccd1c2",
+       7
+      ],
+      [
+       "ikon-fristaende #37453a",
+       2
+      ],
+      [
+       "text-innehall #37453a",
+       7
+      ],
+      [
+       "text-innehall #5b6959",
+       5
+      ],
+      [
+       "text-innehall #627061",
+       2
+      ],
+      [
+       "text-kontroll #24382c",
+       1
+      ],
+      [
+       "ram-kontroll #24382c",
+       4
+      ]
+     ]
+    },
+    "nyaBarn": 1,
+    "efter": {
+     "malade": 44,
+     "DECIDED": 7,
+     "VERIFIED": 5,
+     "PROVISIONAL": 28,
+     "UNDECIDED": 4
+    },
+    "nyaVarden": [
+     "fill rgb(36, 56, 44)"
+    ]
+   }
+  ]
+ },
+ "H_inventering": {
+  "OLD_91_units": 91,
+  "UNCHANGED_old_units": 91,
+  "SPLIT_old_units": 0,
+  "MERGED": 0,
+  "NEW_units_introduced_by_SVG_child_coverage": 0,
+  "NEW_paint_candidates": 13,
+  "$forklaring": "De 97 sjalvstandiga barnvardena ger 13 distinkta malningskandidater. De blir INTE beslutsenheter i detta block: de saknar roll i rollkartan, och en roll far inte harledas ur rafargen. Rollkartan maste utvidgas forst. Ingen force-fit till 91.",
+  "kandidater": [
+   {
+    "egenskap": "fill",
+    "varde": "rgb(36, 56, 44)",
+    "grafikroll": null,
+    "forekomster": 32,
+    "skarmar": 8,
+    "taggar": [
+     "rect",
+     "circle"
+    ]
+   },
+   {
+    "egenskap": "fill",
+    "varde": "rgb(147, 164, 141)",
+    "grafikroll": "redundant",
+    "forekomster": 19,
+    "skarmar": 12,
+    "taggar": [
+     "rect",
+     "circle"
+    ]
+   },
+   {
+    "egenskap": "fill",
+    "varde": "rgb(98, 112, 97)",
+    "grafikroll": "redundant",
+    "forekomster": 14,
+    "skarmar": 4,
+    "taggar": [
+     "circle"
+    ]
+   },
+   {
+    "egenskap": "fill",
+    "varde": "rgb(36, 56, 44)",
+    "grafikroll": "redundant",
+    "forekomster": 8,
+    "skarmar": 8,
+    "taggar": [
+     "circle"
+    ]
+   },
+   {
+    "egenskap": "fill",
+    "varde": "rgb(245, 244, 237)",
+    "grafikroll": "redundant",
+    "forekomster": 5,
+    "skarmar": 5,
+    "taggar": [
+     "rect",
+     "circle"
+    ]
+   },
+   {
+    "egenskap": "fill",
+    "varde": "rgb(245, 244, 237)",
+    "grafikroll": null,
+    "forekomster": 5,
+    "skarmar": 1,
+    "taggar": [
+     "circle",
+     "rect"
+    ]
+   },
+   {
+    "egenskap": "fill",
+    "varde": "rgb(206, 124, 30)",
+    "grafikroll": "decorative",
+    "forekomster": 4,
+    "skarmar": 2,
+    "taggar": [
+     "path",
+     "rect"
+    ]
+   },
+   {
+    "egenskap": "stroke",
+    "varde": "rgb(245, 244, 237)",
+    "grafikroll": "decorative",
+    "forekomster": 3,
+    "skarmar": 2,
+    "taggar": [
+     "path"
+    ]
+   },
+   {
+    "egenskap": "stroke",
+    "varde": "rgb(147, 164, 141)",
+    "grafikroll": "decorative",
+    "forekomster": 2,
+    "skarmar": 1,
+    "taggar": [
+     "path"
+    ]
+   },
+   {
+    "egenskap": "stroke",
+    "varde": "rgb(206, 124, 30)",
+    "grafikroll": "decorative",
+    "forekomster": 2,
+    "skarmar": 2,
+    "taggar": [
+     "path"
+    ]
+   },
+   {
+    "egenskap": "fill",
+    "varde": "rgb(161, 90, 10)",
+    "grafikroll": "decorative",
+    "forekomster": 1,
+    "skarmar": 1,
+    "taggar": [
+     "path"
+    ]
+   },
+   {
+    "egenskap": "fill",
+    "varde": "rgb(36, 56, 44)",
+    "grafikroll": "decorative",
+    "forekomster": 1,
+    "skarmar": 1,
+    "taggar": [
+     "rect"
+    ]
+   },
+   {
+    "egenskap": "fill",
+    "varde": "rgb(55, 69, 58)",
+    "grafikroll": "redundant",
+    "forekomster": 1,
+    "skarmar": 1,
+    "taggar": [
+     "circle"
+    ]
+   }
+  ],
+  "utanGrafikroll": 2,
+  "previewbaraEnheter": {
+   "fore": 31,
+   "efter": 31,
+   "$skal": "svg-barn malar ingen bakgrund och ingar darfor inte i nagon previewkontextkedja. Grafen ar oforandrad."
+  },
+  "HONEST_DECISION_COMPLETE": {
+   "fore": 1,
+   "efter": 1,
+   "scen": "soctomtingavanner",
+   "$skal": "de 34 berorda skarmarna fick alla FLER obeslutade varden. Kompletthet kan bara minska. soctomtingavanner ar inte en av de 34."
+  }
+ },
+ "I_forstaPreview": {
+  "scen": "soctomtingavanner",
+  "maladeBarn": 4,
+  "arvda": 4,
+  "egnaKallor": 0,
+  "allaFoljerRoten": true,
+  "rotvarde": [
+   "rgb(125, 137, 124)"
+  ],
+  "status": "VERIFIED",
+  "$skal": "Alla fyra tidigare omatta varden ar arvda fran den svg-rot vars stroke previewn injicerade. De andrades med. 0 sjalvstandiga, 0 obeslutade, 0 kollateral avvikelse."
+ },
+ "J_start": {
+  "fore": {
+   "malade": 9,
+   "obeslutade": 5
+  },
+  "nyaSvgBarn": 8,
+  "efter": {
+   "malade": 17,
+   "obeslutade": 13
+  },
+  "nyaVarden": [
+   {
+    "tagg": "path",
+    "egenskap": "stroke",
+    "varde": "rgb(245, 244, 237)",
+    "kalla": "ATTRIBUT",
+    "grafikroll": "decorative"
+   },
+   {
+    "tagg": "path",
+    "egenskap": "stroke",
+    "varde": "rgb(147, 164, 141)",
+    "kalla": "ATTRIBUT",
+    "grafikroll": "decorative"
+   },
+   {
+    "tagg": "path",
+    "egenskap": "stroke",
+    "varde": "rgb(147, 164, 141)",
+    "kalla": "ATTRIBUT",
+    "grafikroll": "decorative"
+   },
+   {
+    "tagg": "path",
+    "egenskap": "fill",
+    "varde": "rgb(206, 124, 30)",
+    "kalla": "ATTRIBUT",
+    "grafikroll": "decorative"
+   },
+   {
+    "tagg": "path",
+    "egenskap": "fill",
+    "varde": "rgb(161, 90, 10)",
+    "kalla": "ATTRIBUT",
+    "grafikroll": "decorative"
+   },
+   {
+    "tagg": "path",
+    "egenskap": "stroke",
+    "varde": "rgb(245, 244, 237)",
+    "kalla": "ATTRIBUT",
+    "grafikroll": "decorative"
+   },
+   {
+    "tagg": "path",
+    "egenskap": "stroke",
+    "varde": "rgb(206, 124, 30)",
+    "kalla": "ATTRIBUT",
+    "grafikroll": "decorative"
+   },
+   {
+    "tagg": "rect",
+    "egenskap": "fill",
+    "varde": "rgb(206, 124, 30)",
+    "kalla": "ATTRIBUT",
+    "grafikroll": "decorative"
+   }
+  ],
+  "malenhet": {
+   "roll": "yta-app",
+   "ljus": "#24382c",
+   "OBSERVED_MAPPING_EVIDENCE": "NONE — #f5f4ed -> #17251d far inte overforas",
+   "finalister": [
+    "#17251d",
+    "#24382c",
+    "#4a5c43"
+   ]
+  }
+ },
+ "K_beroenden": {
+  "$omkord": "De 8 nya barnvardena i start ligger i illustrationen, inte i forloppsindikatorn eller statusraden. Relationerna mellan A, B, C och E ar darfor oforandrade.",
+  "PROGRESS_VALUE": {
+   "COMMON_PASS": [
+    "rgba(245,244,237,0.18)"
+   ],
+   "status": "PROVISORISKT GILTIG, omkord"
+  },
+  "STATUS_LINE": {
+   "COMMON_PASS": [
+    "#c9d3c4"
+   ],
+   "status": "PROVISORISKT GILTIG, omkord"
+  },
+  "PROGRESS_TRACK": {
+   "mojligaVarden": 4,
+   "status": "KAN INTE HALLAS TYST KONSTANT",
+   "$skal": "sparets synlighet mot appbakgrunden varierar 1.00 till 2.20 beroende pa vilket varde som valjs. Efter taxonomirattelsen ar fragan om APP_BACKGROUND + PROGRESS_TRACK ar ett compound visuellt beslut fortfarande oppen."
+  },
+  "BRAND_LINE": {
+   "status": "NY ROLL TILLDELAD, INGEN KANDIDATANALYS GJORD",
+   "$skal": "P-TEXT-BRAND ar ny. Kandidatuniversumet for principen finns inte an — behorighetsreglerna i palette-registry.mjs kanner inte principen. Att kora den mot P-TEXT-CONTENT vore precis den ateranvandning principen forbjuder."
+  },
+  "illustrationen": {
+   "status": "NYA OBESLUTADE",
+   "antal": 8,
+   "$skal": "atta sjalvstandiga dekorativa varden utan roll i rollkartan"
+  }
+ },
+ "ejGjort": [
+  "ingen preview renderad",
+  "ingen registry-write",
+  "ingen produktwrite",
+  "ingen farg vald",
+  "ingen roll tilldelad de 13 nya malningskandidaterna",
+  "ingen kandidatanalys for P-TEXT-BRAND",
+  "ingen rollkarteutvidgning"
+ ]
+}
