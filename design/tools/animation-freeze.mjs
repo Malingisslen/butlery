@@ -97,6 +97,22 @@ export function valjFrysTid(prov, troskel = REPRESENTERAD_TROSKEL) {
     regel: 'mittpunkten i det bredaste sammanhangande intervallet dar samtliga delar ar representerade; lika breda bryts av det tidigaste' };
 }
 
+/**
+ * VANTEGRIND. Animationerna registreras inte nodvandigtvis direkt efter load.
+ * Fryser man for tidigt returnerar getAnimations en tom lista och frysningen
+ * faller — men av fel skal. Grinden vantar tills minst en animation finns,
+ * eller ger upp med ett explicit skal.
+ */
+export const VANTA_PA_ANIMATIONER = (art, forsok = 40) => `(async () => {
+  const it = document.getElementById(${JSON.stringify(art)});
+  if (!it) return JSON.stringify({ ok: false, skal: 'artefakten saknas' });
+  for (let i = 0; i < ${forsok}; i++) {
+    const n = it.getAnimations({ subtree: true }).length;
+    if (n > 0) return JSON.stringify({ ok: true, animationer: n, forsok: i + 1 });
+    await new Promise(r => requestAnimationFrame(() => r(1))); }
+  return JSON.stringify({ ok: false, animationer: 0, forsok: ${forsok},
+    skal: 'inga animationer registrerade efter ${forsok} rutor' }); })()`;
+
 /** Fryser vid exakt fas och laser tillbaka. Fail closed vid avvikelse. */
 export const FRYS = (art, tidMs, ordinaler) => `(async () => {
 ${SCOPE_KOD}

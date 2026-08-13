@@ -10,7 +10,7 @@
  "perTyp": {
   "temavaxlande": 30,
   "temainvariant": 7,
-  "undefined": 9
+  "UNKNOWN": 9
  },
  "beslut": [
   {
@@ -1495,7 +1495,17 @@
     ],
     "instanser": 6
    },
-   "tokenNamn": "--text-innehall-d1"
+   "tokenNamn": "--text-innehall-d1",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #37453a -> #8fb89a pa #17251d  7.20"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
   },
   {
    "beslutsId": "TEXTRC ‖ RC-TX-D02",
@@ -1535,7 +1545,17 @@
     ],
     "instanser": 3
    },
-   "tokenNamn": "--text-innehall-d2"
+   "tokenNamn": "--text-innehall-d2",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #627061 -> #c9d3c4 pa #17251d 10.31"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
   },
   {
    "beslutsId": "TEXTRC ‖ RC-TX-D03",
@@ -1575,7 +1595,17 @@
     ],
     "instanser": 1
    },
-   "tokenNamn": "--text-innehall-d3"
+   "tokenNamn": "--text-innehall-d3",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #8a5212 -> #de9078 pa #24382c  4.99  [KOPPLAT]"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
   },
   {
    "beslutsId": "TEXTRC ‖ RC-TX-D04",
@@ -1615,7 +1645,17 @@
     ],
     "instanser": 1
    },
-   "tokenNamn": "--text-innehall-d4"
+   "tokenNamn": "--text-innehall-d4",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #8a5212 -> #93a48d pa #17251d  6.02"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
   },
   {
    "beslutsId": "TEXTRC ‖ RC-TX-L01",
@@ -1657,7 +1697,17 @@
     ],
     "instanser": 4
    },
-   "tokenNamn": "--text-innehall-d5"
+   "tokenNamn": "--text-innehall-d5",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light #93a48d -> #627061 pa #f5f4ed  4.75"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
   },
   {
    "beslutsId": "TEXTRC ‖ RC-TX-L02",
@@ -1697,7 +1747,17 @@
     ],
     "instanser": 3
    },
-   "tokenNamn": "--text-innehall-d6"
+   "tokenNamn": "--text-innehall-d6",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light #93a48d -> #5b6959 pa #e6ead9  4.75"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
   },
   {
    "beslutsId": "TEXTRC ‖ RC-TX-L03 + RC-TX-L04",
@@ -1749,7 +1809,17 @@
     ],
     "instanser": 2
    },
-   "tokenNamn": "--yta-upphojd-d14"
+   "tokenNamn": "--yta-upphojd-d14",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(36,56,44,0.6) -> #24382c  L03 11.36 · L04 5.19"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
   },
   {
    "beslutsId": "TEXTRC ‖ RC-TX-L05",
@@ -1789,7 +1859,17 @@
     ],
     "instanser": 1
    },
-   "tokenNamn": "--text-innehall-d7"
+   "tokenNamn": "--text-innehall-d7",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(245,244,237,0.6) -> #ccd1c2 pa #3f4a42  5.93"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
   },
   {
    "beslutsId": "TEXTRC ‖ RC-TX-L06",
@@ -1835,7 +1915,17 @@
     ],
     "instanser": 1
    },
-   "tokenNamn": "--yta-upphojd-d15"
+   "tokenNamn": "--yta-upphojd-d15",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(23,37,29,0.6) -> #627061  4.75"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
   },
   {
    "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
@@ -3897,5 +3987,208 @@
   "SUPERSEDED_PROVISIONAL": "ett provisoriskt varde som ligger inom ett registrerat besluts exakta scope och darmed ersatts av beslutet. Historiken behalls; pilottokenfilen skrivs inte om.",
   "UNDECIDED": "inget varde ur nagon av ovanstaende kallor.",
   "$kreditregel": "Endast HUMAN_APPROVED och VERIFIED_EXISTING_MAPPING ger completeness-kredit."
+ },
+ "$mappningstypAudit": {
+  "datum": "2026-08-13",
+  "granskade": 9,
+  "aterstallda": 0,
+  "satta_till_UNKNOWN": 9,
+  "$regelprov": {
+   "pastaende": "ljusvarde === morkvarde  <=>  temainvariant",
+   "provadPa": 37,
+   "undantag": 7,
+   "undantagslista": [
+    {
+     "tokenNamn": "--yta-kontroll-d5",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-upphojd-d7",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-upphojd-d8",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-kontroll-d7",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-upphojd-d9",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-upphojd-d11",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-kontroll-d10",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    }
+   ],
+   "slutsats": "Regeln haller inte. Typen ar darfor inte harledbar ur varden."
+  },
+  "$regel": "Ingen typ harleds ur hexvarde, roll, grannbeslut eller onskan om rapportkonsistens. Historisk proveniens bevarad.",
+  "poster": [
+   {
+    "tokenNamn": "--text-innehall-d1",
+    "beslutsId": "TEXTRC ‖ RC-TX-D01",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #37453a -> #8fb89a pa #17251d  7.20"
+    },
+    "ljusvarde": "#37453a",
+    "morkvarde": "#8fb89a",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d2",
+    "beslutsId": "TEXTRC ‖ RC-TX-D02",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #627061 -> #c9d3c4 pa #17251d 10.31"
+    },
+    "ljusvarde": "#627061",
+    "morkvarde": "#c9d3c4",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d3",
+    "beslutsId": "TEXTRC ‖ RC-TX-D03",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #8a5212 -> #de9078 pa #24382c  4.99  [KOPPLAT]"
+    },
+    "ljusvarde": "#8a5212",
+    "morkvarde": "#de9078",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d4",
+    "beslutsId": "TEXTRC ‖ RC-TX-D04",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #8a5212 -> #93a48d pa #17251d  6.02"
+    },
+    "ljusvarde": "#8a5212",
+    "morkvarde": "#93a48d",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d5",
+    "beslutsId": "TEXTRC ‖ RC-TX-L01",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light #93a48d -> #627061 pa #f5f4ed  4.75"
+    },
+    "ljusvarde": "#93a48d",
+    "morkvarde": "#93a48d",
+    "vardenLika": true,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d6",
+    "beslutsId": "TEXTRC ‖ RC-TX-L02",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light #93a48d -> #5b6959 pa #e6ead9  4.75"
+    },
+    "ljusvarde": "#93a48d",
+    "morkvarde": "#93a48d",
+    "vardenLika": true,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--yta-upphojd-d14",
+    "beslutsId": "TEXTRC ‖ RC-TX-L03 + RC-TX-L04",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(36,56,44,0.6) -> #24382c  L03 11.36 · L04 5.19"
+    },
+    "ljusvarde": "rgba(36,56,44,0.6)",
+    "morkvarde": "#24382c",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d7",
+    "beslutsId": "TEXTRC ‖ RC-TX-L05",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(245,244,237,0.6) -> #ccd1c2 pa #3f4a42  5.93"
+    },
+    "ljusvarde": "rgba(245,244,237,0.6)",
+    "morkvarde": "rgba(245,244,237,0.6)",
+    "vardenLika": true,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--yta-upphojd-d15",
+    "beslutsId": "TEXTRC ‖ RC-TX-L06",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(23,37,29,0.6) -> #627061  4.75"
+    },
+    "ljusvarde": "rgba(23,37,29,0.6)",
+    "morkvarde": "#627061",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
+  ]
  }
 }
