@@ -529,8 +529,16 @@ service cloud.firestore {
         // Any authenticated user can increment counters (sharing notifications)
         // Rate limited to prevent counter-spam attacks
         allow create, update: if isAuthenticated()
+          // BUT-1482 sprint, 2026-08-12: these used to name the counterTypeKey
+          // strings ('shared_recipes'), but the writer sends FIELD names from
+          // UserCounterIncrements — `fieldForType()` maps one to the other, and
+          // only the field name reaches Firestore. Two vocabularies for one
+          // fact; the write was denied on every share, swallowed by a
+          // best-effort catch, so the recipient's unread badge never moved.
+          // Writer: base_shared_content_repository.dart:59-63.
           && request.resource.data.keys().hasOnly([
-            'shared_recipes', 'shared_menus', 'shared_shopping_lists',
+            'unreadSharedRecipes', 'unreadSharedMenus',
+            'unreadSharedShoppingLists',
             'totalSharedContent', 'lastUpdated'
           ])
           && isServerTimestamp('lastUpdated')
@@ -542,9 +550,15 @@ service cloud.firestore {
       match /conversation_memberships/{conversationId} {
         allow read, delete: if isOwner(userId);
         allow create, update: if isAuthenticated()
+          // BUT-1482 sprint, 2026-08-12: `isMuted` and `isPinned` were missing,
+          // so every membership write was denied. Unlike the other four this
+          // one is NOT swallowed — addParticipants has no local catch, so
+          // batch.commit() throws up through createDirectConversation /
+          // createGroupConversation. Writer: ConversationMembership.toFirestore.
           && request.resource.data.keys().hasOnly([
             'conversationId', 'conversationTitle', 'isGroup',
-            'lastActivityAt', 'hasUnread', 'joinedAt', 'isArchived'
+            'lastActivityAt', 'hasUnread', 'joinedAt', 'isArchived',
+            'isMuted', 'isPinned'
           ])
           && request.resource.data.conversationId == conversationId
           && rateLimitWrite('conversation_membership', 5);
@@ -1585,6 +1599,288 @@ service cloud.firestore {
           && request.auth.uid == settingsUserId
           && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds;
       }
+
+      // ------------------------------------------------------------------
+      // PARTICIPANT ROSTER (BUT-1482 sprint, 2026-08-12)
+      // ------------------------------------------------------------------
+      // Half of the two-way index whose other half is
+      // users/{uid}/conversation_memberships above; both halves are written in
+      // ONE WriteBatch by ConversationParticipantModule.addParticipants, gated
+      // on `enable_subcollection_participants`, which defaults to TRUE. This
+      // path had no match block at all, so every write hit default-deny — and
+      // unlike the other four drifts in this sprint the failure is NOT
+      // swallowed: addParticipants has no local catch, so batch.commit() throws
+      // up through createDirectConversation / createGroupConversation.
+      //
+      // WHY THE PARENT CONVERSATION IS NOT REQUIRED ON CREATE.
+      // The obvious rule — `request.auth.uid in
+      // get(.../conversations/$(conversationId)).data.participantIds` — denies
+      // every GROUP create, i.e. it reproduces the bug it is meant to fix.
+      // FirebaseMessagingRepository mixes in UserScopedFirebaseRepository, so
+      // createGroupConversation's own conversation write lands on
+      // users/{creatorUid}/conversations/{id}; the TOP-LEVEL document does not
+      // exist when the roster batch runs and only materialises when someone
+      // sends the first message. That is the same path split BUT-1795 records
+      // ("a group nobody has chatted in has no top-level document at all").
+      // So authorization has two branches:
+      //
+      //   ATTESTED  — the top-level conversation exists and names BOTH the
+      //               writer and the row's subject in participantIds. The strong
+      //               branch: it covers the DIRECT create (whose parent IS
+      //               written, and awaited, before the batch), a later add ONLY
+      //               where the parent already names the subject, and every
+      //               write once a group has been chatted in.
+      //
+      //               "Only where" is not hedging. The live add-member path
+      //               (`GroupDetailViewModel.addMembers` -> `addParticipants`)
+      //               updates the USER-SCOPED conversation copy, and no client
+      //               may ever touch the top-level `participantIds` — the
+      //               conversations update rule denies any diff that names it.
+      //               So on a group that HAS been chatted in, the new member's
+      //               roster row is denied and the batch throws. Test P4 pins
+      //               that deny. Adding a member to a live group is therefore
+      //               still broken, tracked as BUT-1828; do not read this branch
+      //               as covering it.
+      //   UNCLAIMED — no top-level conversation document exists yet. The
+      //               bootstrap the group path needs, and the only branch a
+      //               non-member can reach. It is bounded by knowledge of the
+      //               id: a group id is a client-generated UUIDv4 (~122 bits —
+      //               `Conversation.group` mints it, and BaseFirebaseRepository
+      //               writes `doc(getId(entity))`, so it is NOT a Firestore
+      //               20-char auto-id; that is what this comment used to say and
+      //               it was wrong about the mechanism, not the security). A
+      //               DIRECT id
+      //               IS guessable (`direct_{uidA}_{uidB}` over uids that are
+      //               readable from public_profiles). That WAS argued away here
+      //               on the grounds that a direct conversation's parent always
+      //               exists by the time its roster is written — true of the
+      //               legitimate write order, and irrelevant to an attacker
+      //               writing a roster for a DM that does not exist yet. The
+      //               `direct_` exclusion in rosterUnclaimed() is what actually
+      //               closes it; see there.
+      //
+      // Residual, stated rather than hidden: an attacker who knows the id of a
+      // group that has NEVER been messaged in can seat a row and then read that
+      // roster (display names + avatar URLs of its members). The id is a
+      // client-minted UUIDv4, not a Firestore auto-id. Tightening is a one-line
+      // change — drop `rosterUnclaimed()` from mayWriteRoster() — once group
+      // creation writes its conversation to the top-level path (BUT-1795). It
+      // cannot break stored data — but that clause has a HALF-LIFE and this is
+      // the sentence a future tightening will lean on, so date it: as of
+      // 2026-08-12, PRE-DEPLOY, this path had been default-deny since it was
+      // written, so no client row existed. Once this block ships, rows start
+      // being written and the argument no longer holds by itself — re-derive it
+      // against real data before dropping `rosterUnclaimed()`. All THREE Cloud
+      // Functions that
+      // touch the subcollection only DELETE (`leaveGroupConversation`,
+      // `enforceGroupMinorMembership` since 2026-08-12, and `resetUserData`).
+      // Do not read that as "no CF writes rows, so the branch is free" — the
+      // branch is what group CREATION needs, and the writer is the client.
+      match /participants/{participantId} {
+        // One get(); the engine caches it per request and returns null for a
+        // missing document, so this is a single read and never a CEL error
+        // (same trick as isRealtimeParticipant).
+        function parentDoc() {
+          return get(/databases/$(database)/documents/conversations/$(conversationId));
+        }
+        function parentNames(uid) {
+          let parent = parentDoc();
+          return parent != null
+            && uid in parent.data.get('participantIds', []);
+        }
+        function rosterUnclaimed() {
+          // The `direct_` exclusion is load-bearing, and the comment above this
+          // block used to argue it away. A direct id is DETERMINISTIC —
+          // `direct_${sortedUids[0]}_${sortedUids[1]}` — and uids are
+          // enumerable because `public_profiles` is readable by any signed-in
+          // user. Without this clause, anyone can (a) probe whether two people
+          // have ever had a DM, by attempting a roster create and reading the
+          // verdict, and (b) PRE-SEAT a row on a conversation that does not
+          // exist yet, which then persists into the real roster and grants them
+          // its read — both members' names, avatars and live `lastReadAt`.
+          //
+          // The bootstrap this branch exists for is GROUP creation, whose ids
+          // are client-minted UUIDv4s and whose parent legitimately does not
+          // exist until the first message (BUT-1795). Direct conversations
+          // always write their parent first, so they never need it.
+          return parentDoc() == null && !conversationId.matches('^direct_.*');
+        }
+        // The strong branch: the parent vouches for the writer AND the subject.
+        function attestedWriter() {
+          return parentNames(request.auth.uid) && parentNames(participantId);
+        }
+        function mayWriteRoster() {
+          return attestedWriter() || rosterUnclaimed();
+        }
+
+        // Exactly the keys ConversationParticipant.toFirestore sends
+        // (lib/models/messaging/conversation_participant.dart:73-84); avatarUrl
+        // is the only optional one (omitted when null), which is why hasOnly and
+        // hasAll carry different lists. Pinned against the model by
+        // test/unit/security/rules_allowlist_drift_test.dart — the drift this
+        // whole sprint exists to stop.
+        //
+        // `role` is validated as an enum but is NOT authorization: nothing in
+        // these rules or in the app reads it to decide anything (grep
+        // ParticipantRole — it never leaves the module). If that ever changes,
+        // it needs its own immutability conjunct here.
+        function validParticipant() {
+          let d = request.resource.data;
+          return d.keys().hasOnly(['conversationId', 'participantId',
+                                   'displayName', 'avatarUrl', 'joinedAt',
+                                   'lastReadAt', 'role', 'isMuted'])
+            && d.keys().hasAll(['conversationId', 'participantId',
+                                'displayName', 'joinedAt', 'lastReadAt',
+                                'role', 'isMuted'])
+            // Identity is the path, not the payload — this also makes both
+            // fields immutable on update for free.
+            && d.conversationId == conversationId
+            && d.participantId == participantId
+            && d.displayName is string
+            && d.displayName.size() <= 100
+            && (!('avatarUrl' in d)
+                || (d.avatarUrl is string && d.avatarUrl.size() <= 1000))
+            && d.joinedAt is timestamp
+            && d.lastReadAt is timestamp
+            && d.role in ['member', 'admin', 'owner']
+            && d.isMuted is bool;
+        }
+
+        // Read: a member of the roster. Attested by the parent where it exists,
+        // otherwise by the reader's OWN row existing here (the recipePresence
+        // pattern) — the only evidence available for a group that has never been
+        // messaged in. Neither predicate touches resource.data, so the client's
+        // whole-collection get()/snapshots() LIST is provable, not just a get().
+        // The own-row fallback is SCOPED TO parentDoc() == null, and that scope
+        // is the whole safety of it. Unscoped, a row grants roster LIST
+        // FOREVER — including after the conversation goes live and its
+        // participantIds exclude the reader. That is not hypothetical:
+        // `enforceGroupMinorMembership` (functions/src/messaging/) USED TO evict
+        // a minor by deleting ONLY users/{uid}/conversation_memberships/{id},
+        // never touching this roster row, so an evicted MINOR would keep reading
+        // every member's name and avatar, and their own name and avatar would
+        // stay readable to the group. Before this block existed the path was
+        // default-deny, so that CF gap was inert; this block is what would have
+        // made it live.
+        //
+        // FIXED IN TWO HALVES, 2026-08-12. Rules: the fallback is scoped to a
+        // parentless roster, which closes the LIVE-parent case. Code: the CF
+        // now deletes the roster row alongside the membership mirror, which is
+        // the only possible fix for the other case — when it evicts the last
+        // members it DELETES the conversation, and rules cannot tell "parent
+        // destroyed" from "parent not written yet", so a surviving row would be
+        // readable forever. Pinned by roster assertions in
+        // functions/src/__tests__/enforce-group-minor-membership.integration.test.ts
+        // — and, since the caller's invariant needs its own fixture, by a test
+        // there that stages an UNCLEARABLE roster and asserts the parent is left
+        // standing. Deliberately not giving a count: the last two were both
+        // stale within the day.
+        //
+        // RESIDUAL, stated rather than hidden. Two things are NOT closed.
+        //
+        // (a) The pre-seat hole: an unattested user who knows a never-chatted
+        //     group's UUID can seat a row and then list it (test P3B).
+        //
+        //     Same branch, DIFFERENT actor, and worth stating separately
+        //     because the residual lists above describe only the outsider and
+        //     the already-evicted member: between group creation and the first
+        //     real message, every legitimately seated member can LIST the
+        //     roster through this same fallback — including a minor who was
+        //     added by a non-friend and has not been evicted yet.
+        //     `enforceGroupMinorMembership` is an onDocumentCreated trigger on
+        //     the TOP-LEVEL conversation, which does not exist until then (the
+        //     system message `createGroupConversation` sends is itself denied,
+        //     `senderId: "system"` — refused by the client's own participant check
+        //     before it even reaches the rules, and denied by the messages create
+        //     rule if it did), so the child-safety cut cannot fire during
+        //     that window — and only the group's CREATOR can end it. So the
+        //     non-friend adder, who in this threat model IS the creator,
+        //     controls whether the cut ever runs at all.
+        //
+        //     WHY only the creator is not what it looks like, and the real
+        //     reason is fragile: a non-creator's first message falls through to
+        //     a fallback that stages a top-level create carrying
+        //     `metadata: null` (the DTO emits the key unconditionally). The
+        //     create rule's `!('creatorId' in request.resource.data.metadata)`
+        //     then evaluates `in` against a null — an evaluation error, which
+        //     denies. The UPDATE rule below answers the same question with an
+        //     `is map` ternary; making the two agree "for consistency" would
+        //     land that create, and `enforceGroupMinorMembership` would return
+        //     early on it — the fallback payload trips BOTH halves of that guard
+        //     (`isGroup: false` AND a single participant), so the escape is
+        //     doubly certain; do not read it as "isGroup: false returns early"
+        //     in general, because a false flag with >2 participants does not.
+        //     So the cut would never run at all.
+        //     Test C7B pins it and is mutation-proven against exactly that edit.
+        //
+        //     That error is NOT a security bound. It binds the app's own client,
+        //     which sends null; it does not bind a tampered one. A hand-rolled
+        //     create carrying a real `metadata` map is ALLOWED today, ends the
+        //     window whenever the caller likes, and cannot be repaired by the
+        //     real creator afterwards. Pre-existing (this commit does not touch
+        //     the conversations create rule) and filed separately — recorded
+        //     here so nobody reads "only the creator can end it" as a rule. The window is new with this block — before it,
+        //     the path was default-deny. BUT-1795 closes it by making the parent
+        //     exist at creation, which is the same fix as for (a) and (b).
+        //
+        // (b) Orphan-after-delete, reachable from THREE deleters:
+        //     1. a participant deleting the conversation from the UI
+        //        (`ConversationMutationModule.deleteConversation`) — the only
+        //        one a client-side rule can reach. NOT closed, BUT-1825.
+        //     2. `enforceGroupMinorMembership`'s collapse branch, which deletes
+        //        the conversation when eviction leaves fewer than two members.
+        //        CLOSED in code 2026-08-12; see above.
+        //     3. the GDPR account-deletion cascade, which deletes any
+        //        conversation with two or fewer participants WHOLE
+        //        (`account-deletion-cascade.ts`). NOT closed, BUT-1822.
+        //
+        //     `allow delete` does not cascade, and the per-row delete rule
+        //     admits only the row's own subject, so no client can clean up after
+        //     itself. Case 3 is worse than it looks: `rosterUnclaimed()`
+        //     excludes `direct_*` ids from the WRITE, but the read fallback
+        //     below has no such exclusion — so after a DM is erased the
+        //     surviving partner keeps LIST over a roster still holding the
+        //     deleted user's name and avatar.
+        //
+        // BUT-1795 removes the branch and both residuals with it, and is the
+        // ONLY option that reaches all three — widening the row delete rule
+        // reaches case 1 only, because 2 and 3 run server-side under the Admin
+        // SDK, where rules do not apply.
+        allow read: if isAuthenticated()
+          && (parentNames(request.auth.uid)
+              || (parentDoc() == null
+                  && exists(/databases/$(database)/documents/conversations/$(conversationId)/participants/$(request.auth.uid))));
+
+        allow create: if isAuthenticated()
+          && validParticipant()
+          && mayWriteRoster();
+
+        // Update has two shapes, one per writer:
+        //   (u1) the row's own subject stamping their read cursor — the only
+        //        per-row update the client WOULD make (updateLastRead, which
+        //        has no caller outside its own module today), so its diff is
+        //        pinned to lastReadAt;
+        //   (u2) a roster writer re-set()ing the WHOLE row. addParticipant uses
+        //        set() without merge, so a re-add and migrateToSubcollection are
+        //        UPDATES in rules terms, not creates.
+        allow update: if isAuthenticated()
+          && validParticipant()
+          && (
+            (participantId == request.auth.uid
+             && request.resource.data.diff(resource.data).affectedKeys()
+                  .hasOnly(['lastReadAt']))
+            || mayWriteRoster()
+          );
+
+        // Delete: the row's own subject only. Deliberately NOT extended to
+        // co-participants — no client flow deletes another member's row
+        // (ConversationParticipantModule.removeParticipant has no caller), and
+        // the real "remove member" runs in the leaveGroupConversation Cloud
+        // Function under the Admin SDK, which bypasses these rules (BUT-1788).
+        // Granting it here would be a pure griefing primitive.
+        allow delete: if isAuthenticated()
+          && participantId == request.auth.uid;
+      }
     }
 
     // ========================================
@@ -2436,7 +2732,17 @@ service cloud.firestore {
       match /clicks/{clickId} {
         allow read: if isAuthenticated();
         allow create: if isAuthenticated()
-          && request.resource.data.keys().hasOnly(['userId', 'clickedAt', 'referrer'])
+          // BUT-1482 sprint, 2026-08-12: the rules named `clickedAt` and
+          // `referrer`; the writer sends `timestamp` and `userId`, and neither
+          // `clickedAt` nor `referrer`, so every click write was denied
+          // (swallowed by a catch). Do not narrow this list to one key. The WRITER is the
+          // source of truth here because nothing anywhere reads this
+          // subcollection — grep for it returns only the collection constant —
+          // so there is no stored shape to stay compatible with. That also
+          // means it is write-only telemetry with no consumer; whether it
+          // should exist at all is recorded in tasks/todo.md, not decided here.
+          // Writer: firebase_deeplink_repository.dart:201-205.
+          && request.resource.data.keys().hasOnly(['userId', 'timestamp'])
           && request.resource.data.userId == request.auth.uid
           && rateLimitWrite('deep_link_click', 10);
         allow update, delete: if false;
@@ -2466,9 +2772,14 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid;
       allow create, update: if isAuthenticated()
         && request.resource.data.userId == request.auth.uid
+        // BUT-1482 sprint, 2026-08-12: `expireAt` was missing. The writer has
+        // stamped it since 2026-03-24 (a 90-day TTL), four days after this
+        // allowlist was written, and both sibling analytics collections below
+        // already list it. Writer: firebase_notification_history_repository.dart:99.
         && request.resource.data.keys().hasOnly([
           'userId', 'notificationId', 'category', 'type', 'data',
-          'sentAt', 'delivered', 'opened', 'deliveredAt', 'openedAt'
+          'sentAt', 'delivered', 'opened', 'deliveredAt', 'openedAt',
+          'expireAt'
         ])
         // S2: Limit data field size to prevent abuse
         && request.resource.data.get('data', {}).size() <= 20;

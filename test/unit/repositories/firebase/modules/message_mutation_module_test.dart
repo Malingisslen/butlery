@@ -1,6 +1,6 @@
 /// Unit tests for MessageMutationModule.
 ///
-/// Targets the 211-line write module that handles sendMessage's atomic
+/// Targets the sendMessage write module that handles its atomic
 /// 3-doc batch + poll mutation. Tests focus on the documented contracts
 /// (atomic write, fallback conversation construction, permission gates,
 /// poll vote toggling) rather than method-call presence.
@@ -130,7 +130,9 @@ void main() {
 
     test(
       'falls back to constructed conversation when readConversation returns null '
-      'AND id starts with direct_ — fetches other participant profile',
+      '— for ANY id; the direct_ check lives only in the catch, so a null RETURN '
+      'reaches the fallback whatever the id looks like. This case uses a direct_ '
+      'id because it also exercises the other-participant profile fetch',
       () async {
         final firestore = FakeFirebaseFirestore();
         // Pre-seed the other user's public profile doc.
@@ -163,6 +165,113 @@ void main() {
         );
         expect(participantNames['user-a'], equals('A'));
         expect(participantNames['user-b'], equals('B from profile'));
+
+        // The fallback must write `metadata` PRESENT and NULL. Both halves are
+        // load-bearing, and neither is obvious, which is why this is a test and
+        // not only a comment.
+        //
+        // `firestore.rules`' conversations CREATE rule reads
+        // `'creatorId' in request.resource.data.metadata`. An `in` on a null is
+        // an evaluation error, which denies — and that denial is the only thing
+        // stopping a NON-CREATOR from materialising a group's top-level
+        // conversation document by sending its first message. If it landed,
+        // `enforceGroupMinorMembership` would return early on it — this payload
+        // trips BOTH halves of its guard (`isGroup: false` AND at most two
+        // participants — the squat payload this is about carries one);
+        // a false flag alone does NOT return early when there are more than two
+        // — and `onDocumentCreated` cannot fire twice, so the child-safety cut
+        // that evicts a minor added by a non-friend would never run for that
+        // group at all.
+        //
+        // Two well-intentioned edits would each disarm that, and the rules-side
+        // test (C7B in conversations-rules.test.ts) stays green through both:
+        //   1. stamping `metadata: {'creatorId': senderId}` here — the key stops
+        //      being null, so the `in` succeeds and the create is ALLOWED;
+        //   2. making `ConversationDto.toFirestore` skip a null metadata (the
+        //      standard "don't write nulls" cleanup) — the key disappears, the
+        //      rule's `!('metadata' in ...)` disjunct becomes true, and the
+        //      create is ALLOWED.
+        // The first assertion below catches (2); the second catches (1) — that
+        // way round, and it is worth stating because getting it backwards is
+        // how the load-bearing one gets deleted. Under (1) the KEY is still
+        // present, so `containsKey` does not fire; under (2) the key is absent
+        // and `data()['metadata']` returns null, so `isNull` passes VACUOUSLY.
+        // Neither assertion covers for the other. Measured, not reasoned: each
+        // mutant reddens exactly one of them.
+        //
+        // NOTE this is not a security bound — it binds our own client, not a
+        // tampered one (BUT-1830). It is the invariant our writer must keep.
+        //
+        // AND: green here is the FAKE, not production. This exact payload is
+        // refused twice over against the real rules — as a create (the `in` on
+        // null above) when the document is absent, and as an update when it
+        // exists, because the DTO re-stamps `createdAt` and the update rule
+        // pins that key. So a DM send fails today (BUT-1831). Do not read this
+        // passing test as proof the fallback works, and do not "fix" BUT-1831
+        // by stamping a creatorId here — that is mutant (1).
+        expect(
+          convoDoc.data()!.containsKey('metadata'),
+          isTrue,
+          reason:
+              'the metadata KEY must be written even when null — omitting it '
+              "satisfies the rule's !(metadata in data) disjunct and lets a "
+              "non-creator's conversation create land",
+        );
+        expect(
+          convoDoc.data()!['metadata'],
+          isNull,
+          reason:
+              'the fallback conversation must record NO creator — a creatorId '
+              'here makes the create land and disarms the minor-eviction '
+              'trigger for that group',
+        );
+      },
+    );
+
+    // The SAME invariant on a GROUP-shaped id, and it is not redundant.
+    //
+    // The test above reaches the fallback through a `direct_` id, so its payload
+    // has two participants. The payload the invariant is actually about is the
+    // one-participant shape a group id produces — `otherUserId` is parsed only
+    // from a `direct_` id, so it stays null. Without this fixture a
+    // BRANCH-CONDITIONAL disarming edit survives the whole suite: stamping a
+    // creatorId only when the id does NOT start with `direct_` is mutant (1)
+    // applied exactly where it matters, and every other test stays green.
+    test(
+      'the fallback records no creator and keeps the metadata key for a '
+      'GROUP-shaped id too — the one-participant payload the squat is about',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(
+          firestore,
+          readConversation: (_) async => null,
+        );
+
+        await module.sendMessage(
+          _textMessage(conversationId: 'group-abc', senderId: 'user-a'),
+        );
+
+        final convoDoc = await firestore
+            .collection(_convoCollection)
+            .doc('group-abc')
+            .get();
+        expect(convoDoc.exists, isTrue);
+        expect(
+          convoDoc.data()!['participantIds'],
+          equals(['user-a']),
+          reason:
+              'a group id yields no otherUserId, so the fallback builds a '
+              'ONE-participant conversation — the exact shape that makes '
+              'enforceGroupMinorMembership return early',
+        );
+        expect(convoDoc.data()!['isGroup'], isFalse);
+        expect(
+          convoDoc.data()!.containsKey('metadata'),
+          isTrue,
+          reason:
+              'same invariant as the direct_ case, on the shape it matters for',
+        );
+        expect(convoDoc.data()!['metadata'], isNull);
       },
     );
 

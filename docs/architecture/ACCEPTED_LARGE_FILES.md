@@ -31,7 +31,7 @@ Domain models with serialization, factory methods, schema migration. Splitting f
 | File | Lines | Reason |
 |------|-------|--------|
 | `recipe_unified.dart` | 1780 | Core recipe model — serialization, factories, copyWith, type variants. Cohesive growth from family-rating fields; future option is to extract `recipe_unified_serialization.dart` if drift exceeds +25%. |
-| `tag_result.dart` | 869 | Auto-tagging result — serialization, schema migration, 20+ query helpers |
+| `tag_result.dart` | 967 | Auto-tagging result — serialization, schema migration, 20+ query helpers |
 | `unified_shopping_list.dart` | 837 | Shopping list model — serialization, member permissions, sync status |
 | `recipe_form_state.dart` | 802 | Recipe form state — validation, field tracking, error handler extracted |
 | `unified_shopping_item.dart` | 927 | Shopping item model — serialization, category, unit conversion |
@@ -77,7 +77,7 @@ Tightly coupled to base classes. Extraction yields only 15-25% reduction while a
 | `firebase_analytics_repository.dart` | 608 | Analytics writes with per-install salted SHA-256 PII hashing (GDPR Art.7); single-concern repository |
 | `algolia_search_repository.dart` | 515 | Single search backend; deliberate Algolia bypass rationale documented in code |
 | `friend_category_repository.dart` | 504 | Clean single-collection repo; user-scoped friend category CRUD only |
-| `message_mutation_module.dart` | 523 | Focused module for atomic message send; single complex operation |
+| `message_mutation_module.dart` | 557 | Focused module for atomic message send; single complex operation |
 | `shopping_item_operations_module.dart` | 595 | Six item-write operations (add/update/remove × single+batch), each fanning to a personal-subcollection leg and a collaborative-inline leg. The dual-storage split IS the module's reason to exist, so splitting by operation would duplicate that fork six times and splitting by storage would put one caller's two halves in different files. Was already 512 and undeclared when BUT-1762 added the day-coalesced parent stamp; row added then rather than left silent. |
 
 ## Service Modules / Facades

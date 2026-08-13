@@ -136,6 +136,34 @@ class MessageMutationModule {
         }
 
         // Create fallback conversation with BOTH participant names
+        // DO NOT give this conversation a `metadata.creatorId`, however
+        // obviously right that looks. `firestore.rules` relies on the null.
+        //
+        // `ConversationDto.toFirestore` emits `metadata` unconditionally, so
+        // this object sends `metadata: null`, and the conversations CREATE rule
+        // evaluates `'creatorId' in request.resource.data.metadata` against it —
+        // an `in` on a null is an evaluation error, which denies. That denial is
+        // the only thing stopping a NON-CREATOR from materialising a group's
+        // top-level document by sending the first message. If it landed,
+        // `enforceGroupMinorMembership` would return early on it — this payload
+        // trips BOTH halves of its guard (`isGroup: false` AND one participant);
+        // a false flag alone does NOT return early when there are >2 —
+        // and `onDocumentCreated` cannot fire twice — so the child-safety cut
+        // that evicts a minor added by a non-friend would never run for that
+        // group at all.
+        //
+        // The invariant is THREE-sided and every side is now pinned:
+        //   - the rule denies `metadata: null` — test C7B in
+        //     conversations-rules.test.ts;
+        //   - this constructor records no creator, and
+        //   - `ConversationDto.toFirestore` writes the key even when null
+        //     — both in message_mutation_module_test.dart, each
+        //     mutation-proven against the edit it exists for.
+        //
+        // Not a security bound, and do not read it as one: it binds OUR client,
+        // not a tampered one. A hand-rolled create carrying a real metadata map
+        // is allowed today and ends the window irreversibly — BUT-1830. See
+        // ACCEPTED_DEVIATIONS.md, the conversation roster section.
         conversation = Conversation(
           id: conversationId,
           participantIds: [
@@ -154,6 +182,12 @@ class MessageMutationModule {
           },
           lastReadTimestamps: {},
           isGroup: false,
+          // BUT-1831: this re-stamp is why the write is DENIED against any
+          // conversation that already exists — the DTO emits createdAt
+          // unconditionally, the write is a merge-set, and the update rule
+          // pins that field. Establish how often this branch runs before
+          // changing it; the fix differs completely between "a rare repair
+          // path is broken" and "every DM send takes a denied write".
           createdAt: clock.now().toUtc(),
           updatedAt: clock.now().toUtc(),
         );

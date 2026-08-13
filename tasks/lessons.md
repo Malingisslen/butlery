@@ -938,3 +938,58 @@ Four things worth keeping:
    including a minor the eviction trigger has not reached yet, because that trigger fires on
    the parent document that does not exist yet. Enumerate actors and lifecycle states, not
    just the happy path.
+
+## A 403 that names a permission can still be a wrong-identifier bug (2026-08-13)
+
+`firebase deploy --only firestore:rules --project butlery-app` failed four times across a
+session with `HTTP Error: 403, Caller does not have required permission to use project
+butlery-app`. I diagnosed it as expired credentials, then as a missing IAM role, told Malin
+her account lacked the permission, and asked her to re-authenticate. She did; it failed
+again.
+
+The project id is `butlery-app-1`. `butlery-app` is a DIFFERENT project that this account
+genuinely cannot use — so the error was accurate, specific, and about a resource I had
+invented. `firebase projects:list` prints display name and project id in adjacent columns,
+and `butlery-app` is the display NAME of `butlery-app-1`.
+
+What made it expensive is that the error message was consistent with my wrong theory. A 403
+naming a permission reads as an authorisation problem, so I kept fixing authorisation. The
+tell was there from the first run: the error quotes the identifier back, and I never checked
+that identifier against `.firebaserc` or the project list.
+
+So: when a cloud command fails on identity, **first re-read the identifier in the error and
+resolve it against the project's own config**, before touching credentials. `.firebaserc`,
+`--project`, and the display-name-vs-id column are all cheaper to check than a re-auth. And
+never ask the user to fix an account problem until the resource name has been verified — I
+sent Malin to re-authenticate an account that was working the whole time.
+
+Corollary already in the digest, from the other direction: a deterministic tool's verdict
+must be RUN, not predicted. This one was run — four times — and the output was read through a
+theory instead of literally.
+
+## A comment that MAPS assertions to failures is itself an untested assertion, and mine was inverted (2026-08-13)
+
+Two assertions pinned a two-sided invariant, each mutation-proven against the edit it exists
+for. I then wrote a summary line — "the first assertion below catches (1); the second catches
+(2)" — and it was backwards. My own probe output said so: mutant A (the DTO dropping a null
+key) reddened the FIRST assertion, mutant B (stamping a creatorId) reddened the SECOND, and I
+had numbered the edits in the other order two paragraphs above.
+
+The damage is specific and worse than a wrong sentence. That line exists to tell a future
+simplifier which assertion is load-bearing for which edit. Followed literally, it sends them
+to check assertion 1 against edit (1), watch it not fire, and delete the only guard against
+the other edit. And the second assertion passes VACUOUSLY under that edit — absent key and
+null value both read as null — so the suite stays green afterwards.
+
+Three things worth keeping:
+
+1. **A mapping claim has a truth value and a cheap check.** I had the evidence on screen when
+   I wrote the line: two probe runs, each naming the assertion that reddened. Re-read the
+   probe output against the sentence before shipping the sentence.
+2. **When two assertions guard one invariant, state which one is vacuous without the other.**
+   The pair only works because assertion 1 removes a degree of freedom assertion 2 cannot see.
+   That is the fact a simplifier needs; "both are needed" without the mechanism invites the
+   deletion.
+3. Same class as the false comments this sprint kept producing, one level up: not a claim
+   about another file, but a claim about my own tests' behaviour, which is exactly as easy to
+   get wrong and exactly as invisible to the analyzer.

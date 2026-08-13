@@ -66,8 +66,12 @@ class TagResult {
   final bool hasCoverageAnomaly;
 
   /// H3: Decision logs explaining why each allergen/dietary status was set.
-  /// NOT stored in Firestore to avoid storage bloat. Available in-memory
-  /// and via JSON serialization for debugging purposes.
+  ///
+  /// [toFirestore] does NOT emit them, so they never reach `isValidTagResult`'s
+  /// key allowlist on `recipes`. [toJson] DOES — and TWO consumers of it are not
+  /// local: see the note on [toFirestore] for where that map ends up. Say two,
+  /// not one: an auditor who checks only `shared_content` misses
+  /// `globalRecipeCache`, which is where the live denial in BUT-1826 sits.
   final List<TagDecision>? decisions;
 
   /// MED-2/V2: Explicit error reason when tagging fails.
@@ -347,10 +351,91 @@ class TagResult {
 
   /// Converts to Firestore map (uses Timestamp for dates).
   ///
-  /// MED-1: [includeDecisions] optionally includes decision logs in Firestore.
-  /// Defaults to false to avoid storage bloat. Set to true for debugging or
-  /// auditing failed recipes. Decisions add ~200-500 bytes per recipe.
-  Map<String, dynamic> toFirestore({bool includeDecisions = false}) {
+  /// **Every key here must appear in `isValidTagResult`'s `hasOnly` allowlist
+  /// in `firestore.rules`, or the write is DENIED — silently, on every
+  /// attempt.** That is not a hypothetical: `configRevision` was added on
+  /// 2026-07-23 without the rules change and every recipe create and update in
+  /// production was denied for three weeks — every user, since the field is
+  /// stamped whenever the tagConfigs load succeeds, which it does.
+  /// `test/unit/security/rules_allowlist_drift_test.dart` compares the two and
+  /// derives the key
+  /// set by calling this method — but only for the fields its fixture actually
+  /// emits. Two keys here are CONDITIONAL (`configRevision`, `errorReason` are
+  /// written only when non-null), and a fixture that leaves them null derives a
+  /// key set without them. That is not hypothetical: the guard's first version
+  /// did exactly that and would have stayed green through this outage. So: add
+  /// a field here, add it to the rules, AND make sure the guard's fixture
+  /// emits it.
+  ///
+  /// The old `includeDecisions` parameter was REMOVED on 2026-08-12. It emitted
+  /// a `decisions` key that the allowlist does not contain, it had zero callers,
+  /// and its only live effect was that flipping it once for one investigation
+  /// would have reproduced that three-week outage. `decisions` is still carried
+  /// in memory and still written by `toJson()`, which is reached through
+  /// `Recipe.toJson` (`recipe_unified.dart`) — about fifteen call sites, mostly
+  /// local JSON caches, plus backup, SharedPreferences persistence, offline
+  /// storage, menu storage and import.
+  ///
+  /// TWO of them ATTEMPT to write the whole map to Firestore:
+  /// `SocialMenuOperations.shareMenuWithFriends` (into `shared_content`, and
+  /// `shareMenuWithGroup` delegates to it) and `ImportManager` via
+  /// `GlobalRecipeCache.save` (into the top-level `globalRecipeCache`).
+  ///
+  /// Only the first LANDS today. The import path is denied on every attempt for
+  /// unrelated reasons — the rules require four fields the writer never sends
+  /// (BUT-1826). Two things that sentence must not be stretched into:
+  ///
+  /// 1. It is NOT "has never reached that collection". Before 2026-03-15 the
+  ///    rule was a bare `allow create: if isAuthenticated()` (89face532), and
+  ///    the same writer path already cached `recipe.toJson()` (since
+  ///    2025-12-13). Entries carry a 30-180 day TTL by SOURCE TYPE — website 90,
+  ///    youtube 180, tiktok/instagram 60, text/ocr 30 — so only the 180-day tier
+  ///    written just before the cutoff still reaches today. Stronger still, and
+  ///    the reason this is not academic: `expireAt` was only added to
+  ///    `CacheEntry` on 2026-03-24, AFTER the rule tightened, so rows from
+  ///    before the cutoff carry none and the Firestore TTL policy can never
+  ///    collect them — only the cleanup function's `cachedAt + ttlDays`
+  ///    derivation reaches them. Say "not since 2026-03-15", never "never".
+  /// 2. It is NOT protection. It is an unrelated bug and it will be fixed.
+  ///
+  /// Key SHAPE is constrained on one of the two, asymmetrically.
+  /// `shared_content` uses only a FLOOR (`hasRequiredFields`, i.e.
+  /// `keys().hasAll`). `globalRecipeCache` uses a floor on CREATE but restricts
+  /// UPDATES to `['accessCount', 'lastAccessedAt']` — and `save` overwrites a
+  /// deterministic docId (`urlHash ?? 'fp_<fingerprint>'` — two branches, both
+  /// deterministic) with `SetOptions(merge: false)`, so
+  /// re-caching a URL already in the collection is an UPDATE in rules terms and
+  /// is already shape-constrained. Whoever fixes BUT-1826 by adding the four
+  /// required fields fixes the create branch only; every TTL refresh stays
+  /// denied. Neither collection calls `isValidTagResult`.
+  ///
+  /// So a new `toJson` key is safe on the share path and safe by ACCIDENT —
+  /// the day it gains a `keys().hasOnly`, every `toJson` key becomes a rules
+  /// concern. Count both paths before assuming otherwise. This paragraph has
+  /// been wrong four times: it named one consumer when there are two, then the
+  /// wrong method, then claimed the import write had never happened, then
+  /// claimed neither path constrained shape.
+  ///
+  /// TWO tests keep `decisions` out of this map. Re-adding the emission
+  /// reddens BOTH; they diverge only once the allowlist is widened too, and
+  /// that divergence is the reason to keep both:
+  ///
+  /// - `tag_result_test.dart`'s `stored.containsKey('decisions'), isFalse`,
+  ///   against a fixture carrying decisions. Catches the emission itself.
+  /// - `rules_allowlist_drift_test.dart`'s `recipes: core.tagResult` entry,
+  ///   whose fixture also carries a non-empty `decisions` list. Catches the
+  ///   emission ONLY because `decisions` is absent from `isValidTagResult`'s
+  ///   allowlist. Measured: re-add the emission AND widen the allowlist, and
+  ///   this one goes green (7/7) while the first stays red. Widening the
+  ///   allowlist alone changes nothing, because nothing emits the key today.
+  ///
+  /// Neither catches the shape that was actually removed here: an opt-in
+  /// parameter defaulting to false, because both call `toFirestore()` bare.
+  ///
+  /// An earlier version of this paragraph claimed the drift guard would NOT see
+  /// a re-added emission. It does — the mutation proof for that fixture is what
+  /// disproved the sentence, written the same day, two files apart.
+  Map<String, dynamic> toFirestore() {
     // M15: Sort tags for consistent ordering across all storage
     final sortedTags = tags.toList()..sort();
     final result = <String, dynamic>{
@@ -383,11 +468,6 @@ class TagResult {
     // BUT-1482: stamp the config revision when known (null = static fallback)
     if (configRevision != null) {
       result['configRevision'] = configRevision;
-    }
-
-    // MED-1: Optionally include decisions for debugging/auditing
-    if (includeDecisions && decisions != null && decisions!.isNotEmpty) {
-      result['decisions'] = decisions!.map((d) => d.toJson()).toList();
     }
 
     return result;
