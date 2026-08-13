@@ -1,6 +1,6 @@
 # Firestore Backups & Disaster Recovery
 
-**Status: ACTIVE — PITR enabled, weekly GCS exports scheduled.**
+**Status: ACTIVE — PITR enabled, managed daily backups (7-day retention), weekly GCS exports.**
 
 Operational runbook for Firestore data protection in `butlery-app-1`.
 
@@ -19,16 +19,61 @@ After the runbook is executed:
 
 ---
 
-## Current status (as of 2026-04-24)
+## Current status (verified against live GCP 2026-08-13)
+
+Every row below was read off the live project on 2026-08-13; the command that proves it is
+in the Evidence column. Do not edit a row without re-running its command.
 
 | Control | Status | Evidence |
 |---|---|---|
-| PITR enabled | ENABLED — 7-day window | `versionRetentionPeriod: 604800s` |
-| Weekly GCS export | SCHEDULED — Sundays 03:00 UTC | Cloud Scheduler job `firestore-weekly-export` (europe-west1) |
-| Backup bucket | CREATED — `gs://butlery-firestore-backups` | europe-west1, uniform bucket-level access |
-| Retention policy | 30 days auto-delete ⚠️ confirm against live GCP object-lifecycle config | lifecycle rule applied via `docs/ops/lifecycle.json` |
-| Firestore region | **europe-west3 (Frankfurt, EU)** — data; compute pinned to europe-west1 | Resolved per `docs/operations/data-residency.md` (**BUT-819**, 2026-06-14): the Firestore database is in `europe-west3` while Cloud Functions/Vertex stay in `europe-west1`. The EU-region split is **accepted** (both EU → GDPR satisfied). ⚠️ Note the backup bucket above is `europe-west1`, so weekly exports are cross-region — confirm that is acceptable for your RPO. |
-| Restore drill | NEVER PERFORMED | schedule one after first successful export |
+| PITR enabled | ENABLED — 7-day window | `gcloud firestore databases describe`: `pointInTimeRecoveryEnablement: POINT_IN_TIME_RECOVERY_ENABLED`, `versionRetentionPeriod: 604800s` |
+| Managed daily backup schedule | ACTIVE since 2026-08-11 — daily, 7-day retention | `gcloud firestore backups schedules list --database='(default)'`: one schedule, `dailyRecurrence: {}`, `retention: 604800s` |
+| Managed backups on disk | 2 READY (snapshots 2026-08-12 and 2026-08-13) | `gcloud firestore backups list --location=europe-west3` |
+| Weekly GCS export | SCHEDULED — Sundays 03:00 UTC, in **europe-west3** (not europe-west1) | Cloud Scheduler job `firestore-weekly-export`; last run wrote 2026-08-09T03:00Z |
+| Backup bucket | CREATED — `gs://butlery-firestore-backups`, **europe-west3** | `gcloud storage buckets describe`: `location: EUROPE-WEST3` — in-region with the database, so exports are NOT cross-region |
+| Retention policy (bucket) | 30 days auto-delete — CONFIRMED live | `buckets describe` returns the `Delete`/`age: 30` lifecycle rule |
+| Firestore region | **europe-west3 (Frankfurt, EU)** — data; compute pinned to europe-west1 | Resolved per `docs/operations/data-residency.md` (**BUT-819**, 2026-06-14). The EU-region split is **accepted** (both EU → GDPR satisfied). |
+| Restore drill | NEVER PERFORMED | now unblocked — a managed backup exists to restore from |
+
+⚠️ The weekly export writes every run to the same `gs://.../weekly/` prefix, so each run
+overwrites the previous one. Only the LATEST weekly export exists at any time, and the
+30-day lifecycle rule therefore never has an older export to delete. The managed daily
+schedule is what actually provides multi-day depth beyond PITR.
+
+---
+
+## Managed daily backups (the Firestore-native feature)
+
+This is separate from the GCS export pipeline below: Firestore takes and stores the backup
+itself, no bucket, no Scheduler job, no IAM wiring.
+
+Already created (2026-08-11) — do **not** run the create command again, it would add a
+second schedule and double the storage bill.
+
+```bash
+# Create (already done — kept for disaster rebuild):
+gcloud firestore backups schedules create \
+  --database='(default)' --project=butlery-app-1 \
+  --recurrence=daily --retention=7d
+
+# Verify — the schedule (no --location flag on this one):
+gcloud firestore backups schedules list --database='(default)' --project=butlery-app-1
+
+# Verify — the backups that schedule has actually produced:
+gcloud firestore backups list --location=europe-west3 --project=butlery-app-1
+```
+
+**`--location` gotcha:** managed backups live in the DATABASE's region. `--location=eur3`
+returns an empty list and looks exactly like "no backups exist"; `--location=europe-west3`
+lists them. Always use the long form here.
+
+Restore from a managed backup goes to a NEW database, never over `(default)`:
+
+```bash
+gcloud firestore databases restore \
+  --source-backup=projects/butlery-app-1/locations/europe-west3/backups/BACKUP_ID \
+  --destination-database=recovery-YYYYMMDD --project=butlery-app-1
+```
 
 ---
 
@@ -227,16 +272,29 @@ On any data-loss event (accidental delete, ransomware, bad migration):
 
 ## Cost estimate
 
-Rough figures for a database with a few GB of active data:
+Measured 2026-08-13, not estimated. Sizes come from Cloud Monitoring
+(`firestore.googleapis.com/storage/*_storage_bytes`), prices from
+cloud.google.com/firestore/pricing with the location selector on Frankfurt (europe-west3),
+which is dearer than the US default tier ($0.039 vs $0.03 per GiB-month for backup data).
+
+- Live database, data + indexes: **21,543,874 B = 0.0201 GiB**
+- One managed backup: **21,565,621 B = 0.0201 GiB** (a backup is a full copy)
 
 | Line item | Monthly cost |
 |---|---|
-| PITR storage (7-day window, ~5GB) | ~$0.50 |
-| Weekly GCS export (~1GB/week × 4 weeks retained) | ~$0.10 |
+| Managed daily backups — 7 retained at a time, 0.141 GiB total × $0.039 | **$0.0055** |
+| PITR storage (7-day window, 0.0201 GiB) | < $0.01 |
+| Weekly GCS export (2.24 MiB, one copy retained) | < $0.01 |
 | Scheduler job (1 exec/week) | $0 (free tier) |
-| **Total** | **< $1/month** |
+| **Total** | **~$0.02/month (≈0.2 kr)** |
 
-This is negligible and vastly below the cost of a single lost user's trust.
+Backup storage is billed prorated by the fraction of the month each backup is retained, so
+7-day retention costs 7/30 of a GiB-month per backup — already reflected above by counting
+the 7 backups alive at any moment. Backups are **excluded from the Firestore free tier**,
+and creating one costs no document reads.
+
+Sensitivity: cost scales linearly with database size. At 100× today's data (2 GiB) the
+daily-backup line is still only ~$0.55/month.
 
 ---
 
