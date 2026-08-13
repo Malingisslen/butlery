@@ -276,49 +276,30 @@ files in the same edit.
   this as a bug; do not "simplify" the discriminator fixture that proves a bare colon is
   harmless. BUT-1819, 2026-08-10
 
-- **The conversation roster's bootstrap branch is knowingly permissive, in two ways that
-  are NOT closed** — `conversations/{id}/participants` reads as
-  `parentNames(uid) || (parentDoc() == null && you hold a row)`. Group creation writes the
-  roster before the top-level conversation document exists (it materialises on the first
-  message), so the second disjunct is load-bearing and cannot simply be deleted.
-  Consequences, both accepted: (a) **pre-seat** — an unattested user who knows a
-  never-chatted group's id can seat a row and then LIST it (pinned as test P3B, deliberately
-  a passing test, not a hidden one). **Same branch, different actor:** in the window between
-  group creation and the FIRST REAL MESSAGE, every legitimately seated member can LIST the
-  roster through that fallback — including a minor added by a non-friend who has not been
-  evicted yet, because `enforceGroupMinorMembership` triggers on the TOP-LEVEL conversation
-  document, which does not exist until then (the system message the client sends is itself
-  denied, `senderId: "system"`). The child-safety cut cannot fire during that window, and only the
-  group's CREATOR can end it — so the non-friend adder controls whether the cut ever runs.
-  What actually holds that shut is an evaluation error, not a rule anyone wrote on purpose: a
-  non-creator's first message stages a create carrying `metadata: null`, and `in` against a
-  null denies. The UPDATE rule answers the same question with an `is map` ternary; harmonising
-  them would disarm the trigger. **Do not make those two spellings agree** — test C7B pins it.
-  That error is NOT a bound, though: it binds the app's own client, not a tampered one. A
-  hand-rolled create with a real `metadata` map ends the window whenever an attacker likes, and
-  irreversibly (pre-existing, **BUT-1830**, Urgent). All THREE sides are pinned as of this commit: the rule
-  (C7B), the fallback recording no creatorId, and the DTO emitting the metadata key even when
-  null — the last two in `message_mutation_module_test.dart`, each mutation-proven against the
-  well-intentioned edit it exists for.
-  The window is NEW with this block (the path was default-deny before), and BUT-1795 closes it
-  with the other two; (b) **orphan** — rules cannot tell "parent deleted"
-  from "parent not written yet", so deleting a conversation re-opens the branch for it
-  forever, and `allow delete` does not cascade. THREE deleters, not one: the user's own
-  "delete conversation" in the list view, the GDPR account-deletion cascade (which deletes
-  any conversation of two or fewer participants whole), and the eviction CF's collapse
-  branch — only the last is fixed. Widening the per-row delete rule reaches only the first;
-  the other two run under the Admin SDK. **Only BUT-1795 closes all three.** For a DIRECT
-  conversation the cascade case is a live read, not residue: the `direct_` exclusion applies
-  to the WRITE branch and not to the read fallback, so the surviving partner keeps LIST over
-  the erased user's name and avatar (BUT-1822). The id is a client-minted UUIDv4 (~122
-  bits), not guessable, so in practice (b) discloses former group members' names and avatars
-  to a former group member. **BUT-1795 removes the branch and both residuals with it**;
-  BUT-1825 tracks (b). Do NOT "simplify" the `parentDoc() == null` scope out of the read
-  rule — it is what denies an EVICTED member the roster while the parent is alive, and
-  removing it was measured to flip exactly that case (test P12B). The eviction Cloud
-  Function's own delete-the-conversation branch was the sharp case and is CLOSED in code,
-  not in rules: `enforceGroupMinorMembership` now enumerates and deletes every roster row
-  BEFORE deleting the parent. BUT-1795/BUT-1825, 2026-08-12
+- **RESOLVED 2026-08-13 (BUT-1838) — the conversation roster's bootstrap branch is GONE, and
+  so is the separate read fallback that spelled the same idea a second time.** The entry it
+  replaces recorded two accepted holes in
+  `parentNames(uid) || (parentDoc() == null && you hold a row)`: (a) **pre-seat** — a stranger
+  who knew a never-chatted group's id could seat a row and LIST the roster (test P3B, which
+  now DENIES; **that flip is the intended signal, do not "fix" it back**), including the
+  internal form where a minor added by a non-friend could list it during the window before the
+  first message, because the safety trigger fired on a conversation document that did not exist
+  yet; and (b) **orphan** — rules cannot tell "parent deleted" from "parent not written yet", so
+  deleting a conversation re-opened the branch over its rows forever.
+  Both die for one reason: `createChatGroup` writes the group, the conversation and every
+  roster row in ONE Admin-SDK transaction, so the parent exists before any row does and
+  attestation alone suffices. The write rule is now `attestedWriter() && !('groupId' in
+  parentDoc().data)` — narrower than plain attestation, because a GROUP roster row must come
+  from the Admin SDK or a member could seat a peer and route round the minor gate. **Removing
+  only `rosterUnclaimed()` would NOT have closed (a):** the read rule carried its own,
+  textually separate `parentDoc() == null` fallback. Both went in the same edit; if you ever
+  re-introduce one, re-introduce the other's residual too.
+  Rows orphaned BEFORE this shipped are still on disk and are now simply unreadable; the
+  backfill stays closed unbuilt (BUT-1839). Note the old warning that create and update must
+  keep DIFFERENT null-metadata spellings is now stale and was corrected in the rules file the
+  same day: the create rule's bare `metadata.creatorId == uid` denies a null cleanly, so it no
+  longer leans on a CEL accident. C7B still pins the deny; do not re-introduce the `||` hatches
+  to "restore" the old asymmetry. BUT-1795/BUT-1825/BUT-1830, 2026-08-13
 
 - **RESOLVED 2026-08-13 (BUT-1822) — account deletion now erases
   `conversations/{id}/participants/{uid}`, in TWO legs, and one leg alone is not enough.**
@@ -355,3 +336,28 @@ files in the same edit.
   FIRST: deleting the shell flips `parentDoc()` to null and re-opens the branch over every
   surviving row, including the legitimate members and the evicted minor. The shell is safe
   only while it stands. BUT-1795/BUT-1825, 2026-08-12
+
+- **A minor may be added to a group by any of their FRIENDS, and the strangers already in that
+  group can then message them** — the gate checks the person doing the inviting, not everybody
+  present. **Malin's explicit call, 2026-08-13 (BUT-1838).** She was shown the alternative and
+  its cost: requiring every existing member to be a friend of the minor makes a group with a
+  teenager in it possible only when everyone knows the teenager, and blocks any later invite of
+  someone who does not. Trust & Safety noted that both the DSA and the app stores are moving
+  toward testing who may CONTACT a minor rather than who may ADD one, and still recommended
+  shipping this now with the stricter variant as its own ticket. This is the same condition the
+  code has always enforced (`computeMinorsToRemove`, `passesMinorDmGate`); what BUT-1838 changed
+  is that it runs per PERSON per INVITE instead of once per chat, in
+  `functions/src/groups/minor-membership-gate.ts`. Do not widen it silently, and do not narrow
+  it to "the creator" — that regression is what the ticket existed to fix. 2026-08-13
+
+- **Other members' `memberSince` is STRIPPED from the conversations GDPR export; the
+  requester's own is kept** — the group history cut-off, uid-keyed like the two maps beside it.
+  It follows `perUserSettings` (dropped, BUT-1774) rather than `lastReadTimestamps` (kept):
+  when another member joined is third-party behaviour, and although the "X har lagts till i
+  gruppen" system row gives it a weak on-screen counterpart, that row is exported anyway, so
+  the map adds nothing the requester is owed. Reasoned on its own merits — citing BUT-1772 or
+  BUT-1732 as authority here is the precise error the BUT-1732 entry records having made. The
+  export also gains a `chat_groups` PROJECTION (name, creator, admins, and who added YOU),
+  never the raw document: a second copy of a redaction decision is how two sections drift.
+  **Chosen conservatively without asking Malin; widening it to keep other members' stamps is
+  hers to decide.** BUT-1838, 2026-08-13

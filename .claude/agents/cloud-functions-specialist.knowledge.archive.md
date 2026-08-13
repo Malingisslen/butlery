@@ -9780,3 +9780,127 @@ never writes its own proof, that there is no marker file to create, and that wri
 ledger is refused outright; a launching agent's instruction is not the user's consent. The
 `REVIEW-VERDICT` line is the artifact — the gate should read that, plus the `Read` ledger
 the hook keeps, which for this pass pins both test files and all three production files.
+
+### 2026-08-13 — BUT-1838 Etapp 1: porting the leave-group suites onto `chat_groups` [Pattern discovered]
+
+**Task (test authoring, not review).** Etapp 1 was already implemented by the main
+session. Three test jobs: MOVE `leave-group-conversation.test.ts` onto the new
+`removeChatGroupMember` shape, REWRITE the enforce-group integration suite for the
+repointed `onDocumentWritten("chat_groups/{groupId}")` trigger, and WRITE a new suite for
+the three `…WithDeps` cores. Production code was read, never edited.
+
+**1. The dropped-case ledger is the deliverable, not the deletion.** Three cases could not
+carry over, and each needed a stated reason IN the new file, because a later reader who
+finds them missing will otherwise conclude the protection was lost:
+- `authorizeDeparture`'s `isGroup: false` refusal (and its orchestration twin, "a 1:1
+  participant cannot evict the other"). The old callable took a CONVERSATION id, so a DM
+  was addressable and the refusal was load-bearing; the new one takes a GROUP id and reads
+  the conversation off the group document, so a direct conversation cannot be named. A test
+  asserting the refusal would have to fabricate a `chat_groups` doc pointing at a DM — a
+  state no writer produces.
+- "padded 1:1: a junk entry does not let a non-friend DM a minor slip the gate". That case
+  existed because `firestore.rules` applied `passesMinorDmGate` at RAW
+  `participantIds.size() == 2`, so the trigger had to size itself on the raw list. No rule
+  reads `chat_groups.memberIds` — membership is server-written — so there is no second
+  layer to stay in step with, and the trigger now judges the sanitised list.
+- "delete branch: collapsing below 2 deletes the conversation" + "an unclearable roster
+  leaves the shell standing". The trigger no longer owns a conversation's lifecycle.
+
+**2. And the false-verdict fixture had to be RE-HOMED, not dropped with them.**
+`tryClearRoster`'s only gating caller is now `removeChatGroupMember.deleteEmptyGroup`. The
+2026-08-12 measurement on this same family (neutralising the gate left the integration
+suite 4/4 green) says exactly what happens if that case just disappears. Re-homed into
+`chat-group-callables.test.ts` with a cheaper lever than the old refusal cap: `failDeleteAt`
+on ONE roster row makes the verdict false in one line. Mutation-proven 2026-08-13 on a
+shadow copy (`if (!cleared)` → `if (!cleared && [1].length > 9)`): 14/14 → 13/14, the ONE
+red being "an unclearable roster leaves the conversation and the group standing".
+
+**3. `noUnusedLocals` bit again, in a new form.** The obvious gate mutation
+`if (!cleared) {` → `if (false) {` orphans `const cleared` → TS6133 → the suite is red for
+the wrong reason and proves nothing. `if (!cleared && [1].length > 9)` keeps the local read.
+Same trap on the shadow COPY of a callable module: renaming `export const
+removeChatGroupMember = onCall(...)` to a local (to avoid a duplicate export) orphans it.
+Keep the export.
+
+**4. Second mutation probe, on the property the whole ticket exists for.** Shadow copy of
+the trigger with `adderOf` returning `data.createdBy` (the old creator-keyed semantics)
+instead of `memberAddedBy[uid]`: 9/9 → 8/9, the one red being "judges each minor against
+whoever actually seated them". The fixture that makes it discriminating is a minor who IS a
+friend of the CREATOR but was added by a DIFFERENT admin — a fixture where both adders are
+strangers stays green under the mutant.
+
+**5. The fake.** Wrote `src/__tests__/_fake-firestore.ts` (shared by the two new unit
+suites, not a `*.test.ts` so the registration guard ignores it). Applying, not recording:
+dot-path keys, real `arrayRemove`/`FieldValue.delete()`, transform dispatch on
+`constructor.name` with a THROW on any unrecognised `instanceof FieldValue`. `update()` on
+a missing doc rejects with grpc 5; `runTransaction` buffers and applies only after the
+callback resolves (so "a denied removal writes nothing" is an assertion about the store);
+`batch()`/`collectionGroup()` throw by name. Clone plain containers only — a deep-cloned
+`Timestamp` stops being one and every `isEqual` assertion downstream goes vacuous.
+
+**6. Registration.** `minor-membership-gate.test.ts` (written by the main session) had NO
+`test:*` script — the repo's most recurring CI-wiring trap, caught by reading package.json
+first. Added scripts for all three new suites, removed both `leave-group-conversation`
+entries including the one inside the `test:rules:all` chain, and dropped its path from BOTH
+workflow trigger blocks. Also ADDED `functions/src/groups/**` to both blocks: the rules job
+runs `enforce-group-minor-membership.integration.test.ts`, which since this change exercises
+`groups/chat-group-writes.ts` and `groups/minor-membership-gate.ts`, and neither was in any
+`paths:` filter — editing the single membership writer would not have fired the job.
+
+**7. What I could not verify.** `npx tsc --noEmit` is RED with two TS6133s in
+`conversations-rules.test.ts` — a file a PARALLEL session was editing during this run (it
+was clean in my opening `git status` and +681/-45 by the end). Not mine, not touched. Every
+other file typechecks. Suites run: `minor-membership-gate` 9/9, `remove-chat-group-member`
+23/23, `chat-group-callables` 14/14, `enforce-group-minor-membership` 26/26,
+`enforce-group-minor-membership.integration` 9/9 (against the already-running local
+Firestore emulator on 127.0.0.1:8080 — `emulators:exec` would have tried to bind an
+occupied 8080), `check-test-registration` 20/20.
+
+### 2026-08-14 — BUT-1838 Etapp 4: the GDPR half (`deleteChatGroupMemberships`) [Pattern discovered]
+
+**Task.** Extend `account-deletion-cascade.test.ts` (never a new file — that suite is the
+home for this module's legs) for the new chat-group erasure leg, its probe, and the
+`groupId` exclusion in `deleteMessages`. Production untouched. 63/63 → **96/96**.
+
+**1. The fake was missing the primitive the new leg uses.** The top-level
+`collection().where()` matcher returned `{count, get}` with no `limit`, while
+`deleteChatGroupMemberships` reads `.where("memberIds","array-contains",uid).limit(MAX+1)`
+so it can DECLINE rather than truncate. The symptom is a TypeError that says nothing about
+the logic under test — the same gap BUT-1822 had to close on the collection-group matcher
+and on `collection()` itself. Whenever a new leg adds a query SHAPE (filtered+limited,
+unfiltered+limited, `count()`, `listDocuments()`), check the double has it before writing
+the fixture.
+
+**2. The refusal-cap lever is off by N when the caller deletes rows first.** Seeded
+`CAP + 1` roster rows counting the erased user's own, exactly as the sibling 1:1 fixture
+does — and the group leg deletes that row inside its removal transaction BEFORE calling
+`tryClearRoster`, so 500 survived to the read, the clearer succeeded and the group was
+torn down. Caught only because the fixture asserts the group SURVIVES (it failed loudly,
+in the right direction); a fixture asserting only the return value would have gone green on
+the happy path under a name promising the refusal. Seed to what survives to the READ.
+
+**3. `createdBy` re-homing needs THREE groups, not one.** "Prefer a surviving admin" and
+"take the first survivor" agree on any fixture where the first survivor IS an admin, so the
+discriminating group has a non-admin sorting first (`OTHER`) and an admin later (`THIRD`).
+Plus a no-admin-survives group for the fallback, plus a group created by someone else as the
+control that the leg does not rewrite `createdBy` it has no business touching.
+
+**4. Ordering assertions need a row the SUT does not delete for other reasons.** "Roster
+first, then thread, then conversation, then group" is only observable if `tryClearRoster`
+has something to delete: the erased user's own row goes via `tx.delete`, which the fake's
+transaction stub does NOT record in `deletedPaths`. A stale `ghost-uid` row makes the order
+visible and is the realistic shape anyway (a row whose owner left without it being cleared).
+
+**5. The exclusion, mutation-proven.** Deleting the `if (typeof convoDoc.data().groupId ===
+"string") return;` from a shadow copy reddens EXACTLY the two conversation-document checks
+(96 → 94), nothing else. The fixture is a THREE-participant group conversation with the uid
+in every carrier, so without the return it takes the group-departure branch. Stated in the
+scenario docstring: `deleteMessages` still legitimately tombstones the user's own MESSAGE
+rows in that thread and `deleteOwnRosterRows` still sweeps their roster row there — both
+idempotent with the group leg, neither writes membership — so "skips" must not be read as
+"ignores", and a future reviewer must not "fix" the roster sweep to exclude group rosters.
+
+**6. Shared working copy.** The parallel session staged 13 of its own files
+(notification-preferences + testing-specialist knowledge) mid-run. Left untouched; none of
+mine are staged. Same session also fixed the two TS6133s in `conversations-rules.test.ts`
+that made `tsc --noEmit` red in yesterday's pass — it is CLEAN now.

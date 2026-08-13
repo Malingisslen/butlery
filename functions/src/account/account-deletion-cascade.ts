@@ -44,6 +44,11 @@ import {
   logSafeConversationId,
   tryClearRoster,
 } from "../messaging/enforce-group-minor-membership";
+// BUT-1838: the single writer of chat-group membership. Imported rather than
+// re-implemented for the same reason as `tryClearRoster` above — a second
+// spelling of "remove this member" on a GDPR path is a contract to keep in sync,
+// and this one touches three documents.
+import { stageMemberRemoval } from "../groups/chat-group-writes";
 
 export interface DeletionResult {
   deletedCollections: string[];
@@ -176,6 +181,10 @@ export async function probeResidualData(
     [Collections.realtimeRecipes, "lastEditedBy", "=="],
     [Collections.realtimeRecipes, "participantIds", "array-contains"],
     [Collections.conversations, "participantIds", "array-contains"],
+    // BUT-1838: chat-group membership. Every other leg in this file is paired
+    // with a probe, and a leg without one is exactly how an erasure becomes
+    // silently incomplete — so this line ships in the same edit as its deleter.
+    [Collections.chatGroups, "memberIds", "array-contains"],
     // BUT-1798: shared_content membership. The scrub above is the only thing
     // that clears this, and it was blind to ad-hoc shares for the collection's
     // entire life — so this probe is what stops that ever being invisible
@@ -1235,6 +1244,16 @@ export async function deleteMessages(
           const participants = Array.isArray(convoDoc.data().participantIds)
             ? (convoDoc.data().participantIds as string[])
             : [];
+          // BUT-1838: a conversation owned by a chat group is handled ENTIRELY
+          // by `deleteChatGroupMemberships`, which removes the uid from the
+          // group AND the conversation in one transaction. Touching it here too
+          // would be a second writer of membership — the drift this repo has
+          // been burned by more than once — and, because the two legs run in
+          // parallel, a race as well: this branch would strip the conversation
+          // while `chat_groups.memberIds` still named the erased user.
+          if (typeof convoDoc.data().groupId === "string") {
+            return;
+          }
           if (participants.length <= 2) {
             // BUT-1822: THE ROSTER FIRST, and the parent delete gated on it.
             // Deleting the conversation is the write that makes `parentDoc() ==
@@ -2160,4 +2179,152 @@ export async function deleteUserProfile(
 ): Promise<boolean> {
   await db.collection("users").doc(uid).delete();
   return true;
+}
+
+/**
+ * BUT-1838: erase the user's chat-group membership.
+ *
+ * **Why this is its own leg and not part of `deleteMessages`.** A group's
+ * membership lives on `chat_groups/{id}.memberIds` and is MIRRORED onto the
+ * conversation; one writer owns both (`groups/chat-group-writes.ts`). Letting
+ * the conversation leg strip its half would leave the group still naming the
+ * erased user — two copies of one fact, disagreeing, which is the failure
+ * BUT-1798 already cost this project once. `deleteMessages` therefore skips any
+ * conversation carrying a `groupId`, and this leg does the whole removal
+ * through the shared writer.
+ *
+ * Three things happen per group, in this order:
+ *
+ *  1. **`createdBy` is re-homed** to a surviving admin (or member) when the
+ *     erased user created a group that lives on. Same move `deleteFamilyData`
+ *     already makes for households: without it a raw uid sits on a document
+ *     other people keep reading, forever, which Art. 17 does not permit and no
+ *     field-keyed probe would flag as "residual" once the membership is gone.
+ *  2. **The membership goes**, through `stageMemberRemoval` — the same
+ *     transaction that clears `memberIds`, `adminIds`, both display maps,
+ *     `memberAddedBy`, the conversation's `participantIds`, all five uid-keyed
+ *     conversation maps (including `memberSince`) and the roster row.
+ *  3. **An emptied group is taken down**, roster FIRST. Deleting a conversation
+ *     is what makes `parentDoc()` null in `firestore.rules`; with the bootstrap
+ *     branch gone that no longer re-opens a write path, but orphaned roster rows
+ *     still carry names and avatars, so the parent delete stays gated on
+ *     `tryClearRoster` reporting success. A group left standing reports the step
+ *     INCOMPLETE rather than quietly passing.
+ *
+ * Capped like every other sweep here. Above the cap it DECLINES rather than
+ * truncating: a partial pass that reported success would certify an erasure it
+ * did not perform.
+ */
+export const MAX_CHAT_GROUPS_PER_USER = 200;
+
+export async function deleteChatGroupMemberships(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const snap = await db
+    .collection(Collections.chatGroups)
+    .where("memberIds", "array-contains", uid)
+    .limit(MAX_CHAT_GROUPS_PER_USER + 1)
+    .get();
+
+  if (snap.size > MAX_CHAT_GROUPS_PER_USER) {
+    logger.error(
+      "[deletion-cascade] implausible chat-group count; declining the sweep",
+      { uid_prefix: uid.slice(0, 6), groups: snap.size },
+    );
+    return false;
+  }
+
+  let complete = true;
+  const removedAt = admin.firestore.Timestamp.now();
+
+  for (const groupDoc of snap.docs) {
+    try {
+      const data = groupDoc.data();
+      const conversationId =
+        typeof data.conversationId === "string" ? data.conversationId : null;
+      if (!conversationId) {
+        // A group with members and no conversation is a shape no code path
+        // produces. Loud, and not counted as done.
+        complete = false;
+        logger.error("[deletion-cascade] chat group has no conversationId", {
+          uid_prefix: uid.slice(0, 6),
+          groupId: groupDoc.id,
+        });
+        continue;
+      }
+
+      const memberIds: string[] = Array.isArray(data.memberIds)
+        ? (data.memberIds as string[])
+        : [];
+      const adminIds: string[] = Array.isArray(data.adminIds)
+        ? (data.adminIds as string[])
+        : [];
+      const survivors = memberIds.filter((u) => u !== uid);
+
+      await db.runTransaction(async (tx) => {
+        const fresh = await tx.get(groupDoc.ref);
+        if (!fresh.exists) return;
+        stageMemberRemoval(tx, {
+          db,
+          groupId: groupDoc.id,
+          conversationId,
+          uid,
+          removedAt,
+        });
+        if (survivors.length > 0 && data.createdBy === uid) {
+          // Prefer a surviving ADMIN so the group keeps someone who can act on
+          // it; fall back to any survivor rather than leaving a raw uid behind.
+          const survivingAdmin = adminIds.find(
+            (a) => a !== uid && survivors.includes(a),
+          );
+          tx.update(groupDoc.ref, {
+            createdBy: survivingAdmin ?? survivors[0],
+          });
+        }
+      });
+
+      if (survivors.length === 0) {
+        const cleared = await tryClearRoster(db, conversationId);
+        if (!cleared) {
+          complete = false;
+          logger.warn(
+            "[deletion-cascade] roster not clear; empty group left standing",
+            {
+              uid_prefix: uid.slice(0, 6),
+              conversationId: logSafeConversationId(conversationId),
+            },
+          );
+          continue;
+        }
+        const thread = await db
+          .collection(Collections.messages)
+          .where("conversationId", "==", conversationId)
+          .get();
+        await batchDeleteAll(db, thread.docs);
+        await db.collection(Collections.conversations).doc(conversationId).delete();
+        await groupDoc.ref.delete();
+      }
+
+      await db
+        .collection(Collections.users)
+        .doc(uid)
+        .collection("conversation_memberships")
+        .doc(conversationId)
+        .delete()
+        .catch(() => {
+          // Cosmetic mirror; the membership cut above is the erasure. Never
+          // named in the log — the id would carry the conversation.
+        });
+    } catch (e) {
+      complete = false;
+      logger.error("[deletion-cascade] chat-group removal failed", {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (e as { code?: number | string } | null)?.code ?? "unknown",
+        errName: (e as Error | null)?.name,
+      });
+    }
+  }
+
+  return complete;
 }

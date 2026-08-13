@@ -101,6 +101,37 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     dailyLimit: 50,
   },
 
+  // BUT-1838: chat-group membership callables. These replace CLIENT writes that
+  // firestore.rules rate-limited for us (`rateLimitWrite('conversations', 10)`,
+  // `('conversation_membership', 5)`); the Admin SDK bypasses rules, so the
+  // bound has to be re-stated here or moving the operation server-side quietly
+  // removed it. Denominated in CALLS, not members — a single add-members call
+  // is capped separately by MAX_CHAT_GROUP_MEMBERS.
+  //
+  // Creating groups carries a daily cap as well: a group create writes a group
+  // document, a conversation, N roster rows and a system message, so it is the
+  // most write-amplified of the three and the obvious one to abuse.
+  createChatGroup: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+    dailyLimit: 50,
+  },
+  // Add and remove churn a group's members. Higher burst than create because
+  // building a group's roster is a legitimate rapid sequence, and because
+  // remove is also how you LEAVE — a user must never be rate-limited out of
+  // leaving a group they want out of.
+  addChatGroupMembers: {
+    maxTokens: 20,
+    refillRate: 10,
+    refillIntervalMs: 60000,
+  },
+  removeChatGroupMember: {
+    maxTokens: 20,
+    refillRate: 10,
+    refillIntervalMs: 60000,
+  },
+
   // Notification Operations
   sendNotification: {
     maxTokens: 60,

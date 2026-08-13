@@ -1,22 +1,31 @@
 /**
- * BUT-1626: unit tests for the group-conversation minor-safety gate's pure
- * decision core, `computeMinorsToRemove`.
+ * BUT-1626: unit tests for `isValidDocId` and `tryClearRoster`.
  *
- * No emulator: the trigger's Firestore I/O is thin around this pure function,
- * which is where the safety logic lives. We assert exactly who gets removed.
+ * The decision core these used to live beside moved to
+ * `minor-membership-gate.test.ts` when BUT-1838 made the gate the primary
+ * control and this trigger the backstop; the uid-safety and roster-clearing
+ * cases stayed here, with the code they exercise.
+ *
+ * No emulator: these are the paths the emulator cannot reach — a uid the
+ * backend would reject, and a Firestore read or delete that fails.
  *
  * Run: npx ts-node src/__tests__/enforce-group-minor-membership.test.ts
  */
 
 import {
-  computeMinorsToRemove,
-  isValidDocId,
   MAX_ROSTER_ROWS,
   tryClearRoster,
 } from "../messaging/enforce-group-minor-membership";
+import { isValidDocId } from "../shared/valid-doc-id";
 
 let run = 0;
 let failed = 0;
+function sameSet(a: string[], b: string[]): boolean {
+  return (
+    a.length === b.length && [...a].sort().join(",") === [...b].sort().join(",")
+  );
+}
+
 function check(name: string, ok: boolean, detail?: string): void {
   run++;
   if (ok) {
@@ -27,97 +36,6 @@ function check(name: string, ok: boolean, detail?: string): void {
     if (detail) console.log(`        ${detail}`);
   }
 }
-
-function sameSet(a: string[], b: string[]): boolean {
-  return a.length === b.length && [...a].sort().join(",") === [...b].sort().join(",");
-}
-
-console.log("computeMinorsToRemove");
-
-// A group where a non-friend creator added a minor → the minor is removed.
-check(
-  "removes a minor added by a non-friend creator",
-  sameSet(
-    computeMinorsToRemove({
-      participantIds: ["creator", "adult", "minorA"],
-      creatorId: "creator",
-      isMinor: { adult: false, minorA: true },
-      creatorIsFriendOf: { minorA: false },
-    }),
-    ["minorA"],
-  ),
-);
-
-// The creator IS the minor's friend → the minor stays.
-check(
-  "keeps a minor whose friend is the creator",
-  sameSet(
-    computeMinorsToRemove({
-      participantIds: ["creator", "adult", "minorA"],
-      creatorId: "creator",
-      isMinor: { adult: false, minorA: true },
-      creatorIsFriendOf: { minorA: true },
-    }),
-    [],
-  ),
-);
-
-// Adults are never removed regardless of friendship.
-check(
-  "never removes an adult",
-  sameSet(
-    computeMinorsToRemove({
-      participantIds: ["creator", "adultA", "adultB"],
-      creatorId: "creator",
-      isMinor: { adultA: false, adultB: false },
-      creatorIsFriendOf: {},
-    }),
-    [],
-  ),
-);
-
-// The creator, even if a minor, is never removed (they made the group).
-check(
-  "never removes the creator even if the creator is a minor",
-  sameSet(
-    computeMinorsToRemove({
-      participantIds: ["minorCreator", "adult", "minorB"],
-      creatorId: "minorCreator",
-      isMinor: { minorCreator: true, adult: false, minorB: true },
-      creatorIsFriendOf: { minorB: true },
-    }),
-    [],
-  ),
-);
-
-// Unknown creator (legacy doc) → fail SAFE: every minor participant removed.
-check(
-  "removes all minors when the creator is unknown (fail-safe)",
-  sameSet(
-    computeMinorsToRemove({
-      participantIds: ["a", "minorA", "minorB", "adult"],
-      creatorId: null,
-      isMinor: { a: false, minorA: true, minorB: true, adult: false },
-      creatorIsFriendOf: {},
-    }),
-    ["minorA", "minorB"],
-  ),
-);
-
-// Mixed: one friended minor kept, one non-friend minor removed.
-check(
-  "removes only the non-friend minor in a mixed group",
-  sameSet(
-    computeMinorsToRemove({
-      participantIds: ["creator", "minorFriend", "minorStranger"],
-      creatorId: "creator",
-      isMinor: { minorFriend: true, minorStranger: true },
-      creatorIsFriendOf: { minorFriend: true, minorStranger: false },
-    }),
-    ["minorStranger"],
-  ),
-);
-
 
 console.log("isValidDocId (hostile participantIds — BUT-1633)");
 
@@ -158,29 +76,10 @@ check("rejects an over-length uid (1500-byte cap)", !isValidDocId("a".repeat(150
 check("rejects an over-length multibyte uid", !isValidDocId("ä".repeat(800)));
 check("accepts a uid at the byte cap", isValidDocId("a".repeat(1500)));
 
-// The gate must still protect the minor when a HOSTILE entry sits beside them.
-// The fixture deliberately contains a uid the filter rejects ("__x__") — an
-// earlier version of this test used only well-formed uids and so passed
-// identically with the filter deleted, proving nothing.
-check(
-  "a malformed uid alongside a minor does not stop the removal",
-  sameSet(
-    computeMinorsToRemove({
-      participantIds: ["creator", "minorA", "__x__", "adult"].filter(isValidDocId),
-      creatorId: "creator",
-      isMinor: { minorA: true, adult: false },
-      creatorIsFriendOf: { minorA: false },
-    }),
-    ["minorA"],
-  ),
-);
-
-// NOTE: the padding-bypass Critical (raw-vs-sanitised group gate) is NOT
-// testable from this suite. The gate lives in the onDocumentCreated handler,
-// which this file never imports — it only exercises the pure decision core. A
-// unit "test" here could only assert facts about its own fixture. It is pinned
-// by the emulator case "padded 1:1 ..." in
-// enforce-group-minor-membership.integration.test.ts instead.
+// NOTE: the raw-vs-sanitised padding bypass this file used to point at is gone
+// with the trigger's move to `chat_groups` (BUT-1838): no Firestore rule reads
+// that document's membership, so there is no second layer for a padded list to
+// slip between. The equivalent guard now lives at the gate, before the write.
 
 /**
  * `tryClearRoster` — its READ- and DELETE-failure paths, which the emulator

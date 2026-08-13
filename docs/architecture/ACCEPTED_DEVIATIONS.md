@@ -1480,3 +1480,146 @@ holds development data only, so every row a pre-BUT-1822 deletion left behind be
 test account. That is a fact about the DATA, not about the code, so it expires the day real
 users exist; the ticket records what would have to be built and when to reopen it. Do not
 read this entry as saying the roster is clean.
+
+---
+
+## BUT-1838 — group chat becomes a chat with a shared group (2026-08-13)
+
+### The roster bootstrap branch is closed, and so is its twin on the read side
+
+`conversations/{id}/participants` used to authorise a write as
+`attestedWriter() || rosterUnclaimed()`, and a read as
+`parentNames(uid) || (parentDoc() == null && you hold a row)`. Both permissive halves
+existed for one reason: `createGroupConversation` wrote the conversation to
+`users/{creatorUid}/conversations/{id}` while the roster went to the top-level path, so the
+parent legitimately did not exist when the rows were written. Rules cannot distinguish "not
+written yet" from "deleted", which is what made the branch reusable by an attacker and
+permanent after any delete.
+
+`createChatGroup` writes the group document, the top-level conversation and every roster row
+in ONE Admin-SDK transaction. The parent therefore exists before any row does — for groups
+and for directs — so attestation alone is sufficient and both branches are deleted.
+
+Two things about this are easy to get wrong later:
+
+1. **The read fallback was a SECOND, textually separate spelling of the same idea.** Deleting
+   `rosterUnclaimed()` alone would have left the pre-seat residual (test P3B) alive through
+   the read rule. They went in the same edit.
+2. **The remaining write rule is NARROWER than "attested".** It is
+   `attestedWriter() && !('groupId' in parentDoc().data)`. Without the second conjunct any
+   attested group member could `set()` a peer's roster row directly, bypassing
+   `addChatGroupMembers` and therefore the minor-membership gate, while also choosing what
+   that peer is called in a roster the whole group reads.
+
+Test P3B flips from ALLOW to DENY. That flip is the intended signal of this change; a future
+session finding it red should not restore the branch.
+
+### A client can no longer create a group conversation at all
+
+The `conversations` create rule now requires a `direct_` id bound to its own two participants
+(`directIdBinds`, both orderings), a de-duplicated participant list of at least two, the
+caller in it, and `metadata.creatorId` PRESENT and equal to the caller. Group conversations
+are created only by `createChatGroup` under the Admin SDK.
+
+This closes BUT-1830 rather than bounding it: the squat it recorded — one write at a known
+group id that permanently disarmed the child-safety trigger and bricked the group with no
+recovery — has no reachable payload left.
+
+`metadata: null` on create still denies (test C7B). **A warning that used to sit here is now
+false and was corrected the same day.** The old conjunct was
+`!('metadata' in d) || !('creatorId' in d.metadata) || … == uid`, whose `||` hatches allowed an
+absent creator, so only a CEL evaluation error stood in the way — hence the standing
+instruction never to harmonise it with the update rule's `is map` ternary. Against the new bare
+equality that is untrue: a ternary resolving to null still fails `null == uid`. The
+`firestore-rules-tester` gate found it by running the forbidden edit as a mutation probe and
+watching NOTHING redden. The behaviour is stronger than the accident it replaced; do not
+re-introduce the `||` hatches to restore the old asymmetry.
+
+### The minor gate moved from a trigger to the invite path — and the residual is decided
+
+`enforceGroupMinorMembership` was an `onDocumentCreated` trigger on `conversations/{id}`: it
+judged the participant list in the instant the chat was born and never ran again, so anyone
+added later had been checked by nobody. There was no "was invited" moment to move it to,
+because the chat WAS the list.
+
+`chat_groups` supplies that moment. `groups/minor-membership-gate.ts` is now the single
+policy, asked BEFORE every membership write by all three callables, and asked again after the
+fact by the same trigger — repointed to `onDocumentWritten("chat_groups/{groupId}")` and kept
+as belt-and-braces on a child-safety control. Because membership records `memberAddedBy`, the
+backstop judges each member against whoever actually seated THEM; the old core could only ask
+about the group's creator, which is the defect in one sentence.
+
+**The residual, decided by Malin on 2026-08-13:** the gate checks the INVITER, not everyone
+present. A minor invited by a friend can be messaged in that group by adults who are strangers
+to them. She was shown the stricter alternative — every existing member must be a friend of
+the minor — and its cost: a group containing a teenager becomes possible only when everyone
+knows the teenager, and any later invite of a stranger is blocked while they remain. Trust and
+Safety observed that both the DSA and app-store guidance are converging on who may CONTACT a
+minor rather than who may ADD one, and still recommended shipping this and filing the stricter
+variant separately. Do not widen it silently; do not narrow it back to "the creator".
+
+### "A new member sees only from now on" is a rule, not a filter
+
+Malin's decision 2: membership is live, but history before you joined is invisible to you.
+The stamp is `conversations/{id}.memberSince.{uid}` — on the CONVERSATION, because that is the
+document `firestore.rules` already gets to authorise a message read, so the cut-off costs
+zero extra reads.
+
+Two halves, and neither works alone:
+
+* The `messages` READ rule refuses `sentAt < memberSince[uid]` for any conversation carrying a
+  `groupId`, spelled `.get('memberSince', {}).get(uid, request.time)` — fail-closed twice, since
+  indexing an absent key would be an evaluation error and the default denies everything.
+* The `conversations` UPDATE rule adds `memberSince` and `groupId` to its deny-list. That rule
+  is a DENY-list, not an allowlist, so without this any group member could rewrite their own
+  stamp and read the backlog, or raise someone else's to hide history from them. **The first
+  draft of this change shipped the read rule without the update rule and was caught in
+  review.** If you add another server-owned field to a conversation, add it to that list in the
+  same edit.
+
+The client mirrors the rule as a `sentAt >=` query filter. That is not belt-and-braces: a
+Firestore query returning even one document the rules refuse fails ENTIRELY, so a stale client
+stamp shows an error rather than silently missing messages.
+
+### Sending a message now requires being in the conversation
+
+The `messages` create rule checked only that you were who you claimed to be, so any signed-in
+user who knew a conversation id could inject messages into strangers' chats — unreadable to
+them, but written. Direct ids are derivable from two uids and `public_profiles` is readable by
+any signed-in user, so the id was never a secret. Fixed in the same change at Trust and
+Safety's insistence. It costs one document read per message sent; checking the sender's own
+roster row instead would cost the same read and bind the write to a mirror rather than to the
+membership.
+
+### Membership has exactly one writer
+
+`groups/chat-group-writes.ts` is the only code permitted to write `memberIds`,
+`participantIds`, `memberSince` or the roster's `joinedAt`. The same fact lives in three
+documents because three readers need it and none can read the others (the group is the truth,
+the conversation is what rules can see, the roster is what the client lists). Three copies is
+the shape BUT-1798 and BUT-1732 both punished; the mitigation is not fewer readers but one
+writer, one transaction, one computed `Timestamp`. The GDPR cascade imports that writer rather
+than re-implementing removal, and `deleteMessages` skips any conversation with a `groupId` so
+the two legs cannot race.
+
+### `adminIds` is immutable, on purpose
+
+Set at creation, denied by every rule and touched by no callable. Promoting or demoting an
+admin is a feature that does not exist; when it is built it needs its own gated callable, not
+a widened update rule. A widened update rule here is the same mistake as the
+`metadata.creatorId` smuggling BUT-1788 had to close.
+
+### GDPR
+
+Erasure gained `deleteChatGroupMemberships`, with its matching `probeResidualData` leg in the
+same edit (a leg without a probe is how an erasure becomes silently incomplete), a `createdBy`
+re-homing to a surviving admin mirroring `deleteFamilyData`, and a capped sweep that DECLINES
+rather than truncating.
+
+Export: other members' `memberSince` is stripped and the requester's own kept — reasoned on
+its own merits, following `perUserSettings` (dropped) rather than `lastReadTimestamps` (kept),
+because when someone else joined is third-party behaviour. A `chat_groups` PROJECTION was
+added for the one fact the conversation does not carry (who added YOU); never the raw
+document, because a second copy of a redaction decision is how two sections drift.
+**That redaction was chosen conservatively without asking Malin**; widening it to keep other
+members' stamps is hers to decide.

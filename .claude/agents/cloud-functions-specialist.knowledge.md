@@ -228,6 +228,27 @@ idempotent:
   the only cheap lever), but a docstring reading "staged the way production reaches
   it" is a false claim contradicting the SUT's own comment 20 lines away. Write
   "synthetic; production reaches this verdict via <the real route>" instead.
+  **The cap lever is OFF BY N whenever the caller deletes rows before the clearer
+  reads.** `deleteChatGroupMemberships` removes the erased user's own roster row
+  inside its removal transaction and only then calls `tryClearRoster`, so seeding
+  `CAP + 1` rows INCLUDING that one leaves `CAP` at read time and the clearer
+  succeeds — the fixture then measures the happy path under a name promising the
+  refusal. Count the rows that survive to the READ, not the rows seeded (measured
+  2026-08-14: the 1:1 fixture two functions away legitimately counts its own rows
+  because that branch deletes nothing first).
+  **When the gate MOVES, its false-verdict fixture moves with it, or the coverage
+  evaporates silently.** BUT-1838 repointed `enforceGroupMinorMembership` to
+  `chat_groups` and left it no collapse branch at all — `tryClearRoster`'s only
+  gating caller is now `removeChatGroupMember.deleteEmptyGroup`. Deleting the old
+  integration cases was right; deleting them without re-homing the FALSE-verdict
+  case would have retired the single assertion that a destructive delete obeys its
+  guard. Cheapest lever at the new site is not the refusal cap but a failing
+  DELETE (`failDeleteAt` on one roster row) — a fake can inject it in one line,
+  and the assertion is "both documents SURVIVE + the membership cut still landed".
+  Re-measured 2026-08-13: neutralising the gate reddens exactly that one test.
+  So on any trigger repointing, enumerate the branches the OLD suite covered and
+  name, per branch, either its new home or why it cannot exist any more — in the
+  new file's header, where the next reader looks.
 - Scheduled jobs run hourly, not per-minute (43,200×/month adds up).
 
 ## Secrets handling
@@ -537,6 +558,22 @@ see "When to consult the archive" at the end.
   `sentinel.isEqual(FieldValue.arrayUnion(...expected))` assertion: field name,
   sentinel type and value set all pinned at once. Any hand-rolled
   batch/transaction double.
+  **Closing shape, reusable: `src/__tests__/_fake-firestore.ts` (BUT-1838).** An
+  in-memory store that APPLIES the payload — dot-path keys address one literal
+  key, `arrayRemove` really shrinks the array, `FieldValue.delete()` really
+  removes the entry — dispatching on the transform's `constructor.name`
+  (`ArrayUnionTransform`/`ArrayRemoveTransform`/`DeleteTransform`/
+  `ServerTimestampTransform`) and THROWING on any other `instanceof FieldValue`.
+  Three properties earn their keep and each was load-bearing for a real
+  assertion: `update()` on a MISSING document rejects with grpc 5 (a silent no-op
+  hides every NOT_FOUND poison pill); `runTransaction` BUFFERS and applies only
+  after the callback RESOLVES, so "a denied call writes nothing" is an assertion
+  about the store rather than about ordering luck, and the update-target existence
+  check runs over the whole batch first so a failing commit is all-or-nothing;
+  every unmodelled method (`batch`, `collectionGroup`) throws by name. Clone plain
+  containers only — deep-cloning a `Timestamp` into an object literal breaks every
+  `isEqual` assertion downstream. It is NOT a concurrency instrument: one callback
+  invocation, no isolation, no retry, no rules.
 - **Mutating a `Collections.x` reference to a bare literal to prove a test
   non-vacuous can break the BUILD instead** (the import goes unused →
   `noUnusedLocals` TSError, which reads as a red suite for the wrong reason).
@@ -545,7 +582,13 @@ see "When to consult the archive" at the end.
   reworked one reddened exactly the one targeted test. Same trap on a
   destructured `Promise.all` result: deleting a leg from the OR it feeds
   (`shopped: a || b` → `a`) orphans `b` and yields the same TSError; neutralise
-  instead (`[b].length > 99 ? true : a`).
+  instead (`[b].length > 99 ? true : a`). **Third form, hit again 2026-08-13:
+  neutralising a GATE — `if (!cleared) { … return; }` → `if (false)` — orphans
+  the `const cleared` above it (TS6133), which reads as a red suite for the wrong
+  reason. Spell it `if (!cleared && [1].length > 9)`: the local stays read, the
+  branch is dead, and the red is attributable.** Likewise a mutated SHADOW COPY
+  of a callable module must keep its `export const <fn> = onCall(...)` exported;
+  renaming it to a local to avoid a duplicate export orphans it the same way.
 - **A fake query whose `.where()` ignores the FIELD ARGUMENT pins the
   collection but not the field, and a paired "the composite is declared in
   `firestore.indexes.json`" test does NOT close the gap** — it pins the INDEX

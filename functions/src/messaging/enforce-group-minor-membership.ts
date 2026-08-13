@@ -1,34 +1,47 @@
 /**
- * BUT-1626 (BUT-674): group-conversation minor-safety gate.
+ * BUT-1626, repointed by BUT-1838: the minor-membership BACKSTOP.
  *
- * Firestore rules gate 1:1 DMs with a minor (`passesMinorDmGate`), but they
- * cannot iterate a group's `participantIds` list, so a non-friend who adds a
- * minor to a GROUP conversation is not blocked by rules. This trigger closes
- * that gap server-side: on every conversation create, for a group (size > 2),
- * any participant who is a minor AND was NOT added by one of their friends is
- * removed from the conversation.
+ * **This is no longer the control.** Until BUT-1838 it was: an
+ * `onDocumentCreated` trigger on `conversations/{id}` that removed a minor a
+ * non-friend had added. That design could only ever fire once — in the instant
+ * the chat was born — so anyone added later was checked by nobody, and there was
+ * no invitation moment to move the check to, because the chat WAS the member
+ * list.
  *
- * "Added by a friend" is checked against the conversation's `metadata.creatorId`
- * (the only identity the created doc records) via the same directional friend
- * doc the rules use: `users/{minor}/friends/{creatorId}`.
+ * `chat_groups` created that moment. The primary control now runs BEFORE the
+ * write, inside the membership callables, via `groups/minor-membership-gate.ts`.
+ * This trigger re-asks the SAME question (one policy, one module) after every
+ * membership write, and evicts anyone who should not be there.
  *
- * Defense-in-depth, not the primary control: a minor is default-private
- * (BUT-1454), so a non-friend cannot even discover them to add them. This
- * trigger backstops a tampered/legacy client that adds a minor anyway. Because
- * `participantIds` is immutable after create (firestore.rules), a create trigger
- * is sufficient — group membership cannot grow via client update.
+ * **Why keep it at all, if the callables cannot be bypassed.** Because "cannot"
+ * rests on `firestore.rules` refusing every client write to `chat_groups`
+ * membership, and on no future code path writing it under the Admin SDK without
+ * asking the gate. Both are true today and neither is enforced by the compiler.
+ * One invocation per membership change — which is a rare event — buys a check
+ * that survives the next author's mistake. It is belt and braces on a
+ * child-safety control, and that is worth an invocation.
  *
- * Cost: one invocation per conversation create; reads bounded to group creates
- * only (one users/{uid} read per non-creator participant, plus one friend-doc
- * read per minor; and on the collapse and concurrent-delete paths ONLY, a
- * bounded roster read of at most MAX_ROSTER_ROWS + 1 documents plus at most
- * MAX_ROSTER_ROWS deletes). 1:1 and non-group creates return before any read.
+ * It judges each member against `memberAddedBy[uid]` — who actually seated THEM
+ * — rather than against one creator, which is what the old trigger had to do and
+ * what made it wrong for anyone added after creation.
+ *
+ * Cost: bounded to a group's membership (at most MAX_GROUP_PARTICIPANTS reads,
+ * plus one friend-doc read per minor). Converges: the eviction write re-fires
+ * the trigger once, and that pass finds nothing to remove.
  */
 
-import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { hashUid } from "../shared/hash-uid";
+import { Collections } from "../shared/collections";
+import { isValidDocId } from "../shared/valid-doc-id";
+import {
+  computeBlockedMembers,
+  readAdderFriendships,
+  readIsMinor,
+} from "../groups/minor-membership-gate";
+import { stageMemberRemoval } from "../groups/chat-group-writes";
 
 /**
  * A conversation id that is safe to put in Cloud Logging.
@@ -85,59 +98,6 @@ const CONVERSATION_PARTICIPANTS = "participants";
  * real bypass.
  */
 export const MAX_ROSTER_ROWS = MAX_GROUP_PARTICIPANTS * 5;
-
-export interface MinorRemovalInput {
-  /** All participant uids on the created conversation. */
-  participantIds: string[];
-  /** `metadata.creatorId`, or null when the doc records no creator. */
-  creatorId: string | null;
-  /** uid -> whether that account is a compliant minor (isMinor:true). */
-  isMinor: Record<string, boolean>;
-  /** uid -> whether the creator is a friend of that (minor) uid. */
-  creatorIsFriendOf: Record<string, boolean>;
-}
-
-/**
- * Pure decision core (unit-tested): which participants must be removed to
- * protect minors from a non-friend group add.
- *
- * A participant is removed when it is a minor, is not the creator, and either
- * (a) the creator is unknown — we cannot prove a friendship, so fail SAFE for
- * the child — or (b) the creator is not a friend of that minor. Adults and the
- * creator are never removed.
- */
-export function computeMinorsToRemove(input: MinorRemovalInput): string[] {
-  const { participantIds, creatorId, isMinor, creatorIsFriendOf } = input;
-  const removals: string[] = [];
-  for (const uid of participantIds) {
-    if (uid === creatorId) continue; // the creator is not a "non-friend add"
-    if (!isMinor[uid]) continue; // only minors are protected
-    if (!creatorId) {
-      // No identifiable creator ⇒ cannot verify a friendship ⇒ remove the
-      // minor (fail-safe). Only reachable for a group that already contains a
-      // minor, which a default-private minor makes near-impossible in practice.
-      removals.push(uid);
-      continue;
-    }
-    if (!creatorIsFriendOf[uid]) removals.push(uid);
-  }
-  return removals;
-}
-
-/** Reads `isMinor` for each candidate uid via a single batched getAll. */
-async function readIsMinor(
-  db: admin.firestore.Firestore,
-  uids: string[],
-): Promise<Record<string, boolean>> {
-  const out: Record<string, boolean> = {};
-  if (uids.length === 0) return out;
-  const refs = uids.map((u) => db.doc(`users/${u}`));
-  const snaps = await db.getAll(...refs);
-  snaps.forEach((snap, i) => {
-    out[uids[i]] = snap.exists && snap.get("isMinor") === true;
-  });
-  return out;
-}
 
 /**
  * Attempts to delete every row under `conversations/{id}/participants`.
@@ -259,308 +219,154 @@ export async function tryClearRoster(
   return true;
 }
 
-/** Reads, for each minor uid, whether `creatorId` is their friend. */
-async function readCreatorFriendships(
-  db: admin.firestore.Firestore,
-  minorUids: string[],
-  creatorId: string | null,
-): Promise<Record<string, boolean>> {
-  const out: Record<string, boolean> = {};
-  if (!creatorId || minorUids.length === 0) return out;
-  const refs = minorUids.map((u) => db.doc(`users/${u}/friends/${creatorId}`));
-  const snaps = await db.getAll(...refs);
-  snaps.forEach((snap, i) => {
-    out[minorUids[i]] = snap.exists;
-  });
-  return out;
-}
 
-/**
- * True only for a uid this trigger can safely use BOTH ways: as a document id
- * (`users/${uid}`) AND as a FIELD-PATH segment
- * (`participantDisplayNames.${uid}`). Those are different constraint sets, and
- * the field-path one is stricter — that is the trap this guards.
- *
- * Why it must be strict: a uid containing a dot or a field-path metacharacter
- * is a legal document id but an ILLEGAL field path. `update()` then rejects it
- * with INVALID_ARGUMENT (grpc 3, NOT the NOT_FOUND 5 handled below), which
- * `retry: true` replays deterministically forever while the minor is never
- * removed — the child-safety gate fails OPEN, in exactly the tampered-client
- * threat model this trigger exists for. A dotted uid is dangerous even when it
- * does NOT throw: `participantDisplayNames.a.b` addresses a NESTED map rather
- * than the literal key "a.b", so the removed minor's name and avatar would
- * survive the cut.
- *
- * Real Firebase Auth uids are alphanumeric, so rejecting these forms drops only
- * entries that cannot correspond to a real account (and which therefore confer
- * no membership — the rules test `uid in participantIds`).
- */
-export function isValidDocId(v: unknown): v is string {
-  return (
-    typeof v === "string" &&
-    v.length > 0 &&
-    v !== "." &&
-    v !== ".." &&
-    !/^__.*__$/.test(v) &&
-    // "/" breaks the doc path; ".[]*`" break the field path. Rejecting the
-    // union keeps the uid safe for both uses.
-    !/[/.[\]*`]/.test(v) &&
-    // Bytes, not characters: the 1500-byte doc-id cap is busted by a multibyte
-    // uid at ~500 chars. Only "" and "/" throw client-side; the rest of these
-    // forms are rejected by the BACKEND when getAll() runs, which under
-    // retry:true is a deterministic error that repeats forever.
-    Buffer.byteLength(v, "utf8") <= 1500
-  );
-}
-
-export const enforceGroupMinorMembership = onDocumentCreated(
+export const enforceGroupMinorMembership = onDocumentWritten(
   // retry:true — v2 event triggers do NOT retry by default, so a transient
-  // failure in the reads/writes below is logged and dropped, leaving a
-  // non-friend-added minor in the group (fail-OPEN on a child-safety gate).
-  // Every write here is idempotent on re-run — participantIds is set to the
-  // absolute `remaining` value (not arrayRemove), the per-uid FieldValue.delete()s
-  // and snap.ref.delete() are no-ops on a missing doc, and the membership-mirror
-  // deletes are already best-effort — with ONE exception: `update()` throws
-  // NOT_FOUND on a deleted conversation, a DETERMINISTIC error that retry would
-  // repeat forever (a poison pill re-billing the read fan-out). That case is
-  // caught explicitly below, and the roster cleanup reports rather than throws
-  // for the same reason, so only genuinely transient failures reach a retry.
-  { document: "conversations/{conversationId}", retry: true },
+  // failure below would be logged and dropped, leaving a non-friend-added minor
+  // in the group (fail-OPEN on a child-safety gate). Every write here is
+  // idempotent on re-run: `arrayRemove` and the per-uid `FieldValue.delete()`s
+  // are no-ops once applied, and a group that no longer names the minor produces
+  // no removals at all on the next pass.
+  { document: "chat_groups/{groupId}", retry: true },
   async (event) => {
-    const snap = event.data;
-    if (!snap) return;
-    const data = snap.data();
-    const conversationId = event.params.conversationId;
+    const after = event.data?.after;
+    if (!after?.exists) return; // group deleted — nothing left to protect
+    const data = after.data() ?? {};
+    const groupId = event.params.groupId;
 
-    const rawParticipantIds: unknown[] = Array.isArray(data?.participantIds)
-      ? (data.participantIds as unknown[])
+    // Sanitise for USE (the reads below splice uids into document paths), and
+    // judge on the sanitised list here — unlike the old conversations trigger,
+    // which had to gate on the RAW length because `passesMinorDmGate` in
+    // firestore.rules fired at raw size 2 and a padded list could slip between
+    // the two layers. No rule looks at this document's membership at all, so
+    // there is no second layer to stay in step with and no padding attack to
+    // defeat.
+    const rawMemberIds: unknown[] = Array.isArray(data.memberIds)
+      ? (data.memberIds as unknown[])
       : [];
+    const memberIds = rawMemberIds.filter(isValidDocId);
+    if (memberIds.length === 0) return;
 
-    // Drop uids Firestore would reject as a doc id (see isValidDocId) so the
-    // reads below cannot throw and strand the gate fail-OPEN.
-    const participantIds: string[] = rawParticipantIds.filter(isValidDocId);
-
-    // Only GROUP conversations need this gate. 1:1 (size 2) is handled by
-    // firestore.rules; size < 2 is degenerate.
-    //
-    // The size is judged on the RAW list, never the sanitised one. Sanitising
-    // first would reopen the very gap this trigger exists to close:
-    // `passesMinorDmGate` in firestore.rules fires only at raw size()==2, so a
-    // tampered client can pad participantIds with one junk entry
-    // (["attacker","minor","__x__"]) — rules see 3 and skip the DM gate, while
-    // a filtered count here would see 2 and return early, leaving the minor
-    // protected by NEITHER layer. Sanitise for the USE (path building), gate on
-    // the RAW shape.
-    const isGroup = data?.isGroup === true || rawParticipantIds.length > 2;
-    if (!isGroup || rawParticipantIds.length <= 2) return;
-
-    // firestore.rules caps neither participantIds' length nor the create rate,
-    // so a tampered client can post thousands of uids and make the getAll
-    // fan-out below arbitrarily expensive — and retry:true replays it. Refuse
-    // implausibly large groups outright and alert instead: no real group
-    // approaches this, and returning early costs one log line rather than an
-    // unbounded, self-repeating read bill.
-    if (participantIds.length > MAX_GROUP_PARTICIPANTS) {
+    if (memberIds.length > MAX_GROUP_PARTICIPANTS) {
+      // The callables cap membership at the same number, so this is only
+      // reachable if something wrote the document without asking them — which is
+      // precisely the case this trigger exists for. Refuse the fan-out and alert
+      // rather than pay an unbounded, retry-replayed read bill.
       logger.error(
         "[enforceGroupMinorMembership] implausible group size; refusing the read fan-out",
-        { conversationId, participantCount: participantIds.length },
+        { groupId, memberCount: memberIds.length },
       );
       return;
     }
 
-    // A malformed creatorId is treated as NO creator ⇒ the fail-safe path
-    // (unknown creator ⇒ remove minors) rather than a
-    // `users/${creatorId}/friends/...` path build that would throw.
-    const rawCreatorId: unknown = data?.metadata?.creatorId;
-    const creatorId = isValidDocId(rawCreatorId) ? rawCreatorId : null;
+    const rawAddedBy =
+      data.memberAddedBy && typeof data.memberAddedBy === "object"
+        ? (data.memberAddedBy as Record<string, unknown>)
+        : {};
+    const adderOf = (uid: string): string | null => {
+      const v = rawAddedBy[uid];
+      return isValidDocId(v) ? v : null;
+    };
 
     const db = admin.firestore();
-    const candidates = participantIds.filter((u) => u !== creatorId);
-    const isMinor = await readIsMinor(db, candidates);
-    const minorUids = candidates.filter((u) => isMinor[u]);
-    const creatorIsFriendOf = await readCreatorFriendships(
+    const isMinor = await readIsMinor(db, memberIds);
+    const minorUids = memberIds.filter((u) => isMinor[u]);
+    if (minorUids.length === 0) return;
+
+    const inviterIsFriendOf = await readAdderFriendships(
       db,
       minorUids,
-      creatorId,
+      adderOf,
     );
 
-    const toRemove = computeMinorsToRemove({
-      participantIds,
-      creatorId,
+    const toRemove = computeBlockedMembers({
+      candidates: memberIds,
+      inviterOf: adderOf,
       isMinor,
-      creatorIsFriendOf,
+      inviterIsFriendOf,
     });
     if (toRemove.length === 0) return;
 
-    const remaining = participantIds.filter((u) => !toRemove.includes(u));
-
-    logger.warn("[enforceGroupMinorMembership] removing non-friend-added minors", {
-      conversationId,
-      removedCount: toRemove.length,
-      hadCreator: creatorId !== null,
-      remaining: remaining.length,
-    });
-
-    // If the group collapses below 2 members, the conversation is no longer
-    // viable — delete it rather than leave a one-person shell. Everyone's
-    // mirror is then stale, not just the removed minors', so the survivors are
-    // folded into the cleanup list below; otherwise the lone remaining member
-    // keeps a conversation-list row pointing at a deleted doc, which they can
-    // open but never dismiss.
-    const mirrorsToClear = [...toRemove];
-
-    // ORDER MATTERS on the collapse branch, and it is the opposite of the
-    // obvious one. Deleting the conversation is the exact write that makes
-    // `parentDoc() == null` true in firestore.rules, i.e. it OPENS the roster's
-    // bootstrap branch. Closing the rows that branch grants must therefore
-    // happen FIRST: a crash or a swallowed failure in between would leave every
-    // surviving row readable, with no parent left to deny it, forever.
-    //
-    // VERIFIED, not best-effort — and note that is not the same as STRICT, which
-    // in this repo means "throws". The verdict GATES the parent delete. A
-    // swallowed failure that still deleted the parent would be a permanent
-    // unmonitored disclosure, which is exactly why a false answer takes the
-    // update branch instead. On the update branch a failed roster delete is
-    // harmless anyway: the parent survives and no longer names the evicted uid,
-    // and the read fallback requires an ABSENT parent.
-    //
-    // If the roster could not be cleared — too large to be real, or a delete
-    // failed — we take the update branch instead: strip the minors and leave the
-    // shell standing. The child-safety cut still lands, and a LIVE parent that
-    // no longer names anyone is precisely what keeps `rosterUnclaimed()` and the
-    // read fallback shut. Deleting the parent instead would re-open the roster;
-    // throwing would hand a `retry:true` trigger a deterministic error to loop
-    // on. The shell is the safe failure.
-    //
-    // "Shell" can mean ZERO members: `remaining` is empty when nobody survives
-    // the cut (e.g. every participant is a minor and `metadata.creatorId` is
-    // absent). The update then writes `participantIds: []`, and since the
-    // conversations block's own rules all gate on `uid in participantIds`, that
-    // document becomes unreadable, unupdatable and undeletable by anyone —
-    // permanently. Accepted knowingly as the safest of three bad outcomes.
-    //
-    // **A later sweep must clear the roster BEFORE deleting such a shell.**
-    // Deleting it flips `parentDoc()` to null, which re-opens `rosterUnclaimed()`
-    // and the own-row read fallback over whatever rows survive — including the
-    // legitimate members' and the evicted minor's name and avatar. The shell is
-    // safe only while it stands. Recorded in ACCEPTED_DEVIATIONS.md.
-    const rosterCleared =
-      remaining.length < 2 && (await tryClearRoster(db, conversationId));
-
-    if (rosterCleared) {
-      mirrorsToClear.push(...remaining);
-      await snap.ref.delete();
-    } else {
-      const update: Record<string, unknown> = {
-        participantIds: remaining,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      };
-      for (const uid of toRemove) {
-        update[`participantDisplayNames.${uid}`] =
-          admin.firestore.FieldValue.delete();
-        update[`participantAvatarUrls.${uid}`] =
-          admin.firestore.FieldValue.delete();
-        update[`lastReadTimestamps.${uid}`] =
-          admin.firestore.FieldValue.delete();
-      }
-      try {
-        await snap.ref.update(update);
-      } catch (e) {
-        // NOT_FOUND (grpc code 5): the conversation was deleted between the
-        // create that fired this trigger and this write. The access cut we were
-        // about to make is moot — there is no group left to remove the minor
-        // from — so this is success, not failure. Rethrowing would hand
-        // retry:true a deterministic error to loop on forever. Deliberately
-        // does NOT return: the removed minors' membership mirrors below still
-        // point at the (now deleted) conversation and must still be cleaned.
-        // Optional-chained like every other error read in this file: a null
-        // rejection would otherwise raise a TypeError here and escape a
-        // `retry:true` handler. `undefined !== 5` still rethrows, so the
-        // semantics are unchanged.
-        if ((e as { code?: number } | null)?.code !== 5) throw e;
-        logger.info(
-          "[enforceGroupMinorMembership] conversation already deleted; skipping the cut, still clearing mirrors",
-          { conversationId },
-        );
-        // This is the OTHER parent-destroyed path, and it is not the collapse
-        // branch: somebody else deleted the conversation while this trigger ran.
-        // The per-uid cleanup below only covers `toRemove`, so the REMAINING
-        // members' roster rows would survive under an absent parent — readable,
-        // and re-seatable, forever. Same state `tryClearRoster` exists to
-        // prevent, reached by a different route, so it gets the same treatment.
-        // The return value is deliberately ignored: there is no parent left to
-        // protect, so there is nothing for a false answer to prevent. It logs
-        // its own failure. `tryClearRoster` never throws, so this cannot turn a
-        // handled code-5 into the poison pill this branch exists to avoid.
-        //
-        // Note this leaves `remaining`'s MEMBERSHIP mirrors uncleaned — the loop
-        // below only walks `toRemove` on this path — so the survivors keep a
-        // conversation-list row pointing at a deleted document. Pre-existing,
-        // and not the disclosure half; the roster is.
-        void (await tryClearRoster(db, conversationId));
-      }
+    const conversationId =
+      typeof data.conversationId === "string" ? data.conversationId : null;
+    if (!isValidDocId(conversationId)) {
+      // Nothing to cut access to, and no path to build. Loud rather than
+      // silent: a group with members and no conversation is a shape no code
+      // path here produces.
+      logger.error(
+        "[enforceGroupMinorMembership] group has no usable conversationId",
+        { groupId, removedCount: toRemove.length },
+      );
+      return;
     }
 
-    // Best-effort cleanup of each affected uid's TWO mirrors. Never throws out
-    // of the trigger — on this path `participantIds` no longer names them, and
-    // that removal is the real access cut.
-    //
-    // 1. `users/{uid}/conversation_memberships/{id}` — stops the group
-    //    surfacing in their conversation list. Cosmetic; a stale row is the
-    //    only cost, which is what "best-effort" was ever justified by.
-    // 2. `conversations/{id}/participants/{uid}` — the roster row. **Missing
-    //    until 2026-08-12, and it became a disclosure the day that path got
-    //    rules at all.** It used to be default-deny, so a surviving row was
-    //    inert; now the roster's read rule grants the list to anyone the parent
-    //    NAMES, so a row outliving the eviction keeps the evicted minor's own
-    //    name and avatar readable to the group that removed them. The read-back
-    //    direction is denied here by the rules half (the parent survives and no
-    //    longer names them); it is the COLLAPSE branch above, where the parent
-    //    is destroyed, that rules cannot reach. Note a destroyed `direct_*`
-    //    parent leaves its rows READABLE but not re-seatable — `rosterUnclaimed`
-    //    excludes that prefix, the read fallback does not.
-    //
-    // Errors are logged by CODE, not by `String(e)`: a Firestore error embeds
-    // the full document path, which on this path is a raw uid on a
-    // child-safety eviction. The code is what tells PERMISSION_DENIED from
-    // DEADLINE_EXCEEDED; the uid tells nothing and outlives the group.
-    // Optional-chained: this closure runs inside a `.catch`, and a TypeError
-    // raised here would reject a promise the caller believes cannot reject —
-    // against this block's stated promise never to throw out of the trigger.
-    const logCleanupFailure = (what: string) => (e: unknown) =>
-      logger.error(`[enforceGroupMinorMembership] ${what} cleanup failed`, {
-        conversationId,
-        errCode: (e as { code?: number | string } | null)?.code ?? "unknown",
-        errName: (e as Error | null)?.name,
-      });
+    logger.warn(
+      "[enforceGroupMinorMembership] removing non-friend-added minors",
+      {
+        groupId,
+        conversationId: logSafeConversationId(conversationId),
+        removedCount: toRemove.length,
+        remaining: memberIds.length - toRemove.length,
+      },
+    );
 
+    const removedAt = admin.firestore.Timestamp.now();
+    try {
+      await db.runTransaction(async (tx) => {
+        // Read the group inside the transaction so a concurrent legitimate
+        // removal cannot be clobbered, and so a group deleted between the event
+        // and this write is a no-op rather than a resurrection: `tx.update` on a
+        // missing document throws NOT_FOUND, which the catch below treats as
+        // success.
+        const fresh = await tx.get(
+          db.collection(Collections.chatGroups).doc(groupId),
+        );
+        if (!fresh.exists) return;
+        for (const uid of toRemove) {
+          stageMemberRemoval(tx, {
+            db,
+            groupId,
+            conversationId,
+            uid,
+            removedAt,
+          });
+        }
+      });
+    } catch (e) {
+      // NOT_FOUND (grpc 5) is DETERMINISTIC — the group or its conversation was
+      // deleted while this ran — and rethrowing it would hand a `retry:true`
+      // trigger an error to loop on forever, re-billing the read fan-out each
+      // time. The access cut is moot when the documents are gone.
+      if ((e as { code?: number } | null)?.code !== 5) throw e;
+      logger.info(
+        "[enforceGroupMinorMembership] group already gone; skipping the cut",
+        { groupId },
+      );
+    }
+
+    // Best-effort mirror cleanup: stops the group surfacing in the evicted
+    // member's conversation list. The membership removal above IS the access
+    // cut, so a stale row here costs a list entry, not a disclosure. Errors are
+    // logged by CODE, never by `String(e)`: a Firestore error embeds the full
+    // document path, which on this path is a raw uid on a child-safety eviction
+    // and outlives the group it belonged to.
     await Promise.all(
-      [...new Set(mirrorsToClear)].flatMap((uid) => [
+      toRemove.map((uid) =>
         db
           .doc(`users/${uid}/conversation_memberships/${conversationId}`)
           .delete()
-          .catch(logCleanupFailure("membership")),
-        // Skipped when the COLLAPSE branch already enumerated and cleared the
-        // whole roster — otherwise every row is deleted twice, and worse, two
-        // pieces of code both look like the owner of that cleanup.
-        //
-        // Not skipped on the concurrent-delete branch, where `rosterCleared` is
-        // still false even though that branch calls the same helper. The rows
-        // are therefore deleted twice there, deliberately: deleting a missing
-        // document resolves, the second pass is a no-op, and a second flag to
-        // suppress it would buy nothing but another state to keep in step.
-        ...(rosterCleared
-          ? []
-          : [
-              db
-                .doc(
-                  `conversations/${conversationId}/` +
-                    `${CONVERSATION_PARTICIPANTS}/${uid}`,
-                )
-                .delete()
-                .catch(logCleanupFailure("roster")),
-            ]),
-      ]),
+          .catch((e: unknown) =>
+            logger.error(
+              "[enforceGroupMinorMembership] membership cleanup failed",
+              {
+                groupId,
+                errCode:
+                  (e as { code?: number | string } | null)?.code ?? "unknown",
+                errName: (e as Error | null)?.name,
+              },
+            ),
+          ),
+      ),
     );
   },
 );

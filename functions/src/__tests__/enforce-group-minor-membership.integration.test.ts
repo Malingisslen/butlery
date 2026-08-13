@@ -1,21 +1,37 @@
 /**
- * BUT-1633 — emulator-backed integration test for `enforceGroupMinorMembership`.
+ * BUT-1633, rewritten for BUT-1838 — emulator-backed integration test for the
+ * minor-membership BACKSTOP.
  *
- * The sibling unit test (`enforce-group-minor-membership.test.ts`) pins only the
- * pure decision core, `computeMinorsToRemove`. This test exercises the REAL
- * exported trigger via the v2 `CloudFunction.run(event)` surface against a live
- * Firestore emulator (127.0.0.1:8080), covering the destructive-I/O branches the
- * unit test cannot reach:
- *   - the `update` branch (group stays viable ≥2): the non-friend minor is
- *     stripped from participantIds AND their participant sub-maps are cleared;
- *   - the per-user `conversation_memberships` mirror cleanup delete;
- *   - the `delete` branch (group collapses <2): the whole conversation doc is
- *     removed rather than left as a one-person shell;
- *   - the friend-of-creator KEEP path: a real friend doc prevents any removal.
+ * The trigger changed shape completely, so the fixtures had to. It now fires on
+ * `onDocumentWritten("chat_groups/{groupId}")` rather than on the CREATE of
+ * `conversations/{id}`, judges each member against `memberAddedBy[uid]` — whoever
+ * actually seated THEM — rather than against one creator, and evicts through
+ * `stageMemberRemoval`, which writes the group, the conversation and the roster
+ * row from one value.
  *
- * The reads it performs (users/{uid}.isMinor, users/{minor}/friends/{creator})
- * hit real emulator docs, so this proves the batched getAll wiring end to end,
- * not just the pure filter.
+ * What it still exists to prove is unchanged: the destructive-I/O branches the
+ * unit suites cannot reach. The reads hit real emulator documents
+ * (`users/{uid}.isMinor`, `users/{minor}/friends/{adder}`), so this covers the
+ * batched `getAll` wiring end to end, not just the pure filter.
+ *
+ * **Cases deliberately NOT carried over**, each because the behaviour it pinned
+ * no longer exists in this file:
+ *  - *"padded 1:1: a junk entry does not let a non-friend DM a minor slip the
+ *    gate"*. That case existed because `firestore.rules` applied
+ *    `passesMinorDmGate` at RAW `participantIds.size() == 2`, so the trigger had
+ *    to size itself on the raw list or a padded conversation fell between two
+ *    layers. No rule reads `chat_groups.memberIds` at all — membership is
+ *    server-written — so there is no second layer to stay in step with, and the
+ *    trigger now judges the sanitised list. The equivalent protection moved to
+ *    the gate, BEFORE the write (`minor-membership-gate.test.ts`).
+ *  - *"delete branch: collapsing below 2 members deletes the conversation"* and
+ *    *"an unclearable roster leaves the shell standing"*. This trigger no longer
+ *    owns a conversation's lifecycle: it cuts membership and nothing else. The
+ *    collapse-and-delete decision, and the `tryClearRoster` verdict that gates
+ *    it, moved to `removeChatGroupMember` and are pinned there
+ *    (`chat-group-callables.test.ts`), including the case where the verdict is
+ *    FALSE and both documents must survive. `tryClearRoster`'s own read/delete
+ *    failure paths stay in `enforce-group-minor-membership.test.ts`.
  *
  * Skip gate (local machines without the emulator / Java): if 8080 doesn't
  * answer, print SKIP and exit 0 — unless CI is set, where a missing emulator
@@ -49,7 +65,7 @@ function assert(cond: boolean, msg: string): void {
 }
 
 async function run(): Promise<void> {
-  console.log("BUT-1633: enforceGroupMinorMembership INTEGRATION tests (firestore emulator)");
+  console.log("BUT-1838: enforceGroupMinorMembership INTEGRATION tests (firestore emulator)");
   console.log("==========================================================================\n");
 
   await requireEmulatorsOrSkip(
@@ -66,347 +82,426 @@ async function run(): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const {
     enforceGroupMinorMembership,
-    MAX_ROSTER_ROWS,
+    MAX_GROUP_PARTICIPANTS,
   } = require("../messaging/enforce-group-minor-membership");
 
   const userRef = (uid: string) => db.collection("users").doc(uid);
+  const groupRef = (id: string) => db.collection("chat_groups").doc(id);
   const convRef = (id: string) => db.collection("conversations").doc(id);
   const membershipRef = (uid: string, convId: string) =>
     userRef(uid).collection("conversation_memberships").doc(convId);
-  // The TOP-LEVEL roster row. A separate document from the membership mirror
-  // above, in a separate collection, and until 2026-08-12 the trigger cleaned
-  // up only the mirror. Once `conversations/{id}/participants` got a read rule,
-  // a surviving row let an evicted minor keep reading the group's roster.
+  // The TOP-LEVEL roster row: a separate document from the membership mirror
+  // above, in a separate collection, and the one that carries a display name and
+  // an avatar. An evicted member whose row survives keeps both readable by the
+  // group that removed them.
   const rosterRef = (uid: string, convId: string) =>
     convRef(convId).collection("participants").doc(uid);
 
-  /** Seed a user doc with the given minor status. */
+  const seededGroups: string[] = [];
+  const seededUsers = new Set<string>();
+
   async function seedUser(uid: string, isMinor: boolean): Promise<void> {
+    seededUsers.add(uid);
     await userRef(uid).set({ isMinor });
   }
 
-  /** Seed the directional friend doc the trigger checks: users/{minor}/friends/{creator}. */
-  async function seedFriend(minorUid: string, creatorUid: string): Promise<void> {
-    await userRef(minorUid).collection("friends").doc(creatorUid).set({
+  /** The directional friend edge the gate checks: users/{minor}/friends/{adder}. */
+  async function seedFriend(minorUid: string, adderUid: string): Promise<void> {
+    seededUsers.add(minorUid);
+    await userRef(minorUid).collection("friends").doc(adderUid).set({
       createdAt: admin.firestore.Timestamp.now(),
     });
   }
 
   /**
-   * Create a conversation doc + each participant's membership mirror, read the
-   * created doc back, and fire the REAL trigger with the exact event shape
-   * onDocumentCreated delivers: { params: { conversationId }, data: snapshot }.
+   * Seeds the three documents a real group is made of — written the way
+   * `stageGroupCreation` writes them, from one timestamp — plus each member's
+   * roster row and conversation-membership mirror.
    */
-  async function createAndFire(
-    convId: string,
-    doc: Record<string, unknown>,
-    participants: string[],
-    /** Roster rows to seat that are NOT in participantIds (see the collapse test). */
-    extraRosterIds: string[] = [],
-    /**
-     * Runs AFTER the snapshot is read and BEFORE the trigger runs. The only way
-     * to stage a concurrent delete: the trigger receives the snapshot the
-     * create delivered, so the document must vanish between those two moments.
-     */
+  async function seedGroup(
+    groupId: string,
+    members: string[],
+    addedBy: Record<string, string>,
+    overrides: Record<string, unknown> = {},
+  ): Promise<string> {
+    seededGroups.push(groupId);
+    const convId = groupId;
+    const now = admin.firestore.Timestamp.now();
+    const perUid = <T>(value: T): Record<string, T> =>
+      Object.fromEntries(members.map((uid) => [uid, value]));
+
+    await groupRef(groupId).set({
+      name: "Familjen",
+      memberIds: members,
+      adminIds: [members[0]],
+      memberDisplayNames: Object.fromEntries(members.map((u) => [u, u.slice(0, 8)])),
+      memberAvatarUrls: perUid<string | null>(null),
+      memberAddedBy: addedBy,
+      conversationId: convId,
+      createdBy: members[0],
+      createdAt: now,
+      updatedAt: now,
+      ...overrides,
+    });
+    await convRef(convId).set({
+      participantIds: members,
+      participantDisplayNames: Object.fromEntries(
+        members.map((u) => [u, u.slice(0, 8)]),
+      ),
+      participantAvatarUrls: perUid("http://x/a.png"),
+      lastReadTimestamps: perUid(now),
+      perUserSettings: {},
+      memberSince: perUid(now),
+      groupId,
+      isGroup: true,
+      title: "Familjen",
+      createdAt: now,
+      updatedAt: now,
+    });
+    await Promise.all(
+      members.flatMap((uid) => [
+        membershipRef(uid, convId).set({ convId }),
+        rosterRef(uid, convId).set({
+          conversationId: convId,
+          participantId: uid,
+          displayName: uid.slice(0, 8),
+          joinedAt: now,
+        }),
+      ]),
+    );
+    return convId;
+  }
+
+  /**
+   * Fires the REAL trigger with the event shape onDocumentWritten delivers:
+   * `{ params: { groupId }, data: { before, after } }`. `afterSnapshot` runs
+   * between reading the snapshot and running the handler — the only way to stage
+   * a document that vanishes mid-flight.
+   */
+  async function fire(
+    groupId: string,
     afterSnapshot?: () => Promise<void>,
   ): Promise<void> {
-    await convRef(convId).set(doc);
-    await Promise.all([
-      ...participants.map((uid) => membershipRef(uid, convId).set({ convId })),
-      // Seeded because production seeds it — but NOT atomically with the
-      // conversation, and the difference is the whole reason the rules have a
-      // bootstrap branch. `createGroupConversation` awaits the group create
-      // (which lands under `users/{uid}/conversations/{id}`, because the
-      // repository is user-scoped) and THEN calls `addParticipants`, which opens
-      // its own batch. The TOP-LEVEL `conversations/{id}` document this trigger
-      // fires on is written by neither; it materialises on the first message.
-      // So in production these rows already exist by the time the parent
-      // appears, which is the order staged here. A test that omitted them would
-      // assert the cleanup against a collection that was empty anyway.
-      ...[...participants, ...extraRosterIds].map((uid) =>
-        rosterRef(uid, convId).set({ conversationId: convId, participantId: uid }),
-      ),
-    ]);
-    const snap = await convRef(convId).get();
+    const snap = await groupRef(groupId).get();
     if (afterSnapshot) await afterSnapshot();
     await enforceGroupMinorMembership.run({
-      params: { conversationId: convId },
-      data: snap,
+      params: { groupId },
+      data: { before: snap, after: snap },
     });
   }
 
   const creator = `creator-${RUN}`;
   const adult = `adult-${RUN}`;
 
-  // 0. PADDING BYPASS (BUT-1633 Critical regression). firestore.rules applies
-  //    passesMinorDmGate only at RAW size()==2, so a tampered client pads a 1:1
-  //    with one junk entry: rules see 3 and skip the DM gate. If this trigger
-  //    sized itself on the SANITISED list it would see 2, return early, and the
-  //    minor would be gated by NEITHER layer. This case is RED on the pre-fix
-  //    code (filtered gate) and green on the raw gate.
-  test("padded 1:1: a junk entry does not let a non-friend DM a minor slip the gate", async () => {
-    const conv = `conv-padded-${RUN}`;
-    const minor = `minor-padded-${RUN}`;
-    await seedUser(minor, true);
-    // No friend doc for (minor, creator) → not their friend.
-    await createAndFire(
-      conv,
-      {
-        isGroup: false, // rules saw size()==3 and skipped the DM gate
-        participantIds: [creator, minor, "__x__"],
-        metadata: { creatorId: creator },
-      },
-      [creator, minor],
-    );
-    const after = await convRef(conv).get();
-    assert(
-      !after.exists,
-      "padded 1:1 must collapse below 2 and be deleted, not left containing the minor",
-    );
-    assert(
-      !(await membershipRef(minor, conv).get()).exists,
-      "the minor's membership mirror must be cleaned up",
-    );
-  });
-
-  // 1. Update branch: a non-friend creator added a minor to a 3-person group.
-  //    The minor is stripped; the group stays viable (creator + adult remain).
-  test("update branch: strips a non-friend-added minor and clears its sub-maps", async () => {
-    const conv = `conv-update-${RUN}`;
+  // 1. The update branch: a minor seated by someone who is not their friend is
+  //    stripped from all three copies of the membership.
+  test("strips a non-friend-added minor from the group, the conversation and the roster", async () => {
+    const gid = `grp-update-${RUN}`;
     const minor = `minor-strip-${RUN}`;
+    await seedUser(creator, false);
     await seedUser(adult, false);
     await seedUser(minor, true);
-    // No friend doc for (minor, creator) → the creator is not their friend.
-    await createAndFire(
-      conv,
-      {
-        isGroup: true,
-        participantIds: [creator, adult, minor],
-        metadata: { creatorId: creator },
-        participantDisplayNames: { [creator]: "C", [adult]: "A", [minor]: "M" },
-        participantAvatarUrls: { [minor]: "http://x/m.png" },
-        lastReadTimestamps: { [minor]: admin.firestore.Timestamp.now() },
-      },
-      [creator, adult, minor],
+    // No friend doc for (minor, creator) → the adder is not their friend.
+    const conv = await seedGroup(gid, [creator, adult, minor], {
+      [creator]: creator,
+      [adult]: creator,
+      [minor]: creator,
+    });
+
+    await fire(gid);
+
+    const group = (await groupRef(gid).get()).data()!;
+    const memberIds = group.memberIds as string[];
+    assert(
+      !memberIds.includes(minor),
+      `minor must be removed from memberIds, got ${JSON.stringify(memberIds)}`,
     );
+    assert(
+      memberIds.includes(creator) && memberIds.includes(adult),
+      "creator and adult must remain",
+    );
+    for (const map of ["memberDisplayNames", "memberAvatarUrls", "memberAddedBy"]) {
+      const m = (group[map] ?? {}) as Record<string, unknown>;
+      assert(!(minor in m), `chat_groups.${map}.<minor> must be deleted`);
+    }
 
-    const after = (await convRef(conv).get()).data()!;
-    const ids = after.participantIds as string[];
-    assert(after !== undefined, "conversation must still exist (group stayed viable)");
-    assert(!ids.includes(minor), `minor must be removed from participantIds, got ${JSON.stringify(ids)}`);
-    assert(ids.includes(creator) && ids.includes(adult), "creator and adult must remain");
-    const names = (after.participantDisplayNames ?? {}) as Record<string, unknown>;
-    assert(!(minor in names), "participantDisplayNames.<minor> must be deleted");
-    const avatars = (after.participantAvatarUrls ?? {}) as Record<string, unknown>;
-    assert(!(minor in avatars), "participantAvatarUrls.<minor> must be deleted");
-    const reads = (after.lastReadTimestamps ?? {}) as Record<string, unknown>;
-    assert(!(minor in reads), "lastReadTimestamps.<minor> must be deleted");
+    const convo = (await convRef(conv).get()).data()!;
+    const ids = convo.participantIds as string[];
+    assert(!ids.includes(minor), "minor must lose conversation membership too");
+    for (const map of [
+      "participantDisplayNames",
+      "participantAvatarUrls",
+      "lastReadTimestamps",
+      "perUserSettings",
+      "memberSince",
+    ]) {
+      const m = (convo[map] ?? {}) as Record<string, unknown>;
+      assert(!(minor in m), `conversations.${map}.<minor> must be deleted`);
+    }
+    // The history cut-off is the one that must not linger: a stale `memberSince`
+    // would silently pin an old cut-off if the person were ever re-added.
+    const names = convo.participantDisplayNames as Record<string, unknown>;
+    assert(adult in names, "the adult's entries must survive the dot-path deletes");
 
-    const mirror = await membershipRef(minor, conv).get();
-    assert(!mirror.exists, "removed minor's conversation_memberships mirror must be deleted");
-    const adultMirror = await membershipRef(adult, conv).get();
-    assert(adultMirror.exists, "the adult's membership mirror must be left intact");
-
-    // The roster row is the DISCLOSURE half. Rules grant roster LIST to a
-    // participant the parent NAMES, and — only while the parent is ABSENT — to
-    // anyone holding a row. On THIS branch the parent survives and no longer
-    // names the minor, so the rules half already denies them the read back; what
-    // a surviving row leaks here is the other direction, the evicted minor's own
-    // displayName and avatarUrl staying readable to the group that removed them.
-    // The read-back case belongs to the COLLAPSE branch below, where the parent
-    // is destroyed and rules cannot reach it. Stated separately on purpose: a
-    // reader told the scoping is not load-bearing is a reader who deletes it.
     assert(
       !(await rosterRef(minor, conv).get()).exists,
-      "removed minor's conversations/{id}/participants row must be deleted",
+      "the evicted minor's roster row must be deleted — it carries their name and avatar",
     );
     assert(
       (await rosterRef(adult, conv).get()).exists,
-      "the adult's roster row must be left intact — the cleanup is scoped to the removed uids",
+      "the adult's roster row must be left intact — the cut is scoped to the removed uids",
     );
-  });
-
-  // 2. Delete branch: removing every non-friend minor collapses the group below
-  //    two members → the whole conversation is deleted, not left as a shell.
-  test("delete branch: collapsing below 2 members deletes the conversation", async () => {
-    const conv = `conv-collapse-${RUN}`;
-    const minorA = `minorA-${RUN}`;
-    const minorB = `minorB-${RUN}`;
-    await seedUser(minorA, true);
-    await seedUser(minorB, true);
-    // Creator is a friend of neither → both minors removed → only creator left.
-    await createAndFire(
-      conv,
-      {
-        isGroup: true,
-        participantIds: [creator, minorA, minorB],
-        metadata: { creatorId: creator },
-      },
-      [creator, minorA, minorB],
-      // Seeded BEFORE the trigger fires, via the same helper, so it is present
-      // for the real handler rather than asserted into existence afterwards.
-      ["a.b"],
-    );
-
-    const after = await convRef(conv).get();
-    assert(!after.exists, "conversation must be deleted when it collapses below 2 members");
-    assert(!(await membershipRef(minorA, conv).get()).exists, "minorA mirror must be cleaned up");
-    assert(!(await membershipRef(minorB, conv).get()).exists, "minorB mirror must be cleaned up");
-
-    // The collapse branch is the one rules CANNOT cover. Deleting the parent
-    // makes `parentDoc() == null` true again, and rules cannot tell "destroyed"
-    // from "not written yet" — so a surviving roster row would be readable, and
-    // re-seatable, forever. Every row must go, including the SURVIVOR's: the
-    // conversation it belonged to no longer exists.
-    for (const uid of [creator, minorA, minorB]) {
-      assert(
-        !(await rosterRef(uid, conv).get()).exists,
-        `roster row for ${uid} must be deleted when the conversation collapses`,
-      );
-    }
-    // And the row NO UID LIST CAN NAME. The roster's writer keys off
-    // `participantDisplayNames`, while every uid list in the trigger comes from
-    // `participantIds` filtered by `isValidDocId` — so `a.b` is a legal document
-    // id that the filter drops. Before the cleanup enumerated the collection,
-    // this row survived under a deleted parent, permanently readable by whoever
-    // seated it. This assertion is why the cleanup ENUMERATES the collection
-    // rather than deriving a uid list; which enumeration primitive it uses is a
-    // separate question, answered by the read having to be bounded.
     assert(
-      !(await rosterRef("a.b", conv).get()).exists,
-      "a roster row whose id is not a valid uid must ALSO be deleted on collapse",
+      !(await membershipRef(minor, conv).get()).exists,
+      "the evicted minor's conversation_memberships mirror must be cleaned up",
+    );
+    assert(
+      (await membershipRef(adult, conv).get()).exists,
+      "the adult's membership mirror must be left intact",
     );
   });
 
-  // 3. THE CALLER'S INVARIANT: never delete the conversation while roster rows
-  //    may survive.
-  //
-  //    This is the assertion the whole change turns on, and until now nothing
-  //    pinned it — measured: neutralising the gate to `(await tryClearRoster())
-  //    || true`, i.e. deleting the parent even when rows survived, left the
-  //    suite fully green, because every other collapse fixture has a roster that
-  //    clears. The unit tests prove the HELPER returns false; they import the
-  //    helper and never the handler, so they structurally cannot see whether the
-  //    caller obeys it. A future reviewer would have deleted the gate and seen
-  //    green.
-  //
-  //    Staged with an unclearable roster (one row over the cap, which is how a
-  //    seeded roster presents), so the verdict is false and the trigger must
-  //    take the update branch: parent standing, cut still landed.
-  test("an unclearable roster leaves the shell standing, and still cuts the minors", async () => {
-    const conv = `conv-shell-${RUN}`;
-    const minorA = `minorA-shell-${RUN}`;
-    const minorB = `minorB-shell-${RUN}`;
-    await seedUser(minorA, true);
-    await seedUser(minorB, true);
-    // Same shape as the collapse test on purpose: BOTH minors are removed, so
-    // `remaining` is [creator] and the trigger reaches the collapse branch. A
-    // fixture that left two survivors would take the update branch and never
-    // call `tryClearRoster` at all — the test would pass while proving nothing.
-    await convRef(conv).set({
-      isGroup: true,
-      participantIds: [creator, minorA, minorB],
-      metadata: { creatorId: creator },
-    });
-    for (let i = 0; i <= MAX_ROSTER_ROWS; i += 400) {
-      const batch = db.batch();
-      for (let j = i; j < Math.min(i + 400, MAX_ROSTER_ROWS + 1); j++) {
-        batch.set(rosterRef(`seed-${j}`, conv), {
-          conversationId: conv,
-          participantId: `seed-${j}`,
-        });
-      }
-      await batch.commit();
-    }
+  // 2. THE CASE THE OLD TRIGGER COULD NOT EXPRESS, and the reason BUT-1838
+  //    exists. Two minors in one group seated by two different people: the one
+  //    whose own adder is their friend stays, the one added later by a stranger
+  //    goes. A trigger keyed on a single creator had to give both the same
+  //    answer, which is why anyone added after creation was checked by nobody.
+  test("judges each minor against whoever actually seated them", async () => {
+    const gid = `grp-per-member-${RUN}`;
+    const otherAdmin = `admin2-${RUN}`;
+    const minorOk = `minor-ok-${RUN}`;
+    const minorLater = `minor-later-${RUN}`;
+    await seedUser(creator, false);
+    await seedUser(otherAdmin, false);
+    await seedUser(minorOk, true);
+    await seedUser(minorLater, true);
+    // minorOk is a friend of the creator, who added them.
+    await seedFriend(minorOk, creator);
+    // minorLater is a friend of the CREATOR too — but otherAdmin added them,
+    // and it is the adder the gate has to ask about. Without the per-member
+    // lookup this fixture would keep them.
+    await seedFriend(minorLater, creator);
 
-    const snap = await convRef(conv).get();
-    await enforceGroupMinorMembership.run({
-      params: { conversationId: conv },
-      data: snap,
+    const conv = await seedGroup(gid, [creator, otherAdmin, minorOk, minorLater], {
+      [creator]: creator,
+      [otherAdmin]: creator,
+      [minorOk]: creator,
+      [minorLater]: otherAdmin,
     });
 
-    const after = await convRef(conv).get();
-    // THE assertion. Without the gate the collapse branch would have deleted
-    // this document, which is what re-opens the bootstrap branch over the 501
-    // rows that are still sitting there.
-    assert(after.exists, "an unclearable roster must leave the parent STANDING");
-    const ids = after.data()!.participantIds as string[];
+    await fire(gid);
+
+    const memberIds = (await groupRef(gid).get()).data()!.memberIds as string[];
     assert(
-      !ids.includes(minorA) && !ids.includes(minorB),
-      `the child-safety cut must still land, got ${JSON.stringify(ids)}`,
+      memberIds.includes(minorOk),
+      `a minor added by their own friend must stay, got ${JSON.stringify(memberIds)}`,
     );
-    // The shell is what keeps the seeded roster denied: a live parent that no
-    // longer names the minor satisfies neither disjunct of the read rule.
     assert(
-      (await rosterRef(`seed-0`, conv).get()).exists,
-      "tryClearRoster's refusal must delete NOTHING — a partial clear is the " +
-        "worst outcome. (The trigger as a whole still clears the evicted uids' " +
-        "rows below, since rosterCleared is false on this path.)",
+      !memberIds.includes(minorLater),
+      `a minor added by a non-friend must go, got ${JSON.stringify(memberIds)}`,
+    );
+    assert(
+      (await rosterRef(minorOk, conv).get()).exists &&
+        !(await rosterRef(minorLater, conv).get()).exists,
+      "roster rows must follow the same per-member verdict",
     );
   });
 
-  // 4. The concurrent-delete leg. Someone else deletes the conversation while
-  //    the trigger runs, so `update()` throws NOT_FOUND. That is the OTHER
-  //    parent-destroyed path, and the trailing per-uid cleanup only walks the
-  //    REMOVED uids — so without the roster clear on this leg, the SURVIVORS'
-  //    rows outlive the parent, readable and re-seatable. Had no execution
-  //    coverage at all until this test.
-  test("a conversation deleted mid-flight still gets its roster cleared", async () => {
-    const conv = `conv-race-${RUN}`;
-    const minor = `minor-race-${RUN}`;
-    const other = `other-race-${RUN}`;
-    await seedUser(minor, true);
-    await seedUser(other, false);
-    await createAndFire(
-      conv,
-      {
-        isGroup: true,
-        participantIds: [creator, adult, other, minor],
-        metadata: { creatorId: creator },
-      },
-      [creator, adult, other, minor],
-      [],
-      // Delete the parent between reading the snapshot and running the trigger,
-      // which is exactly what the code-5 branch exists for.
-      async () => {
-        await convRef(conv).delete();
-      },
-    );
-
-    for (const uid of [creator, adult, other, minor]) {
-      assert(
-        !(await rosterRef(uid, conv).get()).exists,
-        `roster row for ${uid} must be cleared when the parent vanished mid-flight`,
-      );
-    }
-  });
-
-  // 5. Keep path: a real friend doc for (minor, creator) means the minor was
-  //    added by a friend → no removal, participantIds untouched.
-  test("keep path: a minor whose friend is the creator is not removed", async () => {
-    const conv = `conv-keep-${RUN}`;
+  // 3. Keep path: a real friend doc means no removal at all, and no write.
+  test("a minor whose adder is their friend is not removed", async () => {
+    const gid = `grp-keep-${RUN}`;
     const friendMinor = `minor-friend-${RUN}`;
+    await seedUser(creator, false);
+    await seedUser(adult, false);
     await seedUser(friendMinor, true);
     await seedFriend(friendMinor, creator);
-    await createAndFire(
-      conv,
-      {
-        isGroup: true,
-        participantIds: [creator, adult, friendMinor],
-        metadata: { creatorId: creator },
-      },
-      [creator, adult, friendMinor],
-    );
+    const conv = await seedGroup(gid, [creator, adult, friendMinor], {
+      [creator]: creator,
+      [adult]: creator,
+      [friendMinor]: creator,
+    });
 
-    const after = (await convRef(conv).get()).data()!;
-    const ids = after.participantIds as string[];
-    assert(ids.includes(friendMinor), "a friend-added minor must be kept");
-    assert(ids.length === 3, `no one should be removed, got ${JSON.stringify(ids)}`);
-    assert((await membershipRef(friendMinor, conv).get()).exists, "kept minor's membership mirror stays");
+    await fire(gid);
+
+    const memberIds = (await groupRef(gid).get()).data()!.memberIds as string[];
+    assert(memberIds.includes(friendMinor), "a friend-added minor must be kept");
+    assert(memberIds.length === 3, `no one should be removed, got ${JSON.stringify(memberIds)}`);
     assert(
       (await rosterRef(friendMinor, conv).get()).exists,
       "kept minor's roster row stays — the cleanup must not fire on the keep path",
     );
+    assert(
+      (await membershipRef(friendMinor, conv).get()).exists,
+      "kept minor's membership mirror stays",
+    );
+  });
+
+  // 4. CONVERGENCE. The eviction write re-fires this same trigger, so the second
+  //    pass must find nothing to do. Without that property a `retry:true`
+  //    trigger that always writes is an infinite, billed loop.
+  test("re-firing on the post-eviction state removes nothing", async () => {
+    const gid = `grp-converge-${RUN}`;
+    const minor = `minor-converge-${RUN}`;
+    await seedUser(creator, false);
+    await seedUser(adult, false);
+    await seedUser(minor, true);
+    await seedGroup(gid, [creator, adult, minor], {
+      [creator]: creator,
+      [adult]: creator,
+      [minor]: creator,
+    });
+
+    await fire(gid);
+    const afterFirst = (await groupRef(gid).get()).data()!;
+    await fire(gid);
+    const afterSecond = (await groupRef(gid).get()).data()!;
+
+    assert(
+      !(afterFirst.memberIds as string[]).includes(minor),
+      "the first pass must remove the minor",
+    );
+    assert(
+      JSON.stringify(afterSecond.memberIds) === JSON.stringify(afterFirst.memberIds),
+      "the second pass must change nothing",
+    );
+    assert(
+      (afterSecond.updatedAt as admin.firestore.Timestamp).isEqual(
+        afterFirst.updatedAt as admin.firestore.Timestamp,
+      ),
+      "the second pass must not even stamp updatedAt — it wrote nothing",
+    );
+  });
+
+  // 5. An implausible membership refuses the read fan-out rather than paying an
+  //    unbounded, retry-replayed read bill. Only reachable if something wrote
+  //    the document without asking the callables — which is the case this
+  //    trigger exists for, so the refusal is deliberately LOUD and inert rather
+  //    than a partial check.
+  test("an implausibly large group refuses the fan-out and writes nothing", async () => {
+    const gid = `grp-huge-${RUN}`;
+    const minor = `minor-huge-${RUN}`;
+    await seedUser(minor, true);
+    const filler = Array.from(
+      { length: MAX_GROUP_PARTICIPANTS },
+      (_, i) => `filler-${i}-${RUN}`,
+    );
+    // Written directly rather than through `seedGroup`: no user documents, no
+    // roster rows and no mirrors for the filler uids, because the guard must
+    // return BEFORE any read. A fixture that needed them seeded would be
+    // measuring the reads instead of the refusal — and would litter the shared
+    // demo-test namespace with 100 unswept users.
+    seededGroups.push(gid);
+    await groupRef(gid).set({
+      name: "Seeded",
+      memberIds: [...filler, minor],
+      adminIds: [filler[0]],
+      memberAddedBy: { [minor]: filler[0] },
+      conversationId: gid,
+      createdBy: filler[0],
+    });
+
+    await fire(gid);
+
+    const memberIds = (await groupRef(gid).get()).data()!.memberIds as string[];
+    assert(
+      memberIds.length === MAX_GROUP_PARTICIPANTS + 1 && memberIds.includes(minor),
+      `the fan-out must be refused, not partially applied, got ${memberIds.length} members`,
+    );
+  });
+
+  // 6. The group is deleted between the event and the write. `tx.get` finds
+  //    nothing, so the eviction is a no-op rather than a resurrection — a
+  //    `tx.update` on a missing document would otherwise recreate nothing but
+  //    throw, and under retry:true that throw repeats forever.
+  test("a group deleted mid-flight is a no-op, not a resurrection", async () => {
+    const gid = `grp-gone-${RUN}`;
+    const minor = `minor-gone-${RUN}`;
+    await seedUser(creator, false);
+    await seedUser(adult, false);
+    await seedUser(minor, true);
+    await seedGroup(gid, [creator, adult, minor], {
+      [creator]: creator,
+      [adult]: creator,
+      [minor]: creator,
+    });
+
+    await fire(gid, async () => {
+      await groupRef(gid).delete();
+    });
+
+    assert(
+      !(await groupRef(gid).get()).exists,
+      "the deleted group must not be recreated by the eviction write",
+    );
+  });
+
+  // 7. The conversation is deleted mid-flight, so the transaction's update
+  //    against it throws NOT_FOUND (grpc 5). That is DETERMINISTIC: rethrowing
+  //    it would hand a retry:true trigger an error to loop on forever, re-billing
+  //    the read fan-out each time. The handler must swallow exactly that code and
+  //    still finish its best-effort mirror cleanup.
+  test("a conversation deleted mid-flight does not become a retry loop", async () => {
+    const gid = `grp-race-${RUN}`;
+    const minor = `minor-race-${RUN}`;
+    await seedUser(creator, false);
+    await seedUser(adult, false);
+    await seedUser(minor, true);
+    const conv = await seedGroup(gid, [creator, adult, minor], {
+      [creator]: creator,
+      [adult]: creator,
+      [minor]: creator,
+    });
+
+    let threw = "";
+    try {
+      await fire(gid, async () => {
+        await convRef(conv).delete();
+      });
+    } catch (e) {
+      threw = (e as Error).message;
+    }
+    assert(threw === "", `the handler must not rethrow NOT_FOUND, got ${threw}`);
+    assert(
+      !(await membershipRef(minor, conv).get()).exists,
+      "the best-effort mirror cleanup must still run after the swallowed code-5",
+    );
+  });
+
+  // 8. A group with members and no usable conversation id: nothing to cut access
+  //    to and no path to build. It must refuse loudly rather than splice a junk
+  //    id into a document path.
+  test("a group with no usable conversationId writes nothing", async () => {
+    const gid = `grp-noconv-${RUN}`;
+    const minor = `minor-noconv-${RUN}`;
+    await seedUser(creator, false);
+    await seedUser(adult, false);
+    await seedUser(minor, true);
+    await seedGroup(
+      gid,
+      [creator, adult, minor],
+      { [creator]: creator, [adult]: creator, [minor]: creator },
+      { conversationId: "a/b" },
+    );
+
+    await fire(gid);
+
+    const memberIds = (await groupRef(gid).get()).data()!.memberIds as string[];
+    assert(
+      memberIds.includes(minor),
+      "with no conversation to cut, the group is left untouched rather than half-written",
+    );
+  });
+
+  // 9. The group document itself is gone by the time the trigger runs — the
+  //    delete half of onDocumentWritten. Nothing left to protect.
+  test("a deleted group snapshot is ignored", async () => {
+    const gid = `grp-deleted-${RUN}`;
+    const snap = await groupRef(gid).get(); // never written
+    await enforceGroupMinorMembership.run({
+      params: { groupId: gid },
+      data: { before: snap, after: snap },
+    });
+    assert(!(await groupRef(gid).get()).exists, "nothing is created for a missing group");
   });
 
   let failed = 0;
@@ -421,42 +516,19 @@ async function run(): Promise<void> {
     }
   }
 
-  // Cleanup the shared demo-test namespace.
-  const cleanupConvs = [
-    `conv-padded-${RUN}`,
-    `conv-update-${RUN}`,
-    `conv-collapse-${RUN}`,
-    `conv-shell-${RUN}`,
-    `conv-race-${RUN}`,
-    `conv-keep-${RUN}`,
-  ];
-  // Roster rows outlive their parent by design (no cascade), so sweep them
-  // explicitly — otherwise every run leaves rows in the shared emulator
-  // namespace under a deleted conversation, which is the exact state the
-  // production fix exists to prevent.
+  // Cleanup the shared demo-test namespace. Roster rows outlive their parent by
+  // design (no cascade), so sweep them explicitly — otherwise every run leaves
+  // rows under a deleted conversation, which is the exact state the production
+  // code exists to prevent.
   await Promise.all(
-    cleanupConvs.map(async (c) => {
-      const refs = await convRef(c).collection("participants").listDocuments();
-      await Promise.all(refs.map((r) => r.delete().catch(() => undefined)));
-      await convRef(c).delete().catch(() => undefined);
+    seededGroups.map(async (gid) => {
+      const rows = await convRef(gid).collection("participants").listDocuments();
+      await Promise.all(rows.map((r) => r.delete().catch(() => undefined)));
+      await convRef(gid).delete().catch(() => undefined);
+      await groupRef(gid).delete().catch(() => undefined);
     }),
   );
-  const cleanupUsers = [
-    `minor-padded-${RUN}`,
-    creator,
-    adult,
-    `minor-strip-${RUN}`,
-    `minorA-${RUN}`,
-    `minorB-${RUN}`,
-    `minor-friend-${RUN}`,
-    // The two tests added 2026-08-12. Six integration suites share the
-    // `demo-test` namespace, so an unswept user doc is litter for all of them.
-    `minorA-shell-${RUN}`,
-    `minorB-shell-${RUN}`,
-    `minor-race-${RUN}`,
-    `other-race-${RUN}`,
-  ];
-  for (const uid of cleanupUsers) {
+  for (const uid of seededUsers) {
     const friends = await userRef(uid).collection("friends").get();
     await Promise.all(friends.docs.map((d) => d.ref.delete()));
     const memberships = await userRef(uid).collection("conversation_memberships").get();

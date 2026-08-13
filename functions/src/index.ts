@@ -61,10 +61,16 @@ export { syncConversationLastMessage } from "./messaging/sync-conversation-last-
 // that firestore.rules enforces (rules can't iterate a group participant list).
 export { enforceGroupMinorMembership } from "./messaging/enforce-group-minor-membership";
 
-// BUT-1788: server-side leave-group / remove-member. firestore.rules denies any
-// client update touching `participantIds`, so both operations failed 100% of the
-// time; the write moves here under the Admin SDK and the rule stays closed.
-export { leaveGroupConversation } from "./messaging/leave-group-conversation";
+// BUT-1838: chat groups. Membership lives on a shared `chat_groups` document
+// that no client may write, so every add/remove goes through one of these three
+// callables — which is what lets the minor-membership gate run at INVITE time
+// instead of once, at chat creation, as an after-the-fact trigger. Replaces
+// `leaveGroupConversation` (BUT-1788), deleted in the same change rather than
+// left beside them: two homes for one membership operation is the failure
+// BUT-1795 records.
+export { createChatGroup } from "./groups/create-chat-group";
+export { addChatGroupMembers } from "./groups/add-chat-group-members";
+export { removeChatGroupMember } from "./groups/remove-chat-group-member";
 
 // Cleanup Functions - Event-triggered
 export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";

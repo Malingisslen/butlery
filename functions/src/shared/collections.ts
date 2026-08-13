@@ -20,6 +20,13 @@ export const Collections = {
   // `admin/reset-user-data.ts` — so a rename still needs four edits; this is the
   // home the next writer should use, not yet the only one.
   participants: "participants",
+  // BUT-1838: the shared group object a group chat now hangs off. Named
+  // `chat_groups`, not `groups`, because this repo already calls three unrelated
+  // things a "group": `friend_categories` (a user's own list of friends, used for
+  // recipe sharing), `group_invitations` below (invitations into THOSE), and the
+  // old `isGroup: true` conversation this replaces. A bare `groups` would make
+  // every future grep ambiguous.
+  chatGroups: "chat_groups",
   recipeComments: "recipe_comments",
   unifiedShoppingLists: "unified_shopping_lists",
   unifiedSharedShoppingLists: "unified_shared_shopping_lists",

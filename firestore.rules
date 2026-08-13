@@ -1520,41 +1520,76 @@ service cloud.firestore {
     // ========================================
 
     match /conversations/{conversationId} {
+      // BUT-1838: a direct conversation's id is derived from its members
+      // (`direct_${sortedUids[0]}_${sortedUids[1]}`,
+      // conversation_mutation_module.dart), so the id and the membership must
+      // agree or the document is a forgery. List indexing is legal in rules and
+      // already used by `otherParticipant()` above.
+      function directIdBinds(p) {
+        return p.size() == 2
+          && (conversationId == 'direct_' + p[0] + '_' + p[1]
+              || conversationId == 'direct_' + p[1] + '_' + p[0]);
+      }
+
       // Can read if you're a participant
       allow read: if isAuthenticated() && request.auth.uid in resource.data.participantIds;
 
-      // Can create if you're adding yourself as a participant.
-      // BUT-674: for a 1:1 conversation (participantIds.size() == 2), if the
-      // OTHER participant is a minor (users/{other}.isMinor == true, written
-      // server-side by verifySignupAge), the creator must already be their
-      // friend. This is the chokepoint for 1:1 DMs — participantIds is set at
-      // create and immutable after, so message access is decided here.
+      // BUT-674: if the OTHER participant is a minor (users/{other}.isMinor,
+      // written server-side by verifySignupAge), the creator must already be
+      // their friend. This is the chokepoint for 1:1 DMs — participantIds is set
+      // at create and immutable after, so message access is decided here.
       //
-      // GROUP conversations (size > 2) are intentionally NOT gated here:
-      // Firestore rules cannot iterate the participant list to find the minor.
-      // Group minor-protection is instead provided by the default-private
-      // profile (a non-friend can't discover the minor to add them) plus the
-      // enforceGroupMinorMembership Cloud Function (BUT-1626), which removes a
-      // minor added to a group by a non-friend. That CF trusts
-      // metadata.creatorId as the "who added them" identity, so the create rule
-      // below binds it to the caller. The get() cost is bounded:
-      // otherIsMinor()/creatorIsFriendOf() only fire on a 1:1 create.
+      // GROUP minor-protection no longer lives anywhere near this rule. Rules
+      // cannot iterate a participant list, which is why it used to be an
+      // after-the-fact Cloud Function trigger that ran once per chat; since
+      // BUT-1838 it runs per PERSON per INVITE, inside the `chat_groups`
+      // callables, and a client cannot create a group conversation at all.
+      //
+      // BUT-1838/BUT-1830: a client may create ONLY a direct conversation, and
+      // only one whose id is derived from its own two participants.
+      //
+      // GROUP conversations are now created by `createChatGroup` under the Admin
+      // SDK, alongside the `chat_groups` document that owns their membership. So
+      // the squat this rule used to permit — write
+      // `{participantIds:[self], createdAt, metadata:{creatorId:self}}` at a
+      // known group id, permanently disarm the minor-safety trigger and brick
+      // the group, with no recovery — is not merely bounded, it is unreachable.
+      // The old floor proposal (`toSet().size() >= 2`) is kept anyway, because
+      // it costs nothing and a degenerate direct conversation is also worthless.
+      //
+      // `directIdBinds` is what stops a signed-in user minting a `direct_x_y`
+      // document for two OTHER people, or seeding one at an id that does not
+      // correspond to its members. Both orderings are accepted because the
+      // client sorts the uids but the array order on the document is not
+      // guaranteed to match.
       allow create: if isAuthenticated()
+        && request.resource.data.participantIds is list
+        && request.resource.data.participantIds.toSet().size() >= 2
         && request.auth.uid in request.resource.data.participantIds
+        && directIdBinds(request.resource.data.participantIds)
         && hasRequiredFields(['participantIds', 'createdAt'])
         && passesMinorDmGate(request.resource.data.participantIds)
-        // BUT-1626: bind the recorded creator to the caller so the group
-        // minor-safety CF can trust metadata.creatorId. Without this a tampered
-        // client could add a non-friend minor to a group and set creatorId to
-        // the minor's own uid (hitting the uid===creatorId skip) or to any
-        // friend of the minor, defeating the friend check. A conversation that
-        // records no creator stays safe — the CF fails closed and removes the
-        // minor when creatorId is absent.
-        && (
-          !('metadata' in request.resource.data)
-          || !('creatorId' in request.resource.data.metadata)
-          || request.resource.data.metadata.creatorId == request.auth.uid
-        )
+        // BUT-1626/BUT-1830: the recorded creator must be PRESENT and must be
+        // the caller. `leaveGroupConversation`'s successor and the safety
+        // backstop both read a creator identity, and "records no creator" used
+        // to be a reachable state that authorizeDeparture read as "no admin".
+        //
+        // A create carrying `metadata: null` denies here, and test C7B pins it —
+        // it is what stops `MessageMutationModule`'s fallback materialising a
+        // conversation it does not own.
+        //
+        // CORRECTED 2026-08-13, by the probe that reddened NOTHING. The old
+        // conjunct here was `!('metadata' in d) || !('creatorId' in d.metadata)
+        // || … == uid`, whose `||` hatches allowed an absent creator, so ONLY a
+        // CEL evaluation error stood in the way — and the warning that used to
+        // sit here ("do not harmonise this with the update rule's `is map`
+        // ternary") was true of that spelling. It is FALSE of this one: a bare
+        // equality denies a null creatorId cleanly, so an `is map` ternary
+        // resolving to null still fails `null == uid`. The behaviour is
+        // STRONGER than the old accident, not equal to it — a CEL error binds
+        // our own client, a presence requirement binds a tampered one too. Do
+        // not re-introduce the `||` hatches to "restore" the old warning.
+        && request.resource.data.metadata.creatorId == request.auth.uid
         && rateLimitWrite('conversations', 10);
 
       // Can update if you're a participant (but cannot modify participantIds,
@@ -1570,8 +1605,15 @@ service cloud.firestore {
       // leaveGroupConversation to remove the real creator and every other
       // member — the group-takeover primitive that function exists to avoid.
       allow update: if isAuthenticated() && request.auth.uid in resource.data.participantIds
+        // BUT-1838: `memberSince` joins the deny list, and it is load-bearing,
+        // not hygiene. The messages read rule below trusts that map to decide
+        // which history a member may see; this rule is a DENY-LIST, so without
+        // this key any group member could lower their own stamp and read the
+        // backlog from before they joined, or raise someone else's to hide
+        // history from them. `groupId` is denied for the same reason one step
+        // removed — it is what selects the history rule at all.
         && !request.resource.data.diff(resource.data).affectedKeys()
-            .hasAny(['participantIds', 'createdAt'])
+            .hasAny(['participantIds', 'createdAt', 'memberSince', 'groupId'])
         //
         // The `is map` ternary is load-bearing, not defensive noise. In rules CEL
         // `.get(k, default)` returns the default only when the key is ABSENT; a key
@@ -1612,70 +1654,38 @@ service cloud.firestore {
       // swallowed: addParticipants has no local catch, so batch.commit() throws
       // up through createDirectConversation / createGroupConversation.
       //
-      // WHY THE PARENT CONVERSATION IS NOT REQUIRED ON CREATE.
-      // The obvious rule — `request.auth.uid in
-      // get(.../conversations/$(conversationId)).data.participantIds` — denies
-      // every GROUP create, i.e. it reproduces the bug it is meant to fix.
-      // FirebaseMessagingRepository mixes in UserScopedFirebaseRepository, so
-      // createGroupConversation's own conversation write lands on
-      // users/{creatorUid}/conversations/{id}; the TOP-LEVEL document does not
-      // exist when the roster batch runs and only materialises when someone
-      // sends the first message. That is the same path split BUT-1795 records
-      // ("a group nobody has chatted in has no top-level document at all").
-      // So authorization has two branches:
+      // WHY THE PARENT CONVERSATION IS NOW REQUIRED — and used not to be.
       //
-      //   ATTESTED  — the top-level conversation exists and names BOTH the
-      //               writer and the row's subject in participantIds. The strong
-      //               branch: it covers the DIRECT create (whose parent IS
-      //               written, and awaited, before the batch), a later add ONLY
-      //               where the parent already names the subject, and every
-      //               write once a group has been chatted in.
+      // Until BUT-1838 the obvious rule ("the top-level conversation must name
+      // you") denied every GROUP create, because it reproduced the bug it was
+      // meant to fix: `FirebaseMessagingRepository` mixed in
+      // `UserScopedFirebaseRepository`, so `createGroupConversation` wrote its
+      // conversation to `users/{creatorUid}/conversations/{id}` while the roster
+      // went to the TOP-LEVEL path, which only materialised when somebody sent
+      // the first message. Rules cannot tell "not written yet" from "deleted",
+      // so a bootstrap branch had to permit an unattested write — and that
+      // branch was the source of two accepted residuals (a stranger who knew a
+      // never-chatted group's id could seat a row and list the roster; rows
+      // outlived a deleted parent forever).
       //
-      //               "Only where" is not hedging. The live add-member path
-      //               (`GroupDetailViewModel.addMembers` -> `addParticipants`)
-      //               updates the USER-SCOPED conversation copy, and no client
-      //               may ever touch the top-level `participantIds` — the
-      //               conversations update rule denies any diff that names it.
-      //               So on a group that HAS been chatted in, the new member's
-      //               roster row is denied and the batch throws. Test P4 pins
-      //               that deny. Adding a member to a live group is therefore
-      //               still broken, tracked as BUT-1828; do not read this branch
-      //               as covering it.
-      //   UNCLAIMED — no top-level conversation document exists yet. The
-      //               bootstrap the group path needs, and the only branch a
-      //               non-member can reach. It is bounded by knowledge of the
-      //               id: a group id is a client-generated UUIDv4 (~122 bits —
-      //               `Conversation.group` mints it, and BaseFirebaseRepository
-      //               writes `doc(getId(entity))`, so it is NOT a Firestore
-      //               20-char auto-id; that is what this comment used to say and
-      //               it was wrong about the mechanism, not the security). A
-      //               DIRECT id
-      //               IS guessable (`direct_{uidA}_{uidB}` over uids that are
-      //               readable from public_profiles). That WAS argued away here
-      //               on the grounds that a direct conversation's parent always
-      //               exists by the time its roster is written — true of the
-      //               legitimate write order, and irrelevant to an attacker
-      //               writing a roster for a DM that does not exist yet. The
-      //               `direct_` exclusion in rosterUnclaimed() is what actually
-      //               closes it; see there.
+      // `createChatGroup` (BUT-1838) writes the group, the conversation and
+      // every roster row in ONE Admin-SDK transaction. The parent therefore
+      // exists before any roster row does, for groups and directs alike, so
+      // attestation is sufficient and the bootstrap branch is gone. What remains
+      // is deliberately narrower than "attested": a roster row under a GROUP
+      // conversation may not be written by a client at all, because membership
+      // is decided by `addChatGroupMembers` after the minor-membership gate has
+      // run, and a client that could seat a row would route round it.
       //
-      // Residual, stated rather than hidden: an attacker who knows the id of a
-      // group that has NEVER been messaged in can seat a row and then read that
-      // roster (display names + avatar URLs of its members). The id is a
-      // client-minted UUIDv4, not a Firestore auto-id. Tightening is a one-line
-      // change — drop `rosterUnclaimed()` from mayWriteRoster() — once group
-      // creation writes its conversation to the top-level path (BUT-1795). It
-      // cannot break stored data — but that clause has a HALF-LIFE and this is
-      // the sentence a future tightening will lean on, so date it: as of
-      // 2026-08-12, PRE-DEPLOY, this path had been default-deny since it was
-      // written, so no client row existed. Once this block ships, rows start
-      // being written and the argument no longer holds by itself — re-derive it
-      // against real data before dropping `rosterUnclaimed()`. All THREE Cloud
-      // Functions that
-      // touch the subcollection only DELETE (`leaveGroupConversation`,
-      // `enforceGroupMinorMembership` since 2026-08-12, and `resetUserData`).
-      // Do not read that as "no CF writes rows, so the branch is free" — the
-      // branch is what group CREATION needs, and the writer is the client.
+      // Dated, because this paragraph will outlive its mechanism: as of
+      // 2026-08-13 the only client-written roster rows are those of DIRECT
+      // conversations, written by `ConversationParticipantModule.addParticipants`
+      // (feature flag `enable_subcollection_participants`, default TRUE) in the
+      // same batch as the memberships mirror. Cloud Functions only DELETE rows
+      // (`enforceGroupMinorMembership`, `removeChatGroupMember`,
+      // `resetUserData`, and the account-deletion cascade) except for
+      // `createChatGroup`/`addChatGroupMembers`, which create them under the
+      // Admin SDK where rules do not apply.
       match /participants/{participantId} {
         // One get(); the engine caches it per request and returns null for a
         // missing document, so this is a single read and never a CEL error
@@ -1688,29 +1698,31 @@ service cloud.firestore {
           return parent != null
             && uid in parent.data.get('participantIds', []);
         }
-        function rosterUnclaimed() {
-          // The `direct_` exclusion is load-bearing, and the comment above this
-          // block used to argue it away. A direct id is DETERMINISTIC —
-          // `direct_${sortedUids[0]}_${sortedUids[1]}` — and uids are
-          // enumerable because `public_profiles` is readable by any signed-in
-          // user. Without this clause, anyone can (a) probe whether two people
-          // have ever had a DM, by attempting a roster create and reading the
-          // verdict, and (b) PRE-SEAT a row on a conversation that does not
-          // exist yet, which then persists into the real roster and grants them
-          // its read — both members' names, avatars and live `lastReadAt`.
-          //
-          // The bootstrap this branch exists for is GROUP creation, whose ids
-          // are client-minted UUIDv4s and whose parent legitimately does not
-          // exist until the first message (BUT-1795). Direct conversations
-          // always write their parent first, so they never need it.
-          return parentDoc() == null && !conversationId.matches('^direct_.*');
-        }
         // The strong branch: the parent vouches for the writer AND the subject.
         function attestedWriter() {
           return parentNames(request.auth.uid) && parentNames(participantId);
         }
+        // BUT-1838: the bootstrap branch is GONE, and so is the read fallback
+        // that mirrored it further down. Both existed because group creation
+        // wrote roster rows before the top-level conversation document existed,
+        // so `parentDoc()` was legitimately null and rules could not tell
+        // "not yet written" from "deleted". `createChatGroup` now writes the
+        // conversation and its roster in ONE Admin-SDK transaction, so the
+        // parent always exists first and attestation alone is sufficient. That
+        // closes both residuals recorded in ACCEPTED_DEVIATIONS.md: the
+        // pre-seat (a stranger seating a row on a never-chatted group id, test
+        // P3B, which now DENIES) and the orphan (rows outliving a deleted
+        // parent, readable forever).
+        //
+        // The `!('groupId' in ...)` conjunct is the other half: a GROUP roster
+        // may only be written by the Admin SDK. Without it, any attested member
+        // could `set()` a peer's row directly and route round
+        // `addChatGroupMembers` — and therefore round the minor-membership
+        // gate — while also choosing what that peer is called in the roster the
+        // whole group reads. Direct conversations keep the client write; they
+        // have no group object to go through.
         function mayWriteRoster() {
-          return attestedWriter() || rosterUnclaimed();
+          return attestedWriter() && !('groupId' in parentDoc().data);
         }
 
         // Exactly the keys ConversationParticipant.toFirestore sends
@@ -1776,91 +1788,47 @@ service cloud.firestore {
         // standing. Deliberately not giving a count: the last two were both
         // stale within the day.
         //
-        // RESIDUAL, stated rather than hidden. Two things are NOT closed.
+        // RESIDUALS: CLOSED, 2026-08-13 (BUT-1838). Recorded rather than
+        // deleted, because the next author will meet this shape again.
         //
-        // (a) The pre-seat hole: an unattested user who knows a never-chatted
-        //     group's UUID can seat a row and then list it (test P3B).
+        // (a) The pre-seat hole — an unattested user who knew a never-chatted
+        //     group's id could seat a row and then list the roster (test P3B,
+        //     which now DENIES; the flip is the intended signal, not a
+        //     regression). Its sharper form was internal: between group creation
+        //     and the first message, a minor added by a non-friend could list
+        //     the roster because `enforceGroupMinorMembership` triggered on a
+        //     top-level conversation that did not exist yet. Both die with the
+        //     bootstrap branch, because the parent now exists from the first
+        //     write and the safety gate runs BEFORE anyone is seated.
         //
-        //     Same branch, DIFFERENT actor, and worth stating separately
-        //     because the residual lists above describe only the outsider and
-        //     the already-evicted member: between group creation and the first
-        //     real message, every legitimately seated member can LIST the
-        //     roster through this same fallback — including a minor who was
-        //     added by a non-friend and has not been evicted yet.
-        //     `enforceGroupMinorMembership` is an onDocumentCreated trigger on
-        //     the TOP-LEVEL conversation, which does not exist until then (the
-        //     system message `createGroupConversation` sends is itself denied,
-        //     `senderId: "system"` — refused by the client's own participant check
-        //     before it even reaches the rules, and denied by the messages create
-        //     rule if it did), so the child-safety cut cannot fire during
-        //     that window — and only the group's CREATOR can end it. So the
-        //     non-friend adder, who in this threat model IS the creator,
-        //     controls whether the cut ever runs at all.
+        // (b) Orphan-after-delete — rules cannot distinguish "parent deleted"
+        //     from "parent not written yet", so deleting a conversation used to
+        //     re-open the branch over its surviving rows forever. Three deleters
+        //     reached it: a participant deleting the conversation from the UI
+        //     (BUT-1825), the eviction path's collapse branch (closed in code
+        //     2026-08-12), and the GDPR account-deletion cascade (closed in code
+        //     2026-08-13, BUT-1822). With no parentless branch left, an orphaned
+        //     row is simply unreadable — which is what BUT-1795 promised and
+        //     what this change delivers.
         //
-        //     WHY only the creator is not what it looks like, and the real
-        //     reason is fragile: a non-creator's first message falls through to
-        //     a fallback that stages a top-level create carrying
-        //     `metadata: null` (the DTO emits the key unconditionally). The
-        //     create rule's `!('creatorId' in request.resource.data.metadata)`
-        //     then evaluates `in` against a null — an evaluation error, which
-        //     denies. The UPDATE rule below answers the same question with an
-        //     `is map` ternary; making the two agree "for consistency" would
-        //     land that create, and `enforceGroupMinorMembership` would return
-        //     early on it — the fallback payload trips BOTH halves of that guard
-        //     (`isGroup: false` AND a single participant), so the escape is
-        //     doubly certain; do not read it as "isGroup: false returns early"
-        //     in general, because a false flag with >2 participants does not.
-        //     So the cut would never run at all.
-        //     Test C7B pins it and is mutation-proven against exactly that edit.
+        //     Rows orphaned BEFORE this shipped are still on disk. Malin closed
+        //     the backfill unbuilt on 2026-08-13 (BUT-1839): the app is not
+        //     live, so every one of them belongs to a test account. They are now
+        //     unreadable regardless.
         //
-        //     That error is NOT a security bound. It binds the app's own client,
-        //     which sends null; it does not bind a tampered one. A hand-rolled
-        //     create carrying a real `metadata` map is ALLOWED today, ends the
-        //     window whenever the caller likes, and cannot be repaired by the
-        //     real creator afterwards. Pre-existing (this commit does not touch
-        //     the conversations create rule) and filed separately — recorded
-        //     here so nobody reads "only the creator can end it" as a rule. The window is new with this block — before it,
-        //     the path was default-deny. BUT-1795 closes it by making the parent
-        //     exist at creation, which is the same fix as for (a) and (b).
+        // What has NOT changed: the create rule's `metadata: null` evaluation
+        // error still denies `MessageMutationModule`'s fallback, and the UPDATE
+        // rule below still answers the same question with an `is map` ternary.
+        // The two spellings disagree ON PURPOSE. Test C7B is mutation-proven
+        // against the edit that harmonises them.
         //
-        // (b) Orphan-after-delete, reachable from THREE deleters:
-        //     1. a participant deleting the conversation from the UI
-        //        (`ConversationMutationModule.deleteConversation`) — the only
-        //        one a client-side rule can reach. NOT closed, BUT-1825.
-        //     2. `enforceGroupMinorMembership`'s collapse branch, which deletes
-        //        the conversation when eviction leaves fewer than two members.
-        //        CLOSED in code 2026-08-12; see above.
-        //     3. the GDPR account-deletion cascade, which deletes any
-        //        conversation with two or fewer participants WHOLE
-        //        (`account-deletion-cascade.ts`). CLOSED in code 2026-08-13
-        //        (BUT-1822): `deleteMessages` now clears the whole roster via
-        //        `tryClearRoster` BEFORE the parent delete and abandons the
-        //        delete if that fails, and a collection-group sweep erases the
-        //        deleted user's own rows everywhere else — including rows left
-        //        orphaned by case 1, whenever they name the user being erased.
-        //        What it cannot reach is a case-1 orphan naming SOMEONE ELSE.
-        //
-        //     `allow delete` does not cascade, and the per-row delete rule
-        //     admits only the row's own subject, so no client can clean up after
-        //     itself. Case 3 WAS worse than it looks, and this is why it was
-        //     fixed first: `rosterUnclaimed()` excludes `direct_*` ids from the
-        //     WRITE, but the read fallback below has no such exclusion — so
-        //     before BUT-1822, after a DM was erased the surviving partner kept
-        //     LIST over a roster still holding the deleted user's name and
-        //     avatar. The cascade is forward-only, so rows orphaned BEFORE that
-        //     fix shipped are still on disk — Malin closed the backfill
-        //     (BUT-1839) unbuilt on 2026-08-13: the app is not live, so every
-        //     one of those rows belongs to a test account. That reasoning
-        //     expires at launch; case 1 above does NOT, it orphans new rows.
-        //
-        // BUT-1795 removes the branch and both residuals with it, and is the
-        // ONLY option that reaches all three — widening the row delete rule
-        // reaches case 1 only, because 2 and 3 run server-side under the Admin
-        // SDK, where rules do not apply.
-        allow read: if isAuthenticated()
-          && (parentNames(request.auth.uid)
-              || (parentDoc() == null
-                  && exists(/databases/$(database)/documents/conversations/$(conversationId)/participants/$(request.auth.uid))));
+        // One branch only. The parentless own-row fallback that used to sit
+        // beside this was a SECOND, textually separate spelling of the same
+        // "parent absent" idea as `rosterUnclaimed()`, and removing only the
+        // write half would have left the pre-seat residual alive: seat a row
+        // while the parent does not exist, then list the roster forever. Both
+        // went in the same edit (BUT-1838).
+        allow read: if isAuthenticated() && parentNames(request.auth.uid);
 
         allow create: if isAuthenticated()
           && validParticipant()
@@ -1886,12 +1854,62 @@ service cloud.firestore {
         // Delete: the row's own subject only. Deliberately NOT extended to
         // co-participants — no client flow deletes another member's row
         // (ConversationParticipantModule.removeParticipant has no caller), and
-        // the real "remove member" runs in the leaveGroupConversation Cloud
-        // Function under the Admin SDK, which bypasses these rules (BUT-1788).
-        // Granting it here would be a pure griefing primitive.
+        // the real "remove member" runs in the removeChatGroupMember Cloud
+        // Function under the Admin SDK, which bypasses these rules (BUT-1838,
+        // successor to BUT-1788's leaveGroupConversation). Granting it here
+        // would be a pure griefing primitive.
         allow delete: if isAuthenticated()
           && participantId == request.auth.uid;
       }
+    }
+
+    // ========================================
+    // CHAT GROUPS (BUT-1838) - the shared object a group chat hangs off
+    // ========================================
+    //
+    // Malin's decision, 2026-08-13: a group is its own thing, like WhatsApp —
+    // not a `friend_categories` list (those have an owner, live under
+    // `users/{ownerId}/`, and two people's "Familjen" are two different lists).
+    // Recipe sharing keeps using `friend_categories`; the two concepts are NOT
+    // merged.
+    //
+    // MEMBERSHIP IS SERVER-WRITTEN, FULL STOP. Every create, every add, every
+    // removal goes through a callable that runs the minor-membership gate first
+    // (`functions/src/groups/`). That is the entire point of the ticket: the
+    // check used to be an `onDocumentCreated` trigger on the conversation, so it
+    // ran once, when the chat was born, and never for anyone added afterwards.
+    // A rule cannot iterate a member list to do this itself — which is exactly
+    // why the old gate had to live in a trigger — so the only way to make the
+    // check unbypassable is to make the write unreachable from a client.
+    //
+    // Consequence for anyone tempted to relax this: a client-writable
+    // `memberIds` is a client-writable child-safety gate. There is no partial
+    // version of that.
+    match /chat_groups/{groupId} {
+      allow read: if isAuthenticated()
+        && request.auth.uid in resource.data.get('memberIds', []);
+
+      // Renaming is the one thing a client may do, and only an admin, and only
+      // to the name. `hasOnly` is an ALLOW-list here on purpose — the mirror
+      // rule on `conversations` is a deny-list, which is precisely how
+      // `memberSince` slipped through an earlier draft of this change.
+      allow update: if isAuthenticated()
+        && request.auth.uid in resource.data.get('adminIds', [])
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['name', 'updatedAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && rateLimitWrite('chat_group_rename', 5);
+
+      // Create, delete and EVERY membership change: Admin SDK only.
+      // `adminIds` is immutable after creation — promoting or demoting an admin
+      // is a feature that does not exist yet, and when it is built it needs its
+      // own gated callable, not a widened update rule. Widening this rule is the
+      // same mistake as the `metadata.creatorId` smuggling BUT-1788 had to close.
+      allow create, delete: if false;
+
+      allow read: if isAdmin();
     }
 
     // ========================================
@@ -1899,16 +1917,56 @@ service cloud.firestore {
     // ========================================
 
     match /messages/{messageId} {
-      // Can read messages if authenticated AND you're a participant in the conversation
+      // One get(); the engine caches it per request, so the three references
+      // below are a single billed read — the same read this rule already paid
+      // for before BUT-1838 added the history cut-off.
+      function convOf(convId) {
+        return get(/databases/$(database)/documents/conversations/$(convId));
+      }
+
+      // Can read messages if authenticated AND you're a participant in the
+      // conversation — AND, for a GROUP conversation, only from the moment you
+      // joined it (BUT-1838, Malin's decision 2026-08-13: "a new member sees
+      // only from now on").
+      //
+      // Scoped on `groupId` PRESENCE, not on `isGroup`: `groupId` is written
+      // only by the Admin SDK when a chat group is created, whereas `isGroup` is
+      // an ordinary client field. It also means the one pre-existing direct
+      // conversation, which has neither key, is untouched by this clause.
+      //
+      // `.get(uid, request.time)` fails CLOSED twice over: indexing an absent
+      // map key would be a CEL evaluation error (a blanket deny), and the
+      // default of `request.time` makes a member with no stamp see nothing
+      // rather than everything. The client mirrors this as a
+      // `where('sentAt', '>=', myMemberSince)` filter, because a query that
+      // returns even one document the rule refuses fails ENTIRELY — so a stale
+      // client stamp shows an error, not silently missing messages.
       allow read: if isAuthenticated()
-        && request.auth.uid in get(/databases/$(database)/documents/conversations/$(resource.data.conversationId)).data.participantIds;
+        && request.auth.uid in convOf(resource.data.conversationId).data.participantIds
+        && (
+          !('groupId' in convOf(resource.data.conversationId).data)
+          || resource.data.sentAt >= convOf(resource.data.conversationId)
+               .data.get('memberSince', {}).get(request.auth.uid, request.time)
+        );
 
       // Can create messages if you're the sender, within rate limit.
       // BUT-659: also gate behind the new-account cooldown — DMs are a
       // primary spam vector and per-user 5/min rate limit alone doesn't
       // stop a freshly-registered bot from blasting 50 unrelated users.
+      // BUT-1838: the sender must actually be IN the conversation. This rule
+      // checked only that you were who you claimed to be, so any signed-in user
+      // who knew a conversation id could inject messages into strangers' chats —
+      // they could not read the replies, but they could write. Direct ids are
+      // derivable from two uids and `public_profiles` is readable, so the id was
+      // not a secret.
+      //
+      // Costs one document read per message sent. The cheaper-looking
+      // alternative (check the sender's own roster row) costs the same read and
+      // binds the write to a MIRROR rather than to the membership itself, so it
+      // is worse, not cheaper.
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.senderId
+        && request.auth.uid in convOf(request.resource.data.conversationId).data.participantIds
         && hasRequiredFields(['senderId', 'conversationId', 'content', 'sentAt'])
         && request.resource.data.content is string
         && request.resource.data.content.size() <= 5000

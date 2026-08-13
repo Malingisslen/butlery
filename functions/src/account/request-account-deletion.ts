@@ -51,6 +51,7 @@ import {
   deletePantryItems,
   deleteFamilyData,
   deleteMessages,
+  deleteChatGroupMemberships,
   removeFromSharedContent,
   deleteCommentsAndRatings,
   deletePingsByUser,
@@ -200,6 +201,10 @@ export async function runAccountDeletionWithDeps(
     ["weekly_menu_plans", () => deleteWeeklyMenuPlans(database, uid)],
     ["pantry_items", () => deletePantryItems(database, uid)],
     ["family_data", () => deleteFamilyData(database, uid)],
+    // BUT-1838: chat-group membership. MUST exist alongside `messages`, which
+    // deliberately skips any conversation carrying a `groupId` — this leg owns
+    // both halves of a group membership so the two copies cannot disagree.
+    ["chat_groups", () => deleteChatGroupMemberships(database, uid)],
     ["messages", () => deleteMessages(database, uid)],
     ["shared_content", () => removeFromSharedContent(database, uid)],
     ["comments_ratings", () => deleteCommentsAndRatings(database, uid)],

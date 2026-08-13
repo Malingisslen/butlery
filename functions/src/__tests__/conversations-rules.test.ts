@@ -13,10 +13,25 @@
  *   - ALLOW: a FRIEND of the minor creating the same 1:1.
  *   - ALLOW: a 1:1 with an ADULT target (isMinor absent/false) by a non-friend
  *            (adults unaffected; fail-open).
- *   - ALLOW (documents a known gap): a GROUP conversation (size == 3) that
- *            includes a minor, created by a non-friend, still succeeds today —
- *            rules cannot iterate the participant list, so group-minor
- *            protection is deferred to default-private profiles + a planned CF.
+ *   - DENY (BUT-1838, was ALLOW): a GROUP conversation (size == 3) created by a
+ *            client. Group conversations are now minted only by
+ *            `createChatGroup` under the Admin SDK, after the minor-membership
+ *            gate has cleared every member — and the gate re-runs on every add.
+ *
+ * BUT-1838 (2026-08-13) added three more contracts to this file, each with its
+ * own section banner:
+ *
+ *   - `directIdBinds`: a client may create ONLY a direct conversation, and only
+ *     at the id derived from its own two participants (both orderings).
+ *   - the group history cut-off on /messages (`sentAt >= memberSince[you]`),
+ *     the fail-closed defaults behind it, the admin moderation bypass, and the
+ *     immutability of `memberSince`/`groupId` that makes it a real control.
+ *   - the roster lock: no parentless (bootstrap) branch on write OR read, and no
+ *     client write at all to a GROUP conversation's roster.
+ *
+ * Five previously-passing assertions FLIP to deny (C5, P1, P3B, P14, P24). Each
+ * flip is the intended signal of BUT-1838 and says so at its own site — do not
+ * "restore" one without reading the comment there.
  *
  * Each test name states the behavior it proves. If a test fails, either the
  * rules changed or the product contract changed — decide which before editing
@@ -38,8 +53,15 @@ import {
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
 
-const PROJECT_ID = "butlery-rules-conversations";
-const RULES_PATH = path.resolve(__dirname, "../../../firestore.rules");
+// MUTATION-PROBE SEAM (BUT-1838). Both values are overridable so a mutation
+// probe can point this suite at a MUTATED COPY of firestore.rules in a scratch
+// directory under a FRESH projectId, without ever writing to the real rules
+// file. The repo has been bitten twice by probes left live in tracked files;
+// an env var cannot be left behind. Defaults are the real rules + real project,
+// so a plain `npm run test:rules:conversations` is unaffected.
+const PROJECT_ID = process.env.PROBE_PROJECT_ID ?? "butlery-rules-conversations";
+const RULES_PATH =
+  process.env.PROBE_RULES_PATH ?? path.resolve(__dirname, "../../../firestore.rules");
 
 // The minor whose users/{uid}.isMinor == true (seeded server-side below).
 const MINOR_UID = "conv-minor-uid";
@@ -49,6 +71,26 @@ const ADULT_UID = "conv-adult-uid";
 const FRIEND_UID = "conv-friend-uid";
 // A user with no friendship to the minor.
 const STRANGER_UID = "conv-stranger-uid";
+// An app-level moderator: a document at /admins/{uid} makes isAdmin() true.
+// BUT-1838 needs one because the messages block's moderation branch
+// (`allow read, delete: if isAdmin()`) must bypass the new history cut-off.
+const ADMIN_UID = "conv-admin-uid";
+
+// BUT-1838: a client may now create ONLY a direct conversation, and only at the
+// id derived from its two participants. Every create test therefore needs an id
+// that AGREES with its participantIds, or it denies on `directIdBinds` before
+// reaching the conjunct it means to test — the classic vacuous deny.
+function directId(a: string, b: string): string {
+  return `direct_${a}_${b}`;
+}
+
+// A throwaway counterparty with no users/{uid} profile. `otherIsMinor()` is
+// exists()-guarded and fails OPEN to "adult", so an unseeded uid is a valid
+// adult DM target — and a per-test uid keeps every create test on its OWN
+// document id, so an earlier ALLOW never turns a later create into an update.
+function peer(tag: string): string {
+  return `conv-peer-${tag}`;
+}
 
 // Per-run token: the emulator persists docs across invocations, so a fixed-id
 // create-allow test would become an UPDATE on the 2nd run and hit a different
@@ -96,6 +138,9 @@ async function setup(): Promise<void> {
     await db.doc(`users/${MINOR_UID}/friends/${FRIEND_UID}`).set({
       addedAt: new Date(),
     });
+    // BUT-1838: the moderation branch on /messages is `allow read, delete: if
+    // isAdmin()`, which resolves through a document in /admins.
+    await db.doc(`admins/${ADMIN_UID}`).set({ role: "moderator" });
   });
 }
 
@@ -126,15 +171,28 @@ function convBody(
 // CONVERSATIONS — 1:1 minor-DM gate (BUT-674)
 // ============================================================================
 
+// BUT-1838 NOTE ON EVERY CREATE TEST BELOW. The create rule now also requires
+// `directIdBinds(participantIds)` — the document id must be
+// `direct_<a>_<b>` over exactly the two participants, in either order — and a
+// PRESENT `metadata.creatorId` equal to the caller. Both conjuncts sit ABOVE
+// most of what the older tests meant to prove, so every one of them carries a
+// conforming id and a conforming metadata map. Otherwise the deny is real and
+// the test is vacuous: it would go green with the minor gate deleted.
+
 // C1: DENY — a non-friend of a minor cannot open a 1:1 DM with that minor.
-// This is the core protection: minor's isMinor == true, no friend doc.
+// This is the core protection: minor's isMinor == true, no friend doc. The id
+// and metadata conform, so the minor gate is the ONLY failing conjunct.
 test("conversations: non-friend cannot create a 1:1 DM with a minor", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
   await assertFails(
     ctx
       .firestore()
-      .doc(`conversations/c-minor-deny-${RUN}`)
-      .set(convBody([STRANGER_UID, MINOR_UID]))
+      .doc(`conversations/${directId(STRANGER_UID, MINOR_UID)}`)
+      .set(
+        convBody([STRANGER_UID, MINOR_UID], {
+          metadata: { creatorId: STRANGER_UID },
+        })
+      )
   );
 });
 
@@ -146,8 +204,12 @@ test("conversations: friend of a minor can create a 1:1 DM with the minor", asyn
   await assertSucceeds(
     ctx
       .firestore()
-      .doc(`conversations/c-minor-allow-${RUN}`)
-      .set(convBody([FRIEND_UID, MINOR_UID]))
+      .doc(`conversations/${directId(FRIEND_UID, MINOR_UID)}`)
+      .set(
+        convBody([FRIEND_UID, MINOR_UID], {
+          metadata: { creatorId: FRIEND_UID },
+        })
+      )
   );
 });
 
@@ -155,15 +217,20 @@ test("conversations: friend of a minor can create a 1:1 DM with the minor", asyn
 // Adults are unaffected: isMinor absent -> otherIsMinor() false -> gate passes.
 test("conversations: non-friend can create a 1:1 DM with an adult", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
+  const other = peer("c3");
   await assertSucceeds(
     ctx
       .firestore()
-      .doc(`conversations/c-adult-allow-${RUN}`)
-      .set(convBody([STRANGER_UID, ADULT_UID]))
+      .doc(`conversations/${directId(STRANGER_UID, other)}`)
+      .set(
+        convBody([STRANGER_UID, other], {
+          metadata: { creatorId: STRANGER_UID },
+        })
+      )
   );
 });
 
-// C4: ALLOW — the minor gate holds regardless of participant ORDER.
+// C4: DENY — the minor gate holds regardless of participant ORDER.
 // otherParticipant() must pick the non-creator whether the minor is index 0 or
 // 1. Here the minor is at index 0 and the (non-friend) creator at index 1 ->
 // must still DENY. (Order-sensitivity guard on the deny side.)
@@ -172,25 +239,56 @@ test("conversations: non-friend 1:1 DM with minor is denied when minor is first 
   await assertFails(
     ctx
       .firestore()
-      .doc(`conversations/c-minor-order-deny-${RUN}`)
-      .set(convBody([MINOR_UID, STRANGER_UID]))
+      .doc(`conversations/${directId(MINOR_UID, STRANGER_UID)}`)
+      .set(
+        convBody([MINOR_UID, STRANGER_UID], {
+          metadata: { creatorId: STRANGER_UID },
+        })
+      )
   );
 });
 
-// C5: ALLOW — documents the KNOWN GAP. A GROUP conversation (size == 3) that
-// includes a minor, created by a non-friend, SUCCEEDS today. Firestore rules
-// cannot iterate the participant list to find the minor, so group-minor
-// protection is intentionally NOT enforced here — it relies on default-private
-// profiles (a non-friend can't discover the minor to add them) plus a planned
-// Cloud Function follow-up. If this ever starts FAILING, the group path was
-// (accidentally or deliberately) gated — reconcile with the rule comment.
-test("conversations: non-friend CAN create a group (size 3) conversation including a minor (known rules-cannot-iterate gap)", async () => {
+// C5: DENY — THE FLIP. This test used to ALLOW and documented the
+// rules-cannot-iterate gap: a non-friend could create a GROUP conversation
+// (size 3) containing a minor, and group-minor protection was deferred to an
+// after-the-fact Cloud Function trigger that ran once, at birth.
+//
+// BUT-1838 removes the gap by removing the capability: `directIdBinds` requires
+// exactly two participants, so a client cannot create a group conversation AT
+// ALL. Group conversations are minted by `createChatGroup` under the Admin SDK,
+// after the minor-membership gate has cleared every member, and the gate re-runs
+// on every add. If this ever goes back to ALLOW, the id binding was removed and
+// the child-safety gate is bypassable again.
+test("conversations: a client cannot create a group (size 3) conversation at all", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
-  await assertSucceeds(
+  await assertFails(
     ctx
       .firestore()
-      .doc(`conversations/c-group-allow-${RUN}`)
-      .set(convBody([STRANGER_UID, MINOR_UID, ADULT_UID]))
+      .doc(`conversations/c-group-deny-${RUN}`)
+      .set(
+        convBody([STRANGER_UID, MINOR_UID, ADULT_UID], {
+          metadata: { creatorId: STRANGER_UID },
+        })
+      )
+  );
+});
+
+// C5B: DENY — the same group payload dressed as a direct conversation, i.e. a
+// `direct_a_b` id over a THREE-person list. `directIdBinds` checks size() == 2
+// first, so the id-shaped disguise buys nothing. Pairs with C5: one proves an
+// arbitrary group id fails, this proves a plausible one does too.
+test("conversations: a 3-person conversation is denied even at a direct_-shaped id", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  const other = peer("c5b");
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${directId(STRANGER_UID, other)}`)
+      .set(
+        convBody([STRANGER_UID, other, ADULT_UID], {
+          metadata: { creatorId: STRANGER_UID },
+        })
+      )
   );
 });
 
@@ -202,15 +300,33 @@ test("conversations: non-friend CAN create a group (size 3) conversation includi
 // so this isolates the creatorId binding, not the minor-DM gate.
 test("conversations: cannot create with metadata.creatorId set to another uid", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
+  const other = peer("c6");
   await assertFails(
     ctx
       .firestore()
-      .doc(`conversations/c-creator-forge-${RUN}`)
+      .doc(`conversations/${directId(STRANGER_UID, other)}`)
       .set(
-        convBody([STRANGER_UID, ADULT_UID], {
+        convBody([STRANGER_UID, other], {
           metadata: { creatorId: FRIEND_UID },
         })
       )
+  );
+});
+
+// C6B: DENY — BUT-1838 turns "records no creator" from a permitted state into a
+// denied one. The old rule read `!('metadata' in data) || ...`, so a create with
+// no metadata key at all was fine; `authorizeDeparture` then read that group as
+// having no admin. The conjunct is now a bare equality, so an ABSENT metadata
+// map is a CEL evaluation error and denies. Distinct from C7B (metadata present
+// with value null) — that is a different CEL path and gets its own test.
+test("conversations: a create with no metadata key at all is denied", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  const other = peer("c6b");
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${directId(STRANGER_UID, other)}`)
+      .set(convBody([STRANGER_UID, other]))
   );
 });
 
@@ -240,18 +356,45 @@ test("conversations: cannot create with metadata.creatorId set to another uid", 
 // `onDocumentCreated` cannot fire
 // twice, so the child-safety cut would never run for that group at all.
 //
-// The reason this needs a test rather than a comment: the UPDATE rule thirty
-// lines below answers the same null-metadata question the OTHER way, with an
-// `is map` ternary (pinned by C11B/C12B). Harmonising the two spellings "for
-// consistency" is an obvious, well-intentioned edit — and it would disarm the
-// trigger. If this test starts failing, that is what happened.
+// WHAT THE MUTATION PROBE ACTUALLY SAYS, measured 2026-08-13 against the
+// BUT-1838 rule and recorded here because the paragraph above is inherited from
+// the OLD one. Two probes, 77 assertions each:
+//
+//   * harmonise the create conjunct with the UPDATE rule's `is map` ternary —
+//     the edit the rule comment warns against — and NOTHING reddens (77/77).
+//     Under the pre-BUT-1838 spelling that edit was fatal, because the conjunct
+//     read `!('metadata' in d) || !('creatorId' in d.metadata) || d.metadata
+//     .creatorId == uid`: the `||` escape hatches ALLOWED an absent creator, so
+//     only the evaluation error stood between a non-creator and the document.
+//     BUT-1838 replaced all three with a bare equality that requires the creator
+//     to be PRESENT, and a ternary resolving null still fails `null == uid`.
+//   * delete the conjunct outright and exactly three reddens: this test, C6 and
+//     C6B (74/77).
+//
+// So the ASSERTION is load-bearing and the deny is attributable — the emulator
+// prints `Null value error. for 'create' @ L1565` — but the stated MECHANISM has
+// changed. The `metadata: null` fallback from `MessageMutationModule` is now
+// refused by the presence requirement, not only by a CEL accident, which is a
+// stronger bound: a CEL accident binds our own client, a presence requirement
+// binds a tampered one too. Reported against the rule comment, which still
+// claims harmonising the spellings would disarm this.
+//
+// BUT-1838, 2026-08-13 — the ASSERTION is untouched (still DENY) and the reason
+// is untouched (still the CEL evaluation error on a null `metadata`), but the
+// document id had to change from `c-meta-null-<run>` to a conforming
+// `direct_<caller>_<peer>`. The create rule now evaluates `directIdBinds` BEFORE
+// the metadata conjunct, so at the old id this test would have kept passing
+// while proving nothing about metadata at all — green with the metadata
+// conjunct deleted. C7 immediately below is its fail-closed control: same
+// caller, same shape, same id family, only `metadata` differs, and it ALLOWS.
 test("conversations: a create carrying metadata: null is denied", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
+  const other = peer("c7b");
   await assertFails(
     ctx
       .firestore()
-      .doc(`conversations/c-meta-null-${RUN}`)
-      .set(convBody([STRANGER_UID, ADULT_UID], { metadata: null }))
+      .doc(`conversations/${directId(STRANGER_UID, other)}`)
+      .set(convBody([STRANGER_UID, other], { metadata: null }))
   );
 });
 
@@ -261,17 +404,144 @@ test("conversations: a create carrying metadata: null is denied", async () => {
 // `createDirectConversation` builds its Conversation inline with
 // `metadata: {'creatorId': user1Id}`. Both LIVE paths carry it, so the binding
 // never blocks a real create; the factory named here before did not.
+//
+// Also the fail-closed control for C6, C6B and C7B: identical caller, identical
+// participant shape, identical id family. Only `metadata` differs.
 test("conversations: can create with metadata.creatorId equal to the caller", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
+  const other = peer("c7");
   await assertSucceeds(
     ctx
       .firestore()
-      .doc(`conversations/c-creator-self-${RUN}`)
+      .doc(`conversations/${directId(STRANGER_UID, other)}`)
       .set(
-        convBody([STRANGER_UID, ADULT_UID], {
+        convBody([STRANGER_UID, other], {
           metadata: { creatorId: STRANGER_UID },
         })
       )
+  );
+});
+
+// ============================================================================
+// CONVERSATIONS — id/membership binding on CREATE (BUT-1838 / BUT-1830)
+// ============================================================================
+//
+// `directIdBinds(p)` = `p.size() == 2 && (id == 'direct_'+p[0]+'_'+p[1] || id ==
+// 'direct_'+p[1]+'_'+p[0])`. It closes BUT-1830's squat: before it, any signed-in
+// user could write `{participantIds:[self], createdAt, metadata:{creatorId:self}}`
+// at a KNOWN group id, permanently disarming the minor-safety trigger (an
+// onDocumentCreated cannot fire twice) with no recovery path.
+//
+// Both orderings are accepted on purpose — the client sorts the uids when it
+// mints the id, but the array order stored on the document is not guaranteed to
+// match — so BOTH must be proven to allow, not just the one the client happens
+// to send today.
+
+// C15: ALLOW — array order matches id order.
+test("conversations: a direct create is allowed when the id matches [a, b] in that order", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  const other = peer("c15");
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`conversations/${directId(STRANGER_UID, other)}`)
+      .set(
+        convBody([STRANGER_UID, other], {
+          metadata: { creatorId: STRANGER_UID },
+        })
+      )
+  );
+});
+
+// C16: ALLOW — the REVERSED ordering. The id is direct_<caller>_<other> while
+// the array is [other, caller]. If this ever denies, someone "simplified"
+// directIdBinds to a single ordering and every conversation whose stored array
+// happens to be sorted the other way stops being creatable.
+test("conversations: a direct create is allowed when the id matches [b, a] reversed", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  const other = peer("c16");
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`conversations/${directId(STRANGER_UID, other)}`)
+      .set(
+        convBody([other, STRANGER_UID], {
+          metadata: { creatorId: STRANGER_UID },
+        })
+      )
+  );
+});
+
+// C17: DENY — the squat. A `direct_`-shaped id that does NOT correspond to its
+// participants: the id names one peer, the array names another. This is the
+// shape that let an attacker seed a document at an id somebody else's client
+// would later try to create.
+test("conversations: a direct create whose id names a different peer than participantIds is denied", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  const idPeer = peer("c17-id");
+  const bodyPeer = peer("c17-body");
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${directId(STRANGER_UID, idPeer)}`)
+      .set(
+        convBody([STRANGER_UID, bodyPeer], {
+          metadata: { creatorId: STRANGER_UID },
+        })
+      )
+  );
+});
+
+// C18: DENY — minting a DM for two OTHER people. The id and the array agree
+// perfectly; the caller simply is not in it. `request.auth.uid in
+// participantIds` is the conjunct under test, and it is what stops a stranger
+// pre-creating (and thereby owning the shape of) a conversation between two
+// people who have never talked.
+test("conversations: a user cannot mint a direct conversation between two other people", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  const a = peer("c18-a");
+  const b = peer("c18-b");
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${directId(a, b)}`)
+      .set(convBody([a, b], { metadata: { creatorId: STRANGER_UID } }))
+  );
+});
+
+// C19: DENY — the degenerate direct conversation: two array slots, one distinct
+// uid. `toSet().size() >= 2` is the conjunct, and it is evaluated BEFORE
+// directIdBinds (which this payload would satisfy), so the deny is attributable.
+// A self-DM is worthless, and a rule that accepted it would also accept
+// `participantIds: [self]` padded out to length two.
+test("conversations: a direct create naming the same uid twice is denied", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${directId(STRANGER_UID, STRANGER_UID)}`)
+      .set(
+        convBody([STRANGER_UID, STRANGER_UID], {
+          metadata: { creatorId: STRANGER_UID },
+        })
+      )
+  );
+});
+
+// C20: DENY — participantIds is not a list. `is list` is the type floor that
+// keeps every downstream conjunct (`toSet()`, `in`, `p[0]`) from being handed
+// something it cannot reason about.
+test("conversations: a create whose participantIds is not a list is denied", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${directId(STRANGER_UID, peer("c20"))}`)
+      .set({
+        participantIds: STRANGER_UID,
+        createdAt: new Date(),
+        metadata: { creatorId: STRANGER_UID },
+      })
   );
 });
 
@@ -567,8 +837,340 @@ test("conversations: participant can rename the group via metadata.title while c
 });
 
 // ============================================================================
-// CONVERSATION PARTICIPANTS — roster subcollection (BUT-1482 sprint)
-// (29 tests: P1-P26 plus P3B, P3C and P12B)
+// CONVERSATIONS — memberSince / groupId immutability on UPDATE (BUT-1838)
+// ============================================================================
+//
+// Malin's decision, 2026-08-13: "a new member sees only from now on". The
+// messages read rule below enforces it by comparing a message's `sentAt`
+// against `conversation.memberSince[reader]`. That makes the map a SECURITY
+// CONTROL stored on a document its own subjects may update — and the
+// conversations update rule is a DENY-LIST, not an allow-list.
+//
+// Without `memberSince` in that list, any group member could lower their own
+// stamp and read the whole backlog from before they joined, or RAISE someone
+// else's to blank their history. `groupId` is denied one step removed: it is
+// what selects the history clause at all, so a member who could add or remove
+// it could switch the control off.
+//
+// The plan revision caught this; it was not in the first draft.
+
+const STAMP_GROUP = `g-stamp-${RUN}`;
+const STAMP_DIRECT = directId(FRIEND_UID, STRANGER_UID);
+
+const STAMP_ADULT_AT = new Date("2026-03-01T00:00:00.000Z");
+const STAMP_FRIEND_AT = new Date("2026-04-01T00:00:00.000Z");
+const STAMP_LOWERED = new Date("2026-01-01T00:00:00.000Z");
+
+async function seedStampFixtures(): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore();
+    await db.doc(`conversations/${STAMP_GROUP}`).set({
+      participantIds: [ADULT_UID, FRIEND_UID],
+      createdAt: FIXTURE_CREATED_AT,
+      isGroup: true,
+      groupId: "grp-stamp",
+      title: "Familjen",
+      memberSince: {
+        [ADULT_UID]: STAMP_ADULT_AT,
+        [FRIEND_UID]: STAMP_FRIEND_AT,
+      },
+    });
+    // A DIRECT conversation with no groupId and no memberSince — the state the
+    // one pre-existing production conversation is in.
+    await db.doc(`conversations/${STAMP_DIRECT}`).set({
+      participantIds: [FRIEND_UID, STRANGER_UID],
+      createdAt: FIXTURE_CREATED_AT,
+      isGroup: false,
+    });
+  });
+}
+
+// U1: DENY — a member lowering their OWN stamp. The primary attack: set it to
+// the epoch and the whole pre-join backlog becomes readable.
+test("conversations: a group member cannot lower their own memberSince stamp", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${STAMP_GROUP}`)
+      .update({ [`memberSince.${FRIEND_UID}`]: STAMP_LOWERED })
+  );
+});
+
+// U2: DENY — a member touching ANOTHER member's stamp. The mirror attack:
+// raising someone else's cut-off hides history from them. Same rule conjunct,
+// opposite direction, and a rule that only pinned "your own" would miss it.
+test("conversations: a group member cannot raise another member's memberSince stamp", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${STAMP_GROUP}`)
+      .update({ [`memberSince.${ADULT_UID}`]: new Date("2027-01-01T00:00:00.000Z") })
+  );
+});
+
+// U3: DENY — replacing the whole map in one write. `affectedKeys()` is
+// TOP-LEVEL, so U1/U2 (dotted paths) and this (whole-map set) reach the deny
+// list by the same route; pinning both keeps a future rewrite that special-cases
+// nested paths from opening the wholesale one.
+test("conversations: a group member cannot replace the whole memberSince map", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${STAMP_GROUP}`)
+      .update({ memberSince: { [FRIEND_UID]: STAMP_LOWERED } })
+  );
+});
+
+// U4: DENY — removing `groupId`, which is what SELECTS the history clause. A
+// member who could drop it would turn the cut-off off for everyone at once,
+// without ever touching memberSince.
+test("conversations: a group member cannot change groupId", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${STAMP_GROUP}`)
+      .update({ groupId: "grp-somebody-elses" })
+  );
+});
+
+// U5: DENY — the same key from the other side: ADDING groupId to a direct
+// conversation. Not an escalation on its own, but it hands the messages read
+// rule a `memberSince` map that does not exist, which fails CLOSED and bricks a
+// working DM. Pinned so the deny list is proven on both a document that HAS the
+// key and one that does not.
+test("conversations: a participant cannot add groupId to a direct conversation", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${STAMP_DIRECT}`)
+      .update({ groupId: "grp-forged" })
+  );
+});
+
+// U6: ALLOW — the control, and the reason U1–U5 are not just a blanket freeze.
+// A member renames the group while memberSince and groupId are carried through
+// untouched. Every deny above would still pass if someone froze the whole
+// document; only this one goes red.
+test("conversations: a group member can still update an unrelated field while memberSince is untouched", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`conversations/${STAMP_GROUP}`)
+      .update({ title: "Familjen igen" })
+  );
+});
+
+// ============================================================================
+// MESSAGES — group history cut-off + sender membership (BUT-1838)
+// ============================================================================
+//
+// READ: `sentAt >= conversation.memberSince[you]`, scoped on `'groupId' in` the
+// conversation so the one pre-existing direct conversation is untouched. The
+// lookup is spelled `.get('memberSince', {}).get(uid, request.time)` — indexing
+// an absent key would be a CEL evaluation error (a blanket deny), and the
+// default of `request.time` makes a member with NO stamp see nothing rather than
+// everything. Both halves of that fail-closed claim get their own test.
+//
+// The moderation branch (`allow read, delete: if isAdmin()`) is a SEPARATE
+// allow and must not be caught by the cut-off — Trust & Safety's condition: a
+// moderator previewing a reported message must be able to read it whatever the
+// reporter's join date. M4 is that test.
+//
+// CREATE: the sender must be IN the conversation. The rule used to check only
+// that you were who you claimed to be, so anyone who knew a conversation id
+// could inject messages into strangers' chats — and a direct id is derivable
+// from two uids, with `public_profiles` readable by every signed-in user.
+
+const MSG_GROUP = `g-history-${RUN}`;
+const MSG_GROUP_NO_STAMPS = `g-nostamps-${RUN}`;
+const MSG_DIRECT = directId(ADULT_UID, STRANGER_UID);
+
+const T_BEFORE_JOIN = new Date("2026-03-01T12:00:00.000Z");
+const T_JOIN = new Date("2026-04-01T00:00:00.000Z");
+const T_AFTER_JOIN = new Date("2026-05-01T12:00:00.000Z");
+
+const MSG_OLD = `m-old-${RUN}`;
+const MSG_NEW = `m-new-${RUN}`;
+const MSG_NO_STAMPS = `m-nostamps-${RUN}`;
+const MSG_IN_DIRECT = `m-direct-${RUN}`;
+
+// Claims every message CREATE needs regardless of BUT-1838: `isAgeCompliant()`
+// (ADR-0002) and `isAccountMatured()` (BUT-659). Without them a create denies
+// for a reason that has nothing to do with membership.
+const MSG_CLAIMS = { ageCompliant: true, email_verified: true };
+
+function messageBody(
+  conversationId: string,
+  senderId: string,
+  sentAt: Date
+): Record<string, unknown> {
+  return {
+    senderId,
+    conversationId,
+    content: "hej",
+    sentAt,
+    type: "text",
+  };
+}
+
+async function seedMessageFixtures(): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const db = ctx.firestore();
+    // A GROUP conversation: FRIEND joined on T_JOIN, ADULT has NO stamp at all.
+    await db.doc(`conversations/${MSG_GROUP}`).set({
+      participantIds: [ADULT_UID, FRIEND_UID],
+      createdAt: FIXTURE_CREATED_AT,
+      isGroup: true,
+      groupId: "grp-history",
+      memberSince: { [FRIEND_UID]: T_JOIN },
+    });
+    // A GROUP conversation with the memberSince map entirely ABSENT — the
+    // `.get('memberSince', {})` default branch, which is a different CEL path
+    // from "map present, key missing" and must ALSO fail closed.
+    await db.doc(`conversations/${MSG_GROUP_NO_STAMPS}`).set({
+      participantIds: [ADULT_UID, FRIEND_UID],
+      createdAt: FIXTURE_CREATED_AT,
+      isGroup: true,
+      groupId: "grp-nostamps",
+    });
+    // A DIRECT conversation: no groupId, so the cut-off clause is skipped.
+    await db.doc(`conversations/${MSG_DIRECT}`).set({
+      participantIds: [ADULT_UID, STRANGER_UID],
+      createdAt: FIXTURE_CREATED_AT,
+      isGroup: false,
+    });
+
+    await db.doc(`messages/${MSG_OLD}`).set(
+      messageBody(MSG_GROUP, ADULT_UID, T_BEFORE_JOIN)
+    );
+    await db.doc(`messages/${MSG_NEW}`).set(
+      messageBody(MSG_GROUP, ADULT_UID, T_AFTER_JOIN)
+    );
+    await db.doc(`messages/${MSG_NO_STAMPS}`).set(
+      messageBody(MSG_GROUP_NO_STAMPS, ADULT_UID, T_BEFORE_JOIN)
+    );
+    await db.doc(`messages/${MSG_IN_DIRECT}`).set(
+      messageBody(MSG_DIRECT, ADULT_UID, T_BEFORE_JOIN)
+    );
+  });
+}
+
+// M1: ALLOW — a member reads a message sent AFTER their memberSince. The
+// fail-closed control for M2: same reader, same conversation, same rule path;
+// only `sentAt` differs. Without it M2 could be passing for any reason at all.
+test("messages: a group member can read a message sent after their memberSince", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertSucceeds(ctx.firestore().doc(`messages/${MSG_NEW}`).get());
+});
+
+// M2: DENY — the same member reading a message sent BEFORE they joined. This is
+// the whole ticket: "a new member sees only from now on", enforced in the
+// database rather than hidden by the app.
+test("messages: a group member cannot read a message sent before their memberSince", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(ctx.firestore().doc(`messages/${MSG_OLD}`).get());
+});
+
+// M3: DENY — a PARTICIPANT with no entry in the memberSince map. The map is
+// present, the key is missing, so `.get(uid, request.time)` returns request.time
+// and nothing is ever old enough. Fails closed: a member with no stamp sees
+// NOTHING rather than everything. The message here is one the member would
+// otherwise be entitled to (it is newer than FRIEND's stamp), so the deny is
+// attributable to the missing key.
+test("messages: a group participant with no memberSince entry is denied (fail-closed)", async () => {
+  const ctx = env.authenticatedContext(ADULT_UID);
+  await assertFails(ctx.firestore().doc(`messages/${MSG_NEW}`).get());
+});
+
+// M3B: DENY — the OTHER fail-closed branch: the memberSince map is absent from
+// the conversation entirely, so `.get('memberSince', {})` returns its default.
+// A different CEL path from M3, and one that a rule spelled
+// `resource.data.memberSince[uid]` would turn into an evaluation error instead.
+// Consequence, stated rather than hidden: a group conversation carrying a
+// groupId but no memberSince map has NO readable messages for anybody.
+test("messages: a group with no memberSince map at all denies its members every message", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(ctx.firestore().doc(`messages/${MSG_NO_STAMPS}`).get());
+});
+
+// M4: ALLOW — TRUST & SAFETY MUST-HAVE. A moderator (isAdmin) reads a message
+// sent long before any join date, in a group they are not a member of. The
+// moderation branch is a SEPARATE `allow read, delete: if isAdmin()`, and rules
+// OR their allow statements — so the cut-off in the participant branch must not
+// reach it. If this ever denies, the moderation preview of a reported message is
+// broken and the reports workflow silently shows an empty card.
+test("messages: an admin can still read a pre-join message (moderation preview bypasses the cut-off)", async () => {
+  const ctx = env.authenticatedContext(ADMIN_UID);
+  await assertSucceeds(ctx.firestore().doc(`messages/${MSG_OLD}`).get());
+});
+
+// M5: ALLOW — a DIRECT conversation is untouched. The clause is scoped on
+// `'groupId' in` the conversation document, and a direct conversation has
+// neither groupId nor memberSince, so an old message stays readable. This is
+// the test the plan asked for by name: the one pre-existing production
+// conversation must not be affected by any of this.
+test("messages: a direct conversation's old messages stay readable (no groupId, no cut-off)", async () => {
+  const ctx = env.authenticatedContext(ADULT_UID);
+  await assertSucceeds(ctx.firestore().doc(`messages/${MSG_IN_DIRECT}`).get());
+});
+
+// M6: DENY — the baseline membership check still holds on the read side: a
+// non-participant reads nothing, groupId or not.
+test("messages: a non-participant cannot read a direct conversation's message", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertFails(ctx.firestore().doc(`messages/${MSG_IN_DIRECT}`).get());
+});
+
+// M7: ALLOW — a participant sends a message. The control for M8 and the proof
+// that the new membership conjunct does not break the ordinary send path.
+test("messages: a conversation participant can create a message", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID, MSG_CLAIMS);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/m-send-ok-${RUN}`)
+      .set(messageBody(MSG_GROUP, FRIEND_UID, new Date()))
+  );
+});
+
+// M8: DENY — a NON-participant sends into the same conversation. Identical
+// claims, identical body shape, identical rule path; only membership differs.
+// Before BUT-1838 this succeeded: the rule checked only `auth.uid ==
+// senderId`, so anyone who knew a conversation id could write into strangers'
+// chats (they could not read the replies, but the message landed).
+test("messages: a non-participant cannot create a message in someone else's conversation", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-send-deny-${RUN}`)
+      .set(messageBody(MSG_GROUP, STRANGER_UID, new Date()))
+  );
+});
+
+// M9: ALLOW — the SAME actor as M8, sending into a conversation they ARE in.
+// Same uid, same claims, same payload shape: this is what makes M8's deny
+// attributable to membership rather than to the actor, the claims or the
+// account-maturity gate.
+test("messages: the same actor can create a message in a conversation they are in", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/m-send-ok2-${RUN}`)
+      .set(messageBody(MSG_DIRECT, STRANGER_UID, new Date()))
+  );
+});
+
+// ============================================================================
+// CONVERSATION PARTICIPANTS — roster subcollection (BUT-1482 sprint,
+// re-authorized by BUT-1838)
 // ============================================================================
 //
 // `conversations/{id}/participants/{uid}` had NO match block, so every write
@@ -578,15 +1180,44 @@ test("conversations: participant can rename the group via metadata.title while c
 // createGroupConversation. The flag that gates it, enable_subcollection_
 // participants, defaults to TRUE.
 //
-// The rule cannot simply read the parent conversation on create: for a GROUP,
-// the top-level conversations/{id} document does not exist at roster-write time
-// (createGroupConversation writes through UserScopedFirebaseRepository, i.e. to
-// users/{creatorUid}/conversations/{id} — the BUT-1795 path split). So there are
-// two branches, ATTESTED (parent names writer AND subject) and UNCLAIMED (no
-// parent yet), and the tests below prove each one separately in both directions.
+// BUT-1838 REWROTE THE AUTHORIZATION MODEL HERE. Until 2026-08-13 there were
+// two write branches — ATTESTED (the parent conversation names writer AND
+// subject) and UNCLAIMED (no parent document yet) — because group creation
+// wrote roster rows before the top-level conversation existed. `createChatGroup`
+// now writes the group, the conversation and every roster row in ONE Admin-SDK
+// transaction, so:
+//
+//   * `rosterUnclaimed()` is GONE, and so is the textually separate parentless
+//     own-row READ fallback. Removing only one of the two would have left the
+//     pre-seat residual alive.
+//   * `mayWriteRoster()` is now `attestedWriter() && !('groupId' in
+//     parentDoc().data)` — a GROUP roster row cannot be written by a client at
+//     all, because membership is decided by `addChatGroupMembers` AFTER the
+//     minor-membership gate, and a client that could seat a row would route
+//     round the gate (and choose what a peer is called in the roster the whole
+//     group reads).
+//
+// Four tests below therefore FLIP from allow to deny (P1, P3B, P14, P24). Each
+// flip is the intended signal of this ticket, and each says so at its own site.
+// UPDATE's self-lastReadAt branch is deliberately NOT affected by the groupId
+// lock — P30 pins that, because it is the one client write a group member still
+// makes.
 
-// Parent EXISTS and names ADULT + FRIEND — the attested branch.
+// Parent EXISTS and names ADULT + FRIEND — the attested branch. No `groupId`,
+// so the client write branch is open on it (BUT-1838).
 const P_ATT = `p-attested-${RUN}`;
+// Attested parent with NO seeded roster rows, so the validator tests below are
+// CREATEs rather than updates. Before BUT-1838 they ran against a parentless
+// conversation; that route is now denied outright, which would have made every
+// one of them pass vacuously — green with validParticipant() deleted.
+const P_CREATE = `p-create-${RUN}`;
+// Attested parent that DOES carry `groupId` — the Admin-SDK-only roster. Its
+// twin P_UNGROUPED is byte-identical except for that one key, which is what
+// makes the pair attributable.
+const P_GROUPED = `p-grouped-${RUN}`;
+const P_UNGROUPED = `p-ungrouped-${RUN}`;
+// Attested parent that names the STRANGER — the fail-closed control for P3.
+const P_ATT_STRANGER = `p-attested-stranger-${RUN}`;
 // A LIVE conversation carrying a roster row for someone its participantIds do
 // NOT name — the shape enforceGroupMinorMembership leaves behind (P12B).
 const P_EVICTED = `p-evicted-${RUN}`;
@@ -600,7 +1231,10 @@ const P_READ_FRESH = `p-fresh-read-${RUN}`;
 const P_UPD = `p-update-${RUN}`;
 const P_DEL = `p-delete-${RUN}`;
 const P_BATCH_GROUP = `p-batch-group-${RUN}`;
-const P_BATCH_DIRECT = `direct_p-${RUN}`;
+// BUT-1838: the direct end-to-end test writes its own parent conversation
+// through the CREATE rule, so its id must now BIND to its participants
+// (`directIdBinds`). `direct_p-<run>` no longer creates.
+const P_BATCH_DIRECT = directId(ADULT_UID, FRIEND_UID);
 const P_BATCH_DENY = `p-batch-deny-${RUN}`;
 
 // Constant, not new Date(): the self-update branch pins the diff to lastReadAt,
@@ -655,13 +1289,40 @@ function membershipBody(
 async function seedParticipantFixtures(): Promise<void> {
   await env.withSecurityRulesDisabled(async (ctx) => {
     const db = ctx.firestore();
-    for (const id of [P_ATT, P_UPD, P_DEL, P_BATCH_DENY]) {
+    for (const id of [
+      P_ATT,
+      P_CREATE,
+      P_UPD,
+      P_DEL,
+      P_BATCH_DENY,
+      P_UNGROUPED,
+    ]) {
       await db.doc(`conversations/${id}`).set({
         participantIds: [ADULT_UID, FRIEND_UID],
         createdAt: FIXTURE_CREATED_AT,
         isGroup: true,
       });
     }
+    // BUT-1838: same shape, plus the one key that locks the roster to the Admin
+    // SDK. P_UNGROUPED above is its control.
+    await db.doc(`conversations/${P_GROUPED}`).set({
+      participantIds: [ADULT_UID, FRIEND_UID],
+      createdAt: FIXTURE_CREATED_AT,
+      isGroup: true,
+      groupId: "grp-roster",
+    });
+    // A seeded row on the grouped conversation, so the update/self-lastReadAt
+    // tests below have something to write to.
+    await db
+      .doc(`conversations/${P_GROUPED}/participants/${FRIEND_UID}`)
+      .set(participantBody(P_GROUPED, FRIEND_UID));
+    // The fail-closed control for P3: an attested conversation that DOES name
+    // the stranger, so the same actor + same body + same doc-id shape succeeds.
+    await db.doc(`conversations/${P_ATT_STRANGER}`).set({
+      participantIds: [ADULT_UID, STRANGER_UID],
+      createdAt: FIXTURE_CREATED_AT,
+      isGroup: true,
+    });
     // A row to list against, so the read tests are not vacuously empty.
     await db
       .doc(`conversations/${P_ATT}/participants/${ADULT_UID}`)
@@ -700,13 +1361,20 @@ async function seedParticipantFixtures(): Promise<void> {
 
 // --- CREATE ---------------------------------------------------------------
 
-// P1: ALLOW — the group-create bootstrap. No top-level conversation exists yet
-// (UserScopedFirebaseRepository wrote it under users/{creator}/conversations),
-// and the creator seats ANOTHER participant. If this denies, group chat creation
-// throws for every user — the exact bug this block fixes.
-test("participants: creator can seat another participant while the conversation has no top-level document yet", async () => {
+// P1: DENY — THE FLIP. This used to be the group-create bootstrap ALLOW: no
+// top-level conversation existed yet (UserScopedFirebaseRepository wrote it
+// under users/{creator}/conversations) and the creator seated another
+// participant through `rosterUnclaimed()`.
+//
+// BUT-1838 deletes that branch. Group creation no longer runs from a client at
+// all — `createChatGroup` writes the conversation and its whole roster in one
+// Admin-SDK transaction, where rules do not apply — so a parentless roster write
+// is now exactly what it looks like: someone writing into a conversation nobody
+// can vouch for. If this ever goes back to ALLOW, the bootstrap branch is back
+// and with it the pre-seat residual (P3B) and the orphan residual.
+test("participants: nobody can seat a row while the conversation has no top-level document (bootstrap branch removed)", async () => {
   const ctx = env.authenticatedContext(ADULT_UID);
-  await assertSucceeds(
+  await assertFails(
     ctx
       .firestore()
       .doc(`conversations/${P_UNC}/participants/${FRIEND_UID}`)
@@ -739,17 +1407,22 @@ test("participants: a stranger cannot seat themselves into an existing conversat
   );
 });
 
-// P3B: ALLOW — fail-closed control for P3 AND the documented residual. Identical
-// actor, identical body, identical doc id shape; the ONLY difference is that no
-// top-level conversation document exists, so the unclaimed branch applies. It
-// proves P3's deny is the attestation gate rather than payload/shape/persistence
-// — and it is the honest record of what the bootstrap branch costs: an attacker
-// who knows an unchatted group's UUIDv4 id can seat a row. If this ever
-// starts FAILING, the bootstrap was removed — check that group creation now
-// writes its conversation to the TOP-LEVEL path (BUT-1795) before celebrating.
-test("participants: an unattested user CAN seat a row when no conversation document exists (documented residual)", async () => {
+// P3B: DENY — THE FLIP THIS TICKET EXISTS TO SIGNAL. This test used to ALLOW,
+// and its allow WAS the documented residual in ACCEPTED_DEVIATIONS.md: an
+// unattested user who knew a never-chatted group's id could seat a roster row
+// through `rosterUnclaimed()`, and then LIST the roster — every member's display
+// name and avatar URL — through the matching parentless read fallback.
+//
+// BUT-1838 removes both spellings of "parent absent" in the same edit, so the
+// pre-seat is gone. THE FLIP FROM ALLOW TO DENY IS THE INTENDED SIGNAL, not a
+// regression: if a future change makes this pass again, the bootstrap branch
+// came back and the residual with it.
+//
+// Its old second job — fail-closed control for P3 — moves to P3D below, which
+// keeps the attested route open for the same actor.
+test("participants: an unattested user can no longer seat a row when no conversation document exists (BUT-1838 flip)", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
-  await assertSucceeds(
+  await assertFails(
     ctx
       .firestore()
       .doc(`conversations/${P_UNC_RESIDUAL}/participants/${STRANGER_UID}`)
@@ -757,19 +1430,35 @@ test("participants: an unattested user CAN seat a row when no conversation docum
   );
 });
 
-// P3C: DENY — the bootstrap branch does NOT extend to direct conversations.
+// P3D: ALLOW — the fail-closed control P3 needs now that P3B denies. Same actor
+// (STRANGER), same body shape, same doc-id shape; the ONLY difference is that
+// this conversation's participantIds NAME the stranger. Without it, P3's deny
+// could be about the payload, the persistence or the path, and every attestation
+// test in this file would be vacuous.
+test("participants: a user named by the conversation CAN seat their own row (fail-closed control for P3)", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`conversations/${P_ATT_STRANGER}/participants/${STRANGER_UID}`)
+      .set(participantBody(P_ATT_STRANGER, STRANGER_UID))
+  );
+});
+
+// P3C: DENY — a pre-seat on a DM that does not exist yet.
 //
-// This is the finding the gate caught: a direct id is deterministic
-// (`direct_${sortedUids[0]}_${sortedUids[1]}`) and uids are enumerable, because
-// `public_profiles` is readable by any signed-in user. Without the `direct_`
-// exclusion in `rosterUnclaimed()`, P3B's allow would extend to any DM that has
-// not happened yet — giving a stranger both a DM-existence oracle (create
-// succeeds ⇒ these two have never talked) and a pre-seat foothold that persists
-// into the real roster and then grants its read.
+// This used to be the narrow case: `rosterUnclaimed()` carried a `direct_`
+// exclusion precisely because a direct id is deterministic
+// (`direct_${sortedUids[0]}_${sortedUids[1]}`) and uids are enumerable from the
+// readable `public_profiles`, so without it a stranger got a DM-existence oracle
+// (create succeeds ⇒ these two have never talked) plus a foothold that persisted
+// into the real roster.
 //
-// The pair matters: P3B must stay ALLOW (group bootstrap) while this stays
-// DENY. If both flip, the exclusion was written too wide and group creation is
-// broken; if both allow, it was deleted.
+// BUT-1838 removes the whole parentless branch, so this deny is now the GENERAL
+// case rather than a special exclusion — P3B denies for the same reason. It is
+// kept as a distinct regression pin: if anyone re-introduces a bootstrap branch
+// "just for groups", this is the test that says the DM half must not come back
+// with it.
 test("participants: an unattested user cannot seat a row on a not-yet-created DIRECT conversation", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
   const directId = `direct_${STRANGER_UID}_${ADULT_UID}`;
@@ -794,15 +1483,24 @@ test("participants: a participant cannot seat a uid that the conversation roster
   );
 });
 
-// P5: DENY — unauthenticated, against the unclaimed branch (the most permissive
-// one). Proves the bootstrap still requires a signed-in caller.
-test("participants: an unauthenticated caller cannot seat a row even on an unclaimed roster", async () => {
+// BUT-1838: P5–P11 used to run against the PARENTLESS fixture (P_UNC), which
+// was the most permissive branch at the time. That branch is gone, so a
+// parentless write now denies on attestation before the payload validator is
+// ever reached — every one of these deny tests would have passed vacuously, and
+// P11's allow would have gone red for the wrong reason. They now run against an
+// ATTESTED parent with no seeded roster rows (P_CREATE), so they still exercise
+// `validParticipant()` on the CREATE path, which is what they are for.
+
+// P5: DENY — unauthenticated, against an attested conversation whose roster the
+// caller would otherwise be allowed to write. Proves the rule requires a
+// signed-in caller and not merely a well-formed row.
+test("participants: an unauthenticated caller cannot seat a row on an attested roster", async () => {
   const ctx = env.unauthenticatedContext();
   await assertFails(
     ctx
       .firestore()
-      .doc(`conversations/${P_UNC}/participants/${ADULT_UID}`)
-      .set(participantBody(P_UNC, ADULT_UID))
+      .doc(`conversations/${P_CREATE}/participants/${ADULT_UID}`)
+      .set(participantBody(P_CREATE, ADULT_UID))
   );
 });
 
@@ -813,18 +1511,18 @@ test("participants: a row carrying an unknown field is rejected", async () => {
   await assertFails(
     ctx
       .firestore()
-      .doc(`conversations/${P_UNC}/participants/${ADULT_UID}`)
-      .set(participantBody(P_UNC, ADULT_UID, { nickname: "smeknamn" }))
+      .doc(`conversations/${P_CREATE}/participants/${ADULT_UID}`)
+      .set(participantBody(P_CREATE, ADULT_UID, { nickname: "smeknamn" }))
   );
 });
 
 // P7: DENY — a required field missing (isMuted). hasAll's counterpart to P6.
 test("participants: a row missing a required field is rejected", async () => {
   const ctx = env.authenticatedContext(ADULT_UID);
-  const body = participantBody(P_UNC, ADULT_UID);
+  const body = participantBody(P_CREATE, ADULT_UID);
   delete body.isMuted;
   await assertFails(
-    ctx.firestore().doc(`conversations/${P_UNC}/participants/${ADULT_UID}`).set(body)
+    ctx.firestore().doc(`conversations/${P_CREATE}/participants/${ADULT_UID}`).set(body)
   );
 });
 
@@ -835,8 +1533,8 @@ test("participants: a row whose participantId field does not match the document 
   await assertFails(
     ctx
       .firestore()
-      .doc(`conversations/${P_UNC}/participants/${ADULT_UID}`)
-      .set(participantBody(P_UNC, ADULT_UID, { participantId: FRIEND_UID }))
+      .doc(`conversations/${P_CREATE}/participants/${ADULT_UID}`)
+      .set(participantBody(P_CREATE, ADULT_UID, { participantId: FRIEND_UID }))
   );
 });
 
@@ -848,8 +1546,8 @@ test("participants: a row whose conversationId field does not match the path is 
   await assertFails(
     ctx
       .firestore()
-      .doc(`conversations/${P_UNC}/participants/${ADULT_UID}`)
-      .set(participantBody(P_UNC, ADULT_UID, { conversationId: P_ATT }))
+      .doc(`conversations/${P_CREATE}/participants/${ADULT_UID}`)
+      .set(participantBody(P_CREATE, ADULT_UID, { conversationId: P_ATT }))
   );
 });
 
@@ -859,21 +1557,84 @@ test("participants: a row with a role outside the enum is rejected", async () =>
   await assertFails(
     ctx
       .firestore()
-      .doc(`conversations/${P_UNC}/participants/${ADULT_UID}`)
-      .set(participantBody(P_UNC, ADULT_UID, { role: "superuser" }))
+      .doc(`conversations/${P_CREATE}/participants/${ADULT_UID}`)
+      .set(participantBody(P_CREATE, ADULT_UID, { role: "superuser" }))
   );
 });
 
 // P11: ALLOW — the production shape for a user with no avatar: toFirestore
 // OMITS avatarUrl when it is null, so the optional-field branch has to hold or
-// every avatar-less member breaks group creation.
+// every avatar-less member breaks conversation creation. Also the fail-closed
+// control for P6–P10: same actor, same path, same conversation, only the payload
+// differs.
 test("participants: a row omitting the optional avatarUrl is accepted", async () => {
   const ctx = env.authenticatedContext(ADULT_UID);
   await assertSucceeds(
     ctx
       .firestore()
-      .doc(`conversations/${P_UNC}/participants/${ADULT_UID}`)
-      .set(participantBody(P_UNC, ADULT_UID, {}, true))
+      .doc(`conversations/${P_CREATE}/participants/${ADULT_UID}`)
+      .set(participantBody(P_CREATE, ADULT_UID, {}, true))
+  );
+});
+
+// P27: DENY — the new `!('groupId' in parentDoc().data)` conjunct. The writer is
+// fully ATTESTED (the parent names both them and the subject) and the payload is
+// valid; the ONLY thing wrong is that this conversation belongs to a chat group.
+// Without this conjunct any group member could set() a peer's row directly and
+// route round `addChatGroupMembers` — and therefore round the minor-membership
+// gate — while also choosing what that peer is called in the roster the whole
+// group reads.
+test("participants: an attested member cannot seat a row on a GROUP conversation's roster", async () => {
+  const ctx = env.authenticatedContext(ADULT_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${P_GROUPED}/participants/${ADULT_UID}`)
+      .set(participantBody(P_GROUPED, ADULT_UID))
+  );
+});
+
+// P28: ALLOW — the discriminating control for P27. Same actor, same subject,
+// same payload; the fixture conversation is byte-identical except that it
+// carries NO `groupId`. Direct conversations keep their client-written roster
+// (ConversationParticipantModule.addParticipants, flag default TRUE), so if this
+// denies, group chat is safe and DM creation is broken.
+test("participants: the same attested member CAN seat the same row when the conversation has no groupId", async () => {
+  const ctx = env.authenticatedContext(ADULT_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`conversations/${P_UNGROUPED}/participants/${ADULT_UID}`)
+      .set(participantBody(P_UNGROUPED, ADULT_UID))
+  );
+});
+
+// P29: DENY — the groupId lock holds on UPDATE too, not just create. The (u2)
+// whole-row re-set branch routes through the same mayWriteRoster(), and a rule
+// that guarded only create would let a member rewrite an existing peer's
+// display name in the group roster.
+test("participants: an attested member cannot rewrite another member's row on a GROUP conversation", async () => {
+  const ctx = env.authenticatedContext(ADULT_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${P_GROUPED}/participants/${FRIEND_UID}`)
+      .set(participantBody(P_GROUPED, FRIEND_UID, { displayName: "Kapad" }))
+  );
+});
+
+// P30: ALLOW — the groupId lock deliberately does NOT reach the (u1) self
+// read-cursor branch, which never calls mayWriteRoster(). This is the one write
+// a group member still makes from the client (updateLastRead), and freezing it
+// would break unread counts in every group. Stated as a test rather than a
+// comment because "the roster is server-written" reads like it should deny.
+test("participants: a group member can still stamp their OWN lastReadAt on a GROUP roster row", async () => {
+  const ctx = env.authenticatedContext(FRIEND_UID);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`conversations/${P_GROUPED}/participants/${FRIEND_UID}`)
+      .update({ lastReadAt: new Date() })
   );
 });
 
@@ -925,21 +1686,29 @@ test("participants: a stranger cannot LIST an existing conversation's roster", a
   );
 });
 
-// P14: ALLOW — the own-row read branch. The group has no top-level document, so
-// parent attestation is impossible; the reader's own seeded row is the only
-// evidence available, and without this branch a freshly created group's member
-// list would not render for anyone.
-test("participants: a member can LIST the roster of a group that has no top-level conversation document", async () => {
+// P14: DENY — THE FLIP. This used to be the own-row read fallback: with no
+// top-level conversation document, parent attestation was impossible, so the
+// reader's own seeded row was accepted as evidence.
+//
+// That fallback was a SECOND, textually separate spelling of the same "parent
+// absent" idea as `rosterUnclaimed()`. Removing only the WRITE half would have
+// left the pre-seat residual fully alive — seat a row while the parent does not
+// exist, then list the roster forever — so BUT-1838 removed both in one edit.
+//
+// The cost is real and accepted: an orphaned roster row (a conversation deleted
+// out from under it) is now simply unreadable. That is the intended outcome, and
+// it is why the backfill BUT-1839 was closed unbuilt.
+test("participants: an own row no longer grants the roster when the conversation document is absent (BUT-1838 flip)", async () => {
   const ctx = env.authenticatedContext(FRIEND_UID);
-  const snap = await assertSucceeds(
+  await assertFails(
     ctx.firestore().collection(`conversations/${P_READ_FRESH}/participants`).get()
   );
-  if (snap.empty) throw new Error("expected a non-empty roster — fixture broken");
 });
 
-// P15: DENY — the same fresh roster, read by someone with no row in it. Pairs
-// with P14: the branch is "your own row exists", not "the parent is missing".
-test("participants: a non-member cannot LIST the roster of a group that has no top-level conversation document", async () => {
+// P15: DENY — the same parentless roster read by someone with no row in it.
+// Kept as the pair to P14: both now deny, and if EITHER flips back to allow the
+// parentless read branch was re-introduced.
+test("participants: a non-member cannot LIST the roster of a conversation with no top-level document", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
   await assertFails(
     ctx.firestore().collection(`conversations/${P_READ_FRESH}/participants`).get()
@@ -1042,13 +1811,19 @@ test("participants: a stranger cannot delete a roster row", async () => {
 
 // --- END TO END: the module's real WriteBatch ------------------------------
 
-// P24: ALLOW — the actual shape ConversationParticipantModule.addParticipants
-// commits on the GROUP path: one participant row AND one
-// users/{uid}/conversation_memberships row per participant, all in a single
-// atomic batch, with no top-level conversation document in existence. A batch is
-// all-or-nothing, so this is the only test that proves the two rule blocks
-// cooperate — a single denied document here is a thrown createGroupConversation.
-test("participants: the module's real create-group batch (3 rosters + 3 memberships, no parent doc) commits end to end", async () => {
+// P24: DENY — THE FLIP. This is the exact batch
+// ConversationParticipantModule.addParticipants used to commit on the GROUP
+// path: one participant row AND one users/{uid}/conversation_memberships row per
+// participant, atomically, with no top-level conversation document in existence.
+//
+// Under BUT-1838 a client does not create groups at all — `createChatGroup` does
+// it under the Admin SDK after the minor-membership gate has cleared every
+// member — so this whole batch must now be refused. The client code that built
+// it is removed in the same ticket (Etapp 3, behind `enable_chat_groups`).
+//
+// A batch is all-or-nothing, so the assertion says only "this commit fails". The
+// attributable half is P1 above, which denies the roster row on its own.
+test("participants: the client's old create-group batch (3 rosters + 3 memberships, no parent doc) is now denied end to end", async () => {
   const db = env.authenticatedContext(ADULT_UID).firestore();
   const batch = db.batch();
   for (const uid of [ADULT_UID, FRIEND_UID, MINOR_UID]) {
@@ -1063,13 +1838,17 @@ test("participants: the module's real create-group batch (3 rosters + 3 membersh
       membershipBody(P_BATCH_GROUP, true)
     );
   }
-  await assertSucceeds(batch.commit());
+  await assertFails(batch.commit());
 });
 
-// P25: ALLOW — the DIRECT path in full: the client writes the top-level
-// conversation first (awaited), then commits the 2+2 batch. This is the attested
-// branch end to end, and it also proves the roster block does not fight the
-// conversations create rule.
+// P25: ALLOW — the DIRECT path in full, and after BUT-1838 the ONLY end-to-end
+// client path left: the client writes the top-level conversation first
+// (awaited), then commits the 2+2 batch. It is the load-bearing allow of this
+// whole block — every deny above survives a rule that froze the roster
+// completely, and only this one would go red.
+//
+// The conversation id now BINDS to its participants (`directIdBinds`), so this
+// also proves the new create rule and the roster block do not fight each other.
 test("participants: the module's real create-direct sequence (conversation, then 2 rosters + 2 memberships) commits end to end", async () => {
   const db = env.authenticatedContext(ADULT_UID).firestore();
   await assertSucceeds(
@@ -1112,10 +1891,15 @@ test("participants: a stranger's identically-shaped batch against an existing co
 });
 
 async function run(): Promise<void> {
-  console.log("conversations 1:1 minor-DM gate rules tests (BUT-674)\n");
+  console.log(
+    "conversations rules tests — minor-DM gate (BUT-674), creator binding " +
+      "(BUT-1788), id binding + group history cut-off + roster lock (BUT-1838)\n"
+  );
   console.log("========================================\n");
   await setup();
   await seedUpdateFixtures();
+  await seedStampFixtures();
+  await seedMessageFixtures();
   await seedParticipantFixtures();
   let failed = 0;
   for (const t of tests) {

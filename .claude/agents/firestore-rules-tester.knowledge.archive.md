@@ -1924,3 +1924,109 @@ Non-blocking observation reported: `.claude/rules/accepted-deviations.md` :279-3
 2026-08-12 entry) still reads "only the last is fixed" about the three deleters, which the
 RESOLVED 2026-08-13 entry at :323-341 supersedes without back-pointing at it. That matches the
 repo's supersede-don't-delete convention, so it was reported as an observation, not a finding.
+
+### 2026-08-14 — BUT-1838: group chat becomes a first-class object (conversations create is direct-only, group history cut-off, roster lock, new `chat_groups` block)
+
+Rules diff: `git diff firestore.rules` = 241 insertions / 192 deletions, entirely between
+:1520 and :1982 (verified by grepping every `match /(conversations|messages|chat_groups)` —
+only :517 user-scoped copy, :1522, :1879, :1910; `L2962` in every emulator verdict is the
+global `match /{document=**} { allow read, write: if false; }` catch-all, not a second block).
+
+Six changed branches, all proven both directions:
+
+1. **`conversations` create is DIRECT-ONLY and id-bound.** New conjuncts `participantIds is
+   list`, `toSet().size() >= 2`, caller in list, `directIdBinds(p)` (`p.size() == 2 && (id ==
+   'direct_'+p[0]+'_'+p[1] || id == 'direct_'+p[1]+'_'+p[0])`), and — replacing the old
+   three-way `!('metadata' in d) || !('creatorId' in d.metadata) || … == uid` — a bare
+   `request.resource.data.metadata.creatorId == request.auth.uid`, i.e. the creator must now be
+   PRESENT. Closes BUT-1830's squat by removing the capability: a client cannot create a group
+   conversation at all.
+2. **`conversations` update deny-list gains `memberSince` and `groupId`.** The rule is a
+   DENY-list, so without them any group member could lower their own history cut-off (read the
+   whole backlog) or raise someone else's (blank their history). Caught by the plan revision,
+   not the first draft.
+3. **Roster:** `rosterUnclaimed()` DELETED and the textually separate parentless own-row READ
+   fallback DELETED in the same edit (removing only the write half would have left the pre-seat
+   residual alive). `mayWriteRoster()` = `attestedWriter() && !('groupId' in parentDoc().data)`
+   — a GROUP roster row is Admin-SDK-only.
+4. **`messages` read gains the group history cut-off**, scoped on `'groupId' in` the
+   conversation, spelled `.get('memberSince', {}).get(uid, request.time)` (fail-closed twice).
+   `allow read, delete: if isAdmin()` stays a SEPARATE allow and bypasses it.
+5. **`messages` create requires the sender to be in `participantIds`** (one extra doc read per
+   message, accepted in the plan's step 5).
+6. **NEW `chat_groups/{groupId}`**: member read, `isAdmin()` read, admin-only update limited to
+   `hasOnly(['name','updatedAt'])` with a 1..100-char string name, `create, delete: if false`.
+
+**Results.** `npm run test:rules:conversations` 77/77 (60 tests before this run);
+`npm run test:rules:chat-groups` 27/27 (new file). `node scripts/check-test-registration.js`
+-> "OK — 128 test files registered, 39 rules suites triggered by 2 paths blocks";
+`npm run test:script-test-registration` -> 20/20. `npx tsc --noEmit` clean.
+
+**Four mutation probes, all by env-var against a mutated COPY** (`PROBE_RULES_PATH` /
+`PROBE_PROJECT_ID` seams shipped in both suites; `firestore.rules` md5
+`12baab43171d9e22722a97072017e3f7` before and after every probe, and `git diff --stat` unchanged
+at 241/192 — the file was never written, so byte-identity is by construction rather than by a
+restore step a timeout can skip):
+
+| Mutation | Result |
+|---|---|
+| delete the `memberSince` conjunct from the `/messages` read rule | 74/77 — exactly M2 (pre-join message), M3 (participant with no stamp), M3B (no `memberSince` map at all) |
+| drop `memberSince` from the `conversations` update deny-list | 74/77 — exactly U1 (lower own), U2 (raise another's), U3 (replace whole map) |
+| delete the create-side `metadata.creatorId` conjunct | 74/77 — exactly C6, C6B, C7B |
+| **harmonise** the create-side spelling with the update rule's `is map` ternary | **77/77 — NOTHING reddens** |
+
+That last row is the finding. `firestore.rules` :1577-1582 and the C7B comment both claim
+"making the two spellings agree is the edit that disarms it — do not". That was TRUE of the old
+conjunct, whose `||` hatches allowed an absent creator so only the CEL null-error stood in the
+way; it is FALSE of the bare equality, because a ternary resolving `null` still fails
+`null == uid`. The deny is still real and attributable (emulator prints
+`Null value error. for 'create' @ L1565`) and is now a STRONGER bound — a CEL accident binds our
+own client, a presence requirement binds a tampered one — but the stated danger is stale, and
+the plan's "two invariants must not be cleaned" premise (Etapp 2) rests on it. Reported as a
+non-blocking comment-accuracy finding; `firestore.rules` not edited (not this agent's file).
+The test's own comment was corrected in place with both probe results quoted.
+
+**The vacuity sweep was the bulk of the work.** Every legacy create test (C1-C7) denied under
+the new rule for the NEW reason — `directIdBinds` fires above the minor gate and above the
+metadata conjunct — so all eight were given a conforming `direct_<a>_<b>` id and a conforming
+metadata map, each on its OWN peer uid (`peer(tag)`, an unseeded uid: `otherIsMinor()` is
+`exists()`-guarded and fails open to adult, so an unseeded counterparty is a valid adult target,
+and a per-test uid keeps every create test on its own document id so an earlier ALLOW never
+turns a later create into an update). Same problem on the roster: P5-P11 ran against the
+PARENTLESS fixture, which now denies on attestation before `validParticipant()` is reached, so
+they were re-pointed to an attested parent with no seeded rows (`P_CREATE`) to stay CREATEs.
+
+**Five intended flips**, each documented at its own site as the ticket's signal: C5 (client
+group create), P1 (bootstrap seat), P3B (pre-seat residual), P14 (own-row read fallback), P24
+(the client's old create-group WriteBatch). P3B's SECOND job — fail-closed control for P3 — had
+to be replaced (P3D: same actor, same body, same id shape, attested parent -> ALLOW), or every
+attestation deny in the file would have been unattributable.
+
+**New coverage worth reusing.** P27/P28 are a discriminating pair for the `!('groupId' in …)`
+lock: two byte-identical conversations differing only in that one key, same actor, same payload
+— one denies, one allows. P30 pins that the lock does NOT reach the roster's `(u1)`
+self-`lastReadAt` branch (it never calls `mayWriteRoster()`), which is the one client write a
+group member still makes and reads like it "should" deny. M9 makes M8's non-participant
+message-create deny attributable by having the SAME actor with the SAME claims succeed in a
+conversation they are in. G5/G6 pin the `chat_groups` LIST path in both directions
+(`array-contains` filter allowed and non-empty; unfiltered sweep denied with a foreign group
+seeded), because `resource.data.get('memberIds', [])` is exactly the presence-tolerant shape
+that leaked `cook_snaps` in BUT-1214. G25 (name of exactly 100 chars ALLOWS) is the boundary's
+passing side, without which a tightening to `< 100` would keep G24 green.
+
+**Documented consequence, stated rather than hidden (M3B):** a conversation carrying `groupId`
+but NO `memberSince` map has no readable messages for ANY member — `.get('memberSince', {})`
+returns its default and `request.time` beats every stored `sentAt`. That is the intended
+fail-closed behaviour, and it makes `createChatGroup` writing the map atomically with the
+conversation load-bearing rather than merely tidy.
+
+**Coverage gap left open, reported:** the DELETE half of the `/messages` moderation branch
+(`allow read, delete: if isAdmin()`) is unproven — testing it destroys the fixture the read
+tests share, and delete is not what BUT-1838 changed. Low.
+
+**Working-copy note:** a parallel session held files STAGED in this shared checkout
+(notification-preferences work, `testing-specialist` knowledge, `workflow-map.html`). Nothing of
+this run's was staged, nothing was committed, and `functions/package.json` +
+`.github/workflows/firestore-rules.yml` already carried that session's BUT-1838 CF-side
+registration edits (leave-group-conversation removed, `functions/src/groups/**` added) — this
+run appended to them rather than rewriting.
