@@ -31,7 +31,7 @@ Domain models with serialization, factory methods, schema migration. Splitting f
 | File | Lines | Reason |
 |------|-------|--------|
 | `recipe_unified.dart` | 1780 | Core recipe model — serialization, factories, copyWith, type variants. Cohesive growth from family-rating fields; future option is to extract `recipe_unified_serialization.dart` if drift exceeds +25%. |
-| `tag_result.dart` | 967 | Auto-tagging result — serialization, schema migration, 20+ query helpers |
+| `tag_result.dart` | 982 | Auto-tagging result — serialization, schema migration, 20+ query helpers |
 | `unified_shopping_list.dart` | 837 | Shopping list model — serialization, member permissions, sync status |
 | `recipe_form_state.dart` | 802 | Recipe form state — validation, field tracking, error handler extracted |
 | `unified_shopping_item.dart` | 927 | Shopping item model — serialization, category, unit conversion |
