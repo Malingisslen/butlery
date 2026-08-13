@@ -336,7 +336,11 @@ files in the same edit.
   one "simpler" query; do not remove the cap; do not let a future edit delete the parent on
   a false answer. A `direct_` conversation id is HASHED in every log on this path
   (`logSafeConversationId`) — it is two raw uids, and BUT-1822 is what first sends direct
-  ids into `tryClearRoster`'s logs. The fix is FORWARD-ONLY: rows orphaned by earlier deletions, and rows
+  ids into `tryClearRoster`'s logs. The fix is FORWARD-ONLY and stays that way: the
+  backfill (BUT-1839) was closed unbuilt by Malin on 2026-08-13 because the app is not live,
+  so the leftover rows are all test data. Reopen it at launch, not before. The other
+  forward-looking gap — a user's own "delete conversation" orphaning rows — is BUT-1825 and
+  is NOT covered by that reasoning. The fix is FORWARD-ONLY: rows orphaned by earlier deletions, and rows
   orphaned by a user's own "delete conversation", are still there (BUT-1825 + a backfill
   ticket). 2026-08-13
 

@@ -1847,8 +1847,11 @@ service cloud.firestore {
         //     WRITE, but the read fallback below has no such exclusion — so
         //     before BUT-1822, after a DM was erased the surviving partner kept
         //     LIST over a roster still holding the deleted user's name and
-        //     avatar. Rows orphaned BEFORE that fix shipped are still there; the
-        //     cascade is forward-only and a backfill is tracked separately.
+        //     avatar. The cascade is forward-only, so rows orphaned BEFORE that
+        //     fix shipped are still on disk — Malin closed the backfill
+        //     (BUT-1839) unbuilt on 2026-08-13: the app is not live, so every
+        //     one of those rows belongs to a test account. That reasoning
+        //     expires at launch; case 1 above does NOT, it orphans new rows.
         //
         // BUT-1795 removes the branch and both residuals with it, and is the
         // ONLY option that reaches all three — widening the row delete rule

@@ -1472,5 +1472,11 @@ scopes, deployed to READY before the function.
 **Still open:** the fix is forward-only. Rows orphaned by deletions that ran BEFORE this
 shipped have no future deletion event to hang a sweep on, and case 1 of the three deleters
 (a participant deleting the conversation from the UI) still orphans rows naming other
-people. Both remain under BUT-1825 / a backfill ticket — do not read this entry as saying
-the roster is clean.
+people.
+
+The forward-looking half stays open under BUT-1825. The historical half does not: **Malin
+closed the backfill (BUT-1839) unbuilt on 2026-08-13** — the app is not live and the project
+holds development data only, so every row a pre-BUT-1822 deletion left behind belongs to a
+test account. That is a fact about the DATA, not about the code, so it expires the day real
+users exist; the ticket records what would have to be built and when to reopen it. Do not
+read this entry as saying the roster is clean.
