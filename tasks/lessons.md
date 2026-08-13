@@ -1031,3 +1031,45 @@ Three habits:
 Also: made it a per-repo config knob rather than a blanket change, because the engine is shared
 with binge and webbkollen, whose backlogs do not have this problem and whose default should not
 move under them.
+
+---
+
+## 2026-08-13 — "It's the tooling, not the app" is a claim, and half of it was false
+
+Malin asked me to prove or disprove BUT-1779 by driving the real app. The app came up blank
+and clicks kept landing on the wrong widget. I reported both as local tooling flakiness and
+moved on. She asked one question — "but why is the app not working?" — and one of the two
+was a real, measurable app defect that has been live the whole time.
+
+**The blank screen was tooling.** `flutter run -d web-server` in debug mode loads every DDC
+module and then holds `main()` behind the DWDS handshake, which needs the Dart Debug Chrome
+extension. Without it the page sits white forever with no console error: 3251/3251 modules
+loaded, `flutterCanvasKit` present, `$dartRunMain` defined and never called. Diagnosis is
+three checks — `$dartLoader.loader.numLoaded` vs `numToLoad`, `!!document.querySelector('flutter-view')`,
+and whether `window.$dartRunMain` exists. Calling `window.$dartRunMain()` from the console
+boots it instantly. Do that instead of restarting the dev server; each restart with a changed
+`--dart-define` invalidates the build cache and costs another full recompile (I burned four).
+
+**The clicks were the app.** `FeedbackFAB`'s semantics node is the full viewport
+(`0,0,1707,735`, `role="button"`, 36 descendant semantics nodes) even though the widget is a
+`minTouchTarget` Container in a `Positioned`. Every tap bubbles to it, so with semantics on,
+the feedback dialog opens instead of the control the user touched. Filed as BUT-1837.
+
+What actually went wrong in my process:
+
+1. **I bundled two symptoms under one cause because they appeared together.** Same session,
+   same screen, both "the harness is being difficult". They had nothing to do with each other,
+   and grouping them is what let the real one ride along unexamined.
+2. **"Not my code" is the conclusion that most needs evidence, not the least.** It ends the
+   investigation. I should hold it to the same bar as a bug claim: name the mechanism, show
+   the measurement. I had neither when I wrote it.
+3. **The measurement was cheap and I never took it.** One `getBoundingClientRect()` on the
+   offending node settled it. I had already been fighting the symptom for an hour by then.
+4. **The workaround attempts were the evidence, and I read past them.** `pointer-events:none`
+   not helping means the listener is on an ANCESTOR, not an overlay — that is a structural
+   fact about the tree, and it was in front of me two attempts before I acted on it.
+
+Corollary for driving Flutter web at all: with semantics forced on (`main.dart` does this on
+every web start), the semantics DOM is what receives clicks, so a malformed node breaks
+automation *and* real users identically. That equivalence is why the automation trouble was
+worth diagnosing rather than working around — the workaround would have hidden a live defect.
