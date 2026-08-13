@@ -6,11 +6,11 @@
  "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
  "$tokenidentitet": "Tokennamnet lases i registret vid forsta tilldelningen och andras aldrig. Tva beslut delar aldrig namn, aven nar morkvardet sammanfaller. Ett ersatt beslut behaller inget namn.",
  "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
- "antal": 61,
+ "antal": 63,
  "perTyp": {
   "temavaxlande": 39,
   "temainvariant": 7,
-  "UNKNOWN": 13
+  "UNKNOWN": 15
  },
  "beslut": [
   {
@@ -4998,15 +4998,202 @@
     "forekomsterIEnheten": 91,
     "observerade": 25
    }
+  },
+  {
+   "kandidatId": "CAND-yta-app-#24382c",
+   "roll": "yta-app",
+   "semantiskRoll": "APP_BACKGROUND",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "provenance": "HUMAN_VISUAL_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "status": "ACTIVE",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "INGEN_POSITIV_DEFINITION",
+    "skal": "Faltet har noll kodkonsumenter och ingen normativ definition. Ingen typ harleds."
+   },
+   "princip": "P-SURFACE-APP",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "appytan-sjalv",
+    "utan-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "bast balans som bottenyta i den fullstandiga kompositionen",
+    "jamfort med #17251d: mindre narsvart och hard, och later sekundarinnehallet och nedrakningsomradet synas utan att skarmen blir overdrivet kontrasttung",
+    "jamfort med #4a5c43: behaller en djupare appbasroll och far inte hela skarmen att kannas upphojd eller urtvattad mot en mellanton"
+   ],
+   "villkor": [],
+   "baransvar": null,
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Visuellt val. Ingen observerad mappning i enheten och ingen principdeterminans."
+   },
+   "beslutsunderlag": {
+    "typ": "COMPOUND_DECISION_PREVIEW",
+    "commit": "327269a",
+    "scen": "globceremoni",
+    "tupplarIPaketet": 8,
+    "valdTuppel": 6,
+    "valdKombination": {
+     "APP_BACKGROUND": "#24382c",
+     "BUTTON_SURFACE": "#4a5c43"
+    },
+    "textkontrastIValdTuppel": 4.68,
+    "$kravUppfyllt": "WCAG 1.4.3 4.5:1",
+    "$intePreferens": "Kvoten ar ett konformansutfall, inte ett onskat malvarde.",
+    "kollateralaAndringar": 0,
+    "okanda": 0,
+    "artefakt": "fas2/r04-compound-preview.json"
+   },
+   "tuppelidentitet": {
+    "$regel": "Tuppeln ar den manskliga jamforelseenheten, INTE en gemensam beslutsidentitet. De tva enheterna behaller varsin tokenidentitet och kan ga isar i framtiden.",
+    "valdTillsammansMed": "BUTTON_SURFACE"
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 7,
+   "berordaArtefakter": [
+    "skafferivara",
+    "dialogradera",
+    "dialogosparat",
+    "dialogratelimit",
+    "dialogsparameny",
+    "utloggningtom",
+    "globceremoni"
+   ],
+   "instanserIScope": 7,
+   "kallidentitet": "globceremoni|0|background-color",
+   "scopekontrakt": {
+    "typ": "BESLUTSENHET",
+    "enhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+    "forekomsterIEnheten": 7,
+    "artefakter": 7,
+    "familjer": 7
+   },
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-yta-app-#24382c ‖ APP_BACKGROUND ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "aktiv": true,
+   "tokenNamn": "--yta-app-d2",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-yta-kontroll-#f5f4ed",
+   "roll": "yta-kontroll",
+   "semantiskRoll": "BUTTON_SURFACE",
+   "ljusvarde": "#f5f4ed",
+   "morkvarde": "#4a5c43",
+   "provenance": "HUMAN_VISUAL_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "status": "ACTIVE",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "INGEN_POSITIV_DEFINITION",
+    "skal": "Faltet har noll kodkonsumenter och ingen normativ definition. Ingen typ harleds."
+   },
+   "princip": "P-SURFACE-CONTROL",
+   "semantiskKontext": [
+    "kontroll:button",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "ger huvudhandlingen en tydligt synlig kropp mot #24382c och forblir anda aterhallen",
+    "jamfort med #17251d: laser for tillbakadraget och sekundart",
+    "jamfort med rgba(245,244,237,0.18): det genomskinliga alternativet laser mer urtvattat och mindre beslutsamt primart"
+   ],
+   "villkor": [
+    "Beslutet forutsatter APP_BACKGROUND #24382c. Mot #4a5c43 skulle samma varde ge REQUIRED_CARRIER_COLLAPSE."
+   ],
+   "baransvar": "CONTROL_BODY_REQUIRED",
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Visuellt val. Ingen observerad mappning i enheten och ingen principdeterminans."
+   },
+   "beslutsunderlag": {
+    "typ": "COMPOUND_DECISION_PREVIEW",
+    "commit": "327269a",
+    "scen": "globceremoni",
+    "tupplarIPaketet": 8,
+    "valdTuppel": 6,
+    "valdKombination": {
+     "APP_BACKGROUND": "#24382c",
+     "BUTTON_SURFACE": "#4a5c43"
+    },
+    "textkontrastIValdTuppel": 4.68,
+    "$kravUppfyllt": "WCAG 1.4.3 4.5:1",
+    "$intePreferens": "Kvoten ar ett konformansutfall, inte ett onskat malvarde.",
+    "kollateralaAndringar": 0,
+    "okanda": 0,
+    "artefakt": "fas2/r04-compound-preview.json"
+   },
+   "tuppelidentitet": {
+    "$regel": "Tuppeln ar den manskliga jamforelseenheten, INTE en gemensam beslutsidentitet. De tva enheterna behaller varsin tokenidentitet och kan ga isar i framtiden.",
+    "valdTillsammansMed": "APP_BACKGROUND"
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 4,
+   "berordaArtefakter": [
+    "lgbrotation",
+    "lgbutan",
+    "globceremoni",
+    "fbknapp"
+   ],
+   "instanserIScope": 4,
+   "kallidentitet": "globceremoni|6|background-color",
+   "scopekontrakt": {
+    "typ": "BESLUTSENHET",
+    "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "forekomsterIEnheten": 4,
+    "artefakter": 4,
+    "familjer": 4
+   },
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-yta-kontroll-#f5f4ed ‖ BUTTON_SURFACE ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "aktiv": true,
+   "tokenNamn": "--yta-kontroll-d12",
+   "revision": 1
   }
  ],
  "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
  "perOmfattning": {
   "WHOLE_CANDIDATE": 9,
-  "SUBGROUP": 50
+  "SUBGROUP": 52
  },
  "$status": "Ett beslut har status ACTIVE eller SUPERSEDED. Ett ersatt beslut raderas aldrig — det star kvar med reason och vilket beslut som ersatte det. Bara ACTIVE-beslut far anvandas vid migrering.",
- "aktiva": 59,
+ "aktiva": 61,
  "ersatta": 2,
  "$identitet": "beslutsId ar scopet (kandidat och eventuell undergrupp). Lagringsidentiteten ar scope + revision. Tokennamnet tilldelas en gang och ar persistent; varken supersede, insattning eller omsortering far andra ett befintligt namn.",
  "perTyp2": {
@@ -5226,7 +5413,7 @@
   ]
  },
  "perStatus": {
-  "ACTIVE": 58,
+  "ACTIVE": 60,
   "VERIFIED_EXISTING_MAPPING": 1
  }
 }

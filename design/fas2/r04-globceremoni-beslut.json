@@ -1,0 +1,1433 @@
+{
+ "$schema": "butlery-r04-globceremoni-beslut/1",
+ "$datum": "2026-08-13",
+ "$status": "REGISTRY-ONLY (2 beslut). 0 produktwrites. 0 coverage credit.",
+ "A_beslut": {
+  "valdTuppel": 6,
+  "$regel": "Tuppeln ar den manskliga jamforelseenheten. De registreras som TVA skilda beslut med varsin tokenidentitet.",
+  "poster": [
+   {
+    "beslutsId": "CAND-yta-app-#24382c ‖ APP_BACKGROUND ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+    "tokenNamn": "--yta-app-d2",
+    "semantiskRoll": "APP_BACKGROUND",
+    "ljusvarde": "#24382c",
+    "morkvarde": "#24382c",
+    "provenance": "HUMAN_VISUAL_DECISION",
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "ejKlassificering": [
+     "OBSERVED_MAPPING",
+     "PRINCIPLE_DETERMINATE",
+     "VERIFIED_EXISTING_MAPPING"
+    ],
+    "mappningstyp": "UNKNOWN",
+    "motivering": [
+     "bast balans som bottenyta i den fullstandiga kompositionen",
+     "jamfort med #17251d: mindre narsvart och hard, och later sekundarinnehallet och nedrakningsomradet synas utan att skarmen blir overdrivet kontrasttung",
+     "jamfort med #4a5c43: behaller en djupare appbasroll och far inte hela skarmen att kannas upphojd eller urtvattad mot en mellanton"
+    ],
+    "villkor": [],
+    "scopekontrakt": {
+     "typ": "BESLUTSENHET",
+     "enhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+     "forekomsterIEnheten": 7,
+     "artefakter": 7,
+     "familjer": 7
+    },
+    "beslutsunderlag": {
+     "typ": "COMPOUND_DECISION_PREVIEW",
+     "commit": "327269a",
+     "scen": "globceremoni",
+     "tupplarIPaketet": 8,
+     "valdTuppel": 6,
+     "valdKombination": {
+      "APP_BACKGROUND": "#24382c",
+      "BUTTON_SURFACE": "#4a5c43"
+     },
+     "textkontrastIValdTuppel": 4.68,
+     "$kravUppfyllt": "WCAG 1.4.3 4.5:1",
+     "$intePreferens": "Kvoten ar ett konformansutfall, inte ett onskat malvarde.",
+     "kollateralaAndringar": 0,
+     "okanda": 0,
+     "artefakt": "fas2/r04-compound-preview.json"
+    },
+    "tuppelidentitet": {
+     "$regel": "Tuppeln ar den manskliga jamforelseenheten, INTE en gemensam beslutsidentitet. De tva enheterna behaller varsin tokenidentitet och kan ga isar i framtiden.",
+     "valdTillsammansMed": "BUTTON_SURFACE"
+    }
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#f5f4ed ‖ BUTTON_SURFACE ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "tokenNamn": "--yta-kontroll-d12",
+    "semantiskRoll": "BUTTON_SURFACE",
+    "ljusvarde": "#f5f4ed",
+    "morkvarde": "#4a5c43",
+    "provenance": "HUMAN_VISUAL_DECISION",
+    "klassificering": "VISUAL_CHOICE_REQUIRED",
+    "ejKlassificering": [
+     "OBSERVED_MAPPING",
+     "PRINCIPLE_DETERMINATE",
+     "VERIFIED_EXISTING_MAPPING"
+    ],
+    "mappningstyp": "UNKNOWN",
+    "motivering": [
+     "ger huvudhandlingen en tydligt synlig kropp mot #24382c och forblir anda aterhallen",
+     "jamfort med #17251d: laser for tillbakadraget och sekundart",
+     "jamfort med rgba(245,244,237,0.18): det genomskinliga alternativet laser mer urtvattat och mindre beslutsamt primart"
+    ],
+    "villkor": [
+     "Beslutet forutsatter APP_BACKGROUND #24382c. Mot #4a5c43 skulle samma varde ge REQUIRED_CARRIER_COLLAPSE."
+    ],
+    "scopekontrakt": {
+     "typ": "BESLUTSENHET",
+     "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+     "forekomsterIEnheten": 4,
+     "artefakter": 4,
+     "familjer": 4
+    },
+    "beslutsunderlag": {
+     "typ": "COMPOUND_DECISION_PREVIEW",
+     "commit": "327269a",
+     "scen": "globceremoni",
+     "tupplarIPaketet": 8,
+     "valdTuppel": 6,
+     "valdKombination": {
+      "APP_BACKGROUND": "#24382c",
+      "BUTTON_SURFACE": "#4a5c43"
+     },
+     "textkontrastIValdTuppel": 4.68,
+     "$kravUppfyllt": "WCAG 1.4.3 4.5:1",
+     "$intePreferens": "Kvoten ar ett konformansutfall, inte ett onskat malvarde.",
+     "kollateralaAndringar": 0,
+     "okanda": 0,
+     "artefakt": "fas2/r04-compound-preview.json"
+    },
+    "tuppelidentitet": {
+     "$regel": "Tuppeln ar den manskliga jamforelseenheten, INTE en gemensam beslutsidentitet. De tva enheterna behaller varsin tokenidentitet och kan ga isar i framtiden.",
+     "valdTillsammansMed": "APP_BACKGROUND"
+    }
+   }
+  ],
+  "registertotaler": {
+   "beslut": 63,
+   "aktiva": 61,
+   "ersatta": 2,
+   "perTyp": {
+    "temavaxlande": 39,
+    "temainvariant": 7,
+    "UNKNOWN": 15
+   },
+   "perStatus": {
+    "ACTIVE": 60,
+    "VERIFIED_EXISTING_MAPPING": 1
+   },
+   "perOmfattning": {
+    "WHOLE_CANDIDATE": 9,
+    "SUBGROUP": 52
+   }
+  },
+  "$mappningstyp": "De tva nya bar UNKNOWN. Historiska UNKNOWN-rader ar oberorda."
+ },
+ "B_previewbevis": {
+  "commit": "327269a",
+  "tupplar": 8,
+  "parvisaJamforelser": 28,
+  "ordinalerSomVarierar": [
+   0,
+   6
+  ],
+  "inomGrupp": [
+   6
+  ],
+  "kollateral": 0,
+  "okand": 0,
+  "tvetydigtAgarskap": 0,
+  "identiskGeometri": true,
+  "textkontrastAllaAtta": "PASS",
+  "lagsta": 4.68,
+  "nedrakningssparetsKompositering": "EXPECTED_TARGET_DEPENDENCY",
+  "$ej": [
+   "COLLATERAL",
+   "THIRD_VARIABLE",
+   "UNCONTROLLED_CHANGE"
+  ],
+  "$textkontrast": "Kvoten 4.68 ar ett konformansutfall, inte ett onskat malvarde."
+ },
+ "C_globceremoniOmraknad": {
+  "kategorier": {
+   "DECIDED": 2,
+   "VERIFIED": 5,
+   "TEMPORARY_PREVIEW_CONTROL": 4,
+   "REAL_DECISION_REQUIRED": 1,
+   "LOCKED_DEPENDENCY": 1
+  },
+  "summa": 13,
+  "rader": [
+   {
+    "etikett": "APP_BACKGROUND",
+    "kalla": "globceremoni|0|background-color",
+    "roll": "yta-app",
+    "ljusvarde": "#24382c",
+    "kategori": "DECIDED",
+    "foralder": "appytan (malet)",
+    "koppling": null
+   },
+   {
+    "etikett": "globceremoni|0|border-top-color",
+    "kalla": "globceremoni|0|border-top-color",
+    "roll": "ram-app",
+    "ljusvarde": "#ccd1c2",
+    "kategori": "VERIFIED",
+    "foralder": "appytan (malet)",
+    "koppling": null
+   },
+   {
+    "etikett": "globceremoni|0|border-right-color",
+    "kalla": "globceremoni|0|border-right-color",
+    "roll": "ram-app",
+    "ljusvarde": "#ccd1c2",
+    "kategori": "VERIFIED",
+    "foralder": "appytan (malet)",
+    "koppling": null
+   },
+   {
+    "etikett": "globceremoni|0|border-bottom-color",
+    "kalla": "globceremoni|0|border-bottom-color",
+    "roll": "ram-app",
+    "ljusvarde": "#ccd1c2",
+    "kategori": "VERIFIED",
+    "foralder": "appytan (malet)",
+    "koppling": null
+   },
+   {
+    "etikett": "globceremoni|0|border-left-color",
+    "kalla": "globceremoni|0|border-left-color",
+    "roll": "ram-app",
+    "ljusvarde": "#ccd1c2",
+    "kategori": "VERIFIED",
+    "foralder": "appytan (malet)",
+    "koppling": null
+   },
+   {
+    "etikett": "HEADING",
+    "kalla": "globceremoni|3|color",
+    "roll": "text-innehall",
+    "ljusvarde": "#f5f4ed",
+    "kategori": "TEMPORARY_PREVIEW_CONTROL",
+    "foralder": "appytan (malet)",
+    "koppling": "INDEPENDENT_CONTROL_AVAILABLE"
+   },
+   {
+    "etikett": "SUBTITLE",
+    "kalla": "globceremoni|4|color",
+    "roll": "text-innehall",
+    "ljusvarde": "#c9d3c4",
+    "kategori": "TEMPORARY_PREVIEW_CONTROL",
+    "foralder": "appytan (malet)",
+    "koppling": "INDEPENDENT_CONTROL_AVAILABLE"
+   },
+   {
+    "etikett": "BODY_TEXT",
+    "kalla": "globceremoni|5|color",
+    "roll": "text-innehall",
+    "ljusvarde": "#f5f4ed",
+    "kategori": "TEMPORARY_PREVIEW_CONTROL",
+    "foralder": "appytan (malet)",
+    "koppling": "INDEPENDENT_CONTROL_AVAILABLE"
+   },
+   {
+    "etikett": "BUTTON_SURFACE",
+    "kalla": "globceremoni|6|background-color",
+    "roll": "yta-kontroll",
+    "ljusvarde": "#f5f4ed",
+    "kategori": "DECIDED",
+    "foralder": "appytan (malet)",
+    "koppling": null
+   },
+   {
+    "etikett": "BUTTON_TEXT",
+    "kalla": "globceremoni|6|color",
+    "roll": "text-kontroll",
+    "ljusvarde": "#24382c",
+    "kategori": "VERIFIED",
+    "foralder": "egen malad yta",
+    "koppling": null
+   },
+   {
+    "etikett": "COUNTDOWN_TRACK",
+    "kalla": "globceremoni|7|background-color",
+    "roll": "yta-upphojd",
+    "ljusvarde": "#3f5145",
+    "kategori": "REAL_DECISION_REQUIRED",
+    "foralder": "appytan (malet)",
+    "koppling": "INDEPENDENT_CONTROL_AVAILABLE"
+   },
+   {
+    "etikett": "COUNTDOWN_VALUE",
+    "kalla": "globceremoni|8|background-color",
+    "roll": "yta-upphojd",
+    "ljusvarde": "#ce7c1e",
+    "kategori": "LOCKED_DEPENDENCY",
+    "foralder": "ordinal 7",
+    "koppling": "BLOCKED_BY_UNKNOWN"
+   },
+   {
+    "etikett": "HELP_TEXT",
+    "kalla": "globceremoni|9|color",
+    "roll": "text-innehall",
+    "ljusvarde": "#c9d3c4",
+    "kategori": "TEMPORARY_PREVIEW_CONTROL",
+    "foralder": "appytan (malet)",
+    "koppling": "INDEPENDENT_CONTROL_AVAILABLE"
+   }
+  ],
+  "DESIGN_CLOSED": false,
+  "$varfor": "Tva mal ar beslutade, men fyra textenheter halls fortfarande av temporara previewkontroller och nedrakningsstrecket ar odecidat. Temporara kontroller ger noll kredit.",
+  "kvarstaendeTemporaraKontroller": [
+   {
+    "enhet": "HEADING",
+    "kalla": "globceremoni|3|color",
+    "ljusvarde": "#f5f4ed",
+    "kandidater": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ]
+   },
+   {
+    "enhet": "SUBTITLE",
+    "kalla": "globceremoni|4|color",
+    "ljusvarde": "#c9d3c4",
+    "kandidater": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ]
+   },
+   {
+    "enhet": "BODY_TEXT",
+    "kalla": "globceremoni|5|color",
+    "ljusvarde": "#f5f4ed",
+    "kandidater": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ]
+   },
+   {
+    "enhet": "HELP_TEXT",
+    "kalla": "globceremoni|9|color",
+    "ljusvarde": "#c9d3c4",
+    "kandidater": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ]
+   }
+  ],
+  "kvarstaendeVerkligaBeslut": [
+   {
+    "enhet": "COUNTDOWN_TRACK",
+    "kalla": "globceremoni|7|background-color",
+    "ljusvarde": "#3f5145"
+   }
+  ],
+  "lasta": [
+   {
+    "enhet": "COUNTDOWN_VALUE",
+    "lasesUppAv": "COUNTDOWN_TRACK"
+   }
+  ]
+ },
+ "D_populationer": {
+  "HISTORISK_FRYST_ICKE_TEXTPOPULATION": {
+   "status": "CLOSED / VERIFIED for sitt frysta matta scope",
+   "objekt": 542,
+   "artefakter": 202,
+   "fynd": 0,
+   "unknown": 0,
+   "$regel": "Skrivs inte om. Ingen siffra har rorts."
+  },
+  "NY_CSS_BOX_GRAFISK_POPULATION": {
+   "status": "OPEN",
+   "relationer": 28,
+   "skarmar": 21,
+   "raUnder3": 17
+  },
+  "OVERGRIPANDE_ICKE_TEXTVERIFIERING": {
+   "status": "OPEN i avvaktan pa utvidgningens avstamning"
+  },
+  "$regel": "Den historiska verifieringen kallas inte felaktig. Den var korrekt for sitt scope."
+ },
+ "E_inventering": [
+  {
+   "id": "CSSG-14",
+   "skarm": "profil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "profil|38|background-color",
+   "vardeBarare": "profil|39|background-color",
+   "angransandeBarare": "profil|38|background-color",
+   "form": "REGLAGE",
+   "semantiskRoll": "stateCarrier — knoppens lage visar pa eller av",
+   "varforInformationsbarande": "data-component=\"toggle\" och pillerform med absolut positionerad knopp. Ingen text anger tillstandet.",
+   "ljusForgrund": "#f5f4ed",
+   "ljusAngransande": "#ccd1c2",
+   "deklareratSpar": "rgb(204, 209, 194)",
+   "deklareradFyllning": "rgb(245, 244, 237)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 1.41,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "PRODUCT_ERROR",
+   "utfall": "UNDER_3.0",
+   "bifynd": "toggeln ligger utanfor [data-a11y-role] och sags darfor aldrig av kontrollpopulationen i nt-baslinjen"
+  },
+  {
+   "id": "CSSG-08",
+   "skarm": "statistik",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "statistik|50|background-color",
+   "vardeBarare": "statistik|51|background-color",
+   "angransandeBarare": "statistik|50|background-color",
+   "form": "STAPEL",
+   "semantiskRoll": "supplemental — vardet star som siffra intill",
+   "varforInformationsbarande": "siffran star omedelbart intill stapeln",
+   "ljusForgrund": "#b4bfa6",
+   "ljusAngransande": "#e6ead9",
+   "deklareratSpar": "rgb(230, 234, 217)",
+   "deklareradFyllning": "rgb(180, 191, 166)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 1.57,
+   "troskelkalla": "ingen troskel tillamplig",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "REDUNDANT",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-03",
+   "skarm": "lagamorkt",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "tema": "dark",
+   "stabilIdentitet": "lagamorkt|46|background-color",
+   "vardeBarare": "lagamorkt|47|background-color",
+   "angransandeBarare": "lagamorkt|46|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "supplemental — proportionen star i text",
+   "varforInformationsbarande": "narliggande text anger proportionen: \"Steg 2\"",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#536458",
+   "deklareratSpar": "rgba(245, 244, 237, 0.18)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": true,
+   "bakomSpar": "rgb(47, 68, 55)",
+   "kvot": 1.96,
+   "troskelkalla": "ingen troskel tillamplig",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "REDUNDANT",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-21",
+   "skarm": "lagatimers",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "lagatimers|13|background-color",
+   "vardeBarare": "lagatimers|14|background-color",
+   "angransandeBarare": "lagatimers|13|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "informationsbarande — strecket ar enda barare av hur langt processen gatt",
+   "varforInformationsbarande": "narliggande text anger ingen proportion (Pastan)",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#536458",
+   "deklareratSpar": "rgba(245, 244, 237, 0.18)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": true,
+   "bakomSpar": "rgb(47, 68, 55)",
+   "kvot": 1.96,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "PRODUCT_ERROR",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-10",
+   "skarm": "chattmorkt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "tema": "dark",
+   "stabilIdentitet": "chattmorkt|30|background-color",
+   "vardeBarare": "chattmorkt|31|background-color",
+   "angransandeBarare": "chattmorkt|30|background-color",
+   "form": "SKRIVINDIKATOR",
+   "semantiskRoll": "informationsbarande — prickarna visar att nagon skriver",
+   "varforInformationsbarande": "sma runda punkter i en bubbla, ingen text som sager samma sak",
+   "ljusForgrund": "#627061",
+   "ljusAngransande": "#2f4437",
+   "deklareratSpar": "rgb(47, 68, 55)",
+   "deklareradFyllning": "rgb(98, 112, 97)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(23, 37, 29)",
+   "kvot": 2,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "PRODUCT_ERROR",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-05",
+   "skarm": "smartimport",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "smartimport|31|background-color",
+   "vardeBarare": "smartimport|32|background-color",
+   "angransandeBarare": "smartimport|31|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "informationsbarande — strecket ar enda barare av hur langt processen gatt",
+   "varforInformationsbarande": "narliggande text anger ingen proportion (Importerar …)",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#ccd1c2",
+   "deklareratSpar": "rgb(204, 209, 194)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(230, 234, 217)",
+   "kvot": 2.06,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "PRODUCT_ERROR",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-24",
+   "skarm": "vmbgenererar",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "vmbgenererar|50|background-color",
+   "vardeBarare": "vmbgenererar|51|background-color",
+   "angransandeBarare": "vmbgenererar|50|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "informationsbarande — strecket ar enda barare av hur langt processen gatt",
+   "varforInformationsbarande": "narliggande text anger ingen proportion (lägger ut …)",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#ccd1c2",
+   "deklareratSpar": "rgb(204, 209, 194)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 2.06,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "PRODUCT_ERROR",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-01",
+   "skarm": "start",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "start|18|background-color",
+   "vardeBarare": "start|19|background-color",
+   "angransandeBarare": "start|18|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "informationsbarande — strecket ar enda barare av hur langt processen gatt",
+   "varforInformationsbarande": "narliggande text anger ingen proportion (Dukar upp ditt kök…)",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#4a5a4f",
+   "deklareratSpar": "rgba(245, 244, 237, 0.18)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": true,
+   "bakomSpar": "rgb(36, 56, 44)",
+   "kvot": 2.28,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "PRODUCT_ERROR",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-02",
+   "skarm": "lagastaende",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "lagastaende|46|background-color",
+   "vardeBarare": "lagastaende|47|background-color",
+   "angransandeBarare": "lagastaende|46|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "supplemental — proportionen star i text",
+   "varforInformationsbarande": "narliggande text anger proportionen: \"Steg 2\"",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#4a5a4f",
+   "deklareratSpar": "rgba(245, 244, 237, 0.18)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": true,
+   "bakomSpar": "rgb(36, 56, 44)",
+   "kvot": 2.28,
+   "troskelkalla": "ingen troskel tillamplig",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "REDUNDANT",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-11",
+   "skarm": "lagastaende320",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "lagastaende320|27|background-color",
+   "vardeBarare": "lagastaende320|28|background-color",
+   "angransandeBarare": "lagastaende320|27|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "supplemental — proportionen star i text",
+   "varforInformationsbarande": "narliggande text anger proportionen: \"Steg 2\"",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#4a5a4f",
+   "deklareratSpar": "rgba(245, 244, 237, 0.18)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": true,
+   "bakomSpar": "rgb(36, 56, 44)",
+   "kvot": 2.28,
+   "troskelkalla": "ingen troskel tillamplig",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "REDUNDANT",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-18",
+   "skarm": "snackbars",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "snackbars|23|background-color",
+   "vardeBarare": "snackbars|24|background-color",
+   "angransandeBarare": "snackbars|23|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "informationsbarande — strecket ar enda barare av hur langt processen gatt",
+   "varforInformationsbarande": "narliggande text anger ingen proportion (Synkroniserar …)",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#4a5a4f",
+   "deklareratSpar": "rgba(245, 244, 237, 0.18)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": true,
+   "bakomSpar": "rgb(36, 56, 44)",
+   "kvot": 2.28,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "PRODUCT_ERROR",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-04",
+   "skarm": "smartimport",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "smartimport|19|background-color",
+   "vardeBarare": "smartimport|20|background-color",
+   "angransandeBarare": "smartimport|19|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "informationsbarande — strecket ar enda barare av hur langt processen gatt",
+   "varforInformationsbarande": "narliggande text anger ingen proportion (Analyserar receptet Undertexter hittade · 0:14)",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#e6ead9",
+   "deklareratSpar": "rgb(230, 234, 217)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 2.63,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "PRODUCT_ERROR",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-15",
+   "skarm": "delatlistor",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "delatlistor|13|background-color",
+   "vardeBarare": "delatlistor|14|background-color",
+   "angransandeBarare": "delatlistor|13|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "supplemental — proportionen star i text",
+   "varforInformationsbarande": "narliggande text anger proportionen: \"13 av 20\"",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#e6ead9",
+   "deklareratSpar": "rgb(230, 234, 217)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 2.63,
+   "troskelkalla": "ingen troskel tillamplig",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "REDUNDANT",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-20",
+   "skarm": "hemladdar",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "hemladdar|12|background-color",
+   "vardeBarare": "hemladdar|13|background-color",
+   "angransandeBarare": "hemladdar|12|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "informationsbarande — strecket ar enda barare av hur langt processen gatt",
+   "varforInformationsbarande": "narliggande text anger ingen proportion (Hämtar veckans plan …)",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#e6ead9",
+   "deklareratSpar": "rgb(230, 234, 217)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 2.63,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "PRODUCT_ERROR",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-25",
+   "skarm": "imp2hamtar",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "imp2hamtar|25|background-color",
+   "vardeBarare": "imp2hamtar|26|background-color",
+   "angransandeBarare": "imp2hamtar|25|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "informationsbarande — strecket ar enda barare av hur langt processen gatt",
+   "varforInformationsbarande": "narliggande text anger ingen proportion (Hämtar sidanLäser strukturerad dataTolkar ingredienser…Kontr)",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#e6ead9",
+   "deklareratSpar": "rgb(230, 234, 217)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 2.63,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "PRODUCT_ERROR",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-27",
+   "skarm": "globceremoni",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "globceremoni|7|background-color",
+   "vardeBarare": "globceremoni|8|background-color",
+   "angransandeBarare": "globceremoni|7|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "informationsbarande — strecket ar enda barare av hur langt processen gatt",
+   "varforInformationsbarande": "narliggande text anger ingen proportion (Första receptet är ditt Pannbiffar med lök ligger nu i ditt )",
+   "ljusForgrund": "#ce7c1e",
+   "ljusAngransande": "#3f5145",
+   "deklareratSpar": "rgb(63, 81, 69)",
+   "deklareradFyllning": "rgb(206, 124, 30)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(36, 56, 44)",
+   "kvot": 2.64,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "PRODUCT_ERROR",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-22",
+   "skarm": "lagatimers",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "lagatimers|22|background-color",
+   "vardeBarare": "lagatimers|23|background-color",
+   "angransandeBarare": "lagatimers|22|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "informationsbarande — strecket ar enda barare av hur langt processen gatt",
+   "varforInformationsbarande": "narliggande text anger ingen proportion (Svampen)",
+   "ljusForgrund": "#dca968",
+   "ljusAngransande": "#536458",
+   "deklareratSpar": "rgba(245, 244, 237, 0.18)",
+   "deklareradFyllning": "rgb(220, 169, 104)",
+   "sparGenomskinligt": true,
+   "bakomSpar": "rgb(47, 68, 55)",
+   "kvot": 2.98,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "PRODUCT_ERROR",
+   "utfall": "UNDER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-07",
+   "skarm": "statistik",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "statistik|45|background-color",
+   "vardeBarare": "statistik|46|background-color",
+   "angransandeBarare": "statistik|45|background-color",
+   "form": "STAPEL",
+   "semantiskRoll": "supplemental — vardet star som siffra intill",
+   "varforInformationsbarande": "siffran star omedelbart intill stapeln",
+   "ljusForgrund": "#627061",
+   "ljusAngransande": "#e6ead9",
+   "deklareratSpar": "rgb(230, 234, 217)",
+   "deklareradFyllning": "rgb(98, 112, 97)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 4.27,
+   "troskelkalla": "ingen troskel tillamplig",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "REDUNDANT",
+   "utfall": "OVER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-09",
+   "skarm": "chatt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "chatt|30|background-color",
+   "vardeBarare": "chatt|31|background-color",
+   "angransandeBarare": "chatt|30|background-color",
+   "form": "SKRIVINDIKATOR",
+   "semantiskRoll": "informationsbarande — prickarna visar att nagon skriver",
+   "varforInformationsbarande": "sma runda punkter i en bubbla, ingen text som sager samma sak",
+   "ljusForgrund": "#627061",
+   "ljusAngransande": "#e6ead9",
+   "deklareratSpar": "rgb(230, 234, 217)",
+   "deklareradFyllning": "rgb(98, 112, 97)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 4.27,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "NOT_APPLICABLE",
+   "utfall": "OVER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-12",
+   "skarm": "chatt320",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "chatt320|30|background-color",
+   "vardeBarare": "chatt320|31|background-color",
+   "angransandeBarare": "chatt320|30|background-color",
+   "form": "SKRIVINDIKATOR",
+   "semantiskRoll": "informationsbarande — prickarna visar att nagon skriver",
+   "varforInformationsbarande": "sma runda punkter i en bubbla, ingen text som sager samma sak",
+   "ljusForgrund": "#627061",
+   "ljusAngransande": "#e6ead9",
+   "deklareratSpar": "rgb(230, 234, 217)",
+   "deklareradFyllning": "rgb(98, 112, 97)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 4.27,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "NOT_APPLICABLE",
+   "utfall": "OVER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-06",
+   "skarm": "statistik",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "statistik|40|background-color",
+   "vardeBarare": "statistik|41|background-color",
+   "angransandeBarare": "statistik|40|background-color",
+   "form": "STAPEL",
+   "semantiskRoll": "supplemental — vardet star som siffra intill",
+   "varforInformationsbarande": "siffran star omedelbart intill stapeln",
+   "ljusForgrund": "#4a5c43",
+   "ljusAngransande": "#e6ead9",
+   "deklareratSpar": "rgb(230, 234, 217)",
+   "deklareradFyllning": "rgb(74, 92, 67)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 5.9,
+   "troskelkalla": "ingen troskel tillamplig",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "REDUNDANT",
+   "utfall": "OVER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-23",
+   "skarm": "vmbgenererar",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "vmbgenererar|22|background-color",
+   "vardeBarare": "vmbgenererar|23|background-color",
+   "angransandeBarare": "vmbgenererar|22|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "supplemental — proportionen star i text",
+   "varforInformationsbarande": "narliggande text anger proportionen: \"4 av 7\"",
+   "ljusForgrund": "#24382c",
+   "ljusAngransande": "#ccd1c2",
+   "deklareratSpar": "rgb(204, 209, 194)",
+   "deklareradFyllning": "rgb(36, 56, 44)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 8.03,
+   "troskelkalla": "ingen troskel tillamplig",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "REDUNDANT",
+   "utfall": "OVER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-28",
+   "skarm": "kompbild",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "kompbild|9|background-color",
+   "vardeBarare": "kompbild|10|background-color",
+   "angransandeBarare": "kompbild|9|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "supplemental — proportionen star i text",
+   "varforInformationsbarande": "narliggande text anger proportionen: \"62 %\"",
+   "ljusForgrund": "#24382c",
+   "ljusAngransande": "#ccd1c2",
+   "deklareratSpar": "rgb(204, 209, 194)",
+   "deklareradFyllning": "rgb(36, 56, 44)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(230, 234, 217)",
+   "kvot": 8.03,
+   "troskelkalla": "ingen troskel tillamplig",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "REDUNDANT",
+   "utfall": "OVER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-19",
+   "skarm": "safeareaios",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "safeareaios|31|background-color",
+   "vardeBarare": "safeareaios|32|background-color",
+   "angransandeBarare": "safeareaios|31|background-color",
+   "form": "STAPEL",
+   "semantiskRoll": "oklart",
+   "varforInformationsbarande": "ingen siffra hittad i narliggande text",
+   "ljusForgrund": "#24382c",
+   "ljusAngransande": "#e6ead9",
+   "deklareratSpar": "rgb(230, 234, 217)",
+   "deklareradFyllning": "rgb(36, 56, 44)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 10.22,
+   "troskelkalla": "ingen troskel tillamplig",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "UNKNOWN",
+   "utfall": "OVER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-26",
+   "skarm": "kontovantan",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "tema": null,
+   "stabilIdentitet": "kontovantan|28|background-color",
+   "vardeBarare": "kontovantan|29|background-color",
+   "angransandeBarare": "kontovantan|28|background-color",
+   "form": "FORLOPPSSTRECK",
+   "semantiskRoll": "informationsbarande — strecket ar enda barare av hur langt processen gatt",
+   "varforInformationsbarande": "narliggande text anger ingen proportion (Sökindex Lokal cache Recept, menyer, listorpågår Bilder och )",
+   "ljusForgrund": "#24382c",
+   "ljusAngransande": "#e6ead9",
+   "deklareratSpar": "rgb(230, 234, 217)",
+   "deklareradFyllning": "rgb(36, 56, 44)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 10.22,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "NOT_APPLICABLE",
+   "utfall": "OVER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-13",
+   "skarm": "profil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "profil|34|background-color",
+   "vardeBarare": "profil|35|background-color",
+   "angransandeBarare": "profil|34|background-color",
+   "form": "REGLAGE",
+   "semantiskRoll": "stateCarrier — knoppens lage visar pa eller av",
+   "varforInformationsbarande": "data-component=\"toggle\" och pillerform med absolut positionerad knopp. Ingen text anger tillstandet.",
+   "ljusForgrund": "#f5f4ed",
+   "ljusAngransande": "#24382c",
+   "deklareratSpar": "rgb(36, 56, 44)",
+   "deklareradFyllning": "rgb(245, 244, 237)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 11.36,
+   "troskelkalla": "WCAG 1.4.11 — grafiska objekt som kravs for att forsta innehallet, 3:1",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "NOT_APPLICABLE",
+   "utfall": "OVER_3.0",
+   "bifynd": "toggeln ligger utanfor [data-a11y-role] och sags darfor aldrig av kontrollpopulationen i nt-baslinjen"
+  },
+  {
+   "id": "CSSG-16",
+   "skarm": "taggdetalj",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "taggdetalj|25|background-color",
+   "vardeBarare": "taggdetalj|26|background-color",
+   "angransandeBarare": "taggdetalj|25|background-color",
+   "form": "REGLAGELIKNANDE",
+   "semantiskRoll": "oklart",
+   "varforInformationsbarande": "formen liknar ett reglage men elementet bar ingen toggeldeklaration — faller stangt",
+   "ljusForgrund": "#f5f4ed",
+   "ljusAngransande": "#24382c",
+   "deklareratSpar": "rgb(36, 56, 44)",
+   "deklareradFyllning": "rgb(245, 244, 237)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 11.36,
+   "troskelkalla": "ingen troskel tillamplig",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "UNKNOWN",
+   "utfall": "OVER_3.0",
+   "bifynd": null
+  },
+  {
+   "id": "CSSG-17",
+   "skarm": "taggdetalj",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "tema": "light",
+   "stabilIdentitet": "taggdetalj|31|background-color",
+   "vardeBarare": "taggdetalj|32|background-color",
+   "angransandeBarare": "taggdetalj|31|background-color",
+   "form": "REGLAGELIKNANDE",
+   "semantiskRoll": "oklart",
+   "varforInformationsbarande": "formen liknar ett reglage men elementet bar ingen toggeldeklaration — faller stangt",
+   "ljusForgrund": "#f5f4ed",
+   "ljusAngransande": "#24382c",
+   "deklareratSpar": "rgb(36, 56, 44)",
+   "deklareradFyllning": "rgb(245, 244, 237)",
+   "sparGenomskinligt": false,
+   "bakomSpar": "rgb(245, 244, 237)",
+   "kvot": 11.36,
+   "troskelkalla": "ingen troskel tillamplig",
+   "kallagare": "inline style pa elementet",
+   "skrivbarProvenance": "inline style — skrivbar per instans",
+   "tillstandsberoende": false,
+   "grafikrollDeklarerad": null,
+   "delatBeslut": "nej — varje forekomst ar sin egen beslutsidentitet",
+   "klassificering": "UNKNOWN",
+   "utfall": "OVER_3.0",
+   "bifynd": null
+  }
+ ],
+ "F_adjudicering": {
+  "fordelning": {
+   "PRODUCT_ERROR": 12,
+   "REDUNDANT": 9,
+   "NOT_APPLICABLE": 4,
+   "UNKNOWN": 3
+  },
+  "raUnder3": 17,
+  "faktiskaProduktfel": 12,
+  "$skillnad": "Fem av de 17 rana matningarna ar REDUNDANT: proportionen star som siffra intill grafiken. De ar inte produktfel.",
+  "redundantaUnder3": [
+   {
+    "id": "CSSG-08",
+    "skarm": "statistik",
+    "kvot": 1.57,
+    "skal": "siffran star omedelbart intill stapeln"
+   },
+   {
+    "id": "CSSG-03",
+    "skarm": "lagamorkt",
+    "kvot": 1.96,
+    "skal": "narliggande text anger proportionen: \"Steg 2\""
+   },
+   {
+    "id": "CSSG-02",
+    "skarm": "lagastaende",
+    "kvot": 2.28,
+    "skal": "narliggande text anger proportionen: \"Steg 2\""
+   },
+   {
+    "id": "CSSG-11",
+    "skarm": "lagastaende320",
+    "kvot": 2.28,
+    "skal": "narliggande text anger proportionen: \"Steg 2\""
+   },
+   {
+    "id": "CSSG-15",
+    "skarm": "delatlistor",
+    "kvot": 2.63,
+    "skal": "narliggande text anger proportionen: \"13 av 20\""
+   }
+  ],
+  "unknownFallerStangt": [
+   {
+    "id": "CSSG-19",
+    "skarm": "safeareaios",
+    "kvot": 10.22,
+    "skal": "ingen siffra hittad i narliggande text"
+   },
+   {
+    "id": "CSSG-16",
+    "skarm": "taggdetalj",
+    "kvot": 11.36,
+    "skal": "formen liknar ett reglage men elementet bar ingen toggeldeklaration — faller stangt"
+   },
+   {
+    "id": "CSSG-17",
+    "skarm": "taggdetalj",
+    "kvot": 11.36,
+    "skal": "formen liknar ett reglage men elementet bar ingen toggeldeklaration — faller stangt"
+   }
+  ],
+  "perTema": {
+   "ljusaRitningar": 26,
+   "morkaRitningar": 2,
+   "produktfelILjusa": 11,
+   "produktfelIMorka": 1,
+   "$not": "De morka ritningarna ar egna artefakter med authored dark. Deras fynd hor till morkt lage, inte till den ljusa produkten."
+  }
+ },
+ "G_metodgap": {
+  "fraga": "Varfor sags vanliga CSS-grafiska barare aldrig?",
+  "kandidater": {
+   "A": "historiskt scope uteslot dem avsiktligt",
+   "B": "den semantiska populationsmigrationen representerade dem inte an",
+   "C": "matningens implementation kande bara igen svg- och ikonbarare",
+   "D": "annan uttalad orsak"
+  },
+  "svar": "C",
+  "bevis": [
+   "tools/graphic-objects.mjs deklarerar modellen som \"grafik som INTE ligger i en kontroll och som kravs for att FORSTA innehallet\" — ingen begransning till svg namns",
+   "urvalet i samma fil ar querySelectorAll(\"svg, [data-icon], [data-illustration]\")",
+   "ett forloppsstreck ritat med tva div-element uppfyller modellens definition men matchar inte urvalet"
+  ],
+  "klassificering": "METHOD_COVERAGE_GAP",
+  "$ejOmskrivning": "Historiska resultat skrivs inte om. Gapet galler vilka element som raknades, inte hur de bedomdes.",
+  "bifyndKontrollpopulationen": {
+   "$vad": "Samma sorts lucka finns i kontrollpopulationen.",
+   "deklareradeTogglar": 34,
+   "inutiDeklareradKontroll": 32,
+   "utanfor": 2,
+   "skarmar": [
+    "profil"
+   ],
+   "$not": "Tva togglar bar data-component=\"toggle\" men ligger utanfor [data-a11y-role]. Kontrollpopulationen i nt-baslinjen ser dem darfor aldrig. Den ena av dem ar ett produktfel pa 1.41."
+  }
+ },
+ "H_rotorsaker": {
+  "$regel": "Rotorsak ar inte beslutsidentitet. Samma kalla betyder inte automatiskt samma semantiska beslut.",
+  "grupper": [
+   {
+    "rotorsakId": "RC-01",
+    "angransandeFarg": "#ccd1c2",
+    "vardefarg": "#f5f4ed",
+    "form": "REGLAGE",
+    "kvot": 1.41,
+    "relationsantal": 1,
+    "skarmantal": 1,
+    "relationer": [
+     "CSSG-14"
+    ],
+    "skarmar": [
+     "profil"
+    ],
+    "kalldeklaration": [
+     "inline style — skrivbar per instans"
+    ],
+    "sammaTekniskaFix": "nej — delad klassregel, blast radius maste utredas",
+    "semantiskaBeslutSkilda": "JA. Samma rotorsak ar inte samma semantiska beslut. Varje forekomst behaller sin egen beslutsidentitet."
+   },
+   {
+    "rotorsakId": "RC-02",
+    "angransandeFarg": "#536458",
+    "vardefarg": "#ce7c1e",
+    "form": "FORLOPPSSTRECK",
+    "kvot": 1.96,
+    "relationsantal": 1,
+    "skarmantal": 1,
+    "relationer": [
+     "CSSG-21"
+    ],
+    "skarmar": [
+     "lagatimers"
+    ],
+    "kalldeklaration": [
+     "inline style — skrivbar per instans"
+    ],
+    "sammaTekniskaFix": "nej — delad klassregel, blast radius maste utredas",
+    "semantiskaBeslutSkilda": "JA. Samma rotorsak ar inte samma semantiska beslut. Varje forekomst behaller sin egen beslutsidentitet."
+   },
+   {
+    "rotorsakId": "RC-03",
+    "angransandeFarg": "#2f4437",
+    "vardefarg": "#627061",
+    "form": "SKRIVINDIKATOR",
+    "kvot": 2,
+    "relationsantal": 1,
+    "skarmantal": 1,
+    "relationer": [
+     "CSSG-10"
+    ],
+    "skarmar": [
+     "chattmorkt"
+    ],
+    "kalldeklaration": [
+     "inline style — skrivbar per instans"
+    ],
+    "sammaTekniskaFix": "nej — delad klassregel, blast radius maste utredas",
+    "semantiskaBeslutSkilda": "JA. Samma rotorsak ar inte samma semantiska beslut. Varje forekomst behaller sin egen beslutsidentitet."
+   },
+   {
+    "rotorsakId": "RC-04",
+    "angransandeFarg": "#ccd1c2",
+    "vardefarg": "#ce7c1e",
+    "form": "FORLOPPSSTRECK",
+    "kvot": 2.06,
+    "relationsantal": 2,
+    "skarmantal": 2,
+    "relationer": [
+     "CSSG-05",
+     "CSSG-24"
+    ],
+    "skarmar": [
+     "smartimport",
+     "vmbgenererar"
+    ],
+    "kalldeklaration": [
+     "inline style — skrivbar per instans"
+    ],
+    "sammaTekniskaFix": "nej — delad klassregel, blast radius maste utredas",
+    "semantiskaBeslutSkilda": "JA. Samma rotorsak ar inte samma semantiska beslut. Varje forekomst behaller sin egen beslutsidentitet."
+   },
+   {
+    "rotorsakId": "RC-05",
+    "angransandeFarg": "#4a5a4f",
+    "vardefarg": "#ce7c1e",
+    "form": "FORLOPPSSTRECK",
+    "kvot": 2.28,
+    "relationsantal": 2,
+    "skarmantal": 2,
+    "relationer": [
+     "CSSG-01",
+     "CSSG-18"
+    ],
+    "skarmar": [
+     "start",
+     "snackbars"
+    ],
+    "kalldeklaration": [
+     "inline style — skrivbar per instans"
+    ],
+    "sammaTekniskaFix": "nej — delad klassregel, blast radius maste utredas",
+    "semantiskaBeslutSkilda": "JA. Samma rotorsak ar inte samma semantiska beslut. Varje forekomst behaller sin egen beslutsidentitet."
+   },
+   {
+    "rotorsakId": "RC-06",
+    "angransandeFarg": "#e6ead9",
+    "vardefarg": "#ce7c1e",
+    "form": "FORLOPPSSTRECK",
+    "kvot": 2.63,
+    "relationsantal": 3,
+    "skarmantal": 3,
+    "relationer": [
+     "CSSG-04",
+     "CSSG-20",
+     "CSSG-25"
+    ],
+    "skarmar": [
+     "smartimport",
+     "hemladdar",
+     "imp2hamtar"
+    ],
+    "kalldeklaration": [
+     "inline style — skrivbar per instans"
+    ],
+    "sammaTekniskaFix": "nej — delad klassregel, blast radius maste utredas",
+    "semantiskaBeslutSkilda": "JA. Samma rotorsak ar inte samma semantiska beslut. Varje forekomst behaller sin egen beslutsidentitet."
+   },
+   {
+    "rotorsakId": "RC-07",
+    "angransandeFarg": "#3f5145",
+    "vardefarg": "#ce7c1e",
+    "form": "FORLOPPSSTRECK",
+    "kvot": 2.64,
+    "relationsantal": 1,
+    "skarmantal": 1,
+    "relationer": [
+     "CSSG-27"
+    ],
+    "skarmar": [
+     "globceremoni"
+    ],
+    "kalldeklaration": [
+     "inline style — skrivbar per instans"
+    ],
+    "sammaTekniskaFix": "nej — delad klassregel, blast radius maste utredas",
+    "semantiskaBeslutSkilda": "JA. Samma rotorsak ar inte samma semantiska beslut. Varje forekomst behaller sin egen beslutsidentitet."
+   },
+   {
+    "rotorsakId": "RC-08",
+    "angransandeFarg": "#536458",
+    "vardefarg": "#dca968",
+    "form": "FORLOPPSSTRECK",
+    "kvot": 2.98,
+    "relationsantal": 1,
+    "skarmantal": 1,
+    "relationer": [
+     "CSSG-22"
+    ],
+    "skarmar": [
+     "lagatimers"
+    ],
+    "kalldeklaration": [
+     "inline style — skrivbar per instans"
+    ],
+    "sammaTekniskaFix": "nej — delad klassregel, blast radius maste utredas",
+    "semantiskaBeslutSkilda": "JA. Samma rotorsak ar inte samma semantiska beslut. Varje forekomst behaller sin egen beslutsidentitet."
+   }
+  ],
+  "$observation": "Elva av tolv fel har fyllningen #ce7c1e eller #dca968 mot ett ljust eller dampat spar. Det ar samma designmonster, inte samma beslut."
+ },
+ "I_produktwriteStopp": {
+  "galler": "alla produktfargskrivningar, inklusive R-04-implementationsbatcher",
+  "skal": "Den nyupptackta kravda grafikpopulationen kan lagga villkor pa farger som annars skulle skrivas.",
+  "tillatet": [
+   "registry-only designbeslut",
+   "previewanalys",
+   "metodprov",
+   "populationsavstamning",
+   "kall- och rotorsaksanalys"
+  ],
+  "produktwritesIDettaBlock": 0
+ },
+ "ejGjort": [
+  "ingen produktwrite",
+  "ingen fargfix",
+  "ingen data-graphic-role satt",
+  "ingen baslinje omskriven",
+  "ingen historisk mappningstyp rord"
+ ]
+}
