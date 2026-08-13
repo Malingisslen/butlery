@@ -98,3 +98,4 @@
 {"ts":"2026-08-11T21:53:33.451Z","type":"trigger","fired":true,"signals":"allergen,cloud function,consent,delete,deletion,firestore.rules,functions/src,gdpr,personal data,retention","ran":null}
 {"ts":"2026-08-11T22:00:32.941Z","type":"trigger","fired":true,"signals":"allergen,cloud function,consent,delete,deletion,firestore.rules,functions/src,gdpr,personal data,retention","ran":null}
 {"ts":"2026-08-12T11:34:55.000Z","type":"review","tier":"full","panel":["Legal Counsel","Privacy / Data Protection Officer (GDPR)","Security Architect","Product Manager","Database Administrator / Data-layer Engineer","Codebase Archaeologist"],"outcome":"escalated","must_haves":26,"conflicts":4,"escalations":4,"adrs":["ADR-0005"],"rubber_stamp":false,"approx_tokens":576000,"via":"manual","plan":"BUT-1693 household allergen sharing"}
+{"ts":"2026-08-13T19:41:23.480Z","type":"trigger","fired":true,"signals":"delete,deletion,erasure,functions/src,gdpr","ran":null}
