@@ -13,6 +13,13 @@ export const Collections = {
   realtimeMenus: "realtime_menus",
   messages: "messages",
   conversations: "conversations",
+  // The roster subcollection under `conversations/{id}`, and the collection-group
+  // id its cross-conversation queries use. Added for the account cascade's
+  // `participantId` sweep (BUT-1822). Three local copies of this literal remain —
+  // `enforce-group-minor-membership.ts`, `leave-group-conversation.ts` and
+  // `admin/reset-user-data.ts` — so a rename still needs four edits; this is the
+  // home the next writer should use, not yet the only one.
+  participants: "participants",
   recipeComments: "recipe_comments",
   unifiedShoppingLists: "unified_shopping_lists",
   unifiedSharedShoppingLists: "unified_shared_shopping_lists",

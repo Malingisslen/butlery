@@ -1425,11 +1425,52 @@ let any signed-in user write that path while the parent is absent, with no rate 
 an unbounded enumeration inside a retrying trigger was a real self-repeating bill, the same
 one the `MAX_GROUP_PARTICIPANTS` guard beside it already refuses.
 
-### Art. 17 — open, not accepted
+### Art. 17 — CLOSED 2026-08-13 (BUT-1822)
 
-Account deletion erases `users/{uid}/conversation_memberships` and nothing erases the roster
-row, which carries the deleted user's `displayName` and `avatarUrl`. Inert until this sprint
-(no rows could exist), live from now. **BUT-1822**, high priority, `firebase-backend-security`
-review. Scope note: the cascade also deletes ≤2-participant conversations whole, orphaning the
-SURVIVING partner's row too, so a `collectionGroup` leg keyed on the erased uid is not
-sufficient on its own.
+Account deletion erased `users/{uid}/conversation_memberships` and nothing erased the roster
+row, which carries the deleted user's `displayName` and `avatarUrl`. Inert until 2026-08-12
+(no rows could exist), live from then. Fixed in `deleteMessages`, in two legs, because the
+scope note below made one leg insufficient:
+
+1. the ≤2-participant branch now calls `tryClearRoster` BEFORE the parent delete and
+   **abandons the delete** if it answers false, applying `buildGroupDepartureUpdate` to the
+   surviving document instead. This is what protects the SURVIVING partner's row, whose
+   `participantId` is not the erased uid and which no uid-keyed query can find. It is also
+   the first path that can leave a `direct_` conversation standing with fewer than two
+   participants — `authorizeDeparture` refuses to let anyone leave a direct chat, so no
+   client has rendered that state before (it degrades: every "other participant" lookup in
+   `conversation.dart` carries an `orElse`). For a DIRECT conversation the seeded-roster
+   route is not reachable at all — once the parent exists only the two attested
+   participants may write rows, and `rosterUnclaimed()` excludes `direct_` — so this branch
+   means a transient read or delete failure, i.e. an outage.
+   **That branch reports the step INCOMPLETE** (`deleteMessages` returns false →
+   `failedCollections` → `gdprCompliant: false`). A `direct_` id is literally
+   `direct_<erasedUid>_<survivorUid>`, so a conversation left standing keeps the erased
+   user's identifier in its own document id, where no field-keyed probe can ever see it.
+   The erasure is not done and the audit row must not say it is.
+2. a `collectionGroup("participants").where("participantId","==",uid)` sweep, capped at
+   `MAX_ROSTER_SWEEP_ROWS` (2000) and DECLINING rather than truncating above it, because the
+   bootstrap write branch lets a stranger plant rows naming an arbitrary `participantId`
+   (BUT-1830) and so choose the size of a victim's erasure bill. Both outcomes would be
+   loud — the probe beside it is an uncapped `count()` — so declining is chosen for being
+   strictly less erasure at the same alarm, not for being the only loud one. Its cost: a
+   planted roster also blocks the sweep of the victim's LEGITIMATE rows, with no automatic
+   retry (the auth user is gone), so recovery is a human running `admin/reset-user-data.ts`.
+
+A third thing changed for the same reason. `tryClearRoster`'s three error logs, and the
+new "conversation left standing" warning, HASH a `direct_` conversation id
+(`logSafeConversationId`). The helper's code did not change; its key space did — until
+BUT-1822 its only caller was a group-only trigger with UUIDv4 ids, and a direct id is two
+raw uids in a sink that outlives the account.
+
+`probeResidualData` gained the matching collection-group leg — it could not see this class
+at all before, so it certified every such erasure clean. It fails CLOSED while the new
+index builds (FAILED_PRECONDITION counts as residual, a false alarm rather than a false
+all-clear). Index: a `fieldOverrides` entry on `participants`/`participantId`, both query
+scopes, deployed to READY before the function.
+
+**Still open:** the fix is forward-only. Rows orphaned by deletions that ran BEFORE this
+shipped have no future deletion event to hang a sweep on, and case 1 of the three deleters
+(a participant deleting the conversation from the UI) still orphans rows naming other
+people. Both remain under BUT-1825 / a backfill ticket — do not read this entry as saying
+the roster is clean.

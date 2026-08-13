@@ -220,6 +220,14 @@ idempotent:
   `tryClearRoster` hits only the mid-flight-delete fixture. Reusable lever: the
   cheapest way to force a FALSE verdict is the helper's own refusal cap — seeding
   `CAP + 1` rows is two `batch.commit()`s, no fake, no seam, no error injection.
+  **That lever usually stages a state the CALLER cannot reach, so the fixture must say
+  SYNTHETIC.** For a `direct_` conversation the seeded roster is unreachable —
+  `rosterUnclaimed()` excludes the prefix and, once the parent exists, only the two
+  attested participants may write rows — so the production-reachable false verdict
+  there is a transient read/delete failure, not 501 rows. Use the cap anyway (it is
+  the only cheap lever), but a docstring reading "staged the way production reaches
+  it" is a false claim contradicting the SUT's own comment 20 lines away. Write
+  "synthetic; production reaches this verdict via <the real route>" instead.
 - Scheduled jobs run hourly, not per-minute (43,200×/month adds up).
 
 ## Secrets handling
@@ -300,6 +308,33 @@ logger.info("descriptive event", { userId, recipeId, action });
   (`verify-signup-age.ts`). Grep `\${uid}` inside backticked log strings on
   any cascade/probe diff — one such line among a dozen clean siblings is the
   tell that it was added ad hoc.
+- **A DOCUMENT ID can be PII, and whether it is depends on the CALLER, not on
+  the log line.** A conversation id is an opaque UUIDv4 for a group and
+  `direct_${sortedUids[0]}_${sortedUids[1]}` for a DM
+  (`conversation_mutation_module.dart:57`), so `{ conversationId }` is clean in a
+  group-only trigger and is TWO cleartext uids — the erased user's AND the
+  surviving partner's, a data subject who asked for nothing — the moment a caller
+  reaches it with a 1:1 id. Flagged as a future risk in the BUT-1789 review; went
+  LIVE in BUT-1822, when the cascade's ≤2-participant branch started calling
+  `tryClearRoster` and logging `conversationId` beside a carefully-prefixed
+  `uid_prefix`. The mixed line is the tell, exactly as for hashed-vs-cleartext
+  fields. So: when a diff adds a CALLER to a helper that logs an id, re-derive
+  that id's SHAPE in the new caller's key space; a "never name a uid" comment
+  inside the helper governs its own fields, not the id it was handed. Provable
+  from a PASSING run — both `test:account-deletion-cascade` and
+  `test:enforce-group-minor-membership` print the id in their own green output.
+  **CLOSED 2026-08-13, and the closing shape is the reusable part:** one exported
+  `logSafeConversationId(id)` that returns `direct_#${hashUid(id)}` for the
+  PII-bearing spelling and the raw id otherwise — hashing only the shape that
+  carries uids keeps group UUIDs greppable, so nobody is tempted to revert it for
+  debuggability, and the `direct_#` prefix still says which kind of id it was.
+  Verified by the same suites now printing `direct_#2ad5bfa67fc4`. Second-order
+  trap, still OPEN at `account-deletion-cascade.ts:1497`: fixing the HELPER's call
+  sites is not fixing the FILE. Enumerate every log in the module whose id can be
+  direct-shaped — the `messages` create rule (`firestore.rules:1906`) has no
+  `hasOnly`, so a client can plant `metadata.subjectUserId` on a message in their
+  own DM and steer `anonymizeSystemMessagesAboutUser`'s failure log onto a
+  `direct_` id.
 - A literal NUL (or odd byte) in a source file makes `ripgrep` treat the
   WHOLE file as binary and silently skip it in sweeps — use `Read`/Node to
   inspect suspect files. CI backstop: `functions-binary-guard` in
@@ -408,6 +443,23 @@ see "When to consult the archive" at the end.
   nothing. Same for a `listDocuments()` returning `[]`. Answer with a throw
   naming the right lane ("seed the emulator suite"), and never let the stub's
   comment claim it protects a future fixture.
+- **A `?? {}` read of a document is VACUOUS for exactly the mutant that DELETES that
+  document, so every key-ABSENCE assertion over one needs a sibling that requires the
+  document to EXIST.** Measured 2026-08-13 on the BUT-1822 cascade suite (shadow-copy
+  mutant: gate neutralised to `rosterClear = true`, parent deleted anyway):
+  `(convo.participantDisplayNames)?.[uid] === undefined` stayed GREEN — an absent
+  document has no name to find — while `Array.isArray(convo.participantIds) &&
+  !includes(uid)` and "the partner's name is still Partner" both reddened. The `?? {}`
+  itself is right (reading through an absent doc would TypeError and kill a hand-rolled
+  runner, losing every later assertion); the fix is the sibling plus a comment naming
+  which assertion is vacuous under which mutant.
+- **A fake's `listDocuments()` that returns only STORED docs cannot represent a PHANTOM
+  parent — the one state production uses `listDocuments()` instead of `count()` to
+  see.** `probeResidualData`'s `unified_shopping_lists` leg exists because a deleted list
+  doc can still own live `items`; a stub that maps stored paths answers `[]` there, so
+  the probe reads CLEAN in the suite and RESIDUAL in production. Derive the ids from
+  deeper paths (`new Set(p.split('/').slice(0, depth).join('/'))`) rather than listing
+  the map, or the method's presence is the only thing the suite proves.
 - **Rules are not filters, so a client query built with NO condition is DENIED
   wholesale on a member-scoped collection** — the symptom of a no-op client
   filter (`isNotEqualTo: null` builds no condition: `cloud_firestore`

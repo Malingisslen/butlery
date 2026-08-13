@@ -1073,3 +1073,36 @@ Corollary for driving Flutter web at all: with semantics forced on (`main.dart` 
 every web start), the semantics DOM is what receives clicks, so a malformed node breaks
 automation *and* real users identically. That equivalence is why the automation trouble was
 worth diagnosing rather than working around — the workaround would have hidden a live defect.
+
+## 2026-08-13 — a helper's logs are only as safe as its CALLER LIST (BUT-1822)
+
+`tryClearRoster` had logged a bare `conversationId` since it was written, and that was
+fine: its only caller was a group-only trigger, and a group id is a client-minted UUIDv4.
+BUT-1822 gave it a second caller — the GDPR deletion cascade's 1:1 branch — and a direct
+conversation id is `direct_<uidA>_<uidB>`. The helper's code did not change. Its key space
+did, and with it the PII profile of four log lines in a sink that outlives the erased
+account. I also wrote a fifth such line myself, in the cascade, on the one code path whose
+entire purpose is Art. 17 erasure — beside a `uid_prefix` field I had added *because* raw
+uids must not be logged.
+
+Both reviewers caught it independently; I caught none of it, and the passing test output
+had been printing `direct_seeded` on my screen the whole time.
+
+What generalises:
+
+1. **Adding a caller is a change to the callee**, even when you do not touch its file. Read
+   the callee's logs, its bounds and its error paths against the NEW caller's inputs — the
+   ids, sizes and shapes it will now be handed for the first time. A prior review that
+   judged a line safe ("group ids are opaque") was judging the caller list, not the line.
+2. **A document ID can be PII.** Field-keyed probes and `hasOnly` allowlists are blind to
+   it, so no residual check will ever alarm on it. The same fact decided a second finding:
+   a conversation left standing keeps `direct_<erasedUid>_<...>` in its own id, so the step
+   must report the erasure INCOMPLETE — nothing downstream can notice on its behalf.
+3. **A comment that promises an alarm has to be true.** I wrote "the step lands in
+   `failedCollections`" about a branch that returned `true`. The honest fix was to make the
+   code match the comment, not to soften the comment — an erasure that did not finish must
+   not be reported as finished.
+4. **A mutant that does not compile is not a red test.** Three of seven probes removed a
+   declaration's last use, so `tsc` refused and the run produced no FAIL lines at all —
+   which reads exactly like a green suite if you only count reds. Assert the suite RAN
+   (grep its summary line), and keep every symbol used when mutating.

@@ -870,6 +870,20 @@ personal→collaborative leg only.
   `auth.deleteUser` unconditionally after the cascade, so the account is gone and the ONLY retry is
   a human running `functions/src/admin/reset-user-data.ts` — nothing alerts on the failed run.
   Prefer strict/loud anyway, but say what the recovery actually is.
+- **Every residual probe in this repo is FIELD-keyed, so it is structurally blind to an
+  identifier that lives in a DOCUMENT ID — and a step that knowingly leaves such a document
+  standing must report itself INCOMPLETE, because nothing else can.** BUT-1822's fallback (roster
+  unclearable ⇒ keep the parent so `parentDoc() == null` never opens the bootstrap branch) strips
+  the erased uid from every FIELD, which is exactly what makes the `participantIds
+  array-contains` probe leg read zero — while the surviving document is still literally named
+  `direct_<erasedUid>_<survivorUid>`. Fix shape: the branch flips a `complete` flag, the sweep
+  returns a bool, the step returns `complete && swept`, so `failedCollections` carries it and the
+  audit row says `gdprCompliant: false`. Ask it of any "least-bad outcome" branch: name what
+  survives, then name which probe leg would see it — "none" means the step owns the alarm.
+  Companion: a cap that DECLINES rather than truncates is only defensible once you have checked
+  whether truncating would also be loud (here both are, via an uncapped `count()` probe), so
+  write the real reason down — a false justification is what a future editor deletes the control
+  on.
 - **A row authored by a SYNTHETIC identity ("system", "bot") that names a real person in FREE TEXT
   is invisible to every cascade, because every cascade is keyed on an id field.** `deleteMessages`
   anonymizes `messages where senderId == uid` and tombstones `lastMessage` only when
@@ -1161,6 +1175,17 @@ personal→collaborative leg only.
   exception on "it stays on the device", and think before logging an error whose text embeds a
   query the app built from a uid (a `memberPermissions.<uid>` FAILED_PRECONDITION index URL is the
   realistic shape).
+- **A log line's PII profile changes when its function gains a CALLER, with no edit to the
+  logging code.** `tryClearRoster` logged a bare `conversationId` safely for months because its
+  only caller was a group-only trigger (UUIDv4 ids); BUT-1822 gave it a second caller, the
+  account-deletion cascade's ≤2-participant branch, whose ids are `direct_<uidA>_<uidB>` — two
+  raw uids, one of them the subject being erased, in a sink that outlives the account. So on any
+  diff that adds a caller to an existing helper, re-derive what each logged ARGUMENT can now
+  contain, not whether the helper changed. Same question for a STRUCTURED identifier anywhere:
+  a composite doc id (`direct_{uid}_{uid}`, `${uid}_${op}`, `{uid}_{date}`) is personal data
+  wherever it lands. Shipped shape (2026-08-13): a `logSafeConversationId` chokepoint hashing
+  only the composite form through the repo's existing `hashUid` (12 hex, sync) so operators keep
+  a correlatable handle, applied at EVERY call site in one pass.
 - A field on a world-readable doc must be audited individually for exposure — a boolean gating a
   SEARCH QUERY does not gate DIRECT-FETCH visibility.
 - **A nullable actor-NAME field stamped through `copyWith` misattributes on a multi-user doc.**

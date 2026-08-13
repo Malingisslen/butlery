@@ -3579,3 +3579,91 @@ re-guard on `_householdId`). Hygiene checks run: no `MUTANT`/`THROWAWAY`/`if (fa
 `lib/`, `functions/src` or `test/`, and no probe/`zz_*` files. Non-security note handed to the
 parent: `docs/onboarding/workflow-map.stale` is untracked and names this very consent repository
 in its `triggers`, so the CLAUDE.md marker procedure must run before the commit.
+
+### 2026-08-13 — BUT-1822: the conversation roster in the Art. 17 cascade (two rounds)
+
+Fileset: `functions/src/account/account-deletion-cascade.ts`,
+`functions/src/messaging/enforce-group-minor-membership.ts`,
+`functions/src/shared/collections.ts`, `firestore.rules` (comment-only),
+`firestore.indexes.json`.
+
+**What shipped.** `deleteMessages` gained two legs. (1) The <=2-participant branch calls
+`tryClearRoster` before the parent delete and ABANDONS the delete on a false answer, applying
+`buildGroupDepartureUpdate` to the surviving document instead — the only thing that saves the
+SURVIVING partner's row, whose `participantId` is not the erased uid and which no uid-keyed query
+can reach. (2) A `collectionGroup("participants").where("participantId","==",uid)` sweep capped at
+2000, DECLINING over the bound because the `rosterUnclaimed()` bootstrap branch lets a stranger
+plant rows naming an arbitrary participantId (BUT-1830). `probeResidualData` gained the matching
+uncapped `count()` leg; `firestore.indexes.json` gained a `participants`/`participantId`
+fieldOverride at both query scopes.
+
+**Round-1 findings, all fixed in round 2 and re-verified against the bytes.**
+
+1. (blocking) Raw uids into Cloud Logging. The new "roster not clear" warning logged
+   `conversationId`, and the <=2 branch is precisely where that id is
+   `direct_{uidA}_{uidB}` (`conversation_mutation_module.dart:57`). Worse, the same diff sent
+   direct ids into `tryClearRoster`'s three pre-existing `logger.error` calls for the first time —
+   that helper had only ever been called by the group-only trigger, which returns early at
+   `rawParticipantIds.length <= 2`. Fixed with an exported `logSafeConversationId` hashing the
+   `direct_` form via `shared/hash-uid.ts` (sync, 12 hex), applied at every site.
+   **A FIFTH site landed mid-re-review** — the file's md5 moved under me and only the
+   end-of-review re-checksum caught it, so do that every time. The site is
+   `anonymizeSystemMessagesAboutUser`'s "system lastMessage scrub failed" log, previously judged
+   group-only because `leave-group-conversation.ts` is the sole writer of
+   `metadata.subjectUserId` and refuses direct chats. It is not: the `messages` create rule in
+   `firestore.rules` carries no `hasOnly`, so a sender can plant that field on a message in their
+   own DM and steer the line onto a two-uid id. Generalisation worth more than the fix — "only
+   our writer sets this field" is a claim about the collection's create-rule KEY ALLOWLIST, never
+   about the writer; with no `hasOnly`, any authenticated writer can set any field.
+2. (blocking) A clean erasure reported over a retained identifier. The fallback stripped the uid
+   from every field, so the `conversations / participantIds array-contains` probe leg read zero
+   and `gdprCompliant` came out true while a document named `direct_<erasedUid>_<survivorUid>`
+   stood forever. Fixed: `complete = false` on that branch, `deleteOwnRosterRows` returns bool,
+   `deleteMessages` returns `complete && swept`. Test: "…and the step reports INCOMPLETE, so the
+   audit cannot say gdprCompliant".
+3. `firestore.rules` comment claimed case-1 orphans were untouched "they name someone else",
+   contradicting `deleteOwnRosterRows`' own docstring — the sweep DOES reach case-1 orphans that
+   name the erased user. Corrected.
+4. The cap's docstring justified declining with "truncating would erase half the rows and report
+   success" — false, since the probe beside it is uncapped, so both outcomes fire
+   `residual_data_detected`. Rewritten to the real reason (strictly less erasure at the same
+   alarm) plus the stated cost: a planted roster blocks the victim's legitimate rows with no
+   automatic retry, recovery being a human running `admin/reset-user-data.ts`.
+5. A rejection inside the `Promise.all` conversation loop abandoned the remaining chunks AND the
+   new sweep. Fixed with a per-conversation try/catch collecting error CODES (never `String(e)` —
+   a Firestore error embeds the path, i.e. the ids), the sweep running unconditionally after, and
+   one `return false` at the end.
+6. The thread delete sat between the roster clear and the parent delete, widening the window in
+   which a fresh roster row could be written and then orphaned. Moved above `tryClearRoster`.
+7. Deploy ordering (index READY before the function) is operational and unenforced — judged
+   non-blocking: `deleteOwnRosterRows` has no catch, so a missing index throws FAILED_PRECONDITION
+   and fails the step, and the probe leg counts the same error as residual. Loud, self-healing,
+   never a silent under-erasure. Ops caution attached: do NOT deploy indexes with `--force` (this
+   repo has live TTL policies absent from the file).
+8. The deviation entry overstated the fallback's reachability. For a `direct_` conversation the
+   seeded-roster route is unreachable — once the parent exists only the two attested participants
+   may write rows and `rosterUnclaimed()` excludes `direct_` — so the branch means a transient
+   read/delete failure. Corrected in code comment and both deviation files.
+
+**Verified clean both rounds.** Ordering: no path deletes a conversation while rows may survive
+(`tryClearRoster` never throws, so a false answer cannot be converted back into a delete).
+Probe subset: identical collection group + field; the deleter is a strict superset (it also clears
+whole rosters); the cap asymmetry is deliberate. Client tolerance of a one-participant `direct_`
+conversation: all three "other participant" lookups (`conversation.dart:315,332,347`),
+`chat_viewmodel.dart:125` and `conversations_list_view.dart:523` carry `orElse`, so it degrades
+rather than crashing — worst case the title renders the survivor's own name. `collections.ts`'
+claim of three remaining literals verified (`enforce-group-minor-membership.ts:53`,
+`leave-group-conversation.ts:73`, `admin/reset-user-data.ts:92`); the latter's logs are group-only
+because `authorizeDeparture` denies non-group first, so no leak site there. Index entry matches
+house style and is asserted by tests at BOTH scopes (the COLLECTION entry is not decoration — a
+fieldOverride removes any config it does not list). `firestore.rules` diff is comment-only, so no
+`firestore-rules-tester` handoff.
+
+**Independently re-run, not taken from the handoff:** `npx tsc --noEmit` exit 0, and
+`account-deletion-cascade.test.ts` 63/63. Hygiene: no `MUTANT`/`THROWAWAY`/`if (false)` in
+`functions/src`, no untracked files.
+
+**Marker:** declined, both rounds. Proof of review here is the Read record plus the verdict line;
+a reviewer stamping their own approval is the forgeable artifact the contract exists to replace,
+and the marker's `path@blob-sha` pins are index blobs that do not exist while the fileset is
+unstaged.

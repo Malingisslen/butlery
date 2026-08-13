@@ -154,12 +154,29 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
     },
     collectionGroup(_name: string) {
       // Always empty — cascade steps just walk past.
-      return {
+      //
+      // BUT-1822: `limit()` and `count()` are here for the same reason
+      // `listDocuments()` is above — the roster sweep reads `.limit(MAX + 1)`
+      // and its residual probe reads `.count()`, and a missing method makes the
+      // step throw, which this suite would report as an ORCHESTRATION failure
+      // that has nothing to do with orchestration.
+      const query = {
         get: async () => emptySnapshot(),
         where() {
-          return this;
+          return query;
+        },
+        limit() {
+          return query;
+        },
+        count() {
+          return {
+            async get() {
+              return { data: () => ({ count: 0 }) };
+            },
+          };
         },
       };
+      return query;
     },
     batch() {
       return makeBatch();

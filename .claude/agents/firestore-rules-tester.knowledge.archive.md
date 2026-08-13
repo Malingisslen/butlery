@@ -1863,3 +1863,64 @@ claim is rebutted inside its own paragraph or bullet: `firestore.rules:1794-1820
 … as a rule"), `conversations-rules.test.ts:230-233`, `message_mutation_module.dart:146-166`,
 `.claude/rules/accepted-deviations.md:288-295`, and the back-pointer
 `ACCEPTED_DEVIATIONS.md:1307` ("in the honest-client model described above — and only there").
+
+### 2026-08-13 — BUT-1822 comment-only diff: proving it, and verifying a comment against another file's code
+
+Task: review the working-tree `firestore.rules` change for BUT-1822 (the roster bootstrap
+block, ~lines 1826-1856), asserted to be comment-only.
+
+**Proving comment-only, two ways.** `git diff -U0 -- firestore.rules | grep -E '^[+-]' |
+grep -vE '^(\+\+\+|---)' | grep -vE '^[+-][[:space:]]*//'` returned EMPTY (14 added / 6
+removed lines, all `//`). The md5 method needed a fix the knowledge file did not have: the
+naive `sed 's|//.*$||' | md5sum` MISMATCHED, because stripping comment text from a diff that
+changes the line count leaves a different number of empty lines. Adding
+`grep -vE '^[[:space:]]*$'` (and `tr -d '\r'` — the file is CRLF) made HEAD and the worktree
+identical at `658e2ba54c28d6d600bcb174ec8270a8`, 1328 non-comment non-blank lines on both
+sides. `grep -c '://'` was 0 in both, so the comment strip was safe. Behaviour is therefore
+provably unchanged, which is a STRONGER statement than a green suite run — the suite was not
+run, deliberately, and the report said so rather than implying coverage.
+
+**Verifying the new comment's claims against `account/account-deletion-cascade.ts`.** The
+comment now says case 3 (the GDPR cascade) is CLOSED. Four claims, each read in its own body,
+not inferred:
+1. `deleteMessages` calls `tryClearRoster(db, convoDoc.id)` at :1264 and gates
+   `convoDoc.ref.delete()` at :1266 on its return — true; the `false` branch takes
+   `buildGroupDepartureUpdate` in a transaction and sets `complete = false`.
+2. `deleteOwnRosterRows` (:1391-1410) is
+   `collectionGroup(Collections.participants).where("participantId","==",uid)
+   .limit(MAX_ROSTER_SWEEP_ROWS + 1)`, called at :1333 BEFORE the `conversationFailures`
+   early-return, so a per-conversation failure cannot skip the sweep.
+3. "reaches case-1 orphans naming the erased user" — true by collectionGroup semantics
+   (an orphan row's absent parent is irrelevant to the query).
+4. "cannot reach a case-1 orphan naming SOMEONE ELSE" — true, and it is the ONLY residual,
+   which required reading `tryClearRoster` itself.
+
+**The check that could have gone the other way.** The rules comment says the whole roster is
+cleared. If `tryClearRoster` derived its rows from `participantIds` (as the surrounding
+trigger's other uid lists do), a planted bootstrap row naming a third party under a
+<=2-participant NON-`direct_` conversation would survive the clear and be orphaned by the
+parent delete — a case-3 orphan the comment denies exists. It does not: the function does a
+plain `.collection('conversations/{id}/participants').limit(MAX_ROSTER_ROWS + 1).get()`
+(`enforce-group-minor-membership.ts` :193-196), ENUMERATED, and its own docstring at :177-185
+says why ("a row can exist that no uid list here can name"). So "whole roster" is the
+accurate word and the comment holds. Generalisation: when a rules comment claims a CF cleans
+a subcollection, check whether the cleanup ENUMERATES or DERIVES — derived cleanup always
+leaves the rows the bootstrap branch let a stranger plant.
+
+Constants cross-checked so the sweep is not a silent no-op (the wrong-path-read bug class):
+`Collections.participants === "participants"` (`shared/collections.ts:22`) matches
+`CONVERSATION_PARTICIPANTS === "participants"` (`enforce-group-minor-membership.ts:71`), which
+matches the `conversations/{id}/participants` path in the rules. Also confirmed :1266 is the
+ONLY conversation delete in the cascade — :1480 in `anonymizeSystemMessagesAboutUser` builds a
+conversation ref but only `tx.update`s `lastMessage.content`.
+
+**Tests: nothing invalidated, and that was the honest answer.** Read all 1142 lines of
+`conversations-rules.test.ts`. No test asserts anything about who deletes the parent; P12B's
+comment names only the eviction CF (closed 2026-08-12) and stays accurate. `account-deletion-
+cascade.test.ts` already pins both BUT-1822 legs and the ordering invariant. No new rules test
+was written, because a comment cannot change a rule branch and the code md5 proves it.
+
+Non-blocking observation reported: `.claude/rules/accepted-deviations.md` :279-321 (the
+2026-08-12 entry) still reads "only the last is fixed" about the three deleters, which the
+RESOLVED 2026-08-13 entry at :323-341 supersedes without back-pointing at it. That matches the
+repo's supersede-don't-delete convention, so it was reported as an observation, not a finding.

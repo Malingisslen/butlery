@@ -1832,15 +1832,23 @@ service cloud.firestore {
         //        CLOSED in code 2026-08-12; see above.
         //     3. the GDPR account-deletion cascade, which deletes any
         //        conversation with two or fewer participants WHOLE
-        //        (`account-deletion-cascade.ts`). NOT closed, BUT-1822.
+        //        (`account-deletion-cascade.ts`). CLOSED in code 2026-08-13
+        //        (BUT-1822): `deleteMessages` now clears the whole roster via
+        //        `tryClearRoster` BEFORE the parent delete and abandons the
+        //        delete if that fails, and a collection-group sweep erases the
+        //        deleted user's own rows everywhere else — including rows left
+        //        orphaned by case 1, whenever they name the user being erased.
+        //        What it cannot reach is a case-1 orphan naming SOMEONE ELSE.
         //
         //     `allow delete` does not cascade, and the per-row delete rule
         //     admits only the row's own subject, so no client can clean up after
-        //     itself. Case 3 is worse than it looks: `rosterUnclaimed()`
-        //     excludes `direct_*` ids from the WRITE, but the read fallback
-        //     below has no such exclusion — so after a DM is erased the
-        //     surviving partner keeps LIST over a roster still holding the
-        //     deleted user's name and avatar.
+        //     itself. Case 3 WAS worse than it looks, and this is why it was
+        //     fixed first: `rosterUnclaimed()` excludes `direct_*` ids from the
+        //     WRITE, but the read fallback below has no such exclusion — so
+        //     before BUT-1822, after a DM was erased the surviving partner kept
+        //     LIST over a roster still holding the deleted user's name and
+        //     avatar. Rows orphaned BEFORE that fix shipped are still there; the
+        //     cascade is forward-only and a backfill is tracked separately.
         //
         // BUT-1795 removes the branch and both residuals with it, and is the
         // ONLY option that reaches all three — widening the row delete rule

@@ -28,6 +28,24 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { hashUid } from "../shared/hash-uid";
+
+/**
+ * A conversation id that is safe to put in Cloud Logging.
+ *
+ * A GROUP id is a client-minted UUIDv4 and discloses nothing. A DIRECT id is
+ * `direct_<uidA>_<uidB>` — two raw uids, one of which may belong to someone who
+ * just had their account erased. This helper exists because BUT-1822 gave
+ * `tryClearRoster` a second caller (the account-deletion cascade) that hands it
+ * direct ids for the first time: the helper's code did not change, but the key
+ * space it logs did. Hashing keeps a greppable handle that correlates across
+ * lines without carrying the uids.
+ */
+export function logSafeConversationId(conversationId: string): string {
+  return conversationId.startsWith("direct_")
+    ? `direct_#${hashUid(conversationId)}`
+    : conversationId;
+}
 
 /**
  * Upper bound on participants this trigger will read. Far above any real group
@@ -43,9 +61,12 @@ export const MAX_GROUP_PARTICIPANTS = 100;
  * Honest about what this buys: a SECOND local copy protects nothing against a
  * rename — it just moves the literal. The real home is
  * `functions/src/shared/collections.ts`, which declares itself the single source
- * of truth and does not yet carry `participants`; `admin/reset-user-data.ts`
- * still uses a bare literal. Consolidating all three is a separate change; this
- * constant exists so the two uses in THIS file cannot drift from each other.
+ * of truth and, since BUT-1822, DOES carry `participants` — the account-deletion
+ * cascade needed the collection-group id. This file and
+ * `leave-group-conversation.ts` still hold their own copies and
+ * `admin/reset-user-data.ts` still uses a bare literal, so a rename is four
+ * edits, not one. Consolidating them is a separate change; this constant exists
+ * so the two uses in THIS file cannot drift from each other.
  */
 const CONVERSATION_PARTICIPANTS = "participants";
 
@@ -122,6 +143,14 @@ async function readIsMinor(
  * Attempts to delete every row under `conversations/{id}/participants`.
  * Returns true only if the roster is provably clear afterwards.
  *
+ * TWO CALLERS, in two domains. This trigger's collapse branch, and — since
+ * BUT-1822 — `deleteMessages` in `account/account-deletion-cascade.ts`, which
+ * gates its 1:1 conversation delete on the same answer for the same reason. The
+ * cascade reaching into a trigger module is deliberate (one clearer, not two);
+ * extracting this into a neutral module is tracked separately. Anyone changing
+ * the contract below — the bound, the never-throws promise, the meaning of the
+ * return value — must check that second caller.
+ *
  * **The caller's invariant: never delete the conversation while roster rows may
  * survive.** Deleting the parent is the write that makes `parentDoc() == null`
  * true, which re-opens the bootstrap branch in firestore.rules over whatever is
@@ -175,7 +204,7 @@ export async function tryClearRoster(
     logger.error(
       "[enforceGroupMinorMembership] roster read failed; leaving the conversation standing",
       {
-        conversationId,
+        conversationId: logSafeConversationId(conversationId),
         errCode: (e as { code?: number | string } | null)?.code ?? "unknown",
         errName: (e as Error | null)?.name,
       },
@@ -188,7 +217,10 @@ export async function tryClearRoster(
     // not a real group — it is a seeded one.
     logger.error(
       "[enforceGroupMinorMembership] implausible roster size; not clearing it",
-      { conversationId, rosterRows: snap.size },
+      {
+        conversationId: logSafeConversationId(conversationId),
+        rosterRows: snap.size,
+      },
     );
     return false;
   }
@@ -216,7 +248,11 @@ export async function tryClearRoster(
   if (failures.length > 0) {
     logger.error(
       "[enforceGroupMinorMembership] roster cleanup failed; leaving the conversation standing",
-      { conversationId, failedCount: failures.length, errCodes: failures },
+      {
+        conversationId: logSafeConversationId(conversationId),
+        failedCount: failures.length,
+        errCodes: failures,
+      },
     );
     return false;
   }

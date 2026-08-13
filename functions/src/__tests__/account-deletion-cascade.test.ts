@@ -110,7 +110,17 @@ interface FakeSubcollection {
    * so `analytics/feature_retention/users` (a 3-segment prefix) is invisible to
    * it, which is precisely the shape of collection the cascade had never swept.
    */
-  where(field: string, op: string, value: unknown): { get(): Promise<FakeQuerySnapshot> };
+  where(
+    field: string,
+    op: string,
+    value: unknown,
+  ): {
+    get(): Promise<FakeQuerySnapshot>;
+    count(): { get(): Promise<{ data(): { count: number } }> };
+  };
+  /** BUT-1822: needed by `probeResidualData`'s own subcollection legs. */
+  count(): { get(): Promise<{ data(): { count: number } }> };
+  listDocuments(): Promise<FakeRef[]>;
 }
 
 class FakeFirestore {
@@ -122,6 +132,13 @@ class FakeFirestore {
    * unless the writes are recorded.
    */
   readonly updatedPaths: string[] = [];
+  /**
+   * Every path deleted, in order. BUT-1822 turns on an ORDERING invariant —
+   * roster rows before the conversation document — and "both are gone at the
+   * end" is exactly the assertion that cannot tell the fixed code from the
+   * broken code.
+   */
+  readonly deletedPaths: string[] = [];
 
   set(path: string, data: DocData): void {
     this.docs.set(path, data);
@@ -162,6 +179,7 @@ class FakeFirestore {
     return {
       path,
       delete: async () => {
+        this.deletedPaths.push(path);
         this.docs.delete(path);
       },
       update: async (data: DocData) => {
@@ -171,30 +189,57 @@ class FakeFirestore {
       // — the whole point of the orphan findings this suite now covers. The
       // stub models them as deeper slash-separated keys.
       collection: (name: string): FakeSubcollection => {
-        const snapshotOf = (paths: string[]): FakeQuerySnapshot => ({
-          empty: paths.length === 0,
-          size: paths.length,
-          docs: paths.map((p) => ({
-            ref: this.makeRef(p),
-            id: p.split("/").pop() as string,
-            data: () => this.docs.get(p) as DocData,
-          })),
-        });
+        const snapshotOf = (paths: string[]): FakeQuerySnapshot =>
+          this.snapshotOfPaths(paths);
+        const filtered = (field: string, op: string, value: unknown) =>
+          this.pathsUnder(`${path}/${name}`).filter((p) => {
+            // `readField`, not a literal key lookup: Firestore resolves a dotted
+            // `where()` field as a PATH into nested maps, and a stub that
+            // disagreed would report a dotted subcollection query as matching
+            // nothing while claiming to pass. The top-level matcher has always
+            // done this; extending `count()` here without it would put the trap
+            // on a second path.
+            const fieldVal = FakeFirestore.readField(
+              this.docs.get(p) as DocData,
+              field,
+            );
+            if (op === "==") return fieldVal === value;
+            if (op === "array-contains") {
+              return Array.isArray(fieldVal) && fieldVal.includes(value);
+            }
+            return false;
+          });
         return {
           get: async () => snapshotOf(this.pathsUnder(`${path}/${name}`)),
           doc: (id: string) => this.makeRef(`${path}/${name}/${id}`),
+          count: () => ({
+            get: async () => {
+              const size = this.pathsUnder(`${path}/${name}`).length;
+              return { data: () => ({ count: size }) };
+            },
+          }),
+          // Derived from DEEPER paths, not from stored documents: the one state
+          // `listDocuments()` exists to surface is a MISSING parent that still
+          // owns a subcollection, and a stub that mapped stored docs could never
+          // represent it.
+          listDocuments: async () => {
+            const prefix = `${path}/${name}`;
+            const depth = prefix.split("/").length + 1;
+            const ids = new Set<string>();
+            for (const p of this.docs.keys()) {
+              if (!p.startsWith(`${prefix}/`)) continue;
+              ids.add(p.split("/").slice(0, depth).join("/"));
+            }
+            return [...ids].sort().map((p) => this.makeRef(p));
+          },
           where: (field: string, op: string, value: unknown) => ({
-            get: async () =>
-              snapshotOf(
-                this.pathsUnder(`${path}/${name}`).filter((p) => {
-                  const fieldVal = (this.docs.get(p) as DocData)[field];
-                  if (op === "==") return fieldVal === value;
-                  if (op === "array-contains") {
-                    return Array.isArray(fieldVal) && fieldVal.includes(value);
-                  }
-                  return false;
-                }),
-              ),
+            get: async () => snapshotOf(filtered(field, op, value)),
+            count: () => ({
+              get: async () => {
+                const size = filtered(field, op, value).length;
+                return { data: () => ({ count: size }) };
+              },
+            }),
           }),
         };
       },
@@ -241,23 +286,40 @@ class FakeFirestore {
   }
 
   collection(name: string): unknown {
-    const matcher = (field: string, op: string, value: unknown) => ({
-      get: async () => {
-        const matches: { path: string; data: DocData }[] = [];
-        for (const [path, data] of this.docs) {
-          const segments = path.split("/");
-          if (segments.length !== 2 || segments[0] !== name) continue;
-          const fieldVal = FakeFirestore.readField(data, field);
-          if (op === "==" && fieldVal === value) {
-            matches.push({ path, data });
-          } else if (
-            op === "array-contains" &&
-            Array.isArray(fieldVal) &&
-            fieldVal.includes(value)
-          ) {
-            matches.push({ path, data });
-          }
+    const matching = (field: string, op: string, value: unknown) => {
+      const matches: { path: string; data: DocData }[] = [];
+      for (const [path, data] of this.docs) {
+        const segments = path.split("/");
+        if (segments.length !== 2 || segments[0] !== name) continue;
+        const fieldVal = FakeFirestore.readField(data, field);
+        if (op === "==" && fieldVal === value) {
+          matches.push({ path, data });
+        } else if (op === "!=" && fieldVal !== value && fieldVal !== undefined) {
+          // Firestore's `!=` excludes documents where the field is ABSENT. A
+          // stub that returned them would report the shared-list member-key
+          // probe as matching every document in the collection.
+          matches.push({ path, data });
+        } else if (
+          op === "array-contains" &&
+          Array.isArray(fieldVal) &&
+          fieldVal.includes(value)
+        ) {
+          matches.push({ path, data });
         }
+      }
+      return matches;
+    };
+    const matcher = (field: string, op: string, value: unknown) => ({
+      // BUT-1822: `count()` was missing, which is why `probeResidualData` — the
+      // cascade's own safety net — had no test in this file at all.
+      count: () => ({
+        get: async () => {
+          const size = matching(field, op, value).length;
+          return { data: () => ({ count: size }) };
+        },
+      }),
+      get: async () => {
+        const matches = matching(field, op, value);
         return {
           empty: matches.length === 0,
           size: matches.length,
@@ -272,10 +334,42 @@ class FakeFirestore {
         };
       },
     });
+    // BUT-1822: `name` can be a SLASH-SEPARATED path, and the read can be
+    // unfiltered-but-limited. `tryClearRoster` — which the cascade now calls
+    // before deleting a 1:1 conversation — does exactly
+    // `db.collection("conversations/<id>/participants").limit(N + 1).get()`.
+    // The matcher above cannot serve that: it only ever considers 2-segment
+    // paths, and it is reached only through `where()` — the object `collection()`
+    // itself returned had neither `get` nor `limit`, so wiring the roster clear
+    // in without this would throw a TypeError that says nothing about the logic
+    // under test.
+    const unfiltered = (max?: number) => ({
+      get: async () => {
+        const paths = this.pathsUnder(name);
+        return this.snapshotOfPaths(
+          max === undefined ? paths : paths.slice(0, max),
+        );
+      },
+    });
     return {
       where: (field: string, op: string, value: unknown) =>
         matcher(field, op, value),
       doc: (id: string) => this.makeRef(`${name}/${id}`),
+      get: unfiltered().get,
+      limit: (max: number) => unfiltered(max),
+    };
+  }
+
+  /** Shared snapshot shape for path-listing reads. */
+  private snapshotOfPaths(paths: string[]): FakeQuerySnapshot {
+    return {
+      empty: paths.length === 0,
+      size: paths.length,
+      docs: paths.map((p) => ({
+        ref: this.makeRef(p),
+        id: p.split("/").pop() as string,
+        data: () => this.docs.get(p) as DocData,
+      })),
     };
   }
 
@@ -287,38 +381,53 @@ class FakeFirestore {
    * does.
    */
   collectionGroup(name: string): unknown {
+    const matching = (field: string, op: string, value: unknown) => {
+      const matches: { path: string; data: DocData }[] = [];
+      for (const [path, data] of this.docs) {
+        const segments = path.split("/");
+        // A document path is collection/doc/collection/doc/... so the
+        // owning collection is the second-to-last segment.
+        if (segments.length < 2) continue;
+        if (segments[segments.length - 2] !== name) continue;
+        const fieldVal = FakeFirestore.readField(data, field);
+        if (op === "==" && fieldVal === value) {
+          matches.push({ path, data });
+        } else if (
+          op === "array-contains" &&
+          Array.isArray(fieldVal) &&
+          fieldVal.includes(value)
+        ) {
+          matches.push({ path, data });
+        }
+      }
+      return matches;
+    };
+    const snapshotOf = (matches: { path: string; data: DocData }[]) => ({
+      empty: matches.length === 0,
+      size: matches.length,
+      docs: matches.map((d) => ({
+        ref: this.makeRef(d.path),
+        id: d.path.split("/").pop() as string,
+        data: () => d.data,
+        get: (f: string) => FakeFirestore.readField(d.data, f),
+      })),
+    });
     return {
       where: (field: string, op: string, value: unknown) => ({
-        get: async () => {
-          const matches: { path: string; data: DocData }[] = [];
-          for (const [path, data] of this.docs) {
-            const segments = path.split("/");
-            // A document path is collection/doc/collection/doc/... so the
-            // owning collection is the second-to-last segment.
-            if (segments.length < 2) continue;
-            if (segments[segments.length - 2] !== name) continue;
-            const fieldVal = FakeFirestore.readField(data, field);
-            if (op === "==" && fieldVal === value) {
-              matches.push({ path, data });
-            } else if (
-              op === "array-contains" &&
-              Array.isArray(fieldVal) &&
-              fieldVal.includes(value)
-            ) {
-              matches.push({ path, data });
-            }
-          }
-          return {
-            empty: matches.length === 0,
-            size: matches.length,
-            docs: matches.map((d) => ({
-              ref: this.makeRef(d.path),
-              id: d.path.split("/").pop() as string,
-              data: () => d.data,
-              get: (f: string) => FakeFirestore.readField(d.data, f),
-            })),
-          };
-        },
+        get: async () => snapshotOf(matching(field, op, value)),
+        // BUT-1822. The roster sweep reads `.limit(MAX + 1)` so it can tell
+        // "plausible" from "seeded" and decline rather than truncate, and the
+        // residual probe reads `.count()`. Neither existed on this stub, so
+        // neither could be tested — and `probeResidualData` had no test at all.
+        limit: (max: number) => ({
+          get: async () => snapshotOf(matching(field, op, value).slice(0, max)),
+        }),
+        count: () => ({
+          get: async () => {
+            const size = matching(field, op, value).length;
+            return { data: () => ({ count: size }) };
+          },
+        }),
       }),
     };
   }
@@ -344,7 +453,10 @@ class FakeFirestore {
       },
       commit: async () => {
         for (const u of updates) this.applyUpdate(u.path, u.data);
-        for (const path of deletes) this.docs.delete(path);
+        for (const path of deletes) {
+          this.deletedPaths.push(path);
+          this.docs.delete(path);
+        }
       },
     };
   }
@@ -1168,6 +1280,258 @@ async function scenario_failedMirrorScrubKeepsTheRetryHandle(): Promise<void> {
   );
 }
 
+/** Seed one roster row the way `ConversationParticipant.toFirestore` writes it. */
+function seedRosterRow(
+  db: FakeFirestore,
+  conversationId: string,
+  uid: string,
+  displayName: string,
+): void {
+  db.set(`conversations/${conversationId}/participants/${uid}`, {
+    conversationId,
+    participantId: uid,
+    displayName,
+    avatarUrl: `https://example.test/${uid}.jpg`,
+    role: "member",
+    isMuted: false,
+  });
+}
+
+/**
+ * BUT-1822 leg 2: the erased user's OWN roster row, in a surviving group. It
+ * carries their displayName and avatarUrl, and nothing in the cascade had ever
+ * touched this path — the conversation document keeps running for everyone else,
+ * so there is no later erasure that could find it.
+ */
+async function scenario_ownRosterRowIsErasedInSurvivingGroup(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set("conversations/c-group", {
+    participantIds: [UID, OTHER, "third-uid"],
+    participantDisplayNames: { [UID]: "Raderad", [OTHER]: "Kvar" },
+  });
+  seedRosterRow(db, "c-group", UID, "Raderad");
+  seedRosterRow(db, "c-group", OTHER, "Kvar");
+
+  await deleteMessages(asDb(db), UID);
+
+  check(
+    "the erased user's roster row is deleted from a surviving group",
+    !db.has(`conversations/c-group/participants/${UID}`),
+  );
+  check(
+    "another member's roster row is untouched",
+    db.has(`conversations/c-group/participants/${OTHER}`),
+  );
+  check(
+    "the surviving group document itself is kept",
+    db.has("conversations/c-group"),
+  );
+}
+
+/**
+ * BUT-1822 leg 1, and the ordering it turns on. Deleting the conversation is the
+ * write that makes `parentDoc() == null` true, which re-opens the bootstrap
+ * branch in firestore.rules over whatever roster rows survive. The SURVIVING
+ * partner's row is the one that matters: its `participantId` is not the erased
+ * uid, so leg 2's collection-group sweep can never reach it, and the roster read
+ * fallback carries no `direct_` exclusion — the partner would keep LIST over the
+ * erased user's name and avatar forever.
+ *
+ * Asserting only "both are gone" would pass on the broken code too, since the
+ * sweep would still take the erased user's own row. The ORDER is the test.
+ */
+async function scenario_rosterIsClearedBeforeTheParentDelete(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set("conversations/direct_a_b", { participantIds: [UID, OTHER] });
+  seedRosterRow(db, "direct_a_b", UID, "Raderad");
+  seedRosterRow(db, "direct_a_b", OTHER, "Partner");
+
+  await deleteMessages(asDb(db), UID);
+
+  check(
+    "the 1:1 conversation is gone",
+    !db.has("conversations/direct_a_b"),
+  );
+  check(
+    "the SURVIVING partner's roster row is gone too (no collectionGroup leg can find it)",
+    !db.has(`conversations/direct_a_b/participants/${OTHER}`),
+    `left: ${JSON.stringify(db.pathsUnder("conversations/direct_a_b/participants"))}`,
+  );
+  const parentAt = db.deletedPaths.indexOf("conversations/direct_a_b");
+  const partnerAt = db.deletedPaths.indexOf(
+    `conversations/direct_a_b/participants/${OTHER}`,
+  );
+  check(
+    "the roster row is deleted BEFORE the parent document",
+    partnerAt >= 0 && parentAt >= 0 && partnerAt < parentAt,
+    `delete order: ${JSON.stringify(db.deletedPaths)}`,
+  );
+}
+
+/**
+ * When the roster cannot be proven clear, `tryClearRoster` returns false and the
+ * parent must NOT be deleted — a live parent that no longer names the erased
+ * user denies those rows to everyone, whereas deleting it re-opens the
+ * bootstrap branch. But an untouched document keeps their name in
+ * `participantDisplayNames` forever, so the departure update runs instead.
+ *
+ * Staged SYNTHETICALLY, via the clearer's refusal cap — the cheapest way to
+ * force a false verdict. Production does NOT reach the branch that way for a
+ * direct conversation: once the parent exists only the two attested
+ * participants may write rows and `rosterUnclaimed()` excludes the `direct_`
+ * prefix, so the real route is a transient roster read or delete failure.
+ */
+async function scenario_unclearableRosterLeavesTheParentStanding(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set("conversations/direct_seeded", {
+    participantIds: [UID, OTHER],
+    participantDisplayNames: { [UID]: "Raderad", [OTHER]: "Partner" },
+    participantAvatarUrls: { [UID]: "https://example.test/x.jpg" },
+  });
+  seedRosterRow(db, "direct_seeded", UID, "Raderad");
+  seedRosterRow(db, "direct_seeded", OTHER, "Partner");
+  // 500 is MAX_ROSTER_ROWS; the read is `.limit(MAX + 1)`, so 501 rows is the
+  // smallest roster the clearer refuses.
+  for (let i = 0; i < 499; i++) {
+    seedRosterRow(db, "direct_seeded", `seeded-${i}`, `Seeded ${i}`);
+  }
+
+  const ok = await deleteMessages(asDb(db), UID);
+
+  check(
+    "an unclearable roster leaves the conversation standing",
+    db.has("conversations/direct_seeded"),
+  );
+  check(
+    "…and the step reports INCOMPLETE, so the audit cannot say gdprCompliant",
+    ok === false,
+    // A `direct_` id is literally `direct_<erasedUid>_<survivorUid>`: the
+    // surviving document keeps the erased user's identifier in its own id,
+    // where no field-keyed probe can see it. Reporting success here would
+    // certify an erasure that did not happen.
+    `deleteMessages returned ${ok}`,
+  );
+  // `?? {}` deliberately: the failure this scenario guards against is the
+  // conversation being DELETED, and reading through an absent document would
+  // throw a TypeError that kills the whole runner instead of reddening one
+  // assertion.
+  const convo = (db.get("conversations/direct_seeded") ?? {}) as DocData;
+  // Mutation-proven, with one honest caveat: this single assertion passes
+  // VACUOUSLY if the conversation is deleted instead (an absent document has no
+  // name to find), so it is the two below — participantIds present-and-cleaned,
+  // and the partner's name still there — that catch a wrongly-deleted parent.
+  // Do not "simplify" them away as redundant; each of the three reddens under a
+  // different mutant.
+  check(
+    "…but the erased user's name is stripped from it anyway",
+    (convo.participantDisplayNames as DocData)?.[UID] === undefined &&
+      (convo.participantAvatarUrls as DocData)?.[UID] === undefined,
+    `left: ${JSON.stringify(convo.participantDisplayNames)}`,
+  );
+  check(
+    "…and their participantIds entry is removed",
+    Array.isArray(convo.participantIds) &&
+      !(convo.participantIds as string[]).includes(UID),
+    `participantIds: ${JSON.stringify(convo.participantIds)}`,
+  );
+  check(
+    "the partner's name is kept — it is not theirs to erase",
+    (convo.participantDisplayNames as DocData)?.[OTHER] === "Partner",
+  );
+}
+
+/**
+ * The residual probe is the safety net for this whole class of gap: the deleter
+ * must stay a strict superset of it. Before BUT-1822 the probe had NO
+ * collection-group leg for `participants`, so it certified every erasure clean
+ * over live roster rows — and this file tested none of `probeResidualData`.
+ *
+ * A clean store is asserted first. Without it, a stub method the probe needs but
+ * does not have would land in one of its per-leg catches, count as residual, and
+ * make the second half of this scenario pass for the wrong reason.
+ */
+async function scenario_probeSeesLeftoverRosterRows(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const clean = new FakeFirestore();
+  clean.set("conversations/c-group", { participantIds: [OTHER] });
+  const cleanResult = {
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  };
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "a store with nothing of the user's left probes CLEAN",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const dirty = new FakeFirestore();
+  dirty.set("conversations/c-group", { participantIds: [OTHER] });
+  seedRosterRow(dirty, "c-group", UID, "Raderad");
+  const dirtyResult = {
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  };
+  await probeResidualData(asDb(dirty), UID, dirtyResult);
+  check(
+    "one leftover roster row is reported as residual data",
+    dirtyResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+  );
+}
+
+/**
+ * The collection-group query the two legs above depend on needs a declared
+ * index; Firestore's automatic single-field indexes cover COLLECTION scope only.
+ * Nothing in a stub-backed suite can notice a missing or misspelled one — the
+ * query would throw FAILED_PRECONDITION in production, land in the probe's own
+ * catch, and be logged as a residual that isn't there.
+ *
+ * The COLLECTION entry is not optional either: a `fieldOverride` REPLACES the
+ * automatic indexing for that field.
+ */
+async function scenario_rosterIndexIsDeclared(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const config = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "..", "..", "..", "firestore.indexes.json"),
+      "utf8",
+    ),
+  ) as {
+    fieldOverrides?: {
+      collectionGroup: string;
+      fieldPath: string;
+      indexes: { order?: string; queryScope: string }[];
+    }[];
+  };
+  const entry = (config.fieldOverrides ?? []).find(
+    (o) => o.collectionGroup === "participants" && o.fieldPath === "participantId",
+  );
+  check(
+    "firestore.indexes.json declares the participants/participantId override",
+    entry !== undefined,
+  );
+  const scopes = (entry?.indexes ?? [])
+    .filter((i) => i.order === "ASCENDING")
+    .map((i) => i.queryScope);
+  check(
+    "…for COLLECTION_GROUP scope, which the cascade's sweep and probe query",
+    scopes.includes("COLLECTION_GROUP"),
+    `scopes: ${JSON.stringify(scopes)}`,
+  );
+  check(
+    "…and for COLLECTION scope, which the override would otherwise remove",
+    scopes.includes("COLLECTION"),
+    `scopes: ${JSON.stringify(scopes)}`,
+  );
+}
+
 async function main(): Promise<void> {
   await scenario_directConversationIsErasedWhole();
   await scenario_readsTopLevelNotSubcollection();
@@ -1184,6 +1548,11 @@ async function main(): Promise<void> {
   await scenario_systemMessageAboutDepartedUserIsScrubbed();
   await scenario_newerLastMessageSurvivesTheSystemScrub();
   await scenario_failedMirrorScrubKeepsTheRetryHandle();
+  await scenario_ownRosterRowIsErasedInSurvivingGroup();
+  await scenario_rosterIsClearedBeforeTheParentDelete();
+  await scenario_unclearableRosterLeavesTheParentStanding();
+  await scenario_probeSeesLeftoverRosterRows();
+  await scenario_rosterIndexIsDeclared();
 
   let failed = 0;
   for (const r of results) {

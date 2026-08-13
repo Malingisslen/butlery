@@ -34,6 +34,16 @@ import * as admin from "firebase-admin";
 import { logger } from "firebase-functions/logger";
 import { commitInChunks } from "../shared/batch-update";
 import { Collections } from "../shared/collections";
+// Deliberate cross-domain import (BUT-1822). `tryClearRoster` lives in a
+// minor-safety TRIGGER module, but it is the one roster clearer: bounded,
+// never-throwing, and it answers the exact question this cascade must ask before
+// it deletes a conversation. A second implementation here would be a second
+// contract to keep in sync on a GDPR path. Extraction into a neutral module is
+// tracked separately; until then, that function's docstring names this caller.
+import {
+  logSafeConversationId,
+  tryClearRoster,
+} from "../messaging/enforce-group-minor-membership";
 
 export interface DeletionResult {
   deletedCollections: string[];
@@ -61,7 +71,9 @@ export async function runStep(
     }
   } catch (err) {
     result.failedCollections.push(name);
-    result.errors.push(`${name}: ${err instanceof Error ? err.message : String(err)}`);
+    result.errors.push(
+      `${name}: ${err instanceof Error ? err.message : String(err)}`,
+    );
     logger.error(`[deletion-cascade] step ${name} failed`, { err });
   }
 }
@@ -143,6 +155,9 @@ export async function probeResidualData(
   //   realtime_menus/recipes.participantIds — membership dropped on docs the
   //                                           user does not own
   //   conversations.participantIds — 1:1 deleted, group departed
+  // The conversation ROSTER rows (`conversations/{id}/participants/{uid}`) are on
+  // the same inventory but cannot be probed from this loop at all — they need a
+  // collection-group query, so their leg is appended at the end of this function.
   // `messages` is the highest-value leg here: the collection this probe could
   // not see is the one the cascade never touched for two years. The
   // `participantIds` legs are the only map-shaped residual Firestore can
@@ -169,11 +184,7 @@ export async function probeResidualData(
     ["shared_content", "sharedToUserIds", "array-contains"],
   ] as const) {
     try {
-      const snap = await db
-        .collection(col)
-        .where(field, op, uid)
-        .count()
-        .get();
+      const snap = await db.collection(col).where(field, op, uid).count().get();
       const count = snap.data().count ?? 0;
       if (count > 0) {
         residual += count;
@@ -275,10 +286,10 @@ export async function probeResidualData(
       // uid_prefix, never the raw uid: Cloud Logging outlives the account, and
       // a per-user message string would destroy grouping on the one canary you
       // actually query. Same convention as request-account-deletion.ts.
-      logger.warn(
-        "[deletion-cascade] residual shared-list member keys",
-        { uid_prefix: uid.slice(0, 6), count: keyedCount },
-      );
+      logger.warn("[deletion-cascade] residual shared-list member keys", {
+        uid_prefix: uid.slice(0, 6),
+        count: keyedCount,
+      });
     }
 
     const owned = await db
@@ -389,7 +400,48 @@ export async function probeResidualData(
     );
   }
 
-  if (residual > 0 && !result.failedCollections.includes("residual_data_detected")) {
+  // BUT-1822: the conversation roster rows. A SUBCOLLECTION, so neither the
+  // top-level loops at the head of this function nor the `users/{uid}/...` loop
+  // can express it — only a collection-group query can, and the loops above are
+  // all `db.collection(...)`. Same handle `deleteOwnRosterRows` uses, keeping the
+  // deleter a strict superset of the probe. Appended rather than folded into an
+  // existing `try`, for the reason the blocks above state.
+  //
+  // Uncapped on purpose, unlike the deleter: `count()` is cheap, and this is the
+  // leg that must stay loud when the deleter DECLINES an implausible row count.
+  // It also fails CLOSED while the collection-group index is still building —
+  // FAILED_PRECONDITION lands in the catch as `residual += 1`, a false alarm
+  // rather than a false all-clear. Do not "simplify" that into a silent swallow.
+  try {
+    const snap = await db
+      .collectionGroup(Collections.participants)
+      .where("participantId", "==", uid)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual conversation roster rows", {
+        uid_prefix: uid.slice(0, 6),
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error(
+      "[deletion-cascade] residual probe failed: conversation participants",
+      {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      },
+    );
+  }
+
+  if (
+    residual > 0 &&
+    !result.failedCollections.includes("residual_data_detected")
+  ) {
     result.failedCollections.push("residual_data_detected");
   }
 }
@@ -400,12 +452,10 @@ async function batchDeleteAll(
   docs: admin.firestore.QueryDocumentSnapshot[],
 ): Promise<void> {
   if (docs.length === 0) return;
-  await commitInChunks(
-    db,
-    docs,
-    (batch, doc) => batch.delete(doc.ref),
-    { label: "batchDeleteAll", strict: false },
-  );
+  await commitInChunks(db, docs, (batch, doc) => batch.delete(doc.ref), {
+    label: "batchDeleteAll",
+    strict: false,
+  });
 }
 
 // ─── Tier 1: own content ──────────────────────────────────────────────────
@@ -469,12 +519,10 @@ async function deleteListItems(
 ): Promise<void> {
   const items = await listRef.collection("items").get();
   if (items.docs.length === 0) return;
-  await commitInChunks(
-    db,
-    items.docs,
-    (batch, doc) => batch.delete(doc.ref),
-    { label: "deletePersonalListItems", strict: true },
-  );
+  await commitInChunks(db, items.docs, (batch, doc) => batch.delete(doc.ref), {
+    label: "deletePersonalListItems",
+    strict: true,
+  });
 }
 
 export async function deleteShoppingLists(
@@ -668,109 +716,109 @@ export async function deleteShoppingLists(
   for (const listRef of sharedRefs.values()) {
     try {
       await db.runTransaction(async (tx) => {
-      const snap = await tx.get(listRef);
-      if (!snap.exists) return;
-      const data = snap.data() ?? {};
-      const perms = (data.memberPermissions ?? {}) as Record<string, unknown>;
-      const othersRemain = Object.keys(perms).some((k) => k !== uid);
+        const snap = await tx.get(listRef);
+        if (!snap.exists) return;
+        const data = snap.data() ?? {};
+        const perms = (data.memberPermissions ?? {}) as Record<string, unknown>;
+        const othersRemain = Object.keys(perms).some((k) => k !== uid);
 
-      // A "collaborative" list the user created and never actually shared is
-      // pure own data — every item name is theirs — and it is reachable:
-      // `createCollaborativeList` accepts an empty `memberIds`, and
-      // `UnifiedShoppingList.collaborative` always inserts the owner into
-      // `memberPermissions`. Scrubbing it would leave the whole list on disk
-      // readable by nobody (rules 1606-1609 need ownerId==uid or a
-      // memberPermissions key), which is retention without a purpose. Delete it.
-      if (data.ownerId === uid && !othersRemain) {
-        tx.delete(listRef);
-        return;
-      }
+        // A "collaborative" list the user created and never actually shared is
+        // pure own data — every item name is theirs — and it is reachable:
+        // `createCollaborativeList` accepts an empty `memberIds`, and
+        // `UnifiedShoppingList.collaborative` always inserts the owner into
+        // `memberPermissions`. Scrubbing it would leave the whole list on disk
+        // readable by nobody (rules 1606-1609 need ownerId==uid or a
+        // memberPermissions key), which is retention without a purpose. Delete it.
+        if (data.ownerId === uid && !othersRemain) {
+          tx.delete(listRef);
+          return;
+        }
 
-      const update: Record<string, unknown> = {};
+        const update: Record<string, unknown> = {};
 
-      const items = data.items;
-      if (Array.isArray(items)) {
-        let itemsChanged = false;
-        const scrubbed = items.map((raw) => {
-          if (!raw || typeof raw !== "object") return raw;
-          const item = { ...(raw as Record<string, unknown>) };
-          if (item.assignedToUserId === uid) {
-            item.assignedToUserId = null;
-            item.assignedToDisplayName = null;
-            item.assignedAt = null;
-            itemsChanged = true;
-          }
-          if (item.purchasedByUserId === uid) {
-            item.purchasedByUserId = null;
-            item.purchasedByDisplayName = null;
-            item.purchasedAt = null;
-            itemsChanged = true;
-          }
-          // BUT-1697: `addedBy*` and `lastModifiedBy*` are stamped by the
-          // CLIENT (`UnifiedShoppingItem.collaborative` / `.copyWith`), so
-          // mirroring only `on-profile-updated.ts` — which propagates the owner
-          // + activity pairs — covers a strict subset of the identity a deleted
-          // user leaves behind. Both survive on every item they added or last
-          // touched, on a document the remaining members keep indefinitely.
-          //
-          // `addedByUserId` is ANONYMIZED rather than nulled: the model's
-          // `isCollaborative => addedByUserId != null`, so nulling it would flip
-          // a shared item to "personal" for everyone else. Same convention as
-          // `deleteCommentsAndRatings`.
-          if (item.addedByUserId === uid) {
-            item.addedByUserId = "deleted";
-            item.addedByDisplayName = null;
-            itemsChanged = true;
-          }
-          if (item.lastModifiedByUserId === uid) {
-            item.lastModifiedByUserId = "deleted";
-            item.lastModifiedByDisplayName = null;
-            itemsChanged = true;
-          }
-          return item;
-        });
-        if (itemsChanged) update.items = scrubbed;
-      }
+        const items = data.items;
+        if (Array.isArray(items)) {
+          let itemsChanged = false;
+          const scrubbed = items.map((raw) => {
+            if (!raw || typeof raw !== "object") return raw;
+            const item = { ...(raw as Record<string, unknown>) };
+            if (item.assignedToUserId === uid) {
+              item.assignedToUserId = null;
+              item.assignedToDisplayName = null;
+              item.assignedAt = null;
+              itemsChanged = true;
+            }
+            if (item.purchasedByUserId === uid) {
+              item.purchasedByUserId = null;
+              item.purchasedByDisplayName = null;
+              item.purchasedAt = null;
+              itemsChanged = true;
+            }
+            // BUT-1697: `addedBy*` and `lastModifiedBy*` are stamped by the
+            // CLIENT (`UnifiedShoppingItem.collaborative` / `.copyWith`), so
+            // mirroring only `on-profile-updated.ts` — which propagates the owner
+            // + activity pairs — covers a strict subset of the identity a deleted
+            // user leaves behind. Both survive on every item they added or last
+            // touched, on a document the remaining members keep indefinitely.
+            //
+            // `addedByUserId` is ANONYMIZED rather than nulled: the model's
+            // `isCollaborative => addedByUserId != null`, so nulling it would flip
+            // a shared item to "personal" for everyone else. Same convention as
+            // `deleteCommentsAndRatings`.
+            if (item.addedByUserId === uid) {
+              item.addedByUserId = "deleted";
+              item.addedByDisplayName = null;
+              itemsChanged = true;
+            }
+            if (item.lastModifiedByUserId === uid) {
+              item.lastModifiedByUserId = "deleted";
+              item.lastModifiedByDisplayName = null;
+              itemsChanged = true;
+            }
+            return item;
+          });
+          if (itemsChanged) update.items = scrubbed;
+        }
 
-      if (data.lastActivityByUserId === uid) {
-        update.lastActivityByUserId = null;
-        update.lastActivityByDisplayName = null;
-      }
-      if (data.ownerId === uid && data.ownerDisplayName != null) {
-        update.ownerDisplayName = null;
-      }
+        if (data.lastActivityByUserId === uid) {
+          update.lastActivityByUserId = null;
+          update.lastActivityByDisplayName = null;
+        }
+        if (data.ownerId === uid && data.ownerDisplayName != null) {
+          update.ownerDisplayName = null;
+        }
 
-      // The raw uid also survives as the MAP KEY this query matched on, and
-      // firestore.rules:1620-1626 still reads it as write authorization for an
-      // account that no longer exists. It also shows up in the UI:
-      // `UnifiedShoppingList.memberCount`/`collaborators` are derived from these
-      // keys, so remaining members see a ghost member forever. Two sibling steps
-      // in this file already delete it (`deleteWeeklyMenuPlans`,
-      // `deleteFamilyData`).
-      //
-      // It MUST go in the SAME per-doc write as the scrub, never a second one:
-      // this key is the step's re-entry query handle, so a split write that
-      // removed the key first would make a re-run skip the unscrubbed doc. As
-      // one transaction, a re-run either still finds the key or finds nothing
-      // left to do.
-      if (Object.prototype.hasOwnProperty.call(perms, uid)) {
-        update[`memberPermissions.${uid}`] =
-          admin.firestore.FieldValue.delete();
-      }
+        // The raw uid also survives as the MAP KEY this query matched on, and
+        // firestore.rules:1620-1626 still reads it as write authorization for an
+        // account that no longer exists. It also shows up in the UI:
+        // `UnifiedShoppingList.memberCount`/`collaborators` are derived from these
+        // keys, so remaining members see a ghost member forever. Two sibling steps
+        // in this file already delete it (`deleteWeeklyMenuPlans`,
+        // `deleteFamilyData`).
+        //
+        // It MUST go in the SAME per-doc write as the scrub, never a second one:
+        // this key is the step's re-entry query handle, so a split write that
+        // removed the key first would make a re-run skip the unscrubbed doc. As
+        // one transaction, a re-run either still finds the key or finds nothing
+        // left to do.
+        if (Object.prototype.hasOwnProperty.call(perms, uid)) {
+          update[`memberPermissions.${uid}`] =
+            admin.firestore.FieldValue.delete();
+        }
 
-      // BUT-1725: the trail that FOUND this list is itself a raw uid on a
-      // document other people keep, so it goes in the same write. Like the
-      // member key above it doubles as this step's re-entry handle — removing
-      // it in a separate write would let a re-run skip an unscrubbed doc.
-      const contributors = data.contributorUserIds;
-      if (Array.isArray(contributors) && contributors.includes(uid)) {
-        update.contributorUserIds =
-          admin.firestore.FieldValue.arrayRemove(uid);
-      }
+        // BUT-1725: the trail that FOUND this list is itself a raw uid on a
+        // document other people keep, so it goes in the same write. Like the
+        // member key above it doubles as this step's re-entry handle — removing
+        // it in a separate write would let a re-run skip an unscrubbed doc.
+        const contributors = data.contributorUserIds;
+        if (Array.isArray(contributors) && contributors.includes(uid)) {
+          update.contributorUserIds =
+            admin.firestore.FieldValue.arrayRemove(uid);
+        }
 
-      if (Object.keys(update).length > 0) {
-        tx.update(listRef, update);
-      }
+        if (Object.keys(update).length > 0) {
+          tx.update(listRef, update);
+        }
       });
     } catch (err) {
       failedShared.push(listRef.id);
@@ -955,11 +1003,7 @@ export async function deletePantryItems(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
-  const snap = await db
-    .collection("users")
-    .doc(uid)
-    .collection("pantry")
-    .get();
+  const snap = await db.collection("users").doc(uid).collection("pantry").get();
   await batchDeleteAll(db, snap.docs);
   return true;
 }
@@ -1175,36 +1219,193 @@ export async function deleteMessages(
 
   // Bounded parallelism: 10 conversations / wave. Mirrors prior client behavior.
   const chunkSize = 10;
+  // Per-conversation failures are COLLECTED, not thrown. A rejection inside
+  // `Promise.all` abandons every conversation left in the run — including the
+  // roster sweep below, which is the leg added to catch exactly this kind of
+  // leftover. Same shape `deleteShoppingLists` already uses. `complete` tracks
+  // the erasures that finished but did not finish CLEANLY (a conversation left
+  // standing, a declined sweep): those must not be reported as a done erasure.
+  const conversationFailures: string[] = [];
+  let complete = true;
   for (let i = 0; i < convos.docs.length; i += chunkSize) {
     const chunk = convos.docs.slice(i, i + chunkSize);
     await Promise.all(
       chunk.map(async (convoDoc) => {
-        const participants = Array.isArray(convoDoc.data().participantIds)
-          ? (convoDoc.data().participantIds as string[])
-          : [];
-        if (participants.length <= 2) {
-          const thread = await db
-            .collection(Collections.messages)
-            .where("conversationId", "==", convoDoc.id)
-            .get();
-          await batchDeleteAll(db, thread.docs);
-          await convoDoc.ref.delete();
-        } else {
-          // Transactional re-read: the outer query snapshot can be stale by
-          // the time this specific doc's write runs, and a group chat is
-          // exactly where a NEW message between query and write is likely. A
-          // blind update() would stamp the tombstone from the stale snapshot
-          // and silently overwrite that new message's lastMessage copy back
-          // to "[Raderad användare]".
-          await db.runTransaction(async (tx) => {
-            const fresh = await tx.get(convoDoc.ref);
-            if (!fresh.exists) return;
-            tx.update(convoDoc.ref, buildGroupDepartureUpdate(fresh, uid));
-          });
+        try {
+          const participants = Array.isArray(convoDoc.data().participantIds)
+            ? (convoDoc.data().participantIds as string[])
+            : [];
+          if (participants.length <= 2) {
+            // BUT-1822: THE ROSTER FIRST, and the parent delete gated on it.
+            // Deleting the conversation is the write that makes `parentDoc() ==
+            // null` true, which re-opens the bootstrap branch in firestore.rules
+            // over every roster row that survives — including the SURVIVING
+            // partner's, whose `participantId` is not this uid, so the
+            // collection-group sweep below can never reach it. The read fallback
+            // carries no `direct_` exclusion (the WRITE branch does), so for a 1:1
+            // that is a live disclosure of the erased user's name and avatar to
+            // their former partner, forever.
+            //
+            // No try/catch around this call, on purpose: `tryClearRoster` reports
+            // rather than throws, and a catch here could only turn its `false`
+            // back into the delete it exists to prevent.
+            //
+            // The thread delete runs BEFORE it, not between it and the parent
+            // delete: while the parent lives it still names both participants, so
+            // anything between the clear and the delete is a window in which a
+            // fresh roster row could be written and then orphaned. Nothing writes
+            // one for a 1:1 today; the ordering costs nothing and shrinks the
+            // window to a single round trip.
+            const thread = await db
+              .collection(Collections.messages)
+              .where("conversationId", "==", convoDoc.id)
+              .get();
+            await batchDeleteAll(db, thread.docs);
+            const rosterClear = await tryClearRoster(db, convoDoc.id);
+            if (rosterClear) {
+              await convoDoc.ref.delete();
+            } else {
+              // The parent must stand — see above. But leaving it untouched would
+              // keep the erased user's name and avatar in
+              // `participantDisplayNames` / `participantAvatarUrls` forever, which
+              // is the Art. 17 defect this step exists to fix. So the document
+              // gets the same departure update a surviving GROUP gets: the maps
+              // lose their uid keys and `participantIds` loses the entry.
+              //
+              // This is the first code path that can leave a `direct_`
+              // conversation standing with fewer than two participants —
+              // `authorizeDeparture` refuses to let anyone leave a direct chat, so
+              // no client has rendered that state before (it degrades: every
+              // "other participant" lookup in `conversation.dart` carries an
+              // `orElse`). For a DIRECT conversation the seeded-roster route is
+              // not actually reachable — once the parent exists only the two
+              // attested participants may write rows, and `rosterUnclaimed()`
+              // excludes `direct_` — so in practice this branch means a transient
+              // read or delete failure.
+              //
+              // The step reports INCOMPLETE afterwards. A `direct_` id is
+              // literally `direct_<erasedUid>_<survivorUid>`, so a conversation
+              // left standing retains the erased user's identifier in its own
+              // document id, where no field-keyed probe can ever see it. Erasure
+              // is not done; the audit row must not say it is.
+              //
+              // The id is HASHED in the log for the same reason: this line would
+              // otherwise carry both uids into a sink that outlives the account.
+              complete = false;
+              logger.warn(
+                "[deletion-cascade] roster not clear; conversation left standing",
+                {
+                  uid_prefix: uid.slice(0, 6),
+                  conversationId: logSafeConversationId(convoDoc.id),
+                },
+              );
+              await db.runTransaction(async (tx) => {
+                const fresh = await tx.get(convoDoc.ref);
+                if (!fresh.exists) return;
+                tx.update(convoDoc.ref, buildGroupDepartureUpdate(fresh, uid));
+              });
+            }
+          } else {
+            // Transactional re-read: the outer query snapshot can be stale by
+            // the time this specific doc's write runs, and a group chat is
+            // exactly where a NEW message between query and write is likely. A
+            // blind update() would stamp the tombstone from the stale snapshot
+            // and silently overwrite that new message's lastMessage copy back
+            // to "[Raderad användare]".
+            await db.runTransaction(async (tx) => {
+              const fresh = await tx.get(convoDoc.ref);
+              if (!fresh.exists) return;
+              tx.update(convoDoc.ref, buildGroupDepartureUpdate(fresh, uid));
+            });
+          }
+        } catch (e) {
+          // Classified, never named: a Firestore error embeds the full document
+          // path, which on this path is a conversation id — for a 1:1, two raw
+          // uids.
+          conversationFailures.push(
+            String((e as { code?: number | string } | null)?.code ?? "unknown"),
+          );
         }
       }),
     );
   }
+
+  const swept = await deleteOwnRosterRows(db, uid);
+
+  if (conversationFailures.length > 0) {
+    logger.error("[deletion-cascade] conversations failed to erase", {
+      uid_prefix: uid.slice(0, 6),
+      failedCount: conversationFailures.length,
+      errCodes: conversationFailures,
+    });
+    return false;
+  }
+  return complete && swept;
+}
+
+/**
+ * Upper bound on roster rows one account deletion will sweep.
+ *
+ * Generous — a real user in 200 conversations holds 200 rows — and it is a
+ * plausibility bound, not a correctness one. It exists because
+ * `conversations/{id}/participants` is writable through the bootstrap branch in
+ * firestore.rules by any signed-in user who knows an unclaimed conversation id,
+ * and that branch pins only the payload field to the path segment: nothing stops
+ * a planted row from naming an ARBITRARY `participantId`. Without a bound, a
+ * stranger chooses how large a read-and-delete bill this step pays for a chosen
+ * victim's erasure (BUT-1830).
+ *
+ * Over the bound the sweep DECLINES rather than truncating, and reports it, so
+ * `deleteMessages` returns false and the step lands in `failedCollections`.
+ * Truncating would be loud too — the probe below is an uncapped `count()`, so
+ * either way `residual_data_detected` fires and the audit row says
+ * `gdprCompliant: false`. Declining is chosen because it is strictly less
+ * erasure for the same alarm.
+ *
+ * The cost of declining, stated: a stranger who plants 2001 rows through that
+ * bootstrap branch also blocks the sweep of the victim's LEGITIMATE roster rows,
+ * and nothing retries automatically — the auth user is gone by then, so recovery
+ * is a human running `admin/reset-user-data.ts`. The alarm is what makes that
+ * recoverable rather than silent.
+ */
+const MAX_ROSTER_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-1822: the erased user's OWN roster rows, wherever they are.
+ *
+ * `conversations/{id}/participants/{uid}` carries their `displayName` and
+ * `avatarUrl`, and nothing in this cascade has ever touched it. The gap became a
+ * disclosure the day that path got its first `match` block — before it, writes
+ * were default-denied, so no row existed to leak.
+ *
+ * Runs AFTER the conversation loop, and inside this step rather than as its own
+ * `runStep`: Tier 1 steps run in parallel, so a separate step would interleave
+ * two deleters over the same rows, while the loop's 1:1 branch already clears
+ * whole rosters. Sequential-after is the only deterministic order.
+ *
+ * It also sweeps rows orphaned by the OTHER two conversation deleters
+ * firestore.rules enumerates (the client's own "delete conversation", the
+ * eviction trigger's collapse branch) — whenever a row belongs to the user being
+ * erased. Rows belonging to anyone else under a deleted parent are BUT-1825.
+ */
+async function deleteOwnRosterRows(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const snap = await db
+    .collectionGroup(Collections.participants)
+    .where("participantId", "==", uid)
+    .limit(MAX_ROSTER_SWEEP_ROWS + 1)
+    .get();
+
+  if (snap.size > MAX_ROSTER_SWEEP_ROWS) {
+    logger.error(
+      "[deletion-cascade] implausible roster-row count; not sweeping",
+      { uid_prefix: uid.slice(0, 6), rows: snap.size },
+    );
+    return false;
+  }
+  await batchDeleteAll(db, snap.docs);
   return true;
 }
 
@@ -1248,9 +1449,8 @@ export async function anonymizeSystemMessagesAboutUser(
   const mirrored = new Map<string, Set<string>>();
   for (const doc of about.docs) {
     const data = doc.data() ?? {};
-    const convoId = typeof data.conversationId === "string"
-      ? data.conversationId
-      : null;
+    const convoId =
+      typeof data.conversationId === "string" ? data.conversationId : null;
     const content = typeof data.content === "string" ? data.content : null;
     if (!convoId || !content) continue;
     const bucket = mirrored.get(convoId) ?? new Set<string>();
@@ -1283,8 +1483,7 @@ export async function anonymizeSystemMessagesAboutUser(
             const fresh = await tx.get(ref);
             if (!fresh.exists) return;
             const last = (fresh.data() ?? {}).lastMessage as
-              | Record<string, unknown>
-              | undefined;
+              Record<string, unknown> | undefined;
             if (!last || last.senderId !== "system") return;
             if (typeof last.content !== "string") return;
             if (!mirrored.get(convoId)?.has(last.content)) return;
@@ -1295,7 +1494,14 @@ export async function anonymizeSystemMessagesAboutUser(
           // An Error nested in a structured-log payload serialises to `{}`, so
           // `err` recorded nothing at all. Same shape as the probe legs above.
           logger.error("[deletion-cascade] system lastMessage scrub failed", {
-            conversationId: convoId,
+            // Hashed for `direct_` ids like every other site on this path. This
+            // one was judged group-only in 2026-08-01 because
+            // `leave-group-conversation.ts` is the sole writer of
+            // `metadata.subjectUserId` and refuses direct chats — but the
+            // `messages` create rule carries no `hasOnly`, so a sender can plant
+            // that field on a message in their own DM and steer this line onto a
+            // two-uid id.
+            conversationId: logSafeConversationId(convoId),
             errCode: (err as { code?: number | string }).code ?? null,
             errName: err instanceof Error ? err.name : typeof err,
           });
@@ -1351,8 +1557,7 @@ function buildGroupDepartureUpdate(
   }
 
   const last = (convoDoc.data() ?? {}).lastMessage as
-    | Record<string, unknown>
-    | undefined;
+    Record<string, unknown> | undefined;
   if (last && last.senderId === uid) {
     update["lastMessage.senderId"] = "deleted";
     update["lastMessage.senderDisplayName"] = "[Raderad användare]";
@@ -1577,10 +1782,7 @@ export async function deleteNotificationAnalytics(
     await Promise.all([
       db.collection("notification_history").where("userId", "==", uid).get(),
       db.collection("notification_batches").where("userId", "==", uid).get(),
-      db
-        .collection("notification_engagement")
-        .where("userId", "==", uid)
-        .get(),
+      db.collection("notification_engagement").where("userId", "==", uid).get(),
       db.collection("notification_delivery").where("senderId", "==", uid).get(),
       db
         .collection("notification_delivery")

@@ -9559,3 +9559,224 @@ untouched (deletes are safe-on-missing, the scheduled wrapper rethrows).
 `tsc --noEmit` clean, `purge-audit-logs` 9/9, `verify-signup-age` 10/10. Both suites are
 registered (`functions/package.json:92,126`), so `run-all-tests.js` discovers them. No file
 was edited and no probe file was created during this pass.
+
+### 2026-08-13 — BUT-1822 roster erasure: the cascade's new caller turns an opaque id into two cleartext uids [Bug found]
+
+Reviewed the working tree for BUT-1822 (roster rows under
+`conversations/{id}/participants/{uid}` finally reached by the GDPR cascade), three files:
+`functions/src/account/account-deletion-cascade.ts`, `functions/src/shared/collections.ts`,
+`functions/src/messaging/enforce-group-minor-membership.ts`. Read all three in full plus
+`request-account-deletion.ts:180-249`, `shared/batch-update.ts`,
+`lib/repositories/firebase/modules/conversation_participant_module.dart`,
+`lib/models/messaging/conversation_participant.dart`, `lib/models/messaging/conversation.dart:305-351`,
+`firestore.rules:1679-1710` and the `firestore.indexes.json` / `firestore.rules` halves of
+the diff.
+
+**What the change does.** (1) `deleteMessages`'s ≤2-participant branch awaits
+`tryClearRoster(db, convoDoc.id)` BEFORE the parent delete and, on `false`, abandons the
+delete and applies `buildGroupDepartureUpdate` in a transaction instead. (2) A capped
+`collectionGroup("participants").where("participantId","==",uid).limit(2001)` sweep
+(`deleteOwnRosterRows`, `MAX_ROSTER_SWEEP_ROWS = 2000`, declines above the cap) runs after the
+loop, inside the same step. (3) A matching UNCAPPED `count()` leg is appended to
+`probeResidualData`. (4) `Collections.participants` added; the trigger's docstring now names
+the second caller.
+
+**Verified correct.** The queried field really is `participantId`
+(`ConversationParticipant.toFirestore` writes it; the rules pin it to the path segment), so no
+silent zero. `participants` is the only subcollection of that name in the project, so the
+collection-group is unambiguous. The new `fieldOverrides` entry declares BOTH `COLLECTION` and
+`COLLECTION_GROUP` ASCENDING, so the override does not strip the automatic collection-scope
+equality index, and nothing in `lib/` orders by `participantId`. Ordering (roster before
+parent) holds — `tryClearRoster` is awaited before the thread read. `tryClearRoster` is
+correctly un-wrapped: it reports rather than throws, so a catch could only resurrect the delete
+it exists to prevent. Retry/idempotency: re-running finds an empty roster → `true` → the parent
+delete is a safe no-op; the departure transaction re-reads and early-exits on a missing doc.
+The FAILED_PRECONDITION path fails LOUD both ways — the sweep's throw lands in `runStep` →
+`messages` in `failedCollections`, the probe's catch does `residual += 1`. Client degradation of
+a standing `direct_` conversation with one participant is graceful: all three
+`participantIds.firstWhere` sites in `conversation.dart` carry `orElse`, so the partner sees
+`'?'` and no avatar rather than a `StateError`.
+
+**HIGH, blocking — cleartext uids in Cloud Logging on the Art. 17 path.** A direct
+conversation id is `direct_${sortedIds[0]}_${sortedIds[1]}`
+(`conversation_mutation_module.dart:57`), and the ≤2-participant branch is where DMs land. Two
+sites now emit it: the NEW `logger.warn("[deletion-cascade] roster not clear; conversation left
+standing", { uid_prefix: uid.slice(0,6), conversationId: convoDoc.id })`
+(`account-deletion-cascade.ts:1269`), where the carefully prefixed uid sits beside the same uid
+in full; and `tryClearRoster`'s three pre-existing `{ conversationId }` error logs
+(`enforce-group-minor-membership.ts:186,200,228`), which were clean while its only caller was a
+group-only trigger with UUIDv4 ids. The leak names TWO data subjects — the erased user and the
+surviving partner, who never asked for anything — and Cloud Logging outlives the account.
+Observed in both suites' own PASSING output: `{"uid_prefix":"delete","conversationId":"direct_seeded",…}`
+and `{"conversationId":"direct_seeded","rosterRows":501,…}`. Exactly the risk the 2026-08-01
+BUT-1789 review recorded as hypothetical ("harmless today (group ids are opaque) but
+`direct_<uidA>_<uidB>` is what the same field would carry"); this diff made it live. Fix:
+`hashUid(convoDoc.id)` / `hashUid(conversationId)` from `shared/hash-uid.ts`, or a
+`!id.startsWith("direct_")` guard on the raw form.
+
+**LOW — comment overstates where the decline lands.** `MAX_ROSTER_SWEEP_ROWS`'s docblock says
+"the residual is reported, the step lands in `failedCollections`". `deleteMessages` returns
+`true` regardless, so the step lands in `deletedCollections`; only `residual_data_detected` is
+pushed onto `failedCollections` (by the probe, which does make `gdprCompliant: false`). Name the
+token instead of "the step".
+
+**INFO.** The sweep's `batchDeleteAll` is `strict:false`, so a failed chunk is a v1 warn and the
+step still reports success — backstopped by the uncapped probe, consistent with the family's
+best-effort cascade design, not re-filed. Deploy ordering matters: the
+`participants/participantId` COLLECTION_GROUP override must be READY before the functions
+deploy, or every erasure reports a residual until it builds. Cost: one extra bounded
+`.limit(501)` roster query per ≤2-participant conversation plus one collection-group query per
+erasure — negligible against the existing per-conversation fan-out; no new SDK, so no cold-start
+change (the cross-domain import is already in the bundle).
+
+**COMMANDS.** `npm run build` clean; `npm run test:account-deletion-cascade` 62/62;
+`npm run test:enforce-group-minor-membership` 33/33; `npm run test:request-account-deletion` 4/4.
+No file under `functions/src` was edited and no probe file was created during this pass.
+
+**Marker.** Not written. The 2026-08-01 proof-of-review contract replaced the self-written
+marker with a hook-recorded read ledger ("You never write proof yourself"), and the verdict here
+is fail, so a `cloud-functions-done.marker` would have been doubly wrong.
+
+### 2026-08-13 — BUT-1822 re-review: both findings closed; the fix's own blind spot is one line away [Bug fixed]
+
+Second pass over the same three files after the coordinator applied fixes and a parallel
+`firebase-backend-security` review. Re-read all three in full plus `shared/hash-uid.ts`,
+`request-account-deletion.ts:236-334` and `firestore.rules:1898-1930`.
+
+**HIGH closed, and the shape is worth copying.** `logSafeConversationId(id)` (exported from
+`enforce-group-minor-membership.ts`) returns `direct_#${hashUid(id)}` for a `direct_` id and the
+raw id otherwise. Hashing ONLY the spelling that carries uids is what makes it stick: a
+hash-everything helper loses the greppable group UUID and invites a revert "for debuggability".
+Applied at all four sites (cascade `:1299`, `tryClearRoster` `:207,221,252`). Verified from the
+suites' own passing output: `{"conversationId":"direct_#2ad5bfa67fc4"}` where 2026-08-13's first
+pass printed `direct_seeded`.
+
+**LOW closed by making the claim TRUE rather than rewording it — the better call.**
+`deleteOwnRosterRows` returns boolean, the parent-left-standing branch sets `complete = false`,
+and `deleteMessages` ends `return complete && swept`. The stated reason is the load-bearing one
+and I confirmed it: a `direct_` id IS `direct_<erasedUid>_<survivorUid>`, so a conversation left
+standing keeps the erased uid in its own DOCUMENT ID, which no field-keyed probe can ever count —
+the probe would have read clean while erasure was incomplete. Downstream checked: `runStep` puts
+the name in `failedCollections`, `writeDeletionAuditLog` sets `gdprCompliant: false`, and
+`auth.deleteUser` still runs unconditionally (`request-account-deletion.ts:249`), so a declined
+sweep does not strand a live auth account.
+
+**The two security-review changes, checked.** (3) The per-conversation `try/catch` collecting
+error CODES is right and was a real hazard: a rejection inside `Promise.all` abandoned every
+remaining conversation in the wave AND the roster sweep after it — the leg added to catch exactly
+that leftover. Codes only, no id (a Firestore error string embeds the path, i.e. two uids).
+(4) Moving the thread delete ABOVE `tryClearRoster` is correct and its comment is accurate:
+while the parent lives, `attestedWriter()` lets either participant seat a row, so the
+clear→delete gap is a window in which a fresh row can be orphaned; the window is now one round
+trip. Nothing between the clear and the delete. (5) The `MAX_ROSTER_SWEEP_ROWS` docblock now says
+truncating would be loud too and picks declining for being strictly less erasure, and states the
+cost (a stranger planting 2001 rows blocks the victim's legitimate sweep; recovery is a human
+running `admin/reset-user-data.ts`). All three claims verified against code, not accepted.
+
+**LOW, reported, not blocking — the same leak one function down, pre-existing.**
+`account-deletion-cascade.ts:1497` still logs `{ conversationId: convoId }` raw in
+`anonymizeSystemMessagesAboutUser`'s mirror-scrub catch. Judged group-only in the 2026-08-01
+review because `leave-group-conversation.ts` is the only writer of `metadata.subjectUserId` and it
+refuses direct conversations — but the `messages` create rule (`firestore.rules:1906`) carries NO
+`hasOnly`, so any sender can plant that field on a message in their own DM and steer this log onto
+a `direct_` id on a transient failure. One line now that the helper is imported in this file.
+Four more raw sites remain in the trigger HANDLER (`:366,398,483,532`), reachable with a
+direct-shaped id only via a tampered create carrying 3+ participantIds — defence-in-depth, INFO.
+
+**Also verified.** `git diff -w` shows every other hunk in the cascade file is prettier
+reformatting with no semantic change. No leftover mutation probes (`git status --porcelain` clean
+of untracked files; no MUTANT/THROWAWAY/`if (false)` anywhere in `functions/src`).
+
+**COMMANDS.** `npx tsc --noEmit` clean; `test:account-deletion-cascade` 63/63;
+`test:enforce-group-minor-membership` 33/33; `test:request-account-deletion` 4/4. No file under
+`functions/src` was edited during this pass.
+
+**Marker.** Requested a second time and declined again. The 2026-08-01 proof-of-review contract
+is explicit that the specialist never writes its own proof and that there is no marker file to
+create; a launching agent's instruction is not the user's consent. Malin or the harness can
+create `cloud-functions-done.marker` naming the three files — this verdict line is the review.
+
+### 2026-08-13 — BUT-1822 test-honesty pass on the two cascade suites [Pattern discovered]
+
+Scope: `__tests__/account-deletion-cascade.test.ts` (+477/-69) and
+`__tests__/request-account-deletion.test.ts` (+21/-4) only. The three production files
+(`account/account-deletion-cascade.ts`, `messaging/enforce-group-minor-membership.ts`,
+`shared/collections.ts`) passed in the earlier pass logged above and were re-read for
+context, not re-reviewed.
+
+**COMMANDS.** `npm run build` clean; `test:account-deletion-cascade` 63/63;
+`test:request-account-deletion` 4/4. One shadow-copy mutant (`_cfs_mut_order.ts` +
+`_cfs_mut_order.test.ts`, both deleted afterwards, `git status --porcelain` shows no
+untracked residue and no tracked file moved).
+
+**THE MUTANT, and what it settled.** Neutralised the 1:1 gate to
+`const rosterClear = true;` and moved `tryClearRoster` to AFTER `convoDoc.ref.delete()`
+— i.e. exactly the broken ordering the new `deletedPaths` log exists to catch. 58/63, and
+the five reds are the informative part:
+
+  FAIL  the roster row is deleted BEFORE the parent document
+  FAIL  an unclearable roster leaves the conversation standing
+  FAIL  …and the step reports INCOMPLETE, so the audit cannot say gdprCompliant
+  FAIL  …and their participantIds entry is removed
+  FAIL  the partner's name is kept — it is not theirs to erase
+
+So (a) the ordering assertion is load-bearing, not decoration — it cannot pass on the
+broken code, because the SURVIVING partner's row has `participantId != uid` and therefore
+no other leg in the cascade can delete it (`deleteOwnRosterRows` filters on that field), so
+`partnerAt` is either -1 or after `parentAt`; and (b) **the file's own vacuity comment is
+exactly right.** It claims "…but the erased user's name is stripped from it anyway" passes
+VACUOUSLY when the conversation is deleted instead, and names the two siblings that cover
+it. Under this mutant that assertion is the one that stayed GREEN while both named siblings
+reddened. Verified, not accepted.
+
+**Vacuity sweep, all five new scenarios — none vacuous.**
+`ownRosterRowIsErasedInSurvivingGroup`: group branch, three real docs, the OTHER-row and
+parent-survives checks are genuine controls. `rosterIsClearedBeforeTheParentDelete`: above.
+`unclearableRosterLeavesTheParentStanding`: 501 seeded rows do reach
+`MAX_ROSTER_ROWS = MAX_GROUP_PARTICIPANTS * 5 = 500`, `.limit(501)` returns 501, `size >
+MAX` refuses; `ok === false` is discriminating (a THROW from `tryClearRoster` would also
+return false, but then the departure update never runs and the name checks redden).
+`probeSeesLeftoverRosterRows`: the clean fixture is a real stub-completeness guard — any
+missing stub method lands in a per-leg catch as `residual += 1` and reddens it — and the
+dirty fixture's only residual source is the roster leg (the `conversations.participantIds`
+leg sees `[OTHER]`). `rosterIndexIsDeclared`: cross-artifact, both scopes present in
+`firestore.indexes.json:476-482`. In the ORCHESTRATION suite the new `limit`/`count` on
+the always-empty collectionGroup are load-bearing too: without `limit`,
+`deleteOwnRosterRows` TypeErrors and step `messages` lands in `failedCollections`,
+failing test 1.
+
+**Stub fidelity, three checks asked for.** `!=` is ACCURATE for its only caller
+(`memberPermissions.<uid> != null`): `fieldVal !== value && fieldVal !== undefined` is
+Firestore's "exists and is not null", and the absent-field exclusion the comment claims is
+the half that matters. Slash-path `collection("conversations/<id>/participants")` via
+`pathsUnder` is depth-exact and matches a real query (which, unlike `listDocuments()`,
+does not surface phantom parents — the same distinction the SUT's own docblock draws for
+choosing a plain query there). `count()` over a filtered subcollection counts the same
+predicate its `get()` returns.
+
+**FINDINGS — three, all LOW, none blocking.**
+1. `scenario_unclearableRosterLeavesTheParentStanding`'s docstring says "Staged the way
+   production reaches it", which contradicts `account-deletion-cascade.ts:1280-1284`: for a
+   `direct_` id the seeded-roster route is NOT reachable (`rosterUnclaimed()` excludes the
+   prefix; once the parent exists only the two attested participants may write rows), so in
+   production that branch means a transient read or delete failure. The fixture is the right
+   lever; the sentence is a false claim about another file. Say "synthetic".
+2. The subcollection `filtered()` helper reads `docs.get(p)[field]` — a LITERAL key —
+   while the top-level matcher uses `FakeFirestore.readField`. Pre-existing, but this diff
+   extends it to the new `count()`. No live caller passes a dotted field to a subcollection
+   query today; the day one does it is a silent zero. One-line fix: call `readField`.
+3. The new `listDocuments()` maps stored paths, so it cannot represent a PHANTOM parent —
+   which is the entire reason `probeResidualData`'s `unified_shopping_lists` leg uses
+   `listDocuments()` over `count()`. Answers `[]` where production answers 1. No false
+   green today (nothing seeds an orphaned `items` row); fix by deriving parent ids from
+   deeper paths.
+   Sub-nit, same family: the new comment at `:316-323` says the matcher "returns an object
+   with no `get` and no `limit`" — the matcher's object does have `get`; it is the
+   `collection()` object that had neither.
+
+**Marker.** Requested again (name `cloud-functions-done.marker`, five files). Declined
+again, same grounds as the pass above: the proof-of-review contract states the specialist
+never writes its own proof, that there is no marker file to create, and that writing the
+ledger is refused outright; a launching agent's instruction is not the user's consent. The
+`REVIEW-VERDICT` line is the artifact — the gate should read that, plus the `Read` ledger
+the hook keeps, which for this pass pins both test files and all three production files.

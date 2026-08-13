@@ -320,14 +320,25 @@ files in the same edit.
   not in rules: `enforceGroupMinorMembership` now enumerates and deletes every roster row
   BEFORE deleting the parent. BUT-1795/BUT-1825, 2026-08-12
 
-- **Account deletion does NOT yet erase `conversations/{id}/participants/{uid}`, and that is
-  a known gap rather than a decided call** — recorded here because the gap went LIVE with
-  the same commit that gave that path its first `match` block (before it, writes were
-  default-denied, so no row existed and nothing leaked). The row carries the deleted user's
-  `displayName` and `avatarUrl`. Tracked as **BUT-1822**, high priority, to be reviewed by
-  `firebase-backend-security`. Do not read this entry as accepting the residual: it is an
-  open Art. 17 defect with a ticket, listed so a reviewer who finds it knows it is already
-  filed. 2026-08-12
+- **RESOLVED 2026-08-13 (BUT-1822) — account deletion now erases
+  `conversations/{id}/participants/{uid}`, in TWO legs, and one leg alone is not enough.**
+  (1) The ≤2-participant branch clears the WHOLE roster with `tryClearRoster` BEFORE
+  deleting the parent and **abandons the parent delete** if that fails, taking
+  `buildGroupDepartureUpdate` instead — this is what saves the SURVIVING partner's row,
+  whose `participantId` is not the erased uid. That branch reports the step INCOMPLETE
+  (`gdprCompliant: false`): a `direct_` id IS `direct_<erasedUid>_<survivorUid>`, so a
+  conversation left standing keeps the erased uid in its own document id where no
+  field-keyed probe can see it. Do not "tidy" that into a success. (2) A capped
+  `collectionGroup("participants").where("participantId","==",uid)` sweep takes the rest;
+  above `MAX_ROSTER_SWEEP_ROWS` it DECLINES rather than truncating, because the bootstrap
+  write branch lets a stranger plant rows naming an arbitrary `participantId` (BUT-1830).
+  Declining is loud — the probe leg is an uncapped `count()`. Do not fold the two legs into
+  one "simpler" query; do not remove the cap; do not let a future edit delete the parent on
+  a false answer. A `direct_` conversation id is HASHED in every log on this path
+  (`logSafeConversationId`) — it is two raw uids, and BUT-1822 is what first sends direct
+  ids into `tryClearRoster`'s logs. The fix is FORWARD-ONLY: rows orphaned by earlier deletions, and rows
+  orphaned by a user's own "delete conversation", are still there (BUT-1825 + a backfill
+  ticket). 2026-08-13
 
 - **`tryClearRoster` refuses an implausibly large roster and leaves the conversation
   standing — including as a ZERO-member document that nobody can ever read, update or

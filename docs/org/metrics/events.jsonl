@@ -108,3 +108,4 @@
 {"ts":"2026-08-13T19:55:53.818Z","type":"trigger","fired":true,"signals":"delete,deletion,erasure,firestore.rules,functions/src,gdpr,pii,trust & safety","ran":null}
 {"ts":"2026-08-13T19:56:04.975Z","type":"trigger","fired":true,"signals":"delete,deletion,erasure,firestore.rules,functions/src,gdpr,pii,trust & safety","ran":null}
 {"type": "review", "tier": "full", "panel": ["Privacy/DPO", "Security Architect", "DBA", "Software Architect", "Codebase Archaeologist"], "outcome": "approve-with-conditions", "must_haves": 9, "conflicts": 0, "escalations": 0, "adrs": [], "rubber_stamp": false, "approx_tokens": 574000, "via": "exit-plan", "plan": "BUT-1822 roster erasure in deletion cascade", "ran": true, "ts": "2026-08-13T19:57:48.273703+00:00"}
+{"ts":"2026-08-13T21:10:45.306Z","type":"trigger","fired":true,"signals":"auth,delete,deletion,firestore.rules,functions/src,gdpr,trust & safety","ran":null}
