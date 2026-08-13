@@ -9070,3 +9070,287 @@ changed this round" — I could not byte-compare the pasted block against my own
 asserting identity. Independent verification of the claims is the substitute, and is the
 stronger check anyway. Worktree mtimes are consistent with the stated single edit:
 `cleanup-cache.ts` 01:14, `cleanup-cache.test.ts` 01:08.
+
+### 2026-08-12 — enforceGroupMinorMembership roster cleanup, re-review pass 2 [Pattern discovered]
+
+Re-review of the STAGED `functions/src/messaging/enforce-group-minor-membership.ts` +
+`functions/src/__tests__/enforce-group-minor-membership.integration.test.ts` after the
+author fixed pass-1's findings (false comment, ordering/strictness, key set, PII in logs,
+test litter). Verdict: FAIL, 1 blocking.
+
+BLOCKING (High) — `clearRosterStrict` is an UNBOUNDED enumeration inside a `retry:true`
+trigger. It does `db.collection("conversations/{id}/participants").listDocuments()` and
+then `Promise.all(refs.map(r => r.delete()...))` with no cap and no chunking. The same
+file, 60 lines up, already refuses an unbounded fan-out
+(`participantIds.length > MAX_GROUP_PARTICIPANTS` → log + return) with a comment saying
+`retry:true` replays the bill. The roster collection is CLIENT-WRITABLE at arbitrary
+volume: `firestore.rules`' `rosterUnclaimed()` (`parentDoc() == null &&
+!conversationId.matches('^direct_.*')`) lets any signed-in user seat rows under a
+conversation id whose top-level document does not exist yet, and there is no
+`rateLimitWrite` on the subcollection (the top-level conversation create is rate-limited
+10/window; the roster is not). Reachable chain: seat N rows under a chosen UUID → create
+`conversations/<that id>` with `participantIds:[self, minorA, minorB]` and
+`metadata.creatorId: self` (rules bind creatorId to the caller, and the DM gate is skipped
+at size 3) → both minors are non-friends → collapse branch → the trigger enumerates and
+concurrently deletes all N. This trigger declares no `timeoutSeconds`, so it runs at the
+60s v2 default; large N ⇒ timeout or RESOURCE_EXHAUSTED ⇒ throw ⇒ `retry:true` replays the
+whole handler including the `getAll` fan-out. That is a deterministic loop, which the new
+comment explicitly claims cannot exist ("there is no deterministic-failure shape to loop
+on"). Remediation given: chunk (or `db.bulkWriter()`), and on an implausible roster count
+fall back to the UPDATE branch (strip the minors, keep the one-person shell) rather than
+throw — the live parent is exactly what keeps `rosterUnclaimed()` and the read fallback
+shut, so keeping it alive is the safe bounded outcome.
+
+MEASURED (emulator probe, scratchpad script, no repo file touched): with the parent
+document never written, and again after it was written then deleted,
+`listDocuments()` and `.get()` BOTH return every child row (`['a.b','uidA']`), and a
+second `delete()` on the same ref resolves without throwing. So the author's doc-comment
+claim about `listDocuments()` and absent parents is TRUE, delete-on-missing is
+idempotent (retry-safe), AND — the useful corollary — the "rows before parent" ORDERING is
+not pinnable by any emulator fixture, since swapping the two statements yields an
+identical final state. `tasks/todo.md:139-140` records the ordering as
+"mutationsbevisad" alongside the enumeration; only the enumeration is.
+
+COMMENT CLAIMS CHECKED (the author asked for all four):
+1. `ConversationParticipantModule.addParticipants` iterates
+   `participantDisplayNames.entries` — TRUE (`conversation_participant_module.dart:104`),
+   writing `conversations/{id}/participants/{participantId}`.
+2. `isValidDocId` rejects `a.b` / `__x__` — TRUE (`/[/.[\]*`]/` and `/^__.*__$/`).
+3. "the group-create bootstrap branch in firestore.rules does not check `participantId`
+   at all" — TRUE only if "branch" is read as `rosterUnclaimed()` alone; the sibling
+   conjunct `validParticipant()` DOES reference `participantId` (`d.participantId ==
+   participantId`, rules:1718). It pins the payload to the path segment and constrains the
+   id's SHAPE not at all, so the conclusion survives; the sentence invites the wrong read.
+4. `listDocuments()` returns refs under an absent parent — TRUE, measured above.
+5. NEW FALSE COMMENT, test file: "`addParticipants` writes this row in the same batch that
+   creates the group". `ConversationMutationModule.createGroupConversation` does
+   `await createFn(conversation)` (which lands on `users/{uid}/conversations/{id}`, because
+   `FirebaseMessagingRepository` mixes in `UserScopedFirebaseRepository`) and THEN calls
+   `addParticipants`, which opens its own `firestore.batch()`. Two separate commits, and
+   the top-level conversation doc — the one this trigger fires on — is not written by
+   either; it materialises on the first message. The "same batch" wording asserts an
+   atomicity that is the exact opposite of the premise `rosterUnclaimed()` exists for.
+
+NON-BLOCKING also filed: the collapse branch re-deletes every roster row a second time in
+the trailing best-effort loop (already cleared by `clearRosterStrict`) — ≤N wasted billed
+deletes and an ambiguous contract; `(e as Error).name` / `.code` throw a TypeError inside
+the catch if a rejection value is ever null, which would swallow the loud
+`failedCount`/`errCodes` log; and the throw itself is testable cheaply WITHOUT the emulator
+by exporting `clearRosterStrict` and feeding it a fake db whose `listDocuments()` returns
+two refs, one of whose `delete()` rejects with `{code: 7}` — the repo's established
+"seam that makes ONE iteration throw" pattern. The author's decision to RECORD the gap in
+`tasks/todo.md` rather than claim coverage is honest and verified present
+(`todo.md:136-141`, in Swedish — grep "deltagarrad", not "roster"), but "no cheap fixture
+exists" is true only of the EMULATOR lane.
+
+Answered "does the update branch still behave as before": yes. `mirrorsToClear` is
+unchanged on that branch (`[...toRemove]` only), `flatMap` issues both deletes eagerly and
+independently, every promise carries its own `.catch`, so `Promise.all` cannot reject and
+nothing throws out of the trigger. The only change is the payload shape, from
+`{error: String(e)}` to `{errCode, errName}` — which is the convention this knowledge file
+already prescribes, and it removes a real leak (a Firestore error message embeds the full
+document path, i.e. a raw uid on a child-safety eviction).
+
+### 2026-08-12 — BUT-1482 roster cleanup, FINAL review round (round 5) [Pattern discovered]
+
+Re-reviewed the staged bytes of `enforce-group-minor-membership.ts`,
+`leave-group-conversation.ts` and the three suites after four earlier rounds. Ran
+`npx tsc --noEmit` (clean), `test:enforce-group-minor-membership` (33/33) and
+`test:integration:enforce-group-minor-membership` (4/4) myself rather than accepting the
+reported numbers. The unit run PRINTS its three error payloads
+(`{conversationId,failedCount,errCodes:["7"]}`, `{conversationId,rosterRows:501}`,
+`{conversationId,errCode:8,errName:"Error"}`) — no `err:{}`, no `String(e)`, no uid: the
+log-shape convention is satisfied on evidence, not by argument.
+
+NO code defect found in the control flow. `rosterCleared = remaining.length < 2 && (await
+tryClearRoster(...))` short-circuits correctly, a false verdict reaches the update branch,
+the grpc-5 branch clears the roster and ignores the verdict for a stated and correct
+reason, and the read is bounded at `MAX_ROSTER_ROWS + 1 = 501` with deletes chunked at 100
+— so the previous round's unbounded-fan-out/60s-timeout finding is genuinely closed
+(worst case ~501 reads + 500 deletes over 5 sequential chunks, far inside the default).
+
+THE FINDING IS COVERAGE, and it was measured, not argued. Shadow-copy mutation
+(`src/messaging/_cfs_mut_gate.ts` + `src/__tests__/_cfs_mut_gate.integration.test.ts`,
+both deleted afterwards, `git status --porcelain` byte-identical): neutralising the gate to
+`remaining.length < 2 && ((await tryClearRoster(db, conversationId)) || true)` — i.e.
+deleting the conversation even when roster rows survived, the exact permanent-disclosure
+state the whole change exists to prevent — leaves the integration suite **4/4 GREEN**. Both
+collapse fixtures have a clearable roster, so the verdict is always true; the unit suite
+imports `tryClearRoster` and never the handler, so it structurally cannot see the caller.
+`ACCEPTED_DEVIATIONS.md` says the false-verdict behaviour is "pinned by assertions in
+enforce-group-minor-membership.integration.test.ts … and by fake-database unit tests" —
+the fake-db tests pin that the helper RETURNS false, which is a different proposition from
+the caller OBEYING it. Remedy handed over: seed `MAX_ROSTER_ROWS + 1` rows on a collapsing
+conversation (two `WriteBatch`es), fire, assert the conversation STILL EXISTS and the minor
+is out of `participantIds`.
+
+Second gap, same class: the new grpc-5 leg (`void (await tryClearRoster(...))` inside the
+`update()` catch) has ZERO execution coverage. Reachable cheaply on the emulator —
+`set()` the doc, seed the roster, `get()` the snapshot, `delete()` the doc, THEN
+`.run({params, data: snap})`. It is the leg where the SURVIVORS' rows matter, because the
+trailing mirror loop only walks `toRemove`.
+
+Comment defect (Low, non-blocking): `conversations-rules.test.ts:854-858` (P12B, new in
+this same commit) states `enforceGroupMinorMembership` "evicts a minor by deleting only the
+membership mirror and leaves this row in place" — false as of the very diff it ships in.
+`firestore.rules:1741` carries the twin sentence but corrects it two paragraphs later
+("FIXED IN TWO HALVES"); the test file's copy has no correction. The scope IS still
+load-bearing (the row delete is best-effort and can fail) — the reason stated is what went
+stale, which is the half of a rationale nobody re-reads.
+
+Two Low notes: `leave-group-conversation.ts` spells the same cast two ways in one diff
+(`(e as Error)?.name` twice, `(e as Error | null)?.name` once — runtime-identical); and
+`enforce-group-minor-membership.ts:425`, `(e as { code?: number }).code !== 5`, is now the
+only un-optional-chained error read in a file whose every NEW catch is optional-chained and
+says in prose why. A null rejection there raises a TypeError that escapes a `retry:true`
+handler.
+
+Informational, deliberately not filed as a leak: the new log payloads carry
+`conversationId`, which for a `direct_{uidA}_{uidB}` id IS two raw uids — reachable only
+via a tampered client padding a `direct_`-prefixed doc to 3 participants (group ids are
+client-minted UUIDv4), and pre-existing on three older log sites in the same file. Worth
+knowing because the new comment beside it reads "Count and classify; never name."
+
+Verified the cross-file claims rather than trusting them: `ConversationParticipantModule.
+addParticipants` really does iterate `participantDisplayNames.entries` and write
+`doc(participantId)` (conversation_participant_module.dart:104-127), so a roster row id no
+uid list can name (`a.b`) is real and ENUMERATION is required; `firestore.rules:2828` is a
+terminal `allow read, write: if false`, so nothing can create a subcollection under a
+roster row and the "plain query is enough, `listDocuments()` unnecessary" claim holds; CI
+wiring is present (`package.json:98,100` plus `test:rules:all` and both `paths:` blocks in
+`firestore-rules.yml`), so neither suite is orphaned.
+
+Unrelated: `_run_test.bat` appeared UNTRACKED at the repo root during this review and is
+not mine — a parallel session's Windows flutter-test wrapper. Do not sweep it into this
+commit.
+
+### 2026-08-12 — BUT-1482 roster cleanup, round 4 (final bytes) [Pattern discovered]
+
+Verification pass over the same five staged files. tsc clean; 33/33 unit, 6/6 eviction
+integration, 47/47 conversations rules, 24/24 leave-group unit — all re-run here, not taken
+on report. Every Low from round 3 is genuinely fixed in the bytes: no `'''` artifacts, the
+`MAX_ROSTER_ROWS` docstring no longer claims a size cap that does not exist, the code-5 read
+at `:432` is now optional-chained like its siblings, the four new users are in
+`cleanupUsers`, and `leave-group-conversation.ts`'s three `error: String(e)` payloads are
+`{errCode, errName}`.
+
+**The round-3 blind spot is CLOSED, and I measured it rather than reading the fixture.**
+Shadow-copy mutants (`src/messaging/_cfs_mut_probe.ts` + a test copy with only its `require`
+path rewritten), each run against the live emulator, each reddening EXACTLY ONE test:
+
+- M1 `remaining.length < 2 && ((await tryClearRoster(...)) || true)` — delete the parent
+  despite a false verdict → only "an unclearable roster leaves the shell standing" fails
+  (6/6 → 5/6). That is the fixture that did not exist in round 2, when this same mutant left
+  the suite fully green.
+- M2 the code-5 leg's `void (await tryClearRoster(db, conversationId))` → `void 0` → only
+  "a conversation deleted mid-flight still gets its roster cleared" fails (6/6 → 5/6).
+
+The cheap lever for staging a FALSE verdict on a boolean gate turned out to be the helper's
+own refusal cap: seeding `MAX_ROSTER_ROWS + 1` rows is two `batch.commit()`s (400 + 101) and
+needs no fake, no seam and no error injection.
+
+**New technique — mutation-probing `firestore.rules` from a CF rules suite.** The suite
+reads the rules by PATH, so the whole probe can avoid touching the tracked file: write the
+mutated rules to the scratchpad, copy the test with `RULES_PATH` and `PROJECT_ID` rewritten,
+run, delete both. Two traps, both hit on the first attempt:
+1. `const RULES_PATH = "<abs>"` orphans the `path` import → TS6133 under `noUnusedLocals`,
+   which prints as a red suite for the wrong reason. Spell it `path.resolve("<abs>")` — the
+   same keep-the-symbol-referenced trap already recorded for `Collections.x`.
+2. A Windows path through `path.join` comes back with backslashes, so a
+   `t.includes(JSON.stringify(rp))` self-check false-negatives. Assert on a distinctive
+   substring (`_cfs_rules_m1`), not the whole path.
+Run an UNMUTATED shadow as a CONTROL first: m0 scored 47/47, which is what makes m1's and
+m2's single reds attributable to the mutation rather than to the harness. Both P12B claims
+verified: dropping `parentDoc() == null` from the read fallback reddens P12B alone; dropping
+the whole fallback reddens P14 alone.
+
+Findings this round, all Low, none blocking:
+- The unit suite's `tryClearRoster` block header still says "the failure paths the emulator
+  cannot reach" while containing the cap-refusal test (test 3) and two happy paths (1, 5).
+  The emulator DOES reach the cap refusal — the shell integration test uses it. The
+  correction landed in `ACCEPTED_DEVIATIONS.md` ("READ- and DELETE-failure paths … (Its cap
+  refusal is a different matter)") and not in the test file. One decision, two documents, one
+  updated.
+- The file header's cost paragraph enumerates the reads as "(one `users/{uid}` read per
+  non-creator participant, plus one friend-doc read per minor)" and predates the ≤501-document
+  roster read. The deviation doc states the ≤501 figure; the header does not.
+- The `MAX_ROSTER_ROWS` docstring's replacement sentence is right about the mechanism and
+  loose about which list: the refusal at `:315` is on the SANITISED `participantIds`, so a doc
+  carrying 400 raw ids of which 100 survive `isValidDocId` reaches the helper. No security or
+  cost consequence — the helper's own `.limit()` bounds the read either way — but this file
+  makes raw-vs-sanitised a load-bearing distinction 200 lines earlier.
+- Collapse-branch ordering has a fail-OPEN corner: the roster is cleared, then
+  `snap.ref.delete()` runs, and the minors are never stripped from `participantIds` on that
+  path. A PERMANENTLY failing parent delete therefore leaves the child-safety cut unapplied
+  (retry covers a transient one). Remedy if ever wanted: apply the strip update before the
+  delete, at one extra write per collapse.
+- No `timeoutSeconds` on the trigger (60s platform default) even though this change gave it a
+  real fan-out. Computed rather than assumed: ≤501-doc read + ≤500 deletes in 5 chunks of 100
+  concurrent + ≤200 mirror deletes ≈ low single-digit seconds. Fine as is; recorded so the
+  next person does not have to redo the arithmetic.
+
+### 2026-08-12 — Closing re-review of the BUT-1482 messaging diff: proving "logic unchanged" from the review ledger [Pattern discovered]
+
+Task: third pass over the staged CF diff (`enforce-group-minor-membership.ts`,
+`leave-group-conversation.ts`, the two eviction suites, `conversations-rules.test.ts`).
+The claim to check was "nothing in the CF logic changed since your 0-blocking pass; three
+comment corrections plus a new rules test C7B".
+
+**How it was settled, and the reusable part.** The reviewer ledger under `.claude/state/`
+records `{"t":"read","agent":...,"p":<path>,"sha":<hash>}` per read. That `sha` is the git
+BLOB hash — `git hash-object functions/src/messaging/enforce-group-minor-membership.ts`
+returned `7b2a4801…`, exactly the ledger's entry for my own read this run, and
+`git cat-file -t` answers `blob` for the older ones. Blobs written by an earlier `git add`
+are unreachable but not pruned, so the previous pass's bytes are still retrievable:
+
+    git cat-file -p 36d6e1bc… > old.ts && diff -u old.ts <file>
+
+Result, against my previous pass (aid `af2b4c81607c62af5`):
+- `enforce-group-minor-membership.ts` `36d6e1bc` → `7b2a4801`: three hunks, every changed
+  line inside `/** */` or `//`. Comment-only, proven not asserted.
+- `leave-group-conversation.ts` `4118563c` → `4118563c`: byte-identical, nothing to read.
+- unit suite `d89bb432` → `7fb6c158`: one docstring line.
+- integration suite `90d0f0ff` → `efc01755`: one `assert()` MESSAGE string.
+- `conversations-rules.test.ts` `d888d0cf` → `af6f41d0`: new test C7B + the C7 comment fix.
+
+Index == worktree on all five (`git ls-files -s` vs `git hash-object`).
+
+Gotcha: a Bash `grep` naming the ledger's path is refused outright by the hook that owns it
+("nothing may write … through a tool") — the refusal fires on the path appearing anywhere in
+the command string, including inside a heredoc that only meant to quote it. The refusal is
+about authorship; the **Grep tool** reads the file fine. Do not conclude it is unreadable,
+and keep its filename out of Bash command text.
+
+**Claims verified rather than accepted (all held):**
+- `functions/src/shared/collections.ts` does declare itself single-source-of-truth and does
+  NOT carry `participants`; `admin/reset-user-data.ts:92` still uses the bare literal. So the
+  new "a second local copy protects nothing" docstring is honest.
+- `MAX_ROSTER_ROWS` docstring's "VALID, not raw": the group-size guard at :327 runs on the
+  `isValidDocId`-filtered list, so 400 raw ids of which 100 survive does reach the helper.
+- The "deleted twice on the concurrent-delete branch, deliberately" note matches the code:
+  `rosterCleared` is false on the code-5 path, so the trailing loop re-deletes `toRemove`'s
+  rows after the in-catch `tryClearRoster`.
+- `tryClearRoster`'s "no rules path permits a subcollection under a roster row": the new
+  `match /participants/{participantId}` block contains no nested `match`.
+- C7B's mechanism: `firestore.rules:1553-1557` is
+  `!('metadata' in …) || !('creatorId' in …metadata) || … == uid`, so `metadata: null` fails
+  disjunct 1, evaluation-errors on disjunct 2, denies. Not confounded by `rateLimitWrite`
+  (`!exists(users/{uid}/rate_limits/conversations)` and nothing seeds it). C3 is the
+  fail-closed control: same actor, same participants, same shape minus the key, ALLOW.
+- C7's corrected comment: `Conversation.direct` (conversation.dart:187) stamps no metadata and
+  has NO production caller (only docs/tests); `createDirectConversation`
+  (conversation_mutation_module.dart:102) builds its Conversation inline with
+  `metadata: {'creatorId': user1Id}`, and `messaging_service.dart:127` passes `currentUser.uid`.
+- The "both halves of the guard" correction is right and its premise checks out:
+  `message_mutation_module.dart:97-104` derives `otherUserId` ONLY from a `direct_` id, so for
+  a group UUID the fallback really is one participant.
+- The deviation doc's "the conversations create rule is not changed by this commit": the
+  staged `firestore.rules` hunks are the two allowlists (:532, :553) and a pure addition at
+  :1602. Create rule untouched.
+
+Suites re-run on the shipped bytes: `tsc --noEmit` clean, eviction unit 33/33, eviction
+integration 6/6 (emulator live on 8080), conversations rules 48/48 (8 C-create + 11 C-update +
+29 P), leave-group 24/24 and 5/5. All five reported numbers reproduce.
+
+Verdict: pass, 0 blocking. No production code was touched by this review; no probe applied,
+nothing to restore.

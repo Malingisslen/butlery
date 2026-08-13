@@ -1675,3 +1675,191 @@ suites after it never run unless invoked individually. Not a regression; do not 
 **Mechanic re-learned the hard way:** `cd functions` earlier in a compound Bash call makes a
 later bare `md5sum firestore.rules` miss (the restore `cp` used an absolute path and did land;
 only the verification failed). Absolute paths in BOTH halves of a mutation probe.
+
+### 2026-08-12 — conversations/{id}/participants: designing a rule for a parent that does not exist yet (BUT-1482 sprint, item 5/5)
+
+**The gap.** `conversations/{conversationId}/participants/{participantId}` had NO match block —
+default-deny. Written by `ConversationParticipantModule.addParticipants` in ONE WriteBatch with
+`users/{uid}/conversation_memberships` (item 4 of this sprint), gated on
+`enable_subcollection_participants`, default TRUE. Unlike the other four drifts the failure is
+NOT swallowed: `addParticipants` has no local catch, so `batch.commit()` throws up through
+`createDirectConversation` / `createGroupConversation`.
+
+**The brief's premise was half right, and the real reason is worse.** The brief said the parent
+`conversations/{id}` is written "in the same batch", so a `get()` on it cannot work at create
+time. Reading the code: the conversation write is a SEPARATE, AWAITED write BEFORE the batch
+(`conversation_mutation_module.dart:105-127` for direct, `:156-166` for group), so pre-batch
+state would in fact contain it — for DIRECT. For GROUP it never contains it, because
+`FirebaseMessagingRepository` mixes in `UserScopedFirebaseRepository`, so `createFn` writes to
+`users/{creatorUid}/conversations/{id}` while the roster is written under TOP-LEVEL
+`conversations/{id}`. The top-level document only materialises when someone sends the first
+message — the same path split `leaveGroupConversation`'s BUT-1795 comment records ("a group
+nobody has chatted in has no top-level document at all"). So a parent-attesting rule denies
+every GROUP create permanently, not merely during the batch.
+
+**Shipped shape** (nested inside the existing `match /conversations/{conversationId}`, after
+`userSettings`, firestore.rules:1651):
+- `parentDoc()` = one `get()`, null on missing (the `isRealtimeParticipant` trick, one read,
+  cached per request).
+- `attestedWriter()` = parent names BOTH `request.auth.uid` AND `participantId`.
+- `mayWriteRoster()` = `attestedWriter() || rosterUnclaimed()` (parent == null).
+- create = `validParticipant() && mayWriteRoster()`.
+- update = `validParticipant()` AND (self + `diff().hasOnly(['lastReadAt'])` — `updateLastRead`)
+  OR `mayWriteRoster()` (the re-`set()` path: `addParticipant` sets WITHOUT merge, so a re-add
+  and `migrateToSubcollection` are UPDATES in rules terms).
+- delete = SELF ONLY, deliberately narrower than create/update:
+  `ConversationParticipantModule.removeParticipant` has no caller, and the real remove runs in
+  the `leaveGroupConversation` CF under the Admin SDK (which only DELETEs here). Widening it
+  would be a pure griefing primitive.
+- read = parent-attested OR `exists(.../participants/$(request.auth.uid))` (own row, the
+  recipePresence pattern) — the only evidence available for a group that has never been
+  messaged in. Neither predicate touches `resource.data`, so the client's whole-collection
+  `get()`/`snapshots()` LIST is provable.
+- allowlist = exactly `ConversationParticipant.toFirestore` (8 keys, `avatarUrl` optional →
+  `hasOnly` 8 / `hasAll` 7), plus `d.conversationId == conversationId` and
+  `d.participantId == participantId`, which also makes both immutable on update for free.
+  `role` bounded to the enum but explicitly NOT authorization (grep `ParticipantRole`: it never
+  leaves the module).
+
+**Residual, documented in the rule and pinned by test P3B:** the UNCLAIMED branch lets anyone
+who knows an unchatted group's 20-char auto-id seat a row, and then read that roster. Direct
+conversations are immune by construction (their guessable `direct_{a}_{b}` id always has a
+parent by roster-write time). Tightening = delete `rosterUnclaimed()` from `mayWriteRoster()`
+once BUT-1795 unifies the path; it cannot break stored data, because default-deny means NO
+client row has ever existed and the only CF touching the subcollection deletes.
+
+**Tests** — 26 appended to `conversations-rules.test.ts` (P1–P26), suite now 45/45. P24/P25/P26
+are the end-to-end ones: the module's REAL batch (3 roster rows + 3 membership rows, no parent
+doc) commits; the direct sequence (conversation write, then 2+2) commits; the same batch shape
+by a stranger against an existing conversation is denied. A batch is all-or-nothing, so these
+are the only tests that prove the two rule blocks cooperate.
+
+**Probe (throwaway, deleted in the same Bash call, rules mutated in MEMORY only):**
+- attribution: the stranger's MEMBERSHIP row ALONE is ALLOWED (the deployed sibling rule is
+  deliberately cross-user), so P26's deny is attributable to the roster row. Worth doing —
+  the emulator printed `false for 'create' @ L552` for the membership inside the failed batch,
+  which reads exactly like a second deny and is not one.
+- `mayWriteRoster()` → `true`: P3 FLIPS to allow.
+- `hasOnly([...])` conjunct deleted: P6 (unknown field) FLIPS to allow.
+- delete widened to `mayWriteRoster()`: P22 FLIPS to allow.
+- `firestore.rules` byte-identical afterwards (compared in-process against the string read at
+  probe start).
+
+**Dart guard** `test/unit/security/rules_allowlist_drift_test.dart` gained the entry, deriving
+keys from `ConversationParticipant(...avatarUrl: '...')` — the fixture carries a non-null
+avatar deliberately, because the guard must compare against the WIDEST set the writer can send.
+That also makes the pass self-proving: the parser takes the first `hasOnly(` after the anchor,
+and had it grabbed the neighbouring `hasAll(` (7 keys) instead, `avatarUrl` would have been
+reported MISSING and the test would have failed. 6/6 green.
+
+Adjacent suites re-run green: `leave-group-conversation.integration` 5/5,
+`enforce-group-minor-membership.integration` 4/4.
+
+### 2026-08-12 — Final gate on the staged roster rules: proving a "comment-only" round, and the third deleter
+
+**Q: is the staged `firestore.rules` diff comment-only since the previously reviewed revision?**
+Answered mechanically, not by eye. `git fsck --unreachable` + `git cat-file
+--batch-all-objects --batch-check` (filter blobs 115–150 KB whose first line matches
+`rules_version`) recovered every revision of the file that had ever been staged in this
+working copy — 16 of them. The reviewed revision is identifiable by content: `2a8ac2b9` is
+the only one carrying the disproved sentence "Scoping the fallback closes it, and closes the
+pre-seat residual with it". Comment-stripped (`sed 's|//.*$||'`, after grepping for `://` to
+prove no string literal contains a slash pair) both blobs md5 to `5e15ee5a…` → **identical
+code, 1328 non-comment lines**. Two intermediate blobs (`3e015ca4`, `4a77744e`) have
+DIFFERENT code md5s — a missing `isMuted` in `hasOnly`, and `hasAll` where the file now has
+`hasOnly` on `deep_links/clicks`. Those are restored mutation probes, not history; the point
+is that the staged blob matches the reviewed one, so they round-tripped.
+
+**P12B mutation probe, without touching the file.** Copied the suite to
+`functions/src/__tests__/zz-p12b-probe.test.ts` with `PROJECT_ID` = `butlery-rules-p12b-probe`
+and `RULES_PATH = process.env.PROBE_RULES ?? path.resolve(...)` (the `??` matters — dropping
+the `path` import makes ts-node die on `noUnusedLocals`, and the first run printed nothing at
+all through the grep), pointed it at a scratchpad copy with `parentDoc() == null &&` removed
+from the read fallback, `trap`-deleted the probe in the same call. **46/47, P12B alone**, so
+the deviation entry's "removing it flips exactly test P12B" is measured, not asserted.
+Baseline unmutated: 47/47. `firestore.rules` md5 identical before and after.
+
+**The third deleter nobody named.** The residual paragraph and the deviation entry enumerate
+two ways a roster outlives its parent (the eviction CF's collapse branch — closed in code —
+and the client `deleteConversation`). There is a third: `functions/src/account/
+account-deletion-cascade.ts:1185-1191`, which deletes any conversation with ≤2 participants
+whole (`convoDoc.ref.delete()`) after wiping its messages, and never touches
+`conversations/{id}/participants`. Two consequences the docs do not state: a shrunk GROUP
+deleted this way gets a UUID-id orphan roster that is re-seatable by anyone who knows the id;
+and for a DIRECT conversation the `direct_` exclusion in `rosterUnclaimed()` blocks the WRITE
+but NOT the read fallback, so the surviving partner keeps LIST on a roster that still holds
+the erased user's `displayName` and `avatarUrl` (BUT-1822's stored-data gap becomes a live
+read). BUT-1825's stated option 2 — "widen the row delete rule plus cascade" on the client —
+cannot reach this deleter, which runs server-side.
+
+Other deleters checked and cleared: `leaveGroupConversation` never deletes the parent (it
+`arrayRemove`s and deletes the leaver's own roster row); `admin/reset-user-data.ts` deletes
+subcollections before the doc (`deleteDocRecursive`); no TTL policy on `conversations`; no
+`{path=**}/participants/{id}` collection-group catch-all, and `git log -S
+"participants/{participantId}" -- firestore.rules` is empty, which is what makes "default-deny
+since it was written, so no client row exists" true.
+
+**Claims verified against code:** UUIDv4 (`Conversation.group` → `const Uuid().v4()`, 122
+random bits); `enable_subcollection_participants` defaults `true`
+(`feature_flag_service.dart:47`); the "seven assertions across three tests" roster count in
+`enforce-group-minor-membership.integration.test.ts` is exactly 2 + 4 + 1; every conversations
+rule gates on `uid in participantIds`, so the zero-member shell is genuinely locked.
+
+**Stale by one round:** the block comment still says "the only Cloud Function that touches the
+subcollection (leaveGroupConversation) only DELETES" — this sprint's own CF fix made
+`enforceGroupMinorMembership` a second toucher, and `resetUserData` a third. All three still
+only delete, so the safety argument survives; the enumeration does not. Also one surviving
+"auto-id" (line 1650) after three were corrected to UUIDv4.
+
+**Environment note:** a parallel session was rewriting `clearRosterStrict` in the working tree
+during this review (`listDocuments()` → bounded `.limit(N+1).get()`, "fails loudly" → "never
+throws, reports"), i.e. the CF bytes the staged deviation entries describe are already
+diverging. Rules review is scoped to the staged blob; whoever commits must re-check those two
+sentences.
+
+### 2026-08-13 — Closing pass on the conversations roster cluster: comment-only diff proven, C7B mutation-probed
+
+**Scope.** Re-review of the staged `firestore.rules` + `conversations-rules.test.ts` after
+three corrections (two of my own Lows, one from `testing-specialist`).
+
+**Comment-only proven, not eyeballed.** `git cat-file --batch-all-objects --batch-check`
+filtered to blobs of 138–152 KB whose first 20 bytes are `rules_version`, recovered SIX
+previously-staged revisions of `firestore.rules` (`047548ca`, `91f2b51b`, `9893a7bc`,
+`e8820358`, staged `abc79c25`, plus HEAD `38b1796f`). Comment-stripped md5
+(`sed 's|//.*$||' | tr -d ' \t\r' | grep -v '^$' | md5sum`) is IDENTICAL — `aeb77636…` — for
+all five staged revisions and differs only for HEAD. `grep '://' firestore.rules` is empty,
+so the naive comment strip is safe on this file. Line-diff of the immediately prior revision
+(`e8820358`) against the staged one shows a single hunk, five comment lines.
+
+**The corrected claim, verified against the CF's own line.**
+`functions/src/messaging/enforce-group-minor-membership.ts:318-319` is
+`const isGroup = data?.isGroup === true || rawParticipantIds.length > 2;` then
+`if (!isGroup || rawParticipantIds.length <= 2) return;`. So `isGroup: false` alone never
+decides — a false flag with >2 participants does NOT return early. Both the app fallback
+(`message_mutation_module.dart:167-187`: `participantIds: [senderId, ?otherUserId]`, and
+`otherUserId` stays null for a UUID group id because it is parsed only from a `direct_` id)
+and BUT-1830's hand-rolled squat payload trip BOTH halves, so the escape is real but the
+general reading was wrong. All four sites now say so.
+
+**C7B mutation-probed (the claim repeated in four documents).** Probe per the established
+recipe: `sed` a copy of the suite to `zz-c7b-probe.test.ts` with a fresh PROJECT_ID and
+`RULES_PATH = process.env.PROBE_RULES ?? <original>`, point it at a mutated COPY in the
+scratchpad, `rm` under `trap ... EXIT INT TERM`. Mutation = the "harmonise for consistency"
+edit, i.e. replace the create rule's
+`!('metadata' in …) || !('creatorId' in ….metadata) || ….metadata.creatorId == uid` with the
+UPDATE rule's `is map` ternary spelling. `perl` reported `SUBS=1`. Result: **47/48, the single
+FAIL being `conversations: a create carrying metadata: null is denied`** — exactly C7B, nothing
+else. `firestore.rules` md5 identical before/after; probe file gone; `git status --porcelain`
+clean of artifacts. Unmutated run: 48/48.
+
+**Residual noted, non-blocking.** `ACCEPTED_DEVIATIONS.md:1267-1269` still pairs
+"`isGroup: false`" with "would return early on it" without the both-halves qualifier that
+appears eleven lines later at :1279-1281. True of that payload (one participant), so not a
+false claim — just the shape of the misread, surviving in the one document that also corrects it.
+
+**"Reads as a bound" sweep.** Every surviving occurrence of the creator/only-thing-stopping
+claim is rebutted inside its own paragraph or bullet: `firestore.rules:1794-1820` (claim →
+"WHY only the creator is not what it looks like" → "NOT a security bound" → "so nobody reads
+… as a rule"), `conversations-rules.test.ts:230-233`, `message_mutation_module.dart:146-166`,
+`.claude/rules/accepted-deviations.md:288-295`, and the back-pointer
+`ACCEPTED_DEVIATIONS.md:1307` ("in the honest-client model described above — and only there").

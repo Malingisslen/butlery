@@ -172,6 +172,54 @@ idempotent:
   letting a refactor claim parity, especially where `firestore.rules` constrains
   only field PRESENCE (`hasRequiredFields([...])`) and no field TYPE, which is
   what makes those values writable in the first place.
+- **A `retry:true` trigger that ENUMERATES a client-writable collection has an
+  unbounded fan-out the bounded one beside it already refuses.**
+  `enforceGroupMinorMembership` caps its read fan-out at
+  `MAX_GROUP_PARTICIPANTS = 100` over `participantIds`, with a comment saying why
+  (retry replays the bill) — then the 2026-08-12 roster cleanup enumerates
+  `conversations/{id}/participants` via `listDocuments()` and fires every
+  `delete()` in one uncapped `Promise.all`. `firestore.rules`' `rosterUnclaimed()`
+  lets ANY signed-in user seat rows there while the parent document is absent,
+  with no rate limit on the subcollection, so N is attacker-chosen. N large ⇒ the
+  60s platform default (this trigger declares no `timeoutSeconds`) ⇒ a
+  deterministic retry loop — the exact shape the new comment claims cannot exist.
+  Whenever a cleanup switches from a known-length uid list to an ENUMERATION,
+  re-ask who may WRITE that collection and re-apply the cap: chunk the deletes
+  (or `db.bulkWriter()`), and prefer a bounded FALLBACK (take the
+  non-destructive branch and keep the parent alive, since a live parent is often
+  what keeps rules denying the read) over a throw — under `retry:true` the throw
+  IS the loop.
+  **CLOSED 2026-08-12, and the closing shape is the reusable part:** a
+  `tryClearRoster(db, id): Promise<boolean>` that (a) reads with
+  `.limit(CAP + 1).get()` — the cap must bound the READ, not just the delete, and
+  `listDocuments()` cannot do that because it buffers every ref (it is required
+  ONLY for phantom parents; children of a merely-absent parent come back from a
+  plain query, measured); (b) refuses outright above the cap; (c) deletes in
+  chunks with a per-delete `.catch` that records the grpc CODE only; (d) never
+  throws, so the caller's NOT_FOUND branch cannot be turned back into a poison
+  pill. The caller then reads
+  `cleared = collapses && (await tryClearRoster(...))` and a FALSE verdict falls
+  through to the non-destructive branch.
+- **A boolean verdict that GATES a destructive delete is invisible to any suite
+  whose fixtures all make the verdict TRUE — and that is the one property the
+  whole design rests on.** Measured 2026-08-12 by shadow-copy mutation on
+  `enforceGroupMinorMembership`: neutralising the gate to
+  `((await tryClearRoster(...)) || true)` — i.e. delete the parent even when
+  rows survived — left the integration suite **4/4 GREEN**, and the unit suite
+  cannot see it at all (it imports the helper, never the handler). Fake-db unit
+  tests proving the helper RETURNS false prove nothing about the caller
+  OBEYING it. Force the false verdict in a handler-level fixture — the cheapest
+  lever is the helper's own refusal cap (seed `CAP + 1` rows) — and assert the
+  parent SURVIVES with the safety cut still applied. Same blind spot for the
+  concurrent-delete (grpc 5) leg: an `update()` NOT_FOUND branch is unreachable
+  from a suite that never deletes the parent between snapshot and run, so seed,
+  `get()`, `delete()`, THEN `.run(event)`.
+  **CLOSED 2026-08-12, both legs, and re-measured on the shipped bytes:** each
+  mutant now reddens EXACTLY ONE test (6/6 → 5/6) — `|| true` on the gate hits
+  only the unclearable-roster fixture, and `void 0` for the code-5 leg's
+  `tryClearRoster` hits only the mid-flight-delete fixture. Reusable lever: the
+  cheapest way to force a FALSE verdict is the helper's own refusal cap — seeding
+  `CAP + 1` rows is two `batch.commit()`s, no fake, no seam, no error injection.
 - Scheduled jobs run hourly, not per-minute (43,200×/month adds up).
 
 ## Secrets handling
@@ -275,7 +323,18 @@ logger.info("descriptive event", { userId, recipeId, action });
 - Don't introduce a new test framework; don't import `firebase-functions` v1.
 - Don't trust a client-controlled field for a trigger's security decision
   unless the Firestore create/update RULE independently pins it to
-  `request.auth.uid`.
+  `request.auth.uid`. The CONVERSE also binds: a rules DENY can be what keeps a
+  trigger ARMED. `enforceGroupMinorMembership` fires on the create of
+  `conversations/{id}`, so whoever lands that document first decides the payload
+  the child-safety cut ever sees — and `onDocumentCreated` cannot fire twice. What
+  stops our own client's non-creator fallback from landing a degenerate one is a
+  CEL evaluation error (`'creatorId' in` a `metadata: null`), not a written rule;
+  harmonising it with the sibling UPDATE rule's `is map` ternary "for consistency"
+  disarms the trigger. So when a rules spelling is tidied, grep for every
+  `onDocumentCreated` on that collection, and gate the trigger on BOTH halves of
+  its guard (`!isGroup || raw.length <= 2`) — a false `isGroup` with >2
+  participants does NOT return early, and stating only the flag invites the wrong
+  simplification (BUT-1830).
 
 ---
 
@@ -470,6 +529,15 @@ see "When to consult the archive" at the end.
   the whole risk of in-place mutation next to another session's commit. Assert
   the substitution landed (`out !== s`) before running, or a silent no-op reads
   as "the criterion is pinned".
+  **A CF rules suite is shadow-mutatable too, because it reads `firestore.rules`
+  by PATH** — write the mutated rules to the scratchpad and copy the test with
+  only `RULES_PATH` and `PROJECT_ID` rewritten (a distinct project id keeps the
+  probe's `clearFirestore` off the real fixtures). Three traps, all measured
+  2026-08-12: spell it `path.resolve("<abs>")`, since a bare string literal
+  orphans the `path` import into a TS6133 that reads as a red suite; a Windows
+  `path.join` result carries backslashes, so self-check on a distinctive
+  substring rather than the whole path; and run an UNMUTATED shadow as a CONTROL
+  first (47/47) — without it a mutant's red is not attributable to the mutation.
 
 ### PII scrubbing + GDPR cascade design
 - Cross-port heuristic vectors (TS↔Dart) live in one shared JSON fixture;
@@ -665,6 +733,18 @@ see "When to consult the archive" at the end.
   still own subcollections — use it on both the sweep and the probe wherever
   the client deletes a parent without recursing. `batch.delete(ref)` on such
   a phantom ref is a safe no-op, so the parent leg needs no exists-gate.
+  **MEASURED 2026-08-12 against the emulator (probe, not inference): an absent
+  PARENT document hides nothing.** Both `listDocuments()` AND a plain `.get()`
+  on `conversations/{id}/participants` return every child row after the parent
+  is deleted, and before it was ever written; a repeat `delete()` on the same
+  ref resolves. So `listDocuments()` is required for PHANTOM DOCS only — where
+  the children own no subcollections a paged `.limit()/startAfter` query is
+  available, and that is how you BOUND an enumeration. Review corollary: a
+  "delete the children BEFORE the parent" ORDERING cannot be pinned by an
+  emulator test — swapping the two statements leaves an identical final state,
+  because the child sweep works just as well once the parent is gone. The
+  ordering protects only the crash-in-between window, which no suite can
+  observe; never let a plan or a comment record it as mutation-proven.
 - **A "shared" collection also holds SOLO-owner docs, which are pure own-data
   and must be DELETED, not scrubbed.** A scrub-only loop over
   `where(memberPermissions.{uid} != null)` retains a collaborative list the
@@ -857,6 +937,16 @@ see "When to consult the archive" at the end.
   count against the file, then re-read at an offset around the disputed lines
   before filing anything. Filing the stale branch as Critical would have been a
   false report on code that was already correct.
+  **"Is the logic unchanged since the revision I passed?" is MECHANICAL, not a
+  matter of trusting the write-up.** `.claude/state/review-ledger.jsonl`'s `sha`
+  IS the git BLOB hash (verified 2026-08-12: `git hash-object <file>` reproduces
+  it and `git cat-file -t <sha>` answers `blob`), and a blob written by an earlier
+  `git add` survives in the object store even with no commit referencing it. So
+  `git cat-file -p <sha-from-my-last-pass> > old && diff -u old <file>` prints the
+  exact diff since that pass — "comment-only" becomes PROVEN, and an unchanged
+  file shows up as an identical hash with no diff to read at all. Read the ledger
+  with the **Grep tool**: a Bash `grep` on that path is refused by the hook that
+  owns it, and the refusal is about WRITING, so do not read it as unreadable.
 
 ### Scheduled analytics & lifecycle jobs
 - Don't assume a date field's type (ISO string vs `Timestamp` varies by

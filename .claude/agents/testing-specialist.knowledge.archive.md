@@ -18835,3 +18835,252 @@ No probe files written; no production or test bytes edited.
 
 Verdict: fail (1 blocking) — the account-switch conjunct's stated downstream backstop does not exist,
 and nothing in the suite pins the conjunct.
+
+## 2026-08-13 — BUT-1482/BUT-1830 commit: verification of the two new metadata assertions in `message_mutation_module_test.dart`
+
+Trigger: parent asked whether the two assertions added to the fallback-conversation test can pass
+vacuously, whether `set(merge:true)` on the fake survives a null, and whether the comment above them
+over-claims. Read-only round; one throwaway probe file, deleted in the same Bash call.
+
+**The brief said the other two files were "unchanged since". They were not.** Round-3 close (archive
+:18583) recorded drift suite `20b169aaad6c27db80fb82b408945ad9` 353 lines and `tag_result.dart`
+`bf23c002ae6df6bc6499f09fdc0f72a0` 930 lines. At this round: `eb185778fa652b5d16c79494a5f746aa`
+468 lines and `a3eebe0dc7c4de9cd5a611a60e97da5c` 961 lines. `firestore.rules` moved too
+(`c740081d…` → `7b84864d…`). Both were re-read in full rather than trusted.
+
+### Q1/Q2 — the fake does NOT drop or delete a null on merge (settled by probe, not by reading)
+`test/unit/_zz_probe_fake_null_merge_test.dart`, three arms, all green, file removed in the same call:
+(A) `batch.set({'isGroup': false, 'metadata': null}, SetOptions(merge:true))` on a fresh doc →
+`containsKey('metadata')` true, value null; (B) the same write with the key OMITTED → `containsKey`
+false, i.e. assertion 1 is falsifiable and is not measuring the fake; (C) merge-set `metadata: null`
+over a stored `{'creatorId':'u'}` → key survives, value null, sibling `keep` intact.
+Mechanism in fake_cloud_firestore 4.1.1 `mock_document_reference.dart`: `set` only clears the doc
+when `merge` is false; `_setRawData` → `_applyValues` sends a non-Map, non-FieldValue value straight
+to `document[key] = transformValue(value, …)`, and `validateDocumentValue` explicitly allows null.
+Matches real Firestore (null is a first-class value; only `FieldValue.delete()` removes a key).
+
+### Non-vacuity of the two assertions
+- Positive control for the FALLBACK branch already exists in the same test (`participantDisplayNames`
+  carries `'B from profile'`, which only the fallback's profile fetch can produce), so neither
+  assertion can be satisfied by the readConversation-returns-a-conversation path.
+- Only one write touches `conversations/direct_user-a_user-b` in that test — the batch merge-set. The
+  fire-and-forget `Future.delayed(100ms)` update writes `lastMessage.status` and cannot add `metadata`.
+- Mutant (1) `metadata: {'creatorId': senderId}` in the fallback constructor → assertion 2 reddens,
+  assertion 1 stays green. Mutant (2) `toFirestore` skips a null `metadata` → assertion 1 reddens;
+  assertion 2 passes vacuously under it (`data()['metadata']` on an absent key is null). The comment
+  already attributes each mutant to the assertion that catches it, so this is correct as written —
+  but assertion 2 ALONE would be vacuous, which is why deleting either one is not a tidy-up.
+
+### Comment audit, limb by limb
+True: the rule text at `firestore.rules:1553-1557`; `in` on null being an evaluation error (pinned
+empirically by C7B, which has a same-shape ALLOW control in C7); the fallback being reached for a
+GROUP id (`readConversation` returning null does not throw, so the `direct_` guard in the catch is
+never consulted); `onDocumentCreated` cannot fire twice; C7B staying green through both Dart mutants;
+the BUT-1830 "not a security bound" caveat, which matches `ACCEPTED_DEVIATIONS.md` :1274-1289 and the
+"THREE-sided" wording at :1291. `ACCEPTED_DEVIATIONS.md` has no `BUT-1830` string, but the production
+comment cites the SECTION ("Messaging — the conversation roster", :1207), which exists.
+Advisory only: "would return early on `isGroup: false`" names one of two simultaneously-true causes.
+`enforce-group-minor-membership.ts` :318-319 is
+`isGroup = data?.isGroup === true || rawParticipantIds.length > 2; if (!isGroup || len <= 2) return;`
+— for THIS document (`participantIds: [senderId]`, `isGroup: false`) `!isGroup` is literally what
+returns, so the sentence is true here, but `isGroup: false` alone does not guarantee the early return
+in general. Same wording already lives in the deviations doc and in C7B's comment.
+
+### Drift suite re-check on the new bytes (+115 lines: comment-stripping, census anchors, bounded window)
+Independent python re-derivation of every number the census asserts: raw `hasOnly(` 30, comment-
+stripped 29, `keys().hasOnly` 12, `affectedKeys().hasOnly` 14, `values().hasOnly` 1, remainder 2 set
+differences — exactly the classification in the test's own reason string. All six guarded anchors and
+all six uncovered anchors occur EXACTLY ONCE in the stripped source, so `indexOf` cannot mis-bind.
+Printed the 40 chars before each guarded `hasOnly(`: all six bind to a genuine `keys().hasOnly`
+create allowlist (not an `affectedKeys()` update restriction), key counts 12/5/9/8/11/2, unchanged
+from round 3, so the `sent == allowed` analytic non-vacuity argument still holds.
+The "without the strip, commenting out `isValidTagResult`'s allowlist leaves the suite green" claim is
+analytically true (every check is a substring/indexOf over raw text) — no rules mutation run.
+
+29 tests green across both suites in 2 s (7 drift + 22 module).
+
+Closing state: `message_mutation_module_test.dart` `b5c8d90f6aaf1cdefb67890e98183409` 693 lines;
+`rules_allowlist_drift_test.dart` `eb185778fa652b5d16c79494a5f746aa` 468 lines;
+`tag_result.dart` `a3eebe0dc7c4de9cd5a611a60e97da5c` 961 lines; `firestore.rules`
+`7b84864d6f787aeabe61e7d438203bf7`. No production or test bytes edited; probe file removed.
+Tree-motion note: `lib/repositories/firebase/modules/message_mutation_module.dart` flipped to `MM`
+mid-round and back to md5-identical-with-index within one call — a parallel session's
+mutate-and-restore, not a diff.
+
+Verdict: pass (0 blocking).
+
+## 2026-08-13 — BUT-1482/BUT-1830 closing round: `message_mutation_module_test.dart`, `tag_result.dart`, `rules_allowlist_drift_test.dart`
+
+Trigger: parent asked to confirm the three files mechanically, grade the revised caveat in the
+fallback test's comment, decide whether BUT-1831 makes that test's name/structure misleading, and
+re-check vacuity. Read-only round; zero writes to `lib/`, `test/` or `firestore.rules`.
+
+**Motion check against the previous entry's closing hashes (:18902).** `tag_result.dart`
+`a3eebe0d` 961 L and `rules_allowlist_drift_test.dart` `eb185778` 468 L — both IDENTICAL, so the
+brief was right this time (it was wrong last time, which is why it was checked).
+`message_mutation_module_test.dart` `b5c8d90f` 693 L → `bcc7ffde` 695 L. **`firestore.rules` moved
+too and the brief did not say so** (`7b84864d` → `a27db5e2`), which is the file the drift suite
+reads at runtime — so every census number it asserts was re-derived rather than inherited.
+
+**Re-derivation on the new rules bytes (python, comment-stripped with the suite's own two regexes):**
+raw `hasOnly(` 30, stripped 29, `keys().hasOnly` 12, `affectedKeys().hasOnly` 14, `values().hasOnly`
+1, remainder 2 set differences — the classification in the test's reason string still holds. All 12
+anchors (6 guarded + 6 uncovered) occur EXACTLY ONCE in the stripped source. The 40 characters before
+each guarded `hasOnly(` confirm all six bind to a `keys().hasOnly` create allowlist, counts
+12/5/9/8/11/2, unchanged.
+**Non-vacuity re-proved analytically:** `sent == allowed` EXACTLY on all six, so any key deletion on
+either side reddens. Verified writer-side by reading the sources rather than trusting round 3 —
+`ConversationMembership.toFirestore` 9 keys, `ConversationParticipant.toFirestore` 8 with
+`avatarUrl` non-null, `UserCounterIncrements.fieldForType` mapping the three staged types to
+`unreadSharedRecipes/Menus/ShoppingLists` (+ `totalSharedContent`, `lastUpdated`) = 5,
+`notification_history` 11, `clicks` 2, `TagResult.toFirestore` 12 with the fixture's non-null
+`errorReason` + `configRevision`.
+
+**New latent gap found in the guard's own domain (advisory, not a live drift):**
+`UserCounters.toFirestore()` (`lib/models/user_counters.dart` :84-93) emits SEVEN keys including
+`unreadMessages` and `pendingFriendRequests`, neither of which is in the `users/{uid}/counters`
+allowlist. It has NO caller in `lib/` today (grepped `UserCounters\b` — every hit is inside its own
+file), so nothing is denied. But the guard derives that entry from `UserCounterIncrements`, not from
+`UserCounters`, so the day a writer calls the model's own serializer the write is denied silently and
+this suite stays green. The residual comment in the fixture names the "three type strings are typed by
+hand" risk; it does not name this one.
+
+**The revised caveat is TRUE.** `enforce-group-minor-membership.ts` :318-319 reads
+`const isGroup = data?.isGroup === true || rawParticipantIds.length > 2; if (!isGroup ||
+rawParticipantIds.length <= 2) return;`. The squat payload (`participantIds: [senderId]` — the
+`direct_` parse is skipped for a group id, and `?otherUserId` elides, so the list is length 1,
+`isGroup: false`) makes BOTH disjuncts true. A false flag with 3 participants derives `isGroup = true`
+and does NOT return.
+**Sharper than the comment says, worth keeping:** `!isGroup` expands to `!flag && len<=2`, which
+IMPLIES `len<=2`, so the whole guard reduces to `if (len <= 2) return;` and the flag never decides
+the early return at all. `isGroup` is used nowhere else in the file. Consequence for a future fixer:
+"stamp `isGroup: true` in the fallback" changes nothing — only the participant list matters. The
+redundancy is fail-safe (it can never widen), so this is an observation, not a finding.
+
+**Mid-round move, and it corrected an error of MINE from the previous round.** At the analyze step the
+file went `MM` and then `M ` at `65674f37` / 702 L. The parallel session (a) re-scoped the caveat to
+"at most two participants — the squat payload this is about carries one", which removes the referent
+ambiguity I was about to file (the test's OWN fixture has two participants, so "one participant" read
+against the fixture was false), and (b) INVERTED the mutant→assertion mapping to "the first catches
+(2); the second catches (1)", which is the correct direction and the direction my own :18868-18872
+probe recorded — while the previous round graded the inverted sentence "correct as written". The new
+text also states the vacuity: under (2) the key is absent so `data()['metadata']` is null and `isNull`
+passes VACUOUSLY. Re-verified against the probe result: mutant (1) leaves the key present → only
+`isNull` reddens; mutant (2) removes the key → only `containsKey` reddens. Neither covers the other.
+
+**BUT-1831 vs the fallback test (the parent's Q3).** The test's fixture IS the BUT-1831 path: a
+`direct_` id whose fallback write production refuses twice over — as a CREATE (`'creatorId' in null`
+is an evaluation error, `firestore.rules` :1553-1557) when the doc is absent, and as an UPDATE
+(`affectedKeys().hasAny([...,'createdAt'])`, :1571-1573) when it exists, because the DTO re-stamps
+`createdAt`. `ACCEPTED_DEVIATIONS.md` :1207-1316 documents only the GROUP squat and never mentions
+BUT-1831; the only BUT-1831 note in the tree is `message_mutation_module.dart` :185-190. So the
+deviation record is NOT sufficient, and the test file — the file a BUT-1831 fixer opens — reads as
+proving the DM fallback works. Advisory, because no assertion is wrong or vacuous, the dangerous edit
+(stamping `creatorId`) is already named as mutant (1), and the production half of the same commit
+carries the ticket.
+
+**Test-name imprecision, same test, advisory.** "when readConversation returns null AND id starts with
+`direct_`" states a conjunction that is not the branch condition: the `direct_` check lives only in the
+CATCH (`message_mutation_module.dart` :54), so a null RETURN enters the fallback for ANY id, prefix
+included. That reachability is the premise of the comment's own group paragraph, and the sibling
+test's "AND id is not a deterministic `direct_` id" — where the prefix genuinely decides — reinforces
+the misreading.
+
+**Green:** 29 tests (7 drift + 22 module) on the opening bytes, 22 module tests re-run on the mid-round
+bytes. `flutter analyze` clean on all three (57 s, "No issues found").
+
+Closing state: `message_mutation_module_test.dart` `65674f37629b71288e636cf9562628cc` 702 lines;
+`rules_allowlist_drift_test.dart` `eb185778fa652b5d16c79494a5f746aa` 468 lines; `tag_result.dart`
+`a3eebe0dc7c4de9cd5a611a60e97da5c` 961 lines; `firestore.rules`
+`a27db5e270b04bc6cae3e6c797be722d`. No probe files created; nothing written outside these knowledge
+files.
+
+Verdict: pass (0 blocking).
+
+## 2026-08-13 — BUT-1482/BUT-1830/BUT-1831 commit gate: final read of the three staged files
+
+Trigger: parent asked for a short closing check on `message_mutation_module_test.dart`,
+`rules_allowlist_drift_test.dart` and `tag_result.dart` — grade the two NEW comment claims,
+verify byte-identity of the two files claimed unchanged rather than trusting the brief, and
+name any assertion that can now pass vacuously. Read-only; nothing written outside these
+knowledge files.
+
+**Motion check against the previous entry's closing hashes (:18992).** `rules_allowlist_drift_test.dart`
+`eb185778` 468 L and `tag_result.dart` `a3eebe0d` 961 L — both IDENTICAL, brief confirmed.
+`firestore.rules` `a27db5e2` — also identical, and it is the drift suite's RUNTIME INPUT, so the
+census re-derivation done on these exact bytes last round (raw `hasOnly(` 30 / stripped 29 /
+`keys().hasOnly` 12 = 6 guarded + 6 uncovered; `sent == allowed` exactly on all six, hence
+analytically non-vacuous) carries over unchanged. `message_mutation_module_test.dart`
+`65674f37` 702 L → `f69aca4b` 712 L: both advisories from the previous round applied, test COUNT
+unchanged at 22 (4+3+3+1+1+1+6+3), so the +10 lines are comment and name only. `git show :<path>`
+md5 equals the worktree on all six files — index == worktree, so the verdict is scoped to the
+bytes that will be committed.
+
+**Claim 1 — "green here is the FAKE, not production … refused twice over" — TRUE, both limbs,
+verified against the rules bytes rather than the previous entry.**
+- CREATE limb: `firestore.rules` :1553-1557. `ConversationDto.toFirestore` (:151) emits
+  `'metadata': conversation.metadata` UNCONDITIONALLY, so the key is present with value null →
+  `!('metadata' in request.resource.data)` is false → `!('creatorId' in … .metadata)` evaluates
+  `in` on a null → evaluation error → deny. A merge-set on an absent doc is a create in rules terms.
+- UPDATE limb: :1571-1573, `!…affectedKeys().hasAny(['participantIds','createdAt'])`. The fallback
+  constructs `createdAt: clock.now().toUtc()` (`message_mutation_module.dart` :191) and the
+  conversation write is `batch.set(…, SetOptions(merge: true))` (:225-229), so the re-stamped value
+  differs from the stored one, lands in the diff, and denies. The whole batch is atomic, so the
+  MESSAGE write dies with it, and the commit catch (:287-297) rethrows anything not UNAVAILABLE.
+
+**The frequency half is not open — the wiring answers it, and it makes the comment's "a DM send
+fails today" literally true rather than over-claimed.** `FirebaseMessagingRepository` mixes in
+`UserScopedFirebaseRepository`, whose `getCollectionRef()` returns `getUserCollection(null)` =
+`users/{uid}/conversations` (`base_firebase_repository.dart` :428-432), and the module is wired
+`readConversation: read` (:89) — the base `read`, which returns null for a missing doc (:135-138).
+DMs are written to the TOP-LEVEL `conversations` by `createDirectConversation`
+(`conversation_mutation_module.dart` :104-110, `metadata: {'creatorId': user1Id}`), never to the
+user-scoped path; only `createGroupConversation` goes through `createFn` (:156). So the read seam
+and the write target are different collections, `readConversation` returns null on every DM send,
+and the fallback branch is the ONLY path — which is stronger than
+`message_mutation_module.dart` :185-190 ("Establish how often this branch runs … the fix differs
+completely between 'a rare repair path is broken' and 'every DM send takes a denied write'"). The
+production comment is the conservative one; the test comment is correct. Handed to the parent as
+the reachability answer for BUT-1831 rather than a finding against either comment. Not emulator-
+confirmed — read off the rules text and the wiring.
+
+**Claim 2 — the corrected test name — TRUE.** A null RETURN from `readConversation` never enters
+the catch (:47-61), so `conversation` stays null and the fallback at :85 runs for ANY id; the
+`direct_` prefix decides only the not-found throw INSIDE the catch (:54). The second `direct_`
+check (:97) is the other-participant PARSE, which the name's own next sentence names as the reason
+this case uses a `direct_` id — the profile fetch at :110-136 fires only when that parse yields an
+id, and `participantNames['user-b'] == 'B from profile'` is what proves it ran.
+
+**Vacuity sweep on the current bytes — one real instance, pre-existing and test-only.**
+`'sets readAt for read status with explicit timestamp'` (:272-289) passes
+`DateTime.utc(2026,5,19,12,0)` and asserts only `readAt isNotNull`. The production line is
+`updateData['readAt'] = timestamp != null ? Timestamp.fromDate(timestamp) : serverTimestamp()`
+(:332-334) — both arms write a non-null value, so collapsing the ternary to the server arm leaves
+the test green and the arm the NAME advertises is pinned by nothing. One-line repair:
+`equals(Timestamp.fromDate(readAt))`. Its sibling (`delivered`, no timestamp) legitimately covers
+the server arm. Everything else discriminates: the metadata pair is mutation-proven in both
+directions (:18960-18969), the non-participant test asserts the message did NOT land, the
+`lastReadTimestamps` fixture starts EMPTY so `containsKey` disagrees with the pre-state, and the
+poll fixtures separate strip-then-add from toggle-off.
+Two naming advisories, no assertion affected: the sibling test
+`'throws ResourceNotFoundException when conversation missing AND id is not a deterministic direct_ id'`
+misstates its own branch in the way just fixed on its twin — the fixture stages a THROWING read, and
+a null return with a non-`direct_` id falls back instead of throwing; and
+`'atomically writes …'` names atomicity a `FakeFirebaseFirestore` batch cannot demonstrate (the
+assertions are "all three docs written", which is what it proves).
+
+**The parent's question about the `UserCounters.toFirestore` latent gap (BUT-1824):** agreed, leave
+the drift fixture alone. Its residual comment names the hand-typed type-string risk; adding a
+second residual for a filed ticket would move bytes I have twice closed as identical and void the
+analytic non-vacuity argument for no detection gain.
+
+**Green:** 29 tests (7 drift + 22 module) on the exact staged bytes, 1 s.
+
+Closing state, unmoved during the round: `message_mutation_module_test.dart`
+`f69aca4bd12f02b4aed49570fe45324f` 712 lines; `rules_allowlist_drift_test.dart`
+`eb185778fa652b5d16c79494a5f746aa` 468 lines; `tag_result.dart`
+`a3eebe0dc7c4de9cd5a611a60e97da5c` 961 lines; `firestore.rules`
+`a27db5e270b04bc6cae3e6c797be722d`; `message_mutation_module.dart` `5b113da1`;
+`conversation_dto.dart` `7510d43c`.
+
+Verdict: pass (0 blocking).
