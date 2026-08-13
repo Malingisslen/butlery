@@ -358,7 +358,13 @@ logger.info("descriptive event", { userId, recipeId, action });
   `direct_` id.
 - A literal NUL (or odd byte) in a source file makes `ripgrep` treat the
   WHOLE file as binary and silently skip it in sweeps — use `Read`/Node to
-  inspect suspect files. CI backstop: `functions-binary-guard` in
+  inspect suspect files. **The tool can also LIE about ordinary characters:
+  measured 2026-08-14, the Grep tool rendered `// BUT-1838/BUT-1830` in
+  `firestore.rules` as `\ BUT-1838\BUT-1830` (leading `//` and inner `/` both
+  collapsed to a backslash), which reads exactly like a rules file with corrupted
+  comment markers — i.e. a Critical that does not exist (the file holds ZERO
+  backslash bytes). Never file a finding about literal punctuation from a Grep
+  excerpt; re-print the line with Node/`Read` first. CI backstop: `functions-binary-guard` in
   `test.yml` (`git ls-files -z 'functions/src/**' | xargs -0 -r grep -laP
   '\x00'`).
 - **Doc-ID prefix ranges (`startAt(x).endAt(x+sentinel)`) must spell the
@@ -574,6 +580,19 @@ see "When to consult the archive" at the end.
   containers only — deep-cloning a `Timestamp` into an object literal breaks every
   `isEqual` assertion downstream. It is NOT a concurrency instrument: one callback
   invocation, no isolation, no retry, no rules.
+  **That last clause has a COST, and it lands on exactly the fix a race review asks
+  for.** A double that calls the transaction callback ONCE can never make a
+  re-read inside the closure differ from the pre-read outside it, so every
+  "hoist the result out of the closure, last assignment wins" fix ships with zero
+  coverage while the suite reads as thorough. Measured 2026-08-14 on
+  `addChatGroupMembers` (shadow-copy mutant reverting `seated = stillNew` to
+  `seated = members` plus the matching count): **14/14 GREEN**. Cheap lever, and it
+  is the fake's to grow, not the SUT's: `retryTransactions?: number` +
+  `onTransactionAttempt?(attempt, store)`, running the callback N times and
+  applying only the LAST run's buffered writes — the between-attempt hook seats a
+  concurrent write into the store, and the fixture then asserts the response and
+  the announcement fan-out follow the winning attempt. Until that exists, say
+  "correct by construction, unpinned" rather than crediting the suite.
 - **Mutating a `Collections.x` reference to a bare literal to prove a test
   non-vacuous can break the BUILD instead** (the import goes unused →
   `noUnusedLocals` TSError, which reads as a red suite for the wrong reason).

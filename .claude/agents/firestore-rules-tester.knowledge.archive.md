@@ -2030,3 +2030,67 @@ this run's was staged, nothing was committed, and `functions/package.json` +
 `.github/workflows/firestore-rules.yml` already carried that session's BUT-1838 CF-side
 registration edits (leave-group-conversation removed, `functions/src/groups/**` added) — this
 run appended to them rather than rewriting.
+
+### 2026-08-14 — BUT-1838 re-verification pass on `chat_groups`: every assertion attributed by mutation probe
+
+Second look at `functions/src/__tests__/chat-groups-rules.test.ts` (27 tests, 27/27 green against
+the shipped `firestore.rules` :1888-1913), this time proving non-vacuity by measurement instead of
+by argument. Sixteen mutants, each a COPY of `firestore.rules` in the scratchpad, run through the
+suite's own `PROBE_RULES_PATH`/`PROBE_PROJECT_ID` seam; the real file's md5 was
+`7b2d13dc9bfe47d548b80937419523b2` before and after.
+
+Probe -> flip map (this is the artifact worth keeping; a pass count is not):
+
+| mutation | reddened |
+|---|---|
+| membership read branch -> `if false` | G1, G5 |
+| read -> `if true` | G2, G3, G6 |
+| drop `isAuthenticated()` from read only | NOTHING |
+| drop `uid in resource.data.get('memberIds', [])` | G2, G6 (G3 stays green) |
+| `allow read: if isAdmin()` -> `if false` | G4 |
+| `allow create, delete: if false` -> `if isAuthenticated()` | G7, G8, G9, G10 |
+| drop `uid in resource.data.get('adminIds', [])` | G13, G14, G15 |
+| drop `.hasOnly(['name','updatedAt'])` | G16, G17, G20, G21, G22, G23 |
+| drop BOTH of the above | the eleven update denies, incl. G18, G19 |
+| `hasOnly` -> `hasAll` | G12 |
+| drop `name.size() <= 100` | G24 |
+| `<= 100` -> `< 100` | G25 |
+| drop `name.size() > 0` | G26 |
+| drop `name is string` | NOTHING |
+| drop all three name conjuncts | G24, G26, G27 |
+| `allow update: if false` | G11, G12, G25 |
+
+Two NOTHING rows are the finding. Both are MASKING, not vacuity: `request.auth.uid in …` raises a
+CEL evaluation error on null auth, so the unauth read deny (G3) rides on the membership conjunct
+and cannot be attributed to `isAuthenticated()`; `.size()` on an int errors the same way, so the
+non-string-name deny (G27) rides on the length conjuncts. Both flip under the smallest combined
+mutation, which is how they were attributed. G18/G19 are the third case of the same shape at the
+actor level — a non-admin changing `memberIds`/`adminIds` is refused twice over, so only the
+joint drop moves them.
+
+Also confirmed by probe rather than by reading: G7-G10 cannot be flipped by REMOVING anything
+(`if false` denies by construction), so they were probed by OPENING the rule to
+`if isAuthenticated()` — that is the regression they guard, and all four flip together.
+
+**Mechanic that cost three runs.** Running probes back-to-back in a `for` loop makes
+`loadFirestoreRules` return `{"error":{"code":500,"status":"UNKNOWN"}}`, which reads exactly like a
+rules COMPILE error: the run prints the suite banner and dies before test 1, so a `grep FAIL`
+reports "nothing reddened" for a run that never happened. It is emulator flake — PUTting the same
+mutant to `/emulator/v1/projects/<pid>:securityRules` returned 200 with only pre-existing
+`Unused function` warnings, and every mutant then passed when re-run one or two per shell call.
+Read the summary line's PRESENCE, not just the FAIL lines.
+
+**Uncovered branch, reported not fixed:** `rateLimitWrite('chat_group_rename', 5)` on the update
+rule. It is `!exists(users/{uid}/rate_limits/chat_group_rename) || …`, no test seeds that doc, and
+no Dart writer creates one anywhere in the repo (only the `userRateLimits` constant exists), so the
+conjunct is inert in the suite AND in production — the repo-wide P3-13 pattern, pre-existing, not
+introduced here. Medium: its removal would redden nothing.
+
+**Second uncovered edge, Low:** the rename `allow update` currently has no client caller at all —
+`FirebaseChatGroupRepository` exposes read/watch/create/addMembers/removeMember and no rename — so
+the "send the DTO's REAL payload" rule cannot be applied to G11 yet. When a rename path is built,
+re-check G11's payload against it.
+
+Nothing was staged, committed or edited by this pass; `functions/src/__tests__/chat-groups-rules.test.ts`
+was already staged by the earlier session in this shared checkout and was left byte-identical, which
+is what keeps the reviewed bytes and the staged bytes the same object.

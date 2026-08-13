@@ -9904,3 +9904,57 @@ idempotent with the group leg, neither writes membership — so "skips" must not
 (notification-preferences + testing-specialist knowledge) mid-run. Left untouched; none of
 mine are staged. Same session also fixed the two TS6133s in `conversations-rules.test.ts`
 that made `tsc --noEmit` red in yesterday's pass — it is CLEAN now.
+
+### 2026-08-14 — BUT-1838 second commit: the race fix is right and completely unguarded
+[Pattern discovered] [Cost finding]
+
+Re-review of five files after the first commit's pathspec left the new `groups/` tests
+behind: `groups/add-chat-group-members.ts` (changed since my last pass),
+`__tests__/{remove-chat-group-member,chat-group-callables,chat-groups-rules,_fake-firestore}`.
+
+**The question I was asked.** `stillNew` and the resulting count are now hoisted out of the
+`runTransaction` closure into `seated` / `memberCountAfter`, and the system messages, the log
+and the response are built from `seated`. Verdict: CORRECT. Both are assigned unconditionally
+at the top of the closure, after the transactional re-read and before any early `return` or
+`throw`; the Node SDK re-invokes the callback sequentially per attempt and commits only the
+last, so the last assignment is by construction the committed one. Nothing accumulates
+(`=`, never `push`/`+=`), the `stillNew.length === 0` attempt correctly leaves `seated = []`,
+and an `HttpsError` from the cap check is non-retryable (string `code`), so it propagates on
+attempt 1 rather than leaving a half-set `seated`. Every consumer reads after the `await`.
+
+**What the review actually turned up.** The fix has no test. Shadow-copy mutation
+(`src/groups/_cfs_mut_add.ts` + `src/__tests__/_cfs_mut_add.test.ts`, both deleted, working
+tree verified clean afterwards) reverting to the pre-fix shape —
+`seated = members; memberCountAfter = memberIds.length + members.length` — ran **14/14
+GREEN**. Cause: `FakeFirestore.runTransaction` invokes the callback exactly once and nothing
+mutates the store between attempts, so `stillNew` can never differ from `members` in any
+fixture. Folded into the principles file as a cost clause on the fake's "NOT a concurrency
+instrument" line, with the lever (`retryTransactions` + `onTransactionAttempt`, apply only
+the last run's buffered writes).
+
+**Near-miss worth recording.** The Grep tool rendered `// BUT-1838/BUT-1830` in
+`firestore.rules` as `\ BUT-1838\BUT-1830` — leading `//` and inner `/` both shown as a
+backslash, across six comment lines. That reads precisely like a rules file with broken
+comment markers, i.e. a Critical "the rules will not compile". Node says the file contains
+zero backslash bytes. One `node -e` print separated a tooling artefact from an outage report.
+
+**Runs, all against the staged bytes (md5-verified against `git show :<path>`):**
+`npm run build` clean; `test:chat-group-callables` 14/14; `test:remove-chat-group-member`
+23/23; `test:minor-membership-gate` 9/9; `test:rules:chat-groups` 27/27 on the local emulator
+(the recurring `evaluation error at L1896:24 for 'update'` in that output is the
+unresolved-`resource` round — every trace also carries the paired `false for 'update' @ L1896`,
+which is the real verdict).
+
+**Wiring checked, all present:** the three callables exported (`index.ts:71-73`), rate-limit
+configs for all three (`middleware/rate_limiter.ts:114/124/129`), the two new unit suites
+registered as `test:*` scripts so `run-all-tests.js` finds them, `chat-groups-rules.test.ts`
+in `test:rules:all` AND in both `paths:` blocks of `firestore-rules.yml` (plus
+`functions/src/groups/**`), `check-test-registration.js` OK (128 files, 39 rules suites, the
+4 pre-existing BUT-1702 warnings). `messaging/leave-group-conversation.ts` and its test were
+deleted in the first commit — no dangling `test:*` script, no second membership writer.
+
+**Non-blocking residue reported to the caller:** the untested retry path above; the fake's
+`set()` silently dropping a `SetOptions` argument where every other unmodelled surface throws
+by name; the rules suite never exercising the `rateLimitWrite('chat_group_rename', 5)`
+conjunct (all 27 cases pass through `!exists(limitsPath)`); and the "a malformed member id is
+not counted and cannot be removed" case asserting only the counting half.
