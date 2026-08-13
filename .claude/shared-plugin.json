@@ -290,6 +290,8 @@
       "trackerPath": ".claude/linear-tracker.json"
     },
     "router": {
+      "_panelPolicy": "Malin, 2026-08-13. Under the default 'block' the 2026-08-13 sprint selected six tickets, routed all six to a panel it cannot convene unattended, and shipped nothing — Butlery's remaining backlog is almost entirely Firestore rules and GDPR, so the tier gate now matches everything. 'park' builds those tickets and sends them to In Review for her instead of Done. The specialist reviewers (code-reviewer, firebase-backend-security, firestore-rules-tester, cloud-functions-specialist, integration-reviewer) still run on every commit and still hold a batch on failure; the panel is a second, slower layer, not the only one. Do NOT set this in binge/webbkollen without re-reading the dispatch-gate comment in sprint-execute-parallel.js — the earlier attempt at 'park' lost four of seven finished tickets because the commit-time backstop still held them.",
+      "panelPolicy": "park",
       "command": "python tools/stakeholder_router.py --json",
       "tierMap": {
         "skip": "skip",
