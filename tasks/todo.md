@@ -1,4 +1,157 @@
-# IN EXECUTION 2026-08-12 — the rules/model drift sprint
+# SPRINT 2026-08-13 — poll/GDPR rules gaps, wrong-collection recipe reads, allergen badges
+
+Selection phase only (Phase 1 of sprint-execute). 8 tickets across 3 batches. Linear is up;
+selected tickets transitioned to Todo. 8 tickets found already fixed on `main` under a
+different commit than their own — filed here as obsolete, not re-built.
+
+## Step-0 catch: obsolete tickets (fix already shipped, ticket never closed)
+
+Confirmed by reading the current code, not just `git log`:
+
+- **BUT-1779** (handwritten-recipe save → error screen) — fixed in `3e1c193dc`.
+  `RecipeSaveNavigation.afterSuccessfulSave` passes `savedRecipe`, not a bare id.
+- **BUT-1782** (notification-prefs local cache was a stub) — fixed in `3e1c193dc`.
+  `NotificationPreferences.toJson`/`tryFromJson` are real now, with a BUT-1799 follow-up note.
+- **BUT-1784** ("Listan skapad" shown on a failed create) — fixed in `3e1c193dc`.
+  `showCreateListDialog` checks `createPersonalList`'s bool before the success snackbar.
+- **BUT-1791** (retention job measured only the first 4.5h of its day) — fixed in `3e1c193dc`.
+  `compute-feature-retention.ts` now bases everything on the previous full UTC day.
+- **BUT-1789** (feature-retention per-user rows never erased) — fixed in `3e1c193dc`.
+  `deleteFeatureRetentionFlags` in `account-deletion-cascade.ts` sweeps them.
+- **BUT-1777** (shared-list permission dialog used the live, not opened, base) — fixed in
+  `3e1c193dc`. `viewedBase` doc comment names the ticket directly.
+- **BUT-1788** (leave group / remove member always denied) — the dedicated
+  `leave-group-conversation.ts` Cloud Function (wired to the client at
+  `conversation_mutation_module.dart:339`) now owns this server-side, reading/writing the
+  canonical top-level `conversations` doc. Shipped across `3e1c193dc` / `cf5cfdc0b`.
+- **BUT-1819** (sanitized title/description discarded when a new recipe needed ingredient
+  normalization) — fixed in `cc45d5c83`. `FirebaseRecipeRepository.create` now rebuilds from
+  `recipeToSave`, with a comment citing the ticket.
+
+None of these were re-selected. Recommend closing all eight citing the commits above.
+
+## Agent A — backend-security-gdpr (6 tickets, Tier C, full-panel router tier)
+
+Area: firestore.rules + functions/src (account deletion cascade, TTL indexes) + the messages
+repository module. All six share files, so they run as one batch/worktree, not six.
+Router (`tools/stakeholder_router.py`) returns **full-panel** on `firestore.rules` +
+`account-deletion-cascade.ts` — Security Architect, Privacy/DPO, Trust & Safety, Database
+Admin, Software Architect, Legal, Product, FinOps. `requiresPlanMode: true` on every ticket
+in this batch.
+
+- [ ] **BUT-1832** [build — Malin decided 2026-08-13, see her comment in-ticket: "fix it,
+  not remove the button"] Poll voting denied for everyone but the poll's author
+  (`firestore.rules` messages-update rule keys on `senderId`). Ship the read-receipt fields
+  (`markMessageAsRead`, `batchMarkAsDelivered`) in the same change — same rule, same trap.
+  Design already spec'd by `firebase-backend-security` + `firestore-rules-tester` in the
+  ticket body: separate `allow update` statements per branch (never OR'd into one — a CEL
+  error in one operand can sink the others), the `.get(k,{}) is map` null-safe ternary for
+  `metadata`, and either the `poll_votes/{voterUid}` subcollection shape or a `hasOnly`
+  branch pinning `poll.id/creatorId/question/isClosed/options.size()`. Files:
+  `firestore.rules`, `lib/repositories/firebase/modules/message_mutation_module.dart`,
+  `functions/src/__tests__/*-rules.test.ts`.
+- [ ] **BUT-1835** [build] Same change as BUT-1832, not after it (ticket is explicit: the
+  residual is bounded to the poll author ONLY because BUT-1832 is broken — fixing one without
+  the other widens a live GDPR gap). Account-deletion cascade leg 1 must also rewrite
+  `metadata.poll.creatorId` → `"deleted"` and strip the deleted uid from every option's
+  `voterIds`. Files: `functions/src/account/account-deletion-cascade.ts`.
+- [ ] **BUT-1833** [build] Delete two dead `firestore.rules` helpers — `isAddingSelfToList`
+  (harmless) and `isDocumentOwner` (a trap: reads `resource.data` on `allow create`, which
+  doesn't exist yet, so any future caller gets a silent blanket deny). Files: `firestore.rules`.
+- [ ] **BUT-1822** [build] Account deletion never erases `conversations/{id}/participants/{uid}`
+  (Art. 17). Add a `collectionGroup("participants").where("participantId","==",uid)` deletion
+  leg, the matching leg in `probeResidualData`, and a `COLLECTION_GROUP` `fieldOverride` for
+  `participantId` in `firestore.indexes.json` (never `--force` deploy — 13 live TTL policies
+  are missing from the file). Also: when the cascade deletes a ≤2-participant conversation
+  outright, delete its WHOLE participants subcollection too, not just the erased uid's row —
+  otherwise the surviving partner's row orphans and stays listable forever. Files:
+  `functions/src/account/account-deletion-cascade.ts`, `firestore.indexes.json`.
+- [ ] **BUT-1801** [build] Six more sites read recipes from the empty top-level `recipes`
+  collection instead of `users/{uid}/recipes` — including the GDPR export and the deletion
+  cascade. Sites: `bulk-retag.ts:252,418`, `compute-feature-retention.ts:338`,
+  `canonical-rating-aggregation.ts:157`, `account-deletion-cascade.ts:375`,
+  `recipe_gdpr_export_operations.dart:66`. Check each against `firestore.rules` for a real
+  `match` block, and whether the rewritten queries need a new collection-group index.
+- [ ] **BUT-1792** [build] Three more collections stamp `expireAt` with no TTL policy
+  (`notification_opened_events`, `report_processing_markers`, `system_ip_audit_caps`), plus
+  presence (`activeUsers.expiresAt` — note the different field name, don't copy the others'
+  command). Declare `fieldOverrides` with `"ttl": true` (never `false`, never bare — omit the
+  key to leave an existing policy alone) in `firestore.indexes.json`, update
+  `EXPECTED_TTL_GROUPS` in `firestore-ttl-policies.test.ts`, and replace the now-false "Manual
+  setup required" heading in `record-notification-opened.ts`.
+
+## Agent B — recipe-social-sharing (1 ticket)
+
+Area: recipe sharing. Router: single (Software Architect, Product Manager).
+`requiresPlanMode: true` (priority High).
+
+- [ ] **BUT-1812** [build-review — genuine design choice, not mechanical] Re-sharing a
+  recipe someone else already shared silently adds nobody: `shared_content` uses `recipeId`
+  as the doc id, and the second sharer is denied both the read-probe and the write. Two
+  candidate fixes in the ticket; **recommend Option 2** (stop reusing `recipeId` as the doc
+  id — auto-id documents, matching `social_menu_operations` and
+  `shopping_social_share_module`) over widening the rule, both because it's more consistent
+  with the sibling writers AND because it avoids a `firestore.rules` edit that would conflict
+  with Agent A's batch. Needs a migration story for existing rows before BUT-1809's backfill
+  runs. Files: `lib/services/unified/operations/modules/recipe_sharing_manager.dart`.
+  Signoff: which fix approach, and the backfill/migration shape for existing `shared_content`
+  rows.
+
+## Agent C — recipe-safety-ui (1 ticket)
+
+Area: recipe cards / allergen safety. Router: single (Creative Director / Brand Lead).
+`requiresPlanMode: true` (priority High).
+
+- [ ] **BUT-1780** [build-review — UI/safety tradeoff, signoff named in the ticket itself]
+  Allergen/dietary badges never render on any recipe card in any list or grid —
+  `showAllergenBadges`/`showDietaryBadges` default `false` and nothing in the repo ever
+  passes `true`, despite the user-facing setting (`showOnCards`) defaulting ON. Add the
+  passthrough on `ContentCard` (or derive from `userAllergenPrefs`/`userDietaryPrefs != null`,
+  which `recipe_card_widget.dart` already populates) and forward into the `RecipeCard(...)`
+  call at `content_card.dart:246`. Files: `lib/widgets/common/content_card.dart`,
+  `lib/widgets/recipe/recipe_card.dart`. Signoff: does turning badges on override the
+  deliberate "clean list cards by default" redesign intent (comment at `recipe_card.dart:80`)?
+
+## Not selected this sprint — real work, deferred for batch-conflict / capacity reasons
+
+All confirmed still open (not obsolete), all worth building, all excluded only because they'd
+collide with Agent A's `firestore.rules` / `account-deletion-cascade.ts` edits or because N
+is capped at 8 this round: **BUT-1795** (the root two-storage-locations fix — High, Tier C,
+needs its own dedicated session), **BUT-1830** (Urgent — conversation-id squatting, same
+root cause as 1795), **BUT-1831** (Urgent — DM send fails on every attempt for 3 independent
+reasons, root fix is reading the top-level conversation), **BUT-1796**/**BUT-1828** (add-member
+to a group has never worked), **BUT-1825**, **BUT-1829**, **BUT-1823**, **BUT-1824**,
+**BUT-1827**, **BUT-1834**, **BUT-1716** (second shared-shopping write path with no
+attribution). Recommend a dedicated messaging/rules sprint next, seeded from BUT-1795.
+
+## Needs Malin (not built)
+
+- **BUT-1747** — GDPR export missing shopping lists the user LEFT. Real gap, but needs a new
+  server-side Cloud Function and a deploy slot; her own prior comment recommends bundling the
+  deploy with BUT-1731's. Not squeezed into this round.
+- **BUT-1731** — deploy-day ops task (`backfillSharedListContributors` + delete the stale
+  export). Needs production access this loop doesn't have.
+- **BUT-1693** — Part 2 of household allergen sharing. Malin approved the DPIA/consent/policy
+  2026-08-12 (data layer shipped), but the ticket's own "Sequence" section requires
+  `/stakeholder-review` + `/interview` before any code, AND its next step (the `firestore.rules`
+  match block) would collide with Agent A's rules edits this round regardless.
+
+## Post-sprint (mandatory)
+
+1. Full `dart analyze --fatal-infos`.
+2. File follow-up tickets for anything deferred mid-batch before commit.
+3. Commit through the review gates named in `shared-plugin.json → reviewGates` — Agent A's
+   batch triggers `firebase-backend-security`, `firestore-rules-tester`, and
+   `cloud-functions-specialist` at minimum given the full-panel router tier.
+4. Push (push does not trigger deploy in this repo — `ship.pushTriggersDeploy: false`).
+5. Transition: Tier A/build + all-pass → Done. build-review or any failed/unclear criterion →
+   In Review + plain-language comment + PushNotification.
+6. Close the 8 obsolete tickets above, citing their resolving commits.
+7. Report written for Malin: plain-language paragraph per shipped ticket.
+
+---
+
+# ARCHIVE — IN EXECUTION 2026-08-12 — the rules/model drift sprint
 
 Malin: "planera och fixa alla fyra i en sprint" (2026-08-12). Fem stycken, inte
 fyra — granskningen hittade en latent till efter att hon sa det.
