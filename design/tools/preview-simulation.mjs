@@ -195,3 +195,48 @@ export function kollateralgrind(fore, efter, mal, attlingar = {}) {
       if (!avsett.has(id) && !tillatetArv.has(id)) kollateral.push(id); } }
   return { andrade: andrade.length, kollateral, ok: kollateral.length === 0,
     avsedda: avsett.size }; }
+
+/**
+ * KANALVIS KLASSIFICERING AV ANDRINGAR.
+ *
+ * Felklassen: atta element flaggades som kollaterala nar de i sjalva verket
+ * arvde en avsedd andring. De hade ingen egen fargdeklaration — deras
+ * ramfarger ar currentColor och foljde den injicerade texten.
+ *
+ * Regeln: for VARJE andrad kanal, avgor om andringen HANGER PA en avsedd
+ * malandring. Gor den det ar den ARVD_BEROENDE. Gor den inte det ar den
+ * KOLLATERAL. Tvetydigt agarskap faller stangt.
+ *
+ * Tillstandsstrangen har fyra falt: color | background | fyra ramfarger | fill,stroke
+ */
+export const KANAL = Object.freeze({ COLOR: 0, BAKGRUND: 1, RAM: 2, GRAFIK: 3 });
+
+export function kanalvis(fore, efter, mal, art) {
+  const avsett = new Set(mal.filter(m => m.art === art).map(m => m.ordinal));
+  const fyra = c => [c, c, c, c].join(',');
+  const rader = [];
+  const a = fore[art] || [], b = efter[art] || [];
+  for (let i = 0; i < b.length; i++) {
+    if (a[i] === b[i]) continue;
+    const fa = String(a[i]).split('|'), fb = String(b[i]).split('|');
+    if (fa.length !== fb.length) { rader.push({ ordinal: i, klass: 'OKAND',
+      skal: 'tillstandsstrangarna har olika form' }); continue; }
+    const andrade = fa.map((x, k) => x === fb[k] ? null : k).filter(k => k !== null);
+    if (avsett.has(i)) { rader.push({ ordinal: i, klass: 'AVSEDD', kanaler: andrade }); continue; }
+    // Arvt: ramfargerna foljer color bade fore och efter, och inget annat andrades.
+    const bararCurrentColor = fa[KANAL.RAM] === fyra(fa[KANAL.COLOR]) &&
+      fb[KANAL.RAM] === fyra(fb[KANAL.COLOR]);
+    const baraColorOchRam = andrade.every(k => k === KANAL.COLOR || k === KANAL.RAM);
+    if (baraColorOchRam && bararCurrentColor) {
+      rader.push({ ordinal: i, klass: 'ARVD_BEROENDE', kanaler: andrade,
+        skal: 'ramfargerna ar currentColor och foljer den avsedda textfargen' }); continue; }
+    if (andrade.includes(KANAL.COLOR) && !bararCurrentColor && andrade.includes(KANAL.RAM)) {
+      rader.push({ ordinal: i, klass: 'OKAND', kanaler: andrade,
+        skal: 'ramfargen andrades men foljer inte color — agarskapet gar inte att avgora' }); continue; }
+    rader.push({ ordinal: i, klass: 'KOLLATERAL', kanaler: andrade }); }
+  const r = k => rader.filter(x => x.klass === k);
+  return { rader, avsedda: r('AVSEDD').length, arvda: r('ARVD_BEROENDE').length,
+    kollaterala: r('KOLLATERAL').length, okanda: r('OKAND').length,
+    ok: r('KOLLATERAL').length === 0 && r('OKAND').length === 0,
+    $regel: 'Arvt beroende ar inte kollateralt spill. Tvetydigt agarskap faller stangt.' };
+}
