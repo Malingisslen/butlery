@@ -993,3 +993,41 @@ Three things worth keeping:
 3. Same class as the false comments this sprint kept producing, one level up: not a claim
    about another file, but a claim about my own tests' behaviour, which is exactly as easy to
    get wrong and exactly as invisible to the analyzer.
+
+---
+
+## 2026-08-13 — Loosening a gate means finding the OTHER gate that enforced it
+
+Malin decided the sprint engine may build routed rules/GDPR tickets and park them In Review
+instead of refusing them. The selection-time gate was four lines and obvious. Changing only
+those four lines would have shipped a policy that did nothing except waste a slot per ticket:
+the commit-time backstop still held any batch whose worker reported an unrun panel, and a
+worker building a rules ticket reports one every time. The engine's own comment said so —
+that pairing is why the same "build and park" policy was withdrawn in August after a run lost
+four of seven finished tickets to the stash.
+
+Two more things only visible from reading the whole path:
+
+1. **The report asserted something the code did not do.** It said parked tickets "are already
+   in the In Review list above". They were not — `panelOwed` fed neither `verifiedDoneIds` nor
+   `needsReviewIds`, so a parked ticket would have been closed as Done. Invisible for a week
+   because the policy that populated the array had been turned off, which is the only reason
+   nobody shipped an unreviewed rules change under a green report.
+2. **The metrics row was keyed to the wrong list.** Declined reviews were logged for BLOCKED
+   tickets only. Under the new policy those are exactly the tickets that do not exist, and the
+   ones that do get built would have logged nothing — the precise silence that logging step
+   was built to end.
+
+Three habits:
+
+- Before relaxing a gate, grep for every other place that reads the same signal, and read what
+  each does with it. A gate that stops something is rarely the only one.
+- When a code comment explains why a policy was WITHDRAWN, that comment is the test plan for
+  re-adopting it. Read it as a list of what must change, not as history.
+- A prose claim in a generated report ("these are already in the list above") is an untested
+  assertion about code, same as a comment. Check it against the list-building code, not
+  against intent.
+
+Also: made it a per-repo config knob rather than a blanket change, because the engine is shared
+with binge and webbkollen, whose backlogs do not have this problem and whose default should not
+move under them.
