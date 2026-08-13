@@ -1,0 +1,111 @@
+{
+ "$schema": "butlery-nt-remediering-beslut/1",
+ "$vad": "Beslutsprovenans for atgarder i CSS_BOX_NON_TEXT-populationen. Skild fran R-04:s designbeslutsregister.",
+ "$regel": "Ger noll R-04 coverage credit. Ger noll temamappningsevidens.",
+ "beslut": [
+  {
+   "beslutsId": "NTR-BATCH01-LIGHT-TYPING-INDICATOR",
+   "batch": "BATCH-01",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "TYPING_INDICATOR",
+   "tema": "light",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "valdVariant": 51,
+   "antalGiltigaVarianter": 56,
+   "$ejGallrat": "Ingen variant bortvald pa smak. Deterministisk renderad likhet gav noll sammanslagningar.",
+   "visuellEnhet": {
+    "id": "VDU-1",
+    "$regel": "ETT visuellt beslut over tva vybredder."
+   },
+   "komponentvarden": [
+    {
+     "del": "DOT_1",
+     "varde": "#3f5145",
+     "kvotMotBubbla": 6.93,
+     "tokenidentitet": "TYPING_INDICATOR_DOT_1",
+     "$regel": "egen identitet — ingen aliasing till text-, status-, success-, warning- eller action-token"
+    },
+    {
+     "del": "DOT_2",
+     "varde": "#4a5c50",
+     "kvotMotBubbla": 5.83,
+     "tokenidentitet": "TYPING_INDICATOR_DOT_2"
+    },
+    {
+     "del": "DOT_3",
+     "varde": "#627061",
+     "kvotMotBubbla": 4.27,
+     "tokenidentitet": "TYPING_INDICATOR_DOT_3"
+    }
+   ],
+   "$ejSammanslagna": "De tre delidentiteterna slas INTE ihop for att de bildar ett samordnat visuellt beslut.",
+   "bubbla": "#e6ead9",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "De valda kvoterna ar inte malvarden. 3.0 ar enbart konformansgolvet.",
+   "motivering": [
+    "sammanhallen semantiskt neutral gragron familj",
+    "tydligt fallande visuell styrka",
+    "undviker narsvarta och tunga forstapunktsalternativ",
+    "undviker starkare kulor- och mattnadsskiften som flera gronare buntar har",
+    "alla tre kravda grafiska delar ligger med god marginal over 3.0"
+   ],
+   "relationer": [
+    "BG-010",
+    "BG-011",
+    "BG-017",
+    "BG-018"
+   ],
+   "skrivplatser": [
+    {
+     "rotorsakId": "ROOT_CAUSE-04",
+     "relationer": [
+      "BG-010",
+      "BG-017"
+     ],
+     "skarmar": [
+      "chatt",
+      "chatt320"
+     ]
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-05",
+     "relationer": [
+      "BG-011",
+      "BG-018"
+     ],
+     "skarmar": [
+      "chatt",
+      "chatt320"
+     ]
+    }
+   ],
+   "vyer": [
+    "chatt",
+    "chatt320"
+   ],
+   "$vybevis": "Indikatorns utsnitt ar 47x21 i bada vyerna med identiska deklarationer. Ett val galler bada.",
+   "beslutsunderlag": {
+    "typ": "BUNTPREVIEW_I_FAKTISK_KONTEXT",
+    "commit": "7c2e663",
+    "varianter": 56,
+    "kollateral": 0,
+    "okand": 0,
+    "deterministiskRenderadLikhet": {
+     "unika": 56,
+     "sammanslagna": 0
+    },
+    "artefakt": "fas2/nt-batch01-preview.json"
+   },
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "INTE UTFORD"
+  }
+ ]
+}
