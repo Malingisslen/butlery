@@ -258,7 +258,7 @@ async function consentBucketDeletesConsentBeyond24Months(): Promise<void> {
   );
 }
 
-async function consentPrefixCoversKnownOperations(): Promise<void> {
+async function nearMissOperationsAreNotConsentEvents(): Promise<void> {
   const store: FakeStore = {
     docs: [
       {
@@ -276,11 +276,17 @@ async function consentPrefixCoversKnownOperations(): Promise<void> {
         operation: "consent_revoked",
         timestampMs: daysAgo(800),
       },
-      // "consented_to_skip" — `consent_` prefix is 8 chars (c-o-n-s-e-n-t-_)
-      // and "consented_" diverges at position 7 (_ vs e), so this does NOT
-      // match. Important: `read_consent` and similar would also not match
-      // (no leading "consent_"). This pins the prefix-match contract so a
-      // future refactor that switches to a contains() check fails loudly.
+      // Near misses. They are left alone because they are not MEMBERS of
+      // CONSENT_OPERATIONS — not because of how they are spelled. The
+      // enumeration has been the filter since BUT-1404 (2026-06-28); the
+      // `consent_` spelling is a naming convention. This test earns its keep
+      // as the one that would redden if the filter were ever widened to a
+      // `contains()` match, which would sweep both of these into the 730-day
+      // bucket. Note what it CANNOT see: a regression back to
+      // `startsWith('consent_')` leaves both of these excluded too, so they
+      // stay undeleted and this stays green. Nothing in the suite catches
+      // that — the enumeration's authority rests on the docblocks, not on a
+      // test.
       { id: "fake", operation: "consented_to_skip", timestampMs: daysAgo(800) },
       { id: "fake2", operation: "read_consent", timestampMs: daysAgo(800) },
     ],
@@ -300,9 +306,9 @@ async function consentPrefixCoversKnownOperations(): Promise<void> {
     !store.deleted.has("fake") &&
     !store.deleted.has("fake2");
   record(
-    "consent prefix is strict (`consent_*`) — does NOT match `consented_*` or `*_consent`",
+    "near-miss operations (`consented_*`, `*_consent`) are not in CONSENT_OPERATIONS and are not purged as consent",
     ok,
-    `total=${total} deleted=${[...store.deleted].join(", ")} prefix=${CONSENT_OPERATION_PREFIX}`
+    `total=${total} deleted=${[...store.deleted].join(", ")}`
   );
 }
 
@@ -454,24 +460,36 @@ async function generalPurgeNotStarvedByConsentRows(): Promise<void> {
   );
 }
 
-/** Verifies CONSENT_OPERATIONS is a strict superset of all consent_* values
- *  that actually appear in the codebase. If a new consent op is added without
- *  updating CONSENT_OPERATIONS, the not-in filter lets that op's docs slip
- *  through to the general purge bucket, violating 730d retention. */
+/** Guards CONSENT_OPERATIONS against DELETION, not against a new writer.
+ *
+ *  It compares the constant to a hand-maintained mirror below, so it can only
+ *  fail when an entry is removed from the constant — the direction that
+ *  matters for `consent_age_verification` and `consent_deleted`, the two
+ *  tokens no other test in this file seeds and the two most likely to be
+ *  tidied away as unused. It CANNOT see a new consent operation added to a
+ *  writer, which is the gap that let `consent_deleted` sit unlisted; closing
+ *  that means deriving the mirror from the writers by grep, which is a ticket,
+ *  not a rename. */
 async function consentOperationsArrayIsExhaustive(): Promise<void> {
   // All operation values that start with CONSENT_OPERATION_PREFIX and appear
   // in audit_logs writes — must all be in CONSENT_OPERATIONS.
+  // Hand-maintained, and nothing here reads the Dart writers — which is how
+  // `consent_deleted` went unlisted at the BUT-1404 rewrite (2026-06-28, when
+  // the purge stopped matching by prefix) and stayed unlisted until 2026-08-13
+  // with this test green throughout. Derive this from
+  // `grep "operation: 'consent_" lib/` the day that is cheap to do.
   const knownConsentOps = [
     "consent_age_verification",
     "consent_granted",
     "consent_updated",
     "consent_revoked",
+    "consent_deleted",
   ];
   const ops: string[] = CONSENT_OPERATIONS;
   const missing = knownConsentOps.filter((op: string) => !ops.includes(op));
   const all = knownConsentOps.every((op: string) => op.startsWith(CONSENT_OPERATION_PREFIX));
   record(
-    "CONSENT_OPERATIONS array covers all known consent_* operation values",
+    "CONSENT_OPERATIONS has not lost a legacy token (deletion-only guard)",
     missing.length === 0 && all,
     missing.length > 0 ? `missing: ${missing.join(", ")}` : `all ${knownConsentOps.length} covered`
   );
@@ -482,7 +500,7 @@ async function runAll(): Promise<void> {
   console.log("==========================================\n");
   await generalBucketDeletesNonConsentBeyondSixMonths();
   await consentBucketDeletesConsentBeyond24Months();
-  await consentPrefixCoversKnownOperations();
+  await nearMissOperationsAreNotConsentEvents();
   await emptyCollectionNoop();
   await idempotencySecondRunIsNoop();
   await batchSizeRespected();

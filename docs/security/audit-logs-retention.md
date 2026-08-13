@@ -6,17 +6,20 @@ GDPR Article 30 record covering the `audit_logs` collection.
 
 Active. Enforced by `functions/src/audit_logs/purge-expired.ts`
 (`purgeExpiredAuditLogs`), scheduled Sunday 05:00 UTC, region `europe-west1`.
-Co-exists with the legacy `cleanupOldAuditLogs` CF
-(`functions/src/cleanup/cleanup-audit-logs.ts`, Sunday 03:00 UTC) which
-applies a flat retention from Remote Config — once `purgeExpiredAuditLogs`
-has rolled out, the legacy CF should be retired (tracked separately).
+**Corrected 2026-08-13.** This paragraph used to say the purge co-exists with a
+legacy `cleanupOldAuditLogs` CF applying a flat Remote Config retention to the
+same collection. That stopped being true at BUT-808: `cleanupOldAuditLogs`
+(`functions/src/cleanup/cleanup-audit-logs.ts`) now handles only
+`deletion_audit_logs`. It keeps its old export name so the deployed scheduler
+binding does not churn, which is why it still reads like a second purge of
+`audit_logs` and is not one. `purgeExpiredAuditLogs` is the sole enforcer.
 
 ## Retention windows
 
 | Category | Operation values | Retention | Justification |
 |---|---|---|---|
-| Consent events | `consent_*` (e.g. `consent_updated`, `consent_granted`, `consent_revoked`) | **24 months** | GDPR Art 7(1) requires the controller to *demonstrate* that the data subject consented. Swedish DPA guidance + standard legal-defence horizon = 24 months from the event. Shorter periods risk the controller being unable to evidence consent for in-flight complaints. |
-| General access events | All other operations (`read`, `write`, `delete`, `tag_modified`, etc.) | **6 months** | GDPR Art 5(1)(c) — data minimisation. Six months covers SOC2-style incident-response window (typical mean-time-to-detect for cloud breaches is ~200 days; 180 day floor balances forensic value against minimisation). Longer than the existing 90-day default in `cleanup-audit-logs.ts` because the previous floor was set without a documented Art 30 record. |
+| Consent events | The five values enumerated in `CONSENT_OPERATIONS`, and only those: `consent_age_verification`, `consent_granted`, `consent_updated`, `consent_revoked`, `consent_deleted`. The purge matches by EXACT membership, not by the `consent_` prefix (it did match by prefix until BUT-1404, 2026-06-28), so a sixth spelling would silently fall into the 6-month bucket. Live writers today: `consent_age_verification` (verify-signup-age.ts) and `consent_updated` (firebase_consent_repository.dart). `consent_revoked` is the spelling `deleteConsent` emits, but that method has had no caller since BUT-788 (2026-05-22) — the token is listed so it is already classified when a caller is wired. `consent_granted` has never been written; `consent_deleted` was written 2026-04-27 to 2026-05-22 and is retained as a legacy token. | **24 months** | GDPR Art 7(1) requires the controller to *demonstrate* that the data subject consented. Swedish DPA guidance + standard legal-defence horizon = 24 months from the event. Shorter periods risk the controller being unable to evidence consent for in-flight complaints. |
+| General access events | All other operations (`read`, `write`, `delete`, `tag_modified`, etc.) | **6 months** | GDPR Art 5(1)(c) — data minimisation. Six months covers SOC2-style incident-response window (typical mean-time-to-detect for cloud breaches is ~200 days; 180 day floor balances forensic value against minimisation). Longer than the 90-day default that `cleanup-audit-logs.ts` applied to this collection until BUT-808, which was set without a documented Art 30 record. |
 
 ## Per-field justification (Art 30 record)
 
@@ -32,7 +35,7 @@ added here.
 | `resourceId` | Identify which specific resource (nullable for bulk ops) | Art 6(1)(c) | Yes. |
 | `granted` | Boolean — outcome of permission check. Required for security incident review (Art 32 — security of processing) | Art 6(1)(f) — legitimate interest in security | Yes. |
 | `timestamp` | Server timestamp. Drives the retention cutoff. | Art 6(1)(c) | N/A — the purge field. |
-| `expireAt` | TTL hint for Firestore TTL (currently 365 days from write per `AuditLog.toFirestore`). The `purgeExpiredAuditLogs` CF supersedes this; `expireAt` is a defence-in-depth backstop if the CF stalls. | Art 5(1)(e) — storage limitation | N/A — the purge field. |
+| `expireAt` | **Not written.** `AuditLog.toFirestore` deliberately stamps no `expireAt` (removed in BUT-808; the model says so in its own header). The claim that it carries a 365-day TTL was stale and wrong in the dangerous direction — 365 days is shorter than the 24-month consent window, so a reader could conclude the consent trail expires a year early. Note the TTL POLICY is still armed on this field (`firestore.indexes.json`, `audit_logs.expireAt`, `"ttl": true`): inert while nothing writes the field, but a future writer would hand retention to the TTL reaper silently. | Art 5(1)(e) — storage limitation | N/A — no writer. |
 | `metadata.details` | Free-text human-readable context (e.g., why permission was denied). Risk of inadvertent PII; see *Privacy review* below. | Art 6(1)(f) | Yes. |
 | `metadata.consentVersion` | For `consent_updated` events only — version of the consent terms accepted. | Art 7(1) — demonstrate consent | Yes (24mo bucket). |
 | `metadata.purposes` | For `consent_updated` events only — map of consent-purpose flags. | Art 7(1) | Yes (24mo bucket). |

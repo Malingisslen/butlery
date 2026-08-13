@@ -9354,3 +9354,198 @@ integration 6/6 (emulator live on 8080), conversations rules 48/48 (8 C-create +
 
 Verdict: pass, 0 blocking. No production code was touched by this review; no probe applied,
 nothing to restore.
+
+### 2026-08-13 — BUT-665/BUT-1404 follow-up: `consent_deleted` added to `CONSENT_OPERATIONS` [Pattern discovered]
+
+Review of a two-file diff: `functions/src/audit_logs/purge-expired.ts` +
+`functions/src/__tests__/purge-audit-logs.test.ts`. Verdict: pass, 0 blocking.
+No production code touched by the review; no probe applied.
+
+**The change.** `CONSENT_OPERATIONS` (5 entries after the edit) drives BOTH
+`where("operation","in",…)` for the 730-day consent bucket and
+`where("operation","not-in",…)` for the 180-day general bucket. `"consent_deleted"`
+was never listed, so rows carrying it were swept by the GENERAL bucket at 180 days.
+The header's source list was rewritten to separate live writers from legacy tokens,
+and `knownConsentOps` in the test gained the same entry plus a comment explaining
+the array is hand-maintained.
+
+**The production-exposure claim, verified independently by git pickaxe (it is the
+whole justification, so it was not taken on trust):**
+- `5bdcc5f63` (2025-10-30) introduced the literal `'consent_deleted'` in
+  `FirebaseConsentRepository.deleteConsent`.
+- `bb594cf24` (2026-04-27, BUT-498 commit 3/5, "profile-doc cluster + consent
+  delegation") ADDED `return await _consentRepo.deleteConsent(userId);` inside
+  `ProfileDeletionOperations.deleteConsentRecords`, wired into
+  `account_deletion_service.dart` as the `'consent_records'` step.
+- `7551c14c2` (2026-05-22, BUT-788) DELETED `profile_deletion_operations.dart`
+  whole and removed the `'consent_records'` step line.
+So the window is real: 2026-04-27 → 2026-05-22. Those rows hit their 180-day cutoff
+between 2026-10-24 and 2026-11-18 — the fix lands ~2 months early and nothing has
+been lost yet. The Dart side now emits `consent_revoked` (already listed), so no new
+row is written under the old spelling.
+
+**Header claims checked against the other files (all TRUE):**
+`verify-signup-age.ts:324` → `"consent_age_verification"`;
+`firebase_consent_repository.dart:173` → `'consent_updated'` (saveConsent), `:226` →
+`'consent_revoked'` (deleteConsent). `"consent_granted"` has no writer: the only
+occurrences in `lib/` are `feature_flag_service.dart:107` and
+`household_allergen_share_repository.dart:31-32`, both of which are comments saying
+the DPIA-R5 pair does NOT yet exist and is a gate on flipping
+`enable_household_allergen_sharing` (OFF). `git log -S consent_granted -- lib functions`
+returns only those doc-comment commits.
+
+**Path premise confirmed** (the wrong-collection bug class): the Dart writer goes to
+TOP-LEVEL `audit_logs` (`FirebaseAuditRepository._collection` →
+`FirestoreCollections.auditLogs`, `.add()`), the same collection the CF queries. Not a
+dead read.
+
+**Mechanics judged.**
+- `not-in` cap: list is 5. Exactly ONE `in`/`not-in` construction exists in the file
+  (the `operationFilter` ternary, used by both branches); the only other query is
+  `deletion`-free `system_events.add()`. Header says the cap is 10; Firestore raised
+  `in`/`not-in`/`array-contains-any` to 30 comparison values in Nov 2023, so the
+  header is conservative — safe direction, worth a date-stamped correction. Node
+  Admin SDK 7.11.6 does NO client-side count validation (`query.js:160-183`
+  `_parseFieldFilter` only rejects a non-empty array, and only for `documentId()`
+  paths), so overflow would appear as a runtime INVALID_ARGUMENT inside the
+  scheduled job.
+- Adding a value to `not-in` changes the general sweep ONLY by removing
+  `consent_deleted` rows; the implicit ordering is on the `operation` FIELD, not on
+  the value set, so nothing reorders. Under truncation it strictly frees window slots.
+  The consent bucket's `in` query needs the same value and HAS it — one shared
+  constant feeds both, which is the right shape.
+- Index: `firestore.indexes.json:417` declares `audit_logs` (operation ASC,
+  timestamp ASC), which is value-count-independent. No new index, no deploy ordering.
+- Idempotency/retry/cost: unchanged. Delete-only, safe on missing; `onSchedule` with
+  no `retryConfig`; no new imports, so no cold-start delta. The consent `in` gains one
+  disjunct (negligible) and the general query's match set shrinks.
+
+**Findings filed (all non-blocking).**
+1. `purge-expired.ts:13-17` is FALSE about `cleanup/cleanup-audit-logs.ts`: it says the
+   legacy `cleanupOldAuditLogs` still applies "a flat 90-day default sourced from Remote
+   Config" to `audit_logs` and "will be retired". BUT-808 cut that CF back to
+   `deletion_audit_logs` only (its own header :1-18 says so; there is no Remote Config
+   import left) and deliberately PRESERVES the export name so the scheduler binding does
+   not churn. Material because it tells a reader a 90-day flat purge still runs over the
+   collection whose 730-day bucket this ticket exists to protect.
+2. `purge-expired.ts:31-35` (the `CONSENT_OPERATION_PREFIX` docblock) still says
+   "Matched as `startsWith('consent_')` in code; this list is informational". Both halves
+   are false since BUT-1404 — the enumeration IS the filter, and no prefix match exists
+   in production code. This is precisely the misconception that let `consent_deleted`
+   sit unlisted. `CONSENT_OPERATION_PREFIX` is now referenced only by the test.
+3. The exhaustiveness test is now a pure restatement: `knownConsentOps` and
+   `CONSENT_OPERATIONS` are byte-identical 5-element lists, so it can only fail on a
+   DELETION from the constant, never on a new writer — the direction that actually
+   caused the bug. It also asserts `startsWith(PREFIX)` over the HAND list, not over
+   `CONSENT_OPERATIONS`, so adding a non-consent value (e.g. `"read"`) to the constant
+   stays green while permanently exempting that whole operation from the general purge.
+   Remediation offered: derive the expected set with `fs.readFileSync` +
+   `/operation:\s*['"]consent_[a-z_]+/g` over the writer files, and add the converse
+   assertion.
+4. Pre-existing, flagged not filed: `not-in` implies an ordering on `operation` first,
+   so `limit(MAX_DOCS_PER_RUN_PER_CATEGORY)` truncates alphabetically by operation, not
+   oldest-first — with >10k expired general rows in a week, late-sorting operations
+   starve. And `not-in` never matches docs whose `operation` is missing or null.
+5. Doc drift, handed to whoever owns the Art. 30 record:
+   `docs/security/audit-logs-retention.md` repeats the stale legacy-CF paragraph at
+   :9-12, its consent-values list at :18 omits `consent_age_verification` and
+   `consent_deleted`, and :35 claims `AuditLog.toFirestore` stamps a 365-day `expireAt`
+   that `lib/models/audit_log.dart:92` explicitly removed (BUT-808) — while a live
+   `audit_logs` `expireAt` TTL fieldOverride still stands at
+   `firestore.indexes.json:553`.
+
+**Verification run.** `npx tsc --noEmit` clean. `npx ts-node
+src/__tests__/purge-audit-logs.test.ts` → 9/9 passed, reproducing the reported figure,
+including "CONSENT_OPERATIONS array covers all known consent_* operation values".
+`test:purge-audit-logs` is registered in `functions/package.json:92`, so the suite is
+discovered by `run-all-tests.js`; `purgeExpiredAuditLogs` is exported at `index.ts:75`.
+
+**Scope note.** The staged diff is 8 files; this review covers only the two named
+`functions/src` files. The Dart half (`firebase_consent_repository.dart`, whose new
+comment block I read as context and which is factually correct) plus the DPIA, the
+deviations entry and the household-allergen widget belong to `firebase-backend-security`
+and the Flutter reviewers.
+
+### 2026-08-13 — BUT-665/BUT-1404 follow-up, FINAL coverage read (round 3) [Pattern discovered]
+
+Three staged files re-read at current bytes: `audit_logs/purge-expired.ts`,
+`__tests__/purge-audit-logs.test.ts`, `account/verify-signup-age.ts`. Verdict: pass, 0
+blocking. All three corrections since round 2 land correctly.
+
+**What was verified, not assumed.**
+1. `verify-signup-age.ts` — the three retired prefix claims are gone (`:303-315`,
+   `:338-339`); membership language is accurate: `consent_age_verification` IS in
+   `CONSENT_OPERATIONS`, `age_verification_rejected` is NOT, and the deterministic doc id
+   `consent_age_verification_<hashUid>` genuinely does not affect a filter that matches on
+   operation + timestamp.
+2. Near-miss test comment — hand-executed both halves against the fixture. A
+   `contains('consent')` widening sweeps `consented_to_skip` and `read_consent` (both at
+   800d > the 730d cutoff) → `total` 5, not 3 → RED, so the claimed half holds. A
+   `startsWith('consent_')` regression excludes both ("consented_to_skip" diverges at
+   index 7; "read_consent" has no leading prefix) → they stay undeleted → GREEN. Walked all
+   NINE tests under that hypothetical: every one stays green (tests 1/6/7/8 seed only
+   `read`; 2 and 3 seed prefixed tokens that classify identically either way; 9 reads the
+   constant, not the filter). So "nothing in the suite catches that" is exact.
+3. `Sources` bullet — checked against the STAGED Dart, not the worktree. `git show
+   HEAD:firebase_consent_repository.dart` still writes `operation: 'consent_deleted'`; the
+   rename to `consent_revoked` plus its comment block is in the same index as these three
+   TS files, so comment and code ship together. Had that file been left out of the commit,
+   the bullet would have been false on landing.
+4. The BUT-498→BUT-788 window is real: `bb594cf24` (2026-04-27) made
+   `ProfileDeletionOperations.deleteConsentRecords` delegate to
+   `FirebaseConsentRepository.deleteConsent` (which writes the audit row); `7551c14c2`
+   (2026-05-22) moved deletion to the CF cascade. The earlier `-S deleteConsent` hit
+   (`d04e1b925`, 2026-02-28) is `deleteConsentRecords` doing a DIRECT Firestore delete with
+   no audit row, so it does not widen the window. Earliest `consent_deleted` row is
+   therefore 108 days old — inside the 180-day bucket — and the legacy flat 90-day purge
+   was retired by BUT-808 on 2026-05-06, before any such row reached 90 days. "Rows from
+   that window are still in audit_logs" is true, and listing the token saves them rather
+   than recovering a loss. "46 days" (2026-06-28 → 2026-08-13) is exact; "droppable after
+   2028-05-22" is conservative by one day (730d from 2026-05-22 is 2028-05-21).
+5. Remaining cross-file claims all hold: composite index `(operation ASC, timestamp ASC)`
+   is declared in `firestore.indexes.json`; `CONSENT_OPERATION_PREFIX`'s only non-comment
+   reference is `purge-audit-logs.test.ts:490`; `consent_granted` has no writer in Dart or
+   TS (the two hits are prospective DPIA R5 prose, and BOTH spellings it plans are already
+   listed); `cleanup-audit-logs.ts` touches `audit_logs` only to READ in `getAuditLogStats`
+   (`:106-129`), so "purged EXCLUSIVELY here" holds — the only other deleter anywhere is
+   `admin/reset-user-data.ts`, a never-deployed per-user ts-node reset;
+   `docs/security/audit-logs-retention.md:21` now states the enumeration rule and matches
+   the code (the round-2 doc-drift finding is closed).
+
+**One false sentence found, non-blocking.** `purge-expired.ts:190-192` — "Order matters:
+do general (6mo cutoff) FIRST." Under the server-side filter the two categories are
+disjoint (`in` vs `not-in` over the same list), so swapping the legs changes nothing, and
+the sentence's own second half ("its filter excludes consent events") is the reason order
+is IRRELEVANT. Stale from the pre-BUT-1404 client-side-filter era — the same era as the
+docblock this ticket exists to fix, missed in rounds 1 and 2 because the two legs were read
+for their filters, not their preamble. Graded non-blocking because the harm mode is
+deterrence (a reader won't parallelise) rather than a wrong change: no reading of it
+corrupts data or widens retention. Suggested replacement: "Order is irrelevant — the
+categories are disjoint. Sequential, not `Promise.all`, so one leg's failure doesn't
+obscure the other's count."
+
+**Previously raised, still undocumented (unchanged from round 2, not re-filed):** `not-in`
+never matches a doc whose `operation` field is missing, so such a row is purged by neither
+bucket while the header promises "all other events → 6 months". Latent only — every writer
+(Dart `AuditLog.toFirestore` + six TS sites) sets `operation`.
+
+**Also noted, optional.** The test docblock's "can only fail when an entry is removed from
+the constant" is slightly narrow: the `all` half also fires if `CONSENT_OPERATION_PREFIX`'s
+VALUE changes, and that assertion is the only live pin on a constant advertised as
+"referenced only by the test". And `verify-signup-age.ts`'s `errorFields` docblock
+(pre-existing, outside this diff) implies extracting code+message removes the uid risk,
+while `errMessage` is `err.message` — the family's own convention elsewhere is
+`{errCode, errName}` precisely because a Firestore message can carry `users/<raw uid>/…`.
+Both current call sites are safe today (auth messages don't embed the uid; the IP-cap doc
+path is hashed), so the claim holds in practice and only the mechanism is overstated.
+
+**Behavioural review of the one non-comment change** (`"consent_deleted"` added to
+`CONSENT_OPERATIONS`): general `not-in` now excludes those rows → they age at 730d instead
+of 180d, which is the intent; `in` goes to 5 values against a 10-value `not-in` ceiling; no
+index change (same two fields); no read/write cost change; idempotency and retry semantics
+untouched (deletes are safe-on-missing, the scheduled wrapper rethrows).
+
+**Verification.** Reported figures accepted as stated and consistent with what I read:
+`tsc --noEmit` clean, `purge-audit-logs` 9/9, `verify-signup-age` 10/10. Both suites are
+registered (`functions/package.json:92,126`), so `run-all-tests.js` discovers them. No file
+was edited and no probe file was created during this pass.

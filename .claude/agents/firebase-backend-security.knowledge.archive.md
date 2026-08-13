@@ -3376,3 +3376,206 @@ the whole read; `git status` shows index == tree for it.
 Process note: an overstated "this guard is redundant" is a security defect in its own right —
 it is the sentence a later cleanup pass cites when deleting the guard. Distilled into the
 BUT-1693 principle above.
+
+### 2026-08-13 — BUT-1693 follow-ups: `consent_deleted` → `consent_revoked`, and hiding the sharing row for a household of one
+
+Two-file review, both staged, index == tree (consent repo blob differs by md5 only because the
+worktree copy has CRLF and the blob is LF; `git diff --stat` is empty). No mutants/probes in
+either file. Tile md5 `04d69aa1d386716a75c73b0efd8cf73f`, consent repo tree md5
+`ae8a7478c29eca4b1e77638ff35e719e` (index blob `6ce2868e3b0acd2e1c2d3db44c9a2b7e`).
+
+**Fix A — the rename is correct, and the three premises verified as follows.**
+
+1. *No production caller* — TRUE TODAY. `ConsentService` (the only consumer of
+   `FirebaseConsentRepository`) calls `getUserConsent` and `saveConsent` only; grep for
+   `deleteConsent` in `lib/` hits the declaration alone.
+   **REFUTED FOR THE PAST, and this is the finding.** `git log -S"deleteConsent(" -- lib/`:
+   `bb594cf24` (BUT-498, 2026-04-27) wired `ProfileOperations.deleteConsentRecords` →
+   `_consentRepo.deleteConsent(userId)` into the CLIENT-side account-deletion path; `7551c14c2`
+   (BUT-788, 2026-05-22) removed that path when the CF cascade took over. `auditRepository` is
+   injected (`core_module.dart:195-200`), so any account deleted in that ~25-day window wrote a
+   real `consent_deleted` row. Written 12-16 weeks ago ⇒ still in `audit_logs`, scheduled for the
+   180-day general purge (≈ Nov 2026) rather than 730. Corroborated independently by
+   `docs/security/audit-logs-retention.md:82-84` ("the test that did was deleted with the
+   client-side deletion path in BUT-788"). Population is test accounts (pre-launch), so the
+   practical loss is ~nil — but the diff comment's "Nothing has been lost" is a claim about
+   history that `git log -S` refutes, and the repo's own lesson digest treats that shape as a
+   defect. Remedies offered: soften the sentence to name the window, or add `consent_deleted` to
+   `CONSENT_OPERATIONS` as a legacy token (4 of 10 `not-in` slots used) if any real subject is in
+   it.
+2. *Server-side erasure runs elsewhere* — VERIFIED. `deleteConsentRecords`
+   (`account-deletion-cascade.ts:1890-1901`) deletes `users/{uid}/consent/*` under the Admin SDK,
+   registered as step `consent_records` in `request-account-deletion.ts:226`. It writes no
+   `consent_*` audit row at all, so an account deletion today leaves the grant rows
+   (`consent_updated`, 730d) and no withdrawal row.
+3. *Reuse beats a fourth spelling* — VERIFIED and stronger than stated. `not-in` caps at 10;
+   the operation string is the only discriminator; and no consumer distinguishes revoke from
+   delete (grep of the `consent_*` tokens outside `functions/`: the Dart repo, its test, the DPIA,
+   the retention doc — nothing branches on them; `getAuditStats` counts read/write/delete/create
+   only). Rules-neutral: `firestore.rules:2222-2225` requires `userId/operation/resourceType/
+   timestamp` and constrains no value. `rateLimitWrite('audit_logs', 2)` is inert (known).
+   The exhaustiveness test (`purge-audit-logs.test.ts:457-474`) compares `CONSENT_OPERATIONS`
+   against a HAND-MAINTAINED array, never the Dart writers — which is exactly how `consent_deleted`
+   stayed green since 2025-10-30. Recommended (functions-side, outside this fileset): derive that
+   array from `grep "operation: 'consent_" lib/`.
+
+**Retention direction — 730 is right.** `docs/security/audit-logs-retention.md:73-84` already
+records the Art. 17(3)(b)/(e) position that audit rows are not erased at account close and that
+the purge windows ARE the erasure schedule. The row is uid + operation + timestamp (minimal), and
+the asymmetry argument settles it: grants sit at 730, so a 180-day withdrawal row would create a
+day-181..730 window where the controller can evidence the grant but not its end — worse for the
+data subject than keeping it. The evidentiary gap is `consentVersion`: `saveConsent` logs version
++ purposes, `deleteConsent` logs only a timestamp, and the consent DOC (the sole carrier of
+version/grantedAt) is gone — so read it before deleting and log the version when a production
+caller is wired, matching the DPIA R5 wording.
+
+**Fix B — hides only, cannot widen. Verified mechanically.** The new
+`if (household.memberUserIds.length < 2) return;` sits before the only assignment of
+`_householdId` (the single `setState` after `getOwn`), so `build`'s existing guard returns
+`SizedBox.shrink`; `_grant` and `_revoke` both return on `householdId == null`, and there is no
+other write path to `household_allergen_shares` in the widget. `memberUserIds` is derived from the
+parsed `members` list (`household.dart:172`), and `safeObjectList` can only DROP members, so a
+parse failure fails toward hidden. Read/filter side untouched. Cost: saves the `getOwn` doc read
+for solo households, which is 100% of them — nothing in `lib/` grows a household past its creator
+(`ensureForUser` seeds one member; `addMember`/`removeMember` exist on the model with no
+service/repository caller), so the tile now has no production render path at all while the feature
+is dark. Named that as a fourth gate.
+
+Residual (Low, unreachable today, filed as a launch-gate item not a blocker): `deleteFamilyData`
+(`account-deletion-cascade.ts:1004`) removes a departing uid from `memberUserIds` and keeps the
+household when others remain, so a 2→1 shrink would strand a live share with the row hidden and no
+in-app withdrawal — Art. 7(3). End state `members < 2 && getOwn() == null`, i.e. move the count
+check below the share read once multi-member households exist. Re-verified in the same pass:
+`grep -c household_allergen functions/src` → 0, so the share is still in no cascade step, no export
+and no residual probe, while the DPIA's R7 describes four erasure triggers in the present tense.
+
+### 2026-08-13 — consent audit token, legacy-row retention, and the tile's revoke ordering (BUT-1693 / BUT-665 re-review)
+
+Re-review of my own two findings from the previous pass. Both remedies verified against staged
+bytes (index == tree for all four files; the consent repository's md5 gap is CRLF-vs-LF only,
+`git diff` empty, `cmp` size delta == CR count). Suites run here, not inherited: 9/9
+`purge-audit-logs.test.ts`, 19/19 `household_allergen_sharing_tile_test.dart`, 23/23
+`firebase_consent_repository_test.dart`.
+
+**My comment was refuted correctly, and the history is now checkable.** `git log -S deleteConsent`
+gives `bb594cf24` (BUT-498, 2026-04-27), which pointed `ProfileDeletionOperations
+.deleteConsentRecords` at `FirebaseConsentRepository.deleteConsent`, and `7551c14c2` (BUT-788,
+2026-05-22), which deleted the whole class when deletion moved to the CF. The token written in
+that window was `consent_deleted` (`git show bb594cf24:…firebase_consent_repository.dart` → line
+211), introduced 2025-10-30 (`5bdcc5f63`). So real rows exist and the rename alone would have
+orphaned them. Only live Dart consent writers today are `consent_updated` and `consent_revoked`;
+the only TS one is `consent_age_verification` (`verify-signup-age.ts:324`); `consent_granted`
+appears solely in fixtures and comments, so the header's "never written" holds.
+
+**Where the new prose is still wrong (Low, no data effect).** Both the Dart comment ("unlisted
+since the day it was written") and the TS test comment ("stayed unlisted from 2025-10-30 to
+2026-08-13 with this test green") date the exposure eight months early. `CONSENT_OPERATIONS`, the
+`in`/`not-in` filter and `consentOperationsArrayIsExhaustive` were all born in `3a01d8fcd`
+(BUT-1404, 2026-06-28); before it the purge matched `op.startsWith('consent_')` client-side and
+classified `consent_deleted` CORRECTLY. Real window: 2026-06-28 → 2026-08-13. Also the class was
+`ProfileDeletionOperations`, not `ProfileOperations`. Worth stating the exposure precisely because
+it was PROSPECTIVE: the oldest such row (2026-04-27) becomes 180 days old on ~2026-10-24, so the
+weekly purge had not yet deleted one — the fix landed ~10 weeks early, which is the argument for
+listing rather than an argument that listing was optional.
+
+**Listing `consent_deleted` is the right remedy and creates no new problem.** `in` = 5 values
+(cap 30), `not-in` = 5 (cap 10); the composite index the query needs already exists
+(`firestore.indexes.json:416-423`, operation ASC + timestamp ASC), so no index change. A future
+reader is protected by the header's LEGACY paragraph and by the new Dart test that CAPTURES the
+logged `operation` and asserts `consent_revoked`. Two residuals: the list carries no retirement
+date (droppable once the last such row passes 730 days, i.e. after 2028-04-26), and the TS
+"exhaustiveness" test still compares a hand-typed `knownConsentOps` against the hand-typed
+constant — vacuous by construction, and the exact mechanism that hid this token. It is now
+documented as such; deriving it by reading the Dart source at test time is ~10 lines.
+
+**Tile Fix B, reordered — correct in every reachable state I could enumerate.** `getOwn` now runs
+before the member-count guard and the guard only fires when `own == null`, so a solo household
+under a live share renders the switch ON and one tap revokes. The malformed-roster case fails in
+the harmless direction: `Household.fromMap` is TOTAL (`safeList` catches per item and SKIPS,
+`serialization_utils.dart:196-205`; `safeString`/`safeRequiredDateTime` default rather than
+throw), so `getForUser` cannot throw, and the household is still FOUND because the query filters
+the denormalised `memberUserIds` FIELD while the guard counts the parsed `members` — an
+under-count that can only hide the OFFER. Cost of the new order: one extra document read per
+Settings mount for solo households; unavoidable and correct.
+
+Remaining Low, unreachable while the feature is dark (flag default false, no `firestore.rules`
+block): `getOwn` fails LOUD by design on an id/body mismatch, and `_resolve`'s catch then hides
+the row, so a member with a corrupt or forged own share can neither withdraw nor replace it (the
+M4 `ValidationException` branch covers only `getOwn` returning null for invalid consent). The
+repository already settled this asymmetry — "a fail-loud read is protective; a fail-loud erasure
+is an Art. 17 defect" — and `revoke()` deletes by PATH without reading the body, so the honest UI
+branch is to render the row ON on `FormatException` rather than hide it. Belongs on the BUT-1693
+launch checklist beside the rules block, not in this commit.
+
+### 2026-08-13 — BUT-1693/BUT-1404 final coverage read: both comment blocks verified true, and the mid-review rewrite that nearly cost the verdict
+
+**Fileset (final bytes, pinned):** `lib/repositories/firebase/firebase_consent_repository.dart`
+(md5 4745024ac0ef20091728af2d01d1ad4e) and
+`lib/views/settings/widgets/household_allergen_sharing_tile.dart`
+(md5 5277934d0b35e0406a1091dec30cbe2e). Index == worktree for both at verdict time. Verdict:
+pass, 0 blocking.
+
+**The tile was rewritten BETWEEN my `Read` and my greps, and the detector was free.** My `Read`
+showed lines 99-101 as "… comes back null and is handled by the replace branch on grant, which a
+solo roster now hides too" (a visibly over-long, unformatted line); `git diff HEAD` minutes later
+printed "(A share whose consent record is unusable comes back null; the replace branch on grant
+handles that one, and a solo member can no longer reach it, because the row is hidden for them.)".
+Since `git diff HEAD` IS the worktree, the mismatch alone proved a write had landed; `ls --time-style`
+(13:31:48 vs my read) and an empty `git diff` (index == worktree) confirmed it in one call. Re-read
+at current bytes, re-checksummed at the end. Had I reported from the first read, the review would
+have been scoped to bytes nobody will commit — the same failure mode as the 2026-08-12 four-file
+pass, but caught for free this time. Generalised into principle (c).
+
+**Consent-repo comment block — every claim checked against git and code, all true.**
+- `CONSENT_OPERATIONS` is the filter (`in` for consent, `not-in` for general,
+  `purge-expired.ts:118-129`), so an unlisted `consent_*` token really does fall to the 180-day
+  bucket. `consent_revoked` is listed (`purge-expired.ts:73`), so the rename lands in the 730-day
+  class — not a fourth spelling.
+- Dates: `purge-expired.ts` created 2026-05-01 (`b121ed0a2`) with `startsWith('consent_')`;
+  `CONSENT_OPERATIONS` replaced it 2026-06-28 (`3a01d8fcd`, BUT-1404). `git log -S deleteConsent
+  -- lib/` gives exactly five commits, of which the CALL site appears in `bb594cf24` (BUT-498,
+  2026-04-27, `ProfileDeletionOperations.deleteConsentRecords` delegating to
+  `FirebaseConsentRepository.deleteConsent`) and disappears in `7551c14c2` (BUT-788, 2026-05-22,
+  moved to the CF cascade). The pre-BUT-498 `deleteConsentRecords` (d04e1b925, 2026-02-28) wrote
+  through `_firestore` directly and produced NO audit row, so the token's 2025-10-30 birth does not
+  widen the window. Exposure = 46 days (2026-06-28 → today), and the youngest affected rows are
+  ~83 days old against a 180-day cutoff (oldest ~108) — nothing was erased, listing the token
+  saves them. Class name `ProfileDeletionOperations` confirmed in the BUT-498 commit body.
+- "There is no live caller now" — `grep deleteConsent lib/` returns only the definition and a
+  comment; every other hit is in `test/`.
+- CF header now carries the retirement date (droppable after 2028-05-22). Arithmetic aside, not
+  filed: 730 days after the youngest row (2026-05-22) is 2028-05-21, so the stated date is one day
+  conservative, i.e. it errs toward keeping evidence.
+
+**Tile comment block — every cross-file claim checked, all true.** `getForUser` refuses a caller
+that is not the named user (`firebase_household_repository.dart:94-103`); `ensureForUser` creates
+the solo household and its three named surfaces are exactly its callers (`min_familj_viewmodel`,
+`family_rating_entry`/`breakdown_viewmodel`, `who_is_eating_viewmodel`); `shares.revoke` has no
+other caller in `lib/` and `grep household_allergen functions/src` is still empty, so the tile
+really is the only revoke path; `deleteFamilyData` (account-deletion-cascade.ts:989+) removes the
+departing uid and leaves the household standing when others remain; the FriendCategory dedupe
+precedent is real (`household_service.dart:221-226`, `FriendCategory.allMemberIds`, BUT-1663);
+`UserService.allergenPreferences` does fall back to `defaults` (4 allergens + 2 diets,
+`includeUnknownInMenu: true`) and `HouseholdAllergenShare.fromMap` refuses that substitution
+field-by-field; the household AND-folds the flag (`household_service.dart:302`);
+`lookupUserProfile` never caches an unmerged self profile and re-reads (`user_service.dart:663-692`);
+`settingsMerged` is written only by `fetchProfile` (`firebase_user_repository.dart:249,255`).
+
+**The re-worded sentence is accurate ONLY because of its qualifier.** "never a withdrawal `getOwn`
+can see" is what makes it true: a corrupt/forged own row makes `getOwn` THROW (`fromFirestore`'s
+identity check), `_resolve`'s catch hides the row, and no withdrawal control exists at any roster
+size. That residual is now recorded as the seventh gate on flipping
+`enable_household_allergen_sharing` (DPIA), with the remedy — render the row ON on
+`FormatException`, since `revoke` decides from the PATH and never reads the body. If a future
+editor drops the "getOwn can see" clause, the sentence becomes false; the clause is load-bearing
+prose, not filler.
+
+**Why nothing blocks the commit.** The feature stays dark behind two independent gates, and only
+one is immune to a Remote Config flip: `household_allergen_shares` has no `firestore.rules` match
+block (catch-all deny), and the flag's code default is false
+(`feature_flag_service.dart:116`). The tile's own gate is unconditional (flag read in
+`initState`, `_resolve` returns immediately, `build` returns `SizedBox.shrink`, both handlers
+re-guard on `_householdId`). Hygiene checks run: no `MUTANT`/`THROWAWAY`/`if (false)` anywhere in
+`lib/`, `functions/src` or `test/`, and no probe/`zz_*` files. Non-security note handed to the
+parent: `docs/onboarding/workflow-map.stale` is untracked and names this very consent repository
+in its `triggers`, so the CLAUDE.md marker procedure must run before the commit.

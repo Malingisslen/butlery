@@ -189,11 +189,20 @@ leaves the household, and never contributes to any public or aggregate figure.
   `CONSENT_OPERATIONS` (`functions/src/audit_logs/purge-expired.ts`), so the
   retention classification needs nothing new and no second token for "withdrawn"
   should be minted. Note what that does NOT mean: nothing in this repo writes
-  either operation today — the existing consent repository writes
-  `consent_updated` and `consent_deleted` — so the writer itself is part of this
-  gate, not something already running. That list is
-  exhaustive by enumeration — an unlisted `consent_*` operation falls to the
-  180-day bucket and the trail is purged at six months, invisibly.
+  either operation on a live path today — the existing consent repository writes
+  `consent_updated`, and its delete path writes `consent_revoked` but has no
+  production caller — so the writer itself is part of this gate, not something
+  already running. When it is built, `consent_revoked` will name two different
+  acts: an account-level consent document being deleted, and a household share
+  being withdrawn. The writer must set a `resourceType` that tells them apart
+  (`user_consent` is taken). That list is exhaustive by enumeration — an
+  unlisted `consent_*` operation falls to the 180-day bucket and the trail is
+  purged at six months, invisibly. **Corrected 2026-08-13:** the delete path
+  emitted `consent_deleted`, which the purge classified correctly by prefix
+  until BUT-1404 (2026-06-28) replaced the prefix match with the enumeration
+  and left it out. Rows written 2026-04-27 to 2026-05-22 were still short of
+  the 180-day cutoff, so listing the token as a legacy value saved them; the
+  writer now emits `consent_revoked`.
 - **Residual:** Low **once built**; until then the withdrawal half of the Art.
   7(1) trail does not exist.
 
@@ -227,6 +236,18 @@ leaves the household, and never contributes to any public or aggregate figure.
   mitigated today and the four triggers are named gates on flipping the flag.
 - **Residual:** Low **once built**; today unmitigated-but-unreachable. Subject to the
   erasure tests passing before release.
+- **A sixth gate, found 2026-08-13 and not previously written down:** nothing in the
+  app can put a SECOND account holder into a `households/{id}`. `ensureForUser` creates
+  a solo household, `Household.addMember` has no caller, and the only server-side
+  membership writer removes rather than adds. So the consent row stays invisible to
+  everyone even after the flag is flipped, and the menu has no shared list to read. A
+  household-join flow is a prerequisite for this feature to do anything at all — do not
+  read a flipped flag as a shipped feature.
+- **A seventh, same date:** `getOwn` fails LOUD on a share whose stored id and body
+  disagree, and the settings row's catch then hides the row entirely — so a member whose
+  own share document is corrupt could neither withdraw nor replace it. The repository's
+  fail-loud read is deliberate and right; the UI's response to it is not. Render the row
+  ON for that case (`revoke` never reads the body) before the flag is flipped.
 
 ### R8 — The list leaks into a data export it does not belong in
 - **Position:** a member's own export contains their **own** shared list and

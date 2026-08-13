@@ -5,8 +5,10 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -14,6 +16,8 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+
+class _MockAuditRepository extends Mock implements FirebaseAuditRepository {}
 
 void main() {
   group('FirebaseConsentRepository - GDPR Compliance', () {
@@ -216,6 +220,53 @@ void main() {
     });
 
     group('deleteConsent - Delete Operations (GDPR Article 17)', () {
+      test(
+        'the audit row says consent_revoked — the spelling the purge job keeps '
+        'for 730 days',
+        () async {
+          // CONSENT_OPERATIONS in functions/src/audit_logs/purge-expired.ts is
+          // exhaustive by enumeration. Any other `consent_*` spelling falls to
+          // the 180-day general bucket, and the Art. 7(1) trail disappears at
+          // six months with nothing to show it ever existed. This test is the
+          // Dart half of that contract; the TypeScript half pins the list.
+          const userId = 'test-user-123';
+          final audit = _MockAuditRepository();
+          when(
+            () => audit.logPermissionCheck(
+              userId: any(named: 'userId'),
+              operation: any(named: 'operation'),
+              resourceType: any(named: 'resourceType'),
+              resourceId: any(named: 'resourceId'),
+              granted: any(named: 'granted'),
+              metadata: any(named: 'metadata'),
+            ),
+          ).thenAnswer((_) async {});
+
+          final repo = FirebaseConsentRepository(
+            firestore: fakeFirestore,
+            authRepository: mockAuthRepo,
+            auditRepository: audit,
+          );
+          await _seedConsent(fakeFirestore, userId, _createConsent(userId));
+
+          await repo.deleteConsent(userId);
+
+          final operation =
+              verify(
+                    () => audit.logPermissionCheck(
+                      userId: any(named: 'userId'),
+                      operation: captureAny(named: 'operation'),
+                      resourceType: any(named: 'resourceType'),
+                      resourceId: any(named: 'resourceId'),
+                      granted: any(named: 'granted'),
+                      metadata: any(named: 'metadata'),
+                    ),
+                  ).captured.single
+                  as String;
+          expect(operation, 'consent_revoked');
+        },
+      );
+
       test('should delete user consent successfully', () async {
         // Arrange
         const userId = 'test-user-123';

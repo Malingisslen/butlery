@@ -343,6 +343,18 @@ personal→collaborative leg only.
   REMOVED member, and prove it by mutation — add the membership conjunct and require exactly that
   test to redden (verified 2026-08-12, BUT-1693: 1 of 27 red, restore md5-checked). A code comment
   saying "do not harmonise this" is not a control.
+  **That asymmetry has to survive the UI layer, and the ORDER of the reads is what decides it
+  (2026-08-13).** A settings row that resolves "may I offer this?" before "does a record already
+  exist?" hides the only withdrawal control from anyone whose eligibility has since lapsed —
+  Butlery's tile hid the switch for a household that shrank to one under a live share
+  (`deleteFamilyData` removes a departing uid and leaves the household standing), i.e. Art. 7(3)
+  denied by widget ordering, with the repository's path-only delete working perfectly underneath.
+  Fixed by reading `getOwn` FIRST and gating the eligibility check on `own == null`. Two rules
+  generalise: an eligibility guard on a consent surface may hide the OFFER only, never the
+  WITHDRAWAL, so enumerate the states where a record outlives eligibility; and a read that FAILS
+  LOUD by design (`fromFirestore`'s identity check) must not be allowed to veto the erasure — a
+  `catch` that hides the row re-imposes one layer up exactly the defect the path-decided delete
+  avoids. Where the delete needs no body, the UI's error branch should render the control ON.
   **Then review the CONSUMER as its own change (2026-08-12, BUT-1693 service slice), because a
   repository's fail-safe tri-state dies at the call site.** `HouseholdService._sharedListsByMember`
   returns `null` for "unreadable" and `{}` for "nobody shared", but the consumer spells
@@ -393,7 +405,12 @@ personal→collaborative leg only.
   "28 green" was false against the bytes in front of me (25/3) and true three minutes later. Run
   the suite the handoff cites YOURSELF, md5 the fileset before and after every `Read`, and on any
   change re-read rather than re-reason — two of the three failures were fixes that had not landed
-  yet, and reporting them would have been a review of a file that no longer existed. Final state
+  yet, and reporting them would have been a review of a file that no longer existed. **The
+  cheapest detector needs no baseline (2026-08-13): the text `git diff HEAD` prints IS the current
+  worktree, so any wording it shows that your `Read` did not proves a write landed mid-review** —
+  a re-worded comment block caught exactly that here, confirmed in one call by mtime plus an empty
+  `git diff` (index == worktree). A verdict is scoped to BYTES, so re-`Read` the changed file and
+  re-checksum at the END, or the gate pins content the reviewer never saw. Final state
   pinned: index == tree for all four, 28/28 and 86/86 across the four household suites, analyze
   clean.
   **Gate-pass 2026-08-12 (same slice): the DARKNESS is what makes the GDPR gap non-blocking, so
@@ -605,6 +622,30 @@ personal→collaborative leg only.
   resubmitting it.
 - A `not-in`/`in` filter (e.g. an audit purge sweep) silently excludes docs where the
   discriminator field is ABSENT from both buckets — every writer must set it unconditionally.
+  **Replacing a PREDICATE with an ENUMERATION reclassifies history, not just new writes.**
+  BUT-1404 swapped `op.startsWith('consent_')` for `where('operation','in',CONSENT_OPERATIONS)`
+  and dropped `consent_deleted` — a token with no live caller since BUT-788 but with real rows
+  in `audit_logs` — so every one of them fell to the 180-day bucket and would have been erased
+  ~2026-10-24, six months into a 730-day Art. 7(1) trail. Derive such a list from HISTORY
+  (`git log -S "<token>"` / `git log -S` on the writer method), never from today's writers, and
+  keep a retired token listed with the date it becomes droppable (last row + retention). Two
+  companions: retiring a token is a RENAME in one file and a retention change in another, so
+  pin the new spelling with a test that captures the logged `operation` argument; and an
+  "exhaustiveness" test comparing a hand-typed list against the hand-typed constant is vacuous
+  by construction — it cannot see a token added in the OTHER language, which is exactly how
+  this one hid. Derive the expectation from the source files at test time.
+  **The EXPOSURE WINDOW is bounded by the token's CALLER window and by the purge's own birth,
+  never by the token's birth (verified 2026-08-13).** `consent_deleted` existed in Dart from
+  2025-10-30, but `git log -S` on the CALL site shows it was only ever reachable between
+  BUT-498 (2026-04-27) and BUT-788 (2026-05-22) — and the purge function itself was created
+  2026-05-01 classifying by `startsWith`, so the rows were correctly bucketed until the
+  2026-06-28 enumeration swap. That makes the exposure 46 days on rows all still short of the
+  180-day cutoff: listing the legacy token SAVES them rather than recovering a loss, and the
+  distinction decides whether the finding is "data already destroyed" or "close it now". Run
+  three greps before dating such a claim — `git log -S "<token>"`, `git log -S` on the calling
+  METHOD, and `git log --diff-filter=A` on the purge file — and check the intervening call
+  sites really used the repository (a direct-Firestore sibling like the pre-BUT-498
+  `deleteConsentRecords` writes no audit row at all, so its years do not count).
 
 ### GDPR: deletion, export, and the recurring "wrong probe shape" bug
 - **Most-repeated bug class: a cascade/probe/export query targets the wrong field, shape or
@@ -1000,8 +1041,43 @@ personal→collaborative leg only.
   `resourceType` than the create/read/delete rows for the same document, and a query
   reconstructing one document's history finds half of it. Copy the base class's spelling verbatim
   in any hand-rolled call.
+  **Fourth trap (2026-08-13): the enumerated list is only as strong as the test that claims it is
+  exhaustive, and the correct repair is REUSING a listed token, never minting a fifth.**
+  `purge-audit-logs.test.ts`'s "exhaustiveness" test compares `CONSENT_OPERATIONS` against a
+  HAND-MAINTAINED array of known values — it never reads the Dart writers — which is how
+  `consent_deleted` (`deleteConsent`, written 2025-10-30) sat unlisted for 46 days (2026-06-28, when BUT-1404 replaced a prefix match with the enumeration, to 2026-08-13) in the
+  180-day bucket while the test stayed green. Derive such a test from the writers
+  (`grep "operation: 'consent_" lib/`) or it proves only that someone edited two lists together.
+  Reuse also beats a new token on two mechanics: `not-in` caps at 10 values, and the operation
+  STRING is the whole discriminator (there is no `retentionTier` field), so every spelling is a
+  new silent-misclassification surface. Two checks when renaming an audit token: grep the token's
+  CONSUMERS (here only the purge + its test read operation values, so no consumer conflates
+  revoke-vs-delete) and `git log -S'<oldToken>'` / `-S'<method>('` — **rows outlive their caller**,
+  and this one had a real one (`ProfileDeletionOperations.deleteConsentRecords`, BUT-498 2026-04-27 →
+  BUT-788 2026-05-22, with `auditRepository` injected in `core_module.dart`), so "no production
+  caller" is a statement about TODAY, never about the corpus. On the retention DIRECTION: 730 days
+  for a withdrawal row is right and does not fight Art. 17 — `docs/security/audit-logs-retention.md`
+  records the Art. 17(3)(b)/(e) position that audit rows are NOT erased at account close, the row
+  is uid + operation + timestamp, and classifying the grant at 730 while the withdrawal expires at
+  180 would leave a window where the controller can evidence the grant but not its end. What such
+  a row must carry to be worth keeping is `consentVersion`: Butlery's delete path logs a bare
+  timestamp, and since the consent DOC is deleted, nothing then records which wording was withdrawn.
 - A blocked/admin-only collection's Art-15 export goes through an admin-SDK callable scoped to
   `request.auth.uid`, never a widened user-side read rule.
+- **A UI gate that hides a CONSENT control must key on the absence of a live consent, not only on
+  the precondition that made the control offerable** — Art. 7(3) demands withdrawal be as easy as
+  granting, and a hidden switch is no withdrawal path at all. BUT-1693's sharing tile correctly
+  hides when the household has fewer than two members (`ensureForUser` seeds a solo household for
+  anyone who opened Min familj / family rating / who's-eating, so the row was telling people living
+  alone that the household was guessing for them); it can only ever hide, since `_householdId` stays
+  null and both write handlers bail on it. The residual to close before such a feature ships is the
+  SHRINK: `deleteFamilyData` removes a departing uid from `memberUserIds` and keeps the household,
+  so a 2→1 shrink strands a live share with the row hidden. Correct end state is
+  `members < 2 && getOwn() == null` — check the count AFTER the share read; today the reverse order
+  is the cost-right call (no `lib/` path grows a household past its creator, so every user is solo
+  and the check saves a doc read). Corollary for a dark feature's gate list: a UI-level precondition
+  that no production data satisfies is a FOURTH gate, and it belongs in the flag's checklist beside
+  the flag, the missing rules block and the missing cascade/export steps.
 - TTL fields need THREE things: the `gcloud ... --enable-ttl` policy itself (separate admin
   action, not deployed with code); a backfill for pre-existing docs; a deletion-cascade
   cross-check if the collection carries raw `userId` (or a documented accepted residual).

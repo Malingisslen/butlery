@@ -383,7 +383,15 @@ see "When to consult the archive" at the end.
   wrong branch and `if (!matchesAny(...))` → `if (false)` left the suite
   **14/14 green**. Rule: build the fixture so only the targeted branch CAN
   fire, and assert on branch-unique message text, not the shared code. A
-  criterion is pinned only when you have watched it go red.
+  criterion is pinned only when you have watched it go red. Corollary for a
+  NEGATIVE test whose comment states what it CANNOT catch: walk EVERY case in
+  the suite under the hypothetical regression before trusting the claim —
+  measured 2026-08-13, reverting `CONSENT_OPERATIONS` membership to
+  `startsWith('consent_')` leaves all NINE `purge-audit-logs` tests green, so
+  "nothing in the suite catches that" is exact, not modest. And a TS comment
+  naming what a DART writer emits is true only if that file sits in the SAME
+  INDEX — check `git show :<path>`, never the worktree (HEAD still wrote
+  `consent_deleted` while the worktree wrote `consent_revoked`).
 - **Some guards are only reachable on a SECOND invocation, so only a
   re-run test can pin them.** Firestore `update(ref, {})` throws "At least
   one field must be updated", so an idempotent scrub's
@@ -1038,7 +1046,7 @@ see "When to consult the archive" at the end.
   ORDERING: the last *deleted* doc can sort before the last scanned one, so
   anchoring on it re-reads the page's surviving tail and inflates `scanned`.
   `cleanup-cache.ts:248` now carries the corrected rationale (BUT-1786, verified
-  2026-08-04); `cleanup-old-notifications.ts:49-50` still says "it would in fact
+  2026-08-04); `cleanup-old-notifications.ts:49-50` said, until 2026-08-13, "it would in fact
   be wrong here since the cursor doc gets deleted" — wrong but harmless there,
   since that filtered walk self-advances. Correct the PROSE, never the cursor
   choice. **And when the correction names a fixture as "the ONLY one where X",
@@ -1584,6 +1592,43 @@ see "When to consult the archive" at the end.
   functional lifetime (`scheduled_notifications` is now+7d against a
   quiet-hours `deliverAt` ≤24h out — safe; a >7d deferral would be deleted
   before delivery).
+- **A retention bucket selected by an ENUMERATED allowlist fails silently toward
+  the SHORTER window, and a hand-typed mirror of that list in the test cannot
+  see it.** `purge-expired.ts` splits `audit_logs` with one constant driving both
+  `where("operation","in",CONSENT_OPERATIONS)` (730d) and
+  `where("operation","not-in",CONSENT_OPERATIONS)` (180d), so an unlisted
+  `consent_*` token is not "unclassified" — it is actively swept by the general
+  bucket and the Art. 7(1) trail vanishes on schedule. `consent_deleted` sat
+  unlisted from 2025-10-30 to 2026-08-13 with a green
+  `CONSENT_OPERATIONS covers all known values` test, because that test compares
+  the constant against a hand-typed `knownConsentOps` literal and reads no
+  WRITER — and the writer was DART (`firebase_consent_repository.dart`), which no
+  TS suite has any reason to open. Two moves: derive the expected set by reading
+  the writer files (`fs.readFileSync` + `/operation:\s*['"]consent_[a-z_]+/g` over
+  `functions/src/**` and `lib/**`, ~15 lines, no dep), and assert the CONVERSE too
+  (`ops.every(o => o.startsWith(PREFIX))`) — without it a non-consent value added
+  to the list silently exempts a whole operation from the general purge forever.
+  Same shape for any `in`/`not-in` allowlist that PARTITIONS a collection; a
+  count-based or mirror-based tripwire is not a guard. Cap note: the Node Admin
+  SDK (7.11.6) does NOT validate the value count client-side — only a non-empty
+  check, and only for `documentId()` paths — so an overflow surfaces as a runtime
+  INVALID_ARGUMENT inside the scheduled job, never at build.
+  **Corollary — a retention file's header naming a SECOND CF over the same
+  collection is a load-bearing claim with a half-life, and both of this pair's
+  headers outlived it.** `purge-expired.ts:13-17` still says `cleanupOldAuditLogs`
+  "applies a flat 90-day default sourced from Remote Config" to `audit_logs` and
+  "will be retired"; BUT-808 already cut that CF back to `deletion_audit_logs`
+  only (`cleanup-audit-logs.ts:1-18` says so, and deliberately KEEPS the export
+  name so the scheduler binding does not churn — it is not being retired).
+  `docs/security/audit-logs-retention.md` repeats the stale paragraph at :9-12 and
+  additionally claims at :35 that `AuditLog.toFirestore` stamps a 365-day
+  `expireAt`, which `lib/models/audit_log.dart:92` explicitly removed in the same
+  ticket — a live `audit_logs` TTL fieldOverride still stands in
+  `firestore.indexes.json:553`, so that sentence reads as an armed 365-day floor
+  under a 730-day policy. Whenever you touch a retention constant, re-read the
+  OTHER CF named in the header and the Art. 30 record; two documents describing
+  one collection's lifecycle drift in opposite directions and each one alone
+  looks authoritative.
 - **Before approving a new composite index, check for an EXISTING composite on
   the same two fields in the opposite orderBy direction — Firestore serves a
   query by scanning that index in reverse, so the "opposite direction" variant

@@ -2,7 +2,8 @@
  * BUT-665 — Audit log retention purge.
  *
  * Per `docs/security/audit-logs-retention.md`:
- *   - Consent events (operation prefix `consent_`) → 24 months retention
+ *   - Consent events (the CONSENT_OPERATIONS enumeration below — the
+ *     `consent_` spelling is a naming convention, not the filter) → 24 months
  *     (GDPR Art 7(1) — must be able to demonstrate consent).
  *   - All other events → 6 months retention (Art 5(1)(c) data
  *     minimisation + SOC2-style incident-response window).
@@ -10,11 +11,13 @@
  * Schedule: Sunday 05:00 UTC, region `europe-west1`. Idempotent — a
  * same-day re-run finds zero documents past the cutoff and is a no-op.
  *
- * Co-exists (for now) with the legacy `cleanupOldAuditLogs` CF in
- * `cleanup/cleanup-audit-logs.ts` which applies a flat 90-day default
- * sourced from Remote Config. The legacy CF will be retired once this
- * one has been observed in prod for a full retention cycle (tracked
- * separately).
+ * Since BUT-808, `audit_logs` is purged EXCLUSIVELY here. `cleanupOldAuditLogs`
+ * (`cleanup/cleanup-audit-logs.ts`) handles only `deletion_audit_logs` now; it
+ * keeps its old export name so the deployed scheduler binding does not churn,
+ * which is why it still reads like a second purge of this collection and is
+ * not one. It formerly applied a flat 90-day Remote Config default here, two
+ * hours earlier on the same Sunday schedule, silently defeating the 730-day
+ * consent retention.
  */
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
@@ -28,10 +31,13 @@ export const CONSENT_RETENTION_DAYS = 730;
 /** Days. 6 months. Aligns with industry MTTD for cloud incidents. */
 export const GENERAL_RETENTION_DAYS = 180;
 
-/** Operation values that count as consent events for retention purposes.
- *  Matched as `startsWith('consent_')` in code; this list is informational
- *  and used by the test for exhaustiveness. Keep in sync with
- *  `lib/repositories/firebase/firebase_consent_repository.dart`. */
+/** The naming convention consent operations follow.
+ *
+ *  NOT the filter. Until BUT-1404 (2026-06-28) the purge classified rows with
+ *  `startsWith(CONSENT_OPERATION_PREFIX)`, and this docblock still said so for
+ *  46 days afterwards — which is how `consent_deleted` came to be mis-bucketed
+ *  without anyone reading a contradiction. `CONSENT_OPERATIONS` below IS the
+ *  filter, exhaustively; this constant is referenced only by the test. */
 export const CONSENT_OPERATION_PREFIX = "consent_";
 
 /**
@@ -47,8 +53,18 @@ export const CONSENT_OPERATION_PREFIX = "consent_";
  * Sources:
  *   - account/verify-signup-age.ts  → "consent_age_verification"
  *   - lib/repositories/firebase/firebase_consent_repository.dart
- *     → "consent_granted", "consent_updated", "consent_revoked"
- * Last audited: 2026-06-28.
+ *     → "consent_updated" (saveConsent, LIVE) and "consent_revoked"
+ *       (deleteConsent, which has had no caller since BUT-788, 2026-05-22 —
+ *       listed so the spelling is already classified when one is wired)
+ *   - LEGACY, no live writer: "consent_granted" has never been written by any
+ *     Dart or TS code; "consent_deleted" was written by deleteConsent between
+ *     BUT-498 (2026-04-27) and BUT-788 (2026-05-22), when the client-side
+ *     deletion path existed, and rows from that window are still in
+ *     audit_logs. Both stay listed — dropping a legacy token silently
+ *     reclassifies existing rows into the 180-day bucket. "consent_deleted"
+ *     becomes droppable once its youngest row passes 730 days, i.e. after
+ *     2028-05-22; before that date, removing it deletes evidence.
+ * Last audited: 2026-08-13.
  *
  * Firestore `not-in` supports up to 10 values; if this list exceeds 10,
  * switch to a `retentionTier` field on new writes + backfill (ops-blocked).
@@ -58,6 +74,7 @@ export const CONSENT_OPERATIONS: readonly string[] = [
   "consent_granted",
   "consent_updated",
   "consent_revoked",
+  "consent_deleted",
 ] as const;
 
 const BATCH_SIZE = 200;

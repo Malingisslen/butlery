@@ -210,7 +210,22 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
       // Audit log for consent deletion
       await _localAuditRepository?.logPermissionCheck(
         userId: userId,
-        operation: 'consent_deleted',
+        // `consent_revoked`, NOT a fourth spelling. `CONSENT_OPERATIONS` in
+        // functions/src/audit_logs/purge-expired.ts is exhaustive by
+        // enumeration: an unlisted `consent_*` operation falls to the 180-day
+        // general bucket instead of the 730-day consent one, and the Art. 7(1)
+        // trail is purged at six months without a sound.
+        //
+        // `consent_deleted` reached that state on 2026-06-28 (BUT-1404), when
+        // the purge stopped matching by `startsWith('consent_')` and switched
+        // to the enumeration, which left the token out. It DID reach
+        // production before that: `ProfileDeletionOperations` called this
+        // method from BUT-498 (2026-04-27) until BUT-788 (2026-05-22) moved
+        // deletion to the Cloud Function cascade. Those rows are still short
+        // of the 180-day cutoff, so listing `consent_deleted` as a legacy
+        // token saves them rather than recovering a loss; this rename protects
+        // future rows. There is no live caller now.
+        operation: 'consent_revoked',
         resourceType: 'user_consent',
         resourceId: userId,
         granted: true,

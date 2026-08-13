@@ -86,8 +86,31 @@ class _HouseholdAllergenSharingTileState
 
       final mine = await households.getForUser(userId);
       if (mine.isEmpty) return; // no household → the row stays hidden
-      final householdId = mine.first.id;
+      final household = mine.first;
+      final householdId = household.id;
       final own = await shares.getOwn(householdId);
+
+      // A household DOCUMENT is not somebody to share with. `ensureForUser`
+      // creates a solo `households/{id}` the first time anyone opens Min
+      // familj, the family rating or who's-eating, so a person living alone
+      // has one — and the row's subtitle would then tell them "Hushållet
+      // gissar just nu åt dig" when nobody is guessing anything.
+      //
+      // It hides the OFFER, never a withdrawal `getOwn` can see. (A share
+      // whose consent record is unusable comes back null; the replace branch
+      // on grant handles that one, and a solo member can no longer reach it,
+      // because the row is hidden for them.) This row is the only
+      // revoke path that exists — `shares.revoke` has no other caller and no
+      // Cloud Function does it — so hiding it from someone who HAS shared
+      // would make taking a consent back impossible, which is precisely what
+      // Art. 7(3) forbids and what this file's header promises. A roster can
+      // shrink under a live share: the account-deletion cascade removes a
+      // departing member and leaves the household standing.
+      //
+      // `toSet()` because a duplicated self row would otherwise re-open the
+      // offer; the sibling FriendCategory roster has needed that dedupe
+      // (BUT-1663).
+      if (own == null && household.memberUserIds.toSet().length < 2) return;
       if (!mounted) return;
       setState(() {
         _householdId = householdId;

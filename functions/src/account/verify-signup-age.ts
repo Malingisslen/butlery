@@ -300,16 +300,19 @@ export async function runVerifySignupAge(
 }
 
 /**
- * Consent-category audit row. The `consent_` operation prefix makes
- * `purgeExpiredAuditLogs` retain it for 730 days (GDPR Art 7(1) — demonstrate
- * the age-eligibility condition was met). Stores derived fact only: outcome +
+ * Consent-category audit row. Membership of `CONSENT_OPERATIONS`
+ * (audit_logs/purge-expired.ts) makes `purgeExpiredAuditLogs` retain it for
+ * 730 days (GDPR Art 7(1) — demonstrate the age-eligibility condition was
+ * met). The enumeration is the filter, not the `consent_` spelling — that has
+ * been true since BUT-1404 (2026-06-28), and a new consent operation that is
+ * not added to the list falls to the 180-day bucket. Stores derived fact only: outcome +
  * coarse decade + hashed uid. No raw birth year, no email.
  *
  * BUT-1435: written at a DETERMINISTIC doc id (one consent row per user, the
  * correct semantics for a consent record) with set+merge, so a retry that
  * re-asserts artifacts overwrites in place rather than appending a duplicate.
- * The purge job matches by the `consent_` operation prefix + timestamp, not by
- * id, so retention is unaffected.
+ * The purge job matches by operation membership + timestamp, not by id, so
+ * retention is unaffected.
  */
 async function writeComplianceAudit(
   database: admin.firestore.Firestore,
@@ -332,8 +335,8 @@ async function writeComplianceAudit(
 }
 
 /**
- * Non-identifying rejection record (general 180-day retention — no `consent_`
- * prefix). Deliberately carries NO identifier and NO birth year: it must not
+ * Non-identifying rejection record (general 180-day retention — its operation
+ * is not in `CONSENT_OPERATIONS`). Deliberately carries NO identifier and NO birth year: it must not
  * be possible to derive from this collection that a specific person is under
  * 15 (Legal condition).
  */

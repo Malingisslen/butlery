@@ -87,10 +87,20 @@ UserProfile _profile({
   settingsMerged: settingsMerged,
 );
 
-Household _household() => Household(
+/// A household with somebody else in it. The roster is load-bearing, not
+/// decoration: a solo household is somebody living alone, and the row hides
+/// rather than claim the household is guessing for them.
+Household _household({int memberCount = 2}) => Household(
   id: _householdId,
   name: Household.defaultName,
-  members: const [],
+  members: [
+    for (var i = 0; i < memberCount; i++)
+      HouseholdMember(
+        userId: i == 0 ? _userId : 'member-$i',
+        permission: SharedListPermission.edit,
+        addedAt: DateTime.utc(2026, 1, 1),
+      ),
+  ],
   createdBy: _userId,
   createdAt: DateTime.utc(2026, 1, 1),
   updatedAt: DateTime.utc(2026, 1, 1),
@@ -208,6 +218,43 @@ void main() {
 
       expect(find.byType(SwitchListTile), findsNothing);
     });
+
+    testWidgets('with a household of ONE — nobody to share with', (
+      tester,
+    ) async {
+      // A solo `households/{id}` exists for anyone who has opened Min familj,
+      // the family rating or who's-eating. The row's subtitle would tell that
+      // person the household is guessing for them, which is untrue.
+      wire(household: _household(memberCount: 1));
+
+      await pump(tester);
+
+      expect(find.byType(SwitchListTile), findsNothing);
+      expect(find.text(sv.householdAllergenShareSubtitleOff), findsNothing);
+    });
+
+    testWidgets(
+      'but a solo household that HAS shared still gets its off switch',
+      (tester) async {
+        // This row is the only revoke path in the app. Hiding it from someone
+        // who already consented would make withdrawal impossible, which is
+        // what Art. 7(3) forbids — and a roster can shrink under a live share
+        // when the deletion cascade removes the other member.
+        wire(household: _household(memberCount: 1), existingShare: _share());
+
+        await pump(tester);
+
+        expect(
+          tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+          isTrue,
+        );
+
+        await tester.tap(find.byType(SwitchListTile));
+        await tester.pumpAndSettle();
+
+        verify(() => shares.revoke(_householdId)).called(1);
+      },
+    );
 
     testWidgets('when the current state could not be read', (tester) async {
       // Drawing the switch in a guessed position would tell the member

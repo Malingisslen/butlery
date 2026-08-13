@@ -1034,7 +1034,7 @@ unmoved — that is precisely why this shape was chosen over swapping the two tr
 would have changed this rule's input and silently un-measured it. Choosing the
 restructure over the cheaper swap was MALIN'S CALL on 2026-08-12, taken with the swap
 and its cost put to her explicitly; this paragraph is the tracked record of it, and
-`frame_trim.dart` points here rather than at the gitignored plan snapshot.** So, so `MultiRecipeSplitter` keeps its "never hands back a single SHORTENED
+`frame_trim.dart` points here rather than at the gitignored plan snapshot.** So `MultiRecipeSplitter` keeps its "never hands back a single SHORTENED
 block" contract untouched (it still drops furniture when it splits — a separate promise,
 stated on `split`) and `corpus_split_eval.dart --trim` can still compare two columns.
 Shipped: 10 pages trimmed, precision 66.64 -> 66.77 %, recall 91.54 -> 91.52 %, right
