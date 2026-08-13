@@ -6,9 +6,9 @@
  "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
  "$tokenidentitet": "Tokennamnet lases i registret vid forsta tilldelningen och andras aldrig. Tva beslut delar aldrig namn, aven nar morkvardet sammanfaller. Ett ersatt beslut behaller inget namn.",
  "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
- "antal": 60,
+ "antal": 61,
  "perTyp": {
-  "temavaxlande": 38,
+  "temavaxlande": 39,
   "temainvariant": 7,
   "UNKNOWN": 13
  },
@@ -4863,15 +4863,150 @@
    "aktiv": true,
    "tokenNamn": "--text-innehall-d11",
    "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-kontroll-#24382c",
+   "roll": "text-kontroll",
+   "semantiskRoll": "BUTTON_TEXT",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#c9d3c4",
+   "provenance": "OBSERVED_MAPPING",
+   "auktoritet": "matning",
+   "beslutsdatum": "2026-08-13",
+   "status": "VERIFIED_EXISTING_MAPPING",
+   "klassificering": "OBSERVED_MAPPING",
+   "$ejKlassificering": [
+    "HUMAN_APPROVED_DESIGN_DECISION",
+    "VISUAL_CHOICE_REQUIRED",
+    "PRINCIPLE_DETERMINATE"
+   ],
+   "mappningstyp": "temavaxlande",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "HARLEDD_UR_OBSERVATION",
+    "skal": "Ljus och mork skiljer sig i samtliga 25 observationer — mappningen vaxlar med temat."
+   },
+   "evidensvidBeslut": {
+    "styrka": "OBSERVED_SAME_UNIT_UNANIMOUS",
+    "observationerIAuthoredDark": 25,
+    "artefakter": 19,
+    "familjer": 19,
+    "enigt": true,
+    "populationIEnheten": 91,
+    "$not": "Evidensen galler enheten. Den valjer INTE knappytan — se villkoret nedan."
+   },
+   "villkor": [
+    "Mappningen ar verifierad for TEXTEN. Den avgor inte BUTTON_SURFACE.",
+    "Tillampningen i globceremoni kraver att den slutliga knappytan ger #c9d3c4 minst 4.5:1 enligt WCAG 1.4.3.",
+    "Om ingen giltig knappyta kan samexistera med mappningen ska fallet klassas som antingen ogiltig ytkandidat eller en undergruppssplit — aldrig som en tyst andring av texten."
+   ],
+   "strukturellObservation": {
+    "$vad": "De 25 observationerna ar inte strukturellt identiska med globceremoni.",
+    "utanEgenMaladYta": 23,
+    "medEgenMaladYta": 2,
+    "$not": "I 23 av 25 fall bar knappelementet ingen egen malad yta — texten ligger da pa en arvd yta. I 2 fall finns en egen yta (#e6ead9 -> #24382c). globceremoni tillhor den senare strukturen. Bada delpopulationerna ger samma morkvarde, sa uppskrivningen haller aven under en eventuell split.",
+    "delpopulationMedEgenYta": {
+     "antal": 2,
+     "morkvarde": "#c9d3c4",
+     "enigt": true
+    }
+   },
+   "ersatterProvisorisk": {
+    "token": "--text-kontroll-a",
+    "ljus": "#24382c",
+    "mork": "#c9d3c4",
+    "status": "SUPERSEDED_BY_OBSERVED_MAPPING_REVALIDATION",
+    "$bevarad": "Pilottokenets historiska provenance raderas inte. Det var ett provisoriskt varde ur tokenmigrationen, aldrig ett designbeslut. Revalideringen visar att vardet sammanfaller med den observerade mappningen — det gor inte pilottokenet till evidens i efterhand.",
+    "kalla": "fas2/r04-pilottokens.json"
+   },
+   "beslutsunderlag": {
+    "typ": "MASKINELL_REVALIDERING",
+    "commit": "97d128f",
+    "villkor": [
+     {
+      "namn": "samma stabila beslutsenhetsidentitet",
+      "ok": true,
+      "diag": "text-kontroll|#24382c ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande"
+     },
+     {
+      "namn": "samma semantiska roll",
+      "ok": true,
+      "diag": "text-kontroll"
+     },
+     {
+      "namn": "samma state och undergrupp",
+      "ok": true,
+      "diag": "utan-state · 1 undergrupp"
+     },
+     {
+      "namn": "samma kontrollroll",
+      "ok": true,
+      "diag": "button"
+     },
+     {
+      "namn": "ett enda ljusvarde",
+      "ok": true,
+      "diag": "#24382c"
+     },
+     {
+      "namn": "ett enda observerat morkvarde",
+      "ok": true,
+      "diag": "#c9d3c4"
+     },
+     {
+      "namn": "minst 20 observationer",
+      "ok": true,
+      "diag": "25 observationer"
+     }
+    ],
+    "artefakt": "fas2/r04-buttontext.json"
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 19,
+   "instanserIScope": 91,
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-text-kontroll-#24382c ‖ BUTTON_TEXT ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "aktiv": true,
+   "tokenNamn": "--text-kontroll-d6",
+   "revision": 1,
+   "observeradeArtefakter": [
+    "synkko",
+    "delatlasare",
+    "veckochips",
+    "veckorostavgor",
+    "veckorosthistorik",
+    "authepost",
+    "authmfa",
+    "onbalderblock",
+    "onbvalkommen",
+    "onbsenare",
+    "impgrans",
+    "impgransai",
+    "impcache",
+    "impdelningsocial",
+    "editorutkast",
+    "kontoradera",
+    "kontoreauth",
+    "modtom",
+    "notiscentral"
+   ],
+   "scopekontrakt": {
+    "typ": "BESLUTSENHET",
+    "$text": "Mappningen galler beslutsenheten, inte de 19 artefakter dar den rakade observeras. Observationen ar evidens, inte scope.",
+    "enhet": "CAND-text-kontroll-#24382c ‖ BUTTON_TEXT ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "forekomsterIEnheten": 91,
+    "observerade": 25
+   }
   }
  ],
  "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
  "perOmfattning": {
   "WHOLE_CANDIDATE": 9,
-  "SUBGROUP": 49
+  "SUBGROUP": 50
  },
  "$status": "Ett beslut har status ACTIVE eller SUPERSEDED. Ett ersatt beslut raderas aldrig — det star kvar med reason och vilket beslut som ersatte det. Bara ACTIVE-beslut far anvandas vid migrering.",
- "aktiva": 58,
+ "aktiva": 59,
  "ersatta": 2,
  "$identitet": "beslutsId ar scopet (kandidat och eventuell undergrupp). Lagringsidentiteten ar scope + revision. Tokennamnet tilldelas en gang och ar persistent; varken supersede, insattning eller omsortering far andra ett befintligt namn.",
  "perTyp2": {
@@ -5089,5 +5224,9 @@
     "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
    }
   ]
+ },
+ "perStatus": {
+  "ACTIVE": 58,
+  "VERIFIED_EXISTING_MAPPING": 1
  }
 }

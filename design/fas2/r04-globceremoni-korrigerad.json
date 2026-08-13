@@ -1,0 +1,999 @@
+{
+ "$schema": "butlery-r04-globceremoni-korrigerad/1",
+ "$datum": "2026-08-13",
+ "$status": "ANALYS + EN REGISTERWRITE (uppskrivning). 0 produktwrites, 0 previews, 0 coverage credit.",
+ "A_maladForalder": {
+  "regel": "Om ett forgrundselement sjalvt malar en tackande bakgrund som visuellt omsluter forgrunden, loses forgrundsrelationen mot den bakgrunden innan kedjan vandras uppat.",
+  "verktyg": "tools/parent-resolution.mjs · maladForalder(), FORALDERKLASS",
+  "failClosed": [
+   "genomskinlig egen bakgrund maskerar inte den verkliga foraldern",
+   "flera samtidiga malade barare loses aldrig pa DOM-narhet"
+  ],
+  "prov": {
+   "fil": "tools/painted-parent-fixtures.mjs",
+   "antal": 7,
+   "godkanda": 7,
+   "$numrering": "PP-01 … PP-07 motsvarar bestallningens PR-01 … PR-07. PR-01 … PR-10 var redan upptagna av tools/parent-resolution-fixtures.mjs.",
+   "poster": [
+    {
+     "id": "PP-01",
+     "vad": "text pa ett element med egen malad bakgrund loses mot den bakgrunden",
+     "ok": true,
+     "diag": "underliggandeYta pekar pa ordinal 0, men relationen loses mot ordinal 6 — elementets egen tackande yta"
+    },
+    {
+     "id": "PP-02",
+     "vad": "text utan egen bakgrund vandrar till narmaste faktiskt malade forfader",
+     "ok": true,
+     "diag": "loses mot ordinal 7, inte mot appytan pa ordinal 0"
+    },
+    {
+     "id": "PP-03",
+     "vad": "en helt genomskinlig egen bakgrund maskerar inte den verkliga malade foraldern",
+     "ok": true,
+     "diag": "rgba(0,0,0,0) ar ingen barare — relationen gar vidare till ordinal 0"
+    },
+    {
+     "id": "PP-04",
+     "vad": "en andrad kontrollyta andrar beroende texts relation men inte ett syskons",
+     "ok": true,
+     "diag": "knapptexten: rgb(245, 244, 237) -> rgb(74, 92, 67) · syskonet oforandrat pa rgb(36, 56, 44)"
+    },
+    {
+     "id": "PP-05",
+     "vad": "flera malade barare loses aldrig pa DOM-narhet utan faller stangt",
+     "ok": true,
+     "diag": "barare T5|6 + T5|0 — elementets egen bakgrund slapper igenom — flera malade barare bidrar och relationen far inte valjas pa DOM-narhet. Faller stangt."
+    },
+    {
+     "id": "PP-06",
+     "vad": "globceremoni BUTTON_TEXT loses mot BUTTON_SURFACE, inte mot APP_BACKGROUND",
+     "ok": true,
+     "diag": "foralder ordinal 6 rgb(245, 244, 237) — inte ordinal 0 rgb(36, 56, 44) som matningens underliggandeYta pekade pa"
+    },
+    {
+     "id": "PP-07",
+     "vad": "vanlig text pa appytan loses fortfarande mot APP_BACKGROUND",
+     "ok": true,
+     "diag": "rubriken pa ordinal 3 loses mot appytan — rattelsen flyttar bara det som verkligen har en egen barare"
+    }
+   ]
+  }
+ },
+ "B_metodprov": {
+  "filer": 28,
+  "totalt": 354,
+  "perFil": {
+   "animation-freeze": 8,
+   "channel-collateral": 4,
+   "colour-only": 13,
+   "conformance-scope": 48,
+   "contrast": 14,
+   "effect": 21,
+   "graphic-object": 9,
+   "hit": 15,
+   "identity": 13,
+   "nontext-descent": 9,
+   "nontext": 11,
+   "nontext-surface": 14,
+   "overlap": 7,
+   "ownership-brand": 15,
+   "painted-parent": 7,
+   "parent-resolution": 10,
+   "preview-simulation": 8,
+   "readiness": 7,
+   "semantic-role-filter": 9,
+   "surface-analysis": 13,
+   "surface-constraints": 8,
+   "svg-paint-census": 12,
+   "theme-decision": 6,
+   "theme": 8,
+   "theme-hybrid": 7,
+   "theme-migration": 36,
+   "token-rebind": 15,
+   "two-state-preview": 7
+  },
+  "nyaIDettaBlock": {
+   "painted-parent": 7,
+   "surface-constraints": 8
+  },
+  "allaGrona": true
+ },
+ "C_buttonText": {
+  "fore": {
+   "status": "PROVISIONAL",
+   "token": "--text-kontroll-a",
+   "varde": "#24382c -> #c9d3c4",
+   "kredit": "noll beslutskredit, noll coveragekredit"
+  },
+  "villkorsprovning": [
+   {
+    "namn": "samma stabila beslutsenhetsidentitet",
+    "ok": true,
+    "diag": "text-kontroll|#24382c ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande"
+   },
+   {
+    "namn": "samma semantiska roll",
+    "ok": true,
+    "diag": "text-kontroll"
+   },
+   {
+    "namn": "samma state och undergrupp",
+    "ok": true,
+    "diag": "utan-state · 1 undergrupp"
+   },
+   {
+    "namn": "samma kontrollroll",
+    "ok": true,
+    "diag": "button"
+   },
+   {
+    "namn": "ett enda ljusvarde",
+    "ok": true,
+    "diag": "#24382c"
+   },
+   {
+    "namn": "ett enda observerat morkvarde",
+    "ok": true,
+    "diag": "#c9d3c4"
+   },
+   {
+    "namn": "minst 20 observationer",
+    "ok": true,
+    "diag": "25 observationer"
+   }
+  ],
+  "alltUppfyllt": true,
+  "efter": {
+   "status": "VERIFIED_EXISTING_MAPPING",
+   "provenance": "OBSERVED_MAPPING",
+   "token": "--text-kontroll-d6",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#c9d3c4",
+   "evidens": {
+    "styrka": "OBSERVED_SAME_UNIT_UNANIMOUS",
+    "observationerIAuthoredDark": 25,
+    "artefakter": 19,
+    "familjer": 19,
+    "enigt": true,
+    "populationIEnheten": 91,
+    "$not": "Evidensen galler enheten. Den valjer INTE knappytan — se villkoret nedan."
+   },
+   "ejKlassificering": [
+    "HUMAN_APPROVED_DESIGN_DECISION",
+    "VISUAL_CHOICE_REQUIRED",
+    "PRINCIPLE_DETERMINATE"
+   ],
+   "scopekontrakt": {
+    "typ": "BESLUTSENHET"
+   }
+  },
+  "strukturellObservation": {
+   "$vad": "De 25 observationerna ar inte strukturellt identiska med globceremoni.",
+   "utanEgenMaladYta": 23,
+   "medEgenMaladYta": 2,
+   "$not": "I 23 av 25 fall bar knappelementet ingen egen malad yta — texten ligger da pa en arvd yta. I 2 fall finns en egen yta (#e6ead9 -> #24382c). globceremoni tillhor den senare strukturen. Bada delpopulationerna ger samma morkvarde, sa uppskrivningen haller aven under en eventuell split.",
+   "delpopulationMedEgenYta": {
+    "antal": 2,
+    "morkvarde": "#c9d3c4",
+    "enigt": true
+   }
+  },
+  "provisoriskBevarad": {
+   "token": "--text-kontroll-a",
+   "ljus": "#24382c",
+   "mork": "#c9d3c4",
+   "status": "SUPERSEDED_BY_OBSERVED_MAPPING_REVALIDATION",
+   "$bevarad": "Pilottokenets historiska provenance raderas inte. Det var ett provisoriskt varde ur tokenmigrationen, aldrig ett designbeslut. Revalideringen visar att vardet sammanfaller med den observerade mappningen — det gor inte pilottokenet till evidens i efterhand.",
+   "kalla": "fas2/r04-pilottokens.json"
+  },
+  "villkorForTillampning": [
+   "Mappningen ar verifierad for TEXTEN. Den avgor inte BUTTON_SURFACE.",
+   "Tillampningen i globceremoni kraver att den slutliga knappytan ger #c9d3c4 minst 4.5:1 enligt WCAG 1.4.3.",
+   "Om ingen giltig knappyta kan samexistera med mappningen ska fallet klassas som antingen ogiltig ytkandidat eller en undergruppssplit — aldrig som en tyst andring av texten."
+  ],
+  "registertotaler": {
+   "beslut": 61,
+   "aktiva": 59,
+   "ersatta": 2,
+   "perTyp": {
+    "temavaxlande": 39,
+    "temainvariant": 7,
+    "UNKNOWN": 13
+   },
+   "perStatus": {
+    "ACTIVE": 58,
+    "VERIFIED_EXISTING_MAPPING": 1
+   },
+   "perOmfattning": {
+    "WHOLE_CANDIDATE": 9,
+    "SUBGROUP": 50
+   }
+  }
+ },
+ "D_buttonSurfaceAudit": {
+  "$rattelse": {
+   "vad": "Den forra auditen avvisade fyra av fem kandidater med en 3:1-troskel for ytan.",
+   "varfor": "Projektets eget kontrakt i tools/nontext-measure.mjs sager att en kontroll med egen synlig text identifieras av TEXTEN. Ytan ar da ingen componentIdentityCarrier och WCAG 1.4.11 galler den inte.",
+   "bevis": "Uppmatt i den forfattade morka produkten: 47 av 47 knappytor ligger under 3:1 mot appytan, ingen har ram, och projektets egen icke-textbaslinje har 0 fynd. En 3:1-regel hade gjort hela den befintliga produkten till ett fel.",
+   "foljd": "Trosklarna ligger nu i tools/surface-constraints.mjs och varje troskel bar en namngiven WCAG-kalla."
+  },
+  "formbarare": {
+   "uppmatta": {
+    "bakgrundsfyllning": true,
+    "ram": false,
+    "skugga": false,
+    "kontur": false,
+    "bakgrundsbild": false,
+    "understruken": false
+   },
+   "antal": 1,
+   "egenSynligText": true,
+   "slutsats": "texten identifierar komponenten — ytan ar ingen identitetsbarare"
+  },
+  "tillampadeKrav": [
+   "WCAG 1.4.3 · BUTTON_TEXT 4.5:1 mot ytan",
+   "exakt likhet med bakgrunden — forsvinnandesignal",
+   "genomskinlighet — compositingberoende"
+  ],
+  "ejTillampat": [
+   "generell ytkontrasttroskel",
+   "ljusa lagets ytkvot som minimum",
+   "godtyckligt minsta delta",
+   "WCAG 1.4.11 pa denna yta"
+  ],
+  "rader": [
+   {
+    "kandidat": "#17251d",
+    "appbakgrund": "#17251d",
+    "genomskinlig": false,
+    "beraknadYta": "rgb(23, 37, 29)",
+    "exaktLikaMedBakgrund": true,
+    "kvotYtaMotBakgrund": 1,
+    "kvotTextPaYta": 10.31,
+    "passerar": false,
+    "avvisningsklasser": [
+     "EXACT_CARRIER_COLLAPSE"
+    ]
+   },
+   {
+    "kandidat": "#17251d",
+    "appbakgrund": "#24382c",
+    "genomskinlig": false,
+    "beraknadYta": "rgb(23, 37, 29)",
+    "exaktLikaMedBakgrund": false,
+    "kvotYtaMotBakgrund": 1.27,
+    "kvotTextPaYta": 10.31,
+    "passerar": true,
+    "avvisningsklasser": []
+   },
+   {
+    "kandidat": "#17251d",
+    "appbakgrund": "#4a5c43",
+    "genomskinlig": false,
+    "beraknadYta": "rgb(23, 37, 29)",
+    "exaktLikaMedBakgrund": false,
+    "kvotYtaMotBakgrund": 2.2,
+    "kvotTextPaYta": 10.31,
+    "passerar": true,
+    "avvisningsklasser": []
+   },
+   {
+    "kandidat": "rgba(245,244,237,0.18)",
+    "appbakgrund": "#17251d",
+    "genomskinlig": true,
+    "beraknadYta": "rgb(63, 74, 66)",
+    "exaktLikaMedBakgrund": false,
+    "kvotYtaMotBakgrund": 1.72,
+    "kvotTextPaYta": 5.99,
+    "passerar": false,
+    "avvisningsklasser": [
+     "COMPOSITING_DEPENDENCY_FAIL"
+    ]
+   },
+   {
+    "kandidat": "rgba(245,244,237,0.18)",
+    "appbakgrund": "#24382c",
+    "genomskinlig": true,
+    "beraknadYta": "rgb(74, 90, 79)",
+    "exaktLikaMedBakgrund": false,
+    "kvotYtaMotBakgrund": 1.71,
+    "kvotTextPaYta": 4.74,
+    "passerar": false,
+    "avvisningsklasser": [
+     "COMPOSITING_DEPENDENCY_FAIL"
+    ]
+   },
+   {
+    "kandidat": "rgba(245,244,237,0.18)",
+    "appbakgrund": "#4a5c43",
+    "genomskinlig": true,
+    "beraknadYta": "rgb(105, 119, 98)",
+    "exaktLikaMedBakgrund": false,
+    "kvotYtaMotBakgrund": 1.52,
+    "kvotTextPaYta": 3.08,
+    "passerar": false,
+    "avvisningsklasser": [
+     "TEXT_CONSTRAINT_FAIL",
+     "COMPOSITING_DEPENDENCY_FAIL"
+    ]
+   },
+   {
+    "kandidat": "#24382c",
+    "appbakgrund": "#17251d",
+    "genomskinlig": false,
+    "beraknadYta": "rgb(36, 56, 44)",
+    "exaktLikaMedBakgrund": false,
+    "kvotYtaMotBakgrund": 1.27,
+    "kvotTextPaYta": 8.11,
+    "passerar": true,
+    "avvisningsklasser": []
+   },
+   {
+    "kandidat": "#24382c",
+    "appbakgrund": "#24382c",
+    "genomskinlig": false,
+    "beraknadYta": "rgb(36, 56, 44)",
+    "exaktLikaMedBakgrund": true,
+    "kvotYtaMotBakgrund": 1,
+    "kvotTextPaYta": 8.11,
+    "passerar": false,
+    "avvisningsklasser": [
+     "EXACT_CARRIER_COLLAPSE"
+    ]
+   },
+   {
+    "kandidat": "#24382c",
+    "appbakgrund": "#4a5c43",
+    "genomskinlig": false,
+    "beraknadYta": "rgb(36, 56, 44)",
+    "exaktLikaMedBakgrund": false,
+    "kvotYtaMotBakgrund": 1.73,
+    "kvotTextPaYta": 8.11,
+    "passerar": true,
+    "avvisningsklasser": []
+   },
+   {
+    "kandidat": "#ce7c1e",
+    "appbakgrund": "#17251d",
+    "genomskinlig": false,
+    "beraknadYta": "rgb(206, 124, 30)",
+    "exaktLikaMedBakgrund": false,
+    "kvotYtaMotBakgrund": 4.95,
+    "kvotTextPaYta": 2.08,
+    "passerar": false,
+    "avvisningsklasser": [
+     "TEXT_CONSTRAINT_FAIL"
+    ]
+   },
+   {
+    "kandidat": "#ce7c1e",
+    "appbakgrund": "#24382c",
+    "genomskinlig": false,
+    "beraknadYta": "rgb(206, 124, 30)",
+    "exaktLikaMedBakgrund": false,
+    "kvotYtaMotBakgrund": 3.89,
+    "kvotTextPaYta": 2.08,
+    "passerar": false,
+    "avvisningsklasser": [
+     "TEXT_CONSTRAINT_FAIL"
+    ]
+   },
+   {
+    "kandidat": "#ce7c1e",
+    "appbakgrund": "#4a5c43",
+    "genomskinlig": false,
+    "beraknadYta": "rgb(206, 124, 30)",
+    "exaktLikaMedBakgrund": false,
+    "kvotYtaMotBakgrund": 2.25,
+    "kvotTextPaYta": 2.08,
+    "passerar": false,
+    "avvisningsklasser": [
+     "TEXT_CONSTRAINT_FAIL"
+    ]
+   },
+   {
+    "kandidat": "#4a5c43",
+    "appbakgrund": "#17251d",
+    "genomskinlig": false,
+    "beraknadYta": "rgb(74, 92, 67)",
+    "exaktLikaMedBakgrund": false,
+    "kvotYtaMotBakgrund": 2.2,
+    "kvotTextPaYta": 4.68,
+    "passerar": true,
+    "avvisningsklasser": []
+   },
+   {
+    "kandidat": "#4a5c43",
+    "appbakgrund": "#24382c",
+    "genomskinlig": false,
+    "beraknadYta": "rgb(74, 92, 67)",
+    "exaktLikaMedBakgrund": false,
+    "kvotYtaMotBakgrund": 1.73,
+    "kvotTextPaYta": 4.68,
+    "passerar": true,
+    "avvisningsklasser": []
+   },
+   {
+    "kandidat": "#4a5c43",
+    "appbakgrund": "#4a5c43",
+    "genomskinlig": false,
+    "beraknadYta": "rgb(74, 92, 67)",
+    "exaktLikaMedBakgrund": true,
+    "kvotYtaMotBakgrund": 1,
+    "kvotTextPaYta": 4.68,
+    "passerar": false,
+    "avvisningsklasser": [
+     "EXACT_CARRIER_COLLAPSE"
+    ]
+   }
+  ],
+  "perKandidat": [
+   {
+    "kandidat": "#17251d",
+    "passerarMot": [
+     "#24382c",
+     "#4a5c43"
+    ],
+    "passerarAlla": false,
+    "avvisningsklasser": [
+     "EXACT_CARRIER_COLLAPSE"
+    ]
+   },
+   {
+    "kandidat": "rgba(245,244,237,0.18)",
+    "passerarMot": [],
+    "passerarAlla": false,
+    "avvisningsklasser": [
+     "COMPOSITING_DEPENDENCY_FAIL",
+     "TEXT_CONSTRAINT_FAIL"
+    ]
+   },
+   {
+    "kandidat": "#24382c",
+    "passerarMot": [
+     "#17251d",
+     "#4a5c43"
+    ],
+    "passerarAlla": false,
+    "avvisningsklasser": [
+     "EXACT_CARRIER_COLLAPSE"
+    ]
+   },
+   {
+    "kandidat": "#ce7c1e",
+    "passerarMot": [],
+    "passerarAlla": false,
+    "avvisningsklasser": [
+     "TEXT_CONSTRAINT_FAIL"
+    ]
+   },
+   {
+    "kandidat": "#4a5c43",
+    "passerarMot": [
+     "#17251d",
+     "#24382c"
+    ],
+    "passerarAlla": false,
+    "avvisningsklasser": [
+     "EXACT_CARRIER_COLLAPSE"
+    ]
+   }
+  ],
+  "observeradeKnappytorIMorkt": [
+   [
+    "#e6ead9 -> #24382c",
+    29
+   ],
+   [
+    "#24382c -> #17251d",
+    2
+   ],
+   [
+    "#24382c -> #24382c",
+    16
+   ]
+  ],
+  "slutsats": "Tre av fem kandidater ar giltiga — var och en mot tva av tre appbakgrunder. Ingen ar giltig mot alla tre, eftersom var och en sammanfaller exakt med en av dem. BUTTON_SURFACE ar darfor BACKGROUND_COUPLED, inte omojlig."
+ },
+ "E_ingenGenerellYttroskel": {
+  "verktyg": "tools/surface-constraints.mjs",
+  "prov": {
+   "fil": "tools/surface-constraints-fixtures.mjs",
+   "antal": 8,
+   "godkanda": 8,
+   "poster": [
+    {
+     "id": "SC-01",
+     "vad": "en textmarkt kontroll far inget 3:1-krav pa sin yta",
+     "ok": true,
+     "diag": "kontrollen har egen synlig text — texten identifierar komponenten och ytan ar ingen componentIdentityCarrier"
+    },
+    {
+     "id": "SC-02",
+     "vad": "en kontroll utan egen text far 3:1-krav pa sin yta",
+     "ok": true,
+     "diag": "ICKE_TEXT 3 · WCAG 1.4.11 · 3:1 for grafik som ar komponentens enda identifierande information"
+    },
+    {
+     "id": "SC-03",
+     "vad": "en valkontroll far ytkrav aven nar den har en etikett",
+     "ok": true,
+     "diag": "valkontrollens egen ruta identifierar den — etiketten sager bara vad valet galler"
+    },
+    {
+     "id": "SC-04",
+     "vad": "en behallaryta utan kontrollroll och utan text far inga numeriska krav",
+     "ok": true,
+     "diag": "inga krav — valet ar ett rent visuellt val, inte ett tekniskt"
+    },
+    {
+     "id": "SC-05",
+     "vad": "exakt likhet med bakgrunden flaggas som forsvinnande, oavsett ovriga krav",
+     "ok": true,
+     "diag": "texten pa ytan klarar 8.11 men ytan sjalv ar borta"
+    },
+    {
+     "id": "SC-06",
+     "vad": "textkravet 4.5:1 tillampas pa ytan som bar texten",
+     "ok": true,
+     "diag": "#24382c: text 8.11 passerar · #ce7c1e: text 2.08 faller"
+    },
+    {
+     "id": "SC-07",
+     "vad": "ljusa lagets numeriska ytkvot bevaras inte som minimum i morkt lage",
+     "ok": true,
+     "diag": "ljust 11.36 · morkt 1.27 · passerar anda, eftersom ingen kalla kraver den kvoten"
+    },
+    {
+     "id": "SC-08",
+     "vad": "kallan innehaller ingen generell yttroskel — varje troskel bars av en namngiven WCAG-kalla",
+     "ok": true,
+     "diag": "trosklar i koden: 3, 4.5 · numeriska jamforelser: inga direkta · bada knutna till WCAG 1.4.11 respektive 1.4.3"
+    }
+   ]
+  },
+  "SC_08": {
+   "id": "SC-08",
+   "vad": "kallan innehaller ingen generell yttroskel — varje troskel bars av en namngiven WCAG-kalla",
+   "ok": true,
+   "diag": "trosklar i koden: 3, 4.5 · numeriska jamforelser: inga direkta · bada knutna till WCAG 1.4.11 respektive 1.4.3"
+  },
+  "SC_07": {
+   "id": "SC-07",
+   "vad": "ljusa lagets numeriska ytkvot bevaras inte som minimum i morkt lage",
+   "ok": true,
+   "diag": "ljust 11.36 · morkt 1.27 · passerar anda, eftersom ingen kalla kraver den kvoten"
+  }
+ },
+ "F_samexistens": {
+  "fraga": "Kan nagon BUTTON_SURFACE-kandidat samexistera med den verifierade BUTTON_TEXT-mappningen?",
+  "svar": "Ja. For varje appbakgrundsfinalist finns minst tva giltiga ytkandidater.",
+  "perAppbakgrund": [
+   {
+    "appbakgrund": "#17251d",
+    "giltigaYtor": [
+     "#24382c",
+     "#4a5c43"
+    ]
+   },
+   {
+    "appbakgrund": "#24382c",
+    "giltigaYtor": [
+     "#17251d",
+     "#4a5c43"
+    ]
+   },
+   {
+    "appbakgrund": "#4a5c43",
+    "giltigaYtor": [
+     "#17251d",
+     "#24382c"
+    ]
+   }
+  ],
+  "slutsats": "Varken A (ogiltig ytkandidat) eller B (undergruppssplit) behovs. Ingen tvingad overskrivning av texten."
+ },
+ "G_containerSurface": {
+  "kalla": "globceremoni|7|background-color",
+  "roll": "yta-upphojd",
+  "ljusvarde": "#3f5145",
+  "tekniskaKrav": "inga — elementet har ingen kontrollroll och bar ingen text",
+  "foralder": "appytan (malet)",
+  "kandidater": [
+   "#17251d",
+   "rgba(245,244,237,0.18)",
+   "#24382c",
+   "#ce7c1e",
+   "#4a5c43"
+  ],
+  "perKandidat": [
+   {
+    "varde": "#17251d",
+    "passerarAlla": false,
+    "passerarNagon": true,
+    "rader": [
+     {
+      "bak": "#17251d",
+      "kvot": null,
+      "ok": false,
+      "klass": "EXACT_CARRIER_COLLAPSE"
+     },
+     {
+      "bak": "#24382c",
+      "kvot": null,
+      "ok": true,
+      "klass": null
+     },
+     {
+      "bak": "#4a5c43",
+      "kvot": null,
+      "ok": true,
+      "klass": null
+     }
+    ]
+   },
+   {
+    "varde": "rgba(245,244,237,0.18)",
+    "passerarAlla": false,
+    "passerarNagon": false,
+    "rader": [
+     {
+      "bak": "#17251d",
+      "kvot": null,
+      "ok": false,
+      "klass": "COMPOSITING_DEPENDENCY_FAIL"
+     },
+     {
+      "bak": "#24382c",
+      "kvot": null,
+      "ok": false,
+      "klass": "COMPOSITING_DEPENDENCY_FAIL"
+     },
+     {
+      "bak": "#4a5c43",
+      "kvot": null,
+      "ok": false,
+      "klass": "COMPOSITING_DEPENDENCY_FAIL"
+     }
+    ]
+   },
+   {
+    "varde": "#24382c",
+    "passerarAlla": false,
+    "passerarNagon": true,
+    "rader": [
+     {
+      "bak": "#17251d",
+      "kvot": null,
+      "ok": true,
+      "klass": null
+     },
+     {
+      "bak": "#24382c",
+      "kvot": null,
+      "ok": false,
+      "klass": "EXACT_CARRIER_COLLAPSE"
+     },
+     {
+      "bak": "#4a5c43",
+      "kvot": null,
+      "ok": true,
+      "klass": null
+     }
+    ]
+   },
+   {
+    "varde": "#ce7c1e",
+    "passerarAlla": true,
+    "passerarNagon": true,
+    "rader": [
+     {
+      "bak": "#17251d",
+      "kvot": null,
+      "ok": true,
+      "klass": null
+     },
+     {
+      "bak": "#24382c",
+      "kvot": null,
+      "ok": true,
+      "klass": null
+     },
+     {
+      "bak": "#4a5c43",
+      "kvot": null,
+      "ok": true,
+      "klass": null
+     }
+    ]
+   },
+   {
+    "varde": "#4a5c43",
+    "passerarAlla": false,
+    "passerarNagon": true,
+    "rader": [
+     {
+      "bak": "#17251d",
+      "kvot": null,
+      "ok": true,
+      "klass": null
+     },
+     {
+      "bak": "#24382c",
+      "kvot": null,
+      "ok": true,
+      "klass": null
+     },
+     {
+      "bak": "#4a5c43",
+      "kvot": null,
+      "ok": false,
+      "klass": "EXACT_CARRIER_COLLAPSE"
+     }
+    ]
+   }
+  ],
+  "giltigaMotAllaTre": [
+   "#ce7c1e"
+  ],
+  "klassificering": "BACKGROUND_COUPLED",
+  "$skal": "De tre neutrala kandidaterna utesluts var och en av exakt en appbakgrund genom exakt likhet. Enda vardet som mekaniskt overlever alla tre ar #ce7c1e, en semantisk accent — och att valja den enbart darfor att den overlever filtret vore att lata mekaniken fatta designbeslutet. Vardet kan alltsa inte valjas av princip ensam.",
+  "valtVarde": null
+ },
+ "H_containerMarker": {
+  "kalla": "globceremoni|8|background-color",
+  "status": "LOCKED_DEPENDENCY",
+  "lasesUppAv": "globceremoni|7|background-color",
+  "$regel": "Efter att CONTAINER_SURFACE ar bestamd raknas markorens behorighet om mot den FAKTISKA slutliga foraldern. Startskarmens markorbeslut overfors inte pa rafarg eller roll."
+ },
+ "I_textkontroller": {
+  "enheter": [
+   {
+    "etikett": "HEADING",
+    "kalla": "globceremoni|3|color",
+    "ljusvarde": "#f5f4ed",
+    "kandidater": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ]
+   },
+   {
+    "etikett": "SUBTITLE",
+    "kalla": "globceremoni|4|color",
+    "ljusvarde": "#c9d3c4",
+    "kandidater": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ]
+   },
+   {
+    "etikett": "BODY_TEXT",
+    "kalla": "globceremoni|5|color",
+    "ljusvarde": "#f5f4ed",
+    "kandidater": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ]
+   },
+   {
+    "etikett": "HELP_TEXT",
+    "kalla": "globceremoni|9|color",
+    "ljusvarde": "#c9d3c4",
+    "kandidater": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ]
+   }
+  ],
+  "$regel": "Temporara kontroller: noll beslutskredit, noll coveragekredit. De registreras inte."
+ },
+ "J_omraknadKostnad": {
+  "kategorier": {
+   "REAL_DECISION_REQUIRED": 3,
+   "VERIFIED": 5,
+   "TEMPORARY_PREVIEW_CONTROL": 4,
+   "LOCKED_DEPENDENCY": 1
+  },
+  "summerar": true,
+  "UNKNOWN": 0,
+  "rader": [
+   {
+    "etikett": "APP_BACKGROUND",
+    "kalla": "globceremoni|0|background-color",
+    "roll": "yta-app",
+    "ljusvarde": "#24382c",
+    "kategori": "REAL_DECISION_REQUIRED",
+    "foralder": "appytan (malet)",
+    "koppling": "MALET",
+    "temporaraKontrollkandidater": []
+   },
+   {
+    "kalla": "globceremoni|0|border-top-color",
+    "roll": "ram-app",
+    "ljusvarde": "#ccd1c2",
+    "kategori": "VERIFIED",
+    "foralder": "appytan (malet)",
+    "koppling": null,
+    "temporaraKontrollkandidater": []
+   },
+   {
+    "kalla": "globceremoni|0|border-right-color",
+    "roll": "ram-app",
+    "ljusvarde": "#ccd1c2",
+    "kategori": "VERIFIED",
+    "foralder": "appytan (malet)",
+    "koppling": null,
+    "temporaraKontrollkandidater": []
+   },
+   {
+    "kalla": "globceremoni|0|border-bottom-color",
+    "roll": "ram-app",
+    "ljusvarde": "#ccd1c2",
+    "kategori": "VERIFIED",
+    "foralder": "appytan (malet)",
+    "koppling": null,
+    "temporaraKontrollkandidater": []
+   },
+   {
+    "kalla": "globceremoni|0|border-left-color",
+    "roll": "ram-app",
+    "ljusvarde": "#ccd1c2",
+    "kategori": "VERIFIED",
+    "foralder": "appytan (malet)",
+    "koppling": null,
+    "temporaraKontrollkandidater": []
+   },
+   {
+    "etikett": "HEADING",
+    "kalla": "globceremoni|3|color",
+    "roll": "text-innehall",
+    "ljusvarde": "#f5f4ed",
+    "kategori": "TEMPORARY_PREVIEW_CONTROL",
+    "foralder": "appytan (malet)",
+    "koppling": "INDEPENDENT_CONTROL_AVAILABLE",
+    "temporaraKontrollkandidater": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ]
+   },
+   {
+    "etikett": "SUBTITLE",
+    "kalla": "globceremoni|4|color",
+    "roll": "text-innehall",
+    "ljusvarde": "#c9d3c4",
+    "kategori": "TEMPORARY_PREVIEW_CONTROL",
+    "foralder": "appytan (malet)",
+    "koppling": "INDEPENDENT_CONTROL_AVAILABLE",
+    "temporaraKontrollkandidater": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ]
+   },
+   {
+    "etikett": "BODY_TEXT",
+    "kalla": "globceremoni|5|color",
+    "roll": "text-innehall",
+    "ljusvarde": "#f5f4ed",
+    "kategori": "TEMPORARY_PREVIEW_CONTROL",
+    "foralder": "appytan (malet)",
+    "koppling": "INDEPENDENT_CONTROL_AVAILABLE",
+    "temporaraKontrollkandidater": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ]
+   },
+   {
+    "etikett": "BUTTON_SURFACE",
+    "kalla": "globceremoni|6|background-color",
+    "roll": "yta-kontroll",
+    "ljusvarde": "#f5f4ed",
+    "kategori": "REAL_DECISION_REQUIRED",
+    "foralder": "appytan (malet)",
+    "koppling": "BACKGROUND_COUPLED",
+    "temporaraKontrollkandidater": []
+   },
+   {
+    "etikett": "BUTTON_TEXT",
+    "kalla": "globceremoni|6|color",
+    "roll": "text-kontroll",
+    "ljusvarde": "#24382c",
+    "kategori": "VERIFIED",
+    "foralder": "egen malad yta",
+    "koppling": null,
+    "temporaraKontrollkandidater": []
+   },
+   {
+    "etikett": "CONTAINER_SURFACE",
+    "kalla": "globceremoni|7|background-color",
+    "roll": "yta-upphojd",
+    "ljusvarde": "#3f5145",
+    "kategori": "REAL_DECISION_REQUIRED",
+    "foralder": "appytan (malet)",
+    "koppling": "INDEPENDENT_CONTROL_AVAILABLE",
+    "temporaraKontrollkandidater": []
+   },
+   {
+    "etikett": "CONTAINER_MARKER",
+    "kalla": "globceremoni|8|background-color",
+    "roll": "yta-upphojd",
+    "ljusvarde": "#ce7c1e",
+    "kategori": "LOCKED_DEPENDENCY",
+    "foralder": "ordinal 7",
+    "koppling": "BLOCKED_BY_UNKNOWN",
+    "temporaraKontrollkandidater": []
+   },
+   {
+    "etikett": "HELP_TEXT",
+    "kalla": "globceremoni|9|color",
+    "roll": "text-innehall",
+    "ljusvarde": "#c9d3c4",
+    "kategori": "TEMPORARY_PREVIEW_CONTROL",
+    "foralder": "appytan (malet)",
+    "koppling": "INDEPENDENT_CONTROL_AVAILABLE",
+    "temporaraKontrollkandidater": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ]
+   }
+  ],
+  "verkligaBeslut": [
+   "APP_BACKGROUND",
+   "BUTTON_SURFACE",
+   "CONTAINER_SURFACE"
+  ],
+  "$not": "Antalet ar fortfarande tre, men det faller ut ur den korrigerade modellen — det ar inte bevarat fran forra korningen. CONTAINER_MARKER har ersatts av BUTTON_SURFACE i listan."
+ },
+ "K_previewstopgate": {
+  "passerar": false,
+  "krav": [
+   {
+    "krav": "foralderupplosning regressionstackt",
+    "ok": true,
+    "$not": "PP-01 … PP-07 grona"
+   },
+   {
+    "krav": "BUTTON_SURFACE-uteslutningar fullt forklarade",
+    "ok": true,
+    "$not": "15 rader, varje avvisning med klass"
+   },
+   {
+    "krav": "ingen dold numerisk yttroskel",
+    "ok": true,
+    "$not": "SC-08 laser kallan"
+   },
+   {
+    "krav": "button-text-status avstamd",
+    "ok": true,
+    "$not": "VERIFIED_EXISTING_MAPPING, scope = beslutsenheten"
+   },
+   {
+    "krav": "semantiskt okanda = 0",
+    "ok": true
+   },
+   {
+    "krav": "okand agare = 0",
+    "ok": true
+   },
+   {
+    "krav": "provisoriska = 0",
+    "ok": true,
+    "$not": "den enda ar uppskriven till verifierad"
+   },
+   {
+    "krav": "alla icke-mal ar DECIDED / VERIFIED / giltig temporar kontroll",
+    "ok": false,
+    "$not": "3 verkliga beslut och 1 last beroende kvar"
+   }
+  ],
+  "slutsats": "Ingen bild. Tre beslut kvar."
+ },
+ "ejGjort": [
+  "ingen preview",
+  "ingen produktwrite",
+  "inget fargval",
+  "ingen temporar kontroll registrerad",
+  "ingen coverage credit",
+  "ingen generell yttroskel kodad"
+ ]
+}

@@ -185,3 +185,51 @@ export function kantmangd(population, index, enhetAv) {
       else if (!till) { if (!yttre.has(id)) yttre.set(id, new Set()); yttre.get(id).add(fran); } } }
   return { kanter: [...kanter],
     yttre: [...yttre.entries()].map(([id, s]) => ({ element: id, blockerar: [...s] })) }; }
+
+/* ── MALAD FORALDER FOR EN FORGRUND ──────────────────────────────────
+ *
+ * NORMATIV REGEL, godkand 2026-08-13:
+ *   Om ett forgrundselement SJALVT malar en tackande bakgrund som visuellt
+ *   omsluter forgrunden, loses forgrundsrelationen mot DEN bakgrunden innan
+ *   kedjan vandras uppat.
+ *
+ * Felet regeln stanger: knappens text mottes mot appytan i stallet for mot
+ * knappytan, darfor att upplosningen hoppade direkt till underliggandeYta.
+ *
+ * Fail closed. En genomskinlig egen bakgrund far INTE maskera den verkliga
+ * malade foraldern, och flera samtidiga barare loses aldrig pa DOM-narhet.
+ */
+export const FORALDERKLASS = Object.freeze({
+  EGEN_MALAD_BAKGRUND: 'EGEN_MALAD_BAKGRUND',
+  NARMASTE_MALADE_FORFADER: 'NARMASTE_MALADE_FORFADER',
+  FLERA_BARARE: 'FLERA_BARARE',
+  INGEN: 'INGEN' });
+
+export function maladForalder(post, index) {
+  if (!arForgrund(post.egenskap))
+    return { ok: false, klass: FORALDERKLASS.INGEN,
+      skal: 'maladForalder galler forgrundskanaler — anvand foralderkedja for ytor' };
+  const eget = egetLager(post, index);
+  const { lager, botten } = foralderkedja(post, index);
+
+  if (eget && eget.alpha === 1)
+    return { ok: true, klass: FORALDERKLASS.EGEN_MALAD_BAKGRUND,
+      foralder: { art: eget.art, ordinal: eget.ordinal, varde: eget.varde },
+      barare: [elementid({ art: eget.art, elementOrdinal: eget.ordinal })],
+      $regel: 'elementet malar sin egen tackande bakgrund — relationen loses dar, inte hos forfadern' };
+
+  if (eget && eget.alpha < 1) {
+    const kedja = [{ art: eget.art, ordinal: eget.ordinal, varde: eget.varde }, ...lager];
+    return { ok: false, klass: FORALDERKLASS.FLERA_BARARE,
+      barare: kedja.map(l => l.art + '|' + l.ordinal), kedja,
+      skal: 'elementets egen bakgrund slapper igenom — flera malade barare bidrar och relationen far inte ' +
+        'valjas pa DOM-narhet. Faller stangt.' }; }
+
+  const n = lager[0];
+  if (!n) return { ok: false, klass: FORALDERKLASS.INGEN, botten,
+    skal: 'ingen malad forfader hittad — ' + botten };
+  return { ok: true, klass: FORALDERKLASS.NARMASTE_MALADE_FORFADER,
+    foralder: { art: n.art, ordinal: n.ordinal, varde: n.varde },
+    barare: [n.art + '|' + n.ordinal], arAppytan: !!n.arAppytan,
+    $regel: 'elementet malar ingen egen tackande bakgrund — narmaste faktiskt malade forfader galler' };
+}
