@@ -6,10 +6,10 @@
  "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
  "$tokenidentitet": "Tokennamnet lases i registret vid forsta tilldelningen och andras aldrig. Tva beslut delar aldrig namn, aven nar morkvardet sammanfaller. Ett ersatt beslut behaller inget namn.",
  "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
- "antal": 47,
+ "antal": 48,
  "perTyp": {
   "temavaxlande": 30,
-  "temainvariant": 6,
+  "temainvariant": 7,
   "undefined": 9
  },
  "beslut": [
@@ -3788,15 +3788,101 @@
    "aktiv": true,
    "tokenNamn": "--ikon-fristaende-d1",
    "revision": 1
+  },
+  {
+   "kandidatId": "CAND-yta-upphojd-rgba(245,244,237,0.18)",
+   "roll": "yta-upphojd",
+   "semantiskRoll": "PROGRESS_TRACK",
+   "ljusvarde": "rgba(245,244,237,0.18)",
+   "morkvarde": "rgba(245,244,237,0.18)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temainvariant",
+   "klassificering": "PRINCIPLE_DETERMINATE",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "direkt-pa-appytan",
+    "utan-text",
+    "utan-ikon",
+    "genomskinlig"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "de tre solida kandidaterna #17251d, #24382c och #4a5c43 blir var och en exakt lika med en av appbakgrundens finalister",
+    "vid exakt likhet forsvinner sparet visuellt och bara PROGRESS_VALUE aterstar",
+    "det bryter den godkanda progressprincipen: sparet ska gora hela strackan uppfattbar medan vardet bar den aktuella informationen",
+    "det genomskinliga vardet kollapsar aldrig — 1.72 / 1.71 / 1.52 mot de tre bakgrunderna",
+    "ingen generell kontrasttroskel infors; 1.00 anvands enbart som exakt likhetssignal"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Beslutet ar auktoritet. Determinansen foljer av principen, inte av observation."
+   },
+   "beslutsunderlag": {
+    "typ": "FOKUSERAD_KOMPONENTJAMFORELSE",
+    "scen": "start",
+    "artefakt": "fas2/r04-faseAB.json",
+    "matris": "4 sparkandidater × 3 appbakgrunder",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "sparet mot appbakgrunden",
+     "troskel": null,
+     "kallaTilKrav": "progressprincipen — sparet far inte vara identiskt med bakgrunden",
+     "uppmatt_mork": {
+      "motBakgrunderna": [
+       1.72,
+       1.71,
+       1.52
+      ]
+     }
+    },
+    {
+     "vad": "fyllningen mot sparet",
+     "troskel": null,
+     "uppmatt_mork": {
+      "motSparet": [
+       1.63,
+       1.54,
+       1.38
+      ]
+     }
+    }
+   ],
+   "atskildFran": {
+    "enhet": "PROGRESS_VALUE",
+    "sammaVarde": true,
+    "$regel": "Samma varde ar inte samma token och inte samma beslut. Skilda semantiska roller, skilda stabila identiteter, skild proveniens, skild framtida andringsbarhet. Ingen merge."
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-yta-upphojd-rgba(245,244,237,0.18) ‖ PROGRESS_TRACK ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-upphojd-d17",
+   "revision": 1
   }
  ],
  "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
  "perOmfattning": {
   "WHOLE_CANDIDATE": 9,
-  "SUBGROUP": 36
+  "SUBGROUP": 37
  },
  "$status": "Ett beslut har status ACTIVE eller SUPERSEDED. Ett ersatt beslut raderas aldrig — det star kvar med reason och vilket beslut som ersatte det. Bara ACTIVE-beslut far anvandas vid migrering.",
- "aktiva": 45,
+ "aktiva": 46,
  "ersatta": 2,
  "$identitet": "beslutsId ar scopet (kandidat och eventuell undergrupp). Lagringsidentiteten ar scope + revision. Tokennamnet tilldelas en gang och ar persistent; varken supersede, insattning eller omsortering far andra ett befintligt namn.",
  "perTyp2": {
