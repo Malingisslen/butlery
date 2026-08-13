@@ -6,9 +6,9 @@
  "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
  "$tokenidentitet": "Tokennamnet lases i registret vid forsta tilldelningen och andras aldrig. Tva beslut delar aldrig namn, aven nar morkvardet sammanfaller. Ett ersatt beslut behaller inget namn.",
  "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
- "antal": 48,
+ "antal": 56,
  "perTyp": {
-  "temavaxlande": 30,
+  "temavaxlande": 38,
   "temainvariant": 7,
   "UNKNOWN": 9
  },
@@ -3964,15 +3964,595 @@
    "aktiv": true,
    "tokenNamn": "--yta-upphojd-d17",
    "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#f5f4ed",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_CONTOUR",
+   "illustrationsdel": "banklinje",
+   "funktion": "KONTUR",
+   "ljusvarde": "#f5f4ed",
+   "morkvarde": "#c9d3c4",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "kontur",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:kontur · banklinje · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|3|stroke",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#f5f4ed ‖ ILLUSTRATION_CONTOUR ‖ banklinje",
+   "semantiskUndergrupp": "illustration:kontur · banklinje · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d2",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#93a48d",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_STEAM",
+   "illustrationsdel": "anga vanster",
+   "funktion": "ANGA",
+   "ljusvarde": "#93a48d",
+   "morkvarde": "#8fb89a",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "anga",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:anga · anga-vanster · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|5|stroke",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#93a48d ‖ ILLUSTRATION_STEAM ‖ anga vanster",
+   "semantiskUndergrupp": "illustration:anga · anga-vanster · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d3",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#93a48d",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_STEAM",
+   "illustrationsdel": "anga hoger",
+   "funktion": "ANGA",
+   "ljusvarde": "#93a48d",
+   "morkvarde": "#8fb89a",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "anga",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:anga · anga-hoger · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|6|stroke",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#93a48d ‖ ILLUSTRATION_STEAM ‖ anga hoger",
+   "semantiskUndergrupp": "illustration:anga · anga-hoger · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d4",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#ce7c1e",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_FOOD_WARM",
+   "illustrationsdel": "matratt fram",
+   "funktion": "MAT_FRAM",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "#de9078",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "mat_fram",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:mat_fram · matratt-fram · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": {
+    "hexvarde": "#de9078",
+    "$regel": "Varmt palettvarde numeriskt ateranvant for dekorativ illustration. Det ateranvander INTE tokenidentiteten for action, warning eller status. Egen semantisk identitet: ILLUSTRATION_FOOD_WARM.",
+    "proveniens": "DECORATIVE / REPRESENTATIONAL ILLUSTRATION"
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|8|fill",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#ce7c1e ‖ ILLUSTRATION_FOOD_WARM ‖ matratt fram",
+   "semantiskUndergrupp": "illustration:mat_fram · matratt-fram · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d5",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#a15a0a",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_FOOD_DEPTH",
+   "illustrationsdel": "matratt bak",
+   "funktion": "MAT_BAK",
+   "ljusvarde": "#a15a0a",
+   "morkvarde": "rgba(245,244,237,0.18)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "mat_bak",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:mat_bak · matratt-bak · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|9|fill",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#a15a0a ‖ ILLUSTRATION_FOOD_DEPTH ‖ matratt bak",
+   "semantiskUndergrupp": "illustration:mat_bak · matratt-bak · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d6",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#f5f4ed",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_CONTOUR",
+   "illustrationsdel": "kupa",
+   "funktion": "KONTUR",
+   "ljusvarde": "#f5f4ed",
+   "morkvarde": "#c9d3c4",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "kontur",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:kontur · kupa · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|11|stroke",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#f5f4ed ‖ ILLUSTRATION_CONTOUR ‖ kupa",
+   "semantiskUndergrupp": "illustration:kontur · kupa · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d7",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#ce7c1e",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_LID_KNOB",
+   "illustrationsdel": "knoppstav",
+   "funktion": "KNOPP",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "#de9078",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "knopp",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:knopp · knoppstav · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": {
+    "hexvarde": "#de9078",
+    "$regel": "Varmt palettvarde numeriskt ateranvant for dekorativ illustration. Det ateranvander INTE tokenidentiteten for action, warning eller status. Egen semantisk identitet: ILLUSTRATION_LID_KNOB.",
+    "proveniens": "DECORATIVE / REPRESENTATIONAL ILLUSTRATION"
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|12|stroke",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#ce7c1e ‖ ILLUSTRATION_LID_KNOB ‖ knoppstav",
+   "semantiskUndergrupp": "illustration:knopp · knoppstav · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d8",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#ce7c1e",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_LID_KNOB",
+   "illustrationsdel": "knopp",
+   "funktion": "KNOPP",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "#de9078",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "knopp",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:knopp · knopp · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": {
+    "hexvarde": "#de9078",
+    "$regel": "Varmt palettvarde numeriskt ateranvant for dekorativ illustration. Det ateranvander INTE tokenidentiteten for action, warning eller status. Egen semantisk identitet: ILLUSTRATION_LID_KNOB.",
+    "proveniens": "DECORATIVE / REPRESENTATIONAL ILLUSTRATION"
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|13|fill",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#ce7c1e ‖ ILLUSTRATION_LID_KNOB ‖ knopp",
+   "semantiskUndergrupp": "illustration:knopp · knopp · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d9",
+   "revision": 1
   }
  ],
  "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
  "perOmfattning": {
   "WHOLE_CANDIDATE": 9,
-  "SUBGROUP": 37
+  "SUBGROUP": 45
  },
  "$status": "Ett beslut har status ACTIVE eller SUPERSEDED. Ett ersatt beslut raderas aldrig — det star kvar med reason och vilket beslut som ersatte det. Bara ACTIVE-beslut far anvandas vid migrering.",
- "aktiva": 46,
+ "aktiva": 54,
  "ersatta": 2,
  "$identitet": "beslutsId ar scopet (kandidat och eventuell undergrupp). Lagringsidentiteten ar scope + revision. Tokennamnet tilldelas en gang och ar persistent; varken supersede, insattning eller omsortering far andra ett befintligt namn.",
  "perTyp2": {
