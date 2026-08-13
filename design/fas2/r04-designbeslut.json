@@ -6,11 +6,11 @@
  "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
  "$tokenidentitet": "Tokennamnet lases i registret vid forsta tilldelningen och andras aldrig. Tva beslut delar aldrig namn, aven nar morkvardet sammanfaller. Ett ersatt beslut behaller inget namn.",
  "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
- "antal": 57,
+ "antal": 60,
  "perTyp": {
   "temavaxlande": 38,
   "temainvariant": 7,
-  "UNKNOWN": 10
+  "UNKNOWN": 13
  },
  "beslut": [
   {
@@ -4630,15 +4630,248 @@
    "aktiv": true,
    "tokenNamn": "--yta-app-d1",
    "revision": 1
+  },
+  {
+   "kandidatId": "CAND-yta-upphojd-#ce7c1e",
+   "roll": "yta-upphojd",
+   "semantiskRoll": "PROGRESS_VALUE",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "rgba(245,244,237,0.18)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "PRINCIPLE_DETERMINATE",
+    "OBSERVED_MAPPING",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "INGEN_POSITIV_DEFINITION",
+    "skal": "Faltet har noll kodkonsumenter och ingen normativ definition. Ingen typ harleds."
+   },
+   "princip": null,
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "nastlad-yta",
+    "utan-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "#24382c avvisad: sammanfaller visuellt med den godkanda appbakgrunden utanfor sparet, och forloppsinformationen forsvagas",
+    "#17251d avvisad: skapar en tung mork segmentmarkering och laser mer som en separat mork yta an som fyllning",
+    "genomskinlig 18 procent ar tydligt avlasbar mot sparet, bevarar relationen dar sparet ar struktur och vardet bar forloppet, och fungerar konsekvent i bade COVERED och REVEALED"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Visuellt val. Ingen observerad mappning och ingen principdeterminans."
+   },
+   "beslutsunderlag": {
+    "typ": "SEKVENTIELL_TVATILLSTANDSPREVIEW",
+    "commit": "2c7b69a",
+    "scen": "start",
+    "bilderIPaketet": 22,
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tresistafarger.json",
+    "kollateralaAndringar": 0,
+    "endastEnVariabelPerOmgang": true
+   },
+   "atskildFran": {
+    "enhet": "PROGRESS_TRACK",
+    "sammaVarde": true,
+    "$regel": "Tva beslut, tva identiteter, tva tokens — aven nar det numeriska vardet ar detsamma. Samma varde ar inte samma beslut."
+   },
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|19|background-color",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-upphojd-d18",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-innehall-#dca968",
+   "roll": "text-innehall",
+   "semantiskRoll": "BRAND_SUPPORTING_TEXT",
+   "ljusvarde": "#dca968",
+   "morkvarde": "#dca968",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "PRINCIPLE_DETERMINATE",
+    "OBSERVED_MAPPING",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "INGEN_POSITIV_DEFINITION",
+    "skal": "Faltet har noll kodkonsumenter och ingen normativ definition. Ingen typ harleds."
+   },
+   "princip": "P-TEXT-BRAND",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "bevarar den befintliga guldtonen",
+    "haller varumarkesraden semantiskt och visuellt skild fran vanlig innehalls- och statustext",
+    "fungerar med den godkanda varmt dampade illustrationsbunten",
+    "underordnas ordbilden men behaller egen identitet",
+    "#de9078 avvisad: ligger for nara illustrationens varma orange och forstarker accentkopplingen mer an brandhierarkin kraver",
+    "de neutrala #93a48d, #8fb89a och #c9d3c4 avvisade: de gor i varierande grad varumarkesraden till vanlig sekundartext"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Visuellt val. Ingen observerad mappning och ingen principdeterminans."
+   },
+   "beslutsunderlag": {
+    "typ": "SEKVENTIELL_TVATILLSTANDSPREVIEW",
+    "commit": "2c7b69a",
+    "scen": "start",
+    "bilderIPaketet": 22,
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tresistafarger.json",
+    "kollateralaAndringar": 0,
+    "endastEnVariabelPerOmgang": true
+   },
+   "atskildFran": null,
+   "varmAccentAnvandning": {
+    "$regel": "Om #dca968 numeriskt ocksa anvands av en semantisk accent nagon annanstans behaller BRAND_SUPPORTING_TEXT sin egen semantiska tokenidentitet. Samma hex ar inte samma token."
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|16|color",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-text-innehall-#dca968 ‖ BRAND_SUPPORTING_TEXT ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-innehall-d10",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-innehall-#c9d3c4",
+   "roll": "text-innehall",
+   "semantiskRoll": "STATUS_LINE",
+   "ljusvarde": "#c9d3c4",
+   "morkvarde": "#93a48d",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "PRINCIPLE_DETERMINATE",
+    "OBSERVED_MAPPING",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "INGEN_POSITIV_DEFINITION",
+    "skal": "Faltet har noll kodkonsumenter och ingen normativ definition. Ingen typ harleds."
+   },
+   "princip": "P-TEXT-CONTENT",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "lasbar i den slutliga kontexten",
+    "tydligt underordnad ordbilden, varumarkesraden och illustrationen",
+    "fungerar som lagt hierarkiserad statustext",
+    "#8fb89a avvisad: starkare an statusfunktionen behover och borjar konkurrera med huvudkompositionen",
+    "#c9d3c4 avvisad: for hog visuell prominens, narmar sig primar hierarki och skulle minska skillnaden mot ovriga ljusa textnivaer"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Visuellt val. Ingen observerad mappning och ingen principdeterminans."
+   },
+   "beslutsunderlag": {
+    "typ": "SEKVENTIELL_TVATILLSTANDSPREVIEW",
+    "commit": "2c7b69a",
+    "scen": "start",
+    "bilderIPaketet": 22,
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tresistafarger.json",
+    "kollateralaAndringar": 0,
+    "endastEnVariabelPerOmgang": true
+   },
+   "atskildFran": null,
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|20|color",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-text-innehall-#c9d3c4 ‖ STATUS_LINE ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-innehall-d11",
+   "revision": 1
   }
  ],
  "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
  "perOmfattning": {
   "WHOLE_CANDIDATE": 9,
-  "SUBGROUP": 46
+  "SUBGROUP": 49
  },
  "$status": "Ett beslut har status ACTIVE eller SUPERSEDED. Ett ersatt beslut raderas aldrig — det star kvar med reason och vilket beslut som ersatte det. Bara ACTIVE-beslut far anvandas vid migrering.",
- "aktiva": 55,
+ "aktiva": 58,
  "ersatta": 2,
  "$identitet": "beslutsId ar scopet (kandidat och eventuell undergrupp). Lagringsidentiteten ar scope + revision. Tokennamnet tilldelas en gang och ar persistent; varken supersede, insattning eller omsortering far andra ett befintligt namn.",
  "perTyp2": {
