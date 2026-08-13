@@ -187,9 +187,13 @@ export const purgeExpiredAuditLogs = onSchedule(
     const results: PurgeCategoryResult[] = [];
 
     try {
-      // Order matters: do general (6mo cutoff) FIRST. Its query window
-      // is wider but its filter excludes consent events, so consent docs
-      // older than 6mo are left for the consent-category run below.
+      // Order is irrelevant: the two categories are disjoint, `in` against
+      // `not-in` over the same list, so neither can reach the other's rows.
+      // Sequential rather than `Promise.all` so a failing first leg cannot
+      // leave the second one deleting regulated rows that no run record will
+      // ever account for. It does NOT preserve counts: the catch below
+      // rethrows before the `system_events` write, so a failure in EITHER leg
+      // reports nothing at all, including for the leg that succeeded.
       const generalDeleted = await purgeAuditCategoryWithDb(
         db,
         "general",

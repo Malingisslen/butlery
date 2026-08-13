@@ -9524,6 +9524,16 @@ corrupts data or widens retention. Suggested replacement: "Order is irrelevant �
 categories are disjoint. Sequential, not `Promise.all`, so one leg's failure doesn't
 obscure the other's count."
 
+**SUPERSEDED the same day — the suggested replacement was itself false.** The parent
+applied it verbatim; the next round disproved it by reading where the results are WRITTEN
+rather than where they are pushed. `results` is a discarded local: the `catch` rethrows
+before the `system_events` row and the per-category log loop, so a failure in EITHER leg
+emits no counts at all, including the leg that succeeded. Sequential does buy something,
+just not that — a failing FIRST leg cannot leave the second one deleting regulated rows
+that no run record will ever account for. Lesson for this agent: a reviewer's proposed
+comment is an untested assertion about control flow with the same standing as the one it
+replaces, and the falsifying shape here is rethrow-before-observability-write.
+
 **Previously raised, still undocumented (unchanged from round 2, not re-filed):** `not-in`
 never matches a doc whose `operation` field is missing, so such a row is purged by neither
 bucket while the header promises "all other events → 6 months". Latent only — every writer
