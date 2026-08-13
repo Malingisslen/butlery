@@ -3909,8 +3909,6 @@ class FakeNotificationPreferences {
       },
       allowBatching: true,
       digestFrequency: 'never',
-      soundEnabled: enabled,
-      vibrationEnabled: enabled,
       lastUpdated: DateTime.now(),
     );
   }

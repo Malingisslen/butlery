@@ -1106,3 +1106,36 @@ What generalises:
    declaration's last use, so `tsc` refused and the run produced no FAIL lines at all —
    which reads exactly like a green suite if you only count reds. Assert the suite RAN
    (grep its summary line), and keep every symbol used when mutating.
+
+---
+
+## An ARB edit rewrites the WHOLE file, which a parallel session makes uncommittable (BUT-1783, 2026-08-13)
+
+Removing two strings from `lib/l10n/app_sv.arb` and `app_en.arb` produced a **918-line
+diff** in each: a PostToolUse hook re-serialises the ARB with a JSON pretty-printer, so
+every inline `"count": { "type": "int" }` in the file expands to three lines. The two
+deletions I intended were four lines of it.
+
+That is only noise until a second session is editing the same files — and one was. A
+key-set comparison against `git show HEAD:<file>` (parse both as JSON, diff the key sets,
+diff the values) showed my two removals **plus eight `chatGroup*` keys that were not
+mine**. `git diff` could not show me that: the reformat buried the real content change,
+and `--ignore-all-space` still printed hundreds of lines because the change is structural,
+not whitespace-only.
+
+So the ARB and its `gen-l10n` output stayed OUT of the commit. The Dart no longer
+references either getter, so nothing dangles; the string removal rides along with the
+other session's commit. Leaving an orphan ARB key behind is safe here — checked, there is
+no unused-key lint in `lefthook.yml` or `tools/`.
+
+What generalises:
+
+1. **Compare KEY SETS, not diffs, when a generated or auto-formatted file is shared.** Two
+   lines of `python -c` parsing both revisions as JSON answers "whose changes are in this
+   file?" definitively. A reformatting hook makes `git diff` useless for exactly the
+   question the parallel-session rule needs answered.
+2. **A hook can widen your diff far past your edit.** Check `git diff --stat` after
+   touching any file a hook formats, before assuming the commit is yours to make.
+3. **Dropping a file from a commit is a legitimate move**, not a failure — but say which
+   file and why, and verify the remaining diff still compiles and analyses clean on its
+   own. An ARB key with no reader is inert; a Dart reference to a deleted getter is not.

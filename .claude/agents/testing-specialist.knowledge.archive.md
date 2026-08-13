@@ -19262,3 +19262,72 @@ Closing state, unmoved during the round: `message_mutation_module_test.dart`
 `conversation_dto.dart` `7510d43c`.
 
 Verdict: pass (0 blocking).
+
+## 2026-08-13 — BUT-1783 sound/vibration field removal: three test files, script-applied deletions
+
+**Scope (read-only review, no edits to the three files):**
+`test/unit/services/notifications/modules/notification_preference_manager_test.dart`
+`ac6bdb271021ef981d3bfcea86999922` 556 lines;
+`test/integration/firebase/repositories/notifications_repository_integration_test.dart`
+`0808d23661c7d3678bfb525b4971c8d6` 360 lines;
+`test/infrastructure/mocks/production_mocks.dart` `26dbce5bf5b2ff3eb4f307db81e45936`
+4866 lines. `dart analyze` on the three: clean.
+
+**The brief's hypothesis — that removing `soundEnabled` cost several unit tests their
+"this value changed" discriminator — did NOT hold.** Graded per test by listing which
+ASSERTED field still differs from `NotificationPreferences.defaults()` (enabled true,
+allowBatching true, digestFrequency 'never', quietHours 22:00/08:00):
+
+- `should update preferences and clear cache` — 2 survive (`enabled: false`,
+  `digestFrequency: 'daily'`). The cache half is pinned by the same `enabled` assertion:
+  the arrange calls `getPreferences()` first, so a cache that is neither cleared nor
+  refreshed hands back defaults.
+- `should reset preferences to defaults` — 5 survive (enabled, allowBatching,
+  digestFrequency, both quietHours). The arrange sets all of them non-default.
+- BUT-1782 `a legacy '{}' cache is discarded` — 2 survive (enabled false, digestFrequency
+  'weekly' on the recovered read). Under the reverted `fromJson` spelling the first call
+  caches defaults for 10 min, so `second.enabled` is true and the test reddens.
+- `a repository read error falls back to the SAVED preferences` — 4 survive (enabled,
+  allowBatching, digestFrequency, quietHoursStart 21:30).
+- `the unusable payload is evicted` — never used the fields; asserts the SharedPreferences
+  key is null.
+
+So the deletions cost redundancy, not discrimination.
+
+**What IS vacuous (pre-existing, not caused by the diff):** the integration test
+`should save and retrieve notification preferences` (line 340). It writes
+`NotificationPreferences.defaults()` and asserts `enabled isTrue` + `allowBatching isTrue`.
+`fromMap` parses both with `SerializationUtils.safeBool(..., defaultValue: true)`, and
+`FirebaseNotificationsRepository.getNotificationPreferences` returns `defaults()` when the
+doc does not exist (`firebase_notifications_repository.dart:372`) — so the test passes if
+the write never happened. Proof needing no mutant: the sibling unit test
+`should return default preferences when none exist`
+(`firebase_notifications_repository_test.dart:839`) asserts the SAME two expectations on
+the opposite premise. The two deleted lines were `soundEnabled`/`vibrationEnabled` isTrue,
+whose old parse defaults were ALSO `defaultValue: true`
+(`git show HEAD:lib/models/notification_preferences.dart:110-119`) — so all four assertions
+were equally unfailable and the deletion changed nothing in kind. Repair: seed a
+non-default `digestFrequency: 'weekly'` (parser default `'never'`) plus
+`allowBatching: false`, and assert those back — the pattern
+`firebase_notifications_repository_test.dart:799` already uses.
+
+Also: the comment above those assertions, `// Defaults per
+NotificationPreferences.defaults(): everything on.` is false — `defaults()` has
+`shopping: false`, `social: false`, `digest: false`, `optional: false`.
+
+**`FakeNotificationPreferences` in `production_mocks.dart:3871` is DEAD** — zero repo-wide
+references (the only two grep hits are an unrelated same-named
+`extends Fake implements NotificationPreferences` declared locally in the unit test file
+for `registerFallbackValue`, which shadows the import). The diff maintained a class nothing
+calls. It also carries the compute-a-discriminator-never-read shape: `categories`/`types`
+are never read by `toNotificationPreferences()`, which hardcodes a map disagreeing with
+`defaults()` on `social`. Deletion candidate, not a repair candidate.
+
+**Coverage for the removal itself lives elsewhere and is real:** write-shape key absence at
+`firebase_notifications_repository_test.dart:753-754`
+(`expect(data.containsKey('soundEnabled'), isFalse)`) and legacy-document read tolerance at
+`notification_preferences_test.dart:169-200`. Both outside the reviewed set. The model's
+constructor params were `required`, so a missed call site would have been an analyzer
+error, not a silent miss — which is why a script-applied deletion is safe here.
+
+Verdict: pass (0 blocking).

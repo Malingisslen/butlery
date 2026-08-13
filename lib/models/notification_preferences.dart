@@ -11,6 +11,23 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// User notification preferences model
+///
+/// BUT-1783 removed `soundEnabled` and `vibrationEnabled`. Do not reintroduce
+/// either without a consumer that can act on it: sound and vibration are owned
+/// by the Android notification channel and by iOS system settings, so a stored
+/// preference cannot take effect on its own, and the two switches spent their
+/// whole life persisting a value nothing read.
+///
+/// The removal is forward-only and stays that way. Every document written
+/// before it keeps both keys PERMANENTLY — the repository saves with
+/// `SetOptions(merge: true)`, which never deletes a key it stops sending — so
+/// the legacy keys are a fixture in the tests, not a cleanup candidate.
+/// [fromMap] reads named keys only and ignores them. Verified 2026-08-13:
+/// `match /user_notification_preferences/{userId}` in `firestore.rules` gates
+/// this collection on ownership alone, with no `hasOnly` field allowlist, so
+/// dropping the keys from [toFirestore] cannot be denied. Re-read that block
+/// before ADDING a field anyway: an allowlist could be introduced later, and
+/// the ADD direction is the one that fails closed and in silence (BUT-1482).
 class NotificationPreferences {
   final bool enabled; // Master notification toggle
   final Map<NotificationCategory, bool> categorySettings;
@@ -19,8 +36,6 @@ class NotificationPreferences {
   final String digestFrequency; // 'daily', 'weekly', 'never'
   final TimeOfDay? quietHoursStart; // Don't send during quiet hours
   final TimeOfDay? quietHoursEnd;
-  final bool soundEnabled; // Notification sounds
-  final bool vibrationEnabled; // Notification vibration
   final DateTime lastUpdated;
 
   const NotificationPreferences({
@@ -31,8 +46,6 @@ class NotificationPreferences {
     required this.digestFrequency,
     this.quietHoursStart,
     this.quietHoursEnd,
-    required this.soundEnabled,
-    required this.vibrationEnabled,
     required this.lastUpdated,
   });
 
@@ -60,8 +73,6 @@ class NotificationPreferences {
       digestFrequency: 'never',
       quietHoursStart: const TimeOfDay(hour: 22, minute: 0), // 10 PM
       quietHoursEnd: const TimeOfDay(hour: 8, minute: 0), // 8 AM
-      soundEnabled: true,
-      vibrationEnabled: true,
       lastUpdated: clock.now(),
     );
   }
@@ -107,16 +118,6 @@ class NotificationPreferences {
       quietHoursEnd: _parseTimeOfDay(
         SerializationUtils.safeNullableMap(data, 'quietHoursEnd'),
       ),
-      soundEnabled: SerializationUtils.safeBool(
-        data,
-        'soundEnabled',
-        defaultValue: true,
-      ),
-      vibrationEnabled: SerializationUtils.safeBool(
-        data,
-        'vibrationEnabled',
-        defaultValue: true,
-      ),
       lastUpdated: data['lastUpdated'] is DateTime
           ? data['lastUpdated'] as DateTime
           : (data['lastUpdated'] != null
@@ -143,8 +144,6 @@ class NotificationPreferences {
       'digestFrequency': digestFrequency,
       'quietHoursStart': _timeOfDayToMap(quietHoursStart),
       'quietHoursEnd': _timeOfDayToMap(quietHoursEnd),
-      'soundEnabled': soundEnabled,
-      'vibrationEnabled': vibrationEnabled,
       'lastUpdated': FieldValue.serverTimestamp(),
     };
   }

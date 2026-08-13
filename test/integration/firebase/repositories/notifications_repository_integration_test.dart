@@ -341,7 +341,21 @@ void main() {
         // Arrange — use the authenticated user, otherwise
         // PermissionValidationMixin.validateSelfOperation rejects the write.
         const userId = testUserId;
-        final preferences = NotificationPreferences.defaults();
+        // Every asserted value differs from defaults() on purpose. A missing
+        // document ALSO returns defaults(), and the parser reads a missing key
+        // as its default — so the defaults() fixture this replaced passed its
+        // assertions whether or not the write ever landed.
+        final defaults = NotificationPreferences.defaults();
+        final preferences = NotificationPreferences(
+          enabled: false,
+          categorySettings: defaults.categorySettings,
+          typeSettings: defaults.typeSettings,
+          allowBatching: false,
+          digestFrequency: 'weekly',
+          quietHoursStart: defaults.quietHoursStart,
+          quietHoursEnd: defaults.quietHoursEnd,
+          lastUpdated: defaults.lastUpdated,
+        );
 
         // Act
         await repository.updateNotificationPreferences(userId, preferences);
@@ -351,11 +365,70 @@ void main() {
           userId,
         );
 
-        // Defaults per NotificationPreferences.defaults(): everything on.
-        expect(savedPreferences.enabled, isTrue);
-        expect(savedPreferences.soundEnabled, isTrue);
-        expect(savedPreferences.vibrationEnabled, isTrue);
-        expect(savedPreferences.allowBatching, isTrue);
+        expect(savedPreferences.enabled, isFalse);
+        expect(savedPreferences.allowBatching, isFalse);
+        expect(savedPreferences.digestFrequency, 'weekly');
+      });
+
+      // What the merge protects is BACKEND-OWNED keys. `quiet-hours.ts` reads
+      // a `timezone` field off this same document that the Dart model neither
+      // writes nor parses; nothing writes it yet, but the day something does,
+      // an overwriting save would erase it on every settings change — silently,
+      // and with the whole Dart suite still green.
+      //
+      // The retired BUT-1783 keys are the weaker half of the same invariant:
+      // merging is why they stay on disk, i.e. why that removal is
+      // forward-only rather than a migration. Nothing reads them, so losing
+      // them would be harmless; losing `timezone` would not.
+      //
+      // No other test can see any of this: none of them drives this write
+      // against an EXISTING document, and on a fresh one a merging write and an
+      // overwriting one are byte-identical.
+      test('a save MERGES: fields the model does not know survive it', () async {
+        const userId = testUserId;
+        final doc = fakeFirestore
+            .collection('user_notification_preferences')
+            .doc(userId);
+
+        // The pre-BUT-1783 field set, plus a field only the backend knows
+        // about. Only three of the four assertions below can tell merge from
+        // overwrite; the fourth is the control. Every other key here is
+        // re-sent by the save, so none of them could.
+        await doc.set({
+          'enabled': true,
+          'categorySettings': const <String, dynamic>{},
+          'typeSettings': const <String, dynamic>{},
+          'allowBatching': true,
+          'digestFrequency': 'never',
+          'quietHoursStart': {'hour': 22, 'minute': 0},
+          'quietHoursEnd': {'hour': 8, 'minute': 0},
+          'soundEnabled': false,
+          'vibrationEnabled': false,
+          'timezone': 'Europe/Stockholm',
+        });
+
+        final defaults = NotificationPreferences.defaults();
+        await repository.updateNotificationPreferences(
+          userId,
+          NotificationPreferences(
+            enabled: defaults.enabled,
+            categorySettings: defaults.categorySettings,
+            typeSettings: defaults.typeSettings,
+            allowBatching: defaults.allowBatching,
+            digestFrequency: 'weekly',
+            quietHoursStart: defaults.quietHoursStart,
+            quietHoursEnd: defaults.quietHoursEnd,
+            lastUpdated: defaults.lastUpdated,
+          ),
+        );
+
+        final raw = (await doc.get()).data()!;
+        // Control: the write landed. Without this the survival assertions pass
+        // on a save that never happened.
+        expect(raw['digestFrequency'], 'weekly');
+        expect(raw['timezone'], 'Europe/Stockholm');
+        expect(raw['soundEnabled'], isFalse);
+        expect(raw['vibrationEnabled'], isFalse);
       });
     });
   });

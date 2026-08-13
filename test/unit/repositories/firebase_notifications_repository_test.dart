@@ -739,16 +739,23 @@ void main() {
           // Arrange
           final preferences = NotificationPreferences.defaults();
 
-          // Act - verify toFirestore() output directly (avoids FakeFirebaseFirestore
-          // FieldValue.serverTimestamp() limitation with SetOptions merge)
+          // Act - verify toFirestore() output directly: this is a shape
+          // assertion about the payload, so going through the repository would
+          // only add a write that proves nothing extra here. (The sibling
+          // integration test DOES drive the real merge write — the fake accepts
+          // serverTimestamp() in that shape, contrary to what this comment used
+          // to claim.)
           final data = preferences.toFirestore();
 
           // Assert - verify structure matches current NotificationPreferences model
           expect(data['enabled'], isTrue);
           expect(data['allowBatching'], isTrue);
-          expect(data['soundEnabled'], isTrue);
-          expect(data['vibrationEnabled'], isTrue);
           expect(data['digestFrequency'], equals('never'));
+          // BUT-1783: the sound/vibration switches were removed, so the write
+          // must stop carrying the keys — asserted on key PRESENCE, since a
+          // dropped field reads back as null either way.
+          expect(data.containsKey('soundEnabled'), isFalse);
+          expect(data.containsKey('vibrationEnabled'), isFalse);
 
           // Verify nested categorySettings map (use enum.toString() to stay in sync with serialization)
           final categorySettings =
@@ -818,6 +825,11 @@ void main() {
               },
               'allowBatching': true,
               'digestFrequency': 'daily',
+              // BUT-1783 legacy keys: still present on every document written
+              // before the switches were removed. The parse must not fail or
+              // fall back to defaults on them — `enabled` and `digestFrequency`
+              // below are what prove it did neither. The model suite pins the
+              // same contract on a fully non-default fixture.
               'soundEnabled': false,
               'vibrationEnabled': false,
             });
@@ -827,8 +839,6 @@ void main() {
 
         // Assert
         expect(preferences.enabled, isFalse);
-        expect(preferences.soundEnabled, isFalse);
-        expect(preferences.vibrationEnabled, isFalse);
         expect(preferences.allowBatching, isTrue);
         expect(preferences.digestFrequency, equals('daily'));
       });
@@ -839,10 +849,10 @@ void main() {
           'user-with-no-prefs',
         );
 
-        // Assert - All defaults should be true
+        // Assert - a missing document yields defaults(), which has these two on
+        // (it does NOT have everything on: shopping, social, digest and
+        // optional are off there).
         expect(preferences.enabled, isTrue);
-        expect(preferences.soundEnabled, isTrue);
-        expect(preferences.vibrationEnabled, isTrue);
         expect(preferences.allowBatching, isTrue);
       });
     });

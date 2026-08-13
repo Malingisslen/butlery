@@ -115,8 +115,6 @@ void main() {
           digestFrequency: prefs.digestFrequency,
           quietHoursStart: prefs.quietHoursStart,
           quietHoursEnd: prefs.quietHoursEnd,
-          soundEnabled: prefs.soundEnabled,
-          vibrationEnabled: prefs.vibrationEnabled,
           lastUpdated: DateTime.now(),
         );
         await preferenceManager.updatePreferences(updatedPrefs);
@@ -154,8 +152,6 @@ void main() {
           digestFrequency: defaults.digestFrequency,
           quietHoursStart: defaults.quietHoursStart,
           quietHoursEnd: defaults.quietHoursEnd,
-          soundEnabled: defaults.soundEnabled,
-          vibrationEnabled: defaults.vibrationEnabled,
           lastUpdated: defaults.lastUpdated,
         );
 
@@ -192,8 +188,6 @@ void main() {
           digestFrequency: prefs.digestFrequency,
           quietHoursStart: const TimeOfDay(hour: 22, minute: 0),
           quietHoursEnd: const TimeOfDay(hour: 8, minute: 0),
-          soundEnabled: prefs.soundEnabled,
-          vibrationEnabled: prefs.vibrationEnabled,
           lastUpdated: DateTime.now(),
         );
         await preferenceManager.updatePreferences(updatedPrefs);
@@ -220,8 +214,6 @@ void main() {
             hour: 23,
             minute: 59,
           ), // Always in quiet hours
-          soundEnabled: prefs.soundEnabled,
-          vibrationEnabled: prefs.vibrationEnabled,
           lastUpdated: DateTime.now(),
         );
         await preferenceManager.updatePreferences(updatedPrefs);
@@ -270,8 +262,6 @@ void main() {
           digestFrequency: 'daily', // Changed
           quietHoursStart: originalPrefs.quietHoursStart,
           quietHoursEnd: originalPrefs.quietHoursEnd,
-          soundEnabled: false, // Changed
-          vibrationEnabled: originalPrefs.vibrationEnabled,
           lastUpdated: DateTime.now(),
         );
         await preferenceManager.updatePreferences(updatedPrefs);
@@ -282,7 +272,6 @@ void main() {
         // Assert
         expect(retrievedPrefs.enabled, isFalse);
         expect(retrievedPrefs.digestFrequency, equals('daily'));
-        expect(retrievedPrefs.soundEnabled, isFalse);
       });
 
       test('should reset preferences to defaults', () async {
@@ -295,8 +284,6 @@ void main() {
           digestFrequency: 'weekly',
           quietHoursStart: null,
           quietHoursEnd: null,
-          soundEnabled: false,
-          vibrationEnabled: false,
           lastUpdated: DateTime.now(),
         );
         await preferenceManager.updatePreferences(modifiedPrefs);
@@ -319,14 +306,8 @@ void main() {
           prefs.quietHoursEnd,
           equals(const TimeOfDay(hour: 8, minute: 0)),
         );
-        expect(prefs.soundEnabled, isTrue);
-        expect(prefs.vibrationEnabled, isTrue);
       });
 
-      /// BUT-1782 acceptance criterion 2. The reported symptom: one transient
-      /// Firestore read error reset an explicit opt-out. The old code treated
-      /// EVERY read failure as "no document yet", built defaults, wrote them to
-      /// Firestore and overwrote the local cache with them — so the reset was
       /// BUT-1799. Every existing install carries the literal `'{}'` in this
       /// SharedPreferences slot, written by the pre-BUT-1782 `toJson()` stub.
       /// `fromJson('{}')` answers with `defaults()`; `tryFromJson('{}')`
@@ -359,8 +340,6 @@ void main() {
             digestFrequency: 'weekly',
             quietHoursStart: null,
             quietHoursEnd: null,
-            soundEnabled: false,
-            vibrationEnabled: false,
             lastUpdated: DateTime.now(),
           );
           when(
@@ -406,7 +385,16 @@ void main() {
         },
       );
 
+      /// BUT-1782 acceptance criterion 2. The reported symptom: one transient
+      /// Firestore read error reset an explicit opt-out. The old code treated
+      /// EVERY read failure as "no document yet", built defaults, wrote them to
+      /// Firestore and overwrote the local cache with them — so the reset was
       /// permanent and server-side.
+      ///
+      /// (The two halves of this sentence had drifted onto the wrong tests at
+      /// HEAD; re-joined 2026-08-13. The move itself changed no test code —
+      /// BUT-1783 separately dropped the retired sound/vibration fields from
+      /// both fixtures, and two assertions on them from this test.)
       test(
         'a repository read error falls back to the SAVED preferences and '
         'writes nothing',
@@ -422,8 +410,6 @@ void main() {
             digestFrequency: 'weekly',
             quietHoursStart: const TimeOfDay(hour: 21, minute: 30),
             quietHoursEnd: const TimeOfDay(hour: 7, minute: 15),
-            soundEnabled: false,
-            vibrationEnabled: false,
             lastUpdated: DateTime.now(),
           );
           await preferenceManager.updatePreferences(savedPrefs);
@@ -446,8 +432,6 @@ void main() {
           // Assert: the user's own choices come back, not defaults.
           expect(result.enabled, isFalse);
           expect(result.digestFrequency, equals('weekly'));
-          expect(result.soundEnabled, isFalse);
-          expect(result.vibrationEnabled, isFalse);
           expect(result.allowBatching, isFalse);
           expect(
             result.quietHoursStart,
@@ -497,8 +481,6 @@ void main() {
           digestFrequency: 'daily', // Enabled
           quietHoursStart: prefs.quietHoursStart,
           quietHoursEnd: prefs.quietHoursEnd,
-          soundEnabled: prefs.soundEnabled,
-          vibrationEnabled: prefs.vibrationEnabled,
           lastUpdated: DateTime.now(),
         );
         await preferenceManager.updatePreferences(updatedPrefs);
@@ -519,8 +501,6 @@ void main() {
           digestFrequency: 'never', // Disabled
           quietHoursStart: prefs.quietHoursStart,
           quietHoursEnd: prefs.quietHoursEnd,
-          soundEnabled: prefs.soundEnabled,
-          vibrationEnabled: prefs.vibrationEnabled,
           lastUpdated: DateTime.now(),
         );
         await preferenceManager.updatePreferences(disabledPrefs);
@@ -554,8 +534,6 @@ void main() {
           digestFrequency: prefs.digestFrequency,
           quietHoursStart: prefs.quietHoursStart,
           quietHoursEnd: prefs.quietHoursEnd,
-          soundEnabled: prefs.soundEnabled,
-          vibrationEnabled: prefs.vibrationEnabled,
           lastUpdated: DateTime.now(),
         );
         await preferenceManager.updatePreferences(updatedPrefs);

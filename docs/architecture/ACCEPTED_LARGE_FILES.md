@@ -220,7 +220,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `social_collaborative_components.dart` | 536 | Collaborative social UI components |
 | `menu_preview_view.dart` | 531 | Shared menu preview screen |
 | `chat_action_handler.dart` | 577 | Chat action handling — extracted from messaging view; single handler class |
-| `notification_preferences_view.dart` | 585 | Notification preferences settings screen — category toggles + quiet hours |
+| `notification_preferences_view.dart` | 524 | Notification preferences settings screen — category toggles + quiet hours. Row refreshed 2026-08-13 (was recorded at 585); BUT-1783 removed the sound/vibration section. Still over 500, so the row stays. |
 | `smart_import_viewmodel.dart` | 614 | Smart import pipeline VM — delegates to ImportManager |
 | `shopping_list_content.dart` | 685 | Shopping list UI — drag/reorder, categories, collaborative |
 | `cooking_mode_view.dart` | 815 | Full cooking mode screen — timer, steps, landscape layout (drifted +103 from 585 — BUT-550 reconciled 2026-05-28) |

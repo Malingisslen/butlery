@@ -96,7 +96,7 @@ void main() {
       tester,
     ) async {
       // Proves: a successful load shows the preference form (master toggle +
-      // category + quiet-hours + sound/vibration), not a perpetual spinner.
+      // category + quiet-hours), not a perpetual spinner.
       when(
         () => notificationService.getPreferences(),
       ).thenAnswer((_) async => NotificationPreferences.defaults());
@@ -110,8 +110,46 @@ void main() {
       );
       expect(find.text(sv.notificationEnableTitle), findsOneWidget);
       expect(find.text(sv.notificationCategoriesTitle), findsOneWidget);
-      expect(find.text(sv.notificationSound), findsOneWidget);
-      expect(find.text(sv.notificationVibration), findsOneWidget);
+      expect(find.text(sv.notificationQuietHoursTitle), findsOneWidget);
+    });
+
+    testWidgets('no sound or vibration switch is offered (BUT-1783)', (
+      tester,
+    ) async {
+      // Proves the BUT-1783 removal: neither switch may come back, because
+      // nothing consults the stored value — sound and vibration belong to the
+      // OS notification channel, so a switch here would silently do nothing.
+      // Keyed on the three icons those two rows used (the sound row's icon was
+      // state-dependent) rather than on their labels: the view no longer
+      // renders either label. The two ARB keys are already deleted in the
+      // working tree but held OUT of this commit — a parallel session owns
+      // those files — so at this commit they still exist and are unreferenced.
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
+
+      await pumpView(tester);
+
+      // Control: findsNothing also passes on a view that rendered nothing at
+      // all, so prove the form is on screen before asserting what is missing.
+      expect(find.text(sv.notificationEnableTitle), findsOneWidget);
+      // These two redden on a straight revert.
+      expect(find.byIcon(Icons.volume_up_outlined), findsNothing);
+      expect(find.byIcon(Icons.vibration_outlined), findsNothing);
+      // This one does NOT: with defaults() the sound row always drew the
+      // volume-UP icon, so the off-state icon was unreachable even before the
+      // removal. It is here to cover a revert that also flips the default.
+      expect(find.byIcon(Icons.volume_off_outlined), findsNothing);
+      // Icon-keying only catches an exact revert. The count catches ANY new
+      // switch on this form: master + 7 categories + quiet-hours enable.
+      expect(
+        find.byType(SwitchListTile),
+        findsNWidgets(9),
+        reason:
+            'BUT-1783: no new switch on this form. A legitimately added '
+            'notification category also lands here — bump the count on '
+            'purpose, do not delete the assertion.',
+      );
     });
 
     testWidgets('master toggle reflects the stored enabled=false state', (
@@ -231,8 +269,6 @@ NotificationPreferences _prefsWith({required bool enabled}) {
     digestFrequency: base.digestFrequency,
     quietHoursStart: base.quietHoursStart,
     quietHoursEnd: base.quietHoursEnd,
-    soundEnabled: base.soundEnabled,
-    vibrationEnabled: base.vibrationEnabled,
     lastUpdated: base.lastUpdated,
   );
 }

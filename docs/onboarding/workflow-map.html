@@ -6505,7 +6505,7 @@
         {
           "from": "v-notification-prefs",
           "to": "svc-notification",
-          "payload": "getPreferences/updatePreferences (master-toggle, kategori, tysta timmar, ljud/vibration)",
+          "payload": "getPreferences/updatePreferences (master-toggle, kategori, sammanfattnings-frekvens, tysta timmar). BUT-1783 (2026-08-13) tog bort reglagen för ljud och vibration: inget läste värdet — ljud och vibration ägs av Androids notiskanal och iOS systeminställningar, och pushen sätter sitt eget ljud — så växlarna sparade ett val som aldrig kunde få effekt.",
           "transport": "method call",
           "verified": true
         },

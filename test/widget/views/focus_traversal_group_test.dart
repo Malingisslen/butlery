@@ -401,7 +401,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // This settings form is a column of SwitchListTiles (master enable +
-        // per-category toggles + sound/vibration) plus a digest dropdown — no
+        // per-category toggles + quiet-hours enable) plus a digest dropdown — no
         // text fields, so the harness's button-fallback branch walks the
         // switches. The reading-order contract must hold over the toggles.
         await expectTabWalksControlsTopToBottom(

@@ -18,8 +18,6 @@ void main() {
       final p = NotificationPreferences.defaults();
       expect(p.enabled, isTrue);
       expect(p.allowBatching, isTrue);
-      expect(p.soundEnabled, isTrue);
-      expect(p.vibrationEnabled, isTrue);
       expect(p.digestFrequency, 'never');
       expect(p.quietHoursStart, const TimeOfDay(hour: 22, minute: 0));
       expect(p.quietHoursEnd, const TimeOfDay(hour: 8, minute: 0));
@@ -73,8 +71,6 @@ void main() {
         typeSettings: const {NotificationType.immediate: true},
         allowBatching: true,
         digestFrequency: 'never',
-        soundEnabled: true,
-        vibrationEnabled: true,
         lastUpdated: DateTime.utc(2026, 1, 1),
       );
       expect(
@@ -96,8 +92,6 @@ void main() {
         },
         allowBatching: true,
         digestFrequency: 'never',
-        soundEnabled: true,
-        vibrationEnabled: true,
         lastUpdated: DateTime.utc(2026, 1, 1),
       );
 
@@ -124,8 +118,6 @@ void main() {
         typeSettings: const {NotificationType.immediate: true},
         allowBatching: true,
         digestFrequency: 'never',
-        soundEnabled: true,
-        vibrationEnabled: true,
         lastUpdated: DateTime.utc(2026, 1, 1),
       );
       expect(
@@ -142,6 +134,13 @@ void main() {
       expect(payload['enabled'], isTrue);
       expect(payload['allowBatching'], isTrue);
       expect(payload['digestFrequency'], 'never');
+      // BUT-1783: the removed switches must not come back in the write. The
+      // repository's own suite asserts this too; it is mirrored here because
+      // this is the contract of the model, and a tidy-up of that suite would
+      // otherwise take the only proof with it. Key PRESENCE, not value — a
+      // dropped field and a null-valued field both read back as null.
+      expect(payload.containsKey('soundEnabled'), isFalse);
+      expect(payload.containsKey('vibrationEnabled'), isFalse);
     });
 
     test('converts enum maps to string-keyed maps', () {
@@ -158,8 +157,6 @@ void main() {
         typeSettings: const {},
         allowBatching: true,
         digestFrequency: 'never',
-        soundEnabled: true,
-        vibrationEnabled: true,
         lastUpdated: DateTime.utc(2026, 1, 1),
       );
       final payload = p.toFirestore();
@@ -176,31 +173,47 @@ void main() {
   });
 
   group('fromFirestore / fromMap', () {
-    test('reads a real document snapshot', () async {
-      final firestore = FakeFirebaseFirestore();
-      // fake_cloud_firestore doesn't accept FieldValue.serverTimestamp(),
-      // so seed with a real Timestamp + the string-keyed enum-name maps
-      // that toFirestore() produces.
-      await firestore.collection('prefs').doc('alice').set({
-        'enabled': true,
-        'categorySettings': const <String, dynamic>{},
-        'typeSettings': const <String, dynamic>{},
-        'allowBatching': true,
-        'digestFrequency': 'never',
-        'quietHoursStart': {'hour': 22, 'minute': 0},
-        'quietHoursEnd': {'hour': 8, 'minute': 0},
-        'soundEnabled': true,
-        'vibrationEnabled': true,
-        'lastUpdated': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
-      });
-      final doc = await firestore.collection('prefs').doc('alice').get();
-      final p = NotificationPreferences.fromFirestore(doc);
+    test(
+      'reads a real document snapshot, ignoring BUT-1783 legacy keys',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        // fake_cloud_firestore doesn't accept FieldValue.serverTimestamp(),
+        // so seed with a real Timestamp + the string-keyed enum-name maps
+        // that toFirestore() produces.
+        //
+        // `soundEnabled`/`vibrationEnabled` are deliberately still in this
+        // fixture: `SetOptions(merge: true)` never deletes a key the writer
+        // stops sending, so every document written before BUT-1783 carries
+        // them for good, and the parse must ignore them rather than fail.
+        //
+        // Every value the model still PARSES differs from defaults() on
+        // purpose (the two legacy keys are the pre-removal defaults, which
+        // nothing reads any more). With defaults
+        // as the fixture, a reader that saw an unrecognised key and bailed to
+        // defaults() would pass this test — which is the exact failure the
+        // name claims to exclude.
+        await firestore.collection('prefs').doc('alice').set({
+          'enabled': false,
+          'categorySettings': const <String, dynamic>{},
+          'typeSettings': const <String, dynamic>{},
+          'allowBatching': false,
+          'digestFrequency': 'weekly',
+          'quietHoursStart': {'hour': 21, 'minute': 15},
+          'quietHoursEnd': {'hour': 6, 'minute': 45},
+          'soundEnabled': true,
+          'vibrationEnabled': true,
+          'lastUpdated': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        });
+        final doc = await firestore.collection('prefs').doc('alice').get();
+        final p = NotificationPreferences.fromFirestore(doc);
 
-      expect(p.enabled, isTrue);
-      expect(p.allowBatching, isTrue);
-      expect(p.digestFrequency, 'never');
-      expect(p.quietHoursStart, const TimeOfDay(hour: 22, minute: 0));
-    });
+        expect(p.enabled, isFalse);
+        expect(p.allowBatching, isFalse);
+        expect(p.digestFrequency, 'weekly');
+        expect(p.quietHoursStart, const TimeOfDay(hour: 21, minute: 15));
+        expect(p.quietHoursEnd, const TimeOfDay(hour: 6, minute: 45));
+      },
+    );
 
     test('fromMap safe defaults when fields missing', () {
       final p = NotificationPreferences.fromMap('id', {});
@@ -249,8 +262,6 @@ void main() {
         digestFrequency: 'weekly',
         quietHoursStart: const TimeOfDay(hour: 21, minute: 15),
         quietHoursEnd: const TimeOfDay(hour: 6, minute: 45),
-        soundEnabled: false,
-        vibrationEnabled: false,
         lastUpdated: DateTime.utc(2026, 3, 4, 5, 6, 7),
       );
 
@@ -258,8 +269,6 @@ void main() {
 
       expect(restored.enabled, isFalse);
       expect(restored.allowBatching, isFalse);
-      expect(restored.soundEnabled, isFalse);
-      expect(restored.vibrationEnabled, isFalse);
       expect(restored.digestFrequency, 'weekly');
       expect(restored.quietHoursStart, const TimeOfDay(hour: 21, minute: 15));
       expect(restored.quietHoursEnd, const TimeOfDay(hour: 6, minute: 45));
@@ -290,8 +299,6 @@ void main() {
         typeSettings: const {NotificationType.immediate: true},
         allowBatching: true,
         digestFrequency: 'never',
-        soundEnabled: true,
-        vibrationEnabled: true,
         lastUpdated: DateTime.utc(2026),
       );
 
@@ -314,8 +321,6 @@ void main() {
           typeSettings: const {NotificationType.immediate: true},
           allowBatching: true,
           digestFrequency: 'never',
-          soundEnabled: true,
-          vibrationEnabled: true,
           lastUpdated: localStamp,
         );
 

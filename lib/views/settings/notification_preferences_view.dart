@@ -89,9 +89,9 @@ class _NotificationPreferencesViewState
   }
 
   /// BUT-655: opt-in / opt-out rate tracking. Fires on category-level boolean
-  /// toggles (master + per-category). Digest frequency, quiet hours, sound,
-  /// and vibration are non-boolean or non-category prefs and stay out of this
-  /// event's surface. OS-level permission grant outcomes are tracked
+  /// toggles (master + per-category). Digest frequency and quiet hours are
+  /// non-boolean or non-category prefs and stay out of this event's
+  /// surface. OS-level permission grant outcomes are tracked
   /// separately by `NotificationPermissionService`.
   void _logPreferenceChange({required String category, required bool enabled}) {
     AnalyticsService.tryLog(
@@ -164,8 +164,6 @@ class _NotificationPreferencesViewState
                               _buildDigestFrequencySection(),
                               const SizedBox(height: AppDimensions.spacingXl),
                               _buildQuietHoursSection(),
-                              const SizedBox(height: AppDimensions.spacingXl),
-                              _buildSoundVibrationSection(),
                             ],
                           ),
                         ),
@@ -483,59 +481,6 @@ class _NotificationPreferencesViewState
     }
   }
 
-  Widget _buildSoundVibrationSection() {
-    final cs = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SwitchListTile(
-          title: Text(
-            context.l10n.notificationSound,
-            style: AppTextStyles.titleMedium,
-          ),
-          secondary: Icon(
-            _preferences.soundEnabled
-                ? Icons.volume_up_outlined
-                : Icons.volume_off_outlined,
-            color: cs.primary,
-            size: AppDimensions.iconSizeL,
-          ),
-          value: _preferences.soundEnabled,
-          onChanged: (value) => _savePreferences(
-            _copyPreferences(soundEnabled: value),
-          ),
-          activeTrackColor: cs.primary.withValues(
-            alpha: AppDimensions.opacityHalf,
-          ),
-          thumbColor: _primaryThumbColor(cs),
-          contentPadding: EdgeInsets.zero,
-        ),
-        const Divider(),
-        SwitchListTile(
-          title: Text(
-            context.l10n.notificationVibration,
-            style: AppTextStyles.titleMedium,
-          ),
-          secondary: Icon(
-            Icons.vibration_outlined,
-            color: cs.primary,
-            size: AppDimensions.iconSizeL,
-          ),
-          value: _preferences.vibrationEnabled,
-          onChanged: (value) => _savePreferences(
-            _copyPreferences(vibrationEnabled: value),
-          ),
-          activeTrackColor: cs.primary.withValues(
-            alpha: AppDimensions.opacityHalf,
-          ),
-          thumbColor: _primaryThumbColor(cs),
-          contentPadding: EdgeInsets.zero,
-        ),
-      ],
-    );
-  }
-
   WidgetStateProperty<Color?> _primaryThumbColor(ColorScheme cs) {
     return WidgetStateProperty.resolveWith((states) {
       if (states.contains(WidgetState.selected)) {
@@ -550,20 +495,16 @@ class _NotificationPreferencesViewState
   NotificationPreferences _copyPreferences({
     bool? enabled,
     Map<NotificationCategory, bool>? categorySettings,
-    Map<NotificationType, bool>? typeSettings,
-    bool? allowBatching,
     String? digestFrequency,
     TimeOfDay? quietHoursStart,
     TimeOfDay? quietHoursEnd,
-    bool? soundEnabled,
-    bool? vibrationEnabled,
     bool clearQuietHours = false,
   }) {
     return NotificationPreferences(
       enabled: enabled ?? _preferences.enabled,
       categorySettings: categorySettings ?? _preferences.categorySettings,
-      typeSettings: typeSettings ?? _preferences.typeSettings,
-      allowBatching: allowBatching ?? _preferences.allowBatching,
+      typeSettings: _preferences.typeSettings,
+      allowBatching: _preferences.allowBatching,
       digestFrequency: digestFrequency ?? _preferences.digestFrequency,
       quietHoursStart: clearQuietHours
           ? null
@@ -571,8 +512,6 @@ class _NotificationPreferencesViewState
       quietHoursEnd: clearQuietHours
           ? null
           : (quietHoursEnd ?? _preferences.quietHoursEnd),
-      soundEnabled: soundEnabled ?? _preferences.soundEnabled,
-      vibrationEnabled: vibrationEnabled ?? _preferences.vibrationEnabled,
       lastUpdated: clock.now(),
     );
   }

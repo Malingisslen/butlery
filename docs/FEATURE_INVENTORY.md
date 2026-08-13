@@ -1020,10 +1020,10 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 
 #### SET-03: Notification preferences (categories + quiet hours)
 - **Entry:** `/settings/notifications`.
-- **User story:** As a user, I want granular control over notification categories, digest frequency, quiet hours, sound and vibration so that I only get the alerts I want, when I want them.
-- **Expected behavior:** Master toggle (gates the Android 13+ OS permission); 7 per-category toggles (dimmed when master off); digest dropdown; quiet-hours toggle (default 22:00–08:00) with time pickers; sound + vibration. Optimistic save with revert. Analytics on each category toggle.
+- **User story:** As a user, I want granular control over notification categories, digest frequency and quiet hours so that I only get the alerts I want, when I want them.
+- **Expected behavior:** Master toggle (gates the Android 13+ OS permission); 7 per-category toggles (dimmed when master off); digest dropdown; quiet-hours toggle (default 22:00–08:00) with time pickers. Optimistic save with revert. Analytics on each category toggle. Sound and vibration are NOT offered here — BUT-1783 removed those two switches because the OS notification channel owns both, so the stored value could never take effect.
 - **Edge cases:** OS permission declined → preference persists OFF; save failure reverts + error; load failure → retry.
-- **Test coverage:** Partial — preference manager + types unit-tested; the view widget untested.
+- **Test coverage:** View widget tested (BUT-1353, plus the BUT-1783 removal pin); preference manager + types unit-tested.
 
 #### SET-04: Account security (password + email + MFA + legal)
 - **Entry:** `/settings/account-security`.
