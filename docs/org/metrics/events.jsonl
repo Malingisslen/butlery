@@ -80,3 +80,21 @@
 {"ts":"2026-08-02T20:05:45.483Z","type":"trigger","fired":true,"signals":"functions/src,purge,retention","ran":null}
 {"ts":"2026-08-02T20:17:00.923Z","type":"trigger","fired":true,"signals":"delete,deletion,erasure,functions/src,purge,retention","ran":null}
 {"type": "review", "tier": "full-panel", "panel": ["Privacy / Data Protection Officer (GDPR)", "Database Administrator / Data-layer Engineer", "Software Architect", "Data Analyst / BI", "Financial Controller / FinOps", "Codebase Archaeologist"], "stakeholders": 6, "outcome": "approve-with-conditions", "must_haves": 31, "conflicts": 0, "escalations": 1, "escalated_to_human": true, "adrs": [], "rubber_stamp": false, "approx_tokens": 760000, "via": "manual", "ran": true, "plan": "sank-google-cloud-fakturan: 26 Cloud Scheduler jobs -> 6", "ts": "2026-08-02T20:34:15.845125+00:00"}
+{"ts":"2026-08-04T19:23:10.039Z","type":"trigger","fired":true,"signals":"llm,ocr","ran":null}
+{"ts":"2026-08-04T19:42:08.321Z","type":"trigger","fired":true,"signals":"allergen,llm,monetiz,ocr,subscription","ran":null}
+{"ts":"2026-08-04T20:55:31.667Z","type":"trigger","fired":true,"signals":"gdpr,monetiz,ocr,subscription","ran":null}
+{"ts":"2026-08-04T21:07:28.926Z","type":"trigger","fired":true,"signals":"gdpr,monetiz,ocr,subscription","ran":null}
+{"ts":"2026-08-04T21:07:45.446Z","type":"trigger","fired":true,"signals":"gdpr,monetiz,ocr,subscription","ran":null}
+{"ts":"2026-08-08T11:26:38.322Z","type":"trigger","fired":true,"signals":"delete,login","ran":null}
+{"ts":"2026-08-08T11:27:17.328Z","type":"trigger","fired":true,"signals":"delete,gdpr,login","ran":null}
+{"ts":"2026-08-08T11:48:39.286Z","type":"trigger","fired":true,"signals":"ocr","ran":null}
+{"ts":"2026-08-08T11:54:39.589Z","type":"trigger","fired":true,"signals":"delete,ocr","ran":null}
+{"ts":"2026-08-08T20:14:29.716Z","type":"trigger","fired":true,"signals":"allergen,cloud function,ocr","ran":null}
+{"ts":"2026-08-08T20:21:36.455Z","type":"trigger","fired":true,"signals":"allergen,auth,cloud function,gdpr,monetiz,ocr,subscription","ran":null}
+{"ts":"2026-08-08T20:22:26.760Z","type":"trigger","fired":true,"signals":"allergen,auth,cloud function,gdpr,monetiz,ocr,subscription","ran":null}
+{"ts":"2026-08-09T22:14:29.059Z","type":"trigger","fired":true,"signals":"gdpr,trust & safety","ran":null}
+{"ts":"2026-08-09T23:22:34.075Z","type":"trigger","fired":true,"signals":"gdpr,trust & safety","ran":null}
+{"ts":"2026-08-09T23:28:53.586Z","type":"trigger","fired":true,"signals":"gdpr,trust & safety","ran":null}
+{"ts":"2026-08-11T21:53:33.451Z","type":"trigger","fired":true,"signals":"allergen,cloud function,consent,delete,deletion,firestore.rules,functions/src,gdpr,personal data,retention","ran":null}
+{"ts":"2026-08-11T22:00:32.941Z","type":"trigger","fired":true,"signals":"allergen,cloud function,consent,delete,deletion,firestore.rules,functions/src,gdpr,personal data,retention","ran":null}
+{"ts":"2026-08-12T11:34:55.000Z","type":"review","tier":"full","panel":["Legal Counsel","Privacy / Data Protection Officer (GDPR)","Security Architect","Product Manager","Database Administrator / Data-layer Engineer","Codebase Archaeologist"],"outcome":"escalated","must_haves":26,"conflicts":4,"escalations":4,"adrs":["ADR-0005"],"rubber_stamp":false,"approx_tokens":576000,"via":"manual","plan":"BUT-1693 household allergen sharing"}
