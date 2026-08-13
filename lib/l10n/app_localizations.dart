@@ -3164,6 +3164,60 @@ abstract class AppLocalizations {
   /// **'Vi kunde inte läsa alla i hushållet just nu, så listan över allergier kan vara ofullständig.'**
   String get householdAllergenRosterIncomplete;
 
+  /// BUT-1693: settings toggle that shares the member's own allergen list with their household (GDPR Art. 9 consent)
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela mina allergier med hushållet'**
+  String get householdAllergenShareTitle;
+
+  /// BUT-1693: toggle subtitle when the member has NOT shared — states what the household currently sees, not what the switch does
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushållet gissar just nu åt dig'**
+  String get householdAllergenShareSubtitleOff;
+
+  /// BUT-1693: toggle subtitle when the member HAS shared
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushållets meny räknar med dina allergier'**
+  String get householdAllergenShareSubtitleOn;
+
+  /// BUT-1693: title of the explicit-consent dialog shown when turning sharing ON
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela din allergilista'**
+  String get householdAllergenShareConfirmTitle;
+
+  /// BUT-1693: the Art. 9(2)(a) consent copy, approved in docs/legal/dpia-household-allergen-sharing.md Annex A — do not reword without re-approving it there
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushållet får se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. Idag gissar Butlery åt dig — den räknar med fyra vanliga allergier och missar resten.\n\nAlla som är med i hushållet ser listan, även den som går med senare.\n\nListan visas som en gemensam lista för hela hushållet. Ingen ser vilken allergi som är vems.\n\nKostval räknas som ett krav när menyn planeras: delar du ”vegansk” planeras hela hushållets meny vegansk.\n\nDu kan sluta dela när som helst. Då tas listan bort direkt, och menyn går tillbaka till att vara försiktig åt dig.'**
+  String get householdAllergenShareConfirmBody;
+
+  /// BUT-1693: confirm button on the consent dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela'**
+  String get householdAllergenShareConfirmAction;
+
+  /// BUT-1693: confirmation shown after withdrawing consent — withdrawal has no dialog of its own (Art. 7(3))
+  ///
+  /// In sv, this message translates to:
+  /// **'Din allergilista delas inte längre. Menyn är försiktig åt dig igen.'**
+  String get householdAllergenShareStopped;
+
+  /// BUT-1693: shown when sharing is refused because this device could not read the member's OWN allergen settings — the grant path re-reads the profile whenever the cached one carries no settings, so retrying is a real remedy there; a wholly absent profile is refused outright. The copy names no screen
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte läsa dina egna allergiinställningar. Kontrollera nätet och försök igen.'**
+  String get householdAllergenShareSettingsUnread;
+
+  /// BUT-1693: shown when granting or withdrawing the share could not be saved
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att ändra delningen just nu. Försök igen.'**
+  String get householdAllergenShareFailed;
+
   /// Common action: turn a setting off
   ///
   /// In sv, this message translates to:

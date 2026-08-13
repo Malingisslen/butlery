@@ -37,15 +37,18 @@ class _TestBaseDialog extends BaseDialog<String> {
     this.contentText = 'body',
     this.additionalText,
     this.validateResult = true,
+    this.contentChild,
   });
 
   final bool shouldThrow;
   final String contentText;
   final String? additionalText;
   final bool validateResult;
+  final Widget? contentChild;
 
   @override
-  Widget buildContent(BuildContext context) => Text(contentText);
+  Widget buildContent(BuildContext context) =>
+      contentChild ?? Text(contentText);
 
   @override
   Widget? buildAdditionalContent(BuildContext context) =>
@@ -88,6 +91,7 @@ class _TestActionDialog extends BaseActionDialog<int> {
     this.validateOk = true,
     this.destructive = false,
     this.actionStyle,
+    this.contentChild,
   });
 
   final bool fail;
@@ -98,6 +102,7 @@ class _TestActionDialog extends BaseActionDialog<int> {
   final bool validateOk;
   final bool destructive;
   final ButtonStyle? actionStyle;
+  final Widget? contentChild;
 
   @override
   String dialogTitleText(BuildContext context) => titleText;
@@ -121,7 +126,8 @@ class _TestActionDialog extends BaseActionDialog<int> {
   ButtonStyle? actionButtonStyleFor(BuildContext context) => actionStyle;
 
   @override
-  Widget buildContent(BuildContext context) => const Text('action body');
+  Widget buildContent(BuildContext context) =>
+      contentChild ?? const Text('action body');
 
   @override
   Future<int> performAction(BuildContext context) async {
@@ -605,5 +611,87 @@ void main() {
       LoadingDialog.hide(tester.element(find.text('m')));
       await tester.pump();
     });
+  });
+
+  // Content taller than the dialog must scroll, not overflow. Both templates
+  // take caller-supplied content, and BUT-1693's Art. 9 consent copy is long
+  // because the law says what it has to state — a bare Column dropped its tail
+  // off the bottom with only a debug-mode stripe to show for it, so the member
+  // could not read what they were consenting to or reach "Avbryt".
+  //
+  // Deliberately synthetic content at a phone-sized surface: pinning this on
+  // the real ARB string would make the guard depend on nobody ever shortening
+  // the copy (at the 800x600 default it overflowed by just 38px) and on a
+  // feature flag that will one day be removed.
+  group('content taller than the dialog', () {
+    Widget tallContent() => Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('first-line'),
+        for (var i = 0; i < 40; i++) Text('filler-$i'),
+        const Text('last-line'),
+      ],
+    );
+
+    Future<void> phoneSurface(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+    }
+
+    testWidgets(
+      'BaseDialog: long content scrolls and its tail stays reachable',
+      (
+        tester,
+      ) async {
+        await phoneSurface(tester);
+        await tester.pumpWidget(_wrap(_trigger(() {})));
+        final ctx = tester.element(find.byType(ElevatedButton));
+        showDialog<String>(
+          context: ctx,
+          builder: (_) =>
+              _TestBaseDialog(title: 't', contentChild: tallContent()),
+        );
+        await tester.pumpAndSettle();
+
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: 'a dialog must never overflow its own content',
+        );
+
+        await tester.ensureVisible(find.text('last-line'));
+        await tester.pumpAndSettle();
+        expect(
+          tester.getRect(find.text('last-line')).bottom,
+          lessThanOrEqualTo(568.0),
+          reason: 'the last line of the copy must be readable on a phone',
+        );
+      },
+    );
+
+    testWidgets(
+      'BaseActionDialog: long content scrolls and its tail stays reachable',
+      (tester) async {
+        await phoneSurface(tester);
+        await tester.pumpWidget(_wrap(_trigger(() {})));
+        final ctx = tester.element(find.byType(ElevatedButton));
+        showDialog<int>(
+          context: ctx,
+          builder: (_) => _TestActionDialog(contentChild: tallContent()),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+
+        await tester.ensureVisible(find.text('last-line'));
+        await tester.pumpAndSettle();
+        expect(
+          tester.getRect(find.text('last-line')).bottom,
+          lessThanOrEqualTo(568.0),
+        );
+      },
+    );
   });
 }

@@ -326,9 +326,17 @@ export async function removeGroupParticipantWithDeps(
         .doc(targetUid)
         .delete()
         .catch((e) =>
+          // By CODE, not `String(e)`: a Firestore error embeds the full document
+          // path, which on these two deletes is a raw uid. The code is what
+          // separates PERMISSION_DENIED from DEADLINE_EXCEEDED; the uid tells
+          // nothing and outlives the group. Same RULE as the cleanup logs in
+          // enforce-group-minor-membership.ts — not the same code, and the point
+          // is the rule: two answers to one question is how the next author
+          // guesses wrong.
           logger.error("[leaveGroupConversation] participant mirror cleanup failed", {
             conversationId,
-            error: String(e),
+            errCode: (e as { code?: number | string } | null)?.code ?? "unknown",
+            errName: (e as Error | null)?.name,
           }),
         ),
       database
@@ -340,7 +348,8 @@ export async function removeGroupParticipantWithDeps(
         .catch((e) =>
           logger.error("[leaveGroupConversation] membership mirror cleanup failed", {
             conversationId,
-            error: String(e),
+            errCode: (e as { code?: number | string } | null)?.code ?? "unknown",
+            errName: (e as Error | null)?.name,
           }),
         ),
     ]);
@@ -356,7 +365,8 @@ export async function removeGroupParticipantWithDeps(
     ).catch((e) =>
       logger.error("[leaveGroupConversation] system message write failed", {
         conversationId,
-        error: String(e),
+        errCode: (e as { code?: number | string } | null)?.code ?? "unknown",
+        errName: (e as Error | null)?.name,
       }),
     );
   }

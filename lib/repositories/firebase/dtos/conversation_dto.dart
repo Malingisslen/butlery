@@ -140,6 +140,14 @@ class ConversationDto {
       'updatedAt': Timestamp.fromDate(conversation.updatedAt),
       'title': conversation.title,
       'isGroup': conversation.isGroup,
+      // Emitted UNCONDITIONALLY on purpose. A null here is what denies a
+      // non-creator's fallback conversation create: `firestore.rules` reads
+      // `'creatorId' in request.resource.data.metadata`, and an `in` on a null
+      // is an evaluation error. Omitting the key when null — the standard
+      // "don't write nulls to Firestore" cleanup — satisfies the rule's
+      // `!('metadata' in data)` disjunct instead, so that create LANDS and the
+      // minor-eviction trigger never runs for the group. Pinned by
+      // message_mutation_module_test.dart; see that file for the full chain.
       'metadata': conversation.metadata,
     };
   }

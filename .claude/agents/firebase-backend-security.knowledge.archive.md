@@ -3110,3 +3110,269 @@ inherits neither the BUT-1663 floor nor the shares; and the degraded health bit 
 only in-memory surfaces (`lastPoolStats` via `MenuPrefSource.householdIncomplete`, plus
 `household_allergen_filter_tile.dart:96`), so a menu redisplayed after restart shows a degraded
 pool with no warning. The ~4-uncached-reads-at-flip note from the previous entry stands.
+
+### 2026-08-12 — BUT-1693 settings commit: two comment corrections, verified against the code they describe
+
+Scope: `lib/repositories/firebase/firebase_household_allergen_share_repository.dart` and
+`lib/repositories/interfaces/household_allergen_share_repository.dart`, comment-only in this
+commit. Both files opened with `Read`; no probe files, no production mutation.
+
+**Correction 1 — the class docstring's caller enumeration. TRUE as rewritten.** The previous
+pass recorded "its only caller is `HouseholdService._sharedListsByMember`" as true against the
+bytes of that day; the settings row landed in this commit and falsified it. The new sentence —
+"Every caller — the household aggregate's read and the settings row's grant/withdraw — sits
+behind `enable_household_allergen_sharing` (OFF), so nothing reaches Firestore yet" — was
+re-derived, not trusted:
+- `grep HouseholdAllergenShareRepository lib/` → the interface file, the impl, DI
+  (`social_module.dart:123,167`), `household_service.dart:176`, and
+  `lib/views/settings/widgets/household_allergen_sharing_tile.dart:80,131,228`. Nothing reaches
+  the concrete class outside DI. So the enumeration is complete at call-SITE level.
+- Aggregate side: `HouseholdService._sharedListsByMember` returns `const {}` at
+  `household_service.dart:167-173` before it resolves the repository at all.
+- Settings side: `_featureEnabled` is read once in `initState` (`:63-67`, `?? false` when the
+  flag service is absent); `_resolve()` returns at `:77` when false, so `_householdId` stays
+  null; `build` returns `SizedBox.shrink()` at `:259-261`, so `onChanged` is unreachable; and
+  `_grant`/`_revoke` re-guard on `householdId == null` (`:141`, `:229`). Doubly gated.
+- Flag: `'enable_household_allergen_sharing': false` is the CODE default
+  (`feature_flag_service.dart:106`), and `firestore.rules` still has NO match block for
+  `household_allergen_shares` in BOTH the working tree and the staged index (`git show
+  :firestore.rules`, grep exit 1 twice) — so even a remote flip is denied by the catch-all.
+
+Nit, not filed as a finding: the tile also READS (`getOwn`, `:89`) and the sentence names only
+"grant/withdraw". That read is gated by the same `if (!_featureEnabled) return;`, so the claim
+the sentence is making does not weaken — but a future reader should not treat the omission as
+evidence that the read is un-gated.
+
+**Correction 2 — `revoke`'s doc. TRUE as rewritten, and the Art. 7(1) description is accurate.**
+- `revoke()` → `delete()` → `BaseFirebaseRepository.delete` (`:238-265`), which deletes the
+  document. `HouseholdAllergenShare` is the ONLY carrier of `consentVersion` /
+  `consentGrantedAt` for this feature (`grep consentGrantedAt lib/` → the model only;
+  `user_consent.dart` is the app-wide consent categories, `diner_profile.dart` is the guardian
+  consent for ADR-0003). So withdrawal erases the sole copy of the proof.
+- What survives is exactly what the comment says: `logPermissionCheck` (`permission_validation_
+  mixin.dart:394-459`) persists actor, `operation:'delete'`, resourceType/resourceId, granted,
+  timestamp, `metadata.details` (null here) — no `consentVersion`. And the audit repository IS
+  injected for this repo (`social_module.dart:167-173`), so the row really does land; for the
+  siblings it is optional and nothing would survive at all.
+- Retention: `functions/src/audit_logs/purge-expired.ts` splits the collection with an
+  `in`/`not-in` filter over `CONSENT_OPERATIONS = [consent_age_verification, consent_granted,
+  consent_updated, consent_revoked]` (730d) vs everything else (180d). `'delete'` is in the
+  general bucket. The comment's "180-day general bucket rather than the 730-day `consent_*` one"
+  is exact.
+- DPIA R5 (`docs/legal/dpia-household-allergen-sharing.md:171-178`) does expect the pair, and
+  states the mitigation in the PRESENT tense ("the grant and withdrawal events are recorded in
+  the existing audit log with version and timestamp, retained separately, and appear in the
+  member's own data export"). None of that exists. The code comment is right and the legal doc
+  is the stale artifact; flagged to the parent, not fixed here (not in this fileset, and a DPIA
+  edit is Malin's call).
+
+**New reusable fact, folded into the principles file:** when the pair IS built,
+`consent_withdrawn` must be added to `CONSENT_OPERATIONS` (`consent_granted` is already there).
+The list is exhaustive-by-enumeration for the server-side filter, so an unlisted `consent_*`
+operation falls to the 180-day bucket and the Art. 7(1) trail is purged at six months — the
+exact failure the trail exists to prevent, and invisible until 180 days after launch. Room
+exists: 4 of Firestore's 10-value `not-in` limit are used.
+
+Gate count for this commit: TWO, not three. The rules block is still absent and the flag's code
+default is still false, but `lib/` now contains WRITERS, so the "only caller is a read" gate the
+previous pass counted is gone. The missing Art. 17 cascade step, Art. 15 export section and
+`probeResidualData` canary entry remain launch gates rather than live violations on the strength
+of the remaining two.
+
+Verdict: pass, 0 blocking. No behavioural change in either file (`git diff` shows comment lines
+only), and both corrected sentences are true against the bytes reviewed.
+
+### 2026-08-12 — BUT-1693 settings slice, commit gate (tile + three comment-only edits)
+
+Fileset: `household_allergen_sharing_tile.dart` (new), and comment-only diffs in
+`household_allergen_share_repository.dart` (interface), `firebase_household_allergen_share_repository.dart`
+(header), `feature_flag_service.dart`. Verdict: pass, 0 blocking.
+
+**1. Can the tile write a share that is not a truthful self-declaration? No, on all three routes.**
+- `defaults` substitution: `_grant` reads `profile.allergenPreferences` (nullable) and never
+  `UserService.allergenPreferences`, whose getter is `?? UserAllergenPreferences.defaults`
+  (`user_service.dart:116-118`) — four allergens AND two diets. Allergens/diets fall back to
+  `const {}`; only `includeUnknownInMenu` takes `defaults.includeUnknownInMenu` (true), which is
+  the same value the app itself uses locally for a null prefs object, and the household AND-folds
+  it, so the substitution can only fail toward "no extra caution imposed on others".
+- Empty share vs the BUT-1663 floor: an empty declaration is symmetric with what
+  `HouseholdService._aggregatePreferences` already does for the signed-in user's own null prefs
+  (`household_service.dart:334-368` — `settingsMerged` decides whether null is a declaration), so
+  sharing "nothing entered" removes no protection the design gives that member.
+- Unmerged profile: guarded twice. `lookupUserProfile` returns `foundSettingsUnavailable` (not
+  `found`) for a self profile whose settings did not merge (`user_service.dart:686-692`), and the
+  tile re-asserts `!profile.settingsMerged` afterwards. The cached branch (`:668-671`) falls
+  through for an unmerged SELF profile, so the re-read really happens — needed, because
+  `_loadCurrentUserProfile` DOES cache an unmerged self profile (`:602`). `settingsMerged: true`
+  is set only inside `fetchProfile` (`firebase_user_repository.dart:249,255`), and only the
+  auth-state listener / `initialize` / `retryLoadProfile` re-run it — the tile's "no settings
+  screen re-runs it" is true.
+- `ValidationException` replace branch: `ValidationException` and `SecurityViolationException`
+  both `implements Exception` independently (`permission_exceptions.dart:195,221`), so the branch
+  cannot catch a self-declaration or consent-version violation; `BaseFirebaseRepository.create`
+  throws `PermissionDeniedException`, not `ValidationException`. The only producer is
+  `_assertNotAlreadyShared`. The revoke it performs is `documentId(householdId, currentUserId)`,
+  so it can never delete another member's row.
+
+**2. Consent record.** Correct on both paths. One `clock.now()` per `buildShare()` feeds
+`consentGrantedAt` and `updatedAt` together; `create()` enforces self + `isValidConsent` +
+`currentConsentVersion` and refuses an existing id, so a re-grant is always a create on an absent
+doc; `update()` is never called by the tile and carries the stored triple forward anyway. The
+Swedish consent copy (`app_sv.arb:1228`) names what is shared, who sees it (including future
+joiners), the vegan/menu consequence and one-tap withdrawal; it matches
+`app_localizations_sv.dart` BYTE-WISE (checked in python, `EQUAL: True`) — the gen-l10n trap did
+not fire this time.
+
+**3. Comment claims, each verified.** Interface `revoke`: audit repo injected
+(`social_module.dart:167-173`), client `allow create` on `audit_logs` exists
+(`firestore.rules:2167-2170`), the delete row carries no `details` hence no `consentVersion`, and
+`'delete'` is outside `CONSENT_OPERATIONS` so it sits in `GENERAL_RETENTION_DAYS = 180` rather
+than `CONSENT_RETENTION_DAYS = 730`. Repo header: `grep household_allergen firestore.rules` →
+zero hits, catch-all `if false` at `:2846-2848`; the only `lib/` callers of the interface are
+`household_service.dart:176` (behind the flag at `:167`) and the tile's three sites (behind
+`_featureEnabled`, which fails closed when the flag service is absent). Flag comment (a)(b)(c)
+all true, including "the denied query makes every multi-member household report an incomplete
+roster" (`household_service.dart:189-217` catch → null → `sharesUnavailable && othersOnRoster` →
+`degraded` at `:380-398`).
+
+**4. Findings, none blocking.**
+- MEDIUM — the flag comment's "what is still missing before this may be flipped" reads exhaustive
+  and omits the Art. 17 cascade step, the Art. 15 export section and the `probeResidualData`
+  entry (`grep household_allergen functions/src` → zero). DPIA R7 asserts all four erasure
+  triggers in the present tense, the same defect the same commit fixed for R5.
+- MEDIUM/LOW — `_grant` never asserts `profile.uid == userId` (the `PermissionService` handle it
+  keys the document with). During an account switch, `UserService._currentUserProfile` can still
+  hold the previous account's profile while `PermissionService.currentUserId` has moved; the
+  repository's `isMember(entity.householdId, userId)` and the rules block it, so it is
+  unreachable in practice — but one equality assert makes it structural.
+- LOW — the M4 branch's comment names one cause; a share created on ANOTHER device after
+  `_resolve` reaches the same branch, and the replace then deletes a valid consent record and
+  re-dates the Art. 7(1) evidence. Remedy: on `ValidationException`, `getOwn` again and, if a
+  valid share comes back, just flip the switch ON.
+- LOW — `consentGrantedAt` is a client clock value; the rules block must pin it against
+  `request.time` when written (hand to `firestore-rules-tester`).
+- LOW — the ARB description on `householdAllergenShareSettingsUnread` still says "retrying the
+  toggle cannot help, so the copy names the screen that fixes it"; the last change made retry a
+  real remedy and the copy names no screen. Descriptions ship to translators.
+
+**Gate count for this commit: TWO, and they are not equal.** The flag is Remote-Config-flippable
+without a deploy; only the absent rules block is immune to a remote flip. That asymmetry, and the
+"an enumeration of remaining gates becomes the launch checklist" rule, are folded into the
+principles file.
+
+### 2026-08-12 — BUT-1693 settings slice, gate re-pass over three post-review files (PASS)
+
+Re-read after my previous pass, because three files changed afterwards and a verdict is scoped to
+bytes. Fileset: `lib/repositories/interfaces/household_allergen_share_repository.dart`,
+`lib/services/feature_flags/feature_flag_service.dart`,
+`lib/views/settings/widgets/household_allergen_sharing_tile.dart`. No blocking findings.
+
+**1. The audit-token fix is correct against the sink.** The `revoke` doc now prescribes
+`consent_granted` / `consent_revoked`. Verified in `functions/src/audit_logs/purge-expired.ts:56-61`:
+`CONSENT_OPERATIONS = ["consent_age_verification","consent_granted","consent_updated",
+"consent_revoked"]`. The earlier `consent_withdrawn` spelling would have been a second token for one
+act AND, being unlisted, would have fallen through the `not-in` general filter to the 180-day bucket
+— i.e. the Art. 7(1) trail deleted at six months. The doc's residual claim also holds: `revoke()` →
+`delete()` → base `delete` (`base_firebase_repository.dart:238-249`) logs `operation:'delete'`, no
+`consentVersion`, general bucket; and the audit repository IS injected
+(`social_module.dart:167-173`), so the row actually persists.
+
+**2. My previous Medium (incomplete launch checklist) is applied, and it introduced a Low.** The
+flag comment now lists (a) rules block, (b) atomic settings+share write, (c) consent audit pair,
+(d) "the account-deletion cascade step, its probeResidualData leg, the reset-user-data entry and the
+GDPR export section, none of which exist (`grep household_allergen functions/src` is empty)". Every
+factual claim verified: `grep -rn household_allergen functions/src` → zero; `grep household_allergen
+firestore.rules` → zero (so the collection is still default-denied by the catch-all); the code
+default is `false`. But the cited grep is mis-scoped for one of the four items — the Art. 15 export
+is CLIENT-side (`lib/services/account/export/`; `family_export_manager.dart` exports diner profiles
+and family ratings only, and is where a share section would go). I verified the export claim
+independently (`grep -rn household_allergen lib/services/account/` → zero), so the STATEMENT is
+true; only its cited proof cannot reach it. Filed Low. The same wording has propagated into
+`docs/legal/dpia-household-allergen-sharing.md` R7's status line (read by grep only, not opened, so
+not filed against that file).
+
+**3. The tile cannot write an untruthful self-declaration.** Traced every write:
+- `_grant` latches `_busy` at line 150 BEFORE the first await (the profile re-read), so the
+  double-tap → second consent dialog → racing create → `ValidationException` → replace branch →
+  momentary revoke of a live share is closed. There is no unlatched window: `await _confirmShare()`
+  is modal, and `_grant` runs synchronously to its `setState` before its first await.
+- `if (!mounted) return;` after `lookupUserProfile` (line 162) guards both `setState` and every
+  later `context` use; the `finally` clears the latch only when mounted, which is correct for a
+  disposed element.
+- `profile.uid != userId` (line 179) closes the account-switch window between the `UserService`
+  handle and the `PermissionService` handle. Defence in depth only: the repository's `create` runs
+  `_assertSelfDeclaredWithConsent` (userId match, valid consent, current version) and then
+  `validateCreatePermission` (`entity.userId == userId` AND `isMember(entity.householdId, userId)`),
+  so a stale `_householdId` from a previous account is refused client-side too.
+- Comment claims about `lookupUserProfile` check out (`user_service.dart:656-699`): an unmerged
+  SELF profile is never served from cache and never cached, so "try again" is a real remedy; and for
+  a self caller an unmerged read does arrive as `foundSettingsUnavailable`, making the `found` status
+  check dead-but-harmless as the comment says. `settingsMerged == false` or a null profile refuses
+  with a snackbar rather than writing an empty share — fail-closed in the direction that keeps the
+  BUT-1663 floor.
+- Freshness at grant time: `UserService.updateAllergenPreferences` (`:836-843`) writes
+  `_currentUserProfile` and re-caches, so the shared list matches what the member sees on this
+  device. Cross-device lag after the grant is DPIA R4, already named as gate (b).
+- The `on ValidationException` replace branch is correctly scoped: `ValidationException`,
+  `SecurityViolationException` and `PermissionDeniedException` each `implements Exception`
+  independently (`permission_exceptions.dart:115/195/221`), so only `_assertNotAlreadyShared`'s
+  conflict can reach it. Its failure mode is honest — revoke succeeds, create fails, switch stays
+  OFF with no document.
+- Flag gating is unconditional on the write side: `_featureEnabled` read in `initState`, `_resolve`
+  returns immediately when off, `build` returns `SizedBox.shrink`, and both handlers require
+  `_householdId`/`_isSharing`, which only `_resolve` sets.
+
+**Gate count unchanged at TWO** (absent rules block — the only remote-flip-immune one — plus the
+false code default), with `lib/` now holding writers.
+
+### 2026-08-12 — BUT-1693 tile re-read: I was wrong to call the account-switch conjunct "defence in depth"
+
+Re-read of `lib/views/settings/widgets/household_allergen_sharing_tile.dart` after the comment
+on the `profile.uid != userId` conjunct changed. My earlier pass wrote that the conjunct was
+"defence in depth only — the repository's `create` independently asserts self-declaration".
+Traced against the code this pass; the earlier reading is REFUTED.
+
+- `_grant` reads `userId` from `ServiceLocator.tryGet<PermissionService>()?.currentUserId`
+  (`permission_service.dart:120` → `_authRepository.currentUserId`).
+- `FirebaseHouseholdAllergenShareRepository.create` calls
+  `_assertSelfDeclaredWithConsent(requireCurrentUserId(), entity)`; `requireCurrentUserId`
+  (`base_firebase_repository.dart:69-78`) reads `_authRepository.currentUserId` too.
+- `FirebaseAuthRepository.currentUserId` (`:63-66`) resolves `FirebaseAuth.currentUser` live
+  (its `_ignoreInitialNull`/`_cachedUser` guard only covers the startup race for the SAME user).
+- `super.create` (`base_firebase_repository.dart:97-118`) additionally runs
+  `validateCreatePermission`, which tests `entity.userId != userId` (same two live values) and
+  household membership of `entity.householdId`.
+- The share's `trackedAllergens`/`trackedDietary`/`includeUnknownInMenu` come from
+  `UserService.currentUserProfile` → `_currentUserProfile`, a cached snapshot set by
+  `_loadCurrentUserProfile()` and cleared ONLY on a null `authStateChanges` event
+  (`user_service.dart:129-137`); the refill is async.
+
+So on an A→B account switch with no null tick (or before the async reload lands), every
+downstream layer compares live-auth to live-auth and passes, while the payload carries A's
+Art. 9 allergen list under B's id. The conjunct is the only layer comparing the cached handle
+to the live one. The comment as it now stands is TRUE clause by clause, including "Rules see
+the same two live values" (a rule can only bind `request.auth.uid` and the `{householdId}_{uid}`
+path; neither constrains the allergen payload). Verified the pin exists and is non-vacuous by
+reading it: `test/widget/views/settings/household_allergen_sharing_tile_test.dart:459-500`
+stages an unmerged self profile whose re-read returns `uid: 'someone-else'` with
+`settingsMerged: true`, then asserts `verifyNever(shares.create)` plus the
+`householdAllergenShareSettingsUnread` copy — the conjunct is the only assertion that can
+refuse that fixture.
+
+Counter-check on the sibling field: `_householdId` is ALSO stale across the same switch, but it
+IS closed downstream — `validateCreatePermission` requires `isMember(entity.householdId, uid)`,
+so B writing into A's household is denied unless B is genuinely a member (in which case the
+write is correct). Same call site, opposite verdict, decided by which handle each field comes
+from.
+
+Gate count unchanged at TWO: `grep -n household_allergen firestore.rules` → zero hits (no match
+block; the catch-all denies, and this is the only remote-flip-immune gate), plus the false code
+default of `enable_household_allergen_sharing`.
+
+No mutants/probes left in the fileset (`grep MUTANT|if (false)|THROWAWAY` over the tile, the
+repository and the test → empty). Tile md5 `f5e81cd0766f800fd90776d62e21348d`, unchanged across
+the whole read; `git status` shows index == tree for it.
+
+Process note: an overstated "this guard is redundant" is a security defect in its own right —
+it is the sentence a later cleanup pass cites when deleting the guard. Distilled into the
+BUT-1693 principle above.

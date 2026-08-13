@@ -29,7 +29,10 @@ abstract class HouseholdAllergenShareRepository
   /// yet a consent record: it carries no `consentVersion`, and its operation
   /// spelling puts it in the 180-day general retention bucket rather than the
   /// 730-day `consent_*` one. DPIA R5 expects a real `consent_granted` /
-  /// `consent_withdrawn` pair; the writer ticket lands it with the consent UI.
-  /// Do not describe the Art. 7(1) trail as complete until it does.
+  /// `consent_revoked` pair (the spelling `CONSENT_OPERATIONS` already
+  /// carries — do not mint a second token for one act). The consent UI shipped WITHOUT it (BUT-1693,
+  /// 2026-08-12) — it is a named gate on turning the feature flag on, not
+  /// something already scheduled elsewhere. Do not describe the Art. 7(1)
+  /// trail as complete until it exists.
   Future<void> revoke(String householdId);
 }

@@ -1874,6 +1874,40 @@ class AppLocalizationsEn extends AppLocalizations {
       'We could not read everyone in the household just now, so the list of allergies may be incomplete.';
 
   @override
+  String get householdAllergenShareTitle =>
+      'Share my allergies with the household';
+
+  @override
+  String get householdAllergenShareSubtitleOff =>
+      'The household is guessing on your behalf';
+
+  @override
+  String get householdAllergenShareSubtitleOn =>
+      'The household\'s menu accounts for your allergies';
+
+  @override
+  String get householdAllergenShareConfirmTitle => 'Share your allergy list';
+
+  @override
+  String get householdAllergenShareConfirmBody =>
+      'Your household can see the allergies and dietary choices you have entered, so the weekly menu can be planned around them. Today Butlery guesses on your behalf — it assumes four common allergies and misses the rest.\n\nEveryone in the household sees the list, including anyone who joins later.\n\nIt is shown as one combined list for the whole household. Nobody sees which allergy belongs to whom.\n\nDietary choices count as a requirement when the menu is planned: if you share “vegan”, the whole household\'s menu is planned vegan.\n\nYou can stop sharing at any time. The list is removed immediately and the menu goes back to being cautious on your behalf.';
+
+  @override
+  String get householdAllergenShareConfirmAction => 'Share';
+
+  @override
+  String get householdAllergenShareStopped =>
+      'Your allergy list is no longer shared. The menu is cautious on your behalf again.';
+
+  @override
+  String get householdAllergenShareSettingsUnread =>
+      'We could not read your own allergy settings. Check your connection and try again.';
+
+  @override
+  String get householdAllergenShareFailed =>
+      'Could not change sharing just now. Please try again.';
+
+  @override
   String get commonTurnOff => 'Turn off';
 
   @override

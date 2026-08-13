@@ -1211,3 +1211,225 @@ Pinned by `test/unit/repositories/firebase_recipe_repository_sanitize_test.dart`
 (`a sentence CONTAINING data: is blanked`), which also carries a discriminator
 fixture proving a bare colon is harmless, so a future reader cannot mistake the
 rule for "any colon blanks the field". BUT-1819, 2026-08-10
+
+## Messaging — the conversation roster (2026-08-12)
+
+### The bootstrap branch, and why it cannot just be tightened
+
+`conversations/{conversationId}/participants/{participantId}` had **no `match` block at
+all** until 2026-08-12. It fell to the terminal default-deny, which meant
+`ConversationParticipantModule.addParticipants` — reached on every group and direct
+conversation creation — was denied. LOUDLY, unlike the other four: `addParticipants` has no
+local catch, so `batch.commit()` throws up through `createGroupConversation`. That is what
+made it the priority of the five `hasOnly`/missing-rule drifts found after the three-week
+recipe-save outage — the others were swallowed and merely stopped working.
+
+The obvious rule (`get()` the conversation and check `participantIds`) denies GROUP creation
+permanently. `FirebaseMessagingRepository` mixes in `UserScopedFirebaseRepository`, so the
+group document is written under `users/{uid}/conversations/{id}`, while the roster goes to
+the TOP-LEVEL path — whose parent only materialises when the first message is sent
+(BUT-1795). So the shipped rule is `attested || unclaimed`:
+
+    allow read: if isAuthenticated()
+      && (parentNames(request.auth.uid)
+          || (parentDoc() == null && exists(<own row>)));
+
+`rosterUnclaimed()` additionally excludes `^direct_.*` ids, because a direct id is
+guessable from two uids that are readable in `public_profiles`.
+
+### Residual (a): pre-seat
+
+An unattested user who knows a never-chatted group's id can seat a row, and then read the
+roster. Pinned by test **P3B**, which is written to PASS — it is the honest record of the
+cost, not a hidden hole. If P3B ever starts failing, the bootstrap was removed and group
+creation should be re-checked before celebrating.
+
+**A third actor on the same branch, recorded separately because the two lists above do not
+reach them.** Between group creation and the first REAL message, every legitimately seated
+member can LIST the roster through the unclaimed fallback — including a minor added by a
+non-friend who has not been evicted yet. `enforceGroupMinorMembership` is an
+`onDocumentCreated` trigger on the TOP-LEVEL `conversations/{id}` document, and that document
+does not exist until the first real message: group creation writes only the user-scoped copy,
+and the system message `createGroupConversation` sends immediately after is refused twice over: the client's own participant check
+rejects `isParticipant('system')` before any write, and the messages create rule would deny it
+anyway (`senderId == request.auth.uid` against `Message.system`'s literal `"system"` — already documented at `conversation_mutation_module.dart:226`). So the
+child-safety cut cannot fire during that window, and the roster it would have cleaned is
+readable to everyone in it.
+
+**And the window is closed by the CREATOR, not by "someone" — but not for the reason it first
+appears, and the real reason is fragile.** The first version of this paragraph said a
+non-creator's send is "refused before any write" and that the create conjunct
+`metadata.creatorId == request.auth.uid` denies it. Neither is what happens.
+
+`readConversation` is the user-scoped `read`, which RETURNS NULL on a missing document rather
+than throwing, so the `ResourceNotFoundException` never fires — a non-creator has no
+`users/{uid}/conversations/{id}` copy, and nothing refuses before the write. The module falls
+through to its fallback, builds `Conversation(participantIds: [senderId], isGroup: false)` with
+no metadata, and stages a top-level create. `ConversationDto.toFirestore` emits
+`'metadata': conversation.metadata` UNCONDITIONALLY, so the payload carries `metadata: null`,
+and the create rule evaluates `!('creatorId' in request.resource.data.metadata)` against null —
+an `in` on a null is a CEL EVALUATION ERROR, which denies. The named equality conjunct is never
+reached.
+
+**So the barrier is an evaluation error, and the UPDATE rule thirty lines below answers the
+same null-metadata question the opposite way, with an `is map` ternary.** Harmonising the two
+spellings "for consistency" is an obvious, well-intentioned edit and it would disarm the
+child-safety trigger outright: the non-creator's create would land a top-level document with
+`isGroup: false` AND a single participant, `enforceGroupMinorMembership` would return early on
+it (both halves of its guard, not the flag alone — see below), and
+`onDocumentCreated` cannot fire twice — so the cut would never run for that group at all, while
+every other member's roster read would die because the parent now exists and names only the
+sender. Pinned by test C7B, which is the only test in the suite that puts `metadata: null`
+through the CREATE rule; mutation-proven — making the two rules agree reddens exactly it.
+
+**The evaluation error is NOT a security bound, and this record must not be read as claiming
+one.** It binds the app's own client, which sends `metadata: null`. It does not bind a tampered
+one. Measured against the staged rules: any authenticated caller who knows a group's id can
+create `conversations/{id}` with `{participantIds: [self], createdAt, isGroup: false,
+metadata: {creatorId: self}}` — no null anywhere, the conjunct satisfied, **ALLOW**. That ends
+the window degenerately and IRREVERSIBLY: the trigger returns early on it — that payload trips BOTH halves of its
+guard (`isGroup: false` AND a single participant), so do not read the flag alone as sufficient
+— and `onDocumentCreated` cannot fire twice, so the child-safety cut never runs for that group; the
+real creator's later first message is now an UPDATE against `participantIds: [attacker]` and is
+denied, so they cannot repair it; and every member loses roster read, because the parent now
+exists and names nobody real. A member who wants the eviction never to run has a one-write way
+to guarantee it.
+
+That squat is PRE-EXISTING — the conversations create rule is not changed by this commit — and
+is filed separately as **BUT-1830** (Urgent), which also warns against adding an explicit
+`metadata is map` to the create rule alone: that removes the accidental barrier stopping our
+own client while leaving the deliberate attack untouched. What is recorded here is only this: "only the creator can end the window"
+is true of the honest client and false in general, and the thing standing between the two is an
+error rather than a rule.
+
+**The invariant is THREE-sided, and all three sides are pinned as of this commit.** C7B proves
+the rule denies `metadata: null`. Two Dart assertions in
+`message_mutation_module_test.dart` prove the writer keeps sending it: one that the fallback
+records no `creatorId` (stamping one — an obvious, well-intentioned fix — makes the create land
+and leaves C7B green), and one that `ConversationDto.toFirestore` emits the KEY even when null
+(omitting it, the standard "don't write nulls" cleanup, satisfies the rule's
+`!('metadata' in data)` disjunct and lands the create just as effectively). Each is
+mutation-proven against exactly the edit it exists for, and `conversation_dto.dart` carries a
+comment saying why that line is unconditional.
+
+Whether a non-creator's first message SHOULD fail is a product question; today it is a failed
+send, not a graceful refusal, and this record should not be read as endorsing it. So for a group whose creator stays silent, `enforceGroupMinorMembership` never fires
+at all. In the threat model this trigger exists for, the non-friend adder IS the creator: in the
+honest-client model described above — and only there, see the "NOT a security bound" paragraph
+— they control whether the child-safety cut ever runs, and this block is what makes the roster
+readable in the meantime. Pre-existing (BUT-1626/BUT-1795) but sharper than "until the first
+message" suggests, and it should weigh on BUT-1795's priority.
+
+This window is NEW with this block: the path was default-deny before, so a seated row granted
+nothing. It is not a regression against a working state — group creation was throwing
+outright until this sprint (D2) — but it is a real cost of turning the path on, and it is the
+strongest single argument for landing BUT-1795, which removes it along with (a) and (b).
+
+Bounded by the id: `Conversation.group` mints a UUIDv4 and `BaseFirebaseRepository.create`
+writes `doc(getId(entity))`, so it is ~122 bits and client-generated. (An earlier version of
+this record said "a 20-char Firestore auto-id". That was wrong about the mechanism; the
+security conclusion was unchanged, but the sentence was corrected in three places.)
+
+### Residual (b): orphan — and why the scoping does NOT close it
+
+Firestore rules cannot distinguish "the parent has never been written" from "the parent was
+deleted". Both are `parentDoc() == null`. So every deletion of a conversation re-opens the
+permissive branch over its surviving roster rows, permanently. `allow delete` on the
+conversation does not cascade, and the per-row delete rule admits only the row's own subject,
+so the deleting client cannot clean up after itself.
+
+The first version of the rule comment claimed the scoping "closes it, and closes the pre-seat
+residual with it". It does neither; a five-minute emulator probe disproved both. That
+sentence was written in the same edit that created the branch, which is the general hazard:
+a claim about a control, authored by the person adding it, at the moment they are most
+convinced.
+
+Reachable deleters:
+
+1. **`enforceGroupMinorMembership`** — when evicting non-friend-added minors leaves fewer
+   than two members, it deletes the whole conversation. This was the sharp case: the evicted
+   MINOR kept roster read on a group they had been removed from, and their own name and
+   avatar stayed readable to it. **CLOSED in code, 2026-08-12.** The trigger now enumerates
+   the roster with a bounded `.limit(MAX_ROSTER_ROWS + 1).get()` and deletes every row
+   BEFORE deleting the parent — order matters, because the parent delete is the write that
+   opens the branch. `tryClearRoster` REPORTS rather than throws (a throw inside a
+   `retry:true` trigger is a loop); a false verdict makes the caller take the UPDATE branch
+   instead, leaving the parent standing, which is what keeps the roster denied. Pinned at three levels, each
+   mutation-proven and each proving something the others cannot. The integration suite pins
+   the CLEANUP (remove the roster delete and the update and collapse branches redden, the
+   keep path stays green) and the CALLER'S INVARIANT (neutralise the gate so the parent is
+   deleted despite a false verdict, and the shell test alone reddens — that gate was
+   invisible to every fixture until a test staged an unclearable roster, because every other
+   fixture's roster clears). Fake-database unit tests pin the helper's READ- and
+   DELETE-failure paths, which the emulator cannot reach at all: nothing there can make
+   either fail, since the Admin SDK bypasses rules and deleting a missing document succeeds.
+   (Its cap refusal is a different matter — the emulator reaches that one, and the shell
+   test above is how the false verdict is staged.)
+2. **`ConversationMutationModule.deleteConversation`**, from the conversations list view —
+   **NOT closed**, tracked as BUT-1825.
+3. **`account-deletion-cascade.ts:1185-1191`**, the GDPR erasure — it deletes any
+   conversation with **two or fewer participants WHOLE** and never touches the roster.
+   **NOT closed.** Two consequences neither the first version of this record nor BUT-1825
+   named: a group that has shrunk to two members is deleted this way, so residual (a) is
+   reachable without ever needing an unchatted group; and for a DIRECT conversation the
+   `direct_` exclusion in `rosterUnclaimed()` blocks the WRITE but not the READ fallback, so
+   the surviving partner keeps LIST over a roster still holding the erased user's
+   `displayName` and `avatarUrl` — a live read immediately after an Art. 17 erasure, not
+   merely stored residue. That is BUT-1822 seen from the other end.
+
+**Consequence for the remedy:** BUT-1825's option 2 (widen the per-row delete rule so a
+client can cascade) reaches deleter **2** only — the user's own delete from the conversations
+list view, which is the one a client-side rule can see. Deleters **1 and 3** run server-side
+under the Admin SDK, where rules do not apply. **Only BUT-1795 closes all three.**
+
+(The numbering above is this section's own: 1 = `enforceGroupMinorMembership`, 2 = the client
+delete, 3 = the GDPR cascade. `.claude/rules/accepted-deviations.md` lists the same three in a
+different order and refers to them by description rather than number, deliberately — an index
+copied between two differently-ordered lists is how this sentence was wrong on its first
+writing. **`firestore.rules` numbers them too, in a THIRD order** — 1 client delete,
+2 eviction CF, 3 cascade — so those are the two places that both use indices, and they are the
+pair a copied number breaks. Never move a "deleter N" between documents; re-read the list you
+are writing into.)
+
+### Why this is accepted rather than fixed now
+
+The alternative to the branch is landing BUT-1795 (write the group to the top-level path at
+creation), after which the branch can be deleted outright and both residuals go with it.
+Widening the roster `delete` rule so a client could cascade is more surface for a residual
+that, in practice, shows a former group member the names and avatars of people they already
+chatted with.
+
+**Also worth knowing:** nothing in the app reads this path today — `getParticipants`,
+`watchParticipants`, `isParticipant` and `updateLastRead` have no callers outside their
+module. The read rule ships ahead of its reader. That is a fair argument for `allow read: if
+false` until one exists, and it is recorded here rather than acted on.
+
+### The zero-member shell
+
+`tryClearRoster` refuses a roster larger than `MAX_ROSTER_ROWS` (5x the participant cap)
+and returns false, whereupon the trigger takes the update branch instead of the delete
+branch. When `remaining` is empty — every participant a minor, no `metadata.creatorId` —
+that writes `participantIds: []`, and since every rule in the conversations block gates on
+`uid in participantIds`, the document becomes permanently unreadable, unupdatable and
+undeletable.
+
+Accepted as the safest of three bad outcomes. **A later sweep must clear the roster BEFORE
+deleting such a shell** — deleting it flips `parentDoc()` to null and re-opens
+`rosterUnclaimed()` plus the own-row read fallback over every surviving row, including the
+legitimate members and the evicted minor. The shell is safe only while it stands, so the
+naive cleanup performs exactly the disclosure the shell was chosen to avoid. A live parent naming nobody makes the seeded
+roster unreadable; deleting the conversation would re-open the bootstrap branch over those
+rows; throwing would hand a `retry:true` trigger a deterministic error to loop on forever,
+re-billing a ≤501-document roster read plus the ≤100-document participant fan-out each time. The cap exists precisely because rules
+let any signed-in user write that path while the parent is absent, with no rate limit — so
+an unbounded enumeration inside a retrying trigger was a real self-repeating bill, the same
+one the `MAX_GROUP_PARTICIPANTS` guard beside it already refuses.
+
+### Art. 17 — open, not accepted
+
+Account deletion erases `users/{uid}/conversation_memberships` and nothing erases the roster
+row, which carries the deleted user's `displayName` and `avatarUrl`. Inert until this sprint
+(no rows could exist), live from now. **BUT-1822**, high priority, `firebase-backend-security`
+review. Scope note: the cascade also deletes ≤2-participant conversations whole, orphaning the
+SURVIVING partner's row too, so a `collectionGroup` leg keyed on the erased uid is not
+sufficient on its own.

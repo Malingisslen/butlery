@@ -32,11 +32,11 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 ///
 /// **Inert until the rules commit lands.** `firestore.rules` has no match block
 /// for this collection yet, so the catch-all `match /{document=**}` denies every
-/// read and write here in production. Its only caller is
-/// `HouseholdService._sharedListsByMember`, itself behind
-/// `enable_household_allergen_sharing` (OFF), so nothing reaches Firestore yet —
-/// but do not read the sentence above as describing a live control until the
-/// block and its emulator tests exist.
+/// read and write here in production. Every caller — the household aggregate's
+/// read and the settings row's grant/withdraw — sits behind
+/// `enable_household_allergen_sharing` (OFF), so nothing reaches Firestore yet.
+/// Do not read the sentence above as describing a live control until the block
+/// and its emulator tests exist.
 class FirebaseHouseholdAllergenShareRepository
     extends BaseFirebaseRepository<HouseholdAllergenShare>
     implements HouseholdAllergenShareRepository {

@@ -275,3 +275,68 @@ files in the same edit.
   recorded in the full entry and needs its own ticket, not a quiet widening. Do not file
   this as a bug; do not "simplify" the discriminator fixture that proves a bare colon is
   harmless. BUT-1819, 2026-08-10
+
+- **The conversation roster's bootstrap branch is knowingly permissive, in two ways that
+  are NOT closed** — `conversations/{id}/participants` reads as
+  `parentNames(uid) || (parentDoc() == null && you hold a row)`. Group creation writes the
+  roster before the top-level conversation document exists (it materialises on the first
+  message), so the second disjunct is load-bearing and cannot simply be deleted.
+  Consequences, both accepted: (a) **pre-seat** — an unattested user who knows a
+  never-chatted group's id can seat a row and then LIST it (pinned as test P3B, deliberately
+  a passing test, not a hidden one). **Same branch, different actor:** in the window between
+  group creation and the FIRST REAL MESSAGE, every legitimately seated member can LIST the
+  roster through that fallback — including a minor added by a non-friend who has not been
+  evicted yet, because `enforceGroupMinorMembership` triggers on the TOP-LEVEL conversation
+  document, which does not exist until then (the system message the client sends is itself
+  denied, `senderId: "system"`). The child-safety cut cannot fire during that window, and only the
+  group's CREATOR can end it — so the non-friend adder controls whether the cut ever runs.
+  What actually holds that shut is an evaluation error, not a rule anyone wrote on purpose: a
+  non-creator's first message stages a create carrying `metadata: null`, and `in` against a
+  null denies. The UPDATE rule answers the same question with an `is map` ternary; harmonising
+  them would disarm the trigger. **Do not make those two spellings agree** — test C7B pins it.
+  That error is NOT a bound, though: it binds the app's own client, not a tampered one. A
+  hand-rolled create with a real `metadata` map ends the window whenever an attacker likes, and
+  irreversibly (pre-existing, **BUT-1830**, Urgent). All THREE sides are pinned as of this commit: the rule
+  (C7B), the fallback recording no creatorId, and the DTO emitting the metadata key even when
+  null — the last two in `message_mutation_module_test.dart`, each mutation-proven against the
+  well-intentioned edit it exists for.
+  The window is NEW with this block (the path was default-deny before), and BUT-1795 closes it
+  with the other two; (b) **orphan** — rules cannot tell "parent deleted"
+  from "parent not written yet", so deleting a conversation re-opens the branch for it
+  forever, and `allow delete` does not cascade. THREE deleters, not one: the user's own
+  "delete conversation" in the list view, the GDPR account-deletion cascade (which deletes
+  any conversation of two or fewer participants whole), and the eviction CF's collapse
+  branch — only the last is fixed. Widening the per-row delete rule reaches only the first;
+  the other two run under the Admin SDK. **Only BUT-1795 closes all three.** For a DIRECT
+  conversation the cascade case is a live read, not residue: the `direct_` exclusion applies
+  to the WRITE branch and not to the read fallback, so the surviving partner keeps LIST over
+  the erased user's name and avatar (BUT-1822). The id is a client-minted UUIDv4 (~122
+  bits), not guessable, so in practice (b) discloses former group members' names and avatars
+  to a former group member. **BUT-1795 removes the branch and both residuals with it**;
+  BUT-1825 tracks (b). Do NOT "simplify" the `parentDoc() == null` scope out of the read
+  rule — it is what denies an EVICTED member the roster while the parent is alive, and
+  removing it was measured to flip exactly that case (test P12B). The eviction Cloud
+  Function's own delete-the-conversation branch was the sharp case and is CLOSED in code,
+  not in rules: `enforceGroupMinorMembership` now enumerates and deletes every roster row
+  BEFORE deleting the parent. BUT-1795/BUT-1825, 2026-08-12
+
+- **Account deletion does NOT yet erase `conversations/{id}/participants/{uid}`, and that is
+  a known gap rather than a decided call** — recorded here because the gap went LIVE with
+  the same commit that gave that path its first `match` block (before it, writes were
+  default-denied, so no row existed and nothing leaked). The row carries the deleted user's
+  `displayName` and `avatarUrl`. Tracked as **BUT-1822**, high priority, to be reviewed by
+  `firebase-backend-security`. Do not read this entry as accepting the residual: it is an
+  open Art. 17 defect with a ticket, listed so a reviewer who finds it knows it is already
+  filed. 2026-08-12
+
+- **`tryClearRoster` refuses an implausibly large roster and leaves the conversation
+  standing — including as a ZERO-member document that nobody can ever read, update or
+  delete** — every rule in the conversations block gates on `uid in participantIds`, so an
+  empty list locks the document permanently. Accepted as the safest of three bad outcomes:
+  a live parent that names nobody makes the seeded roster unreadable, whereas deleting the
+  conversation would re-open the bootstrap branch over those rows, and throwing would loop
+  a `retry:true` trigger forever on a deterministic error. Only reachable when a roster has
+  been seeded past `MAX_ROSTER_ROWS`. What it leaves needs a sweep that clears the ROSTER
+  FIRST: deleting the shell flips `parentDoc()` to null and re-opens the branch over every
+  surviving row, including the legitimate members and the evicted minor. The shell is safe
+  only while it stands. BUT-1795/BUT-1825, 2026-08-12

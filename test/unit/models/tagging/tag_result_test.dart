@@ -1156,7 +1156,11 @@ void main() {
             ],
           );
 
-          // Default cross-user write omits decisions to avoid storage bloat.
+          // The cross-user write NEVER emits decisions. Not "by default" — the
+          // `includeDecisions` flag that could was removed 2026-08-12, because
+          // `decisions` is absent from `isValidTagResult`'s allowlist and
+          // flipping it would have denied every recipe write. This assertion is
+          // what keeps it out; see the note on `TagResult.toFirestore`.
           final stored = withDecisions.toFirestore();
           expect(stored.containsKey('decisions'), isFalse);
 
