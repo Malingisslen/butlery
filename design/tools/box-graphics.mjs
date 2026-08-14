@@ -161,7 +161,11 @@ export function angransandeFarg(rel) {
 export const EKVIVALENS = Object.freeze({
   PROPORTION: 'PROPORTION_MATCH', VARDEMANGD: 'VALUE_SET_MATCH', INGEN: 'INGEN' });
 
-const ANDEL_TOLERANS = 0.05;
+// Andelstolerans for uppmatt geometri. Delas med colour-only.mjs, som
+// klassificerar knoppens lage i ett reglage som en andel av dess resa. Samma
+// slags storhet — en dimensionslos andel — och darfor samma tolerans. Inget
+// eget troskelvarde infors pa andra hall.
+export const ANDEL_TOLERANS = 0.05;
 
 /** Plockar ut proportioner ur synlig text: "x av y", "x/y", "n %". */
 export function proportionerITexten(texter) {

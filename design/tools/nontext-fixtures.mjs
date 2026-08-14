@@ -12,6 +12,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { NONTEXT_MEASURE } from './nontext-measure.mjs';
+import { knoppLage, LAGE_OKANT } from './colour-only.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -182,9 +183,15 @@ const prov = (id, vad, ok, diag) => resultat.push({ id, vad, ok: !!ok, diag });
     d ? d.carrier + ' · kvot ' + d.kvot : 'delen saknas'); }
 
 { const pa = k('nt08-reglage-pa'), av = k('nt09-reglage-av');
-  const skiljer = pa && av && pa.signaler.thumbLage !== av.signaler.thumbLage;
+  // Lagesignalen lases ur FAKTISK RENDERAD GEOMETRI sedan 2026-08-15. Den
+  // gamla modellen laste justify-content och var blind for allt utom flex.
+  const la = pa && knoppLage(pa.signaler.knoppGeometri);
+  const lb = av && knoppLage(av.signaler.knoppGeometri);
+  const skiljer = !!la && !!lb && la.klass !== LAGE_OKANT && lb.klass !== LAGE_OKANT &&
+    la.klass !== lb.klass;
   prov('NT-08', 'reglagets knopplage skiljer on fran off — icke-fargbaserad signal',
-    skiljer, pa && av ? pa.signaler.thumbLage + ' mot ' + av.signaler.thumbLage : 'kontroller saknas'); }
+    skiljer, la && lb ? la.klass + ' (nX ' + la.nX + ') mot ' + lb.klass + ' (nX ' + lb.nX + ')'
+      : 'kontroller saknas'); }
 
 { const pa = k('nt08-reglage-pa'), av = k('nt09-reglage-av');
   const t = pa && pa.delar.find(x => x.typ === 'thumb');

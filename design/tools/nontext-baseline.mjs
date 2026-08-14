@@ -147,8 +147,11 @@ const doc = {
     stateGroups_tvetydiga_st: co.grupper_tvetydiga_st,
     tillstandspar_st: co.par_st,
     par_medIckefargSignal_st: co.par_med_ickefargSignal_st,
+    par_okantLage_st: co.par_okantLage_st,
     colorOnly_tillstandspar_st: co.colorOnly_st,
     tackningsinvariant_ok: co.invariant_ok,
+    parinvariant_ok: co.parinvariant_ok,
+    okandaPar: co.okandaPar,
     $not: 'Identiteten ar authored data-state-group pa kontrollen sjalv. data-component anvands aldrig som reservidentitet: komponenttyp ar inte identitet. Accessible name, geometri, DOM-position och textmatchning ar otillatna. Utan giltig grupp blir kontrollen pairingUnknown — aldrig "ingen skillnad". En grupp med bara ett representerat tillstand ar single-state, aldrig godkand.',
     colorOnly: co.colorOnly,
     par: co.par,
@@ -215,7 +218,9 @@ rad('  single-state / unpaired', co.grupper_singelState_st, 'grupper');
 rad('  tvetydig representant', co.grupper_tvetydiga_st, 'grupper');
 rad('jamforda par', co.par_st, 'tillstandspar');
 rad('  klarar via ickefarg-signal', co.par_med_ickefargSignal_st, 'tillstandspar');
+rad('  okant lage — fail closed', co.par_okantLage_st, 'tillstandspar');
 rad('  color-only', co.colorOnly_st, 'tillstandspar');
+console.log('    ' + (co.parinvariant_ok ? '✔ parinvariant' : '✖ PARINVARIANT BRUTEN'));
 console.log('');
 console.log('C · GRAFISKA OBJEKT UTANFOR KONTROLLER');
 rad('grafiska objekt', G.length, 'grafiska objekt');

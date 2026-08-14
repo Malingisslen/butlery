@@ -196,6 +196,11 @@ export const NONTEXT_MEASURE = `(() => {
     // kontrollen. Lases de av den genomskinliga agaren blir varje form- och
     // lagesskillnad osynlig, och allt ser ut som color-only.
     let bararEl = c;
+    // Spar och knopp for reglagets LAGESSIGNAL. De satts BARA av den
+    // strukturella agarskapsanalysen. bararEl duger inte: den faller tillbaka
+    // pa agaren nar formen inte gar att avgora, och da vore "sparet" hela
+    // listraden. Ett lage matt mot fel box ar inget lage.
+    let sparEl = null, knoppEl = null;
 
     /* ── STEG 1 · ROLLEN. Ingen kontrast lases har. ────────────────────── */
 
@@ -207,6 +212,7 @@ export const NONTEXT_MEASURE = `(() => {
       if (form.identitet) {
         const e = form.identitet;
         bararEl = e;
+        if (roll === 'switch') sparEl = e;
         const typ = harRam(e) ? 'ram' : harFyllning(e) ? 'fyllning' : 'glyf';
         delar.push({ typ, roll_i_kontrollen: 'componentIdentityCarrier',
           motivering: 'valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — ' + form.grund,
@@ -227,9 +233,10 @@ export const NONTEXT_MEASURE = `(() => {
       // den malar ingenting.
       const thumb = roll === 'switch' && form.tillstand && form.tillstand !== bock
         ? form.tillstand : null;
-      if (thumb) delar.push({ typ: 'thumb', roll_i_kontrollen: 'stateCarrier',
-        motivering: 'reglagets knopp och dess lage visar on eller off',
-        el: thumb, motEl: thumb.parentElement || inreYta, mot: 'inre' });
+      if (thumb) { knoppEl = thumb;
+        delar.push({ typ: 'thumb', roll_i_kontrollen: 'stateCarrier',
+          motivering: 'reglagets knopp och dess lage visar on eller off',
+          el: thumb, motEl: thumb.parentElement || inreYta, mot: 'inre' }); }
       const anvand = new Set([form.identitet, bock, thumb].filter(Boolean));
       for (const e of g) if (!anvand.has(e)) delar.push({ typ: 'ikon',
         roll_i_kontrollen: 'supplemental',
@@ -317,9 +324,33 @@ export const NONTEXT_MEASURE = `(() => {
         // syns aven for den som inte uppfattar kulor.
         avgransning: ((harRam(bararEl) ? 'ram' : '') + (harFyllning(bararEl) ? 'fyllning' : '')) || 'ingen',
         barnAntal: bararEl.children.length,
-        thumbLage: roll === 'switch' ? getComputedStyle(bararEl).justifyContent : null,
+        // KNOPPENS LAGE MATS UR FAKTISK RENDERAD GEOMETRI, inte ur CSS.
+        //
+        // Den forra modellen laste justify-content pa bararen. Den ar
+        // implementationsspecifik: den ser flexplacerade knoppar men ar blind
+        // for absolut placerade, som star pa "normal" i BADA tillstanden. Ett
+        // reglage vars knopp bevisligen flyttar sig 16 px klassades da som
+        // color-only. Det var en lucka i matningen, inte ett fel i produkten.
+        //
+        // Har lamnas bara RA GEOMETRI. Klassificeringen sker i colour-only.mjs,
+        // enligt samma ordning som gruppidentiteten: browsern mater, Node
+        // bedomer. Spar och knopp kommer uteslutande fran den strukturella
+        // agarskapsanalysen — saknas nagon av dem blir svaret null och
+        // bedomningen fail closed. Aldrig radens eller sidans box.
+        knoppGeometri: roll === 'switch'
+          ? (sparEl && knoppEl ? { spar: rect(sparEl), knopp: rect(knoppEl) } : null)
+          : null,
+        knoppGeometriVarfor: roll !== 'switch' ? null
+          : sparEl && knoppEl ? 'spar och knopp entydigt utpekade av strukturanalysen'
+          : !sparEl ? 'sparets agarskap gar inte att avgora: ' + visuellForm(c).grund
+          : 'knoppens agarskap gar inte att avgora: ' + visuellForm(c).grund,
         form: rect(bararEl).w + 'x' + rect(bararEl).h,
         bararArAgaren: bararEl === c },
+      // DIAGNOSTIK. Aldrig normativ. Finns for att kunna se VILKEN teknik en
+      // implementation anvander nar en avvikelse ska forklaras.
+      diagnostik: roll === 'switch' && sparEl
+        ? { justifyContent: getComputedStyle(sparEl).justifyContent,
+            knoppPosition: knoppEl ? getComputedStyle(knoppEl).position : null } : null,
       delar: matta });
     // Elementreferenserna lamnas kvar i sidan sa att kallrotorsaksanalysen
     // kan lasa VILKET element varje del avser utan att gissa. Detta paverkar
