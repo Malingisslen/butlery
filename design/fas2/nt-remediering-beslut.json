@@ -344,7 +344,7 @@
     "artefakt": "fas2/nt-coupling-bd.json"
    },
    "R04_COVERAGE_CREDIT": 0,
-   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler",
+   "produktwrite": "UTFORD 2026-08-14",
    "beslutsenhet": "DU-01-B",
    "tokenidentitet": "PROGRESS_FILL_DU_01_B",
    "relationer": [
@@ -430,7 +430,21 @@
      "eget skrivomfang",
      "egen beslutsenhet med egen faktisk track"
     ]
-   }
+   },
+   "skrivplatserUtforda": [
+    {
+     "fynd": "BG-005",
+     "skarm": "smartimport",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 129675
+    },
+    {
+     "fynd": "BG-030",
+     "skarm": "vmbgenererar",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "offset": 28700
+    }
+   ]
   },
   {
    "beslutsId": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-D",
@@ -468,7 +482,7 @@
     "artefakt": "fas2/nt-coupling-bd.json"
    },
    "R04_COVERAGE_CREDIT": 0,
-   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler",
+   "produktwrite": "UTFORD 2026-08-14",
    "beslutsenhet": "DU-01-D",
    "tokenidentitet": "PROGRESS_FILL_DU_01_D",
    "relationer": [
@@ -585,7 +599,27 @@
      "eget skrivomfang",
      "egen beslutsenhet med egen faktisk track"
     ]
-   }
+   },
+   "skrivplatserUtforda": [
+    {
+     "fynd": "BG-004",
+     "skarm": "smartimport",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 128338
+    },
+    {
+     "fynd": "BG-026",
+     "skarm": "hemladdar",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 101581
+    },
+    {
+     "fynd": "BG-031",
+     "skarm": "imp2hamtar",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "offset": 26004
+    }
+   ]
   }
  ],
  "$forberedReconciliation": {
@@ -615,7 +649,7 @@
  },
  "$forberedSkrivning": {
   "batch": "BATCH-03",
-  "status": "FORBEREDD, INTE UTFORD",
+  "status": "UTFORD 2026-08-14",
   "platser": [
    {
     "fynd": "BG-005",
