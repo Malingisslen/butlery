@@ -307,6 +307,285 @@
      "offset": 169824
     }
    ]
+  },
+  {
+   "beslutsId": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-B",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-03",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "PROGRESS_FILL",
+   "tema": "light",
+   "valtVarde": "#4a5c50",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoterna ar konformansutfall, inte malvarden.",
+   "motivering": [
+    "bada strecken uttrycker samma typ av pagaende process i samma smartimport-vy",
+    "alla 64 kombinationer klarade redan den tekniska grinden, sa det finns inget behov av en fargskillnad mellan dem",
+    "ger tillracklig tyngd utan att bli nastan svart som #17251d, #24382c eller #2f4437",
+    "mer neutral an den tydligare grona #3f6b4f",
+    "#627061 blir for lagmald i grupp B"
+   ],
+   "beslutsunderlag": {
+    "typ": "COMPOUND_DECISION_PREVIEW",
+    "commit": "73ca395",
+    "tuplar": 64,
+    "renderingar": 88,
+    "kollateral": 0,
+    "okand": 0,
+    "valdTuppel": "#4a5c50 / #4a5c50 (diagonalen)",
+    "artefakt": "fas2/nt-coupling-bd.json"
+   },
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler",
+   "beslutsenhet": "DU-01-B",
+   "tokenidentitet": "PROGRESS_FILL_DU_01_B",
+   "relationer": [
+    "BG-005",
+    "BG-030"
+   ],
+   "skarmar": [
+    "smartimport",
+    "vmbgenererar"
+   ],
+   "faktiskTrack": "rgb(204, 209, 194)",
+   "kvoter": [
+    {
+     "skarm": "smartimport",
+     "fynd": "BG-005",
+     "track": "rgb(204, 209, 194)",
+     "kvot": 4.58,
+     "pass": true
+    },
+    {
+     "skarm": "vmbgenererar",
+     "fynd": "BG-030",
+     "track": "rgb(204, 209, 194)",
+     "kvot": 4.58,
+     "pass": true
+    }
+   ],
+   "enheter": [
+    {
+     "fynd": "BG-005",
+     "skarm": "smartimport",
+     "kalla": "smartimport|32|background-color",
+     "enhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+     "roll": "yta-upphojd",
+     "ljusvarde": "#ce7c1e",
+     "track": "rgb(204, 209, 194)",
+     "korsar": []
+    },
+    {
+     "fynd": "BG-030",
+     "skarm": "vmbgenererar",
+     "kalla": "vmbgenererar|51|background-color",
+     "enhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+     "roll": "yta-upphojd",
+     "ljusvarde": "#ce7c1e",
+     "track": "rgb(204, 209, 194)",
+     "korsar": []
+    }
+   ],
+   "skrivplatser": [
+    {
+     "fynd": "BG-005",
+     "skarm": "smartimport",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 129675,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:62%;background:#ce7c1e;border-radius:2px",
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#4a5c50"
+    },
+    {
+     "fynd": "BG-030",
+     "skarm": "vmbgenererar",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "offset": 28700,
+     "kallform": "display:block;width:60%;height:2px;background:#ce7c1e",
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#4a5c50"
+    }
+   ],
+   "skrivomfang": 2,
+   "$tvaIdentiteter": {
+    "$regel": "Samma numeriska varde ar INTE mappningsevidens, innebar INGEN sammanslagning och ger INGEN R-04-kredit.",
+    "systerbeslut": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-D",
+    "$skilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen beslutsenhet med egen faktisk track"
+    ]
+   }
+  },
+  {
+   "beslutsId": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-D",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-03",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "PROGRESS_FILL",
+   "tema": "light",
+   "valtVarde": "#4a5c50",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoterna ar konformansutfall, inte malvarden.",
+   "motivering": [
+    "bada strecken uttrycker samma typ av pagaende process i samma smartimport-vy",
+    "alla 64 kombinationer klarade redan den tekniska grinden, sa det finns inget behov av en fargskillnad mellan dem",
+    "ger tillracklig tyngd utan att bli nastan svart som #17251d, #24382c eller #2f4437",
+    "mer neutral an den tydligare grona #3f6b4f",
+    "#627061 blir for lagmald i grupp B"
+   ],
+   "beslutsunderlag": {
+    "typ": "COMPOUND_DECISION_PREVIEW",
+    "commit": "73ca395",
+    "tuplar": 64,
+    "renderingar": 88,
+    "kollateral": 0,
+    "okand": 0,
+    "valdTuppel": "#4a5c50 / #4a5c50 (diagonalen)",
+    "artefakt": "fas2/nt-coupling-bd.json"
+   },
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler",
+   "beslutsenhet": "DU-01-D",
+   "tokenidentitet": "PROGRESS_FILL_DU_01_D",
+   "relationer": [
+    "BG-004",
+    "BG-026",
+    "BG-031"
+   ],
+   "skarmar": [
+    "smartimport",
+    "hemladdar",
+    "imp2hamtar"
+   ],
+   "faktiskTrack": "rgb(230, 234, 217)",
+   "kvoter": [
+    {
+     "skarm": "smartimport",
+     "fynd": "BG-004",
+     "track": "rgb(230, 234, 217)",
+     "kvot": 5.83,
+     "pass": true
+    },
+    {
+     "skarm": "hemladdar",
+     "fynd": "BG-026",
+     "track": "rgb(230, 234, 217)",
+     "kvot": 5.83,
+     "pass": true
+    },
+    {
+     "skarm": "imp2hamtar",
+     "fynd": "BG-031",
+     "track": "rgb(230, 234, 217)",
+     "kvot": 5.83,
+     "pass": true
+    }
+   ],
+   "enheter": [
+    {
+     "fynd": "BG-004",
+     "skarm": "smartimport",
+     "kalla": "smartimport|20|background-color",
+     "enhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+     "roll": "yta-upphojd",
+     "ljusvarde": "#ce7c1e",
+     "track": "rgb(230, 234, 217)",
+     "korsar": []
+    },
+    {
+     "fynd": "BG-026",
+     "skarm": "hemladdar",
+     "kalla": "hemladdar|13|background-color",
+     "enhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+     "roll": "yta-upphojd",
+     "ljusvarde": "#ce7c1e",
+     "track": "rgb(230, 234, 217)",
+     "korsar": []
+    },
+    {
+     "fynd": "BG-031",
+     "skarm": "imp2hamtar",
+     "kalla": "imp2hamtar|26|background-color",
+     "enhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+     "roll": "yta-upphojd",
+     "ljusvarde": "#ce7c1e",
+     "track": "rgb(230, 234, 217)",
+     "korsar": []
+    }
+   ],
+   "skrivplatser": [
+    {
+     "fynd": "BG-004",
+     "skarm": "smartimport",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 128338,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:42%;border-radius:2px;background:#ce7c1e",
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#4a5c50"
+    },
+    {
+     "fynd": "BG-026",
+     "skarm": "hemladdar",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 101581,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:44%;border-radius:2px;background:#ce7c1e",
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#4a5c50"
+    },
+    {
+     "fynd": "BG-031",
+     "skarm": "imp2hamtar",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "offset": 26004,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:62%;background:#ce7c1e",
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#4a5c50"
+    }
+   ],
+   "skrivomfang": 3,
+   "$tvaIdentiteter": {
+    "$regel": "Samma numeriska varde ar INTE mappningsevidens, innebar INGEN sammanslagning och ger INGEN R-04-kredit.",
+    "systerbeslut": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-B",
+    "$skilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen beslutsenhet med egen faktisk track"
+    ]
+   }
   }
  ],
  "$forberedReconciliation": {
@@ -333,5 +612,57 @@
   "$enhetsidentitet": "Undergruppen ar oforandrad — samma struktur, samma roll. Bara ljuskallan andras. Det ar en revision av posten, inte en enhetsdelning.",
   "$snackbars": "Snackbars far INGEN morklagesmappning, ingen dark evidence och ingen R-04-kredit av detta beslut.",
   "$mappningstyp": "Harleds inte ur att varden rakar vara lika eller olika."
+ },
+ "$forberedSkrivning": {
+  "batch": "BATCH-03",
+  "status": "FORBEREDD, INTE UTFORD",
+  "platser": [
+   {
+    "fynd": "BG-005",
+    "skarm": "smartimport",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "offset": 129675,
+    "fran": "#ce7c1e",
+    "till": "#4a5c50",
+    "entydig": true
+   },
+   {
+    "fynd": "BG-030",
+    "skarm": "vmbgenererar",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "offset": 28700,
+    "fran": "#ce7c1e",
+    "till": "#4a5c50",
+    "entydig": true
+   },
+   {
+    "fynd": "BG-004",
+    "skarm": "smartimport",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "offset": 128338,
+    "fran": "#ce7c1e",
+    "till": "#4a5c50",
+    "entydig": true
+   },
+   {
+    "fynd": "BG-026",
+    "skarm": "hemladdar",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "offset": 101581,
+    "fran": "#ce7c1e",
+    "till": "#4a5c50",
+    "entydig": true
+   },
+   {
+    "fynd": "BG-031",
+    "skarm": "imp2hamtar",
+    "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+    "offset": 26004,
+    "fran": "#ce7c1e",
+    "till": "#4a5c50",
+    "entydig": true
+   }
+  ],
+  "$villkor": "Kravs uttryckligt klartecken. Det allmanna fargskrivningsstoppet galler."
  }
 }
