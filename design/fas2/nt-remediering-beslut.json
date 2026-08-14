@@ -661,7 +661,7 @@
    },
    "couplingVerdikt": "VISUALLY_COUPLED_DECISIONS",
    "R04_COVERAGE_CREDIT": 0,
-   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler",
+   "produktwrite": "UTFORD 2026-08-14",
    "beslutsenhet": "DU-01-A",
    "etikett": "Pastan",
    "tokenidentitet": "PROGRESS_FILL_LAGATIMERS_DU_01_A",
@@ -732,7 +732,17 @@
      "egen skrivplats i kallan",
      "egen beslutspost"
     ]
-   }
+   },
+   "skrivplatserUtforda": [
+    {
+     "fynd": "BG-027",
+     "skarm": "lagatimers",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 166398,
+     "fran": "#ce7c1e",
+     "till": "#d8b784"
+    }
+   ]
   },
   {
    "beslutsId": "NTR-BATCH04-LIGHT-PROGRESS-FILL-TIMER-DU-02",
@@ -774,7 +784,7 @@
    },
    "couplingVerdikt": "VISUALLY_COUPLED_DECISIONS",
    "R04_COVERAGE_CREDIT": 0,
-   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler",
+   "produktwrite": "UTFORD 2026-08-14",
    "beslutsenhet": "SEPARAT TIMERBESLUT (DU-02)",
    "etikett": "Svampen",
    "tokenidentitet": "PROGRESS_FILL_LAGATIMERS_TIMER_DU_02",
@@ -845,7 +855,17 @@
      "egen skrivplats i kallan",
      "egen beslutspost"
     ]
-   }
+   },
+   "skrivplatserUtforda": [
+    {
+     "fynd": "BG-028",
+     "skarm": "lagatimers",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 167435,
+     "fran": "#dca968",
+     "till": "#d8b784"
+    }
+   ]
   }
  ],
  "$forberedReconciliation": {
@@ -875,7 +895,7 @@
  },
  "$forberedSkrivning": {
   "batch": "BATCH-04",
-  "status": "FORBEREDD, INTE UTFORD",
+  "status": "UTFORD 2026-08-14",
   "platser": [
    {
     "fynd": "BG-027",
