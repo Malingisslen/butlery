@@ -1,0 +1,3793 @@
+{
+ "$schema": "butlery-odeklarerade-komponenter/1",
+ "$datum": "2026-08-14",
+ "$franCommit": "1f79cfe",
+ "$status": "RIKTAD KONTROLL + ADJUDICERING. 0 produktwrites, 0 fargbeslut, 0 R-04-paverkan.",
+ "A_detektor": {
+  "modul": "tools/undeclared-components.mjs",
+  "kandidatgrind": [
+   "elementet bar ett authored data-component, ELLER",
+   "elementet ar ett pillerformat spar med ett absolut placerat runt barn",
+   "och varken elementet sjalvt eller nagon forfader inom artefakten bar data-a11y-role"
+  ],
+  "adjudiceringsregel": [
+   "A INTERACTIVE_CONTROL kravs positiv evidens: antingen en agande deklaration, eller en komponenttyp vars deklarationsgrad i korpusen nar TROSKEL_TYPKONVENTION.",
+   "B NON_INTERACTIVE_STATE_GRAPHIC kravs positiv evidens for att objektet visar tillstand utan att vara manovrerbart. Saknad metadata ar inte sadan evidens.",
+   "C DECORATIVE_GRAPHIC kravs positiv evidens, till exempel aria-hidden eller en deklarerad dekorativ roll.",
+   "D UNKNOWN ar utfallet nar ingen av de tre har positiv evidens. Unknown ar ett giltigt slutresultat och far aldrig tvingas till pass eller till kontroll.",
+   "Utseende, geometri och skarmnamn ar aldrig tillrackligt for A, B eller C.",
+   "Syskonparitet och lokal skarmkonvention hojer prioriteten i adjudiceringskon men avgor inte verdikt — grannens roll ar inte elementets roll."
+  ],
+  "troskelTypkonvention": 0.9,
+  "$viktigt": "Detektorn rapporterar kandidater. Den doper dem inte till kontroller."
+ },
+ "B_accessibilityTrad": {
+  "matt": true,
+  "verktyg": "CDP Accessibility.getPartialAXTree",
+  "provPaDeklareradeKontroller": {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "antal": 76,
+   "exponeraderRoll": 0
+  },
+  "kandidaterMatta": 208,
+  "utfall": "EJ INFORMATIV",
+  "$skal": "Noll av 76 korrekt deklarerade kontroller exponerar nagon roll i accessibility-tradet. data-a11y-role ar en authored annotering i en designspecifikation, inte ett levande ARIA-attribut. Tradet kan darfor varken bekrafta eller motbevisa exponering.",
+  "$sprakregel": "Formuleringar om vad en skarmlasare faktiskt hor far inte anvandas. Korrekt formulering: kontrollen saknar deklarerad switch-roll, accessible name och state-semantik; exakt accessibility-tree-exponering ar inte verifierbar i denna korpus."
+ },
+ "C_observation": {
+  "kontrollikaObjekt": 208,
+  "deklarerade": 98,
+  "kandidater": 110,
+  "typkonvention": [
+   {
+    "komponent": "chip",
+    "totalt": 41,
+    "deklarerade": 13,
+    "grad": 0.3171,
+    "entydig": false
+   },
+   {
+    "komponent": "toggle",
+    "totalt": 34,
+    "deklarerade": 32,
+    "grad": 0.9412,
+    "entydig": true
+   },
+   {
+    "komponent": "checkbox",
+    "totalt": 131,
+    "deklarerade": 53,
+    "grad": 0.4046,
+    "entydig": false
+   }
+  ],
+  "$avstamning": "208 = 98 deklarerade + 110 kandidater"
+ },
+ "D_adjudicering": {
+  "rakn": {
+   "INTERACTIVE_CONTROL": 2,
+   "NON_INTERACTIVE_STATE_GRAPHIC": 0,
+   "DECORATIVE_GRAPHIC": 0,
+   "UNKNOWN": 108
+  },
+  "summerar": true,
+  "perKomponentOchVerdikt": [
+   {
+    "grupp": "chip → UNKNOWN",
+    "antal": 28
+   },
+   {
+    "grupp": "checkbox → UNKNOWN",
+    "antal": 78
+   },
+   {
+    "grupp": "toggle → INTERACTIVE_CONTROL",
+    "antal": 2
+   },
+   {
+    "grupp": "(odeklarerad struktur) → UNKNOWN",
+    "antal": 2
+   }
+  ],
+  "kandidater": [
+   {
+    "art": "hemrecept",
+    "ordinal": 19,
+    "komponent": "chip",
+    "identitet": "hemrecept|19",
+    "etikett": "Vego · Filter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Vego · Filter",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "hemrecept",
+    "ordinal": 20,
+    "komponent": "chip",
+    "identitet": "hemrecept|20",
+    "etikett": "Snabbt · Filter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Snabbt · Filter",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "laga",
+    "ordinal": 37,
+    "komponent": "chip",
+    "identitet": "laga|37",
+    "etikett": "2",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "2",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "snabbspara",
+    "ordinal": 10,
+    "komponent": "chip",
+    "identitet": "snabbspara|10",
+    "etikett": "Lunch · Frukost · Efterrätt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Lunch · Frukost · Efterrätt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "snabbspara",
+    "ordinal": 11,
+    "komponent": "chip",
+    "identitet": "snabbspara|11",
+    "etikett": "Middag · Frukost · Efterrätt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Middag · Frukost · Efterrätt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "snabbspara",
+    "ordinal": 12,
+    "komponent": "chip",
+    "identitet": "snabbspara|12",
+    "etikett": "Middag · Lunch · Efterrätt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Middag · Lunch · Efterrätt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "snabbspara",
+    "ordinal": 13,
+    "komponent": "chip",
+    "identitet": "snabbspara|13",
+    "etikett": "Middag · Lunch · Frukost",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Middag · Lunch · Frukost",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "vemat",
+    "ordinal": 18,
+    "komponent": "checkbox",
+    "identitet": "vemat|18",
+    "etikett": "M · MalinVuxen",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "M · MalinVuxen",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "vemat",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "identitet": "vemat|26",
+    "etikett": "J · JonasVuxen",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "J · JonasVuxen",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "vemat",
+    "ordinal": 34,
+    "komponent": "checkbox",
+    "identitet": "vemat|34",
+    "etikett": "E · EbbaBarn 7–12",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "E · EbbaBarn 7–12",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "inkopmerge",
+    "ordinal": 22,
+    "komponent": "checkbox",
+    "identitet": "inkopmerge|22",
+    "etikett": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+     "syskonAiDeklareradeKontroller": 2,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 2 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "inkopmergeoppen",
+    "ordinal": 12,
+    "komponent": "checkbox",
+    "identitet": "inkopmergeoppen|12",
+    "etikett": "Slå samman dubbletterGul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Slå samman dubbletterGul lök från tre recept blir en rad med summerad mängd. Raden visar ”3 recept”.",
+     "syskonAiDeklareradeKontroller": 2,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 2 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "inkopmergeoppen",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "identitet": "inkopmergeoppen|19",
+    "etikett": "Konvertera enheter2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Konvertera enheter2 dl + 100 ml blir 3 dl. Volym och vikt konverteras aldrig mot varandra — de blir två rader.",
+     "syskonAiDeklareradeKontroller": 2,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 2 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "inkopmergeoppen",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "identitet": "inkopmergeoppen|26",
+    "etikett": "Dra bort skafferivaror6 varor finns hemma. Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Dra bort skafferivaror6 varor finns hemma. Okänd mängd ger inget avdrag — varan läggs till märkt ”Kanske hemma”.",
+     "syskonAiDeklareradeKontroller": 2,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 2 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "inkopmergeoppen",
+    "ordinal": 33,
+    "komponent": "checkbox",
+    "identitet": "inkopmergeoppen|33",
+    "etikett": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Ersätt listan i stället för att lägga tillDina egna, manuellt tillagda varor behålls alltid.",
+     "syskonAiDeklareradeKontroller": 2,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 2 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 11,
+    "komponent": "checkbox",
+    "identitet": "onboarding|11",
+    "etikett": "Gluten · Laktos · Ägg · Skaldjur · Soja · Nötter · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Gluten · Laktos · Ägg · Skaldjur · Soja · Nötter · Fisk",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 15,
+    "komponent": "checkbox",
+    "identitet": "onboarding|15",
+    "etikett": "Jordnötter · Laktos · Ägg · Skaldjur · Soja · Nötter · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordnötter · Laktos · Ägg · Skaldjur · Soja · Nötter · Fisk",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 17,
+    "komponent": "checkbox",
+    "identitet": "onboarding|17",
+    "etikett": "Jordnötter · Gluten · Ägg · Skaldjur · Soja · Nötter · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordnötter · Gluten · Ägg · Skaldjur · Soja · Nötter · Fisk",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 21,
+    "komponent": "checkbox",
+    "identitet": "onboarding|21",
+    "etikett": "Jordnötter · Gluten · Laktos · Skaldjur · Soja · Nötter · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordnötter · Gluten · Laktos · Skaldjur · Soja · Nötter · Fisk",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "identitet": "onboarding|23",
+    "etikett": "Jordnötter · Gluten · Laktos · Ägg · Soja · Nötter · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordnötter · Gluten · Laktos · Ägg · Soja · Nötter · Fisk",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 25,
+    "komponent": "checkbox",
+    "identitet": "onboarding|25",
+    "etikett": "Jordnötter · Gluten · Laktos · Ägg · Skaldjur · Nötter · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordnötter · Gluten · Laktos · Ägg · Skaldjur · Nötter · Fisk",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 27,
+    "komponent": "checkbox",
+    "identitet": "onboarding|27",
+    "etikett": "Jordnötter · Gluten · Laktos · Ägg · Skaldjur · Soja · Fisk",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordnötter · Gluten · Laktos · Ägg · Skaldjur · Soja · Fisk",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "onboarding",
+    "ordinal": 29,
+    "komponent": "checkbox",
+    "identitet": "onboarding|29",
+    "etikett": "Jordnötter · Gluten · Laktos · Ägg · Skaldjur · Soja · Nötter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordnötter · Gluten · Laktos · Ägg · Skaldjur · Soja · Nötter",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 15,
+    "komponent": "checkbox",
+    "identitet": "menysmak|15",
+    "etikett": "Husmanskost · Thailändskt · Mexikanskt · Indiskt · Japanskt · Franskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Husmanskost · Thailändskt · Mexikanskt · Indiskt · Japanskt · Franskt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "identitet": "menysmak|19",
+    "etikett": "Italienskt · Thailändskt · Mexikanskt · Indiskt · Japanskt · Franskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Italienskt · Thailändskt · Mexikanskt · Indiskt · Japanskt · Franskt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "identitet": "menysmak|23",
+    "etikett": "Italienskt · Husmanskost · Mexikanskt · Indiskt · Japanskt · Franskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Italienskt · Husmanskost · Mexikanskt · Indiskt · Japanskt · Franskt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 25,
+    "komponent": "checkbox",
+    "identitet": "menysmak|25",
+    "etikett": "Italienskt · Husmanskost · Thailändskt · Indiskt · Japanskt · Franskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Italienskt · Husmanskost · Thailändskt · Indiskt · Japanskt · Franskt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 29,
+    "komponent": "checkbox",
+    "identitet": "menysmak|29",
+    "etikett": "Italienskt · Husmanskost · Thailändskt · Mexikanskt · Japanskt · Franskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Italienskt · Husmanskost · Thailändskt · Mexikanskt · Japanskt · Franskt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 31,
+    "komponent": "checkbox",
+    "identitet": "menysmak|31",
+    "etikett": "Italienskt · Husmanskost · Thailändskt · Mexikanskt · Indiskt · Franskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Italienskt · Husmanskost · Thailändskt · Mexikanskt · Indiskt · Franskt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "menysmak",
+    "ordinal": 33,
+    "komponent": "checkbox",
+    "identitet": "menysmak|33",
+    "etikett": "Italienskt · Husmanskost · Thailändskt · Mexikanskt · Indiskt · Japanskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Italienskt · Husmanskost · Thailändskt · Mexikanskt · Indiskt · Japanskt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "taggar",
+    "ordinal": 57,
+    "komponent": "chip",
+    "identitet": "taggar|57",
+    "etikett": "Soppa · Testkök",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Soppa · Testkök",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "taggar",
+    "ordinal": 58,
+    "komponent": "chip",
+    "identitet": "taggar|58",
+    "etikett": "Grillat · Testkök",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Grillat · Testkök",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "taggar",
+    "ordinal": 59,
+    "komponent": "chip",
+    "identitet": "taggar|59",
+    "etikett": "Grillat · Soppa",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Grillat · Soppa",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "allergener",
+    "ordinal": 11,
+    "komponent": "checkbox",
+    "identitet": "allergener|11",
+    "etikett": "Laktos · Gluten · Ägg · Skaldjur · Nötter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Laktos · Gluten · Ägg · Skaldjur · Nötter",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "allergener",
+    "ordinal": 15,
+    "komponent": "checkbox",
+    "identitet": "allergener|15",
+    "etikett": "Jordnötter · Gluten · Ägg · Skaldjur · Nötter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordnötter · Gluten · Ägg · Skaldjur · Nötter",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "allergener",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "identitet": "allergener|19",
+    "etikett": "Jordnötter · Laktos · Ägg · Skaldjur · Nötter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordnötter · Laktos · Ägg · Skaldjur · Nötter",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "allergener",
+    "ordinal": 21,
+    "komponent": "checkbox",
+    "identitet": "allergener|21",
+    "etikett": "Jordnötter · Laktos · Gluten · Skaldjur · Nötter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordnötter · Laktos · Gluten · Skaldjur · Nötter",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "allergener",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "identitet": "allergener|23",
+    "etikett": "Jordnötter · Laktos · Gluten · Ägg · Nötter",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordnötter · Laktos · Gluten · Ägg · Nötter",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "allergener",
+    "ordinal": 25,
+    "komponent": "checkbox",
+    "identitet": "allergener|25",
+    "etikett": "Jordnötter · Laktos · Gluten · Ägg · Skaldjur",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordnötter · Laktos · Gluten · Ägg · Skaldjur",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "allergener",
+    "ordinal": 29,
+    "komponent": "checkbox",
+    "identitet": "allergener|29",
+    "etikett": "Veganskt · Fläskfritt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Veganskt · Fläskfritt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "allergener",
+    "ordinal": 33,
+    "komponent": "checkbox",
+    "identitet": "allergener|33",
+    "etikett": "Vegetariskt · Fläskfritt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Vegetariskt · Fläskfritt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "allergener",
+    "ordinal": 35,
+    "komponent": "checkbox",
+    "identitet": "allergener|35",
+    "etikett": "Vegetariskt · Veganskt",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Vegetariskt · Veganskt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "delatlista",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "identitet": "delatlista|26",
+    "etikett": "Jordgubbar 3 l",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jordgubbar 3 l",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "delatlista",
+    "ordinal": 30,
+    "komponent": "checkbox",
+    "identitet": "delatlista|30",
+    "etikett": "Färskpotatis 2 kg",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Färskpotatis 2 kg",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "delatlista",
+    "ordinal": 34,
+    "komponent": "checkbox",
+    "identitet": "delatlista|34",
+    "etikett": "Gräddfil 2 st",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Gräddfil 2 st",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "delatlista",
+    "ordinal": 39,
+    "komponent": "checkbox",
+    "identitet": "delatlista|39",
+    "etikett": "Sill 2 burkar · Per",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Sill 2 burkar · Per",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "delatlista",
+    "ordinal": 45,
+    "komponent": "checkbox",
+    "identitet": "delatlista|45",
+    "etikett": "Snaps · Anna",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Snaps · Anna",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "ingredienssok",
+    "ordinal": 6,
+    "komponent": "chip",
+    "identitet": "ingredienssok|6",
+    "etikett": "grädde · pasta · lägg till …",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "grädde · pasta · lägg till …",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "ingredienssok",
+    "ordinal": 10,
+    "komponent": "chip",
+    "identitet": "ingredienssok|10",
+    "etikett": "champinjoner · pasta · lägg till …",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "champinjoner · pasta · lägg till …",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "ingredienssok",
+    "ordinal": 14,
+    "komponent": "chip",
+    "identitet": "ingredienssok|14",
+    "etikett": "champinjoner · grädde · lägg till …",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "champinjoner · grädde · lägg till …",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "ingredienssok",
+    "ordinal": 27,
+    "komponent": "chip",
+    "identitet": "ingredienssok|27",
+    "etikett": "Krämig svamppasta med timjan 3 av 3 ingredienser",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Krämig svamppasta med timjan 3 av 3 ingredienser",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "ingredienssok",
+    "ordinal": 34,
+    "komponent": "chip",
+    "identitet": "ingredienssok|34",
+    "etikett": "Svamprisotto 2 av 3 ingredienser",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Svamprisotto 2 av 3 ingredienser",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "ingredienssok",
+    "ordinal": 43,
+    "komponent": "chip",
+    "identitet": "ingredienssok|43",
+    "etikett": "Pasta carbonara 1 av 3 ingredienser · Delat",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Pasta carbonara 1 av 3 ingredienser · Delat",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "profil",
+    "ordinal": 34,
+    "komponent": "toggle",
+    "identitet": "profil|34",
+    "etikett": "Sökbar för vänner",
+    "verdikt": "INTERACTIVE_CONTROL",
+    "kontrolltyp": "switch",
+    "evidens": {
+     "authoradKomponenttyp": "toggle",
+     "typkonventionTotalt": 34,
+     "typkonventionDeklarerade": 32,
+     "typkonventionGrad": 0.9412,
+     "typkonventionEntydig": true,
+     "agandeDeklaration": null,
+     "synligEtikett": "Sökbar för vänner",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "authored komponenttyp \"toggle\" ar deklarerad som kontroll i 32 av 34 fall i korpusen (94.1 %), over troskeln 90 %",
+     "synlig etikett finns: \"Sökbar för vänner\""
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "profil",
+    "ordinal": 38,
+    "komponent": "toggle",
+    "identitet": "profil|38",
+    "etikett": "Visa mina recept publikt",
+    "verdikt": "INTERACTIVE_CONTROL",
+    "kontrolltyp": "switch",
+    "evidens": {
+     "authoradKomponenttyp": "toggle",
+     "typkonventionTotalt": 34,
+     "typkonventionDeklarerade": 32,
+     "typkonventionGrad": 0.9412,
+     "typkonventionEntydig": true,
+     "agandeDeklaration": null,
+     "synligEtikett": "Visa mina recept publikt",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "authored komponenttyp \"toggle\" ar deklarerad som kontroll i 32 av 34 fall i korpusen (94.1 %), over troskeln 90 %",
+     "synlig etikett finns: \"Visa mina recept publikt\""
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 29,
+    "komponent": "checkbox",
+    "identitet": "familjeform|29",
+    "etikett": "Jag är vårdnadshavare för Sigrid och godkänner att en profil skapas.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jag är vårdnadshavare för Sigrid och godkänner att en profil skapas.",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 39,
+    "komponent": "checkbox",
+    "identitet": "familjeform|39",
+    "etikett": "Jag godkänner att Sigrids allergener sparas.",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Jag godkänner att Sigrids allergener sparas.",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 45,
+    "komponent": "checkbox",
+    "identitet": "familjeform|45",
+    "etikett": "Ägg · Gluten · Laktos · Soja",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Ägg · Gluten · Laktos · Soja",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 49,
+    "komponent": "checkbox",
+    "identitet": "familjeform|49",
+    "etikett": "Nötter · Gluten · Laktos · Soja",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Nötter · Gluten · Laktos · Soja",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 53,
+    "komponent": "checkbox",
+    "identitet": "familjeform|53",
+    "etikett": "Nötter · Ägg · Laktos · Soja",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Nötter · Ägg · Laktos · Soja",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 55,
+    "komponent": "checkbox",
+    "identitet": "familjeform|55",
+    "etikett": "Nötter · Ägg · Gluten · Soja",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Nötter · Ägg · Gluten · Soja",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "familjeform",
+    "ordinal": 57,
+    "komponent": "checkbox",
+    "identitet": "familjeform|57",
+    "etikett": "Nötter · Ägg · Gluten · Laktos",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Nötter · Ägg · Gluten · Laktos",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "betygsoversikt",
+    "ordinal": 13,
+    "komponent": "chip",
+    "identitet": "betygsoversikt|13",
+    "etikett": "Familjens snitt 3 betyg",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Familjens snitt 3 betyg",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "laggtillmedlemmar",
+    "ordinal": 15,
+    "komponent": "checkbox",
+    "identitet": "laggtillmedlemmar|15",
+    "etikett": "E · Erik Sandell",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "E · Erik Sandell",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "laggtillmedlemmar",
+    "ordinal": 21,
+    "komponent": "checkbox",
+    "identitet": "laggtillmedlemmar|21",
+    "etikett": "H · Hanna Vik",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "H · Hanna Vik",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "laggtillmedlemmar",
+    "ordinal": 29,
+    "komponent": "checkbox",
+    "identitet": "laggtillmedlemmar|29",
+    "etikett": "P · Pelle Åberg",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "P · Pelle Åberg",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "nygruppchatt",
+    "ordinal": 11,
+    "komponent": "chip",
+    "identitet": "nygruppchatt|11",
+    "etikett": "Hanna",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Hanna",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "nygruppchatt",
+    "ordinal": 14,
+    "komponent": "chip",
+    "identitet": "nygruppchatt|14",
+    "etikett": "Erik",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Erik",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "nygruppchatt",
+    "ordinal": 21,
+    "komponent": "checkbox",
+    "identitet": "nygruppchatt|21",
+    "etikett": "E · Erik Sandell",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "E · Erik Sandell",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "nygruppchatt",
+    "ordinal": 27,
+    "komponent": "checkbox",
+    "identitet": "nygruppchatt|27",
+    "etikett": "H · Hanna Vik",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "H · Hanna Vik",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "nygruppchatt",
+    "ordinal": 33,
+    "komponent": "checkbox",
+    "identitet": "nygruppchatt|33",
+    "etikett": "J · Jonas Ek",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "J · Jonas Ek",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "nydelatlista",
+    "ordinal": 13,
+    "komponent": "checkbox",
+    "identitet": "nydelatlista|13",
+    "etikett": "E · Erik Sandell",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "E · Erik Sandell",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "nydelatlista",
+    "ordinal": 20,
+    "komponent": "checkbox",
+    "identitet": "nydelatlista|20",
+    "etikett": "S · Söndagsmiddagarna · grupp, 4 pers",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "S · Söndagsmiddagarna · grupp, 4 pers",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "nydelatlista",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "identitet": "nydelatlista|26",
+    "etikett": "H · Hanna Vik",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "H · Hanna Vik",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "taggdetalj",
+    "ordinal": 25,
+    "komponent": null,
+    "identitet": "taggdetalj|25",
+    "etikett": "Innehåller \"rester\"",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": null,
+     "typkonventionTotalt": null,
+     "typkonventionDeklarerade": null,
+     "typkonventionGrad": null,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Innehåller \"rester\"",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": true
+    },
+    "skal": [
+     "ingen authored komponenttyp — bara en strukturell form, och formen ar inte evidens",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "taggdetalj",
+    "ordinal": 31,
+    "komponent": null,
+    "identitet": "taggdetalj|31",
+    "etikett": "Ingrediens: kokt ris",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": null,
+     "typkonventionTotalt": null,
+     "typkonventionDeklarerade": null,
+     "typkonventionGrad": null,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Ingrediens: kokt ris",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": true
+    },
+    "skal": [
+     "ingen authored komponenttyp — bara en strukturell form, och formen ar inte evidens",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "delaark",
+    "ordinal": 10,
+    "komponent": "checkbox",
+    "identitet": "delaark|10",
+    "etikett": "E · Erik Sandell",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "E · Erik Sandell",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "delaark",
+    "ordinal": 16,
+    "komponent": "checkbox",
+    "identitet": "delaark|16",
+    "etikett": "H · Hanna Vik",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "H · Hanna Vik",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "delaark",
+    "ordinal": 22,
+    "komponent": "checkbox",
+    "identitet": "delaark|22",
+    "etikett": "S · Söndagsmiddagarna",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "S · Söndagsmiddagarna",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "dialogsparameny",
+    "ordinal": 8,
+    "komponent": "checkbox",
+    "identitet": "dialogsparameny|8",
+    "etikett": "Dela direkt med Söndagsmiddagarna",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Dela direkt med Söndagsmiddagarna",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "storsttext",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "identitet": "storsttext|23",
+    "etikett": "400 g · Pasta",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "400 g · Pasta",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "storsttext",
+    "ordinal": 27,
+    "komponent": "checkbox",
+    "identitet": "storsttext|27",
+    "etikett": "250 g · Kantareller",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "250 g · Kantareller",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "storsttext",
+    "ordinal": 31,
+    "komponent": "checkbox",
+    "identitet": "storsttext|31",
+    "etikett": "2 dl · Grädde",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "2 dl · Grädde",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "langavarden",
+    "ordinal": 21,
+    "komponent": "checkbox",
+    "identitet": "langavarden|21",
+    "etikett": "1,5 dl · kallpressad rapsolja från Gotland, gärna den ofiltrerade",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "1,5 dl · kallpressad rapsolja från Gotland, gärna den ofiltrerade",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "langavarden",
+    "ordinal": 25,
+    "komponent": "checkbox",
+    "identitet": "langavarden|25",
+    "etikett": "400 g · pasta",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "400 g · pasta",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "veckoallergi",
+    "ordinal": 45,
+    "komponent": "chip",
+    "identitet": "veckoallergi|45",
+    "etikett": "Mindre kött · kan släppas",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Mindre kött · kan släppas",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 1,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 1
+   },
+   {
+    "art": "betygsammanslaget",
+    "ordinal": 21,
+    "komponent": "chip",
+    "identitet": "betygsammanslaget|21",
+    "etikett": "4,3 3 av 4 röstade · Per person M Maja · du P Perinmatat av Maja I Ida hoppade över · Ingen historik per tillfälle. Data",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "4,3 3 av 4 röstade · Per person M Maja · du P Perinmatat av Maja I Ida hoppade över · Ingen historik per tillfälle. Data",
+     "syskonAiDeklareradeKontroller": 2,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 2 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "delatmindel",
+    "ordinal": 41,
+    "komponent": "checkbox",
+    "identitet": "delatmindel|41",
+    "etikett": "2 st · gul lök · AAnna tar",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "2 st · gul lök · AAnna tar",
+     "syskonAiDeklareradeKontroller": 1,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 5,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "delatmindel",
+    "ordinal": 48,
+    "komponent": "checkbox",
+    "identitet": "delatmindel|48",
+    "etikett": "1 kg · potatis · AAnna tar",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "1 kg · potatis · AAnna tar",
+     "syskonAiDeklareradeKontroller": 1,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 5,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "delatnarvaro",
+    "ordinal": 25,
+    "komponent": "checkbox",
+    "identitet": "delatnarvaro|25",
+    "etikett": "2 st · gul lök · AAnna tar",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "2 st · gul lök · AAnna tar",
+     "syskonAiDeklareradeKontroller": 1,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 4,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "delatclaimkonflikt",
+    "ordinal": 15,
+    "komponent": "checkbox",
+    "identitet": "delatclaimkonflikt|15",
+    "etikett": "2 st · gul lök · AAnna tar",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "2 st · gul lök · AAnna tar",
+     "syskonAiDeklareradeKontroller": 1,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 2,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 13,
+    "komponent": "chip",
+    "identitet": "veckochips|13",
+    "etikett": "1 vegetariskt · tacofredag · max 30 min · 2 luncher",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "1 vegetariskt · tacofredag · max 30 min · 2 luncher",
+     "syskonAiDeklareradeKontroller": 1,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 14,
+    "komponent": "chip",
+    "identitet": "veckochips|14",
+    "etikett": "3 middagar · tacofredag · max 30 min · 2 luncher",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "3 middagar · tacofredag · max 30 min · 2 luncher",
+     "syskonAiDeklareradeKontroller": 1,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 15,
+    "komponent": "chip",
+    "identitet": "veckochips|15",
+    "etikett": "3 middagar · 1 vegetariskt · max 30 min · 2 luncher",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "3 middagar · 1 vegetariskt · max 30 min · 2 luncher",
+     "syskonAiDeklareradeKontroller": 1,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 16,
+    "komponent": "chip",
+    "identitet": "veckochips|16",
+    "etikett": "3 middagar · 1 vegetariskt · tacofredag · 2 luncher",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "3 middagar · 1 vegetariskt · tacofredag · 2 luncher",
+     "syskonAiDeklareradeKontroller": 1,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 17,
+    "komponent": "chip",
+    "identitet": "veckochips|17",
+    "etikett": "3 middagar · 1 vegetariskt · tacofredag · max 30 min",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "3 middagar · 1 vegetariskt · tacofredag · max 30 min",
+     "syskonAiDeklareradeKontroller": 1,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 20,
+    "komponent": "chip",
+    "identitet": "veckochips|20",
+    "etikett": "”som förra gången”",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "”som förra gången”",
+     "syskonAiDeklareradeKontroller": 1,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "veckochips",
+    "ordinal": 25,
+    "komponent": "chip",
+    "identitet": "veckochips|25",
+    "etikett": "”lite lyxigt”",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "chip",
+     "typkonventionTotalt": 41,
+     "typkonventionDeklarerade": 13,
+     "typkonventionGrad": 0.3171,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "”lite lyxigt”",
+     "syskonAiDeklareradeKontroller": 1,
+     "syskonRoller": [
+      "button"
+     ],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"chip\" ar deklarerad som kontroll i bara 13 av 41 fall (31.7 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 1 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 2
+   },
+   {
+    "art": "imp2hamtar",
+    "ordinal": 9,
+    "komponent": "checkbox",
+    "identitet": "imp2hamtar|9",
+    "etikett": "Hämtar sidan",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Hämtar sidan",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "imp2hamtar",
+    "ordinal": 14,
+    "komponent": "checkbox",
+    "identitet": "imp2hamtar|14",
+    "etikett": "Läser strukturerad data",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Läser strukturerad data",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "imp2hamtar",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "identitet": "imp2hamtar|19",
+    "etikett": "Tolkar ingredienser · …",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Tolkar ingredienser · …",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "imp2hamtar",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "identitet": "imp2hamtar|23",
+    "etikett": "Kontrollerar allergener",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Kontrollerar allergener",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "impassist2",
+    "ordinal": 16,
+    "komponent": "checkbox",
+    "identitet": "impassist2|16",
+    "etikett": "500 g blandfärs",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "500 g blandfärs",
+     "syskonAiDeklareradeKontroller": 3,
+     "syskonRoller": [
+      "checkbox"
+     ],
+     "sammaTypDeklareradISkarmen": 3,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 3 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "impassist2",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "identitet": "impassist2|19",
+    "etikett": "1 gul lök",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "1 gul lök",
+     "syskonAiDeklareradeKontroller": 3,
+     "syskonRoller": [
+      "checkbox"
+     ],
+     "sammaTypDeklareradISkarmen": 3,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 3 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "impassist2",
+    "ordinal": 22,
+    "komponent": "checkbox",
+    "identitet": "impassist2|22",
+    "etikett": "3 dl grädde",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "3 dl grädde",
+     "syskonAiDeklareradeKontroller": 3,
+     "syskonRoller": [
+      "checkbox"
+     ],
+     "sammaTypDeklareradISkarmen": 3,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration",
+     "OBS: 3 syskonrader ar deklarerade kontroller — hojer prioritet, avgor inte verdikt"
+    ],
+    "prioritet": 3
+   },
+   {
+    "art": "kontovantan",
+    "ordinal": 9,
+    "komponent": "checkbox",
+    "identitet": "kontovantan|9",
+    "etikett": "Sökindex",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Sökindex",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "kontovantan",
+    "ordinal": 14,
+    "komponent": "checkbox",
+    "identitet": "kontovantan|14",
+    "etikett": "Lokal cache",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Lokal cache",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "kontovantan",
+    "ordinal": 19,
+    "komponent": "checkbox",
+    "identitet": "kontovantan|19",
+    "etikett": "Recept, menyer, listor · pågår",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Recept, menyer, listor · pågår",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "kontovantan",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "identitet": "kontovantan|23",
+    "etikett": "Bilder och filer",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Bilder och filer",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   },
+   {
+    "art": "kontovantan",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "identitet": "kontovantan|26",
+    "etikett": "Kontot",
+    "verdikt": "UNKNOWN",
+    "evidens": {
+     "authoradKomponenttyp": "checkbox",
+     "typkonventionTotalt": 131,
+     "typkonventionDeklarerade": 53,
+     "typkonventionGrad": 0.4046,
+     "typkonventionEntydig": false,
+     "agandeDeklaration": null,
+     "synligEtikett": "Kontot",
+     "syskonAiDeklareradeKontroller": 0,
+     "syskonRoller": [],
+     "sammaTypDeklareradISkarmen": 0,
+     "ariaHidden": null,
+     "interaktionsdeklaration": null,
+     "tabindex": null,
+     "accessibilityTrad": "EJ INFORMATIV I DENNA KORPUS",
+     "strukturellFormEnbart": false
+    },
+    "skal": [
+     "komponenttypen \"checkbox\" ar deklarerad som kontroll i bara 53 av 131 fall (40.5 %) — under troskeln",
+     "ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration"
+    ],
+    "prioritet": 0
+   }
+  ]
+ },
+ "E_nyaKontroller": [
+  {
+   "identitet": "profil|34",
+   "skarm": "profil",
+   "komponent": "toggle",
+   "kontrolltyp": "switch",
+   "etikett": "Sökbar för vänner",
+   "visuellAgare": "profil|34 (sparet) med knoppen som barn",
+   "etikettskalla": "synlig syskontext i samma rad",
+   "tillstandskalla": "knoppens lage och sparets farg — ingen deklaration",
+   "avseddTraffytaAgare": "raden profil|32",
+   "uppmattGeometri": {
+    "w": 364,
+    "h": 37
+   },
+   "strukturKorrektMetadataSaknas": true,
+   "strukturenSjalvFel": false,
+   "$not": "Strukturen foljer korpusens monster. Radhojden nar dock inte 48 px, sa metadata ensam racker inte.",
+   "skal": [
+    "authored komponenttyp \"toggle\" ar deklarerad som kontroll i 32 av 34 fall i korpusen (94.1 %), over troskeln 90 %",
+    "synlig etikett finns: \"Sökbar för vänner\""
+   ]
+  },
+  {
+   "identitet": "profil|38",
+   "skarm": "profil",
+   "komponent": "toggle",
+   "kontrolltyp": "switch",
+   "etikett": "Visa mina recept publikt",
+   "visuellAgare": "profil|38 (sparet) med knoppen som barn",
+   "etikettskalla": "synlig syskontext i samma rad",
+   "tillstandskalla": "knoppens lage och sparets farg — ingen deklaration",
+   "avseddTraffytaAgare": "raden profil|36",
+   "uppmattGeometri": {
+    "w": 364,
+    "h": 36
+   },
+   "strukturKorrektMetadataSaknas": true,
+   "strukturenSjalvFel": false,
+   "$not": "Strukturen foljer korpusens monster. Radhojden nar dock inte 48 px, sa metadata ensam racker inte.",
+   "skal": [
+    "authored komponenttyp \"toggle\" ar deklarerad som kontroll i 32 av 34 fall i korpusen (94.1 %), over troskeln 90 %",
+    "synlig etikett finns: \"Visa mina recept publikt\""
+   ]
+  }
+ ],
+ "F_kvarvarandeUnknown": {
+  "antal": 108,
+  "perKomponent": [
+   {
+    "komponent": "chip",
+    "antal": 28
+   },
+   {
+    "komponent": "checkbox",
+    "antal": 78
+   },
+   {
+    "komponent": "(odeklarerad struktur)",
+    "antal": 2
+   }
+  ],
+  "prioriterade": 21,
+  "$prioritetsregel": "Syskonparitet och lokal skarmkonvention hojer prioritet i kon men avgor inte verdikt.",
+  "ko": [
+   {
+    "identitet": "delatmindel|41",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "2 st · gul lök · AAnna tar"
+   },
+   {
+    "identitet": "delatmindel|48",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "1 kg · potatis · AAnna tar"
+   },
+   {
+    "identitet": "delatnarvaro|25",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "2 st · gul lök · AAnna tar"
+   },
+   {
+    "identitet": "delatclaimkonflikt|15",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "2 st · gul lök · AAnna tar"
+   },
+   {
+    "identitet": "impassist2|16",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "500 g blandfärs"
+   },
+   {
+    "identitet": "impassist2|19",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "1 gul lök"
+   },
+   {
+    "identitet": "impassist2|22",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "3 dl grädde"
+   },
+   {
+    "identitet": "inkopmerge|22",
+    "komponent": "checkbox",
+    "prioritet": 2,
+    "etikett": "Ersätt listan i stället för att lägga tillDina egna, manuell"
+   },
+   {
+    "identitet": "inkopmergeoppen|12",
+    "komponent": "checkbox",
+    "prioritet": 2,
+    "etikett": "Slå samman dubbletterGul lök från tre recept blir en rad med"
+   },
+   {
+    "identitet": "inkopmergeoppen|19",
+    "komponent": "checkbox",
+    "prioritet": 2,
+    "etikett": "Konvertera enheter2 dl + 100 ml blir 3 dl. Volym och vikt ko"
+   },
+   {
+    "identitet": "inkopmergeoppen|26",
+    "komponent": "checkbox",
+    "prioritet": 2,
+    "etikett": "Dra bort skafferivaror6 varor finns hemma. Okänd mängd ger i"
+   },
+   {
+    "identitet": "inkopmergeoppen|33",
+    "komponent": "checkbox",
+    "prioritet": 2,
+    "etikett": "Ersätt listan i stället för att lägga tillDina egna, manuell"
+   },
+   {
+    "identitet": "betygsammanslaget|21",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "4,3 3 av 4 röstade · Per person M Maja · du P Perinmatat av "
+   },
+   {
+    "identitet": "veckochips|13",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "1 vegetariskt · tacofredag · max 30 min · 2 luncher"
+   },
+   {
+    "identitet": "veckochips|14",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "3 middagar · tacofredag · max 30 min · 2 luncher"
+   },
+   {
+    "identitet": "veckochips|15",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "3 middagar · 1 vegetariskt · max 30 min · 2 luncher"
+   },
+   {
+    "identitet": "veckochips|16",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "3 middagar · 1 vegetariskt · tacofredag · 2 luncher"
+   },
+   {
+    "identitet": "veckochips|17",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "3 middagar · 1 vegetariskt · tacofredag · max 30 min"
+   },
+   {
+    "identitet": "veckochips|20",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "”som förra gången”"
+   },
+   {
+    "identitet": "veckochips|25",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "”lite lyxigt”"
+   },
+   {
+    "identitet": "veckoallergi|45",
+    "komponent": "chip",
+    "prioritet": 1,
+    "etikett": "Mindre kött · kan släppas"
+   }
+  ],
+  "$regel": "Unknown ar ett giltigt slutresultat och har inte tvingats till pass eller kontroll."
+ },
+ "G_populationsavstamning": {
+  "HISTORICAL_VERIFIED_CONTROL_POPULATION": {
+   "antal": 1344,
+   "$harledning": "1376 kalldeklarationer = 1344 i artefakt + 32 utanfor",
+   "NT_baslinje": 1344,
+   "$orord": "Inte omskriven."
+  },
+  "CURRENT_DISCOVERED_CONTROL_POPULATION": {
+   "antal": 1346,
+   "$harledning": "1344 + 2 adjudicerade nya kontroller",
+   "tillagg": [
+    {
+     "identitet": "profil|34",
+     "skarm": "profil",
+     "etikett": "Sökbar för vänner",
+     "kontrolltyp": "switch"
+    },
+    {
+     "identitet": "profil|38",
+     "skarm": "profil",
+     "etikett": "Visa mina recept publikt",
+     "kontrolltyp": "switch"
+    }
+   ]
+  },
+  "CURRENT_UNKNOWN_COMPONENT_CANDIDATES": {
+   "antal": 108
+  },
+  "$summering": "110 kandidater = 2 INTERACTIVE_CONTROL + 0 NON_INTERACTIVE_STATE_GRAPHIC + 0 DECORATIVE_GRAPHIC + 108 UNKNOWN"
+ },
+ "H_R02": {
+  "kontrakt": "48 x 48 CSS-px, tools/hit-contract.mjs",
+  "historisktOrort": true,
+  "nya": [
+   {
+    "kontroll": "profil|34",
+    "skarm": "profil",
+    "etikett": "Sökbar för vänner",
+    "avseddTraffytaAgare": "raden profil|32",
+    "faktiskTraffytaDeklarerad": null,
+    "form": "undeclared",
+    "matbar": false,
+    "bredd": 364,
+    "hojd": 37,
+    "krav": 48,
+    "utfall": "UNKNOWN",
+    "overlapp": "ej provbart utan deklarerad traffyta",
+    "traffbarhet": "ej provbart utan deklarerad traffyta",
+    "$villkorat": "Med data-hit=\"self\" enligt korpuskonventionen vore ytan 364 x 37 px, 11.0 px under hojdkravet."
+   },
+   {
+    "kontroll": "profil|38",
+    "skarm": "profil",
+    "etikett": "Visa mina recept publikt",
+    "avseddTraffytaAgare": "raden profil|36",
+    "faktiskTraffytaDeklarerad": null,
+    "form": "undeclared",
+    "matbar": false,
+    "bredd": 364,
+    "hojd": 36,
+    "krav": 48,
+    "utfall": "UNKNOWN",
+    "overlapp": "ej provbart utan deklarerad traffyta",
+    "traffbarhet": "ej provbart utan deklarerad traffyta",
+    "$villkorat": "Med data-hit=\"self\" enligt korpuskonventionen vore ytan 364 x 36 px, 12.0 px under hojdkravet."
+   }
+  ],
+  "$slutsats": "R-02 far inte rapporteras som VERIFIED for hela appen. Den utokade populationen innehaller tva kontroller utan deklarerad traffyta, alltsa UNKNOWN."
+ },
+ "I_ickeTextAgarskap": {
+  "nya": [
+   {
+    "kontroll": "profil|34",
+    "etikett": "Sökbar för vänner",
+    "relationspar": [
+     {
+      "par": "knopp mot spar",
+      "varde": "rgb(245, 244, 237)",
+      "mot": "rgb(36, 56, 44)",
+      "kvot": 11.36,
+      "krav": 3,
+      "pass": true
+     },
+     {
+      "par": "spar mot angransande yta",
+      "varde": "rgb(36, 56, 44)",
+      "mot": "rgb(245, 244, 237)",
+      "kvot": 11.36,
+      "krav": 3,
+      "pass": true
+     }
+    ],
+    "bliviandeAgarskap": "CONTROL_NON_TEXT",
+    "$villkor": "Agarskapet flyttas forst nar kontrollen faktiskt ar deklarerad.",
+    "kopplatTillGrafikfynd": null
+   },
+   {
+    "kontroll": "profil|38",
+    "etikett": "Visa mina recept publikt",
+    "relationspar": [
+     {
+      "par": "knopp mot spar",
+      "varde": "rgb(245, 244, 237)",
+      "mot": "rgb(204, 209, 194)",
+      "kvot": 1.41,
+      "krav": 3,
+      "pass": false
+     },
+     {
+      "par": "spar mot angransande yta",
+      "varde": "rgb(204, 209, 194)",
+      "mot": "rgb(245, 244, 237)",
+      "kvot": 1.41,
+      "krav": 3,
+      "pass": false
+     }
+    ],
+    "bliviandeAgarskap": "CONTROL_NON_TEXT",
+    "$villkor": "Agarskapet flyttas forst nar kontrollen faktiskt ar deklarerad.",
+    "kopplatTillGrafikfynd": "BG-020"
+   }
+  ],
+  "BG_020": {
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "relationsidentitet": "profil|38→39",
+   "kvot": 1.41,
+   "status": "LIGGER KVAR, EJ MIGRERAD",
+   "baslinje": "34 / 0 / 1"
+  }
+ },
+ "J_stopgate": {
+  "utlosta": [],
+  "antal": 0
+ },
+ "K_baslinje": {
+  "produktfilerAndrade": 0,
+  "fargbeslut": 0,
+  "R04_registretBitIdentiskt": true,
+  "R04_COVERAGE_CREDIT": 0,
+  "grafikbaslinje": "34 / 0 / 1",
+  "profilfixUtford": false
+ }
+}
