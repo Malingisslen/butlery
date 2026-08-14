@@ -1602,6 +1602,34 @@ writer, one transaction, one computed `Timestamp`. The GDPR cascade imports that
 than re-implementing removal, and `deleteMessages` skips any conversation with a `groupId` so
 the two legs cannot race.
 
+### Renaming a group is gated by ORDER, not by a rule on the visible name
+
+`updateConversation` writes `chat_groups.name` first and lets it throw, then
+`conversations.title`. That ordering IS the control, and it is worth stating
+plainly because it is weaker than it looks: `firestore.rules` gates the group
+write on `uid in adminIds`, but the conversations update rule has **no conjunct
+on `title`** — any participant may change it. So a hand-rolled client that skips
+the group write can rename what members SEE, while the group document and the
+Art. 15 export keep the true name.
+
+What holds today: the app's only rename path goes through this method, so the
+server's refusal of the group write is what stops a non-admin before anything
+visible changes. What does not hold: this is not a rules-level guarantee, and a
+future caller reaching `MessagingService.updateGroupTitle` another way would walk
+past it.
+
+The same shape applies to DELETING a group conversation: `MessageDeletionModule`
+refuses one carrying a `groupId` and the conversation list hides the delete tile
+for one, but `firestore.rules` still permits any participant to delete the
+document. Both are UX, not controls, and they close with the same kind of rules
+change.
+
+Recorded rather than fixed because the real close is a rules conjunct (`title` in
+`affectedKeys()` on a `groupId` conversation ⇒ caller in `adminIds`), which is a
+rules change with its own test surface and its own ticket. Raised by the
+`firebase-backend-security` gate, 2026-08-14, on the grounds that a residual
+living only in a code comment is not a decided deviation.
+
 ### `adminIds` is immutable, on purpose
 
 Set at creation, denied by every rule and touched by no callable. Promoting or demoting an

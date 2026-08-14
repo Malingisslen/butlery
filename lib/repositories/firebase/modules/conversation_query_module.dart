@@ -47,12 +47,36 @@ class ConversationQueryModule {
   }
 
   /// Get a single conversation by ID.
-  Future<Conversation?> getConversation(
-    String conversationId,
-    Future<Conversation?> Function(String) readFn,
-  ) async {
+  /// Reads the TOP-LEVEL conversation document, not the user-scoped copy.
+  ///
+  /// BUT-1838/BUT-1795: `readFn` comes from `BaseFirebaseRepository.read`, and
+  /// `FirebaseMessagingRepository` mixes in `UserScopedFirebaseRepository`,
+  /// which rewrites every path to `users/{uid}/conversations/{id}`. A chat
+  /// group's conversation is written ONLY at the top level, by
+  /// `createChatGroup` under the Admin SDK — so `readFn` returned null for
+  /// every group, for everyone, including the creator.
+  ///
+  /// That was not a cosmetic miss. `Conversation.memberSince` is what the
+  /// caller passes to the message query as the history cut-off, and a null
+  /// conversation means a null cut-off, which means an unfiltered query, which
+  /// `firestore.rules` refuses in full for anyone who joined a group late —
+  /// so the chat rendered an error instead of the history the member is
+  /// entitled to. The list stream beside this one (`getUserConversations`)
+  /// already read the top level; the two disagreed.
+  ///
+  /// The retired `readFn` parameter is GONE from both this and
+  /// `getConversationParticipants` below — it was the same handle whose four
+  /// siblings on `ConversationMutationModule` caused three separate defects in
+  /// this ticket, and an inert one is still the handle the next author reaches
+  /// for.
+  Future<Conversation?> getConversation(String conversationId) async {
     try {
-      return await readFn(conversationId);
+      final doc = await firestore
+          .collection(collectionName)
+          .doc(conversationId)
+          .get();
+      if (!doc.exists) return null;
+      return fromFirestore(doc);
     } catch (e) {
       AppLogger.error('Failed to get conversation $conversationId', e);
       return null;
@@ -62,10 +86,12 @@ class ConversationQueryModule {
   /// Get list of participant IDs for a conversation.
   Future<List<String>> getConversationParticipants(
     String conversationId,
-    Future<Conversation?> Function(String) readFn,
   ) async {
     try {
-      final conversation = await readFn(conversationId);
+      // Through getConversation, so this reads the top level too — see the
+      // note there. Reading the user-scoped copy here returned an empty
+      // participant list for every group.
+      final conversation = await getConversation(conversationId);
       return conversation?.participantIds ?? [];
     } catch (e) {
       AppLogger.error(

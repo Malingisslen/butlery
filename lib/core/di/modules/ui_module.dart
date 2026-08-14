@@ -57,6 +57,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
@@ -362,6 +363,7 @@ class UIModule implements DIModule {
       container.registerFactory<ConversationsViewModel>(
         () => ConversationsViewModel(
           messagingService: container<MessagingService>(),
+          chatGroupRepository: container<ChatGroupRepository>(),
         ),
       );
       // Collaborative Status ViewModel

@@ -104,85 +104,15 @@ void main() {
         expect(messageData['content'], equals('Hello!'));
       });
 
-      test('should manually add participants to array', () async {
-        // Arrange
-        final conversationId = await repository.createGroupConversation(
-          participantIds: [testUserId, friendUserId],
-          participantDisplayNames: {
-            testUserId: 'Test User',
-            friendUserId: 'Friend User',
-          },
-          participantAvatarUrls: {
-            testUserId: null,
-            friendUserId: null,
-          },
-          title: 'Test Group',
-          creatorId: testUserId,
-        );
-
-        const newParticipantId = 'new_user_789';
-
-        // Act
-        await repository.addParticipants(
-          conversationId: conversationId,
-          participantIds: [newParticipantId],
-          participantDisplayNames: {
-            newParticipantId: 'New User',
-          },
-          participantAvatarUrls: {
-            newParticipantId: null,
-          },
-        );
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('conversations')
-            .doc(conversationId)
-            .get();
-
-        final participants = List<String>.from(
-          doc.data()!['participantIds'] ?? [],
-        );
-        expect(participants, contains(newParticipantId));
-        expect(participants.length, equals(3));
-      });
-
-      test('should manually remove participants from array', () async {
-        // Arrange
-        final conversationId = await repository.createGroupConversation(
-          participantIds: [testUserId, friendUserId, 'user_789'],
-          participantDisplayNames: {
-            testUserId: 'Test User',
-            friendUserId: 'Friend User',
-            'user_789': 'Third User',
-          },
-          participantAvatarUrls: {
-            testUserId: null,
-            friendUserId: null,
-            'user_789': null,
-          },
-          title: 'Test Group',
-          creatorId: testUserId,
-        );
-
-        // Act
-        await repository.removeParticipant(
-          conversationId: conversationId,
-          participantId: 'user_789',
-        );
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('conversations')
-            .doc(conversationId)
-            .get();
-
-        final participants = List<String>.from(
-          doc.data()!['participantIds'] ?? [],
-        );
-        expect(participants, isNot(contains('user_789')));
-        expect(participants.length, equals(2));
-      });
+      // BUT-1838: `createGroupConversation`, `addParticipants` and
+      // `removeParticipant` are removed from `MessagingRepository` — group
+      // creation and membership changes now go through `ChatGroupRepository`
+      // (the `createChatGroup`/`addChatGroupMembers`/`removeChatGroupMember`
+      // callables), not a client-side Firestore write. The two tests that
+      // exercised those methods here were deleted with them rather than
+      // rewritten, since there is no repository-level replacement to point
+      // at — real coverage for the new path lives in the CF unit/integration
+      // tests, not here.
 
       test('should manually increment unread count', () async {
         // Arrange
@@ -349,19 +279,14 @@ void main() {
       });
 
       test('should update conversation metadata transactionally', () async {
-        // Arrange
-        final conversationId = await repository.createGroupConversation(
-          participantIds: [testUserId, friendUserId],
-          participantDisplayNames: {
-            testUserId: 'Test User',
-            friendUserId: 'Friend User',
-          },
-          participantAvatarUrls: {
-            testUserId: null,
-            friendUserId: null,
-          },
-          title: 'Original Title',
-          creatorId: testUserId,
+        // Arrange — a direct conversation exercises the same updateFn path;
+        // group creation moved off this repository (BUT-1838, see the note
+        // above the deleted participant-management tests).
+        final conversationId = await repository.createDirectConversation(
+          user1Id: testUserId,
+          user1DisplayName: 'Test User',
+          user2Id: friendUserId,
+          user2DisplayName: 'Friend User',
         );
 
         // Act

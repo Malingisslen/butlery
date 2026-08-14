@@ -127,55 +127,12 @@ void main() {
         ).called(1);
       });
 
-      test('should create group conversation', () async {
-        // Arrange
-        final participantIds = ['user_1', 'user_2', 'user_3'];
-        final participantNames = {
-          'user_1': 'Alice',
-          'user_2': 'Bob',
-          'user_3': 'Charlie',
-        };
-        final participantAvatars = {
-          'user_1': 'avatar1.jpg',
-          'user_2': null,
-          'user_3': 'avatar3.jpg',
-        };
-        const title = 'Recipe Discussion Group';
-        const creatorId = 'user_1';
-        const expectedConversationId = 'group_conv_123';
-
-        // Stub the repository method
-        when(
-          () => mockRepository.createGroupConversation(
-            participantIds: participantIds,
-            participantDisplayNames: participantNames,
-            participantAvatarUrls: participantAvatars,
-            title: title,
-            creatorId: creatorId,
-          ),
-        ).thenAnswer((_) async => expectedConversationId);
-
-        // Act
-        final conversationId = await mockRepository.createGroupConversation(
-          participantIds: participantIds,
-          participantDisplayNames: participantNames,
-          participantAvatarUrls: participantAvatars,
-          title: title,
-          creatorId: creatorId,
-        );
-
-        // Assert
-        expect(conversationId, equals(expectedConversationId));
-        verify(
-          () => mockRepository.createGroupConversation(
-            participantIds: participantIds,
-            participantDisplayNames: participantNames,
-            participantAvatarUrls: participantAvatars,
-            title: title,
-            creatorId: creatorId,
-          ),
-        ).called(1);
-      });
+      // BUT-1838: `createGroupConversation` is removed from
+      // `MessagingRepository` — group creation now goes through
+      // `ChatGroupRepository.createGroup` (the `createChatGroup` callable),
+      // which is what lets the minor-membership gate run before anyone is
+      // seated. See `create_group_conversation_viewmodel_test.dart` for the
+      // replacement coverage.
 
       test('should get conversation by ID', () async {
         // Arrange
@@ -513,75 +470,13 @@ void main() {
     });
 
     group('Participant Management', () {
-      test('should add participants to group', () async {
-        // Arrange
-        const conversationId = 'group_conv_123';
-        final newParticipantIds = ['user_4', 'user_5'];
-        final newParticipantNames = {
-          'user_4': 'David',
-          'user_5': 'Emma',
-        };
-        final newParticipantAvatars = {
-          'user_4': 'avatar4.jpg',
-          'user_5': null,
-        };
-
-        // Stub the repository method
-        when(
-          () => mockRepository.addParticipants(
-            conversationId: conversationId,
-            participantIds: newParticipantIds,
-            participantDisplayNames: newParticipantNames,
-            participantAvatarUrls: newParticipantAvatars,
-          ),
-        ).thenAnswer((_) async {});
-
-        // Act
-        await mockRepository.addParticipants(
-          conversationId: conversationId,
-          participantIds: newParticipantIds,
-          participantDisplayNames: newParticipantNames,
-          participantAvatarUrls: newParticipantAvatars,
-        );
-
-        // Assert
-        verify(
-          () => mockRepository.addParticipants(
-            conversationId: conversationId,
-            participantIds: newParticipantIds,
-            participantDisplayNames: newParticipantNames,
-            participantAvatarUrls: newParticipantAvatars,
-          ),
-        ).called(1);
-      });
-
-      test('should remove participant from group', () async {
-        // Arrange
-        const conversationId = 'group_conv_123';
-        const participantId = 'user_3';
-
-        // Stub the repository method
-        when(
-          () => mockRepository.removeParticipant(
-            conversationId: conversationId,
-            participantId: participantId,
-          ),
-        ).thenAnswer((_) async {});
-
-        // Act
-        await mockRepository.removeParticipant(
-          conversationId: conversationId,
-          participantId: participantId,
-        );
-
-        // Assert
-        verify(
-          () => mockRepository.removeParticipant(
-            conversationId: conversationId,
-            participantId: participantId,
-          ),
-        ).called(1);
-      });
+      // BUT-1838: `addParticipants` and `removeParticipant` are removed from
+      // `MessagingRepository` — group membership changes now go through
+      // `ChatGroupRepository.addMembers`/`removeMember` (the
+      // `addChatGroupMembers`/`removeChatGroupMember` callables), which run
+      // the minor-membership gate per person before seating them. See
+      // `group_detail_viewmodel_test.dart` and
+      // `conversations_viewmodel_test.dart` for the replacement coverage.
 
       test('should get conversation participants', () async {
         // Arrange

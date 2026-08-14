@@ -141,6 +141,14 @@ class MessageDeletionModule {
     QueryDocumentSnapshot<Map<String, dynamic>> convoDoc,
     String userId,
   ) async {
+    // BUT-1838: never a conversation owned by a chat group, whatever its size.
+    // A two-member group is still a GROUP: deleting its conversation would
+    // leave the `chat_groups` document pointing at nothing, no callable
+    // recreates a conversation, and the remaining member loses the chat with no
+    // way back. `removeChatGroupMember` is the owner of group departure and it
+    // takes an emptied group down properly, roster first.
+    if (convoDoc.data()['groupId'] is String) return;
+
     final participants = List<String>.from(
       convoDoc.data()['participantIds'] ?? const [],
     );

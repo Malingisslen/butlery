@@ -1722,6 +1722,24 @@
       "path": "Firestore: socialRequests collection"
     },
     {
+      "id": "repo-chat-group",
+      "label": "ChatGroupRepository",
+      "context": "repository",
+      "path": "lib/repositories/firebase/firebase_chat_group_repository.dart"
+    },
+    {
+      "id": "cf-chat-group-membership",
+      "label": "createChatGroup / addChatGroupMembers / removeChatGroupMember",
+      "context": "cloud-function",
+      "path": "functions/src/groups/create-chat-group.ts"
+    },
+    {
+      "id": "ds-chat-groups",
+      "label": "chat_groups",
+      "context": "datastore",
+      "path": "Firestore: chat_groups collection"
+    },
+    {
       "id": "ds-conversations",
       "label": "conversations",
       "context": "datastore",
@@ -5904,21 +5922,35 @@
         {
           "from": "vm-create-group-conversation",
           "to": "svc-messaging",
-          "payload": "createGroupConversation(...)",
+          "payload": "createGroupConversation(namn, medlemmar)",
           "transport": "call",
           "verified": true
         },
         {
           "from": "svc-messaging",
-          "to": "repo-messaging",
-          "payload": "createGroupConversation",
+          "to": "repo-chat-group",
+          "payload": "createGroup",
           "transport": "call",
           "verified": true
         },
         {
-          "from": "repo-messaging",
+          "from": "repo-chat-group",
+          "to": "cf-chat-group-membership",
+          "payload": "createChatGroup (callable)",
+          "transport": "call",
+          "verified": true
+        },
+        {
+          "from": "cf-chat-group-membership",
+          "to": "ds-chat-groups",
+          "payload": "grupp + medlemslista (efter minderårighetsgrinden)",
+          "transport": "write",
+          "verified": true
+        },
+        {
+          "from": "cf-chat-group-membership",
           "to": "ds-conversations",
-          "payload": "ny gruppkonversation",
+          "payload": "gruppens konversation + memberSince",
           "transport": "write",
           "verified": true
         },
@@ -5931,22 +5963,29 @@
         },
         {
           "from": "vm-group-detail-messaging",
-          "to": "svc-messaging",
-          "payload": "addParticipantsToGroup / removeParticipantFromGroup / updateGroupTitle",
+          "to": "repo-chat-group",
+          "payload": "addMembers / removeMember (admin avgörs av chat_groups.adminIds)",
           "transport": "call",
           "verified": true
         },
         {
-          "from": "svc-messaging",
-          "to": "repo-messaging",
-          "payload": "medlemshantering (endast admin)",
+          "from": "repo-chat-group",
+          "to": "ds-chat-groups",
+          "payload": "watchGroup: medlemslista + adminIds (läs)",
+          "transport": "read",
+          "verified": true
+        },
+        {
+          "from": "repo-chat-group",
+          "to": "cf-chat-group-membership",
+          "payload": "addChatGroupMembers / removeChatGroupMember (callable)",
           "transport": "call",
           "verified": true
         },
         {
-          "from": "repo-messaging",
+          "from": "cf-chat-group-membership",
           "to": "ds-conversations",
-          "payload": "participantIds / title uppdaterad",
+          "payload": "participantIds + memberSince speglade i samma transaktion",
           "transport": "write",
           "verified": true
         },
@@ -6505,7 +6544,7 @@
         {
           "from": "v-notification-prefs",
           "to": "svc-notification",
-          "payload": "getPreferences/updatePreferences (master-toggle, kategori, sammanfattnings-frekvens, tysta timmar). BUT-1783 (2026-08-13) tog bort reglagen för ljud och vibration: inget läste värdet — ljud och vibration ägs av Androids notiskanal och iOS systeminställningar, och pushen sätter sitt eget ljud — så växlarna sparade ett val som aldrig kunde få effekt.",
+          "payload": "getPreferences/updatePreferences (master-toggle, kategori, sammanfattnings-frekvens, tysta timmar). Sammanfattnings-frekvensen är sedan 2026-08-14 en sluten uppräkning (DigestFrequency: never/weekly) med en total parsning — ett sparat 'daily' från den borttagna dagliga varianten läses som weekly, vilket är exakt vad servern redan skickar. BUT-1783 (2026-08-13) tog bort reglagen för ljud och vibration: inget läste värdet — ljud och vibration ägs av Androids notiskanal och iOS systeminställningar, och pushen sätter sitt eget ljud — så växlarna sparade ett val som aldrig kunde få effekt.",
           "transport": "method call",
           "verified": true
         },

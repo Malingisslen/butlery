@@ -32,6 +32,7 @@ class ConversationGroupDetailView extends StatelessWidget {
         conversationId: conversationId,
         messagingService: ServiceLocator.get(),
         friendsService: ServiceLocator.get(),
+        chatGroupRepository: ServiceLocator.get(),
       ),
       child: Consumer<GroupDetailViewModel>(
         builder: (context, viewModel, child) {
@@ -296,27 +297,19 @@ class ConversationGroupDetailView extends StatelessWidget {
         selectedFriends.isNotEmpty &&
         context.mounted) {
       final memberIds = selectedFriends.map((f) => f.uid).toList();
-      final displayNames = {
-        for (var f in selectedFriends) f.uid: f.displayName,
-      };
-      final avatarUrls = {for (var f in selectedFriends) f.uid: f.avatarUrl};
 
-      final success = await viewModel.addMembers(
-        memberIds,
-        displayNames,
-        avatarUrls,
-      );
+      final addedCount = await viewModel.addMembers(memberIds);
 
       if (context.mounted) {
-        if (success) {
+        if (addedCount != null) {
           SnackBarUtils.showSuccess(
             context,
-            context.l10n.messagingMembersAdded(selectedFriends.length),
+            context.l10n.chatGroupMembersAddedCount(addedCount),
           );
         } else {
           SnackBarUtils.showError(
             context,
-            viewModel.error ?? context.l10n.messagingCouldNotAddMembers,
+            viewModel.error ?? context.l10n.chatGroupAddMembersFailed,
           );
         }
       }

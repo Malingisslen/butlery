@@ -14,16 +14,34 @@ class MessageQueryModule {
   });
 
   /// Stream conversation messages with real-time updates.
+  ///
+  /// [historyStart] MUST be passed for a group conversation: it is the caller's
+  /// `memberSince` stamp, and `firestore.rules` refuses any message sent before
+  /// it (BUT-1838). This is not a display filter — a query that returns even
+  /// ONE document the rules refuse fails ENTIRELY, so omitting it turns a group
+  /// chat into a permission error rather than a slightly-too-long history.
   Stream<List<Message>> getConversationMessages({
     required String conversationId,
+    DateTime? historyStart,
     int limit = 50,
   }) {
     try {
       AppLogger.info(
         '🔍 [MessageQuery] Creating message stream for conversationId: $conversationId',
       );
-      return messagesRef
-          .where('conversationId', isEqualTo: conversationId)
+      var query = messagesRef.where(
+        'conversationId',
+        isEqualTo: conversationId,
+      );
+      if (historyStart != null) {
+        query = query.where(
+          'sentAt',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(historyStart),
+        );
+      }
+      // A range and an orderBy on the SAME field, so the existing
+      // `conversationId ASC + sentAt` composite index covers this unchanged.
+      return query
           .orderBy('sentAt', descending: true)
           .limit(limit)
           .snapshots()
@@ -50,13 +68,23 @@ class MessageQueryModule {
   /// Get paginated messages for conversation.
   Future<List<Message>> getConversationMessagesPage({
     required String conversationId,
+    DateTime? historyStart,
     int limit = 50,
     DateTime? startAfter,
   }) async {
     try {
-      var query = messagesRef
-          .where('conversationId', isEqualTo: conversationId)
-          .orderBy('sentAt', descending: true);
+      var query = messagesRef.where(
+        'conversationId',
+        isEqualTo: conversationId,
+      );
+      // Same rules constraint as the stream above — see its comment.
+      if (historyStart != null) {
+        query = query.where(
+          'sentAt',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(historyStart),
+        );
+      }
+      query = query.orderBy('sentAt', descending: true);
 
       if (startAfter != null) {
         query = query.startAfter([Timestamp.fromDate(startAfter)]);
@@ -93,9 +121,15 @@ class MessageQueryModule {
   }
 
   /// Search messages in conversation (simplified implementation).
+  /// [historyStart] carries the same obligation as the two readers above: for
+  /// a group conversation `firestore.rules` refuses anything sent before the
+  /// caller joined, and one refused document fails the WHOLE query. Omitting it
+  /// made search look empty and made "rensa chatt" report success having
+  /// deleted nothing, for exactly the members who joined late.
   Future<List<Message>> searchMessages({
     required String conversationId,
     required String query,
+    DateTime? historyStart,
     int limit = 20,
   }) async {
     try {
@@ -103,8 +137,17 @@ class MessageQueryModule {
       // This is a simplified implementation that searches in content
       // In production, consider using Algolia or similar
 
-      final messages = await messagesRef
-          .where('conversationId', isEqualTo: conversationId)
+      var searchQuery = messagesRef.where(
+        'conversationId',
+        isEqualTo: conversationId,
+      );
+      if (historyStart != null) {
+        searchQuery = searchQuery.where(
+          'sentAt',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(historyStart),
+        );
+      }
+      final messages = await searchQuery
           .orderBy('sentAt', descending: true)
           .limit(limit * 3) // Get more to filter
           .get();

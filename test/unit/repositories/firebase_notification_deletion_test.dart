@@ -387,11 +387,17 @@ void main() {
       required List<String> participantIds,
       required Map<String, int> messagesBySender,
       bool createConversationDoc = true,
+      String? groupId,
     }) async {
       if (createConversationDoc) {
         await fakeFirestore.collection('conversations').doc(convoId).set({
           'participantIds': participantIds,
           'createdAt': DateTime(2026, 4, 1),
+          // Server-written and absent on a direct chat, which is why it is
+          // omitted rather than nulled: the guard under test is
+          // `data()['groupId'] is String`, and a stored null must read the
+          // same as an absent key.
+          'groupId': ?groupId,
         });
       }
       for (final entry in messagesBySender.entries) {
@@ -550,6 +556,54 @@ void main() {
         expect(count, equals(5));
         expect(await messageCountFor(_ownerUid), isZero);
         expect(await messageCountFor('third-uid'), equals(1));
+      },
+    );
+
+    // BUT-1838. Every other fixture in this group omits `groupId`, so the
+    // `if (data()['groupId'] is String) return;` guard in
+    // `_leaveOneConversation` was reached by nothing: with the key absent the
+    // guard never fires, and deleting the line changes no assertion above.
+    // The discriminating shape is the one the guard exists for — a TWO-member
+    // chat group, which the participant-count branch below it would otherwise
+    // treat exactly like a 1:1 and delete.
+    test(
+      'a two-member CHAT GROUP conversation is left standing — deleting it '
+      'would orphan the chat_groups document with no way back',
+      () async {
+        await seedConversation(
+          convoId: 'convo-chat-group',
+          participantIds: [_ownerUid, _strangerUid],
+          groupId: 'chat-group-1',
+          messagesBySender: {_ownerUid: 2, _strangerUid: 1},
+        );
+
+        final count = await repo.deleteAllMessagesForUser(_ownerUid);
+
+        // Positive control FIRST: the sweep reached this conversation and did
+        // its Art. 17 work. Without it, "the conversation survived" would also
+        // be satisfied by the conversation never being visited at all.
+        expect(count, equals(2));
+        expect(await messageCountFor(_ownerUid), isZero);
+        expect(await messageCountFor(_strangerUid), equals(1));
+
+        final convoAfter = await fakeFirestore
+            .collection('conversations')
+            .doc('convo-chat-group')
+            .get();
+        expect(
+          convoAfter.exists,
+          isTrue,
+          reason:
+              'a two-member group is still a GROUP: no callable recreates a '
+              'conversation, so deleting it here would leave chat_groups/'
+              'chat-group-1 pointing at nothing and the remaining member '
+              'without the chat. removeChatGroupMember owns group departure.',
+        );
+        expect(
+          convoAfter.data()!['groupId'],
+          equals('chat-group-1'),
+          reason: 'and nothing else about the document was rewritten',
+        );
       },
     );
 

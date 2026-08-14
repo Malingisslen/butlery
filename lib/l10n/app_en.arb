@@ -121,29 +121,39 @@
   "slotPickerWeekLabel": "w.{week}",
   "@slotPickerWeekLabel": {
     "placeholders": {
-      "week": { "type": "int" }
+      "week": {
+        "type": "int"
+      }
     }
   },
   "slotPickerConfirmCount": "Add ({count})",
   "@slotPickerConfirmCount": {
     "description": "BUT-999: confirm button in the multi-select slot picker; count = number of selected day/slot targets.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "a11ySlotPickerCell": "Pick {day} {slot}",
   "@a11ySlotPickerCell": {
     "description": "BUT-999: a11y label for a day×slot cell in the slot picker.",
     "placeholders": {
-      "day": { "type": "String" },
-      "slot": { "type": "String" }
+      "day": {
+        "type": "String"
+      },
+      "slot": {
+        "type": "String"
+      }
     }
   },
   "recipeAddedToMenuSlots": "{count, plural, =1{Recipe added to 1 slot in the weekly menu} other{Recipe added to {count} slots in the weekly menu}}",
   "@recipeAddedToMenuSlots": {
     "description": "BUT-999: snackbar after adding one recipe to N day/slot targets from the recipe detail view.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuPlaceAutoButton": "Place automatically in the calendar",
@@ -158,7 +168,9 @@
   "@menuAutoPlacedToast": {
     "description": "BUT-1241: snackbar after auto-distribution; carries the change action.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuAutoPlacedChangeAction": "Change",
@@ -173,22 +185,30 @@
   "@menuPlacementProgress": {
     "description": "BUT-1241: progress pill in the placement-mode header.",
     "placeholders": {
-      "placed": { "type": "int" },
-      "total": { "type": "int" }
+      "placed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "menuPlacementTrayLabel": "Left to place ({count})",
   "@menuPlacementTrayLabel": {
     "description": "BUT-1241: label above the tray of recipes waiting to be placed.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuPlacementHint": "Tap a free cell to place {recipe}.",
   "@menuPlacementHint": {
     "description": "BUT-1241: hint banner while a tray recipe is selected.",
     "placeholders": {
-      "recipe": { "type": "String" }
+      "recipe": {
+        "type": "String"
+      }
     }
   },
   "menuPlacementHintSelect": "Select a recipe below to place it.",
@@ -207,14 +227,18 @@
   "@menuPlacementOverflow": {
     "description": "BUT-1241: warning after auto-rest when some recipes did not fit the week.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuPlacementSaved": "{count, plural, =1{1 recipe placed in the weekly menu} other{{count} recipes placed in the weekly menu}}",
   "@menuPlacementSaved": {
     "description": "BUT-1241: snackbar after the placement session saved.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeklyMenuNewBadge": "NEW",
@@ -225,22 +249,30 @@
   "@a11yPlacementCell": {
     "description": "BUT-1241: a11y label for an eligible day×slot cell in placement mode.",
     "placeholders": {
-      "day": { "type": "String" },
-      "slot": { "type": "String" }
+      "day": {
+        "type": "String"
+      },
+      "slot": {
+        "type": "String"
+      }
     }
   },
   "a11yPlacementTrayCard": "Select {recipe}",
   "@a11yPlacementTrayCard": {
     "description": "BUT-1241: a11y label for a tray recipe card in placement mode.",
     "placeholders": {
-      "recipe": { "type": "String" }
+      "recipe": {
+        "type": "String"
+      }
     }
   },
   "a11yPlacementRemoveEntry": "Remove {recipe} from the cell",
   "@a11yPlacementRemoveEntry": {
     "description": "BUT-1241: a11y label for a session-placed grid cell — tapping un-places the recipe.",
     "placeholders": {
-      "recipe": { "type": "String" }
+      "recipe": {
+        "type": "String"
+      }
     }
   },
   "bulkAddToMenu": "Add to weekly menu",
@@ -250,16 +282,26 @@
   "bulkAddToMenuSuccess": "{count} recipes added to {slot} {day}",
   "@bulkAddToMenuSuccess": {
     "placeholders": {
-      "count": { "type": "int" },
-      "slot": { "type": "String" },
-      "day": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "slot": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
     }
   },
   "bulkAddToMenuOverflowed": "{added} of {requested} added — the rest don't fit this week",
   "@bulkAddToMenuOverflowed": {
     "placeholders": {
-      "added": { "type": "int" },
-      "requested": { "type": "int" }
+      "added": {
+        "type": "int"
+      },
+      "requested": {
+        "type": "int"
+      }
     }
   },
   "bulkAddToMenuOverflowedAction": "Put the rest in next week",
@@ -269,13 +311,17 @@
   "bulkAddToMenuSuccessNextWeek": "{count} recipes added to next week",
   "@bulkAddToMenuSuccessNextWeek": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "bulkAddToMenuOverflowedTwoWeeks": "The rest doesn't fit next week either — {remaining} recipes still without a slot",
   "@bulkAddToMenuOverflowedTwoWeeks": {
     "placeholders": {
-      "remaining": { "type": "int" }
+      "remaining": {
+        "type": "int"
+      }
     }
   },
   "bulkExport": "Export selected",
@@ -287,7 +333,9 @@
   "bulkExportCopied": "{count} recipes copied to clipboard",
   "@bulkExportCopied": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "imageTakePhoto": "Take photo",
@@ -727,14 +775,18 @@
   "chatMenuWeekOption": "Week {weekNum}",
   "@chatMenuWeekOption": {
     "placeholders": {
-      "weekNum": {"type": "int"}
+      "weekNum": {
+        "type": "int"
+      }
     }
   },
   "chatWeekCurrentSuffix": " (this week)",
   "chatMenuShareTitle": "Weekly menu wk {weekNum}",
   "@chatMenuShareTitle": {
     "placeholders": {
-      "weekNum": {"type": "int"}
+      "weekNum": {
+        "type": "int"
+      }
     }
   },
   "chatCheckOutMenu": "Do take a look at my weekly menu.",
@@ -875,40 +927,118 @@
   "voiceImportMicRationaleTitle": "Microphone for recipe dictation",
   "recipeVoiceImport": "Speak in a recipe",
   "voiceAssistStepPrefix": "Step {step} of {total}. ",
-  "@voiceAssistStepPrefix": { "placeholders": { "step": { "type": "int" }, "total": { "type": "int" } } },
+  "@voiceAssistStepPrefix": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "voiceAssistNoNextStep": "There is no next step. The recipe is done",
   "voiceAssistNoPreviousStep": "This is the first step",
   "voiceAssistNoIngredients": "The ingredient list is empty",
   "voiceAssistTimerStarted": "Timer {duration} started",
-  "@voiceAssistTimerStarted": { "placeholders": { "duration": { "type": "String" } } },
+  "@voiceAssistTimerStarted": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistNoTimers": "No timer is running",
   "voiceAssistSubstitutions": "{ingredient} can be replaced with: {suggestions}",
-  "@voiceAssistSubstitutions": { "placeholders": { "ingredient": { "type": "String" }, "suggestions": { "type": "String" } } },
+  "@voiceAssistSubstitutions": {
+    "placeholders": {
+      "ingredient": {
+        "type": "String"
+      },
+      "suggestions": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistNoSubstitutions": "I found no substitutes for {ingredient}",
-  "@voiceAssistNoSubstitutions": { "placeholders": { "ingredient": { "type": "String" } } },
+  "@voiceAssistNoSubstitutions": {
+    "placeholders": {
+      "ingredient": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistQuantityNotFound": "I couldn't find {ingredient} among the ingredients",
-  "@voiceAssistQuantityNotFound": { "placeholders": { "ingredient": { "type": "String" } } },
+  "@voiceAssistQuantityNotFound": {
+    "placeholders": {
+      "ingredient": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistStepOutOfRange": "The recipe has {count} steps",
-  "@voiceAssistStepOutOfRange": { "placeholders": { "count": { "type": "int" } } },
+  "@voiceAssistStepOutOfRange": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "voiceAssistRatioHalf": "half the amount",
   "voiceAssistRatioDouble": "double the amount",
   "voiceAssistRatioOneAndHalf": "one and a half times the amount",
   "voiceAssistRatioTimes": "{ratio} times the amount",
-  "@voiceAssistRatioTimes": { "placeholders": { "ratio": { "type": "String" } } },
+  "@voiceAssistRatioTimes": {
+    "placeholders": {
+      "ratio": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistTimeLeft": "{duration} left",
-  "@voiceAssistTimeLeft": { "placeholders": { "duration": { "type": "String" } } },
+  "@voiceAssistTimeLeft": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistMissed": "I didn't catch that. Try saying next, or read it again",
   "voiceAssistMissedTwice": "I didn't catch that this time either. The buttons work as usual",
   "voiceAssistHours": "{n, plural, =1{1 hour} other{{n} hours}}",
-  "@voiceAssistHours": { "placeholders": { "n": { "type": "int" } } },
+  "@voiceAssistHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "voiceAssistMinutes": "{n, plural, =1{1 minute} other{{n} minutes}}",
-  "@voiceAssistMinutes": { "placeholders": { "n": { "type": "int" } } },
+  "@voiceAssistMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "voiceAssistSeconds": "{n, plural, =1{1 second} other{{n} seconds}}",
-  "@voiceAssistSeconds": { "placeholders": { "n": { "type": "int" } } },
+  "@voiceAssistSeconds": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "voiceAssistAnd": "and",
   "voiceAssistWindowHint": "Say a command…",
   "voiceAssistHeard": "Heard: {text}",
-  "@voiceAssistHeard": { "placeholders": { "text": { "type": "String" } } },
+  "@voiceAssistHeard": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistMicTooltip": "Talk to the kitchen butler",
   "voiceAssistMuteTooltip": "Mute readouts",
   "voiceAssistUnmuteTooltip": "Unmute readouts",
@@ -973,12 +1103,23 @@
   "menuGeneratedShoppingListName": "Shopping list w.{week}",
   "@menuGeneratedShoppingListName": {
     "description": "BUT-1234: default name for the shopping list generated from the weekly menu. {week} is the ISO week number, e.g. 24.",
-    "placeholders": { "week": { "type": "int" } }
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
   },
   "menuShoppingListGenerated": "{listName} updated – {count} items",
   "@menuShoppingListGenerated": {
     "description": "BUT-956: snackbar after generating the aggregated week shopping list. {listName} e.g. 'Inköpslista v.24'.",
-    "placeholders": { "listName": { "type": "String" }, "count": { "type": "int" } }
+    "placeholders": {
+      "listName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "menuShoppingListGenerationEmpty": "This week's plan has no recipes with ingredients yet",
   "menuShoppingListGenerationFailed": "Could not create the shopping list – try again",
@@ -1054,7 +1195,7 @@
       }
     }
   },
-  "recipePrint": "Print recipe",
+  "recipePrint": "Print",
   "recipeCreateShoppingList": "Create shopping list",
   "recipeUpdateTags": "Update tags",
   "recipeViewSource": "View source",
@@ -1062,7 +1203,11 @@
   "recipeSourceSheetTitle": "Source text",
   "recipeSourceCapturedAt": "Captured {time}",
   "@recipeSourceCapturedAt": {
-    "placeholders": { "time": { "type": "String" } }
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
   },
   "recipeSourceTypeUrl": "Source URL",
   "recipeSourceTypeYoutube": "YouTube transcript",
@@ -1192,7 +1337,9 @@
   "@householdAllergenOffBody": {
     "description": "BUT-1465: confirm-dialog body naming the household's tracked allergens",
     "placeholders": {
-      "allergens": { "type": "String" }
+      "allergens": {
+        "type": "String"
+      }
     }
   },
   "householdAllergenOffBodyGeneric": "Then the weekly menu is planned from your own allergies only. A recipe that someone else in the household — including a child — needs to avoid can then be planned into the menu. The filter can be turned back on at any time.",
@@ -1396,7 +1543,9 @@
   "@personalTagSelectedCount": {
     "description": "Selection-mode app-bar title showing how many tags are selected",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagMergeAction": "Merge",
@@ -1415,8 +1564,12 @@
   "@personalTagMergeMessage": {
     "description": "Body of the merge-tags dialog",
     "placeholders": {
-      "count": { "type": "int" },
-      "target": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
     }
   },
   "personalTagMergeKeepLabel": "Keep this tag:",
@@ -1431,35 +1584,45 @@
   "@personalTagMergeSuccess": {
     "description": "Snackbar after a successful merge, with recipes-updated count",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagMergeSuccessCount": "{count, plural, =1{1 tag merged} other{{count} tags merged}}",
   "@personalTagMergeSuccessCount": {
     "description": "Snackbar after a successful merge, counting how many source tags were merged into the target",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagBulkDeleteTitle": "{count, plural, =1{Delete 1 tag?} other{Delete {count} tags?}}",
   "@personalTagBulkDeleteTitle": {
     "description": "Title of the bulk-delete confirmation dialog",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagBulkDeleteMessage": "{count, plural, =1{The tag will be removed from every recipe that uses it.} other{The tags will be removed from every recipe that uses them.}}",
   "@personalTagBulkDeleteMessage": {
     "description": "Body of the bulk-delete confirmation dialog",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagBulkDeleted": "{count, plural, =1{1 tag deleted} other{{count} tags deleted}}",
   "@personalTagBulkDeleted": {
     "description": "Snackbar after a successful bulk delete",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagNoGroup": "No group",
@@ -2048,7 +2211,9 @@
   "@shoppingNewListNameTemplate": {
     "description": "Default name for a shopping list auto-created from a recipe; {title} is the recipe title.",
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "shoppingAddFromMenu": "Add from menu",
@@ -2322,14 +2487,18 @@
   "@recipeCommentVisibleTo": {
     "description": "BUT-914: label under the comment composer naming who will see the comment (collaborative recipe members). {audience} is a pre-formatted name list, e.g. 'Anna, Per, Maria +2'.",
     "placeholders": {
-      "audience": { "type": "String" }
+      "audience": {
+        "type": "String"
+      }
     }
   },
   "recipeCommentVisiblePeople": "{count, plural, =1{1 person} other{{count} people}}",
   "@recipeCommentVisiblePeople": {
     "description": "BUT-914: count-only fallback for the comment-visibility audience when no member name resolves — must never hide a real audience (privacy). e.g. '3 people'.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "recipeCommentAudienceTitle": "Visible to",
@@ -2340,7 +2509,9 @@
   "@recipeCommentAudienceOthers": {
     "description": "BUT-1211: trailing line in the comment-audience dialog for members whose display name couldn't be resolved — counted, never hidden (privacy). e.g. 'and 2 more people'.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "commentReply": "Reply",
@@ -3691,7 +3862,9 @@
   "a11yIngredientHeadingField": "Heading {label}",
   "@a11yIngredientHeadingField": {
     "placeholders": {
-      "label": { "type": "String" }
+      "label": {
+        "type": "String"
+      }
     }
   },
   "recipeLeaveWithoutSaving": "Leave without saving",
@@ -3877,7 +4050,9 @@
   "@importMultipleRecipesFound": {
     "description": "Button shown after OCR when several recipes were detected on one page; opens the picker.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importPhotoAddPage": "Add page",
@@ -3888,21 +4063,27 @@
   "@importPhotoPageLabel": {
     "description": "Label under each thumbnail in the multi-page photo import strip (BUT-903).",
     "placeholders": {
-      "number": { "type": "int" }
+      "number": {
+        "type": "int"
+      }
     }
   },
   "importPhotoPagesCombined": "{count} pages combined into one recipe",
   "@importPhotoPagesCombined": {
     "description": "Caption above the page strip explaining the pages are merged into one recipe (BUT-903).",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importPhotoPagesMaxReached": "Max {max} pages per recipe",
   "@importPhotoPagesMaxReached": {
     "description": "Error/disabled-state message when the user tries to add more than the page cap (BUT-903).",
     "placeholders": {
-      "max": { "type": "int" }
+      "max": {
+        "type": "int"
+      }
     }
   },
   "shareImportUnreadable": "Could not read the shared photo(s)",
@@ -3913,7 +4094,9 @@
   "@a11yRemovePhotoPage": {
     "description": "Screen-reader label for the remove button on a photo-import page thumbnail (BUT-903).",
     "placeholders": {
-      "number": { "type": "int" }
+      "number": {
+        "type": "int"
+      }
     }
   },
   "importProcessingImage": "Processing image...",
@@ -4504,14 +4687,20 @@
   "importConfirmButton": "Import ({count})",
   "@importConfirmButton": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importPreviewSubtitle": "{ingredients} ingredients · {steps} steps",
   "@importPreviewSubtitle": {
     "placeholders": {
-      "ingredients": { "type": "int" },
-      "steps": { "type": "int" }
+      "ingredients": {
+        "type": "int"
+      },
+      "steps": {
+        "type": "int"
+      }
     }
   },
   "stateAddRecipes": "Add recipes",
@@ -4805,21 +4994,31 @@
   "@groupRemoveMultipleConfirm": {
     "description": "BUT-997.",
     "placeholders": {
-      "count": { "type": "int" },
-      "group": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "group": {
+        "type": "String"
+      }
     }
   },
   "groupMembersRemoved": "{count} members removed",
   "@groupMembersRemoved": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "groupMembersPartiallyRemoved": "{removed} members removed — could not remove: {failedNames}",
   "@groupMembersPartiallyRemoved": {
     "placeholders": {
-      "removed": { "type": "int" },
-      "failedNames": { "type": "String" }
+      "removed": {
+        "type": "int"
+      },
+      "failedNames": {
+        "type": "String"
+      }
     }
   },
   "groupOwner": "Owner",
@@ -5092,7 +5291,9 @@
   "shoppingItemMoved": "Moved to {category}",
   "@shoppingItemMoved": {
     "placeholders": {
-      "category": { "type": "String" }
+      "category": {
+        "type": "String"
+      }
     }
   },
   "shoppingUnitHint": "Unit...",
@@ -6074,35 +6275,65 @@
   "categoryCanned": "Canned Goods",
   "categoryDryGoods": "Dry Goods",
   "categoryMeat": "Meat",
-  "@categoryMeat": {"description": "Shopping category — meat only (BUT-1004 split from meat_fish)"},
+  "@categoryMeat": {
+    "description": "Shopping category — meat only (BUT-1004 split from meat_fish)"
+  },
   "categoryFish": "Fish",
-  "@categoryFish": {"description": "Shopping category — fish only (BUT-1004 split from meat_fish)"},
+  "@categoryFish": {
+    "description": "Shopping category — fish only (BUT-1004 split from meat_fish)"
+  },
   "categoryFruit": "Fruit",
-  "@categoryFruit": {"description": "Shopping category — fruit only (BUT-1004 split from fruit_veg)"},
+  "@categoryFruit": {
+    "description": "Shopping category — fruit only (BUT-1004 split from fruit_veg)"
+  },
   "categoryVeg": "Vegetables",
-  "@categoryVeg": {"description": "Shopping category — vegetables only (BUT-1004 split from fruit_veg)"},
+  "@categoryVeg": {
+    "description": "Shopping category — vegetables only (BUT-1004 split from fruit_veg)"
+  },
   "conflictBannerMessage": "Sync conflict resolved — the latest edit was saved",
-  "@conflictBannerMessage": {"description": "BUT-1031: banner shown when realtime conflict resolver picked a winner."},
+  "@conflictBannerMessage": {
+    "description": "BUT-1031: banner shown when realtime conflict resolver picked a winner."
+  },
   "conflictBannerDismiss": "Dismiss",
-  "@conflictBannerDismiss": {"description": "BUT-1031: dismiss action on the conflict banner."},
+  "@conflictBannerDismiss": {
+    "description": "BUT-1031: dismiss action on the conflict banner."
+  },
   "a11yConflictBannerDismiss": "Dismiss conflict notification",
-  "@a11yConflictBannerDismiss": {"description": "BUT-1031: a11y label for the conflict banner dismiss action."},
+  "@a11yConflictBannerDismiss": {
+    "description": "BUT-1031: a11y label for the conflict banner dismiss action."
+  },
   "conflictDiffTitle": "What changed",
-  "@conflictDiffTitle": {"description": "BUT-1163: title of the conflict diff view."},
+  "@conflictDiffTitle": {
+    "description": "BUT-1163: title of the conflict diff view."
+  },
   "conflictDiffLocalLabel": "My version",
-  "@conflictDiffLocalLabel": {"description": "BUT-1163: label for the local snapshot column in the conflict diff."},
+  "@conflictDiffLocalLabel": {
+    "description": "BUT-1163: label for the local snapshot column in the conflict diff."
+  },
   "conflictDiffRemoteLabel": "Their version",
-  "@conflictDiffRemoteLabel": {"description": "BUT-1163: label for the remote snapshot column in the conflict diff."},
+  "@conflictDiffRemoteLabel": {
+    "description": "BUT-1163: label for the remote snapshot column in the conflict diff."
+  },
   "conflictDiffKeepMine": "Keep my version",
-  "@conflictDiffKeepMine": {"description": "BUT-1163: button that re-applies the local version after a lost conflict."},
+  "@conflictDiffKeepMine": {
+    "description": "BUT-1163: button that re-applies the local version after a lost conflict."
+  },
   "conflictDiffKeptToast": "Your version was saved",
-  "@conflictDiffKeptToast": {"description": "BUT-1163: success toast after re-applying the local version."},
+  "@conflictDiffKeptToast": {
+    "description": "BUT-1163: success toast after re-applying the local version."
+  },
   "conflictDiffKeepFailed": "Couldn't save your version",
-  "@conflictDiffKeepFailed": {"description": "BUT-1163: error toast when re-applying the local version fails."},
+  "@conflictDiffKeepFailed": {
+    "description": "BUT-1163: error toast when re-applying the local version fails."
+  },
   "conflictDiffNoChanges": "No field changes to show — the versions are identical.",
-  "@conflictDiffNoChanges": {"description": "BUT-1163: empty state when the two snapshots are identical."},
+  "@conflictDiffNoChanges": {
+    "description": "BUT-1163: empty state when the two snapshots are identical."
+  },
   "conflictDiffEmptyValue": "(empty)",
-  "@conflictDiffEmptyValue": {"description": "BUT-1163: placeholder shown for an empty or missing field value in the diff."},
+  "@conflictDiffEmptyValue": {
+    "description": "BUT-1163: placeholder shown for an empty or missing field value in the diff."
+  },
   "privacyEmailSubject": "Privacy inquiry",
   "unshareRecipeTitle": "Stop sharing recipe?",
   "unshareRecipeConfirm": "The recipe \"{title}\" will be removed from all groups it was shared with.",
@@ -6262,8 +6493,6 @@
   "notificationQuietHoursSubtitle": "No notifications during selected time period",
   "commonFrom": "From",
   "commonTo": "To",
-  "notificationSound": "Sound",
-  "notificationVibration": "Vibration",
   "notificationCategoryFriends": "Friends",
   "notificationCategoryRecipes": "Recipes",
   "notificationCategoryCollaboration": "Collaboration",
@@ -6312,24 +6541,47 @@
   "blockedUsersEmpty": "No blocked users",
   "blockedUsersUnblockSelectedCount": "Unblock selected ({count})",
   "@blockedUsersUnblockSelectedCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "blockedUsersBulkUnblockTitle": "Unblock selected?",
   "blockedUsersBulkUnblockMessage": "Do you want to unblock {count} users?",
   "@blockedUsersBulkUnblockMessage": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "blockedUsersBulkUnblockResult": "{count} users unblocked",
   "@blockedUsersBulkUnblockResult": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "blockedUsersBulkUnblockPartial": "{succeeded} of {total} unblocked",
   "@blockedUsersBulkUnblockPartial": {
-    "placeholders": { "succeeded": { "type": "int" }, "total": { "type": "int" } }
+    "placeholders": {
+      "succeeded": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "a11yBlockedUserSelect": "Select blocked user {name}",
   "@a11yBlockedUserSelect": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "retagFetchingRecipes": "Fetching recipes...",
   "retagRetaggingRecipes": "Retagging recipes",
@@ -6546,12 +6798,20 @@
   "adminMetricWhy": "Why it matters",
   "adminDrillImportTitle": "Import attempts: {domain}",
   "@adminDrillImportTitle": {
-    "placeholders": { "domain": { "type": "String" } }
+    "placeholders": {
+      "domain": {
+        "type": "String"
+      }
+    }
   },
   "adminDrillEmpty": "No import attempts logged",
   "adminDrillTruncated": "Showing {count} (there may be more)",
   "@adminDrillTruncated": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "adminDrillSuccess": "Succeeded",
   "adminDrillFailure": "Failed",
@@ -9757,11 +10017,19 @@
   "seasonalForgottenFavorites": "Forgotten Favorites",
   "seasonalHeroTitle": "in season now · {month}",
   "@seasonalHeroTitle": {
-    "placeholders": { "month": {"type": "String"} }
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
   },
   "seasonalHeroRecipeCount": "{count, plural, =1{1 recipe} other{{count} recipes}}",
   "@seasonalHeroRecipeCount": {
-    "placeholders": { "count": {"type": "int"} }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "seasonalMonthJanuary": "January",
   "seasonalMonthFebruary": "February",
@@ -9781,21 +10049,28 @@
   "emptyStateNewUserWithPrefs": "Your dietary preferences are ready. Import your first recipe and the filtering will be handled for you.",
   "emptyStateImportAction": "Import by link",
   "emptyStateOtherOptions": "Further options",
-  "recipePrint": "Print",
   "cookingModePreviousStep": "Previous step",
   "cookingModeNextStep": "Next step",
   "cookingModeStepOf": "Step {current} of {total}",
   "@cookingModeStepOf": {
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "cookingModeStepAnnounce": "Step {step}: {instruction}",
   "@cookingModeStepAnnounce": {
     "placeholders": {
-      "step": {"type": "int"},
-      "instruction": {"type": "String"}
+      "step": {
+        "type": "int"
+      },
+      "instruction": {
+        "type": "String"
+      }
     }
   },
   "quickCaptureTitle": "Quick save recipe",
@@ -9812,13 +10087,17 @@
   "a11yRecipeSelected": "{title}, selected",
   "@a11yRecipeSelected": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "a11yRecipeNotSelected": "{title}, not selected",
   "@a11yRecipeNotSelected": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "recipeImproveTitle": "Improve this recipe",
@@ -9831,22 +10110,27 @@
   "recipeCompleteness": "{score}% complete",
   "@recipeCompleteness": {
     "placeholders": {
-      "score": { "type": "int" }
+      "score": {
+        "type": "int"
+      }
     }
   },
   "recipeCompletenessA11y": "Recipe is {score} percent complete",
   "@recipeCompletenessA11y": {
     "placeholders": {
-      "score": { "type": "int" }
+      "score": {
+        "type": "int"
+      }
     }
   },
   "pwaInstallPrompt": "Install Butlery on your home screen for quicker access",
   "pwaInstallAction": "Install",
-
   "duplicateMergeSimilarity": "{percent}% similar",
   "@duplicateMergeSimilarity": {
     "placeholders": {
-      "percent": { "type": "int" }
+      "percent": {
+        "type": "int"
+      }
     }
   },
   "duplicateMergeExisting": "Existing",
@@ -9869,13 +10153,17 @@
   "duplicateMergeMinutes": "{minutes} min",
   "@duplicateMergeMinutes": {
     "placeholders": {
-      "minutes": { "type": "int" }
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "duplicateMergeItemCount": "{count} items",
   "@duplicateMergeItemCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "duplicateMergeNoSource": "No source",
@@ -9883,7 +10171,9 @@
   "menuSwapAlternatives": "{count} alternatives left",
   "@menuSwapAlternatives": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuSwapExhausted": "No more alternatives matching your preferences",
@@ -9899,25 +10189,23 @@
   "statsWithoutTime": "No time",
   "statsIncomplete": "Incomplete",
   "statsAllComplete": "All recipes are complete.",
-
   "notificationsTitle": "Notifications",
   "notificationsEmpty": "No notifications yet",
   "notificationsErrorLoad": "Could not load notifications",
   "notificationsSelectedCount": "{count} selected",
   "notificationsMarkAllRead": "Mark all as read",
-
   "allergenIncludeUnknownTitle": "Show unknown allergen status",
   "allergenIncludeUnknownSubtitle": "Include recipes with unknown allergen status in menu suggestions",
-
   "tagDecisionWhyTitle": "Why this tag?",
   "tagDecisionReason": "Reason",
   "tagDecisionIngredients": "Ingredients",
-
   "cookSnapSectionTitle": "Cooked this",
   "cookSnapSectionTitleCount": "Cooked this ({count})",
   "@cookSnapSectionTitleCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "cookSnapAddTooltip": "Add cooking photo",
@@ -9937,7 +10225,11 @@
   "cookSnapVisibleTo": "Visible to: {audience}",
   "@cookSnapVisibleTo": {
     "description": "BUT-901: disclosure when the parent recipe is shared/collaborative. {audience} is a pre-formatted name list (e.g. 'Anna, Per, Maria +2').",
-    "placeholders": { "audience": { "type": "String" } }
+    "placeholders": {
+      "audience": {
+        "type": "String"
+      }
+    }
   },
   "cookSnapVisibilityConfirm": "Share photo",
   "@cookSnapVisibilityConfirm": {
@@ -9965,30 +10257,38 @@
   "@cookSnapPhotoCounter": {
     "description": "Position indicator on a multi-photo cook snap album, e.g. 2/5.",
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "a11yCookSnapPhotoCarousel": "Cooking photo {current} of {total}",
   "@a11yCookSnapPhotoCarousel": {
     "description": "Screen-reader label for a swipeable cook snap album.",
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
-
   "collectionInsightsTitle": "My collection",
   "collectionInsightsInsufficientData": "Add more recipes to see patterns",
   "collectionInsightsTopCuisines": "Top cuisines",
   "collectionInsightsDietaryVegetarian": "vegetarian",
   "collectionInsightsDietaryVegan": "vegan",
   "collectionInsightsDietaryPescetarian": "pescetarian",
-
   "personalTagUnusedTags": "Unused tags ({count})",
   "@personalTagUnusedTags": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagDeleteAllUnused": "Delete all unused",
@@ -9996,13 +10296,17 @@
   "personalTagDeleteAllUnusedMessage": "{count, plural, =1{1 tag with no recipes will be deleted.} other{{count} tags with no recipes will be deleted.}}",
   "@personalTagDeleteAllUnusedMessage": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagUnusedDeleted": "{count, plural, =1{1 unused tag deleted} other{{count} unused tags deleted}}",
   "@personalTagUnusedDeleted": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeklyMenuToggleList": "List",
@@ -10019,15 +10323,20 @@
   "weeklyMenuWeekLabel": "Week {weekNum} · {start}–{end}",
   "@weeklyMenuWeekLabel": {
     "placeholders": {
-      "weekNum": {"type": "int"},
-      "start": {"type": "String"},
-      "end": {"type": "String"}
+      "weekNum": {
+        "type": "int"
+      },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
     }
   },
   "mealSlotLunch": "Lunch",
   "mealSlotMiddag": "Dinner",
   "mealSlotOvrigt": "Other",
-
   "weeklyMenuChipsHeading": "We understood:",
   "weeklyMenuChipsNotUnderstood": "We didn't understand:",
   "weeklyMenuChipsRefinePrompt": "Refine your prompt",
@@ -10039,7 +10348,9 @@
   "weeklyMenuCopyToNextResult": "{count, plural, =0{Nothing copied – it's all already on next week} =1{1 recipe copied to next week} other{{count} recipes copied to next week}}",
   "@weeklyMenuCopyToNextResult": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeklyMenuCopyToNextFailed": "Couldn't copy the week",
@@ -10047,7 +10358,9 @@
   "weeklyMenuSelectionCount": "{count, plural, =1{1 selected} other{{count} selected}}",
   "@weeklyMenuSelectionCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeklyMenuMoveSelectionAction": "Move",
@@ -10055,17 +10368,20 @@
   "weeklyMenuMovedResult": "{count, plural, =0{Nothing moved} =1{1 recipe moved} other{{count} recipes moved}}",
   "@weeklyMenuMovedResult": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeklyMenuMoveFailed": "Couldn't move the recipes",
   "a11yWeeklyMenuSelectEntry": "Select {recipe} to move",
   "@a11yWeeklyMenuSelectEntry": {
     "placeholders": {
-      "recipe": {"type": "String"}
+      "recipe": {
+        "type": "String"
+      }
     }
   },
-
   "pantrySectionExpiring": "Expiring soon",
   "pantrySectionFridge": "Fridge",
   "pantrySectionFreezer": "Freezer",
@@ -10081,7 +10397,9 @@
   "pantryExpiryInDays": "{days, plural, =1{Expires in 1 day} other{Expires in {days} days}}",
   "@pantryExpiryInDays": {
     "placeholders": {
-      "days": {"type": "int"}
+      "days": {
+        "type": "int"
+      }
     }
   },
   "pantryExpiryDate": "Expiry date",
@@ -10107,7 +10425,9 @@
   "recipeCardPantryMatchA11y": "Matches {percent}% of your ingredients",
   "@recipeCardPantryMatchA11y": {
     "placeholders": {
-      "percent": {"type": "int"}
+      "percent": {
+        "type": "int"
+      }
     }
   },
   "ingredientSearchTitle": "Search by ingredients",
@@ -10120,20 +10440,28 @@
   "ingredientSearchResultCount": "{count, plural, =1{1 recipe found} other{{count} recipes found}}",
   "@ingredientSearchResultCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "ingredientMatchCount": "{matched} of {total} ingredients",
   "@ingredientMatchCount": {
     "placeholders": {
-      "matched": {"type": "int"},
-      "total": {"type": "int"}
+      "matched": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "ingredientMissing": "Missing: {list}",
   "@ingredientMissing": {
     "placeholders": {
-      "list": {"type": "String"}
+      "list": {
+        "type": "String"
+      }
     }
   },
   "ingredientSearchSharedBadge": "Shared",
@@ -10143,14 +10471,18 @@
   "annasDel": "{name}'s part",
   "@annasDel": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "otilldelat": "Unassigned",
   "handlarNu": "{name} is shopping now",
   "@handlarNu": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "efterZon": "By zone",
@@ -10158,26 +10490,34 @@
   "nagonAnnanTogDen": "{name} grabbed that — pick another",
   "@nagonAnnanTogDen": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "shoppingItemClaimed": "Claimed \"{itemName}\"",
   "@shoppingItemClaimed": {
     "placeholders": {
-      "itemName": {"type": "String"}
+      "itemName": {
+        "type": "String"
+      }
     }
   },
   "shoppingItemUnclaimed": "Released \"{itemName}\"",
   "@shoppingItemUnclaimed": {
     "placeholders": {
-      "itemName": {"type": "String"}
+      "itemName": {
+        "type": "String"
+      }
     }
   },
   "outOfIngredientTitle": "Out of {ingredient}? Try…",
   "@outOfIngredientTitle": {
     "description": "BUT-202: title of the cooking-mode substitution bottom sheet.",
     "placeholders": {
-      "ingredient": {"type": "String"}
+      "ingredient": {
+        "type": "String"
+      }
     }
   },
   "ratioSuffix": "of original amount",
@@ -10324,16 +10664,28 @@
   "@cookingNowSingle": {
     "description": "BUT-408: single-cook presence label.",
     "placeholders": {
-      "name": {"type": "String", "example": "Erik"},
-      "recipe": {"type": "String", "example": "chicken stew"}
+      "name": {
+        "type": "String",
+        "example": "Erik"
+      },
+      "recipe": {
+        "type": "String",
+        "example": "chicken stew"
+      }
     }
   },
   "cookingNowMerge": "{names} are cooking {recipe}",
   "@cookingNowMerge": {
     "description": "BUT-408: multi-cook merge label. 'names' is pre-joined on the client.",
     "placeholders": {
-      "names": {"type": "String", "example": "Erik & Sara"},
-      "recipe": {"type": "String", "example": "chicken stew"}
+      "names": {
+        "type": "String",
+        "example": "Erik & Sara"
+      },
+      "recipe": {
+        "type": "String",
+        "example": "chicken stew"
+      }
     }
   },
   "notificationPermissionTitle": "Turn on notifications?",
@@ -10368,15 +10720,24 @@
   "@familyPresenceOverflow": {
     "description": "Overflow chip label when more members are online than the bar can show (e.g. '+3').",
     "placeholders": {
-      "count": {"type": "int", "example": "3"}
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
     }
   },
   "cookingStepSuffix": " · step {current} of {total}",
   "@cookingStepSuffix": {
     "description": "Appended to the cooking presence line to show progress. Includes the middot separator.",
     "placeholders": {
-      "current": {"type": "int", "example": "3"},
-      "total": {"type": "int", "example": "7"}
+      "current": {
+        "type": "int",
+        "example": "3"
+      },
+      "total": {
+        "type": "int",
+        "example": "7"
+      }
     }
   },
   "pingNudge": "Nudge",
@@ -10415,37 +10776,58 @@
   "@pingNudgeFrom": {
     "description": "Activity line when someone nudges the current user.",
     "placeholders": {
-      "name": {"type": "String", "example": "Erik"}
+      "name": {
+        "type": "String",
+        "example": "Erik"
+      }
     }
   },
   "pingTimerAlertFrom": "{name}'s timer is ringing",
   "@pingTimerAlertFrom": {
     "description": "Activity line when someone's timer alert fires.",
     "placeholders": {
-      "name": {"type": "String", "example": "Erik"}
+      "name": {
+        "type": "String",
+        "example": "Erik"
+      }
     }
   },
   "pingHelpMeFrom": "{name} needs help",
   "@pingHelpMeFrom": {
     "description": "Activity line when someone asks for help.",
     "placeholders": {
-      "name": {"type": "String", "example": "Erik"}
+      "name": {
+        "type": "String",
+        "example": "Erik"
+      }
     }
   },
   "activityAddedIngredient": "{name} added {ingredient}",
   "@activityAddedIngredient": {
     "description": "Activity line for the addedIngredient event type.",
     "placeholders": {
-      "name": {"type": "String", "example": "Erik"},
-      "ingredient": {"type": "String", "example": "butter"}
+      "name": {
+        "type": "String",
+        "example": "Erik"
+      },
+      "ingredient": {
+        "type": "String",
+        "example": "butter"
+      }
     }
   },
   "activityStartedCooking": "{name} started cooking {recipe}",
   "@activityStartedCooking": {
     "description": "Activity line for the startedCooking event type.",
     "placeholders": {
-      "name": {"type": "String", "example": "Erik"},
-      "recipe": {"type": "String", "example": "chicken stew"}
+      "name": {
+        "type": "String",
+        "example": "Erik"
+      },
+      "recipe": {
+        "type": "String",
+        "example": "chicken stew"
+      }
     }
   },
   "moderatorReviewTitle": "Review reports",
@@ -11274,34 +11656,94 @@
   "familyDeleteConfirmBody": "The family member and their family ratings will be removed. This cannot be undone.",
   "a11yAddFamilyMember": "Add family member",
   "a11yEditFamilyMember": "Edit family member",
-  "@familyGuardianConsentText": {"placeholders": {"name": {"type": "String"}}},
-  "@familyAllergenConsentText": {"placeholders": {"name": {"type": "String"}}},
+  "@familyGuardianConsentText": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@familyAllergenConsentText": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "familyConsentChildWord": "the child",
   "familyConsentPersonWord": "the person",
   "familyHubSubtitle": "Manage children and guests in the household",
   "a11yColorSwatch": "Avatar colour {index}",
-  "@a11yColorSwatch": {"placeholders": {"index": {"type": "int"}}},
+  "@a11yColorSwatch": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
   "whoAteTitle": "who ate?",
   "whoAteConfirm": "done — {count} ate",
-  "@whoAteConfirm": {"placeholders": {"count": {"type": "int"}}},
+  "@whoAteConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "whoAteSkip": "skip",
   "a11yToggleDiner": "Toggle whether {name} ate",
-  "@a11yToggleDiner": {"placeholders": {"name": {"type": "String"}}},
+  "@a11yToggleDiner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "menuPresenceSheetTitle": "who's home?",
   "menuPresenceThisMeal": "this meal",
   "menuPresenceWholeDay": "whole day",
   "menuPresenceNobody": "nobody home",
   "menuPresencePortions": "{count} serv",
-  "@menuPresencePortions": {"placeholders": {"count": {"type": "int"}}},
+  "@menuPresencePortions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "menuPresenceSlotSubtitle": "{slot} on {day}",
-  "@menuPresenceSlotSubtitle": {"placeholders": {"slot": {"type": "String"}, "day": {"type": "String"}}},
+  "@menuPresenceSlotSubtitle": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "menuPresenceAfterGenerateNotice": "presence updated — planned meals stay put",
   "menuPresenceSummaryTitle": "who's home?",
   "menuPresenceSummaryAllHome": "everyone home all week",
   "menuPresenceSummaryAway": "{names} away part of the week",
-  "@menuPresenceSummaryAway": {"placeholders": {"names": {"type": "String"}}},
+  "@menuPresenceSummaryAway": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
   "a11yMenuSlotPresence": "Choose who's home for {slot} {day}",
-  "@a11yMenuSlotPresence": {"placeholders": {"slot": {"type": "String"}, "day": {"type": "String"}}},
+  "@a11yMenuSlotPresence": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "familyRatingTitle": "what did you think?",
   "familyRatingIntro": "Set stars for everyone who ate. Feel free to pass the phone around — only the latest rating counts.",
   "familyRatingYou": "you",
@@ -11309,41 +11751,145 @@
   "familyRatingPrivateNote": "Your individual ratings are private — no one else sees who gave what. Each rating does, though, count toward the recipe's overall average.",
   "familyRatingManualButton": "Rate as a family",
   "familyRatingProxyNote": "entered by {name} · doesn't change their own rating",
-  "@familyRatingProxyNote": {"placeholders": {"name": {"type": "String"}}},
+  "@familyRatingProxyNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yRateStarsForMember": "Give {name} {count} stars",
-  "@a11yRateStarsForMember": {"placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}},
+  "@a11yRateStarsForMember": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "familyRatingSectionTitle": "ratings",
   "familyRatingAverageLabel": "family average",
   "familyRatingCount": "{count} ratings",
-  "@familyRatingCount": {"placeholders": {"count": {"type": "int"}}},
+  "@familyRatingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "familyRatingUpdated": "updated {date}",
-  "@familyRatingUpdated": {"placeholders": {"date": {"type": "String"}}},
+  "@familyRatingUpdated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "familyRatingCommunityLabel": "everyone",
   "familyRatingYourOwnLabel": "your own rating",
   "familyRatingLegend": "Green = your household's average (private). Rust = all users' rating. Gold = your own rating.",
   "recipeFamilyRatingPill": "family {rating}",
-  "@recipeFamilyRatingPill": {"placeholders": {"rating": {"type": "String"}}},
+  "@recipeFamilyRatingPill": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "recipeAllaRatingPill": "everyone {rating}",
-  "@recipeAllaRatingPill": {"placeholders": {"rating": {"type": "String"}}},
+  "@recipeAllaRatingPill": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "a11yFamilyRatingPill": "Family rating {rating}",
-  "@a11yFamilyRatingPill": {"placeholders": {"rating": {"type": "String"}}},
+  "@a11yFamilyRatingPill": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "a11yAllaRatingPill": "Everyone's rating {rating}",
-  "@a11yAllaRatingPill": {"placeholders": {"rating": {"type": "String"}}},
+  "@a11yAllaRatingPill": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "butleryBetygCount": "{count} ratings",
-  "@butleryBetygCount": {"placeholders": {"count": {"type": "int"}}},
+  "@butleryBetygCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "a11yButleryBetygPill": "Butlery rating {rating}, {count} votes",
-  "@a11yButleryBetygPill": {"placeholders": {"rating": {"type": "String"}, "count": {"type": "int"}}},
+  "@a11yButleryBetygPill": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "pooledCommunityLabel": "butlery rating",
   "pooledHouseholdLabel": "everyone in your kitchen",
   "a11yPooledHouseholdPill": "Your kitchen's rating {rating}",
-  "@a11yPooledHouseholdPill": {"placeholders": {"rating": {"type": "String"}}},
+  "@a11yPooledHouseholdPill": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "familyRatingProxyEntered": "entered by {name}",
-  "@familyRatingProxyEntered": {"placeholders": {"name": {"type": "String"}}},
+  "@familyRatingProxyEntered": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yToggleRatingBreakdown": "Show or hide rating breakdown",
   "a11yEditMemberRating": "Edit rating for {name}",
-  "@a11yEditMemberRating": {"placeholders": {"name": {"type": "String"}}},
+  "@a11yEditMemberRating": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "deepLinkExpired": "This link has expired and can no longer be opened.",
   "deepLinkUnavailable": "This content is no longer available.",
   "familyDislikesSectionTitle": "disliked ingredients",
-  "familyDislikesNote": "Dishes with these are avoided when possible. A taste preference, not a safety limit like allergies."
+  "familyDislikesNote": "Dishes with these are avoided when possible. A taste preference, not a safety limit like allergies.",
+  "chatJoinedHereDivider": "You joined here",
+  "chatGroupMembersAddedCount": "{count, plural, =1{1 member added} other{{count} members added}}",
+  "@chatGroupMembersAddedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatGroupAddMembersBlocked": "Some people could not be added to the group.",
+  "chatGroupAddMembersFailed": "Could not add members. Please try again.",
+  "chatGroupCreateFailed": "Could not create the group. Please try again.",
+  "chatGroupTooManyMembers": "A group can have at most {max} members.",
+  "@chatGroupTooManyMembers": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  }
 }

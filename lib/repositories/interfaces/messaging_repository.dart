@@ -73,14 +73,10 @@ abstract class MessagingRepository {
     String? user2AvatarUrl,
   });
 
-  /// Create a new group conversation
-  Future<String> createGroupConversation({
-    required List<String> participantIds,
-    required Map<String, String> participantDisplayNames,
-    required Map<String, String?> participantAvatarUrls,
-    required String title,
-    required String creatorId,
-  });
+  // BUT-1838: createGroupConversation is removed — group creation goes
+  // through ChatGroupRepository.createGroup (the createChatGroup callable),
+  // which is what lets the minor-membership gate run BEFORE anyone is
+  // seated. See MessagingService.createGroupConversation.
 
   /// Find existing direct conversation between two users
   Future<String?> findDirectConversation({
@@ -95,29 +91,27 @@ abstract class MessagingRepository {
     Map<String, dynamic>? metadata,
   });
 
-  /// Add participants to group conversation
-  Future<void> addParticipants({
-    required String conversationId,
-    required List<String> participantIds,
-    required Map<String, String> participantDisplayNames,
-    required Map<String, String?> participantAvatarUrls,
-  });
+  // BUT-1838: addParticipants/removeParticipant are removed — group
+  // membership changes go through ChatGroupRepository.addMembers/
+  // removeMember (the addChatGroupMembers/removeChatGroupMember callables),
+  // which run the minor-membership gate per person before seating them.
 
-  /// Remove participant from group conversation
-  Future<void> removeParticipant({
-    required String conversationId,
-    required String participantId,
-  });
-
-  /// Get messages for a conversation
+  /// Get messages for a conversation.
+  ///
+  /// [historyStart] is the caller's `Conversation.memberSince` stamp and is
+  /// REQUIRED for a group conversation — `firestore.rules` refuses messages
+  /// sent before someone joined, and a query returning one refused document
+  /// fails entirely (BUT-1838).
   Stream<List<Message>> getConversationMessages({
     required String conversationId,
+    DateTime? historyStart,
     int limit = 50,
   });
 
   /// Get messages for a conversation with pagination support
   Future<List<Message>> getConversationMessagesPage({
     required String conversationId,
+    DateTime? historyStart,
     int limit = 50,
     DateTime? startAfter,
   });
@@ -154,7 +148,13 @@ abstract class MessagingRepository {
   Future<void> deleteMessage(String messageId);
 
   /// Delete conversation and all its messages
-  Future<void> deleteConversation(String conversationId);
+  /// [historyStart] is the caller's `Conversation.memberSince` for a group
+  /// conversation; without it the message sweep is refused wholesale for a
+  /// late-joining member (BUT-1838).
+  Future<void> deleteConversation(
+    String conversationId, {
+    DateTime? historyStart,
+  });
 
   /// Get conversation participants
   Future<List<String>> getConversationParticipants(String conversationId);
@@ -169,6 +169,7 @@ abstract class MessagingRepository {
   Future<List<Message>> searchMessages({
     required String conversationId,
     required String query,
+    DateTime? historyStart,
     int limit = 20,
   });
 

@@ -33,6 +33,8 @@ class ConversationBuilder {
     bool isGroup = false,
     Map<String, DateTime>? lastReadTimestamps,
     Map<String, dynamic>? metadata,
+    String? groupId,
+    Map<String, DateTime>? memberSince,
   }) {
     final defaultId = id ?? 'conv_${DateTime.now().millisecondsSinceEpoch}';
     final defaultParticipantIds = participantIds ?? ['user1', 'user2'];
@@ -55,6 +57,8 @@ class ConversationBuilder {
       isGroup: isGroup,
       lastReadTimestamps: lastReadTimestamps ?? {},
       metadata: metadata ?? {},
+      groupId: groupId,
+      memberSince: memberSince ?? const {},
     );
   }
 
@@ -192,6 +196,7 @@ void main() {
       when(
         () => mockMessagingService.getConversationMessages(
           conversationId: any(named: 'conversationId'),
+          historyStart: any(named: 'historyStart'),
           limit: any(named: 'limit'),
         ),
       ).thenAnswer((_) => messagesStreamController.stream);
@@ -387,6 +392,154 @@ void main() {
         // Assert - after stream event
         expect(viewModel.messages.length, equals(2));
       });
+
+      // BUT-1838: a group conversation's history cut-off must reach the
+      // message query — firestore.rules refuses any message sent before the
+      // member joined, and a query missing that filter fails ENTIRELY, not
+      // partially. This is the regression the fix targets.
+      test(
+        'passes historyQueryStartFor(currentUser) to the message stream for a '
+        'group conversation',
+        () async {
+          // `createdAt` must PRECEDE the stamp, or this fixture describes a
+          // member who joined before the group existed — and
+          // `joinedLaterAt` returns null for anyone whose stamp is not after
+          // creation, because `createChatGroup` stamps every FOUNDING member
+          // with the conversation's own `createdAt` and a founder must not get
+          // a "Du gick med här" divider. Left at the builder's default (now),
+          // this test would silently assert the founder case instead.
+          final createdAt = DateTime(2026, 1, 1);
+          final joinedAt = DateTime(2026, 1, 15);
+          final groupConversation = ConversationBuilder.build(
+            id: 'conv_group_history',
+            participantIds: [testUserId, 'user2'],
+            isGroup: true,
+            groupId: 'chatgroup-1',
+            createdAt: createdAt,
+            memberSince: {testUserId: joinedAt},
+          );
+
+          final newViewModel = ChatViewModel(
+            authRepository: FakeAuthRepository(),
+            maturityHelper: FakeMaturedAccountHelper(),
+            messagingService: mockMessagingService,
+            conversationId: 'conv_group_history',
+            initialConversation: groupConversation,
+            presenceService: mockPresenceService,
+          );
+          await Future.delayed(const Duration(milliseconds: 50));
+
+          verify(
+            () => mockMessagingService.getConversationMessages(
+              conversationId: 'conv_group_history',
+              historyStart: joinedAt,
+              limit: any(named: 'limit'),
+            ),
+          ).called(1);
+
+          newViewModel.dispose();
+        },
+      );
+
+      test(
+        'passes a null historyStart for a direct conversation',
+        () async {
+          // The default setUp conversation is a direct chat (isGroup: false,
+          // no groupId) — historyQueryStartFor always returns null for it.
+          //
+          // NOTE this one is a RECALL CONTROL, not a discriminator: dropping
+          // the `historyStart:` argument entirely also yields null (it is the
+          // parameter's default), so this test cannot see that mutant. The
+          // group test above is what kills it.
+          await Future.delayed(const Duration(milliseconds: 50));
+          verify(
+            () => mockMessagingService.getConversationMessages(
+              conversationId: testConversationId,
+              historyStart: null,
+              limit: any(named: 'limit'),
+            ),
+          ).called(1);
+        },
+      );
+
+      // BUT-1838, the ORDERING half. The test above passes
+      // `initialConversation`, which resolves the conversation synchronously
+      // and so cannot see WHEN the stream is opened — measured: reverting
+      // `_initializeChat` to the old fire-and-forget
+      // `_loadConversation(); _loadMessages();` left all 45 tests in this file
+      // green. On a COLD open (no initialConversation — how the chat is
+      // actually entered from the conversations list) that revert opens the
+      // message stream before `memberSince` is known, so the cut-off is null,
+      // the query returns rows firestore.rules refuses, and the WHOLE query
+      // fails. This test omits initialConversation on purpose; it is the only
+      // thing in the file that constrains the ordering.
+      test(
+        'a COLD open waits for the conversation before opening the message '
+        'stream, so the cut-off is never null for a late joiner',
+        () async {
+          final joinedAt = DateTime(2026, 2, 20);
+          final loadStarted = Completer<void>();
+          final releaseLoad = Completer<void>();
+
+          when(
+            () => mockMessagingService.getConversation('conv_cold_open'),
+          ).thenAnswer((_) async {
+            if (!loadStarted.isCompleted) loadStarted.complete();
+            // Hold the conversation fetch open. If the stream is opened
+            // without waiting, it happens while we are parked here — which
+            // is exactly what the premise assertion below detects.
+            await releaseLoad.future;
+            return ConversationBuilder.build(
+              id: 'conv_cold_open',
+              participantIds: [testUserId, 'user2'],
+              isGroup: true,
+              groupId: 'chatgroup-cold',
+              // Before the stamp — see the note on the sibling fixture: a
+              // member whose stamp is not AFTER creation is a founder, and a
+              // founder deliberately has no cut-off.
+              createdAt: DateTime(2026, 1, 1),
+              memberSince: {testUserId: joinedAt},
+            );
+          });
+
+          final coldViewModel = ChatViewModel(
+            authRepository: FakeAuthRepository(),
+            maturityHelper: FakeMaturedAccountHelper(),
+            messagingService: mockMessagingService,
+            conversationId: 'conv_cold_open',
+            presenceService: mockPresenceService,
+          );
+
+          await loadStarted.future;
+          await Future.delayed(const Duration(milliseconds: 20));
+
+          // Premise: while the conversation is still loading, NO message
+          // query has been opened. Without this the test would pass on the
+          // reverted ordering too, since the verify below only inspects the
+          // eventual call.
+          verifyNever(
+            () => mockMessagingService.getConversationMessages(
+              conversationId: 'conv_cold_open',
+              historyStart: any(named: 'historyStart'),
+              limit: any(named: 'limit'),
+            ),
+          );
+
+          releaseLoad.complete();
+          await Future.delayed(const Duration(milliseconds: 50));
+
+          // ...and once it resolves, the stream opens WITH the cut-off.
+          verify(
+            () => mockMessagingService.getConversationMessages(
+              conversationId: 'conv_cold_open',
+              historyStart: joinedAt,
+              limit: any(named: 'limit'),
+            ),
+          ).called(1);
+
+          coldViewModel.dispose();
+        },
+      );
     });
 
     group('State Accessors', () {
@@ -990,6 +1143,66 @@ void main() {
         // Clean up
         newViewModel.dispose();
       });
+
+      // BUT-1838. The sibling test above drives the THROW path; this one drives
+      // the RETURN-NULL path, and they are different lines in different
+      // branches. Nothing in this file stubbed `getConversation` to null before
+      // — the only stub is the wildcard in setUp, which answers a conversation
+      // — so deleting the `if (_conversation == null) setError(...)` check left
+      // all of it green.
+      //
+      // Null is the NORMAL shape of a failure here, not an edge: the query
+      // module catches and returns null, then MessagingService catches and
+      // returns null again, so a permission-denied, an offline read and a
+      // deleted document all arrive this way with no exception. Both readers
+      // wait for the value — `_loadMessages` here and `ChatMessageStream`'s
+      // `_awaitConversation`, which completes on `conversation != null ||
+      // hasError` — so a null reporting neither leaves the chat on a spinner
+      // with no error text and no retry, forever.
+      test(
+        'a null conversation is reported as an error, not resolved silently',
+        () async {
+          // Registered after setUp's wildcard, so this one wins (mocktail is
+          // last-registered-wins).
+          when(
+            () => mockMessagingService.getConversation('conv_missing'),
+          ).thenAnswer((_) async => null);
+
+          final newViewModel = ChatViewModel(
+            authRepository: FakeAuthRepository(),
+            maturityHelper: FakeMaturedAccountHelper(),
+            messagingService: mockMessagingService,
+            conversationId: 'conv_missing',
+          );
+          await Future.delayed(const Duration(milliseconds: 100));
+
+          expect(
+            newViewModel.conversation,
+            isNull,
+            reason: 'premise: the service really did answer null',
+          );
+          expect(
+            newViewModel.hasError,
+            isTrue,
+            reason:
+                'this is the flag ChatMessageStream waits on; false here is '
+                'the permanent spinner',
+          );
+          expect(newViewModel.error, equals('Kunde inte ladda konversation'));
+          expect(
+            newViewModel.isLoading,
+            isFalse,
+            reason:
+                'setError lowers the loading flag — the assertion that '
+                'separates "reported" from "still waiting". No message ever '
+                'reaches the stream in this test, so nothing downstream can '
+                'call setSuccess() and clear it for the wrong reason.',
+          );
+
+          // Clean up
+          newViewModel.dispose();
+        },
+      );
     });
 
     group('Refresh and State Management', () {

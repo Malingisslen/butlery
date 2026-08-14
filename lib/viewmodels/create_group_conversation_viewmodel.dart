@@ -2,8 +2,10 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/core/errors/chat_group_error_mapper.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
@@ -12,13 +14,14 @@ import 'package:butlery/core/l10n/app_locale.dart';
 
 /// ViewModel for messaging group conversation creation with friend selection and validation.
 /// Manages complete group conversation creation workflow including friend list loading,
-/// member selection, group name validation, and conversation creation through MessagingService.
+/// member selection, group name validation, and conversation creation through the
+/// `createChatGroup` callable (`ChatGroupRepository.createGroup`, BUT-1838).
 /// Follows MVVM architecture with AsyncOperationMixin for state management.
 /// **Core Responsibilities:**
 /// - Load available friends for group member selection (loading managed by AsyncOperationMixin)
 /// - Manage selected members set with add/remove operations
 /// - Validate group name and member count requirements (minimum 2 members)
-/// - Create group conversation via MessagingService
+/// - Create group conversation via `ChatGroupRepository.createGroup`
 /// - Handle loading states and error conditions with Swedish messages
 /// **State Management:**
 /// - General loading/error managed by StateNotifierMixin
@@ -30,7 +33,6 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// **Usage Example:**
 /// ```dart
 /// final viewModel = CreateGroupConversationViewModel(
-///   messagingService: messagingService,
 ///   friendsService: friendsService,
 /// );
 /// // Load friends
@@ -47,7 +49,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// ```
 class CreateGroupConversationViewModel extends ChangeNotifier
     with ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
-  final MessagingService _messagingService;
+  final ChatGroupRepository _chatGroupRepository;
   final UnifiedFriendsService _friendsService;
 
   // State
@@ -62,10 +64,11 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   String? _validationError;
 
   CreateGroupConversationViewModel({
-    required MessagingService messagingService,
     required UnifiedFriendsService friendsService,
-  }) : _messagingService = messagingService,
-       _friendsService = friendsService;
+    ChatGroupRepository? chatGroupRepository,
+  }) : _friendsService = friendsService,
+       _chatGroupRepository =
+           chatGroupRepository ?? ServiceLocator.get<ChatGroupRepository>();
 
   // Getters
   List<UserProfile> get availableFriends => _availableFriends;
@@ -198,27 +201,13 @@ class CreateGroupConversationViewModel extends ChangeNotifier
         '🔄 Skapar gruppkonversation: $_groupName med ${_selectedMemberIds.length} medlemmar',
       );
 
-      // Build participant maps for group conversation
-      final participantIds = _selectedMemberIds.toList();
-      final participantDisplayNames = <String, String>{};
-      final participantAvatarUrls = <String, String?>{};
-
-      // Get display names and avatar URLs for selected members
-      for (final friendId in _selectedMemberIds) {
-        final friend = _availableFriends.firstWhere(
-          (f) => f.uid == friendId,
-          orElse: () => throw Exception('Friend not found: $friendId'),
-        );
-        participantDisplayNames[friendId] = friend.displayName;
-        participantAvatarUrls[friendId] = friend.avatarUrl;
-      }
-
-      // Create group conversation
-      final conversationId = await _messagingService.createGroupConversation(
-        participantIds: participantIds,
-        participantDisplayNames: participantDisplayNames,
-        participantAvatarUrls: participantAvatarUrls,
-        title: _groupName.trim(),
+      // The callable resolves display names/avatars server-side from
+      // `public_profiles` and adds the caller automatically — the client
+      // sends only the OTHER members' uids (BUT-1838). The returned id
+      // doubles as both the group id and its conversation id.
+      final conversationId = await _chatGroupRepository.createGroup(
+        name: _groupName.trim(),
+        memberIds: _selectedMemberIds.toList(),
       );
 
       if (_isDisposed) return null;
@@ -234,7 +223,12 @@ class CreateGroupConversationViewModel extends ChangeNotifier
 
       if (_isDisposed) return null;
 
-      setError(AppLocale.current.errorCouldNotCreateGroup);
+      setError(
+        ChatGroupErrorMapper.map(
+          e,
+          genericFallback: AppLocale.current.chatGroupCreateFailed,
+        ),
+      );
       _isCreatingGroup = false;
       _safeNotifyListeners();
 

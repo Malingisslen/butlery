@@ -4,6 +4,7 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/social_export_redaction.dart';
+import 'package:butlery/services/account/export/chat_group_export.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson;
 
@@ -148,35 +149,31 @@ class SocialExportManager with SocialExportRedaction {
   ) {
     final copy = Map<String, dynamic>.from(source);
 
-    // Both branches FAIL CLOSED on a shape they do not recognise: an unexpected
-    // shape drops the field entirely rather than falling through to the
-    // untouched copy. A redaction that silently no-ops on a schema it has not
-    // seen is the expensive failure — it ships the data while the
-    // `data_minimisation` line still claims it was removed. Neither drop loses
-    // anything the requester is owed: `participantAvatarUrls` holds nothing but
-    // avatars, and `lastMessage` is a denormalised PREVIEW of a row that also
-    // belongs in `messages`.
-    final avatars = copy['participantAvatarUrls'];
-    if (avatars != null) {
-      if (avatars is Map) {
-        copy['participantAvatarUrls'] = <String, dynamic>{
-          userId: ?avatars[userId],
-        };
+    // Three uid-keyed maps, one rule: keep the requester's own entry, drop
+    // everyone else's. Written once rather than three times because three
+    // copies of one decision is how they drift (BUT-1772/BUT-1798).
+    //   participantAvatarUrls — BUT-1772: a durable pointer to someone else's
+    //     photograph, which outlives the app and buys the requester nothing.
+    //   perUserSettings — BUT-1774: another member's mute/pin/archive state is
+    //     pure third-party behaviour the client never renders for anyone else.
+    //   memberSince — BUT-1838: when someone ELSE joined the group. Follows
+    //     perUserSettings rather than lastReadTimestamps (which is kept),
+    //     decided on its own merits — analogy is the error BUT-1732 records.
+    for (final field in const [
+      'participantAvatarUrls',
+      'perUserSettings',
+      'memberSince',
+    ]) {
+      final value = copy[field];
+      if (value == null) continue;
+      if (value is Map) {
+        copy[field] = <String, dynamic>{userId: ?value[userId]};
       } else {
-        copy.remove('participantAvatarUrls');
-        copy['redaction_fell_back'] = true;
-      }
-    }
-
-    // Same fail-closed shape, for the field BUT-1774 decided goes.
-    final settings = copy['perUserSettings'];
-    if (settings != null) {
-      if (settings is Map) {
-        copy['perUserSettings'] = <String, dynamic>{
-          userId: ?settings[userId],
-        };
-      } else {
-        copy.remove('perUserSettings');
+        // FAIL CLOSED. An unrecognised shape drops the field entirely rather
+        // than falling through to the untouched copy — a redaction that
+        // silently no-ops on a schema it has not seen ships the data while the
+        // `data_minimisation` line still claims it was removed.
+        copy.remove(field);
         copy['redaction_fell_back'] = true;
       }
     }
@@ -268,12 +265,33 @@ class SocialExportManager with SocialExportRedaction {
         if (convo['messages_truncated'] == true) {
           conversationData['messages_truncated'] = true;
         }
+        // BUT-1838: carry the per-conversation failure marker UP. The
+        // repository's new per-conversation catch stops one unreadable
+        // conversation failing the whole section — but a row that silently
+        // reports `message_count: 0` is byte-identical to a conversation that
+        // genuinely has no messages, so without this the bundle would describe
+        // itself as complete. `DataExportService` only lifts `error_code` at
+        // SECTION root, and its nested walk looks for `truncated`, not this.
+        // Trading a loud failure for silence on an Art. 15 bundle is the wrong
+        // direction, whichever way the section-level behaviour improved.
+        if (convo['error_code'] is String) {
+          conversationData['error_code'] = convo['error_code'];
+          // No `error` key: the section is INCOMPLETE, not failed — the other
+          // conversations did export, and `DataExportService` renders that as
+          // "may be incomplete" rather than "could not be exported".
+          messagesData['error_code'] = 'conversation-messages-read-failed';
+        }
         messagesData['conversations'].add(conversationData);
         messagesData['total_messages'] += messagesList.length;
       }
 
       messagesData['total_conversations'] =
           messagesData['conversations'].length;
+
+      // BUT-1838: the one fact a group holds that the conversation does not —
+      // who added you. Its own class so a failure there cannot take this
+      // section down, and so this facade stays under the 500-line limit.
+      messagesData.addAll(await ChatGroupExport(_exports).export(userId));
 
       // Section level, matching SharedShoppingListExport, rather than duplicated
       // into each of up to 100 conversations.
@@ -289,8 +307,11 @@ class SocialExportManager with SocialExportRedaction {
       messagesData['data_minimisation'] =
           "Other participants' profile pictures have been removed, as have "
           'their own notification settings for this conversation (muted, '
-          'pinned, archived). Everything else this conversation held is kept '
-          'as it was stored.';
+          'pinned, archived) and, for a group chat, the moment each of THEM '
+          'joined it. Everything else this conversation held is kept as it was '
+          'stored. The chat_groups section beside it is a summary rather than a '
+          'copy: it carries the group name, who created it, who administers it '
+          'and who added YOU — not the other members you can already see above.';
 
       return messagesData;
     } catch (e) {

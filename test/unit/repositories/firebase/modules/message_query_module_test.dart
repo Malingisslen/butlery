@@ -194,6 +194,131 @@ void main() {
     });
   });
 
+  // BUT-1838. `historyStart` is the caller's `memberSince` stamp, mirrored
+  // here as a `sentAt >=` filter. It is NOT a display filter: firestore.rules
+  // refuses any message sent before a member joined a group conversation, and
+  // a query that returns even ONE refused document fails entirely, so a
+  // missing filter turns the chat into a permission error rather than a
+  // slightly-too-long history. The boundary matters in its own right — the
+  // stamp is the instant of joining, and the join system-message is written
+  // AT it, so `>` instead of `>=` would drop the row that explains the cut.
+  group('historyStart cut-off', () {
+    // Deliberately distinct instants; the middle one is the boundary.
+    final before = DateTime.utc(2026, 1, 1, 9);
+    final atJoin = DateTime.utc(2026, 1, 1, 10);
+    final after = DateTime.utc(2026, 1, 1, 11);
+
+    Future<CollectionReference<Map<String, dynamic>>> seedThree(
+      FakeFirebaseFirestore firestore,
+    ) async {
+      final messagesRef = firestore.collection('messages');
+      await _seedMessage(
+        messagesRef,
+        id: 'm-before',
+        content: 'said before you joined',
+        sentAt: before,
+      );
+      await _seedMessage(
+        messagesRef,
+        id: 'm-at-join',
+        content: 'the moment you joined',
+        sentAt: atJoin,
+      );
+      await _seedMessage(
+        messagesRef,
+        id: 'm-after',
+        content: 'said after you joined',
+        sentAt: after,
+      );
+      return messagesRef;
+    }
+
+    test('stream excludes messages sent before the stamp, inclusive at '
+        'the boundary', () async {
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = await seedThree(firestore);
+      final module = MessageQueryModule(messagesRef: messagesRef);
+
+      final messages = await module
+          .getConversationMessages(
+            conversationId: _conversationId,
+            historyStart: atJoin,
+          )
+          .first;
+
+      // 'm-at-join' present pins `>=` against `>`; 'm-before' absent pins
+      // that a filter was applied at all.
+      expect(messages.map((m) => m.id), ['m-at-join', 'm-after']);
+    });
+
+    test('stream returns the full history when historyStart is null', () async {
+      // The recall control: a direct chat, or a founding member, must not be
+      // filtered. Without this, "always return nothing" would satisfy the
+      // test above.
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = await seedThree(firestore);
+      final module = MessageQueryModule(messagesRef: messagesRef);
+
+      final messages = await module
+          .getConversationMessages(
+            conversationId: _conversationId,
+            historyStart: null,
+          )
+          .first;
+
+      expect(messages.map((m) => m.id), ['m-before', 'm-at-join', 'm-after']);
+    });
+
+    test('the page reader applies the same cut-off', () async {
+      // The two methods build their queries separately, so the stream's
+      // filter proves nothing about the page reader — which is the one the
+      // chat view calls first, on open.
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = await seedThree(firestore);
+      final module = MessageQueryModule(messagesRef: messagesRef);
+
+      final filtered = await module.getConversationMessagesPage(
+        conversationId: _conversationId,
+        historyStart: atJoin,
+      );
+      final unfiltered = await module.getConversationMessagesPage(
+        conversationId: _conversationId,
+      );
+
+      expect(filtered.map((m) => m.id), ['m-at-join', 'm-after']);
+      expect(unfiltered.map((m) => m.id), [
+        'm-before',
+        'm-at-join',
+        'm-after',
+      ]);
+    });
+
+    test('the cut-off does not widen past the conversation filter', () async {
+      // A message in ANOTHER conversation sent after the stamp must still be
+      // excluded — the two `where` clauses have to compose, not replace.
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = await seedThree(firestore);
+      await _seedMessage(
+        messagesRef,
+        id: 'm-other-convo',
+        content: 'someone else entirely',
+        sentAt: after,
+        conversationId: 'conv-other',
+      );
+      final module = MessageQueryModule(messagesRef: messagesRef);
+
+      final messages = await module
+          .getConversationMessages(
+            conversationId: _conversationId,
+            historyStart: atJoin,
+          )
+          .first;
+
+      expect(messages.map((m) => m.id), ['m-at-join', 'm-after']);
+      expect(messages.map((m) => m.id), isNot(contains('m-other-convo')));
+    });
+  });
+
   group('getMessage', () {
     test('returns null when document does not exist', () async {
       final firestore = FakeFirebaseFirestore();

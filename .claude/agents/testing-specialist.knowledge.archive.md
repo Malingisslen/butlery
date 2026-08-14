@@ -19331,3 +19331,573 @@ constructor params were `required`, so a missed call site would have been an ana
 error, not a silent miss — which is why a script-applied deletion is safe here.
 
 Verdict: pass (0 blocking).
+
+## 2026-08-14 — BUT-1838 client half (group chat becomes a chat with a shared group)
+
+Trigger: commit-gate review of 43 staged files, ~30 of them `lib/**.dart`. Asked to
+verify two mutation claims made by the implementing agent rather than trust them, and to
+report per-behaviour whether a test exists that would fail on a revert.
+
+### Mutation results (all on the STAGED bytes, restores md5-verified)
+
+Claims made by the implementer, both VERIFIED:
+* `GroupDetailViewModel.isAdmin` reverted to `_conversation!.metadata?['creatorId']`
+  → **15 reds** in `group_detail_viewmodel_test.dart`. Not a fixture-shape kill: the
+  suite carries `testChatGroupAdmin` (adminIds `[testUserId]`) and
+  `testChatGroupNonAdmin` (adminIds `[testMember1Id]`) over the SAME conversation, so
+  `=> true` and `=> false` are both killed.
+* `historyStart: historyStart` dropped from `ChatViewModel._loadMessages`
+  → **exactly 1 red**, the named test. The expectation is a concrete `joinedAt`, not
+  `any()`, so mocktail's noSuchMethod-filled null cannot match.
+
+Mutant the implementer did NOT claim, and the finding of the round:
+* `_initializeChat` reverted to the pre-fix `_loadConversation(); _loadMessages();`
+  fire-and-forget ordering → **all 45 tests stayed GREEN**. The ordering change is the
+  load-bearing half (the production comment says a query missing the cut-off "fails
+  ENTIRELY"), and it is pinned by nothing, because 11 of the 14 `ChatViewModel(...)`
+  constructions in the suite pass `initialConversation`, which makes `_conversation`
+  non-null synchronously and the ordering unobservable.
+
+### Coverage gaps found by grepping the NEW TOKENS across `test/`
+
+`grep -rl` per token, which took ~30 s and was worth more than reading the diff twice:
+
+| token | files in `test/` before this round |
+|---|---|
+| `exportChatGroups` | 0 |
+| `ChatGroupErrorMapper` | 0 |
+| `historyStartFor` | 1 (chat_viewmodel_test only) |
+| `memberSince` | 1 (chat_viewmodel_test fixture only) |
+| `ChatGroup(` | 1 (group_detail_viewmodel_test, hand-built via the constructor) |
+
+`ChatGroup.fromFirestore` was reached by nothing. Three suites that ALREADY EXISTED were
+never opened by the change: `conversation_test.dart` (copyWith carry-through),
+`conversation_dto_test.dart` (reads both fields, writes neither),
+`message_query_module_test.dart` (the `sentAt >=` filter). That is the recurring shape —
+the diff adds behaviour to a class whose suite it does not touch, and no lint sees it.
+
+### Tests written this round (39), each mutation-proven
+
+New: `test/unit/models/messaging/chat_group_test.dart` (11),
+`test/unit/core/errors/chat_group_error_mapper_test.dart` (14).
+Appended: `conversation_test.dart` (6), `conversation_dto_test.dart` (4),
+`message_query_module_test.dart` (4).
+
+Battery (serial, one driver, binary IO, restore in `finally` + on signal):
+
+| mutant | verdict |
+|---|---|
+| M1 `copyWith` drops `groupId:`/`memberSince:` | KILLED, 2 tests |
+| M2 `historyStartFor` drops the `groupId == null ?` guard | KILLED, 1 test |
+| M3 DTO stops READING `groupId` | KILLED, 1 test |
+| M4 DTO starts WRITING `groupId` (the rules-denial shape) | KILLED, 2 tests |
+| M5 `isGreaterThan` instead of `isGreaterThanOrEqualTo` | not run — see below |
+| M6 stream ignores `historyStart` entirely | KILLED, 2 tests |
+
+M5 was deliberately NOT run as a production mutant: by the time it came up a parallel
+session was writing that same file, and clobbering an in-flight write is the documented
+cost. It is settled analytically instead — the fixture seeds a message at exactly
+`atJoin` and asserts `['m-at-join', 'm-after']`, which no `>` implementation can produce.
+Said so in the report rather than claiming a run.
+
+M4 is worth keeping as a template: the mutant is an APPEND, so `assert search_text not in
+mutated_bytes` is the wrong assertion and fires a false "mutant did not apply". Compare
+against the ORIGINAL bytes instead.
+
+### The tree moved under me, twice, and the second time was informative
+
+`git diff -- lib` was empty at the start of the round and had four files in it by the
+middle: `conversation_query_module.dart` (never staged at all), `social_export_manager.dart`,
+`group_detail_viewmodel.dart`, `chat_message_stream.dart`, all mtimes 02:01–02:04. A
+parallel session was fixing, live, three things worth recording:
+
+1. `_chatGroupSubscription` was not cancelled in `GroupDetailViewModel.dispose()` — a live
+   Firestore document listener per screen open. I had spotted it while reading; it was
+   fixed before I filed it.
+2. `searchMessages` never got the `historyStart` parameter its two siblings got, so search
+   and "rensa chatt" were silently empty for late-joining members. A THIRD reader on the
+   same collection that the staged diff missed — the enumerate-every-reader rule again.
+3. `chat_message_stream.dart` resolved the cut-off a SECOND time through its own
+   `getConversation` call, and (per the fixing session's own comment) that copy "was null
+   for every group" because it went through the user-scoped read. Two resolution paths for
+   one fact, exactly the shape that disagrees.
+
+Mechanically: every measurement above ran against `M ` files (staged, worktree clean), so
+the numbers are about the staged bytes. Two probe scripts asserted their search text was
+unique BEFORE writing, and both times that assert is what caught a moved file rather than
+a broken mutant — once CRLF-vs-LF (`group_detail_viewmodel.dart` is CRLF on disk,
+`conversation.dart` is LF, in the same repo), once a genuinely changed md5.
+
+### One test deleted on purpose
+
+The drafted "a null message falls back to generic" case for the error mapper does not
+compile: `FirebaseFunctionsException.message` is a REQUIRED constructor parameter in
+cloud_functions_platform_interface 6.0.3 even though the getter's type is `String?`. So
+the `?? false` in `error.message?.contains('members') ?? false` is unreachable from any
+caller. Replaced with the reachable empty-string neighbour plus a comment saying which
+half has no test and why — an unreachable branch earns a sentence, not a fixture.
+
+Verdict: fail (2 blocking).
+
+## 2026-08-14 — BUT-1838 round 2: closing the two GDPR gaps against MOVED code
+
+Trigger: coordinator confirmed the "parallel session" I had detected was them, acting on
+three other reviewers' blocking findings, and asked me to close my two blocking gaps
+against the CURRENT tree rather than the snapshot I measured in round 1.
+
+### What moved, and why it mattered to the tests
+
+`exportChatGroups`'s section had been extracted into a new class,
+`lib/services/account/export/chat_group_export.dart` (`ChatGroupExport.export`), to keep
+`social_export_manager.dart` under 500 lines — so the round-1 gap had a NEW ADDRESS. And
+`_redactOtherParticipants` had been refactored from three copied blocks into ONE loop over
+a literal field list. Both changes are improvements; both changed what the missing test
+had to be. Re-Reading the files before writing anything is what caught it — a test written
+against my round-1 notes would have targeted a method that no longer existed.
+
+### Gap 1 — ChatGroupExport (6 tests, `chat_group_export_test.dart`)
+
+Driven through the REAL `FirebaseDataExportRepository` over `FakeFirebaseFirestore`, not a
+repo `Fake`, for two reasons the fake cannot supply: `createdAt` has to be a genuine
+Firestore `Timestamp` for the encode test to mean anything, and the ownership-negative
+needs the repository's own `memberIds array-contains`. A `Fake` is used ONLY for the
+failure branch, which the real repository cannot be made to take on demand.
+
+The load-bearing test is the encode one, and its shape is the lesson: assert
+`json.encode(section)` RETURNS NORMALLY, not that the field is a String. The failure being
+guarded is not local — `jsonEncode` runs once after every section is gathered, so an
+unsanitised `Timestamp` here means the data subject receives NO FILE, and no try/catch
+inside the section can catch it. A type assertion would pass on a half-fix.
+
+Mutant M7 (drop `sanitizeForJson`) → KILLED, 3 tests. Three rather than one is honest, not
+noisy: the two projection tests also call `json.encode` to prove absence of third-party
+fields, so they depend on encodability too.
+
+Also pinned the projection's EXACT KEY SET rather than `contains`. The section is a
+projection by decision (BUT-1772/BUT-1798), so a key silently appearing is how a projection
+becomes a dump; widening it should have to be a deliberate edit to the test.
+
+### Gap 2 — the shared redaction loop (4 tests appended to `social_export_manager_test.dart`)
+
+**A refactor from N copied blocks to ONE loop over a literal field list moves the whole
+contract into the LIST, and a name dropped from it fails OPEN** — the field sails through
+unredacted while `data_minimisation` still claims it was removed, and nothing else notices.
+So the right unit of coverage is one narrowing case PER FIELD NAME, proven by deleting each
+name in turn:
+
+| name deleted from the list | reds |
+|---|---|
+| `memberSince` | 2 (both mine — and no sibling's) |
+| `perUserSettings` | 2 |
+| `participantAvatarUrls` | 3 |
+
+Before this round `perUserSettings` had a fail-closed test but no narrowing test, so
+deleting its name reddened only one case; `memberSince` had neither.
+
+### The failure I found by widening the run
+
+I added `conversation_query_module_test.dart` to the final run — not in my round-1 set —
+because the coordinator mentioned `getConversation` had been repointed to the TOP-LEVEL
+document. **Two tests failed, and two more were passing vacuously.** The suite encoded the
+PRE-FIX contract in its test NAMES ("returns whatever readFn returns"), which is the tell:
+when a fix inverts a delegation, the old suite does not merely fail, it asserts the bug.
+
+The two vacuous ones are the more interesting half: "returns null on readFn exception" and
+"returns empty list on readFn exception" both stayed GREEN, because production no longer
+calls `readFn` at all and the conversation they named was never seeded — so `null`/`[]`
+came back from the document being absent. Two failure paths, one observable.
+
+Rewrote all six to pin the shipped contract, with the discriminating fixture being the one
+where the two sources DISAGREE (Firestore seeded, `readFn` answering null — literally the
+production bug: the user-scoped read returned null for every group). Reverting the repoint
+now reddens all 6; before the rewrite that same revert made the suite GREEN.
+
+Generalisable: **when a review round is told "X was repointed", run X's OWN suite even if
+the ticket never listed it** — a repoint's existing suite is, by construction, written
+against the retired behaviour.
+
+### Counts
+
+`flutter analyze --fatal-infos` clean on all 8 touched test files. Final:
+**473 passed, 1 pre-existing skip** across 19 suites. Round-1 total was 408/19 before these
+gaps were closed and before `conversation_query_module_test` joined the set.
+
+One assertion of mine was wrong and the code was right: I pinned `created_at` to
+`createdAt.toIso8601String()` in UTC, but `sanitizeForJson` renders `Timestamp.toDate()`,
+which comes back LOCAL-flagged, so the text carries the runner's offset. Repaired to
+`DateTime.parse(...).isAtSameMomentAs(...)` — still pins the VALUE (reading `updatedAt`
+instead fails it) while surviving a CI box in another timezone. Same family as the existing
+zone-normalisation rule, approached from the opposite direction.
+
+Verdict: pass (0 blocking).
+
+## 2026-08-13 — BUT-1838 client half, ledger round: the extracted subscription owner, and a live sweep reddening its own siblings
+
+Trigger: asked to Read 16 files the gate recorded as never-read or read-before-change, look
+hard at two genuinely new ones (`lib/viewmodels/group_detail/chat_group_watch.dart`,
+`lib/services/account/export/chat_group_export.dart`), re-run the owned suites, and add a
+test ONLY if the extraction left something unpinned.
+
+### The leak was closed in code and pinned by nothing
+
+`GroupDetailViewModel` grew past 500 lines and its chat-group subscription was extracted
+into `ChatGroupWatch`, which owns the `StreamSubscription`, the `_watchedGroupId`
+bookkeeping and `isAdmin`. The class header says the first version leaked because
+`dispose()` cancelled its SIBLING subscription and not this one. The fix line —
+`_chatGroupWatch.cancel();` in `GroupDetailViewModel.dispose()` — was deletable-green.
+
+Why the existing `Dispose` group could not see it, and this is the reusable part:
+
+- `'should dispose without errors'` asserts `returnsNormally` — the vacuous shape already
+  in the principles file.
+- `'should cancel stream subscription on dispose'` has NO `expect` at all; its comment says
+  "No crash means subscription was cancelled". It also only concerns the conversation
+  stream.
+- Every test in the file stubs `watchGroup` with `Stream.value(...)` or
+  `const Stream.empty()`. Both COMPLETE on their own before `dispose()` is ever reached, so
+  there is nothing left to cancel and no observable to assert. That is the mechanical tell:
+  a suite whose every stub for the subscribed stream is a completing stream cannot pin any
+  cancellation, no matter how many dispose tests it has.
+
+Test added, in the `Dispose` group:
+
+    final groupController = StreamController<ChatGroup?>();
+    when(() => mockChatGroupRepository.watchGroup(testGroupId))
+        .thenAnswer((_) => groupController.stream);
+    viewModel = createViewModel();
+    await Future.delayed(const Duration(milliseconds: 100));
+    expect(groupController.hasListener, isTrue,
+        reason: 'premise: the watch actually subscribed');
+    viewModel.dispose();
+    expect(groupController.hasListener, isFalse);
+
+The premise assertion is load-bearing and is the whole reason the test is not vacuous:
+`hasListener == false` is ALSO what a watch that never subscribed shows, so without the
+pre-state the post-state is satisfied by two different worlds.
+
+### Second unpinned thing the extraction created: the "am I already watching this" guard
+
+`ChatGroupWatch.sync()` runs on EVERY conversation-stream emission, and a chat list
+refreshes often. `if (_watchedGroupId == groupId) return;` is what stops that becoming a
+fresh `chat_groups` listener per update. The suite had the classic SPLIT: the test that
+verifies `watchGroup(...).called(1)` never emits on the conversation stream, and the tests
+that emit never verify. Neither half can see the guard. Closed with one test that emits
+twice and then verifies `.called(1)`, with `expect(vm.conversation?.title, 'Bytt namn')` as
+the premise that both emissions really landed.
+
+### Mutation proof without writing to `lib/` (the round was read-only on production)
+
+Both `lib/` files were staged (`M `/`A `), so the "clean file is your licence" shortcut did
+not apply and the brief forbade production edits. Used the WHOLE-CLASS REPLICA technique,
+but placed in the SESSION SCRATCHPAD rather than under `test/`:
+
+- `cp lib/viewmodels/group_detail_viewmodel.dart <scratch>/zz_probe_vm.dart`, rename the
+  class + constructor with a byte-level python patch that asserts each search string occurs
+  exactly once, delete `_chatGroupWatch.cancel();`.
+- For the second mutant, also replicate `chat_group_watch.dart`, rename the class, delete
+  the dedup guard, and repoint the replica VM's one import from
+  `package:butlery/viewmodels/group_detail/chat_group_watch.dart` to the local replica.
+- `flutter test <absolute scratchpad path>` — `package:butlery/...` imports resolve fine
+  from outside the tree.
+
+Results, both exactly as predicted:
+
+- mutant 1: `Expected: false / Actual: <true>` on `hasListener` after dispose, with the
+  premise assertion passing first.
+- mutant 2: `Expected: <1> / Actual: <3>` on `watchGroup` — initial load plus two emissions.
+
+Cleanup: all five scratch files deleted in the same round, then `git status --porcelain`
+grepped for probe/zz_/throwaway and `lib/`+`test/` grepped for MUTANT and `if (false)`.
+Both clean. Nothing was ever written under `test/` or `lib/`.
+
+### The tree moved twice DURING the round, and the motion was itself the finding
+
+Mid-round, a parallel session began a sweep replacing whole-document `updateFn` writes with
+narrow field-path `update()` writes (the BUT-1831 "the update rule denies any diff touching
+`participantIds`/`createdAt`" hazard). It landed as UNSTAGED-only edits on top of the
+staged bytes I had been asked to review:
+
+- `conversation_mutation_module.dart` went `M ` to `MM`. `updateConversation` no longer
+  calls `readFn`/`updateFn` at all: it reads the top-level doc, does a field-path
+  `update()`, and adds a SECOND write mirroring `title` into `chat_groups.name`. Its suite's
+  `'writes new title + metadata via updateFn'` now throws `ResourceNotFoundException`
+  because the fake has no seeded document.
+- `message_mutation_module.dart` appeared as ` M` BETWEEN two of my test runs (it passed in
+  the first batch and failed in the second, with no edit of mine in between).
+  `'markConversationAsRead updates lastReadTimestamps ... via updateConversation cb'` now
+  throws `[FakeFirestore/not-found]` from `MockDocumentReference.update`.
+
+Both failing test NAMES literally name the retired seam — `via updateFn`, `via
+updateConversation cb` — the same tell that caught the two vacuous `readFn` tests last
+round. Same disease, one commit later, and this time it surfaces as a hard red rather than
+a silent pass, because the new code reaches Firestore where the old code reached an
+injected callback.
+
+Decisions taken, and why:
+
+- Did NOT rewrite either test. The production side is still moving (` M`/`MM`); a rewrite
+  is written against bytes that will not be there in ten minutes, and it would collide with
+  the session mid-edit. Reported instead.
+- Verified the reds are not mine and not in my reviewed bytes:
+  `git show :lib/repositories/firebase/modules/conversation_mutation_module.dart | grep -c
+  "readFn(conversationId)"` returns 1, i.e. the STAGED version I reviewed still uses
+  `readFn` and its suite passes against it. The red exists only against the worktree.
+- The mechanical discriminator for "did the tree move under me" that actually fired was the
+  STACK TRACE LINE NUMBER disagreeing with the file I had read minutes earlier
+  (`conversation_mutation_module.dart 165:9` pointing at a `throw` where my read showed an
+  `AppLogger.debug`). That is cheaper than re-hashing everything and it fired first.
+
+### Counts
+
+Green: group_detail_viewmodel 50 (was 48); chat_viewmodel + conversations_viewmodel +
+create_group_conversation_viewmodel + chat_group + conversation + chat_group_error_mapper +
+group_detail = 243 combined; chat_group_export + social_export_manager + messaging_service +
+messaging_service_close_poll = 112; conversation_query + message_query + conversation_dto +
+firebase_messaging_repository_mock = 61; conversations_list_view (views) = 6.
+Red, both from the in-flight sweep and not from this fileset: 1 in
+conversation_mutation_module_test, 1 in message_mutation_module_test.
+
+### Reviewed-and-found-nothing (worth recording so the next round does not re-derive it)
+
+`chat_group_export_test.dart` carries all four GDPR section proofs plus the exact-key-set
+pin and the `isAtSameMomentAs` timestamp comparison from the previous round — no gap found.
+`ChatGroup` has no `toFirestore` by design (the client never writes it), so the "model field
+reaching Firestore is a rules change too" rule does not apply to it.
+`MessagingModule.provides` now lists `ChatGroupRepository`, closing the flag from the
+earlier round; the DI health check is what reads that list. Delete-conversation is correctly
+withheld for a group in `conversations_list_view.dart` (`if (!conversation.isGroup)`), and
+`conversations_list_view_test.dart` is green at 6.
+
+Verdict: pass (0 blocking).
+
+## 2026-08-14 — BUT-1838 client half, round N+1: the composed leg nobody could see
+
+**Trigger:** re-review after two edits to `lib/services/account/export/social_export_manager.dart`
+(md5 316e4461e2ba8cc6780d05e6b51e41dd, staged `M `): the three uid-keyed redaction blocks
+collapsed into one fail-closed loop over a literal field list, and the chat-groups leg moved
+out to `ChatGroupExport` and is composed back with
+`messagesData.addAll(await ChatGroupExport(_exports).export(userId))` (line 278). Asked
+specifically to grade the `_FakeDataExportRepository.exportChatGroups` override added to
+`test/unit/services/account/export/social_export_manager_test.dart`.
+
+**Q1 — does the override's `maxGroups = -1` default match the file's convention?**
+Half. The header comment frames a binary: sentinel for methods the manager forwards a cap to,
+real defaults for the rest ("blocks, memberships"). But the file already has a THIRD shape it
+does not name — `exportFriendCategories` keeps the sentinel *and is asserted as `-1`* in the
+friends forwarding test, with a comment saying that leg rides the repository's implicit default
+(100) with no truncation probe, deferred to BUT-1701. `ChatGroupExport.export` calls
+`exportChatGroups(userId)` with no cap, and the real signature is `{int maxGroups = 100}`
+(`firebase_data_export_repository.dart:447-449`), so it belongs to exactly that third shape —
+same silent-clipping gap, a user in >100 chat groups gets a section presented as complete.
+The `-1` is therefore right; what was missing is the assertion that gives it meaning.
+`capturedMax['exportChatGroups']` was written by the fake and read by no test.
+Repaired the header comment (it enumerated "blocks, memberships" as the only non-forwarders)
+and asserted `repo.capturedMax == {'exportChatGroups': -1}`.
+
+**Q2 — was any assertion passing only because the section carried an `error_code`?**
+No assertion flipped, but the scope of several was silently narrowed, and the real finding is
+next to it. Before the override, every `exportMessages` test ran the chat-groups leg down its
+catch branch: `ChatGroupExport` returns `{'chat_groups': [], 'error_code':
+'chat-groups-export-failed'}`, which `addAll` lifts to the MESSAGES section root. Nothing in
+the file asserts on `error_code` or `chat_groups`, so it all stayed green — while every
+whole-bundle `json.encode(result), isNot(contains(x))` assertion covered an empty leg. Checked
+the aggregator: `data_export_service.dart:344-378` keys on `error` OR `error_code` and
+distinguishes them — `error_code` without `error` yields the PARTIAL warning ("the messages
+section may be incomplete"), which is the correct shape for this leg and matches the
+`shared_shopping_list_export.dart` precedent. So the composition is well designed; the tests
+were simply grading its failure arm.
+
+**The finding the two questions led to.** `grep -rn "chat_groups\|ChatGroupExport" test/`:
+every hit is inside `chat_group_export_test.dart`, which constructs `ChatGroupExport(repository)`
+directly, plus the new fixture in the manager suite. Nothing observed line 278. Deleting the
+compose line reddened zero tests while the whole `chat_groups` section vanished from the Art. 15
+bundle — the extraction gave the new class a thorough suite (projection key set, third-party
+`memberAddedBy` drop, Timestamp encode, ownership negative, failure marker) and left the one
+line that puts it in the bundle unpinned.
+
+**Added** one test to the existing `SocialExportManager.exportMessages` group:
+`chat_groups` payload equality + `containsKey('error_code') isFalse` + the `capturedMax`
+sentinel. Mutation-proven test-side (no production bytes touched): renaming the fake's
+`exportChatGroups` override so `Fake.noSuchMethod` throws — i.e. exactly the pre-fix state —
+fails it at `social_export_manager_test.dart:1070`, `Actual: []`. Restore md5-verified
+identical (96d1cf41... both sides), no `.probebak` residue, `grep MUTANT/THROWAWAY` clean.
+
+**Staging note for the parent, not a defect:** the test file is `MM`. `git diff` vs the index
+is exactly the 30 lines of the fix under review (the `chatGroups` field, the override, the
+fixture). The four narrowing tests are in the index; the fail-quiet fix is NOT. A commit made
+without re-staging ships the narrowing tests back in the fail-quiet state.
+
+Closing hashes: `lib/.../social_export_manager.dart` 316e4461e2ba8cc6780d05e6b51e41dd (483 lines,
+unmoved through the round); `lib/.../chat_group_export.dart` 0c26c51520e3769285183f87cd30cb76
+(63 lines); `test/.../social_export_manager_test.dart` 96d1cf41eaf2e113a713c08ae7bac243.
+`flutter test test/unit/services/account/export/` — **177 passed**, 0 failed.
+`flutter analyze --fatal-infos` on the edited test file — clean.
+
+Verdict: pass (0 blocking).
+
+## 2026-08-14 — BUT-1838 client half, third pass: three mutation-dead behaviours, three tests, one tautology retired
+
+Third review round on the BUT-1838 client diff (frozen production; two prior passes). The
+parent named ten files and asked for judgement on three specific points rather than a stamp.
+All ten opened with `Read`: `conversation.dart`, `chat_message_stream.dart`,
+`chat_viewmodel.dart`, `message_deletion_module.dart`, `message_mutation_module.dart`,
+`conversation_mutation_module.dart`, `conversation_query_module.dart`,
+`firebase_messaging_repository.dart`, `message_management_operations.dart`,
+`messaging_service.dart`, `conversations_list_view.dart`.
+
+**1. `Conversation.historyQueryStartFor` / `joinedLaterAt` split — already pinned, correctly.**
+`conversation_test.dart:734` asserts all four cells of the founder/late-joiner × query/divider
+matrix, with the founder's stamp set EQUAL to `createdAt` (2026-01-01 both) so `isAfter` is
+the only thing separating them. Checked the mutants by hand: dropping the `isAfter` clause
+reddens `joinedLaterAt('user_1') isNull`; flipping it to `isBefore` reddens
+`joinedLaterAt('user_2')`; returning `historyQueryStartFor` directly reddens the first. No
+gap. The `copyWith` carry group beside it is the strongest part of the file — two-hop rebuild
+plus the direct-conversation negative.
+
+**2. `chat_message_stream.dart` divider — the gap the parent already suspected, closed.**
+Nothing in `test/` rendered this widget (`grep -rln ChatMessageStream test/` → zero), so the
+vacuous guard (oldest loaded message vs the join stamp, which the query already filters on)
+and the correct one (`_messages.length < _pageLimit`) were indistinguishable.
+**Wrote** `test/widget/messaging/chat_message_stream_joined_divider_test.dart`, 3 arms:
+49-of-50 shows, 50-of-50 withholds, founder-on-a-short-page withholds.
+Mechanics worth reusing: the widget resolves `MessagingService` from the PRODUCTION locator in
+a field initializer and `currentUserId` from `PermissionService`, so
+`production.ServiceLocator.initialize(DIContainer())` in `setUpAll` +
+`TestServiceLocator.registerMock<MessagingService>` is the whole bridge. Surface set to
+800x14000 dpr 1.0 — on a phone surface the auto-scroll-to-bottom pushes item 0 (the divider)
+out of the built range and `findsNothing` passes for the wrong reason. Realtime stream stubbed
+`Stream.empty()` because an emission runs `_updateMessagesIncremental`, which removes every
+message absent from the snapshot and would change the page size mid-test.
+**Kill matrix, measured** via a scratchpad replica of the widget (`probe_divider.py`, class
+renamed, test's four relative imports rewritten with `os.path.relpath` — a bare `C:/...` import
+does not resolve in Dart, that cost one run):
+| mutant | red |
+|---|---|
+| control (unmutated replica) | ALL PASS |
+| size guard deleted (pre-fix shape) | FULL-page arm only |
+| `<` → `<=` | FULL-page arm only |
+| `_joinedLaterAt` → `_historyStart` | FOUNDER arm only |
+One red per mutant, never the same arm twice; the SHORT-page arm is the recall control that
+stops `showJoinedDivider = false` passing the group. Replicas deleted in a `finally`;
+`find test -name "*probe*" -o -name "zz_*"` empty, no MUTANT markers in `lib/`.
+
+**3. `chat_viewmodel.dart` null-conversation error — NOT pinned. Closed.**
+`chat_viewmodel_test.dart` has one error test and it uses `thenThrow` (the CATCH branch, a
+different line). No stub anywhere in the file answers null — `grep 'async => null'` → zero —
+so `if (_conversation == null) _setError(...)` was deletable-green. That is the branch that
+decides between an error screen and a permanent spinner, because null is the NORMAL shape of
+failure here: the query module catches → null, `MessagingService` catches → null, so
+permission-denied, offline and deleted-document all arrive without an exception.
+**Added** 'a null conversation is reported as an error, not resolved silently': premise
+(`conversation isNull`), `hasError isTrue` (the flag `ChatMessageStream._awaitConversation`
+waits on), the Swedish string, and `isLoading isFalse` — which is the assertion that separates
+"reported" from "still waiting", since the constructor's `setLoading(true)` is never lowered
+on the mutant. Analytic kill, no probe owed: the only other mechanism that sets that error is
+the catch branch, and nothing throws in this fixture.
+
+**4. `message_deletion_module.dart` groupId skip — not pinned. Closed.**
+`_leaveOneConversation`'s new `if (convoDoc.data()['groupId'] is String) return;` was reached
+by nothing: every fixture in `firebase_notification_deletion_test.dart` omits `groupId`, so
+`null is String` is false in all of them and the line was deletable-green. **Added** a
+two-member CHAT GROUP case — an exact one-field delta from the existing '1:1 conversation'
+test, which asserts the opposite outcome on the same participant list. That pairing is an
+analytic kill (one field differs, outcomes disagree), so no mutant run was owed. Seed helper
+gained `String? groupId` written with `if (groupId != null)` so an absent key stays absent
+rather than becoming a stored null. Positive control (`count == 2`, own messages gone) placed
+BEFORE the survival assertion, or "the conversation survived" is equally satisfied by never
+visiting it.
+
+**5. The two deleted "readFn is never invoked" tests — right call, but the same edit left a
+tautology behind.** With the parameter deleted from `ConversationQueryModule`'s constructor the
+compiler enforces non-invocation, and such a test would no longer compile; deleting them cost
+nothing and the file records why at the site. What it silently broke is the SIBLING: 'the
+top-level document WINS when readFn disagrees' still built an in-memory `decoy` Conversation
+that nothing can pass in any more, so `expect(result, isNot(same(decoy)))` had become
+unfailable under a test name promising a discriminator. **Repaired** (test-only): the decoy is
+now a real document seeded at the RETIRED path `users/alice/conversations/c1`, which a revert
+to a user-scoped read would actually return. Retitled the two tests and rewrote the two
+present-tense `readFn` sentences, keeping the historical half that explains why each test
+changed.
+
+**Reported, not fixed (pre-existing, outside the diff):**
+`conversations_list_view._navigateToGroupInfo` pushes `Routes.groupDetail` with
+`arguments: {'groupId': conversation.id}` — a Map — while
+`social_deferred_module.dart:134` does `settings.arguments as String?`, so "Gruppinfo" from
+the conversation list throws a TypeError. It also targets the SOCIAL `GroupDetailView`
+(friend categories), not `ConversationGroupDetailView`. Untouched by this diff, untested,
+needs its own ticket.
+
+**Runs.** `flutter analyze --fatal-infos` on all four touched test files — clean.
+`flutter test` over the divider suite + `chat_viewmodel_test` + `firebase_notification_deletion_test`
++ `conversation_test` + `test/unit/repositories/firebase/modules/` — **440 passed, 1 skipped,
+0 failed**; `conversation_query_module_test` re-run after the repair — 13 passed.
+No production bytes changed; nothing staged.
+
+Verdict: pass (0 blocking).
+
+## 2026-08-14 — BUT-1838 client half, final gate round: proving "dart format only" from git's object store
+
+**Trigger.** Sole-reviewer round (earlier concurrent runs lost their ledger entries, so the
+gate reported 30 `lib/` files as unread). Substance had already passed twice; the one genuinely
+new question was the parent's own: five files were reformatted by `dart format` during a killed
+commit run — `lib/core/constants/firestore_collections.dart`,
+`lib/repositories/firebase/dtos/conversation_dto.dart`,
+`lib/repositories/firebase/modules/conversation_query_module.dart`,
+`test/unit/models/conversation_test.dart`,
+`test/unit/repositories/firebase/modules/conversation_mutation_module_test.dart` — and this repo
+has a documented failure mode where a formatter race reverts CODE while keeping the COMMENT that
+describes the fix (BUT-1693, 2026-08-12). Reading the files cannot detect that; a re-read of a
+hybrid "looks right".
+
+**The technique that settled it in ~3 minutes.** The pre-format versions are still in `.git` as
+unreachable blobs (4010 of them here), because staging writes a blob. Script:
+
+1. `git cat-file --batch-all-objects --batch-check='%(objectname) %(objecttype) %(objectsize)'`,
+   keep blobs within ±25 % of each target's size (17567 candidates).
+2. Stream them through one `git cat-file --batch` and compare `re.sub(rb'\s+', b'', body)`
+   against the same signature of the current file.
+3. For ordering, `os.path.getmtime('.git/objects/ab/cdef…')` on the LOOSE ones — that gave the
+   real chain for `conversation_dto.dart`: 01:49 (tokens differ = the real content edit under
+   review) -> 08:03 -> 11:18 (staged), the last two whitespace-identical.
+4. `git rev-parse :<path>` confirms which blob the INDEX holds, so "staged == the 11:18 one".
+
+**Two traps, both hit.**
+- Git stores LF; the worktree here is CRLF. Current `conversation_dto.dart` is 10090 bytes, its
+  blob 9915 — exactly 175 = its line count. A raw byte compare of blob-vs-disk is therefore
+  always "different"; the whitespace-stripped signature is immune, but any *size* heuristic must
+  allow for it. Compare blob-to-blob when you can.
+- **`test/unit/models/conversation_test.dart` failed the token-signature match and was still
+  format-only.** `dart format` wrapped `test('…', () { … })` across lines and INSERTED A TRAILING
+  COMMA (`});` -> `},\n);`), which is a real token. The raw `diff` of blob a06171df vs staged
+  9239e82e is one hunk, pure re-indentation plus that comma. So a token-signature mismatch is a
+  prompt to diff, not a finding.
+
+Results, all five: `firestore_collections.dart` one added blank line; `conversation_dto.dart` one
+`memberSince:` expression re-wrapped; `conversation_query_module.dart` `getConversationParticipants(String conversationId)`
+wrapped to three lines; `conversation_mutation_module_test.dart` one blank line removed;
+`conversation_test.dart` the block above. No logic moved. The formatter-race defect did not occur.
+
+**Read coverage.** All 33 staged `lib/**.dart` opened with `Read`. The three generated l10n files
+(27179 / 16282 / 16323 lines) exceed the Read cap and were opened at their changed regions only —
+plus an ARB↔generated value check for all six new `chatGroup*` / `chatJoinedHereDivider` keys
+(`app_sv.arb` :11937-11949 against `app_localizations_sv.dart` :16294-16322), which is the guard
+for the "edited the ARB after gen-l10n" defect. In sync.
+
+**Suites re-run on the staged bytes (all green):** models + error mapper + DTO 89; the five
+repository/module suites + `firebase_notification_deletion_test` 103 passed / 1 skipped;
+messaging service + close-poll + `chat_group_export_test` + `social_export_manager_test` 113;
+the four messaging ViewModel suites 169; `chat_message_stream_joined_divider_test` 3;
+`conversations_list_view_test` 6. **Total 483 passed, 1 skipped, 0 failed.**
+`flutter analyze --fatal-infos lib/ test/` — "No issues found" (332.8 s).
+
+**Hygiene sweep (the BUT-1693 three-in-one-day lesson):** `grep -rn "MUTANT\|THROWAWAY\|if (false)" lib/ test/`
+zero hits; no `*probe*` / `zz_*` files under `test/`; `git status --porcelain` shows nothing
+beyond the staged set and one unrelated `docs/org/metrics/events.jsonl`. Opening and closing md5
+identical on all five files — the tree did not move during the round.
+
+Not re-litigated per the brief, and each is in the commit message: the missing log line on the
+export's per-conversation catch, the `isAdmin`-ungated "Lägg till" button, the two discarded maps
+on `MessagingService.createGroupConversation`, three call sites bypassing `ChatGroupErrorMapper`,
+`startMealVotePoll` minting a group per invocation.
+
+Verdict: pass (0 blocking).

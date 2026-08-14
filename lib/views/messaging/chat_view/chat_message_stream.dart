@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/viewmodels/chat_viewmodel.dart';
 import 'package:butlery/widgets/messaging/message_bubble.dart';
+import 'package:butlery/widgets/messaging/components/system_message_widget.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -44,6 +45,25 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
   Stream<List<Message>>? _messageStream;
   StreamSubscription<List<Message>>? _messageStreamSubscription;
 
+  /// How many messages a page holds. Extracted because the divider's guard
+  /// below has to be provably the SAME number as the query's limit — a guard
+  /// keyed to a literal that drifts from the query is a guard that stops
+  /// meaning anything without failing.
+  static const int _pageLimit = 50;
+
+  /// The query's cut-off: non-null for every member of a GROUP conversation,
+  /// founders included, because that is what `firestore.rules` filters on and a
+  /// reader that filters differently gets the whole query refused. It does NOT
+  /// drive the divider — see [_joinedLaterAt], which is a narrower question.
+  /// Resolved once per stream init; a conversation's `groupId`/`memberSince`
+  /// never change under a member (BUT-1838).
+  DateTime? _historyStart;
+
+  /// When the "du gick med här" divider should render, which is a NARROWER
+  /// question than "does this member have a cut-off": `historyStart` alone is
+  /// non-null for founders too, because every founding member is stamped.
+  DateTime? _joinedLaterAt;
+
   @override
   void initState() {
     super.initState();
@@ -57,22 +77,73 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     super.dispose();
   }
 
+  /// Completes when the ViewModel has a conversation, or when it gives up.
+  ///
+  /// A ChangeNotifier, not a Future, is what the ViewModel exposes — so this
+  /// listens once rather than polling. It also completes on an ERROR: a
+  /// conversation that cannot be loaded is not going to arrive, and hanging
+  /// here would leave the chat on its spinner forever.
+  Future<void> _awaitConversation(ChatViewModel viewModel) {
+    final completer = Completer<void>();
+    void listener() {
+      if (viewModel.conversation != null || viewModel.hasError) {
+        viewModel.removeListener(listener);
+        if (!completer.isCompleted) completer.complete();
+      }
+    }
+
+    viewModel.addListener(listener);
+    // The value can already have arrived between the null check and this
+    // subscription; check once more rather than wait for a notification that
+    // has been and gone.
+    if (viewModel.conversation != null || viewModel.hasError) {
+      viewModel.removeListener(listener);
+      return Future.value();
+    }
+    return completer.future;
+  }
+
   Future<void> _initializeMessageStream() async {
     try {
       AppLogger.debug(
         'Initializing message stream for conversation: ${widget.conversationId}',
       );
 
+      // The cut-off comes from the ViewModel, which owns the conversation —
+      // this widget used to fetch it a SECOND time, which was both an extra
+      // document read per chat open and a second place for the answer to come
+      // from. Two resolution paths for one fact is how they disagree, and they
+      // did: the widget's copy went through the user-scoped read and was null
+      // for every group.
+      //
+      // WAITING for it is as load-bearing as reading it. `historyQueryStartFor` is
+      // the cut-off `firestore.rules` enforces, and a query missing it can
+      // return a message the rules refuse — which fails the WHOLE query, not
+      // just that message. Three entry points construct this screen with no
+      // conversation in hand (the create-group flow, the conversation list and
+      // a shared-recipe card), so at `initState` the ViewModel is still
+      // loading; opening the stream then would query unfiltered and hand a
+      // late-joining member an error screen instead of their history.
+      final viewModel = context.read<ChatViewModel>();
+      if (viewModel.conversation == null) {
+        await _awaitConversation(viewModel);
+        if (!mounted) return;
+      }
+      _historyStart = viewModel.historyStart;
+      _joinedLaterAt = viewModel.joinedLaterAt;
+
       // Load initial messages from MessagingService
       final messages = await _messagingService.getConversationMessagesPage(
         conversationId: widget.conversationId,
-        limit: 50,
+        historyStart: _historyStart,
+        limit: _pageLimit,
       );
 
       // Set up real-time message stream
       _messageStream = _messagingService.getConversationMessages(
         conversationId: widget.conversationId,
-        limit: 50,
+        historyStart: _historyStart,
+        limit: _pageLimit,
       );
 
       if (mounted) {
@@ -163,7 +234,8 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       // Refresh messages from MessagingService
       final messages = await _messagingService.getConversationMessagesPage(
         conversationId: widget.conversationId,
-        limit: 50,
+        historyStart: _historyStart,
+        limit: _pageLimit,
       );
 
       if (mounted) {
@@ -208,6 +280,24 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       );
     }
 
+    // "Du gick med här" divider at the top of the list — non-null exactly
+    // when the current user joined a group conversation after it started.
+    // The second condition is what stops the divider LYING, and the obvious
+    // spelling of it does not work: comparing the oldest loaded message to the
+    // join stamp is vacuous, because the query already filters on that same
+    // value, so every loaded message satisfies it by construction.
+    //
+    // The page is the NEWEST [_pageLimit] messages. Only a SHORT page proves
+    // the oldest one loaded is the first one after joining; a full page means
+    // the join point is off-screen, and this widget has no load-more, so the
+    // honest thing is to show no divider at all rather than one above
+    // message fifty-one-from-the-end. Exactly [_pageLimit] hides it — failing
+    // safe on the boundary rather than guessing.
+    final showJoinedDivider =
+        _joinedLaterAt != null &&
+        _messages.isNotEmpty &&
+        _messages.length < _pageLimit;
+
     return Consumer<ChatViewModel>(
       builder: (context, viewModel, child) {
         return RefreshIndicator(
@@ -217,8 +307,14 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
             padding: const EdgeInsets.symmetric(
               vertical: AppDimensions.spacingS,
             ),
-            itemCount: _messages.length,
-            itemBuilder: (context, index) {
+            itemCount: _messages.length + (showJoinedDivider ? 1 : 0),
+            itemBuilder: (context, rawIndex) {
+              if (showJoinedDivider && rawIndex == 0) {
+                return SystemMessageWidget(
+                  content: context.l10n.chatJoinedHereDivider,
+                );
+              }
+              final index = showJoinedDivider ? rawIndex - 1 : rawIndex;
               final message = _messages[index];
               final previousMessage = index > 0 ? _messages[index - 1] : null;
 

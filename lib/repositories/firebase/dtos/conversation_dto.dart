@@ -101,6 +101,14 @@ class ConversationDto {
       title: data['title'] as String?,
       isGroup: data['isGroup'] as bool? ?? false,
       metadata: data['metadata'] as Map<String, dynamic>?,
+      groupId: data['groupId'] as String?,
+      memberSince: (data['memberSince'] as Map<String, dynamic>? ?? const {})
+          .map(
+            (key, value) => MapEntry(
+              key,
+              SerializationUtils.parseDateTimeValue(value) ?? clock.now(),
+            ),
+          ),
       isArchived: perUserSettings?['isArchived'] as bool? ?? false,
       isPinned: perUserSettings?['isPinned'] as bool? ?? false,
       isMuted: perUserSettings?['isMuted'] as bool? ?? false,
@@ -140,15 +148,28 @@ class ConversationDto {
       'updatedAt': Timestamp.fromDate(conversation.updatedAt),
       'title': conversation.title,
       'isGroup': conversation.isGroup,
-      // Emitted UNCONDITIONALLY on purpose. A null here is what denies a
-      // non-creator's fallback conversation create: `firestore.rules` reads
-      // `'creatorId' in request.resource.data.metadata`, and an `in` on a null
-      // is an evaluation error. Omitting the key when null — the standard
-      // "don't write nulls to Firestore" cleanup — satisfies the rule's
-      // `!('metadata' in data)` disjunct instead, so that create LANDS and the
-      // minor-eviction trigger never runs for the group. Pinned by
-      // message_mutation_module_test.dart; see that file for the full chain.
+      // Emitted UNCONDITIONALLY on purpose, and the reason CHANGED under this
+      // comment on 2026-08-13 — the instruction survives, its mechanism does
+      // not. It used to be that `firestore.rules` read
+      // `'creatorId' in request.resource.data.metadata`, so omitting the key
+      // when null satisfied a `!('metadata' in data)` disjunct and the
+      // non-creator's fallback create LANDED. The rule is now a bare
+      // `request.resource.data.metadata.creatorId == request.auth.uid`
+      // (firestore.rules, BUT-1838), which denies an absent or null metadata
+      // cleanly instead of leaning on a CEL evaluation error.
+      //
+      // So: still emit it unconditionally — a `hasOnly`-style tidy that drops
+      // null keys is still a behaviour change on a write path rules govern —
+      // but do not repeat the old disjunct argument, and do not "restore" the
+      // `||` hatches to make it true again. Pinned by
+      // message_mutation_module_test.dart.
       'metadata': conversation.metadata,
+      // NOT written here, and that is deliberate: `groupId` and `memberSince`
+      // are server-owned (BUT-1838), and the conversations UPDATE rule denies
+      // any client diff that touches either. Adding them to this map would make
+      // every ordinary conversation write — a read-receipt stamp, a pin — fail
+      // the diff check, silently, in the way only a rules test can see
+      // (BUT-1482). They are read above and never written.
     };
   }
 }

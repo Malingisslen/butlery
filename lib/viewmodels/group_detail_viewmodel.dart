@@ -2,12 +2,16 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/models/messaging/chat_group.dart';
+import 'package:butlery/viewmodels/group_detail/chat_group_watch.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/core/errors/chat_group_error_mapper.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
@@ -61,6 +65,7 @@ class GroupDetailViewModel extends ChangeNotifier
   final String _conversationId;
   final MessagingService _messagingService;
   final UnifiedFriendsService _friendsService;
+  final ChatGroupRepository _chatGroupRepository;
 
   // State
   bool _isDisposed = false;
@@ -72,13 +77,25 @@ class GroupDetailViewModel extends ChangeNotifier
   bool _isUpdatingTitle = false;
   StreamSubscription<List<Conversation>>? _conversationSubscription;
 
+  // BUT-1838: the group's own document is the sole authority on who may
+  // rename it or remove members — the roster row's `role` is descriptive
+  // only. Watched separately from the conversation because it lives in its
+  // own top-level collection with its own permission model (server-written).
+  late final ChatGroupWatch _chatGroupWatch = ChatGroupWatch(
+    repository: _chatGroupRepository,
+    onChanged: _safeNotifyListeners,
+  );
+
   GroupDetailViewModel({
     required String conversationId,
     required MessagingService messagingService,
     required UnifiedFriendsService friendsService,
+    ChatGroupRepository? chatGroupRepository,
   }) : _conversationId = conversationId,
        _messagingService = messagingService,
-       _friendsService = friendsService {
+       _friendsService = friendsService,
+       _chatGroupRepository =
+           chatGroupRepository ?? ServiceLocator.get<ChatGroupRepository>() {
     // Start in loading state until conversation data arrives
     setLoading(true);
     _initializeConversationStream();
@@ -86,6 +103,7 @@ class GroupDetailViewModel extends ChangeNotifier
 
   // Getters
   Conversation? get conversation => _conversation;
+  ChatGroup? get chatGroup => _chatGroupWatch.group;
   // isLoading and error provided by StateNotifierMixin
   bool get isAddingMembers => _isAddingMembers;
   bool get isRemovingMember => _isRemovingMember;
@@ -95,12 +113,13 @@ class GroupDetailViewModel extends ChangeNotifier
   String? get currentUserId =>
       ServiceLocator.get<PermissionService>().currentUserId;
 
-  /// Check if current user is group admin/creator
-  bool get isAdmin {
-    if (_conversation == null || currentUserId == null) return false;
-    final creatorId = _conversation!.metadata?['creatorId'] as String?;
-    return creatorId == currentUserId;
-  }
+  /// Check if current user is group admin. Sourced from `chat_groups.adminIds`
+  /// — the only authority on this — never from the roster row's descriptive
+  /// `role` or the retired `conversation.metadata['creatorId']` (BUT-1838).
+  /// False while the group hasn't been watched yet (no `groupId`, or the
+  /// snapshot hasn't arrived) — a client-side pre-check that misses briefly
+  /// is safe because the server re-checks admin authority on every callable.
+  bool get isAdmin => _chatGroupWatch.isAdmin(currentUserId);
 
   /// Get list of member user profiles
   List<String> get memberIds {
@@ -171,6 +190,7 @@ class GroupDetailViewModel extends ChangeNotifier
       if (!_isDisposed && conversation != null) {
         _conversation = conversation;
         setSuccess();
+        _chatGroupWatch.sync(conversation);
       }
     } catch (e) {
       AppLogger.error('Failed to load conversation', e);
@@ -186,6 +206,7 @@ class GroupDetailViewModel extends ChangeNotifier
 
     _conversation = conversation;
     setSuccess();
+    _chatGroupWatch.sync(conversation);
 
     if (conversation != null) {
       AppLogger.debug('Conversation updated: ${conversation.title}');
@@ -204,16 +225,24 @@ class GroupDetailViewModel extends ChangeNotifier
     setError(errorMessage);
   }
 
-  Future<bool> addMembers(
-    List<String> memberIds,
-    Map<String, String> memberDisplayNames,
-    Map<String, String?>? memberAvatarUrls,
-  ) async {
-    if (_isDisposed || _conversation == null) return false;
+  /// Adds [memberIds] to the group via the `addChatGroupMembers` callable.
+  /// Returns the number ACTUALLY seated (already-present uids are not
+  /// repeated, per [ChatGroupRepository.addMembers]) on success, or null on
+  /// failure — display names/avatars are no longer client-supplied, the
+  /// server resolves them from `public_profiles` so the person adding
+  /// someone can't choose what everyone else's name looks like (BUT-1838).
+  Future<int?> addMembers(List<String> memberIds) async {
+    if (_isDisposed || _conversation == null) return null;
+
+    final groupId = _conversation!.groupId;
+    if (groupId == null) {
+      setError(AppLocale.current.chatGroupAddMembersFailed);
+      return null;
+    }
 
     if (!isAdmin) {
       setError(AppLocale.current.errorOnlyAdminCanAddMembers);
-      return false;
+      return null;
     }
 
     _isAddingMembers = true;
@@ -223,36 +252,45 @@ class GroupDetailViewModel extends ChangeNotifier
     try {
       AppLogger.info('Adding ${memberIds.length} members to group');
 
-      await _messagingService.addParticipantsToGroup(
-        conversationId: _conversationId,
-        participantIds: memberIds,
-        participantDisplayNames: memberDisplayNames,
-        participantAvatarUrls: memberAvatarUrls ?? {},
+      final added = await _chatGroupRepository.addMembers(
+        groupId: groupId,
+        userIds: memberIds,
       );
 
-      if (_isDisposed) return false;
+      if (_isDisposed) return null;
 
-      AppLogger.success('Successfully added ${memberIds.length} members');
+      AppLogger.success('Successfully added ${added.length} members');
 
       _isAddingMembers = false;
       _safeNotifyListeners();
 
-      return true;
+      return added.length;
     } catch (e) {
       AppLogger.error('Failed to add members', e);
 
-      if (_isDisposed) return false;
+      if (_isDisposed) return null;
 
-      setError(AppLocale.current.errorCouldNotAddMembers);
+      setError(
+        ChatGroupErrorMapper.map(
+          e,
+          genericFallback: AppLocale.current.chatGroupAddMembersFailed,
+        ),
+      );
       _isAddingMembers = false;
       _safeNotifyListeners();
 
-      return false;
+      return null;
     }
   }
 
   Future<bool> removeMember(String memberId) async {
     if (_isDisposed || _conversation == null) return false;
+
+    final groupId = _conversation!.groupId;
+    if (groupId == null) {
+      setError(AppLocale.current.errorCouldNotDelete('medlem'));
+      return false;
+    }
 
     if (!isAdmin) {
       setError(AppLocale.current.errorOnlyAdminCanRemoveMembers);
@@ -271,9 +309,9 @@ class GroupDetailViewModel extends ChangeNotifier
     try {
       AppLogger.info('Removing member $memberId from group');
 
-      await _messagingService.removeParticipantFromGroup(
-        conversationId: _conversationId,
-        participantId: memberId,
+      await _chatGroupRepository.removeMember(
+        groupId: groupId,
+        userId: memberId,
       );
 
       if (_isDisposed) return false;
@@ -289,7 +327,12 @@ class GroupDetailViewModel extends ChangeNotifier
 
       if (_isDisposed) return false;
 
-      setError(AppLocale.current.errorCouldNotDelete('medlem'));
+      setError(
+        ChatGroupErrorMapper.map(
+          e,
+          genericFallback: AppLocale.current.errorCouldNotDelete('medlem'),
+        ),
+      );
       _isRemovingMember = false;
       _safeNotifyListeners();
 
@@ -302,6 +345,12 @@ class GroupDetailViewModel extends ChangeNotifier
       return false;
     }
 
+    final groupId = _conversation!.groupId;
+    if (groupId == null) {
+      setError(AppLocale.current.errorCouldNotLeaveGroup);
+      return false;
+    }
+
     _isLeavingGroup = true;
     clearError();
     _safeNotifyListeners();
@@ -309,10 +358,8 @@ class GroupDetailViewModel extends ChangeNotifier
     try {
       AppLogger.info('Current user leaving group');
 
-      await _messagingService.removeParticipantFromGroup(
-        conversationId: _conversationId,
-        participantId: currentUserId!,
-      );
+      // Omitting `userId` is the repository's "leave yourself" contract.
+      await _chatGroupRepository.removeMember(groupId: groupId);
 
       if (_isDisposed) return false;
 
@@ -331,7 +378,12 @@ class GroupDetailViewModel extends ChangeNotifier
 
       if (_isDisposed) return false;
 
-      setError(AppLocale.current.errorCouldNotLeaveGroup);
+      setError(
+        ChatGroupErrorMapper.map(
+          e,
+          genericFallback: AppLocale.current.errorCouldNotLeaveGroup,
+        ),
+      );
       _isLeavingGroup = false;
       _safeNotifyListeners();
 
@@ -420,6 +472,12 @@ class GroupDetailViewModel extends ChangeNotifier
   void dispose() {
     _isDisposed = true;
     _conversationSubscription?.cancel();
+    // Explicitly, like its sibling above: `disposeStreamResources()` only
+    // reaches subscriptions registered through the mixin's `addSubscription`,
+    // and neither of these is — so a listener left out of this list is a live
+    // Firestore document listener per screen open, billed forever, holding the
+    // ViewModel with it.
+    _chatGroupWatch.cancel();
     cancelAllOperations();
     disposeStreamResources();
     super.dispose();

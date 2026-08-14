@@ -3,7 +3,6 @@
 
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -44,10 +43,6 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     super.auditRepository,
     super.timestampProvider,
     FeatureFlagService? featureFlagService,
-    // BUT-1788: injectable so tests can drive `leaveGroupConversation` without
-    // a Firebase app; production leaves it null and the mutation module
-    // lazily resolves europe-west1.
-    FirebaseFunctions? functions,
   }) : super(
          authRepository: authRepository ?? FirebaseAuthRepository(),
        ) {
@@ -70,12 +65,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     _conversationMutationModule = ConversationMutationModule(
       firestore: firestore,
       collectionName: collectionName,
-      createFn: create,
-      updateFn: update,
-      readFn: read,
-      sendMessageFn: sendMessage,
       participantModule: _participantModule,
-      functions: functions,
     );
 
     _messageQueryModule = MessageQueryModule(
@@ -86,7 +76,15 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
       firestore: firestore,
       collectionName: collectionName,
       messagesRef: _messagesRef,
-      readConversation: read,
+      // BUT-1838: the TOP-LEVEL read, not `read` — this class mixes in
+      // `UserScopedFirebaseRepository`, which rewrites every path to
+      // `users/{uid}/conversations/{id}`. A chat group's conversation is
+      // written only at the top level by `createChatGroup`, so `read` returned
+      // null for every group, for everyone. `sendMessage` would then take its
+      // fabricate-a-conversation fallback on EVERY send, and the batch that
+      // carries it is refused by the conversations update rule — so the
+      // message died with it.
+      readConversation: _readTopLevelConversation,
       timestampProvider: timestampProvider,
     );
 
@@ -159,7 +157,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
 
   @override
   Future<Conversation?> getConversation(String conversationId) async =>
-      _conversationQueryModule.getConversation(conversationId, read);
+      _conversationQueryModule.getConversation(conversationId);
 
   @override
   Future<String> createDirectConversation({
@@ -176,21 +174,6 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     user2Id: user2Id,
     user2DisplayName: user2DisplayName,
     user2AvatarUrl: user2AvatarUrl,
-  );
-
-  @override
-  Future<String> createGroupConversation({
-    required List<String> participantIds,
-    required Map<String, String> participantDisplayNames,
-    required Map<String, String?> participantAvatarUrls,
-    required String title,
-    required String creatorId,
-  }) async => _conversationMutationModule.createGroupConversation(
-    participantIds: participantIds,
-    participantDisplayNames: participantDisplayNames,
-    participantAvatarUrls: participantAvatarUrls,
-    title: title,
-    creatorId: creatorId,
   );
 
   @override
@@ -239,34 +222,33 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     metadata: metadata,
   );
 
-  @override
-  Future<void> addParticipants({
-    required String conversationId,
-    required List<String> participantIds,
-    required Map<String, String> participantDisplayNames,
-    required Map<String, String?> participantAvatarUrls,
-  }) async => _conversationMutationModule.addParticipants(
-    conversationId: conversationId,
-    participantIds: participantIds,
-    participantDisplayNames: participantDisplayNames,
-    participantAvatarUrls: participantAvatarUrls,
-  );
+  /// The top-level conversation document, bypassing the user-scoped rewrite.
+  ///
+  /// Deliberately not `read`: see the note where this is wired in. Mirrors
+  /// `ConversationQueryModule.getConversation`, which had the same bug.
+  Future<Conversation?> _readTopLevelConversation(String conversationId) async {
+    try {
+      final doc = await firestore
+          .collection(collectionName)
+          .doc(conversationId)
+          .get();
+      if (!doc.exists) return null;
+      return fromFirestore(doc);
+    } catch (e) {
+      AppLogger.error('Failed to read conversation $conversationId', e);
+      return null;
+    }
+  }
 
   @override
-  Future<void> removeParticipant({
-    required String conversationId,
-    required String participantId,
-  }) async => _conversationMutationModule.removeParticipant(
-    conversationId: conversationId,
-    participantId: participantId,
+  Future<void> deleteConversation(
+    String conversationId, {
+    DateTime? historyStart,
+  }) async => _conversationMutationModule.deleteConversation(
+    conversationId,
+    _messagesRef,
+    historyStart: historyStart,
   );
-
-  @override
-  Future<void> deleteConversation(String conversationId) async =>
-      _conversationMutationModule.deleteConversation(
-        conversationId,
-        _messagesRef,
-      );
 
   @override
   Future<void> votePoll({
@@ -304,10 +286,8 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   @override
   Future<List<String>> getConversationParticipants(
     String conversationId,
-  ) async => _conversationQueryModule.getConversationParticipants(
-    conversationId,
-    read,
-  );
+  ) async =>
+      _conversationQueryModule.getConversationParticipants(conversationId);
 
   @override
   Future<int> getUnreadMessageCount(String userId) async =>
@@ -319,19 +299,23 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   @override
   Stream<List<Message>> getConversationMessages({
     required String conversationId,
+    DateTime? historyStart,
     int limit = 50,
   }) => _messageQueryModule.getConversationMessages(
     conversationId: conversationId,
+    historyStart: historyStart,
     limit: limit,
   );
 
   @override
   Future<List<Message>> getConversationMessagesPage({
     required String conversationId,
+    DateTime? historyStart,
     int limit = 50,
     DateTime? startAfter,
   }) async => _messageQueryModule.getConversationMessagesPage(
     conversationId: conversationId,
+    historyStart: historyStart,
     limit: limit,
     startAfter: startAfter,
   );
@@ -344,10 +328,12 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   Future<List<Message>> searchMessages({
     required String conversationId,
     required String query,
+    DateTime? historyStart,
     int limit = 20,
   }) async => _messageQueryModule.searchMessages(
     conversationId: conversationId,
     query: query,
+    historyStart: historyStart,
     limit: limit,
   );
 
@@ -382,7 +368,6 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   }) async => _messageMutationModule.markConversationAsRead(
     conversationId: conversationId,
     userId: userId,
-    updateConversation: update,
   );
 
   @override

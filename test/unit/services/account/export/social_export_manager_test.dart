@@ -34,6 +34,7 @@ class _FakeDataExportRepository extends Fake
     this.outgoingBlocks = const [],
     this.incomingBlocks = const [],
     this.memberships = const [],
+    this.chatGroups = const [],
   });
 
   final List<Map<String, dynamic>> friends;
@@ -48,19 +49,38 @@ class _FakeDataExportRepository extends Fake
   final List<Map<String, dynamic>> incomingBlocks;
   final List<Map<String, dynamic>> memberships;
 
+  /// BUT-1838. Overridden rather than left to `Fake`'s throw, because the
+  /// chat-groups leg is composed INTO the messages section: an unoverridden
+  /// method makes every `exportMessages` test in this file silently exercise
+  /// the FAILURE branch and carry an `error_code`, which is fail-quiet in a
+  /// file whose whole convention is fail-loud sentinels.
+  final List<Map<String, dynamic>> chatGroups;
+
   /// Per-method captured `maxDocuments`, keyed by repository method name.
   /// Every override that the manager is expected to pass a cap to defaults to
   /// a sentinel -1 no real caller would pass, so a production path that stops
   /// forwarding its cap fails the forwarding test instead of coincidentally
-  /// matching the repository's own default. The remaining overrides
-  /// (blocks, memberships) keep the real defaults — the manager forwards
-  /// nothing to them and they carry no truncation probe.
+  /// matching the repository's own default. The sentinel is ALSO how a
+  /// deliberate NON-forward is pinned — `exportFriendCategories` and
+  /// `exportChatGroups` are asserted as -1 precisely because the manager
+  /// passes them nothing and they therefore ride an implicit cap with no
+  /// truncation probe (BUT-1701). Only overrides no assertion reads at all
+  /// (blocks, memberships) keep the repository's real defaults.
   final Map<String, int> capturedMax = <String, int>{};
 
   /// `exportConversationsAndMessages` takes TWO caps, so it records into its
   /// own fields rather than [capturedMax].
   int? capturedMaxConversations;
   int? capturedMaxMessagesPerConversation;
+
+  @override
+  Future<List<Map<String, dynamic>>> exportChatGroups(
+    String userId, {
+    int maxGroups = -1,
+  }) async {
+    capturedMax['exportChatGroups'] = maxGroups;
+    return chatGroups;
+  }
 
   @override
   Future<List<Map<String, dynamic>>> exportFriendsSubcollection(
@@ -320,6 +340,19 @@ void main() {
 
     SocialExportManager buildManager() => SocialExportManager(
       dataExportRepository: _FakeDataExportRepository(
+        // BUT-1838: a real group, so the messages section exercises the
+        // chat-groups leg's HAPPY path. Left unset, `Fake` throws and every
+        // assertion below silently runs against the failure branch.
+        chatGroups: const [
+          {
+            'group_id': 'chat-group-1',
+            'name': 'Familjen',
+            'conversation_id': 'conv1',
+            'created_by': userId,
+            'admin_ids': [userId],
+            'you_were_added_by': userId,
+          },
+        ],
         conversations: [
           {
             'id': 'conv1',
@@ -747,6 +780,170 @@ void main() {
         );
       },
     );
+
+    // BUT-1838. The three uid-keyed maps now share ONE loop over a literal
+    // field list, which is the right shape — three copies of one decision is
+    // how they drift — but it means the list itself is the whole contract.
+    // A name dropped from it fails closed in the WRONG direction: the field
+    // sails through unredacted while `data_minimisation` still claims it was
+    // removed, and nothing else in the file would notice. So there is one
+    // case per field below, and `memberSince` (the newest, and the only one
+    // with no coverage at all before this) gets both halves.
+    const otherJoined = '2026-02-02T02:02:02.000Z';
+
+    test(
+      'memberSince keeps the requester s own join stamp and drops everyone '
+      'else s',
+      () async {
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {
+                  'participantIds': [userId, otherUid],
+                  'groupId': 'chat-group-1',
+                  'memberSince': {
+                    userId: '2026-01-01T01:01:01.000Z',
+                    otherUid: otherJoined,
+                  },
+                },
+                'messages': const <Map<String, dynamic>>[],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final convo =
+            (result['conversations'] as List).single as Map<String, dynamic>;
+        final info = convo['conversation_info'] as Map<String, dynamic>;
+        final memberSince = info['memberSince'] as Map<String, dynamic>;
+
+        // Own stamp KEPT — the opposite failure, withholding the requester's
+        // own data, is just as wrong under Art. 15.
+        expect(memberSince[userId], '2026-01-01T01:01:01.000Z');
+        // Everyone else's dropped, asserted over the WHOLE encoded bundle so
+        // a copy surviving somewhere else in the section still fails.
+        expect(memberSince.containsKey(otherUid), isFalse);
+        expect(json.encode(result), isNot(contains(otherJoined)));
+        expect(
+          info.containsKey('redaction_fell_back'),
+          isFalse,
+          reason: 'a recognised Map shape is narrowed, never dropped',
+        );
+      },
+    );
+
+    test(
+      'an unexpected memberSince shape drops the field entirely',
+      () async {
+        // Fail-closed half, matching its two siblings above.
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {
+                  'participantIds': [userId, otherUid],
+                  'groupId': 'chat-group-1',
+                  // A plausible future shape: a LIST of {uid, joinedAt}.
+                  'memberSince': [
+                    {'uid': otherUid, 'joinedAt': otherJoined},
+                  ],
+                },
+                'messages': const <Map<String, dynamic>>[],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final convo =
+            (result['conversations'] as List).single as Map<String, dynamic>;
+        final info = convo['conversation_info'] as Map<String, dynamic>;
+
+        expect(json.encode(result), isNot(contains(otherJoined)));
+        expect(info.containsKey('memberSince'), isFalse);
+        expect(info['redaction_fell_back'], isTrue);
+      },
+    );
+
+    test(
+      'perUserSettings keeps the requester s own entry and drops everyone '
+      'else s',
+      () async {
+        // The third field in the shared list. It had a fail-closed test but
+        // no narrowing test, so removing 'perUserSettings' from the loop
+        // reddened nothing before this.
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {
+                  'participantIds': [userId, otherUid],
+                  'perUserSettings': {
+                    userId: {'isPinned': true},
+                    otherUid: {'isMuted': true, 'isArchived': true},
+                  },
+                },
+                'messages': const <Map<String, dynamic>>[],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final convo =
+            (result['conversations'] as List).single as Map<String, dynamic>;
+        final info = convo['conversation_info'] as Map<String, dynamic>;
+        final settings = info['perUserSettings'] as Map<String, dynamic>;
+
+        expect(settings[userId], {'isPinned': true});
+        expect(settings.containsKey(otherUid), isFalse);
+        // BUT-1774: another member's mute/pin/archive state is pure
+        // third-party behaviour. Assert the VALUE is gone from the bundle,
+        // not merely the key from this map.
+        expect(json.encode(result), isNot(contains('isArchived')));
+      },
+    );
+
+    test(
+      'participantAvatarUrls keeps the requester s own entry and drops '
+      'everyone else s',
+      () async {
+        // Completes one-narrowing-case-per-field over the shared loop.
+        const ownAvatar = 'https://example.test/avatars/user-uid.jpg';
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {
+                  'participantIds': [userId, otherUid],
+                  'participantAvatarUrls': {
+                    userId: ownAvatar,
+                    otherUid: otherAvatar,
+                  },
+                },
+                'messages': const <Map<String, dynamic>>[],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final convo =
+            (result['conversations'] as List).single as Map<String, dynamic>;
+        final info = convo['conversation_info'] as Map<String, dynamic>;
+        final avatars = info['participantAvatarUrls'] as Map<String, dynamic>;
+
+        expect(avatars[userId], ownAvatar);
+        expect(avatars.containsKey(otherUid), isFalse);
+        expect(json.encode(result), isNot(contains(otherAvatar)));
+      },
+    );
   });
 
   group('SocialExportManager.exportMessages (BUT-1438)', () {
@@ -834,6 +1031,65 @@ void main() {
           repo.capturedMaxMessagesPerConversation,
           ExportPaginationHelper.getLimitForType('messages_per_conversation'),
         );
+      },
+    );
+
+    test(
+      'the chat-groups leg is composed into the section, and a healthy leg '
+      'leaves no failure marker (BUT-1838)',
+      () async {
+        // The leg lives in its own class and has its own suite, so everything
+        // ABOUT it is covered — but the one line that puts it in the bundle,
+        // `messagesData.addAll(await ChatGroupExport(_exports).export(...))`,
+        // was observable from no test at all: `chat_group_export_test.dart`
+        // constructs the class directly, and nothing here read `chat_groups`.
+        // Deleting that line reddened nothing while the whole section
+        // disappeared from the Art. 15 bundle.
+        //
+        // The `error_code` assertion is the fail-quiet guard: an unoverridden
+        // `exportChatGroups` on the fake sends the leg down its catch branch,
+        // which `addAll`s a section-root `error_code` beside a perfectly good
+        // conversations list. `DataExportService` reads that as "the messages
+        // section may be incomplete", so the state every test in this file was
+        // silently in must be one a test can see.
+        const userId = 'user-uid';
+        const groupRow = {
+          'group_id': 'chat-group-1',
+          'name': 'Middagsgänget',
+          'conversation_id': 'conv1',
+          'created_by': 'other-uid',
+          'admin_ids': ['other-uid'],
+          'you_were_added_by': 'other-uid',
+        };
+        final repo = _FakeDataExportRepository(chatGroups: const [groupRow]);
+
+        final result = await SocialExportManager(
+          dataExportRepository: repo,
+        ).exportMessages(userId);
+
+        expect(
+          result['chat_groups'],
+          [groupRow],
+          reason:
+              'the leg reaches the bundle through this section and nowhere '
+              'else — who added the requester to a group lives in no other '
+              'part of the export',
+        );
+        expect(
+          result.containsKey('error_code'),
+          isFalse,
+          reason:
+              'a leg that succeeded must not make the section announce itself '
+              'as possibly incomplete at bundle level',
+        );
+        // No cap is forwarded, so the section rides the repository's own
+        // implicit default (100 groups) with no N+1 truncation probe — the
+        // same gap `exportFriendCategories` carries, deferred to BUT-1701.
+        // Pinned as the sentinel exactly like that one: when a cap starts
+        // being forwarded this reddens, which is where the truncation flag
+        // has to be added rather than quietly capping a bundle that asserts
+        // it is complete.
+        expect(repo.capturedMax, {'exportChatGroups': -1});
       },
     );
 

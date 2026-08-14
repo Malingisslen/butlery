@@ -32,6 +32,8 @@ import 'package:butlery/repositories/firebase/firebase_device_repository.dart';
 // Messaging repositories and interfaces
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_messaging_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_chat_group_repository.dart';
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 
 // Messaging services
 import 'package:butlery/services/messaging_service.dart';
@@ -71,6 +73,11 @@ class MessagingModule implements DIModule {
   @override
   List<Type> get provides => [
     MessagingRepository,
+    // BUT-1838: registered below and consumed by three ViewModels, so it
+    // belongs in the declared surface — this list is what the DI health check
+    // verifies, and a registration missing from it is a resolution failure
+    // nothing warns about until a screen opens.
+    ChatGroupRepository,
     MessagingService,
     MessageReactionsService,
     PresenceService,
@@ -94,6 +101,7 @@ class MessagingModule implements DIModule {
     container.registerLazySingleton<MessagingService>(
       () => MessagingService(
         messagingRepository: appScope<MessagingRepository>(),
+        chatGroupRepository: appScope<ChatGroupRepository>(),
         authRepository: appScope<AuthRepository>(),
         reactionsService: appScope<MessageReactionsService>(),
       ),
@@ -129,6 +137,15 @@ class MessagingModule implements DIModule {
           featureFlagService: container.isRegistered<FeatureFlagService>()
               ? container<FeatureFlagService>()
               : null,
+        ),
+      );
+
+      // BUT-1838: chat groups. Read-only from the app; every membership change
+      // goes through a Cloud Function, which is what keeps the
+      // minor-membership gate unbypassable.
+      container.registerLazySingleton<ChatGroupRepository>(
+        () => FirebaseChatGroupRepository(
+          authRepository: container<AuthRepository>(),
         ),
       );
 

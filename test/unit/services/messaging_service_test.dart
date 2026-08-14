@@ -12,6 +12,8 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/mocks/service_mocks.dart'
+    show MockChatGroupRepository;
 import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
@@ -123,6 +125,7 @@ void main() {
   group('MessagingService', () {
     late MessagingService messagingService;
     late MockMessagingRepository mockMessagingRepo;
+    late MockChatGroupRepository mockChatGroupRepo;
     late FakeAuthRepository mockAuthRepo;
     late User mockUser;
 
@@ -153,6 +156,7 @@ void main() {
 
     setUp(() {
       mockMessagingRepo = MockMessagingRepository();
+      mockChatGroupRepo = MockChatGroupRepository();
       mockAuthRepo = FakeAuthRepository();
 
       // Create mock user with proper configuration
@@ -170,6 +174,7 @@ void main() {
 
       messagingService = MessagingService(
         messagingRepository: mockMessagingRepo,
+        chatGroupRepository: mockChatGroupRepo,
         authRepository: mockAuthRepo,
         reactionsService: MockMessageReactionsService(),
       );
@@ -310,170 +315,78 @@ void main() {
         },
       );
 
-      test('should create group conversation', () async {
-        // Arrange
-        const participantIds = ['user-1', 'user-2', 'user-3'];
-        final participantDisplayNames = {
-          'user-1': 'User One',
-          'user-2': 'User Two',
-          'user-3': 'User Three',
-        };
-        final participantAvatarUrls = {
-          'user-1': 'https://example.com/user1.jpg',
-          'user-2': null,
-          'user-3': 'https://example.com/user3.jpg',
-        };
-        const title = 'Recipe Planning Group';
-        const conversationId = 'group-conv-123';
-
-        when(
-          () => mockMessagingRepo.createGroupConversation(
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
-            title: title,
-            creatorId: 'test-user-id',
-          ),
-        ).thenAnswer((_) async => conversationId);
-
-        // Act
-        final result = await messagingService.createGroupConversation(
-          participantIds: participantIds,
-          participantDisplayNames: participantDisplayNames,
-          participantAvatarUrls: participantAvatarUrls,
-          title: title,
-        );
-
-        // Assert
-        expect(result, equals(conversationId));
-        verify(
-          () => mockMessagingRepo.createGroupConversation(
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
-            title: title,
-            creatorId: 'test-user-id',
-          ),
-        ).called(1);
-      });
-
-      test('should add current user to group if not included', () async {
-        // Arrange
-        const participantIds = [
-          'user-1',
-          'user-2',
-        ]; // Current user not included
-        final participantDisplayNames = <String, String>{
-          'user-1': 'User One',
-          'user-2': 'User Two',
-        };
-        final participantAvatarUrls = <String, String?>{
-          'user-1': null,
-          'user-2': null,
-        };
-        const title = 'Group Chat';
-        const conversationId = 'group-conv-456';
-
-        when(
-          () => mockMessagingRepo.createGroupConversation(
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
-            title: title,
-            creatorId: 'test-user-id',
-          ),
-        ).thenAnswer((_) async => conversationId);
-
-        // Act
-        final result = await messagingService.createGroupConversation(
-          participantIds: participantIds,
-          participantDisplayNames: participantDisplayNames,
-          participantAvatarUrls: participantAvatarUrls,
-          title: title,
-        );
-
-        // Assert
-        expect(result, equals(conversationId));
-
-        // Verify current user was added
-        final capturedCall = verify(
-          () => mockMessagingRepo.createGroupConversation(
-            participantIds: captureAny(named: 'participantIds'),
-            participantDisplayNames: captureAny(
-              named: 'participantDisplayNames',
-            ),
-            participantAvatarUrls: captureAny(named: 'participantAvatarUrls'),
-            title: title,
-            creatorId: 'test-user-id',
-          ),
-        ).captured;
-
-        final capturedParticipantIds = capturedCall[0] as List<String>;
-        expect(capturedParticipantIds, contains('test-user-id'));
-      });
-
+      // BUT-1838: createGroupConversation now delegates to
+      // ChatGroupRepository.createGroup (the createChatGroup callable) —
+      // mockMessagingRepo.createGroupConversation no longer exists to stub.
       test(
-        'should not mutate the callers participant maps when adding current user',
+        'should create group conversation via ChatGroupRepository',
         () async {
-          // Bug 29: createGroupConversation used to add the current user
-          // directly into the caller-owned maps as a side effect.
-          const participantIds = [
-            'user-1',
-            'user-2',
-          ]; // current user not included
-          final callerDisplayNames = <String, String>{
-            'user-1': 'User One',
-            'user-2': 'User Two',
-          };
-          final callerAvatarUrls = <String, String?>{
-            'user-1': null,
-            'user-2': null,
-          };
-          final displayNamesSnapshot = Map<String, String>.from(
-            callerDisplayNames,
-          );
-          final avatarUrlsSnapshot = Map<String, String?>.from(
-            callerAvatarUrls,
-          );
+          // Arrange
+          const participantIds = ['user-1', 'user-2', 'user-3'];
+          const title = 'Recipe Planning Group';
+          const conversationId = 'group-conv-123';
 
           when(
-            () => mockMessagingRepo.createGroupConversation(
-              participantIds: any(named: 'participantIds'),
-              participantDisplayNames: any(named: 'participantDisplayNames'),
-              participantAvatarUrls: any(named: 'participantAvatarUrls'),
-              title: any(named: 'title'),
-              creatorId: 'test-user-id',
+            () => mockChatGroupRepo.createGroup(
+              name: title,
+              memberIds: any(named: 'memberIds'),
             ),
-          ).thenAnswer((_) async => 'group-conv-no-mutation');
+          ).thenAnswer((_) async => conversationId);
 
           // Act
-          await messagingService.createGroupConversation(
+          final result = await messagingService.createGroupConversation(
             participantIds: participantIds,
-            participantDisplayNames: callerDisplayNames,
-            participantAvatarUrls: callerAvatarUrls,
-            title: 'Group Chat',
+            participantDisplayNames: const {},
+            participantAvatarUrls: const {},
+            title: title,
           );
 
-          // Assert — the caller's maps are untouched (no current-user key added).
-          expect(callerDisplayNames, equals(displayNamesSnapshot));
-          expect(callerAvatarUrls, equals(avatarUrlsSnapshot));
-          expect(callerDisplayNames.containsKey('test-user-id'), isFalse);
-          expect(callerAvatarUrls.containsKey('test-user-id'), isFalse);
+          // Assert
+          expect(result, equals(conversationId));
+          verify(
+            () => mockChatGroupRepo.createGroup(
+              name: title,
+              memberIds: any(named: 'memberIds'),
+            ),
+          ).called(1);
+        },
+      );
 
-          // ...but the repository still received the current user merged in.
+      test(
+        'strips the current user from memberIds — the callable adds the '
+        'caller server-side',
+        () async {
+          // Arrange
+          const participantIds = ['user-1', 'test-user-id', 'user-2'];
+          const title = 'Group Chat';
+          const conversationId = 'group-conv-456';
+
+          when(
+            () => mockChatGroupRepo.createGroup(
+              name: title,
+              memberIds: captureAny(named: 'memberIds'),
+            ),
+          ).thenAnswer((_) async => conversationId);
+
+          // Act
+          final result = await messagingService.createGroupConversation(
+            participantIds: participantIds,
+            participantDisplayNames: const {},
+            participantAvatarUrls: const {},
+            title: title,
+          );
+
+          // Assert
+          expect(result, equals(conversationId));
           final captured = verify(
-            () => mockMessagingRepo.createGroupConversation(
-              participantIds: any(named: 'participantIds'),
-              participantDisplayNames: captureAny(
-                named: 'participantDisplayNames',
-              ),
-              participantAvatarUrls: captureAny(named: 'participantAvatarUrls'),
-              title: any(named: 'title'),
-              creatorId: 'test-user-id',
+            () => mockChatGroupRepo.createGroup(
+              name: title,
+              memberIds: captureAny(named: 'memberIds'),
             ),
           ).captured;
-          final sentDisplayNames = captured[0] as Map<String, String>;
-          expect(sentDisplayNames.containsKey('test-user-id'), isTrue);
+          final sentMemberIds = captured.single as List<String>;
+          expect(sentMemberIds, isNot(contains('test-user-id')));
+          expect(sentMemberIds, containsAll(['user-1', 'user-2']));
         },
       );
 
@@ -959,77 +872,13 @@ void main() {
       });
     });
 
-    group('Participant Management', () {
-      test('should add participants to group conversation', () async {
-        // Arrange
-        const conversationId = 'conv-group-add';
-        final participantIds = ['new-user-123', 'new-user-456'];
-        final participantDisplayNames = {
-          'new-user-123': 'New User 1',
-          'new-user-456': 'New User 2',
-        };
-        final participantAvatarUrls = {
-          'new-user-123': 'https://example.com/new1.jpg',
-          'new-user-456': 'https://example.com/new2.jpg',
-        };
-
-        when(
-          () => mockMessagingRepo.addParticipants(
-            conversationId: conversationId,
-            participantIds: participantIds,
-            participantDisplayNames: participantDisplayNames,
-            participantAvatarUrls: participantAvatarUrls,
-          ),
-        ).thenAnswer((_) async {});
-
-        // Act
-        await messagingService.addParticipantsToGroup(
-          conversationId: conversationId,
-          participantIds: participantIds,
-          participantDisplayNames: participantDisplayNames,
-          participantAvatarUrls: participantAvatarUrls,
-        );
-
-        // Assert
-        verify(
-          () => mockMessagingRepo.addParticipants(
-            conversationId: conversationId,
-            participantIds: participantIds,
-            participantDisplayNames: participantDisplayNames,
-            participantAvatarUrls: participantAvatarUrls,
-          ),
-        ).called(1);
-      });
-
-      test('should remove participant from group conversation', () async {
-        // Arrange
-        const conversationId = 'conv-group-remove';
-        const participantId = 'remove-user-123';
-
-        when(
-          () => mockMessagingRepo.removeParticipant(
-            conversationId: conversationId,
-            participantId: participantId,
-          ),
-        ).thenAnswer((_) async {});
-
-        // Act
-        await messagingService.removeParticipantFromGroup(
-          conversationId: conversationId,
-          participantId: participantId,
-        );
-
-        // Assert
-        verify(
-          () => mockMessagingRepo.removeParticipant(
-            conversationId: conversationId,
-            participantId: participantId,
-          ),
-        ).called(1);
-      });
-
-      // Note: Leave conversation functionality is handled via removeParticipantFromGroup
-    });
+    // BUT-1838: `addParticipantsToGroup`/`removeParticipantFromGroup` are
+    // removed from `MessagingService` — group membership changes now go
+    // through `ChatGroupRepository.addMembers`/`removeMember` directly (the
+    // `addChatGroupMembers`/`removeChatGroupMember` callables), called from
+    // `GroupDetailViewModel`/`ConversationsViewModel`, not through this
+    // service. See `group_detail_viewmodel_test.dart` and
+    // `conversations_viewmodel_test.dart` for the replacement coverage.
 
     group('Error Handling', () {
       test('should require authentication for sending messages', () async {
@@ -1298,17 +1147,15 @@ void main() {
 
     group('Conversation Management Errors', () {
       test(
-        'should handle creating conversation with invalid participants',
+        'should surface a rejection from ChatGroupRepository.createGroup',
         () async {
-          // Arrange
+          // Arrange — the callable, not this service, enforces the member
+          // minimum/cap (BUT-1838); the service just rethrows what it gets.
           final participantIds = <String>[]; // Empty participants list
           when(
-            () => mockMessagingRepo.createGroupConversation(
-              participantIds: any(named: 'participantIds'),
-              participantDisplayNames: any(named: 'participantDisplayNames'),
-              participantAvatarUrls: any(named: 'participantAvatarUrls'),
-              title: any(named: 'title'),
-              creatorId: any(named: 'creatorId'),
+            () => mockChatGroupRepo.createGroup(
+              name: any(named: 'name'),
+              memberIds: any(named: 'memberIds'),
             ),
           ).thenAnswer(
             (_) async =>
@@ -1357,93 +1204,10 @@ void main() {
         );
       });
 
-      test('should handle leaving conversation as last admin', () async {
-        // Arrange
-        const conversationId = 'conv-admin';
-        const userId = 'test-user-id';
-        when(
-          () => mockMessagingRepo.removeParticipant(
-            conversationId: conversationId,
-            participantId: userId,
-          ),
-        ).thenAnswer(
-          (_) async => throw PermissionDeniedException(
-            'Cannot leave: You are the only admin',
-          ),
-        );
-
-        // Act & Assert
-        await expectLater(
-          messagingService.removeParticipantFromGroup(
-            conversationId: conversationId,
-            participantId: 'test-user-id',
-          ),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
-
-      test('should handle adding duplicate participants', () async {
-        // Arrange
-        const conversationId = 'conv-duplicate';
-        final participantIds = ['user-1', 'user-1']; // Duplicate user
-        when(
-          () => mockMessagingRepo.addParticipants(
-            conversationId: conversationId,
-            participantIds: participantIds,
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          ),
-        ).thenAnswer(
-          (_) async => throw ValidationException('Duplicate participant IDs'),
-        );
-
-        // Act & Assert
-        await expectLater(
-          messagingService.addParticipantsToGroup(
-            conversationId: conversationId,
-            participantIds: participantIds,
-            participantDisplayNames: {'user-1': 'User One'},
-            participantAvatarUrls: {},
-          ),
-          throwsA(isA<ValidationException>()),
-        );
-      });
-
-      test(
-        'should handle conversation creation with too many participants',
-        () async {
-          // Arrange
-          final participantIds = List.generate(
-            101,
-            (i) => 'user-$i',
-          ); // 101 users
-          when(
-            () => mockMessagingRepo.createGroupConversation(
-              participantIds: any(named: 'participantIds'),
-              participantDisplayNames: any(named: 'participantDisplayNames'),
-              participantAvatarUrls: any(named: 'participantAvatarUrls'),
-              title: any(named: 'title'),
-              creatorId: any(named: 'creatorId'),
-            ),
-          ).thenAnswer(
-            (_) async =>
-                throw ValidationException('Maximum 100 participants allowed'),
-          );
-
-          // Act & Assert
-          await expectLater(
-            messagingService.createGroupConversation(
-              participantIds: participantIds,
-              participantDisplayNames: {
-                for (final id in participantIds) id: 'User $id',
-              },
-              participantAvatarUrls: {},
-              title: 'Large Group',
-            ),
-            throwsA(isA<ValidationException>()),
-          );
-        },
-      );
+      // BUT-1838: leaving/removing a member and adding participants are
+      // removed from MessagingService — those tests moved to
+      // group_detail_viewmodel_test.dart and conversations_viewmodel_test.dart,
+      // which exercise ChatGroupRepository.removeMember/addMembers directly.
     });
 
     group('Real-time Messaging Errors', () {
@@ -1692,48 +1456,8 @@ void main() {
         expect(callCount, greaterThanOrEqualTo(1));
       });
 
-      test('should handle concurrent participant additions', () async {
-        // Arrange
-        const conversationId = 'conv-add-concurrent';
-        var addCount = 0;
-
-        when(
-          () => mockMessagingRepo.addParticipants(
-            conversationId: conversationId,
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          ),
-        ).thenAnswer((_) async {
-          addCount++;
-          if (addCount > 1) {
-            throw Exception('Participants already being modified');
-          }
-        });
-
-        // Act
-        final future1 = messagingService
-            .addParticipantsToGroup(
-              conversationId: conversationId,
-              participantIds: ['user-a'],
-              participantDisplayNames: {'user-a': 'User A'},
-              participantAvatarUrls: {},
-            )
-            .catchError((_) => null);
-
-        final future2 = messagingService
-            .addParticipantsToGroup(
-              conversationId: conversationId,
-              participantIds: ['user-b'],
-              participantDisplayNames: {'user-b': 'User B'},
-              participantAvatarUrls: {},
-            )
-            .catchError((_) => null);
-
-        // Assert
-        await Future.wait<void>([future1, future2]);
-        expect(addCount, greaterThanOrEqualTo(2));
-      });
+      // BUT-1838: addParticipantsToGroup is removed from MessagingService —
+      // see the note in 'Conversation Management Errors' above.
 
       test('should handle concurrent message deletion', () async {
         // Arrange

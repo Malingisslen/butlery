@@ -104,6 +104,22 @@ class ChatViewModel extends ChangeNotifier
   Message? get replyToMessage => _replyToMessage;
   bool get hasReplyTarget => _replyToMessage != null;
 
+  /// The cut-off the message query must carry — the caller's raw `memberSince`
+  /// stamp for a group conversation, null for a direct chat.
+  ///
+  /// Non-null for FOUNDERS too, deliberately: it has to mirror
+  /// `firestore.rules`, and the rule filters every group member. The divider is
+  /// a different question — see [joinedLaterAt].
+  DateTime? get historyStart => currentUserId != null
+      ? _conversation?.historyQueryStartFor(currentUserId!)
+      : null;
+
+  /// When this member joined, if they joined AFTER the group was created —
+  /// the divider's question, not the query's. See [Conversation.joinedLaterAt].
+  DateTime? get joinedLaterAt => currentUserId != null
+      ? _conversation?.joinedLaterAt(currentUserId!)
+      : null;
+
   String get conversationTitle {
     if (_conversation == null) return AppLocale.current.commonLoading;
     if (currentUserId == null) {
@@ -153,9 +169,20 @@ class ChatViewModel extends ChangeNotifier
     AppLogger.info(
       '🔍 [ChatViewModel] Initializing chat for conversationId: $conversationId',
     );
-    _loadConversation();
-    _loadMessages();
     _subscribeToTypingIndicators();
+    unawaited(_loadConversationThenMessages());
+  }
+
+  /// The conversation must be loaded before the message stream opens: a
+  /// group conversation's `historyQueryStartFor` cut-off comes from it, and
+  /// `firestore.rules` refuses any message sent before that member joined —
+  /// a query returning even one refused message fails ENTIRELY, not
+  /// partially (BUT-1838). When [initialConversation] was passed in this
+  /// resolves synchronously (no visible delay); only a cold load waits.
+  Future<void> _loadConversationThenMessages() async {
+    await _loadConversation();
+    if (_isDisposed) return;
+    _loadMessages();
   }
 
   Future<void> _loadConversation() async {
@@ -165,6 +192,18 @@ class ChatViewModel extends ChangeNotifier
       try {
         _conversation = await _messagingService.getConversation(conversationId);
         if (_isDisposed) return;
+        // A NULL is a failure here, not an empty result, and saying so is what
+        // stops the screen hanging. Every layer below swallows: the query
+        // module catches and returns null, then `MessagingService` catches and
+        // returns null again — so a permission-denied, an offline read or a
+        // deleted document all arrive as null with no exception. `_loadMessages`
+        // and `ChatMessageStream` both WAIT for this value before opening a
+        // query (they must — an unfiltered group query is refused outright), so
+        // a null that reports neither success nor error leaves a spinner with
+        // no error text and no retry, forever.
+        if (_conversation == null) {
+          _setError(AppLocale.current.errorCouldNotLoadConversation);
+        }
         _safeNotifyListeners();
       } catch (e) {
         if (_isDisposed) return;
@@ -232,6 +271,7 @@ class ChatViewModel extends ChangeNotifier
       _messagesSubscription = _messagingService
           .getConversationMessages(
             conversationId: conversationId,
+            historyStart: historyStart,
             limit: 50,
           )
           .listen(

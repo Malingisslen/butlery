@@ -6,6 +6,7 @@
 import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart'
     as auth_repo;
@@ -49,6 +50,7 @@ import 'package:uuid/uuid.dart';
 /// ```
 class MessagingService extends BaseService with StreamManagementMixin {
   final MessagingRepository _messagingRepository;
+  final ChatGroupRepository _chatGroupRepository;
   final auth_repo.AuthRepository _authRepository;
   late final MessageSendingOperations _sendingOps;
   late final ConversationActionOperations _actionOps;
@@ -64,9 +66,11 @@ class MessagingService extends BaseService with StreamManagementMixin {
 
   MessagingService({
     required MessagingRepository messagingRepository,
+    required ChatGroupRepository chatGroupRepository,
     required auth_repo.AuthRepository authRepository,
     required MessageReactionsService reactionsService,
   }) : _messagingRepository = messagingRepository,
+       _chatGroupRepository = chatGroupRepository,
        _authRepository = authRepository,
        _reactionsService = reactionsService {
     _sendingOps = MessageSendingOperations(
@@ -146,7 +150,18 @@ class MessagingService extends BaseService with StreamManagementMixin {
     }
   }
 
-  /// Create a new group conversation
+  /// Create a new group conversation.
+  ///
+  /// BUT-1838: delegates to `ChatGroupRepository.createGroup` — the
+  /// `createChatGroup` callable — which is what lets the minor-membership
+  /// gate run BEFORE anyone is seated, not once after the conversation
+  /// already exists. [participantDisplayNames] and [participantAvatarUrls]
+  /// are accepted for call-site compatibility but no longer sent anywhere:
+  /// the callable resolves names/avatars server-side from `public_profiles`,
+  /// so the person creating a group can no longer choose what everyone
+  /// else's name looks like in it. The callable also adds the caller
+  /// automatically, so [participantIds] is filtered down to the other
+  /// members before the call.
   Future<String> createGroupConversation({
     required List<String> participantIds,
     required Map<String, String> participantDisplayNames,
@@ -159,25 +174,13 @@ class MessagingService extends BaseService with StreamManagementMixin {
         throw AuthenticationException('User must be authenticated');
       }
 
-      // Add current user to participants if not already included. Copy the
-      // caller's maps first so adding the current user never mutates the
-      // caller's passed-in collections as a side effect.
-      final allParticipantIds = [...participantIds];
-      final displayNames = Map<String, String>.from(participantDisplayNames);
-      final avatarUrls = Map<String, String?>.from(participantAvatarUrls);
-      if (!allParticipantIds.contains(currentUser.uid)) {
-        allParticipantIds.add(currentUser.uid);
-        displayNames[currentUser.uid] =
-            currentUser.displayName ?? AppLocale.current.displayUnknownUser;
-        avatarUrls[currentUser.uid] = currentUser.photoURL;
-      }
+      final memberIds = participantIds
+          .where((id) => id != currentUser.uid)
+          .toList();
 
-      final conversationId = await _messagingRepository.createGroupConversation(
-        participantIds: allParticipantIds,
-        participantDisplayNames: displayNames,
-        participantAvatarUrls: avatarUrls,
-        title: title,
-        creatorId: currentUser.uid,
+      final conversationId = await _chatGroupRepository.createGroup(
+        name: title,
+        memberIds: memberIds,
       );
 
       AppLogger.success('✅ Group conversation created: $conversationId');
@@ -204,11 +207,13 @@ class MessagingService extends BaseService with StreamManagementMixin {
   /// retroactively filtered out before reaching the UI.
   Stream<List<Message>> getConversationMessages({
     required String conversationId,
+    DateTime? historyStart,
     int limit = 50,
   }) {
     return _messagingRepository
         .getConversationMessages(
           conversationId: conversationId,
+          historyStart: historyStart,
           limit: limit,
         )
         .asyncMap(_filterBlocked);
@@ -217,12 +222,14 @@ class MessagingService extends BaseService with StreamManagementMixin {
   /// Get messages for a conversation with pagination support
   Future<List<Message>> getConversationMessagesPage({
     required String conversationId,
+    DateTime? historyStart,
     int limit = 50,
     DateTime? startAfter,
   }) async {
     try {
       final messages = await _messagingRepository.getConversationMessagesPage(
         conversationId: conversationId,
+        historyStart: historyStart,
         limit: limit,
         startAfter: startAfter,
       );
@@ -369,7 +376,10 @@ class MessagingService extends BaseService with StreamManagementMixin {
 
   /// Delete all messages in a conversation (chat clear functionality)
   Future<void> deleteAllMessages(String conversationId) async =>
-      _managementOps.deleteAllMessages(conversationId);
+      _managementOps.deleteAllMessages(
+        conversationId,
+        historyStart: await _historyStartFor(conversationId),
+      );
 
   /// Delete a conversation and all its messages
   Future<void> deleteConversation(String conversationId) async =>
@@ -462,7 +472,21 @@ class MessagingService extends BaseService with StreamManagementMixin {
   Future<void> markAllConversationsAsRead() async => _actionOps
       .markAllConversationsAsRead(getMyConversations, markConversationAsRead);
 
-  /// Search messages in conversation
+  /// The caller's history cut-off for a conversation, or null when there is
+  /// none (a direct chat, or a founding member).
+  ///
+  /// `firestore.rules` refuses messages sent before a member joined a GROUP,
+  /// and a query returning one refused document fails entirely — so every
+  /// message query in this service must carry this, and the ones that read the
+  /// whole thread (search, clear-chat, delete-conversation) must carry it most,
+  /// because their failure mode is a silent empty result.
+  Future<DateTime?> _historyStartFor(String conversationId) async {
+    final userId = _authRepository.currentUserId;
+    if (userId == null) return null;
+    final conversation = await getConversation(conversationId);
+    return conversation?.historyQueryStartFor(userId);
+  }
+
   Future<List<Message>> searchMessages({
     required String conversationId,
     required String query,
@@ -474,6 +498,10 @@ class MessagingService extends BaseService with StreamManagementMixin {
       return await _messagingRepository.searchMessages(
         conversationId: conversationId,
         query: query.trim(),
+        // Resolved here rather than asked of the caller: this is the layer
+        // that can, and a caller who forgets it gets an empty result rather
+        // than an error (BUT-1838).
+        historyStart: await _historyStartFor(conversationId),
         limit: limit,
       );
     } catch (e) {
@@ -510,27 +538,11 @@ class MessagingService extends BaseService with StreamManagementMixin {
     }
   }
 
-  /// Add participants to group conversation
-  Future<void> addParticipantsToGroup({
-    required String conversationId,
-    required List<String> participantIds,
-    required Map<String, String> participantDisplayNames,
-    required Map<String, String?> participantAvatarUrls,
-  }) async => _managementOps.addParticipantsToGroup(
-    conversationId: conversationId,
-    participantIds: participantIds,
-    participantDisplayNames: participantDisplayNames,
-    participantAvatarUrls: participantAvatarUrls,
-  );
-
-  /// Remove participant from group conversation
-  Future<void> removeParticipantFromGroup({
-    required String conversationId,
-    required String participantId,
-  }) async => _managementOps.removeParticipantFromGroup(
-    conversationId: conversationId,
-    participantId: participantId,
-  );
+  // BUT-1838: addParticipantsToGroup/removeParticipantFromGroup are removed
+  // — group membership changes go through ChatGroupRepository.addMembers/
+  // removeMember directly, called from GroupDetailViewModel and
+  // ConversationsViewModel. Neither of those old client write paths ever
+  // succeeded against firestore.rules.
 
   /// Update group conversation title
   Future<void> updateGroupTitle({

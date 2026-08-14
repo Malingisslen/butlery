@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/group_detail_viewmodel.dart';
@@ -6,6 +7,7 @@ import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/models/messaging/chat_group.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/di/di_container.dart';
@@ -14,6 +16,8 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/mocks/service_mocks.dart'
+    show MockChatGroupRepository;
 
 // Mock services
 class MockMessagingService extends Mock implements MessagingService {}
@@ -28,10 +32,12 @@ void main() {
     late MockMessagingService mockMessagingService;
     late MockUnifiedFriendsService mockFriendsService;
     late MockAuthRepository mockAuthRepository;
+    late MockChatGroupRepository mockChatGroupRepository;
     late StreamController<List<Conversation>> conversationsStreamController;
 
     // Test data
     const testConversationId = 'test-conversation-123';
+    const testGroupId = 'chat-group-123';
     const testUserId = 'current-user-123';
     const testMember1Id = 'member-1';
     const testMember2Id = 'member-2';
@@ -55,7 +61,29 @@ void main() {
       updatedAt: DateTime(2025, 1, 1),
       title: 'Testgrupp',
       isGroup: true,
-      metadata: {'creatorId': testUserId},
+      groupId: testGroupId,
+    );
+
+    ChatGroup buildChatGroup({required List<String> adminIds}) => ChatGroup(
+      id: testGroupId,
+      name: 'Testgrupp',
+      memberIds: const [testUserId, testMember1Id, testMember2Id],
+      adminIds: adminIds,
+      memberDisplayNames: const {
+        testUserId: 'Current User',
+        testMember1Id: 'Anna',
+        testMember2Id: 'Erik',
+      },
+      memberAvatarUrls: const {},
+      conversationId: testConversationId,
+      createdBy: testUserId,
+      createdAt: DateTime(2025, 1, 1),
+      updatedAt: DateTime(2025, 1, 1),
+    );
+
+    final testChatGroupAdmin = buildChatGroup(adminIds: const [testUserId]);
+    final testChatGroupNonAdmin = buildChatGroup(
+      adminIds: const [testMember1Id],
     );
 
     final testFriends = [
@@ -90,6 +118,7 @@ void main() {
       mockMessagingService = MockMessagingService();
       mockFriendsService = MockUnifiedFriendsService();
       mockAuthRepository = MockAuthRepository();
+      mockChatGroupRepository = MockChatGroupRepository();
 
       // Setup stream controller for conversations
       conversationsStreamController =
@@ -117,6 +146,10 @@ void main() {
         () => mockMessagingService.getConversation(testConversationId),
       ).thenAnswer((_) async => testGroupConversation);
       when(() => mockFriendsService.friends).thenReturn(testFriends);
+      // Default: the signed-in test user is admin.
+      when(
+        () => mockChatGroupRepository.watchGroup(testGroupId),
+      ).thenAnswer((_) => Stream.value(testChatGroupAdmin));
     });
 
     tearDown(() async {
@@ -140,6 +173,7 @@ void main() {
         conversationId: testConversationId,
         messagingService: mockMessagingService,
         friendsService: mockFriendsService,
+        chatGroupRepository: mockChatGroupRepository,
       );
     }
 
@@ -225,6 +259,48 @@ void main() {
           reason: 'Should keep cached conversation',
         );
       });
+
+      test('should watch the chat group once a groupId is known', () async {
+        // Act
+        viewModel = createViewModel();
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        // Assert
+        verify(() => mockChatGroupRepository.watchGroup(testGroupId)).called(1);
+        expect(viewModel.chatGroup, equals(testChatGroupAdmin));
+      });
+
+      test(
+        'watches the group ONCE however many conversation updates arrive',
+        () async {
+          // `ChatGroupWatch.sync` runs on EVERY conversation-stream emission,
+          // and a chat list refreshes often. Its `_watchedGroupId` bookkeeping
+          // is what stops that becoming a fresh `chat_groups` document
+          // listener per update — a per-emission Firestore cost nothing else
+          // in this suite can see: the test above verifies `.called(1)` but
+          // never emits, and the emitting tests never verify.
+          viewModel = createViewModel();
+          await Future.delayed(const Duration(milliseconds: 100));
+
+          conversationsStreamController.add([testGroupConversation]);
+          await Future.delayed(const Duration(milliseconds: 20));
+          conversationsStreamController.add([
+            testGroupConversation.copyWith(title: 'Bytt namn'),
+          ]);
+          await Future.delayed(const Duration(milliseconds: 20));
+
+          expect(
+            viewModel.conversation?.title,
+            'Bytt namn',
+            reason:
+                'premise: both updates really reached the ViewModel, so '
+                'sync() really ran three times in total',
+          );
+          verify(() => mockChatGroupRepository.watchGroup(testGroupId)).called(
+            1,
+          );
+        },
+      );
     });
 
     // ===== GROUP INFORMATION =====
@@ -319,28 +395,24 @@ void main() {
 
     group('Admin Permissions', () {
       test(
-        'should identify current user as admin when they are creator',
+        'should identify current user as admin when they are in adminIds',
         () async {
           // Arrange
           viewModel = createViewModel();
           await Future.delayed(const Duration(milliseconds: 100));
 
           // Act & Assert
-          expect(viewModel.isAdmin, true, reason: 'Current user is creator');
+          expect(viewModel.isAdmin, true, reason: 'Current user is admin');
         },
       );
 
       test(
-        'should identify current user as not admin when they are not creator',
+        'should identify current user as not admin when they are not in adminIds',
         () async {
           // Arrange
-          final nonAdminConversation = testGroupConversation.copyWith(
-            metadata: {'creatorId': testMember1Id},
-          );
-
           when(
-            () => mockMessagingService.getConversation(testConversationId),
-          ).thenAnswer((_) async => nonAdminConversation);
+            () => mockChatGroupRepository.watchGroup(testGroupId),
+          ).thenAnswer((_) => Stream.value(testChatGroupNonAdmin));
 
           viewModel = createViewModel();
           await Future.delayed(const Duration(milliseconds: 100));
@@ -349,7 +421,7 @@ void main() {
           expect(
             viewModel.isAdmin,
             false,
-            reason: 'Current user is not creator',
+            reason: 'Current user is not admin',
           );
         },
       );
@@ -361,6 +433,22 @@ void main() {
         // Act & Assert
         expect(viewModel.isAdmin, false);
       });
+
+      test(
+        'should return false for isAdmin while the group snapshot has not arrived',
+        () async {
+          // Arrange — watchGroup never emits.
+          when(
+            () => mockChatGroupRepository.watchGroup(testGroupId),
+          ).thenAnswer((_) => const Stream.empty());
+
+          viewModel = createViewModel();
+          await Future.delayed(const Duration(milliseconds: 100));
+
+          // Act & Assert
+          expect(viewModel.isAdmin, false);
+        },
+      );
 
       test('should return false for isAdmin when not authenticated', () async {
         // Arrange - clear userId on PermissionService (which the ViewModel actually uses)
@@ -386,23 +474,17 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(
-          () => mockMessagingService.addParticipantsToGroup(
-            conversationId: any(named: 'conversationId'),
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
+          () => mockChatGroupRepository.addMembers(
+            groupId: testGroupId,
+            userIds: [testMember3Id],
           ),
-        ).thenAnswer((_) async => {});
+        ).thenAnswer((_) async => [testMember3Id]);
 
         // Act
-        final result = await viewModel.addMembers(
-          [testMember3Id],
-          {testMember3Id: 'Maria'},
-          {testMember3Id: null},
-        );
+        final result = await viewModel.addMembers([testMember3Id]);
 
         // Assert
-        expect(result, true, reason: 'Add members should succeed');
+        expect(result, equals(1), reason: 'One member actually seated');
         expect(
           viewModel.isAddingMembers,
           false,
@@ -411,11 +493,9 @@ void main() {
         expect(viewModel.error, null, reason: 'No error should occur');
 
         verify(
-          () => mockMessagingService.addParticipantsToGroup(
-            conversationId: testConversationId,
-            participantIds: [testMember3Id],
-            participantDisplayNames: {testMember3Id: 'Maria'},
-            participantAvatarUrls: {testMember3Id: null},
+          () => mockChatGroupRepository.addMembers(
+            groupId: testGroupId,
+            userIds: [testMember3Id],
           ),
         ).called(1);
       });
@@ -425,22 +505,16 @@ void main() {
         viewModel = createViewModel();
         await Future.delayed(const Duration(milliseconds: 100));
 
-        final completer = Completer<void>();
+        final completer = Completer<List<String>>();
         when(
-          () => mockMessagingService.addParticipantsToGroup(
-            conversationId: any(named: 'conversationId'),
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
+          () => mockChatGroupRepository.addMembers(
+            groupId: any(named: 'groupId'),
+            userIds: any(named: 'userIds'),
           ),
         ).thenAnswer((_) => completer.future);
 
         // Act
-        final addFuture = viewModel.addMembers(
-          [testMember3Id],
-          {testMember3Id: 'Maria'},
-          null,
-        );
+        final addFuture = viewModel.addMembers([testMember3Id]);
 
         await Future.delayed(const Duration(milliseconds: 10));
 
@@ -448,37 +522,117 @@ void main() {
         expect(viewModel.isAddingMembers, true);
 
         // Complete the operation
-        completer.complete();
+        completer.complete([testMember3Id]);
         await addFuture;
 
         expect(viewModel.isAddingMembers, false);
       });
 
-      test('should handle add members failure', () async {
+      test('should handle generic add members failure', () async {
         // Arrange
         viewModel = createViewModel();
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(
-          () => mockMessagingService.addParticipantsToGroup(
-            conversationId: any(named: 'conversationId'),
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
+          () => mockChatGroupRepository.addMembers(
+            groupId: any(named: 'groupId'),
+            userIds: any(named: 'userIds'),
           ),
         ).thenThrow(Exception('Failed to add members'));
 
         // Act
-        final result = await viewModel.addMembers(
-          [testMember3Id],
-          {testMember3Id: 'Maria'},
-          null,
-        );
+        final result = await viewModel.addMembers([testMember3Id]);
 
         // Assert
-        expect(result, false, reason: 'Should fail');
-        expect(viewModel.error, contains('Kunde inte lägga till medlemmar'));
+        expect(result, isNull, reason: 'Should fail');
+        expect(
+          viewModel.error,
+          contains('Det gick inte att lägga till medlemmar'),
+        );
         expect(viewModel.isAddingMembers, false);
+      });
+
+      test(
+        'should surface blocked members without saying why (minor gate)',
+        () async {
+          // Arrange
+          viewModel = createViewModel();
+          await Future.delayed(const Duration(milliseconds: 100));
+
+          when(
+            () => mockChatGroupRepository.addMembers(
+              groupId: any(named: 'groupId'),
+              userIds: any(named: 'userIds'),
+            ),
+          ).thenThrow(
+            FirebaseFunctionsException(
+              code: 'permission-denied',
+              message: 'Some people could not be added to this group.',
+              details: const {
+                'blockedUserIds': <String>[testMember3Id],
+              },
+            ),
+          );
+
+          // Act
+          final result = await viewModel.addMembers([testMember3Id]);
+
+          // Assert — the neutral wording, never a reason.
+          expect(result, isNull);
+          expect(
+            viewModel.error,
+            contains('kunde inte läggas till'),
+          );
+          expect(viewModel.error, isNot(contains('minderårig')));
+        },
+      );
+
+      test('should surface rate-limit wording on resource-exhausted', () async {
+        // Arrange
+        viewModel = createViewModel();
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        when(
+          () => mockChatGroupRepository.addMembers(
+            groupId: any(named: 'groupId'),
+            userIds: any(named: 'userIds'),
+          ),
+        ).thenThrow(
+          FirebaseFunctionsException(
+            code: 'resource-exhausted',
+            message: 'Slow down.',
+            details: const {'retryAfterSeconds': 30},
+          ),
+        );
+
+        // Act
+        final result = await viewModel.addMembers([testMember3Id]);
+
+        // Assert
+        expect(result, isNull);
+        expect(viewModel.error, contains('30'));
+      });
+
+      test('should not add members when not admin', () async {
+        // Arrange
+        when(
+          () => mockChatGroupRepository.watchGroup(testGroupId),
+        ).thenAnswer((_) => Stream.value(testChatGroupNonAdmin));
+
+        viewModel = createViewModel();
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        // Act
+        final result = await viewModel.addMembers([testMember3Id]);
+
+        // Assert
+        expect(result, isNull);
+        verifyNever(
+          () => mockChatGroupRepository.addMembers(
+            groupId: any(named: 'groupId'),
+            userIds: any(named: 'userIds'),
+          ),
+        );
       });
 
       test('should not add members when disposed', () async {
@@ -487,21 +641,22 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
         viewModel.dispose();
 
+        when(
+          () => mockChatGroupRepository.addMembers(
+            groupId: any(named: 'groupId'),
+            userIds: any(named: 'userIds'),
+          ),
+        ).thenAnswer((_) async => [testMember3Id]);
+
         // Act
-        final result = await viewModel.addMembers(
-          [testMember3Id],
-          {testMember3Id: 'Maria'},
-          null,
-        );
+        final result = await viewModel.addMembers([testMember3Id]);
 
         // Assert
-        expect(result, false);
+        expect(result, isNull);
         verifyNever(
-          () => mockMessagingService.addParticipantsToGroup(
-            conversationId: any(named: 'conversationId'),
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
+          () => mockChatGroupRepository.addMembers(
+            groupId: any(named: 'groupId'),
+            userIds: any(named: 'userIds'),
           ),
         );
       });
@@ -516,11 +671,11 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: testGroupId,
+            userId: testMember1Id,
           ),
-        ).thenAnswer((_) async => {});
+        ).thenAnswer((_) async {});
 
         // Act
         final result = await viewModel.removeMember(testMember1Id);
@@ -531,22 +686,18 @@ void main() {
         expect(viewModel.error, null);
 
         verify(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: testConversationId,
-            participantId: testMember1Id,
+          () => mockChatGroupRepository.removeMember(
+            groupId: testGroupId,
+            userId: testMember1Id,
           ),
         ).called(1);
       });
 
       test('should not remove member when user is not admin', () async {
         // Arrange
-        final nonAdminConversation = testGroupConversation.copyWith(
-          metadata: {'creatorId': testMember1Id},
-        );
-
         when(
-          () => mockMessagingService.getConversation(testConversationId),
-        ).thenAnswer((_) async => nonAdminConversation);
+          () => mockChatGroupRepository.watchGroup(testGroupId),
+        ).thenAnswer((_) => Stream.value(testChatGroupNonAdmin));
 
         viewModel = createViewModel();
         await Future.delayed(const Duration(milliseconds: 100));
@@ -559,9 +710,9 @@ void main() {
         expect(viewModel.error, contains('Endast administratör'));
 
         verifyNever(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
           ),
         );
       });
@@ -579,9 +730,9 @@ void main() {
         expect(viewModel.error, contains('Lämna grupp'));
 
         verifyNever(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
           ),
         );
       });
@@ -592,9 +743,9 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
           ),
         ).thenThrow(Exception('Failed to remove'));
 
@@ -614,9 +765,9 @@ void main() {
 
         final completer = Completer<void>();
         when(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
           ),
         ).thenAnswer((_) => completer.future);
 
@@ -643,11 +794,11 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: testGroupId,
+            userId: null,
           ),
-        ).thenAnswer((_) async => {});
+        ).thenAnswer((_) async {});
 
         // Act
         final result = await viewModel.leaveGroup();
@@ -657,9 +808,9 @@ void main() {
         expect(viewModel.isLeavingGroup, false);
 
         verify(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: testConversationId,
-            participantId: testUserId,
+          () => mockChatGroupRepository.removeMember(
+            groupId: testGroupId,
+            userId: null,
           ),
         ).called(1);
       });
@@ -671,9 +822,9 @@ void main() {
 
         final completer = Completer<void>();
         when(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
           ),
         ).thenAnswer((_) => completer.future);
 
@@ -696,9 +847,9 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
           ),
         ).thenThrow(Exception('Failed to leave'));
 
@@ -728,9 +879,9 @@ void main() {
         expect(result, false);
 
         verifyNever(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
           ),
         );
       });
@@ -793,13 +944,9 @@ void main() {
 
       test('should not update title when user is not admin', () async {
         // Arrange
-        final nonAdminConversation = testGroupConversation.copyWith(
-          metadata: {'creatorId': testMember1Id},
-        );
-
         when(
-          () => mockMessagingService.getConversation(testConversationId),
-        ).thenAnswer((_) async => nonAdminConversation);
+          () => mockChatGroupRepository.watchGroup(testGroupId),
+        ).thenAnswer((_) => Stream.value(testChatGroupNonAdmin));
 
         viewModel = createViewModel();
         await Future.delayed(const Duration(milliseconds: 100));
@@ -1004,6 +1151,49 @@ void main() {
         // Assert - No crash means subscription was cancelled
       });
 
+      test('cancels the chat-group listener on dispose', () async {
+        // The leak ChatGroupWatch exists for. Before BUT-1838's extraction,
+        // `dispose()` cancelled the conversation subscription and not this
+        // one, so every group screen ever opened left a live `chat_groups`
+        // document listener behind — billed forever, holding the ViewModel
+        // with it. `disposeStreamResources()` does NOT reach it: it only
+        // cancels subscriptions registered through the mixin's
+        // `addSubscription`, and this one is not.
+        //
+        // The two sibling tests above cannot see any of that. Both stub
+        // `watchGroup` with `Stream.value(...)`, which completes on its own
+        // before dispose is ever called, so there is nothing left to cancel;
+        // and neither asserts anything about it.
+        final groupController = StreamController<ChatGroup?>();
+        when(
+          () => mockChatGroupRepository.watchGroup(testGroupId),
+        ).thenAnswer((_) => groupController.stream);
+
+        viewModel = createViewModel();
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        // Positive control, in the same test and before the act: an
+        // unsubscribed watch shows `hasListener == false` too, so without
+        // this line the assertion below passes for the wrong reason.
+        expect(
+          groupController.hasListener,
+          isTrue,
+          reason: 'premise: the watch actually subscribed',
+        );
+
+        viewModel.dispose();
+
+        expect(
+          groupController.hasListener,
+          isFalse,
+          reason:
+              'a surviving listener here is one live Firestore document '
+              'listener per screen open',
+        );
+
+        await groupController.close();
+      });
+
       test('should not perform operations after dispose', () async {
         // Arrange
         viewModel = createViewModel();
@@ -1011,25 +1201,19 @@ void main() {
         viewModel.dispose();
 
         when(
-          () => mockMessagingService.addParticipantsToGroup(
-            conversationId: any(named: 'conversationId'),
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
+          () => mockChatGroupRepository.addMembers(
+            groupId: any(named: 'groupId'),
+            userIds: any(named: 'userIds'),
           ),
-        ).thenAnswer((_) async => {});
+        ).thenAnswer((_) async => [testMember3Id]);
 
         // Act
-        final result = await viewModel.addMembers(
-          [testMember3Id],
-          {testMember3Id: 'Maria'},
-          null,
-        );
+        final result = await viewModel.addMembers([testMember3Id]);
 
         // Assert
         expect(
           result,
-          false,
+          isNull,
           reason: 'Should not perform operation after dispose',
         );
       });

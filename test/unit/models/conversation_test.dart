@@ -679,6 +679,200 @@ void main() {
       });
     });
 
+    // BUT-1838. `groupId` and `memberSince` are server-owned, so copyWith has
+    // no PARAMETER for them — they are carried unconditionally. That makes
+    // them the exact shape that goes missing in a field-by-field rebuild, and
+    // the consequence is not cosmetic: with `groupId` dropped,
+    // `historyQueryStartFor` answers null, the client's message query loses its
+    // `sentAt >=` filter, and `firestore.rules` then refuses the WHOLE query
+    // rather than trimming it — the group chat stops loading entirely.
+    group('copyWith carries the server-owned group fields', () {
+      final joinedAt = DateTime.utc(2026, 3, 4, 5, 6);
+      final founderJoinedAt = DateTime.utc(2026, 1, 1);
+
+      Conversation groupConversation() => Conversation(
+        id: 'conv_group',
+        participantIds: const ['user_1', 'user_2'],
+        participantDisplayNames: const {'user_1': 'Anna', 'user_2': 'Erik'},
+        participantAvatarUrls: const {'user_1': null, 'user_2': null},
+        lastReadTimestamps: const {},
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 1),
+        isGroup: true,
+        title: 'Middagsgänget',
+        groupId: 'chat-group-1',
+        memberSince: {'user_1': founderJoinedAt, 'user_2': joinedAt},
+      );
+
+      test('survive a pin toggle — the live ConversationsViewModel path', () {
+        // `ConversationsViewModel.togglePin` rebuilds the conversation with
+        // exactly this call, optimistically, on every pin tap.
+        final original = groupConversation();
+
+        final pinned = original.copyWith(
+          isPinned: true,
+          pinnedAt: DateTime.utc(2026, 5, 5),
+        );
+
+        expect(pinned.groupId, equals('chat-group-1'));
+        expect(pinned.memberSince, equals(original.memberSince));
+        expect(pinned.historyQueryStartFor('user_2'), equals(joinedAt));
+        expect(pinned.isPinned, isTrue); // positive control: the copy happened
+      });
+
+      // BUT-1838: `createChatGroup` stamps `memberSince` for EVERY founding
+      // member, including the creator — so a bare `memberSince[uid]` lookup is
+      // non-null for the whole founding roster and would put "Du gick med här"
+      // at the top of every group chat, above "gruppen skapades". A founder's
+      // stamp is the same value the conversation's `createdAt` carries, which
+      // is what separates the two.
+      // The two methods answer DIFFERENT questions, and pinning both here is
+      // the point: the QUERY must mirror the rule for everybody (the rule
+      // filters founders too, and a reader that does not can be handed a
+      // document the rules refuse, which fails the whole query), while the
+      // DIVIDER must fire only for someone who joined later.
+      test(
+        'the query filters a founder; the divider does not show for one',
+        () {
+          final conversation = groupConversation();
+
+          expect(
+            conversation.historyQueryStartFor('user_1'),
+            equals(founderJoinedAt),
+            reason: 'the query mirrors the rule, which stamps founders too',
+          );
+          expect(
+            conversation.joinedLaterAt('user_1'),
+            isNull,
+            reason: 'no "du gick med här" above "gruppen skapades"',
+          );
+
+          expect(
+            conversation.historyQueryStartFor('user_2'),
+            equals(joinedAt),
+            reason: 'a later joiner keeps their cut-off — the control',
+          );
+          expect(
+            conversation.joinedLaterAt('user_2'),
+            equals(joinedAt),
+            reason: 'and gets the divider',
+          );
+        },
+      );
+
+      test('survive an archive toggle and a lastMessage update', () {
+        final original = groupConversation();
+
+        final archived = original.copyWith(
+          isArchived: true,
+          archivedAt: DateTime.utc(2026, 5, 6),
+        );
+        final withMessage = archived.copyWith(
+          lastMessage: Message.text(
+            conversationId: 'conv_group',
+            senderId: 'user_1',
+            senderDisplayName: 'Anna',
+            content: 'Hej',
+          ),
+          updatedAt: DateTime.utc(2026, 5, 7),
+        );
+
+        // Two hops, because a single copyWith is where a dropped field is
+        // easiest to spot and a chained rebuild is where it actually happens.
+        expect(withMessage.groupId, equals('chat-group-1'));
+        expect(withMessage.historyQueryStartFor('user_2'), equals(joinedAt));
+        expect(withMessage.isArchived, isTrue);
+        expect(withMessage.lastMessage, isNotNull);
+      });
+
+      test('a direct conversation stays direct through copyWith', () {
+        // The negative half: copyWith must not INVENT a groupId either, or a
+        // direct chat would start filtering its own history away.
+        final direct = Conversation.direct(
+          user1Id: 'user_1',
+          user1DisplayName: 'Anna',
+          user2Id: 'user_2',
+          user2DisplayName: 'Erik',
+        );
+
+        final updated = direct.copyWith(isMuted: true);
+
+        expect(updated.groupId, isNull);
+        expect(updated.memberSince, isEmpty);
+        expect(updated.historyQueryStartFor('user_1'), isNull);
+        expect(updated.isMuted, isTrue);
+      });
+    });
+
+    group('historyQueryStartFor', () {
+      final joinedAt = DateTime.utc(2026, 3, 4, 5, 6);
+
+      Conversation build({
+        String? groupId,
+        Map<String, DateTime> memberSince = const {},
+        bool isGroup = true,
+      }) => Conversation(
+        id: 'conv_history',
+        participantIds: const ['user_1', 'user_2'],
+        participantDisplayNames: const {},
+        participantAvatarUrls: const {},
+        lastReadTimestamps: const {},
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 1),
+        isGroup: isGroup,
+        groupId: groupId,
+        memberSince: memberSince,
+      );
+
+      test('returns the joining member\'s own stamp', () {
+        final conversation = build(
+          groupId: 'chat-group-1',
+          memberSince: {'user_2': joinedAt},
+        );
+
+        expect(conversation.historyQueryStartFor('user_2'), equals(joinedAt));
+      });
+
+      test('returns null for a founding member with no stamp', () {
+        final conversation = build(
+          groupId: 'chat-group-1',
+          memberSince: {'user_2': joinedAt},
+        );
+
+        // user_1 was there from the start — no cut-off, so no filter and no
+        // "Du gick med här" divider.
+        expect(conversation.historyQueryStartFor('user_1'), isNull);
+      });
+
+      test(
+        'returns null when groupId is absent even though isGroup is true '
+        'and a stamp exists',
+        () {
+          // The discriminating case for the `groupId == null ?` guard. The
+          // model doc is explicit that `isGroup` must NOT be substituted for
+          // `groupId`: `isGroup` is an ordinary client field, and the rule in
+          // firestore.rules keys on the presence of `groupId`. A conversation
+          // predating BUT-1838 has isGroup true and no groupId, and filtering
+          // its history would hide messages the rules would happily serve.
+          final legacy = build(
+            groupId: null,
+            memberSince: {'user_2': joinedAt},
+            isGroup: true,
+          );
+
+          expect(legacy.isGroup, isTrue, reason: 'premise');
+          expect(
+            legacy.memberSince['user_2'],
+            equals(joinedAt),
+            reason:
+                'premise: the stamp is present and would be returned '
+                'if the groupId guard were dropped',
+          );
+          expect(legacy.historyQueryStartFor('user_2'), isNull);
+        },
+      );
+    });
+
     group('Equality and Hashing', () {
       test('should be equal when IDs match', () {
         final conv1 = Conversation(

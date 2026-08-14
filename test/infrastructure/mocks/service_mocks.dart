@@ -19,6 +19,7 @@ import 'package:butlery/services/unified/operations/modules/recipe_discovery_ser
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 
 // Service interfaces - add as needed when interfaces are available
 // For now, these are placeholder mocks without interfaces
@@ -29,6 +30,12 @@ import 'package:butlery/models/recipe_unified.dart';
 class MockMessagesRepository extends Mock {
   // Different from MockMessagingRepository - for message content vs messaging system
 }
+
+/// BUT-1838: chat groups are read-only from the app; every mutation is a
+/// callable. Shared here so `ConversationsViewModel`, `CreateGroupConversationViewModel`
+/// and `GroupDetailViewModel` tests stub the same mock rather than each
+/// declaring their own.
+class MockChatGroupRepository extends Mock implements ChatGroupRepository {}
 
 // MockUnifiedShoppingService moved to production_mocks.dart with full implementation
 

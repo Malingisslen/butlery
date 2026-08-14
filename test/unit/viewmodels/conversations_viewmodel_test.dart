@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
@@ -32,6 +33,7 @@ class ConversationBuilder {
     bool isGroup = false,
     Map<String, DateTime>? lastReadTimestamps,
     Map<String, dynamic>? metadata,
+    String? groupId,
   }) {
     final defaultId = id ?? 'conv_${DateTime.now().millisecondsSinceEpoch}';
     final defaultParticipantIds = participantIds ?? ['user1', 'user2'];
@@ -54,6 +56,7 @@ class ConversationBuilder {
       isGroup: isGroup,
       lastReadTimestamps: lastReadTimestamps ?? {},
       metadata: metadata ?? {},
+      groupId: groupId,
     );
   }
 
@@ -86,6 +89,7 @@ class ConversationBuilder {
     List<String>? participantIds,
     Map<String, String>? participantDisplayNames,
     Message? lastMessage,
+    String? groupId,
   }) {
     final ids = participantIds ?? ['user1', 'user2', 'user3'];
     final names =
@@ -103,6 +107,7 @@ class ConversationBuilder {
       participantDisplayNames: names,
       lastMessage: lastMessage,
       isGroup: true,
+      groupId: groupId,
     );
   }
 }
@@ -139,6 +144,7 @@ void main() {
   group('ConversationsViewModel', () {
     late ConversationsViewModel viewModel;
     late MockMessagingService mockMessagingService;
+    late MockChatGroupRepository mockChatGroupRepository;
     late FakeAuthRepository mockAuthRepository;
     late StreamController<List<Conversation>> conversationsStreamController;
     const testUserId = 'test-user-123';
@@ -186,6 +192,19 @@ void main() {
       ),
     );
 
+    // Dedicated fixture for the "Leave Group" tests below — leaveGroup now
+    // reads groupId off the loaded conversation list rather than calling
+    // MessagingService, so these tests must seed the stream first.
+    Conversation leaveGroupConversation({
+      String id = 'group_123',
+      String groupId = 'chatgroup_123',
+    }) => ConversationBuilder.buildGroup(
+      id: id,
+      title: 'Lämnabar grupp',
+      participantIds: [testUserId, 'user2'],
+      groupId: groupId,
+    );
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(ConversationBuilder.build());
@@ -198,6 +217,7 @@ void main() {
 
       // Create mocks
       mockMessagingService = MockMessagingService();
+      mockChatGroupRepository = MockChatGroupRepository();
       mockAuthRepository = FakeAuthRepository();
       conversationsStreamController =
           StreamController<List<Conversation>>.broadcast();
@@ -242,15 +262,16 @@ void main() {
       ).thenAnswer((_) async => 'new_conv_group');
 
       when(
-        () => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
+        () => mockChatGroupRepository.removeMember(
+          groupId: any(named: 'groupId'),
+          userId: any(named: 'userId'),
         ),
-      ).thenAnswer((_) async => {});
+      ).thenAnswer((_) async {});
 
       // Create viewModel
       viewModel = ConversationsViewModel(
         messagingService: mockMessagingService,
+        chatGroupRepository: mockChatGroupRepository,
       );
     });
 
@@ -294,6 +315,7 @@ void main() {
         // Act
         final errorViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
+          chatGroupRepository: mockChatGroupRepository,
         );
 
         // Assert
@@ -397,6 +419,7 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
+          chatGroupRepository: mockChatGroupRepository,
         );
 
         // Load initial data
@@ -607,6 +630,7 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
+          chatGroupRepository: mockChatGroupRepository,
         );
         testViewModel.dispose();
 
@@ -799,6 +823,7 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
+          chatGroupRepository: mockChatGroupRepository,
         );
         testViewModel.dispose();
 
@@ -862,6 +887,7 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
+          chatGroupRepository: mockChatGroupRepository,
         );
         testViewModel.dispose();
 
@@ -875,21 +901,27 @@ void main() {
 
     group('Leave Group', () {
       test('should leave group successfully', () async {
+        // Arrange — leaveGroup reads groupId off the loaded conversation.
+        conversationsStreamController.add([leaveGroupConversation()]);
+        await Future.delayed(Duration.zero);
+
         // Act
         final result = await viewModel.leaveGroup('group_123');
 
         // Assert
         expect(result, isTrue);
         verify(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: 'group_123',
-            participantId: testUserId,
+          () => mockChatGroupRepository.removeMember(
+            groupId: 'chatgroup_123',
+            userId: null,
           ),
         ).called(1);
       });
 
       test('should handle when user not authenticated', () async {
         // Arrange
+        conversationsStreamController.add([leaveGroupConversation()]);
+        await Future.delayed(Duration.zero);
         final mockPermissionService =
             TestServiceLocator.get<PermissionService>()
                 as FakePermissionService;
@@ -904,19 +936,40 @@ void main() {
         // Assert
         expect(result, isFalse);
         verifyNever(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
+          ),
+        );
+      });
+
+      test('should fail when the conversation has no chat group', () async {
+        // A conversation missing groupId (legacy data) cannot be left this
+        // way — there is nothing to call removeMember on.
+        conversationsStreamController.add([
+          ConversationBuilder.buildGroup(id: 'group_nogroupid'),
+        ]);
+        await Future.delayed(Duration.zero);
+
+        final result = await viewModel.leaveGroup('group_nogroupid');
+
+        expect(result, isFalse);
+        verifyNever(
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
           ),
         );
       });
 
       test('should handle error when leaving group', () async {
         // Arrange
+        conversationsStreamController.add([leaveGroupConversation()]);
+        await Future.delayed(Duration.zero);
         when(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
           ),
         ).thenThrow(Exception('Leave failed'));
 
@@ -927,16 +980,50 @@ void main() {
         expect(result, isFalse);
       });
 
+      test('should surface rate-limit wording on resource-exhausted', () async {
+        // Arrange
+        conversationsStreamController.add([leaveGroupConversation()]);
+        await Future.delayed(Duration.zero);
+        when(
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenThrow(
+          FirebaseFunctionsException(
+            code: 'resource-exhausted',
+            message: 'Slow down.',
+            details: const {'retryAfterSeconds': 12},
+          ),
+        );
+
+        // Act
+        final result = await viewModel.leaveGroup('group_123');
+
+        // Assert
+        expect(result, isFalse);
+        expect(viewModel.error, contains('12'));
+      });
+
       test('should return correct success/failure values', () async {
+        conversationsStreamController.add([
+          leaveGroupConversation(
+            id: 'group_success',
+            groupId: 'chatgroup_success',
+          ),
+          leaveGroupConversation(id: 'group_fail', groupId: 'chatgroup_fail'),
+        ]);
+        await Future.delayed(Duration.zero);
+
         // Test success
         final successResult = await viewModel.leaveGroup('group_success');
         expect(successResult, isTrue);
 
         // Test failure
         when(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: 'chatgroup_fail',
+            userId: any(named: 'userId'),
           ),
         ).thenThrow(Exception('Failed'));
 
@@ -948,6 +1035,7 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
+          chatGroupRepository: mockChatGroupRepository,
         );
         testViewModel.dispose();
 
@@ -957,9 +1045,9 @@ void main() {
         // Assert
         expect(result, isFalse);
         verifyNever(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
           ),
         );
       });
@@ -1154,6 +1242,7 @@ void main() {
         // Arrange
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
+          chatGroupRepository: mockChatGroupRepository,
         );
 
         // Act & Assert - Should not throw on first dispose
@@ -1164,6 +1253,7 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
+          chatGroupRepository: mockChatGroupRepository,
         );
         testViewModel.dispose();
 
@@ -1177,6 +1267,7 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
+          chatGroupRepository: mockChatGroupRepository,
         );
 
         // Act - First dispose should work
@@ -1190,6 +1281,7 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
+          chatGroupRepository: mockChatGroupRepository,
         );
         testViewModel.dispose();
 
@@ -1214,9 +1306,9 @@ void main() {
         // Assert - No operations should have been performed
         verifyNever(() => mockMessagingService.markConversationAsRead(any()));
         verifyNever(
-          () => mockMessagingService.removeParticipantFromGroup(
-            conversationId: any(named: 'conversationId'),
-            participantId: any(named: 'participantId'),
+          () => mockChatGroupRepository.removeMember(
+            groupId: any(named: 'groupId'),
+            userId: any(named: 'userId'),
           ),
         );
         verifyNever(

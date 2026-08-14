@@ -51,7 +51,13 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "verifySignupAge", // account/verify-signup-age.ts — signup age gate (enforceAppCheck: true)
   "acceptFriendRequest", // social/accept-friend-request.ts — friend accept (enforceAppCheck: true)
   "setProfileSearchability", // social/set-profile-searchability.ts — minor search opt-in (enforceAppCheck: true)
-  "leaveGroupConversation", // messaging/leave-group-conversation.ts — leave/remove group member (enforceAppCheck: true)
+  // BUT-1838: the three chat-group membership callables. They replaced
+  // `leaveGroupConversation`, which is deleted — its entry went with it, and
+  // the guard's second assertion (a USER_FACING name with no matching onCall)
+  // is what would have caught leaving it behind.
+  "createChatGroup", // groups/create-chat-group.ts — create a chat group (enforceAppCheck: true)
+  "addChatGroupMembers", // groups/add-chat-group-members.ts — admin-only member add (enforceAppCheck: true)
+  "removeChatGroupMember", // groups/remove-chat-group-member.ts — leave / admin removal (enforceAppCheck: true)
 ]);
 
 /**

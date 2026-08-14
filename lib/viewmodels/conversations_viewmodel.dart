@@ -5,9 +5,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/core/errors/chat_group_error_mapper.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -23,6 +25,7 @@ class ConversationsViewModel extends ChangeNotifier
         StateNotifierMixin,
         AsyncOperationMixin {
   final MessagingService _messagingService;
+  final ChatGroupRepository _chatGroupRepository;
 
   // State
   bool _isDisposed = false;
@@ -36,7 +39,10 @@ class ConversationsViewModel extends ChangeNotifier
 
   ConversationsViewModel({
     required MessagingService messagingService,
-  }) : _messagingService = messagingService {
+    ChatGroupRepository? chatGroupRepository,
+  }) : _messagingService = messagingService,
+       _chatGroupRepository =
+           chatGroupRepository ?? ServiceLocator.get<ChatGroupRepository>() {
     _initializeConversations();
   }
 
@@ -206,10 +212,19 @@ class ConversationsViewModel extends ChangeNotifier
         throw Exception('User not authenticated');
       }
 
-      await _messagingService.removeParticipantFromGroup(
-        conversationId: conversationId,
-        participantId: currentUser,
+      final conversation = _allConversations.firstWhere(
+        (c) => c.id == conversationId,
+        orElse: () => throw StateError(
+          'Conversation $conversationId not in the loaded list',
+        ),
       );
+      final groupId = conversation.groupId;
+      if (groupId == null) {
+        throw StateError('Conversation $conversationId has no chat group');
+      }
+
+      // Omitting `userId` is the repository's "leave yourself" contract.
+      await _chatGroupRepository.removeMember(groupId: groupId);
 
       await ServiceLocator.tryGet<AnalyticsService>()?.social.logGroupLeft(
         groupId: conversationId,
@@ -219,6 +234,12 @@ class ConversationsViewModel extends ChangeNotifier
       return true;
     } catch (e) {
       AppLogger.error('Failed to leave group', e);
+      setError(
+        ChatGroupErrorMapper.map(
+          e,
+          genericFallback: AppLocale.current.errorCouldNotLeaveGroup,
+        ),
+      );
       return false;
     }
   }

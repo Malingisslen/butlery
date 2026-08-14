@@ -151,6 +151,120 @@ void main() {
     });
   });
 
+  // BUT-1838. `groupId` and `memberSince` are written ONLY by the group
+  // callables under the Admin SDK. The DTO therefore has to be asymmetric —
+  // it reads both and writes neither — and both halves need pinning:
+  //
+  //  * drop the READ and a group conversation loses its history cut-off, so
+  //    the client's message query returns rows firestore.rules refuses and
+  //    the whole query fails;
+  //  * add the WRITE and every ordinary conversation update (a read receipt,
+  //    a pin) starts carrying a server-owned key, which the conversations
+  //    UPDATE rule's deny-list refuses — silently, in the way only a rules
+  //    test can see (the BUT-1482 shape).
+  group('groupId + memberSince are read but never written', () {
+    test('fromFirestore reads groupId and per-member join stamps', () async {
+      final firestore = FakeFirebaseFirestore();
+      final joinedAt = DateTime.utc(2026, 3, 4, 5, 6);
+      final doc = await _writeAndRead(firestore, <String, dynamic>{
+        'participantIds': ['alice', 'bob'],
+        'isGroup': true,
+        'groupId': 'chat-group-1',
+        'memberSince': {'bob': Timestamp.fromDate(joinedAt)},
+      });
+
+      final restored = ConversationDto.fromFirestore(doc);
+
+      expect(restored.groupId, 'chat-group-1');
+      expect(restored.memberSince['bob']?.toUtc(), joinedAt);
+      expect(restored.historyQueryStartFor('bob')?.toUtc(), joinedAt);
+      // alice is a founding member — present in the group, absent from the
+      // stamp map, so no cut-off applies to her.
+      expect(restored.historyQueryStartFor('alice'), isNull);
+    });
+
+    test('both default safely when the document predates BUT-1838', () async {
+      final firestore = FakeFirebaseFirestore();
+      final doc = await _writeAndRead(firestore, <String, dynamic>{
+        'participantIds': ['alice', 'bob'],
+        'isGroup': true,
+      });
+
+      final restored = ConversationDto.fromFirestore(doc);
+
+      expect(restored.groupId, isNull);
+      expect(restored.memberSince, isEmpty);
+      expect(restored.historyQueryStartFor('bob'), isNull);
+    });
+
+    test('toFirestore omits both KEYS, not merely their values', () {
+      // Asserted as key ABSENCE. `containsKey` is the load-bearing check:
+      // fake_cloud_firestore stores a null-valued key faithfully, and so does
+      // production, so a payload carrying `'groupId': null` would still put
+      // the key in the update diff and still be denied.
+      final conversation = Conversation(
+        id: 'c-group',
+        participantIds: const ['alice', 'bob'],
+        participantDisplayNames: const {'alice': 'A', 'bob': 'B'},
+        participantAvatarUrls: const {'alice': null, 'bob': null},
+        lastReadTimestamps: const {},
+        createdAt: DateTime.utc(2026, 1, 1),
+        updatedAt: DateTime.utc(2026, 1, 2),
+        isGroup: true,
+        groupId: 'chat-group-1',
+        memberSince: {'bob': DateTime.utc(2026, 3, 4)},
+      );
+
+      final data = ConversationDto.toFirestore(conversation);
+
+      // Premise: the model really is carrying both, so the absence below is
+      // the serializer's decision and not an empty fixture.
+      expect(conversation.groupId, isNotNull);
+      expect(conversation.memberSince, isNotEmpty);
+
+      expect(data.containsKey('groupId'), isFalse);
+      expect(data.containsKey('memberSince'), isFalse);
+
+      // Positive control: the client-owned keys ARE still written, so this
+      // is a scoped omission rather than a broken serializer.
+      expect(data.containsKey('participantIds'), isTrue);
+      expect(data.containsKey('isGroup'), isTrue);
+      expect(data.containsKey('metadata'), isTrue);
+    });
+
+    test(
+      'a write-then-read round trip drops the server-owned fields',
+      () async {
+        // End to end: what the client persists cannot resurrect a groupId,
+        // so nothing the app writes can make a direct chat look like a group.
+        final firestore = FakeFirebaseFirestore();
+        final conversation = Conversation(
+          id: 'c-round',
+          participantIds: const ['alice', 'bob'],
+          participantDisplayNames: const {'alice': 'A', 'bob': 'B'},
+          participantAvatarUrls: const {'alice': null, 'bob': null},
+          lastReadTimestamps: const {},
+          createdAt: DateTime.utc(2026, 1, 1),
+          updatedAt: DateTime.utc(2026, 1, 2),
+          isGroup: true,
+          groupId: 'chat-group-1',
+          memberSince: {'bob': DateTime.utc(2026, 3, 4)},
+        );
+
+        final doc = await _writeAndRead(
+          firestore,
+          ConversationDto.toFirestore(conversation),
+          id: 'c-round',
+        );
+        final restored = ConversationDto.fromFirestore(doc);
+
+        expect(restored.groupId, isNull);
+        expect(restored.memberSince, isEmpty);
+        expect(restored.isGroup, isTrue); // positive control
+      },
+    );
+  });
+
   group('perUserSettings extraction', () {
     test('flags default to false when no perUserSettings present', () async {
       final firestore = FakeFirebaseFirestore();

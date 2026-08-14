@@ -411,14 +411,24 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               },
             ),
           ],
-          ErrorListTile(
-            icon: Icons.delete_outline,
-            title: l10n.messagingDeleteConversation,
-            onTap: () {
-              Navigator.pop(context);
-              _deleteConversation(vm, conversation);
-            },
-          ),
+          // BUT-1838: not offered for a GROUP. Keyed on `groupId`, not
+          // `isGroup` — `isGroup` is an ordinary client field and `groupId` is
+          // the server-written authority, which is the same distinction the
+          // rules and the deletion module use. Deleting the conversation would
+          // leave the `chat_groups` document standing with a `conversationId`
+          // pointing at nothing — the group would be unusable and no callable
+          // recreates a conversation, so it is unrecoverable. "Lämna gruppen"
+          // above is what a member actually means here, and it is the path that
+          // takes an emptied group down properly.
+          if (conversation.groupId == null)
+            ErrorListTile(
+              icon: Icons.delete_outline,
+              title: l10n.messagingDeleteConversation,
+              onTap: () {
+                Navigator.pop(context);
+                _deleteConversation(vm, conversation);
+              },
+            ),
         ],
       ),
     );
@@ -449,7 +459,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                 } else {
                   SnackBarUtils.showError(
                     context,
-                    l10n.messagingCouldNotLeaveGroup(''),
+                    vm.error ?? l10n.messagingCouldNotLeaveGroup(''),
                   );
                 }
               }

@@ -63,8 +63,8 @@ class _CreateGroupConversationViewState
     return ChangeNotifierProvider<CreateGroupConversationViewModel>(
       create: (context) {
         final viewModel = CreateGroupConversationViewModel(
-          messagingService: ServiceLocator.get(),
           friendsService: ServiceLocator.get(),
+          chatGroupRepository: ServiceLocator.get(),
         );
         // Load friends immediately
         viewModel.loadFriends();

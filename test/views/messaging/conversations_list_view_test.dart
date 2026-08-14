@@ -137,7 +137,13 @@ void main() {
 
     // PermissionService is auto-registered by TestServiceLocator with
     // currentUserId == 'test-user-123', which is exactly _currentUserId.
-    viewModel = ConversationsViewModel(messagingService: messagingService);
+    // BUT-1838: chatGroupRepository is passed explicitly — the VM's
+    // constructor resolves it eagerly (ServiceLocator fallback), and nothing
+    // registers ChatGroupRepository in this view test's DI bridge.
+    viewModel = ConversationsViewModel(
+      messagingService: messagingService,
+      chatGroupRepository: MockChatGroupRepository(),
+    );
   });
 
   tearDown(() async {

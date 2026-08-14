@@ -1,71 +1,29 @@
 /// Unit tests for ConversationMutationModule.
 ///
-/// 134-line write module that orchestrates direct/group conversation
-/// lifecycle, participant changes, deletion, and per-user settings.
-/// All dependencies are injected as callbacks/optional module, so the
-/// tests verify the contract by capturing the callbacks invoked and
-/// reading back Firestore state where applicable.
+/// The write module for direct-conversation creation, rename, deletion and
+/// per-user settings. Since BUT-1838 it injects NO callbacks: the four seams it
+/// used to take (`createFn`, `updateFn`, `readFn`, `sendMessageFn`) all
+/// resolved through `UserScopedFirebaseRepository` to a path nothing writes for
+/// a chat group, which is what broke group rename. Every assertion here
+/// therefore reads Firestore back rather than capturing an invocation — and the
+/// compiler now enforces what a "the seam was not consulted" test used to.
 library;
 
-import 'package:cloud_functions/cloud_functions.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
-import 'package:butlery/models/messaging/conversation.dart';
-import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_mutation_module.dart';
 
 const _convoCollection = 'conversations';
-
-class _MockFunctions extends Mock implements FirebaseFunctions {}
-
-class _MockCallable extends Mock implements HttpsCallable {}
-
-/// Fake instead of Mock — `HttpsCallableResult.data` reads from a private
-/// backing field that `implements` can't see, so a Mock returns null.
-class _FakeCallableResult extends Fake
-    implements HttpsCallableResult<Map<String, dynamic>> {
-  _FakeCallableResult(this._data);
-  final Map<String, dynamic> _data;
-  @override
-  Map<String, dynamic> get data => _data;
-}
-
-Conversation _groupConvo({
-  String id = 'group-1',
-  String title = 'Squad',
-  List<String> participants = const ['user-a', 'user-b'],
-}) {
-  return Conversation(
-    id: id,
-    participantIds: participants,
-    participantDisplayNames: {for (final id in participants) id: id},
-    participantAvatarUrls: const {},
-    lastReadTimestamps: const {},
-    isGroup: true,
-    title: title,
-    createdAt: DateTime.utc(2026, 1, 1),
-    updatedAt: DateTime.utc(2026, 1, 1),
-  );
-}
-
 void main() {
-  setUpAll(() {
-    registerFallbackValue(<String, dynamic>{});
-  });
-
   group('createDirectConversation', () {
     test('uses deterministic id sorted by user id', () async {
       final firestore = FakeFirebaseFirestore();
       final module = ConversationMutationModule(
         firestore: firestore,
         collectionName: _convoCollection,
-        createFn: (c) async => c,
-        updateFn: (_) async {},
-        readFn: (_) async => null,
-        sendMessageFn: (_) async {},
       );
 
       // Pass user-b first; output should still sort: direct_user-a_user-b
@@ -87,17 +45,9 @@ void main() {
           .doc('direct_user-a_user-b')
           .set({'title': 'preexisting'});
 
-      var createInvocations = 0;
       final module = ConversationMutationModule(
         firestore: firestore,
         collectionName: _convoCollection,
-        createFn: (c) async {
-          createInvocations++;
-          return c;
-        },
-        updateFn: (_) async {},
-        readFn: (_) async => null,
-        sendMessageFn: (_) async {},
       );
 
       final id = await module.createDirectConversation(
@@ -108,10 +58,8 @@ void main() {
       );
 
       expect(id, equals('direct_user-a_user-b'));
-      // createFn is for group creation; direct uses .set() directly. Should
-      // still be zero because the existing-doc short-circuit fires first.
-      expect(createInvocations, equals(0));
-      // And the pre-existing payload must be untouched.
+      // The existing-doc short-circuit must fire, so the pre-existing payload
+      // is untouched — a re-create would overwrite the title below.
       final doc = await firestore
           .collection(_convoCollection)
           .doc('direct_user-a_user-b')
@@ -124,10 +72,6 @@ void main() {
       final module = ConversationMutationModule(
         firestore: firestore,
         collectionName: _convoCollection,
-        createFn: (c) async => c,
-        updateFn: (_) async {},
-        readFn: (_) async => null,
-        sendMessageFn: (_) async {},
       );
 
       await module.createDirectConversation(
@@ -151,63 +95,11 @@ void main() {
     });
   });
 
-  // BUT-1788 twin, NOT a passing feature. Everything below asserts the
-  // CLIENT-SIDE contract, and production refuses part of it: the
-  // `Message.system` write carries `senderId: 'system'`, which
-  // `firestore.rules:1562` (`request.auth.uid == request.resource.data.senderId`)
-  // denies for every client. `createGroupConversation` rethrows after `createFn`
-  // has already created the document, so the user sees a failure for a group
-  // that exists. Green here means "the module calls sendMessageFn", never "the
-  // system message lands" — the leave/remove twin only started landing once it
-  // moved to the Admin SDK. See the KNOWN BROKEN doc comment on
-  // `ConversationMutationModule.addParticipants`.
-  group('createGroupConversation', () {
-    test(
-      'delegates to createFn and emits a system message via sendMessageFn',
-      () async {
-        Conversation? capturedCreate;
-        final sent = <Message>[];
-
-        final firestore = FakeFirebaseFirestore();
-        final module = ConversationMutationModule(
-          firestore: firestore,
-          collectionName: _convoCollection,
-          createFn: (c) async {
-            capturedCreate = c;
-            return c;
-          },
-          updateFn: (_) async {},
-          readFn: (_) async => null,
-          sendMessageFn: (m) async {
-            sent.add(m);
-          },
-        );
-
-        final newId = await module.createGroupConversation(
-          participantIds: ['user-a', 'user-b', 'user-c'],
-          participantDisplayNames: const {
-            'user-a': 'A',
-            'user-b': 'B',
-            'user-c': 'C',
-          },
-          participantAvatarUrls: const {
-            'user-a': null,
-            'user-b': null,
-            'user-c': null,
-          },
-          title: 'Team',
-          creatorId: 'user-a',
-        );
-
-        expect(capturedCreate, isNotNull);
-        expect(capturedCreate!.isGroup, isTrue);
-        expect(capturedCreate!.title, equals('Team'));
-        expect(newId, equals(capturedCreate!.id));
-        expect(sent, hasLength(1));
-        expect(sent.first.type, equals(MessageType.system));
-      },
-    );
-  });
+  // BUT-1838: createGroupConversation is deleted from this module (and from
+  // MessagingRepository/FirebaseMessagingRepository) — group creation goes
+  // through ChatGroupRepository.createGroup instead. See
+  // create_group_conversation_viewmodel_test.dart for the replacement
+  // coverage.
 
   group('updateConversation', () {
     test(
@@ -217,10 +109,10 @@ void main() {
         final module = ConversationMutationModule(
           firestore: firestore,
           collectionName: _convoCollection,
-          createFn: (c) async => c,
-          updateFn: (_) async {},
-          readFn: (_) async => null,
-          sendMessageFn: (_) async {},
+          // Nothing is seeded at this id, so the throw can only come from the
+          // TOP-LEVEL read. There is no injected seam left that could answer
+          // instead — that is the point of this ticket, and the constructor
+          // signature is now what proves it.
         );
 
         await expectLater(
@@ -233,19 +125,41 @@ void main() {
       },
     );
 
-    test('writes new title + metadata via updateFn', () async {
-      Conversation? capturedUpdate;
+    // BUT-1838: the contract CHANGED here, and both halves of the change are
+    // load-bearing, so both are pinned.
+    //
+    // It used to read through `readFn` and write the whole document back
+    // through `updateFn` — both of which `UserScopedFirebaseRepository`
+    // rewrites to `users/{uid}/conversations/{id}`. A chat group's conversation
+    // exists only at the TOP level, so renaming one threw "Conversation not
+    // found" at its admin, every time.
+    //
+    // The write narrowed too: sending the whole document back re-sends
+    // `participantIds` and `createdAt`, which the conversations update rule
+    // denies on any diff (BUT-1831). A field-path update cannot trip it.
+    test('renames the TOP-LEVEL document, not the user-scoped copy', () async {
       final firestore = FakeFirebaseFirestore();
-      final existing = _groupConvo();
+      await firestore.collection(_convoCollection).doc('group-1').set({
+        'title': 'Old Title',
+        'participantIds': ['u1', 'u2', 'u3'],
+        'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        'groupId': 'group-1',
+      });
+      // The group document must exist, and the rename must reach it: the name
+      // lives in TWO documents (the export reads `chat_groups.name`, the chat
+      // list renders `conversations.title`) and the ADMIN-only rule is on the
+      // group. Writing the group FIRST is what makes the server's answer the
+      // gate — a non-admin fails before anything visible changes.
+      await firestore.collection('chat_groups').doc('group-1').set({
+        'name': 'Old Title',
+        'adminIds': ['u1'],
+      });
       final module = ConversationMutationModule(
         firestore: firestore,
         collectionName: _convoCollection,
-        createFn: (c) async => c,
-        updateFn: (c) async {
-          capturedUpdate = c;
-        },
-        readFn: (_) async => existing,
-        sendMessageFn: (_) async {},
+        // No seams: the module can only reach the documents seeded above, so
+        // every assertion below is about what is really stored rather than
+        // about what a callback was handed.
       );
 
       await module.updateConversation(
@@ -254,261 +168,47 @@ void main() {
         metadata: const {'pinned': true},
       );
 
-      expect(capturedUpdate, isNotNull);
-      expect(capturedUpdate!.title, equals('New Title'));
-      expect(capturedUpdate!.metadata?['pinned'], isTrue);
+      final stored = await firestore
+          .collection(_convoCollection)
+          .doc('group-1')
+          .get();
+      expect(stored.data()!['title'], equals('New Title'));
+      final storedGroup = await firestore
+          .collection('chat_groups')
+          .doc('group-1')
+          .get();
+      expect(
+        storedGroup.data()!['name'],
+        equals('New Title'),
+        reason: 'the export reads this name; it must not drift from the title',
+      );
+      expect(stored.data()!['metadata']['pinned'], isTrue);
+      // The two keys the update rule denies must be untouched by the write, not
+      // merely unchanged in value — a whole-document write that happens to
+      // round-trip them identically is the shape that breaks the day a
+      // timestamp is re-stamped.
+      expect(
+        (stored.data()!['participantIds'] as List).length,
+        equals(3),
+        reason: 'membership is server-owned and must survive a rename',
+      );
+      // `isAtSameMomentAs`, not `equals`: Timestamp.toDate() returns a
+      // LOCAL-flagged DateTime, so an equality assertion passes only on a
+      // UTC machine and reddens on a CI box in another timezone.
+      expect(
+        (stored.data()!['createdAt'] as Timestamp).toDate().isAtSameMomentAs(
+          DateTime.utc(2026, 1, 1),
+        ),
+        isTrue,
+      );
     });
   });
 
-  // BUT-1788 twin, KNOWN BROKEN in production — see the note above
-  // `createGroupConversation`. `addParticipants` fails on BOTH counts: the
-  // `updateFn` write rebuilds `participantIds`, which `firestore.rules:1533-1535`
-  // denies outright, and the per-add `Message.system` is denied too. The two
-  // "rejects ..." cases below are genuine (they short-circuit before any write);
-  // the third pins only that the module ASSEMBLES the right payload, not that
-  // "Lägg till medlemmar" works. Deliberately left client-side by BUT-1788:
-  // adding needs its own authorization answer and its own minor-membership
-  // gate, so it needs its own ticket.
-  group('addParticipants', () {
-    test('rejects missing conversation', () async {
-      final firestore = FakeFirebaseFirestore();
-      final module = ConversationMutationModule(
-        firestore: firestore,
-        collectionName: _convoCollection,
-        createFn: (c) async => c,
-        updateFn: (_) async {},
-        readFn: (_) async => null,
-        sendMessageFn: (_) async {},
-      );
-
-      await expectLater(
-        module.addParticipants(
-          conversationId: 'missing',
-          participantIds: const ['user-x'],
-          participantDisplayNames: const {'user-x': 'X'},
-          participantAvatarUrls: const {'user-x': null},
-        ),
-        throwsA(isA<ResourceNotFoundException>()),
-      );
-    });
-
-    test('rejects direct conversations with ValidationException', () async {
-      final firestore = FakeFirebaseFirestore();
-      final direct = Conversation(
-        id: 'direct-1',
-        participantIds: const ['user-a', 'user-b'],
-        participantDisplayNames: const {},
-        participantAvatarUrls: const {},
-        lastReadTimestamps: const {},
-        isGroup: false,
-        createdAt: DateTime.utc(2026),
-        updatedAt: DateTime.utc(2026),
-      );
-
-      final module = ConversationMutationModule(
-        firestore: firestore,
-        collectionName: _convoCollection,
-        createFn: (c) async => c,
-        updateFn: (_) async {},
-        readFn: (_) async => direct,
-        sendMessageFn: (_) async {},
-      );
-
-      await expectLater(
-        module.addParticipants(
-          conversationId: 'direct-1',
-          participantIds: const ['user-x'],
-          participantDisplayNames: const {'user-x': 'X'},
-          participantAvatarUrls: const {'user-x': null},
-        ),
-        throwsA(isA<ValidationException>()),
-      );
-    });
-
-    test(
-      'appends to participant lists and sends a system message per add',
-      () async {
-        Conversation? capturedUpdate;
-        final sent = <Message>[];
-        final firestore = FakeFirebaseFirestore();
-        final module = ConversationMutationModule(
-          firestore: firestore,
-          collectionName: _convoCollection,
-          createFn: (c) async => c,
-          updateFn: (c) async {
-            capturedUpdate = c;
-          },
-          readFn: (_) async => _groupConvo(),
-          sendMessageFn: (m) async => sent.add(m),
-        );
-
-        await module.addParticipants(
-          conversationId: 'group-1',
-          participantIds: const ['user-c', 'user-d'],
-          participantDisplayNames: const {'user-c': 'C', 'user-d': 'D'},
-          participantAvatarUrls: const {'user-c': null, 'user-d': null},
-        );
-
-        expect(capturedUpdate, isNotNull);
-        expect(
-          capturedUpdate!.participantIds,
-          containsAll(['user-a', 'user-b', 'user-c', 'user-d']),
-        );
-        expect(
-          capturedUpdate!.lastReadTimestamps.keys,
-          containsAll(['user-c', 'user-d']),
-        );
-        // One system message per added user.
-        expect(sent, hasLength(2));
-        expect(sent.every((m) => m.type == MessageType.system), isTrue);
-      },
-    );
-  });
-
-  // BUT-1788: the three tests this replaces asserted the OLD client-side
-  // write — read the conversation, strip the uid from four maps, write the doc
-  // back. That write has never once landed: `firestore.rules` denies any
-  // client update whose diff touches `participantIds`, and the follow-up
-  // system message (senderId "system") fails the messages create rule too. The
-  // suite was green on a code path the backend refuses. The contract is now
-  // "delegate to the `leaveGroupConversation` callable and write nothing
-  // locally", and the authorization/idempotency assertions live server-side in
-  // `functions/src/__tests__/leave-group-conversation.test.ts`.
-  group('removeParticipant (server-side, BUT-1788)', () {
-    late _MockFunctions functions;
-    late _MockCallable callable;
-
-    setUp(() {
-      functions = _MockFunctions();
-      callable = _MockCallable();
-      when(() => functions.httpsCallable(any())).thenReturn(callable);
-      // Mirror what `leaveGroupConversation` actually returns. The old fixture
-      // was `{success: true}` alone, which predates the `removed` field and so
-      // could not tell a real removal apart from the callable's no-op branch —
-      // the shape BUT-1795 is about.
-      when(() => callable.call<Map<String, dynamic>>(any())).thenAnswer(
-        (_) async => _FakeCallableResult(const {
-          'success': true,
-          'removed': true,
-          'remaining': 2,
-        }),
-      );
-    });
-
-    ConversationMutationModule buildModule({
-      void Function(Conversation)? onUpdate,
-      void Function(Message)? onSend,
-    }) {
-      return ConversationMutationModule(
-        firestore: FakeFirebaseFirestore(),
-        collectionName: _convoCollection,
-        createFn: (c) async => c,
-        updateFn: (c) async => onUpdate?.call(c),
-        readFn: (_) async => _groupConvo(),
-        sendMessageFn: (m) async => onSend?.call(m),
-        functions: functions,
-      );
-    }
-
-    test(
-      'invokes leaveGroupConversation with the conversation and uid',
-      () async {
-        final module = buildModule();
-
-        await module.removeParticipant(
-          conversationId: 'group-1',
-          participantId: 'user-b',
-        );
-
-        verify(
-          () => functions.httpsCallable('leaveGroupConversation'),
-        ).called(1);
-        final captured =
-            verify(
-                  () => callable.call<Map<String, dynamic>>(captureAny()),
-                ).captured.single
-                as Map<String, dynamic>;
-        expect(captured['conversationId'], equals('group-1'));
-        expect(captured['participantId'], equals('user-b'));
-      },
-    );
-
-    test(
-      'writes nothing from the client — no doc update, no system message',
-      () async {
-        final updates = <Conversation>[];
-        final sent = <Message>[];
-        final module = buildModule(onUpdate: updates.add, onSend: sent.add);
-
-        await module.removeParticipant(
-          conversationId: 'group-1',
-          participantId: 'user-b',
-        );
-
-        expect(updates, isEmpty);
-        expect(sent, isEmpty);
-      },
-    );
-
-    test('surfaces a denied removal to the caller', () async {
-      when(() => callable.call<Map<String, dynamic>>(any())).thenThrow(
-        FirebaseFunctionsException(
-          code: 'permission-denied',
-          message: 'Only the group admin can remove other members.',
-        ),
-      );
-      final module = buildModule();
-
-      await expectLater(
-        module.removeParticipant(
-          conversationId: 'group-1',
-          participantId: 'user-b',
-        ),
-        throwsA(isA<FirebaseFunctionsException>()),
-      );
-    });
-
-    // BUT-1795. The callable answers a MISSING conversation with
-    // `{removed: false, remaining: 0}` instead of throwing, so it does not leak
-    // whether a conversation exists. That branch is reachable by construction:
-    // groups are created at `users/{uid}/conversations/{id}` while the callable
-    // reads top-level `conversations/{id}`. Discarding the reply is what made a
-    // failed leave report success and fire a false `logGroupLeft`.
-    test('a no-op reply is a FAILURE, not a silent success', () async {
-      when(() => callable.call<Map<String, dynamic>>(any())).thenAnswer(
-        (_) async => _FakeCallableResult(const {
-          'success': true,
-          'removed': false,
-          'remaining': 0,
-        }),
-      );
-      final module = buildModule();
-
-      await expectLater(
-        module.removeParticipant(
-          conversationId: 'group-1',
-          participantId: 'user-b',
-        ),
-        throwsA(isA<ResourceNotFoundException>()),
-      );
-    });
-
-    test('a reply with no `removed` field at all is also a failure', () async {
-      // Fail closed: an older or unexpected payload must not read as success.
-      when(() => callable.call<Map<String, dynamic>>(any())).thenAnswer(
-        (_) async => _FakeCallableResult(const {'success': true}),
-      );
-      final module = buildModule();
-
-      await expectLater(
-        module.removeParticipant(
-          conversationId: 'group-1',
-          participantId: 'user-b',
-        ),
-        throwsA(isA<ResourceNotFoundException>()),
-      );
-    });
-  });
+  // BUT-1838: addParticipants and removeParticipant are deleted from this
+  // module (and from MessagingRepository/FirebaseMessagingRepository) —
+  // group membership changes go through ChatGroupRepository.addMembers/
+  // removeMember instead. See group_detail_viewmodel_test.dart and
+  // conversations_viewmodel_test.dart for the replacement coverage.
 
   group('deleteConversation', () {
     test(
@@ -540,10 +240,6 @@ void main() {
         final module = ConversationMutationModule(
           firestore: firestore,
           collectionName: _convoCollection,
-          createFn: (c) async => c,
-          updateFn: (_) async {},
-          readFn: (_) async => null,
-          sendMessageFn: (_) async {},
         );
 
         await module.deleteConversation('group-1', messagesRef);
@@ -567,10 +263,6 @@ void main() {
       final module = ConversationMutationModule(
         firestore: firestore,
         collectionName: _convoCollection,
-        createFn: (c) async => c,
-        updateFn: (_) async {},
-        readFn: (_) async => null,
-        sendMessageFn: (_) async {},
       );
 
       await module.updateConversationUserSettings(
@@ -592,10 +284,6 @@ void main() {
       final module = ConversationMutationModule(
         firestore: firestore,
         collectionName: _convoCollection,
-        createFn: (c) async => c,
-        updateFn: (_) async {},
-        readFn: (_) async => null,
-        sendMessageFn: (_) async {},
       );
 
       await module.updateConversationUserSettings(
@@ -630,10 +318,6 @@ void main() {
         final module = ConversationMutationModule(
           firestore: firestore,
           collectionName: _convoCollection,
-          createFn: (c) async => c,
-          updateFn: (_) async {},
-          readFn: (_) async => null,
-          sendMessageFn: (_) async {},
         );
 
         // First: pinned=true

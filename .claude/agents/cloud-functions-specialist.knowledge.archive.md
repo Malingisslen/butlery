@@ -9958,3 +9958,38 @@ deleted in the first commit — no dangling `test:*` script, no second membershi
 by name; the rules suite never exercising the `rateLimitWrite('chat_group_rename', 5)`
 conjunct (all 27 cases pass through `!exists(limitsPath)`); and the "a malformed member id is
 not counted and cannot be removed" case asserting only the counting half.
+
+### 2026-08-14 — BUT-1838: the App Check classification guard after a callable family swap [Pattern discovered]
+
+Reviewed the fix to `functions/src/__tests__/app-check-enforcement.test.ts` alone (client half
+already through five gates). The server commit added `createChatGroup`, `addChatGroupMembers`,
+`removeChatGroupMember` and deleted `leaveGroupConversation`, leaving the guard RED at 13/15 —
+both of its list assertions failing at once (three unclassified callables; one `USER_FACING`
+name with no matching `onCall`). Every per-file reviewer missed it because the guard is a file
+the diff does not touch; the integration reviewer caught it.
+
+Verified, not accepted:
+- All three declare `enforceAppCheck: true` at the options position (read each file; the
+  extractor's slice runs `onCall(` → first `async`, which in all three spans exactly the
+  options object, so no cross-function false positive is possible).
+- `npm run test:app-check-enforcement` → **18/18**, with all three named in the PASS lines and
+  `setProfileSearchability` still resolving (its declaration wraps across a newline; the guard's
+  `\s*` regex handles it, a line-based grep does not — do not "confirm" this list with grep).
+- Classification: no `requireAdmin` / `token.admin` anywhere in `functions/src/groups/`.
+  `addChatGroupMembers` / `removeChatGroupMember` gate on `chat_groups.adminIds`, an in-app role
+  an ordinary account holds — `USER_FACING` is right, `ADMIN_EXEMPT` would have been wrong.
+- Nothing else needs classifying: `enforceGroupMinorMembership` is `onDocumentWritten` (repointed
+  to `chat_groups/{groupId}`), so it is outside the guard's `onCall` contract by construction;
+  `grep` for `export const X = onCall` over `functions/src` yields 28 decls = 15 discovered
+  `USER_FACING` + 13 `ADMIN_EXEMPT`, exactly partitioned. `leaveGroupConversation` survives only
+  in prose, and `stripComments` runs before extraction, so no phantom declaration.
+- Corroborations: `npm run build` clean; all three rate-limit operation keys exist in
+  `middleware/rate_limiter.ts` (114/124/129); `CI_EXCLUDE` in `scripts/run-ci-unit-tests.js` is
+  empty, so the guard really does run in the CI lane.
+
+Verdict: pass, 0 blocking. Two non-blocking notes handed back: (a) the `cloud-functions-unit.yml`
+comment above the DI-seam step still says the runner "excludes two suites with pre-existing
+failures on main (test:app-check-enforcement, test:request-account-deletion)" — stale since
+`CI_EXCLUDE` was emptied, and it reads as licence to leave this very guard red; (b) the guard
+asserts classification but never that a `USER_FACING` name is EXPORTED from `index.ts`, so a
+callable that is defined, flagged and never deployed still passes.

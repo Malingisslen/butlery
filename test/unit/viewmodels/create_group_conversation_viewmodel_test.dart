@@ -11,23 +11,25 @@
 //  6. create-group blocked when validation fails (empty name or < 2 members)
 //  7. loading/isCreatingGroup state transitions during successful creation
 //  8. loadFriends populates availableFriends from UnifiedFriendsService
+//  9. BUT-1838 — ChatGroupRepository.createGroup wiring, incl. blocked-member
+//     and rate-limit error mapping
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/viewmodels/create_group_conversation_viewmodel.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
+import '../../infrastructure/mocks/service_mocks.dart'
+    show MockChatGroupRepository;
 
 // ---------------------------------------------------------------------------
 // Local pure-Mock classes — no concrete @override bodies so when() works.
 // ---------------------------------------------------------------------------
-class _MockMessagingService extends Mock implements MessagingService {}
-
 class _MockFriendsService extends Mock implements UnifiedFriendsService {}
 
 // ---------------------------------------------------------------------------
@@ -52,25 +54,26 @@ final _friend3 = _profile('uid-maria', 'Maria Nilsson');
 // ---------------------------------------------------------------------------
 void main() {
   late CreateGroupConversationViewModel viewModel;
-  late _MockMessagingService mockMessaging;
+  late MockChatGroupRepository mockChatGroupRepository;
   late _MockFriendsService mockFriends;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnit();
+    registerFallbackValue(<String>[]);
   });
 
   setUp(() async {
     await TestServiceLocator.initialize();
 
-    mockMessaging = _MockMessagingService();
+    mockChatGroupRepository = MockChatGroupRepository();
     mockFriends = _MockFriendsService();
 
     // Default: friends list has three members.
     when(() => mockFriends.friends).thenReturn([_friend1, _friend2, _friend3]);
 
     viewModel = CreateGroupConversationViewModel(
-      messagingService: mockMessaging,
       friendsService: mockFriends,
+      chatGroupRepository: mockChatGroupRepository,
     );
   });
 
@@ -182,17 +185,17 @@ void main() {
 
   // -------------------------------------------------------------------------
   group('createGroupConversation — success path', () {
-    // Intent: when validation passes and the service succeeds, the VM
-    // returns the conversation ID and ends in a clean (no-error, no-loading) state.
+    // Intent: when validation passes and the repository succeeds, the VM
+    // returns the group/conversation id and ends in a clean (no-error,
+    // no-loading) state. The callable adds the caller automatically, so the
+    // client only sends the OTHER selected members.
     test(
       'returns conversationId and clears isCreatingGroup on success',
       () async {
         when(
-          () => mockMessaging.createGroupConversation(
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
-            title: any(named: 'title'),
+          () => mockChatGroupRepository.createGroup(
+            name: any(named: 'name'),
+            memberIds: any(named: 'memberIds'),
           ),
         ).thenAnswer((_) async => 'conv-new-group');
 
@@ -209,46 +212,41 @@ void main() {
       },
     );
 
-    test('passes participant display names and title to the service', () async {
-      when(
-        () => mockMessaging.createGroupConversation(
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          title: any(named: 'title'),
-        ),
-      ).thenAnswer((_) async => 'conv-abc');
+    test(
+      'passes the trimmed name and selected member ids to the repository',
+      () async {
+        when(
+          () => mockChatGroupRepository.createGroup(
+            name: any(named: 'name'),
+            memberIds: any(named: 'memberIds'),
+          ),
+        ).thenAnswer((_) async => 'conv-abc');
 
-      await viewModel.loadFriends();
-      viewModel.updateGroupName('  Köttbullsälskare  '); // trims whitespace
-      viewModel.toggleMemberSelection(_friend1.uid);
-      viewModel.toggleMemberSelection(_friend2.uid);
+        await viewModel.loadFriends();
+        viewModel.updateGroupName('  Köttbullsälskare  '); // trims whitespace
+        viewModel.toggleMemberSelection(_friend1.uid);
+        viewModel.toggleMemberSelection(_friend2.uid);
 
-      await viewModel.createGroupConversation();
+        await viewModel.createGroupConversation();
 
-      final captured = verify(
-        () => mockMessaging.createGroupConversation(
-          participantIds: captureAny(named: 'participantIds'),
-          participantDisplayNames: captureAny(named: 'participantDisplayNames'),
-          participantAvatarUrls: captureAny(named: 'participantAvatarUrls'),
-          title: captureAny(named: 'title'),
-        ),
-      ).captured;
+        final captured = verify(
+          () => mockChatGroupRepository.createGroup(
+            name: captureAny(named: 'name'),
+            memberIds: captureAny(named: 'memberIds'),
+          ),
+        ).captured;
 
-      // captured[0]=participantIds, [1]=displayNames, [2]=avatarUrls, [3]=title
-      expect(captured[3], equals('Köttbullsälskare'));
-      final displayNames = captured[1] as Map<String, String>;
-      expect(displayNames[_friend1.uid], equals('Anna Andersson'));
-      expect(displayNames[_friend2.uid], equals('Erik Eriksson'));
-    });
+        expect(captured[0], equals('Köttbullsälskare'));
+        final memberIds = captured[1] as List<String>;
+        expect(memberIds, containsAll([_friend1.uid, _friend2.uid]));
+      },
+    );
 
     test('isCreatingGroup transitions true → false during creation', () async {
       when(
-        () => mockMessaging.createGroupConversation(
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          title: any(named: 'title'),
+        () => mockChatGroupRepository.createGroup(
+          name: any(named: 'name'),
+          memberIds: any(named: 'memberIds'),
         ),
       ).thenAnswer((_) async => 'conv-xyz');
 
@@ -275,15 +273,13 @@ void main() {
 
   // -------------------------------------------------------------------------
   group('createGroupConversation — failure path', () {
-    // Intent: when the service throws, the VM returns null, sets an error
+    // Intent: when the repository throws, the VM returns null, sets an error
     // state visible to the UI, and leaves isCreatingGroup=false.
-    test('returns null and sets error on service failure', () async {
+    test('returns null and sets a generic error on unknown failure', () async {
       when(
-        () => mockMessaging.createGroupConversation(
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          title: any(named: 'title'),
+        () => mockChatGroupRepository.createGroup(
+          name: any(named: 'name'),
+          memberIds: any(named: 'memberIds'),
         ),
       ).thenThrow(Exception('Network error'));
 
@@ -296,8 +292,92 @@ void main() {
 
       expect(result, isNull);
       expect(viewModel.hasError, isTrue);
+      expect(viewModel.error, contains('Det gick inte att skapa gruppen'));
       expect(viewModel.isCreatingGroup, isFalse);
     });
+
+    test(
+      'surfaces blocked members without saying why (minor gate)',
+      () async {
+        when(
+          () => mockChatGroupRepository.createGroup(
+            name: any(named: 'name'),
+            memberIds: any(named: 'memberIds'),
+          ),
+        ).thenThrow(
+          FirebaseFunctionsException(
+            code: 'permission-denied',
+            message: 'Some people could not be added to this group.',
+            details: {
+              'blockedUserIds': [_friend1.uid],
+            },
+          ),
+        );
+
+        await viewModel.loadFriends();
+        viewModel.updateGroupName('Testgrupp');
+        viewModel.toggleMemberSelection(_friend1.uid);
+        viewModel.toggleMemberSelection(_friend2.uid);
+
+        final result = await viewModel.createGroupConversation();
+
+        expect(result, isNull);
+        expect(viewModel.error, contains('kunde inte läggas till'));
+        expect(viewModel.error, isNot(contains('minderårig')));
+      },
+    );
+
+    test('surfaces rate-limit wording on resource-exhausted', () async {
+      when(
+        () => mockChatGroupRepository.createGroup(
+          name: any(named: 'name'),
+          memberIds: any(named: 'memberIds'),
+        ),
+      ).thenThrow(
+        FirebaseFunctionsException(
+          code: 'resource-exhausted',
+          message: 'Slow down.',
+          details: const {'retryAfterSeconds': 45},
+        ),
+      );
+
+      await viewModel.loadFriends();
+      viewModel.updateGroupName('Testgrupp');
+      viewModel.toggleMemberSelection(_friend1.uid);
+      viewModel.toggleMemberSelection(_friend2.uid);
+
+      final result = await viewModel.createGroupConversation();
+
+      expect(result, isNull);
+      expect(viewModel.error, contains('45'));
+    });
+
+    test(
+      'surfaces the member-cap wording on invalid-argument',
+      () async {
+        when(
+          () => mockChatGroupRepository.createGroup(
+            name: any(named: 'name'),
+            memberIds: any(named: 'memberIds'),
+          ),
+        ).thenThrow(
+          FirebaseFunctionsException(
+            code: 'invalid-argument',
+            message: 'A group can hold at most 100 members.',
+          ),
+        );
+
+        await viewModel.loadFriends();
+        viewModel.updateGroupName('Testgrupp');
+        viewModel.toggleMemberSelection(_friend1.uid);
+        viewModel.toggleMemberSelection(_friend2.uid);
+
+        final result = await viewModel.createGroupConversation();
+
+        expect(result, isNull);
+        expect(viewModel.error, contains('100'));
+      },
+    );
 
     test(
       'returns null immediately when validation fails (no service call)',
@@ -310,11 +390,9 @@ void main() {
 
         expect(result, isNull);
         verifyNever(
-          () => mockMessaging.createGroupConversation(
-            participantIds: any(named: 'participantIds'),
-            participantDisplayNames: any(named: 'participantDisplayNames'),
-            participantAvatarUrls: any(named: 'participantAvatarUrls'),
-            title: any(named: 'title'),
+          () => mockChatGroupRepository.createGroup(
+            name: any(named: 'name'),
+            memberIds: any(named: 'memberIds'),
           ),
         );
       },

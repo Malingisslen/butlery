@@ -6,6 +6,7 @@
 /// poll vote toggling) rather than method-call presence.
 library;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -170,45 +171,36 @@ void main() {
         // load-bearing, and neither is obvious, which is why this is a test and
         // not only a comment.
         //
-        // `firestore.rules`' conversations CREATE rule reads
-        // `'creatorId' in request.resource.data.metadata`. An `in` on a null is
-        // an evaluation error, which denies — and that denial is the only thing
-        // stopping a NON-CREATOR from materialising a group's top-level
-        // conversation document by sending its first message. If it landed,
-        // `enforceGroupMinorMembership` would return early on it — this payload
-        // trips BOTH halves of its guard (`isGroup: false` AND at most two
-        // participants — the squat payload this is about carries one);
-        // a false flag alone does NOT return early when there are more than two
-        // — and `onDocumentCreated` cannot fire twice, so the child-safety cut
-        // that evicts a minor added by a non-friend would never run for that
-        // group at all.
+        // WHY, restated for BUT-1838 — the old reason is retired and repeating
+        // it would mislead. It used to be that the conversations CREATE rule
+        // read `'creatorId' in request.resource.data.metadata`, that an `in` on
+        // a null was an evaluation error, and that this error was the only
+        // thing stopping a non-creator from materialising a group's top-level
+        // document and thereby disarming an `onDocumentCreated` child-safety
+        // trigger. The rule is now a bare
+        // `request.resource.data.metadata.creatorId == request.auth.uid`, a
+        // client cannot create a group conversation at all, and the safety gate
+        // runs before the write in the `chat_groups` callables.
         //
-        // Two well-intentioned edits would each disarm that, and the rules-side
-        // test (C7B in conversations-rules.test.ts) stays green through both:
-        //   1. stamping `metadata: {'creatorId': senderId}` here — the key stops
-        //      being null, so the `in` succeeds and the create is ALLOWED;
+        // What still holds, and what these two assertions pin:
+        //   1. stamping `metadata: {'creatorId': senderId}` here would claim a
+        //      creator this caller is not — the second assertion catches it,
+        //      because the VALUE stops being null;
         //   2. making `ConversationDto.toFirestore` skip a null metadata (the
-        //      standard "don't write nulls" cleanup) — the key disappears, the
-        //      rule's `!('metadata' in ...)` disjunct becomes true, and the
-        //      create is ALLOWED.
-        // The first assertion below catches (2); the second catches (1) — that
-        // way round, and it is worth stating because getting it backwards is
-        // how the load-bearing one gets deleted. Under (1) the KEY is still
-        // present, so `containsKey` does not fire; under (2) the key is absent
+        //      standard "don't write nulls" cleanup) changes a write path the
+        //      rules govern — the first assertion catches it, because the KEY
+        //      disappears.
+        // That way round, and it is worth stating because getting it backwards
+        // is how the load-bearing one gets deleted: under (1) the key is still
+        // present so `containsKey` does not fire; under (2) the key is absent
         // and `data()['metadata']` returns null, so `isNull` passes VACUOUSLY.
-        // Neither assertion covers for the other. Measured, not reasoned: each
-        // mutant reddens exactly one of them.
+        // Measured, not reasoned: each mutant reddens exactly one of them.
         //
-        // NOTE this is not a security bound — it binds our own client, not a
-        // tampered one (BUT-1830). It is the invariant our writer must keep.
-        //
-        // AND: green here is the FAKE, not production. This exact payload is
-        // refused twice over against the real rules — as a create (the `in` on
-        // null above) when the document is absent, and as an update when it
-        // exists, because the DTO re-stamps `createdAt` and the update rule
-        // pins that key. So a DM send fails today (BUT-1831). Do not read this
-        // passing test as proof the fallback works, and do not "fix" BUT-1831
-        // by stamping a creatorId here — that is mutant (1).
+        // AND: green here is the FAKE, not production. This payload is still
+        // refused against the real rules, now by the bare equality on create
+        // and by the update rule's `createdAt` pin when the document exists
+        // (BUT-1831). Do not read this passing test as proof the fallback
+        // works.
         expect(
           convoDoc.data()!.containsKey('metadata'),
           isTrue,
@@ -359,12 +351,23 @@ void main() {
   });
 
   group('MessageMutationModule.markConversationAsRead', () {
+    // BUT-1838: the contract CHANGED. It used to hand the whole updated
+    // conversation to an injected callback, which resolved to
+    // `users/{uid}/conversations/{id}` — a document that exists for no chat
+    // group, so a group read receipt landed nowhere and the failure was
+    // swallowed. It now writes ONE dotted field to the top-level document,
+    // which is also what keeps it clear of the conversations update rule's
+    // deny-list (`participantIds`, `createdAt`).
     test(
-      'updates lastReadTimestamps for the participant via updateConversation cb',
+      'writes the reader stamp to the TOP-LEVEL document, not through the callback',
       () async {
         final firestore = FakeFirebaseFirestore();
         final convo = _twoPersonConvo();
-        Conversation? captured;
+
+        await firestore.collection('conversations').doc(convo.id).set({
+          'participantIds': convo.participantIds,
+          'createdAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1)),
+        });
 
         final module = _newModule(
           firestore,
@@ -374,16 +377,28 @@ void main() {
         await module.markConversationAsRead(
           conversationId: convo.id,
           userId: 'user-a',
-          updateConversation: (updated) async {
-            captured = updated;
-          },
         );
 
-        expect(captured, isNotNull);
+        final stored = await firestore
+            .collection('conversations')
+            .doc(convo.id)
+            .get();
         expect(
-          captured!.lastReadTimestamps.containsKey('user-a'),
-          isTrue,
+          (stored.data()!['lastReadTimestamps'] as Map)['user-a'],
+          isNotNull,
           reason: 'lastReadTimestamps must record the reader',
+        );
+        // The retired user-scoped write seam is not merely unused here — the
+        // parameter no longer EXISTS on this method (BUT-1838), so the
+        // compiler enforces what this assertion used to.
+        // Not merely unchanged in value: the write must not TOUCH the two keys
+        // the update rule denies, or it only works while they round-trip
+        // byte-identically (BUT-1831).
+        expect(
+          (stored.data()!['createdAt'] as Timestamp).toDate().isAtSameMomentAs(
+            DateTime.utc(2026, 1, 1),
+          ),
+          isTrue,
         );
       },
     );
@@ -401,7 +416,6 @@ void main() {
           module.markConversationAsRead(
             conversationId: 'missing',
             userId: 'user-a',
-            updateConversation: (_) async {},
           ),
           throwsA(isA<ResourceNotFoundException>()),
         );
@@ -420,7 +434,6 @@ void main() {
         module.markConversationAsRead(
           conversationId: convo.id,
           userId: 'outsider',
-          updateConversation: (_) async {},
         ),
         throwsA(isA<PermissionDeniedException>()),
       );

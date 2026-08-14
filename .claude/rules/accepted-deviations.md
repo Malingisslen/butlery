@@ -361,3 +361,17 @@ files in the same edit.
   never the raw document: a second copy of a redaction decision is how two sections drift.
   **Chosen conservatively without asking Malin; widening it to keep other members' stamps is
   hers to decide.** BUT-1838, 2026-08-13
+
+- **Renaming a group chat is gated by WRITE ORDER, not by a rule on the visible name** —
+  `updateConversation` writes the admin-gated `chat_groups.name` FIRST and lets it throw, then
+  the any-participant `conversations.title`. That ordering is the whole control: the
+  conversations update rule has no conjunct on `title`, so a hand-rolled client that skips the
+  group write can rename what members SEE while the group document and the Art. 15 export keep
+  the true name. The app's only rename path goes through this method, so the server's refusal
+  stops a non-admin before anything visible changes — but it is not a rules-level guarantee.
+  Do not "simplify" the two writes into one, and do not reorder them. The real close is a rules
+  conjunct (`title` in `affectedKeys()` on a `groupId` conversation ⇒ caller in `adminIds`),
+  which needs its own ticket. **The same shape applies to DELETING a group conversation:** the
+  deletion module and the list view both refuse one carrying a `groupId`, but `firestore.rules`
+  still allows any participant to delete it, so those two are UX, not controls. Raised by the
+  `firebase-backend-security` and `integration-reviewer` gates. BUT-1838, 2026-08-14

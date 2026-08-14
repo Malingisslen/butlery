@@ -15589,18 +15589,6 @@ abstract class AppLocalizations {
   /// **'Till'**
   String get commonTo;
 
-  /// No description provided for @notificationSound.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ljud'**
-  String get notificationSound;
-
-  /// No description provided for @notificationVibration.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vibration'**
-  String get notificationVibration;
-
   /// No description provided for @notificationCategoryFriends.
   ///
   /// In sv, this message translates to:
@@ -27118,6 +27106,42 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Rätter med dessa undviks när det går. En smakpreferens, inte en säkerhetsgräns som allergier.'**
   String get familyDislikesNote;
+
+  /// No description provided for @chatJoinedHereDivider.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du gick med här'**
+  String get chatJoinedHereDivider;
+
+  /// No description provided for @chatGroupMembersAddedCount.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 medlem tillagd} other{{count} medlemmar tillagda}}'**
+  String chatGroupMembersAddedCount(int count);
+
+  /// No description provided for @chatGroupAddMembersBlocked.
+  ///
+  /// In sv, this message translates to:
+  /// **'Några personer kunde inte läggas till i gruppen.'**
+  String get chatGroupAddMembersBlocked;
+
+  /// No description provided for @chatGroupAddMembersFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att lägga till medlemmar. Försök igen.'**
+  String get chatGroupAddMembersFailed;
+
+  /// No description provided for @chatGroupCreateFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att skapa gruppen. Försök igen.'**
+  String get chatGroupCreateFailed;
+
+  /// No description provided for @chatGroupTooManyMembers.
+  ///
+  /// In sv, this message translates to:
+  /// **'En grupp kan ha högst {max} medlemmar.'**
+  String chatGroupTooManyMembers(int max);
 }
 
 class _AppLocalizationsDelegate

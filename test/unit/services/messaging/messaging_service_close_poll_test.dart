@@ -39,8 +39,11 @@ import 'package:butlery/services/messaging/message_reactions_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 
 class _MockMessagingRepo extends Mock implements MessagingRepository {}
+
+class _MockChatGroupRepo extends Mock implements ChatGroupRepository {}
 
 class _MockAuthRepo extends Mock implements AuthRepository {}
 
@@ -126,6 +129,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late _MockMessagingRepo messagingRepo;
+  late _MockChatGroupRepo chatGroupRepo;
   late _MockAuthRepo authRepo;
   late _MockReactionsService reactionsService;
   late _MockPlanService planService;
@@ -160,6 +164,7 @@ void main() {
 
   setUp(() async {
     messagingRepo = _MockMessagingRepo();
+    chatGroupRepo = _MockChatGroupRepo();
     authRepo = _MockAuthRepo();
     reactionsService = _MockReactionsService();
     planService = _MockPlanService();
@@ -248,6 +253,7 @@ void main() {
 
     service = MessagingService(
       messagingRepository: messagingRepo,
+      chatGroupRepository: chatGroupRepo,
       authRepository: authRepo,
       reactionsService: reactionsService,
     );

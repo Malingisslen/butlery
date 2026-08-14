@@ -1565,7 +1565,18 @@ see "When to consult the archive" at the end.
   `token.admin===true`) — App Check attests the app binary, the admin claim
   attests the caller; orthogonal threats. A callable reachable by an
   ordinary user belongs in `USER_FACING` with `enforceAppCheck:true`, never
-  `ADMIN_EXEMPT`. (The guard's regex matches multi-line declarations, so a
+  `ADMIN_EXEMPT`. An IN-APP admin role read from a document
+  (`chat_groups.adminIds`, gating `addChatGroupMembers` /
+  `removeChatGroupMember`) is NOT the admin claim — an ordinary authenticated
+  account holds it, so those stay `USER_FACING`. **DELETING a callable is the
+  same three-file change**: the stale `USER_FACING` entry is caught only by the
+  guard's THIRD assertion (name with no matching `onCall`), and both halves fire
+  in one commit when a family is replaced wholesale — BUT-1838 added three and
+  removed `leaveGroupConversation`, reddening the suite 13/15 on two different
+  assertions. That miss is invisible to every PER-FILE reviewer (the guard is a
+  file the diff does not touch); it was the integration reviewer that caught it,
+  so on any diff that adds or deletes an `index.ts` export, open the guard
+  yourself. (The guard's regex matches multi-line declarations, so a
   miss is always a RED suite — but it still recurs, most often on a new
   `migrations/` backfill; `CI_EXCLUDE` is empty, so the miss reddens the real
   CI lane. `check-test-registration.js` will NOT catch it: that script only

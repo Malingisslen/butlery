@@ -367,12 +367,42 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
       // `messages` section — so the false positive now mislabels a complete
       // Art. 15 bundle. Same probe-one-extra shape as
       // [ExportPaginationHelper.fetchCapped].
-      final messagesSnapshot = await firestore
+      // BUT-1838: the history cut-off is a RULE, not a filter. For a group
+      // conversation `firestore.rules` refuses anything sent before this user
+      // joined, and a query returning one refused document fails ENTIRELY — so
+      // an unfiltered read here would throw out of the loop and fail the whole
+      // messages section, which is the `messages-export-failed` outcome
+      // BUT-1767 had just finished fixing.
+      final rawMemberSince = convoDoc.data()['memberSince'];
+      final ownStamp = rawMemberSince is Map ? rawMemberSince[userId] : null;
+      var messagesQuery = firestore
           .collection(FirestoreCollections.messages)
-          .where('conversationId', isEqualTo: convoDoc.id)
-          .orderBy('sentAt')
-          .limit(maxMessagesPerConversation + 1)
-          .get();
+          .where('conversationId', isEqualTo: convoDoc.id);
+      if (ownStamp is Timestamp) {
+        messagesQuery = messagesQuery.where(
+          'sentAt',
+          isGreaterThanOrEqualTo: ownStamp,
+        );
+      }
+      final QuerySnapshot<Map<String, dynamic>> messagesSnapshot;
+      try {
+        messagesSnapshot = await messagesQuery
+            .orderBy('sentAt')
+            .limit(maxMessagesPerConversation + 1)
+            .get();
+      } catch (e) {
+        // Per CONVERSATION, not per section. Before BUT-1838 one bad
+        // conversation took the whole `messages` section down with it —
+        // every other conversation, every message, and the chat-groups leg.
+        results.add(<String, dynamic>{
+          'id': convoDoc.id,
+          'data': convoDoc.data(),
+          'messages': const <Map<String, dynamic>>[],
+          'messages_truncated': false,
+          'error_code': 'conversation-messages-read-failed',
+        });
+        continue;
+      }
 
       final truncated =
           messagesSnapshot.docs.length > maxMessagesPerConversation;
@@ -395,6 +425,49 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
       });
     }
     return results;
+  }
+
+  /// BUT-1838: the chat groups the requester belongs to.
+  ///
+  /// The conversation section already carries the group's NAME (as `title`) and
+  /// its membership (as `participantIds`), so this leg exists for the one fact
+  /// that lives nowhere else and is genuinely about the requester: **who added
+  /// them to the group**. It is deliberately a projection, not the document —
+  /// dumping `chat_groups` would re-export three uid-keyed maps that duplicate
+  /// what `conversation_info` already holds, and a second copy of a redaction
+  /// decision is how the two drift apart (BUT-1772/BUT-1798).
+  ///
+  /// `adminIds` is kept: it is the group's structure, the requester sees who
+  /// can remove people in the app, and their own client may read this whole
+  /// document under `firestore.rules`. Other members' `memberAddedBy` entries
+  /// are NOT kept — who invited someone else is third-party behaviour.
+  ///
+  /// `memberIds array-contains` is equality-shaped, so the automatic
+  /// single-field index serves it; no composite entry is needed.
+  Future<List<Map<String, dynamic>>> exportChatGroups(
+    String userId, {
+    int maxGroups = 100,
+  }) async {
+    await _guardSelfExport(userId, ExportResourceType.conversations);
+    final snapshot = await firestore
+        .collection(FirestoreCollections.chatGroups)
+        .where('memberIds', arrayContains: userId)
+        .limit(maxGroups)
+        .get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      final addedBy = data['memberAddedBy'];
+      return <String, dynamic>{
+        'group_id': doc.id,
+        'name': data['name'],
+        'conversation_id': data['conversationId'],
+        'created_by': data['createdBy'],
+        'created_at': data['createdAt'],
+        'admin_ids': data['adminIds'],
+        'you_were_added_by': addedBy is Map ? addedBy[userId] : null,
+      };
+    }).toList();
   }
 
   /// One `shared_content` leg: `contentType == [contentType]` AND the caller is

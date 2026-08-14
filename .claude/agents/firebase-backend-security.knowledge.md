@@ -12,7 +12,17 @@ file", below.
 **Every repository in `lib/repositories/` MUST use `PermissionValidationMixin`.**
 This is non-negotiable — it's CLAUDE.md rule #3 and the foundation of the
 authorization story. If you find a repository that doesn't use it, that is
-a Critical-severity finding.
+a Critical-severity finding. **But `with PermissionValidationMixin` in the
+declaration is the LETTER, not the substance** — grep the class body for an actual
+`logPermissionCheck`/`validateOwnership` call before crediting it. A read-only +
+callable-write repository (BUT-1838's `FirebaseChatGroupRepository`) can carry the
+mixin and call nothing in it, leaving zero Art. 30 rows for cross-user membership
+changes; and when its doc comment cites a precedent ("same shape as
+`BaseMetadataRepository`"), open the precedent — that one logs on BOTH branches of
+every operation, so the citation was false. Correct shape for a callable-backed
+mutator: log the callable's OUTCOME (never `granted:true` before it answers, which
+forges the trail), and check whether the CF writes an audit row either — for BUT-1838
+neither side did.
 
 **Service access**: code uses `ServiceLocator.get<T>()` (in widgets/VMs) or
 constructor injection (in DI modules). Never `FirebaseFirestore.instance`
@@ -520,11 +530,18 @@ personal→collaborative leg only.
   + `affectedKeys().hasOnly([...])`. Self-leave-a-shared-doc needs `removeAll()` both directions
   or a recipient can grief by dropping others while leaving.
 - `rateLimitWrite(collection, seconds)` is only live if a write path stamps
-  `users/{uid}/rate_limits/{collection}.lastWrite` — else it's a permanent no-op. **Verified
-  2026-07-30: NOTHING in the repo writes that path** (only the unused constant
-  `FirestoreCollections.userRateLimits`; real buckets live in top-level `system_rate_limits`, see
-  `account-deletion-cascade.ts:1408`), so EVERY `rateLimitWrite` conjunct in `firestore.rules` is
-  currently inert. Never let a design comment cite one as a live constraint — BUT-1773's
+  `users/{uid}/rate_limits/{collection}.lastWrite` — else it's a permanent no-op, and liveness is
+  **PER BUCKET, never per repo**. **CORRECTION 2026-08-14 (BUT-1838 gate pass): the 2026-07-30
+  "NOTHING in the repo writes that path" is FALSE as a blanket claim** — six Dart writers stamp
+  `FirestoreCollections.userRateLimits` (= `'rate_limits'`) with a per-bucket doc id, so four rules
+  buckets ARE live: `messages` (`message_mutation_module.dart`, batched beside every send),
+  `comments`, `social_requests`, `activity_events` (plus `imports` and `friendSearchMigrated`, which
+  no rule reads). Every OTHER bucket is inert for want of a writer — including `audit_logs`, so
+  BUT-1773's conclusion below survives, and including any bucket a NEW rule invents
+  (`chat_group_rename`, BUT-1838: decorative on arrival). Grep `.doc('<bucket>')` under
+  `userRateLimits` before calling a specific conjunct live or dead; a bare grep of the CONSTANT
+  answers neither question, which is how the blanket claim got written. Never let a design comment
+  cite one as a live constraint — BUT-1773's
   one-audit-row-per-export decision is argued in three places from "rows 3..30 would be rejected by
   `rateLimitWrite('audit_logs', 2)`", which is false. The Art. 30 argument (the processing activity
   is the REQUEST, not each read) stands on its own; the rules claim must go.
@@ -686,7 +703,28 @@ personal→collaborative leg only.
   REACHES the collection the rule guards — here the client write lands in the private subtree
   where the owner is allowed, so both the ticket's diagnosis and the CF's target were derived from
   a path the operation never touched. Follow the writer chain to a `.set(`/`.update(`, never to a
-  constant.
+  constant. **MOVING that creation to the Admin SDK removes the private copy the client's fallback
+  depended on, and the fallback is deny-shaped (BUT-1838):** `read()` returns null for every group,
+  so `MessageMutationModule.sendMessage` fabricates a `participantIds:[sender]` + `createdAt: now`
+  conversation and the merge-set it batches beside the message trips the update rule's deny-list on
+  BOTH keys — killing the message with it. The rules suite cannot see this: its fixture seeds the
+  SAME participantIds and createdAt the payload sends, so `affectedKeys()` is empty and the test
+  passes. When a create path moves server-side, grep every client read of that doc that still
+  resolves through a user-scoped `getCollectionRef()`. **Do that grep as a SET, and count the
+  seams — fixing two of three is the failure mode (BUT-1838 re-review, 2026-08-13).** A repository
+  facade hands the same `read` to several modules, so one collection has several read seams:
+  `ConversationQueryModule.getConversation` and `MessageMutationModule.readConversation` were
+  repointed to the top level and `ConversationMutationModule`'s `readFn: read` was not — which is
+  the whole of `updateGroupTitle`, so renaming a group throws `ResourceNotFoundException` for every
+  admin on every group. Enumerate the CONSTRUCTOR ARGUMENTS at the wiring site, not the methods you
+  happened to open. Two traps in the obvious fix, both worth stating in the finding rather than
+  patching: the WRITE half of such a seam is separately user-scoped (`markConversationAsRead` reads
+  top-level now and still writes through `update`, i.e. a `.update()` on a doc that does not exist),
+  and a top-level full-doc `update(dto.toFirestore(e))` re-sends every deny-listed field, so it
+  survives only while the values round-trip byte-identically. Where the server has since taken
+  ownership of the fact (here `chat_groups.name`, with its own admin-only `hasOnly(['name',
+  'updatedAt'])` rule that NO client code calls and no trigger syncs back to `conversations.title`),
+  the right answer is a target change, not a path change.
   Second half of the same shape error: `deleteUserSubcollections` sweeps
   `users/{uid}/user_shared_shopping_lists` and `.../user_shared_menus`, but the app writes both
   as TOP-LEVEL trees `user_shared_shopping_lists/{uid}/received_lists/{id}` — the only shape
@@ -723,6 +761,43 @@ personal→collaborative leg only.
   `userShoppingLists` both client/CF readers the comment names are real
   (`friends_utility_operations.dart:146` root query → catch-all deny `firestore.rules:2526-2528`;
   `compute-feature-retention.ts:212`), and a denied QUERY surfaces as `permission-denied`, not empty.
+- **A new PER-DOCUMENT conjunct in a READ rule silently breaks every UNFILTERED query on
+  that collection — the GDPR export's first, because nobody runs it.** Rules are not
+  filters and a query returning even ONE refused document fails ENTIRELY, so BUT-1838's
+  `messages` read gate (`sentAt >= memberSince[uid]` where the conversation carries a
+  `groupId`) turned `exportConversationsAndMessages`' unfiltered per-conversation message
+  query into a guaranteed `permission-denied` for anyone added to a group with prior
+  history — and since that read has no per-conversation catch, the WHOLE `messages`
+  section (every conversation, every message, not just the group) lands as
+  `messages-export-failed`. Whenever a rules diff adds such a conjunct, enumerate every
+  reader of the collection (chat stream, pagination, SEARCH, export, cascade probes) and
+  require each to mirror the predicate; the UI path usually gets it and `searchMessages`
+  usually does not. Second half, same ticket: **an export leg that hand-builds a
+  projection must run its values through `sanitizeForJson` at the leg** — the bundle is
+  `JsonEncoder.convert`ed once at the end, `Timestamp` has no `toJson`, so a single raw
+  Firestore value thrown into a projection map fails the ENTIRE Art. 15 export (the
+  section's own try/catch is around the READ and cannot see an encode that happens later).
+  A projection also needs the same three things a whole-doc leg gets: an N+1 truncation
+  probe, an `error_code` (a bespoke nested `<x>_export_failed` flag is invisible to
+  `DataExportService`'s lift, which keys on `error`/`error_code` at SECTION top level and
+  on `truncated`/`*_truncated` in the walk), and a line in `data_minimisation` naming what
+  the projection drops.
+  **Third half, and it is the trap that DEGRADING a section's failure mode opens (BUT-1838,
+  closed 2026-08-14): moving a read's try/catch from the SECTION to the ROW buys resilience
+  by spending the alarm.** A per-conversation catch stops one unreadable conversation
+  failing the whole `messages` section — but the row it substitutes (`messages: []`,
+  `message_count: 0`) is byte-identical to a conversation that genuinely holds no messages,
+  so the bundle silently understates itself. The shipped shape, and the one to demand
+  whenever a catch is narrowed: the repository stamps a row-level `error_code`, the manager
+  copies it onto the row AND sets a SECTION-ROOT `error_code` **with no `error` key** —
+  because `DataExportService` reads `error` as "could not be exported" and a bare
+  `error_code` as "may be incomplete", and the second is the true claim when the other rows
+  did export. Never let the row marker be the only one; the aggregator's nested walk looks
+  for `truncated`, not for arbitrary keys. One residual worth knowing when several legs
+  `addAll` into one section map (`ChatGroupExport` into `exportMessages`): the last leg's
+  `error_code` overwrites the earlier one, so the section keeps ONE token — harmless while
+  both mean "incomplete", wrong the day a leg adds an `error` key too, which would relabel
+  a partially successful section as failed outright.
 - **A denormalized ERASURE HANDLE is only as good as its weakest writer and its rule.** When a
   cascade cannot query the field that actually carries the PII (Firestore cannot filter inside an
   array of maps), the repair is a flat `array-contains`-queryable trail of everyone who has written
@@ -1186,6 +1261,17 @@ personal→collaborative leg only.
   wherever it lands. Shipped shape (2026-08-13): a `logSafeConversationId` chokepoint hashing
   only the composite form through the repo's existing `hashUid` (12 hex, sync) so operators keep
   a correlatable handle, applied at EVERY call site in one pass.
+  **The CLIENT half is unshipped, and the message redactor structurally cannot cover it
+  (2026-08-14).** `_sanitizeForCrashlytics` is `RegExp(r'\b[a-zA-Z0-9]{20,28}\b')`; Dart follows
+  ECMAScript, where `_` is a word character, so there is NO `\b` between `direct_` and the uid that
+  follows it — a bare uid in a log line is masked, and the one id shape carrying TWO uids passes
+  through whole. Verified by running the regex, not by reading it. So `AppLogger.error('Failed to
+  get conversation $conversationId')` (several such lines across the messaging modules) ships both
+  uids to Crashlytics. Two rules: never credit a redactor for a COMPOSITE identifier without
+  running it on that exact shape, and remember an anchor-class bug in a redactor fails toward
+  disclosure silently — the sanitized-looking output is the tell only if you look at it. The fix is
+  a lookaround pair in `logger.dart`, not per-call-site masking (BUT-1838 gate pass filed it; the
+  log lines themselves are pre-existing on main).
 - A field on a world-readable doc must be audited individually for exposure — a boolean gating a
   SEARCH QUERY does not gate DIRECT-FETCH visibility.
 - **A nullable actor-NAME field stamped through `copyWith` misattributes on a multi-user doc.**

@@ -9283,12 +9283,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonTo => 'To';
 
   @override
-  String get notificationSound => 'Sound';
-
-  @override
-  String get notificationVibration => 'Vibration';
-
-  @override
   String get notificationCategoryFriends => 'Friends';
 
   @override
@@ -16254,4 +16248,35 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get familyDislikesNote =>
       'Dishes with these are avoided when possible. A taste preference, not a safety limit like allergies.';
+
+  @override
+  String get chatJoinedHereDivider => 'You joined here';
+
+  @override
+  String chatGroupMembersAddedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members added',
+      one: '1 member added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatGroupAddMembersBlocked =>
+      'Some people could not be added to the group.';
+
+  @override
+  String get chatGroupAddMembersFailed =>
+      'Could not add members. Please try again.';
+
+  @override
+  String get chatGroupCreateFailed =>
+      'Could not create the group. Please try again.';
+
+  @override
+  String chatGroupTooManyMembers(int max) {
+    return 'A group can have at most $max members.';
+  }
 }

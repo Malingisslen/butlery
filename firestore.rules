@@ -1816,11 +1816,13 @@ service cloud.firestore {
         //     live, so every one of them belongs to a test account. They are now
         //     unreadable regardless.
         //
-        // What has NOT changed: the create rule's `metadata: null` evaluation
-        // error still denies `MessageMutationModule`'s fallback, and the UPDATE
-        // rule below still answers the same question with an `is map` ternary.
-        // The two spellings disagree ON PURPOSE. Test C7B is mutation-proven
-        // against the edit that harmonises them.
+        // Still true: `MessageMutationModule`'s fallback create is denied, and
+        // test C7B pins it. NOT still true, and corrected above on the same
+        // day: that the create and update rules must keep DIFFERENT
+        // null-metadata spellings. The create rule is now a bare equality,
+        // which denies a null cleanly, so the asymmetry the old comment
+        // defended is gone — the rules gate proved it by running the forbidden
+        // edit as a mutation and watching nothing redden.
         //
         // One branch only. The parentless own-row fallback that used to sit
         // beside this was a SECOND, textually separate spelling of the same

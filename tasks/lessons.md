@@ -1139,3 +1139,38 @@ What generalises:
 3. **Dropping a file from a commit is a legitimate move**, not a failure — but say which
    file and why, and verify the remaining diff still compiles and analyses clean on its
    own. An ARB key with no reader is inert; a Dart reference to a deleted getter is not.
+
+## `git commit -- <pathspec>` silently drops every NEW file (BUT-1838, 2026-08-14)
+
+Staging by explicit pathspec is the repo rule when a parallel session shares the working
+copy, and `git commit -F msg -- <paths>` honours it — for **tracked** files. Untracked ones
+it ignores completely. A commit that was supposed to carry a new Cloud Functions module
+landed as: `index.ts` exporting three callables that did not exist, a trigger importing a
+module that did not exist, and the DELETION of the file it replaced. HEAD did not compile.
+
+Nothing complained. The commit succeeded, every lefthook gate passed (they run on the staged
+diff, which was internally consistent), and the only visible tell was the file COUNT in the
+commit summary being smaller than the set I had named. I read that number and moved on.
+
+Three habits, in order of cheapness:
+
+1. **`git status --porcelain | grep '^??'` before every pathspec commit.** Untracked files
+   are the failure mode; a `??` line for a path you just named is the whole diagnosis.
+2. **Count.** `git show --stat HEAD | tail -1` against the number of paths you passed. They
+   should match. When they do not, the difference is almost always new files.
+3. **`git add -- <paths>` FIRST, then commit with the same pathspec.** `add` picks up
+   untracked files; the pathspec on `commit` then keeps a parallel session's staged work out.
+   Both halves are needed: `add` alone risks the other session sweeping you, `commit --`
+   alone risks this.
+
+The generalisation is worth more than the git trivia: **a partial-commit mechanism fails
+CLOSED for edits and OPEN for additions.** Any tool that filters "what to include" by naming
+things is only safe for things that already exist in whatever index it filters. The same
+shape bites `git stash push -- <paths>`, `git diff --cached <paths>` used as a review scope,
+and a reviewer marker that pins "the staged files" — the file nobody staged is invisible to
+all of them, and invisible reads as fine.
+
+Recorded rather than amended, per the repo's no-amend rule, so the broken intermediate commit
+stays in history with its own explanation. That is the right trade: a reader bisecting
+through it needs to know why one commit does not build, and a rewritten history would have
+hidden exactly the failure this lesson is about.

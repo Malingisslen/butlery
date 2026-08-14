@@ -137,6 +137,26 @@ class Conversation {
   /// Timestamp when conversation was archived (null if not archived)
   final DateTime? archivedAt;
 
+  /// The [ChatGroup] this conversation belongs to, or null for a direct chat.
+  ///
+  /// Server-written and immutable from the client. Its PRESENCE is what selects
+  /// the history rule in `firestore.rules` — a member of a group conversation
+  /// may only read messages sent at or after [memberSince] for them. Do not
+  /// substitute [isGroup] for it: that is an ordinary client field, and the
+  /// distinction is what keeps the rule out of direct conversations.
+  final String? groupId;
+
+  /// When each member joined, for group conversations.
+  ///
+  /// Malin's decision, 2026-08-13: someone added to a running group chat sees
+  /// only what is said from then on, so nobody has to think back over the
+  /// history before inviting a person. Enforced in `firestore.rules`, not just
+  /// hidden in the UI — the client mirrors it as a `sentAt >=` filter on the
+  /// message query, and a query returning even one message the rule refuses
+  /// fails entirely. Written only by the group callables; the conversations
+  /// update rule denies any client diff that touches it.
+  final Map<String, DateTime> memberSince;
+
   /// Creates a new conversation with comprehensive participant and metadata configuration.
   /// This constructor provides complete conversation initialization with support for both
   /// direct and group conversations. All participant information is cached for UI performance,
@@ -169,7 +189,39 @@ class Conversation {
     this.isMuted = false,
     this.pinnedAt,
     this.archivedAt,
+    this.groupId,
+    this.memberSince = const {},
   });
+
+  /// The cut-off the MESSAGE QUERY must carry: the caller's own `memberSince`
+  /// stamp for a group conversation, null for a direct chat.
+  ///
+  /// This mirrors `firestore.rules` exactly, founders included, and that is the
+  /// point. The rule refuses `sentAt < memberSince[uid]` for every member of a
+  /// group, so a reader that filters on anything else — or on nothing — can be
+  /// handed a document the rules refuse, which fails the WHOLE query rather
+  /// than trimming it. For a founder the stamp equals the conversation's
+  /// `createdAt`, so nothing is normally excluded; "normally" is why this is
+  /// not optimised away, because nothing pins a message's `sentAt` to server
+  /// time and a device with a slow clock can write one that predates the group.
+  DateTime? historyQueryStartFor(String userId) =>
+      groupId == null ? null : memberSince[userId];
+
+  /// Whether to show the "du gick med här" divider — a DIFFERENT question from
+  /// the query cut-off, which is why these are two methods.
+  ///
+  /// `createChatGroup` stamps `memberSince` for everybody present at creation,
+  /// including the creator, so a bare "has a stamp" test is true for the whole
+  /// founding roster and would put the divider at the top of every group chat,
+  /// directly above "gruppen skapades". A founder's stamp is the SAME
+  /// `Timestamp` the conversation's `createdAt` carries — one value, one
+  /// transaction, `stageGroupCreation` — so `isAfter` separates the two exactly
+  /// rather than comparing two clock readings.
+  DateTime? joinedLaterAt(String userId) {
+    final stamp = historyQueryStartFor(userId);
+    if (stamp == null || !stamp.isAfter(createdAt)) return null;
+    return stamp;
+  }
 
   /// Factory constructors for simplified conversation creation with specific configurations.
 
@@ -297,6 +349,12 @@ class Conversation {
       isMuted: isMuted ?? this.isMuted,
       pinnedAt: pinnedAt ?? this.pinnedAt,
       archivedAt: archivedAt ?? this.archivedAt,
+      // Carried, never overridden: both are server-owned, so there is no
+      // parameter for them. A copyWith that silently dropped them would make an
+      // in-memory conversation look like a direct chat and disable the history
+      // cut-off in the client's own query.
+      groupId: groupId,
+      memberSince: memberSince,
     );
   }
 

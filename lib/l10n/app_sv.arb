@@ -122,29 +122,39 @@
   "@slotPickerWeekLabel": {
     "description": "BUT-1029: ISO week-number label shown between the prev/next arrows in the slot picker. Format: v.42",
     "placeholders": {
-      "week": { "type": "int" }
+      "week": {
+        "type": "int"
+      }
     }
   },
   "slotPickerConfirmCount": "Lägg till ({count})",
   "@slotPickerConfirmCount": {
     "description": "BUT-999: confirm button in the multi-select slot picker; count = number of selected day/slot targets.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "a11ySlotPickerCell": "Välj {day} {slot}",
   "@a11ySlotPickerCell": {
     "description": "BUT-999: a11y label for a day×slot cell in the slot picker (day = mån..sön, slot = lunch/middag/övrigt).",
     "placeholders": {
-      "day": { "type": "String" },
-      "slot": { "type": "String" }
+      "day": {
+        "type": "String"
+      },
+      "slot": {
+        "type": "String"
+      }
     }
   },
   "recipeAddedToMenuSlots": "{count, plural, =1{Receptet lades till på 1 plats i veckomenyn} other{Receptet lades till på {count} platser i veckomenyn}}",
   "@recipeAddedToMenuSlots": {
     "description": "BUT-999: snackbar after adding one recipe to N day/slot targets from the recipe detail view.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuPlaceAutoButton": "Placera automatiskt i kalendern",
@@ -159,7 +169,9 @@
   "@menuAutoPlacedToast": {
     "description": "BUT-1241: snackbar after auto-distribution; carries the ÄNDRA action.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuAutoPlacedChangeAction": "Ändra",
@@ -174,22 +186,30 @@
   "@menuPlacementProgress": {
     "description": "BUT-1241: progress pill in the placement-mode header.",
     "placeholders": {
-      "placed": { "type": "int" },
-      "total": { "type": "int" }
+      "placed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "menuPlacementTrayLabel": "Kvar att placera ({count})",
   "@menuPlacementTrayLabel": {
     "description": "BUT-1241: label above the tray of recipes waiting to be placed.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuPlacementHint": "Tryck på en ledig ruta för att placera {recipe}.",
   "@menuPlacementHint": {
     "description": "BUT-1241: hint banner while a tray recipe is selected.",
     "placeholders": {
-      "recipe": { "type": "String" }
+      "recipe": {
+        "type": "String"
+      }
     }
   },
   "menuPlacementHintSelect": "Välj ett recept nedan för att placera det.",
@@ -208,14 +228,18 @@
   "@menuPlacementOverflow": {
     "description": "BUT-1241: warning after auto-rest when some recipes did not fit the week.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuPlacementSaved": "{count, plural, =1{1 recept placerat i veckomenyn} other{{count} recept placerade i veckomenyn}}",
   "@menuPlacementSaved": {
     "description": "BUT-1241: snackbar after the placement session saved.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeklyMenuNewBadge": "NY",
@@ -226,22 +250,30 @@
   "@a11yPlacementCell": {
     "description": "BUT-1241: a11y label for an eligible day×slot cell in placement mode.",
     "placeholders": {
-      "day": { "type": "String" },
-      "slot": { "type": "String" }
+      "day": {
+        "type": "String"
+      },
+      "slot": {
+        "type": "String"
+      }
     }
   },
   "a11yPlacementTrayCard": "Välj {recipe}",
   "@a11yPlacementTrayCard": {
     "description": "BUT-1241: a11y label for a tray recipe card in placement mode.",
     "placeholders": {
-      "recipe": { "type": "String" }
+      "recipe": {
+        "type": "String"
+      }
     }
   },
   "a11yPlacementRemoveEntry": "Ta bort {recipe} från rutan",
   "@a11yPlacementRemoveEntry": {
     "description": "BUT-1241: a11y label for a session-placed grid cell — tapping un-places the recipe.",
     "placeholders": {
-      "recipe": { "type": "String" }
+      "recipe": {
+        "type": "String"
+      }
     }
   },
   "bulkAddToMenu": "Lägg till i veckomeny",
@@ -252,17 +284,27 @@
   "@bulkAddToMenuSuccess": {
     "description": "BUT-1013: snackbar after bulk-add success.",
     "placeholders": {
-      "count": { "type": "int" },
-      "slot": { "type": "String" },
-      "day": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "slot": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
     }
   },
   "bulkAddToMenuOverflowed": "{added} av {requested} lades till — resten ryms inte i veckan",
   "@bulkAddToMenuOverflowed": {
     "description": "BUT-1013: snackbar when not all selected recipes fit (single-slot run-out).",
     "placeholders": {
-      "added": { "type": "int" },
-      "requested": { "type": "int" }
+      "added": {
+        "type": "int"
+      },
+      "requested": {
+        "type": "int"
+      }
     }
   },
   "bulkAddToMenuOverflowedAction": "Lägg de resterande nästa vecka",
@@ -273,14 +315,18 @@
   "@bulkAddToMenuSuccessNextWeek": {
     "description": "BUT-1034: success snackbar after cascading overflow recipes into the following week.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "bulkAddToMenuOverflowedTwoWeeks": "Resten ryms inte i nästa vecka heller — {remaining} recept utan plats",
   "@bulkAddToMenuOverflowedTwoWeeks": {
     "description": "BUT-1034: snackbar when cascading to next week still leaves recipes unplaced (recursion guard fires here).",
     "placeholders": {
-      "remaining": { "type": "int" }
+      "remaining": {
+        "type": "int"
+      }
     }
   },
   "bulkExport": "Exportera valda",
@@ -293,7 +339,9 @@
   "@bulkExportCopied": {
     "description": "BUT-1014: snackbar after clipboard copy.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "imageTakePhoto": "Ta foto",
@@ -733,14 +781,18 @@
   "chatMenuWeekOption": "Vecka {weekNum}",
   "@chatMenuWeekOption": {
     "placeholders": {
-      "weekNum": {"type": "int"}
+      "weekNum": {
+        "type": "int"
+      }
     }
   },
   "chatWeekCurrentSuffix": " (denna vecka)",
   "chatMenuShareTitle": "Veckomeny v.{weekNum}",
   "@chatMenuShareTitle": {
     "placeholders": {
-      "weekNum": {"type": "int"}
+      "weekNum": {
+        "type": "int"
+      }
     }
   },
   "chatCheckOutMenu": "Ta gärna en titt på min veckomeny.",
@@ -881,40 +933,118 @@
   "voiceImportMicRationaleTitle": "Mikrofon för receptinläsning",
   "recipeVoiceImport": "Tala in recept",
   "voiceAssistStepPrefix": "Steg {step} av {total}. ",
-  "@voiceAssistStepPrefix": { "placeholders": { "step": { "type": "int" }, "total": { "type": "int" } } },
+  "@voiceAssistStepPrefix": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "voiceAssistNoNextStep": "Det finns inget nästa steg. Receptet är klart",
   "voiceAssistNoPreviousStep": "Det här är första steget",
   "voiceAssistNoIngredients": "Ingredienslistan är tom",
   "voiceAssistTimerStarted": "Timer {duration} startad",
-  "@voiceAssistTimerStarted": { "placeholders": { "duration": { "type": "String" } } },
+  "@voiceAssistTimerStarted": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistNoTimers": "Ingen timer är igång",
   "voiceAssistSubstitutions": "{ingredient} kan ersättas med: {suggestions}",
-  "@voiceAssistSubstitutions": { "placeholders": { "ingredient": { "type": "String" }, "suggestions": { "type": "String" } } },
+  "@voiceAssistSubstitutions": {
+    "placeholders": {
+      "ingredient": {
+        "type": "String"
+      },
+      "suggestions": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistNoSubstitutions": "Jag hittade inga ersättningar för {ingredient}",
-  "@voiceAssistNoSubstitutions": { "placeholders": { "ingredient": { "type": "String" } } },
+  "@voiceAssistNoSubstitutions": {
+    "placeholders": {
+      "ingredient": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistQuantityNotFound": "Jag hittade inte {ingredient} bland ingredienserna",
-  "@voiceAssistQuantityNotFound": { "placeholders": { "ingredient": { "type": "String" } } },
+  "@voiceAssistQuantityNotFound": {
+    "placeholders": {
+      "ingredient": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistStepOutOfRange": "Receptet har {count} steg",
-  "@voiceAssistStepOutOfRange": { "placeholders": { "count": { "type": "int" } } },
+  "@voiceAssistStepOutOfRange": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "voiceAssistRatioHalf": "halva mängden",
   "voiceAssistRatioDouble": "dubbla mängden",
   "voiceAssistRatioOneAndHalf": "en och en halv gånger mängden",
   "voiceAssistRatioTimes": "{ratio} gånger mängden",
-  "@voiceAssistRatioTimes": { "placeholders": { "ratio": { "type": "String" } } },
+  "@voiceAssistRatioTimes": {
+    "placeholders": {
+      "ratio": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistTimeLeft": "{duration} kvar",
-  "@voiceAssistTimeLeft": { "placeholders": { "duration": { "type": "String" } } },
+  "@voiceAssistTimeLeft": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistMissed": "Jag uppfattade inte. Säg till exempel nästa, eller läs igen",
   "voiceAssistMissedTwice": "Jag uppfattade inte den här gången heller. Knapparna fungerar som vanligt",
   "voiceAssistHours": "{n, plural, =1{1 timme} other{{n} timmar}}",
-  "@voiceAssistHours": { "placeholders": { "n": { "type": "int" } } },
+  "@voiceAssistHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "voiceAssistMinutes": "{n, plural, =1{1 minut} other{{n} minuter}}",
-  "@voiceAssistMinutes": { "placeholders": { "n": { "type": "int" } } },
+  "@voiceAssistMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "voiceAssistSeconds": "{n, plural, =1{1 sekund} other{{n} sekunder}}",
-  "@voiceAssistSeconds": { "placeholders": { "n": { "type": "int" } } },
+  "@voiceAssistSeconds": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "voiceAssistAnd": "och",
   "voiceAssistWindowHint": "Säg ett kommando…",
   "voiceAssistHeard": "Hörde: {text}",
-  "@voiceAssistHeard": { "placeholders": { "text": { "type": "String" } } },
+  "@voiceAssistHeard": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
   "voiceAssistMicTooltip": "Tala med köksbutlern",
   "voiceAssistMuteTooltip": "Tysta uppläsningen",
   "voiceAssistUnmuteTooltip": "Slå på uppläsningen",
@@ -979,12 +1109,23 @@
   "menuGeneratedShoppingListName": "Inköpslista v.{week}",
   "@menuGeneratedShoppingListName": {
     "description": "BUT-1234: default name for the shopping list generated from the weekly menu. {week} is the ISO week number, e.g. 24.",
-    "placeholders": { "week": { "type": "int" } }
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
   },
   "menuShoppingListGenerated": "{listName} uppdaterad – {count} varor",
   "@menuShoppingListGenerated": {
     "description": "BUT-956: snackbar after generating the aggregated week shopping list. {listName} e.g. 'Inköpslista v.24'.",
-    "placeholders": { "listName": { "type": "String" }, "count": { "type": "int" } }
+    "placeholders": {
+      "listName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "menuShoppingListGenerationEmpty": "Veckans plan har inga recept med ingredienser ännu",
   "menuShoppingListGenerationFailed": "Kunde inte skapa inköpslistan – försök igen",
@@ -1060,7 +1201,7 @@
       }
     }
   },
-  "recipePrint": "Skriv ut recept",
+  "recipePrint": "Skriv ut",
   "recipeCreateShoppingList": "Skapa inköpslista",
   "recipeUpdateTags": "Uppdatera taggar",
   "recipeViewSource": "Visa källa",
@@ -1068,7 +1209,11 @@
   "recipeSourceSheetTitle": "Källtext",
   "recipeSourceCapturedAt": "Sparad {time}",
   "@recipeSourceCapturedAt": {
-    "placeholders": { "time": { "type": "String" } }
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
   },
   "recipeSourceTypeUrl": "Käll-URL",
   "recipeSourceTypeYoutube": "YouTube-transkript",
@@ -1198,7 +1343,9 @@
   "@householdAllergenOffBody": {
     "description": "BUT-1465: confirm-dialog body naming the household's tracked allergens",
     "placeholders": {
-      "allergens": { "type": "String" }
+      "allergens": {
+        "type": "String"
+      }
     }
   },
   "householdAllergenOffBodyGeneric": "Då planeras veckomenyn bara utifrån dina egna allergier. Recept som någon annan i hushållet — även ett barn — behöver undvika kan då planeras in i veckomenyn. Filtret kan slås på igen när som helst.",
@@ -1402,7 +1549,9 @@
   "@personalTagSelectedCount": {
     "description": "Selection-mode app-bar title showing how many tags are selected",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagMergeAction": "Slå ihop",
@@ -1421,8 +1570,12 @@
   "@personalTagMergeMessage": {
     "description": "Body of the merge-tags dialog",
     "placeholders": {
-      "count": { "type": "int" },
-      "target": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
     }
   },
   "personalTagMergeKeepLabel": "Behåll denna tagg:",
@@ -1437,35 +1590,45 @@
   "@personalTagMergeSuccess": {
     "description": "Snackbar after a successful merge, with recipes-updated count",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagMergeSuccessCount": "{count, plural, =1{1 tagg sammanslagen} other{{count} taggar sammanslagna}}",
   "@personalTagMergeSuccessCount": {
     "description": "Snackbar after a successful merge, counting how many source tags were merged into the target",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagBulkDeleteTitle": "{count, plural, =1{Ta bort 1 tagg?} other{Ta bort {count} taggar?}}",
   "@personalTagBulkDeleteTitle": {
     "description": "Title of the bulk-delete confirmation dialog",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagBulkDeleteMessage": "{count, plural, =1{Taggen tas bort från alla recept som använder den.} other{Taggarna tas bort från alla recept som använder dem.}}",
   "@personalTagBulkDeleteMessage": {
     "description": "Body of the bulk-delete confirmation dialog",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagBulkDeleted": "{count, plural, =1{1 tagg borttagen} other{{count} taggar borttagna}}",
   "@personalTagBulkDeleted": {
     "description": "Snackbar after a successful bulk delete",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagNoGroup": "Ingen grupp",
@@ -2054,7 +2217,9 @@
   "@shoppingNewListNameTemplate": {
     "description": "Default name for a shopping list auto-created from a recipe; {title} is the recipe title.",
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "shoppingAddFromMenu": "Lägg till från meny",
@@ -2328,14 +2493,18 @@
   "@recipeCommentVisibleTo": {
     "description": "BUT-914: label under the comment composer naming who will see the comment (collaborative recipe members). {audience} is a pre-formatted name list, e.g. 'Anna, Per, Maria +2'.",
     "placeholders": {
-      "audience": { "type": "String" }
+      "audience": {
+        "type": "String"
+      }
     }
   },
   "recipeCommentVisiblePeople": "{count, plural, =1{1 person} other{{count} personer}}",
   "@recipeCommentVisiblePeople": {
     "description": "BUT-914: count-only fallback for the comment-visibility audience when no member name resolves — must never hide a real audience (privacy). e.g. '3 personer'.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "recipeCommentAudienceTitle": "Synlig för",
@@ -2346,7 +2515,9 @@
   "@recipeCommentAudienceOthers": {
     "description": "BUT-1211: trailing line in the comment-audience dialog for members whose display name couldn't be resolved — counted, never hidden (privacy). e.g. 'och 2 personer till'.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "commentReply": "Svara",
@@ -3697,7 +3868,9 @@
   "a11yIngredientHeadingField": "Rubrik {label}",
   "@a11yIngredientHeadingField": {
     "placeholders": {
-      "label": { "type": "String" }
+      "label": {
+        "type": "String"
+      }
     }
   },
   "recipeLeaveWithoutSaving": "Lämna utan att spara",
@@ -3883,7 +4056,9 @@
   "@importMultipleRecipesFound": {
     "description": "Button shown after OCR when several recipes were detected on one page; opens the picker.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importPhotoAddPage": "Lägg till sida",
@@ -3894,21 +4069,27 @@
   "@importPhotoPageLabel": {
     "description": "Label under each thumbnail in the multi-page photo import strip (BUT-903).",
     "placeholders": {
-      "number": { "type": "int" }
+      "number": {
+        "type": "int"
+      }
     }
   },
   "importPhotoPagesCombined": "{count} sidor kombineras till ett recept",
   "@importPhotoPagesCombined": {
     "description": "Caption above the page strip explaining the pages are merged into one recipe (BUT-903).",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importPhotoPagesMaxReached": "Max {max} sidor per recept",
   "@importPhotoPagesMaxReached": {
     "description": "Error/disabled-state message when the user tries to add more than the page cap (BUT-903).",
     "placeholders": {
-      "max": { "type": "int" }
+      "max": {
+        "type": "int"
+      }
     }
   },
   "shareImportUnreadable": "Kunde inte läsa det delade fotot",
@@ -3919,7 +4100,9 @@
   "@a11yRemovePhotoPage": {
     "description": "Screen-reader label for the remove button on a photo-import page thumbnail (BUT-903).",
     "placeholders": {
-      "number": { "type": "int" }
+      "number": {
+        "type": "int"
+      }
     }
   },
   "importProcessingImage": "Bearbetar bild...",
@@ -4525,14 +4708,20 @@
   "importConfirmButton": "Importera ({count})",
   "@importConfirmButton": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "importPreviewSubtitle": "{ingredients} ingredienser · {steps} steg",
   "@importPreviewSubtitle": {
     "placeholders": {
-      "ingredients": { "type": "int" },
-      "steps": { "type": "int" }
+      "ingredients": {
+        "type": "int"
+      },
+      "steps": {
+        "type": "int"
+      }
     }
   },
   "stateAddRecipes": "Lägg till recept",
@@ -4826,23 +5015,33 @@
   "@groupRemoveMultipleConfirm": {
     "description": "BUT-997: confirm-dialog text for bulk-remove of group members.",
     "placeholders": {
-      "count": { "type": "int" },
-      "group": { "type": "String" }
+      "count": {
+        "type": "int"
+      },
+      "group": {
+        "type": "String"
+      }
     }
   },
   "groupMembersRemoved": "{count} medlemmar har tagits bort",
   "@groupMembersRemoved": {
     "description": "BUT-997: success snackbar after bulk-remove.",
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "groupMembersPartiallyRemoved": "{removed} medlemmar borttagna — kunde inte ta bort: {failedNames}",
   "@groupMembersPartiallyRemoved": {
     "description": "BUT-997: partial-failure snackbar when bulk-remove couldn't remove every selected member.",
     "placeholders": {
-      "removed": { "type": "int" },
-      "failedNames": { "type": "String" }
+      "removed": {
+        "type": "int"
+      },
+      "failedNames": {
+        "type": "String"
+      }
     }
   },
   "groupOwner": "Ägare",
@@ -5115,7 +5314,9 @@
   "shoppingItemMoved": "Flyttade till {category}",
   "@shoppingItemMoved": {
     "placeholders": {
-      "category": { "type": "String" }
+      "category": {
+        "type": "String"
+      }
     }
   },
   "shoppingUnitHint": "Enhet...",
@@ -6100,35 +6301,65 @@
   "categoryCanned": "Konserver",
   "categoryDryGoods": "Torrvaror",
   "categoryMeat": "Kött",
-  "@categoryMeat": {"description": "Shopping category — meat only (BUT-1004 split from meat_fish)"},
+  "@categoryMeat": {
+    "description": "Shopping category — meat only (BUT-1004 split from meat_fish)"
+  },
   "categoryFish": "Fisk",
-  "@categoryFish": {"description": "Shopping category — fish only (BUT-1004 split from meat_fish)"},
+  "@categoryFish": {
+    "description": "Shopping category — fish only (BUT-1004 split from meat_fish)"
+  },
   "categoryFruit": "Frukt",
-  "@categoryFruit": {"description": "Shopping category — fruit only (BUT-1004 split from fruit_veg)"},
+  "@categoryFruit": {
+    "description": "Shopping category — fruit only (BUT-1004 split from fruit_veg)"
+  },
   "categoryVeg": "Grönsaker",
-  "@categoryVeg": {"description": "Shopping category — vegetables only (BUT-1004 split from fruit_veg)"},
+  "@categoryVeg": {
+    "description": "Shopping category — vegetables only (BUT-1004 split from fruit_veg)"
+  },
   "conflictBannerMessage": "Synkroniseringskonflikt löst — den senaste ändringen sparades",
-  "@conflictBannerMessage": {"description": "BUT-1031: banner shown when realtime conflict resolver picked a winner."},
+  "@conflictBannerMessage": {
+    "description": "BUT-1031: banner shown when realtime conflict resolver picked a winner."
+  },
   "conflictBannerDismiss": "Stäng",
-  "@conflictBannerDismiss": {"description": "BUT-1031: dismiss action on the conflict banner."},
+  "@conflictBannerDismiss": {
+    "description": "BUT-1031: dismiss action on the conflict banner."
+  },
   "a11yConflictBannerDismiss": "Stäng konfliktnotis",
-  "@a11yConflictBannerDismiss": {"description": "BUT-1031: a11y label for the conflict banner dismiss action."},
+  "@a11yConflictBannerDismiss": {
+    "description": "BUT-1031: a11y label for the conflict banner dismiss action."
+  },
   "conflictDiffTitle": "Vad ändrades",
-  "@conflictDiffTitle": {"description": "BUT-1163: title of the conflict diff view."},
+  "@conflictDiffTitle": {
+    "description": "BUT-1163: title of the conflict diff view."
+  },
   "conflictDiffLocalLabel": "Min version",
-  "@conflictDiffLocalLabel": {"description": "BUT-1163: label for the local snapshot column in the conflict diff."},
+  "@conflictDiffLocalLabel": {
+    "description": "BUT-1163: label for the local snapshot column in the conflict diff."
+  },
   "conflictDiffRemoteLabel": "Deras version",
-  "@conflictDiffRemoteLabel": {"description": "BUT-1163: label for the remote snapshot column in the conflict diff."},
+  "@conflictDiffRemoteLabel": {
+    "description": "BUT-1163: label for the remote snapshot column in the conflict diff."
+  },
   "conflictDiffKeepMine": "Behåll min version",
-  "@conflictDiffKeepMine": {"description": "BUT-1163: button that re-applies the local version after a lost conflict."},
+  "@conflictDiffKeepMine": {
+    "description": "BUT-1163: button that re-applies the local version after a lost conflict."
+  },
   "conflictDiffKeptToast": "Din version sparades",
-  "@conflictDiffKeptToast": {"description": "BUT-1163: success toast after re-applying the local version."},
+  "@conflictDiffKeptToast": {
+    "description": "BUT-1163: success toast after re-applying the local version."
+  },
   "conflictDiffKeepFailed": "Kunde inte spara din version",
-  "@conflictDiffKeepFailed": {"description": "BUT-1163: error toast when re-applying the local version fails."},
+  "@conflictDiffKeepFailed": {
+    "description": "BUT-1163: error toast when re-applying the local version fails."
+  },
   "conflictDiffNoChanges": "Inga fältändringar att visa — versionerna är identiska.",
-  "@conflictDiffNoChanges": {"description": "BUT-1163: empty state when the two snapshots are identical."},
+  "@conflictDiffNoChanges": {
+    "description": "BUT-1163: empty state when the two snapshots are identical."
+  },
   "conflictDiffEmptyValue": "(tomt)",
-  "@conflictDiffEmptyValue": {"description": "BUT-1163: placeholder shown for an empty or missing field value in the diff."},
+  "@conflictDiffEmptyValue": {
+    "description": "BUT-1163: placeholder shown for an empty or missing field value in the diff."
+  },
   "privacyEmailSubject": "Integritetsfråga",
   "unshareRecipeTitle": "Sluta dela recept?",
   "unshareRecipeConfirm": "Receptet \"{title}\" tas bort från alla grupper det delats med.",
@@ -6288,8 +6519,6 @@
   "notificationQuietHoursSubtitle": "Inga aviseringar under vald tidsperiod",
   "commonFrom": "Från",
   "commonTo": "Till",
-  "notificationSound": "Ljud",
-  "notificationVibration": "Vibration",
   "notificationCategoryFriends": "Vänner",
   "notificationCategoryRecipes": "Recept",
   "notificationCategoryCollaboration": "Samarbete",
@@ -6338,24 +6567,47 @@
   "blockedUsersEmpty": "Inga blockerade användare",
   "blockedUsersUnblockSelectedCount": "Avblockera valda ({count})",
   "@blockedUsersUnblockSelectedCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "blockedUsersBulkUnblockTitle": "Avblockera valda?",
   "blockedUsersBulkUnblockMessage": "Vill du avblockera {count} användare?",
   "@blockedUsersBulkUnblockMessage": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "blockedUsersBulkUnblockResult": "{count} användare avblockerade",
   "@blockedUsersBulkUnblockResult": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "blockedUsersBulkUnblockPartial": "{succeeded} av {total} avblockerade",
   "@blockedUsersBulkUnblockPartial": {
-    "placeholders": { "succeeded": { "type": "int" }, "total": { "type": "int" } }
+    "placeholders": {
+      "succeeded": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   },
   "a11yBlockedUserSelect": "Markera blockerad användare {name}",
   "@a11yBlockedUserSelect": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "retagFetchingRecipes": "Hämtar recept...",
   "retagRetaggingRecipes": "Omtaggar recept",
@@ -6572,12 +6824,20 @@
   "adminMetricWhy": "Varför viktigt",
   "adminDrillImportTitle": "Importförsök: {domain}",
   "@adminDrillImportTitle": {
-    "placeholders": { "domain": { "type": "String" } }
+    "placeholders": {
+      "domain": {
+        "type": "String"
+      }
+    }
   },
   "adminDrillEmpty": "Inga importförsök loggade",
   "adminDrillTruncated": "Visar {count} (det kan finnas fler)",
   "@adminDrillTruncated": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "adminDrillSuccess": "Lyckades",
   "adminDrillFailure": "Misslyckades",
@@ -9656,7 +9916,9 @@
   "@a11yLinkTo": {
     "description": "Accessibility label for an inline link in user/markdown text — read by screen readers as the link's name (BUT-1446)",
     "placeholders": {
-      "url": { "type": "String" }
+      "url": {
+        "type": "String"
+      }
     }
   },
   "reportContent": "Rapportera",
@@ -9792,11 +10054,19 @@
   "seasonalForgottenFavorites": "Glömda favoriter",
   "seasonalHeroTitle": "just nu i säsong · {month}",
   "@seasonalHeroTitle": {
-    "placeholders": { "month": {"type": "String"} }
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
   },
   "seasonalHeroRecipeCount": "{count, plural, =1{1 recept} other{{count} recept}}",
   "@seasonalHeroRecipeCount": {
-    "placeholders": { "count": {"type": "int"} }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "seasonalMonthJanuary": "januari",
   "seasonalMonthFebruary": "februari",
@@ -9816,21 +10086,28 @@
   "emptyStateNewUserWithPrefs": "Dina kostpreferenser är redo. Importera ditt första recept, så sköts filtreringen åt dig.",
   "emptyStateImportAction": "Importera via länk",
   "emptyStateOtherOptions": "Övriga alternativ",
-  "recipePrint": "Skriv ut",
   "cookingModePreviousStep": "Föregående steg",
   "cookingModeNextStep": "Nästa steg",
   "cookingModeStepOf": "Steg {current} av {total}",
   "@cookingModeStepOf": {
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "cookingModeStepAnnounce": "Steg {step}: {instruction}",
   "@cookingModeStepAnnounce": {
     "placeholders": {
-      "step": {"type": "int"},
-      "instruction": {"type": "String"}
+      "step": {
+        "type": "int"
+      },
+      "instruction": {
+        "type": "String"
+      }
     }
   },
   "quickCaptureTitle": "Snabbspara recept",
@@ -9847,13 +10124,17 @@
   "a11yRecipeSelected": "{title}, markerad",
   "@a11yRecipeSelected": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "a11yRecipeNotSelected": "{title}, ej markerad",
   "@a11yRecipeNotSelected": {
     "placeholders": {
-      "title": {"type": "String"}
+      "title": {
+        "type": "String"
+      }
     }
   },
   "recipeImproveTitle": "Förbättra detta recept",
@@ -9866,22 +10147,27 @@
   "recipeCompleteness": "{score}% komplett",
   "@recipeCompleteness": {
     "placeholders": {
-      "score": { "type": "int" }
+      "score": {
+        "type": "int"
+      }
     }
   },
   "recipeCompletenessA11y": "Receptet är {score} procent komplett",
   "@recipeCompletenessA11y": {
     "placeholders": {
-      "score": { "type": "int" }
+      "score": {
+        "type": "int"
+      }
     }
   },
   "pwaInstallPrompt": "Installera Butlery på din hemskärm för snabbare åtkomst",
   "pwaInstallAction": "Installera",
-
   "duplicateMergeSimilarity": "{percent}% likhet",
   "@duplicateMergeSimilarity": {
     "placeholders": {
-      "percent": { "type": "int" }
+      "percent": {
+        "type": "int"
+      }
     }
   },
   "duplicateMergeExisting": "Befintligt",
@@ -9904,13 +10190,17 @@
   "duplicateMergeMinutes": "{minutes} min",
   "@duplicateMergeMinutes": {
     "placeholders": {
-      "minutes": { "type": "int" }
+      "minutes": {
+        "type": "int"
+      }
     }
   },
   "duplicateMergeItemCount": "{count} st",
   "@duplicateMergeItemCount": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "duplicateMergeNoSource": "Ingen källa",
@@ -9918,7 +10208,9 @@
   "menuSwapAlternatives": "{count} alternativ kvar",
   "@menuSwapAlternatives": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "menuSwapExhausted": "Inga fler alternativ som matchar dina preferenser",
@@ -9934,7 +10226,6 @@
   "statsWithoutTime": "Utan tid",
   "statsIncomplete": "Ofullständiga",
   "statsAllComplete": "Alla recept är kompletta.",
-
   "notificationsTitle": "Aviseringar",
   "notificationsEmpty": "Inga aviseringar än",
   "notificationsErrorLoad": "Kunde inte ladda aviseringar",
@@ -9950,19 +10241,18 @@
   "@notificationsMarkAllRead": {
     "description": "Notifications view app-bar overflow action — bulk-marks every unread notification as read (BUT-952)."
   },
-
   "allergenIncludeUnknownTitle": "Visa okänd allergenstatus",
   "allergenIncludeUnknownSubtitle": "Inkludera recept med okänd allergenstatus i menyförslag",
-
   "tagDecisionWhyTitle": "Varför denna tagg?",
   "tagDecisionReason": "Orsak",
   "tagDecisionIngredients": "Ingredienser",
-
   "cookSnapSectionTitle": "Lagade detta",
   "cookSnapSectionTitleCount": "Lagade detta ({count})",
   "@cookSnapSectionTitleCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "cookSnapAddTooltip": "Lägg till matfoto",
@@ -9982,7 +10272,11 @@
   "cookSnapVisibleTo": "Synligt för: {audience}",
   "@cookSnapVisibleTo": {
     "description": "BUT-901: disclosure when the parent recipe is shared/collaborative. {audience} is a pre-formatted name list (e.g. 'Anna, Per, Maria +2').",
-    "placeholders": { "audience": { "type": "String" } }
+    "placeholders": {
+      "audience": {
+        "type": "String"
+      }
+    }
   },
   "cookSnapVisibilityConfirm": "Dela foto",
   "@cookSnapVisibilityConfirm": {
@@ -10013,30 +10307,38 @@
   "@cookSnapPhotoCounter": {
     "description": "Position indicator on a multi-photo cook snap album, e.g. 2/5.",
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "a11yCookSnapPhotoCarousel": "Matbild {current} av {total}",
   "@a11yCookSnapPhotoCarousel": {
     "description": "Screen-reader label for a swipeable cook snap album.",
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
-
   "collectionInsightsTitle": "Min samling",
   "collectionInsightsInsufficientData": "Lägg till fler recept för att se mönster",
   "collectionInsightsTopCuisines": "Topkök",
   "collectionInsightsDietaryVegetarian": "vegetariskt",
   "collectionInsightsDietaryVegan": "veganskt",
   "collectionInsightsDietaryPescetarian": "pescetarianskt",
-
   "personalTagUnusedTags": "Oanvända taggar ({count})",
   "@personalTagUnusedTags": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagDeleteAllUnused": "Radera alla oanvända",
@@ -10044,13 +10346,17 @@
   "personalTagDeleteAllUnusedMessage": "{count, plural, =1{1 tagg utan recept kommer att tas bort.} other{{count} taggar utan recept kommer att tas bort.}}",
   "@personalTagDeleteAllUnusedMessage": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "personalTagUnusedDeleted": "{count, plural, =1{1 oanvänd tagg borttagen} other{{count} oanvända taggar borttagna}}",
   "@personalTagUnusedDeleted": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeklyMenuToggleList": "Lista",
@@ -10067,15 +10373,20 @@
   "weeklyMenuWeekLabel": "Vecka {weekNum} · {start}–{end}",
   "@weeklyMenuWeekLabel": {
     "placeholders": {
-      "weekNum": {"type": "int"},
-      "start": {"type": "String"},
-      "end": {"type": "String"}
+      "weekNum": {
+        "type": "int"
+      },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
     }
   },
   "mealSlotLunch": "Lunch",
   "mealSlotMiddag": "Middag",
   "mealSlotOvrigt": "Övrigt",
-
   "weeklyMenuChipsHeading": "Vi förstod:",
   "weeklyMenuChipsNotUnderstood": "Vi förstod inte:",
   "weeklyMenuChipsRefinePrompt": "Förfina prompten",
@@ -10087,7 +10398,9 @@
   "weeklyMenuCopyToNextResult": "{count, plural, =0{Inget kopierades – allt finns redan nästa vecka} =1{1 recept kopierat till nästa vecka} other{{count} recept kopierade till nästa vecka}}",
   "@weeklyMenuCopyToNextResult": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeklyMenuCopyToNextFailed": "Kunde inte kopiera veckan",
@@ -10095,7 +10408,9 @@
   "weeklyMenuSelectionCount": "{count, plural, =1{1 vald} other{{count} valda}}",
   "@weeklyMenuSelectionCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeklyMenuMoveSelectionAction": "Flytta",
@@ -10103,17 +10418,20 @@
   "weeklyMenuMovedResult": "{count, plural, =0{Inget flyttades} =1{1 recept flyttat} other{{count} recept flyttade}}",
   "@weeklyMenuMovedResult": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "weeklyMenuMoveFailed": "Kunde inte flytta recepten",
   "a11yWeeklyMenuSelectEntry": "Välj {recipe} för att flytta",
   "@a11yWeeklyMenuSelectEntry": {
     "placeholders": {
-      "recipe": {"type": "String"}
+      "recipe": {
+        "type": "String"
+      }
     }
   },
-
   "pantrySectionExpiring": "Går ut snart",
   "pantrySectionFridge": "Kylskåp",
   "pantrySectionFreezer": "Frys",
@@ -10129,7 +10447,9 @@
   "pantryExpiryInDays": "{days, plural, =1{Utgår om 1 dag} other{Utgår om {days} dagar}}",
   "@pantryExpiryInDays": {
     "placeholders": {
-      "days": {"type": "int"}
+      "days": {
+        "type": "int"
+      }
     }
   },
   "pantryExpiryDate": "Utgångsdatum",
@@ -10155,7 +10475,9 @@
   "recipeCardPantryMatchA11y": "Matchar {percent}% av dina ingredienser",
   "@recipeCardPantryMatchA11y": {
     "placeholders": {
-      "percent": {"type": "int"}
+      "percent": {
+        "type": "int"
+      }
     }
   },
   "ingredientSearchTitle": "Sök med ingredienser",
@@ -10168,20 +10490,28 @@
   "ingredientSearchResultCount": "{count, plural, =1{1 recept hittat} other{{count} recept hittade}}",
   "@ingredientSearchResultCount": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "ingredientMatchCount": "{matched} av {total} ingredienser",
   "@ingredientMatchCount": {
     "placeholders": {
-      "matched": {"type": "int"},
-      "total": {"type": "int"}
+      "matched": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "ingredientMissing": "Saknas: {list}",
   "@ingredientMissing": {
     "placeholders": {
-      "list": {"type": "String"}
+      "list": {
+        "type": "String"
+      }
     }
   },
   "ingredientSearchSharedBadge": "Delat",
@@ -10191,14 +10521,18 @@
   "annasDel": "{name}s del",
   "@annasDel": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "otilldelat": "Otilldelat",
   "handlarNu": "{name} handlar nu",
   "@handlarNu": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "efterZon": "Efter zon",
@@ -10206,26 +10540,34 @@
   "nagonAnnanTogDen": "{name} tog den — välj en annan",
   "@nagonAnnanTogDen": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "shoppingItemClaimed": "Tar hand om \"{itemName}\"",
   "@shoppingItemClaimed": {
     "placeholders": {
-      "itemName": {"type": "String"}
+      "itemName": {
+        "type": "String"
+      }
     }
   },
   "shoppingItemUnclaimed": "Släppte \"{itemName}\"",
   "@shoppingItemUnclaimed": {
     "placeholders": {
-      "itemName": {"type": "String"}
+      "itemName": {
+        "type": "String"
+      }
     }
   },
   "outOfIngredientTitle": "Slut på {ingredient}? Prova…",
   "@outOfIngredientTitle": {
     "description": "BUT-202: title of the cooking-mode substitution bottom sheet, shown when long-pressing an ingredient row.",
     "placeholders": {
-      "ingredient": {"type": "String"}
+      "ingredient": {
+        "type": "String"
+      }
     }
   },
   "ratioSuffix": "av originalmängden",
@@ -10372,16 +10714,28 @@
   "@cookingNowSingle": {
     "description": "BUT-408: single-cook presence label (one group member is cooking).",
     "placeholders": {
-      "name": {"type": "String", "example": "Erik"},
-      "recipe": {"type": "String", "example": "kycklinggryta"}
+      "name": {
+        "type": "String",
+        "example": "Erik"
+      },
+      "recipe": {
+        "type": "String",
+        "example": "kycklinggryta"
+      }
     }
   },
   "cookingNowMerge": "{names} lagar {recipe}",
   "@cookingNowMerge": {
     "description": "BUT-408: multi-cook merge label. 'names' is pre-joined on the client (e.g. 'Erik & Sara').",
     "placeholders": {
-      "names": {"type": "String", "example": "Erik & Sara"},
-      "recipe": {"type": "String", "example": "kycklinggryta"}
+      "names": {
+        "type": "String",
+        "example": "Erik & Sara"
+      },
+      "recipe": {
+        "type": "String",
+        "example": "kycklinggryta"
+      }
     }
   },
   "notificationPermissionTitle": "Aktivera aviseringar?",
@@ -10416,15 +10770,24 @@
   "@familyPresenceOverflow": {
     "description": "Overflow chip label when more members are online than the bar can show (e.g. '+3').",
     "placeholders": {
-      "count": {"type": "int", "example": "3"}
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
     }
   },
   "cookingStepSuffix": " · steg {current} av {total}",
   "@cookingStepSuffix": {
     "description": "Appended to the cooking presence line to show progress. Includes the middot separator.",
     "placeholders": {
-      "current": {"type": "int", "example": "3"},
-      "total": {"type": "int", "example": "7"}
+      "current": {
+        "type": "int",
+        "example": "3"
+      },
+      "total": {
+        "type": "int",
+        "example": "7"
+      }
     }
   },
   "pingNudge": "Knuffa",
@@ -10463,37 +10826,58 @@
   "@pingNudgeFrom": {
     "description": "Activity line when someone nudges the current user.",
     "placeholders": {
-      "name": {"type": "String", "example": "Erik"}
+      "name": {
+        "type": "String",
+        "example": "Erik"
+      }
     }
   },
   "pingTimerAlertFrom": "{name} har en timer som ringer",
   "@pingTimerAlertFrom": {
     "description": "Activity line when someone's timer alert fires.",
     "placeholders": {
-      "name": {"type": "String", "example": "Erik"}
+      "name": {
+        "type": "String",
+        "example": "Erik"
+      }
     }
   },
   "pingHelpMeFrom": "{name} behöver hjälp",
   "@pingHelpMeFrom": {
     "description": "Activity line when someone asks for help.",
     "placeholders": {
-      "name": {"type": "String", "example": "Erik"}
+      "name": {
+        "type": "String",
+        "example": "Erik"
+      }
     }
   },
   "activityAddedIngredient": "{name} lade till {ingredient}",
   "@activityAddedIngredient": {
     "description": "Activity line for the addedIngredient event type.",
     "placeholders": {
-      "name": {"type": "String", "example": "Erik"},
-      "ingredient": {"type": "String", "example": "smör"}
+      "name": {
+        "type": "String",
+        "example": "Erik"
+      },
+      "ingredient": {
+        "type": "String",
+        "example": "smör"
+      }
     }
   },
   "activityStartedCooking": "{name} började laga {recipe}",
   "@activityStartedCooking": {
     "description": "Activity line for the startedCooking event type.",
     "placeholders": {
-      "name": {"type": "String", "example": "Erik"},
-      "recipe": {"type": "String", "example": "kycklinggryta"}
+      "name": {
+        "type": "String",
+        "example": "Erik"
+      },
+      "recipe": {
+        "type": "String",
+        "example": "kycklinggryta"
+      }
     }
   },
   "moderatorReviewTitle": "Granska rapporter",
@@ -11322,34 +11706,94 @@
   "familyDeleteConfirmBody": "Familjemedlemmen och deras familjebetyg tas bort. Detta går inte att ångra.",
   "a11yAddFamilyMember": "Lägg till familjemedlem",
   "a11yEditFamilyMember": "Redigera familjemedlem",
-  "@familyGuardianConsentText": {"placeholders": {"name": {"type": "String"}}},
-  "@familyAllergenConsentText": {"placeholders": {"name": {"type": "String"}}},
+  "@familyGuardianConsentText": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@familyAllergenConsentText": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "familyConsentChildWord": "barnet",
   "familyConsentPersonWord": "personen",
   "familyHubSubtitle": "Hantera barn och gäster i hushållet",
   "a11yColorSwatch": "Avatarfärg {index}",
-  "@a11yColorSwatch": {"placeholders": {"index": {"type": "int"}}},
+  "@a11yColorSwatch": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
   "whoAteTitle": "vem åt?",
   "whoAteConfirm": "klar — {count} åt",
-  "@whoAteConfirm": {"placeholders": {"count": {"type": "int"}}},
+  "@whoAteConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "whoAteSkip": "hoppa över",
   "a11yToggleDiner": "Växla om {name} åt",
-  "@a11yToggleDiner": {"placeholders": {"name": {"type": "String"}}},
+  "@a11yToggleDiner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "menuPresenceSheetTitle": "vem är hemma?",
   "menuPresenceThisMeal": "denna måltid",
   "menuPresenceWholeDay": "hela dagen",
   "menuPresenceNobody": "ingen hemma",
   "menuPresencePortions": "{count} port",
-  "@menuPresencePortions": {"placeholders": {"count": {"type": "int"}}},
+  "@menuPresencePortions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "menuPresenceSlotSubtitle": "{slot} på {day}",
-  "@menuPresenceSlotSubtitle": {"placeholders": {"slot": {"type": "String"}, "day": {"type": "String"}}},
+  "@menuPresenceSlotSubtitle": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "menuPresenceAfterGenerateNotice": "närvaron uppdaterad — planerade rätter ligger kvar",
   "menuPresenceSummaryTitle": "vem är hemma?",
   "menuPresenceSummaryAllHome": "alla hemma hela veckan",
   "menuPresenceSummaryAway": "{names} borta delar av veckan",
-  "@menuPresenceSummaryAway": {"placeholders": {"names": {"type": "String"}}},
+  "@menuPresenceSummaryAway": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
   "a11yMenuSlotPresence": "Välj vilka som är hemma på {slot} {day}",
-  "@a11yMenuSlotPresence": {"placeholders": {"slot": {"type": "String"}, "day": {"type": "String"}}},
+  "@a11yMenuSlotPresence": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "familyRatingTitle": "vad tyckte ni?",
   "familyRatingIntro": "Sätt stjärnor för var och en som åt. Lämna gärna runt mobilen — bara senaste betyget räknas.",
   "familyRatingYou": "du",
@@ -11357,39 +11801,123 @@
   "familyRatingPrivateNote": "Era enskilda betyg är privata — ingen annan ser vem som satte vad. Varje betyg räknas dock med i receptets allmänna snitt.",
   "familyRatingManualButton": "Betygsätt som familj",
   "familyRatingProxyNote": "inmatat av {name} · ändrar inte personens eget betyg",
-  "@familyRatingProxyNote": {"placeholders": {"name": {"type": "String"}}},
+  "@familyRatingProxyNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yRateStarsForMember": "Ge {name} {count} stjärnor",
-  "@a11yRateStarsForMember": {"placeholders": {"name": {"type": "String"}, "count": {"type": "int"}}},
+  "@a11yRateStarsForMember": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "familyRatingSectionTitle": "betyg",
   "familyRatingAverageLabel": "familjens snitt",
   "familyRatingCount": "{count} betyg",
-  "@familyRatingCount": {"placeholders": {"count": {"type": "int"}}},
+  "@familyRatingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "familyRatingUpdated": "uppdaterad {date}",
-  "@familyRatingUpdated": {"placeholders": {"date": {"type": "String"}}},
+  "@familyRatingUpdated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "familyRatingCommunityLabel": "alla",
   "familyRatingYourOwnLabel": "ditt eget betyg",
   "familyRatingLegend": "Grönt = ert hushålls snitt (privat). Rost = alla användares betyg. Guld = ditt eget betyg.",
   "recipeFamilyRatingPill": "familj {rating}",
-  "@recipeFamilyRatingPill": {"placeholders": {"rating": {"type": "String"}}},
+  "@recipeFamilyRatingPill": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "recipeAllaRatingPill": "alla {rating}",
-  "@recipeAllaRatingPill": {"placeholders": {"rating": {"type": "String"}}},
+  "@recipeAllaRatingPill": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "a11yFamilyRatingPill": "Familjebetyg {rating}",
-  "@a11yFamilyRatingPill": {"placeholders": {"rating": {"type": "String"}}},
+  "@a11yFamilyRatingPill": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "a11yAllaRatingPill": "Allas betyg {rating}",
-  "@a11yAllaRatingPill": {"placeholders": {"rating": {"type": "String"}}},
+  "@a11yAllaRatingPill": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "butleryBetygCount": "{count} betyg",
-  "@butleryBetygCount": {"placeholders": {"count": {"type": "int"}}},
+  "@butleryBetygCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "a11yButleryBetygPill": "Butlery-betyget {rating}, {count} röster",
-  "@a11yButleryBetygPill": {"placeholders": {"rating": {"type": "String"}, "count": {"type": "int"}}},
+  "@a11yButleryBetygPill": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "pooledCommunityLabel": "butlery-betyget",
   "pooledHouseholdLabel": "alla i ditt kök",
   "a11yPooledHouseholdPill": "Ditt köks betyg {rating}",
-  "@a11yPooledHouseholdPill": {"placeholders": {"rating": {"type": "String"}}},
+  "@a11yPooledHouseholdPill": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "familyRatingProxyEntered": "inmatat av {name}",
-  "@familyRatingProxyEntered": {"placeholders": {"name": {"type": "String"}}},
+  "@familyRatingProxyEntered": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "a11yToggleRatingBreakdown": "Visa eller dölj betygsöversikt",
   "a11yEditMemberRating": "Ändra betyg för {name}",
-  "@a11yEditMemberRating": {"placeholders": {"name": {"type": "String"}}},
+  "@a11yEditMemberRating": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "deepLinkExpired": "Länken har gått ut och kan inte längre öppnas.",
   "@deepLinkExpired": {
     "description": "Butler-voice snackbar shown when a shared recipe/menu/shopping deep link is older than 7 days and is dropped (BUT-1587)"
@@ -11405,5 +11933,25 @@
   "familyDislikesNote": "Rätter med dessa undviks när det går. En smakpreferens, inte en säkerhetsgräns som allergier.",
   "@familyDislikesNote": {
     "description": "Helper text under the disliked-ingredients picker clarifying it is a soft preference, not an allergy/safety constraint (BUT-1610)"
+  },
+  "chatJoinedHereDivider": "Du gick med här",
+  "chatGroupMembersAddedCount": "{count, plural, =1{1 medlem tillagd} other{{count} medlemmar tillagda}}",
+  "@chatGroupMembersAddedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatGroupAddMembersBlocked": "Några personer kunde inte läggas till i gruppen.",
+  "chatGroupAddMembersFailed": "Det gick inte att lägga till medlemmar. Försök igen.",
+  "chatGroupCreateFailed": "Det gick inte att skapa gruppen. Försök igen.",
+  "chatGroupTooManyMembers": "En grupp kan ha högst {max} medlemmar.",
+  "@chatGroupTooManyMembers": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
   }
 }

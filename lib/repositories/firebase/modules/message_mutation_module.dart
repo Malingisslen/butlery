@@ -137,33 +137,28 @@ class MessageMutationModule {
 
         // Create fallback conversation with BOTH participant names
         // DO NOT give this conversation a `metadata.creatorId`, however
-        // obviously right that looks. `firestore.rules` relies on the null.
+        // obviously right that looks — but the REASON changed on 2026-08-13
+        // (BUT-1838) and the old one is worth not repeating.
         //
-        // `ConversationDto.toFirestore` emits `metadata` unconditionally, so
-        // this object sends `metadata: null`, and the conversations CREATE rule
-        // evaluates `'creatorId' in request.resource.data.metadata` against it —
-        // an `in` on a null is an evaluation error, which denies. That denial is
-        // the only thing stopping a NON-CREATOR from materialising a group's
-        // top-level document by sending the first message. If it landed,
-        // `enforceGroupMinorMembership` would return early on it — this payload
-        // trips BOTH halves of its guard (`isGroup: false` AND one participant);
-        // a false flag alone does NOT return early when there are >2 —
-        // and `onDocumentCreated` cannot fire twice — so the child-safety cut
-        // that evicts a minor added by a non-friend would never run for that
-        // group at all.
+        // It used to be a CEL accident: the create rule read
+        // `'creatorId' in request.resource.data.metadata`, an `in` on a null is
+        // an evaluation error, and that error was the only thing stopping a
+        // non-creator from materialising a group's top-level document by
+        // sending the first message — which would have permanently disarmed the
+        // `onDocumentCreated` child-safety trigger.
         //
-        // The invariant is THREE-sided and every side is now pinned:
-        //   - the rule denies `metadata: null` — test C7B in
-        //     conversations-rules.test.ts;
-        //   - this constructor records no creator, and
-        //   - `ConversationDto.toFirestore` writes the key even when null
-        //     — both in message_mutation_module_test.dart, each
-        //     mutation-proven against the edit it exists for.
+        // None of that is the situation any more. The create rule is a bare
+        // `request.resource.data.metadata.creatorId == request.auth.uid`, which
+        // denies an absent or null creator cleanly rather than by error; a
+        // client cannot create a GROUP conversation at all (`directIdBinds`);
+        // and the safety gate runs before the write, in the `chat_groups`
+        // callables, with the trigger repointed at `chat_groups` as a backstop.
         //
-        // Not a security bound, and do not read it as one: it binds OUR client,
-        // not a tampered one. A hand-rolled create carrying a real metadata map
-        // is allowed today and ends the window irreversibly — BUT-1830. See
-        // ACCEPTED_DEVIATIONS.md, the conversation roster section.
+        // What survives: this fallback must still send no creator, because the
+        // caller is not one — and `ConversationDto.toFirestore` still emits the
+        // key unconditionally, so a "don't write nulls" tidy would change a
+        // write path the rules govern. Test C7B pins the deny; the DTO's own
+        // emission is pinned in message_mutation_module_test.dart.
         conversation = Conversation(
           id: conversationId,
           participantIds: [
@@ -371,7 +366,6 @@ class MessageMutationModule {
   Future<void> markConversationAsRead({
     required String conversationId,
     required String userId,
-    required Future<void> Function(Conversation) updateConversation,
   }) async {
     try {
       final conversation = await readConversation(conversationId);
@@ -391,18 +385,24 @@ class MessageMutationModule {
         );
       }
 
+      // BUT-1838: a FIELD-PATH write to the top level, not a whole-document
+      // update through `updateConversation`. Two reasons, either sufficient.
+      //
+      // The path: `updateConversation` is `BaseFirebaseRepository.update`,
+      // which this repository's user-scoped mixin rewrites to
+      // `users/{uid}/conversations/{id}` — a document that exists for no chat
+      // group, so `.update()` would throw on a read receipt (and the service
+      // swallows it, so nobody would ever be told).
+      //
+      // The payload: sending the whole document back re-sends `participantIds`
+      // and `createdAt`, which the conversations update rule denies on any
+      // diff. It survives only while those values round-trip byte-identically
+      // (BUT-1831). One dotted key cannot trip it.
       final now = clock.now().toUtc();
-      final updatedLastReadTimestamps = Map<String, DateTime>.from(
-        conversation.lastReadTimestamps,
-      );
-      updatedLastReadTimestamps[userId] = now;
-
-      final updatedConversation = conversation.copyWith(
-        lastReadTimestamps: updatedLastReadTimestamps,
-        updatedAt: now,
-      );
-
-      await updateConversation(updatedConversation);
+      await firestore.collection(collectionName).doc(conversationId).update({
+        'lastReadTimestamps.$userId': Timestamp.fromDate(now),
+        'updatedAt': Timestamp.fromDate(now),
+      });
 
       AppLogger.debug(
         'Conversation marked as read: $conversationId by ${userId.maskedUserId}',

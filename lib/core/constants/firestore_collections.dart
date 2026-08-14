@@ -136,6 +136,11 @@ abstract final class FirestoreCollections {
   // ── Other subcollections ──
 
   static const String participants = 'participants';
+
+  /// BUT-1838: the shared group a group chat hangs off. Named `chat_groups`
+  /// because `friend_categories` and `group_invitations` already claim the word
+  /// "group" for an unrelated feature (recipe sharing).
+  static const String chatGroups = 'chat_groups';
   static const String activeUsers = 'activeUsers';
   static const String recipePresence = 'recipePresence';
   // BUT-238: collaborative shopping presence (per-list, 30s TTL).

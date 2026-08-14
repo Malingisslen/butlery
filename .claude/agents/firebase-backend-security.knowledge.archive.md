@@ -3667,3 +3667,271 @@ fieldOverride removes any config it does not list). `firestore.rules` diff is co
 a reviewer stamping their own approval is the forgeable artifact the contract exists to replace,
 and the marker's `path@blob-sha` pins are index blobs that do not exist while the fileset is
 unstaged.
+
+### 2026-08-14 — BUT-1838 client half: two ways one Art. 15 export dies, and a mixin that only looks present
+
+Reviewed the staged client half of BUT-1838 (43 files staged; my gate = `lib/repositories/**` +
+the GDPR/user services). Server half already committed (d627daf25, c7fc9dd6b). Verdict: FAIL,
+4 blocking.
+
+**1. Raw `Timestamp` in a hand-built export projection kills the WHOLE bundle.**
+`FirebaseDataExportRepository.exportChatGroups` returns `'created_at': data['createdAt']`
+straight off the document, and `SocialExportManager.exportMessages` assigns the list into
+`messagesData['chat_groups']` without `sanitizeForJson`. Every other leg in the file sanitizes.
+`chat_groups.createdAt` is an admin `Timestamp` (`chat-group-writes.ts:135`); `Timestamp` has no
+`toJson` (checked `cloud_firestore_platform_interface-6.6.12/lib/src/timestamp.dart`), so
+`DataExportService._buildExportBundle`'s `JsonEncoder.withIndent('  ').convert(exportData)`
+(:415) throws `JsonUnsupportedObjectError` — AFTER every section has been gathered, i.e. outside
+the section's own try/catch — and `exportUserData` rethrows. Any user in ≥1 chat group gets NO
+bundle. Two sibling files carry comments warning about exactly this
+(`shared_shopping_list_export.dart:224`, `content_export_manager.dart:229`). Zero tests reference
+`chat_groups` anywhere in `test/`.
+
+**2. The new `messages` read conjunct breaks the export's own query.**
+BUT-1838 added `sentAt >= memberSince[uid]` for conversations carrying `groupId`
+(`firestore.rules`, messages block). `exportConversationsAndMessages` queries messages by
+`conversationId` with `orderBy('sentAt')` and NO `sentAt` filter, so for anyone added to a group
+that already had messages the query returns refused documents → the whole query is denied → the
+throw escapes the per-conversation loop (no local catch) → `messages-export-failed` for EVERY
+conversation the requester has. Same class as BUT-1767, one rule change later. The chat UI got
+the mirror (`MessageQueryModule.historyStart`, wired via `ChatViewModel.historyStart` and
+`chat_message_stream.dart`); `searchMessages` did not (interface, module and repository all lack
+the parameter), so group search silently returns `[]` for a late joiner.
+
+**3. Group messaging is deny-shaped by construction now.**
+`createChatGroup` writes the conversation TOP-LEVEL only, but `FirebaseMessagingRepository` mixes
+`UserScopedFirebaseRepository`, so `read()` resolves `users/{uid}/conversations/{id}` — which now
+exists for nobody. `MessageMutationModule.sendMessage` therefore always takes its fallback
+branch, fabricates `participantIds:[senderId]`/`createdAt: now`/`metadata: null`, and batches
+`set(conversations/{groupId}, dto, merge:true)` beside the message. The update rule's deny-list
+(`participantIds`, `createdAt`, `memberSince`, `groupId`) refuses it, and a WriteBatch is atomic,
+so the message dies with it. Invisible to `conversations-rules.test.ts` because
+`conversationDtoPayload` seeds the SAME participantIds + `FIXTURE_CREATED_AT` it sends, leaving
+`affectedKeys()` empty (tests C10B/C11/C11B). BUT-1831 already records the branch as deny-prone
+and asks how often it runs; for groups the answer is now "always".
+
+**4. Leaked snapshot listener.** `GroupDetailViewModel._chatGroupSubscription` (a live
+`chat_groups/{id}` `.snapshots()`) is never cancelled: `dispose()` cancels only
+`_conversationSubscription`, and `disposeStreamResources()` only cancels subscriptions REGISTERED
+with `StreamManagementMixin` — this one is a bare field assignment.
+
+**Verified clean / decided, not re-argued:**
+- `ConversationDto.toFirestore` emits exactly ten keys and neither `groupId` nor `memberSince`
+  (question 3 answered). Enumerated every writer of a conversation doc:
+  `conversation_mutation_module` (DTO or `perUserSettings` dot-paths only),
+  `message_mutation_module` (DTO), `conversation_participant_module` (roster/mirror only). Nothing
+  else sends either field.
+- The client writes NOTHING to `chat_groups` (grep of the constant: repository read/watch, export,
+  model, VMs). The rules permit an admin rename; no client code performs one. So there is no
+  client-written `chat_groups` PII outside the cascade's reach (question 2 answered).
+- `_redactOtherParticipants`' `memberSince` branch is correct for the shapes Firestore returns:
+  it runs AFTER `sanitizeForJson` (so a Map stays a Map), `{userId: ?memberSince[userId]}` drops a
+  missing own stamp to `{}`, and a non-Map removes the field and sets `redaction_fell_back`.
+- `memberIds array-contains` needs no composite index; both `messages` composites
+  (`conversationId`+`sentAt` ASC and DESC) exist, so the fix for (2) needs no index work.
+- Callable names/region/response fields all match the server (`index.ts:71-73`,
+  `setGlobalOptions({region:"europe-west1"})`, `groupId`/`addedUserIds`/`removed`), and
+  `call<Map<String, dynamic>>` is safe: the method channel already does
+  `Map<String, dynamic>.from(result)` (`cloud_functions_platform_interface-6.0.3`).
+- `group-system-message.ts` carries `metadata.subjectUserId` as its Art. 17 handle — the
+  synthetic-sender residual class is handled, not open.
+
+**Non-blocking, filed in the report:** `chat_groups_export_failed` is a bespoke nested flag the
+bundle-level lift cannot see (needs an `error_code`); `exportChatGroups` caps at 100 with no N+1
+probe; `data_minimisation` says nothing about the projection; `watchMyGroups` has no production
+caller and no `.limit()`; the client's "Radera konversation" is still offered for GROUP
+conversations, which orphans the `chat_groups` doc when it succeeds; group creation never writes
+the `conversation_memberships` mirror, so `removeChatGroupMember`'s mirror cleanup deletes nothing.
+
+**Bytes reviewed:** index == worktree for all fourteen files (`conversation_mutation_module.dart`
+and `group_detail_viewmodel.dart` differ only by CRLF; `git diff` empty). No mid-review write.
+Marker: declined — the Read record plus the verdict line is the proof.
+
+### 2026-08-13 — BUT-1838 client half, FINAL pass: three read seams, two repointed
+
+Re-review of the four blocking findings returned on the earlier state. All four verified fixed
+against the staged bytes:
+
+1. **Raw `Timestamp` failing the whole bundle** — CLOSED. `ChatGroupExport.export` maps every
+   projection row through `sanitizeForJson` (the `Map` branch returns `Map<String, dynamic>`, so
+   the `as` cast is safe), and the failure marker is `error_code` WITHOUT `error`. That shape
+   matters: `data_export_service.dart:344-378` reads `error` as "section failed outright" and a
+   bare `error_code` as "partial", and this leg is merged into the messages section with
+   `addAll`, so the stronger claim would tell a data subject the conversations they DID get were
+   missing.
+2. **Export message query lacked the cut-off** — CLOSED. `exportConversationsAndMessages` reads
+   `memberSince[userId]` off the conversation doc and mirrors it as `sentAt >=`, with a
+   per-CONVERSATION catch emitting `conversation-messages-read-failed`. Fails safe when the stamp
+   is missing (rule defaults to `request.time`, query dies, one conversation degrades instead of
+   the section). Both `messages` composites exist (`conversationId`+`sentAt` ASC and DESC), so
+   the export, the delete sweep and `searchMessages` are all covered.
+3. **Group message sending denied** — PARTIALLY closed, and the residual is the finding.
+   `MessageMutationModule.readConversation` → `_readTopLevelConversation` and
+   `ConversationQueryModule.getConversation` → direct top-level read, both correct. But
+   `ConversationMutationModule` is still constructed `readFn: read`
+   (`firebase_messaging_repository.dart:70`), and its only remaining consumer of that callback is
+   `updateConversation` — the whole of `updateGroupTitle`. `createChatGroup` writes only the
+   top-level conversation + roster (`functions/src/groups/chat-group-writes.ts`), so
+   `users/{uid}/conversations/{id}` does not exist for any BUT-1838 group and rename throws
+   `ResourceNotFoundException` for every admin. Reachable: admin-only edit icon,
+   `group_detail_view.dart:76-81` → `_showEditGroupNameDialog` → `viewModel.updateGroupTitle`.
+   Graded BLOCKING: a shipped, gated, always-failing write path, and the same defect class the
+   ticket was fixing.
+   Two traps the obvious fix walks into, which is why it was reported rather than patched: the
+   sibling seam's WRITE half is still user-scoped (`markConversationAsRead` reads top-level and
+   writes through `update`, a `.update()` on a doc that does not exist — swallowed by
+   `MessagingService`), and a top-level `update(ConversationDto.toFirestore(e))` re-sends
+   `participantIds`/`createdAt`, which the conversations update rule denies unless they round-trip
+   byte-identically (the BUT-1831 hazard). Meanwhile `firestore.rules` opened an admin-only
+   `chat_groups` rename (`hasOnly(['name','updatedAt'])`) that no client code calls, and nothing
+   syncs `chat_groups.name` back to `conversations.title` (only `chat-group-writes.ts:152`, at
+   creation). So the target of the rename is a product decision, not a path swap.
+4. **Leaked listener** — CLOSED. `ChatGroupWatch` cancels in `GroupDetailViewModel.dispose()`, and
+   `_watchedGroupId` stops a fresh `chat_groups` listener per conversation-stream emission (a new
+   unstaged test pins exactly that).
+
+Mediums also confirmed actioned: `error_code` convention, `data_minimisation` now names the
+projection, `searchMessages` takes the cut-off, `memberSince` folded into the SAME three-field
+strip loop as `participantAvatarUrls`/`perUserSettings` (one helper, per the deviation entry),
+delete-conversation no longer offered for a group.
+
+**Non-blocking, filed in the report:**
+- The client Art. 17 leg still deletes a ≤2-participant conversation unconditionally
+  (`MessageDeletionModule._leaveOneConversation`) with no `groupId` skip — the UI affordance was
+  one of three deleters. For a two-member chat group that strands the `chat_groups` doc and takes
+  the survivor's chat with it (the conversation delete leaves the messages orphaned, and
+  `convOf()` on a missing parent denies).
+- Re-adding a removed member OVERWRITES `memberSince` (`chat-group-writes.ts:208`; removal deletes
+  the stamp), so a leave-and-rejoin makes the member's OWN earlier messages unreadable to them,
+  and the export — which mirrors the filter — omits them with no error_code and no truncation
+  flag. Silent Art. 15 gap in a rare state; follows from Malin's "sees only from now on".
+- `FirebaseChatGroupRepository`'s doc comment still cites `BaseMetadataRepository` as the
+  precedent for carrying `PermissionValidationMixin` inertly; that class calls
+  `logPermissionCheck` five times (`:84,133,180,216,247`). The inert mixin is an accepted call —
+  the sentence justifying it by an opposite precedent is what will license believing an audit row
+  exists.
+- `ChatGroupRepository.watchMyGroups()` still has no production caller.
+
+**Bytes reviewed:** index == worktree for every `lib/` file in scope (md5-checked on the three
+that carry the finding); the only unstaged diff in the tree is an ADDED test in
+`group_detail_viewmodel_test.dart`, i.e. the verdict is scoped to staged content that does not
+include it. No MUTANT/THROWAWAY/`if (false)` residue anywhere in `lib/` or `test/`.
+
+### 2026-08-14 — BUT-1838 client half, gate pass 3: the per-row export marker landed, and the seam set is complete
+
+**Verdict: PASS, 0 blocking.** Fileset read with `Read` (worktree bytes):
+`firebase_messaging_repository.dart`, `conversation_mutation_module.dart`,
+`message_mutation_module.dart`, `social_export_manager.dart`, plus corroborating reads of
+`conversation_query_module.dart`, `conversation_dto.dart`, `chat_group_export.dart`,
+`data_export_service.dart:320-400`, `firebase_data_export_repository.dart:332-428`,
+`conversations_list_view.dart:370-435`, `message_management_operations.dart:180-244`,
+`firestore.rules` (conversations 1522-1640, chat_groups 1890-1915, messages 1921-1993).
+
+**The blocking finding from pass 2 is closed exactly as specified.** `SocialExportManager.
+exportMessages` now copies the repository's per-conversation `error_code` onto the row AND sets
+`messagesData['error_code'] = 'conversation-messages-read-failed'` with NO `error` key. Verified
+against the consumer rather than the comment: `data_export_service.dart:344-378` keys the warning
+on `error != null || error_code != null` and picks the message from `failedOutright =
+value['error'] != null`, so this renders "may be incomplete", which is the true claim — the other
+conversations did export. The producer is real: `exportConversationsAndMessages` stamps
+`error_code` in its per-conversation catch (`:393-404`), the same string.
+
+**Seam removal is now 3/3 on the read side and 4/4 on the mutation side.** `getConversation` and
+`getConversationParticipants` no longer take `readFn` (the latter routes through the former, so
+one path, not two), `ConversationMutationModule` holds no injected function at all, and
+`MessageMutationModule.markConversationAsRead` lost its `updateConversation` argument in favour of
+a dotted field-path write to the top level. The replacement read is a private
+`_readTopLevelConversation` on the repository that deliberately bypasses the `UserScoped` mixin —
+the right shape, because the seam cannot be re-pointed at the wrong path by a future wiring edit.
+
+**Claims verified rather than credited** (comments are untested assertions):
+`ConversationDto.toFirestore` does emit `metadata` unconditionally AND deliberately omits
+`groupId`/`memberSince` — with `merge:true` an omitted key is untouched, so `affectedKeys()` never
+names the two server-owned fields and ordinary group sends survive the update rule's deny-list.
+The chat_groups rename write (`{name, updatedAt}`) matches its allow-list rule byte for byte
+(`hasOnly(['name','updatedAt'])`, admin-gated, name 1..100), so the group-first ordering really is
+gated by the server and not by the ViewModel's `isAdmin`. `conversations_list_view.dart:423` gates
+delete on `conversation.groupId == null`, i.e. the third deleter from the pass-2 non-blocking list
+is closed for the UI leg.
+
+**Non-blocking, carried forward:** the `sendMessage` fallback is now unreachable-by-design in both
+directions — a create denies on the bare `metadata.creatorId == uid` equality, a merge-set over an
+existing doc denies on `createdAt`/`participantIds` — so it is a path that can only produce a
+denied batch; it fails loudly, but it is dead weight and its own comment says so.
+`_readTopLevelConversation` swallows a read error into `null`, which converts a transient
+permission/network failure into that dead fallback rather than into the clean
+`ResourceNotFoundException` the pre-BUT-1838 code raised for a non-`direct_` id. And
+`message_mutation_module_test.dart:208` still gives its `reason` in terms of the RETIRED
+`!(metadata in data)` disjunct, three lines under a comment explaining that repeating that reason
+would mislead — a stale assertion inside the test that pins the invariant.
+
+**Bytes:** worktree != index for all four files (md5-compared); the reviewed content is the
+NEWER, unstaged one. `git add` of the four is required before the commit, or the gate pins bytes
+this review never saw. No mid-review write detected — `git diff` wording matches every `Read`.
+
+### 2026-08-14 — BUT-1838 client half, solo gate-clearance pass (ten `lib/repositories/**` files)
+
+Ran alone: the review ledger had been dropping entries when several reviewers appended at once, so
+three earlier passes' reads never landed and the gate reported these ten as unreviewed. Verdict
+unchanged, evidence re-taken.
+
+**Fileset, md5-pinned before and after every Read (all ten identical at both ends, and `git status`
+shows them STAGED with a clean worktree, i.e. index == tree — the opposite of the 2026-08-13 pass,
+which reviewed unstaged bytes):** `conversation_dto.dart`, `firebase_chat_group_repository.dart`,
+`firebase_data_export_repository.dart`, `firebase_messaging_repository.dart`,
+`conversation_mutation_module.dart`, `conversation_query_module.dart`, `message_deletion_module.dart`,
+`message_mutation_module.dart`, `interfaces/chat_group_repository.dart`,
+`interfaces/messaging_repository.dart`.
+
+**The pass-2 blocking finding is fixed exactly as specified.** `exportConversationsAndMessages`'
+per-conversation catch stamps `error_code: 'conversation-messages-read-failed'` on the row, and
+`social_export_manager.dart:277-283` copies it onto the row AND sets the SECTION-ROOT `error_code`
+with no `error` key — read the manager to confirm the second half, because the repository's row
+marker alone is invisible to `DataExportService`'s lift. The `sentAt >=` filter mirrors the rule,
+and both the ASC and DESC `conversationId+sentAt` composites are declared in `firestore.indexes.json`
+(checked by parsing the file, not by reading the comment that claims it).
+
+**Two new non-blocking findings, both PRE-EXISTING on main and both outside the ten files.**
+
+1. **The Crashlytics uid redactor cannot mask a `direct_<uidA>_<uidB>` conversation id.**
+   `_sanitizeForCrashlytics` is `RegExp(r'\b[a-zA-Z0-9]{20,28}\b')`; `_` is a word character in
+   ECMAScript (Dart's flavour), so no `\b` exists between `direct_` and the uid. Probed rather than
+   reasoned: a bare uid in the same string is masked to `KJh8***` while both uids inside the
+   composite id survive verbatim. Reached from ~6 `AppLogger.error` lines across the messaging
+   modules; one of them (`_readTopLevelConversation`) is new in this diff, the rest predate it. The
+   CF side already hashes this shape (`logSafeConversationId`, BUT-1822), so this is the client half
+   of a decision already taken. Fix belongs in `logger.dart` (lookaround pair, plus a `direct_`
+   fixture in `logger_test.dart`), not per call site.
+
+2. **`rateLimitWrite('chat_group_rename', 5)` is decorative** — nothing writes
+   `users/{uid}/rate_limits/chat_group_rename`. Chasing that corrected a knowledge-file claim I had
+   been carrying since 2026-07-30: `NOTHING in the repo writes that path` is false. Six writers stamp
+   the subcollection with per-bucket doc ids, so `messages`, `comments`, `social_requests` and
+   `activity_events` ARE live conjuncts (the messages one is batched beside every send, in
+   `message_mutation_module.dart:230-243`). `audit_logs` genuinely has no writer, so BUT-1773's
+   conclusion stands — for the narrow reason, not the blanket one.
+
+**One residual recorded only in a code comment, which is where it will rot.**
+`conversation_mutation_module.updateConversation` writes `chat_groups.name` (admin-gated) BEFORE
+`conversations.title` (any-participant), so the server denies a non-admin rename before anything
+visible moves. That ordering is the whole control: the `conversations` update rule has no conjunct
+on `title`, so a hand-rolled client that skips the group write can still rename what every member
+SEES while `chat_groups.name` — and therefore the Art. 15 export — keeps the real name. The comment
+says so and defers it to "a rules change with its own ticket"; the BUT-1838 section of
+`ACCEPTED_DEVIATIONS.md` does not mention it. A residual that lives only in a comment is not a
+decided deviation, and the next reviewer reading the rules alone will grade it fresh.
+
+**Re-confirmed as agreed-and-unfixed, not re-litigated:** `exportChatGroups` has no N+1 truncation
+probe; no Art. 30 row exists for membership changes on either side (the repository carries
+`PermissionValidationMixin` and calls nothing from it — its doc comment now says so plainly, which
+is the fix for the false `BaseMetadataRepository` citation); `MessageDeletionModule` has no
+`memberSince` cut-off and — verified by grep, not assumed — no production caller outside the
+repository's own passthrough, which is what keeps the missing cut-off a latent bug rather than a
+broken Art. 17 path; no log line on the export's per-conversation catch; the conversation LIST
+previews a pre-join message until the system row overwrites it (Malin has it as a separate commit).
+
+**On the `dart format` reformat of `conversation_dto.dart` and `conversation_query_module.dart`:**
+the testing specialist's method — recover the pre-format blobs from `.git` and compare
+whitespace-stripped content — is sound and I did not redo it. It proves no TOKEN moved, which is
+the right claim for a formatter; it would not catch a same-token semantic edit, and does not need
+to, because I read both files in full at the current bytes.
