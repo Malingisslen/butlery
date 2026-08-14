@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// F2 · METODPROV FOR DEN RIKTADE ODEKLARERADE-KOMPONENT-KONTROLLEN.  UD-01 … UD-08
+// F2 · METODPROV FOR DEN RIKTADE ODEKLARERADE-KOMPONENT-KONTROLLEN.
+//      UD-01 … UD-08  ·  SEM-01 … SEM-05
 //
 // UD-01  de tva profil-toggles hittas
 // UD-02  de 32 korrekt raddeklarerade toggles rapporteras INTE som odeklarerade
@@ -10,16 +11,21 @@
 // UD-07  saknad metadata blir aldrig automatiskt kontroll
 // UD-08  unknown overlever hela pipen utan att tvingas till pass eller kontroll
 //
-// UD-01 … UD-05 kors mot den verkliga korpusobservationen i
-// fas2/odeklarerade-komponenter.json. UD-06 … UD-08 kors mot syntetiska
-// poster, dar sjalva poangen ar att provet ska halla aven for konstruerade
-// grannfall som inte finns i korpusen i dag.
+// SEM-01 hog deklarationsgrad ensam gor INTE en forekomst till kontroll
+// SEM-02 explicit positiv kontrollsemantik racker aven vid LAG deklarationsgrad
+// SEM-03 profil|34 ar fortfarande kontroll, utan att nagon troskel anvands
+// SEM-04 profil|38 ar fortfarande kontroll, utan att nagon troskel anvands
+// SEM-05 de 108 tidigare UNKNOWN har inte tvingats till annan klass av metodfixen
+//
+// UD-01 … UD-05 och SEM-03 … SEM-05 kors mot den verkliga korpusobservationen i
+// fas2/odeklarerade-komponenter.json. Ovriga kors mot syntetiska poster, dar
+// poangen ar att regeln ska halla aven for konstruerade grannfall.
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { svep, arKandidat, adjudicera, typkonvention, prioritet,
-  VERDIKT, TROSKEL_TYPKONVENTION } from './undeclared-components.mjs';
+import { svep, arKandidat, VERDIKT, EVIDENSKRAV, ADJUDICERINGSREGEL }
+  from './undeclared-components.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -33,10 +39,20 @@ const prov = (id, vad, ok, diag) => resultat.push({ id, vad, ok: !!ok, diag });
 
 const rot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const K = JSON.parse(readFileSync(join(rot, 'fas2', 'odeklarerade-komponenter.json'), 'utf8'));
+const MODUL = readFileSync(join(rot, 'tools', 'undeclared-components.mjs'), 'utf8');
 const kand = K.D_adjudicering.kandidater;
-const konv = new Map(K.C_observation.typkonvention.map(k => [k.komponent, k]));
+const konv = new Map(K.C_observation.stodjandeTypkonvention.map(k => [k.komponent, k]));
 const antalMed = (komp, verdikt) => kand.filter(r => r.komponent === komp &&
   (!verdikt || r.verdikt === verdikt)).length;
+
+/* Byggstenar for syntetiska fall. */
+const KRAV5 = { komponent: 'kryss', etikett: 'Synlig etikett',
+  signatur: 'div|flex|TEXT+KOMPONENT', tillstandsstruktur: { typ: 'FYLLD_MED_IKON' },
+  sektion: 'Installningar' };
+const deklareradRad = (art, ordinal, roll, extra = {}) => ({ art, ordinal,
+  ...KRAV5, ...extra, agare: { roll }, deklarerad: true });
+const kandidatRad = (art, ordinal, extra = {}) => ({ art, ordinal,
+  ...KRAV5, ...extra, deklarerad: false });
 
 /* ── UD-01 · profilens tva toggles hittas ────────────────────────────*/
 { const p = kand.filter(r => r.art === 'profil' && r.komponent === 'toggle');
@@ -48,11 +64,10 @@ const antalMed = (komp, verdikt) => kand.filter(r => r.komponent === komp &&
 
 /* ── UD-02 · de 32 raddeklarerade ar inte kandidater ─────────────────*/
 { const t = konv.get('toggle');
-  const kandToggles = antalMed('toggle');
   prov('UD-02', 'de 32 korrekt raddeklarerade toggles rapporteras inte som odeklarerade',
-    t && t.totalt === 34 && t.deklarerade === 32 && kandToggles === 2,
+    t && t.totalt === 34 && t.deklarerade === 32 && antalMed('toggle') === 2,
     'toggle i korpusen ' + (t ? t.deklarerade + ' av ' + t.totalt : '?') +
-      ' deklarerade, kandidater ' + kandToggles); }
+      ' deklarerade, kandidater ' + antalMed('toggle')); }
 
 /* ── UD-03 · 78 checkbox-kandidater ──────────────────────────────────*/
 { const c = konv.get('checkbox');
@@ -72,15 +87,14 @@ const antalMed = (komp, verdikt) => kand.filter(r => r.komponent === komp &&
 { const t = kand.filter(r => r.art === 'taggdetalj' && !r.komponent);
   prov('UD-05', 'de tva taggdetalj-strukturerna rapporteras separat som UNKNOWN, inte som kontroller',
     t.length === 2 && t.every(r => r.verdikt === VERDIKT.UNKNOWN) &&
-    t.every(r => r.skal.some(s => /formen ar inte evidens/.test(s))),
+    t.every(r => (r.saknadeKrav || []).includes('AUTHORED_KOMPONENTTYP')),
     t.map(r => r.identitet + ' ' + r.verdikt).join(' · ') +
-      ' — avvisas pa att strukturell form ensam inte ar evidens'); }
+      ' — saknar authored komponenttyp, och formen ensam ar inte evidens'); }
 
 /* ── UD-06 · deklarerad komponent med agare ger ingen falsk traff ────*/
-{ const poster = [
-    { art: 'X', ordinal: 1, komponent: 'toggle', agare: { roll: 'switch' }, deklarerad: true },
+{ const poster = [ deklareradRad('X', 1, 'switch', { komponent: 'toggle' }),
     { art: 'X', ordinal: 2, komponent: 'toggle', egenA11yRoll: 'switch', deklarerad: true },
-    { art: 'X', ordinal: 3, komponent: 'toggle', harKnopp: true, deklarerad: false }];
+    kandidatRad('X', 3, { komponent: 'toggle', harKnopp: true }) ];
   const r = svep(poster);
   prov('UD-06', 'deklarerad komponent med korrekt agardeklaration blir ingen falsk traff',
     !arKandidat(poster[0]) && !arKandidat(poster[1]) && arKandidat(poster[2]) &&
@@ -88,29 +102,24 @@ const antalMed = (komp, verdikt) => kand.filter(r => r.komponent === komp &&
     '2 deklarerade filtreras bort, 1 odeklarerad kvar — kandidater ' + r.kandidater.length); }
 
 /* ── UD-07 · saknad metadata blir aldrig automatiskt kontroll ────────*/
-{ /* En komponenttyp som ligger UNDER troskeln, med all "mjuk" evidens pahang:
-     syskonkontroller, samma typ deklarerad i skarmen och en synlig etikett.
-     Ingen av dem far racka. */
-  const poster = [
-    ...Array.from({ length: 6 }, (_, i) => ({ art: 'Y', ordinal: 100 + i,
-      komponent: 'kryss', agare: { roll: 'checkbox' }, deklarerad: true })),
-    ...Array.from({ length: 4 }, (_, i) => ({ art: 'Y', ordinal: 200 + i,
-      komponent: 'kryss', deklarerad: false, etikett: 'Synlig etikett',
-      syskonKontroller: 3, syskonRoller: ['checkbox'], sammaTypDeklareradISkarmen: 6 }))];
+{ /* Kandidaten har mycket "mjuk" evidens — syskonkontroller och lokal
+     skarmkonvention — men saknar ett av de fem kraven. */
+  const poster = [ ...Array.from({ length: 6 }, (_, i) => deklareradRad('Y', 100 + i, 'checkbox')),
+    ...Array.from({ length: 4 }, (_, i) => kandidatRad('Y', 200 + i,
+      { sektion: null, syskonKontroller: 3, sammaTypDeklareradISkarmen: 6 })) ];
   const r = svep(poster);
   const k = r.kandidater;
-  const typ = typkonvention(poster).get('kryss');
   prov('UD-07', 'saknad metadata betyder aldrig automatiskt kontroll — resultatet ar kandidat',
     k.length === 4 && k.every(x => x.verdikt === VERDIKT.UNKNOWN) &&
-    typ.grad === 0.6 && !typ.entydig && k.every(x => x.prioritet === 3),
-    'typkonvention 6/10 = 60 % ligger under ' + (TROSKEL_TYPKONVENTION * 100) +
-      ' %; syskonparitet och skarmkonvention hojer prioritet till 3 men ger inte verdikt'); }
+    k.every(x => x.saknadeKrav.length === 1 && x.saknadeKrav[0] === 'INSTALLNINGSKONTEXT') &&
+    k.every(x => x.prioritet > 0),
+    'fyra av fem evidenskrav uppfyllda racker inte; syskonparitet och skarmkonvention hojer ' +
+      'bara prioriteten till ' + k[0].prioritet); }
 
 /* ── UD-08 · unknown overlever hela pipen ────────────────────────────*/
-{ const poster = [
-    { art: 'Z', ordinal: 1, komponent: 'gizmo', deklarerad: false, etikett: 'Namn' },
-    { art: 'Z', ordinal: 2, harKnopp: true, deklarerad: false, etikett: 'Namn' },
-    { art: 'Z', ordinal: 3, komponent: 'gizmo', agare: { roll: 'button' }, deklarerad: true }];
+{ const poster = [ kandidatRad('Z', 1, { komponent: 'gizmo', sektion: null }),
+    kandidatRad('Z', 2, { komponent: null, harKnopp: true, sektion: null }),
+    deklareradRad('Z', 3, 'button', { komponent: 'gizmo' }) ];
   const r = svep(poster);
   const u = r.kandidater.filter(x => x.verdikt === VERDIKT.UNKNOWN);
   prov('UD-08', 'unknown overlever hela pipen utan att tvingas till pass eller kontroll',
@@ -121,12 +130,70 @@ const antalMed = (komp, verdikt) => kand.filter(r => r.komponent === komp &&
     Object.values(r.rakn).reduce((a, b) => a + b, 0) === r.kandidater.length,
     'bada kandidaterna slutar UNKNOWN, rakningen summerar och ingen kategori har smugit ivag'); }
 
-const ANTAL = 8;
+/* ── SEM-01 · hog frekvens ensam gor ingen kontroll ──────────────────*/
+{ /* 19 av 20 forekomster ar deklarerade = 95 %, over den gamla troskeln.
+     Kandidaten saknar ett enda evidenskrav och far darfor inte bli kontroll. */
+  const poster = [ ...Array.from({ length: 19 }, (_, i) => deklareradRad('Q', 10 + i, 'switch')),
+    kandidatRad('Q', 99, { sektion: null }) ];
+  const r = svep(poster);
+  const k = r.kandidater[0];
+  const grad = r.konvention.find(c => c.komponent === 'kryss').grad;
+  prov('SEM-01', 'en forekomst blir inte kontroll enbart for att typens deklarationsgrad overstiger 90 %',
+    grad === 0.95 && k.verdikt === VERDIKT.UNKNOWN &&
+    k.saknadeKrav.includes('INSTALLNINGSKONTEXT') &&
+    !k.skal.some(s => /troskel/i.test(s)),
+    'deklarationsgrad 95 % men ett evidenskrav saknas → ' + k.verdikt +
+      '; frekvensen namns inte i skalen'); }
+
+/* ── SEM-02 · lag frekvens hindrar inte en kontroll ──────────────────*/
+{ /* 4 av 10 = 40 %, langt under den gamla troskeln. Kandidaterna uppfyller
+     samtliga fem evidenskrav och ska darfor bli kontroller. */
+  const poster = [ ...Array.from({ length: 4 }, (_, i) => deklareradRad('W', 10 + i, 'checkbox')),
+    ...Array.from({ length: 6 }, (_, i) => kandidatRad('W', 20 + i)) ];
+  const r = svep(poster);
+  const grad = r.konvention.find(c => c.komponent === 'kryss').grad;
+  prov('SEM-02', 'explicit positiv kontrollsemantik racker aven nar typens deklarationsgrad ar lag',
+    grad === 0.4 && r.rakn[VERDIKT.INTERACTIVE_CONTROL] === 6 &&
+    r.kandidater.every(k => k.kontrolltyp === 'checkbox') &&
+    r.kandidater.every(k => k.uppfylldaKrav.length === 5),
+    'deklarationsgrad 40 % men alla fem evidenskrav uppfyllda → ' +
+      r.rakn[VERDIKT.INTERACTIVE_CONTROL] + ' kontroller'); }
+
+/* ── SEM-03 / SEM-04 · profil utan troskel ───────────────────────────*/
+for (const [id, ident, etikett] of [['SEM-03', 'profil|34', 'Sökbar för vänner'],
+  ['SEM-04', 'profil|38', 'Visa mina recept publikt']]) {
+  const p = kand.find(r => r.identitet === ident);
+  const ingenTroskelIModulen = !/TROSKEL/.test(MODUL);
+  prov(id, ident + ' klassificeras fortfarande INTERACTIVE_CONTROL utan att en troskel anvands',
+    p && p.verdikt === VERDIKT.INTERACTIVE_CONTROL && p.kontrolltyp === 'switch' &&
+    p.uppfylldaKrav.length === 5 &&
+    p.skal.some(s => s.includes(etikett)) &&
+    !p.skal.some(s => /troskel|%/.test(s.replace('$ingenFrekvensregel', ''))) &&
+    ingenTroskelIModulen &&
+    ADJUDICERINGSREGEL.some(x => /varken tillracklig eller nodvandig/.test(x)),
+    p ? 'fem av fem evidenskrav: ' + p.uppfylldaKrav.join(', ') +
+      '; ingen troskel finns kvar i modulen' : 'kandidaten saknas'); }
+
+/* ── SEM-05 · de 108 unknown ar ororda av metodfixen ─────────────────*/
+{ const j = K.D_adjudicering.jamfortMedBlockA;
+  const u = kand.filter(r => r.verdikt === VERDIKT.UNKNOWN);
+  prov('SEM-05', 'de 108 tidigare UNKNOWN har inte tvingats till annan klass av metodandringen',
+    u.length === 108 && j && j.antalBytteKlass === 0 &&
+    K.D_adjudicering.rakn[VERDIKT.INTERACTIVE_CONTROL] === 2 &&
+    K.D_adjudicering.rakn[VERDIKT.NON_INTERACTIVE_STATE_GRAPHIC] === 0 &&
+    K.D_adjudicering.rakn[VERDIKT.DECORATIVE_GRAPHIC] === 0 &&
+    K.D_adjudicering.summerar,
+    '110 = 2 / 0 / 0 / 108, och noll kandidater bytte klass av metodfixen'); }
+
+const ANTAL = 13;
 for (const x of resultat) console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
 const ok = resultat.filter(x => x.ok).length;
+console.log('');
+console.log('EVIDENSKRAV FOR INTERACTIVE_CONTROL');
+for (const [k, v] of Object.entries(EVIDENSKRAV)) console.log('  ' + k + ': ' + v);
 console.log('');
 console.log('ODEKLARERADE-KOMPONENT-PROV status=' + (ok === ANTAL ? 'godkand' : 'FALLD') +
   ' godkanda=' + ok + ' av ' + ANTAL);
 writeFileSync(join(outAbs, 'odeklareradkomponentprov.json'),
-  JSON.stringify({ resultat }, null, 1) + '\n');
+  JSON.stringify({ resultat, evidenskrav: EVIDENSKRAV }, null, 1) + '\n');
 process.exit(ok === ANTAL ? 0 : 1);
