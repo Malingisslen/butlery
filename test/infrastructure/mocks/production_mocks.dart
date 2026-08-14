@@ -3908,7 +3908,7 @@ class FakeNotificationPreferences {
         NotificationType.optional: false,
       },
       allowBatching: true,
-      digestFrequency: 'never',
+      digestFrequency: DigestFrequency.never,
       lastUpdated: DateTime.now(),
     );
   }

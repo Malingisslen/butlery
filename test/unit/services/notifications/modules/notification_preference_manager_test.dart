@@ -21,7 +21,13 @@ import '../../../../test_support/base_unit_test.dart';
 import '../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
 
-// Fake classes for fallback values
+// Fake classes for fallback values.
+//
+// This SHADOWS an unrelated `FakeNotificationPreferences` in production_mocks,
+// which this file also imports — a plain data holder, not a NotificationPreferences.
+// Dart resolves the local declaration, so registerFallbackValue below gets the
+// right type. Deleting this class as a "duplicate" would silently register a
+// value of the wrong type and break `any()` at runtime, not at compile time.
 class FakeNotificationPreferences extends Fake
     implements NotificationPreferences {}
 
@@ -259,7 +265,7 @@ void main() {
           categorySettings: originalPrefs.categorySettings,
           typeSettings: originalPrefs.typeSettings,
           allowBatching: originalPrefs.allowBatching,
-          digestFrequency: 'daily', // Changed
+          digestFrequency: DigestFrequency.weekly, // Changed
           quietHoursStart: originalPrefs.quietHoursStart,
           quietHoursEnd: originalPrefs.quietHoursEnd,
           lastUpdated: DateTime.now(),
@@ -271,7 +277,7 @@ void main() {
 
         // Assert
         expect(retrievedPrefs.enabled, isFalse);
-        expect(retrievedPrefs.digestFrequency, equals('daily'));
+        expect(retrievedPrefs.digestFrequency, equals(DigestFrequency.weekly));
       });
 
       test('should reset preferences to defaults', () async {
@@ -281,7 +287,7 @@ void main() {
           categorySettings: {},
           typeSettings: {},
           allowBatching: false,
-          digestFrequency: 'weekly',
+          digestFrequency: DigestFrequency.weekly,
           quietHoursStart: null,
           quietHoursEnd: null,
           lastUpdated: DateTime.now(),
@@ -297,7 +303,7 @@ void main() {
         // Assert - Should have default values
         expect(prefs.enabled, isTrue);
         expect(prefs.allowBatching, isTrue);
-        expect(prefs.digestFrequency, equals('never'));
+        expect(prefs.digestFrequency, equals(DigestFrequency.never));
         expect(
           prefs.quietHoursStart,
           equals(const TimeOfDay(hour: 22, minute: 0)),
@@ -337,7 +343,7 @@ void main() {
                 NotificationPreferences.defaults().categorySettings,
             typeSettings: NotificationPreferences.defaults().typeSettings,
             allowBatching: false,
-            digestFrequency: 'weekly',
+            digestFrequency: DigestFrequency.weekly,
             quietHoursStart: null,
             quietHoursEnd: null,
             lastUpdated: DateTime.now(),
@@ -356,7 +362,7 @@ void main() {
                 'recovered read could never win and the user would appear to '
                 'be on factory settings',
           );
-          expect(second.digestFrequency, equals('weekly'));
+          expect(second.digestFrequency, equals(DigestFrequency.weekly));
         },
       );
 
@@ -407,7 +413,7 @@ void main() {
                 NotificationPreferences.defaults().categorySettings,
             typeSettings: NotificationPreferences.defaults().typeSettings,
             allowBatching: false,
-            digestFrequency: 'weekly',
+            digestFrequency: DigestFrequency.weekly,
             quietHoursStart: const TimeOfDay(hour: 21, minute: 30),
             quietHoursEnd: const TimeOfDay(hour: 7, minute: 15),
             lastUpdated: DateTime.now(),
@@ -431,7 +437,7 @@ void main() {
 
           // Assert: the user's own choices come back, not defaults.
           expect(result.enabled, isFalse);
-          expect(result.digestFrequency, equals('weekly'));
+          expect(result.digestFrequency, equals(DigestFrequency.weekly));
           expect(result.allowBatching, isFalse);
           expect(
             result.quietHoursStart,
@@ -478,7 +484,7 @@ void main() {
           categorySettings: prefs.categorySettings,
           typeSettings: prefs.typeSettings,
           allowBatching: prefs.allowBatching,
-          digestFrequency: 'daily', // Enabled
+          digestFrequency: DigestFrequency.weekly, // Enabled
           quietHoursStart: prefs.quietHoursStart,
           quietHoursEnd: prefs.quietHoursEnd,
           lastUpdated: DateTime.now(),
@@ -498,7 +504,7 @@ void main() {
           categorySettings: prefs.categorySettings,
           typeSettings: prefs.typeSettings,
           allowBatching: prefs.allowBatching,
-          digestFrequency: 'never', // Disabled
+          digestFrequency: DigestFrequency.never, // Disabled
           quietHoursStart: prefs.quietHoursStart,
           quietHoursEnd: prefs.quietHoursEnd,
           lastUpdated: DateTime.now(),

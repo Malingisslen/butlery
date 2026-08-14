@@ -10,6 +10,55 @@ import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
+/// How often the activity digest may be sent. Wire value is [name], so
+/// Firestore keeps the exact strings `'never'` and `'weekly'` it already holds.
+///
+/// A THIRD value, `'daily'`, was selectable in the settings dropdown between
+/// `920256e9e` and `77ba0bd30` (2026-03-27, fourteen minutes) and was removed
+/// without migrating whatever had been stored. `DropdownButton` requires its
+/// value to match exactly one item, so a document holding `'daily'` — or any
+/// other unrecognised string — would crash the notification settings screen in
+/// debug and render a blank control in release. Whether any such document
+/// exists is beside the point: the parse has to be TOTAL, and that is what
+/// [fromWire] is for. (For the record, the window was short and the app is not
+/// live — the same reasoning that closed a backfill unbuilt in
+/// `.claude/rules/accepted-deviations.md` — so in practice this is test data.)
+///
+/// [fromWire] is nevertheless a permanent line, not a migration TODO: an
+/// unrecognised value is never rewritten by a read (BUT-1782 forbids the read
+/// path writing to FIRESTORE — it does refresh the local mirror), so a
+/// Firestore document only changes when its owner next saves this screen.
+enum DigestFrequency {
+  never,
+  weekly
+  ;
+
+  /// Total parse: every possible stored string maps to a value.
+  ///
+  /// The rule is `'never'` off, anything else weekly — deliberately the
+  /// BACKEND'S OWN RULE, mirrored. `send-activity-digest.ts` asks
+  /// `digestFrequency === "never"` and otherwise sends the weekly digest, so a
+  /// client that disagreed for any value would re-create the class of defect
+  /// this fixes. It also degrades in the safe direction: an unknown future
+  /// value reads as "still subscribed", never as a silent unsubscribe.
+  ///
+  /// `'daily'` therefore becomes [weekly] rather than being shown as a retired
+  /// option. BUT-1618 (`personal_tag_rule_dialog.dart`) does the opposite for a
+  /// retired tag property, and rightly: there the system cannot name an
+  /// equivalent, so only the user can decide. Here it can — both consumers
+  /// treat `'daily'` and `'weekly'` identically, so a "Dagligen" option would
+  /// promise a cadence that does not exist.
+  ///
+  /// Do NOT tighten the backend to `=== "weekly"` (BUT-1844). Every value it
+  /// does not recognise would then stop meaning "send", which is a silent
+  /// unsubscribe — the same failure as the bug above, pointing the other way.
+  ///
+  /// `null` is ABSENCE, not junk: it means no preference was ever stored, so it
+  /// reads as [never]. Junk reads as [weekly] per the rule above.
+  static DigestFrequency fromWire(String? wire) =>
+      (wire == null || wire == never.name) ? never : weekly;
+}
+
 /// User notification preferences model
 ///
 /// BUT-1783 removed `soundEnabled` and `vibrationEnabled`. Do not reintroduce
@@ -33,7 +82,7 @@ class NotificationPreferences {
   final Map<NotificationCategory, bool> categorySettings;
   final Map<NotificationType, bool> typeSettings;
   final bool allowBatching; // Allow grouping similar notifications
-  final String digestFrequency; // 'daily', 'weekly', 'never'
+  final DigestFrequency digestFrequency;
   final TimeOfDay? quietHoursStart; // Don't send during quiet hours
   final TimeOfDay? quietHoursEnd;
   final DateTime lastUpdated;
@@ -70,7 +119,7 @@ class NotificationPreferences {
         NotificationType.optional: false, // Optional features off
       },
       allowBatching: true,
-      digestFrequency: 'never',
+      digestFrequency: DigestFrequency.never,
       quietHoursStart: const TimeOfDay(hour: 22, minute: 0), // 10 PM
       quietHoursEnd: const TimeOfDay(hour: 8, minute: 0), // 8 AM
       lastUpdated: clock.now(),
@@ -107,10 +156,10 @@ class NotificationPreferences {
         'allowBatching',
         defaultValue: true,
       ),
-      digestFrequency: SerializationUtils.safeString(
-        data,
-        'digestFrequency',
-        defaultValue: 'never',
+      // safeNullableString, not safeString with a default: the default belongs
+      // to fromWire alone, or two layers own the same rule and can disagree.
+      digestFrequency: DigestFrequency.fromWire(
+        SerializationUtils.safeNullableString(data, 'digestFrequency'),
       ),
       quietHoursStart: _parseTimeOfDay(
         SerializationUtils.safeNullableMap(data, 'quietHoursStart'),
@@ -141,7 +190,7 @@ class NotificationPreferences {
       'categorySettings': _enumMapToStrings(categorySettings),
       'typeSettings': _enumMapToStrings(typeSettings),
       'allowBatching': allowBatching,
-      'digestFrequency': digestFrequency,
+      'digestFrequency': digestFrequency.name,
       'quietHoursStart': _timeOfDayToMap(quietHoursStart),
       'quietHoursEnd': _timeOfDayToMap(quietHoursEnd),
       'lastUpdated': FieldValue.serverTimestamp(),

@@ -824,6 +824,10 @@ void main() {
                 'NotificationType.optional': false,
               },
               'allowBatching': true,
+              // A RETIRED value. It reads back as weekly, which still differs
+              // from the missing-document fallback (defaults() is never), so
+              // this keeps proving the parse read the document — and it now
+              // also pins the legacy coercion at the repository level.
               'digestFrequency': 'daily',
               // BUT-1783 legacy keys: still present on every document written
               // before the switches were removed. The parse must not fail or
@@ -840,7 +844,7 @@ void main() {
         // Assert
         expect(preferences.enabled, isFalse);
         expect(preferences.allowBatching, isTrue);
-        expect(preferences.digestFrequency, equals('daily'));
+        expect(preferences.digestFrequency, equals(DigestFrequency.weekly));
       });
 
       test('should return default preferences when none exist', () async {

@@ -286,7 +286,7 @@ class _NotificationPreferencesViewState
             contentPadding: AppDimensions.paddingSymmetric16x12,
           ),
           child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
+            child: DropdownButton<DigestFrequency>(
               value: _preferences.digestFrequency,
               isDense: true,
               isExpanded: true,
@@ -307,23 +307,26 @@ class _NotificationPreferencesViewState
     );
   }
 
-  List<DropdownMenuItem<String>> _digestFrequencyItems(AppLocalizations l10n) =>
-      [
-        DropdownMenuItem(
-          value: 'never',
-          child: Text(
-            l10n.notificationDigestFrequencyNever,
-            style: AppTextStyles.titleMedium,
-          ),
+  /// Built from [DigestFrequency.values], not a second hand-written list —
+  /// the two drifting apart is what broke this dropdown for accounts still
+  /// holding the retired `'daily'`. The label switch has no `default` on
+  /// purpose: adding a value must be a compile error here, not a blank control
+  /// months later.
+  List<DropdownMenuItem<DigestFrequency>> _digestFrequencyItems(
+    AppLocalizations l10n,
+  ) => [
+    for (final frequency in DigestFrequency.values)
+      DropdownMenuItem(
+        value: frequency,
+        child: Text(
+          switch (frequency) {
+            DigestFrequency.never => l10n.notificationDigestFrequencyNever,
+            DigestFrequency.weekly => l10n.notificationDigestFrequencyWeekly,
+          },
+          style: AppTextStyles.titleMedium,
         ),
-        DropdownMenuItem(
-          value: 'weekly',
-          child: Text(
-            l10n.notificationDigestFrequencyWeekly,
-            style: AppTextStyles.titleMedium,
-          ),
-        ),
-      ];
+      ),
+  ];
 
   Widget _buildQuietHoursSection() {
     final cs = Theme.of(context).colorScheme;
@@ -495,7 +498,7 @@ class _NotificationPreferencesViewState
   NotificationPreferences _copyPreferences({
     bool? enabled,
     Map<NotificationCategory, bool>? categorySettings,
-    String? digestFrequency,
+    DigestFrequency? digestFrequency,
     TimeOfDay? quietHoursStart,
     TimeOfDay? quietHoursEnd,
     bool clearQuietHours = false,

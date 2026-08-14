@@ -314,7 +314,7 @@ class NotificationPreferenceManager {
   Future<bool> areDigestNotificationsEnabled() async {
     try {
       final preferences = await getPreferences();
-      return preferences.digestFrequency != 'never';
+      return preferences.digestFrequency != DigestFrequency.never;
     } catch (e) {
       AppLogger.error('❌ Failed to check digest notification status', e);
       return false;

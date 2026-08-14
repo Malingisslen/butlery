@@ -18,7 +18,7 @@ void main() {
       final p = NotificationPreferences.defaults();
       expect(p.enabled, isTrue);
       expect(p.allowBatching, isTrue);
-      expect(p.digestFrequency, 'never');
+      expect(p.digestFrequency, DigestFrequency.never);
       expect(p.quietHoursStart, const TimeOfDay(hour: 22, minute: 0));
       expect(p.quietHoursEnd, const TimeOfDay(hour: 8, minute: 0));
 
@@ -70,7 +70,7 @@ void main() {
         categorySettings: const {NotificationCategory.friends: true},
         typeSettings: const {NotificationType.immediate: true},
         allowBatching: true,
-        digestFrequency: 'never',
+        digestFrequency: DigestFrequency.never,
         lastUpdated: DateTime.utc(2026, 1, 1),
       );
       expect(
@@ -91,7 +91,7 @@ void main() {
           NotificationType.digest: false,
         },
         allowBatching: true,
-        digestFrequency: 'never',
+        digestFrequency: DigestFrequency.never,
         lastUpdated: DateTime.utc(2026, 1, 1),
       );
 
@@ -117,7 +117,7 @@ void main() {
         categorySettings: const {}, // empty
         typeSettings: const {NotificationType.immediate: true},
         allowBatching: true,
-        digestFrequency: 'never',
+        digestFrequency: DigestFrequency.never,
         lastUpdated: DateTime.utc(2026, 1, 1),
       );
       expect(
@@ -143,6 +143,34 @@ void main() {
       expect(payload.containsKey('vibrationEnabled'), isFalse);
     });
 
+    // The backend reads these strings directly
+    // (`send-activity-digest.ts`: `digestFrequency === "never"`), so renaming
+    // an enum value would silently break the digest. Driven off
+    // `DigestFrequency.values` rather than two hand-written calls, so a third
+    // value arrives as a red test instead of an unpinned wire string.
+    test('emits the exact wire string for every digest frequency', () {
+      String wireFor(DigestFrequency frequency) {
+        final base = NotificationPreferences.defaults();
+        return NotificationPreferences(
+              enabled: base.enabled,
+              categorySettings: base.categorySettings,
+              typeSettings: base.typeSettings,
+              allowBatching: base.allowBatching,
+              digestFrequency: frequency,
+              lastUpdated: base.lastUpdated,
+            ).toFirestore()['digestFrequency']
+            as String;
+      }
+
+      expect(
+        {for (final f in DigestFrequency.values) f: wireFor(f)},
+        {
+          DigestFrequency.never: 'never',
+          DigestFrequency.weekly: 'weekly',
+        },
+      );
+    });
+
     test('converts enum maps to string-keyed maps', () {
       final payload = NotificationPreferences.defaults().toFirestore();
       final cats = payload['categorySettings'] as Map;
@@ -156,7 +184,7 @@ void main() {
         categorySettings: const {},
         typeSettings: const {},
         allowBatching: true,
-        digestFrequency: 'never',
+        digestFrequency: DigestFrequency.never,
         lastUpdated: DateTime.utc(2026, 1, 1),
       );
       final payload = p.toFirestore();
@@ -209,7 +237,7 @@ void main() {
 
         expect(p.enabled, isFalse);
         expect(p.allowBatching, isFalse);
-        expect(p.digestFrequency, 'weekly');
+        expect(p.digestFrequency, DigestFrequency.weekly);
         expect(p.quietHoursStart, const TimeOfDay(hour: 21, minute: 15));
         expect(p.quietHoursEnd, const TimeOfDay(hour: 6, minute: 45));
       },
@@ -219,9 +247,72 @@ void main() {
       final p = NotificationPreferences.fromMap('id', {});
       expect(p.enabled, isTrue); // default true
       expect(p.allowBatching, isTrue);
-      expect(p.digestFrequency, 'never');
+      expect(p.digestFrequency, DigestFrequency.never);
       expect(p.quietHoursStart, isNull);
       expect(p.quietHoursEnd, isNull);
+    });
+
+    // The dropdown offered 'daily' between 920256e9e and 77ba0bd30 (fourteen
+    // minutes on 2026-03-27) and the option was removed without migrating
+    // whatever had been stored. Whether such a document exists is beside the
+    // point: parsing must be TOTAL, or a stored value the item list does not
+    // contain reaches `DropdownButton`, which asserts on build.
+    group('digestFrequency is parsed totally', () {
+      DigestFrequency parse(Object? stored) => NotificationPreferences.fromMap(
+        'id',
+        stored == null ? {} : {'digestFrequency': stored},
+      ).digestFrequency;
+
+      test('the retired "daily" reads as weekly, not as an opt-out', () {
+        // The backend only ever asked whether the value was 'never', so a
+        // document saying 'daily' is already being sent the weekly digest.
+        // Reading it as never here would make the client disagree with what
+        // the server does — a silent unsubscribe.
+        expect(parse('daily'), DigestFrequency.weekly);
+      });
+
+      test('the two live values round-trip unchanged', () {
+        expect(parse('never'), DigestFrequency.never);
+        expect(parse('weekly'), DigestFrequency.weekly);
+      });
+
+      // The inverse of the wire-string pin above, and driven off .values for
+      // the same reason: a third value added to the enum but not handled in
+      // fromWire would otherwise collapse silently into weekly.
+      test('every enum value parses back from its own wire string', () {
+        expect(
+          {
+            for (final f in DigestFrequency.values)
+              f.name: DigestFrequency.fromWire(f.name),
+          },
+          {
+            'never': DigestFrequency.never,
+            'weekly': DigestFrequency.weekly,
+          },
+        );
+      });
+
+      test('a missing key reads as never — absence is not a preference', () {
+        expect(parse(null), DigestFrequency.never);
+        // Directly, too: the line above routes through fromMap, so on its own
+        // it would still pass if fromWire's null branch were deleted.
+        expect(DigestFrequency.fromWire(null), DigestFrequency.never);
+      });
+
+      test('junk reads as weekly, the recoverable direction', () {
+        // Mirrors the backend's own rule (anything but 'never' sends), so the
+        // client can never disagree with what the user actually receives. A
+        // non-string is included because the serialization helper calls
+        // toString() rather than rejecting it.
+        expect(parse('monthly'), DigestFrequency.weekly);
+        expect(parse(''), DigestFrequency.weekly);
+        expect(parse(42), DigestFrequency.weekly);
+      });
+
+      test('the match is case-sensitive', () {
+        // No writer produces 'Never'; tolerating it would invent behaviour.
+        expect(parse('Never'), DigestFrequency.weekly);
+      });
     });
 
     test('fromMap honors explicit raw DateTime lastUpdated', () {
@@ -259,7 +350,7 @@ void main() {
           NotificationType.optional: true,
         },
         allowBatching: false,
-        digestFrequency: 'weekly',
+        digestFrequency: DigestFrequency.weekly,
         quietHoursStart: const TimeOfDay(hour: 21, minute: 15),
         quietHoursEnd: const TimeOfDay(hour: 6, minute: 45),
         lastUpdated: DateTime.utc(2026, 3, 4, 5, 6, 7),
@@ -269,7 +360,7 @@ void main() {
 
       expect(restored.enabled, isFalse);
       expect(restored.allowBatching, isFalse);
-      expect(restored.digestFrequency, 'weekly');
+      expect(restored.digestFrequency, DigestFrequency.weekly);
       expect(restored.quietHoursStart, const TimeOfDay(hour: 21, minute: 15));
       expect(restored.quietHoursEnd, const TimeOfDay(hour: 6, minute: 45));
       expect(restored.categorySettings, original.categorySettings);
@@ -298,7 +389,7 @@ void main() {
         categorySettings: const {NotificationCategory.system: true},
         typeSettings: const {NotificationType.immediate: true},
         allowBatching: true,
-        digestFrequency: 'never',
+        digestFrequency: DigestFrequency.never,
         lastUpdated: DateTime.utc(2026),
       );
 
@@ -307,10 +398,16 @@ void main() {
       expect(restored.quietHoursEnd, isNull);
     });
 
-    // Production never holds a UTC-flagged lastUpdated: defaults() stamps
-    // clock.now() (local) and the Firestore path arrives via Timestamp.toDate().
-    // A DateTime.utc fixture makes toJson's .toUtc() a byte-for-byte no-op, so
-    // the instant-preserving contract is only asserted from a local fixture.
+    // defaults() and the view's _copyPreferences stamp clock.now() (LOCAL), so
+    // a just-saved copy is the state this asserts. A DateTime.utc fixture makes
+    // toJson's .toUtc() a byte-for-byte no-op, so the instant-preserving
+    // contract is only assertable from a local one.
+    //
+    // Read BACK it is always UTC — AppTimestamp.fromFirestore ends on .toUtc()
+    // and fromJson parses a Z-suffixed string — which is exactly why the
+    // fixture cannot come from a read. (Corrected 2026-08-14: this comment used
+    // to claim production never holds a UTC stamp, on the strength of a bare
+    // `Timestamp.toDate()` that AppTimestamp does not do.)
     test(
       'a local lastUpdated is stored as a UTC instant, not a wall clock',
       () {
@@ -320,7 +417,7 @@ void main() {
           categorySettings: const {NotificationCategory.system: true},
           typeSettings: const {NotificationType.immediate: true},
           allowBatching: true,
-          digestFrequency: 'never',
+          digestFrequency: DigestFrequency.never,
           lastUpdated: localStamp,
         );
 
@@ -439,7 +536,7 @@ void main() {
         final p = NotificationPreferences.fromJson(jsonEncode(stored));
 
         expect(p.enabled, isTrue, reason: corruptField);
-        expect(p.digestFrequency, 'never', reason: corruptField);
+        expect(p.digestFrequency, DigestFrequency.never, reason: corruptField);
         // defaults() says friends on; an all-off parse of the blob says off.
         expect(
           p.categorySettings[NotificationCategory.friends],

@@ -351,7 +351,7 @@ void main() {
           categorySettings: defaults.categorySettings,
           typeSettings: defaults.typeSettings,
           allowBatching: false,
-          digestFrequency: 'weekly',
+          digestFrequency: DigestFrequency.weekly,
           quietHoursStart: defaults.quietHoursStart,
           quietHoursEnd: defaults.quietHoursEnd,
           lastUpdated: defaults.lastUpdated,
@@ -367,7 +367,7 @@ void main() {
 
         expect(savedPreferences.enabled, isFalse);
         expect(savedPreferences.allowBatching, isFalse);
-        expect(savedPreferences.digestFrequency, 'weekly');
+        expect(savedPreferences.digestFrequency, DigestFrequency.weekly);
       });
 
       // What the merge protects is BACKEND-OWNED keys. `quiet-hours.ts` reads
@@ -415,7 +415,7 @@ void main() {
             categorySettings: defaults.categorySettings,
             typeSettings: defaults.typeSettings,
             allowBatching: defaults.allowBatching,
-            digestFrequency: 'weekly',
+            digestFrequency: DigestFrequency.weekly,
             quietHoursStart: defaults.quietHoursStart,
             quietHoursEnd: defaults.quietHoursEnd,
             lastUpdated: defaults.lastUpdated,

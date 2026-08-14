@@ -5,14 +5,20 @@
 // ServiceLocator; `LayoutComponents.offlineIndicator()` resolves
 // [OfflineService] in initState. We bridge all three through a DIContainer +
 // ServiceLocator.initialize() (the same seam the real app uses) and assert the
-// user-visible behaviour:
+// user-visible behaviour. Among what the tests below cover:
 //   - loaded preferences render the master toggle reflecting the stored state;
 //   - flipping the master toggle ON when the OS grant is DENIED leaves the
 //     toggle OFF and never persists an enabled preference (the BUT-414 gate);
-//   - flipping it ON when the grant is GRANTED persists the enabled preference.
+//   - flipping it ON when the grant is GRANTED persists the enabled preference;
+//   - no sound or vibration switch is offered (BUT-1783);
+//   - a stored digest frequency the dropdown no longer offers still renders,
+//     and picking a frequency shows and persists that value.
 //
-// These are behavioural contracts (permission gating, persistence) — not theme
-// or layout assertions — so they survive a design refactor.
+// The permission and persistence assertions are behavioural contracts, not
+// theme or layout assertions, so they survive a design refactor. The two
+// counting/structural guards — the switch count and the dropdown's item list —
+// are deliberate exceptions: they are meant to redden when the form gains a
+// control, and to be updated on purpose when that is legitimate.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -113,6 +119,110 @@ void main() {
       expect(find.text(sv.notificationQuietHoursTitle), findsOneWidget);
     });
 
+    testWidgets('a stored digest frequency that was retired still renders', (
+      tester,
+    ) async {
+      // The dropdown offered 'daily' between 920256e9e and 77ba0bd30 (fourteen
+      // minutes on 2026-03-27); removing the option left any document holding
+      // it carrying a value the list no longer contains, and DropdownButton
+      // asserts exactly one item matches its value — so such a document would
+      // have thrown on build in debug and rendered a blank control in release.
+      //
+      // Staged through fromMap on purpose: a constructor fixture cannot even
+      // express 'daily' any more, so it would skip the parse under test.
+      final stored = NotificationPreferences.fromMap('u', {
+        'enabled': true,
+        'categorySettings': const <String, dynamic>{},
+        'typeSettings': const <String, dynamic>{},
+        'allowBatching': true,
+        'digestFrequency': 'daily',
+        'lastUpdated': DateTime.utc(2026, 1, 1),
+      });
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => stored);
+
+      await pumpView(tester);
+
+      // Cheap guard only. Since the field became an enum this can no longer
+      // fail on the crash it names: `value` is non-nullable and the items are
+      // generated one per enum value, so the SDK's exactly-one-match assert is
+      // unreachable for every inhabitant of the type. That is the fix working,
+      // not the test proving it. The two assertions below are the real ones.
+      expect(tester.takeException(), isNull);
+      expect(find.byType(StateWidget), findsNothing);
+
+      // Assert on the widget, never with find.text: a dropdown builds EVERY
+      // item into an IndexedStack, so both labels are in the tree whichever
+      // one is selected.
+      final dropdown = tester.widget<DropdownButton<DigestFrequency>>(
+        find.byType(DropdownButton<DigestFrequency>),
+      );
+      expect(
+        dropdown.value,
+        DigestFrequency.weekly,
+        reason:
+            'A retired "daily" must read as weekly — that is what the backend '
+            'already sends for it. Reading it as never would make the client '
+            'disagree with the server, i.e. a silent unsubscribe.',
+      );
+      // What keeps the assert above unreachable is that the item list is
+      // GENERATED from the enum. `toList()`, not `toSet()`, so a duplicate
+      // reddens too. Analytically true today; this is the gate for the day
+      // someone hand-writes the list again, which is how the bug happened.
+      expect(
+        dropdown.items!.map((item) => item.value).toList(),
+        DigestFrequency.values,
+      );
+      // A read must not write (BUT-1782). Without this, a future "heal the
+      // document on load" edit would pass: updatePreferences is unstubbed, so
+      // mocktail throws inside _savePreferences' try, the catch swallows it,
+      // and takeException stays null.
+      verifyNever(() => notificationService.updatePreferences(any()));
+    });
+
+    testWidgets('picking a digest frequency shows and persists that value', (
+      tester,
+    ) async {
+      // Two gaps this closes, both invisible to every other test:
+      //
+      // 1. The label mapping. Nothing else reads either label — swapping the
+      //    two arms of the switch in _digestFrequencyItems compiles and leaves
+      //    the whole suite green, while a weekly subscriber would read
+      //    "Aldrig" on screen. That is the mirror of the bug being fixed.
+      // 2. Persistence. Dropping the `digestFrequency:` argument from
+      //    _copyPreferences also compiles and stays green; the choice would
+      //    simply never be saved.
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
+      when(
+        () => notificationService.updatePreferences(any()),
+      ).thenAnswer((_) async {});
+
+      await pumpView(tester);
+
+      await tester.tap(find.byType(DropdownButton<DigestFrequency>));
+      await tester.pumpAndSettle();
+      // The open menu renders a second copy of each label on top of the
+      // IndexedStack one, so take the last.
+      await tester.tap(find.text(sv.notificationDigestFrequencyWeekly).last);
+      await tester.pumpAndSettle();
+
+      final saved =
+          verify(
+                () => notificationService.updatePreferences(captureAny()),
+              ).captured.single
+              as NotificationPreferences;
+      expect(
+        saved.digestFrequency,
+        DigestFrequency.weekly,
+        reason:
+            'Tapping the Veckovis row must persist weekly — this fails both '
+            'if the labels are swapped and if the value is never passed on.',
+      );
+    });
+
     testWidgets('no sound or vibration switch is offered (BUT-1783)', (
       tester,
     ) async {
@@ -120,10 +230,8 @@ void main() {
       // nothing consults the stored value — sound and vibration belong to the
       // OS notification channel, so a switch here would silently do nothing.
       // Keyed on the three icons those two rows used (the sound row's icon was
-      // state-dependent) rather than on their labels: the view no longer
-      // renders either label. The two ARB keys are already deleted in the
-      // working tree but held OUT of this commit — a parallel session owns
-      // those files — so at this commit they still exist and are unreferenced.
+      // state-dependent) rather than on their labels: the view renders neither
+      // label, so there is nothing for a label-based assertion to key on.
       when(
         () => notificationService.getPreferences(),
       ).thenAnswer((_) async => NotificationPreferences.defaults());
