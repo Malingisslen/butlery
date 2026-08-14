@@ -999,6 +999,251 @@
      "till": "#d8b784"
     }
    ]
+  },
+  {
+   "beslutsId": "NTR-BATCH06-LIGHT-SWITCH-OFF-TRACK-PROFIL",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-06",
+   "population": "CONTROL_NON_TEXT",
+   "objekt": "SWITCH_OFF_STATE",
+   "skarm": "profil",
+   "tema": "light",
+   "kontrollidentitet": "profil · switch · \"Visa mina recept publikt\"",
+   "state": "OFF",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoterna ar konformansgolv, inte optimeringsmal.",
+   "granularitet": "TWO_SOURCE_VISUALLY_COUPLED",
+   "motivering": [
+    "det mest konsekventa paret i den faktiska skarmen",
+    "#7d897c ar redan det klart vanligaste AV-sparet i korpusen — 7 av 9 avstangda reglage anvander det i samma roll",
+    "i profil ger det 3.32 mot sidan och 3.42 i separation fran PA-sparet",
+    "med den befintliga knoppen #f5f4ed blir aven knopp mot spar 3.32",
+    "battre an att gora AV morkare eller mer fargat an nodvandigt — #627061 och de morkare grona fungerar tekniskt men ger AV storre visuell vikt",
+    "accentparen ar tekniskt mojliga men saknar semantiskt skal har",
+    "paret passerar aven den separata state-separationsgrinden"
+   ],
+   "beslutsunderlag": {
+    "typ": "PAIRED_CANDIDATE_VISUAL_PREVIEW",
+    "commit": "effffce",
+    "kombinationer": 62,
+    "renderingar": 63,
+    "unika": 63,
+    "kollateral": 0,
+    "okand": 0,
+    "valdKombination": "#7d897c / #f5f4ed",
+    "artefakt": "fas2/offswitch-fargpreview.json"
+   },
+   "$precedens": {
+    "$regel": "Precedens ar stod, inte mappningsevidens.",
+    "etableradeAvSpar": [
+     {
+      "varde": "#7d897c",
+      "forekomster": 7,
+      "roll": "reglagespar",
+      "state": "AV",
+      "ytor": [
+       "rgb(245, 244, 237)"
+      ]
+     },
+     {
+      "varde": "#ccd1c2",
+      "forekomster": 1,
+      "roll": "reglagespar",
+      "state": "AV",
+      "ytor": [
+       "rgb(245, 244, 237)"
+      ]
+     },
+     {
+      "varde": "#627061",
+      "forekomster": 1,
+      "roll": "reglagespar",
+      "state": "AV",
+      "ytor": [
+       "rgb(230, 234, 217)"
+      ]
+     }
+    ]
+   },
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler",
+   "beslutsenhet": "OFF_TRACK",
+   "del": "sparet",
+   "tokenidentitet": "SWITCH_OFF_TRACK_PROFIL",
+   "kallidentitet": "profil|38|background-color",
+   "element": "profil|38",
+   "normativRelation": "sparet mot den faktiskt malade ytan utanfor kontrollen",
+   "angransande": "rgb(245, 244, 237)",
+   "tidigareVarde": "#ccd1c2",
+   "tidigareKvot": 1.41,
+   "valtVarde": "#7d897c",
+   "nyKvot": 3.32,
+   "separationMotPaSpar": 3.42,
+   "enhetsnyckelkollision": {
+    "kall": "profil|38|background-color",
+    "roll": "yta-upphojd",
+    "undergrupp": "utan-kontroll · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "nyckelFore": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "nyckelEfter": "yta-upphojd|#7d897c ‖ utan-kontroll · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "gruppträffar": 0,
+    "prov": [],
+    "utfall": "ingen gruppträff alls",
+    "scopeGuardModul": "tools/decision-scope-guard.mjs",
+    "$metod": "Varje gruppträff provades med traffens EGEN identitet, sa att bara scopelagret kan avvisa den."
+   },
+   "skrivplatser": [
+    {
+     "del": "OFF_TRACK",
+     "kallidentitet": "profil|38|background-color",
+     "skarm": "profil",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "offset": 30913,
+     "kallform": "width:34px;height:20px;border-radius:999px;background:#ccd1c2;position:relative",
+     "fargtraffarIDeklarationen": 1,
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ccd1c2",
+     "till": "#7d897c"
+    }
+   ],
+   "skrivomfang": 1,
+   "kraverProduktandring": true,
+   "$tvaIdentiteter": {
+    "$regel": "Tva kallor och tva normativa relationer ger tva beslut. Att knoppen behaller samma numeriska varde ar varken mappningsevidens eller skal att sla ihop besluten.",
+    "systerbeslut": "NTR-BATCH06-LIGHT-SWITCH-OFF-THUMB-PROFIL",
+    "$skilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen provenanskedja",
+     "egen normativ relation",
+     "egen angransande farg"
+    ]
+   }
+  },
+  {
+   "beslutsId": "NTR-BATCH06-LIGHT-SWITCH-OFF-THUMB-PROFIL",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-06",
+   "population": "CONTROL_NON_TEXT",
+   "objekt": "SWITCH_OFF_STATE",
+   "skarm": "profil",
+   "tema": "light",
+   "kontrollidentitet": "profil · switch · \"Visa mina recept publikt\"",
+   "state": "OFF",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoterna ar konformansgolv, inte optimeringsmal.",
+   "granularitet": "TWO_SOURCE_VISUALLY_COUPLED",
+   "motivering": [
+    "det mest konsekventa paret i den faktiska skarmen",
+    "#7d897c ar redan det klart vanligaste AV-sparet i korpusen — 7 av 9 avstangda reglage anvander det i samma roll",
+    "i profil ger det 3.32 mot sidan och 3.42 i separation fran PA-sparet",
+    "med den befintliga knoppen #f5f4ed blir aven knopp mot spar 3.32",
+    "battre an att gora AV morkare eller mer fargat an nodvandigt — #627061 och de morkare grona fungerar tekniskt men ger AV storre visuell vikt",
+    "accentparen ar tekniskt mojliga men saknar semantiskt skal har",
+    "paret passerar aven den separata state-separationsgrinden"
+   ],
+   "beslutsunderlag": {
+    "typ": "PAIRED_CANDIDATE_VISUAL_PREVIEW",
+    "commit": "effffce",
+    "kombinationer": 62,
+    "renderingar": 63,
+    "unika": 63,
+    "kollateral": 0,
+    "okand": 0,
+    "valdKombination": "#7d897c / #f5f4ed",
+    "artefakt": "fas2/offswitch-fargpreview.json"
+   },
+   "$precedens": {
+    "$regel": "Precedens ar stod, inte mappningsevidens.",
+    "etableradeAvSpar": [
+     {
+      "varde": "#7d897c",
+      "forekomster": 7,
+      "roll": "reglagespar",
+      "state": "AV",
+      "ytor": [
+       "rgb(245, 244, 237)"
+      ]
+     },
+     {
+      "varde": "#ccd1c2",
+      "forekomster": 1,
+      "roll": "reglagespar",
+      "state": "AV",
+      "ytor": [
+       "rgb(245, 244, 237)"
+      ]
+     },
+     {
+      "varde": "#627061",
+      "forekomster": 1,
+      "roll": "reglagespar",
+      "state": "AV",
+      "ytor": [
+       "rgb(230, 234, 217)"
+      ]
+     }
+    ]
+   },
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler",
+   "beslutsenhet": "OFF_THUMB",
+   "del": "knoppen",
+   "tokenidentitet": "SWITCH_OFF_THUMB_PROFIL",
+   "kallidentitet": "profil|39|background-color",
+   "element": "profil|39",
+   "normativRelation": "knoppen mot sparet, alltsa kontrollens inre yta",
+   "angransande": "#7d897c (sparets nya varde)",
+   "tidigareVarde": "#f5f4ed",
+   "tidigareKvot": 1.41,
+   "valtVarde": "#f5f4ed",
+   "nyKvot": 3.32,
+   "enhetsnyckelkollision": {
+    "kall": "profil|39|background-color",
+    "roll": "yta-upphojd",
+    "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "nyckelFore": "yta-upphojd|#f5f4ed ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "nyckelEfter": "yta-upphojd|#f5f4ed ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "gruppträffar": 0,
+    "prov": [],
+    "utfall": "ingen gruppträff alls",
+    "scopeGuardModul": "tools/decision-scope-guard.mjs",
+    "$metod": "Varje gruppträff provades med traffens EGEN identitet, sa att bara scopelagret kan avvisa den."
+   },
+   "skrivplatser": [],
+   "skrivomfang": 0,
+   "kraverProduktandring": false,
+   "$oforandratVarde": "Beslutet ar att BEHALLA #f5f4ed. Det ar ett eget normativt beslut for en egen relation, inte franvaron av ett beslut. Ingen produktdeklaration behover andras.",
+   "$tvaIdentiteter": {
+    "$regel": "Tva kallor och tva normativa relationer ger tva beslut. Att knoppen behaller samma numeriska varde ar varken mappningsevidens eller skal att sla ihop besluten.",
+    "systerbeslut": "NTR-BATCH06-LIGHT-SWITCH-OFF-TRACK-PROFIL",
+    "$skilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen provenanskedja",
+     "egen normativ relation",
+     "egen angransande farg"
+    ]
+   }
   }
  ],
  "$forberedReconciliation": {
@@ -1027,19 +1272,21 @@
   "$mappningstyp": "Harleds inte ur att varden rakar vara lika eller olika."
  },
  "$forberedSkrivning": {
-  "batch": "BATCH-05",
-  "status": "UTFORD 2026-08-14",
+  "batch": "BATCH-06",
+  "status": "FORBEREDD, INTE UTFORD",
   "platser": [
    {
-    "fynd": "BG-033",
-    "skarm": "globceremoni",
-    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
-    "offset": 30237,
-    "fran": "#ce7c1e",
-    "till": "#d8b784",
+    "del": "OFF_TRACK",
+    "kallidentitet": "profil|38|background-color",
+    "skarm": "profil",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "offset": 30913,
+    "fran": "#ccd1c2",
+    "till": "#7d897c",
     "entydig": true
    }
   ],
+  "$antal": "exakt en deklaration — knoppen behaller sitt varde",
   "$villkor": "Kravs uttryckligt klartecken. Det allmanna fargskrivningsstoppet galler."
  }
 }
