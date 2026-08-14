@@ -866,6 +866,129 @@
      "till": "#d8b784"
     }
    ]
+  },
+  {
+   "beslutsId": "NTR-BATCH05-LIGHT-PROGRESS-FILL-DU-01-E",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-05",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "PROGRESS_FILL",
+   "skarm": "globceremoni",
+   "tema": "light",
+   "valtVarde": "#d8b784",
+   "beslutsenhet": "DU-01-E",
+   "etikett": "nedrakningsstreck",
+   "tokenidentitet": "PROGRESS_FILL_GLOBCEREMONI_DU_01_E",
+   "relationer": [
+    "BG-033"
+   ],
+   "kallidentitet": "globceremoni|8|background-color",
+   "kallidentitetBarare": "globceremoni|7|background-color",
+   "stabiltRelationsId": "globceremoni|7→8",
+   "roll": "yta-upphojd",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "tidigareVarde": "#ce7c1e",
+   "tidigareKvot": 2.64,
+   "faktiskTrack": "rgb(63, 81, 69)",
+   "trackKomposition": "DIREKT",
+   "nyKvot": 4.46,
+   "andel": 0.5333,
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoten ar ett konformansgolv, inte ett optimeringsmal.",
+   "motivering": [
+    "i den faktiska globceremoni-vyn ar #d8b784 tydligt nog for att bara nedrakningen",
+    "det konkurrerar inte med rubriken eller den ljusa primarknappen",
+    "det knyter an till den varma tonen i matillustrationen utan att borja lasa som status- eller actionaccent",
+    "de ljusaste kandidaterna blir for framtradande",
+    "de gragrona alternativen blir mer anonyma och strukturella",
+    "4.46 mot den faktiska tracken ger god marginal over 3.0"
+   ],
+   "beslutsunderlag": {
+    "typ": "FULL_CANDIDATE_VISUAL_PREVIEW",
+    "commit": "e46f3f8",
+    "kandidater": 13,
+    "renderingar": 14,
+    "unika": 14,
+    "kollateral": 0,
+    "okand": 0,
+    "geometriOchTrackKonstanta": true,
+    "artefakt": "fas2/nt-bg033-kandidatpaket.json"
+   },
+   "kandidatpipeline": {
+    "palett": 44,
+    "efterSemantik": 26,
+    "efterTeknik": 13
+   },
+   "enhetsnyckelkollision": {
+    "nyckelFore": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "nyckelEfter": "yta-upphojd|#d8b784 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "gruppträffar": 1,
+    "provPerTraff": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "omfattning": {
+       "klass": "KALLIDENTITET",
+       "varde": "start|19|background-color"
+      },
+      "berordaArtefakter": [
+       "start"
+      ],
+      "kallidentitet": "start|19|background-color",
+      "tackerBG033": false,
+      "tackning": "EJ_TACKT_ANNAN_KALLA",
+      "kredit": 0,
+      "mappningsevidens": false,
+      "morktVarde": null,
+      "tokenidentitet": null,
+      "scopeUtokat": false,
+      "skal": "beslutet ar scopat till kallraden start|19|background-color — forekomsten globceremoni|8|background-color ar en annan kallrad"
+     }
+    ],
+    "utfall": "INGEN KREDIT OCH INGEN MAPPNINGSEVIDENS. Sorteringsnyckeln sammanfaller efter en skrivning, men ingen traff omfattar globceremoni|8.",
+    "scopeGuardModul": "tools/decision-scope-guard.mjs",
+    "$metod": "Varje gruppträff provades med forekomsten satt till TRAFFENS EGEN identitet, sa att bara scopelagret kan avvisa den."
+   },
+   "$numeriskAteranvandning": {
+    "$regel": "Numerisk ateranvandning av #d8b784 fran andra progressrelationer ar INTE mappningsevidens, ar inget skal for identitetssammanslagning och ger 0 R-04-kredit.",
+    "andraNTRbeslutMedSammaVarde": [
+     "NTR-BATCH02-LIGHT-PROGRESS-FILL-DU-01-C",
+     "NTR-BATCH04-LIGHT-PROGRESS-FILL-DU-01-A",
+     "NTR-BATCH04-LIGHT-PROGRESS-FILL-TIMER-DU-02"
+    ],
+    "$atskilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen provenanskedja"
+    ]
+   },
+   "skrivplatser": [
+    {
+     "fynd": "BG-033",
+     "skarm": "globceremoni",
+     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+     "offset": 30237,
+     "kallform": "width:64px;height:2px;border-radius:2px;background:#ce7c1e",
+     "fargtraffarIDeklarationen": 1,
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#d8b784"
+    }
+   ],
+   "skrivomfang": 1,
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler"
   }
  ],
  "$forberedReconciliation": {
@@ -894,24 +1017,15 @@
   "$mappningstyp": "Harleds inte ur att varden rakar vara lika eller olika."
  },
  "$forberedSkrivning": {
-  "batch": "BATCH-04",
-  "status": "UTFORD 2026-08-14",
+  "batch": "BATCH-05",
+  "status": "FORBEREDD, INTE UTFORD",
   "platser": [
    {
-    "fynd": "BG-027",
-    "skarm": "lagatimers",
-    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-    "offset": 166398,
+    "fynd": "BG-033",
+    "skarm": "globceremoni",
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+    "offset": 30237,
     "fran": "#ce7c1e",
-    "till": "#d8b784",
-    "entydig": true
-   },
-   {
-    "fynd": "BG-028",
-    "skarm": "lagatimers",
-    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-    "offset": 167435,
-    "fran": "#dca968",
     "till": "#d8b784",
     "entydig": true
    }
