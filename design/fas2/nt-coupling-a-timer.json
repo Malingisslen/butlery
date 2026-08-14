@@ -1,0 +1,1224 @@
+{
+ "$schema": "butlery-nt-coupling-lagatimers/1",
+ "$datum": "2026-08-14",
+ "$franCommit": "e8c7c2a",
+ "$status": "COUPLING AUDIT + COMPOUND PREVIEW. 0 produktwrites, 0 registerwrites, 0 fargval.",
+ "A_faktiskRendering": {
+  "skarm": "lagatimers",
+  "skarmetikett": "Matlagning — flera timers",
+  "tema": "light",
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "viewport": "compact-390 · 390x844 logiskt, deviceScaleFactor 2",
+  "telefonramen": {
+   "x": 44,
+   "y": 21553,
+   "w": 414,
+   "h": 846
+  },
+  "animationerIScenen": 0,
+  "$animationsnot": "Noll animationer i scenen. Ingen av relationerna doljs eller varierar med en timer- eller overgangsstate.",
+  "BG_027": {
+   "enhet": "DU-01-A",
+   "etikett": "Pastan",
+   "renderIdentitet": "lagatimers|13→14",
+   "kallidentitetVarde": "lagatimers|14|background-color",
+   "kallidentitetBarare": "lagatimers|13|background-color",
+   "fillRect": {
+    "x": 69,
+    "y": 21796,
+    "w": 138,
+    "h": 3
+   },
+   "trackRect": {
+    "x": 69,
+    "y": 21796,
+    "w": 238,
+    "h": 3
+   },
+   "synlig": true,
+   "opacitet": "1",
+   "fillDeklarerad": "rgb(206, 124, 30)",
+   "fillRenderad": "rgb(206, 124, 30)",
+   "trackDeklarerad": "rgba(245, 244, 237, 0.18)",
+   "trackRenderad": "rgb(83, 100, 88)",
+   "state": null,
+   "animationer": 0,
+   "andel": 0.58,
+   "kvot": 1.96
+  },
+  "BG_028": {
+   "enhet": "SEPARAT TIMERBESLUT (DU-02)",
+   "etikett": "Svampen",
+   "renderIdentitet": "lagatimers|22→23",
+   "kallidentitetVarde": "lagatimers|23|background-color",
+   "kallidentitetBarare": "lagatimers|22|background-color",
+   "fillRect": {
+    "x": 69,
+    "y": 21852,
+    "w": 52,
+    "h": 3
+   },
+   "trackRect": {
+    "x": 69,
+    "y": 21852,
+    "w": 238,
+    "h": 3
+   },
+   "synlig": true,
+   "opacitet": "1",
+   "fillDeklarerad": "rgb(220, 169, 104)",
+   "fillRenderad": "rgb(220, 169, 104)",
+   "trackDeklarerad": "rgba(245, 244, 237, 0.18)",
+   "trackRenderad": "rgb(83, 100, 88)",
+   "state": null,
+   "animationer": 0,
+   "andel": 0.2199,
+   "kvot": 2.98
+  },
+  "badaSynligaSamtidigt": true,
+  "vertikaltAvstand": 56,
+  "gemensamForfader": {
+   "tagg": "div",
+   "klass": null,
+   "matt": {
+    "w": 412,
+    "h": 152
+   },
+   "text": "Två timers går Pastan 04:12 Svampen 01:47"
+  },
+  "rymsUtanRullning": "Bada raderna ligger inuti samma kort 412x152 px, 56 px isar, mot en vyhojd pa 844 px. Kortet ryms i sin helhet i vyn, sa bada strecken ses samtidigt utan rullning."
+ },
+ "B_verdikt": {
+  "klass": "VISUALLY_COUPLED_DECISIONS",
+  "bevis": [
+   "Bada fyllningarna ar synliga samtidigt (56 px isar vertikalt) inuti samma kort div 412x152 vars egen text lyder \"Två timers går Pastan 04:12 Svampen 01:47\". Kortet ar en enda komposition som visar tva parallella timers.",
+   "Identisk geometri: bada bararna ar 238x3 px och ligger i samma kolumn (x = 69 for bada).",
+   "Identisk faktisk track: bada ar rgba(245, 244, 237, 0.18) komponerad over rgb(47, 68, 55) = rgb(83, 100, 88). En och samma bakgrundsfarg bedomer bada fyllningarna.",
+   "De bar i dag TVA OLIKA orangea varden (rgb(206, 124, 30) respektive rgb(220, 169, 104)). Vilket varde den ena far avgor darfor materiellt om skarmen efterat laser som en enhetlig uppsattning eller som tva olika sorters forlopp. Det gar inte att bedoma den ena utan att se den andra.",
+   "Noll animationer i scenen: ingen av dem ar ett transient tillstand som doljer den andra."
+  ],
+  "$ejBevis": [
+   "gemensamt skarmnamn",
+   "samma komponenttyp",
+   "samma rafarg",
+   "samma rollnamn"
+  ],
+  "foljd": "Vag 5B: COMPOUND_DECISION_PREVIEW. En envariabelpreview skulle behova halla den andra pa sitt nuvarande varde, som redan ar ett fynd och ska andras."
+ },
+ "C_kandidatmangder": {
+  "metod": "omraknad fran HEAD (e8c7c2a). Rollfilter + tekniskt filter mot faktiskt malad angransande farg. Ingen smakbaserad gallring.",
+  "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+  "$ejMalvarde": "Kvoterna ar konformansutfall, inte malvarden. 3.0 ar golv, inte design target.",
+  "DU_01_A": {
+   "fynd": "BG-027",
+   "roll": "yta-upphojd",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "nuvarandeVarde": "#ce7c1e",
+   "nuvarandeKvot": 1.96,
+   "faktiskTrack": "rgb(83, 100, 88)",
+   "prov": {
+    "provade": 30,
+    "bortSemantik": 4,
+    "bortKontrast": 17,
+    "giltiga": 9,
+    "varavAccent": 0
+   },
+   "antal": 9,
+   "kandidater": [
+    {
+     "varde": "#f5f4ed",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 306,
+     "forekomsterTotalt": 1745,
+     "kvot": 5.72,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#f0eee2",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 19,
+     "forekomsterTotalt": 25,
+     "kvot": 5.41,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#f7e8d2",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 11,
+     "forekomsterTotalt": 18,
+     "kvot": 5.23,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#e6ead9",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 367,
+     "forekomsterTotalt": 650,
+     "kvot": 5.14,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#dfe0d6",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 2,
+     "forekomsterTotalt": 2,
+     "kvot": 4.73,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#ccd1c2",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 107,
+     "forekomsterTotalt": 3417,
+     "kvot": 4.04,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#c3c6ba",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 2,
+     "forekomsterTotalt": 2,
+     "kvot": 3.63,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#d8b784",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 2,
+     "forekomsterTotalt": 106,
+     "kvot": 3.31,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#b4bfa6",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 5,
+     "forekomsterTotalt": 6,
+     "kvot": 3.28,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    }
+   ],
+   "R04_mappningsevidens": "ingen"
+  },
+  "TIMER_DU_02": {
+   "fynd": "BG-028",
+   "roll": "yta-upphojd",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "nuvarandeVarde": "#dca968",
+   "nuvarandeKvot": 2.98,
+   "faktiskTrack": "rgb(83, 100, 88)",
+   "prov": {
+    "provade": 30,
+    "bortSemantik": 4,
+    "bortKontrast": 17,
+    "giltiga": 9,
+    "varavAccent": 0
+   },
+   "antal": 9,
+   "kandidater": [
+    {
+     "varde": "#f5f4ed",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 306,
+     "forekomsterTotalt": 1745,
+     "kvot": 5.72,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#f0eee2",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 19,
+     "forekomsterTotalt": 25,
+     "kvot": 5.41,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#f7e8d2",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 11,
+     "forekomsterTotalt": 18,
+     "kvot": 5.23,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#e6ead9",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 367,
+     "forekomsterTotalt": 650,
+     "kvot": 5.14,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#dfe0d6",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 2,
+     "forekomsterTotalt": 2,
+     "kvot": 4.73,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#ccd1c2",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 107,
+     "forekomsterTotalt": 3417,
+     "kvot": 4.04,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#c3c6ba",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 2,
+     "forekomsterTotalt": 2,
+     "kvot": 3.63,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#d8b784",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 2,
+     "forekomsterTotalt": 106,
+     "kvot": 3.31,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    },
+    {
+     "varde": "#b4bfa6",
+     "semantiskBehorig": true,
+     "sammaRollForekomster": 5,
+     "forekomsterTotalt": 6,
+     "kvot": 3.28,
+     "accentkollision": false,
+     "pass": true,
+     "mappningsevidens": "ingen — palettmedlemskap och samma roll i ljust lage ar inte evidens",
+     "provenans": "inline-deklaration per instans, ingen tokenreferens",
+     "status": "GILTIG"
+    }
+   ],
+   "R04_mappningsevidens": "ingen"
+  },
+  "snitt": [
+   "#f5f4ed",
+   "#f0eee2",
+   "#f7e8d2",
+   "#e6ead9",
+   "#dfe0d6",
+   "#ccd1c2",
+   "#c3c6ba",
+   "#d8b784",
+   "#b4bfa6"
+  ],
+  "snittAntal": 9,
+  "baraIA": [],
+  "baraIT": [],
+  "skillnadsorsak": "Ingen skillnad. Bada enheterna har samma roll (yta-upphojd), samma undergruppsnyckel och samma faktiskt malade track (rgb(83, 100, 88)). Det tekniska filtret och det semantiska filtret ar darfor bitvis identiska, och kandidatmangderna sammanfaller helt. Det enda som skiljer enheterna at ar deras nuvarande ljusvarde (#ce7c1e mot #dca968), och det nuvarande vardet ingar inte i kandidatuniversumet.",
+  "$regel": "Palettmedlemskap och numerisk ateranvandning ar INTE mappningsevidens. Ingen av de nio kandidaterna har mappningsevidens i nagon riktning.",
+  "$accent": "Noll av de giltiga kandidaterna kolliderar med accent-, status- eller brandfargregistret. Den nuvarande orangea #ce7c1e ar sjalv accentfargen och faller redan pa kontrastkravet (1.96)."
+ },
+ "D_compoundPreview": {
+  "typ": "COMPOUND_DECISION_PREVIEW",
+  "tuplar": 81,
+  "$ingenGallring": "Samtliga 9x9 tekniskt och semantiskt giltiga kombinationer ingar. Ingen smakbaserad gallring och ingen automatisk vinnare.",
+  "varavSammaVarde": 9,
+  "renderingar": 81,
+  "band": {
+   "x": 45,
+   "y": 21758,
+   "width": 336,
+   "height": 135
+  },
+  "kravPerTuppel": [
+   "BG-027 >= 3.0 mot faktisk track",
+   "BG-028 >= 3.0 mot faktisk track",
+   "bada renderade tillsammans i lagatimers",
+   "verifierade faktiska tracks",
+   "okant agarskap 0",
+   "kollateral 0",
+   "inga andra fargar eller ytor andrade",
+   "samma viewport och samma state mellan alla tuplar"
+  ],
+  "allaKravUppfyllda": true,
+  "kollateralTotalt": 0,
+  "okandTotalt": 0,
+  "unikaRenderingar": 81,
+  "kallgrind": {
+   "ok": true,
+   "deklarationer": 50
+  },
+  "scenenAterstalld": true,
+  "rader": [
+   {
+    "A": "#f5f4ed",
+    "T": "#f5f4ed",
+    "kvotA": 5.72,
+    "kvotT": 5.72,
+    "badaPasserar": true,
+    "sammaVarde": true,
+    "fil": "tup-f5f4ed-f5f4ed.png"
+   },
+   {
+    "A": "#f5f4ed",
+    "T": "#f0eee2",
+    "kvotA": 5.72,
+    "kvotT": 5.41,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f5f4ed-f0eee2.png"
+   },
+   {
+    "A": "#f5f4ed",
+    "T": "#f7e8d2",
+    "kvotA": 5.72,
+    "kvotT": 5.23,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f5f4ed-f7e8d2.png"
+   },
+   {
+    "A": "#f5f4ed",
+    "T": "#e6ead9",
+    "kvotA": 5.72,
+    "kvotT": 5.14,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f5f4ed-e6ead9.png"
+   },
+   {
+    "A": "#f5f4ed",
+    "T": "#dfe0d6",
+    "kvotA": 5.72,
+    "kvotT": 4.73,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f5f4ed-dfe0d6.png"
+   },
+   {
+    "A": "#f5f4ed",
+    "T": "#ccd1c2",
+    "kvotA": 5.72,
+    "kvotT": 4.04,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f5f4ed-ccd1c2.png"
+   },
+   {
+    "A": "#f5f4ed",
+    "T": "#c3c6ba",
+    "kvotA": 5.72,
+    "kvotT": 3.63,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f5f4ed-c3c6ba.png"
+   },
+   {
+    "A": "#f5f4ed",
+    "T": "#d8b784",
+    "kvotA": 5.72,
+    "kvotT": 3.31,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f5f4ed-d8b784.png"
+   },
+   {
+    "A": "#f5f4ed",
+    "T": "#b4bfa6",
+    "kvotA": 5.72,
+    "kvotT": 3.28,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f5f4ed-b4bfa6.png"
+   },
+   {
+    "A": "#f0eee2",
+    "T": "#f5f4ed",
+    "kvotA": 5.41,
+    "kvotT": 5.72,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f0eee2-f5f4ed.png"
+   },
+   {
+    "A": "#f0eee2",
+    "T": "#f0eee2",
+    "kvotA": 5.41,
+    "kvotT": 5.41,
+    "badaPasserar": true,
+    "sammaVarde": true,
+    "fil": "tup-f0eee2-f0eee2.png"
+   },
+   {
+    "A": "#f0eee2",
+    "T": "#f7e8d2",
+    "kvotA": 5.41,
+    "kvotT": 5.23,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f0eee2-f7e8d2.png"
+   },
+   {
+    "A": "#f0eee2",
+    "T": "#e6ead9",
+    "kvotA": 5.41,
+    "kvotT": 5.14,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f0eee2-e6ead9.png"
+   },
+   {
+    "A": "#f0eee2",
+    "T": "#dfe0d6",
+    "kvotA": 5.41,
+    "kvotT": 4.73,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f0eee2-dfe0d6.png"
+   },
+   {
+    "A": "#f0eee2",
+    "T": "#ccd1c2",
+    "kvotA": 5.41,
+    "kvotT": 4.04,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f0eee2-ccd1c2.png"
+   },
+   {
+    "A": "#f0eee2",
+    "T": "#c3c6ba",
+    "kvotA": 5.41,
+    "kvotT": 3.63,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f0eee2-c3c6ba.png"
+   },
+   {
+    "A": "#f0eee2",
+    "T": "#d8b784",
+    "kvotA": 5.41,
+    "kvotT": 3.31,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f0eee2-d8b784.png"
+   },
+   {
+    "A": "#f0eee2",
+    "T": "#b4bfa6",
+    "kvotA": 5.41,
+    "kvotT": 3.28,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f0eee2-b4bfa6.png"
+   },
+   {
+    "A": "#f7e8d2",
+    "T": "#f5f4ed",
+    "kvotA": 5.23,
+    "kvotT": 5.72,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f7e8d2-f5f4ed.png"
+   },
+   {
+    "A": "#f7e8d2",
+    "T": "#f0eee2",
+    "kvotA": 5.23,
+    "kvotT": 5.41,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f7e8d2-f0eee2.png"
+   },
+   {
+    "A": "#f7e8d2",
+    "T": "#f7e8d2",
+    "kvotA": 5.23,
+    "kvotT": 5.23,
+    "badaPasserar": true,
+    "sammaVarde": true,
+    "fil": "tup-f7e8d2-f7e8d2.png"
+   },
+   {
+    "A": "#f7e8d2",
+    "T": "#e6ead9",
+    "kvotA": 5.23,
+    "kvotT": 5.14,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f7e8d2-e6ead9.png"
+   },
+   {
+    "A": "#f7e8d2",
+    "T": "#dfe0d6",
+    "kvotA": 5.23,
+    "kvotT": 4.73,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f7e8d2-dfe0d6.png"
+   },
+   {
+    "A": "#f7e8d2",
+    "T": "#ccd1c2",
+    "kvotA": 5.23,
+    "kvotT": 4.04,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f7e8d2-ccd1c2.png"
+   },
+   {
+    "A": "#f7e8d2",
+    "T": "#c3c6ba",
+    "kvotA": 5.23,
+    "kvotT": 3.63,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f7e8d2-c3c6ba.png"
+   },
+   {
+    "A": "#f7e8d2",
+    "T": "#d8b784",
+    "kvotA": 5.23,
+    "kvotT": 3.31,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f7e8d2-d8b784.png"
+   },
+   {
+    "A": "#f7e8d2",
+    "T": "#b4bfa6",
+    "kvotA": 5.23,
+    "kvotT": 3.28,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-f7e8d2-b4bfa6.png"
+   },
+   {
+    "A": "#e6ead9",
+    "T": "#f5f4ed",
+    "kvotA": 5.14,
+    "kvotT": 5.72,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-e6ead9-f5f4ed.png"
+   },
+   {
+    "A": "#e6ead9",
+    "T": "#f0eee2",
+    "kvotA": 5.14,
+    "kvotT": 5.41,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-e6ead9-f0eee2.png"
+   },
+   {
+    "A": "#e6ead9",
+    "T": "#f7e8d2",
+    "kvotA": 5.14,
+    "kvotT": 5.23,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-e6ead9-f7e8d2.png"
+   },
+   {
+    "A": "#e6ead9",
+    "T": "#e6ead9",
+    "kvotA": 5.14,
+    "kvotT": 5.14,
+    "badaPasserar": true,
+    "sammaVarde": true,
+    "fil": "tup-e6ead9-e6ead9.png"
+   },
+   {
+    "A": "#e6ead9",
+    "T": "#dfe0d6",
+    "kvotA": 5.14,
+    "kvotT": 4.73,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-e6ead9-dfe0d6.png"
+   },
+   {
+    "A": "#e6ead9",
+    "T": "#ccd1c2",
+    "kvotA": 5.14,
+    "kvotT": 4.04,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-e6ead9-ccd1c2.png"
+   },
+   {
+    "A": "#e6ead9",
+    "T": "#c3c6ba",
+    "kvotA": 5.14,
+    "kvotT": 3.63,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-e6ead9-c3c6ba.png"
+   },
+   {
+    "A": "#e6ead9",
+    "T": "#d8b784",
+    "kvotA": 5.14,
+    "kvotT": 3.31,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-e6ead9-d8b784.png"
+   },
+   {
+    "A": "#e6ead9",
+    "T": "#b4bfa6",
+    "kvotA": 5.14,
+    "kvotT": 3.28,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-e6ead9-b4bfa6.png"
+   },
+   {
+    "A": "#dfe0d6",
+    "T": "#f5f4ed",
+    "kvotA": 4.73,
+    "kvotT": 5.72,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-dfe0d6-f5f4ed.png"
+   },
+   {
+    "A": "#dfe0d6",
+    "T": "#f0eee2",
+    "kvotA": 4.73,
+    "kvotT": 5.41,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-dfe0d6-f0eee2.png"
+   },
+   {
+    "A": "#dfe0d6",
+    "T": "#f7e8d2",
+    "kvotA": 4.73,
+    "kvotT": 5.23,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-dfe0d6-f7e8d2.png"
+   },
+   {
+    "A": "#dfe0d6",
+    "T": "#e6ead9",
+    "kvotA": 4.73,
+    "kvotT": 5.14,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-dfe0d6-e6ead9.png"
+   },
+   {
+    "A": "#dfe0d6",
+    "T": "#dfe0d6",
+    "kvotA": 4.73,
+    "kvotT": 4.73,
+    "badaPasserar": true,
+    "sammaVarde": true,
+    "fil": "tup-dfe0d6-dfe0d6.png"
+   },
+   {
+    "A": "#dfe0d6",
+    "T": "#ccd1c2",
+    "kvotA": 4.73,
+    "kvotT": 4.04,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-dfe0d6-ccd1c2.png"
+   },
+   {
+    "A": "#dfe0d6",
+    "T": "#c3c6ba",
+    "kvotA": 4.73,
+    "kvotT": 3.63,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-dfe0d6-c3c6ba.png"
+   },
+   {
+    "A": "#dfe0d6",
+    "T": "#d8b784",
+    "kvotA": 4.73,
+    "kvotT": 3.31,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-dfe0d6-d8b784.png"
+   },
+   {
+    "A": "#dfe0d6",
+    "T": "#b4bfa6",
+    "kvotA": 4.73,
+    "kvotT": 3.28,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-dfe0d6-b4bfa6.png"
+   },
+   {
+    "A": "#ccd1c2",
+    "T": "#f5f4ed",
+    "kvotA": 4.04,
+    "kvotT": 5.72,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-ccd1c2-f5f4ed.png"
+   },
+   {
+    "A": "#ccd1c2",
+    "T": "#f0eee2",
+    "kvotA": 4.04,
+    "kvotT": 5.41,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-ccd1c2-f0eee2.png"
+   },
+   {
+    "A": "#ccd1c2",
+    "T": "#f7e8d2",
+    "kvotA": 4.04,
+    "kvotT": 5.23,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-ccd1c2-f7e8d2.png"
+   },
+   {
+    "A": "#ccd1c2",
+    "T": "#e6ead9",
+    "kvotA": 4.04,
+    "kvotT": 5.14,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-ccd1c2-e6ead9.png"
+   },
+   {
+    "A": "#ccd1c2",
+    "T": "#dfe0d6",
+    "kvotA": 4.04,
+    "kvotT": 4.73,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-ccd1c2-dfe0d6.png"
+   },
+   {
+    "A": "#ccd1c2",
+    "T": "#ccd1c2",
+    "kvotA": 4.04,
+    "kvotT": 4.04,
+    "badaPasserar": true,
+    "sammaVarde": true,
+    "fil": "tup-ccd1c2-ccd1c2.png"
+   },
+   {
+    "A": "#ccd1c2",
+    "T": "#c3c6ba",
+    "kvotA": 4.04,
+    "kvotT": 3.63,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-ccd1c2-c3c6ba.png"
+   },
+   {
+    "A": "#ccd1c2",
+    "T": "#d8b784",
+    "kvotA": 4.04,
+    "kvotT": 3.31,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-ccd1c2-d8b784.png"
+   },
+   {
+    "A": "#ccd1c2",
+    "T": "#b4bfa6",
+    "kvotA": 4.04,
+    "kvotT": 3.28,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-ccd1c2-b4bfa6.png"
+   },
+   {
+    "A": "#c3c6ba",
+    "T": "#f5f4ed",
+    "kvotA": 3.63,
+    "kvotT": 5.72,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-c3c6ba-f5f4ed.png"
+   },
+   {
+    "A": "#c3c6ba",
+    "T": "#f0eee2",
+    "kvotA": 3.63,
+    "kvotT": 5.41,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-c3c6ba-f0eee2.png"
+   },
+   {
+    "A": "#c3c6ba",
+    "T": "#f7e8d2",
+    "kvotA": 3.63,
+    "kvotT": 5.23,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-c3c6ba-f7e8d2.png"
+   },
+   {
+    "A": "#c3c6ba",
+    "T": "#e6ead9",
+    "kvotA": 3.63,
+    "kvotT": 5.14,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-c3c6ba-e6ead9.png"
+   },
+   {
+    "A": "#c3c6ba",
+    "T": "#dfe0d6",
+    "kvotA": 3.63,
+    "kvotT": 4.73,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-c3c6ba-dfe0d6.png"
+   },
+   {
+    "A": "#c3c6ba",
+    "T": "#ccd1c2",
+    "kvotA": 3.63,
+    "kvotT": 4.04,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-c3c6ba-ccd1c2.png"
+   },
+   {
+    "A": "#c3c6ba",
+    "T": "#c3c6ba",
+    "kvotA": 3.63,
+    "kvotT": 3.63,
+    "badaPasserar": true,
+    "sammaVarde": true,
+    "fil": "tup-c3c6ba-c3c6ba.png"
+   },
+   {
+    "A": "#c3c6ba",
+    "T": "#d8b784",
+    "kvotA": 3.63,
+    "kvotT": 3.31,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-c3c6ba-d8b784.png"
+   },
+   {
+    "A": "#c3c6ba",
+    "T": "#b4bfa6",
+    "kvotA": 3.63,
+    "kvotT": 3.28,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-c3c6ba-b4bfa6.png"
+   },
+   {
+    "A": "#d8b784",
+    "T": "#f5f4ed",
+    "kvotA": 3.31,
+    "kvotT": 5.72,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-d8b784-f5f4ed.png"
+   },
+   {
+    "A": "#d8b784",
+    "T": "#f0eee2",
+    "kvotA": 3.31,
+    "kvotT": 5.41,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-d8b784-f0eee2.png"
+   },
+   {
+    "A": "#d8b784",
+    "T": "#f7e8d2",
+    "kvotA": 3.31,
+    "kvotT": 5.23,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-d8b784-f7e8d2.png"
+   },
+   {
+    "A": "#d8b784",
+    "T": "#e6ead9",
+    "kvotA": 3.31,
+    "kvotT": 5.14,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-d8b784-e6ead9.png"
+   },
+   {
+    "A": "#d8b784",
+    "T": "#dfe0d6",
+    "kvotA": 3.31,
+    "kvotT": 4.73,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-d8b784-dfe0d6.png"
+   },
+   {
+    "A": "#d8b784",
+    "T": "#ccd1c2",
+    "kvotA": 3.31,
+    "kvotT": 4.04,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-d8b784-ccd1c2.png"
+   },
+   {
+    "A": "#d8b784",
+    "T": "#c3c6ba",
+    "kvotA": 3.31,
+    "kvotT": 3.63,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-d8b784-c3c6ba.png"
+   },
+   {
+    "A": "#d8b784",
+    "T": "#d8b784",
+    "kvotA": 3.31,
+    "kvotT": 3.31,
+    "badaPasserar": true,
+    "sammaVarde": true,
+    "fil": "tup-d8b784-d8b784.png"
+   },
+   {
+    "A": "#d8b784",
+    "T": "#b4bfa6",
+    "kvotA": 3.31,
+    "kvotT": 3.28,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-d8b784-b4bfa6.png"
+   },
+   {
+    "A": "#b4bfa6",
+    "T": "#f5f4ed",
+    "kvotA": 3.28,
+    "kvotT": 5.72,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-b4bfa6-f5f4ed.png"
+   },
+   {
+    "A": "#b4bfa6",
+    "T": "#f0eee2",
+    "kvotA": 3.28,
+    "kvotT": 5.41,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-b4bfa6-f0eee2.png"
+   },
+   {
+    "A": "#b4bfa6",
+    "T": "#f7e8d2",
+    "kvotA": 3.28,
+    "kvotT": 5.23,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-b4bfa6-f7e8d2.png"
+   },
+   {
+    "A": "#b4bfa6",
+    "T": "#e6ead9",
+    "kvotA": 3.28,
+    "kvotT": 5.14,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-b4bfa6-e6ead9.png"
+   },
+   {
+    "A": "#b4bfa6",
+    "T": "#dfe0d6",
+    "kvotA": 3.28,
+    "kvotT": 4.73,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-b4bfa6-dfe0d6.png"
+   },
+   {
+    "A": "#b4bfa6",
+    "T": "#ccd1c2",
+    "kvotA": 3.28,
+    "kvotT": 4.04,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-b4bfa6-ccd1c2.png"
+   },
+   {
+    "A": "#b4bfa6",
+    "T": "#c3c6ba",
+    "kvotA": 3.28,
+    "kvotT": 3.63,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-b4bfa6-c3c6ba.png"
+   },
+   {
+    "A": "#b4bfa6",
+    "T": "#d8b784",
+    "kvotA": 3.28,
+    "kvotT": 3.31,
+    "badaPasserar": true,
+    "sammaVarde": false,
+    "fil": "tup-b4bfa6-d8b784.png"
+   },
+   {
+    "A": "#b4bfa6",
+    "T": "#b4bfa6",
+    "kvotA": 3.28,
+    "kvotT": 3.28,
+    "badaPasserar": true,
+    "sammaVarde": true,
+    "fil": "tup-b4bfa6-b4bfa6.png"
+   }
+  ]
+ },
+ "E_identitetsskydd": {
+  "$regel": "Aven om samma numeriska farg valjs for bada forblir de tva beslut.",
+  "kvarstar": [
+   "tva beslutsidentiteter",
+   "tva tokenidentiteter",
+   "tva skrivomfang",
+   "tva provenanskedjor"
+  ],
+  "$inte": [
+   "ingen sammanslagning",
+   "ingen delad token",
+   "ingen mappningsevidens",
+   "ingen R-04-kredit"
+  ],
+  "skiljandeEgenskaperUtomFarg": [
+   "ordinal i skarmen (14 mot 23)",
+   "stabilt relationsid (lagatimers|13→14 mot lagatimers|22→23)",
+   "egen barare (ordinal 13 mot 22)",
+   "egen andel (58 % mot 22 %)",
+   "egen skrivplats i kallan",
+   "egen beslutspost"
+  ]
+ },
+ "F_baslinjekontroll": {
+  "population": 34,
+  "kandidatavstamning": "2492 = 2458 + 34",
+  "summerarExakt": true,
+  "UNKNOWN": 0,
+  "findings": 4,
+  "fyndlista": [
+   {
+    "id": "BG-020",
+    "skarm": "profil",
+    "kvot": 1.41
+   },
+   {
+    "id": "BG-027",
+    "skarm": "lagatimers",
+    "kvot": 1.96
+   },
+   {
+    "id": "BG-033",
+    "skarm": "globceremoni",
+    "kvot": 2.64
+   },
+   {
+    "id": "BG-028",
+    "skarm": "lagatimers",
+    "kvot": 2.98
+   }
+  ],
+  "BG_020": "BLOCKERAD OCH ORORD",
+  "BG_033": "oforandrad, kvot 2.64",
+  "produktfilerAndrade": 0,
+  "registerraderAndrade": 0,
+  "morktLageBerort": false,
+  "R04_COVERAGE_CREDIT": 0,
+  "$injektioner": "Alla injektioner var transienta. Scenen aterstalldes bit-identiskt efter sista tuppeln (true)."
+ },
+ "G_slutsats": {
+  "couplingVerdikt": "VISUALLY_COUPLED_DECISIONS",
+  "kandidatantalBG027": 9,
+  "kandidatantalBG028": 9,
+  "snittAntal": 9,
+  "previewtyp": "COMPOUND_DECISION_PREVIEW · 81 tuplar",
+  "vantar": "mansklig val av kombination",
+  "$ejGjort": [
+   "ingen produktwrite",
+   "ingen registerwrite",
+   "inget fargval",
+   "ingen profilandring",
+   "ingen R-04-implementation",
+   "ingen coverage credit",
+   "ingen smakbaserad gallring",
+   "ingen rekommenderad tuppel"
+  ]
+ }
+}
