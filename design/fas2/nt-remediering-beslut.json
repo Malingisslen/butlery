@@ -1074,7 +1074,7 @@
     ]
    },
    "R04_COVERAGE_CREDIT": 0,
-   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler",
+   "produktwrite": "UTFORD 2026-08-14",
    "beslutsenhet": "OFF_TRACK",
    "del": "sparet",
    "tokenidentitet": "SWITCH_OFF_TRACK_PROFIL",
@@ -1128,7 +1128,18 @@
      "egen normativ relation",
      "egen angransande farg"
     ]
-   }
+   },
+   "skrivplatserUtforda": [
+    {
+     "del": "OFF_TRACK",
+     "kallidentitet": "profil|38|background-color",
+     "skarm": "profil",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "offset": 30913,
+     "fran": "#ccd1c2",
+     "till": "#7d897c"
+    }
+   ]
   },
   {
    "beslutsId": "NTR-BATCH06-LIGHT-SWITCH-OFF-THUMB-PROFIL",
@@ -1204,7 +1215,7 @@
     ]
    },
    "R04_COVERAGE_CREDIT": 0,
-   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler",
+   "produktwrite": "INGEN PRODUKTANDRING BEHOVS — skrivomfang 0, vardet behalls",
    "beslutsenhet": "OFF_THUMB",
    "del": "knoppen",
    "tokenidentitet": "SWITCH_OFF_THUMB_PROFIL",
@@ -1273,7 +1284,7 @@
  },
  "$forberedSkrivning": {
   "batch": "BATCH-06",
-  "status": "FORBEREDD, INTE UTFORD",
+  "status": "UTFORD 2026-08-14",
   "platser": [
    {
     "del": "OFF_TRACK",
