@@ -224,6 +224,100 @@
    "R04_COVERAGE_CREDIT": 0,
    "$coverage": "Ger noll R-04 coverage credit, och far det forst om det ordinarie coveragekontraktet uppfylls sjalvstandigt av faktisk dual-theme-implementation.",
    "produktwrite": "UTFORD I DETTA BLOCK"
+  },
+  {
+   "beslutsId": "NTR-BATCH02-LIGHT-PROGRESS-FILL-DU-01-C",
+   "batch": "BATCH-02",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "PROGRESS_FILL",
+   "tema": "light",
+   "beslutsenhet": "DU-01-C",
+   "$enhetsgrund": "splittad ur yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande efter FAKTISK track rgb(74, 90, 79)",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "valtVarde": "#d8b784",
+   "antalKandidater": 10,
+   "gemensamtFor": [
+    "start",
+    "snackbars"
+   ],
+   "$gemensamhet": "Ett gemensamt LJUST beslut. Det innebar INTE gemensam morklagesmappning.",
+   "relationer": [
+    "BG-001",
+    "BG-024"
+   ],
+   "kvoter": [
+    {
+     "skarm": "start",
+     "renderadFill": "rgb(216, 183, 132)",
+     "renderadTrack": "rgb(74, 90, 79)",
+     "kvot": 3.85
+    },
+    {
+     "skarm": "snackbars",
+     "renderadFill": "rgb(216, 183, 132)",
+     "renderadTrack": "rgb(74, 90, 79)",
+     "kvot": 3.85
+    }
+   ],
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoten 3.85 ar ett konformansutfall med marginal, inte ett malvarde.",
+   "motivering": [
+    "fungerar i bade start och snackbars",
+    "de mycket ljusa kandidaterna blir for textlika och visuellt harda",
+    "de gragrona fungerar tekniskt men gor forloppsstrecket anonymt och dekorativt",
+    "behaller en tydlig egen signal for pagaende forlopp",
+    "blir inte lika stark eller semantiskt laddad som den registrerade accenten #dca968",
+    "ungefar samma visuella tyngd i bada kompositionerna"
+   ],
+   "$accentavgransning": "Vardet ar inte en registrerad semantisk accent. Det far inte aliasas till #dca968 eller nagon annan accenttoken.",
+   "tokenidentitet": "PROGRESS_FILL_DU_01_C",
+   "beslutsunderlag": {
+    "typ": "PARVIS KANDIDATPREVIEW I FAKTISK KONTEXT",
+    "commit": "5c574da",
+    "kandidater": 10,
+    "malrenderingar": 20,
+    "kollateral": 0,
+    "okand": 0,
+    "morkReferensBitIdentisk": true,
+    "artefakt": "fas2/nt-batch02-preview.json"
+   },
+   "skrivplatser": 2,
+   "$skrivplatser": "Tva separata kallrader. Gemensam designidentitet ar inte gemensam skrivplats.",
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "INTE UTFORD"
   }
- ]
+ ],
+ "$forberedReconciliation": {
+  "$status": "FORBEREDD — skrivs forst nar produktwriten ar godkand och utford",
+  "post": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+  "token": "--yta-upphojd-d18",
+  "semantiskRoll": "PROGRESS_VALUE",
+  "OLD_light_value": "#ce7c1e",
+  "NEW_light_value": "#d8b784",
+  "dark_value": "rgba(245,244,237,0.18)",
+  "dark_status": "OFORANDRAT",
+  "dark_provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+  "dark_klassificering": "VISUAL_CHOICE_REQUIRED",
+  "scope": [
+   "start"
+  ],
+  "bevaras": [
+   "beslutsId oforandrat sa att provenienslankar haller",
+   "human provenance for det morka vardet",
+   "mapping evidence-status",
+   "mappningstyp rors inte",
+   "0 R-04 coverage fran atgarden"
+  ],
+  "$enhetsidentitet": "Undergruppen ar oforandrad — samma struktur, samma roll. Bara ljuskallan andras. Det ar en revision av posten, inte en enhetsdelning.",
+  "$snackbars": "Snackbars far INGEN morklagesmappning, ingen dark evidence och ingen R-04-kredit av detta beslut.",
+  "$mappningstyp": "Harleds inte ur att varden rakar vara lika eller olika."
+ }
 }
