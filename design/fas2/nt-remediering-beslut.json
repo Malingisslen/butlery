@@ -620,6 +620,232 @@
      "offset": 26004
     }
    ]
+  },
+  {
+   "beslutsId": "NTR-BATCH04-LIGHT-PROGRESS-FILL-DU-01-A",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-04",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "PROGRESS_FILL",
+   "skarm": "lagatimers",
+   "tema": "light",
+   "valtVarde": "#d8b784",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoten ar ett konformansgolv, inte ett optimeringsmal.",
+   "motivering": [
+    "valet begransades till diagonalen: samma funktion, samma geometri och samma faktiska track, visade som tva parallella timers i samma kort",
+    "etiketterna Pastan och Svampen skiljer redan objekten at, sa tva olika fyllfarger skulle lagga till en visuell semantisk skillnad som designen inte behover",
+    "tva olika farger kan lasas som tva olika typer eller statusar",
+    "de ljusaste alternativen #f5f4ed, #f0eee2, #f7e8d2 och #e6ead9 far strecken att konkurrera for mycket med den ljusa texten",
+    "de gragrona alternativen blir mer anonyma och narmar sig kanslan av stodstruktur snarare an aktivt forlopp",
+    "#d8b784 behaller en tydlig, dampad varm progresskaraktar utan att infora tva olika fargkoder"
+   ],
+   "beslutsunderlag": {
+    "typ": "COMPOUND_DECISION_PREVIEW",
+    "commit": "ef8da97",
+    "tuplar": 81,
+    "renderingar": 81,
+    "unika": 81,
+    "kollateral": 0,
+    "okand": 0,
+    "valdTuppel": "#d8b784 / #d8b784 (diagonalen)",
+    "artefakt": "fas2/nt-coupling-a-timer.json"
+   },
+   "couplingVerdikt": "VISUALLY_COUPLED_DECISIONS",
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler",
+   "beslutsenhet": "DU-01-A",
+   "etikett": "Pastan",
+   "tokenidentitet": "PROGRESS_FILL_LAGATIMERS_DU_01_A",
+   "relationer": [
+    "BG-027"
+   ],
+   "kallidentitet": "lagatimers|14|background-color",
+   "stabiltRelationsId": "lagatimers|13→14",
+   "roll": "yta-upphojd",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "tidigareVarde": "#ce7c1e",
+   "tidigareKvot": 1.96,
+   "faktiskTrack": "rgb(83, 100, 88)",
+   "nyKvot": 3.31,
+   "andel": 0.58,
+   "skrivplatser": [
+    {
+     "fynd": "BG-027",
+     "skarm": "lagatimers",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 166398,
+     "kallform": "display:block;height:100%;width:58%;background:#ce7c1e;border-radius:2px",
+     "fargtraffarIDeklarationen": 1,
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#d8b784"
+    }
+   ],
+   "skrivomfang": 1,
+   "enhetsnyckelkollision": {
+    "fynd": "BG-027",
+    "nyckelFore": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "nyckelEfter": "yta-upphojd|#d8b784 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "kolliderarMed": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "roll": "yta-upphojd",
+      "ljusvarde": "#d8b784",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "omfattning": "SUBGROUP",
+      "kallidentitet": "start|19|background-color",
+      "berordaArtefakter": [
+       "start"
+      ],
+      "omfattarLagatimers": false,
+      "traffarKallidentitet": false
+     }
+    ],
+    "utfall": "INGEN KREDIT OCH INGEN MAPPNINGSEVIDENS. Enhetsnyckeln sammanfaller efter en skrivning, men beslutet ar scopat till start och till kallidentiteten start|19|background-color. lagatimers ingar inte i det scopet."
+   },
+   "$tvaIdentiteter": {
+    "$regel": "Samma numeriska varde ar INTE mappningsevidens, innebar INGEN sammanslagning och ger INGEN R-04-kredit.",
+    "systerbeslut": "NTR-BATCH04-LIGHT-PROGRESS-FILL-TIMER-DU-02",
+    "$skilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen provenanskedja"
+    ],
+    "skiljandeEgenskaperUtomFarg": [
+     "ordinal 14 mot 23",
+     "stabilt relationsid lagatimers|13→14 mot lagatimers|22→23",
+     "egen barare, ordinal 13 mot 22",
+     "andel 58 % mot 22 %",
+     "egen skrivplats i kallan",
+     "egen beslutspost"
+    ]
+   }
+  },
+  {
+   "beslutsId": "NTR-BATCH04-LIGHT-PROGRESS-FILL-TIMER-DU-02",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-04",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "PROGRESS_FILL",
+   "skarm": "lagatimers",
+   "tema": "light",
+   "valtVarde": "#d8b784",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoten ar ett konformansgolv, inte ett optimeringsmal.",
+   "motivering": [
+    "valet begransades till diagonalen: samma funktion, samma geometri och samma faktiska track, visade som tva parallella timers i samma kort",
+    "etiketterna Pastan och Svampen skiljer redan objekten at, sa tva olika fyllfarger skulle lagga till en visuell semantisk skillnad som designen inte behover",
+    "tva olika farger kan lasas som tva olika typer eller statusar",
+    "de ljusaste alternativen #f5f4ed, #f0eee2, #f7e8d2 och #e6ead9 far strecken att konkurrera for mycket med den ljusa texten",
+    "de gragrona alternativen blir mer anonyma och narmar sig kanslan av stodstruktur snarare an aktivt forlopp",
+    "#d8b784 behaller en tydlig, dampad varm progresskaraktar utan att infora tva olika fargkoder"
+   ],
+   "beslutsunderlag": {
+    "typ": "COMPOUND_DECISION_PREVIEW",
+    "commit": "ef8da97",
+    "tuplar": 81,
+    "renderingar": 81,
+    "unika": 81,
+    "kollateral": 0,
+    "okand": 0,
+    "valdTuppel": "#d8b784 / #d8b784 (diagonalen)",
+    "artefakt": "fas2/nt-coupling-a-timer.json"
+   },
+   "couplingVerdikt": "VISUALLY_COUPLED_DECISIONS",
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "INTE UTFORD — allmant fargskrivningsstopp galler",
+   "beslutsenhet": "SEPARAT TIMERBESLUT (DU-02)",
+   "etikett": "Svampen",
+   "tokenidentitet": "PROGRESS_FILL_LAGATIMERS_TIMER_DU_02",
+   "relationer": [
+    "BG-028"
+   ],
+   "kallidentitet": "lagatimers|23|background-color",
+   "stabiltRelationsId": "lagatimers|22→23",
+   "roll": "yta-upphojd",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "tidigareVarde": "#dca968",
+   "tidigareKvot": 2.98,
+   "faktiskTrack": "rgb(83, 100, 88)",
+   "nyKvot": 3.31,
+   "andel": 0.2199,
+   "skrivplatser": [
+    {
+     "fynd": "BG-028",
+     "skarm": "lagatimers",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 167435,
+     "kallform": "display:block;height:100%;width:22%;background:#DCA968;border-radius:2px",
+     "fargtraffarIDeklarationen": 1,
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#dca968",
+     "till": "#d8b784"
+    }
+   ],
+   "skrivomfang": 1,
+   "enhetsnyckelkollision": {
+    "fynd": "BG-028",
+    "nyckelFore": "yta-upphojd|#dca968 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "nyckelEfter": "yta-upphojd|#d8b784 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "kolliderarMed": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "roll": "yta-upphojd",
+      "ljusvarde": "#d8b784",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "omfattning": "SUBGROUP",
+      "kallidentitet": "start|19|background-color",
+      "berordaArtefakter": [
+       "start"
+      ],
+      "omfattarLagatimers": false,
+      "traffarKallidentitet": false
+     }
+    ],
+    "utfall": "INGEN KREDIT OCH INGEN MAPPNINGSEVIDENS. Enhetsnyckeln sammanfaller efter en skrivning, men beslutet ar scopat till start och till kallidentiteten start|19|background-color. lagatimers ingar inte i det scopet."
+   },
+   "$tvaIdentiteter": {
+    "$regel": "Samma numeriska varde ar INTE mappningsevidens, innebar INGEN sammanslagning och ger INGEN R-04-kredit.",
+    "systerbeslut": "NTR-BATCH04-LIGHT-PROGRESS-FILL-DU-01-A",
+    "$skilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen provenanskedja"
+    ],
+    "skiljandeEgenskaperUtomFarg": [
+     "ordinal 14 mot 23",
+     "stabilt relationsid lagatimers|13→14 mot lagatimers|22→23",
+     "egen barare, ordinal 13 mot 22",
+     "andel 58 % mot 22 %",
+     "egen skrivplats i kallan",
+     "egen beslutspost"
+    ]
+   }
   }
  ],
  "$forberedReconciliation": {
@@ -648,52 +874,25 @@
   "$mappningstyp": "Harleds inte ur att varden rakar vara lika eller olika."
  },
  "$forberedSkrivning": {
-  "batch": "BATCH-03",
-  "status": "UTFORD 2026-08-14",
+  "batch": "BATCH-04",
+  "status": "FORBEREDD, INTE UTFORD",
   "platser": [
    {
-    "fynd": "BG-005",
-    "skarm": "smartimport",
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "offset": 129675,
-    "fran": "#ce7c1e",
-    "till": "#4a5c50",
-    "entydig": true
-   },
-   {
-    "fynd": "BG-030",
-    "skarm": "vmbgenererar",
-    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
-    "offset": 28700,
-    "fran": "#ce7c1e",
-    "till": "#4a5c50",
-    "entydig": true
-   },
-   {
-    "fynd": "BG-004",
-    "skarm": "smartimport",
-    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
-    "offset": 128338,
-    "fran": "#ce7c1e",
-    "till": "#4a5c50",
-    "entydig": true
-   },
-   {
-    "fynd": "BG-026",
-    "skarm": "hemladdar",
+    "fynd": "BG-027",
+    "skarm": "lagatimers",
     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
-    "offset": 101581,
+    "offset": 166398,
     "fran": "#ce7c1e",
-    "till": "#4a5c50",
+    "till": "#d8b784",
     "entydig": true
    },
    {
-    "fynd": "BG-031",
-    "skarm": "imp2hamtar",
-    "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
-    "offset": 26004,
-    "fran": "#ce7c1e",
-    "till": "#4a5c50",
+    "fynd": "BG-028",
+    "skarm": "lagatimers",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "offset": 167435,
+    "fran": "#dca968",
+    "till": "#d8b784",
     "entydig": true
    }
   ],
