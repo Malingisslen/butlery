@@ -559,39 +559,28 @@ void main() {
         );
       });
 
-      test('should format last message preview', () {
-        final message = Message.text(
-          conversationId: conversation.id,
-          senderId: 'user_1',
-          senderDisplayName: 'Anna',
-          content: 'Hej Erik!',
-        );
-
-        final withMessage = conversation.copyWith(lastMessage: message);
-
-        expect(withMessage.lastMessagePreview, equals('Anna: Hej Erik!'));
-      });
-
-      test('should handle system messages', () {
-        final systemMessage = Message(
-          id: 'msg_1',
-          conversationId: conversation.id,
-          senderId: 'system',
-          senderDisplayName: 'System',
-          content: 'Erik har anslutit sig',
-          type: MessageType.system,
-          status: MessageStatus.delivered,
-          sentAt: DateTime.now(),
-        );
-
-        final withSystem = conversation.copyWith(lastMessage: systemMessage);
-
-        expect(withSystem.lastMessagePreview, equals('Erik har anslutit sig'));
-      });
-
-      test('should show Swedish "Inga meddelanden än"', () {
-        expect(conversation.lastMessagePreview, equals('Inga meddelanden än'));
-      });
+      // BUT-1838: `Conversation.lastMessagePreview` is DELETED, and these three
+      // tests went with it. It built the same preview as the conversation list
+      // but without the history cut-off, so it would have shown a member a
+      // message `firestore.rules` refuses them. It had no production caller —
+      // only these tests — which is why deleting beat guarding: an unguarded
+      // twin of a privacy check is what the next caller reaches for.
+      //
+      // All three cases are now pinned where the preview is actually built, in
+      // `test/widget/messaging/conversation_list_item_history_preview_test.dart`
+      // ("previews a message sent after the reader joined", "previews a
+      // readable SYSTEM row verbatim", and the two no-message tests), together
+      // with the cut-off none of them knew about.
+      //
+      // Not a like-for-like move, in two places, and that is deliberate:
+      //   - the model prefixed the sender on EVERY conversation ("Anna: Hej
+      //     Erik!"), including a direct chat. The list only prefixes in a
+      //     group; a 1:1 row shows the bare content, and that is what the
+      //     widget suite pins.
+      //   - the model's empty state was "Inga meddelanden än". The list says
+      //     "Grupp skapad" for a group and "Säg hej." for a direct chat, and
+      //     keeps "Inga meddelanden än" for the third state the model had no
+      //     concept of: a last message this member may not read.
 
       test('should format activity time', () {
         final now = DateTime.now();
@@ -871,6 +860,129 @@ void main() {
           expect(legacy.historyQueryStartFor('user_2'), isNull);
         },
       );
+    });
+
+    // BUT-1838 review follow-up. `canReadMessageAt` is the ONE spelling of the
+    // comparison the list row, the search filter and the message query used to
+    // hand-roll separately — and unlike `historyQueryStartFor`, whose null means
+    // "no cut-off", it fails CLOSED in the two states where the rules deny:
+    // an unknown reader and a `groupId` conversation with no stamp for them.
+    group('canReadMessageAt', () {
+      final createdAt = DateTime.utc(2026, 1, 1);
+      final joinedAt = DateTime.utc(2026, 3, 4, 5, 6);
+      final beforeJoin = DateTime.utc(2026, 2, 1);
+      final afterJoin = DateTime.utc(2026, 4, 1);
+
+      Conversation build({
+        String? groupId = 'chat-group-1',
+        Map<String, DateTime> memberSince = const {},
+        bool isGroup = true,
+      }) => Conversation(
+        id: 'conv_can_read',
+        participantIds: const ['user_1', 'user_2'],
+        participantDisplayNames: const {},
+        participantAvatarUrls: const {},
+        lastReadTimestamps: const {},
+        createdAt: createdAt,
+        updatedAt: createdAt,
+        isGroup: isGroup,
+        groupId: groupId,
+        memberSince: memberSince,
+      );
+
+      test('allows anything in a direct conversation', () {
+        // No groupId, so no cut-off exists — even with a stamp lying around,
+        // which is the shape that would blank a direct chat if the guard read
+        // `memberSince` before checking `groupId`.
+        final direct = build(
+          groupId: null,
+          isGroup: false,
+          memberSince: {'user_2': joinedAt},
+        );
+
+        expect(direct.canReadMessageAt(beforeJoin, 'user_2'), isTrue);
+      });
+
+      test(
+        'allows a LEGACY group — isGroup true, no groupId — even with a stamp '
+        'later than the message',
+        () {
+          // The only fixture that REACHES `canReadMessageAt` and separates
+          // `groupId == null` from `!isGroup`. Every other one reaching it has
+          // both flags or neither, so on them the two predicates agree and the
+          // substitution survives. (The `historyQueryStartFor` group above
+          // builds this same shape, but never calls this method.) A
+          // conversation created before BUT-1838 has `isGroup` true and no
+          // `groupId`; `firestore.rules` keys on `groupId`, so it serves that
+          // whole history, and a guard keyed on `isGroup` would blank a chat
+          // the rules happily read.
+          final legacy = build(
+            groupId: null,
+            isGroup: true,
+            memberSince: {'user_2': joinedAt},
+          );
+
+          expect(legacy.isGroup, isTrue, reason: 'premise');
+          expect(
+            legacy.memberSince['user_2'],
+            equals(joinedAt),
+            reason:
+                'premise: the stamp is present and later than the message, so '
+                'a guard keyed on isGroup would refuse this',
+          );
+          expect(legacy.canReadMessageAt(beforeJoin, 'user_2'), isTrue);
+        },
+      );
+
+      test('refuses a message sent before the reader joined', () {
+        final conversation = build(memberSince: {'user_2': joinedAt});
+
+        expect(conversation.canReadMessageAt(beforeJoin, 'user_2'), isFalse);
+      });
+
+      test('allows a message sent after the reader joined', () {
+        final conversation = build(memberSince: {'user_2': joinedAt});
+
+        expect(conversation.canReadMessageAt(afterJoin, 'user_2'), isTrue);
+      });
+
+      test('allows a message sent EXACTLY at the stamp — the rule is >=', () {
+        // `isBefore` and `!isAfter` disagree only here, and firestore.rules
+        // spells it `sentAt >= memberSince[uid]`.
+        final conversation = build(memberSince: {'user_2': joinedAt});
+
+        expect(conversation.canReadMessageAt(joinedAt, 'user_2'), isTrue);
+      });
+
+      test('refuses an EMPTY reader id even when the message is readable', () {
+        // Every caller passes `currentUserId.orEmpty()`, so '' is reachable
+        // while the signed-in user is momentarily unknown. `memberSince['']`
+        // is null, which a naive guard reads as "no cut-off, show it"; the
+        // rule's `.get(uid, request.time)` default denies.
+        final conversation = build(memberSince: {'user_2': joinedAt});
+
+        expect(
+          conversation.canReadMessageAt(afterJoin, 'user_2'),
+          isTrue,
+          reason: 'premise: this message is readable for a real member',
+        );
+        expect(conversation.canReadMessageAt(afterJoin, ''), isFalse);
+      });
+
+      test('refuses a group reader carrying no stamp of their own', () {
+        // Reachable: `stageMemberRemoval` deletes `memberSince.{uid}` and
+        // leaves `groupId` in place, so a removed member sits in exactly this
+        // state. Someone else's stamp is present, so a pass here could not be
+        // blamed on an empty map.
+        final conversation = build(memberSince: {'user_1': createdAt});
+
+        expect(
+          conversation.historyQueryStartFor('user_2'),
+          isNull,
+          reason: 'premise: the sibling method reports no cut-off here',
+        );
+        expect(conversation.canReadMessageAt(afterJoin, 'user_2'), isFalse);
+      });
     });
 
     group('Equality and Hashing', () {

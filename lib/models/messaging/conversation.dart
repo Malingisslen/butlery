@@ -207,6 +207,19 @@ class Conversation {
   DateTime? historyQueryStartFor(String userId) =>
       groupId == null ? null : memberSince[userId];
 
+  /// Whether [sentAt] is inside the history [userId] may read — one home for
+  /// the in-memory comparison the list row and the search filter would
+  /// otherwise spell twice. The message QUERY does not use this: it needs the
+  /// cut-off as a Firestore bound and takes [historyQueryStartFor], whose null
+  /// means "no filter" where this answers false. Fails CLOSED like the rules
+  /// (`.get(uid, request.time)`): unknown reader or missing stamp ⇒ false.
+  bool canReadMessageAt(DateTime sentAt, String userId) {
+    if (groupId == null) return true;
+    if (userId.isEmpty) return false;
+    final start = memberSince[userId];
+    return start != null && !sentAt.isBefore(start);
+  }
+
   /// Whether to show the "du gick med här" divider — a DIFFERENT question from
   /// the query cut-off, which is why these are two methods.
   ///
@@ -447,25 +460,9 @@ class Conversation {
     return participantIds.contains(userId);
   }
 
-  /// Content display methods for conversation preview and activity summaries.
-
-  /// Gets Swedish-localized preview text for the last message in the conversation.
-  /// Provides formatted message preview for conversation lists with sender attribution
-  /// for regular messages and direct content display for system messages. Uses Swedish
-  /// fallback text when no messages exist. Used for conversation list previews.
-  String get lastMessagePreview {
-    if (lastMessage == null) {
-      return AppLocale.current.conversationNoMessagesYet;
-    }
-
-    final message = lastMessage!;
-    if (message.isSystemMessage) {
-      return message.content;
-    }
-
-    final senderName = message.senderDisplayName;
-    return '$senderName: ${message.displayContent}';
-  }
+  /// `lastMessagePreview` was REMOVED here (BUT-1838): it built the list's
+  /// preview WITHOUT the history cut-off, handing a member a message
+  /// `firestore.rules` refuses them. Gate any preview on [canReadMessageAt].
 
   /// Gets formatted last activity time using compact Swedish-localized time units.
   /// Provides human-readable time descriptions for conversation activity with compact

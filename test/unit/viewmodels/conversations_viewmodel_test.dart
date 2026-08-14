@@ -34,6 +34,7 @@ class ConversationBuilder {
     Map<String, DateTime>? lastReadTimestamps,
     Map<String, dynamic>? metadata,
     String? groupId,
+    Map<String, DateTime>? memberSince,
   }) {
     final defaultId = id ?? 'conv_${DateTime.now().millisecondsSinceEpoch}';
     final defaultParticipantIds = participantIds ?? ['user1', 'user2'];
@@ -57,6 +58,7 @@ class ConversationBuilder {
       lastReadTimestamps: lastReadTimestamps ?? {},
       metadata: metadata ?? {},
       groupId: groupId,
+      memberSince: memberSince ?? const {},
     );
   }
 
@@ -542,6 +544,262 @@ void main() {
         expect(viewModel.conversations, isEmpty);
         expect(viewModel.hasConversations, isFalse);
       });
+    });
+
+    // BUT-1838, the twin leak. The list stopped SHOWING a message sent before
+    // this member joined the group, but the search filter still matched on
+    // `lastMessage.content` — so a late joiner could confirm words in that
+    // message by typing them and watching the row appear or not. Same
+    // disclosure, narrower door, and against the same decision ("a new member
+    // sees only from now on"). `_applySearch` now searches an empty string
+    // whenever `Conversation.canReadMessageAt` — the same predicate the row
+    // itself asks — says the message is out of reach.
+    group('Search respects the history cut-off (BUT-1838)', () {
+      final createdAt = DateTime.utc(2026, 1, 1);
+      final joinedAt = DateTime.utc(2026, 2, 1);
+      // Strictly between the two, so a guard keyed on `createdAt` instead of
+      // the member's own stamp would still match.
+      final beforeJoin = DateTime.utc(2026, 1, 15);
+      final afterJoin = DateTime.utc(2026, 2, 2);
+
+      // Lives in the pre-join message, in a readable one, and in one title —
+      // so the query cannot pass by matching nothing anywhere.
+      const query = 'restaurang';
+
+      Conversation groupConv({
+        required String id,
+        required String title,
+        required String content,
+        required DateTime sentAt,
+      }) => ConversationBuilder.build(
+        id: id,
+        title: title,
+        isGroup: true,
+        participantIds: [testUserId, 'user2'],
+        participantDisplayNames: {testUserId: 'Test User', 'user2': 'Erik'},
+        createdAt: createdAt,
+        groupId: 'chat-group-1',
+        memberSince: {testUserId: joinedAt},
+        lastMessage: MessageBuilder.build(
+          content: content,
+          sentAt: sentAt,
+          senderId: 'user2',
+          senderDisplayName: 'Erik',
+        ),
+      );
+
+      final preJoin = groupConv(
+        id: 'conv_prejoin',
+        title: 'Middagsgänget',
+        content: 'Vi bokar restaurangen redan nu',
+        sentAt: beforeJoin,
+      );
+      final readable = groupConv(
+        id: 'conv_readable',
+        title: 'Fredagsklubben',
+        content: 'Restaurangen är fullbokad',
+        sentAt: afterJoin,
+      );
+      final titleMatch = groupConv(
+        id: 'conv_title',
+        title: 'Restauranggänget',
+        content: 'Vi ses klockan sex',
+        sentAt: afterJoin,
+      );
+
+      Future<void> seed(List<Conversation> conversations) async {
+        conversationsStreamController.add(conversations);
+        await Future.delayed(Duration.zero);
+      }
+
+      List<String> resultIds() =>
+          viewModel.conversations.map((c) => c.id).toList();
+
+      test(
+        'a word that appears ONLY in a pre-join message matches no row, while '
+        'the same word in a readable message and in a title still does',
+        () async {
+          await seed([preJoin, readable, titleMatch]);
+
+          expect(
+            preJoin.lastMessage!.content.toLowerCase().contains(query),
+            isTrue,
+            reason: 'premise: the hidden message really carries the word',
+          );
+          expect(
+            preJoin.historyQueryStartFor(testUserId),
+            equals(joinedAt),
+            reason: 'premise: this member really has a history cut-off',
+          );
+
+          viewModel.updateSearchQuery(query);
+
+          // One assertion, both directions: the two controls prove the query
+          // works at all, and the hidden row's absence is the fix.
+          expect(
+            resultIds(),
+            unorderedEquals(['conv_readable', 'conv_title']),
+          );
+        },
+      );
+
+      test(
+        'a row whose last message is out of reach is still findable by its '
+        'TITLE — the cut-off blanks the preview, it does not hide the group',
+        () async {
+          // The over-fix, and the one edit the other four tests in this group
+          // all survive: `if (!canReadMessageAt(...)) return false;` as the
+          // whole where-clause. Every fixture above pairs an unreadable
+          // message with a title that does NOT match, so dropping the row and
+          // dropping only its content are indistinguishable there.
+          //
+          // A late joiner is a full member of the group — the group's NAME is
+          // not what the cut-off protects, and losing it means typing your own
+          // group's name makes it disappear from the list. That is a worse
+          // regression than the leak this guard closes, and it would ship
+          // green.
+          await seed([preJoin, titleMatch]);
+
+          expect(
+            preJoin.canReadMessageAt(
+              preJoin.lastMessage!.sentAt,
+              testUserId,
+            ),
+            isFalse,
+            reason:
+                'premise: this row\'s preview really is blanked, so the match '
+                'below can only have come through the title',
+          );
+
+          viewModel.updateSearchQuery('middagsgänget');
+
+          expect(resultIds(), equals(['conv_prejoin']));
+        },
+      );
+
+      test(
+        'a DIRECT conversation carrying a stamp is still searchable — the '
+        'cut-off is selected by groupId, not by having a memberSince entry',
+        () async {
+          // The near-twin discriminator. `historyQueryStartFor` answers null
+          // without a `groupId`, so this stamp is inert data and the rules
+          // apply no history limit to a direct chat. A filter reading
+          // `memberSince` directly silently makes a whole 1:1 history
+          // unsearchable. This fixture does NOT separate `groupId == null` from
+          // `!isGroup` — it has neither, so the two predicates agree; that
+          // substitution is killed in the model suite's `canReadMessageAt`
+          // group, on the legacy shape.
+          final direct = ConversationBuilder.build(
+            id: 'conv_direct_stamped',
+            isGroup: false,
+            participantIds: [testUserId, 'other_user'],
+            participantDisplayNames: {
+              testUserId: 'Test User',
+              'other_user': 'Anna',
+            },
+            createdAt: createdAt,
+            memberSince: {testUserId: joinedAt},
+            lastMessage: MessageBuilder.build(
+              content: 'Vi bokar restaurangen redan nu',
+              sentAt: beforeJoin,
+              senderId: 'other_user',
+              senderDisplayName: 'Anna',
+            ),
+          );
+
+          await seed([direct, titleMatch]);
+
+          expect(
+            direct.historyQueryStartFor(testUserId),
+            isNull,
+            reason: 'premise: no groupId, so no rule to mirror',
+          );
+          expect(
+            direct.memberSince[testUserId],
+            equals(joinedAt),
+            reason:
+                'premise: the stamp is present and later than the message, so '
+                'a guard reading it directly would blank this row',
+          );
+
+          viewModel.updateSearchQuery(query);
+
+          expect(
+            resultIds(),
+            unorderedEquals(['conv_direct_stamped', 'conv_title']),
+          );
+        },
+      );
+
+      test(
+        'a message sent at the exact join instant stays searchable — the rule '
+        'allows sentAt >= memberSince',
+        () async {
+          // The flip point. `!sentAt.isBefore(stamp)` is true here;
+          // `sentAt.isAfter(stamp)` is not, and the chat screen shows this
+          // message, so the search must find it.
+          final boundary = groupConv(
+            id: 'conv_boundary',
+            title: 'Grillgänget',
+            content: 'Restaurangen ligger vid torget',
+            sentAt: joinedAt,
+          );
+
+          await seed([boundary, preJoin]);
+
+          viewModel.updateSearchQuery(query);
+
+          expect(resultIds(), equals(['conv_boundary']));
+        },
+      );
+
+      test(
+        'a group row carrying NO stamp for the searcher matches nothing — the '
+        'filter fails CLOSED where historyQueryStartFor answers null',
+        () async {
+          // The state `stageMemberRemoval` leaves behind: it deletes
+          // `memberSince.{uid}` and leaves `groupId` on the conversation. The
+          // older predicate answers null here, which reads as "no cut-off,
+          // search it"; `canReadMessageAt` answers false, like the rule's
+          // `.get(uid, request.time)` default.
+          final noStamp = ConversationBuilder.build(
+            id: 'conv_no_stamp',
+            title: 'Torsdagsgänget',
+            isGroup: true,
+            participantIds: [testUserId, 'user2'],
+            participantDisplayNames: {testUserId: 'Test User', 'user2': 'Erik'},
+            createdAt: createdAt,
+            groupId: 'chat-group-1',
+            // Somebody else's stamp, so an empty map cannot be the cause.
+            memberSince: {'user2': createdAt},
+            lastMessage: MessageBuilder.build(
+              content: 'Vi bokar restaurangen redan nu',
+              sentAt: afterJoin,
+              senderId: 'user2',
+              senderDisplayName: 'Erik',
+            ),
+          );
+
+          await seed([noStamp, titleMatch]);
+
+          expect(
+            noStamp.historyQueryStartFor(testUserId),
+            isNull,
+            reason: 'premise: the searcher has no stamp of their own',
+          );
+          expect(
+            noStamp.lastMessage!.sentAt.isAfter(joinedAt),
+            isTrue,
+            reason:
+                'premise: the message is recent, so a match would not be '
+                'explained by an ordinary pre-join cut-off',
+          );
+
+          viewModel.updateSearchQuery(query);
+
+          expect(resultIds(), equals(['conv_title']));
+        },
+      );
     });
 
     group('Direct Conversation Creation', () {

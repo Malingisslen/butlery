@@ -120,12 +120,23 @@ class ConversationsViewModel extends ChangeNotifier
     if (_searchQuery.isEmpty) {
       _filteredConversations = List.from(_allConversations);
     } else {
+      // Hoisted: `currentUserId` resolves a service each time, and this runs
+      // once per row per keystroke.
+      final readerId = currentUserId.orEmpty();
       _filteredConversations = _allConversations.where((conversation) {
-        final title = conversation
-            .getDisplayTitle(currentUserId.orEmpty())
-            .toLowerCase();
+        final title = conversation.getDisplayTitle(readerId).toLowerCase();
+        // BUT-1838: search the preview only if this member may READ it. The
+        // list stopped SHOWING a pre-join message; matching on its text would
+        // let a late joiner confirm words in it by typing them and watching the
+        // row appear — the same disclosure through a narrower door, and against
+        // the same decision ("a new member sees only from now on"). Same
+        // predicate as the row itself, deliberately not a second spelling of it.
+        final lastMessage = conversation.lastMessage;
         final lastMessageContent =
-            (conversation.lastMessage?.content.toLowerCase()).orEmpty();
+            lastMessage != null &&
+                conversation.canReadMessageAt(lastMessage.sentAt, readerId)
+            ? lastMessage.content.toLowerCase()
+            : '';
 
         return title.contains(_searchQuery) ||
             lastMessageContent.contains(_searchQuery);

@@ -282,6 +282,52 @@ class ConversationListItem extends StatelessWidget {
 
     final message = conversation.lastMessage!;
 
+    // BUT-1838: never preview a message the reader may not open.
+    //
+    // `firestore.rules` refuses any message sent before this member joined the
+    // group, and the chat screen honours that — but the LIST renders
+    // `conversation.lastMessage`, a denormalised copy living on the
+    // conversation document itself, and rules cannot gate a field inside a
+    // document the reader is allowed to read. So a member added to a running
+    // group saw "Erik: <something said before they arrived>" in their list
+    // while the chat itself correctly showed nothing.
+    //
+    // It self-heals in the happy path — `addChatGroupMembers` writes a
+    // "har lagts till i gruppen" system row whose `sentAt` is later, and
+    // `syncConversationLastMessage` overwrites the preview — but that write is
+    // best-effort, so the stale preview can outlive it.
+    //
+    // `Conversation.canReadMessageAt` is the ONE spelling of this comparison,
+    // shared with the search filter so the two surfaces of the SAME row cannot
+    // disagree. The message query is deliberately NOT a third caller — it needs
+    // the cut-off as a Firestore bound and takes `historyQueryStartFor`, which
+    // answers null (no filter) where this answers false. The two therefore
+    // disagree in exactly the fail-closed cases below; harmless, because a
+    // reader in either state is denied the conversation document itself, but do
+    // not read this method as proof the query is fail-closed. A THIRD spelling
+    // exists and is meant to: `firebase_data_export_repository.dart` reads
+    // `memberSince` off a raw map because it never builds a `Conversation` —
+    // do not "consolidate" it into this one. `canReadMessageAt` fails closed
+    // twice, matching the rule's
+    // `.get(uid, request.time)` default: an empty reader id (the signed-in user
+    // is momentarily unknown — every caller here passes `.orEmpty()`) and a
+    // `groupId` conversation carrying no stamp for this reader. That second
+    // state is REACHABLE, not theoretical: `stageMemberRemoval` deletes
+    // `memberSince.{uid}` and leaves `groupId` in place. A removed member also
+    // leaves `participantIds`, so the rules deny them the document anyway — but
+    // the list must not be the thing relying on that.
+    //
+    // Falls back to the string the CHAT shows for the same member — "Inga
+    // meddelanden än" — rather than the group-created text, so the row and the
+    // screen behind it say the same sentence. No new ARB key.
+    // ABOVE the system-message branch on purpose: a pre-join system row is the
+    // worst thing to leak here, because it embeds a real display name and the
+    // group name in free text ("Anna skapade gruppen …"). Moving this below
+    // that branch is a silent regression; the suite pins the ordering.
+    if (!conversation.canReadMessageAt(message.sentAt, currentUserId)) {
+      return context.l10n.conversationNoMessagesYet;
+    }
+
     // For system messages, just show the content
     if (message.isSystemMessage) {
       return message.content;
