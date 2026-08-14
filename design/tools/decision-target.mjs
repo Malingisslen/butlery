@@ -20,6 +20,12 @@ export const MALREGEL = [
   'ingen traff: fail closed'
 ];
 
+// VIKTIGT FOR ANROPARE: malMatchning provar IDENTITET, inte SCOPE. Tva olika
+// forekomster kan dela hela identiteten och anda tillhora olika beslut, for
+// att beslutet ar avgransat till en kallrad eller en artefaktlista. Anropa
+// beslutstackning() i decision-scope-guard.mjs nar du binder en FOREKOMST
+// till ett beslut — den lagger scopelagret ovanpa den har funktionen.
+//
 // instans: { kandidatId, roll, undergrupp, ljusvarde }
 export function malMatchning(register, instans) {
   const kandidater = register.beslut.filter(b => {
