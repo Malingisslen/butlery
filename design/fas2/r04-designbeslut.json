@@ -4635,7 +4635,7 @@
    "kandidatId": "CAND-yta-upphojd-#ce7c1e",
    "roll": "yta-upphojd",
    "semantiskRoll": "PROGRESS_VALUE",
-   "ljusvarde": "#ce7c1e",
+   "ljusvarde": "#d8b784",
    "morkvarde": "rgba(245,244,237,0.18)",
    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
    "auktoritet": "Malin Gisslen",
@@ -4707,7 +4707,30 @@
    "status": "ACTIVE",
    "aktiv": true,
    "tokenNamn": "--yta-upphojd-d18",
-   "revision": 1
+   "revision": 1,
+   "ljusvardeHistorik": [
+    {
+     "fran": "#ce7c1e",
+     "till": "#d8b784",
+     "datum": "2026-08-14",
+     "orsak": "CSS_BOX_NON_TEXT_REMEDIATION · NTR-BATCH02-LIGHT-PROGRESS-FILL-DU-01-C",
+     "$regel": "Ljuskallan andrades av en icke-textrattelse. Det morka vardet, beslutsId, undergruppen och den tidigare morka provenansen ar oforandrade. Ingen split och ingen ny mappningsevidens."
+    }
+   ],
+   "$reconciliation": {
+    "OLD_light_value": "#ce7c1e",
+    "NEW_light_value": "#d8b784",
+    "dark_value": "rgba(245,244,237,0.18)",
+    "dark_status": "OFORANDRAT",
+    "dark_provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "$ejGjort": [
+     "ingen split",
+     "ingen ny mapping evidence",
+     "ingen mappningstypharledning",
+     "ingen R-04-coveragekredit",
+     "ingen dark evidence till snackbars"
+    ]
+   }
   },
   {
    "kandidatId": "CAND-text-innehall-#dca968",

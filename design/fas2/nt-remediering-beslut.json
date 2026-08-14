@@ -292,11 +292,25 @@
    "skrivplatser": 2,
    "$skrivplatser": "Tva separata kallrader. Gemensam designidentitet ar inte gemensam skrivplats.",
    "R04_COVERAGE_CREDIT": 0,
-   "produktwrite": "INTE UTFORD"
+   "produktwrite": "UTFORD 2026-08-14",
+   "skrivplatserUtforda": [
+    {
+     "fynd": "BG-001",
+     "art": "start",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 8902
+    },
+    {
+     "fynd": "BG-024",
+     "art": "snackbars",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "offset": 169824
+    }
+   ]
   }
  ],
  "$forberedReconciliation": {
-  "$status": "FORBEREDD — skrivs forst nar produktwriten ar godkand och utford",
+  "$status": "UTFORD 2026-08-14",
   "post": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
   "token": "--yta-upphojd-d18",
   "semantiskRoll": "PROGRESS_VALUE",
