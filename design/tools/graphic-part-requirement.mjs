@@ -61,7 +61,8 @@ export const EVIDENSGRUND = Object.freeze({
   GRAPHICAL_DELIMITATION: 'GRAPHICAL_DELIMITATION',
   STRUCTURAL_FUNCTION: 'STRUCTURAL_FUNCTION',
   STATE_ENCODING: 'STATE_ENCODING',
-  SHAPE_RECOGNISABILITY: 'SHAPE_RECOGNISABILITY' });
+  SHAPE_RECOGNISABILITY: 'SHAPE_RECOGNISABILITY',
+  CURRENT_VISUAL_COLLAPSE: 'CURRENT_VISUAL_COLLAPSE' });
 
 /* Grunder som aldrig ensamma kan bara ett grafiskt krav. Samtliga ar
  * utsagor om TEXT, inte om malningen. */
@@ -69,6 +70,37 @@ export const ICKE_GRUNDANDE_ENSAMT = Object.freeze([
   EVIDENSGRUND.TEXT_BACKGROUND_OWNER,
   EVIDENSGRUND.OWNS_VISIBLE_TEXT,
   EVIDENSGRUND.CHILD_TEXT_VARIES ]);
+
+/* ── EXAKT VISUELL LIKHET AR INGET ONODIGHETSBEVIS ──────────────────
+ *
+ * FELET DENNA GRIND STANGER
+ * Nar en barare har exakt samma farg som ytan den ligger mot ar kvoten 1:1.
+ * Det ar frestande att lasa det som "baren gor ingenting, alltsa behovs den
+ * inte". Kvoten bevisar bara CURRENT_VISUAL_COLLAPSE — att baren i sitt
+ * NUVARANDE utseende inte syns. Den sager ingenting om huruvida funktionen
+ * behovs.
+ *
+ * Ar separationen eller grupperingen i sjalva verket kravd, ar samma 1:1 i
+ * stallet ett KONFORMANSFYND: en kravd barare som inte nar 3.0 mot sin
+ * angransande farg.
+ *
+ * Exakt likhet ar alltsa en SIGNAL, aldrig ett requiredness-bevis — at
+ * nagot hall.
+ */
+export const ICKE_GRUNDANDE_FOR_ONODIG = Object.freeze([
+  EVIDENSGRUND.CURRENT_VISUAL_COLLAPSE ]);
+
+/** Kan de anforda grunderna bara slutsatsen att baren INTE behovs? */
+export function grundarOnodig(grunder) {
+  const g = Array.isArray(grunder) ? grunder : [];
+  const barande = g.filter(x => !ICKE_GRUNDANDE_FOR_ONODIG.includes(x));
+  return { grundar: barande.length > 0, barande,
+    ickeGrundande: g.filter(x => ICKE_GRUNDANDE_FOR_ONODIG.includes(x)),
+    skal: barande.length > 0
+      ? 'minst en grund sager nagot om funktionen, inte bara om nuvarande utseende'
+      : 'enda grunden ar att baren redan kollapsar visuellt — det bevisar inte att ' +
+        'funktionen saknas' };
+}
 
 /** Kan de anforda grunderna over huvud taget bara ett grafiskt krav? */
 export function grundarKrav(grunder) {
@@ -113,7 +145,16 @@ export function bortfallsprov(del, begripligUtan, motivering, grunder) {
       krav: { minsta: KRAV_MOT_ANGRANSANDE, mot: 'faktiskt malad angransande farg', kalla: KRAVKALLA },
       grunder: grunder === undefined || grunder === null ? null : grundarKrav(grunder),
       skal: motivering }; }
-  return { del: del.id, klass: DELKLASS.SUPPLEMENTAL, krav: null, skal: motivering };
+  /* begripligUtan === true: baren pastas onodig. Samma stranghet at det hallet. */
+  if (grunder !== undefined && grunder !== null) {
+    const o = grundarOnodig(grunder);
+    if (!o.grundar)
+      return { del: del.id, klass: DELKLASS.UNKNOWN, krav: null, grunder: o,
+        skal: 'slutsatsen vilar enbart pa ' + o.ickeGrundande.join(', ') +
+          ' — exakt visuell likhet bevisar inte att funktionen saknas; faller stangt' }; }
+  return { del: del.id, klass: DELKLASS.SUPPLEMENTAL, krav: null,
+    grunder: grunder === undefined || grunder === null ? null : grundarOnodig(grunder),
+    skal: motivering };
 }
 
 /* ── CARRIER-STABILITET ─────────────────────────────────────────────

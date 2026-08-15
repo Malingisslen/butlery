@@ -23,12 +23,17 @@
 //   ADJ-11  upprepning eller identiska syskon far aldrig ensamt ge DECORATIVE
 //   ADJ-12  textbakgrundsagarskap ensamt kan inte etablera grafiskt krav
 //   ADJ-13  andrad barntext andrar inte forald erns carrier-krav
+//   ADJ-14  exakt visuell likhet ar inget onodighetsbevis
+//   ADJ-15  REVIEWED_UNKNOWN atervinns inte utan angivet skal
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { bortfallsprov, carrierstabilitet, grundarKrav, DELKLASS, EVIDENSGRUND,
-  ICKE_GRUNDANDE_ENSAMT } from './graphic-part-requirement.mjs';
+import { bortfallsprov, carrierstabilitet, grundarKrav, grundarOnodig, DELKLASS,
+  EVIDENSGRUND, ICKE_GRUNDANDE_ENSAMT, ICKE_GRUNDANDE_FOR_ONODIG, KRAV_MOT_ANGRANSANDE }
+  from './graphic-part-requirement.mjs';
+import { GRANSKNINGSSTATUS, OMPROVNINGSSKAL, granskningsstatus, arOlost,
+  automatisktValbar, batchomfattning } from './review-ledger.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -250,6 +255,113 @@ const F = A.E_F_G_perForekomst;
     'med grafisk grund: ' + s1.fore + ' → ' + s1.efter + ' (stabil); utan grafisk grund: ' +
       s2.fore + ' → ' + s2.efter + ' (stabil); nar den grafiska grunden faller bort ' +
       'redovisas evidensen som olik och verdiktet far skilja sig'); }
+
+/* ── ADJ-14 · exakt visuell likhet ar ingen frikannelse ─────────────
+ *
+ * FELET DETTA PROV FINNS FOR
+ * Tva av de 31 headerplattorna har exakt samma farg som ytan under. Kvoten
+ * 1.000 lastes som "plattan gor ingenting, alltsa behovs den inte". Kvoten
+ * bevisar bara CURRENT_VISUAL_COLLAPSE — att baren i sitt NUVARANDE utseende
+ * inte syns. Ar separationen i sjalva verket kravd ar samma 1:1 i stallet ett
+ * KONFORMANSFYND: en kravd barare under 3.0 mot sin angransande farg.
+ *
+ * BADA RIKTNINGAR PROVAS.
+ */
+{ const ENDAST_KOLLAPS = [EVIDENSGRUND.CURRENT_VISUAL_COLLAPSE];
+
+  /* Riktning 1 · onodig-slutsatsen far inte uppsta ur kollapsen ensam. */
+  const friad = bortfallsprov({ id: 'platta' }, true,
+    'plattan kollapsar mot ytan under', ENDAST_KOLLAPS);
+
+  /* Riktning 2 · med separat evidens for att funktionen behovs FAR kravet uppsta,
+   * och da ar 1:1 ett konformansfynd. */
+  const kravd = bortfallsprov({ id: 'platta' }, false,
+    'separationen mellan headerbandet och overlagringen behovs for grupperingen',
+    [EVIDENSGRUND.CURRENT_VISUAL_COLLAPSE, EVIDENSGRUND.STRUCTURAL_FUNCTION]);
+  const kvot1till1 = 1;
+  const blirFynd = kravd.klass === DELKLASS.REQUIRED_FOR_UNDERSTANDING &&
+    kvot1till1 < KRAV_MOT_ANGRANSANDE;
+
+  const o = grundarOnodig(ENDAST_KOLLAPS);
+
+  const K = JSON.parse(readFileSync(join(rot, 'fas2', 'carrier-korrigering-a4.json'), 'utf8'));
+  const tva = K.D_deTvaPlattorna;
+  const korpusRatt = tva.length === 2 &&
+    tva.every(x => x.HEADER_FILL.klass === DELKLASS.UNKNOWN &&
+      x.HEADER_FILL.tidigare === DELKLASS.SUPPLEMENTAL &&
+      x.HEADER_FILL.kvot === 1 && x.HEADER_FILL.olostFraga.length > 40);
+  const konformansRatt = K.E_konformansneutralitet.C.klass === 'POTENTIALLY_CONFORMANCE_RELEVANT' &&
+    K.E_konformansneutralitet.C.antal === 2 &&
+    K.E_konformansneutralitet.A.klass === 'CURRENT-LIGHT-CONFORMANCE-NEUTRAL' &&
+    /aterkallat/.test(K.E_konformansneutralitet.$ejNeutraltIStort);
+
+  prov('ADJ-14', 'EXACT_VISUAL_EQUALITY / CARRIER_COLLAPSE ensamt kan inte etablera ' +
+    'NOT_REQUIRED, REDUNDANT eller DECORATIVE',
+    friad.klass === DELKLASS.UNKNOWN && friad.krav === null &&
+    blirFynd && o.grundar === false && o.ickeGrundande.length === 1 &&
+    ICKE_GRUNDANDE_FOR_ONODIG.includes(EVIDENSGRUND.CURRENT_VISUAL_COLLAPSE) &&
+    korpusRatt && konformansRatt,
+    'enbart kollaps ger ' + friad.klass + '; med separat strukturell evidens ger samma 1:1 ' +
+      kravd.klass + ' och blir darmed ett konformansfynd under ' + KRAV_MOT_ANGRANSANDE +
+      '; i korpusen ar bada 1:1-plattorna ateroppnade till UNKNOWN och klassade ' +
+      K.E_konformansneutralitet.C.klass); }
+
+/* ── ADJ-15 · unresolved ar inte unreviewed ─────────────────────────
+ *
+ * FELET DETTA PROV FINNS FOR
+ * CLEANEST-FIRST byggde sin valbara population som "alla kandidater minus de
+ * med ett verdikt som inte ar UNKNOWN". En kandidat som HADE granskats och
+ * landat i UNKNOWN blev darmed lika valbar som en aldrig sedd. Det ger en tyst
+ * slinga: samma svarbedomda objekt kan plockas om, med samma evidens, i
+ * batch efter batch.
+ *
+ * REVIEWED_UNKNOWN raknas fortsatt som olost — populationssiffran andras inte
+ * — men far bara tas upp igen mot ett angivet skal.
+ */
+{ const nyKand = granskningsstatus(null);
+  const avgjord = granskningsstatus('NON_INTERACTIVE_STATE_GRAPHIC');
+  const okand = granskningsstatus('UNKNOWN');
+
+  const utanSkal = automatisktValbar(okand, null);
+  const tomtSkal = automatisktValbar(okand, { skal: OMPROVNINGSSKAL.NY_EVIDENS, vad: '  ' });
+  const paHitt = automatisktValbar(okand, { skal: 'FOR_ATT_JAG_VILL', vad: 'ny batch' });
+  const medSkal = automatisktValbar(okand,
+    { skal: OMPROVNINGSSKAL.EXPLICIT_AUKTORISATION, vad: 'ordern 2026-08-15' });
+  const ogranskad = automatisktValbar(nyKand, null);
+  const redanKlar = automatisktValbar(avgjord, null);
+
+  /* Grinden far inte roka medlemskapet. */
+  const medlemmar = ['a|1', 'b|1', 'c|1'];
+  const st = { 'a|1': nyKand, 'b|1': okand, 'c|1': avgjord };
+  const om = batchomfattning(medlemmar, id => st[id]);
+
+  const K = JSON.parse(readFileSync(join(rot, 'fas2', 'carrier-korrigering-a4.json'), 'utf8'));
+  const L = K.F_granskningsliggare, G = K.G_selectorRattning;
+  const liggareStammer = L.UNREVIEWED + L.REVIEWED_UNKNOWN === L.unresolvedTotalt &&
+    L.unresolvedTotalt === 2611 &&
+    L.klustradKandidatpopulation - L.REVIEWED_RESOLVED === L.unresolvedTotalt;
+  const defektRedovisad = G.defektFore.behandladesSomOgranskade === true &&
+    G.defektFore.reviewedUnknownIValbarPopulation === L.REVIEWED_UNKNOWN;
+  const rattad = G.idag.valbara === 0 && G.idag.sparrade === 31 &&
+    G.idag.medlemmarOforandrade === true && G.medExplicitAuktorisation.valbara === 31;
+  const batch2Orord = G.batch2Retroaktivt.allaValbaraDa === true &&
+    G.batch2Retroaktivt.de31GranskadeForeBatch2 === 0 &&
+    K.H_frysta.batch2Rank.RAW_RANK === 2 && K.H_frysta.batch2Rank.ELIGIBLE_RANK === 1;
+
+  prov('ADJ-15', 'en REVIEWED_UNKNOWN atervinns inte automatiskt — den kraver ny evidens, ' +
+    'upplost beroende eller explicit omprovningsauktorisation',
+    nyKand === GRANSKNINGSSTATUS.UNREVIEWED && okand === GRANSKNINGSSTATUS.REVIEWED_UNKNOWN &&
+    avgjord === GRANSKNINGSSTATUS.REVIEWED_RESOLVED &&
+    arOlost(okand) && arOlost(nyKand) && !arOlost(avgjord) &&
+    utanSkal.valbar === false && tomtSkal.valbar === false && paHitt.valbar === false &&
+    medSkal.valbar === true && ogranskad.valbar === true && redanKlar.valbar === false &&
+    om.valbara.length === 1 && om.sparrade.length === 2 && om.medlemmarOforandrade &&
+    liggareStammer && defektRedovisad && rattad && batch2Orord,
+    'tre tillstand skilda; REVIEWED_UNKNOWN sparrad utan skal, med tomt skal och med ' +
+      'pahittat skal, men slapps igenom mot ' + OMPROVNINGSSKAL.EXPLICIT_AUKTORISATION +
+      '; liggaren ' + L.UNREVIEWED + ' + ' + L.REVIEWED_UNKNOWN + ' = ' + L.unresolvedTotalt +
+      '; de ' + L.REVIEWED_UNKNOWN + ' som var fritt valbara ar nu sparrade och batch 2:s ' +
+      'RAW_RANK 2 / ELIGIBLE_RANK 1 star oforandrat'); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
