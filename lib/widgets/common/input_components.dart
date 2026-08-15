@@ -1,16 +1,14 @@
-// ignore_for_file: unintended_html_in_doc_comment
-
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
-// Import all input modules
+// The four modules this facade imports directly. Five more in `common/input/`
+// are pulled in BY these four, so BUT-1859's reachability audit has to follow
+// the imports rather than the directory listing.
 import 'package:butlery/widgets/common/input/instruction_editor.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/common/input/debounced_checkbox.dart';
-import 'package:butlery/widgets/common/input/shopping_item_dialog.dart';
 import 'package:butlery/widgets/common/input/shopping_list_selector.dart';
 
 /// Facade for input components. Delegates to specialized input modules.
@@ -64,19 +62,6 @@ class InputComponents {
       onChanged: onChanged,
       activeColor: activeColor,
       debounceDuration: debounceDuration,
-    );
-  }
-
-  /// Displays a modal dialog for creating or editing shopping items.
-  static Future<UnifiedShoppingItem?> showShoppingItemDialog(
-    BuildContext context, {
-    UnifiedShoppingItem? initialItem,
-  }) {
-    return showDialog<UnifiedShoppingItem>(
-      context: context,
-      builder: (context) => AddUnifiedShoppingItemDialog(
-        initialItem: initialItem,
-      ),
     );
   }
 

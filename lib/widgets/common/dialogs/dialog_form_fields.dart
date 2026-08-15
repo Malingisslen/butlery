@@ -1,18 +1,19 @@
 /// 🔍 AI INFO BLOCK:
 /// Component: Dialog Form Fields - Common form field patterns for dialogs
 /// File: lib/widgets/common/dialogs/dialog_form_fields.dart
-/// Quick Guide: Standardized form fields eliminating validation and styling duplication
-/// Dependencies IN: FormValidators, AppDimensions, Material UI
-/// Dependencies OUT: Dialog form implementations
+/// Quick Guide: Prebuilt dialog form fields with consistent validation and styling
+/// Dependencies IN: FormValidators, ValidationUtils, AppDimensions, l10n, Material UI
+/// Dependencies OUT: create_group_dialog.dart
 /// Data flow: User input -> Validation -> Controller update
 /// State management: TextEditingController-based
-/// Purpose: Eliminate 400+ lines of duplicate form field validation patterns
+/// Purpose: One place for a dialog's field validation and styling (text,
+///   dropdown, checkbox, switch)
 /// Common issues: Validation consistency, styling uniformity, loading states
 /// Test coverage: Form field validation tests with edge cases
 /// Performance: Efficient validation, consistent styling
-/// Analytics: Form interaction tracking
-/// Code smells: None - clean reusable form field components
-/// Connected to: BaseFormDialog, FormValidators, dialog implementations
+/// Analytics: None
+/// Code smells: One production caller only (create_group_dialog.dart)
+/// Connected to: FormValidators
 /// Used in phases: Code Consolidation Phase - Form Field Unification
 
 import 'package:flutter/material.dart';
@@ -22,14 +23,9 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 
-/// Common form field factory that eliminates duplicate form field patterns.
-/// Consolidates form field patterns found across:
-/// - create_group_dialog.dart (name field)
-/// - edit_group_dialog.dart (name field)
-/// - shopping_item_dialog.dart (name/amount fields)
-/// - menu_save_dialog.dart (name field)
-/// - dialog_factory.dart (text input)
-/// And 8+ other dialog files with identical form field patterns.
+/// Static builders for a dialog's form fields. Every TEXT variant funnels
+/// through [buildTextFormField]; the dropdown, checkbox and switch builders
+/// stand on their own.
 class DialogFormFields {
   /// Standard text form field with consistent validation and styling
   static Widget buildTextFormField({
@@ -93,7 +89,7 @@ class DialogFormFields {
     );
   }
 
-  /// Name field with standard validation (eliminates 8+ duplicate implementations)
+  /// Name field with standard validation.
   static Widget buildNameField({
     required BuildContext context,
     required TextEditingController controller,

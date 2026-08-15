@@ -48,6 +48,31 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
     if (existing != null) {
       _nameController.text = existing.ingredientName;
       _quantityController.text = existing.formattedQuantity;
+      // `DropdownButton` requires its value to match exactly one item, so a
+      // unit outside `_units` must never reach it — in debug that asserts, in
+      // release the control renders blank. The clamp costs data: `_submit`
+      // writes `_unit` unconditionally, so opening an item stored with an
+      // off-list unit and saving rewrites that unit to 'st'. Widening `_units`
+      // is therefore not cosmetic; it changes what a save destroys.
+      //
+      // Off-list units reach this sheet through a shipped path — a mechanism,
+      // not a claim about what is currently stored. The shopping-checkoff flow
+      // (`ShoppingCheckoffPantryService.onItemCheckedOff` ->
+      // `PantryService.addFromShoppingItem` -> `addFromText`) stores the
+      // shopping item's unit verbatim — `UnifiedShoppingItem.unit` is a
+      // non-nullable free-text String, so neither fallback on the way down
+      // fires (`addFromText`'s `match?.typicalUnit`, `_buildItem`'s 'st')
+      // — and that text comes straight from a free-text field in
+      // `unified_shopping/widgets/dialogs/shopping_item_dialogs.dart` (plural:
+      // NOT the singular `common/input/shopping_item_dialog.dart`, deleted by
+      // BUT-1849), or from parsed recipe units ('förp', 'påse', 'krm', ''). It is behind
+      // the `autoAddBoughtToPantry` opt-in, off by default, but shipped.
+      // Second-order cost: that flow dedups on name + unit, so once a 'förp'
+      // row has been clamped here, the next checkoff stops aggregating and
+      // creates a duplicate row.
+      //
+      // The clamp predates that flow — it is in this file's creation commit
+      // (b67aafe49), not a response to it. 2026-08-15.
       _unit = _units.contains(existing.unit) ? existing.unit : 'st';
       _location = existing.location;
       _expiryDate = existing.expiryDate;

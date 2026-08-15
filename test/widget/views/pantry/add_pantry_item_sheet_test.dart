@@ -1,13 +1,17 @@
-/// BUT-1344 COOK-07: behavioral widget tests for AddPantryItemSheet.
+/// Behavioral widget tests for AddPantryItemSheet.
 ///
-/// Proves three user-visible contracts:
-///   1. Selecting an autocomplete suggestion routes the submit to addItemFromIngredient.
-///   2. Typing a raw name (no suggestion chosen) routes to addItemFromText.
-///   3. Opening in edit mode pre-populates the form and routes submit to updateItem.
+/// Three contracts, added by three tickets:
+///   - BUT-1344 COOK-07 — the *routing decision* _submit() makes: an
+///     autocomplete pick goes to addItemFromIngredient, a raw name to
+///     addItemFromText, and edit mode to updateItem, so the item lands in the
+///     right Firestore collection.
+///   - BUT-1379 — a failed save keeps the sheet open; a successful one
+///     dismisses it.
+///   - BUT-1849 — an ON-LIST stored unit is read back into the dropdown, and
+///     the picked unit is what gets written. The last test pins the OFF-LIST
+///     case, where neither holds, as a known defect for BUT-1858 to invert.
 ///
-/// These are not structural tests — they verify the *routing decision* the
-/// sheet makes in _submit(), which is the domain invariant: the right VM
-/// method must be called so the item lands in the correct Firestore collection.
+/// None of these are structural tests.
 library;
 
 import 'package:flutter/material.dart';
@@ -270,8 +274,17 @@ void main() {
       () => vm.updateItem(
         any(
           that: predicate<PantryItem>(
-            (item) => item.id == 'p_42' && item.ingredientName == 'Smör',
-            'updated item must preserve id and name',
+            // `unit` is asserted here on purpose: it is what proves the sheet
+            // still READS the stored unit once the defect test below is
+            // rewritten by BUT-1858. The write leg has its own test after it,
+            // because this one alone would stay green if `_submit` stopped
+            // sending `_unit` — `copyWith` without it preserves the item's
+            // stored value, which is the very 'g' asserted here.
+            (item) =>
+                item.id == 'p_42' &&
+                item.ingredientName == 'Smör' &&
+                item.unit == 'g',
+            'updated item must preserve id, name and an on-list unit',
           ),
         ),
       ),
@@ -350,5 +363,109 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(AddPantryItemSheet), findsNothing);
+  });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Test 6: the unit the user PICKS is the unit that gets saved.
+  //
+  // The write leg the test above cannot cover: there the stored and saved unit
+  // are the same value, so dropping `unit: _unit` from _submit's copyWith
+  // would go unnoticed. Here they differ, so only a real read of the dropdown
+  // can produce 'dl'.
+  //
+  // This one is deliberately NOT tied to BUT-1858 — it must outlive the defect
+  // test below, which is the suite's only other assertion that REDDENS when
+  // the write drops `unit`. Note what stays open even so: `_submit`'s two ADD
+  // branches pass
+  // `unit` too, and tests 1-2 match it with a wildcard, so hardcoding 'st'
+  // there survives the whole suite. Editing is the only leg proven here.
+  // ────────────────────────────────────────────────────────────────────────────
+  testWidgets('picking a different unit saves the picked unit', (tester) async {
+    final existing = PantryItem(
+      id: 'p_7',
+      ingredientName: 'Grädde',
+      quantity: 2,
+      unit: 'g',
+      location: PantryLocation.fridge,
+      addedAt: DateTime(2026, 1, 1),
+    );
+
+    await tester.pumpWidget(buildSheet(existingItem: existing));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+
+    // The closed button renders every item in an IndexedStack, so the open
+    // menu's entry is the hit-testable one.
+    await tester.tap(find.text('dl').hitTestable().last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Spara'));
+    await tester.pumpAndSettle();
+
+    final saved =
+        verify(() => vm.updateItem(captureAny())).captured.single as PantryItem;
+    expect(
+      saved.unit,
+      'dl',
+      reason: 'The dropdown selection must reach the saved item.',
+    );
+  });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // DOCUMENTS A DEFECT — when BUT-1858 lands, REPLACE this test with its
+  // inverse rather than deleting it. It holds the suite's only off-list
+  // fixture, so a plain deletion would leave nothing asserting that such an
+  // item renders at all. The inverse: 'knippe' survives the save.
+  //
+  // The unit dropdown offers eight values. Off-list units reach pantry rows
+  // from the shopping-checkoff flow, which stores an item's FREE-TEXT unit
+  // verbatim (`ShoppingCheckoffPantryService` -> `PantryService
+  // .addFromShoppingItem`); the sheet itself never produces one. The clamp
+  // substitutes 'st' so `DropdownButton`'s one-match assert cannot fire — but
+  // `_submit` writes `_unit` unconditionally, so opening such an item and
+  // saving REWRITES the user's unit. This test pins that data loss as KNOWN,
+  // not as desired: it asserts the current behaviour so a future fix has
+  // something to redden.
+  // ────────────────────────────────────────────────────────────────────────────
+  testWidgets('an off-list unit is clamped to st, and saving rewrites it', (
+    tester,
+  ) async {
+    final existing = PantryItem(
+      id: 'p_99',
+      ingredientName: 'Rosmarin',
+      quantity: 1,
+      unit: 'knippe',
+      location: PantryLocation.pantry,
+      addedAt: DateTime(2026, 1, 1),
+    );
+
+    await tester.pumpWidget(buildSheet(existingItem: existing));
+    await tester.pumpAndSettle();
+
+    // The screen renders rather than asserting — that is what the clamp buys.
+    expect(tester.takeException(), isNull);
+    final dropdown = tester.widget<DropdownButtonFormField<String>>(
+      find.byType(DropdownButtonFormField<String>),
+    );
+    expect(
+      dropdown.initialValue,
+      'st',
+      reason: 'The stored unit is not on offer, so the clamp substitutes st.',
+    );
+
+    await tester.tap(find.text('Spara'));
+    await tester.pumpAndSettle();
+
+    final saved =
+        verify(() => vm.updateItem(captureAny())).captured.single as PantryItem;
+    expect(
+      saved.unit,
+      'st',
+      reason:
+          'The cost of the clamp: an untouched save silently replaces the '
+          "user's 'knippe' with 'st'. Pinned so the loss is known.",
+    );
   });
 }

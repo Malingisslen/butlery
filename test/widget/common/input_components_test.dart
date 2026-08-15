@@ -1,8 +1,10 @@
 /// Widget tests for the InputComponents facade.
 ///
-/// Verifies each factory returns the right concrete widget with the
-/// arguments forwarded correctly, and that the modal openers actually
-/// mount their dialog/sheet widget into the tree.
+/// Verifies each factory returns the right concrete widget with the arguments
+/// forwarded correctly. The facade's one remaining modal opener,
+/// `showListSelector`, is deliberately NOT covered — see the SKIP note at the
+/// end of this file. (BUT-1849 removed `showShoppingItemDialog` and the dead
+/// dialog behind it, which was the only opener this suite ever mounted.)
 library;
 
 import 'package:flutter/material.dart';
@@ -13,7 +15,6 @@ import 'package:butlery/widgets/common/input_components.dart';
 import 'package:butlery/widgets/common/input/instruction_editor.dart';
 import 'package:butlery/widgets/common/input/portion_scaler.dart';
 import 'package:butlery/widgets/common/input/debounced_checkbox.dart';
-import 'package:butlery/widgets/common/input/shopping_item_dialog.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -120,69 +121,6 @@ void main() {
       );
       expect(find.byType(DebouncedCheckbox), findsOneWidget);
       expect(find.byType(Checkbox), findsOneWidget);
-    });
-  });
-
-  group('InputComponents.showShoppingItemDialog', () {
-    testWidgets('shows an AddUnifiedShoppingItemDialog on call', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('sv'),
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () =>
-                    InputComponents.showShoppingItemDialog(context),
-                child: const Text('Open dialog'),
-              ),
-            ),
-          ),
-        ),
-      );
-
-      await tester.tap(find.text('Open dialog'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AddUnifiedShoppingItemDialog), findsOneWidget);
-    });
-
-    testWidgets('returns null when dialog dismissed via barrier', (
-      tester,
-    ) async {
-      Object? result = const Object();
-      await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('sv'),
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () async {
-                  result = await InputComponents.showShoppingItemDialog(
-                    context,
-                  );
-                },
-                child: const Text('Open'),
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-      expect(find.byType(AddUnifiedShoppingItemDialog), findsOneWidget);
-
-      // Tap outside dialog to dismiss via barrier.
-      await tester.tapAt(const Offset(10, 10));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AddUnifiedShoppingItemDialog), findsNothing);
-      expect(result, isNull);
     });
   });
 

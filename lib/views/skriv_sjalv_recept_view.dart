@@ -418,8 +418,7 @@ class _SkrivSjalvReceptViewContentState
                       _saveRecipe();
                     },
                     // BUT-701: scope keyboard tab-order to this form so Tab
-                    // walks the fields in visual order (matches the
-                    // shopping_item_dialog pattern). No visual change.
+                    // walks the fields in visual order. No visual change.
                     child: FocusTraversalGroup(
                       child: ListView(
                         children: [

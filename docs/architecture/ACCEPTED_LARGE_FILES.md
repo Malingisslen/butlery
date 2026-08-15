@@ -33,7 +33,7 @@ Domain models with serialization, factory methods, schema migration. Splitting f
 | `recipe_unified.dart` | 1780 | Core recipe model — serialization, factories, copyWith, type variants. Cohesive growth from family-rating fields; future option is to extract `recipe_unified_serialization.dart` if drift exceeds +25%. |
 | `tag_result.dart` | 982 | Auto-tagging result — serialization, schema migration, 20+ query helpers |
 | `unified_shopping_list.dart` | 837 | Shopping list model — serialization, member permissions, sync status |
-| `recipe_form_state.dart` | 988 | Recipe form state — validation, field tracking, error handler extracted. Row refreshed 2026-08-14: recorded 802, measured 935 before BUT-1845 touched it (+133 pre-existing drift, not this change) and 988 after it added `mealTypeOptions`. |
+| `recipe_form_state.dart` | 989 | Recipe form state — validation, field tracking, error handler extracted. Row refreshed 2026-08-14: recorded 802, measured 935 before BUT-1845 touched it (+133 pre-existing drift, not this change) and 989 after it added `mealTypeOptions`. |
 | `unified_shopping_item.dart` | 927 | Shopping item model — serialization, category, unit conversion |
 | `invitation_target.dart` | 652 | Invitation model — many invitation type variants |
 | `realtime_menu.dart` | 620 | Realtime menu model with collaboration operations |
@@ -178,7 +178,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 |------|-------|--------|
 | `recipe_image_manager.dart` | 1,374 | Already uses facade pattern (5 sub-managers) |
 | `personal_tag_dialogs.dart` | 899 | 14 static dialog functions — already extracted from view |
-| `skriv_sjalv_recept_view.dart` | 981 | Recipe creation screen — refactored from 836. Row refreshed 2026-08-14: recorded 959, measured 972 before BUT-1845 (+13 pre-existing drift) and 981 after it. |
+| `skriv_sjalv_recept_view.dart` | 980 | Recipe creation screen — refactored from 836. Row refreshed 2026-08-14: recorded 959, measured 972 before BUT-1845 (+13 pre-existing drift) and 981 after it; 980 after BUT-1849 shortened a comment. |
 | `personal_tag_rule_dialog.dart` | 839 | Complex rule editing dialog — many condition types |
 | `recipe_parser_service.dart` | 915 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,177 | Recipe list with filtering, search, tags |
