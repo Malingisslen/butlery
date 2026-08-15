@@ -1,0 +1,372 @@
+{
+ "$schema": "butlery-profil-stategroup-utford/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "5dd5c1c",
+ "$status": "PROFILE STATE-GROUP REGRESSION CLOSED / VERIFIED",
+ "$typ": "METADATA-ONLY PRODUCT WRITE. Ingen farg, ingen geometri, ingen CSS.",
+ "B_kalldiff": {
+  "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+  "andradeTaggar": 2,
+  "diff": [
+   {
+    "kontroll": "Sökbar för vänner",
+    "offset": 29946,
+    "fore": "<div style=\"margin-top:8px;display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #ccd1c2;min-height:48px;box-sizing:border-box\" data-a11y-name=\"Sökbar för vänner\" data-a11y-role=\"switch\" data-hit=\"self\" data-a11y-state=\"checked\">",
+    "efter": "<div style=\"margin-top:8px;display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #ccd1c2;min-height:48px;box-sizing:border-box\" data-a11y-name=\"Sökbar för vänner\" data-a11y-role=\"switch\" data-hit=\"self\" data-a11y-state=\"on\" data-state-group=\"profil-integritetsreglage\">",
+    "nyttState": "on"
+   },
+   {
+    "kontroll": "Visa mina recept publikt",
+    "offset": 30608,
+    "fore": "<div style=\"margin-top:0;display:flex;justify-content:space-between;align-items:center;padding:8px 0;min-height:48px;box-sizing:border-box\" data-a11y-name=\"Visa mina recept publikt\" data-a11y-role=\"switch\" data-hit=\"self\">",
+    "efter": "<div style=\"margin-top:0;display:flex;justify-content:space-between;align-items:center;padding:8px 0;min-height:48px;box-sizing:border-box\" data-a11y-name=\"Visa mina recept publikt\" data-a11y-role=\"switch\" data-hit=\"self\" data-a11y-state=\"off\" data-state-group=\"profil-integritetsreglage\">",
+    "nyttState": "off"
+   }
+  ],
+  "fargdiff": [],
+  "attrdiff": [
+   {
+    "attribut": "data-a11y-state=",
+    "fore": 1,
+    "efter": 2,
+    "delta": 1
+   },
+   {
+    "attribut": "data-state-group=",
+    "fore": 0,
+    "efter": 2,
+    "delta": 2
+   }
+  ],
+  "stilarBitIdentiska": true,
+  "andradeProduktfiler": [
+   "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  ]
+ },
+ "C_metadataForeEfter": [
+  {
+   "kontroll": "Sökbar för vänner",
+   "fore": "data-a11y-state=\"checked\" · (ingen grupp)",
+   "efter": "data-a11y-state=\"on\" · data-state-group=\"profil-integritetsreglage\"",
+   "rollOforandrad": true,
+   "namnOforandrat": true,
+   "hitOforandrat": true
+  },
+  {
+   "kontroll": "Visa mina recept publikt",
+   "fore": "(inget state) · (ingen grupp)",
+   "efter": "data-a11y-state=\"off\" · data-state-group=\"profil-integritetsreglage\"",
+   "rollOforandrad": true,
+   "namnOforandrat": true,
+   "hitOforandrat": true
+  }
+ ],
+ "D_stateColorUseTotaler": {
+  "FORE": {
+   "kontrollerMedTillstand": 136,
+   "saknarFamilj": 1,
+   "familjer": 70,
+   "singleton": 52,
+   "tvetydiga": 0,
+   "jamfordaPar": 20,
+   "parUtanFarg": 20,
+   "parOkantLage": 0,
+   "colorOnly": 0,
+   "tackningsinvariant": true,
+   "parinvariant": true
+  },
+  "EFTER": {
+   "kontrollerMedTillstand": 137,
+   "saknarFamilj": 0,
+   "familjer": 71,
+   "singleton": 52,
+   "tvetydiga": 0,
+   "jamfordaPar": 21,
+   "parUtanFarg": 21,
+   "parOkantLage": 0,
+   "colorOnly": 0,
+   "tackningsinvariant": true,
+   "parinvariant": true
+  },
+  "syntetisktForvantat": {
+   "kontrollerMedTillstand": 137,
+   "saknarFamilj": 0,
+   "familjer": 71,
+   "singleton": 52,
+   "tvetydiga": 0,
+   "jamfordaPar": 21,
+   "parIckefarg": 21,
+   "parOkantLage": 0,
+   "colorOnly": 0,
+   "tackningsinvariant": true,
+   "parinvariant": true
+  },
+  "reproducerarSyntetiskt": true,
+  "avvikelser": []
+ },
+ "E_nyttPar": {
+  "familj": "profil-integritetsreglage",
+  "stateA": "off",
+  "stateB": "on",
+  "artA": "profil",
+  "artB": "profil",
+  "namnA": "Visa mina recept publikt",
+  "namnB": "Sökbar för vänner",
+  "ickeFargSignaler": [
+   {
+    "nyckel": "thumbLage",
+    "slag": "form",
+    "text": "knoppens lage skiljer",
+    "a": "vanster|mitten",
+    "b": "hoger|mitten"
+   }
+  ],
+  "okandaSignaler": [],
+  "klassificering": "NON_COLOR_STATE_DIFFERENCE",
+  "colorOnly": false,
+  "lage": {
+   "a": {
+    "klass": "vanster|mitten",
+    "nX": -0.778,
+    "nY": 0,
+    "varfor": "uppmatt andel av knoppens tillgangliga resa i sparet"
+   },
+   "b": {
+    "klass": "hoger|mitten",
+    "nX": 0.778,
+    "nY": 0,
+    "varfor": "uppmatt andel av knoppens tillgangliga resa i sparet"
+   }
+  }
+ },
+ "E_nyaPar_st": 1,
+ "E_bortaPar_st": 0,
+ "E_parSomByttKlass_st": 0,
+ "E_nySingleton": [],
+ "F_normaliseradeLagen": {
+  "OFF": {
+   "klass": "vanster|mitten",
+   "nX": -0.778,
+   "nY": 0,
+   "varfor": "uppmatt andel av knoppens tillgangliga resa i sparet"
+  },
+  "ON": {
+   "klass": "hoger|mitten",
+   "nX": 0.778,
+   "nY": 0,
+   "varfor": "uppmatt andel av knoppens tillgangliga resa i sparet"
+  }
+ },
+ "G_ickeFargmassigBarare": {
+  "signal": [
+   "thumbLage"
+  ],
+  "detalj": [
+   {
+    "nyckel": "thumbLage",
+    "slag": "form",
+    "text": "knoppens lage skiljer",
+    "a": "vanster|mitten",
+    "b": "hoger|mitten"
+   }
+  ],
+  "metodregression": {
+   "signalLaserGeometri": true,
+   "ingenJustifyContentSomSignal": true,
+   "justifyContentEndastDiagnostik": true,
+   "toleransFranBoxGraphics": true,
+   "sparOchKnoppUrStrukturanalysen": true,
+   "parKlassSha": "3715b5c1510667c9",
+   "bitIdentiskMedMetodcommit": true
+  },
+  "slutsats": "Den friande signalen ar knoppens renderade lage, hamtad ur sparets och knoppens faktiska boxar. justify-content finns kvar men bara som diagnostik."
+ },
+ "H_colorOnly": {
+  "fore": 0,
+  "efter": 0,
+  "okandaPar": {
+   "fore": 0,
+   "efter": 0
+  }
+ },
+ "I_kontrollerOchR02": {
+  "kandaKontroller": {
+   "fore": {
+    "total_metadatapopulation_st": 1386,
+    "semantiska_kontroller_st": 1378,
+    "produktnamnare_st": 1346,
+    "utanfor_produktpopulationen_st": 32,
+    "metadata_utan_roll_st": 8
+   },
+   "efter": {
+    "total_metadatapopulation_st": 1386,
+    "semantiska_kontroller_st": 1378,
+    "produktnamnare_st": 1346,
+    "utanfor_produktpopulationen_st": 32,
+    "metadata_utan_roll_st": 8
+   }
+  },
+  "utfall": {
+   "fore": {
+    "measured_st": 1346,
+    "unknown_st": 0,
+    "pass_st": 1346,
+    "fail_st": 0,
+    "fail_bredd_st": 0,
+    "fail_hojd_st": 0,
+    "fail_bagge_st": 0,
+    "measured_coverage_pct": 100,
+    "unknown_coverage_pct": 0
+   },
+   "efter": {
+    "measured_st": 1346,
+    "unknown_st": 0,
+    "pass_st": 1346,
+    "fail_st": 0,
+    "fail_bredd_st": 0,
+    "fail_hojd_st": 0,
+    "fail_bagge_st": 0,
+    "measured_coverage_pct": 100,
+    "unknown_coverage_pct": 0
+   }
+  },
+  "profilrader": [
+   {
+    "namn": "Sökbar för vänner",
+    "fore": "364x48",
+    "efter": "364x48",
+    "oforandrad": true,
+    "minst48": true,
+    "rollFore": "switch",
+    "rollEfter": "switch",
+    "hitFore": "self",
+    "hitEfter": "self",
+    "stateFore": "checked",
+    "stateEfter": "on",
+    "gruppFore": null,
+    "gruppEfter": "profil-integritetsreglage"
+   },
+   {
+    "namn": "Visa mina recept publikt",
+    "fore": "364x48",
+    "efter": "364x48",
+    "oforandrad": true,
+    "minst48": true,
+    "rollFore": "switch",
+    "rollEfter": "switch",
+    "hitFore": "self",
+    "hitEfter": "self",
+    "stateFore": null,
+    "stateEfter": "off",
+    "gruppFore": null,
+    "gruppEfter": "profil-integritetsreglage"
+   }
+  ]
+ },
+ "J_ickeText": {
+  "grafiskaDelar": {
+   "fore": 1644,
+   "efter": 1644
+  },
+  "fynd": {
+   "fore": 0,
+   "efter": 0
+  },
+  "profilkontroller": [
+   {
+    "namn": "Sökbar för vänner",
+    "iPar": true,
+    "state": "on",
+    "familj": "profil-integritetsreglage",
+    "lage": {
+     "klass": "hoger|mitten",
+     "nX": 0.778,
+     "nY": 0,
+     "varfor": "uppmatt andel av knoppens tillgangliga resa i sparet"
+    },
+    "ickeTextFynd_st": 0
+   },
+   {
+    "namn": "Visa mina recept publikt",
+    "iPar": true,
+    "state": "off",
+    "familj": "profil-integritetsreglage",
+    "lage": {
+     "klass": "vanster|mitten",
+     "nX": -0.778,
+     "nY": 0,
+     "varfor": "uppmatt andel av knoppens tillgangliga resa i sparet"
+    },
+    "ickeTextFynd_st": 0
+   }
+  ],
+  "samladStatus": {
+   "fore": "FALLD",
+   "efter": "GODKAND",
+   "delresultat": {
+    "kontrast": "GRON — 0 fynd av 637 bedomda delar",
+    "stateFamilj": "KOMPLETT for profilparet — on och off i samma familj",
+    "ickeFargBarare": "knoppens renderade rorelse",
+    "colorOnly": "0 fynd"
+   }
+  }
+ },
+ "K_fristaendeGrafik": {
+  "objekt": {
+   "fore": 542,
+   "efter": 542
+  },
+  "required": {
+   "fore": 266,
+   "efter": 266
+  },
+  "fynd": {
+   "fore": 0,
+   "efter": 0
+  },
+  "unknown": {
+   "fore": 0,
+   "efter": 0
+  }
+ },
+ "L_unknownBacklogg": {
+  "undeclaredUnknown": 108,
+  "prioriterade": 21,
+  "rorda": "nej — ingen kandidat lastes eller omklassificerades i detta block"
+ },
+ "M_singletonFamiljer": {
+  "fore": 52,
+  "efter": 52,
+  "$not": "Separat coverage-spar. Inte rort."
+ },
+ "M2_switcharUtanState": {
+  "fore": 20,
+  "efter": 19,
+  "profilensAvRadIngarLangre": true
+ },
+ "N_regression": {
+  "fargrakning": "0 skillnader",
+  "styleAttribut": "bit-identiska",
+  "rendering_r03": "bit-identisk",
+  "effekter": "bit-identiska",
+  "identitet": "bit-identisk",
+  "textkontrast": {
+   "foreFynd": 0,
+   "efterFynd": 0,
+   "foreKontroller": 1344,
+   "efterKontroller": 1344
+  },
+  "andraStateGroups": "inga andrade — attributbokforingen visar data-state-group +2, bada pa profilens tva rader",
+  "andraStateVarden": "inga andrade — data-a11y-state +1, och det enda befintliga vardet som skrevs om ar profilens egen ON-rad",
+  "borttagnaPar": 0
+ },
+ "O_r04": {
+  "registerBitIdentiskt": true,
+  "morkaVarden": 0,
+  "mappningsevidens": 0,
+  "arvdaMorkaTokens": 0,
+  "kredit": 0,
+  "$not": "on/off ar tillstandsetiketter for jamforelse. Inte fargbeslut, inte mappningsevidens, inte R-04-evidens. profil-integritetsreglage ar jamforelsemetadata, lokal till profil, och ar inte kontrollidentitet."
+ },
+ "P_stoppvillkor": []
+}
