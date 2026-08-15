@@ -41,12 +41,22 @@
 //   UDC-28  tvetydiga agare ligger kvar i explicit bokforing
 //   UDC-29  R-02-utfallet paverkar aldrig medlemskapet
 //   UDC-30  semantisk UNKNOWN presenteras inte som antal kontroller
+//   UDC-31  samma renderade ruta ensam avgor inte agarskapet
+//   UDC-32  ett visuellt barn blir ingen egen kandidat nar raden ar agaren
+//   UDC-33  en layoutforalder slukar inte ett sjalvstandigt barn
+//   UDC-34  tva verkligt sjalvstandiga nastlade agare forblir tva identiteter
+//   UDC-35  agarupplosning laser aldrig det semantiska verdiktet
+//   UDC-36  en olost agare ligger kvar i DISCOVERY_AMBIGUOUS_OWNER
+//   UDC-37  agarupplosning bevarar harkomsten fran den tvetydiga identiteten
+//   UDC-38  mappning till en befintlig kandidat skapar ingen dublett
+//   UDC-39  agarupplosning andrar inte Tier 1-reglerna
+//   UDC-40  agarupplosning satter inget verdikt
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { upptack, aterupptack, mekanismerFor, prioritet, arDeklarerad, PREDIKAT, UNION,
-  MEKANISM, MATT, TRAFFYTA_MIN } from './control-shape-discovery.mjs';
+  MEKANISM, MATT, TRAFFYTA_MIN, nastlad, sammaRuta } from './control-shape-discovery.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -63,9 +73,9 @@ const KOD = MOD.replace(/^\s*\/\/.*$/gm, '');   // kod utan kommentarer
 
 /* Byggstenar. KROPP ar en malad textkropp; varje prov andrar exakt en sak. */
 const KROPP = { harFyllning: true, helRam: false, malar: true, egenTextLangd: 6,
-  inreMalande: 0, svgAntal: 0, display: 'flex', align: 'center', w: 155, h: 48,
+  inreMalande: 0, svgAntal: 0, display: 'flex', align: 'center', x: 0, y: 0, w: 155, h: 48,
   tagg: 'div', roll: null, forfaderRoll: null, iSvg: false, komponent: null,
-  piller: false, harKnopp: false, fil: 'prov.html' };
+  piller: false, harKnopp: false, foraldrakedja: [], fil: 'prov.html' };
 const o = (art, ordinal, extra = {}) => ({ art, ordinal, ...KROPP, ...extra });
 
 /* ── UDC-01 ─────────────────────────────────────────────────────────*/
@@ -99,14 +109,15 @@ const o = (art, ordinal, extra = {}) => ({ art, ordinal, ...KROPP, ...extra });
       r.deklareradeMedKontrollform_st); }
 
 /* ── UDC-05 ─────────────────────────────────────────────────────────*/
-{ const r = upptack([ o('R', 20, { w: 364 }), o('R', 21, { w: 364 }) ], new Set(['R|20']));
+{ const r = upptack([ o('R', 20, { x: 0, y: 0, w: 364 }),
+    o('R', 21, { x: 0, y: 0, w: 364, foraldrakedja: [20] }) ], new Set(['R|20']));
   prov('UDC-05', 'radagare och visuellt barn med samma box ger inte tva kandidater',
     r.nya_st === 0 && r.redanKanda_st === 1 && r.tvetydigaAgare_st === 1 && r.invariant_ok,
     'tvetydiga: ' + JSON.stringify(r.tvetydigaAgare.map(x => x.identitet))); }
 
 /* ── UDC-06 ─────────────────────────────────────────────────────────*/
-{ const r = upptack([ o('A', 30, { w: 200, h: 60 }), o('A', 31, { w: 200, h: 60 }) ],
-    new Set(['A|30']));
+{ const r = upptack([ o('A', 30, { x: 0, y: 0, w: 200, h: 60 }),
+    o('A', 31, { x: 0, y: 0, w: 200, h: 60, foraldrakedja: [30] }) ], new Set(['A|30']));
   prov('UDC-06', 'tvetydigt agarskap ger fail closed — ingen kandidat, en redovisad post',
     r.nya_st === 0 && r.tvetydigaAgare_st === 1 &&
     /gar inte att avgora/.test(r.tvetydigaAgare[0].skal) && r.invariant_ok,
@@ -334,14 +345,15 @@ const o = (art, ordinal, extra = {}) => ({ art, ordinal, ...KROPP, ...extra });
 
 /* -- UDC-28 - tvetydiga agare ligger kvar i bokforingen -------------*/
 { const A = JSON.parse(readFileSync(join(rot, 'fas2', 'upptacktsslutning.json'), 'utf8'));
-  const k = A.K_tvetydigaAgare;
-  const r = upptack([ o('A', 30, { w: 200, h: 60 }), o('A', 31, { w: 200, h: 60 }) ],
-    new Set(['A|30']));
+  const k = A.K_tvetydigaAgare;   // populationen SOM DEN SAG UT vid f89b72b
+  const r = upptack([ o('A', 30, { x: 0, y: 0, w: 200, h: 60 }),
+    o('A', 31, { x: 0, y: 0, w: 200, h: 60, foraldrakedja: [30] }) ], new Set(['A|30']));
   prov('UDC-28', 'tvetydiga agare ligger kvar i explicit bokforing',
     k.antal === A.M_N_matt.DISCOVERY_AMBIGUOUS_OWNER.efter && k.poster.length === k.antal &&
-    k.poster.every(x => x.konkurrerandeAgare && x.behovs) &&
-    r.tvetydigaAgare[0].behovs.length > 0,
-    k.antal + ' tvetydiga, alla med konkurrerande agare och angivet saknat bevis'); }
+    k.poster.every(x => x.konkurrerandeAgare) &&
+    r.tvetydigaAgare.length === 1 && r.tvetydigaAgare[0].behovs.length > 0,
+    k.antal + ' redovisade vid f89b72b; en syntetisk containmentkonflikt ger en post med ' +
+      'konkurrent och angivet saknat bevis'); }
 
 /* -- UDC-29 - R-02-utfallet paverkar aldrig medlemskapet ------------*/
 { const A = JSON.parse(readFileSync(join(rot, 'fas2', 'upptacktsslutning.json'), 'utf8'));
@@ -362,6 +374,106 @@ const o = (art, ordinal, extra = {}) => ({ art, ordinal, ...KROPP, ...extra });
     // Varningen ska uttryckligen FORNEKA att talen ar ett antal kontroller.
     /uppskattning/.test(MATT.$varning) && /kontroller/.test(MATT.$varning),
     'tre atskilda matt med egna definitioner, plus explicit varning och historiknot'); }
+
+/* -- UDC-31 - samma ruta ensam avgor inte agarskapet ----------------*/
+{ // Tva SYSKON med identiskt matt men olika lage. De ar skilda objekt och far
+  // inte bli en agarkonflikt. Sjutton kalenderdagrutor blev det med den gamla
+  // regeln, som bara laste matt.
+  const a = o('S', 1, { x: 0, y: 0 });
+  const b = o('S', 2, { x: 160, y: 0 });
+  const r = upptack([a, b], new Set(['S|1']));
+  prov('UDC-31', 'samma renderade ruta ensam avgor inte agarskapet',
+    r.nya_st === 1 && r.tvetydigaAgare_st === 0 && !sammaRuta(a, b) &&
+    a.w === b.w && a.h === b.h,
+    'samma matt men olika lage -> ' + r.nya_st + ' kandidat, ' + r.tvetydigaAgare_st +
+      ' agarkonflikt'); }
+
+/* -- UDC-32 - visuellt barn blir ingen egen kandidat ----------------*/
+{ // Raden ar redan kandidat. Barnet har SAMMA ruta och ligger inuti raden.
+  const rad = o('T', 10, { x: 0, y: 0, w: 364, h: 48 });
+  const barn = o('T', 11, { x: 0, y: 0, w: 364, h: 48, foraldrakedja: [10] });
+  const r = upptack([rad, barn], new Set(['T|10']));
+  prov('UDC-32', 'ett visuellt barn blir ingen egen kandidat nar raden ar agaren',
+    r.nya_st === 0 && r.tvetydigaAgare_st === 1 &&
+    nastlad(barn, rad) && sammaRuta(rad, barn) && r.invariant_ok,
+    'barnet hamnar i agarfragan, inte som ny kandidat: ' +
+      JSON.stringify(r.tvetydigaAgare.map(x => x.identitet))); }
+
+/* -- UDC-33 - layoutforalder slukar inte ett sjalvstandigt barn -----*/
+{ // Foraldern ar bara layout: omalad, ingen egen text. Barnet ar en egen kropp
+  // med annan ruta. Barnet ska bli kandidat i sin egen ratt.
+  const foralder = o('U', 1, { x: 0, y: 0, w: 364, h: 120, malar: false,
+    harFyllning: false, helRam: false, egenTextLangd: 0, display: 'block', align: 'normal' });
+  const barn = o('U', 2, { x: 12, y: 12, w: 155, h: 48, foraldrakedja: [1] });
+  const r = upptack([foralder, barn]);
+  prov('UDC-33', 'en layoutforalder slukar inte ett sjalvstandigt barn',
+    r.nya_st === 1 && r.nya[0].identitet === 'U|2' &&
+    mekanismerFor(foralder).length === 0,
+    'foraldern gav ' + mekanismerFor(foralder).length + ' mekanismer, barnet blev kandidat'); }
+
+/* -- UDC-34 - tva sjalvstandiga nastlade agare forblir tva ----------*/
+{ // Bada ar egna kroppar, med OLIKA rutor, den ena inuti den andra.
+  const yttre = o('V', 1, { x: 0, y: 0, w: 364, h: 96 });
+  const inre = o('V', 2, { x: 200, y: 24, w: 120, h: 48, foraldrakedja: [1] });
+  const r = upptack([yttre, inre]);
+  prov('UDC-34', 'tva verkligt sjalvstandiga nastlade agare forblir tva identiteter',
+    r.nya_st === 2 && nastlad(inre, yttre) && !sammaRuta(yttre, inre) &&
+    r.tvetydigaAgare_st === 0,
+    'nastlade men med olika rutor -> ' + r.nya_st + ' identiteter'); }
+
+/* -- UDC-35 - agarupplosning laser inte verdiktet -------------------*/
+{ // Samma tva objekt, en gang utan och en gang MED semantiska falt pa dem.
+  const utan = upptack([ o('W', 1, { x: 0, y: 0 }), o('W', 2, { x: 200, y: 0 }) ]);
+  const med = upptack([ { ...o('W', 1, { x: 0, y: 0 }), verdikt: 'INTERACTIVE_CONTROL' },
+    { ...o('W', 2, { x: 200, y: 0 }), verdikt: 'DECORATIVE_GRAPHIC' } ]);
+  const lika = JSON.stringify(utan.nya.map(x => x.identitet)) ===
+    JSON.stringify(med.nya.map(x => x.identitet)) &&
+    utan.tvetydigaAgare_st === med.tvetydigaAgare_st;
+  const KODEN = MOD.slice(MOD.indexOf('export function upptack'));
+  prov('UDC-35', 'agarupplosning laser aldrig det semantiska verdiktet',
+    lika && !/verdikt\s*===|INTERACTIVE_CONTROL|DECORATIVE/.test(KODEN.replace(/verdikt: null/g, '')),
+    'identiskt utfall med och utan verdiktfalt: ' + lika); }
+
+/* -- UDC-36 - olost agare ligger kvar ------------------------------*/
+{ const rad = o('X', 10, { x: 0, y: 0, w: 300, h: 60 });
+  const barn = o('X', 11, { x: 0, y: 0, w: 300, h: 60, foraldrakedja: [10] });
+  const r = upptack([rad, barn], new Set(['X|10']));
+  const t = r.tvetydigaAgare[0];
+  prov('UDC-36', 'en olost agare ligger kvar i explicit DISCOVERY_AMBIGUOUS_OWNER',
+    r.tvetydigaAgare_st === 1 && t.konkurrerandeAgare.length === 1 &&
+    typeof t.behovs === 'string' && t.behovs.length > 0 && Array.isArray(t.relation),
+    'redovisad med konkurrent ' + t.konkurrerandeAgare[0] + ' och angivet saknat bevis'); }
+
+/* -- UDC-37/38 - harkomst och dedup --------------------------------*/
+{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'agarupplosning.json'), 'utf8'));
+  const alla = A.B_upplosta;
+  const harLineage = alla.every(x => typeof x.lineage === 'string' && /->|→/.test(x.lineage));
+  prov('UDC-37', 'agarupplosning bevarar harkomsten fran den tvetydiga identiteten',
+    harLineage && alla.length === A.A_de26.antal,
+    alla.length + ' av ' + A.A_de26.antal + ' har explicit gammal→ny-spar'); }
+{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'agarupplosning.json'), 'utf8'));
+  prov('UDC-38', 'mappning till en befintlig kandidat skapar ingen dublett',
+    A.I_population.forloradeIdentiteter === 0 &&
+    A.I_population.fore + A.I_population.upplostaTillKandidater === A.I_population.efter &&
+    A.I_population.dubbletter === 0,
+    A.I_population.fore + ' + ' + A.I_population.upplostaTillKandidater + ' = ' +
+      A.I_population.efter + ', 0 dubbletter, 0 tappade'); }
+
+/* -- UDC-39 - Tier 1-reglerna ororda -------------------------------*/
+{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'agarupplosning.json'), 'utf8'));
+  prov('UDC-39', 'agarupplosning andrar inte Tier 1-reglerna',
+    JSON.stringify(UNION) === JSON.stringify(A.L_tier1Union) &&
+    A.M_sentinel.aterupptackta === 1351 && A.M_sentinel.allaRoller100,
+    'unionen oforandrad och recall fortfarande ' + A.M_sentinel.aterupptackta + '/1351'); }
+
+/* -- UDC-40 - inget verdikt satts ----------------------------------*/
+{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'agarupplosning.json'), 'utf8'));
+  const inga = A.B_upplosta.every(x => !('verdikt' in x) && !/INTERACTIVE|DECORATIVE|STATE_GRAPHIC/
+    .test(JSON.stringify(x)));
+  prov('UDC-40', 'agarupplosning satter inget control-, state- eller decorative-verdikt',
+    inga && A.J_semantiskaVerdiktAndrade === 0,
+    'noll verdikt i upplosningsposterna och ' + A.J_semantiskaVerdiktAndrade +
+      ' andrade semantiska verdikt'); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);

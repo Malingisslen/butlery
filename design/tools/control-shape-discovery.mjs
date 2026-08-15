@@ -139,6 +139,10 @@ export function aterupptack(kontroll, union = UNION) {
  * De tvetydiga FORSVINNER INTE ur bokforingen. De ar en egen oppen population,
  * DISCOVERY_AMBIGUOUS_OWNER, och raknas aldrig som vanliga kandidater.
  */
+export const nastlad = (inre, yttre) => Array.isArray(inre.foraldrakedja) &&
+  inre.foraldrakedja.includes(yttre.ordinal);
+export const sammaRuta = (a, b) => a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h;
+
 export function upptack(objekt, befintliga = new Set(), union = UNION) {
   const id = o => o.art + '|' + o.ordinal;
   const iScope = o => !o.iSvg;
@@ -150,14 +154,25 @@ export function upptack(objekt, befintliga = new Set(), union = UNION) {
   const redanKanda = [], nya = [], tvetydigaAgare = [];
   for (const o of traffar) {
     if (befintliga.has(id(o))) { redanKanda.push(id(o)); continue; }
+    // TVETYDIGT AGARSKAP kraver SAMMA RENDERADE RUTA — lage OCH matt — OCH en
+    // containmentrelation.
+    //
+    // Enbart samma MATT racker inte, och den regeln var fel. 12169 par i
+    // korpusen delar matt utan att vara samma objekt: tjugo dagrutor i en
+    // kalender ar tjugo olika objekt. Bara 105 par delar hela rutan, och 91 av
+    // dem ar genuint nastlade. Den gamla regeln gjorde sjutton syskon till
+    // falska agarkonflikter.
     const krock = objekt.filter(x => x !== o && befintliga.has(id(x)) &&
-      x.art === o.art && x.w === o.w && x.h === o.h);
+      x.art === o.art && sammaRuta(x, o) && (nastlad(o, x) || nastlad(x, o)));
     if (krock.length) { tvetydigaAgare.push({ identitet: id(o), art: o.art, fil: o.fil,
-      konkurrerandeAgare: krock.map(id), geometri: o.w + 'x' + o.h,
-      skal: 'samma artefakt och samma renderade box som en befintlig kandidat — agarvalet ' +
-        'gar inte att avgora ur strukturen',
-      behovs: 'ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, ' +
-        'till exempel en authored agarmarkering eller en entydig innehallsrelation' });
+      konkurrerandeAgare: krock.map(id), ruta: o.x + ',' + o.y + ' ' + o.w + 'x' + o.h,
+      relation: krock.map(x => nastlad(o, x) ? 'objektet ligger inuti ' + id(x)
+        : id(x) + ' ligger inuti objektet'),
+      skal: 'exakt samma renderade ruta som en befintlig kandidat OCH i containmentrelation ' +
+        'med den — agarvalet gar inte att avgora i upptackten',
+      behovs: 'ett strukturellt bevis for vilken av de tva boxarna som ar den semantiska ' +
+        'agaren: vilken bar den egna texten, vilken malar avgransningen, och vilken ' +
+        'motsvarar den etablerade agararkitekturen i deklarerade kontroller' });
       continue; }
     nya.push(o);
   }
