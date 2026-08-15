@@ -1174,3 +1174,224 @@ Recorded rather than amended, per the repo's no-amend rule, so the broken interm
 stays in history with its own explanation. That is the right trade: a reader bisecting
 through it needs to know why one commit does not build, and a rewritten history would have
 hidden exactly the failure this lesson is about.
+
+---
+
+## "Affected users" is a claim with a timestamp, and an enum is not coverage (BUT-1846, 2026-08-14)
+
+A retired dropdown value (`digestFrequency: 'daily'`) crashed the notification settings
+screen. The fix was right. Two things I wrote around it were not, and both were caught by
+reviewers rather than by me.
+
+### 1. I asserted an affected population I had never counted
+
+The doc comment said "these users have been receiving the weekly digest all along" and
+"most affected documents still say `'daily'`". Two independent reviewers ran the same two
+commands I had not:
+
+```
+git show -s --format=%ci 920256e9e   # 2026-03-27 09:57:58  option added
+git show -s --format=%ci 77ba0bd30   # 2026-03-27 10:12:03  option removed
+```
+
+Fourteen minutes. No shipped build ever offered it, and `accepted-deviations.md` already
+records that the app is not live, so the leftover data is test data. The *code* was right
+either way — totality is the point — but the justification was fiction, and it would have
+been quoted by the next person as evidence about real users.
+
+The trap is that the bug's SHAPE suggests a population. A retired value implies people who
+chose it; a broken screen implies people who hit it. Neither implication survives one
+timestamp check. So: before writing a sentence about who is affected, date the window
+(`git show -s` both ends) and check whether the app is live. If the answer is "nobody, and
+it doesn't matter", say that — "whether such a document exists is beside the point, the
+parse has to be total" is a stronger argument than an invented user anyway.
+
+### 2. The enum killed the crash class, and killed my test with it
+
+Making the field `enum DigestFrequency { never, weekly }` makes the SDK's exactly-one-match
+assert unreachable for every inhabitant of the type. That is the fix working. It also made
+my own `expect(tester.takeException(), isNull)` **analytically unfailable** — a line whose
+comment claimed it was "the primary proof".
+
+Worse, exhaustiveness hid two real gaps. The `default`-less `switch` proves every enum
+value gets *a* label; nothing proved it gets the *right* one. Repo-wide, no test read either
+label. Swapping the two arms compiled and left the whole suite green, while a weekly
+subscriber would read "Aldrig" on screen — the same lie as the bug being fixed. Separately,
+dropping the `digestFrequency:` argument from `_copyPreferences` also stayed green: nothing
+tapped the control.
+
+**Compiler exhaustiveness is a proof about the SET, not about the MAPPING or the WIRING.**
+When a type change removes a failure mode, ask what the old test was actually catching and
+whether anything still catches it. Here the honest replacements were an item-list assertion
+(`dropdown.items!.map((i) => i.value).toList() == Values` — the gate for the day someone
+hand-writes the list again) and a test that taps the control and captures the save. Both
+mutation-proven; the unfailable line stayed, relabelled as the cheap guard it is.
+
+### 3. Operational: a commit gate that outlives the tool timeout
+
+The pre-commit suite here runs 400–600s. The Bash tool caps at 600s, and `run_in_background`
+plus `nohup` both died with the shell — the log stopped after the first gate. What survived
+was launching it fully detached from the shell's process group:
+
+```
+powershell -Command "Start-Process -FilePath 'C:\Program Files\Git\bin\bash.exe' \
+  -ArgumentList '-lc','cd /c/repo && git commit -F msg > run.log 2>&1' -WindowStyle Hidden"
+```
+
+then polling `git rev-parse HEAD` until it moves. Three timed-out attempts each left a stale
+`.git/index.lock` behind — and in a shared working copy you cannot assume a lock is yours.
+Check its mtime against your own last attempt, and check that no live `git.exe` is doing
+anything but read-only status queries, before removing one.
+
+---
+
+## BUT-1838 — a correction to a false comment fails the same way the original did (2026-08-15)
+
+A whole-range gate caught four code comments justifying live controls with a `firestore.rules`
+branch BUT-1838 had deleted two days earlier. Fixing them took **six review rounds**, and every
+round found a fresh false sentence *in the text I had just written to replace a false sentence*.
+Zero logic defects the whole time. The failure mode was identical every time, and it is not
+carelessness — it is the shape of the sentence.
+
+### The shape: an unqualified claim about a qualified fact
+
+Each wrong sentence generalised something true **per verb**, **per caller**, or **per branch**:
+
+| I wrote | The qualifier I dropped |
+|---|---|
+| "nobody can read, update or delete them, ever" | per VERB — `allow delete` and the `hasOnly(['lastReadAt'])` update branch key on `participantId == request.auth.uid` and never touch `parentDoc()`. Orphaned rows are UNREADABLE, not unreachable. |
+| "the account cascade's two call sites are handed direct ids" | per CALLER — `deleteChatGroupMemberships` reads its id off a `chat_groups` doc, so it is group-side. Only `deleteMessages` is direct-side. |
+| "a live parent … denies the roster to everyone" | per CALLER again — true for the two group-side callers (zero-member shell), false for the 1:1 branch, where the surviving partner is still named. |
+| "No rule reads `chat_groups` membership" | per PURPOSE — rules read it for the group's read gate and for rename; what they never do is read it for a SIZE decision. |
+| "Nothing actually caps a group's size" | `MAX_CHAT_GROUP_MEMBERS = 100`, enforced by both membership callables. |
+| "re-introduce the fallback and this test reddens alone" | per FIXTURE — a sibling test stages the same predicate over an absent parent and flips too. |
+
+Two of them were *worse than what they replaced*: the original sentences were correct, and my
+rewrite invented a route that does not exist (a direct conversation's roster holds at most TWO
+client-written rows — `directIdBinds` forces `p.size() == 2` and `participantIds` is in the
+update deny-list, so it can never reach a 2000-row cap).
+
+### Three habits, in the order they pay
+
+1. **Write the qualifier or write nothing.** "Every predicate that could SURFACE a row reads
+   through the parent" is true; "every predicate reads through the parent" is false, and the
+   difference is the whole finding. Before an absolute — *every, no, nobody, nothing, only, at
+   all* — name the axis it quantifies over (verb? caller? branch? purpose?) and check each value.
+2. **Enumerate by GREPPING THE PHRASE, not by fixing the site the reviewer named.** Round five
+   fixed two instances a reviewer pointed at; round six's grep found a third in a file nobody had
+   opened. Grep across the whole tree *including tests* — a false claim propagates by copy-paste,
+   and `__tests__` is where the copies live.
+3. **Re-read the WHOLE docstring, not the diff.** Two findings were context lines ~30 lines from
+   my edit, inside the same comment block. They cannot appear in a diff, and they now contradicted
+   the paragraph above them — which is strictly worse than being uniformly stale.
+
+### The other half: a decision record ages the same way
+
+`.claude/rules/accepted-deviations.md` justified `MAX_ROSTER_SWEEP_ROWS` ("do not remove the cap")
+with the same deleted branch — written one day before the branch died. A record that is wrong on
+the day it is written is worse than one that goes stale, because it gets cited as authority. Both
+files got a dated `AMENDED` addendum rather than a silent edit, and the replacement rationale was
+itself panel-reviewed: the Security Architect refused the draft that said the path was no longer
+client-writable, because `attestedWriter()` lets either participant of a direct chat write the
+other's roster row. The phrase "not a live client write path" is now banned by name at every site.
+
+### Also, the underlying bug was bigger than reported
+
+The reviewer reported "group chats are invisible to the unread badge". The badge read **0 for
+everyone**: its inverse index is written `hasUnread: false` and the only writer that would flip it
+has no production caller. The suggested fix (have the server write the missing rows) would not have
+helped — they would arrive `false` too. **When a reviewer reports a symptom, find the mechanism
+before accepting the scope**; the reported scope is a lower bound on the defect, not a description
+of it.
+
+## "Not a live bug" is a claim about CALLERS, not about a fallback (BUT-1849, 2026-08-15)
+
+Deleting a dead widget, I documented a clamp in a neighbouring file and wrote the sentence that
+made both reviewers fail the diff:
+
+> no live path produces an off-list unit — `PantryService`'s `typicalUnit` fallback is unreachable
+> while this sheet is the only caller and always passes a unit
+
+Every clause in it is defensible in isolation. The conclusion is false. The clamp guards a
+**shipped** flow: check off a shopping item with the auto-add-to-pantry preference on, and
+`ShoppingCheckoffPantryService` → `PantryService.addFromShoppingItem` → `addFromText` stores the
+item's free-text unit verbatim — `UnifiedShoppingItem.unit` is non-nullable, so the `unit ?? 'st'`
+I was reasoning about never fires. Opening that row and pressing Save rewrites `förp` to `st`, and
+because the same flow dedups on name + unit, the next check-off then creates a duplicate row.
+
+**The error was choosing the wrong thing to trace.** I traced the *field's own default* (is the
+fallback reachable?) and the *view's* callers (`PantryViewModel.addItemFromText` — genuinely only
+this sheet). The question was about the SERVICE's callers, one layer down and in a different
+feature. "Is X reachable" decomposes into "who calls the writer", and a null-coalescing operator
+answers none of it. Nullability is not reachability.
+
+Two habits:
+
+1. **Trace up from the WRITE, not down from the field.** Grep the writing method's name, then each
+   of *its* callers, until you hit UI or a trigger. The stopping condition is a human or a
+   scheduler, never "the fallback can't fire".
+2. **A reachability claim is load-bearing prose.** It downgrades a ticket, it justifies deferring a
+   fix, and it is the sentence the next reader trusts instead of re-deriving. It had propagated
+   into the Linear ticket too (as a "Nej" heading), so the correction was two documents, not one.
+
+### The test-side twin: deleting a defect test can unpin the field
+
+The defect is pinned by a test explicitly labelled *delete this when BUT-1858 lands*. Nothing else
+in the suite asserted `unit` at all — so the day the fix arrives and that test is removed as
+instructed, unit persistence would be guarded by nothing, and an "always writes 'st'" regression
+would pass. **A test written to be deleted must ship with the assertion that outlives it**: here,
+one clause on the happy-path predicate checking an on-list unit round-trips. Ask, of every
+temporary test, what goes unguarded on the day it is removed.
+
+## A gate can be structurally unsatisfiable, and a chained command dies whole (BUT-1849, 2026-08-15)
+
+Two failures of the same family, one day, both about the machinery rather than the code.
+
+### The gate could never pass, and that is a fact about the gate
+
+`require-review-before-commit` proves a review by recording which bytes a reviewer opened,
+comparing against `git rev-parse :<file>`. For a path staged as DELETED that command fails,
+the sha comes back `''`, and `fileProven` opens with `if (!sha) return false`. So **every
+proof for a deleted file was false forever**: no commit removing a gated `.dart` file could
+pass, however many reviewers ran and passed. Not a race, not staleness — arithmetic. The
+push gate carried the identical branch, which surfaced the instant the commit gate was fixed
+and the very next push carried the two deletions.
+
+It hid for two weeks because ledger mode landed 2026-08-01 and the last `.dart` deletion in
+any of these repos was 2026-07-16. **A gate is only exercised by the shapes that actually
+occur**, and "nobody hit it" is not evidence it works — the same reasoning as "nobody
+reported it" not proving a write path works (BUT-1482).
+
+The rule I want: when a gate blocks, ask *can this gate pass at all* before assuming the
+work is wrong. Read the predicate. If it cannot be satisfied by any honest action, that is a
+tool defect and fixing it IS the task — with fixtures and a mutation proof, never by routing
+around. Both fixes here pin a deletion's proof to the *previous* version, so the requirement
+stays real (the reviewer must have opened the content being removed) and merely becomes
+performable. Both block messages now say how to read a file that is already gone, because
+the old remedy — "open each file with Read" — was an instruction that could not be carried
+out, and a reader following it loops.
+
+### A PreToolUse hook rejects the whole command string
+
+I ran `git rm -- <two files> && git commit -F msg -- <ten paths>`. The commit gate matched
+the string, refused it, and **neither half ran** — so the deletion I believed I had staged
+was never staged. I then told two reviewers, in writing, that the files "are now staged as
+`D`". Both went and looked, and both failed the diff on it. My own comment in production
+code said "deleted by BUT-1849" about a file still sitting on disk.
+
+The shape: a blocking hook is not a filter on the command's last clause. **Any state change
+you chain ahead of a gated command is lost with it.** Put mutations in their own call, then
+verify with the command that reads the result (`git diff --cached --name-status`), never
+with the intention. And never write a factual claim about repo state into a brief — or a
+comment — from what you meant to do; three of the nine review rounds on this ticket were
+spent on exactly that.
+
+### Corollary on reporting
+
+The lesson from BUT-1838 ("a correction fails the same way the original did") repeated here
+in a new place: of nine review rounds, every blocking finding was a sentence about code
+elsewhere, and **three were my corrections landing worse than what they replaced** — one
+turned a hedge into a false universal, one attributed two tests to the wrong ticket, one
+claimed all builders funnel through a helper when three do not. Before shipping a
+replacement sentence, verify it at the same cost as the original. A reviewer-requested
+rewrite is not pre-verified.
