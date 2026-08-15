@@ -383,7 +383,17 @@ class RecipeFormViewModel extends BaseViewModel
   bool get isOwner => _permissionManager.isOwner;
   bool get hasPermissions => _permissionManager.hasPermissions;
 
-  static const List<String> mealTypes = RecipeFormState.mealTypes;
+  /// BUT-1845. The meal types to offer for a recipe storing [storedValue].
+  ///
+  /// There is deliberately no `mealTypes` re-export beside this one: binding a
+  /// dropdown's `items:` to the bare vocabulary is the defect this replaced, so
+  /// the wrong thing is not spellable through this class. The bare list still
+  /// exists as [RecipeFormState.mealTypes] for non-dropdown callers such as
+  /// `quick_capture_view.dart`'s ChoiceChips, which cannot assert.
+  static ({List<String> values, String? selected}) mealTypeOptions(
+    String storedValue,
+  ) => RecipeFormState.mealTypeOptions(storedValue);
+
   static const int maxImages = RecipeFormState.maxImages;
 
   bool get isFirstRecipe => _persistenceManager.isFirstRecipe;

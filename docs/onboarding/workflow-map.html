@@ -3513,7 +3513,7 @@
     {
       "id": "flow-rec-3",
       "label": "skapa & redigera recept",
-      "description": "Snabbspara sparar bara titel + måltidstyp direkt, utan taggning. Manuellt skrivet och redigerat recept går genom samma RecipeFormCoordinator-motor, som kör deterministisk auto-taggning OCH användarens taggregler innan Firestore-skrivningen.",
+      "description": "Snabbspara sparar bara titel + måltidstyp direkt, utan taggning. Manuellt skrivet och redigerat recept går genom samma RecipeFormCoordinator-motor, som kör deterministisk auto-taggning OCH användarens taggregler innan Firestore-skrivningen. Måltidstypen är FRITEXT och flera skrivare är oense om vokabulären (assisterad import skriver engelska, textimport kan skriva 'Huvudrätt'); sedan BUT-1845 bygger formulärens listor via RecipeFormState.mealTypeOptions, som lägger till receptets faktiska värde först i stället för att krascha på build.",
       "features": [
         "REC-07",
         "REC-08",

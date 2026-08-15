@@ -33,7 +33,7 @@ Domain models with serialization, factory methods, schema migration. Splitting f
 | `recipe_unified.dart` | 1780 | Core recipe model — serialization, factories, copyWith, type variants. Cohesive growth from family-rating fields; future option is to extract `recipe_unified_serialization.dart` if drift exceeds +25%. |
 | `tag_result.dart` | 982 | Auto-tagging result — serialization, schema migration, 20+ query helpers |
 | `unified_shopping_list.dart` | 837 | Shopping list model — serialization, member permissions, sync status |
-| `recipe_form_state.dart` | 802 | Recipe form state — validation, field tracking, error handler extracted |
+| `recipe_form_state.dart` | 988 | Recipe form state — validation, field tracking, error handler extracted. Row refreshed 2026-08-14: recorded 802, measured 935 before BUT-1845 touched it (+133 pre-existing drift, not this change) and 988 after it added `mealTypeOptions`. |
 | `unified_shopping_item.dart` | 927 | Shopping item model — serialization, category, unit conversion |
 | `invitation_target.dart` | 652 | Invitation model — many invitation type variants |
 | `realtime_menu.dart` | 620 | Realtime menu model with collaboration operations |
@@ -178,7 +178,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 |------|-------|--------|
 | `recipe_image_manager.dart` | 1,374 | Already uses facade pattern (5 sub-managers) |
 | `personal_tag_dialogs.dart` | 899 | 14 static dialog functions — already extracted from view |
-| `skriv_sjalv_recept_view.dart` | 959 | Recipe creation screen — refactored from 836 |
+| `skriv_sjalv_recept_view.dart` | 981 | Recipe creation screen — refactored from 836. Row refreshed 2026-08-14: recorded 959, measured 972 before BUT-1845 (+13 pre-existing drift) and 981 after it. |
 | `personal_tag_rule_dialog.dart` | 839 | Complex rule editing dialog — many condition types |
 | `recipe_parser_service.dart` | 915 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,177 | Recipe list with filtering, search, tags |
@@ -190,13 +190,13 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `adaptive_icon.dart` | 672 | Platform-adaptive icon widget |
 | `di_container.dart` | 585 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 858 | DI registrations for content layer |
-| `edit_recipe_view.dart` | 707 | Recipe editing screen (drifted +29 from 639 — BUT-550 reconciled 2026-05-28) |
+| `edit_recipe_view.dart` | 724 | Recipe editing screen (drifted +29 from 639 — BUT-550 reconciled 2026-05-28). Row refreshed 2026-08-14: recorded 707, measured 715 before BUT-1845 (+8 pre-existing drift) and 724 after it. |
 | `user_profile_edit_view.dart` | 390 | Facade-extracted to `lib/views/social/user_profile_edit/` per BUT-1154 (was 832, now 390 — well under 500; kept in table for history) |
 | `ocr_extraction_service.dart` | 1,253 | OCR-based recipe image extraction (+121 for the free on-device tier 0, 2026-08-02) |
 | `text_layout.dart` (`lib/services/ocr/`) | 558 | The OCR page model: pure value types plus the contract prose every consumer defers to (line-index-is-row-number, the sanitize law, capture-vs-reading order, which figures are proxy). ~55 % is doc comment, and that is the point — the split path has already shipped four false comments about this file, so the prose is load-bearing. `glyph_metrics.dart` was extracted from it 2026-08-07; what remains is one cohesive contract that a facade would only scatter. 2026-08-08 |
 | `auth_view.dart` | 780 | Login/signup screen (drifted +61 from 631 — BUT-550 reconciled 2026-05-28) |
 | `smart_import_view.dart` | 383 | Facade-extracted to `lib/views/smart_import/` per BUT-1154 (was 817, now 383 — well under 500; kept in table for history) |
-| `recipe_form_viewmodel.dart` | 729 | Recipe form VM — delegates to 6 managers |
+| `recipe_form_viewmodel.dart` | 777 | Recipe form VM — delegates to 6 managers. Row refreshed 2026-08-14: recorded 729, measured 767 before BUT-1845 (+38 pre-existing drift) and 777 after it replaced the `mealTypes` re-export with `mealTypeOptions`. |
 | `personal_tag_selector.dart` | 685 | Tag picker widget |
 | `adaptive_navigation.dart` | 631 | Bottom nav / side nav adaptive widget |
 | `universal_image_manager.dart` | 590 | Image management widget |

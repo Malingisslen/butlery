@@ -303,6 +303,11 @@ class _SkrivSjalvReceptViewContentState
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeFormViewModel>();
+    // BUT-1845: read the stored meal type ONCE per build; the dropdown's items
+    // and its selected value must both come from this.
+    final mealTypeOptions = RecipeFormViewModel.mealTypeOptions(
+      viewModel.mealType,
+    );
 
     // CRITICAL FIX: Initialize controllers once on first build
     _initializeControllersIfNeeded(viewModel);
@@ -436,8 +441,12 @@ class _SkrivSjalvReceptViewContentState
                               const SizedBox(
                                 height: 4.0,
                               ), // Minimal gap between label and dropdown
+                              // BUT-1845: items and initialValue must come from
+                              // ONE read of the stored value — the dropdown's
+                              // constructor assert re-checks the match on every
+                              // build.
                               DropdownButtonFormField<String>(
-                                initialValue: viewModel.mealType,
+                                initialValue: mealTypeOptions.selected,
                                 isExpanded: true,
                                 decoration: const InputDecoration(
                                   contentPadding: EdgeInsets.symmetric(
@@ -447,7 +456,7 @@ class _SkrivSjalvReceptViewContentState
                                   border: OutlineInputBorder(),
                                 ),
                                 style: AppTextStyles.bodyMedium,
-                                items: RecipeFormViewModel.mealTypes
+                                items: mealTypeOptions.values
                                     .map(
                                       (mt) => DropdownMenuItem(
                                         value: mt,

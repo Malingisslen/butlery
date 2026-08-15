@@ -363,6 +363,12 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     BuildContext context,
     RecipeFormViewModel viewModel,
   ) {
+    // BUT-1845: read the stored meal type ONCE per build; the dropdown's items
+    // and its selected value must both come from this.
+    final mealTypeOptions = RecipeFormViewModel.mealTypeOptions(
+      viewModel.mealType,
+    );
+
     return [
       // Meal type dropdown
       Column(
@@ -375,8 +381,11 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingXs),
+          // BUT-1845: items and initialValue must come from ONE read of the
+          // stored value — the dropdown's constructor assert re-checks the
+          // match on every build.
           DropdownButtonFormField<String>(
-            initialValue: viewModel.mealType,
+            initialValue: mealTypeOptions.selected,
             isExpanded: true,
             decoration: const InputDecoration(
               contentPadding: EdgeInsets.symmetric(
@@ -386,7 +395,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
               border: OutlineInputBorder(),
             ),
             style: AppTextStyles.bodyMedium,
-            items: RecipeFormViewModel.mealTypes
+            items: mealTypeOptions.values
                 .map((mt) => DropdownMenuItem(value: mt, child: Text(mt)))
                 .toList(),
             onChanged: (value) {

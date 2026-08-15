@@ -69,6 +69,9 @@ class RecipeFormState extends ChangeNotifier {
   // Single source of truth is now FormFieldsManager values only
 
   // Constants
+
+  /// The meal types this app OFFERS. Never bind this straight to a dropdown's
+  /// `items:` — use [mealTypeOptions]. See its doc for why.
   static const List<String> mealTypes = [
     'Frukost',
     'Lunch',
@@ -77,6 +80,57 @@ class RecipeFormState extends ChangeNotifier {
     'Mellanmål',
     'Fika',
   ];
+
+  /// BUT-1845: the meal types to offer for a recipe that stores [storedValue],
+  /// widened to include whatever that recipe actually carries.
+  ///
+  /// `mealType` is a free-form `String` and several writers disagree with
+  /// [mealTypes]: the assisted import writes English (`'dinner'` by default),
+  /// text import can produce `'Huvudrätt'`, and the LLM enhancement writes
+  /// lowercase English. `DropdownButtonFormField` asserts in its CONSTRUCTOR —
+  /// so on every build, not just the first — that exactly one item matches its
+  /// value. Binding `items:` to [mealTypes] while `initialValue:` holds one of
+  /// those values therefore throws on build in debug and renders a blank
+  /// control in release.
+  ///
+  /// Returns both halves together, deliberately: two functions would encode the
+  /// emptiness rule twice and let a caller pass a different value to each,
+  /// which is the same two-lists-that-disagree defect one scope down. One call,
+  /// one read, one build.
+  ///
+  /// The stored value is offered PLAIN and first, not flagged as retired the
+  /// way `personal_tag_rule_dialog.dart` flags a withdrawn tag property.
+  /// Nothing was ever removed from [mealTypes] — these values come from writers
+  /// that never agreed with it — and no code can say whether `'Huvudrätt'`
+  /// means Lunch or Middag. Only the user can, so the value stays visible and
+  /// selected until they choose otherwise.
+  ///
+  /// No trimming and no case folding: `'lunch'` sits beside `'Lunch'` as two
+  /// near-identical rows. That is honest under "this must not change what any
+  /// screen writes", and normalising `values` without `selected` would make the
+  /// two diverge and re-trip the assert. Unifying the vocabulary is BUT-1845's
+  /// follow-up, not this seam's job.
+  ///
+  /// An empty stored value yields `selected: null` — no item matches, so the
+  /// control shows whatever the view's `hint:` says, and blank where none is
+  /// declared (neither recipe-form view declares one today). Deliberate, and
+  /// still strictly better than asserting.
+  ///
+  /// One consequence, so it is not read as a bug: the widening keys off the
+  /// CURRENT value. The injected row IS selectable — picking it re-stores the
+  /// same value and the row stays — but picking an OFFERED row drops it, and it
+  /// cannot be got back in that session. That is what "visible and selected
+  /// until they choose otherwise" means.
+  static ({List<String> values, String? selected}) mealTypeOptions(
+    String storedValue,
+  ) => (
+    values: [
+      if (storedValue.isNotEmpty && !mealTypes.contains(storedValue))
+        storedValue,
+      ...mealTypes,
+    ],
+    selected: storedValue.isEmpty ? null : storedValue,
+  );
   static const int maxImages = 5;
   static const int maxIngredients = 100;
   static const int maxInstructions = 50;
