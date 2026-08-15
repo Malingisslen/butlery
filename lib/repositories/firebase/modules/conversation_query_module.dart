@@ -136,17 +136,35 @@ class ConversationQueryModule {
 
   /// Get count of conversations with unread messages.
   ///
-  /// Uses inverse index (conversationMemberships) when available for O(1) lookup.
-  /// Falls back to legacy arrayContains query otherwise.
+  /// Reads the conversations themselves. It used to prefer the inverse index
+  /// (`users/{uid}/conversation_memberships`) and return early whenever that
+  /// was non-empty — which made this method answer 0 for every user holding at
+  /// least one such row. Those rows are written with `hasUnread: false` and
+  /// nothing ever sets it true:
+  /// `ConversationParticipantModule.updateConversationActivity` is the only
+  /// writer that would, and it has no production caller (no production writer
+  /// in `functions/src` either — the one literal there is a rules fixture, and
+  /// it writes `false`). So any user with one direct conversation had a
+  /// non-empty list of all-false rows, the early return fired, and the query
+  /// below never ran — for ALL their chats, groups included. The badge in
+  /// `profile_menu.dart` read 0 for them from the day the membership write
+  /// shipped. Only a user with NO rows at all fell through and counted
+  /// correctly, and since BUT-1838's group conversations get no membership
+  /// rows, that meant a group-only user. The gap between those two
+  /// populations is what made the defect visible.
+  ///
+  /// Do not reinstate the shortcut by having the server write those rows —
+  /// they would arrive `hasUnread: false` too. It needs `hasUnread` to be
+  /// MAINTAINED, which is BUT-1850 along with the question of whether that
+  /// half-built index should exist at all.
   Future<int> getUnreadConversationsCount(String userId) async {
     try {
-      // Try inverse index first (much faster for users with many conversations)
-      final memberships = await participantModule?.getUserMemberships(userId);
-      if (memberships != null && memberships.isNotEmpty) {
-        return memberships.where((m) => m.hasUnread).length;
-      }
-
-      // Fallback to legacy query
+      // `limit(500)` is a ceiling, not a prefetch — Firestore bills per
+      // document RETURNED, so a household paying for twelve conversations pays
+      // for twelve. Lowering it to match `getUnreadMessageCount`'s 100 was a
+      // panel condition and was declined (ADR-0006): the two numbers diverge
+      // only for a user who actually holds more than 100 conversations, which
+      // no household reaches.
       final conversations = await firestore
           .collection(collectionName)
           .where('participantIds', arrayContains: userId)

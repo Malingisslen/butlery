@@ -1067,7 +1067,7 @@ async function scenario_adHocSharedContentMembershipIsScrubbed(): Promise<void> 
 }
 
 /**
- * BUT-1788. `leaveGroupConversation` writes "<Name> har lämnat gruppen" under
+ * BUT-1788. The departure callable writes "<Name> har lämnat gruppen" under
  * `senderId: "system"` into a group the user has since LEFT. Three separate
  * legs of this cascade miss it: the `senderId == uid` sweep (wrong author), the
  * `lastMessage` tombstone (only fires when the user is the SENDER), and the
@@ -1350,12 +1350,14 @@ async function scenario_ownRosterRowIsErasedInSurvivingGroup(): Promise<void> {
 
 /**
  * BUT-1822 leg 1, and the ordering it turns on. Deleting the conversation is the
- * write that makes `parentDoc() == null` true, which re-opens the bootstrap
- * branch in firestore.rules over whatever roster rows survive. The SURVIVING
- * partner's row is the one that matters: its `participantId` is not the erased
- * uid, so leg 2's collection-group sweep can never reach it, and the roster read
- * fallback carries no `direct_` exclusion — the partner would keep LIST over the
- * erased user's name and avatar forever.
+ * write that makes `parentDoc() == null` true, and every predicate that could
+ * surface a row reads through the parent — so whatever rows survive become
+ * UNREADABLE forever (delete and the `lastReadAt` stamp key on the subject's
+ * own uid, and no client flow uses either). The SURVIVING partner's row is
+ * the one that matters: its `participantId` is not the erased uid, so leg 2's
+ * collection-group sweep can never reach it either. Until BUT-1838 this was worse
+ * than unreachable — a bootstrap branch re-opened those rows to any signed-in
+ * user, so the partner kept LIST over the erased user's name and avatar forever.
  *
  * Asserting only "both are gone" would pass on the broken code too, since the
  * sweep would still take the erased user's own row. The ORDER is the test.
@@ -1391,15 +1393,22 @@ async function scenario_rosterIsClearedBeforeTheParentDelete(): Promise<void> {
 /**
  * When the roster cannot be proven clear, `tryClearRoster` returns false and the
  * parent must NOT be deleted — a live parent that no longer names the erased
- * user denies those rows to everyone, whereas deleting it re-opens the
- * bootstrap branch. But an untouched document keeps their name in
+ * user still lets the SURVIVING partner list what is left — the read rule is
+ * not row-scoped and `buildGroupDepartureUpdate` only `arrayRemove`s the erased
+ * uid — which is acceptable because leg 2 sweeps the erased user's own row.
+ * Deleting the parent instead makes every row unreadable
+ * forever (and, until BUT-1838, re-opened a bootstrap branch over them). But an untouched document keeps their name in
  * `participantDisplayNames` forever, so the departure update runs instead.
  *
  * Staged SYNTHETICALLY, via the clearer's refusal cap — the cheapest way to
  * force a false verdict. Production does NOT reach the branch that way for a
- * direct conversation: once the parent exists only the two attested
- * participants may write rows and `rosterUnclaimed()` excludes the `direct_`
- * prefix, so the real route is a transient roster read or delete failure.
+ * direct conversation: only the two attested participants may write rows, and
+ * `directIdBinds` pins `participantIds` to exactly two with the update rule
+ * denying any diff that touches it — so such a roster holds at most TWO
+ * client-written rows, ever, which can never reach the refusal cap. For a
+ * `direct_` id the real route is therefore a transient roster read or delete
+ * failure; a LEGACY non-direct conversation reaches this branch too and can hit
+ * the cap through rows seeded before BUT-1838.
  */
 async function scenario_unclearableRosterLeavesTheParentStanding(): Promise<void> {
   const db = new FakeFirestore();

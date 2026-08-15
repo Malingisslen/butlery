@@ -311,8 +311,8 @@ files in the same edit.
   conversation left standing keeps the erased uid in its own document id where no
   field-keyed probe can see it. Do not "tidy" that into a success. (2) A capped
   `collectionGroup("participants").where("participantId","==",uid)` sweep takes the rest;
-  above `MAX_ROSTER_SWEEP_ROWS` it DECLINES rather than truncating, because the bootstrap
-  write branch lets a stranger plant rows naming an arbitrary `participantId` (BUT-1830).
+  above `MAX_ROSTER_SWEEP_ROWS` it DECLINES rather than truncating, because a planted roster
+  lets somebody else choose the size of a victim's erasure bill (BUT-1830).
   Declining is loud — the probe leg is an uncapped `count()`. Do not fold the two legs into
   one "simpler" query; do not remove the cap; do not let a future edit delete the parent on
   a false answer. A `direct_` conversation id is HASHED in every log on this path
@@ -324,6 +324,33 @@ files in the same edit.
   is NOT covered by that reasoning. The fix is FORWARD-ONLY: rows orphaned by earlier deletions, and rows
   orphaned by a user's own "delete conversation", are still there (BUT-1825 + a backfill
   ticket). 2026-08-13
+  **AMENDED 2026-08-15 — the cap's STATED REASON was stale within two days of being written;
+  the cap itself is unchanged and still must not be removed.** This entry, and four comments
+  in the code, justified `MAX_ROSTER_SWEEP_ROWS` by the bootstrap write branch — which
+  BUT-1838 deleted on 2026-08-13, one day later. That does NOT weaken the cap. Three sources
+  of extra rows survive: (1) rows seeded BEFORE BUT-1838, still on disk because the backfill
+  is closed unbuilt (BUT-1839); (2) a tampered or non-standard Admin-SDK writer, which rules
+  never see; (3) an ATTESTED client write, bounded but LIVE — `attestedWriter()`
+  (`firestore.rules`:1706-1708) requires the parent to name the writer AND the subject, and
+  `direct_A_B` names both, so A may write B's row with a `displayName` A chooses; A may also
+  create that conversation, since two adults need no friendship (`passesMinorDmGate` fires
+  only when the other party is a minor) and NOTHING caps the rate — the create rule's
+  `rateLimitWrite('conversations', 10)` reads `users/{uid}/rate_limits/conversations`, a
+  bucket no writer in `lib/` ever stamps, so `!exists(limitsPath)` is permanently true, and
+  the bucket is self-written anyway. **The DECLINE-rather-than-truncate behaviour and the uncapped
+  `count()` probe beside it are FROZEN** — they are the Art. 17 completeness signal and do
+  not depend on which source is live; do not relax either arguing the bootstrap hole is
+  closed. Note also that orphaning is still a one-way door after BUT-1838: every predicate
+  that could SURFACE a row reads through the parent, so deleting it makes
+  the surviving rows unreadable forever — which is why the ordering in leg (1) is unchanged
+  even though the disclosure it originally prevented is gone. NOT un-writable: the `(u1)`
+  self-cursor update and `allow delete` are parent-free self checks, so the row's own
+  subject could still stamp or delete it (no client flow does). Measured against the live
+  rules, orphaned row acting as its own subject: READ denied, UPDATE allowed, DELETE
+  allowed. Do not lean an Art. 17 argument on "un-deletable". Raised by the
+  whole-range integration gate; the phrase "not a live client write path" is deliberately
+  absent from every site, because that is the sentence a future reader would cite to remove
+  the cap. BUT-1838, 2026-08-15
 
 - **`tryClearRoster` refuses an implausibly large roster and leaves the conversation
   standing — including as a ZERO-member document that nobody can ever read, update or
@@ -336,6 +363,14 @@ files in the same edit.
   FIRST: deleting the shell flips `parentDoc()` to null and re-opens the branch over every
   surviving row, including the legitimate members and the evicted minor. The shell is safe
   only while it stands. BUT-1795/BUT-1825, 2026-08-12
+  **AMENDED 2026-08-15 (BUT-1838):** "re-open the bootstrap branch", twice above, is stale —
+  that branch was deleted on 2026-08-13. The verdict is unchanged, because the consequence it
+  guarded against is only milder, not gone: every predicate that could SURFACE a row reads
+  through the parent, so deleting the shell leaves every surviving row UNREADABLE forever.
+  (Not un-writable — see the AMENDED note above: the self-cursor update and the delete are
+  parent-free self checks, measured.) Orphaning is still a one-way door, so the shell is the safer of
+  the two, and a sweep must still clear the ROSTER first. See the AMENDED note on the BUT-1822
+  entry above for the three sources of rows that keep the caps load-bearing.
 
 - **A minor may be added to a group by any of their FRIENDS, and the strangers already in that
   group can then message them** — the gate checks the person doing the inviting, not everybody

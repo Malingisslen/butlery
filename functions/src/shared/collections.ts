@@ -15,10 +15,11 @@ export const Collections = {
   conversations: "conversations",
   // The roster subcollection under `conversations/{id}`, and the collection-group
   // id its cross-conversation queries use. Added for the account cascade's
-  // `participantId` sweep (BUT-1822). Three local copies of this literal remain —
-  // `enforce-group-minor-membership.ts`, `leave-group-conversation.ts` and
-  // `admin/reset-user-data.ts` — so a rename still needs four edits; this is the
-  // home the next writer should use, not yet the only one.
+  // `participantId` sweep (BUT-1822). Two local copies of this literal remain —
+  // `enforce-group-minor-membership.ts` and `admin/reset-user-data.ts` — so a
+  // rename still needs three edits. (Three copies until BUT-1838 deleted
+  // `leave-group-conversation.ts`.) This is the home the next writer should use,
+  // not yet the only one.
   participants: "participants",
   // BUT-1838: the shared group object a group chat now hangs off. Named
   // `chat_groups`, not `groups`, because this repo already calls three unrelated

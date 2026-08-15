@@ -1596,9 +1596,13 @@ service cloud.firestore {
       // createdAt or the recorded creator).
       //
       // BUT-1788: metadata.creatorId must be immutable, not just create-bound.
-      // Two server-side functions treat it as a trustworthy admin identity —
-      // enforceGroupMinorMembership (BUT-1626) and leaveGroupConversation's
-      // authorizeDeparture. The create rule above binds it to the caller, but
+      // Two server-side functions TREATED it as a trustworthy admin identity —
+      // enforceGroupMinorMembership (BUT-1626, since repointed to
+      // `chat_groups.memberAddedBy`) and leaveGroupConversation's
+      // authorizeDeparture (deleted by BUT-1838; its successor reads
+      // `chat_groups.adminIds`). Nothing reads the field today; the conjunct
+      // stays because the primitive below returns the moment anything does.
+      // The create rule above binds it to the caller, but
       // affectedKeys() is TOP-LEVEL: 'metadata' is not in the deny list, so
       // without the conjunct below any group participant could
       // update({metadata: {creatorId: <own uid>}}) and then call
@@ -1758,15 +1762,19 @@ service cloud.firestore {
             && d.isMuted is bool;
         }
 
-        // Read: a member of the roster. Attested by the parent where it exists,
-        // otherwise by the reader's OWN row existing here (the recipePresence
-        // pattern) — the only evidence available for a group that has never been
-        // messaged in. Neither predicate touches resource.data, so the client's
+        // Read: a member of the roster, attested by the parent. ONE predicate,
+        // `parentNames(request.auth.uid)` — see the rule at the bottom of this
+        // block. It does not touch resource.data, so the client's
         // whole-collection get()/snapshots() LIST is provable, not just a get().
-        // The own-row fallback is SCOPED TO parentDoc() == null, and that scope
-        // is the whole safety of it. Unscoped, a row grants roster LIST
+        //
+        // HISTORY, kept because the next author will meet this shape again and
+        // the reasoning is not obvious. Until BUT-1838 there was a SECOND
+        // predicate: the reader's OWN row existing here (the recipePresence
+        // pattern), the only evidence available for a group that had never been
+        // messaged in. That fallback was SCOPED TO parentDoc() == null, and the
+        // scope was the whole safety of it. Unscoped, a row grants roster LIST
         // FOREVER — including after the conversation goes live and its
-        // participantIds exclude the reader. That is not hypothetical:
+        // participantIds exclude the reader. That was not hypothetical:
         // `enforceGroupMinorMembership` (functions/src/messaging/) USED TO evict
         // a minor by deleting ONLY users/{uid}/conversation_memberships/{id},
         // never touching this roster row, so an evicted MINOR would keep reading
@@ -1775,8 +1783,10 @@ service cloud.firestore {
         // default-deny, so that CF gap was inert; this block is what would have
         // made it live.
         //
-        // FIXED IN TWO HALVES, 2026-08-12. Rules: the fallback is scoped to a
-        // parentless roster, which closes the LIVE-parent case. Code: the CF
+        // FIXED IN TWO HALVES, 2026-08-12, then the rules half was superseded a
+        // day later — see RESIDUALS below, where the fallback goes away
+        // entirely. Rules: the fallback was scoped to a
+        // parentless roster, which closed the LIVE-parent case. Code: the CF
         // now deletes the roster row alongside the membership mirror, which is
         // the only possible fix for the other case — when it evicts the last
         // members it DELETES the conversation, and rules cannot tell "parent

@@ -20,9 +20,10 @@
  *    gate"*. That case existed because `firestore.rules` applied
  *    `passesMinorDmGate` at RAW `participantIds.size() == 2`, so the trigger had
  *    to size itself on the raw list or a padded conversation fell between two
- *    layers. No rule reads `chat_groups.memberIds` at all — membership is
- *    server-written — so there is no second layer to stay in step with, and the
- *    trigger now judges the sanitised list. The equivalent protection moved to
+ *    layers. Rules do read `chat_groups.memberIds` — the group's read gates on
+ *    it — but never for a SIZE decision, and membership is server-written, so
+ *    there is no second layer to stay in step with and the trigger now judges
+ *    the sanitised list. The equivalent protection moved to
  *    the gate, BEFORE the write (`minor-membership-gate.test.ts`).
  *  - *"delete branch: collapsing below 2 members deletes the conversation"* and
  *    *"an unclearable roster leaves the shell standing"*. This trigger no longer

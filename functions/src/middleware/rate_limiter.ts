@@ -45,8 +45,9 @@ export interface RateLimitConfig {
   refillIntervalMs: number;
   /**
    * BUT-1477: optional per-user daily request cap (UTC day). Set on expensive
-   * (LLM-backed) operations; omitted → no daily enforcement. Counted per
-   * request, not per token.
+   * operations — LLM-backed ones, and since BUT-1838 the write-amplified
+   * `createChatGroup`; omitted → no daily enforcement. Counted per request, not
+   * per token.
    */
   dailyLimit?: number;
 }
@@ -79,8 +80,12 @@ interface StoredRateLimit {
  * These mirror the client-side configurations for consistency.
  *
  * Exported (BUT-1573) so the production `dailyLimit` values are pinned by a
- * test — deleting or weakening a per-user daily LLM cap now regresses
- * rate-limiter-daily-cap.test.ts instead of shipping silently.
+ * test — deleting or weakening one now regresses rate-limiter-daily-cap.test.ts
+ * instead of shipping silently. All FOUR are pinned: the three LLM-spend caps
+ * and, since BUT-1838, `createChatGroup`. Add a fifth and pin it in the same
+ * edit — this sentence QUANTIFIES, so it goes stale by addition with its own
+ * bytes untouched, which is how it was wrong between BUT-1838 shipping and
+ * BUT-1838's own follow-up catching it.
  */
 export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   // LLM Operations (expensive - strict limits)
@@ -101,11 +106,15 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     dailyLimit: 50,
   },
 
-  // BUT-1838: chat-group membership callables. These replace CLIENT writes that
-  // firestore.rules rate-limited for us (`rateLimitWrite('conversations', 10)`,
-  // `('conversation_membership', 5)`); the Admin SDK bypasses rules, so the
-  // bound has to be re-stated here or moving the operation server-side quietly
-  // removed it. Denominated in CALLS, not members — a single add-members call
+  // BUT-1838: chat-group membership callables. These replace CLIENT writes whose
+  // create rules carried `rateLimitWrite('conversations', 10)` and
+  // `('conversation_membership', 5)` — conjuncts that never actually bound:
+  // `rateLimitWrite` is `!exists(bucket) || …`, and nothing in `lib/` writes
+  // either bucket, so both were permanently true. (The bucket is self-written
+  // too, so a tampered client would skip the stamp regardless.) The Admin SDK
+  // bypasses rules either way, so this token bucket ESTABLISHES the first real
+  // bound on these operations rather than restoring one — which is a stronger
+  // reason to keep it, not a weaker one. Denominated in CALLS, not members — a single add-members call
   // is capped separately by MAX_CHAT_GROUP_MEMBERS.
   //
   // Creating groups carries a daily cap as well: a group create writes a group

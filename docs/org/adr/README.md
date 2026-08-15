@@ -46,6 +46,7 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
+- [ADR-0006](ADR-0006-unread-count-query-limit.md) — The unread-conversations query keeps `limit(500)`; Performance's must-have to lower it to 100 declined on a factual objection (Firestore bills per document returned, so the lower ceiling saves nothing typical and undercounts first) — priority order, correctness > cost (2026-08-15).
 - [ADR-0005](ADR-0005-household-allergen-sharing.md) — Household allergen sharing scopes to `households/{householdId}` (priority order, over the friend category); Malin escalations: one combined allergens+diet toggle, live household scope incl. later joiners, June minimisation override re-confirmed, papers before code (2026-08-12).
 - [ADR-0004](ADR-0004-shared-list-self-removal-rule-allowlist.md) — Shared-list self-removal allowlists exactly `memberPermissions` + `updatedAt`; Security's blocklist objection was correct and the synthesizer's three-key override rested on a false verification the cold audit caught (2026-07-31).
 - [ADR-0002](ADR-0002-age-enforcement-mechanism.md) — Age enforcement = signup Cloud Function (authoritative) + Firestore rule (gate); CTO ruled security/correctness > cost (2026-06-27).

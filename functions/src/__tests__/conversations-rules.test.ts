@@ -552,10 +552,13 @@ test("conversations: a create whose participantIds is not a list is denied", asy
 // The create binding (C6/C7) is only half the story. `affectedKeys()` is
 // TOP-LEVEL, so before this rule conjunct existed the deny list
 // ['participantIds','createdAt'] let any participant rewrite `metadata`
-// wholesale. Two server functions treat metadata.creatorId as the group admin
-// identity — enforceGroupMinorMembership (BUT-1626) and leaveGroupConversation's
-// authorizeDeparture — so a self-promotion write was a group-takeover primitive:
-// name yourself creator, then call the callable and evict everyone else.
+// wholesale. Two server functions TREATED metadata.creatorId as the group admin
+// identity — enforceGroupMinorMembership (BUT-1626, since repointed to
+// `chat_groups.memberAddedBy`) and leaveGroupConversation's authorizeDeparture
+// (deleted by BUT-1838; its successor reads `chat_groups.adminIds`) — so a
+// self-promotion write was a group-takeover primitive: name yourself creator,
+// then call the callable and evict everyone else. NOTHING reads the field today;
+// the conjunct stays because the primitive returns the moment anything does.
 
 const TAKEOVER_GROUP = `c-creator-immutable-${RUN}`;
 const NO_METADATA_GROUP = `c-no-metadata-${RUN}`;
@@ -758,8 +761,8 @@ test("conversations: a conversation whose stored metadata is null is still updat
 
 // C12A: DENY — injecting a creatorId onto a document that stored NONE
 // (metadata key absent). Resolves to non-null == null. This is the takeover
-// against a pre-BUT-1626 group, where authorizeDeparture currently sees no
-// admin at all. Uses update(), not a merge-set: merge DEEP-MERGES nested maps,
+// against a pre-BUT-1626 group, where authorizeDeparture then saw no admin at
+// all. Uses update(), not a merge-set: merge DEEP-MERGES nested maps,
 // so a merge-set can never prove anything about a key's removal or addition
 // semantics the way a plain update can.
 test("conversations: participant cannot inject metadata.creatorId onto a conversation whose metadata key is absent", async () => {
@@ -1200,8 +1203,8 @@ test("messages: the same actor can create a message in a conversation they are i
 // Four tests below therefore FLIP from allow to deny (P1, P3B, P14, P24). Each
 // flip is the intended signal of this ticket, and each says so at its own site.
 // UPDATE's self-lastReadAt branch is deliberately NOT affected by the groupId
-// lock — P30 pins that, because it is the one client write a group member still
-// makes.
+// lock — P30 pins that. It is the only per-row UPDATE the lock leaves open to a
+// group member; deleting their own row is the other client write on this path.
 
 // Parent EXISTS and names ADULT + FRIEND — the attested branch. No `groupId`,
 // so the client write branch is open on it (BUT-1838).
@@ -1624,10 +1627,15 @@ test("participants: an attested member cannot rewrite another member's row on a 
 });
 
 // P30: ALLOW — the groupId lock deliberately does NOT reach the (u1) self
-// read-cursor branch, which never calls mayWriteRoster(). This is the one write
-// a group member still makes from the client (updateLastRead), and freezing it
-// would break unread counts in every group. Stated as a test rather than a
-// comment because "the roster is server-written" reads like it should deny.
+// read-cursor branch, which never calls mayWriteRoster(). It is the only
+// per-row UPDATE the lock leaves open to a group member, besides deleting their
+// own row (`allow delete` is a bare self check). Its writer, updateLastRead,
+// has NO production caller today — firestore.rules says so at the branch — and
+// unread counts read `conversations.lastReadTimestamps`, not this row, so
+// freezing it would break nothing right now. Kept open because it is the
+// intended client cursor write, not because anything depends on it. Stated as a
+// test rather than a comment because "the roster is server-written" reads like
+// it should deny.
 test("participants: a group member can still stamp their OWN lastReadAt on a GROUP roster row", async () => {
   const ctx = env.authenticatedContext(FRIEND_UID);
   await assertSucceeds(
@@ -1655,20 +1663,25 @@ test("participants: a roster member can LIST the whole participants subcollectio
 
 // P12B: DENY — an own row does NOT outlive the parent naming you.
 //
-// The read rule's own-row fallback is scoped to `parentDoc() == null`, and this
-// is the test that proves the scope is load-bearing. Unscoped, a row would
-// grant roster LIST forever — which mattered because
+// HISTORY: the read rule USED TO carry an own-row fallback scoped to
+// `parentDoc() == null`, and this was the test that proved the scope was load-
+// bearing. BUT-1838 deleted the fallback outright, so today this pins the plain
+// attestation rule — a strictly stronger version of the same guarantee, which is
+// why the test still passes unchanged. Unscoped, a row would have
+// granted roster LIST forever — which mattered because
 // `enforceGroupMinorMembership` USED TO evict a minor by deleting only the
 // membership mirror, leaving this row in place. That half is closed in code as
-// of 2026-08-12: the trigger clears the roster too. The scope is still
-// load-bearing, because that delete is best-effort and a row can survive it —
-// and without the scope, an evicted MINOR would keep reading every member's
-// name and avatar.
+// of 2026-08-12: the trigger clears the roster too. The scope mattered because
+// that delete is best-effort and a row can survive it — without it, an evicted
+// MINOR would have kept reading every member's name and avatar. BUT-1838 then
+// removed the fallback entirely, which closes the same case outright.
 //
 // The pair is P12 (member named by a LIVE parent → ALLOW) against this
-// (row exists, LIVE parent excludes → DENY). Remove `parentDoc() == null` from
-// the fallback and this reddens alone; remove the whole fallback and P14 (the
-// fresh-group bootstrap read) reddens instead.
+// (row exists, LIVE parent excludes → DENY). Re-introduce the fallback UNSCOPED
+// and this reddens together with P14, whose fixture stages the same predicate
+// over an absent parent; re-introduce it SCOPED to `parentDoc() == null` and
+// only P14 reddens. That pair is the mutation to run if anyone proposes
+// bringing it back.
 test("participants: a row whose LIVE parent no longer names you does not grant the roster", async () => {
   const ctx = env.authenticatedContext(STRANGER_UID);
   await assertFails(
@@ -1791,7 +1804,7 @@ test("participants: the row's subject can delete their own row", async () => {
 
 // P22: DENY — delete is deliberately SELF-ONLY, narrower than create/update. A
 // co-participant evicting someone from the roster mirror is pure griefing; the
-// real "remove member" runs in the leaveGroupConversation Cloud Function under
+// real "remove member" runs in the removeChatGroupMember Cloud Function under
 // the Admin SDK, which bypasses these rules. If this ever passes, someone
 // widened delete to mayWriteRoster() — that is a product decision, not a tidy-up.
 test("participants: an attested co-participant cannot delete another member's row", async () => {

@@ -68,34 +68,42 @@ export function logSafeConversationId(conversationId: string): string {
 export const MAX_GROUP_PARTICIPANTS = 100;
 
 /**
- * Mirrors `FirestoreCollections.participants` on the client, and the identical
- * declaration in `leave-group-conversation.ts`.
+ * Mirrors `FirestoreCollections.participants` on the client.
  *
  * Honest about what this buys: a SECOND local copy protects nothing against a
  * rename — it just moves the literal. The real home is
  * `functions/src/shared/collections.ts`, which declares itself the single source
  * of truth and, since BUT-1822, DOES carry `participants` — the account-deletion
- * cascade needed the collection-group id. This file and
- * `leave-group-conversation.ts` still hold their own copies and
- * `admin/reset-user-data.ts` still uses a bare literal, so a rename is four
- * edits, not one. Consolidating them is a separate change; this constant exists
- * so the two uses in THIS file cannot drift from each other.
+ * cascade needed the collection-group id. This file still holds its own copy and
+ * `admin/reset-user-data.ts` still uses a bare literal, so a rename is three
+ * edits, not one. (It was four until BUT-1838 deleted
+ * `leave-group-conversation.ts`, which held a fourth.) Consolidating them is a
+ * separate change; this constant exists so the two uses in THIS file cannot
+ * drift from each other.
  */
 const CONVERSATION_PARTICIPANTS = "participants";
 
 /**
- * Above this many roster rows the collapse branch refuses to delete the
- * conversation. Generous on purpose — a plausibility bound against a SEEDED
- * roster, not a correctness bound on real groups. Nothing actually caps a
- * group's size (neither the conversations create rule nor
- * `createGroupConversation` checks it), but a conversation carrying more than
- * [MAX_GROUP_PARTICIPANTS] VALID participants is refused by this trigger before
- * this helper is reachable at all. Valid, not raw — that guard runs on the
- * `isValidDocId`-filtered list, so a document carrying 400 raw ids of which 100
- * survive the filter does reach here. No consequence either way, because the
- * `.limit()` below is what actually bounds the read; said precisely because
- * raw-vs-sanitised is load-bearing 250 lines down, where conflating them was a
- * real bypass.
+ * Above this many roster rows [tryClearRoster] refuses to clear, so its callers
+ * leave the conversation standing. Generous on purpose — a plausibility bound
+ * against a SEEDED roster, not a correctness bound on real groups.
+ *
+ * Group size IS capped: `MAX_CHAT_GROUP_MEMBERS` (100) is enforced by both
+ * membership callables, and `firestore.rules` refuses every client write to
+ * `chat_groups` membership — so this bound is not about real groups at all. It
+ * bounds the three sources named on [tryClearRoster] below, and nothing
+ * upstream filters them: this trigger's own [MAX_GROUP_PARTICIPANTS] guard
+ * governs the GROUP read fan-out, not the roster path, and BUT-1838 left this
+ * trigger no collapse branch to reach the helper through.
+ *
+ * The raw-vs-sanitised distinction that used to be load-bearing here no longer
+ * is: the old conversations trigger had to gate on the RAW length because
+ * `passesMinorDmGate` fired at raw size 2 and a padded list could slip between
+ * the two layers. Rules DO read `chat_groups` membership — the group's read
+ * gates on `uid in memberIds` and rename on `adminIds` — but never for a SIZE
+ * decision, and no client may write the list at all, so there is no padding
+ * attack and no second layer to stay in step with. See the comment on the
+ * guard itself.
  */
 export const MAX_ROSTER_ROWS = MAX_GROUP_PARTICIPANTS * 5;
 
@@ -103,32 +111,75 @@ export const MAX_ROSTER_ROWS = MAX_GROUP_PARTICIPANTS * 5;
  * Attempts to delete every row under `conversations/{id}/participants`.
  * Returns true only if the roster is provably clear afterwards.
  *
- * TWO CALLERS, in two domains. This trigger's collapse branch, and — since
- * BUT-1822 — `deleteMessages` in `account/account-deletion-cascade.ts`, which
- * gates its 1:1 conversation delete on the same answer for the same reason. The
- * cascade reaching into a trigger module is deliberate (one clearer, not two);
- * extracting this into a neutral module is tracked separately. Anyone changing
- * the contract below — the bound, the never-throws promise, the meaning of the
- * return value — must check that second caller.
+ * THREE CALL SITES, in two other modules and NONE in this one — BUT-1838 moved
+ * the group collapse out of this trigger. They are `deleteEmptyGroup`
+ * (`groups/remove-chat-group-member.ts`), and `deleteMessages` +
+ * `deleteChatGroupMemberships` in `account/account-deletion-cascade.ts`; the
+ * three gate a conversation delete on this answer, for the same reason.
+ * Other modules reaching into a trigger module is deliberate (one clearer, not
+ * three); extracting this into a neutral module is tracked separately. Anyone
+ * changing the contract below — the bound, the never-throws promise, the
+ * meaning of the return value — must check all three.
  *
  * **The caller's invariant: never delete the conversation while roster rows may
- * survive.** Deleting the parent is the write that makes `parentDoc() == null`
- * true, which re-opens the bootstrap branch in firestore.rules over whatever is
- * left. So this function never throws — it reports, and a false answer means the
- * caller must leave the parent standing. Never throws on any error shape the
+ * survive.** Deleting the parent makes `parentDoc() == null` true, and
+ * every predicate that could surface a row reads through the parent, so the
+ * rows left behind become UNREADABLE forever. Not unreachable: `allow delete`
+ * and the `hasOnly(['lastReadAt'])` update branch key on
+ * `participantId == request.auth.uid` alone, so the row's own subject keeps a
+ * delete and a cursor stamp — and no client flow uses either. (Up
+ * to BUT-1838 the same write was worse: it re-opened a bootstrap branch that
+ * let any signed-in user read and write them. That branch is gone; the
+ * invariant is not, because an unreadable roster is still a one-way door.) So this
+ * function never throws — it reports, and a false answer means the caller must
+ * leave the parent standing. Never throws on any error shape the
  * SDK can produce — the read and every delete are caught. (A hostile `code`
  * accessor that throws would escape, since an optional chain guards `null`, not
  * a throwing getter. Firestore rejects with plain objects, so that is a note,
- * not a hole.) A live parent that no longer names the
- * evicted members denies the roster to everyone, so the shell is the safe
- * failure, and the child-safety cut still lands via the update branch.
+ * not a hole.) A live parent denies the roster to everyone it no longer names —
+ * for both group-side callers it names nobody at that point, so the shell is
+ * the safe failure; the access cut itself already committed in the caller's own
+ * removal transaction (`stageMemberRemoval`), never here.
+ * (For the cascade's 1:1 caller the surviving partner IS still named and can
+ * list what is left; leg 2 of that cascade is what sweeps the erased user's own
+ * row.)
  *
  * BOUNDED READ, not just a bounded delete. `listDocuments()` buffers every ref
- * before any cap could be applied, and this path is writable by any signed-in
- * user while the parent is absent (`rosterUnclaimed()`) with no
- * `rateLimitWrite` on it — so an unbounded enumeration inside a `retry:true`
- * trigger is a self-repeating read bill, the same one the MAX_GROUP_PARTICIPANTS
- * guard already refuses. `.limit(N + 1).get()` bounds the read itself. A plain
+ * before any cap could be applied, and this path can hold far more rows than
+ * the members this trigger knows about — so an unbounded enumeration inside a
+ * `retry:true` trigger is a self-repeating read bill, the same one the
+ * MAX_GROUP_PARTICIPANTS guard already refuses. The bound stays, and the reason
+ * it stays SURVIVED BUT-1838 even though the hole that motivated it did not.
+ * What that ticket closed was the UNATTESTED branch: anyone who guessed a
+ * conversation id could seat rows under a parent that did not exist, with no
+ * `rateLimitWrite` on the path. Three sources of extra rows remain:
+ *   1. rows seeded BEFORE BUT-1838 shipped, still on disk — the backfill was
+ *      closed unbuilt (BUT-1839), so they are not hypothetical;
+ *   2. a tampered or non-standard Admin-SDK writer, which rules never see;
+ *   3. an ATTESTED client write, which is bounded but live. `attestedWriter()`
+ *      requires the parent to name the writer AND the subject, and in a direct
+ *      conversation `direct_A_B` it names both — so A may write B's row with a
+ *      `displayName` of A's choosing. A may also create that conversation:
+ *      two adults need no friendship (`passesMinorDmGate` only fires when the
+ *      other party is a minor), and NOTHING caps the rate: the create rule's
+ *      `rateLimitWrite('conversations', 10)` reads
+ *      `users/{uid}/rate_limits/conversations`, a bucket nothing in `lib/` ever
+ *      writes. The only documents that collection ever holds are
+ *      `activity_events`, `comments`, `social_requests`, `messages`, `imports`
+ *      and `friendSearchMigrated` (the last a migration flag squatting in the
+ *      namespace, not a rate stamp) — so `!exists(limitsPath)` is permanently
+ *      true. The bucket is self-written anyway, so a tampered client would omit
+ *      the stamp.
+ * Do not read "the bootstrap branch is gone" as "no client can write here".
+ * Source 3 is unreachable for BOTH group-side callers: `deleteEmptyGroup` only
+ * passes group conversations, and `deleteChatGroupMemberships` takes its
+ * `conversationId` off a `chat_groups` document — and `mayWriteRoster()` denies
+ * every client roster write under a `groupId` parent, so for those two sources
+ * 1 and 2 carry the bound on their own. It is named for `deleteMessages`, the ONE call
+ * site handed direct ids; its `typeof groupId === "string"` early return is
+ * what makes that exact.
+ *
+ * `.limit(N + 1).get()` bounds the read itself. A plain
  * query is enough here: `listDocuments()` is only required to surface PHANTOM
  * parents (rows that exist solely as ancestors of a subcollection), and no rules
  * path permits a subcollection under a roster row. It does return children whose
@@ -138,11 +189,13 @@ export const MAX_ROSTER_ROWS = MAX_GROUP_PARTICIPANTS * 5;
  * (`ConversationParticipantModule.addParticipants`) iterates
  * `participantDisplayNames.entries`, while every uid list in this trigger comes
  * from `participantIds` filtered by `isValidDocId`. A uid that filter rejects —
- * `a.b` — is still a legal document id, and the bootstrap branch
- * (`rosterUnclaimed()`) authorises on the PARENT alone; the only conjunct that
- * mentions `participantId` merely pins the payload field to the path segment,
- * and constrains the id's shape not at all. So a row can exist that no uid list
- * here can name.
+ * `a.b` — is still a legal document id, and the write rule constrains the
+ * id's SHAPE not at all: the only conjunct mentioning `participantId` pins the
+ * payload field to the path segment. (Before BUT-1838 the bootstrap branch made
+ * this worse still, authorising on the parent alone.) Attestation does constrain
+ * WHICH ids may be written — they must appear in `participantIds` — but that list
+ * is itself never shape-validated, so a row can exist that no uid list here can
+ * name.
  */
 export async function tryClearRoster(
   db: admin.firestore.Firestore,
@@ -238,9 +291,10 @@ export const enforceGroupMinorMembership = onDocumentWritten(
     // judge on the sanitised list here — unlike the old conversations trigger,
     // which had to gate on the RAW length because `passesMinorDmGate` in
     // firestore.rules fired at raw size 2 and a padded list could slip between
-    // the two layers. No rule looks at this document's membership at all, so
-    // there is no second layer to stay in step with and no padding attack to
-    // defeat.
+    // the two layers. Rules do read this document's membership (the group's
+    // read gates on `uid in memberIds`), but never for a size decision, and no
+    // client may write the list — so there is no second layer to stay in step
+    // with and no padding attack to defeat.
     const rawMemberIds: unknown[] = Array.isArray(data.memberIds)
       ? (data.memberIds as unknown[])
       : [];

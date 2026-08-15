@@ -77,9 +77,11 @@ check("rejects an over-length multibyte uid", !isValidDocId("ä".repeat(800)));
 check("accepts a uid at the byte cap", isValidDocId("a".repeat(1500)));
 
 // NOTE: the raw-vs-sanitised padding bypass this file used to point at is gone
-// with the trigger's move to `chat_groups` (BUT-1838): no Firestore rule reads
-// that document's membership, so there is no second layer for a padded list to
-// slip between. The equivalent guard now lives at the gate, before the write.
+// with the trigger's move to `chat_groups` (BUT-1838): rules DO read that document's membership (the group's read gates on
+// `uid in memberIds`, rename on `adminIds`), but never for a SIZE decision, and
+// no client may write the list — so there is no second layer for a padded list
+// to slip between.
+// The equivalent guard now lives at the gate, before the write.
 
 /**
  * `tryClearRoster` — its READ- and DELETE-failure paths, which the emulator
@@ -89,8 +91,14 @@ check("accepts a uid at the byte cap", isValidDocId("a".repeat(1500)));
  * rules, and deleting a document that does not exist RESOLVES. A fake `db` is
  * the only instrument that can. What it pins is not cosmetic — the caller
  * deletes the conversation ONLY on a true answer, and a wrong true would leave
- * roster rows readable under a destroyed parent, forever, with no probe and no
- * sweep to find them.
+ * roster rows ORPHANED under a destroyed parent — unreadable to every client,
+ * since `parentNames()` is false with no parent. Not unreachable: the row's own
+ * subject keeps `allow delete` and the `lastReadAt` stamp (neither reads the
+ * parent), and the Admin SDK reaches them by path as well — `admin/reset-user-
+ * data.ts` lists `participants` under a recursive `conversations` delete. What
+ * no automatic path does is FIND them: `deleteOwnRosterRows` sweeps by
+ * collection group but only for the erased user's own rows, the two client
+ * writes have no caller, and nothing probes the rest.
  */
 type FakeRef = { id: string; delete: () => Promise<void> };
 
@@ -191,11 +199,18 @@ async function rosterTests(): Promise<void> {
     );
   }
 
-  // 3. An implausibly large roster is a SEEDED one: rules let any signed-in user
-  //    write this path while the parent is absent, with no rate limit. The read
-  //    itself must be bounded — a cap applied AFTER enumerating everything is
-  //    not a cap — and refusing means deleting nothing, so the caller keeps the
-  //    parent alive, which is what holds the read fallback shut.
+  // 3. An implausibly large roster is a SEEDED one. BUT-1838 removed the branch
+  //    that let ANY signed-in user write this path while the parent was absent,
+  //    but rows seeded before it are still on disk (BUT-1839 closed unbuilt) and
+  //    an Admin-SDK writer never passes through rules. The read itself must be
+  //    bounded — a cap applied AFTER enumerating everything is not a cap — and
+  //    refusing means deleting nothing, so the caller keeps the parent alive.
+  //    What that buys depends on the caller: for the two group-side ones the
+  //    surviving shell names nobody, so the rows are unreadable either way and
+  //    the parent is merely a marker that something is left; for the cascade's
+  //    1:1 branch the partner is still named, so a live parent is what keeps
+  //    the rows readable to them rather than orphaned. The Admin SDK reaches
+  //    them either way — `deleteOwnRosterRows` sweeps by collection group.
   {
     const attempts: string[] = [];
     const limits: number[] = [];

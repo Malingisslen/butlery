@@ -1,23 +1,43 @@
-/// Unit tests for ConversationQueryModule (legacy / non-inverse-index paths).
+/// Unit tests for ConversationQueryModule, one group per public read path.
 ///
-/// The module exposes five read paths over the conversations collection.
-/// Tests target the legacy arrayContains-based paths that fire when no
-/// `ConversationParticipantModule` is wired up (or when the inverse-index
-/// returns empty): the user-conversations stream, the single-doc read,
-/// the participants accessor, the unread-message count, and the unread-
-/// conversations count.
+/// Six of them: the user-conversations stream, the single-doc read, the
+/// participants accessor, the unread-message count, the unread-conversations
+/// count, and the inverse-index id lookup.
+///
+/// Most tests wire no `ConversationParticipantModule`, because most paths do
+/// not consult one. The two exceptions are in `getUnreadConversationsCount`
+/// and wire a real module over the same fake Firestore: that method USED to
+/// prefer the inverse index and answer 0 for anyone who had a row in it, so
+/// those two seed the index — through the production writer, so the
+/// `hasUnread: false` default is the real one — and prove the count no longer
+/// short-circuits on it.
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
+import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_query_module.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
 const _convoCollection = 'conversations';
 const _userId = 'alice';
+
+class _MockFeatureFlags extends Mock implements FeatureFlagService {}
+
+/// Every `ConversationParticipantModule` method short-circuits when the flag is
+/// off, so a membership index only exists with it on — which is also the
+/// production default (`feature_flag_service.dart`).
+void _enableSubcollectionFlag(_MockFeatureFlags flags) {
+  when(
+    () => flags.isEnabled(FeatureFlags.enableSubcollectionParticipants),
+  ).thenReturn(true);
+  when(() => flags.getInt(FeatureFlags.maxInlineParticipants)).thenReturn(50);
+}
 
 /// Test-only fromFirestore that pulls every Conversation field we care
 /// about from a flat doc map.
@@ -60,12 +80,13 @@ Future<void> _seedConvo(
   DateTime? lastMessageAt,
   String? lastMessageSender,
   Map<String, DateTime>? lastReads,
+  bool isGroup = false,
 }) async {
   await firestore.collection(_convoCollection).doc(id).set({
     'participantIds': participants,
     'updatedAt': Timestamp.fromDate(updatedAt),
     'createdAt': Timestamp.fromDate(updatedAt),
-    'isGroup': false,
+    'isGroup': isGroup,
     if (lastMessageAt != null)
       'lastMessage': {
         'senderId': lastMessageSender ?? participants.first,
@@ -83,8 +104,11 @@ ConversationQueryModule _module(FakeFirebaseFirestore firestore) {
     firestore: firestore,
     collectionName: _convoCollection,
     fromFirestore: _fromFirestore,
-    // participantModule deliberately null → all calls fall through to
-    // legacy arrayContains paths.
+    // participantModule deliberately null. Since the unread-count shortcut was
+    // deleted, the only path that still behaves differently for null is
+    // `getConversationIdsViaInverseIndex`, which answers []. The counts read
+    // the conversations either way — which is what the two wired tests below
+    // exist to hold in place.
   );
 }
 
@@ -221,9 +245,11 @@ void main() {
     // now, so the compiler enforces it — strictly stronger than a counter.
 
     test('returns null when the top-level document does not exist', () async {
-      // Absence is the answer, so callers can tell "no such conversation" from
-      // "a conversation I cannot see" — the latter throws, it does not answer
-      // null (see ChatGroupRepository.getGroup's note on the same distinction).
+      // Absence answers null. So does a DENIED read: the catch below logs and
+      // returns null too, so this method deliberately flattens both to the same
+      // answer and a caller cannot tell them apart. That is the opposite of
+      // `ChatGroupRepository.getGroup`, which rethrows a denial on purpose —
+      // do not import that contract here by reading this test's name as one.
       final firestore = FakeFirebaseFirestore();
 
       final result = await _module(
@@ -308,42 +334,233 @@ void main() {
     });
   });
 
-  group('getUnreadConversationsCount (legacy path)', () {
-    test('falls back to arrayContains query when no inverse index', () async {
-      final firestore = FakeFirebaseFirestore();
-      await _seedConvo(
-        firestore,
-        id: 'c1',
-        participants: [_userId, 'bob'],
-        updatedAt: DateTime.utc(2026, 1, 5),
-        lastMessageAt: DateTime.utc(2026, 1, 5),
-        lastReads: {_userId: DateTime.utc(2026, 1, 1)},
-      );
-      await _seedConvo(
-        firestore,
-        id: 'c2',
-        participants: [_userId, 'bob'],
-        updatedAt: DateTime.utc(2026, 1, 4),
-        lastMessageAt: DateTime.utc(2026, 1, 4),
-        lastReads: {_userId: DateTime.utc(2026, 1, 1)},
-      );
-      await _seedConvo(
-        firestore,
-        id: 'c3',
-        participants: [_userId, 'bob'],
-        updatedAt: DateTime.utc(2026, 1, 3),
-      );
+  group('getUnreadConversationsCount', () {
+    test(
+      'counts unread conversations when no participant module is wired',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await _seedConvo(
+          firestore,
+          id: 'c1',
+          participants: [_userId, 'bob'],
+          updatedAt: DateTime.utc(2026, 1, 5),
+          lastMessageAt: DateTime.utc(2026, 1, 5),
+          lastReads: {_userId: DateTime.utc(2026, 1, 1)},
+        );
+        await _seedConvo(
+          firestore,
+          id: 'c2',
+          participants: [_userId, 'bob'],
+          updatedAt: DateTime.utc(2026, 1, 4),
+          lastMessageAt: DateTime.utc(2026, 1, 4),
+          lastReads: {_userId: DateTime.utc(2026, 1, 1)},
+        );
+        await _seedConvo(
+          firestore,
+          id: 'c3',
+          participants: [_userId, 'bob'],
+          updatedAt: DateTime.utc(2026, 1, 3),
+        );
+        // Somebody else's unread conversation. Without it every fixture in this
+        // file sits in ONE scope, and deleting the
+        // `where('participantIds', arrayContains: userId)` clause is green
+        // across the whole suite — `hasUnreadMessages` asks nothing about
+        // membership, and a stranger's chat has no `lastReadTimestamps` entry
+        // for this user, which that method reads as UNREAD. Measured: dropping
+        // the clause returns 3 here and the correct answer in every other
+        // fixture in this group.
+        await _seedConvo(
+          firestore,
+          id: 'not-mine',
+          participants: ['bob', 'carol'],
+          updatedAt: DateTime.utc(2026, 1, 6),
+          lastMessageAt: DateTime.utc(2026, 1, 6),
+          lastReads: {'bob': DateTime.utc(2026, 1, 1)},
+        );
 
-      final count = await _module(
-        firestore,
-      ).getUnreadConversationsCount(_userId);
-      expect(count, 2);
-    });
+        final count = await _module(
+          firestore,
+        ).getUnreadConversationsCount(_userId);
+        expect(count, 2);
+      },
+    );
 
     test('returns 0 when no conversations exist', () async {
       final firestore = FakeFirebaseFirestore();
       expect(await _module(firestore).getUnreadConversationsCount(_userId), 0);
     });
+
+    test(
+      'a non-empty membership index does NOT short-circuit the count — it is '
+      'written hasUnread:false and never maintained',
+      () async {
+        // The defect this method used to have. It preferred
+        // `users/{uid}/conversation_memberships` and returned
+        // `memberships.where((m) => m.hasUnread).length` whenever that list was
+        // non-empty. Nothing sets `hasUnread` true —
+        // `ConversationParticipantModule.updateConversationActivity` is its only
+        // writer and has no production caller — so one direct conversation was
+        // enough to make the badge answer 0 for that user forever.
+        //
+        // The fixture stages exactly that: rows exist (so the old early return
+        // fires) and every one says false (so it returns 0), while the
+        // conversations themselves really are unread.
+        final firestore = FakeFirebaseFirestore();
+        final flags = _MockFeatureFlags();
+        _enableSubcollectionFlag(flags);
+        final participants = ConversationParticipantModule(
+          firestore: firestore,
+          featureFlags: flags,
+        );
+
+        for (final id in ['c1', 'c2']) {
+          await _seedConvo(
+            firestore,
+            id: id,
+            participants: [_userId, 'bob'],
+            updatedAt: DateTime.utc(2026, 1, 5),
+            lastMessageAt: DateTime.utc(2026, 1, 5),
+            lastReads: {_userId: DateTime.utc(2026, 1, 1)},
+          );
+          // Written by the production path, through the production writer, so
+          // the `hasUnread: false` default is the real one and not a literal I
+          // chose to make the point.
+          await participants.addParticipant(
+            conversationId: id,
+            conversationTitle: 'Bob',
+            isGroup: false,
+            participantId: _userId,
+            displayName: 'Alice',
+          );
+        }
+
+        // A third conversation, READ, that also carries an index row — so the
+        // number of rows (3) is not the answer (2). Without it the fixture's
+        // row count equals the expected count, and reinstating the shortcut as
+        // `return memberships.length` — the reading of "hasUnread is never
+        // maintained, so count the rows instead" that this method's own doc
+        // comment warns against — passes. Measured: that variant answers 3 here
+        // and the correct 2 without this conversation.
+        await _seedConvo(
+          firestore,
+          id: 'c3',
+          participants: [_userId, 'bob'],
+          updatedAt: DateTime.utc(2026, 1, 4),
+          lastMessageAt: DateTime.utc(2026, 1, 2),
+          lastReads: {_userId: DateTime.utc(2026, 1, 3)},
+        );
+        await participants.addParticipant(
+          conversationId: 'c3',
+          conversationTitle: 'Bob',
+          isGroup: false,
+          participantId: _userId,
+          displayName: 'Alice',
+        );
+
+        final memberships = await participants.getUserMemberships(_userId);
+        expect(
+          memberships,
+          hasLength(3),
+          reason:
+              'premise: the index is non-empty, so the old branch fires — and '
+              'holds one row MORE than the count, so no reading of the index '
+              'happens to equal the right answer',
+        );
+        expect(
+          memberships.where((m) => m.hasUnread),
+          isEmpty,
+          reason:
+              'premise: every row says false, so the old branch answers 0 — '
+              'without this the test would pass under the old code too',
+        );
+
+        final module = ConversationQueryModule(
+          firestore: firestore,
+          collectionName: _convoCollection,
+          fromFirestore: _fromFirestore,
+          participantModule: participants,
+        );
+
+        expect(await module.getUnreadConversationsCount(_userId), 2);
+      },
+    );
+
+    test(
+      'a group conversation is counted even though it has no membership row',
+      () async {
+        // BUT-1838: `createChatGroup` writes the group, the conversation and
+        // the roster in one Admin-SDK transaction and never writes the
+        // `conversation_memberships` mirror. With the old early return, a user
+        // whose only unread chat was a group got 0 — the index was non-empty
+        // from their direct chats and had nothing to say about the group.
+        //
+        // This is NOT a second copy of the test above, even though both redden
+        // when the deleted branch comes back. It is the only fixture where the
+        // index is WIRED and a conversation that must be counted is missing
+        // from it, so it alone kills the half-reinstatement — keeping the index
+        // as a SELECTOR (`fetch the docs it names, count unread among those`),
+        // which reads like a safe optimisation and answers 0 here. Measured:
+        // that variant answers the correct 2 against the test above.
+        //
+        // `isGroup: true` makes the fixture the thing its name claims. The
+        // counter reads neither `isGroup` nor `groupId`, so the flag is
+        // documentation, not a kill — a future branch keyed on group-ness would
+        // need its own test.
+        final firestore = FakeFirebaseFirestore();
+        final flags = _MockFeatureFlags();
+        _enableSubcollectionFlag(flags);
+        final participants = ConversationParticipantModule(
+          firestore: firestore,
+          featureFlags: flags,
+        );
+
+        // A READ direct chat, only there to populate the index.
+        await _seedConvo(
+          firestore,
+          id: 'direct',
+          participants: [_userId, 'bob'],
+          updatedAt: DateTime.utc(2026, 1, 2),
+          lastMessageAt: DateTime.utc(2026, 1, 2),
+          lastReads: {_userId: DateTime.utc(2026, 1, 3)},
+        );
+        await participants.addParticipant(
+          conversationId: 'direct',
+          conversationTitle: 'Bob',
+          isGroup: false,
+          participantId: _userId,
+          displayName: 'Alice',
+        );
+
+        // The unread group, with no membership row — as the server writes it.
+        await _seedConvo(
+          firestore,
+          id: 'group',
+          participants: [_userId, 'bob', 'cecilia'],
+          updatedAt: DateTime.utc(2026, 1, 5),
+          lastMessageAt: DateTime.utc(2026, 1, 5),
+          lastReads: {_userId: DateTime.utc(2026, 1, 1)},
+          isGroup: true,
+        );
+
+        final memberships = await participants.getUserMemberships(_userId);
+        expect(
+          memberships.map((m) => m.conversationId),
+          ['direct'],
+          reason:
+              'premise: the index knows the direct chat and not the group, '
+              'which is exactly the asymmetry that hid the group',
+        );
+
+        final module = ConversationQueryModule(
+          firestore: firestore,
+          collectionName: _convoCollection,
+          fromFirestore: _fromFirestore,
+          participantModule: participants,
+        );
+
+        expect(await module.getUnreadConversationsCount(_userId), 1);
+      },
+    );
   });
 
   group('getConversationIdsViaInverseIndex', () {

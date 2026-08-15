@@ -9993,3 +9993,857 @@ failures on main (test:app-check-enforcement, test:request-account-deletion)" �
 `CI_EXCLUDE` was emptied, and it reads as licence to leave this very guard red; (b) the guard
 asserts classification but never that a `USER_FACING` name is EXPORTED from `index.ts`, so a
 callable that is defined, flagged and never deployed still passes.
+
+### 2026-08-15 — BUT-1838 comment-truth sweep: what the roster cap can still be justified by [Pattern discovered]
+
+Reviewed the comment-only diff over `account/account-deletion-cascade.ts`,
+`messaging/enforce-group-minor-membership.ts`, `shared/collections.ts` and
+`__tests__/account-deletion-cascade.test.ts`. The change rewrote four sites that still
+described `firestore.rules`' deleted bootstrap branch (`rosterUnclaimed()` + the parentless
+read fallback) in the present tense, two of them as the stated REASON for controls
+`.claude/rules/accepted-deviations.md` forbids removing (`MAX_ROSTER_SWEEP_ROWS`,
+`tryClearRoster`'s bounded read). Diff proven comment-only mechanically
+(`git diff -U0 | grep -vE '^[+-][[:space:]]*(\*|//|/\*)'` → empty); `npm run build` clean;
+`test:account-deletion-cascade` 96/96, `test:enforce-group-minor-membership` 26/26.
+
+VERIFIED TRUE, against the rules text rather than by argument:
+- `attestedWriter()` = `parentNames(auth.uid) && parentNames(participantId)` (rules:1702-1704).
+- `mayWriteRoster()` = `attestedWriter() && !('groupId' in parentDoc().data)` (:1724-1726).
+- `passesMinorDmGate` fires only at `participantIds.size() == 2` with the other party a minor
+  (:255-259); `rateLimitWrite('conversations', 10)` is 10 seconds on CREATE (:213-217, :1593).
+- `leave-group-conversation.ts` is gone; three copies of the `participants` literal remain
+  (`shared/collections.ts`, `enforce-group-minor-membership.ts:84`,
+  `admin/reset-user-data.ts:92`), so the new "three edits" counts are right.
+
+DERIVED, and the reusable part: an ATTESTED client roster write is capped at TWO rows per
+direct conversation, forever. `directIdBinds` (:1528-1532) forces exactly 2 `participantIds`
+on every client-created conversation, the update rule denies any diff touching that field
+(:1615-1616), and `parentNames(participantId)` restricts the path segment to those two. Group
+conversations take ZERO client roster writes because `stageGroupCreation` stamps `groupId`
+(chat-group-writes.ts:150) and `mayWriteRoster` excludes it. So the rewritten "a partner
+planting rows is not impossible" / "or a partner who planted rows" clauses are a NEW false
+claim — more wrong than the true sentence they replaced ("Production does NOT reach the branch
+that way"), and doubly so because a false verdict from `tryClearRoster` requires a read
+failure, `> MAX_ROSTER_ROWS`, or a delete failure, none of which a legitimate second row can
+cause. Same over-reach in "whoever plants 2001 rows by any of the three routes above": against
+a CHOSEN victim, route 3 yields one row per distinct peer account. The route that IS live and
+unbounded is SELF-inflation (create `direct_A_X1..Xn` at 1/10s, seat your own row in each),
+which is exactly what "caps the rate, not the total" buys — but it is self-DoS on your own
+Art. 17 erasure, not an attack on someone else's.
+
+Also found: three stale references the sweep missed, two inside paragraphs it rewrote —
+`account-deletion-cascade.ts:1298` ("`authorizeDeparture` refuses to let anyone leave a direct
+chat"; the surviving `authorizeDeparture` at `remove-chat-group-member.ts:83` has no such
+branch, and that module's own header says so), `:1454` (`leaveGroupConversation` named as the
+writer of `metadata.subjectUserId`; it is `groups/group-system-message.ts` now), and
+`__tests__/account-deletion-cascade.test.ts:1353-1358` (the SIBLING scenario's docstring, 30
+lines above the edited one, still present-tense on both the bootstrap branch and the read
+fallback). Out of scope but adjacent: `__tests__/conversations-rules.test.ts:1658-1669` and
+`__tests__/enforce-group-minor-membership.test.ts:198` carry the same present tense, as does
+the `tryClearRoster` entry in `.claude/rules/accepted-deviations.md`:349-359 — the AMENDED
+addendum landed on the BUT-1822 entry above it and not on that one.
+
+Lesson shape: a comment-truth sweep is itself an assertion about coverage. Enumerate the stale
+TOKEN across the whole tree (`grep -rn "rosterUnclaimed\|bootstrap branch\|read fallback\|
+parentDoc() == null"`) and reconcile the hit list against the files edited, before claiming the
+sweep is done — the misses here were in the same files, one of them in the same paragraph.
+And when replacing a claim that was true-for-a-stale-reason, check whether the CONCLUSION got
+weaker: two of these hedged a correct absolute ("does NOT reach") into "rarely", which is the
+opposite of the correction the ticket was for.
+
+### 2026-08-15 — BUT-1838 comment sweep, second re-review: the replacements' own false claims
+[User correction] [Pattern discovered]
+
+Re-review of the six-file comment-only diff (cascade, trigger, collections, three suites)
+after all four blocking + five non-blocking findings from the previous pass were taken.
+Verified each replacement against the file it names (firestore.rules read at 240-259,
+1520-1630, 1660-1880, 1960-1990; `remove-chat-group-member.ts`; `group-system-message.ts`;
+`chat-group-writes.ts`). Confirmed TRUE: `authorizeDeparture` has no direct-chat branch and
+`RemoveChatGroupMemberRequest` requires `groupId`, so "no client can leave a direct chat"
+holds; the direct-roster arithmetic (`directIdBinds` size 2 at :1529, `participantIds` in the
+update deny-list at :1615, `attestedWriter()` at :1702) really does cap a direct roster at two
+client-written rows; `rateLimitWrite('conversations', 10)` is 10 seconds; `passesMinorDmGate`
+fires only at size 2 with a minor other party; `messages` create carries no `hasOnly`, so a DM
+sender can plant `metadata.subjectUserId`; `writeGroupSystemMessage`'s three call sites are all
+group callables and `removeChatGroupMember` writes the "har lämnat gruppen" row.
+
+Three findings, all in text this round introduced or touched:
+
+1. "Every predicate in the roster block reads through the parent … nobody can read, update or
+   delete them, ever" (trigger docstring, cascade :1259-1268, cascade test :1353-1355, plus
+   "beyond any rule's reach" at test :1395). FALSE per verb: `allow delete` is
+   `participantId == request.auth.uid` and the (u1) self-update is `hasOnly(['lastReadAt'])`,
+   neither reading `parentDoc()` (rules:1853-1870; rules test P30 exists precisely to pin the
+   u1 branch). Orphaned rows are UNREADABLE — which is what the rules file itself claims at
+   :1816 — not unreachable. Conclusion (never delete the parent over surviving rows)
+   unaffected; the mechanism sentence is what is wrong. Notable that the bootstrap-era text it
+   replaced was correct, and the replacement over-reached in the same move that removed a stale
+   claim — the failure mode the previous entry already recorded ("check whether the CONCLUSION
+   got weaker") running in the opposite direction.
+
+2. `conversations-rules.test.ts` P12B: "Re-introduce the fallback unscoped and this reddens
+   alone." FALSE. P14's fixture is a row under an ABSENT parent (`P_READ_FRESH`, seeded at
+   :1354-1358 with no conversation document), which is exactly what an unscoped own-row
+   fallback would re-allow, so P14 flips too. The sentence it replaced had this right
+   ("remove the whole fallback and P14 reddens instead"). Correct statement: unscoped ⇒ P12B
+   and P14; scoped to `parentDoc() == null` ⇒ P14 alone.
+
+3. `tryClearRoster`'s caller inventory. Its header still says "TWO CALLERS … This trigger's
+   collapse branch", which BUT-1838 removed, and the new paragraph calls `deleteEmptyGroup`
+   "THIS file's own caller" though it lives in `groups/remove-chat-group-member.ts`. Grep finds
+   three call sites in two other modules (`deleteMessages` :1285, `deleteChatGroupMemberships`
+   :2317, `deleteEmptyGroup` :296) and none in this file. The header carries a safety
+   instruction ("anyone changing the contract must check that second caller"), so the wrong map
+   is worse than ordinary rot.
+
+Non-blocking: the cascade's `MAX_ROSTER_SWEEP_ROWS` note says "the only conversation in which A
+may write V's row is `direct_A_V`, and it holds one" — `directIdBinds` accepts BOTH orderings
+(rules:1530-1531), so `direct_V_A` is equally creatable by A and the true figure is two rows per
+distinct peer account. Bound class unchanged (peer accounts, not rows), understated by 2x.
+
+No code changed; `npm run build`, `test:account-deletion-cascade` 96/96 and
+`test:enforce-group-minor-membership` 26/26 were established by the requester and not re-run.
+
+### 2026-08-15 — BUT-1838 comment sweep, round 3: the fix for a stale caller inventory introduced a false one [User correction]
+
+Round 2's three findings were all taken and all verified TRUE against the rules text this
+round: the per-verb reading (`allow delete` rules:1869-1870 and the u1 `hasOnly(['lastReadAt'])`
+branch :1853-1860 reach no `parentDoc()`; `validParticipant()` :1739-1758 reads only
+`request.resource.data`, so "keys on the subject's own uid" holds as an authorization
+statement), the P12B/P14 mutation pair (`P_EVICTED` seeds STRANGER's own row under a LIVE
+parent that excludes them, `P_READ_FRESH` seeds FRIEND's own row under NO parent — unscoped
+re-introduction flips both, scoped flips P14 alone), and the THREE-call-site inventory
+(`deleteMessages` :1288, `deleteChatGroupMemberships` :2321, `deleteEmptyGroup`
+`groups/remove-chat-group-member.ts`:296; none in `enforce-group-minor-membership.ts`).
+Also verified: `directIdBinds` both orderings (:1530-1531), `passesMinorDmGate` fires only on a
+minor counterparty (:255-259), `rateLimitWrite('conversations', 10)` is 10 SECONDS (:213-217),
+`stageGroupCreation` stamps `groupId` on every group conversation (`chat-group-writes.ts`:150),
+`writeGroupSystemMessage` writes "<Name> har lämnat gruppen" under `senderId: "system"` with all
+three call sites in group callables, the `messages` create rule carries no `hasOnly` (:1975-1983),
+`updateLastRead`/`removeParticipant` have no callers in `lib/` (only `addParticipants` and
+`getUserMemberships` are called on the module), and exactly two local `"participants"` literals
+remain (`enforce-group-minor-membership.ts`:84, `admin/reset-user-data.ts`:92).
+
+BLOCKING 1 — the replacement sentence for finding 3 is itself false. "It is named because the
+account cascade's two call sites are handed direct ids"
+(`enforce-group-minor-membership.ts`:158-159). `deleteChatGroupMemberships` reads
+`conversationId` off a `chat_groups` document (:2277-2278) and passes it at :2321, so it is
+handed GROUP ids only — group conversations carry `groupId`, so `mayWriteRoster()` denies client
+roster writes there exactly as for `deleteEmptyGroup`. Only `deleteMessages` is direct-side, and
+provably so: :1254-1256 returns early on any conversation with a string `groupId`. So the
+sentence written to fix a wrong caller map states a wrong caller KEY SPACE — the same error one
+level down.
+
+BLOCKING 2 — `MAX_ROSTER_ROWS`'s own docstring (:86-99, untouched by all three rounds) now
+contradicts the paragraph 40 lines below it. Three present-tense claims are false post-BUT-1838:
+"Above this many roster rows the collapse branch refuses" (this trigger has no collapse branch);
+"Nothing actually caps a group's size (neither the conversations create rule nor
+`createGroupConversation` checks it)" (`MAX_CHAT_GROUP_MEMBERS = 100` is enforced by
+`create-chat-group.ts`:85 and `add-chat-group-members.ts`:138,183, and the file's OWN code
+comment at :283 says so); and "a conversation carrying more than MAX_GROUP_PARTICIPANTS VALID
+participants is refused by this trigger before this helper is reachable at all" (the trigger
+fires on `chat_groups`, never reads a conversation's participant list, and never calls this
+helper). Also "raw-vs-sanitised is load-bearing 250 lines down" — :268-275 now says the opposite
+in so many words. The false one is the one that invites deleting the bound the new paragraph
+says must stay.
+
+NON-BLOCKING — the "unreadable" rewrite over-generalises in two sites, in OPPOSITE directions,
+because the read rule (`parentNames(request.auth.uid)`, :1839) is not row-scoped: a live parent
+grants LIST over the WHOLE roster to exactly the uids it still names.
+(a) `account-deletion-cascade.test.ts`:1395-1396 "a live parent that no longer names the erased
+user denies those rows to everyone" — the surviving partner is still named after
+`buildGroupDepartureUpdate`, so they can list the roster. Harmless in practice only because leg 2
+(`deleteOwnRosterRows`) sweeps the erased user's own row.
+(b) `enforce-group-minor-membership.test.ts`:199-200 "the caller keeps the parent alive, which is
+what keeps those rows reachable at all" — for both group-collapse callers the surviving parent
+names NOBODY (ACCEPTED_DEVIATIONS records that shell as unreadable by design), and Admin-SDK
+reachability never depended on the parent. The old text it replaced ("which is what holds the read
+fallback shut") was true and load-bearing.
+
+No code changed. Build and the two suites were established by the requester and not re-run;
+nothing in this review touches a runtime path.
+
+### 2026-08-15 — BUT-1838 roster comments, ROUND 4 (verify the round-3 replacements) [Bug fixed]
+
+Same six in-scope files, comment-only diff. Both round-3 blocking fixes are CORRECT on their
+central claims, verified against code rather than against the report:
+
+- Caller key space (blocking 1). `deleteChatGroupMemberships` reads `conversationId` off a
+  `chat_groups` document (:2277-2278, passed at :2321) → group-side; `stageGroupCreation`
+  (`chat-group-writes.ts`:139-151) stamps `groupId` on every group conversation and
+  `firestore.rules`:1724-1725 `mayWriteRoster()` denies every client roster write under a
+  `groupId` parent, so source 3 really is dead for both group-side callers. `deleteEmptyGroup`
+  (`remove-chat-group-member.ts`:291-296) takes its id from the same group document.
+  `deleteMessages`' `typeof groupId === "string"` early return (:1254-1256) does make the
+  direct-side claim exact.
+- `MAX_ROSTER_ROWS` (blocking 2). `MAX_CHAT_GROUP_MEMBERS = 100`
+  (`minor-membership-gate.ts`:97) enforced at `create-chat-group.ts`:85 and
+  `add-chat-group-members.ts`:138,183; `chat_groups` rules are `allow create, delete: if false`
+  + `hasOnly(['name','updatedAt'])` on update. `MAX_GROUP_PARTICIPANTS` does govern only the
+  group read fan-out (:289), and this trigger holds no `tryClearRoster` call at all.
+  Also verified true, each by code: three roster-literal copies (`collections.ts`,
+  `enforce-…`:84, `admin/reset-user-data.ts`:92) and the deleted
+  `leave-group-conversation.ts`:73 as the fourth; `rateLimitWrite(collection, seconds)` really
+  is seconds; `passesMinorDmGate` really is `size() != 2 || …`; `directIdBinds` (:1528-1532) +
+  the update rule's `affectedKeys().hasAny(['participantIds',…])` (:1615) really do cap a
+  direct roster at two client-written rows; P12B/P14 fixtures really do stage own rows under an
+  excluding-live and an absent parent, so the stated mutation pair is right.
+
+FOUR FALSE SENTENCES REMAIN (all comment-only, one line each):
+1. `account-deletion-cascade.test.ts`:1395-1398 — the round-3 fix kept the false head clause
+   ("denies those rows to the erased user's peers on this path") and appended its own
+   refutation ("so the SURVIVING partner … can list what is left").
+2. `enforce-group-minor-membership.ts`:102 (twin at :280) — "No rule reads `chat_groups`
+   membership". `firestore.rules`:1897-1898 reads `memberIds`; :1905 reads `adminIds`.
+   Conclusion survives, premise does not.
+3. `enforce-group-minor-membership.test.ts`:200-202 — "the surviving shell names nobody" is
+   false for the `deleteMessages` 1:1 caller (`buildGroupDepartureUpdate` is `arrayRemove(uid)`,
+   partner stays named); "which deleting the parent would foreclose" is false for any Admin-SDK
+   sweep (`deleteOwnRosterRows`' `collectionGroup` reaches orphaned rows).
+4. `conversations-rules.test.ts`:1666-1669 (earlier round's edit) — "The scope is still
+   load-bearing" three lines under "BUT-1838 deleted the fallback outright".
+
+NON-BLOCKING: `tryClearRoster`'s "the first two gate a conversation delete on this answer" —
+all THREE do (:2321-2338); typo "so there sources 1 and 2"; stale pre-existing twins now
+contradicting corrected neighbours (`account-deletion-cascade.test.ts`:1070 and
+`conversations-rules.test.ts`:1799 still name `leaveGroupConversation`;
+`account-deletion-cascade.ts`:1626 says the trigger "does not yet clear" `perUserSettings`,
+which `stageMemberRemoval` does via `chat-group-writes.ts`:41-47).
+
+No code changed. Build/suite results taken as established by the requester; nothing here
+touches a runtime path.
+
+### 2026-08-15 — BUT-1838 comment review, ROUND 5 (verify the four fixes) [User correction]
+
+Scope: the same six files. All four blocking sentences from round 4 are genuinely fixed, and
+each replacement was re-derived against the code rather than accepted:
+
+- B1 (`account-deletion-cascade.test.ts`:1394-1409) — head clause dropped; the new text
+  ("still lets the SURVIVING partner list what is left … acceptable because leg 2 sweeps the
+  erased user's own row") checks out: rules:1839 is `parentNames(request.auth.uid)` alone,
+  `buildGroupDepartureUpdate` (:1604-1606) only `arrayRemove`s the erased uid, and
+  `deleteOwnRosterRows` (:1441-1459) runs unconditionally after the loop.
+- B2 (`enforce-…ts`:99-106 + :280-286) — both now say rules DO read `chat_groups` membership
+  but never for a SIZE decision, and no client may write it. Verified at rules:1897-1898
+  (`memberIds` read), :1904-1911 (rename gated on `adminIds`, `hasOnly(['name','updatedAt'])`),
+  :1918 (`create, delete: if false`). `MAX_CHAT_GROUP_MEMBERS = 100`
+  (`minor-membership-gate.ts`:97) really is enforced by BOTH callables
+  (`create-chat-group.ts`:85, `add-chat-group-members.ts`:138 and :183).
+- B3 (`enforce-…test.ts`:194-205) — the per-caller split is right: `deleteEmptyGroup`
+  (`remove-chat-group-member.ts`:255-296) and `deleteChatGroupMemberships`
+  (`account-deletion-cascade.ts`:2323-2324) both call the clearer ONLY at zero survivors, so
+  their shell names nobody; `deleteMessages` (:1288) reaches it only for a non-`groupId`
+  conversation (early return :1254) where the partner stays named.
+- B4 (`conversations-rules.test.ts`:1656-1676) — fully past-tensed, and the new mutation pair
+  ("unscoped ⇒ this + P14; scoped ⇒ P14 alone") matches the P_EVICTED / P_READ_FRESH fixtures.
+- The newest claim, `PER_USER_CONVERSATION_MAPS` (:1622-1636), is TRUE in every part:
+  `groups/chat-group-writes.ts`:41-47 declares a SEPARATE five-key list including
+  `memberSince`, `stageMemberRemoval` (:256-258) deletes every key in it, and the cascade
+  imports only `stageMemberRemoval` (:51). Two declarations, no shared import.
+- Both stale `leaveGroupConversation` names named by the requester are fixed; the departure
+  system row really is written by `removeChatGroupMember` through
+  `groups/group-system-message.ts` (`memberLeft` ⇒ "<Name> har lämnat gruppen"), whose three
+  call sites are all group callables.
+
+TWO FALSE SENTENCES FOUND, both PRE-EXISTING and both in files under review — i.e. the
+round-4 fixes were applied where they were pointed and nowhere else:
+1. `enforce-group-minor-membership.test.ts`:79-82 — "no Firestore rule reads that document's
+   membership". This is B2's THIRD instance; round 4 named "both twins" (the two source
+   docstrings) and the test file's copy was never enumerated.
+2. `enforce-group-minor-membership.ts`:139-141 — "A live parent that no longer names the
+   evicted members denies the roster to everyone". True for the two group-side callers
+   (zero-member shell), FALSE for `deleteMessages`' 1:1 caller, whose surviving partner is
+   still named and can LIST. It sits ~30 unchanged lines below the paragraph rewritten in this
+   very round, inside the SAME docstring, so it never appeared in the diff.
+
+NON-BLOCKING: `conversations-rules.test.ts`:556-557 ("Two server functions TREAT
+metadata.creatorId as the group admin identity — enforceGroupMinorMembership and
+leaveGroupConversation's authorizeDeparture") — neither does today; the trigger judges
+`memberAddedBy` on `chat_groups`, and `authorizeDeparture` moved to
+`groups/remove-chat-group-member.ts`:83 where it takes `{memberIds, adminIds}`. Same staleness
+at :318 and :761 ("currently"). And P30:1628 calls `updateLastRead` "the one write a group
+member still makes from the client", while a repo-wide grep finds NO production caller (only
+its declaration at `conversation_participant_module.dart`:185 and its own unit test) — which is
+why the new "no client flow uses either" is the accurate half of that pair.
+
+No code changed; build/suite results taken as established by the requester.
+
+### 2026-08-15 — BUT-1838 comment sweep, ROUND 6 (7 files, comment-only) [User correction]
+
+Requester enumerated by GREPPING THE PHRASE across all of `functions/src` including
+`__tests__` (rather than fixing the sites named in round 5), which found a third copy of the
+B1 claim I had not — `enforce-group-minor-membership.integration.test.ts`:23. That method is
+right and is now in the principles; this round proves it is not sufficient on its own.
+
+VERIFIED TRUE (read against the code, not argued):
+- B1, all three sites (`enforce-…ts`:103-106 and :286-289,
+  `enforce-…test.ts`:80-83, `…integration.test.ts`:23-26) — rules DO read `chat_groups`
+  membership: read `uid in memberIds` (rules:1897-1898), rename `uid in adminIds` +
+  `hasOnly(['name','updatedAt'])` (:1904-1911), `create, delete: if false` (:1918). No rule
+  takes a SIZE decision on `memberIds` (no `.size()` anywhere in that block), so the padding
+  attack really has no second layer. `grep -rn "no rule reads" | grep -i member` → empty.
+- B2 (`enforce-…ts`:139-144) — "denies the roster to everyone it NO LONGER NAMES" matches the
+  non-row-scoped read rule (:1839 `parentNames(request.auth.uid)`). "For both group-side
+  callers it names nobody at that point" checks out: `deleteEmptyGroup` runs only at
+  `outcome.remaining === 0` after `stageMemberRemoval` `arrayRemove`d every uid from
+  `participantIds` (`chat-group-writes.ts`:253), and `deleteChatGroupMemberships` calls the
+  clearer only at `survivors.length === 0` (`account-deletion-cascade.ts`:2323-2324), also
+  after `stageMemberRemoval`. The 1:1 parenthetical is right too — `buildGroupDepartureUpdate`
+  (:1600-1620) `arrayRemove`s ONLY the erased uid, so the partner stays named and can LIST,
+  and leg 2 (`deleteOwnRosterRows`) sweeps the erased user's own row.
+- The rest of the diff: `directIdBinds` (rules:1528-1532) really pins two participants with
+  both orderings and the update rule (:1615-1616) denies any diff touching `participantIds`,
+  so the "at most TWO client-written rows, ever" ceiling holds; group conversations really
+  carry `groupId` (`chat-group-writes.ts`:150) so `mayWriteRoster()` denies group roster
+  writes; `removeChatGroupMember` takes a `groupId` (`remove-chat-group-member.ts`:41-45,
+  115-118), so "a direct conversation cannot be addressed at all" is exact; the departure
+  system row is written by it through `groups/group-system-message.ts` (:56, :71); the two
+  remaining `participants` literals are `enforce-…ts`:84 and `admin/reset-user-data.ts`:92,
+  so collections.ts' "three edits" is right. Diff is comment-only (verified: every `+`/`-`
+  line starts with `*`, `//`, `/*` or `*/`).
+
+FOUR BLOCKING, all PRE-EXISTING lines the phrase grep could not reach:
+1. `enforce-group-minor-membership.test.ts`:92-95 — a wrong TRUE verdict "would leave roster
+   rows readable under a destroyed parent, forever, with no probe and no sweep to find them".
+   Both halves false since BUT-1838: an absent parent makes `parentNames()` false, so the rows
+   are UNREADABLE (the SUT docstring and this file's own test-3 comment both say so), and
+   `deleteOwnRosterRows` finds the erased user's rows by collection group. Twelve lines above
+   the sentence the requester fixed, in the same file.
+2. `conversations-rules.test.ts`:555-557 — "Two server functions TREAT metadata.creatorId as
+   the group admin identity — enforceGroupMinorMembership (BUT-1626) and
+   leaveGroupConversation's authorizeDeparture". Zero readers of that field exist in
+   `functions/src`; the trigger judges `memberAddedBy` on `chat_groups`, and
+   `authorizeDeparture` (`remove-chat-group-member.ts`:83-107) reads `adminIds`. Raised
+   non-blocking in round 5 and elevated on the requester's explicit ask ("tell me if it is
+   FALSE"): the present tense makes it a claim about live code, and it names a function that
+   still exists, so a reader will open the trigger looking for a `creatorId` read.
+3. `conversations-rules.test.ts`:759-762 — same defect with "currently": "the takeover against
+   a pre-BUT-1626 group, where authorizeDeparture CURRENTLY sees no admin at all". (:318 is
+   genuinely past tense and is fine — that one really was only stale-sounding.)
+4. `conversations-rules.test.ts`:1626-1630 (P30) and its twin at :1203-1204 — "the one write a
+   group member still makes from the client (updateLastRead), and freezing it would break
+   unread counts in every group". `updateLastRead` has no caller outside
+   `conversation_participant_module.dart` (rules:1847 says exactly that), unread counts read
+   `lastReadTimestamps` on the CONVERSATION document via `Conversation.getUnreadCount`
+   (`conversation.dart`:443-454), and rules also leave a group member `allow delete` on their
+   own row (:1869-1870), so it is not even the only permitted client write on that path.
+
+NON-BLOCKING, with the reason I did NOT block each:
+- `enforce-…ts`:141 "and the child-safety cut still lands via the update branch" — fossil of
+  the collapse branch BUT-1838 deleted; no caller of `tryClearRoster` is a child-safety path
+  (the eviction trigger never calls it). Read as "the ACCESS cut", it is true for both
+  group-side callers — `stageMemberRemoval`'s updates commit before the clearer runs — so it
+  is a stale label on a real mechanism, not a false mechanism.
+- `account-deletion-cascade.ts`:1436-1439 "the OTHER two conversation deleters firestore.rules
+  enumerates (the client's own delete, the eviction trigger's collapse branch)" — the citation
+  is accurate (rules:1812-1815 does enumerate three, past tense, marking the eviction path
+  "closed in code 2026-08-12"), but the trigger has had no collapse branch since BUT-1838 and
+  the list omits today's third deleter, `removeChatGroupMember.deleteEmptyGroup`.
+
+No code changed; build/suite results taken as established by the requester.
+
+### 2026-08-15 — BUT-1838 comment-accuracy review, ROUND 7 (8 files, comment-only diff) [Pattern discovered]
+
+Scope: `account-deletion-cascade.ts`, `enforce-group-minor-membership.ts`, `shared/collections.ts`,
+four `__tests__` suites, `firestore.rules` (hand-off taken by the requester). No code changed;
+`tsc`, `test:enforce-group-minor-membership` 26/26, `test:account-deletion-cascade` 96/96 and the
+rules validation taken as established.
+
+THE SEVEN REPLACEMENTS — all verified against code, all TRUE:
+1. rules:1599-1604 / `conversations-rules.test.ts`:555-561 past-tensed `metadata.creatorId`.
+   Verified: `grep -rn creatorId functions/src` shows only `chat-group-writes.ts`:154 WRITING it;
+   `lib/` has one hit and it is `group_detail_viewmodel.dart`:118 calling the field retired. The
+   backstop reads `memberAddedBy` (`enforce-…ts`:310), the departure successor reads `adminIds`
+   (`remove-chat-group-member.ts`:99, and its own header :19-21 says the same). So "NOTHING reads
+   the field today" is exact on BOTH sides of the wire.
+2. `conversations-rules.test.ts`:764 "authorizeDeparture then saw no admin at all" — historical, fine.
+3. P30 + its twin at :1206: `updateLastRead` is its own only hit in `lib/` (no caller at all);
+   `Conversation.getUnreadCount` (`conversation.dart`:443) reads `lastReadTimestamps`, not the row;
+   for a `groupId` parent `mayWriteRoster()` is false, so (u1) really is the only open per-row
+   UPDATE and `allow delete` (rules:1873) the only other client write.
+4. `enforce-…ts`:141 access cut — `stageMemberRemoval` commits inside the caller's transaction for
+   BOTH group-side callers (`remove-chat-group-member.ts`:210 before :255; cascade :2305 before :2325),
+   and it `arrayRemove`s the uid from `conversations.participantIds`, so the shell really names nobody.
+5. cascade:1436-1440 deleter list — `deleteEmptyGroup` clears the roster first (:296) and leaves the
+   conversation standing on a false verdict, so it orphans nothing; the trigger has no collapse branch.
+6. `collections.ts` "three edits" — `grep -rn '"participants"'` returns exactly three sites.
+7. `deleteOwnRosterRows` (:1447) and the probe (:426) are both `participantId == uid`, so
+   "solely for the erased user's own rows" and "nothing probes or sweeps the rest" are exact.
+
+BLOCKING (1) — the one sentence this round REWROTE and got wrong:
+`enforce-group-minor-membership.test.ts`:94-97 — "…ORPHANED under a destroyed parent — unreadable to
+every client … and reachable afterwards ONLY by an Admin-SDK collection-group sweep". Head clause TRUE;
+the "only" clause is FALSE twice: rules:1857-1874 leave the row's own subject `allow delete` and the
+`hasOnly(['lastReadAt'])` update, neither of which reads the parent (which is exactly what the SAME
+diff's two production comments spell out as "Not unreachable: …"), and the Admin SDK also reaches those
+rows by PATH — `admin/reset-user-data.ts`:91-92 lists `participants` under a recursive conversation
+delete. Round 6 flagged this same docstring for the opposite error; the fix over-corrected the second
+half. Remedy: keep the head clause, replace the tail with "and nothing in production reaches them
+afterwards: `deleteOwnRosterRows` sweeps only the erased user's own rows, and the delete + `lastReadAt`
+stamp the subject keeps have no client caller".
+
+PRE-EXISTING, untouched by the diff, named for the follow-up ticket (all found by grepping the
+claim's SUBJECT, not its wording — every one is a `git diff` context line beside a corrected hunk):
+- `firestore.rules`:1573 — "`leaveGroupConversation`'s successor and the safety backstop both read a
+  creator identity", six lines above the newly corrected ":1603 nothing reads the field today".
+- `firestore.rules`:1607-1610 — the counterfactual still says "then call leaveGroupConversation …
+  the group-takeover primitive that function exists to avoid", present tense, in the paragraph item 7
+  past-tensed.
+- `firestore.rules`:1789-1799 — "when it evicts the last members it DELETES the conversation" (no
+  collapse branch since BUT-1838) and the pointer "pinned by … a test there that stages an UNCLEARABLE
+  roster" — the integration suite's own header (:28-35) says that case was NOT carried over; it lives
+  in `chat-group-callables.test.ts`:523.
+- `conversations-rules.test.ts`:1734 (P16) — "The single most frequent write on this path" about
+  `updateLastRead`, which P30 twelve tests later now says has no caller.
+- `enforce-group-minor-membership.ts`:186 — "every uid list in this trigger comes from `participantIds`
+  filtered by `isValidDocId`"; the trigger reads `chat_groups.memberIds` (:291-294) and never
+  `participantIds`.
+- Minor: `enforce-…ts`:52 still calls the cascade `tryClearRoster`'s "second caller" (historical
+  framing, 60 lines above the corrected "THREE CALL SITES"), and :63-67 describes
+  `MAX_GROUP_PARTICIPANTS` as a bound on "participants" read "on a tampered create" for a trigger that
+  now fires `onDocumentWritten` over group MEMBERS.
+
+Durable lessons folded into the principles file: (a) when a diff defines a term ("Not unreachable: …"),
+its own test-file paraphrase is a separate site that owes the term the same reading, and "only by X" is
+the shape that goes wrong; (b) the neighbours a phrase-grep misses are found by grepping the SUBJECT —
+function, constant or fixture name — and a pointer naming WHICH SUITE pins a safety fixture is the
+claim most likely to be stale and the costliest one to leave.
+
+### 2026-08-15 — BUT-1838 comment review, round 8: REACH vs FIND, and my own round-7 wording was false [User correction]
+
+Scope: the same 8-file comment-only diff (3 production TS + 4 suites + `firestore.rules`). One blocking
+finding from round 7 — the test file's "reachable afterwards only by an Admin-SDK collection-group
+sweep" (`enforce-group-minor-membership.test.ts`:95) — came back fixed, but NOT with my suggested
+wording, and the requester was right to refuse it. I had proposed "nothing in production reaches them
+afterwards, except <sweep>". That is false about `admin/reset-user-data.ts`, which is production code
+under `functions/src` and names `participants` as a subcollection of its recursive `conversations`
+target (:90-93). My replacement carried the same defect one level down — the exact failure mode the
+round-7 entry above describes.
+
+The shipped replacement splits the two verbs instead:
+- **unreadable to every client**, since `parentNames()` is false with no parent;
+- **not unreachable** — the row's own subject keeps `allow delete` and the `lastReadAt` stamp (neither
+  reads the parent), and the Admin SDK reaches them by path as well, naming `reset-user-data.ts`;
+- **what no AUTOMATIC path does is FIND them** — `deleteOwnRosterRows` sweeps by collection group but
+  only for the erased user's own rows, the two client writes have no caller, and nothing probes the rest.
+
+VERIFIED TRUE, claim by claim, against the bytes:
+- `firestore.rules`:1843 `allow read: if isAuthenticated() && parentNames(request.auth.uid)` — single
+  predicate; `parentDoc()` returns null for an absent parent, so `parent != null` is false for every
+  reader including the row's subject. No `{path=**}/participants/{id}` match block exists, so a client
+  collectionGroup read is denied outright too.
+- `:1873-1874` delete = bare `participantId == request.auth.uid`; `:1857-1864` u1 update =
+  `participantId == request.auth.uid && affectedKeys().hasOnly(['lastReadAt'])`. Neither calls
+  `parentDoc()`; the `validParticipant()` conjunct reads only `request.resource.data`. Exactly two verbs,
+  as claimed — create and the u2 whole-row update both route through `mayWriteRoster()` → `parentDoc()`.
+- Callers: `grep -rn "updateLastRead\|removeParticipant" lib/` finds both only as declarations in
+  `conversation_participant_module.dart` (:152 delete, :185 lastReadAt) plus that module's own unit
+  tests. The other `removeParticipant` hits are the unrelated realtime menu/recipe families.
+- `admin/reset-user-data.ts`:90-93 lists `["participants","userSettings"]` under `{ name: "conversations" }`,
+  consumed by `deleteWithSubcollections` (:221) → `deleteDocRecursive` (:200), documented "any depth".
+  Note the interface docstring (:21-29): the `subcollections` array is a reader's inventory and does NOT
+  drive the deletion — `listCollections()` discovers everything — so "lists `participants` under a
+  recursive `conversations` delete" is the only accurate way to cite the file.
+- The script would in fact FIND orphaned rows: `db.collection("conversations").listDocuments()` (:228)
+  returns PHANTOM parents. It is still not a counter-example, because it is a manual ts-node script
+  behind the typed phrase `YES DELETE ALL USER DATA` (:152, :281-290) — which is what the word AUTOMATIC
+  is doing in the sentence, and why the sentence needs it.
+- `deleteOwnRosterRows` (`account-deletion-cascade.ts`:1446-1450) is
+  `collectionGroup(participants).where("participantId","==",uid)`; the residual probe (:425-429) is the
+  same predicate under `count()`. Nothing in `functions/src` queries that collection group any other way
+  (only `account-deletion-cascade.ts`, `chat-group-writes.ts` — by path, via `Collections.participants` —
+  `reset-user-data.ts` and `enforce-group-minor-membership.ts` touch it at all).
+
+Neighbour sweep for anything the fix introduced or left contradicting it: the same file's test-3 comment
+(:202-213), the cascade's :1258-1271 and :1352-1360, `tryClearRoster`'s :124-145 and P30/:1629-1638 all
+read the term the same way now. Also re-verified in passing: `collections.ts`'s "two local copies remain
+… three edits" — `grep '"participants"' functions/src` returns exactly `reset-user-data.ts`:92,
+`enforce-group-minor-membership.ts`:84 and `collections.ts`:23; `chat-group-writes.ts` uses
+`Collections.participants`.
+
+No new blocking finding. Round-7's pre-existing list (six items, headed by `firestore.rules`:1573) is
+untouched by this diff and is being filed as its own ticket.
+
+Durable lesson folded into the principles file: split REACH from FIND, and scope FIND to AUTOMATIC paths
+— a human-run admin script is production code, so a blanket "nothing in production reaches them" is the
+same "only by X" error one level down, including when the reviewer is the one writing it.
+
+### 2026-08-15 — BUT-1838 round 9: is the ≤2 branch really not direct-only? [Pattern discovered]
+
+Scope: `account/account-deletion-cascade.ts` + `__tests__/account-deletion-cascade.test.ts`, comment-only
+edit at two sites, made after `integration-reviewer` found the batch contradicting itself — the decision
+record said pre-BUT-1838 seeded rows were "not hypothetical" while the code comment concluded the branch
+could only mean a transient failure. Question put to me: is the new SCOPED claim true, and did it break
+anything true.
+
+Verified TRUE, in four steps, none of which can be done from today's rules file:
+- The gate reads no id. `deleteMessages` (:1254-1257) returns early on `typeof groupId === "string"` and
+  then tests `participants.length <= 2` — so any conversation without a `groupId` and with ≤2
+  `participantIds` enters, whatever its id.
+- "LEGACY" is exact, and datable. `git log --oneline -S"groupId" -- lib/models/messaging/conversation.dart`
+  returns only the two BUT-1838 commits, and today's create rule requires `directIdBinds`
+  (firestore.rules:1569, `p.size() == 2` + id derived from the pair). So a non-direct conversation
+  carrying no `groupId` can only predate BUT-1838.
+- The legacy write rules permitted the whole shape. `git show d627daf25^:firestore.rules`: the create rule
+  (:1542-1558) bound neither the document id nor any size floor — `isAuthenticated() && uid in
+  participantIds && hasRequiredFields && passesMinorDmGate && metadata hatch && rateLimitWrite`; and
+  `rosterUnclaimed()` (:1706) was `parentDoc() == null && !conversationId.matches('^direct_.*')`, with the
+  same block's own comment noting no rate limit on the subcollection and that a group's top-level
+  conversation only materialises on the first message. So: plant >500 rows at an arbitrary non-direct id
+  while the parent is absent, then create the conversation at that id with `[attacker, victim]`. Both legs
+  were permitted, in that order.
+- The cap is reachable by that route. `MAX_ROSTER_ROWS = MAX_GROUP_PARTICIPANTS * 5` = 500, read as
+  `.limit(501)`, refusing at `snap.size > 500` (`enforce-group-minor-membership.ts`:108, :201, :221).
+
+Nothing true was removed: the direct-scoped sentence it replaces survives verbatim inside the new one, and
+the neighbours it could have contradicted (`MAX_ROSTER_SWEEP_ROWS`' three-source paragraph at :1389-1407,
+the group-side fixture's "nothing writes 501 rows to a group conversation" at the test file :1843-1845)
+now agree with it — the group-side sentence stays true because `mayWriteRoster()` denies every client
+roster write under a `groupId` parent and `createChatGroup` mints a fresh UUIDv4 conversation, so no
+legacy seeded roster can sit under a `chat_groups`-owned id.
+
+Two non-blocking notes, appended to BUT-1851 rather than blocking:
+- `tryClearRoster`'s docstring (`enforce-group-minor-membership.ts`:171-173, unchanged since round 8)
+  still says `deleteMessages`' `typeof groupId === "string"` early return "is what makes that exact" about
+  direct ids. It makes "non-group" exact, not "direct" — the same over-scoping this round fixed one file
+  away. Its operative half ("the ONE call site handed direct ids") is true.
+- "rows seeded before BUT-1838 … those rows are exactly the non-direct population" is true under this
+  codebase's established use of *seeded* (planted, cf. "a plausibility bound against a SEEDED roster");
+  read literally as "every row written before BUT-1838" it would also cover legitimate attested DIRECT
+  rows. The conclusion is unaffected — a direct roster holds at most two of them.
+
+Durable lesson folded into the principles file: the mirror of over-claiming is scoping a branch by the ID
+SHAPE the prose happens to be about when the gate never reads the id; settle it with `git log -S<field>`
+on the model to date the excluding field and `git show <sha>^:firestore.rules` for the rule that governed
+the rows already on disk. Today's rules answer what may be WRITTEN, never what is already STORED.
+
+### 2026-08-15 — BUT-1851 round 10: the inert `rateLimitWrite`, verified, and the neighbour it contradicts [User correction] [Pattern discovered]
+
+Scope: `functions/src/messaging/enforce-group-minor-membership.ts` and
+`functions/src/account/account-deletion-cascade.ts`, comment-only, after the `integration-reviewer` gate
+found that source 3's old sentence credited a rate limiter that does not bind. Asked two questions: is the
+new claim true, and did the edit break a neighbour.
+
+**Claim 1 — VERIFIED TRUE, by grep, not reasoning.**
+- `rateLimitWrite(collection, seconds)` is `!exists(limitsPath) || get(limitsPath).data.lastWrite +
+  duration.value(seconds,'s') <= request.time` (`firestore.rules`:213-217).
+- The conversations create rule ends `&& rateLimitWrite('conversations', 10)` (:1593).
+- `match /rate_limits/{type} { allow read, write: if isOwner(userId); }` (:522-524) — self-written.
+- `grep -rn "rate_limits" lib` returns ONE hit (the constant declaration); the anchored grep for
+  `userRateLimits` returns 8 occurrences across 7 files, one of which is that declaration. The six
+  writers and their buckets, each read at the write site: `firebase_activity_event_repository.dart`:104
+  → `activity_events` (via `FirestoreCollections.activityEvents`, constants:70);
+  `firebase_comments_repository.dart`:237 → `comments`; `firebase_social_request_repository.dart`:108 →
+  `social_requests`; `message_mutation_module.dart`:234 → `messages`;
+  `import_rate_limiter.dart`:199 → `imports` (written in `recordUsage`'s transaction, :110);
+  `friends_firebase_sync.dart`:165 → `friendSearchMigrated` (`.set({'migratedAt': …})`).
+  No `conversations` bucket writer in `lib/` or `functions/src` (the only `functions` writes are to the
+  unrelated top-level `system_rate_limits`; one test writes `users/{uid}/rate_limits/activity_events`).
+  So `!exists(limitsPath)` is permanently true and the conjunct is inert. Rules has ~20 `rateLimitWrite`
+  call sites and six live buckets, so most of them are inert too.
+
+**Claim 2 — the edit left a neighbour asserting the opposite, and it is FALSE.**
+`account-deletion-cascade.ts`:1423-1425, inside the same docstring, 20 lines below the correction: "rows
+planted by routes 1 or 2 — or by a user inflating their OWN count, **one conversation per 10 seconds** —
+block the sweep…". That rate is exactly the bound the paragraph above now says does not exist. Reported
+blocking; remediation is to drop the figure ("at whatever rate the client can issue creates — nothing
+caps it, see above"), since the paragraph's argument does not need a rate at all.
+
+Non-blocking, appended to BUT-1851:
+- `functions/src/middleware/rate_limiter.ts`:104-109 (unmodified, out of scope) carries the same
+  falsehood in the strongest form yet: the chat-group callables "replace CLIENT writes that
+  firestore.rules rate-limited for us (`rateLimitWrite('conversations', 10)`,
+  `('conversation_membership', 5)`)". NEITHER bucket is stamped, so nothing was rate-limited for us and
+  the server-side token bucket is not restoring a bound — it is establishing the first one. The claim is
+  load-bearing prose (it justifies the constants beneath it), so it is worth a real fix.
+- `enforce-group-minor-membership.ts`:155-178 lists source 3 (attested client write) among the three
+  sources bounding the per-conversation `MAX_ROSTER_ROWS` = 500, at a call site (`deleteMessages`) whose
+  ids are direct — where the same diff's cascade text correctly says a direct roster holds at most TWO
+  client-written rows, ever. Nothing in the paragraph literally claims source 3 can reach 500, so it is
+  not a false sentence, but the reader is invited to think it can; sources 1 and 2 are what carry that
+  bound.
+
+Durable lesson folded into the principles file: a `rateLimitWrite(bucket, n)` conjunct is a bound only if
+some writer stamps `users/{uid}/rate_limits/<bucket>` — grep the bucket name before citing it, and treat
+every duration derived from an unverified one (">2000 rows in ~6h") as false. The principles file itself
+carried that derived figure and has been corrected in the same edit.
+
+### 2026-08-15 — BUT-1838 comment review, round 11 (three replacements verified; one NEW file, one new blocking find) [Bug fixed]
+
+Scope: `account/account-deletion-cascade.ts`, `messaging/enforce-group-minor-membership.ts`,
+`middleware/rate_limiter.ts` (first time in the diff).
+
+**All three round-11 replacements verified TRUE**, each against primary sources rather than the
+previous round's notes:
+1. `account-deletion-cascade.ts`:1423-1426 — "at whatever rate a client can issue creates, since
+   nothing caps it (above)". `rateLimitWrite` is `!exists(limitsPath) || …` (firestore.rules:213-217)
+   and no writer stamps `users/{uid}/rate_limits/conversations`, so the create rule's conjunct
+   (:1593) is permanently true. Self-inflation is genuinely unbounded, not merely unrated: a peer
+   uid need not EXIST — `otherIsMinor` is `exists(userPath) && …`, so an invented peer fails the
+   minor test and `passesMinorDmGate` passes, and `directIdBinds` (:1528-1532) only checks the id
+   string against the two ids.
+2. `enforce-group-minor-membership.ts`:167-172 — "the only documents that collection ever holds
+   are …". Re-derived by grep, not quoted: six doc ids, `imports`
+   (`import_rate_limiter.dart`:200), `comments`, `social_requests`, `messages`, `activity_events`
+   (four repos, all `{lastWrite, expireAt}`) and `friendSearchMigrated`
+   (`friends_firebase_sync.dart`:121/166, `{migratedAt}` — the migration flag, correctly named as
+   such now). No `functions/src` writer of that subcollection exists either.
+3. `rate_limiter.ts`:104-113 — the callables' bucket "ESTABLISHES the first real bound". Verified
+   the three callables actually consume it (`checkRateLimit(uid, "createChatGroup" | …)` at
+   `create-chat-group.ts`:96, `add-chat-group-members.ts`:79, `remove-chat-group-member.ts`:136,
+   each throwing `resource-exhausted`), default `tokensRequired = 1` ⇒ "denominated in CALLS" holds,
+   and the write-amplification list is exact (`stageGroupCreation` writes the group doc, the
+   conversation and N roster rows; `writeGroupSystemMessage` the message, outside the transaction).
+
+**No neighbour broken.** Whole docstrings re-read, not hunks: the `MAX_ROSTER_SWEEP_ROWS` header
+(1381-1430), the `tryClearRoster` header (110-199) and the chat-group config block. Three call
+sites confirmed by grep (cascade :1288, cascade :2335, `deleteEmptyGroup` :296); "for both
+group-side callers it names nobody" holds (`deleteChatGroupMemberships` only clears at
+`survivors.length === 0`, `deleteEmptyGroup` only on the last member); `mayWriteRoster()`'s
+`!('groupId' in parentDoc().data)` (:1728-1730) plus `stageGroupCreation`'s `groupId` stamp really
+does deny source 3 for both. `removeParticipant`/`updateLastRead` still have no caller outside
+`ConversationParticipantModule`.
+
+**BLOCKING (new, and pre-existing in the newly-in-scope file):** `rate_limiter.ts`:81-83, the
+BUT-1573 docstring — "the production `dailyLimit` values are pinned by a test". FALSE since
+BUT-1838 added `createChatGroup: { dailyLimit: 50 }` at :118-123: `rate-limiter-daily-cap.test.ts`
+asserts `structureRecipe`/`ocrRecipeImage`/`importRecipe` only (:247-275), and no other suite reads
+`RATE_LIMIT_CONFIGS` at all. The cap is live (the callable goes through `checkRateLimit` →
+`evaluateDailyCap`), so deleting it ships silently — exactly what the sentence promises cannot
+happen. Remedy: add the fourth assertion and keep the sentence, or scope the sentence to the LLM
+caps and say the group cap is unpinned.
+
+Non-blocking, appended to BUT-1851:
+- `enforce-group-minor-membership.ts`:178-180 — "the ONE call site handed direct ids; its `typeof
+  groupId === "string"` early return is what makes that exact". The early return makes NON-GROUP
+  exact, not DIRECT; the same diff's cascade text (:1313-1319) states outright that the branch is
+  not direct-only and a LEGACY non-direct conversation can hit the cap. Round 9's error in a
+  weaker spelling.
+- `account-deletion-cascade.ts`:1423-1426 — "block the sweep of that user's LEGITIMATE roster
+  rows" has an ambiguous antecedent: for routes 1 and 2 the planter and "that user" are different
+  people (the old wording said "the victim's").
+- Out of scope, same falsehood class in a fourth file: `triggers/ping_onCreate.ts`:4-5 — "The
+  Firestore rule (`firestore.rules:874`) only enforces a 60s burst guard via `rateLimitWrite`".
+  Nothing stamps the `pings` bucket either, so that guard never binds, and the line number is
+  stale (the conjunct is at :1207).
+
+Everything else in `rate_limiter.ts` checked and TRUE: weekly `cleanupOldRateLimits`
+(`"0 3 * * 0"`, UTC); `system_rate_limits` has NO match block in `firestore.rules`, so
+"clients can't reset their own limits" is a default-deny fact; `MAX_BATCH_NOTIFICATIONS = 100`
+matches "the callable caps at 100" and the batch bucket really is charged per notification;
+`system/config` really is the BUT-439 `aiEnabled` doc; `IP_AUDIT_CAP_PER_HOUR = 5` backs the
+`verifySignupAge` note; the BUT-1577 ordering, the fail-closed catch and the BUT-1692 seam all
+match the code.
+
+### 2026-08-15 — BUT-1838 CF review round 12: the quantified coverage claim, closed by pinning [Pattern discovered]
+
+Scope: `middleware/rate_limiter.ts`, `__tests__/rate-limiter-daily-cap.test.ts` (new to the
+diff), `account/account-deletion-cascade.ts`, `messaging/enforce-group-minor-membership.ts`.
+Round 11's blocking finding was closed the harder way — the fourth `dailyLimit` is now pinned
+rather than the sentence narrowed. VERDICT: pass, 0 blocking.
+
+**The new assertion is correct and non-vacuous.** `RATE_LIMIT_CONFIGS.createChatGroup.dailyLimit
+=== 50` matches `rate_limiter.ts`:125. Counted rather than re-read: FOUR `dailyLimit` entries in
+the config (:98 structureRecipe 100, :104 ocrRecipeImage 50, :125 createChatGroup 50, :164
+importRecipe 100) against FOUR assertions in the suite (:250, :260, :270, :287); no `dailyLimit`
+exists anywhere else under `functions/src`. Non-vacuity is settled by the declared type:
+`RateLimitConfig.dailyLimit` is `number | undefined`, so this is a runtime `!==` in
+`_unit-runner.ts`:22-28 — deleting the field gives `undefined !== 50` → FAIL, weakening gives a
+FAIL, renaming the config key throws a TypeError that `runTests` catches per case (:48-55)
+without aborting the rest. No mutation probe run: the comparison is mechanically identical to
+the three sibling cases and a probe is a WRITE to production code, which round 12 does not need.
+
+**The rewritten docstring holds, clause by clause.** "All FOUR are pinned" — verified by the
+count above. "since BUT-1838" — `git log -S "createChatGroup: {"` → d627daf25, 2026-08-14 01:28.
+"a group create writes a group document, a conversation, N roster rows and a system message" —
+`stageGroupCreation` (chat-group-writes.ts:114-157) writes the group doc, the conversation doc
+and one roster row per member; `createChatGroupWithDeps` then calls `writeGroupSystemMessage`
+outside the transaction (create-chat-group.ts:145). "NOT an LLM-spend cap" — true; the callable
+imports no LLM path. The earlier-round `rateLimitWrite` paragraph re-verified too: both
+conjuncts are on CREATE rules (`conversation_membership` firestore.rules:564, `conversations`
+:1593), and `grep -rn userRateLimits lib/` finds exactly six stamped buckets, neither of them
+these — so "permanently true" stands.
+
+**New, non-blocking (Low) — closing a quantified claim by ADDITION falsifies the classifying
+claim one level up.** The new case sits under a section header still reading "BUT-1573: the
+production `dailyLimit` values are the load-bearing per-user LLM-spend caps"
+(rate-limiter-daily-cap.test.ts:242-243), and the case's own comment says "it is NOT an
+LLM-spend cap" 30 lines below it — the file now argues with itself, the rounds-4-7 shape. Same
+one-word staleness in the file docstring (:22-24, "the LLM daily caps, and the
+sendNotificationBatch bucket") and the runner label (:390, "per-user daily LLM cap"). Remedy is
+one word in three places: "per-user spend caps (three LLM, one write-amplified)".
+
+Also Low: "which is how it was wrong for a day" (rate_limiter.ts:86) understates the window —
+2026-08-14 01:28 to 2026-08-15 15:07 is ~38 h. And the pin covers the VALUE, not the WIRING:
+nothing asserts `createChatGroup` passes the string `"createChatGroup"` to `checkRateLimit`
+(create-chat-group.ts:96), because `chat-group-callables.test.ts` drives
+`createChatGroupWithDeps`, below the rate-limit call. Pre-existing gap for all four caps.
+
+Appended to BUT-1851 (pre-existing bytes, not blocking):
+- `rate_limiter.ts`:118-120 (unchanged in HEAD) — "so it is the most write-amplified of the
+  three". Per call `addChatGroupMembers` writes 2 updates + N roster rows + N system messages
+  (≤ ~200 at the 100-member cap, burst 20) against create's ≤103 at burst 5. The argument that
+  actually holds for the daily cap: re-adds are idempotent and adds saturate at the group cap,
+  so create is the unbounded funnel.
+- `enforce-group-minor-membership.ts`:191-192 — "every uid list in this trigger comes from
+  `participantIds` filtered by `isValidDocId`". The trigger has read `chat_groups.memberIds`
+  (:298-301) since BUT-1838. This was already recorded as a round-7 find and has still not been
+  carried into a fix, so it needs to land ON the ticket, not be re-found in round 13.
+
+### 2026-08-15 — BUT-1838 review round 13: the re-labelled classifying claim [Pattern discovered]
+
+Scope: `middleware/rate_limiter.ts`, `__tests__/rate-limiter-daily-cap.test.ts` only (four-word
+diff). Round 12's two Low items were both taken. VERDICT: pass, 0 blocking.
+
+**Three of the four rewritten labels are TRUE, verified clause by clause.** "every `dailyLimit`
+(three LLM-spend, one write-amplified)" — exactly four `dailyLimit:` value sites in the config
+(:99, :105, :126, :165) and exactly four assertions (:249, :259, :269, :286); `grep -rn
+dailyLimit --include=*.ts src` finds no fifth declaration anywhere under `functions/src`. Runner
+label "per-user daily caps" — true, and correctly drops the LLM scope the four cases no longer
+share. The duration rewrite ("between BUT-1838 shipping and BUT-1838's own follow-up catching
+it") carries no figure to go stale and is true of the retained head clause "the production
+`dailyLimit` values are pinned by a test", which was the half that was actually wrong in the
+window; "this sentence" is a loose antecedent (the "All FOUR" sentence did not exist then) but
+the claim it makes did, so not false.
+
+**The fourth is true of two of three — and it is my own round-12 remedy, sharpened.** I proposed
+"three LLM, one write-amplified" (a category label); what shipped is "three bounding LLM cost"
+(rate-limiter-daily-cap.test.ts:244), which asserts each of the three BINDS something.
+`RATE_LIMIT_CONFIGS.importRecipe` binds nothing: enumerating every call site of the three entry
+points (`grep -rn "withRateLimit(\|checkRateLimit(\|enforceRateLimit(" src`, 12 production hits)
+shows `"importRecipe"` is passed by none, `index.ts` exports no import callable, and the only
+live limiter of that name is the Dart client's (`lib/core/rate_limiting/rate_limiter.dart`:34,
+:251) — client-side, so bypassable. An import's LLM spend IS bounded, by `structureRecipe`'s
+cap (charged at structure-recipe.ts:88 and again from the OCR path, ocr-recipe-image.ts:308).
+Same word choice makes the header's "load-bearing" false for that entry. This is the strongest
+instance of the wiring item already on BUT-1851, so it goes there, not into a block.
+
+**The file does not quite agree end to end, at two sites nobody named.** `RateLimitConfig`'s own
+field doc (rate_limiter.ts:48-49) still reads "Set on expensive (LLM-backed) operations" —
+33 lines above the corrected "All FOUR … and, since BUT-1838, `createChatGroup`", i.e. the same
+contradiction round 12 filed, in the declaration that documents the field itself. The test
+file's TITLE (:2, "per-user daily cap on LLM-backed operations") is the same claim in the one
+place a reader meets first; it is defensible as a ticket title (BUT-1477 did scope to LLM ops,
+and the widening is announced in the "BUT-1573/BUT-1692 tail" paragraph), so it is weaker than
+the field doc. Both are unchanged bytes → BUT-1851. Lesson: a three-site inventory came from
+counting the sites I had NAMED, which is the same "enumerate by count, not by grep" error
+recorded in round 5 (a).
+
+Also appended to BUT-1851: the docstring umbrella "config values that are one decision shared
+with another file" (:22-23) fits the `sendNotificationBatch`/`MAX_BATCH_NOTIFICATIONS` pin but
+not the `dailyLimit` pins, which live in one file only — pre-existing imprecision the rewrite
+carried forward unchanged in truth value, not introduced.
+
+Verified against the shipped bytes, not re-run: `tsc` and `test:rate-limiter-daily-cap` 15/15
+were established by the requester and taken as given.
+
+### 2026-08-15 — Round 14, BUT-1851 rate-limiter comments: the category label is fixed, the excuse beside it is the new falsehood [User correction]
+
+Scope: `functions/src/middleware/rate_limiter.ts` + `functions/src/__tests__/rate-limiter-daily-cap.test.ts`,
+two edits, both answering round-13 findings. `tsc` clean and `test:rate-limiter-daily-cap` 15/15
+established by the requester and taken as given; this pass reviewed truth only.
+
+**Replacement 2 — TRUE, all four clauses verified.** `RateLimitConfig.dailyLimit`'s field doc
+(rate_limiter.ts:46-51) now reads "Set on expensive operations — LLM-backed ones, and since
+BUT-1838 the write-amplified `createChatGroup`; omitted → no daily enforcement. Counted per
+request, not per token." Checked: exactly FOUR entries carry `dailyLimit` (mechanical count over
+the config block = 4, matching 4 `.dailyLimit,` pins in the suite) — `structureRecipe` 100,
+`ocrRecipeImage` 50, `importRecipe` 100, `createChatGroup` 50; "since BUT-1838" dates correctly
+(`git log -S"createChatGroup: {"` → d627daf25, the BUT-1838 commit, which introduced the entry
+WITH its `dailyLimit: 50`); "write-amplified" is real and not merely asserted — one call writes
+a `chat_groups` doc + a `conversations` doc + N roster rows (`stageGroupCreation`,
+chat-group-writes.ts:114-139) + a system message (`writeGroupSystemMessage`,
+create-chat-group.ts:144 → group-system-message.ts:69); "counted per request, not per token" is
+what `checkRateLimit` does (`dailyCount: dailyCap.priorDailyCount + 1`, :447, independent of
+`tokensRequired`); "omitted → no daily enforcement" is `config.dailyLimit !== undefined` (:345).
+
+**Replacement 1 — the head clause and the first half of the caveat are TRUE; the LAST clause is
+FALSE.** Test file :243-249 now says "three LLM-cost caps, and since BUT-1838 one bounding WRITE
+amplification. (\"LLM-cost\" by category, not by effect: nothing passes `\"importRecipe\"` to
+`checkRateLimit`, so that entry's own cap binds nothing — an import's LLM spend is bounded by
+`structureRecipe`'s. See BUT-1851.)"
+
+Verified true: the three/one split; "binds nothing" — `grep -rn importRecipe functions/src` finds
+the config entry and this test only, no `checkRateLimit`/`withRateLimit`/`enforceRateLimit` call
+site takes it (every call site in `functions/src` passes a string LITERAL, so there is no dynamic
+route), and `index.ts` exports no such callable; "one BOUNDING write amplification" — unlike
+`importRecipe`, `createChatGroup` IS wired (create-chat-group.ts:96 passes the literal and :97-99
+throws `resource-exhausted` on a deny).
+
+FALSE: **"an import's LLM spend is bounded by `structureRecipe`'s"** names one of TWO caps. The
+import flow's own LLM service calls both callables — `_llmService.structureRecipe(...)` at
+`lib/services/import/llm/llm_enhancement_service.dart`:80/256/324 (text/URL) and
+`_llmService.ocrRecipeImage(...)` at :171, reached from `photo_llm_vision.dart`:67/123 via
+`extractFromImage` (photo import). The photo leg's vision spend is bounded by `ocrRecipeImage`'s
+own `dailyLimit: 50`, not by structureRecipe's 100. (`ocr-recipe-image.ts`:308 charges
+`structureRecipe` only for the BUT-1655 retry leg, not for the vision call.) True form: "bounded
+by the cap of whichever LLM callable the import invokes — `structureRecipe` for text/URL,
+`ocrRecipeImage` for photo." One-line remedy given.
+
+Shape worth keeping: the round-13 remedy ("state the category, not the effect") was applied
+correctly and the SENTENCE ADDED TO EXCUSE the inert entry became the new false claim. A
+reassurance clause is a fresh claim about a whole flow and needs the same grep as the finding it
+answers.
+
+Second-order: round 13's own line "the only live limiter of that name is the CLIENT's
+(`lib/core/rate_limiting/rate_limiter.dart`)" is itself imprecise — `RateLimitOperation.importRecipe`
+(:34 enum, :251 config) has no `checkLimit` caller in `lib/`; only
+`test/unit/core/rate_limiting/rate_limiter_test.dart`:351 reads its token count, and the import
+flow's client gate is `ImportOperation.withLlm(...)` (llm_enhancement_service.dart:158). It never
+reached shipped bytes — the comment does not repeat it — so no code finding, but the archive
+should not carry it uncorrected.
+
+Re-checked and found clean (no finding): the enumeration "a group document, a conversation, N
+roster rows and a system message" at test :281-282 and rate_limiter.ts:120-122; the FOUR-count in
+the `RATE_LIMIT_CONFIGS` docstring (:82-89) against a mechanical count. Left on BUT-1851 per the
+requester and re-confirmed unchanged in truth value: the BUT-1477 test title, the "one decision
+shared with another file" umbrella, "the most write-amplified of the three", and the wiring gap
+(nothing asserts `create-chat-group.ts`:96 passes the operation STRING, so a renamed key orphans
+the config with every value pin green).
+
+### 2026-08-15 — Round 15, BUT-1851: the two-callable clause verified CLEAN, and how the enumeration was closed [Pattern discovered]
+
+**Scope:** one file, one clause — `functions/src/__tests__/rate-limiter-daily-cap.test.ts`:245-249.
+Round 14's remedy was taken verbatim: "an import's LLM spend is bounded by the cap of whichever
+callable it invokes: `structureRecipe` for text/URL imports, `ocrRecipeImage` for photo imports."
+
+**Verdict: no false sentence introduced or rewritten. Zero blocking.** Every clause re-derived
+from bytes rather than from round 14's report:
+- `"importRecipe"` appears in `functions/src` only at `rate_limiter.ts`:162 (the config entry) and
+  in this test file — no `checkRateLimit` / `withRateLimit` / `enforceRateLimit` call site, and no
+  such export in `index.ts`. The "binds nothing" half stands.
+- `structureRecipe` is exported at `index.ts`:39, wrapped `withRateLimit("structureRecipe")`
+  (`structure-recipe.ts`:88), `dailyLimit: 100`. `ocrRecipeImage` is exported at `index.ts`:40,
+  wrapped `withRateLimit("ocrRecipeImage")` (`ocr-recipe-image.ts`:122), `dailyLimit: 50`.
+- **The enumeration is COMPLETE, and the cheap way to prove that is to enumerate the CALLABLES from
+  the client, not the import kinds.** `grep -n "httpsCallable(" lib/` returns 13 sites; exactly one
+  file carries LLM ones (`llm_service.dart`:115/:255 → `structureRecipe`, :193 → `ocrRecipeImage`).
+  So no import leg can be bounded by a cap the clause fails to name — which is the property round 14
+  found violated when only one callable was named.
+- Leg-by-leg: photo → `photo_llm_vision.dart`:67/123 → `extractFromImage` →
+  `llm_enhancement_service.dart`:171 → `ocrRecipeImage`. URL/HTML → `extractFromHtml` (:256) and
+  `RecipeParserService`'s `LlmTier` (`llm_tier.dart`:112) → `structureRecipe`. Social/video →
+  `extractFromTranscript` (:324) from the Instagram/TikTok/YouTube pipelines → `structureRecipe`.
+  Voice/transcript legs send TEXT, so "text/URL" covers them.
+- **The path in round 14's own archive note is wrong and is corrected here:** the file is
+  `lib/services/import/photo_llm_vision.dart`, not `.../import/llm/photo_llm_vision.dart`, and
+  ":171" belongs to `llm_enhancement_service.dart`, not to it. The substance was right.
+
+**The one residual, deliberately NOT filed:** a photo import that reaches the vision route also
+consumes the caller's `structureRecipe` cap server-side (`ocr-recipe-image.ts`:308, the BUT-1655
+retry gate). "Bounded by ocrRecipeImage's cap" stays true — it is not "only by", and the extra
+bound is stricter, not looser. Recorded because the enumeration of CALLABLES INVOKED and the
+enumeration of CAPS CHARGED are not the same list, and a future sharpening to "only" would be false.
+
+**Also verified clean this round:** the char-OCR photo path spends nothing on LLM — `OCRExtractionService`
+(on-device ML Kit / OCR.space / Google Vision / Tesseract) hands its text to `TextImportStrategy`
+(`photo_import_strategy.dart`:241), which has no LLM callable at all (its only lazily-resolved
+collaborator is `IngredientParsingStrategy`). Had it routed through `RecipeParserService`, a photo
+import would have been bounded by `structureRecipe`'s 100 and the clause WOULD have been false.
+That check is what the verdict rests on, not the wording.
+
+**Left on BUT-1851 (pre-existing, per the requester), re-confirmed still true as findings:**
+`rate_limiter.ts`:161's `// Import Operations (LLM-backed downstream — carries a daily cap too)`
+now reads against the new clause — the entry carries a cap that charges nothing; and this test
+file's docstring line 2, "per-user daily cap on LLM-backed operations", which the non-LLM
+`createChatGroup` pin (added round 12) made imprecise, and which the runner-label fix did not reach.

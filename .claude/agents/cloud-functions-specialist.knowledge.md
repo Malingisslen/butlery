@@ -179,8 +179,10 @@ idempotent:
   (retry replays the bill) — then the 2026-08-12 roster cleanup enumerates
   `conversations/{id}/participants` via `listDocuments()` and fires every
   `delete()` in one uncapped `Promise.all`. `firestore.rules`' `rosterUnclaimed()`
-  lets ANY signed-in user seat rows there while the parent document is absent,
-  with no rate limit on the subcollection, so N is attacker-chosen. N large ⇒ the
+  LET any signed-in user seat rows there while the parent document was absent,
+  with no rate limit on the subcollection, so N was attacker-chosen (BUT-1838
+  deleted that branch on 2026-08-13; the cap still stands on three OTHER sources —
+  see the arithmetic below, and never re-justify it by `rosterUnclaimed`). N large ⇒ the
   60s platform default (this trigger declares no `timeoutSeconds`) ⇒ a
   deterministic retry loop — the exact shape the new comment claims cannot exist.
   Whenever a cleanup switches from a known-length uid list to an ENUMERATION,
@@ -221,13 +223,108 @@ idempotent:
   cheapest way to force a FALSE verdict is the helper's own refusal cap — seeding
   `CAP + 1` rows is two `batch.commit()`s, no fake, no seam, no error injection.
   **That lever usually stages a state the CALLER cannot reach, so the fixture must say
-  SYNTHETIC.** For a `direct_` conversation the seeded roster is unreachable —
-  `rosterUnclaimed()` excludes the prefix and, once the parent exists, only the two
-  attested participants may write rows — so the production-reachable false verdict
-  there is a transient read/delete failure, not 501 rows. Use the cap anyway (it is
-  the only cheap lever), but a docstring reading "staged the way production reaches
-  it" is a false claim contradicting the SUT's own comment 20 lines away. Write
-  "synthetic; production reaches this verdict via <the real route>" instead.
+  SYNTHETIC.** For a `direct_` conversation the seeded roster is unreachable, and
+  since BUT-1838 it is unreachable by ARITHMETIC — the durable form of the argument,
+  re-derived 2026-08-15 and worth re-deriving rather than quoting: a client-created
+  conversation must satisfy `directIdBinds` (EXACTLY 2 `participantIds`, rules:1528)
+  and the update rule denies any diff touching `participantIds` (:1615), while the
+  roster's `attestedWriter()` requires `parentNames(participantId)` (:1702) — so a
+  direct roster holds at most TWO client-writable rows, EVER, and a group roster holds
+  NONE (`mayWriteRoster()`'s `!('groupId' in parentDoc().data)`, and
+  `stageGroupCreation` stamps `groupId` on every group conversation). Therefore the
+  production-reachable false verdict is a transient read/delete failure, not 501 rows,
+  and **"a partner planted rows" is not a route to it** — a comment saying so is a new
+  false claim, not a hedge (it also cannot cause a false verdict at all: `false` needs
+  a read failure, `> MAX_ROSTER_ROWS`, or a delete failure). What DOES survive to
+  justify the cascade's cross-conversation `MAX_ROSTER_SWEEP_ROWS`: pre-BUT-1838 rows
+  still on disk (backfill closed unbuilt, BUT-1839), a non-standard Admin-SDK writer,
+  and SELF-inflation — and it is UNRATED, not 1/10s. **A `rateLimitWrite(bucket, n)`
+  conjunct binds only if some writer STAMPS `users/{uid}/rate_limits/<bucket>`; the
+  helper is `!exists(limitsPath) || …` (rules:213-217), so an unstamped bucket is
+  permanently true.** Verified 2026-08-15: exactly SIX buckets are stamped anywhere in
+  `lib/` — `activity_events`, `comments`, `social_requests`, `messages`, `imports`,
+  `friendSearchMigrated` (grep `userRateLimits`; the constants file is the 7th hit) — so
+  `('conversations', 10)`, `('conversation_membership', 5)` and every other bucket in the
+  20-odd call sites are INERT, and the bucket is self-written (`allow read, write:
+  isOwner`, rules:522-524) so a tampered client would omit the stamp anyway. Never cite a
+  `rateLimitWrite` as a bound without grepping its bucket name first; "1/10s" and any
+  duration derived from it (">2000 rows in ~6h") are false.
+  Against a CHOSEN victim it is TWO rows per distinct peer account — `directIdBinds`
+  accepts BOTH id orderings for one pair (rules:1530-1531), so A can create `direct_A_V`
+  and `direct_V_A` and seat V's row in each (2001 rows ⇒ ~1000 accounts, not 2001). Use the
+  cap as the fixture lever anyway (it is the only cheap one),
+  but a docstring reading "staged the way production reaches it" is a false claim
+  contradicting the SUT's own comment 20 lines away. Write "synthetic; production
+  reaches this verdict via <the real route>" instead.
+  **The parent predicate is PER-VERB, and "orphaned rows are unreachable" overstates it.**
+  Only READ, CREATE and the (u2) whole-row UPDATE route through `parentDoc()`; `allow
+  delete` is bare `participantId == request.auth.uid` and the (u1) self-update is
+  `hasOnly(['lastReadAt'])` (rules:1853-1870, pinned by rules test P30) — neither reads the
+  parent. So deleting a conversation leaves its rows UNREADABLE (the disclosure argument,
+  and all the rules file itself claims), not unreachable: the row's own subject keeps a
+  delete and a cursor stamp. "Nobody can read, update or delete them, ever" is a false claim
+  about firestore.rules — it landed in three comment sites at once on 2026-08-15, each
+  replacing correct bootstrap-era text. Enumerate the four verbs before writing that
+  sentence; the never-orphan ORDERING is unaffected either way.
+  **Round 7 (2026-08-15): the production sites were fixed correctly and the TEST file's
+  PARAPHRASE re-introduced the same idea in weaker form** — "reachable afterwards only by an
+  Admin-SDK collection-group sweep" (`enforce-group-minor-membership.test.ts`:95) against the
+  same diff's own "Not unreachable: `allow delete` and the `hasOnly(['lastReadAt'])` branch key
+  on the subject's uid alone". When a diff DEFINES a term, every site in it owes that term the
+  same reading. "Only by X" is the shape that goes wrong: the Admin SDK also reaches those rows
+  BY PATH (`admin/reset-user-data.ts` recursive-deletes `conversations/{id}` + `participants`),
+  so the true form is "nothing in production reaches them except <sweep>, and no client flow
+  uses the two verbs the subject keeps".
+  **Round 8 (2026-08-15) settled the SHAPE of that sentence, and my round-7 wording was itself
+  wrong** — "nothing in production reaches them" is false of `admin/reset-user-data.ts`, which is
+  production code. The form that survives splits two verbs and scopes the second: **REACH**
+  (unbounded — the Admin SDK addresses any path, and this script names `participants` under a
+  recursive `conversations` target) vs **FIND**, and FIND is claimable only of AUTOMATIC paths,
+  because that script is human-run behind a typed confirmation phrase. It would in fact find
+  them: `deleteWithSubcollections` enumerates `db.collection("conversations").listDocuments()`,
+  which returns PHANTOM parents, then recurses via `listCollections()` — so the `subcollections:`
+  array is a reader's inventory that does not drive the delete, and "lists X under a recursive
+  delete" is the only accurate way to cite it. The verified all-clear for the orphan claim, in
+  one place: read denied for EVERYONE including the subject (`allow read: parentNames(uid)`,
+  rules:1843, null parent ⇒ false; no collectionGroup match block, so that route is denied too);
+  exactly TWO client verbs survive, `allow delete` (:1873) and the u1 `hasOnly(['lastReadAt'])`
+  update (:1857-1864), neither touching `parentDoc()` and both callerless in Dart
+  (`ConversationParticipantModule.removeParticipant` / `.updateLastRead` have no caller outside
+  their module); and nothing probes ANOTHER user's row — both `deleteOwnRosterRows` (:1446) and
+  the uncapped `count()` probe (:425) key on `participantId == uid`.
+  **The read verb is also NOT ROW-SCOPED** — `parentNames(request.auth.uid)` alone, so a live
+  parent grants LIST over the WHOLE roster to every uid it still names. Both careless
+  generalisations of that are in the tree: "a live parent that no longer names the erased user
+  denies those rows to everyone" is false whenever a CO-PARTICIPANT survives (a 1:1 departure
+  update leaves the partner listing every row), and "keeping the parent alive is what keeps
+  those rows reachable" is false for an EMPTIED group, whose zero-member shell names nobody.
+  Name the uids the parent still names; the two sentences are true in opposite scenarios.
+  **Round 9 (2026-08-15) is the MIRROR error and its verification recipe: a comment that scopes
+  a branch by the ID SHAPE its prose is about, when the gate never reads the id.**
+  `deleteMessages`' `participants.length <= 2` branch fires on ANY conversation without a
+  `groupId`, so "for a `direct_` id this branch means a transient roster failure" was true and
+  read as total. Settle such a scope with two DATED greps, never from today's rules file:
+  `git log -S<field> -- <model>` dates the field that would exclude the document (`groupId` and
+  `directIdBinds` BOTH arrived with BUT-1838, so a non-direct non-group conversation is
+  necessarily LEGACY), and `git show <sha>^:firestore.rules` gives the write rule that governed
+  the rows still on disk (the pre-BUT-1838 create rule bound neither the id nor a size floor,
+  and `rosterUnclaimed()` excluded `direct_` — so bootstrap-planted rows are exactly the
+  non-direct population and >`MAX_ROSTER_ROWS` on one id was reachable, parent created
+  afterwards). Today's rules answer what may be WRITTEN, never what is already STORED.
+  **Both corrections then failed in the OPPOSITE direction (round 4, 2026-08-15), which is the
+  durable half of this principle.** The first kept its false head clause and appended the
+  refutation ("a live parent … denies those rows to the erased user's peers — the read rule is
+  not row-scoped, so the SURVIVING partner … can list what is left"): a sentence containing its
+  own negation reads as a hedge and is simply false. The second universalised the EMPTIED-group
+  case over a helper with THREE callers ("the surviving shell names nobody") — true for
+  `deleteEmptyGroup` and `deleteChatGroupMemberships`, false for `deleteMessages`, whose 1:1
+  branch leaves the partner named by `buildGroupDepartureUpdate` (`arrayRemove(uid)` only). A
+  claim in a HELPER's file must hold for every caller or name the caller it holds for. Third
+  new falsehood from the same edit: "keeping the parent alive keeps the rows addressable for a
+  future Admin-SDK sweep, which deleting the parent would foreclose" — the Admin SDK reaches
+  children of an absent parent by path AND by `collectionGroup` (that IS `deleteOwnRosterRows`,
+  and this very file's docstring says a plain query returns them), so deleting the parent costs
+  an orphaned RESIDUAL, never access.
   **The cap lever is OFF BY N whenever the caller deletes rows before the clearer
   reads.** `deleteChatGroupMemberships` removes the erased user's own roster row
   inside its removal transaction and only then calls `tryClearRoster`, so seeding
@@ -249,6 +346,151 @@ idempotent:
   So on any trigger repointing, enumerate the branches the OLD suite covered and
   name, per branch, either its new home or why it cannot exist any more — in the
   new file's header, where the next reader looks.
+  **And re-derive the helper's CALLER-INVENTORY docstring by grep, not memory — the COUNT,
+  the MODULE, and each caller's KEY SPACE.** `tryClearRoster`'s header opened "TWO CALLERS …
+  this trigger's collapse branch" months after BUT-1838 left the trigger no collapse branch,
+  while `grep -rn tryClearRoster` finds THREE call sites in two other modules
+  (`deleteMessages`, `deleteChatGroupMemberships`, `removeChatGroupMember.deleteEmptyGroup`)
+  and NONE in the file that defines it. A header saying "anyone changing this contract must
+  check the other caller" is a safety instruction, so a stale count costs more than ordinary
+  rot — and each rewrite so far has re-broken it one level down: first "THIS file's own
+  caller — `deleteEmptyGroup`" (it lives in `groups/`), then "the account cascade's two call
+  sites are handed direct ids" (2026-08-15) — FALSE, because `deleteChatGroupMemberships`
+  takes `conversationId` off a `chat_groups` document and is therefore group-side exactly
+  like `deleteEmptyGroup`; only `deleteMessages` is direct-side, and provably so by its own
+  `typeof groupId === "string"` early return. So per caller, state which ids it can hand
+  over — a direct/group split decides whether `mayWriteRoster()`'s `!('groupId' in
+  parentDoc().data)` already denies the client write the paragraph is bounding.
+  **Second trap in the same shape: fixing the paragraph you were pointed at while the
+  NEIGHBOURING docstring keeps asserting the opposite.** `MAX_ROSTER_ROWS`'s header still
+  says the bound is unreachable ("refused by this trigger before this helper is reachable
+  at all", "nothing caps a group's size") 40 lines above a freshly written "THE BOUND STAYS,
+  for three reasons" — and the stale half is the one inviting its deletion. When a review
+  fixes a claim, re-read every OTHER docstring in the file that names the same constant or
+  code path; they were written in the same state of belief.
+  **Round 4 (2026-08-15) proved that trap recurs INSIDE the rewritten paragraph and across
+  files.** `MAX_ROSTER_ROWS`'s replacement imported the guard comment's own false line — "No
+  rule reads `chat_groups` membership" — and pointed at it ("see the comment on the guard
+  itself"). FALSE: `firestore.rules:1897` gates the group's read on `uid in memberIds` and
+  :1905 its rename on `uid in adminIds`. The TRUE form, and the one that kills the padding
+  attack, is narrower: no rule reads that list for a SIZE/threshold decision (unlike
+  `passesMinorDmGate`, which fires at raw `size() == 2`), and `allow create, delete: if false`
+  plus an `hasOnly(['name','updatedAt'])` update means no client can write it at all. Same
+  round, `conversations-rules.test.ts`'s P12B kept "The scope is still load-bearing" three
+  lines under a freshly written "BUT-1838 deleted the fallback outright" — there is no scope.
+  A rewrite that converts a paragraph to past tense must convert the WHOLE paragraph.
+  **Round 5 (2026-08-15) verified all four round-4 fixes TRUE and found the same claims still
+  live in the two places a fix never reaches, so make both mechanical.** (a) The SUITE file's
+  copy: "no Firestore rule reads that document's membership" survived at
+  `enforce-group-minor-membership.test.ts`:79-82 because round 4 said "both twins" — a COUNT,
+  taken from the two source docstrings. Never enumerate a false claim by counting twins; grep
+  its distinctive phrase across `functions/src` INCLUDING `__tests__`, and fix every hit in the
+  one edit. (b) The UNCHANGED lines of the docstring you just rewrote: `tryClearRoster`'s
+  header still reads "A live parent that no longer names the evicted members denies the roster
+  to everyone" ~30 lines under the corrected paragraph — true for the two group-side callers
+  (zero-member shell), false for `deleteMessages`' 1:1 caller — and a `git diff` cannot show it,
+  because a false CONTEXT line looks reviewed. Re-read the WHOLE docstring, not the hunk.
+  **Round 6 (2026-08-15): the PHRASE grep is necessary and not sufficient — the same false idea
+  recurs under wording no fixed sentence contains.** The requester's grep of "no rule reads …
+  membership" cleared every hit and verified all six replacements TRUE (rules:1897/1904/1918,
+  `MAX_CHAT_GROUP_MEMBERS` in both callables, both group-side callers at zero survivors,
+  `directIdBinds`' two-row ceiling) — while 12 lines above one of the fixed hits,
+  `enforce-group-minor-membership.test.ts`:92-95 still said a wrong TRUE verdict "would leave
+  roster rows readable under a destroyed parent, forever, with no probe and no sweep to find
+  them": post-BUT-1838 those rows are UNREADABLE, and `deleteOwnRosterRows`'s collection-group
+  sweep does find the erased user's own — contradicting the same file 110 lines down. So grep
+  the CLAIM's mechanism nouns (destroyed/absent parent, orphan, readable, sweep, collapse
+  branch) as well as the sentence, and read the whole file you are pointed into.
+  Second durable half: **"the one write X still makes from the client" is TWO claims — a caller
+  exists, and something consumes it — and both need a grep.** P30's `updateLastRead` has no
+  caller outside its own module (firestore.rules:1847 says so itself), and unread counts come
+  from `Conversation.getUnreadCount` over `conversations.lastReadTimestamps`
+  (`conversation.dart`:443), not the roster row's `lastReadAt` — so "freezing it would break
+  unread counts in every group" is false twice over. Same round: a present-tense clause inside
+  an otherwise past-tense HISTORY paragraph is a false claim, not a tense wobble, whenever it
+  names a function that still exists (`conversations-rules.test.ts`:556 has
+  `enforceGroupMinorMembership` "treat"ing `metadata.creatorId`, which no function in
+  `functions/src` reads at all — `chat-group-writes.ts`:154 only writes it).
+  **Round 7 (2026-08-15) settled how to FIND the neighbours a phrase-grep misses: grep the
+  SUBJECT — the function, constant or fixture the claim is about — not the sentence.** Four
+  pre-existing falsehoods surfaced that way, every one a `git diff` CONTEXT line beside a
+  freshly corrected hunk: `updateLastRead` finds P16's "the single most frequent write on this
+  path" (`conversations-rules.test.ts`:1734) three cases above the P30 comment establishing it
+  has no caller at all; `leaveGroupConversation` finds `firestore.rules`:1573 ("its successor
+  and the safety backstop both read a creator identity") six lines above the corrected ":1603
+  nothing reads the field today"; `participantIds` finds
+  `enforce-group-minor-membership.ts`:186 ("every uid list in this trigger comes from
+  `participantIds`") in a trigger that has read `chat_groups.memberIds` since BUT-1838; and
+  the integration suite's own header refutes `firestore.rules`:1794's pointer to an
+  unclearable-roster fixture that moved to `chat-group-callables.test.ts`:523. A pointer to
+  WHICH SUITE pins a safety fixture is worth grepping every time — it is the claim most likely
+  to be stale and the one whose staleness costs coverage.
+  **A coverage claim that QUANTIFIES ("the production `dailyLimit` values are pinned by a test")
+  goes stale by ADDITION, with its own sentence untouched — so a `git diff` shows nothing.**
+  `rate_limiter.ts`:81-83 says exactly that; BUT-1838 then added a FOURTH `dailyLimit`
+  (`createChatGroup: 50`) 35 lines below it, and `rate-limiter-daily-cap.test.ts` pins only the
+  three LLM ones — a real per-user cap nothing would redden if deleted. Check such a claim by
+  counting instances of the FIELD against the assertions
+  (`grep -c dailyLimit` in the config vs. in the suite), never by re-reading the sentence; and
+  when a ticket adds an instance of a quantified kind, the pin is part of the same edit.
+  **CLOSED 2026-08-15, and closing it exposed the follow-on shape: adding the missing pin
+  falsifies the CLASSIFYING claim one level up.** The new case landed under a section header
+  reading "the production `dailyLimit` values are the load-bearing per-user LLM-SPEND caps"
+  (and a file docstring enumerating "the LLM daily caps"), which the added non-LLM cap
+  contradicts — the file then argues with itself 30 lines apart, the rounds-4-7 shape again.
+  So when you close a quantified-coverage finding by ADDITION, re-read the block header, the
+  file docstring and the runner LABEL that scope what you appended to, in the same edit.
+  **Round 13 (2026-08-15): that three-site inventory is INCOMPLETE, and the re-label is a
+  STRONGER claim than the one it replaces.** All three were fixed correctly and two more sites
+  still said it in wording no fixed sentence contained — the FIELD's own doc comment
+  (`dailyLimit?: number`, "Set on expensive (LLM-backed) operations", rate_limiter.ts:46-51,
+  which now contradicts the corrected header 33 lines below it) and the test file's TITLE line.
+  Grep the classifying ADJECTIVE across both files, never the sentences you rewrote. Worse,
+  "three bounding LLM cost" asserts each member BINDS, where "the LLM daily caps" only named a
+  category: `RATE_LIMIT_CONFIGS.importRecipe.dailyLimit` binds nothing — the string
+  `"importRecipe"` reaches no `checkRateLimit`/`withRateLimit`/`enforceRateLimit` call site in
+  `functions/src`, no such callable is exported from `index.ts`, and the only live limiter of
+  that name is the CLIENT's (`lib/core/rate_limiting/rate_limiter.dart`) — so two of the
+  "three" bound anything (an import's LLM spend is bounded by `structureRecipe`'s cap instead).
+  Before writing a COUNT of ENFORCING things, grep each member's operation string at its call
+  sites; a config entry with no caller is the cheapest way to make a sharpened label false, and
+  the safe remedy wording states the category ("three LLM"), not the effect ("three bounding").
+  **Round 14 (2026-08-15): the category re-label landed TRUE and the REASSURANCE clause beside it
+  was the new false claim.** Defusing "this cap binds nothing" with "the spend is bounded by X's
+  instead" is a fresh claim about the whole flow, and it named ONE of two callables: an import
+  reaches `structureRecipe` (text/URL, `llm_enhancement_service.dart`:80/256/324) AND
+  `ocrRecipeImage` (photo, :171 via `photo_llm_vision.dart`), whose vision spend is capped at 50 by
+  its own entry, not by structureRecipe's 100. So when you neutralise a binds-nothing finding by
+  pointing at the real bound, grep every LLM/expensive callable the flow can invoke and either
+  enumerate them or scope the sentence to the leg it holds for — the rounds-4-7 "must hold for
+  every caller" rule applies to the excuse as much as to the claim.
+  **Round 15 (2026-08-15) verified the two-callable clause CLEAN, and the cheap proof of
+  COMPLETENESS is to enumerate the CALLABLES from the client, never the flow's own branches.**
+  `grep "httpsCallable(" lib/` returns 13 sites and exactly one file carries LLM ones
+  (`llm_service.dart`:115/:255 → `structureRecipe`, :193 → `ocrRecipeImage`), so no import leg can
+  be bounded by an unnamed cap — one grep settles what branch-walking cannot. Two traps it exposed:
+  (a) the enumeration of CALLABLES INVOKED is not the enumeration of CAPS CHARGED — a photo import
+  also spends `structureRecipe`'s cap server-side (`ocr-recipe-image.ts`:308, BUT-1655 retry), so
+  "bounded by X" stays true while sharpening it to "only by X" would be false; (b) the verdict rests
+  on the SILENT leg, not the wording — the char-OCR photo path (`OCRExtractionService` →
+  `TextImportStrategy`, `photo_import_strategy.dart`:241) invokes no LLM callable at all, and had it
+  routed through `RecipeParserService`'s `LlmTier` instead, the clause would have been false. Check
+  the leg that spends NOTHING before passing a bounds claim. Round 14's own note also mis-pathed the
+  file it cited (`lib/services/import/photo_llm_vision.dart`, and ":171" is in
+  `llm_enhancement_service.dart`) — a verified-substance note still carries unverified coordinates. Corollary: round 13's own
+  "the only live limiter of that name is the CLIENT's" is imprecise too —
+  `RateLimitOperation.importRecipe` (`lib/core/rate_limiting/rate_limiter.dart`:34/251) has no
+  `checkLimit` caller either (one test reads its token count); the import flow's client gate is
+  `ImportOperation.withLlm(...)`. Verify a "the live one is over there" pointer with the same grep
+  as the dead one.
+  Non-vacuity of such a pin is settled by the field's DECLARED type, not by running it:
+  `dailyLimit?: number` makes `assertEqual(cfg.X.dailyLimit, 50)` a RUNTIME comparison
+  (deleting the field → `undefined !== 50` → FAIL; renaming the config key → TypeError caught
+  per-case by `runTests`, suite continues), whereas the TS2367 compile-error trap recorded
+  above only bites a literal-typed `export const X = 90`. What such a pin does NOT cover is the
+  WIRING: nothing asserts the callable passes that operation STRING to `checkRateLimit`
+  (`create-chat-group.ts`:96), because the callable suites exercise the `…WithDeps` core below
+  the wrapper — a renamed operation key orphans the config and every value pin stays green.
 - Scheduled jobs run hourly, not per-minute (43,200×/month adds up).
 
 ## Secrets handling
@@ -450,7 +692,13 @@ see "When to consult the archive" at the end.
   the suite under the hypothetical regression before trusting the claim —
   measured 2026-08-13, reverting `CONSENT_OPERATIONS` membership to
   `startsWith('consent_')` leaves all NINE `purge-audit-logs` tests green, so
-  "nothing in the suite catches that" is exact, not modest. And a TS comment
+  "nothing in the suite catches that" is exact, not modest. **Same walk for a comment
+  naming which test reddens under a proposed RE-INTRODUCTION**: "re-introduce the roster
+  read fallback unscoped and this reddens ALONE" is false in `conversations-rules.test.ts`
+  — P12B (own row, live parent excludes you) and P14 (own row, parent ABSENT) both stage
+  the mutated predicate's input, so both flip; only the SCOPED
+  (`parentDoc() == null`) re-introduction reddens P14 alone. Grep the fixture constants
+  (`P_EVICTED`, `P_READ_FRESH`) before naming a count. And a TS comment
   naming what a DART writer emits is true only if that file sits in the SAME
   INDEX — check `git show :<path>`, never the worktree (HEAD still wrote
   `consent_deleted` while the worktree wrote `consent_revoked`).

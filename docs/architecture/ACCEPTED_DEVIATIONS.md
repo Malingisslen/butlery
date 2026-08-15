@@ -1425,6 +1425,27 @@ let any signed-in user write that path while the parent is absent, with no rate 
 an unbounded enumeration inside a retrying trigger was a real self-repeating bill, the same
 one the `MAX_GROUP_PARTICIPANTS` guard beside it already refuses.
 
+**AMENDED 2026-08-15 (BUT-1838) — everything above is the 2026-08-12 record, and three of
+its present-tense claims are now false. The verdict and the cap are unchanged.**
+
+1. **The caller moved.** This is written as the eviction trigger choosing between an update
+   and a delete branch. BUT-1838 removed that collapse branch; `tryClearRoster` is now called
+   from `deleteEmptyGroup` (`groups/remove-chat-group-member.ts`) and from `deleteMessages`
+   and `deleteChatGroupMemberships` in the account cascade. None of them lives in the trigger.
+2. **The branches it fears are gone.** `rosterUnclaimed()` and the own-row read fallback were
+   both deleted. Deleting a shell no longer re-opens them — it makes the surviving rows
+   UNREADABLE instead (every predicate that could surface a row reads through the parent).
+   Not un-writable: the `(u1)` self-cursor update and `allow delete` are parent-free self
+   checks, so the row's own subject could still stamp or delete it, and no client flow does.
+   The ordering rule survives on the milder consequence: orphaning is still a one-way door.
+3. **"The cap exists precisely because rules let any signed-in user write that path while the
+   parent is absent" is the sentence this whole amendment exists to retire.** That hole is
+   closed. `MAX_ROSTER_ROWS` stays load-bearing for the same three sources as its sibling
+   `MAX_ROSTER_SWEEP_ROWS` — rows planted before BUT-1838 and still on disk (backfill closed
+   unbuilt, BUT-1839); a tampered or non-standard Admin-SDK writer; and a bounded but LIVE
+   attested client write. Do not cite the retired hole as the reason for a live control, and
+   do not conclude from its removal that the control can go.
+
 ### Art. 17 — CLOSED 2026-08-13 (BUT-1822)
 
 Account deletion erased `users/{uid}/conversation_memberships` and nothing erased the roster
@@ -1437,25 +1458,98 @@ scope note below made one leg insufficient:
    surviving document instead. This is what protects the SURVIVING partner's row, whose
    `participantId` is not the erased uid and which no uid-keyed query can find. It is also
    the first path that can leave a `direct_` conversation standing with fewer than two
-   participants — `authorizeDeparture` refuses to let anyone leave a direct chat, so no
-   client has rendered that state before (it degrades: every "other participant" lookup in
-   `conversation.dart` carries an `orElse`). For a DIRECT conversation the seeded-roster
-   route is not reachable at all — once the parent exists only the two attested
-   participants may write rows, and `rosterUnclaimed()` excludes `direct_` — so this branch
-   means a transient read or delete failure, i.e. an outage.
+   participants — no client can leave a direct chat, because the departure callable takes a
+   `groupId` and a direct conversation cannot be addressed at all, so no client has rendered
+   that state before (it degrades: every "other participant" lookup in `conversation.dart`
+   carries an `orElse`). For a DIRECT conversation the seeded-roster route is not reachable:
+   only the two attested participants may write rows, `directIdBinds` pins `participantIds`
+   to exactly two and the update rule denies any diff touching it, so such a roster holds at
+   most TWO client-written rows and can never reach the refusal cap. For a DIRECT id this
+   branch therefore means a transient read or delete failure, i.e. an outage. A LEGACY
+   non-direct conversation is the other population it serves, and there source 1 (rows
+   seeded before BUT-1838) can genuinely hit the cap — so a `gdprCompliant: false` here is
+   not necessarily an outage.
+   *(Corrected 2026-08-15. This clause used to cite `rosterUnclaimed()`, deleted by
+   BUT-1838, and `authorizeDeparture` refusing direct chats — that function survived the
+   ticket by moving to `groups/remove-chat-group-member.ts`, where it takes `{memberIds,
+   adminIds}` and never sees a direct conversation. See the AMENDED block below.)*
    **That branch reports the step INCOMPLETE** (`deleteMessages` returns false →
    `failedCollections` → `gdprCompliant: false`). A `direct_` id is literally
    `direct_<erasedUid>_<survivorUid>`, so a conversation left standing keeps the erased
    user's identifier in its own document id, where no field-keyed probe can ever see it.
    The erasure is not done and the audit row must not say it is.
 2. a `collectionGroup("participants").where("participantId","==",uid)` sweep, capped at
-   `MAX_ROSTER_SWEEP_ROWS` (2000) and DECLINING rather than truncating above it, because the
-   bootstrap write branch lets a stranger plant rows naming an arbitrary `participantId`
-   (BUT-1830) and so choose the size of a victim's erasure bill. Both outcomes would be
+   `MAX_ROSTER_SWEEP_ROWS` (2000) and DECLINING rather than truncating above it, because a
+   planted roster lets somebody else choose the size of a victim's erasure bill (BUT-1830). Both outcomes would be
    loud — the probe beside it is an uncapped `count()` — so declining is chosen for being
    strictly less erasure at the same alarm, not for being the only loud one. Its cost: a
    planted roster also blocks the sweep of the victim's LEGITIMATE rows, with no automatic
    retry (the auth user is gone), so recovery is a human running `admin/reset-user-data.ts`.
+
+**AMENDED 2026-08-15 (BUT-1838) — the cap's stated reason went stale one day after it was
+written; the cap itself is unchanged and still must not be removed.**
+
+This section, and four comments in the code, justified `MAX_ROSTER_SWEEP_ROWS` by the
+bootstrap write branch. BUT-1838 deleted that branch on 2026-08-13 — a day after this was
+written — and a whole-range integration review caught the code still citing it, including as
+the reason for a control this document says must stay. Rewriting a control's rationale is how
+the control gets removed later, so the replacement is stated precisely rather than loosely.
+
+What BUT-1838 closed: the UNATTESTED branch, where anyone who guessed a conversation id could
+seat rows under a parent that did not exist, on a path carrying no `rateLimitWrite`.
+
+What still puts rows there, and therefore keeps the cap load-bearing:
+
+1. **Rows seeded before BUT-1838 shipped.** Still on disk — the backfill (BUT-1839) was closed
+   unbuilt by Malin on 2026-08-13 because the app is not live. Not hypothetical, just test data
+   for now.
+2. **A tampered or non-standard Admin-SDK writer.** Rules never see it.
+3. **An ATTESTED client write — bounded, but live.** `attestedWriter()` (`firestore.rules`
+   :1706-1708) requires the parent to name the writer AND the subject. A direct conversation
+   `direct_A_B` names both, so A may write B's roster row with a `displayName` of A's
+   choosing. A may also create that conversation: the create rule asks only for
+   `directIdBinds`, two distinct uids and A's own presence — two adults need no friendship,
+   because `passesMinorDmGate` fires only when the other party is a minor. The 10-second
+   `rateLimitWrite('conversations', 10)` does NOT cap the rate: it reads
+   `users/{uid}/rate_limits/conversations`, a bucket no writer in `lib/` ever stamps — the
+   six that exist stamp `activity_events`, `comments`, `social_requests`, `messages`,
+   `imports` and `friendSearchMigrated` — so `!exists(limitsPath)` is permanently true. The
+   bucket is self-written (`firestore.rules`:522-524), so even a stamped one would not bind
+   a tampered client. *(Corrected 2026-08-15: this clause previously credited that limiter,
+   which understated the attacker and so understated the case for the cap.)* Against a
+   CHOSEN victim this
+   yields at most two rows per distinct peer account — `directIdBinds` accepts both
+   orderings, so A may create `direct_A_V` and `direct_V_A`, each holding one such row — so
+   it is unbounded only against your OWN uid. The write rule constrains a row's id SHAPE not
+   at all: attestation requires only that the id APPEAR IN `participantIds`, which is itself
+   never shape-validated. Both halves matter — dropping the second makes this bullet say an
+   attested writer can seat rows at arbitrary ids, which contradicts leg 1 above.
+
+**Frozen, and not up for simplification:** the DECLINE-rather-than-truncate behaviour and the
+uncapped `count()` probe beside it. They are the Art. 17 completeness signal and do not depend
+on which of the three sources is live. Raised by the Privacy/DPO seat on the 2026-08-15 panel,
+which asked for exactly this sentence so that a future "the threat is gone, let's simplify"
+edit cannot quietly weaken an erasure alarm this change never touched.
+
+**Also restated, because it reads like the same fact and is not:** orphaning is still a one-way
+door. Every predicate that could SURFACE a row reads through the parent, so deleting a
+conversation leaves its surviving rows unreadable forever. It does NOT make them un-writable: the `(u1)` self-cursor update branch
+and `allow delete` are parent-free self checks (`firestore.rules`:1860-1862, :1873-1874), so
+the row's own subject could still stamp or delete it, and no client flow does. Measured with a
+throwaway probe against the live rules, orphaned row acting as its own subject: READ denied,
+UPDATE allowed, DELETE allowed. The verdict and the ordering are unaffected — but do not lean
+an Art. 17 argument on "un-deletable", which is the sentence this note exists to stop.
+Before BUT-1838
+that write was worse — it re-opened the bootstrap branch over those rows — but the ordering in
+leg 1 (clear the roster first, abandon the parent delete if that fails) is unchanged, because
+the milder consequence is still bad.
+
+The phrase "not a live client write path" appears at none of the amended sites, on the Security
+Architect's condition: it is the sentence a future reader would cite to remove the cap.
+
+Erasure of the user's OWN `conversation_memberships` rows is untouched by all of this and
+already happens in `deleteUserSubcollections` — noted because the same change set stopped
+READING that collection, and a later reader should not mistake that for an erasure change.
 
 A third thing changed for the same reason. `tryClearRoster`'s three error logs, and the
 new "conversation left standing" warning, HASH a `direct_` conversation id

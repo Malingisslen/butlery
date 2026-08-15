@@ -20,8 +20,9 @@
  * `if (!dailyCap.allowed)` block in checkRateLimit turns these cases red.
  *
  * BUT-1573/BUT-1692 tail: it also pins the production config values that are
- * one decision shared with another file — the LLM daily caps, and the
- * `sendNotificationBatch` bucket versus the batch callable's own size cap.
+ * one decision shared with another file — every `dailyLimit` (three LLM-spend,
+ * one write-amplified), and the `sendNotificationBatch` bucket versus the batch
+ * callable's own size cap.
  *
  * Run with: npx ts-node src/__tests__/rate-limiter-daily-cap.test.ts
  */
@@ -240,9 +241,14 @@ const cases: UnitCase[] = [
   },
 
   // ---- BUT-1573: the production dailyLimit values are the load-bearing
-  // per-user LLM-spend caps. Pin them so deleting or weakening one regresses a
-  // test instead of shipping silently. If a value is deliberately retuned,
-  // update these expectations in the same change. ----
+  // per-user spend caps — three LLM-cost caps, and since BUT-1838 one bounding
+  // WRITE amplification. ("LLM-cost" by category, not by effect: nothing passes
+  // `"importRecipe"` to `checkRateLimit`, so that entry's own cap binds nothing —
+  // an import's LLM spend is bounded by the cap of whichever callable it
+  // invokes: `structureRecipe` for text/URL imports, `ocrRecipeImage` for photo
+  // imports. See BUT-1851.) Pin them so deleting or weakening one
+  // regresses a test instead of shipping silently. If a value is deliberately
+  // retuned, update these expectations in the same change. ----
   {
     name: "RATE_LIMIT_CONFIGS: structureRecipe daily cap is 100",
     fn: async () => {
@@ -270,6 +276,23 @@ const cases: UnitCase[] = [
         RATE_LIMIT_CONFIGS.importRecipe.dailyLimit,
         100,
         "importRecipe.dailyLimit"
+      );
+    },
+  },
+  // BUT-1838 added the fourth `dailyLimit`, and it is NOT an LLM-spend cap:
+  // creating a group writes a group document, a conversation, N roster rows and
+  // a system message, so it is the write-amplified one. The claim above — that
+  // deleting a daily cap regresses this file rather than shipping silently —
+  // went stale the moment it was added, because a coverage promise that
+  // QUANTIFIES goes stale by ADDITION with its own bytes untouched. Pinned here
+  // so the sentence is true again.
+  {
+    name: "RATE_LIMIT_CONFIGS: createChatGroup daily cap is 50",
+    fn: async () => {
+      assertEqual(
+        RATE_LIMIT_CONFIGS.createChatGroup.dailyLimit,
+        50,
+        "createChatGroup.dailyLimit"
       );
     },
   },
@@ -370,4 +393,4 @@ function fakeRateLimitDb(
   return { db, writes, getStored: () => stored };
 }
 
-runTests("BUT-1477: per-user daily LLM cap", cases);
+runTests("BUT-1477: per-user daily caps", cases);
