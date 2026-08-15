@@ -21,10 +21,14 @@
 //   ADJ-09  ett avgjort verdikt tar inte bort kandidaten ur den ra upptackten
 //   ADJ-10  prospektiv konformitet paverkar inte det semantiska verdiktet
 //   ADJ-11  upprepning eller identiska syskon far aldrig ensamt ge DECORATIVE
+//   ADJ-12  textbakgrundsagarskap ensamt kan inte etablera grafiskt krav
+//   ADJ-13  andrad barntext andrar inte forald erns carrier-krav
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { bortfallsprov, carrierstabilitet, grundarKrav, DELKLASS, EVIDENSGRUND,
+  ICKE_GRUNDANDE_ENSAMT } from './graphic-part-requirement.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -165,6 +169,87 @@ const F = A.E_F_G_perForekomst;
     k.ateroppnade.length + ' ateroppnade som UNKNOWN; ' +
       k.totalerEfter.DECORATIVE_GRAPHIC + ' dekorativa kvar; skalet skiljer uttryckligen ' +
       'strukturell upprepningsevidens fran semantisk dekorationsevidens'); }
+
+/* ── ADJ-12 · textagarskap ar ingen grafisk carrier-evidens ─────────
+ *
+ * FELET DETTA PROV FINNS FOR
+ * Batch 2 forklarade 31 skarmhuvuden INFORMATION_BEARING. Tre av fyra
+ * evidenspunkter var utsagor om TEXT: raden ager titeln, raden ager
+ * sekundarvardet, sekundarvardet varierar. Att en malad yta ar den narmaste
+ * malade agaren till ett barns text gor den till textens MATBAKGRUND. Det ar
+ * en matningsrelation i textsparet och sager ingenting om huruvida ytans egen
+ * malning bar information eller struktur.
+ *
+ * SCENARIOT SOM PROVAS
+ * En foralder malar en bakgrund. Ett barn bar sjalvstandig text. Foraldern ar
+ * textens background owner. Ingen separat strukturell eller informationsbarande
+ * funktion hos foralderns egen malning ar bevisad.
+ *   FORVANTAT: textagarskapet far finnas — men graphical carrier requiredness
+ *   far inte uppsta automatiskt. Faller stangt till UNKNOWN.
+ */
+{ const ENDAST_TEXT = [EVIDENSGRUND.TEXT_BACKGROUND_OWNER,
+    EVIDENSGRUND.OWNS_VISIBLE_TEXT, EVIDENSGRUND.CHILD_TEXT_VARIES];
+  const utanGrafisk = bortfallsprov({ id: 'foralderns_fyllning' }, false,
+    'barnets text vore olasbar utan fyllningen', ENDAST_TEXT);
+  /* Positiv kontroll: laggs EN utsaga om malningen sjalv till, far kravet uppsta. */
+  const medGrafisk = bortfallsprov({ id: 'foralderns_fyllning' }, false,
+    'fyllningen ar den enda avgransningen mot omgivningen',
+    [...ENDAST_TEXT, EVIDENSGRUND.GRAPHICAL_DELIMITATION]);
+  const g = grundarKrav(ENDAST_TEXT);
+
+  const C = JSON.parse(readFileSync(join(rot, 'fas2', 'carrier-adjudikering-a2.json'), 'utf8'));
+  const textgrunder = ICKE_GRUNDANDE_ENSAMT;
+  const ingenBarareViladPaText = C.E_perForekomst.every(x =>
+    Object.values(x.barare).every(bar => bar.klass !== DELKLASS.REQUIRED_FOR_UNDERSTANDING ||
+      (bar.grunder || []).some(gr => !textgrunder.includes(gr))));
+  const textrelationenKvarITextsparet = C.E_perForekomst.every(x =>
+    /TEXTSPARET/.test(x.textrelation.$regel));
+  const batch2Aterkallat = C.G_aterkalladeVerdikt.efter.UNKNOWN === 31 &&
+    /utsagor om text/i.test(C.G_aterkalladeVerdikt.$skal);
+
+  prov('ADJ-12', 'TEXT_BACKGROUND_OWNER ensamt kan inte etablera INFORMATION_BEARING eller ' +
+    'REQUIRED_GRAPHICAL_CARRIER',
+    utanGrafisk.klass === DELKLASS.UNKNOWN && utanGrafisk.krav === null &&
+    medGrafisk.klass === DELKLASS.REQUIRED_FOR_UNDERSTANDING &&
+    g.grundar === false && g.ickeGrundande.length === 3 &&
+    ingenBarareViladPaText && textrelationenKvarITextsparet && batch2Aterkallat,
+    'enbart textgrunder ger ' + utanGrafisk.klass + '; med en grafisk grund ger samma ' +
+      'scenario ' + medGrafisk.klass + '; i korpusen vilar ingen kravd barare pa textgrunder ' +
+      'och de 31 objektverdikten ar aterkallade'); }
+
+/* ── ADJ-13 · barntexten far inte vagga fram ett carrier-krav ───────
+ *
+ * FELET DETTA PROV FINNS FOR
+ * Om textagarskapet forst rakas in som carrier-evidens blir foljden att man
+ * kan andra en grafisk barares status genom att skriva om, flytta eller byta
+ * agare pa barnets text — utan att en enda pixel av malningen andrats. Sa
+ * lange den grafiska och strukturella evidensen ar oforandrad ska
+ * carrier-verdiktet vara oforandrat.
+ */
+{ const GRAFISK = [EVIDENSGRUND.GRAPHICAL_DELIMITATION];
+  const fore = { grunder: [...GRAFISK, EVIDENSGRUND.OWNS_VISIBLE_TEXT,
+      EVIDENSGRUND.TEXT_BACKGROUND_OWNER], begripligUtan: false };
+  const efter = { grunder: [...GRAFISK], begripligUtan: false };   // texten borttagen
+  const s1 = carrierstabilitet(fore, efter);
+
+  const foreT = { grunder: [EVIDENSGRUND.TEXT_BACKGROUND_OWNER], begripligUtan: false };
+  const efterT = { grunder: [EVIDENSGRUND.OWNS_VISIBLE_TEXT, EVIDENSGRUND.CHILD_TEXT_VARIES],
+    begripligUtan: false };
+  const s2 = carrierstabilitet(foreT, efterT);   // bara textgrunder — bada UNKNOWN
+
+  /* Kontroll at andra hallet: andras den GRAFISKA evidensen far verdiktet skilja sig. */
+  const s3 = carrierstabilitet({ grunder: GRAFISK, begripligUtan: false },
+    { grunder: [], begripligUtan: false });
+
+  prov('ADJ-13', 'andrad barntext eller andrat textagarskap andrar inte foralderns ' +
+    'carrier-krav nar den grafiska evidensen ar oforandrad',
+    s1.grafiskEvidensLika && s1.stabil && s1.fore === s1.efter &&
+    s1.fore === DELKLASS.REQUIRED_FOR_UNDERSTANDING &&
+    s2.grafiskEvidensLika && s2.stabil && s2.fore === DELKLASS.UNKNOWN &&
+    s3.grafiskEvidensLika === false,
+    'med grafisk grund: ' + s1.fore + ' → ' + s1.efter + ' (stabil); utan grafisk grund: ' +
+      s2.fore + ' → ' + s2.efter + ' (stabil); nar den grafiska grunden faller bort ' +
+      'redovisas evidensen som olik och verdiktet far skilja sig'); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
