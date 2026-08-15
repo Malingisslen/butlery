@@ -22,13 +22,25 @@
 //   CL-10  varje olost kandidat ligger i exakt en granskningspartition
 //   CL-11  klusteridentiteten ar deterministisk over identiska korningar
 //   CL-12  klustringen andrar noll semantiska verdikt
+//   CL-13  samma indata och samma population ger bit-identisk klustring
+//   CL-14  andrade semantiska verdikt ensamt kan inte andra medlemskap
+//   CL-15  andrade comparatorroller ensamt kan inte andra medlemskap
+//   CL-16  relativ ytklass bestams utan semantiska data
+//   CL-17  syskonupprepningsklass bestams utan semantiska data
+//   CL-18  historiska klusteridentiteter ar oforanderliga
+//   CL-19  andrad medlemsmangd kraver en ny klusteridentitet
+//   CL-20  shadowpopulationen stammer exakt 2684 = 2684
+//   CL-21  den operativa populationen stammer exakt 2611 = 2611
+//   CL-22  upprepning ensam kan inte innebara DECORATIVE
+//   CL-23  de nya egenskaperna kan inte sprida ett semantiskt verdikt
+//   CL-24  tva identiska fullkorningar ger identiskt medlemskap och ordning
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { struktursignatur, signaturnyckel, partitionsnyckel, havstang, hash,
-  formklass, texttopologi, tillstandsbarare, FORBJUDNA_NYCKLAR }
-  from './candidate-clustering.mjs';
+import { struktursignatur, struktursignaturV2, signaturnyckel, partitionsnyckel,
+  havstang, hash, formklass, texttopologi, tillstandsbarare, relativYtklass,
+  syskonupprepningsklass, FORBJUDNA_NYCKLAR } from './candidate-clustering.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -166,6 +178,105 @@ const nyckel = x => signaturnyckel(struktursignatur(x));
     FORBJUDNA_NYCKLAR.length >= 12,
     '0 verdiktandringar, deklarerade ' + A.Q_deklarerade + ', recall ' + A.R_recall +
       ', tvetydiga ' + A.S_tvetydiga); }
+
+/* ── CL-13 · bit-identisk klustring ─────────────────────────────────*/
+{ const V = JSON.parse(readFileSync(join(rot, 'fas2', 'klustring-v2.json'), 'utf8'));
+  const d = V.J_determinism;
+  prov('CL-13', 'samma indata och samma population ger bit-identisk klustring',
+    d.shadowIdentisk && d.operativIdentisk,
+    'shadow ' + d.shadowIdentisk + ', operativ ' + d.operativIdentisk +
+      '; fingeravtryck ' + d.shadowFp + ' / ' + d.operativFp); }
+
+/* ── CL-14 · verdikt kan inte andra medlemskap ──────────────────────*/
+{ const bas = o({ andelAvArtefaktyta: 0.01, identiskaSyskon: 1 });
+  const med = { ...bas, verdikt: 'INTERACTIVE_CONTROL', tidigareVerdikt: 'DECORATIVE_GRAPHIC' };
+  prov('CL-14', 'andrade semantiska verdikt ensamt kan inte andra medlemskap',
+    signaturnyckel(struktursignaturV2(bas)) === signaturnyckel(struktursignaturV2(med)),
+    'identisk v2-signatur med och utan verdiktfalt'); }
+
+/* ── CL-15 · comparatorroll kan inte andra medlemskap ───────────────*/
+{ const bas = o({ andelAvArtefaktyta: 0.01, identiskaSyskon: 1 });
+  const med = { ...bas, comparatorRoll: 'button', roll: 'checkbox' };
+  prov('CL-15', 'andrade comparatorroller ensamt kan inte andra medlemskap',
+    signaturnyckel(struktursignaturV2(bas)) === signaturnyckel(struktursignaturV2(med)) &&
+    !/comparator|roll/.test(signaturnyckel(struktursignaturV2(bas))),
+    'identisk v2-signatur, och ingen rollterm i nyckeln'); }
+
+/* ── CL-16 / CL-17 · rent matematiska egenskaper ────────────────────*/
+{ const fn = relativYtklass.toString();
+  prov('CL-16', 'relativ ytklass bestams utan semantiska data',
+    relativYtklass(0.96) === 'A-1' && relativYtklass(0.00006) === 'A-5' &&
+    relativYtklass(0.01) === 'A-2' &&
+    !/verdikt|roll|namn|etikett|skarm/.test(fn) && /log10/.test(fn),
+    '0,96 → A-1, 0,01 → A-2, 0,00006 → A-5; funktionen laser bara en ytkvot'); }
+{ const fn = syskonupprepningsklass.toString();
+  prov('CL-17', 'syskonupprepningsklass bestams utan semantiska data',
+    syskonupprepningsklass(1) === 'R0' && syskonupprepningsklass(3) === 'R1' &&
+    syskonupprepningsklass(4) === 'R2' && syskonupprepningsklass(16) === 'R4' &&
+    !/verdikt|roll|namn|etikett|skarm/.test(fn) && /log2/.test(fn),
+    '1 → R0, 3 → R1, 4 → R2, 16 → R4; funktionen laser bara ett antal'); }
+
+/* ── CL-18 · historiska identiteter oforanderliga ───────────────────*/
+{ const gammal = JSON.parse(readFileSync(join(rot, 'fas2', 'kandidatklustring.json'), 'utf8'));
+  const V = JSON.parse(readFileSync(join(rot, 'fas2', 'klustring-v2.json'), 'utf8'));
+  const gamlaId = new Set(gammal.W_klusterkvalitet.map(k => k.id));
+  const nyaId = V.F_operativ.kluster.map(k => k.id);
+  prov('CL-18', 'historiska klusteridentiteter ar oforanderliga',
+    gammal.C_niva1.antal === 416 && gammal.D_partitioner.antal === 559 &&
+    nyaId.every(id => !gamlaId.has(id)) && nyaId.every(id => id.startsWith('CL2-')),
+    'de gamla 416/559 star kvar och ingen ny identitet ateranvander ett gammalt id'); }
+
+/* ── CL-19 · andrad medlemsmangd kraver ny identitet ────────────────*/
+{ const V = JSON.parse(readFileSync(join(rot, 'fas2', 'klustring-v2.json'), 'utf8'));
+  const pilot = V.I_pilotgruppen;
+  const nya = pilot.delning.map(x => x.nyPartition);
+  prov('CL-19', 'andrad medlemsmangd kraver en ny kluster- eller partitionsidentitet',
+    pilot.gammalId === 'CL-903533c5d5' && pilot.gammaltAntal === 143 &&
+    pilot.nyaPartitioner > 1 && nya.every(id => id !== pilot.gammalId) &&
+    new Set(nya).size === nya.length,
+    '143 i ett gammalt id blev ' + pilot.nyaPartitioner + ' nya, alla med egna identiteter'); }
+
+/* ── CL-20 / CL-21 · avstamning ─────────────────────────────────────*/
+{ const V = JSON.parse(readFileSync(join(rot, 'fas2', 'klustring-v2.json'), 'utf8'));
+  prov('CL-20', 'shadowpopulationen stammer exakt 2684 = 2684',
+    V.E_shadow.population === 2684 && V.E_shadow.summa === 2684,
+    V.E_shadow.population + ' = ' + V.E_shadow.summa); }
+{ const V = JSON.parse(readFileSync(join(rot, 'fas2', 'klustring-v2.json'), 'utf8'));
+  prov('CL-21', 'den operativa populationen stammer exakt 2611 = 2611',
+    V.F_operativ.population === 2611 && V.F_operativ.summa === 2611 &&
+    V.K_avstamning.raPopulation === 2700,
+    V.F_operativ.population + ' = ' + V.F_operativ.summa + '; ra population oforandrad ' +
+      V.K_avstamning.raPopulation); }
+
+/* ── CL-22 · upprepning innebar inte DECORATIVE ─────────────────────*/
+{ const V = JSON.parse(readFileSync(join(rot, 'fas2', 'klustring-v2.json'), 'utf8'));
+  const hogUpprepning = syskonupprepningsklass(16);
+  prov('CL-22', 'upprepning ensam kan inte innebara DECORATIVE',
+    V.B_korrigeradPilot.totalerEfter.DECORATIVE_GRAPHIC === 0 &&
+    V.B_korrigeradPilot.ateroppnade.length === 14 &&
+    hogUpprepning === 'R4' &&
+    // Klassen ar en gruppering, inte ett verdikt: den namner ingen verdiktklass.
+    !/DECORATIVE|CONTROL|GRAPHIC/.test(hogUpprepning),
+    'de 14 ar ateroppnade som UNKNOWN och upprepningsklassen bar ingen verdiktterm'); }
+
+/* ── CL-23 · nya egenskaper sprider inget verdikt ───────────────────*/
+{ const V = JSON.parse(readFileSync(join(rot, 'fas2', 'klustring-v2.json'), 'utf8'));
+  const blandade = V.I_pilotgruppen.delning.filter(x => Object.keys(x.$postHoc).length > 1);
+  prov('CL-23', 'de nya egenskaperna kan inte sprida ett semantiskt verdikt',
+    V.I_pilotgruppen.delning.every(x => /post hoc|EFTER klustringen/i.test(x.$not)) &&
+    blandade.length > 0,
+    'verdiktfordelningen visas enbart som efterhandsdiagnostik, och ' + blandade.length +
+      ' av de nya partitionerna ar fortfarande blandade — inget verdikt har spridits'); }
+
+/* ── CL-24 · tva identiska fullkorningar ────────────────────────────*/
+{ const V = JSON.parse(readFileSync(join(rot, 'fas2', 'klustring-v2.json'), 'utf8'));
+  const h1 = hash(signaturnyckel(struktursignaturV2(o({ andelAvArtefaktyta: 0.02,
+    identiskaSyskon: 4 }))));
+  const h2 = hash(signaturnyckel(struktursignaturV2(o({ andelAvArtefaktyta: 0.02,
+    identiskaSyskon: 4 }))));
+  prov('CL-24', 'tva identiska fullkorningar ger identiskt medlemskap, hashar och ordning',
+    V.J_determinism.shadowIdentisk && V.J_determinism.operativIdentisk && h1 === h2,
+    'bada fullkorningarna identiska och samma indata ger samma hash ' + h1.slice(0, 12)); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);

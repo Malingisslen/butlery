@@ -20,6 +20,7 @@
 //   ADJ-08  en partition kan flaggas heterogen utan att medlemskap andras
 //   ADJ-09  ett avgjort verdikt tar inte bort kandidaten ur den ra upptackten
 //   ADJ-10  prospektiv konformitet paverkar inte det semantiska verdiktet
+//   ADJ-11  upprepning eller identiska syskon far aldrig ensamt ge DECORATIVE
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
@@ -133,6 +134,37 @@ const F = A.E_F_G_perForekomst;
     nya.length > 0 && alla && A.O_frysta.deklarerade === 1351,
     nya.length + ' nya kontroller: prospektiv R-02 UNKNOWN, 30x30 skulle ge ett R-02-fel, ' +
       'och verdiktet star anda'); }
+
+/* ── ADJ-11 · repetition ar inte dekorationsbevis ───────────────────
+ *
+ * FELET DETTA PROV FINNS FOR
+ * Piloten forklarade fjorton listmarkorer DECORATIVE med skalet att markoren
+ * ar identisk fore varje rad. Det ar STRUKTURELL UPPREPNINGSEVIDENS: den
+ * bevisar bara att markoren inte kodar ett VARIERANDE attribut. En identisk
+ * aterkommande markor kan fortfarande bara liststruktur, listmedlemskap eller
+ * gruppering. SEMANTISK DEKORATIONSEVIDENS kraver dessutom att objektet inte
+ * behovs for att forsta innehall, struktur eller tillstand — och den lades
+ * aldrig fram. De fjorton ar ateroppnade som UNKNOWN.
+ */
+{ const V = JSON.parse(readFileSync(join(rot, 'fas2', 'klustring-v2.json'), 'utf8'));
+  const k = V.B_korrigeradPilot;
+  const STRUCTURAL_REPETITION_EVIDENCE =
+    'identisk markor fore varje rad utan variation — bevisar att objektet inte kodar ett ' +
+    'varierande attribut';
+  const SEMANTIC_DECORATIVE_EVIDENCE =
+    'objektet behovs inte for att forsta innehall, struktur eller tillstand — kraver egen ' +
+    'positiv evidens';
+  const skiljerBegreppen = k.ateroppnade.every(x =>
+    /bevisar bara att den inte kodar ett VARIERANDE attribut|VARIERANDE/.test(x.skal) &&
+    /kraver separat positiv evidens/.test(x.skal));
+  prov('ADJ-11', 'upprepning eller identiska syskon far aldrig ensamt etablera DECORATIVE',
+    k.totalerEfter.DECORATIVE_GRAPHIC === 0 && k.ateroppnade.length === 14 &&
+    k.ateroppnade.every(x => x.nyttVerdikt === 'UNKNOWN' && x.olostFraga.length > 40) &&
+    skiljerBegreppen &&
+    STRUCTURAL_REPETITION_EVIDENCE !== SEMANTIC_DECORATIVE_EVIDENCE,
+    k.ateroppnade.length + ' ateroppnade som UNKNOWN; ' +
+      k.totalerEfter.DECORATIVE_GRAPHIC + ' dekorativa kvar; skalet skiljer uttryckligen ' +
+      'strukturell upprepningsevidens fran semantisk dekorationsevidens'); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);

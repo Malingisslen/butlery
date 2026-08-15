@@ -83,6 +83,43 @@ export function tillstandsbarare(o) {
   return 'ingen-observerad';
 }
 
+/* ── SKALA OCH UPPREPNING · VERSION 2 ─────────────────────────────────────
+ *
+ * VARFOR DE BEHOVS
+ * Version 1 normaliserade objektets PROPORTION men inte dess SKALA. En och
+ * samma granskningspartition rymde darfor 5x5-prickar pa 0,006 % av skarmytan
+ * och nastan helskarmsoverlager pa 96 %. Det ar verklig strukturell
+ * heterogenitet som signaturen inte representerade.
+ *
+ * FORMLERNA AR FASTSTALLDA I FORVAG OCH ar rent matematiska. Inga gransvarden
+ * ar handvalda, och INGEN grans har provats mot pilotens verdikt. Att valja
+ * en bucketgrans sa att den skiljer redan kanda utfall at vore att bygga in
+ * facit i strukturen.
+ *
+ *   RELATIVE_AREA_CLASS = floor(log10(objektets yta / artefaktens yta))
+ *     En dekad per klass. Ytkvoten ar dimensionslos och viewportoberoende.
+ *
+ *   SIBLING_REPETITION_CLASS = floor(log2(R)), dar R = antalet strukturellt
+ *     identiska syskon INKLUSIVE objektet sjalvt. Identiska = samma foralder,
+ *     samma avrundade renderade matt och samma malningstillstand. Log2 haller
+ *     ihop 2-3, 4-7, 8-15 och hindrar att exakta antal fragmenterar i
+ *     singletons.
+ *
+ * BADA far anvandas for klustring och granskningspartitionering.
+ * INGEN av dem far harleda semantisk roll. En liten upprepad ruta ar inte
+ * "darfor dekor", och en stor ensam yta ar inte "darfor en kontroll".
+ */
+export function relativYtklass(andelAvArtefaktyta) {
+  const a = Number(andelAvArtefaktyta);
+  if (!(a > 0) || !isFinite(a)) return 'A?';
+  return 'A' + Math.floor(Math.log10(a));
+}
+export function syskonupprepningsklass(identiskaSyskonInklusiveSjalv) {
+  const r = Number(identiskaSyskonInklusiveSjalv);
+  if (!(r >= 1) || !isFinite(r)) return 'R?';
+  return 'R' + Math.floor(Math.log2(r));
+}
+
 /* ── NIVA 1 · STRUKTURSIGNATUR ───────────────────────────────────────────── */
 export function struktursignatur(o) {
   return {
@@ -98,6 +135,14 @@ export function struktursignatur(o) {
     segmenterat: o.segmentgrupp >= 3,
     mekanismer: (o.mekanismer || []).slice().sort().join('+'),
   };
+}
+
+/* VERSION 2. Samma signatur plus skala och upprepning. Version 1 lamnas kvar
+ * orord sa att den gamla klustringens identiteter forblir reproducerbara. */
+export function struktursignaturV2(o) {
+  return { ...struktursignatur(o),
+    ytklass: relativYtklass(o.andelAvArtefaktyta),
+    upprepning: syskonupprepningsklass(o.identiskaSyskon) };
 }
 export const signaturnyckel = s => Object.entries(s)
   .map(([k, v]) => k + '=' + v).join('|');
