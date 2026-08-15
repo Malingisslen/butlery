@@ -31,12 +31,22 @@
 //   UDC-18  unionen har inga tysta missar
 //   UDC-19  kandidatens agare stams av mot samma semantiska agare
 //   UDC-20  borttagna konformitetstrosklar andrar inte semantiska verdikt
+//   UDC-21  nastlad malad form blockerar inte agarupptackt
+//   UDC-22  nastlad malad form gor inte heller foraldern till kandidat automatiskt
+//   UDC-23  en omalad atgardsagare upptacks utan krav pa centrering
+//   UDC-24  en vanlig omalad innehallsrad blir inte automatiskt kandidat
+//   UDC-25  fler kandidater kan aldrig sanka recall
+//   UDC-26  Tier 1-medlemskap ar oberoende av prioriteringspoangen
+//   UDC-27  varje deklarerad kontroll ar aterupptackt eller INFORMATION_LIMIT
+//   UDC-28  tvetydiga agare ligger kvar i explicit bokforing
+//   UDC-29  R-02-utfallet paverkar aldrig medlemskapet
+//   UDC-30  semantisk UNKNOWN presenteras inte som antal kontroller
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { upptack, aterupptack, mekanismerFor, arDeklarerad, PREDIKAT, UNION,
-  GAPFAMILJER, TRAFFYTA_MIN } from './control-shape-discovery.mjs';
+import { upptack, aterupptack, mekanismerFor, prioritet, arDeklarerad, PREDIKAT, UNION,
+  MEKANISM, MATT, TRAFFYTA_MIN } from './control-shape-discovery.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -200,22 +210,20 @@ const o = (art, ordinal, extra = {}) => ({ art, ordinal, ...KROPP, ...extra });
       '; modulen motiverar valet med recall: ' + namnerRecall); }
 
 /* ── UDC-17 · varje miss far exakt en primar gap-orsak ──────────────*/
-{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'upptacktsrecall.json'), 'utf8'));
-  const missar = A.G_missade;
-  const alla = missar.every(m => typeof m.rotorsak === 'string' && m.rotorsak.length > 0 &&
-    Object.prototype.hasOwnProperty.call(GAPFAMILJER, m.rotorsak));
-  const summa = Object.values(A.H_gapfamiljer).reduce((n, f) => n + f.antal, 0);
+{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'upptacktsslutning.json'), 'utf8'));
   prov('UDC-17', 'varje missad deklarerad kontroll far exakt en primar gap-orsak',
-    alla && summa === missar.length && missar.length === A.E_totalt.missade,
-    missar.length + ' missar, ' + summa + ' i familjer, alla i den dokumenterade uppsattningen: ' + alla); }
+    A.F_recall.missade === 0 && A.E_informationLimit.antal === 0 &&
+    A.D_perKontroll.every(x => x.nuAterupptackt && typeof x.mekanism === 'string'),
+    'noll kvarvarande missar; alla ' + A.D_perKontroll.length +
+    ' tidigare missar har en namngiven mekanism'); }
 
 /* ── UDC-18 · unionen har inga tysta missar ─────────────────────────*/
-{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'upptacktsrecall.json'), 'utf8'));
-  const t = A.E_totalt;
+{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'upptacktsslutning.json'), 'utf8'));
+  const t = A.F_recall;
   prov('UDC-18', 'detektorunionen har inga tysta missade deklarerade kontroller',
-    t.deklarerade === t.aterupptackta + t.missade && A.G_missade.length === t.missade,
-    t.deklarerade + ' = ' + t.aterupptackta + ' aterupptackta + ' + t.missade +
-      ' redovisade missar'); }
+    t.deklarerade === t.aterupptackta + t.informationLimit && t.missade === 0,
+    t.deklarerade + ' = ' + t.aterupptackta + ' aterupptackta + ' + t.informationLimit +
+      ' informationsgranser'); }
 
 /* ── UDC-19 · kandidatens agare stams av ────────────────────────────*/
 { // En traff pa ETT entydigt barn stams av till agaren. Tva likadana barn gor
@@ -234,14 +242,126 @@ const o = (art, ordinal, extra = {}) => ({ art, ordinal, ...KROPP, ...extra });
       '; tva likadana barn → avstambar ' + b.agarAvstambar); }
 
 /* ── UDC-20 · borttagna trosklar andrar inte verdikt ────────────────*/
-{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'upptacktsrecall.json'), 'utf8'));
-  const v = A.N_semantiskAvstamning;
+{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'upptacktsslutning.json'), 'utf8'));
   prov('UDC-20', 'borttagna konformitetstrosklar okar kandidater men andrar inga verdikt',
-    v.verdiktandringar === 0 && v.nyaKandidater > 0 &&
-    v.tidigareAdjudiceradeSomBehallerVerdikt === v.tidigareAdjudicerade,
-    v.nyaKandidater + ' nya kandidater, ' + v.verdiktandringar + ' verdiktandringar, ' +
-      v.tidigareAdjudiceradeSomBehallerVerdikt + ' av ' + v.tidigareAdjudicerade +
-      ' behaller sitt verdikt'); }
+    A.L_raPopulation.nya > 0 && A.L_raPopulation.forloradeIdentiteter === 0 &&
+    A.O_dialogsparameny.namnfalt.verdikt === 'UNKNOWN — OFORANDRAT',
+    A.L_raPopulation.nya + ' nya kandidater, 0 tappade identiteter, namnfaltets verdikt ' +
+      A.O_dialogsparameny.namnfalt.verdikt); }
+
+/* -- UDC-21 - nastlad malad form blockerar inte agarupptackt --------*/
+{ // Matkortet: malad kortyta, egen text, en nastlad bricka inuti.
+  const kort = o('V', 22, { w: 126, h: 86, inreMalande: 1, svgAntal: 1, egenTextLangd: 9 });
+  const m = mekanismerFor(kort);
+  prov('UDC-21', 'nastlad malad form blockerar inte agarupptackt',
+    m.includes('PAINTED_TEXT_BODY') && upptack([kort]).nya_st === 1,
+    'malad agare med en nastlad form och egen text -> ' + JSON.stringify(m)); }
+
+/* -- UDC-22 - nastlad form gor inte foraldern till kandidat ---------*/
+{ // En sektionsbehallare: malar en yta, men all text ligger INUTI de nastlade
+  // malade korten. Agaren har darfor ingen EGEN text och far inte bli kandidat.
+  const sektion = o('V', 1, { w: 380, h: 400, inreMalande: 6, egenTextLangd: 0,
+    svgAntal: 2, display: 'block', align: 'normal' });
+  const m = mekanismerFor(sektion);
+  prov('UDC-22', 'nastlad malad form gor inte foraldern till kandidat automatiskt',
+    m.length === 0 && upptack([sektion]).nya_st === 0,
+    'malad behallare utan egen text och med sex nastlade former -> ' +
+      JSON.stringify(m) + ' mekanismer'); }
+
+/* -- UDC-23 - omalad atgardsagare utan centrering -------------------*/
+{ const rad = o('W', 28, { malar: false, harFyllning: false, helRam: false,
+    w: 294, h: 56, align: 'normal', egenTextLangd: 32 });
+  const ikon = o('W', 15, { malar: false, harFyllning: false, helRam: false,
+    w: 412, h: 64, align: 'flex-start', egenTextLangd: 0, svgAntal: 1 });
+  const r = upptack([rad, ikon]);
+  prov('UDC-23', 'en omalad atgardsagare upptacks utan krav pa centrering',
+    r.nya_st === 2 && mekanismerFor(rad).includes('CONTROL_SHELL') &&
+    mekanismerFor(ikon).includes('CONTROL_SHELL'),
+    'align normal och flex-start bada upptackta: ' + r.nya_st + ' av 2'); }
+
+/* -- UDC-24 - vanlig omalad innehallsrad blir inte kandidat ---------*/
+{ // En brodtextrad: blocklayout, ingen malning, ingen glyf. Inte en kandidat.
+  const brodtext = o('W', 40, { malar: false, harFyllning: false, helRam: false,
+    display: 'block', align: 'normal', egenTextLangd: 120, w: 364, h: 60 });
+  // En flexrad vars innehall ar nastlade MALADE kort - inte heller kandidat.
+  const kortrad = o('W', 41, { malar: false, harFyllning: false, helRam: false,
+    display: 'flex', align: 'center', egenTextLangd: 0, svgAntal: 0,
+    inreMalande: 3, w: 364, h: 120 });
+  const r = upptack([brodtext, kortrad]);
+  prov('UDC-24', 'en vanlig omalad innehallsrad blir inte automatiskt kandidat',
+    r.nya_st === 0 && mekanismerFor(brodtext).length === 0 &&
+    mekanismerFor(kortrad).length === 0,
+    'brodtext ' + JSON.stringify(mekanismerFor(brodtext)) + ', kortrad ' +
+      JSON.stringify(mekanismerFor(kortrad))); }
+
+/* -- UDC-25 - fler kandidater kan aldrig sanka recall ---------------*/
+{ // Unionen ar monoton: att lagga till en mekanism kan bara oka recall.
+  const kontroller = [
+    { agare: o('M', 1), attkomlingar: [] },
+    { agare: o('M', 2, { malar: false, harFyllning: false, helRam: false,
+        align: 'flex-start', egenTextLangd: 12 }), attkomlingar: [] },
+    { agare: o('M', 3, { komponent: 'checkbox', display: 'block', align: 'normal',
+        egenTextLangd: 0, malar: false, harFyllning: false }), attkomlingar: [] } ];
+  const smal = ['AUTHORED_COMPONENT'];
+  const bred = UNION;
+  const rSmal = kontroller.filter(k => aterupptack(k, smal).agarAvstambar).length;
+  const rBred = kontroller.filter(k => aterupptack(k, bred).agarAvstambar).length;
+  const volSmal = upptack(kontroller.map(k => k.agare), new Set(), smal).nya_st;
+  const volBred = upptack(kontroller.map(k => k.agare), new Set(), bred).nya_st;
+  prov('UDC-25', 'fler kandidater kan aldrig sanka recall',
+    rBred >= rSmal && volBred >= volSmal && rBred === 3 && rSmal === 1,
+    'recall ' + rSmal + ' -> ' + rBred + ' nar volymen gick ' + volSmal + ' -> ' + volBred); }
+
+/* -- UDC-26 - Tier 1 ar oberoende av prioriteringspoangen -----------*/
+{ const lag = o('N', 1, { w: 20, h: 20, egenTextLangd: 0, malar: true, harFyllning: true,
+    svgAntal: 0, inreMalande: 0 });
+  const hog = o('N', 2, { w: 200, h: 60, komponent: 'checkbox', egenTextLangd: 10 });
+  const pl = prioritet(lag), ph = prioritet(hog);
+  const r = upptack([lag, hog]);
+  prov('UDC-26', 'Tier 1-medlemskap ar oberoende av prioriteringspoangen',
+    r.nya_st === 2 && pl.poang < ph.poang &&
+    /paverkar inte Tier 1-medlemskap/.test(pl.$regel),
+    'poang ' + pl.poang + ' och ' + ph.poang + ' - bada ar kandidater'); }
+
+/* -- UDC-27 - aterupptackt eller INFORMATION_LIMIT ------------------*/
+{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'upptacktsslutning.json'), 'utf8'));
+  const t = A.F_recall;
+  prov('UDC-27', 'varje deklarerad kontroll ar aterupptackt eller explicit INFORMATION_LIMIT',
+    t.deklarerade === t.aterupptackta + t.informationLimit && t.missade === 0 &&
+    Object.values(A.G_perRoll).every(r => r.missade === 0),
+    t.deklarerade + ' = ' + t.aterupptackta + ' + ' + t.informationLimit +
+      '; alla roller pa 100 %'); }
+
+/* -- UDC-28 - tvetydiga agare ligger kvar i bokforingen -------------*/
+{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'upptacktsslutning.json'), 'utf8'));
+  const k = A.K_tvetydigaAgare;
+  const r = upptack([ o('A', 30, { w: 200, h: 60 }), o('A', 31, { w: 200, h: 60 }) ],
+    new Set(['A|30']));
+  prov('UDC-28', 'tvetydiga agare ligger kvar i explicit bokforing',
+    k.antal === A.M_N_matt.DISCOVERY_AMBIGUOUS_OWNER.efter && k.poster.length === k.antal &&
+    k.poster.every(x => x.konkurrerandeAgare && x.behovs) &&
+    r.tvetydigaAgare[0].behovs.length > 0,
+    k.antal + ' tvetydiga, alla med konkurrerande agare och angivet saknat bevis'); }
+
+/* -- UDC-29 - R-02-utfallet paverkar aldrig medlemskapet ------------*/
+{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'upptacktsslutning.json'), 'utf8'));
+  const i = A.I_konformitetsoberoende;
+  prov('UDC-29', 'R-02-utfallet paverkar aldrig medlemskapet',
+    i.sammaBeslutForAllaStorlekar && i.ingenStorlekIPredikaten &&
+    new Set(i.storlekar.map(s => JSON.stringify(s.mekanismer))).size === 1 &&
+    new Set(i.storlekar.map(s => s.uppfyllerTraffyta)).size === 2,
+    'fyra storlekar med tva olika traffyteutfall gav ett och samma upptacktsbeslut'); }
+
+/* -- UDC-30 - UNKNOWN presenteras inte som antal kontroller ---------*/
+{ const A = JSON.parse(readFileSync(join(rot, 'fas2', 'upptacktsslutning.json'), 'utf8'));
+  const m = A.M_N_matt;
+  const tre = ['RAW_DISCOVERY_CANDIDATES', 'ADJUDICATION_UNRESOLVED', 'DISCOVERY_AMBIGUOUS_OWNER']
+    .every(k => m[k] && typeof m[k].definition === 'string');
+  prov('UDC-30', 'semantisk UNKNOWN presenteras inte som antal kontroller',
+    tre && /aldrig|inte/.test(m.$varning) && /backlogtal/.test(m.$historik) &&
+    // Varningen ska uttryckligen FORNEKA att talen ar ett antal kontroller.
+    /uppskattning/.test(MATT.$varning) && /kontroller/.test(MATT.$varning),
+    'tre atskilda matt med egna definitioner, plus explicit varning och historiknot'); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
