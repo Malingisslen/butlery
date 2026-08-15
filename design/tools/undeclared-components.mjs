@@ -114,8 +114,13 @@ export function evidens(post, ix, konvention) {
     authoradKomponenttyp: post.komponent || null,
     SYNLIG_ETIKETT: !!(post.etikett && String(post.etikett).trim()),
     synligEtikett: post.etikett || null,
-    DEKLARERAT_EXEMPEL: !!ex,
-    exempelroll: ex ? [...ex.roller].join(',') : null,
+    // Exemplet ska LEVERERA kontrollrollen. Bar tva deklarerade forekomster med
+    // samma signatur olika roller kan det inte gora det — da vet vi att
+    // strukturen anvands for tva olika saker, och vilken av dem kandidaten ar
+    // gar inte att avgora. Motstridig evidens far aldrig bli ett verdikt.
+    DEKLARERAT_EXEMPEL: !!ex && ex.roller.size === 1,
+    exempelroll: ex && ex.roller.size === 1 ? [...ex.roller][0] : null,
+    exempelrollerMotstridiga: ex && ex.roller.size > 1 ? [...ex.roller] : null,
     exempelantal: ex ? ex.antal : 0,
     exempel: ex ? ex.exempel : [],
     KONTROLLRADSFORM: KONTROLLRADSFORMER.has(post.signatur),
@@ -166,6 +171,10 @@ export function adjudicera(post, ix, konvention) {
     return { verdikt: VERDIKT.INTERACTIVE_CONTROL, kontrolltyp: ev.exempelroll,
       evidens: ev, skal, uppfylldaKrav: uppfyllda }; }
   skal.push('saknad positiv evidens: ' + saknade.join(', '));
+  if (ev.exempelrollerMotstridiga)
+    skal.push('motstridig evidens: samma struktur ar deklarerad med flera olika roller (' +
+      ev.exempelrollerMotstridiga.join(', ') + ') — exemplet levererar ingen entydig ' +
+      'kontrollroll och far darfor inte bara ett verdikt');
   skal.push('ingen positiv evidens for icke-interaktiv tillstandsgrafik eller dekoration');
   if (!ev.AUTHORED_KOMPONENTTYP)
     skal.push('ingen authored komponenttyp — bara en strukturell form, och formen ar inte evidens');
