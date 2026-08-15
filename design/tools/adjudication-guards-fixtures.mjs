@@ -6,7 +6,7 @@
 // FELKLASSEN DESSA PROV FINNS FOR
 // En adjudikering ar bara vard nagot om den inte kan smyga in en klassificering
 // via en signal som aldrig var evidens, och om ett semantiskt svar inte kan
-// forvaxlas med en uppmatt produktegenskap. Tio egenskaper lases har:
+// forvaxlas med en uppmatt produktegenskap. Elva egenskaper lases har:
 //
 //   PR-01  grannkontroll ensam ger aldrig INTERACTIVE_CONTROL
 //   PR-02  hog korpusfrekvens ensam ger aldrig INTERACTIVE_CONTROL
@@ -18,11 +18,13 @@
 //   PR-08  semantiskt upptackta kontroller raknas inte som R-02-verifierade
 //   PR-09  framtida agarskap muterar inte nuvarande icke-textpopulationer
 //   PR-10  de utanfor omfanget far inga verdiktandringar
+//   PR-11  populationen harleds ur persisterad kalla, inte ur en totalsiffra
 //
 // PR-01..PR-06 provas mot detektorn sjalv, med syntetiska fall.
-// PR-07..PR-10 provas mot adjudikeringens faktiska bokforing i
-// fas2/prioriterade-kandidater.json — de ar bokforingsregler, inte kodregler,
-// och maste darfor lasas mot det som faktiskt redovisades.
+// PR-07..PR-11 provas mot adjudikeringens faktiska bokforing i
+// fas2/prioriterade-kandidater.json och fas2/p0r-lineage.json — de ar
+// bokforingsregler, inte kodregler, och maste darfor lasas mot det som
+// faktiskt redovisades.
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
@@ -172,6 +174,30 @@ const kandidat = (art, ordinal, extra = {}) => ({ art, ordinal,
     f.utanforOmfang + ' utanfor omfanget med ' + f.utanforOmfangVerdiktandringar +
       ' verdiktandringar; ' + f.adjudicerade + ' + ' + f.utanforOmfang + ' = ' +
       f.raInventeringEfter); }
+
+/* ── PR-11 · populationen harleds ur kallan, aldrig ur en totalsiffra ──
+ *
+ * FELET DETTA PROV FINNS FOR
+ * I cbee18d valdes predikatet for "prioriterad" genom att prova sex kandidater
+ * och behalla den som gav 21. Att ett predikat rakar reproducera en forvantad
+ * totalsiffra ar ingen harledning — det ar en efterhandsanpassning, och den
+ * hade lika garna kunnat landa i fel population. Medlemskapet ska komma ur den
+ * persisterade listan och predikatet ur koden vid samma commit.
+ */
+{ const L = JSON.parse(readFileSync(join(rot, 'fas2', 'p0r-lineage.json'), 'utf8'));
+  const hist = L.B_historisktMedlemskap, nu = L.C_nuvarandeMedlemskap;
+  const perId = L.D_rekonciliering.spar;
+  prov('PR-11', 'populationen harleds ur persisterad kalla, inte ur en matchande totalsiffra',
+    L.A_kalla.kategori.startsWith('A') && !!L.A_kalla.commit &&
+    /prioritet > 0/.test(L.A_kalla.predikatSomGavMedlemskapet) &&
+    hist.antal === nu.antal && hist.fingeravtryck === nu.fingeravtryck &&
+    L.F_setjamforelse.identiska &&
+    L.F_setjamforelse.baraHistoriska.length === 0 && L.F_setjamforelse.baraCbee18d.length === 0 &&
+    perId.length === hist.antal && perId.every(s => s.gammalId && s.kategori),
+    'kalla ' + L.A_kalla.commit + ' · ' + L.A_kalla.falt + ' · predikat "' +
+      L.A_kalla.predikatSomGavMedlemskapet + '" · fingeravtryck ' + hist.fingeravtryck +
+      ' = ' + nu.fingeravtryck + ' · ' + perId.length + ' av ' + hist.antal +
+      ' med explicit gammal→ny-spar'); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);

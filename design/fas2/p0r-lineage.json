@@ -1,0 +1,585 @@
+{
+ "$schema": "butlery-p0r-lineage/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "cbee18d",
+ "$status": "P0-R LINEAGE BEVISAD — seten ar identiska",
+ "$produktandring": "INGEN",
+ "A_kalla": {
+  "kategori": "A — explicit persisterad 21-kandidatlista",
+  "commit": "974b30e",
+  "fil": "fas2/odeklarerade-komponenter.json",
+  "falt": "F_kvarvarandeUnknown.ko",
+  "rapporteratAntal": 21,
+  "faktisktAntalILista": 21,
+  "prioritetsregelSomTexten": "Syskonparitet och lokal skarmkonvention hojer prioritet i kon men avgor inte verdikt.",
+  "prioritetsfunktionVidSammaCommit": "export function prioritet(res) {\n  if (res.verdikt !== VERDIKT.UNKNOWN) return 0;\n  const e = res.evidens;\n  return (e.syskonAiDeklareradeKontroller ? 2 : 0) +\n    (e.sammaTypDeklareradISkarmen ? 1 : 0);\n}",
+  "predikatSomGavMedlemskapet": "prioriterade: unknown.filter(r => r.prioritet > 0).length",
+  "$harledning": "prioritet = (syskonAiDeklareradeKontroller ? 2 : 0) + (sammaTypDeklareradISkarmen ? 1 : 0), och medlemskapet ar prioritet > 0. Det ar per konstruktion \"syskonrad ar deklarerad kontroll ELLER samma typ deklarerad i skarmen\". Predikatet ar alltsa harlett ur kallan, inte valt for att ge 21."
+ },
+ "B_historisktMedlemskap": {
+  "antal": 21,
+  "fingeravtryck": "cc1fbe4362269a4614f86f80",
+  "identiteter": [
+   "betygsammanslaget|21",
+   "delatclaimkonflikt|15",
+   "delatmindel|41",
+   "delatmindel|48",
+   "delatnarvaro|25",
+   "impassist2|16",
+   "impassist2|19",
+   "impassist2|22",
+   "inkopmergeoppen|12",
+   "inkopmergeoppen|19",
+   "inkopmergeoppen|26",
+   "inkopmergeoppen|33",
+   "inkopmerge|22",
+   "veckoallergi|45",
+   "veckochips|13",
+   "veckochips|14",
+   "veckochips|15",
+   "veckochips|16",
+   "veckochips|17",
+   "veckochips|20",
+   "veckochips|25"
+  ],
+  "poster": [
+   {
+    "identitet": "delatmindel|41",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "2 st · gul lök · AAnna tar"
+   },
+   {
+    "identitet": "delatmindel|48",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "1 kg · potatis · AAnna tar"
+   },
+   {
+    "identitet": "delatnarvaro|25",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "2 st · gul lök · AAnna tar"
+   },
+   {
+    "identitet": "delatclaimkonflikt|15",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "2 st · gul lök · AAnna tar"
+   },
+   {
+    "identitet": "impassist2|16",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "500 g blandfärs"
+   },
+   {
+    "identitet": "impassist2|19",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "1 gul lök"
+   },
+   {
+    "identitet": "impassist2|22",
+    "komponent": "checkbox",
+    "prioritet": 3,
+    "etikett": "3 dl grädde"
+   },
+   {
+    "identitet": "inkopmerge|22",
+    "komponent": "checkbox",
+    "prioritet": 2,
+    "etikett": "Ersätt listan i stället för att lägga tillDina egna, manuell"
+   },
+   {
+    "identitet": "inkopmergeoppen|12",
+    "komponent": "checkbox",
+    "prioritet": 2,
+    "etikett": "Slå samman dubbletterGul lök från tre recept blir en rad med"
+   },
+   {
+    "identitet": "inkopmergeoppen|19",
+    "komponent": "checkbox",
+    "prioritet": 2,
+    "etikett": "Konvertera enheter2 dl + 100 ml blir 3 dl. Volym och vikt ko"
+   },
+   {
+    "identitet": "inkopmergeoppen|26",
+    "komponent": "checkbox",
+    "prioritet": 2,
+    "etikett": "Dra bort skafferivaror6 varor finns hemma. Okänd mängd ger i"
+   },
+   {
+    "identitet": "inkopmergeoppen|33",
+    "komponent": "checkbox",
+    "prioritet": 2,
+    "etikett": "Ersätt listan i stället för att lägga tillDina egna, manuell"
+   },
+   {
+    "identitet": "betygsammanslaget|21",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "4,3 3 av 4 röstade · Per person M Maja · du P Perinmatat av "
+   },
+   {
+    "identitet": "veckochips|13",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "1 vegetariskt · tacofredag · max 30 min · 2 luncher"
+   },
+   {
+    "identitet": "veckochips|14",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "3 middagar · tacofredag · max 30 min · 2 luncher"
+   },
+   {
+    "identitet": "veckochips|15",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "3 middagar · 1 vegetariskt · max 30 min · 2 luncher"
+   },
+   {
+    "identitet": "veckochips|16",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "3 middagar · 1 vegetariskt · tacofredag · 2 luncher"
+   },
+   {
+    "identitet": "veckochips|17",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "3 middagar · 1 vegetariskt · tacofredag · max 30 min"
+   },
+   {
+    "identitet": "veckochips|20",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "”som förra gången”"
+   },
+   {
+    "identitet": "veckochips|25",
+    "komponent": "chip",
+    "prioritet": 2,
+    "etikett": "”lite lyxigt”"
+   },
+   {
+    "identitet": "veckoallergi|45",
+    "komponent": "chip",
+    "prioritet": 1,
+    "etikett": "Mindre kött · kan släppas"
+   }
+  ]
+ },
+ "C_nuvarandeMedlemskap": {
+  "antal": 21,
+  "fingeravtryck": "cc1fbe4362269a4614f86f80",
+  "identiteter": [
+   "betygsammanslaget|21",
+   "delatclaimkonflikt|15",
+   "delatmindel|41",
+   "delatmindel|48",
+   "delatnarvaro|25",
+   "impassist2|16",
+   "impassist2|19",
+   "impassist2|22",
+   "inkopmergeoppen|12",
+   "inkopmergeoppen|19",
+   "inkopmergeoppen|26",
+   "inkopmergeoppen|33",
+   "inkopmerge|22",
+   "veckoallergi|45",
+   "veckochips|13",
+   "veckochips|14",
+   "veckochips|15",
+   "veckochips|16",
+   "veckochips|17",
+   "veckochips|20",
+   "veckochips|25"
+  ]
+ },
+ "D_rekonciliering": {
+  "perKategori": {
+   "FINNS KVAR": 21
+  },
+  "summa": "21 = 21 FINNS KVAR",
+  "spar": [
+   {
+    "gammalId": "delatmindel|41",
+    "gammaltAnkare": "delatmindel ordinal 41 · checkbox · \"2 st · gul lök · AAnna tar\"",
+    "nuvarandeId": "delatmindel|41",
+    "nuvarandeAnkare": "delatmindel ordinal 41 · checkbox",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 6,
+     "syskon": 1,
+     "sammaTypISkarmen": 5
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "delatmindel|48",
+    "gammaltAnkare": "delatmindel ordinal 48 · checkbox · \"1 kg · potatis · AAnna tar\"",
+    "nuvarandeId": "delatmindel|48",
+    "nuvarandeAnkare": "delatmindel ordinal 48 · checkbox",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 6,
+     "syskon": 1,
+     "sammaTypISkarmen": 5
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "delatnarvaro|25",
+    "gammaltAnkare": "delatnarvaro ordinal 25 · checkbox · \"2 st · gul lök · AAnna tar\"",
+    "nuvarandeId": "delatnarvaro|25",
+    "nuvarandeAnkare": "delatnarvaro ordinal 25 · checkbox",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 6,
+     "syskon": 1,
+     "sammaTypISkarmen": 4
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "delatclaimkonflikt|15",
+    "gammaltAnkare": "delatclaimkonflikt ordinal 15 · checkbox · \"2 st · gul lök · AAnna tar\"",
+    "nuvarandeId": "delatclaimkonflikt|15",
+    "nuvarandeAnkare": "delatclaimkonflikt ordinal 15 · checkbox",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 7,
+     "syskon": 1,
+     "sammaTypISkarmen": 2
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "impassist2|16",
+    "gammaltAnkare": "impassist2 ordinal 16 · checkbox · \"500 g blandfärs\"",
+    "nuvarandeId": "impassist2|16",
+    "nuvarandeAnkare": "impassist2 ordinal 16 · checkbox",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 7,
+     "syskon": 3,
+     "sammaTypISkarmen": 3
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "impassist2|19",
+    "gammaltAnkare": "impassist2 ordinal 19 · checkbox · \"1 gul lök\"",
+    "nuvarandeId": "impassist2|19",
+    "nuvarandeAnkare": "impassist2 ordinal 19 · checkbox",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 7,
+     "syskon": 3,
+     "sammaTypISkarmen": 3
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "impassist2|22",
+    "gammaltAnkare": "impassist2 ordinal 22 · checkbox · \"3 dl grädde\"",
+    "nuvarandeId": "impassist2|22",
+    "nuvarandeAnkare": "impassist2 ordinal 22 · checkbox",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 7,
+     "syskon": 3,
+     "sammaTypISkarmen": 3
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "inkopmerge|22",
+    "gammaltAnkare": "inkopmerge ordinal 22 · checkbox · \"Ersätt listan i stället för att lägga tillDi\"",
+    "nuvarandeId": "inkopmerge|22",
+    "nuvarandeAnkare": "inkopmerge ordinal 22 · checkbox",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 4,
+     "syskon": 2,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "inkopmergeoppen|12",
+    "gammaltAnkare": "inkopmergeoppen ordinal 12 · checkbox · \"Slå samman dubbletterGul lök från tre recept\"",
+    "nuvarandeId": "inkopmergeoppen|12",
+    "nuvarandeAnkare": "inkopmergeoppen ordinal 12 · checkbox",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 5,
+     "syskon": 2,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "inkopmergeoppen|19",
+    "gammaltAnkare": "inkopmergeoppen ordinal 19 · checkbox · \"Konvertera enheter2 dl + 100 ml blir 3 dl. V\"",
+    "nuvarandeId": "inkopmergeoppen|19",
+    "nuvarandeAnkare": "inkopmergeoppen ordinal 19 · checkbox",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 5,
+     "syskon": 2,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "inkopmergeoppen|26",
+    "gammaltAnkare": "inkopmergeoppen ordinal 26 · checkbox · \"Dra bort skafferivaror6 varor finns hemma. O\"",
+    "nuvarandeId": "inkopmergeoppen|26",
+    "nuvarandeAnkare": "inkopmergeoppen ordinal 26 · checkbox",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 5,
+     "syskon": 2,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "inkopmergeoppen|33",
+    "gammaltAnkare": "inkopmergeoppen ordinal 33 · checkbox · \"Ersätt listan i stället för att lägga tillDi\"",
+    "nuvarandeId": "inkopmergeoppen|33",
+    "nuvarandeAnkare": "inkopmergeoppen ordinal 33 · checkbox",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 4,
+     "syskon": 2,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "betygsammanslaget|21",
+    "gammaltAnkare": "betygsammanslaget ordinal 21 · chip · \"4,3 3 av 4 röstade · Per person M Maja · du \"",
+    "nuvarandeId": "betygsammanslaget|21",
+    "nuvarandeAnkare": "betygsammanslaget ordinal 21 · chip",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 4,
+     "syskon": 2,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "veckochips|13",
+    "gammaltAnkare": "veckochips ordinal 13 · chip · \"1 vegetariskt · tacofredag · max 30 min · 2 \"",
+    "nuvarandeId": "veckochips|13",
+    "nuvarandeAnkare": "veckochips ordinal 13 · chip",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 5,
+     "syskon": 1,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "veckochips|14",
+    "gammaltAnkare": "veckochips ordinal 14 · chip · \"3 middagar · tacofredag · max 30 min · 2 lun\"",
+    "nuvarandeId": "veckochips|14",
+    "nuvarandeAnkare": "veckochips ordinal 14 · chip",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 5,
+     "syskon": 1,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "veckochips|15",
+    "gammaltAnkare": "veckochips ordinal 15 · chip · \"3 middagar · 1 vegetariskt · max 30 min · 2 \"",
+    "nuvarandeId": "veckochips|15",
+    "nuvarandeAnkare": "veckochips ordinal 15 · chip",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 5,
+     "syskon": 1,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "veckochips|16",
+    "gammaltAnkare": "veckochips ordinal 16 · chip · \"3 middagar · 1 vegetariskt · tacofredag · 2 \"",
+    "nuvarandeId": "veckochips|16",
+    "nuvarandeAnkare": "veckochips ordinal 16 · chip",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 5,
+     "syskon": 1,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "veckochips|17",
+    "gammaltAnkare": "veckochips ordinal 17 · chip · \"3 middagar · 1 vegetariskt · tacofredag · ma\"",
+    "nuvarandeId": "veckochips|17",
+    "nuvarandeAnkare": "veckochips ordinal 17 · chip",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 5,
+     "syskon": 1,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "veckochips|20",
+    "gammaltAnkare": "veckochips ordinal 20 · chip · \"”som förra gången”\"",
+    "nuvarandeId": "veckochips|20",
+    "nuvarandeAnkare": "veckochips ordinal 20 · chip",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 5,
+     "syskon": 1,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "veckochips|25",
+    "gammaltAnkare": "veckochips ordinal 25 · chip · \"”lite lyxigt”\"",
+    "nuvarandeId": "veckochips|25",
+    "nuvarandeAnkare": "veckochips ordinal 25 · chip",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 6,
+     "syskon": 1,
+     "sammaTypISkarmen": 0
+    },
+    "kategori": "FINNS KVAR"
+   },
+   {
+    "gammalId": "veckoallergi|45",
+    "gammaltAnkare": "veckoallergi ordinal 45 · chip · \"Mindre kött · kan släppas\"",
+    "nuvarandeId": "veckoallergi|45",
+    "nuvarandeAnkare": "veckoallergi ordinal 45 · chip",
+    "sammaForekomst": true,
+    "fortfarandeOdeklarerad": true,
+    "nuvarandeDetektorstatus": "UNKNOWN",
+    "nuvarandePrioritetssignal": {
+     "prioritet": 4,
+     "syskon": 0,
+     "sammaTypISkarmen": 1
+    },
+    "kategori": "FINNS KVAR"
+   }
+  ]
+ },
+ "E_neighborOnly": {
+  "medSyskonsignalIdag": 20,
+  "utanSyskonsignalIdag": [
+   "veckoallergi|45"
+  ],
+  "utanSyskonsignalRedanIBlockA": [
+   "veckoallergi|45"
+  ],
+  "denTjugoforsta": "veckoallergi|45",
+  "forklaring": "Den ursprungliga regeln var ALDRIG enbart grannskap. Block A:s prioritetsfunktion adderar tva skilda signaler: syskonparitet (vikt 2) och lokal skarmkonvention (vikt 1), och medlemskapet ar summan > 0. Artefaktens egen formulering sager ocksa bada: \"Syskonparitet OCH lokal skarmkonvention hojer prioritet i kon\". Kandidaten veckoallergi|45 kvalificerade sig pa den andra signalen ensam — samma komponenttyp ar deklarerad i samma skarm (syskonchipet \"Mindre kott · kan slappas\") — men har ingen deklarerad syskonRAD. Neighbor-only ger darfor 20, och har alltid gjort det.",
+  "historikkorrigering": "Formuleringen i rapporten fran cbee18d, \"de ligger i strukturer dar narliggande rader redan ar deklarerade kontroller\", aterger bara halva den ursprungliga regeln. Den utelamnade skarmkonventionsledet. Formuleringen var fel och korrigeras har. Populationen var dock ratt.",
+  "metodfel": "I cbee18d valdes predikatet genom att prova sex kandidater och behalla den som gav 21. Det ar en efterhandsanpassning till en forvantad totalsiffra och duger inte som bevis. Predikatet ar nu i stallet last ur kallan vid 974b30e, och medlemskapet ar hamtat ur den persisterade listan — inte ur en raknesumma."
+ },
+ "F_setjamforelse": {
+  "snitt": 21,
+  "baraHistoriska": [],
+  "baraCbee18d": [],
+  "identiska": true
+ },
+ "G_verdiktForRattSet": {
+  "NON_INTERACTIVE_STATE_GRAPHIC": 9,
+  "UNKNOWN": 7,
+  "INTERACTIVE_CONTROL": 5
+ },
+ "H_globalSemantiskUnknown": {
+  "utanforOmfang": 87,
+  "olostaAvDe21": 7,
+  "summa": 94,
+  "formel": "87 + 7 = 94"
+ },
+ "I_produktskrivningar": 0,
+ "J_frysta": {
+  "historisktVerifierade": 1344,
+  "deklareradeMatbara": 1346,
+  "raKandidater": 108,
+  "r02": {
+   "measured": 1346,
+   "pass": 1346,
+   "fail": 0,
+   "unknown": 0
+  },
+  "kontrollIckeTextFynd": 0,
+  "grafiskaDelar": 1644,
+  "fristaende": {
+   "required": 266,
+   "fynd": 0,
+   "unknown": 0
+  },
+  "stateColorUse": {
+   "medTillstand": 137,
+   "saknarFamilj": 0,
+   "familjer": 71,
+   "singleton": 52,
+   "par": 21,
+   "okandaPar": 0,
+   "colorOnly": 0
+  },
+  "r04BitIdentiskt": true,
+  "andradeProduktfiler": []
+ },
+ "K_stoppvillkor": []
+}
