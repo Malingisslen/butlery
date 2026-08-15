@@ -6,7 +6,7 @@
 // FELKLASSEN DESSA PROV FINNS FOR
 // En adjudikering ar bara vard nagot om den inte kan smyga in en klassificering
 // via en signal som aldrig var evidens, och om ett semantiskt svar inte kan
-// forvaxlas med en uppmatt produktegenskap. Elva egenskaper lases har:
+// forvaxlas med en uppmatt produktegenskap. Femton egenskaper lases har:
 //
 //   PR-01  grannkontroll ensam ger aldrig INTERACTIVE_CONTROL
 //   PR-02  hog korpusfrekvens ensam ger aldrig INTERACTIVE_CONTROL
@@ -19,12 +19,16 @@
 //   PR-09  framtida agarskap muterar inte nuvarande icke-textpopulationer
 //   PR-10  de utanfor omfanget far inga verdiktandringar
 //   PR-11  populationen harleds ur persisterad kalla, inte ur en totalsiffra
+//   PR-12  hojd prioritet fran en ny likadan comparator andrar inget verdikt
+//   PR-13  en ny comparator starker evidens bara via redovisade matchningar
+//   PR-14  prioritetsdelta muterar aldrig ra medlemskap eller verdikt
+//   PR-15  en comparator ur en adjudicerad kontroll bootstrappar inte likande kandidater
 //
-// PR-01..PR-06 provas mot detektorn sjalv, med syntetiska fall.
-// PR-07..PR-11 provas mot adjudikeringens faktiska bokforing i
-// fas2/prioriterade-kandidater.json och fas2/p0r-lineage.json — de ar
-// bokforingsregler, inte kodregler, och maste darfor lasas mot det som
-// faktiskt redovisades.
+// PR-01..PR-06 och PR-12..PR-15 provas mot detektorn sjalv, med syntetiska
+// fall. PR-07..PR-11 provas mot adjudikeringens faktiska bokforing i
+// fas2/prioriterade-kandidater.json, fas2/p0r-lineage.json och
+// fas2/prioritetsdelta-adjudicering.json — de ar bokforingsregler, inte
+// kodregler, och maste darfor lasas mot det som faktiskt redovisades.
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
@@ -198,6 +202,69 @@ const kandidat = (art, ordinal, extra = {}) => ({ art, ordinal,
       L.A_kalla.predikatSomGavMedlemskapet + '" · fingeravtryck ' + hist.fingeravtryck +
       ' = ' + nu.fingeravtryck + ' · ' + perId.length + ' av ' + hist.antal +
       ' med explicit gammal→ny-spar'); }
+
+/* ── PR-12..PR-15 · ATERKOPPLINGSSLINGAN ───────────────────────────────
+ *
+ * FELKLASSEN DESSA PROV FINNS FOR
+ * En produktdeklaration skapar en ny comparator, och den comparatorn hojer
+ * detektorns prioritet for kandidater med samma struktur. Det ar legitimt som
+ * upptackt och kolegi — men om det ocksa fick andra verdikt skulle metoden
+ * validera sig sjalv: en enda adjudicerad kontroll kunde da rekursivt dra in
+ * varje visuellt likande kandidat i kontrollpopulationen utan att nagon ny
+ * evidens om DE forekomsterna nagonsin lades fram.
+ *
+ * Provet kor samma korpus tva ganger. Enda skillnaden ar att en tidigare
+ * kandidat blivit deklarerad kontroll — precis det som hande i 9929749.
+ */
+{ const KAND = { komponent: 'kryss', etikett: 'Synlig etikett',
+    signatur: 'div|flex|KOMPONENT+TEXT', tillstandsstruktur: { typ: 'TOM_RAM' },
+    sektion: null };                       // sektion saknas → aldrig fem av fem
+  const rad = (art, ordinal, extra = {}) => ({ art, ordinal, ...KAND, ...extra, deklarerad: false });
+  // FORE: tva likadana kandidater, ingen deklarerad comparator finns.
+  const fore = svep([ rad('Z', 1), rad('Z', 2) ]);
+  // EFTER: den forsta ar nu deklarerad kontroll. Den andra ar ORORD.
+  const efter = svep([ { ...rad('Z', 1), agare: { roll: 'checkbox' }, deklarerad: true },
+    rad('Z', 2) ]);
+  const kF = fore.kandidater.find(k => k.ordinal === 2);
+  const kE = efter.kandidater.find(k => k.ordinal === 2);
+  const comparatorTillkom = !kF.evidens.DEKLARERAT_EXEMPEL && kE.evidens.DEKLARERAT_EXEMPEL;
+  const prioritetenOkade = kE.prioritet > kF.prioritet;
+
+  prov('PR-12', 'hojd prioritet fran en ny likadan comparator andrar inget verdikt',
+    comparatorTillkom && prioritetenOkade && kF.verdikt === kE.verdikt &&
+    kE.verdikt === VERDIKT.UNKNOWN,
+    'ny comparator ' + comparatorTillkom + ', prioritet ' + kF.prioritet + '→' + kE.prioritet +
+      ', verdikt ' + kF.verdikt + '→' + kE.verdikt);
+
+  prov('PR-13', 'en ny comparator starker evidens bara via redovisade matchningar',
+    kE.evidens.DEKLARERAT_EXEMPEL === true && kE.evidens.exempelroll === 'checkbox' &&
+    Array.isArray(kE.evidens.exempel) && kE.evidens.exempel.length > 0 &&
+    kE.saknadeKrav.includes('INSTALLNINGSKONTEXT'),
+    'exemplet redovisas med roll ' + kE.evidens.exempelroll + ' och forekomst ' +
+      JSON.stringify(kE.evidens.exempel) + '; kvarvarande saknade krav ' +
+      JSON.stringify(kE.saknadeKrav));
+
+  prov('PR-14', 'prioritetsdelta muterar aldrig ra medlemskap eller verdikt',
+    fore.kandidater.length === 2 && efter.kandidater.length === 1 &&
+    // Den enda som lamnade listan ar den som faktiskt blev DEKLARERAD, inte den
+    // vars prioritet andrades.
+    !efter.kandidater.some(k => k.ordinal === 1) &&
+    efter.kandidater.some(k => k.ordinal === 2) &&
+    Object.values(efter.rakn).reduce((x, y) => x + y, 0) === efter.kandidater.length,
+    'kandidater ' + fore.kandidater.length + ' → ' + efter.kandidater.length +
+      '; den som lamnade ar den deklarerade, den med hojd prioritet ligger kvar som ' + kE.verdikt);
+
+  // PR-15: hela poangen — en kedja av deklarationer far inte lyfta in fler.
+  // Har deklareras ANNU en, sa att comparatorn har tva exempel. Kandidat 3 ar
+  // fortfarande UNKNOWN, for den saknar fortfarande sin egen evidens.
+  const kedja = svep([ { ...rad('Z', 1), agare: { roll: 'checkbox' }, deklarerad: true },
+    { ...rad('Z', 2), agare: { roll: 'checkbox' }, deklarerad: true }, rad('Z', 3) ]);
+  const k3 = kedja.kandidater.find(k => k.ordinal === 3);
+  prov('PR-15', 'en comparator ur en adjudicerad kontroll bootstrappar inte likande kandidater',
+    kedja.kandidater.length === 1 && k3.verdikt === VERDIKT.UNKNOWN &&
+    k3.evidens.exempelantal === 2 && kedja.rakn[VERDIKT.INTERACTIVE_CONTROL] === 0,
+    'tva deklarerade exempel med identisk struktur → kandidat 3 ar fortfarande ' + k3.verdikt +
+      '; kontroller skapade av kedjan: ' + kedja.rakn[VERDIKT.INTERACTIVE_CONTROL]); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
