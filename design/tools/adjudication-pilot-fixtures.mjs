@@ -25,6 +25,8 @@
 //   ADJ-13  andrad barntext andrar inte forald erns carrier-krav
 //   ADJ-14  exakt visuell likhet ar inget onodighetsbevis
 //   ADJ-15  REVIEWED_UNKNOWN atervinns inte utan angivet skal
+//   ADJ-16  en handlingslik etikett ensam kan inte etablera CONTROL
+//   ADJ-17  bevisad interaktivitet etablerar inte BUTTON som roll
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
@@ -34,6 +36,8 @@ import { bortfallsprov, carrierstabilitet, grundarKrav, grundarOnodig, DELKLASS,
   from './graphic-part-requirement.mjs';
 import { GRANSKNINGSSTATUS, OMPROVNINGSSKAL, granskningsstatus, arOlost,
   automatisktValbar, batchomfattning } from './review-ledger.mjs';
+import { INTERAKTIONSGRUND, ICKE_GRUNDANDE_FOR_KONTROLL, KONTROLLKLASS, ROLL, ROLLGRUND,
+  kontrollprov, rollprov } from './control-evidence.mjs';
 
 const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
 const OUT = arg('out');
@@ -362,6 +366,95 @@ const F = A.E_F_G_perForekomst;
       '; liggaren ' + L.UNREVIEWED + ' + ' + L.REVIEWED_UNKNOWN + ' = ' + L.unresolvedTotalt +
       '; de ' + L.REVIEWED_UNKNOWN + ' som var fritt valbara ar nu sparrade och batch 2:s ' +
       'RAW_RANK 2 / ELIGIBLE_RANK 1 star oforandrat'); }
+
+/* ── ADJ-16 · en handlingslik etikett ar ingen interaktionsevidens ──
+ *
+ * FELET DETTA PROV FINNS FOR
+ * Batch 3 forklarade tva objekt kontroller enbart darfor att hela deras
+ * innehall var en handlingsetikett: "+ Lägg till familjemedlem" och "Skapa
+ * konto". En imperativ eller navigerande etikett ar en utsaga om SPRAKET i
+ * objektet, inte forekomstspecifik positiv evidens for att det gar att
+ * interagera med. Knapplik form — ram, radie, padding — ar utseende och
+ * racker inte heller.
+ *
+ * NUMRERING: ordern kallade regeln ADJ-15. Det numret ar upptaget sedan
+ * 325d517 (review-state-sparren) och far inte skrivas om. Regeln ar ADJ-16.
+ */
+{ const ENBART_ETIKETT = [INTERAKTIONSGRUND.IMPERATIVE_ACTION_LABEL];
+  const ETIKETT_OCH_FORM = [INTERAKTIONSGRUND.IMPERATIVE_ACTION_LABEL,
+    INTERAKTIONSGRUND.NAVIGATIONAL_LABEL, INTERAKTIONSGRUND.BUTTON_LIKE_APPEARANCE];
+  const MED_PROSA = [INTERAKTIONSGRUND.IMPERATIVE_ACTION_LABEL,
+    INTERAKTIONSGRUND.AUTHORED_SCREEN_PROSE_NAMES_CONTROL];
+
+  const a = kontrollprov(ENBART_ETIKETT);
+  const b = kontrollprov(ETIKETT_OCH_FORM);
+  const c = kontrollprov(MED_PROSA);
+  const d = kontrollprov([]);
+
+  const K = JSON.parse(readFileSync(join(rot, 'fas2', 'batch3-korrigering.json'), 'utf8'));
+  const ater = K.A_aterOppnade.map(x => x.identitet).sort();
+  const korpusRatt = ater.length === 2 &&
+    ater[0] === 'familj|39' && ater[1] === 'inloggningmorkt|19' &&
+    K.C_utfall.INTERACTIVE_CONTROL === 19 && K.C_utfall.UNKNOWN === 3 &&
+    K.C_utfall.NON_INTERACTIVE_STATE_GRAPHIC === 1 &&
+    K.K_perForekomst.every(x => x.verdikt !== 'INTERACTIVE_CONTROL' ||
+      x.kontrollprov.barande.length > 0) &&
+    K.E_avstamning.avvikelser.length === 0;
+
+  prov('ADJ-16', 'en handlingslik, imperativ eller navigerande etikett kan inte ensam ' +
+    'etablera CONTROL — och inte heller knapplik form',
+    a.klass === KONTROLLKLASS.UNKNOWN && b.klass === KONTROLLKLASS.UNKNOWN &&
+    d.klass === KONTROLLKLASS.UNKNOWN &&
+    c.klass === KONTROLLKLASS.INTERACTIVE_CONTROL && c.barande.length === 1 &&
+    ICKE_GRUNDANDE_FOR_KONTROLL.length === 3 && korpusRatt,
+    'etikett ensam ger ' + a.klass + ', etikett + navigering + knapplik form ger ' + b.klass +
+      ', med en oberoende evidenspunkt ger samma objekt ' + c.klass +
+      '; i korpusen ar ' + ater.join(' och ') + ' ateroppnade och utfallet ' +
+      K.C_utfall.INTERACTIVE_CONTROL + ' / ' + K.C_utfall.NON_INTERACTIVE_STATE_GRAPHIC +
+      ' / ' + K.C_utfall.UNKNOWN); }
+
+/* ── ADJ-17 · interaktivitet ar inte roll ───────────────────────────
+ *
+ * FELET DETTA PROV FINNS FOR
+ * Batch 3 stamplade BUTTON pa varje objekt som bedomdes interaktivt — aven
+ * dar skarmprosan talade om lankar och aven dar objektet var ett av flera
+ * omsesidigt uteslutande val. Att ett objekt gar att interagera med sager
+ * ingenting om VILKEN roll det har. Rollen kraver egen grund, och
+ * rollosakerhet ska kunna sta oppen UTAN att kontrollstatusen faller.
+ */
+{ const I = KONTROLLKLASS.INTERACTIVE_CONTROL;
+  const utanGrund = rollprov(I, ROLL.BUTTON, []);
+  const medOperation = rollprov(I, ROLL.BUTTON, [ROLLGRUND.OPERATION_ON_CURRENT_STATE]);
+  const medProsa = rollprov(I, ROLL.LINK, [ROLLGRUND.AUTHORED_PROSE_STATES_ROLE]);
+  const motstridig = rollprov(I, ROLL.BUTTON,
+    [ROLLGRUND.OPERATION_ON_CURRENT_STATE, ROLLGRUND.NAVIGATES_TO_DESTINATION]);
+  const iMangd = rollprov(I, ROLL.BUTTON, [ROLLGRUND.ONE_OF_MUTUALLY_EXCLUSIVE_SET]);
+  const ejInteraktiv = rollprov(KONTROLLKLASS.UNKNOWN, ROLL.BUTTON,
+    [ROLLGRUND.OPERATION_ON_CURRENT_STATE]);
+
+  const K = JSON.parse(readFileSync(join(rot, 'fas2', 'batch3-korrigering.json'), 'utf8'));
+  const F = K.F_roller;
+  /* Oppen roll far INTE gora forekomsten olost. */
+  const statusOberoende = K.K_perForekomst
+    .filter(x => x.verdikt === 'INTERACTIVE_CONTROL')
+    .every(x => x.verdikt === 'INTERACTIVE_CONTROL') &&
+    F.avgjorda + F.oppna === K.C_utfall.INTERACTIVE_CONTROL &&
+    F.oppna > 0 && F.perRoll.UNKNOWN === F.oppna;
+
+  prov('ADJ-17', 'bevisad interaktivitet etablerar inte BUTTON som semantisk roll — ' +
+    'rollosakerhet star oppen utan att kontrollstatusen faller',
+    utanGrund.roll === ROLL.UNKNOWN && utanGrund.avgjord === false &&
+    medOperation.roll === ROLL.BUTTON && medOperation.avgjord === true &&
+    medProsa.roll === ROLL.LINK && medProsa.avgjord === true &&
+    motstridig.roll === ROLL.UNKNOWN && iMangd.roll === ROLL.UNKNOWN &&
+    ejInteraktiv.roll === ROLL.UNKNOWN && ejInteraktiv.avgjord === false &&
+    statusOberoende,
+    'utan rollgrund ' + utanGrund.roll + '; med operation ' + medOperation.roll +
+      '; med prosa ' + medProsa.roll + '; motstridiga grunder ' + motstridig.roll +
+      '; ett av flera omsesidigt uteslutande val ' + iMangd.roll +
+      '; i korpusen star ' + F.avgjorda + ' roller avgjorda och ' + F.oppna +
+      ' oppna, medan alla ' + K.C_utfall.INTERACTIVE_CONTROL +
+      ' fortsatt ar etablerade kontroller'); }
 
 for (const x of resultat)
   console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
