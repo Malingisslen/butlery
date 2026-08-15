@@ -132,6 +132,22 @@ files in the same edit.
 
 ## Engineering
 
+- **The pantry sheet's unit dropdown keeps its EIGHT units and widens PER ITEM; it is not
+  replaced by `UnitDefinitions.standaloneUnits`** — a stored unit the sheet does not offer is
+  prepended for that item and stays selectable, so an untouched save cannot rewrite it.
+  **Malin's explicit call, 2026-08-15**, over the two alternatives she was shown: adopting the
+  parser's 88-entry set as the menu (no data loss, but that set exists to RECOGNISE what a
+  parser may find in a recipe — it holds `pers`, `personer`, `gallons`, `tablespoons` — and a
+  set you must recognise is not a set you should offer), and keeping the clamp for display
+  while writing back the original (smallest change, but the screen would then disagree with
+  storage). The widening keys on the STORED unit, deliberately unlike
+  `RecipeFormState.mealTypeOptions` which keys on the current selection — so here the injected
+  row survives a pick and can be chosen back, and a mis-pick is undoable. Do not propose the
+  vocabulary swap again (pinned by `pantry_unit_options_test.dart`'s last case) and do not
+  harmonise the two seams (pinned by widget test 8; test 7 pins the widening itself and stays
+  green under the harmonisation mutant). Full rationale:
+  `docs/architecture/ACCEPTED_DEVIATIONS.md`. BUT-1858, 2026-08-15
+
 - **TRIMMING a trailing orphan heading is BUILT at a 120-character budget; the
   120-200 band is MEASURED AND DECLINED.** `withoutOrphanTail` cuts a page at its last
   detected heading when under 120 characters follow it, applied by `ImportManager`

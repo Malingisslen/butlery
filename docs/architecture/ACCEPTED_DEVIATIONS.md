@@ -1745,3 +1745,71 @@ added for the one fact the conversation does not carry (who added YOU); never th
 document, because a second copy of a redaction decision is how two sections drift.
 **That redaction was chosen conservatively without asking Malin**; widening it to keep other
 members' stamps is hers to decide.
+
+## Pantry — the unit dropdown (2026-08-15)
+
+### The unit dropdown keeps its eight units and widens per item (BUT-1858, 2026-08-15)
+
+**Verdict: the pantry sheet offers the same eight units it always has, and a stored unit it
+does not offer is added to the list for that one item.** Malin's explicit call, 2026-08-15.
+
+**The defect.** The sheet clamped any stored unit outside `st, g, kg, ml, dl, l, tsk, msk` to
+`st`, because `DropdownButtonFormField` asserts in its constructor, on every build, that
+exactly one item matches its value — in debug the screen falls, in release the control renders
+blank. `_submit` then wrote the clamped value unconditionally, so opening a row stored as
+`1 knippe rosmarin`, changing nothing, and pressing Save silently rewrote it to `1 st`.
+
+Off-list units are not hypothetical. The shopping-checkoff flow
+(`ShoppingCheckoffPantryService.onItemCheckedOff` → `PantryService.addFromShoppingItem` →
+`addFromText`) stores a shopping item's unit verbatim — `UnifiedShoppingItem.unit` is a
+non-nullable free-text String, so neither fallback on the way down fires — and that text comes
+from a plain input field or from parsed recipe units (`förp`, `påse`, `krm`, and `''` for an
+amount-less line). The flow sits behind the `autoAddBoughtToPantry` opt-in, off by default but
+shipped.
+
+**Second-order cost, which is what made this worth fixing rather than documenting.** That same
+flow dedups on name + exact unit. Once a `förp` row had been clamped to `st`, the next
+check-off of the same item no longer matched it and created a duplicate pantry row instead of
+aggregating.
+
+**The two rejected alternatives**, both put to Malin with their costs:
+
+1. *Adopt `UnitDefinitions.standaloneUnits` as the menu* (88 entries). No data loss, and it
+   looks like the tidy answer — one list instead of two. Rejected because that set exists to
+   RECOGNISE what a parser may find in a recipe: it holds `pers`, `personer`, `gallons`,
+   `tablespoons`. A set you must recognise is not a set you should offer, and conflating the
+   two questions would make the dropdown worse, not just longer.
+2. *Keep the clamp for display, write back the original if untouched.* Smallest change, but
+   it makes the screen disagree with storage — its own trap, and a harder one to see.
+
+**What shipped.** `AddPantryItemSheet.unitOptions(storedUnit)` returns `(values, selected)`:
+an off-list stored unit is prepended and selected, an on-list one leaves the list untouched,
+and an EMPTY stored unit selects nothing — `PantryItem.copyWith(unit: null)` then preserves it
+rather than inventing `st`. `_unit` became `String?` for that last case.
+
+**The deliberate divergence from `RecipeFormState.mealTypeOptions`.** The two seams solve the
+same bug class (BUT-1845) and are keyed
+differently BY THEIR CALLERS. The two BODIES are identical apart from the vocabulary each
+closes over, so one parameterised helper would serve — what differs is the ARGUMENT each caller
+passes, and that is the part test 8 refuses. (They are not interchangeable as they stand:
+swapping a call site would offer meal types in the unit dropdown.) Meal type is called with the
+CURRENT selection, so its injected row disappears once you
+pick something else; this one keys on the STORED unit, so the injected row stays on offer and
+a mis-pick is undoable. Do not harmonise them. If a third copy of the seam appears, that is
+the moment to extract one helper — not before.
+
+**Pinned by:** `test/unit/views/pantry/pantry_unit_options_test.dart` (the widening rule, and
+a literal assertion on the eight-entry vocabulary and its display order — the case whose red
+message says WHY, though it is not the only one: half-applying alternative 1 also reddens the
+off-list-prepend case and widget tests 7-8, because `knippe` is itself in `standaloneUnits`)
+and `test/widget/views/pantry/add_pantry_item_sheet_test.dart` tests **1 and 7-10** (an off-list unit survives an untouched
+save; the injected row survives a pick and can be chosen back; an empty unit is preserved; and
+both add branches send the picked unit — test 1 for the ingredient path, test 10 for raw text.
+Test 1 is the ingredient branch's ONLY guard; do not read the 7-10 range as
+complete). Test 7 pins the widening and stays green under the
+harmonisation mutant — test 8 is the one that catches it.
+
+**Known and out of scope:** an empty unit renders a trailing space in the pantry list, at
+`pantry_item_card.dart`'s `'${item.formattedQuantity} ${item.unit}'`. Filed as BUT-1863, and
+that line carries a pointer back. It existed before, but this change makes it durable, because
+opening and saving no longer normalises the unit away.

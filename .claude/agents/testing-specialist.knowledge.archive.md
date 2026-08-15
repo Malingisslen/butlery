@@ -20596,3 +20596,352 @@ Closing state — md5 / wc -l (worktree):
 No production or test bytes changed by this round.
 
 Verdict: pass (0 blocking).
+
+## 2026-08-15 — BUT-1858 pantry unit dropdown, round 10 (the fix, after round 9 reviewed the defect)
+
+**Trigger:** asked to review the BUT-1858 fix — `AddPantryItemSheet.unitOptions(storedUnit)`
+widening the dropdown per item — plus its widget suite and a new unit suite
+`test/unit/views/pantry/pantry_unit_options_test.dart` mirroring
+`test/unit/viewmodels/recipe_form/meal_type_options_test.dart` (BUT-1845). Brief supplied
+mutation results (drop the prepend → 4 red; empty selects 'st' → 2 red; add branch hardcodes
+'st' → 1 red) and asked four questions: what is still unguarded (naming the
+`addItemFromIngredient` branch and the empty-unit-on-add case), whether test 7's two
+assertions both earn their place, whether the docstring's per-ticket claims are true, and
+whether the mirror of the meal-type suite is honest.
+
+**All three round-9 findings were applied.** The defect-documenting test
+(`an off-list unit is clamped to st, and saving rewrites it`) was replaced by its INVERSE
+rather than deleted, keeping the suite's only off-list fixture; the offered list is pinned,
+not only the selection; the disclosed add-branch gap got test 9.
+
+**The tree moved TWICE during the round, both times unstaged.** Widget suite
+eaecd3cc… → 8ff43b04… (test 1 gained a 'dl' pick and `unit: 'dl'`, closing the
+`addItemFromIngredient` half of my finding while I was writing it, and the header bullet was
+rewritten from "The add path is covered too" to "BOTH add branches are covered — test 1 for
+the ingredient path, test 9 for raw text"); production 20d6cbab… → 2a6a07a6… (comment-only:
+`unitOptions` now says it is keyed on the STORED unit "rather than the current selection, so
+the injected row survives a pick and can be chosen back… do not harmonise the two"). Detected
+by `wc -l` disagreeing with a Read taken minutes earlier (568 vs 574 vs 585) — the cheap
+motion detector again. Everything below is graded against the FINAL bytes, re-read in full.
+
+**Blocking, 3.**
+
+1. Test 7's `Would fail if: … or if _submit stopped sending it` is FALSE, analytically: the
+   fixture is an UNTOUCHED save of a 'knippe' row, and `PantryItem.copyWith`'s
+   `unit: unit ?? this.unit` preserves 'knippe' when the argument is dropped, so that mutant
+   leaves every assertion in test 7 green. Test 6 (stored 'g', picked 'dl') is what kills it.
+   Sharpest detail: test 3's comment ten lines up states the rule correctly ("this one alone
+   would stay green if `_submit` stopped sending `_unit`, because `copyWith` without it
+   preserves the item's stored value"), so the file teaches the trap and then falls into it.
+2. Reviewed bytes ≠ committable bytes. Both in-scope files are `MM`; the INDEX still holds the
+   pre-round-10 widget suite (wildcard `unit` on test 1 plus the old "The add path is covered
+   too" header), so a bare `git commit` ships the gap AND the sentence denying it. `git add`
+   both before the gate, then re-hash.
+3. "The injected row survives a pick and can be chosen back" is reachable by NO test, and this
+   round DOUBLED the claim (a new `unitOptions` docstring paragraph plus the pre-existing
+   comment at the `items:` argument). Mutating build's
+   `unitOptions(widget.existingItem?.unit ?? '')` to `unitOptions(_unit ?? '')` leaves all 15
+   tests green — analytic, no run owed: in add mode `_unit` is 'st' (on-list ⇒ same list), in
+   test 7 `_unit` is 'knippe' before any pick, in test 8 `_unit` is null ⇒ ''. The
+   user-visible loss is real (pick 'dl' by mistake on a 'knippe' row and 'knippe' is gone from
+   the menu; Save then rewrites the stored unit — the very bug BUT-1858 exists to stop).
+   Fixture is four lines inside test 7: pick 'dl', reopen, assert 'knippe' is still offered.
+
+**Non-blocking, 6.**
+
+4. Header still reads "Three contracts, added by three tickets" over FOUR bullets / four tickets.
+5. The BUT-1344 bullet's "so the item lands in the right Firestore collection" is false —
+   `PantryService.addFromIngredient` and `addFromText` both end at
+   `_pantryRepository.add(userId, item)`, one collection. What the routing decides is the
+   `ingredientId` link and the `typicalUnit`/`typicalStorage` defaults, which test 1's own
+   Intent paragraph says correctly. Pre-existing, but the brief asked for each bullet.
+6. **New reusable fact, probe-verified:** the four `verifyNever(() => vm.addItemFrom*(any()))`
+   guards (tests 1, 2, 3×2) are UNFAILABLE. A throwaway probe
+   (`test/zz_probe_verifynever_named_defaults_test.dart`, run and deleted in one command,
+   `git status` + `find` confirmed clean) printed `bare verifyNever passed (i.e. VACUOUS):
+   true` against a real call `addItemFromText('Mjolk', quantity: 1.0, unit: 'st',
+   location: pantry)`, and `false` for the same verifyNever with every named param spelled
+   `any(named:)`. Cause: the noSuchMethod forwarder fills omitted named params with their
+   DECLARED DEFAULTS (null here), so the verification invocation cannot match. Harmless today
+   — `_submit`'s if/else makes double dispatch impossible and the positive `verify` carries
+   the routing contract — but it reads as coverage and will be copied.
+7. Test 7's items-assert comment ("pins the widening against a half-applied edit that selects
+   the value without offering it") names a mutant the `expect(tester.takeException(), isNull)`
+   two lines ABOVE already kills, since that shape trips the framework's one-match assert. The
+   kill only `items` owns is an offering that CONTAINS the selection in a different shape —
+   append-instead-of-prepend, or a widening to `UnitDefinitions`. It understates, which is the
+   safe direction of the round-8 lesson, but it mis-nominates which line is load-bearing.
+8. `find.byType(DropdownButton<String>)` reaches into `DropdownButtonFormField`'s internal
+   composition; it holds on Flutter 3.38.5 and is the only cheap way to read the offered list
+   (every item renders in an IndexedStack, so `find.text` cannot discriminate), but it is a
+   framework internal under a header that says "None of these are structural tests".
+9. Unit test 6 pins `offeredUnits` as an ORDERED literal, so a display reorder reddens it. Keep
+   it — it is what breaks the circularity of tests 1-3, which compare against the same constant
+   the code reads — but the comment should say the order is part of the pinned decision.
+
+**Q2 answered (do both of test 7's assertions earn their place):** yes, and neither is
+redundant, but the implication is ONE-directional. Given `takeException() == null`, an
+`initialValue` of 'knippe' already proves 'knippe' occurs exactly once in `items`, so the
+MEMBERSHIP half of the items assertion is implied; POSITION (first) and "the eight follow
+unchanged, in order" are not, and an append-instead-of-prepend build is killed by nothing
+else. `initialValue` has its own unique kill in the other direction: a build passing
+`offeredUnits.contains(_unit) ? _unit : null` shows an empty control while the save still
+writes 'knippe' — the "shown" half of the contract, which no save assertion can see.
+
+**Q1's second half (empty unit on the ADD path):** nothing owed. `_unit` is field-initialised
+to 'st', `initState`'s else branch only sets the quantity, and `onChanged` ignores null, so
+`_unit` is non-null in add mode by construction — which also means `PantryService`'s
+`unit ?? match?.typicalUnit` and `_buildItem`'s `?? 'st'` are unreachable from this sheet and
+correctly untested here.
+
+**Q4 (is the meal-type mirror honest):** yes. It tests the REAL static seam rather than
+reimplementing the rule, and the near-collision the case test needs genuinely exists in this
+vocabulary ('G' vs offered 'g', 'St' vs 'st') — a `toLowerCase()` containment fold makes
+`values.first != stored` and reddens. Two honest divergences: it ADDS the literal
+eight-element vocabulary pin the meal-type file lacks (which is what redeems tests 1-3
+comparing against `offeredUnits` itself), and it DROPS the meal-type file's strongest case
+assertion (`where(v.toLowerCase() == 'lunch').length == 2`, i.e. both spellings coexist) in
+favour of a three-value loop. The dropped assertion has no unique kill here, so the trade is
+fine. Placement at `test/unit/views/pantry/` follows the existing `test/unit/views/recipe_detail/`
+precedent, not the agent's default views→journey mapping.
+
+`ACCEPTED_DEVIATIONS.md`: head read, all 38 section headings enumerated, full-file grep for
+pantry/unit/dropdown/1845/1849/1858 — nothing decides any of this.
+
+**Tests run (read-only; none written or edited):** unit + widget pantry suites, 15 passed at
+the final bytes; `flutter analyze --fatal-infos` over `lib/views/pantry`,
+`test/widget/views/pantry`, `test/unit/views/pantry` — No issues found.
+
+Closing state — md5 / wc -l (worktree, LF):
+- 2a6a07a6c0b578f2787ef5397e9d0540  lib/views/pantry/add_pantry_item_sheet.dart (399)
+- 8ff43b044c0a4aae24dfeb82edfc1f41  test/widget/views/pantry/add_pantry_item_sheet_test.dart (585)
+- b9637ad545440f32b931e5c5677ca3a7  test/unit/views/pantry/pantry_unit_options_test.dart (112)
+Both `lib` and the widget suite are `MM` — the index is BEHIND the bytes above.
+No production or test bytes changed by this round; the one probe file was deleted in the same
+command that ran it.
+
+Verdict: fail (3 blocking).
+
+## 2026-08-15 — BUT-1858 round 3: verifying the corrections (pantry unit dropdown)
+
+Trigger: parent asked for a *verification* pass over three applied fixes, explicitly "verify
+rather than accept" because the predecessor ticket in this file burned three rounds on
+corrections that landed worse than the originals. Brief asserted the tree was frozen,
+index == worktree, 16 green.
+
+**The tree was not frozen.** It moved at least twice DURING the round. Tell that fired first:
+`wc -l` reported 401/685 against `Read` outputs of 399/683 taken minutes earlier — a uniform
++2 on both files. A second write landed between that `wc` and the re-Read (685 -> 692). Every
+mid-round hunk was a comment improvement in the direction of a finding I was about to file, so
+the fixes were correct; the process claim was not. Re-Read both files in full and graded the
+worktree bytes.
+
+**Index BEHIND the graded bytes, for the SECOND consecutive round.** Last round closed noting
+`MM` on the same two files; this round's brief said "Staging — resolved; that was the stale-bytes
+race". It was not. `git show :<path> | diff -` showed the index still holding, in the widget
+suite: the false `test 9 covers the add branch, which tests 1-2 only wildcard` (test 9 is the
+empty-unit EDIT test — the renumber orphaned the pointer), and a garbled duplicated test-10
+header (`Covers the RAW-TEXT add branch. Test 10 covers the raw-text branch; test 1 the
+ingredient one, the same way;`). Both already repaired in the worktree. The lib file's index
+held the older `~85 entries` vocabulary paragraph — stale but not false (the set is 88 entries).
+Filed as the round's single blocking item: a bare `git commit` ships a false comment of exactly
+the class that was blocking finding #1 last round.
+
+**Q1 (are the four repaired `verifyNever` guards non-vacuous):** yes, and settled by the callee's
+declaration rather than a probe. `PantryViewModel.addItemFromIngredient` (:69) and
+`addItemFromText` (:97) each declare exactly five named params — `quantity = 1`, `String? unit`,
+`PantryLocation? location`, `DateTime? expiryDate`, `String? note` — and all five now carry
+`any(named:)`. The old omitted form was unfailable because `_submit` always sends `unit:'st'|'dl'`
+and `location: PantryLocation.pantry` against `null` defaults, so the verification invocation
+noSuchMethod fills with defaults could never match a recorded call. Caveat recorded for the
+parent: marginal yield is small, because the positive `verify(...).called(1)` beside each guard
+already reddens on any routing mutant that REDIRECTS; the repair only buys the duplicate-write
+mutant (both branches fire).
+
+**Q2 (does test 8 pin what its comment claims, without collapsing into test 7):** yes, both
+directions, by full enumeration over a pure function — no production mutation run, deliberately,
+because the parent session was writing to the same files (a `finally` restore would have clobbered
+an in-flight write).
+- Mutant A, items keyed off `_unit` instead of the stored unit: for tests 1/2/4/5/10 stored is ''
+  and `_unit` is 'st' then 'dl' — all three give `offeredUnits`; test 3 and 6 store 'g'; test 9
+  stores '' with `_unit` null; test 7 stores 'knippe' and never picks. So `unitOptions(stored)`
+  and `unitOptions(_unit)` agree at every build in nine of ten tests. Test 8 is the only fixture
+  where they diverge (after picking 'dl' the list loses 'knippe'), and it reddens twice — the list
+  assertion, and then `find.text('knippe')` finding nothing. Confirms the parent's own probe.
+- Mutant B, `onChanged` sanitising the pick to `offeredUnits`: reddens ONLY test 8's closing
+  `saved.unit == 'knippe'` — the half the parent added a `reason:` to this round. So both halves
+  of test 8 pay for themselves; the closing assert is not a weak echo of test 7's.
+- Reverse: test 8 does NOT subsume test 7. Restore the initState clamp
+  (`_unit = offered.contains(x) ? x : 'st'`) while leaving build's widening intact and test 7
+  reddens on `initialValue == 'knippe'` while test 8 stays GREEN, because it picks 'knippe' back
+  explicitly. Test 7 also uniquely covers the untouched-save path, which is the actual bug report.
+
+**Cross-file claims, all verified true at these bytes:** `standaloneUnits` does hold 'pers',
+'personer' (`unit_definitions.dart`:27), 'gallons' (:42) and 'tablespoons' (:43), and is a
+recognition set (`isKnownUnit`, :47). The new BUT-1344 header sentence is right —
+`PantryService.addFromText` does `searchIngredients(trimmed, limit: 1)` then `ingredientId:
+match?.id`, and its own doc says "Orphan items (no match) store the raw text". The
+`RecipeFormState.mealTypeOptions` divergence is real and is a CALL-SITE difference:
+`edit_recipe_view.dart`:368 passes `viewModel.mealType` (current), the sheet passes
+`widget.existingItem?.unit` (stored); `recipe_form_state.dart`:119-123 states the consequence in
+its own words. Nit not filed as blocking: test 8 says "mealTypeOptions, whose injected row
+disappears", attributing to the shared function a property that belongs to its caller — the lib
+comment gets it right with "keyed on".
+
+**Residuals reported non-blocking, in order:** (1) the ADD-mode default selection 'st' is pinned
+by nothing, and BUT-1858 is what made it droppable — `_unit` went `String _unit = 'st'`
+(`HEAD`:36) to `String? _unit = 'st'` (:73); `String? _unit;` leaves all 16 green while a fresh
+add sheet opens with a blank unit box. (2) `location`/`expiryDate`/`note`/`quantity` are wildcard
+matched on all three branches — the same defect class BUT-1858 just closed for `unit`, one field
+over; sharpest instance is `_onSuggestionTap` setting `_location` from
+`PantryLocation.fromTypicalStorage`, wholly unasserted. (3) `clearNote` / `clearExpiryDate` on the
+edit `copyWith`: no fixture clears either, so hardcoding both `false` survives all 16.
+
+`ACCEPTED_DEVIATIONS.md`: grepped for 1858/1849/pantry — no matches, nothing there decides any of
+this.
+
+**Tests run (read-only; nothing written or edited under `lib/` or `test/`):** both pantry suites,
+16 passed at the final bytes; `flutter analyze --fatal-infos` over `lib/views/pantry`,
+`test/widget/views/pantry`, `test/unit/views/pantry` — No issues found.
+
+Closing state — md5 / wc -l (worktree, LF):
+- d917f1e28573280b00191c4e3df8fd49  lib/views/pantry/add_pantry_item_sheet.dart (401)
+- a3fc69db3bfbb1ba3008985357c38584  test/widget/views/pantry/add_pantry_item_sheet_test.dart (692)
+- 782b136347617debba9449828d31469c  test/unit/views/pantry/pantry_unit_options_test.dart (118)
+The unit suite is staged and IDENTICAL; the other two are `MM` with the index behind.
+
+Verdict: fail (1 blocking — staging only; the graded content is correct).
+
+## 2026-08-15 — BUT-1858 pantry unit dropdown, closing round (the nullability's quiet door)
+
+Trigger: closing testing review after two raced rounds. Index == worktree on all three
+in-scope files (verified `git show :<path> | diff - <path>` empty); md5
+`609ebb3aa5ff3d3b14c12ce6cc0eaf2e` / `0d0247b98a2a5d148b7dbe9e0724659d` /
+`782b136347617debba9449828d31469c`, 411 / 715 / 118 lines.
+
+**1. The test-2 addition is non-vacuous, and doubly so.** The named mutant is dropping the
+`= 'st'` initialiser from `String? _unit = 'st'`. Both new assertions die under it:
+`DropdownButtonFormField<String>.initialValue` reads null instead of `'st'`, and the
+`verify(... unit: 'st' ...)` records null. Enumerated all ten widget tests against the
+mutant to confirm the comment's "nothing else in the suite would notice": tests 1 and 10
+pick `'dl'` first so they never see the default; 3/6/7/8/9 are edit mode, where initState
+assigns `_unit`; 4 and 5 match `unit` with `any(named:)`, which matches null. Only test 2
+reddens. Claim true.
+
+**2. The consequence sentence is false, and the falsifier is two lines of service code.**
+Test 2's comment says the mutant would "store no unit". It cannot: `PantryViewModel`'s
+`unit` param is already `String?`, `PantryService.addFromText` does
+`unit: unit ?? match?.typicalUnit` (`pantry_service.dart:88`) and `_buildItem` closes with
+`unit: unit ?? 'st'` (`:259`). So the item is stored with the fuzzy match's typical unit,
+or `'st'` — a silently derived value that disagrees with the blank control on screen,
+which is a subtler instance of exactly the screen-vs-storage divergence BUT-1858 exists to
+prevent. `PantryItem.unit` is a non-nullable String; "no unit" is not a reachable state.
+This is the general shape now recorded as a principle: a nullability widening moves a
+guarantee from the compiler to a test, and the mutant's consequence has to be traced
+through the downstream `??` chain, not asserted from the field's own declaration.
+
+**3. Same file, same class, weaker: the BUT-1344 header bullet still reads "_submit always
+sends a non-null unit and location".** After this ticket that is true per BRANCH only —
+the edit branch's `copyWith(unit: _unit)` is precisely the empty-unit design test 9 pins.
+The bullet's operative conclusion ("the service's typicalUnit/typicalStorage fallbacks
+never fire from this sheet") remains TRUE, because only the two add branches reach the
+service and `_unit` is non-null there — but only because of the initialiser test 2 now
+pins. Advisory, not blocking: the conclusion holds, the stated reason over-quantifies.
+
+**4. Everything else this diff made droppable is pinned.** Walked the diff element by
+element: `offeredUnits` contents + ORDER (unit test 6, literal); the `isNotEmpty` conjunct
+(unit test 3, widget 9); the `!contains` conjunct (unit test 1 — the mutant duplicates
+`'g'` and trips the one-match assert); prepend POSITION (`values.first`, widget 7/8 exact
+list); the `selected:` ternary (unit test 3, widget 9); initState's
+`unitOptions(...).selected` vs bare `existing.unit` (widget 9 — `''` selects nothing vs
+asserting); build keyed on the STORED unit vs `_unit` (widget 8, the only killer);
+`items` from `unitValues` vs `offeredUnits` (widget 7); the add-mode initialiser (widget 2,
+this round). One residual is mutation-DEAD by construction and owes no test: `onChanged`'s
+`if (value != null)` guard, now that `_unit` is nullable and no `DropdownMenuItem` carries
+a null value — dropping it changes nothing observable. Analytic, no mutant.
+
+**5. Cross-file claims all verified.** `lib/widgets/common/input/shopping_item_dialog.dart`
+is absent from the worktree AND from HEAD (`git cat-file -e` fails; deleted by 078da5357,
+BUT-1849) — settling the "deleted by BUT-####" claim on the TREE, which the knowledge file
+warns migrates. `UnifiedShoppingItem.unit` is `final String` defaulting to `''`
+(`lib/models/unified/unified_shopping_item.dart:194,296`), so the "neither fallback fires"
+mechanism holds, including for the empty string. `RecipeFormState.mealTypeOptions` exists,
+is BUT-1845 (matching the unit-test header), and its own doc says it keys off the CURRENT
+value — so the "deliberately unlike, keyed on STORED" divergence claim is accurate on both
+sides. The BUT-1858 entry IS in `.claude/rules/accepted-deviations.md` (lines 135-148,
+2026-08-15) as the production comment promises.
+
+**6. Documentation gap, reported not fixed.** The deviation was appended to the always-on
+rules file only. `docs/architecture/ACCEPTED_DEVIATIONS.md` has no BUT-1858 entry and no
+occurrence of `pantry`, though both files' own preambles say a new deviation is appended
+in both in the same edit, and the commit gate names the docs file when it blocks.
+
+**7. Nit checked and NOT filed.** The unit-test header's "a violation is a fallen screen in
+debug and a blank control in release" is right for the zero-match violation this seam can
+produce and slightly wrong for the duplicate-match one (release renders the first match,
+not blank). The seam cannot produce a duplicate while the `!contains` conjunct stands, so
+the sentence is true over the reachable domain.
+
+Closing hashes re-verified after the round: unchanged from the opening set above.
+
+## 2026-08-16 — BUT-1858 post-verdict drift round: one arch-guard token, three comment lines
+
+Trigger: asked to re-review `lib/views/pantry/add_pantry_item_sheet.dart` (one token) and
+`lib/views/pantry/pantry_item_card.dart` (three comment lines, new to the batch) after the
+commit gate refused the batch on lefthook's BUT-581 rule. Told nothing else had moved.
+
+**0. The "nothing else moved" premise was false, and the motion detector was `wc -l`.**
+My closing-round hashes were 411 / 715 / 118 lines; the tree held 414 / 721 / 122. Recovered
+all three pre-drift blobs from the loose object store by md5 (`05148b70`, `2f02131f`,
+`71e72b1a`) and diffed. The deltas are four comment repairs that IMPLEMENT my closing round's
+findings 2 and 3 — the widget-test header's "_submit always sends a non-null unit" bullet is
+now per-branch and names test 9; test 2's false "store no unit" consequence now traces the
+`match?.typicalUnit ?? 'st'` chain; the unit test's circularity claim is replaced by a
+per-sibling kill list; `unitOptions`' docstring now says selecting nothing also satisfies the
+one-match assert. Graded all four: true. The unit test's "`UnitDefinitions`' 88 entries" is
+exact (scripted count of `standaloneUnits`: 88 items, 88 unique), and its four named kills
+(`'g'`, `''`, `'St'`, `'knippe'`) each redden the sibling case claimed, by reading. The
+"widget tests 1, 6, 8 and 10 tap `find.text('dl')`" list is exactly right (lines 207/490/598/704).
+
+**1. `(widget.existingItem?.unit).orEmpty()` is the same expression.** `StringDefaults on
+String?` is `String orEmpty() => this ?? '';` (`default_value_extensions.dart:9`), resolved
+statically on the `String?` receiver the parentheses produce. No test now passes for a
+different reason: the value fed to `unitOptions` is byte-identical on every fixture. The
+equivalence is itself pinned — `test/unit/core/extensions/default_value_extensions_test.dart:14`
+asserts null→`''` and value→value — so the substitution imports no untested behaviour. The
+arch guard is ALSO a test, not only a lefthook grep: `test/architecture/architecture_test.dart:663`
+("no raw `?? ''` in lib/ — use .orEmpty() (BUT-581)"), which I ran green. 21 tests green across
+the four pantry suites.
+
+**2. What the rewrite DID change is the mutant set at that call site.** `?? ''` had no adjacent
+misspelling; `.orEmpty()` sits one identifier from `.orDefault('x')` and `.orEmptyTrimmed()`,
+both of which typecheck there. `.orDefault('okänd')` survives all 16 tests: add mode's
+dropdown would carry a spurious first row, and no add-mode test reads `DropdownButton.items`
+(the three that do — 7, 8, 9 — are all edit mode; test 2 reads only `initialValue`).
+`.orEmptyTrimmed()` also survives all 16 (every widget fixture is `null`/`''`/`'g'`/`'knippe'`,
+on all of which `trim()` is identity) and its consequence is worse — the build site would
+offer `'g'` while initState still selects the raw `' g'`, so the one-match assert fires. Its
+reachability is NOT established: the only free-text writer of `UnifiedShoppingItem.unit`
+trims (`shopping_item_dialogs.dart:248,387`), so I filed it as an invariant worth one comment,
+not a fixture. The `orDefault` half IS worth one line (`items == offeredUnits` in add mode).
+
+**3. The three card lines are true.** The trailing space is by construction. The old clamp
+really did normalise `''` → `'st'` on any open-and-save (`_units.contains('')` is false; HEAD's
+line, plus `_submit`'s unconditional `unit: _unit`), so "BUT-1858 made that durable" holds with
+the scope its own second clause supplies. Checked and NOT filed: the first clause alone
+over-quantifies, since a row nobody ever opened kept the space before this ticket too; the
+docs entry (`ACCEPTED_DEVIATIONS.md:1811-1814`) states the qualifier in full and the comment
+points back at it, which is the pointer the round was asked to verify. Both deviation records
+now carry BUT-1858 — closing round's finding 6 is fixed.
+
+**4. Unpinned in the card, pre-existing, reported not fixed.** Nothing taps a pantry row in
+NORMAL mode anywhere in the suite (selection test taps only in selection mode, undo test only
+swipes, chunk4 reads the semantics label, bulk-delete taps the bar), so `_showEditSheet`'s
+`AddPantryItemSheet(existingItem: item)` is guarded by nothing: dropping `existingItem:` turns
+every edit into an add and duplicates the row, green everywhere. The quantity+unit line the
+new comment describes is likewise asserted by no test — both card fixtures use `unit: 'l'` and
+neither reads the text — so a mutant dropping `${item.unit}` survives.
+
+Closing state: index == worktree on both reviewed files (`git show :<path> | diff -` empty);
+md5 `8d29e4d182d5831f7c442c07739cac5e` (414 lines) and `520545b8226eea4a9ac434b22a02b081`
+(246 lines). Both knowledge files edited this round and therefore now sit ahead of the index.

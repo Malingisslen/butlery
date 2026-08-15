@@ -22,18 +22,67 @@ class AddPantryItemSheet extends StatefulWidget {
 
   final PantryItem? existingItem;
 
+  /// The units this sheet offers, in display order.
+  static const List<String> offeredUnits = [
+    'st',
+    'g',
+    'kg',
+    'ml',
+    'dl',
+    'l',
+    'tsk',
+    'msk',
+  ];
+
+  /// BUT-1858: the dropdown's item list for an item stored with [storedUnit].
+  ///
+  /// A stored unit the app does not offer is PREPENDED and stays selectable
+  /// rather than being clamped away. `DropdownButtonFormField` asserts on every
+  /// build that exactly one item matches its value, so with a FIXED item list
+  /// clamping to 'st' was the only way to keep the control both up and
+  /// populated (selecting nothing also satisfies the assert — that is what the
+  /// empty case below does — but shows a blank box) — and it leaked into storage,
+  /// because `_submit` writes the selection unconditionally. Widening the list
+  /// per item keeps the screen up *and* keeps the value. Same seam as
+  /// `RecipeFormState.mealTypeOptions`, for the same bug class — but keyed on
+  /// the STORED unit rather than the current selection, so the injected row
+  /// survives a pick and can be chosen back. That divergence is deliberate;
+  /// do not harmonise the two.
+  ///
+  /// An empty stored unit selects nothing rather than inventing one: it matches
+  /// no item by design, and `PantryItem.copyWith(unit: null)` then preserves the
+  /// stored value. Empty is a real stored unit — an amount-less recipe line
+  /// yields it, and the shopping-checkoff flow stores it verbatim.
+  ///
+  /// The vocabulary is deliberately NOT replaced by `UnitDefinitions`'
+  /// `standaloneUnits`. That set exists to RECOGNISE what a parser may find in
+  /// a recipe — it holds 'pers', 'personer', 'gallons', 'tablespoons' — and a
+  /// set you must recognise is not a set you should offer. Malin's call,
+  /// 2026-08-15 — recorded in `.claude/rules/accepted-deviations.md` so it is
+  /// checkable, and so nobody proposes the widening again.
+  static ({List<String> values, String? selected}) unitOptions(
+    String storedUnit,
+  ) => (
+    values: [
+      if (storedUnit.isNotEmpty && !offeredUnits.contains(storedUnit))
+        storedUnit,
+      ...offeredUnits,
+    ],
+    selected: storedUnit.isEmpty ? null : storedUnit,
+  );
+
   @override
   State<AddPantryItemSheet> createState() => _AddPantryItemSheetState();
 }
 
 class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
-  static const _units = ['st', 'g', 'kg', 'ml', 'dl', 'l', 'tsk', 'msk'];
-
   final _nameController = TextEditingController();
   final _quantityController = TextEditingController();
   final _noteController = TextEditingController();
 
-  String _unit = 'st';
+  // Null means "no unit selected", which only an item stored with an empty
+  // unit can produce. `copyWith(unit: null)` then preserves what is stored.
+  String? _unit = 'st';
   PantryLocation _location = PantryLocation.pantry;
   DateTime? _expiryDate;
   IngredientData? _selectedIngredient;
@@ -48,32 +97,30 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
     if (existing != null) {
       _nameController.text = existing.ingredientName;
       _quantityController.text = existing.formattedQuantity;
-      // `DropdownButton` requires its value to match exactly one item, so a
-      // unit outside `_units` must never reach it — in debug that asserts, in
-      // release the control renders blank. The clamp costs data: `_submit`
-      // writes `_unit` unconditionally, so opening an item stored with an
-      // off-list unit and saving rewrites that unit to 'st'. Widening `_units`
-      // is therefore not cosmetic; it changes what a save destroys.
+      // BUT-1858: a non-empty stored unit is taken as-is, on or off the
+      // offered list; an empty one selects nothing (see `unitOptions`).
+      // `AddPantryItemSheet.unitOptions` widens the dropdown to include it, so
+      // `DropdownButtonFormField`'s one-match assert is satisfied without the
+      // clamp to 'st' this line used to perform — a clamp that leaked into
+      // storage, because `_submit` writes the selection unconditionally.
       //
-      // Off-list units reach this sheet through a shipped path — a mechanism,
-      // not a claim about what is currently stored. The shopping-checkoff flow
-      // (`ShoppingCheckoffPantryService.onItemCheckedOff` ->
+      // Off-list units get here through a shipped path. The shopping-checkoff
+      // flow (`ShoppingCheckoffPantryService.onItemCheckedOff` ->
       // `PantryService.addFromShoppingItem` -> `addFromText`) stores the
       // shopping item's unit verbatim — `UnifiedShoppingItem.unit` is a
       // non-nullable free-text String, so neither fallback on the way down
-      // fires (`addFromText`'s `match?.typicalUnit`, `_buildItem`'s 'st')
-      // — and that text comes straight from a free-text field in
-      // `unified_shopping/widgets/dialogs/shopping_item_dialogs.dart` (plural:
-      // NOT the singular `common/input/shopping_item_dialog.dart`, deleted by
-      // BUT-1849), or from parsed recipe units ('förp', 'påse', 'krm', ''). It is behind
-      // the `autoAddBoughtToPantry` opt-in, off by default, but shipped.
-      // Second-order cost: that flow dedups on name + unit, so once a 'förp'
-      // row has been clamped here, the next checkoff stops aggregating and
-      // creates a duplicate row.
+      // fires (`addFromText`'s `match?.typicalUnit`, `_buildItem`'s 'st') —
+      // and that text comes from a free-text field in
+      // `lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart`
+      // (plural; the singular `common/input/shopping_item_dialog.dart` was
+      // deleted by BUT-1849) or from parsed recipe units ('förp', 'påse',
+      // 'krm', ''). It sits behind the `autoAddBoughtToPantry` opt-in, off by
+      // default but shipped.
       //
-      // The clamp predates that flow — it is in this file's creation commit
-      // (b67aafe49), not a response to it. 2026-08-15.
-      _unit = _units.contains(existing.unit) ? existing.unit : 'st';
+      // That flow also dedups on name + unit, which is why the old clamp cost
+      // more than the label: a 'förp' row rewritten to 'st' stopped matching
+      // the next checkoff and produced a duplicate row instead of aggregating.
+      _unit = AddPantryItemSheet.unitOptions(existing.unit).selected;
       _location = existing.location;
       _expiryDate = existing.expiryDate;
       _noteController.text = existing.note.orEmpty();
@@ -186,6 +233,9 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
     final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final unitValues = AddPantryItemSheet.unitOptions(
+      (widget.existingItem?.unit).orEmpty(),
+    ).values;
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
@@ -257,8 +307,11 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                         borderRadius: BorderRadius.zero,
                       ),
                     ),
+                    // Derived from the STORED unit, not from `_unit`, so an
+                    // off-list row stays on offer after the user picks
+                    // something else and can be picked back.
                     items: [
-                      for (final unit in _units)
+                      for (final unit in unitValues)
                         DropdownMenuItem(value: unit, child: Text(unit)),
                     ],
                     onChanged: (value) {

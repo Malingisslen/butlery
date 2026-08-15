@@ -131,6 +131,9 @@ class PantryItemCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
+                  // BUT-1863: an empty unit leaves a trailing space here.
+                  // BUT-1858 made that durable — the pantry sheet no
+                  // longer rewrites an off-list or empty unit on save.
                   '${item.formattedQuantity} ${item.unit}',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: cs.onSurfaceVariant,

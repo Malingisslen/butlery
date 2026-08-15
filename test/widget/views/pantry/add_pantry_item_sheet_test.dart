@@ -1,17 +1,36 @@
 /// Behavioral widget tests for AddPantryItemSheet.
 ///
-/// Three contracts, added by three tickets:
+/// Four contracts, added by four tickets:
 ///   - BUT-1344 COOK-07 — the *routing decision* _submit() makes: an
 ///     autocomplete pick goes to addItemFromIngredient, a raw name to
-///     addItemFromText, and edit mode to updateItem, so the item lands in the
-///     right Firestore collection.
+///     addItemFromText, and edit mode to updateItem. Both add branches write
+///     to the same collection. What the routing decides is whether the
+///     ingredient is the one the user EXACTLY picked or whatever a fuzzy
+///     search finds for the typed text (possibly nothing) — and so the
+///     ingredientId link, plus, on the text branch only, whether the stored
+///     NAME is the user's raw string or the match's canonical Swedish one.
+///     The service's typicalUnit/typicalStorage fallbacks never fire from
+///     this sheet: both ADD branches send a non-null unit (`_unit` starts at
+///     'st' and only edit mode can null it) and a non-nullable location. The
+///     edit branch CAN send unit: null — test 9 — but routes to updateItem,
+///     which has no such fallback.
 ///   - BUT-1379 — a failed save keeps the sheet open; a successful one
 ///     dismisses it.
 ///   - BUT-1849 — an ON-LIST stored unit is read back into the dropdown, and
-///     the picked unit is what gets written. The last test pins the OFF-LIST
-///     case, where neither holds, as a known defect for BUT-1858 to invert.
+///     the picked unit is what gets written.
+///   - BUT-1858 — the same now holds for a unit the sheet does not offer: it
+///     is added to the dropdown for that item rather than clamped to 'st', so
+///     an untouched save no longer rewrites it. An empty stored unit selects
+///     nothing and survives. BOTH add branches assert the picked unit — test
+///     1 for the ingredient path, test 10 for raw text. They have to: a
+///     wildcard `unit` matcher, which is all they had before, cannot tell a
+///     forwarded selection from a hardcoded default.
 ///
-/// None of these are structural tests.
+/// None of these are structural tests. Two disclosed reads of internals: the
+/// OFFERED LIST is read off `DropdownButton<String>.items`,
+/// which is `DropdownButtonFormField`'s internal composition (tests 7-9), and
+/// the SELECTION is read off the FormField's own `initialValue` (tests 2, 7,
+/// 9) rather than off rendered pixels.
 library;
 
 import 'package:flutter/material.dart';
@@ -141,7 +160,13 @@ void main() {
   // is linked to the canonical ingredient and its allergen / storage data
   // is correctly set.
   //
-  // Would fail if: _submit() dropped the `_selectedIngredient != null` branch.
+  // It also picks a unit and asserts it, which is what makes the ingredient
+  // add branch non-wildcarded: `_submit` has TWO add branches and test 10 only
+  // covers the raw-text one, so without this a hardcoded `unit: 'st'` here
+  // would survive the whole suite (BUT-1858).
+  //
+  // Would fail if: _submit() dropped the `_selectedIngredient != null` branch,
+  //   or stopped forwarding the dropdown selection on that branch.
   // Won't break from: padding changes, unit-dropdown reorder, label copy edits.
   // ────────────────────────────────────────────────────────────────────────────
   testWidgets(
@@ -173,6 +198,15 @@ void main() {
       await tester.tap(find.text('Lax'));
       await tester.pump();
 
+      // Pick a unit other than the 'st' default, so the assertion below can
+      // tell a forwarded selection from a hardcoded one. The closed button
+      // renders every item in an IndexedStack, so the open menu's entry is the
+      // hit-testable one.
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('dl').hitTestable().last);
+      await tester.pumpAndSettle();
+
       // Submit the form (the primary button text is "LÄGG TILL" in add mode).
       await tester.tap(find.text('LÄGG TILL'));
       await tester.pump();
@@ -181,13 +215,22 @@ void main() {
         () => vm.addItemFromIngredient(
           lax,
           quantity: any(named: 'quantity'),
-          unit: any(named: 'unit'),
+          unit: 'dl',
           location: any(named: 'location'),
           expiryDate: any(named: 'expiryDate'),
           note: any(named: 'note'),
         ),
       ).called(1);
-      verifyNever(() => vm.addItemFromText(any()));
+      verifyNever(
+        () => vm.addItemFromText(
+          any(),
+          quantity: any(named: 'quantity'),
+          unit: any(named: 'unit'),
+          location: any(named: 'location'),
+          expiryDate: any(named: 'expiryDate'),
+          note: any(named: 'note'),
+        ),
+      );
     },
   );
 
@@ -197,13 +240,32 @@ void main() {
   // Intent: when the user types a name but never taps a suggestion, the sheet
   // must call addItemFromText so the item is stored with the user's raw string.
   //
-  // Would fail if: the `else` branch in _submit() were removed or if
-  //   _selectedIngredient were never cleared on text-only input.
+  // It also pins the ADD-MODE DEFAULT, both on screen and in the write.
+  // BUT-1858 made `_unit` nullable so an empty stored unit can select nothing;
+  // dropping the `= 'st'` initialiser in the same field would open every new
+  // item with a blank unit box and SEND no unit — the service would then
+  // store `match?.typicalUnit ?? 'st'`, the very fallback the header says
+  // never fires from here — and nothing else in the suite would notice.
+  //
+  // Would fail if: the `else` branch in _submit() were removed, if
+  //   _selectedIngredient were never cleared on text-only input, or if the
+  //   add-mode default stopped being 'st'.
   // ────────────────────────────────────────────────────────────────────────────
   testWidgets(
     'typing raw text without picking a suggestion calls addItemFromText',
     (tester) async {
       await tester.pumpWidget(buildSheet());
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<DropdownButtonFormField<String>>(
+              find.byType(DropdownButtonFormField<String>),
+            )
+            .initialValue,
+        'st',
+        reason: 'A new item opens on the default unit, not on nothing.',
+      );
 
       await tester.enterText(
         find.widgetWithText(TextField, 'Ingrediens'),
@@ -218,13 +280,22 @@ void main() {
         () => vm.addItemFromText(
           'Hemlagad buljong',
           quantity: any(named: 'quantity'),
-          unit: any(named: 'unit'),
+          unit: 'st',
           location: any(named: 'location'),
           expiryDate: any(named: 'expiryDate'),
           note: any(named: 'note'),
         ),
       ).called(1);
-      verifyNever(() => vm.addItemFromIngredient(any()));
+      verifyNever(
+        () => vm.addItemFromIngredient(
+          any(),
+          quantity: any(named: 'quantity'),
+          unit: any(named: 'unit'),
+          location: any(named: 'location'),
+          expiryDate: any(named: 'expiryDate'),
+          note: any(named: 'note'),
+        ),
+      );
     },
   );
 
@@ -274,12 +345,15 @@ void main() {
       () => vm.updateItem(
         any(
           that: predicate<PantryItem>(
-            // `unit` is asserted here on purpose: it is what proves the sheet
-            // still READS the stored unit once the defect test below is
-            // rewritten by BUT-1858. The write leg has its own test after it,
-            // because this one alone would stay green if `_submit` stopped
-            // sending `_unit` — `copyWith` without it preserves the item's
-            // stored value, which is the very 'g' asserted here.
+            // `unit` is asserted here on purpose: it proves the sheet READS
+            // the stored unit. It cannot prove the WRITE — this one alone
+            // would stay green if `_submit` stopped sending `_unit`, because
+            // `copyWith` without it preserves the item's stored value, which
+            // is the very 'g' asserted here. Test 6 covers the write on this
+            // EDIT path; tests 1 and 10 cover it on the two add paths;
+            // tests 7-9 do NOT — their fixtures are off-list or empty, so
+            // `copyWith` preserving them produces the asserted value either
+            // way. Do not read those three as backing up 6 and 10.
             (item) =>
                 item.id == 'p_42' &&
                 item.ingredientName == 'Smör' &&
@@ -289,8 +363,26 @@ void main() {
         ),
       ),
     ).called(1);
-    verifyNever(() => vm.addItemFromIngredient(any()));
-    verifyNever(() => vm.addItemFromText(any()));
+    verifyNever(
+      () => vm.addItemFromIngredient(
+        any(),
+        quantity: any(named: 'quantity'),
+        unit: any(named: 'unit'),
+        location: any(named: 'location'),
+        expiryDate: any(named: 'expiryDate'),
+        note: any(named: 'note'),
+      ),
+    );
+    verifyNever(
+      () => vm.addItemFromText(
+        any(),
+        quantity: any(named: 'quantity'),
+        unit: any(named: 'unit'),
+        location: any(named: 'location'),
+        expiryDate: any(named: 'expiryDate'),
+        note: any(named: 'note'),
+      ),
+    );
   });
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -368,17 +460,14 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────────
   // Test 6: the unit the user PICKS is the unit that gets saved.
   //
-  // The write leg the test above cannot cover: there the stored and saved unit
-  // are the same value, so dropping `unit: _unit` from _submit's copyWith
-  // would go unnoticed. Here they differ, so only a real read of the dropdown
-  // can produce 'dl'.
+  // The write leg test 3 cannot cover: there the stored and saved unit are the
+  // same value, so dropping `unit: _unit` from _submit's copyWith would go
+  // unnoticed. Here they differ, so only a real read of the dropdown can
+  // produce 'dl'.
   //
-  // This one is deliberately NOT tied to BUT-1858 — it must outlive the defect
-  // test below, which is the suite's only other assertion that REDDENS when
-  // the write drops `unit`. Note what stays open even so: `_submit`'s two ADD
-  // branches pass
-  // `unit` too, and tests 1-2 match it with a wildcard, so hardcoding 'st'
-  // there survives the whole suite. Editing is the only leg proven here.
+  // This covers the EDIT branch of _submit. The two ADD branches are covered
+  // by test 1 (ingredient) and test 10 (raw text), which assert the picked
+  // unit for the same reason this one does.
   // ────────────────────────────────────────────────────────────────────────────
   testWidgets('picking a different unit saves the picked unit', (tester) async {
     final existing = PantryItem(
@@ -414,22 +503,22 @@ void main() {
   });
 
   // ────────────────────────────────────────────────────────────────────────────
-  // DOCUMENTS A DEFECT — when BUT-1858 lands, REPLACE this test with its
-  // inverse rather than deleting it. It holds the suite's only off-list
-  // fixture, so a plain deletion would leave nothing asserting that such an
-  // item renders at all. The inverse: 'knippe' survives the save.
+  // Test 7 (BUT-1858): an off-list unit is shown, selected, and SURVIVES a save
   //
-  // The unit dropdown offers eight values. Off-list units reach pantry rows
-  // from the shopping-checkoff flow, which stores an item's FREE-TEXT unit
-  // verbatim (`ShoppingCheckoffPantryService` -> `PantryService
-  // .addFromShoppingItem`); the sheet itself never produces one. The clamp
-  // substitutes 'st' so `DropdownButton`'s one-match assert cannot fire — but
-  // `_submit` writes `_unit` unconditionally, so opening such an item and
-  // saving REWRITES the user's unit. This test pins that data loss as KNOWN,
-  // not as desired: it asserts the current behaviour so a future fix has
-  // something to redden.
+  // The inverse of the test this replaces. Until BUT-1858 the sheet clamped any
+  // unit outside its eight to 'st' to satisfy the dropdown's one-match assert,
+  // and `_submit` then wrote the clamped value — so opening a 'knippe' row and
+  // pressing Save silently rewrote it. Off-list units arrive from the
+  // shopping-checkoff flow, which stores a free-text unit verbatim; the sheet
+  // itself never produces one.
+  //
+  // Would fail if: `unitOptions` stopped prepending the stored unit — the
+  //   dropdown's one-match assert fires and takeException() is non-null.
+  // Would NOT fail if: _submit stopped sending `unit`. `copyWith` then falls
+  //   back to the stored 'knippe', which is the value asserted. This test pins
+  //   the WIDENING; tests 6, 1 and 10 pin the write.
   // ────────────────────────────────────────────────────────────────────────────
-  testWidgets('an off-list unit is clamped to st, and saving rewrites it', (
+  testWidgets('an off-list unit is offered, selected, and survives a save', (
     tester,
   ) async {
     final existing = PantryItem(
@@ -444,15 +533,25 @@ void main() {
     await tester.pumpWidget(buildSheet(existingItem: existing));
     await tester.pumpAndSettle();
 
-    // The screen renders rather than asserting — that is what the clamp buys.
     expect(tester.takeException(), isNull);
     final dropdown = tester.widget<DropdownButtonFormField<String>>(
       find.byType(DropdownButtonFormField<String>),
     );
     expect(
       dropdown.initialValue,
-      'st',
-      reason: 'The stored unit is not on offer, so the clamp substitutes st.',
+      'knippe',
+      reason: 'The stored unit is what the control must show.',
+    );
+    // The whole offered list, not just the selection: the stored unit rides on
+    // top and the eight follow unchanged. Pins the widening against a
+    // half-applied edit that selects the value without offering it.
+    expect(
+      tester
+          .widget<DropdownButton<String>>(find.byType(DropdownButton<String>))
+          .items
+          ?.map((i) => i.value)
+          .toList(),
+      ['knippe', ...AddPantryItemSheet.offeredUnits],
     );
 
     await tester.tap(find.text('Spara'));
@@ -462,10 +561,161 @@ void main() {
         verify(() => vm.updateItem(captureAny())).captured.single as PantryItem;
     expect(
       saved.unit,
-      'st',
-      reason:
-          'The cost of the clamp: an untouched save silently replaces the '
-          "user's 'knippe' with 'st'. Pinned so the loss is known.",
+      'knippe',
+      reason: 'An untouched save must not rewrite the stored unit.',
     );
+  });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Test 8 (BUT-1858): the injected row SURVIVES a pick and can be chosen back
+  //
+  // The dropdown's items are derived from the STORED unit, not from the current
+  // selection — the one place this seam diverges from
+  // `RecipeFormState.mealTypeOptions`, whose injected row disappears the moment
+  // you pick something else. Without this test the divergence is a comment
+  // only: keying the list off `_unit` instead leaves every other test green,
+  // and the user who mis-picks 'dl' on a 'knippe' row can never get 'knippe'
+  // back — then Save rewrites it, which is the whole defect returning by
+  // another door.
+  // ────────────────────────────────────────────────────────────────────────────
+  testWidgets('the off-list row stays on offer after a different pick', (
+    tester,
+  ) async {
+    final existing = PantryItem(
+      id: 'p_101',
+      ingredientName: 'Rosmarin',
+      quantity: 1,
+      unit: 'knippe',
+      location: PantryLocation.pantry,
+      addedAt: DateTime(2026, 1, 1),
+    );
+
+    await tester.pumpWidget(buildSheet(existingItem: existing));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('dl').hitTestable().last);
+    await tester.pumpAndSettle();
+
+    // The stored unit must still be offered, so the mis-pick is undoable.
+    expect(
+      tester
+          .widget<DropdownButton<String>>(find.byType(DropdownButton<String>))
+          .items
+          ?.map((i) => i.value)
+          .toList(),
+      ['knippe', ...AddPantryItemSheet.offeredUnits],
+    );
+
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('knippe').hitTestable().last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Spara'));
+    await tester.pumpAndSettle();
+
+    final saved =
+        verify(() => vm.updateItem(captureAny())).captured.single as PantryItem;
+    expect(
+      saved.unit,
+      'knippe',
+      reason: 'A mis-pick must be undoable all the way back to storage.',
+    );
+  });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Test 9 (BUT-1858): an EMPTY stored unit selects nothing and is preserved
+  //
+  // Empty is a real stored value — an amount-less recipe line produces it and
+  // the checkoff flow stores it verbatim. It matches no dropdown item by
+  // design, so `_unit` stays null and `copyWith(unit: null)` keeps what is
+  // stored rather than inventing 'st'.
+  //
+  // Would fail if: unitOptions returned '' as the selection (assert fires), or
+  //   if _submit coalesced null to a default before writing.
+  // ────────────────────────────────────────────────────────────────────────────
+  testWidgets('an empty stored unit selects nothing and is not invented', (
+    tester,
+  ) async {
+    final existing = PantryItem(
+      id: 'p_100',
+      ingredientName: 'Persilja',
+      quantity: 1,
+      unit: '',
+      location: PantryLocation.fridge,
+      addedAt: DateTime(2026, 1, 1),
+    );
+
+    await tester.pumpWidget(buildSheet(existingItem: existing));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    final dropdown = tester.widget<DropdownButtonFormField<String>>(
+      find.byType(DropdownButtonFormField<String>),
+    );
+    expect(dropdown.initialValue, isNull);
+    expect(
+      tester
+          .widget<DropdownButton<String>>(find.byType(DropdownButton<String>))
+          .items
+          ?.map((i) => i.value)
+          .toList(),
+      AddPantryItemSheet.offeredUnits,
+    );
+
+    await tester.tap(find.text('Spara'));
+    await tester.pumpAndSettle();
+
+    final saved =
+        verify(() => vm.updateItem(captureAny())).captured.single as PantryItem;
+    expect(
+      saved.unit,
+      '',
+      reason: 'Nothing was picked, so the stored empty unit must survive.',
+    );
+  });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Test 10 (BUT-1858): the raw-text ADD path sends the picked unit too
+  //
+  // Covers the RAW-TEXT add branch; test 1 covers the ingredient one the same
+  // way. Together they close the gap an earlier round disclosed, where a
+  // wildcard `unit` matcher let a hardcoded 'st' survive the whole suite.
+  // This is the add-mode twin of test 6.
+  // ────────────────────────────────────────────────────────────────────────────
+  testWidgets('adding by raw text sends the picked unit, not the default', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildSheet());
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Ingrediens'),
+      'Grädde',
+    );
+    await tester.pump();
+
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    // The closed button renders every item in an IndexedStack, so the open
+    // menu's entry is the hit-testable one.
+    await tester.tap(find.text('dl').hitTestable().last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('LÄGG TILL'));
+    await tester.pump();
+
+    verify(
+      () => vm.addItemFromText(
+        'Grädde',
+        quantity: any(named: 'quantity'),
+        unit: 'dl',
+        location: any(named: 'location'),
+        expiryDate: any(named: 'expiryDate'),
+        note: any(named: 'note'),
+      ),
+    ).called(1);
   });
 }
