@@ -4,7 +4,7 @@ Each `<role-slug>.stale` file here means a role's dossier in
 `docs/architecture/ROLE_RESPONSIBILITY_MAP.md` may be out of date because a file
 it owns was edited since the dossier was last audited.
 
-- **Written by** `.claude/hooks/dossier-freshness-stamp.sh` (PostToolUse Write|Edit),
+- **Written by** the role-org plugin's `scripts/dossier-stamp.mjs` (PostToolUse Write|Edit),
   which matches the edited file against `docs/org/role-paths.json` (generated from
   the map by `tools/gen_role_paths.py`).
 - **Cleared by** the `/refresh-dossiers` skill, which re-audits only the stale
