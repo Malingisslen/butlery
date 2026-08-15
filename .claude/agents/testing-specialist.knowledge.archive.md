@@ -19901,3 +19901,698 @@ on `MessagingService.createGroupConversation`, three call sites bypassing `ChatG
 `startMealVotePoll` minting a group per invocation.
 
 Verdict: pass (0 blocking).
+
+## 2026-08-14 — BUT-1838 follow-up: the conversation LIST previewed history the rules refuse (test authoring)
+
+**Trigger:** Malin asked for a real test after the integration reviewer surfaced the defect.
+One behaviour, running alone. New file (nothing in `test/` had ever rendered
+`ConversationListItem`; `conversations_list_view_test.dart` only counts rows by type and
+asserts titles).
+
+**The defect.** `firestore.rules` :1946-1952 refuses a message whose `sentAt` is below
+`memberSince[uid]` for a group conversation, and the chat screen mirrors it. The LIST row
+renders `conversation.lastMessage` — a denormalised copy living ON the conversation
+document — and no rule can gate a field inside a document the reader is allowed to read.
+A member added to a running group saw `"Erik: <said before they arrived>"` while the chat
+correctly showed nothing. Fix (already applied, worktree-only, +24 lines):
+`_getLastMessagePreview` asks `conversation.historyQueryStartFor(currentUserId)` and returns
+`context.l10n.conversationGroupCreated` when `message.sentAt.isBefore(historyStart)`.
+
+**File:** `test/widget/messaging/conversation_list_item_history_preview_test.dart`, 6 tests.
+Widget is a plain `StatelessWidget` — no DI, no locator bridge needed; just
+`createLocalizedTestApp` + a `Builder` capturing `context.l10n`, so a reworded ARB moves both
+sides. (`conversationGroupCreated` = "Grupp skapad" collides in VALUE with
+`personalTagGroupCreated`; that key belongs to another feature and this widget never renders
+it, so `find.text` cannot be satisfied by the twin — noted in the header rather than worked
+around.)
+
+**Fixture design (what makes the group non-vacuous).**
+- `createdAt` 2026-01-01, `memberSince` 2026-02-01, hidden message 2026-01-15 — strictly
+  BETWEEN, so a guard comparing against `createdAt` instead of the member's stamp renders it.
+- Founder clock-skew case (2025-12-31 23:59, stamp == `createdAt`): the ONLY case where
+  `historyQueryStartFor` and `joinedLaterAt` disagree. The model's own doc names it — nothing
+  pins a message's `sentAt` to server time. This was the Phase-9 addition; the brief's four
+  cases do not contain it, and the brief's founder case (ordinary message) is killed by the
+  same mutants as the late-joiner control, i.e. it is a behavioural pin, not a discriminator.
+- Direct conversation carries `memberSince: {uid: joinedAt}` with `groupId: null` and a
+  message BEFORE that stamp — inert data that a guard reading the raw map, or keyed on
+  `isGroup`, would blank.
+- Boundary: `sentAt == memberSince` must RENDER, matching the rule's `sentAt >= ...`.
+- Every absence assertion is paired with a positive render control (the group title).
+
+**Mutation matrix, measured, one red each, never the same test twice.** Production file was
+` M` (fix unstaged), so `git show :<path>` is the PRE-fix version — the md5 identity check is
+therefore against the pre-probe worktree bytes, `1e1646ecfef2cf6bc2f67d0e099278c0`, not
+against the index. Driver: python, binary read/replace, anchor asserted to occur exactly once
+BEFORE any write, `finally` + SIGINT/SIGTERM/SIGBREAK restore, `flutter test` output written
+to a file (printing Swedish through cp1252 killed the first run AFTER the restore had already
+happened — the `finally` did its job).
+- guard block deleted (the pre-fix shape): `+4 -2` — late-joiner test AND founder-skew test.
+  Both are the guard's own behaviour; the four controls stayed green, as the brief required.
+- `historyQueryStartFor` -> `joinedLaterAt`: `+5 -1` — ONLY the founder-skew test. This is the
+  proof that the added case earns its place.
+- `isBefore` -> `!isAfter`: `+5 -1` — ONLY the exact-instant boundary test.
+Restored md5 `1e1646ecfef2cf6bc2f67d0e099278c0` after every arm, byte-identical, guard lines
+present at 304-305, `grep MUTANT|THROWAWAY|if (false)` zero hits, no probe files under `test/`
+(all drivers and backups live in the session scratchpad).
+
+**Green:** new suite 6/6; `flutter test test/widget/messaging test/views/messaging/conversations_list_view_test.dart`
+46 passed. `dart analyze --fatal-infos` on the new test + the widget: no issues (first pass
+flagged one `unnecessary_import` — `message_type.dart` is re-exported by `message.dart`).
+
+**Observation, not tested and not a blocker:** the row still renders
+`formattedLastActivity` from the hidden message's `sentAt`, so a late joiner learns WHEN
+something was said, never what or by whom. `hasUnreadMessages` likewise still lights the
+unread dot. Both are metadata the conversation document already exposes to that member;
+worth a line in the ticket, not an assertion here.
+
+Verdict: pass (0 blocking).
+
+
+## 2026-08-14 — BUT-1838 follow-up, second review round: the guard that also had to NOT hide the row
+
+Scope: six files (model `canReadMessageAt`, list row, `ConversationsViewModel._applySearch`,
+plus the three suites). Brief supplied four already-run probes (A empty-reader fail-open 2 red,
+B missing-stamp fail-open 3 red, C list guard sunk below `isSystemMessage` 1 red, D search
+reverted to raw `lastMessage.content` 3 red) and asked whether that probe set is the RIGHT one.
+
+**It was not complete.** A fifth mutant survives all four search tests: the OVER-fix, i.e.
+moving the guard from the CONTENT to the ROW —
+
+    if (lastMessage != null && !conversation.canReadMessageAt(lastMessage.sentAt, readerId)) {
+      return false; // MUTANT
+    }
+
+Every fixture in `Search respects the history cut-off` pairs an unreadable message with a title
+that does NOT contain the query (`preJoin` is titled 'Middagsgänget', the query is 'restaurang'),
+so "blanked the content" and "dropped the whole conversation" are the same observation. The
+user-visible cost of the mutant is worse than the leak the ticket closes: a late joiner is a
+full member, and typing their own group's name would make it vanish from the list.
+
+Closed with one test in the same group — seed `[preJoin, titleMatch]`, search 'middagsgänget',
+`expect(resultIds(), equals(['conv_prejoin']))`, with a premise asserting
+`preJoin.canReadMessageAt(...) == false` so the match can only have come through the title.
+Measured: mutant live -> `+4 -1`, and the one red is the new test. Production restored
+md5-identical (backup + `finally`, verified by hash inside the same script; `flutter` is a
+`.bat`, so `subprocess.run` needs `shell=True` — the first attempt died on `WinError 2` AFTER
+the write and was saved by the `finally`).
+
+**Everything else in the round held up.** Notes worth keeping:
+- Vacuity sweep of all 12 `findsNothing`/`isFalse` + 4 unordered/equals sets: none passes for
+  a second reason. `find.textContaining('Erik')` discriminates because the group row renders the
+  TITLE, never the participant names; the system-row negative is anchored on 'Anna skapade
+  gruppen' rather than the whole sentence, which is right for a different reason than the comment
+  gives (the title Text cannot contain the full sentence either way — harmless).
+- The founder-readable widget test READS as a duplicate of the late-joiner readable one (same
+  seam, subset kill set) and must NOT be deleted: it is the control proving the founder-SKEW
+  blank comes from `sentAt`, not from being a founder.
+- Premise assertions: mostly load-bearing (empty-reader premise separates "blank from the id"
+  from "blank anyway"; `isSystemMessage` premise is what makes the POSITION claim real;
+  `joinedLaterAt == null` is the sibling-disagreement pin). Two are documentation rather than
+  discrimination (`historyQueryStartFor == joinedAt` in widget test 1, where fixture drift is
+  already caught by the main assertion). Not decoration overall.
+- Comment claims verified in the files they name: `stageMemberRemoval` really does delete
+  `memberSince.{uid}` via `PER_USER_CONVERSATION_MAPS` while leaving `groupId` (chat-group-writes.ts
+  :226-258), so the no-stamp state is reachable; `conversations_list_view.dart:321` really does
+  pass `vm.currentUserId.orEmpty()`, so '' is reachable at the widget; the ARB twins are real
+  ('Inga meddelanden än' = `conversationNoMessagesYet`/`chatNoMessages`, 'Grupp skapad' =
+  `conversationGroupCreated`/`personalTagGroupCreated`) and neither twin is rendered by this widget.
+- The retirement comment on the three `lastMessagePreview` tests is accurate at these bytes: both
+  named successor titles exist verbatim, and the comment NAMES the two behaviours that deliberately
+  did not move (direct-chat sender prefix; the empty-state string). Graded case by case against
+  `git show HEAD:` of the deleted tests.
+- `.orEmpty()` in `_applySearch` is unchanged by this diff (only hoisted), so no new empty-reader
+  wiring gap; the semantics are pinned at the model and at the widget.
+
+**Out of scope, production observation, not a test finding:** `lastMessage` is a THIRD
+denormalised surface — `social_export_manager._redactOtherParticipants` keeps
+`lastMessage.content` in the Art. 15 conversations section (it strips only `senderAvatarUrl`),
+so a late joiner's export still carries the pre-join message this ticket removed from the list
+and the search. Same disclosure class, and `.claude/rules/accepted-deviations.md` decides names,
+avatars, `perUserSettings`, `lastReadTimestamps` and `memberSince` for that section but says
+nothing about message content vs the history cut-off. Needs its own ticket + Malin's call, not a
+quiet widening.
+
+**Green:** `flutter test` on the three suites 123/123 (122 + the added test);
+`flutter analyze --fatal-infos` on the edited suite: no issues. `grep MUTANT` on the viewmodel:
+zero hits; `git status lib/` unchanged apart from the parallel session's own files.
+
+Verdict: pass (0 blocking).
+
+## 2026-08-15 — BUT-1838 conversation-list history cut-off: re-review round 2 (comment-only delta)
+
+**Trigger:** commit gate marked the previous "pass (0 blocking)" stale after ONE file moved —
+`lib/widgets/messaging/conversation_list_item.dart`, comment only. The integration reviewer had
+found the comment's caller inventory incomplete: it claimed `Conversation.canReadMessageAt` is
+"the ONE spelling of this comparison" shared with the search filter, and that the message query
+is "deliberately NOT a third caller". A clause was added naming a THIRD spelling —
+`lib/repositories/firebase/firebase_data_export_repository.dart` — and saying not to consolidate it.
+
+**Re-read, all six in scope:** `conversation_list_item.dart` (352 lines), `conversation.dart`
+(500), `conversations_viewmodel.dart` (370), the untracked widget suite
+`test/widget/messaging/conversation_list_item_history_preview_test.dart` (572), plus
+`test/unit/models/conversation_test.dart` (1238) and
+`test/unit/viewmodels/conversations_viewmodel_test.dart` (1587).
+
+**The new clause is TRUE, verified in the named file rather than from the brief:**
+`exportConversationsAndMessages` reads `convoDoc.data()['memberSince']` (line 376), narrows with
+`rawMemberSince is Map ? rawMemberSince[userId] : null` (377) and applies its own bound
+`where('sentAt', isGreaterThanOrEqualTo: ownStamp)` (381-386). It imports only
+`cloud_firestore`, `base_firebase_repository`, `firestore_collections` and `logger` — the
+`Conversation` model is not imported, and the only `Conversation` tokens in the whole file are
+the `maxMessagesPerConversation` parameter. So "reads `memberSince` off a raw map because it
+never builds a `Conversation`" holds on both halves, and it genuinely IS a third spelling worth
+naming rather than consolidating (a Firestore bound cannot be expressed through a bool predicate).
+
+**One non-blocking advisory (advisory, not a finding — the sentence is not false in itself):**
+the insertion sits BETWEEN "…do not read this method as proof the query is fail-closed" and
+"It fails closed twice, matching the rule's `.get(uid, request.time)` default". The pronoun's
+nearest referent is now the export repository, and under that reading the sentence is false —
+the export repo does NOT fail closed on a missing stamp; `ownStamp is Timestamp` false means NO
+`sentAt` filter is added at all, i.e. it leans on the rules instead. Suggested repair is one
+word: "`canReadMessageAt` fails closed twice…". No code, no test consequence.
+
+**Nothing else drifted.** `canReadMessageAt` (conversation.dart:216-221) still reads
+`groupId == null ⇒ true`, `userId.isEmpty ⇒ false`, missing stamp ⇒ false, `!sentAt.isBefore(start)`;
+the widget's guard is still at line 327, ABOVE the `isSystemMessage` branch at 332 (the position
+the widget suite's second test pins); `_applySearch` still hoists `currentUserId.orEmpty()` and
+routes through the same predicate (viewmodel 125-139). The over-fix test added in round 1 —
+"a row whose last message is out of reach is still findable by its TITLE" — is intact at
+conversations_viewmodel_test.dart:646-678, and the widget suite header's "measured: 1 red of 12"
+still matches the file's 12 `testWidgets` and the two fail-closed cases that both use
+`MessageType.text`.
+
+**Mechanical:** `grep MUTANT|THROWAWAY|"if (false)"` over all six — zero hits (exit 1).
+`git status`: the five tracked files ` M`, the widget suite `??`; no staged bytes. Analyze/tests
+not re-run per the brief (dart analyze --fatal-infos clean, 123 green, conversation.dart exactly
+500 lines).
+
+**Lesson folded into the principles file:** inserting a clause into an existing comment paragraph
+re-points the pronouns after it, so grading only the inserted sentence can pass a paragraph that
+has just gone false.
+
+Verdict: pass (0 blocking).
+
+## 2026-08-15 — BUT-1838 round 8: the repaired claim survived inline, in the test the header describes
+
+**Trigger:** re-review after my round-7 blocking finding ("two comments claim their fixture kills a
+guard keyed on `isGroup`, but both fixtures have `isGroup: false` AND no `groupId`, so the two
+predicates agree there").
+
+**What was fixed, and holds.** The new model test
+`test/unit/models/conversation_test.dart:906-933` — "allows a LEGACY group — isGroup true, no
+groupId — even with a stamp later than the message" — IS the discriminator, confirmed by reading
+the flag pair of every fixture that reaches `canReadMessageAt`. Under the substitution
+`if (!isGroup) return true;` for `if (groupId == null) return true;`: the six other tests in that
+group are (null,false) once and (set,true) five times, so the mutant is behaviour-identical on all
+six; only the legacy (null,true) fixture flips (start=joinedAt, beforeJoin.isBefore ⇒ false). Exactly
+one red, as reported. No other suite calls `canReadMessageAt` with a legacy shape (grep: viewmodel
+suite and widget suite fixtures are all (null,false) or (set,true)). Model suite run: 55 green.
+The widget header's repaired clause (lines 52-56) and the viewmodel-test clause (686-691) are both
+TRUE of their fixtures.
+
+**The blocking finding.** The identical false claim survives at
+`test/widget/messaging/conversation_list_item_history_preview_test.dart:399-401`, inline in the
+direct-conversation test whose fixture the repaired HEADER 350 lines above describes: "A guard
+reading `memberSince` directly, **or keyed on `isGroup`**, would blank this row." That fixture is
+`isGroup: false`, no `groupId`, so every isGroup-keyed spelling of the guard returns true and SHOWS
+the row — the header says so itself ("on this fixture the two are the same predicate"). Only the
+first half ("reading `memberSince` directly") is true. One-clause deletion.
+
+**Method note:** the whole verdict was reachable by reading, because `canReadMessageAt` is a pure
+predicate over two fields — enumerate `(groupId, isGroup)` per fixture and the mutant's kill set is
+decided. No probe, no production edit, no exposure to the parallel recipe_form session.
+
+Verdict: fail (1 blocking).
+
+## 2026-08-15 — BUT-1838/BUT-1850: the deleted unread-count shortcut, and what its two new tests could not see
+
+**Trigger:** review round on the uncommitted `getUnreadConversationsCount` change —
+`lib/repositories/firebase/modules/conversation_query_module.dart` +
+`test/unit/repositories/firebase/modules/conversation_query_module_test.dart`. The
+production diff deletes an early return that preferred the inverse index
+(`users/{uid}/conversation_memberships`, rows written `hasUnread: false` and never
+maintained), which made the badge answer 0 for anyone holding one row. Established before
+the round: analyze clean, 15 green, a restore-the-branch probe reddening exactly the two
+new tests.
+
+**Method.** No production edit (parallel session live in the same checkout). Instead a
+throwaway `test/`-side replica, `zz_probe_unread_count_test.dart`, holding the method's
+body as a function plus five mutants, run over six fixtures — the three shipped ones and
+three candidate strengthenings. Deleted after, `git status --porcelain` verified clean,
+`lib/` md5 identical at both ends (`0445ffa8f113d2c58531c3782bd2b0de`).
+
+Matrix (SURVIVES = fixture cannot see the mutant):
+
+| fixture | M1 restore-branch | M2 count-index-rows | M3 index-as-selector | M4 drop-arrayContains | M5 drop-unread-filter |
+|---|---|---|---|---|---|
+| F1 test 1 as shipped (2 unread, 2 rows, expect 2) | killed | SURVIVES 2 | SURVIVES 2 | SURVIVES 2 | SURVIVES 2 |
+| F1b + a READ conversation that also has a row (expect 2) | killed | killed 3 | SURVIVES 2 | SURVIVES 2 | killed 3 |
+| F2 test 2 as shipped (read direct w/ row + unread group w/o, expect 1) | killed | SURVIVES 1 | killed 0 | SURVIVES 1 | killed 2 |
+| F2g F2 with `isGroup: true` | identical to F2 on every mutant |
+| F3 plain no-module test (expect 2) | SURVIVES | SURVIVES | SURVIVES | SURVIVES 2 | killed 3 |
+| F3b + one FOREIGN unread conversation (expect 2) | SURVIVES | SURVIVES | SURVIVES | killed 3 | killed 3 |
+
+**Three findings, all fixed in the test file.**
+
+1. `where('participantIds', arrayContains: userId)` was deletable-green across the WHOLE
+   file — every seeded conversation in both count groups belonged to `alice`.
+   `Conversation.hasUnreadMessages` asks nothing about membership and returns TRUE when the
+   user has no `lastReadTimestamps` entry, so a stranger's chat counts as unread and the
+   badge over-counts. Closed with one foreign unread doc in the plain test (F3b).
+2. Both new tests made the index's ROW COUNT equal the expected answer (2/2 and 1/1), so
+   `return memberships.length` — the "hasUnread is never maintained, so count rows instead"
+   reinstatement the production doc comment invites — survived both. Closed by adding a
+   third, READ, conversation that also carries a row to test 1 (F1b): rows 3, answer 2.
+3. The previous reviewer's duplicate concern is right about a straight revert and wrong
+   overall: M3 (keep the index as a SELECTOR, fetch the docs it names, filter unread
+   correctly) survives F1 and F1b and dies only on F2. Test 2 earns its place on that
+   mutant, not on documentation. Recorded in its comment.
+
+**Fixture-honesty fix.** `_seedConvo` hardcoded `'isGroup': false`, so the test named "a
+group conversation is counted…" staged a direct-shaped doc with three participants. Added
+an `isGroup` parameter; measured F2g ≡ F2 across all five mutants, so the flag is
+documentation, not coverage, and the comment now says exactly that (a branch keyed on
+group-ness would need its own test). Left as-is because the counter reads neither `isGroup`
+nor `groupId`.
+
+**Fake-Firestore premise is REAL, not fake-only.** `ConversationMembership.toFirestore()`
+emits plain `Timestamp.fromDate` values and a literal `hasUnread: false` — no `FieldValue`
+sentinel anywhere on `addParticipant`'s path, and it is a `batch.set` without `merge:true`,
+which the fake applies faithfully. `lastActivityAt` is present, so
+`getUserMemberships`'s `orderBy('lastActivityAt')` does not silently drop the seeded rows
+(the failure mode that would have made the premise assertions vacuous). The digest's
+transactional-merge-set and `runTransaction` caveats do not reach this path.
+
+**Harness.** `_MockFeatureFlags` is a bare `Mock` (no `@override` bodies) and fails loud on
+an unstubbed flag; its `getInt(maxInlineParticipants)` stub is unused on this path
+(`shouldUseSubcollection` is the only reader) — harmless, left. `_module`'s comment claimed
+null `participantModule` makes "all calls fall through to legacy arrayContains paths",
+which the deletion made false for the counts; rewritten. The library docstring said "five
+read paths" (there are six; the missing one, `getConversationIdsViaInverseIndex`, has its
+own group) and called the whole file "legacy / non-inverse-index paths"; rewritten.
+
+**Closing state:** 15 tests green, `flutter analyze --fatal-infos` clean on the test file,
+`lib/` untouched.
+`md5 lib/.../conversation_query_module.dart 0445ffa8f113d2c58531c3782bd2b0de` (unchanged),
+test file 573 lines after edits (md5 49d29e6352652f165e9e5fcdb2b2146e).
+
+Verdict: pass (0 blocking).
+
+## 2026-08-15 — BUT-1849 comment-only fallout review (edit_recipe_view, skriv_sjalv_recept_view, dialog_form_fields)
+
+Trigger: parent asked for a testing-angle review of three files carrying "comment-only fallout"
+from BUT-1849's deletion of the dead `lib/widgets/common/input/shopping_item_dialog.dart`
+(357 L) and its 453-line test. Two earlier review rounds had already run.
+
+### Comment-only: confirmed, all three
+`git diff --cached` over the three: every changed line starts with `///` or `//`.
+- `edit_recipe_view.dart` -2/+2 (BUT-701 comment rewrapped, drops "matches the
+  shopping_item_dialog pattern"). Net 0 lines; allowlist row still reads 724, file is 724.
+- `skriv_sjalv_recept_view.dart` -2/+1 (same phrase). 981 -> 980; the staged
+  ACCEPTED_LARGE_FILES row was updated to 980. Correct.
+- `dialog_form_fields.dart` AI-info block + class doc + one method doc. 412 lines.
+Worktree md5 == index md5 for all three (228da312…, 3e7d6e5a…, b1b8cfe5…), so the bytes
+reviewed are the bytes staged.
+
+### The blocking one: the deletion never happened
+`lib/widgets/common/input/shopping_item_dialog.dart` (13,435 bytes) and
+`test/widget/common/input/shopping_item_dialog_test.dart` (15,823 bytes) are both still on
+disk, unmodified, and `git status --porcelain -- <both>` prints NOTHING — no staged `D`, no
+worktree deletion. Meanwhile the staged `test/widget/common/input_components_test.dart`
+header asserts "(BUT-1849 removed `showShoppingItemDialog` and the dead dialog behind it,
+which was the only opener this suite ever mounted.)" The first half is true (the facade
+method and its import are staged out of `input_components.dart`, and the 72-line test group
+that mounted it is staged out). The second half is false against these bytes.
+
+Nothing BREAKS if it ships that way — the orphaned dialog still compiles and its own suite
+still passes — but a staged test file would carry a false claim about repo state, and the
+ticket's actual deliverable would be missing. This is the mirror of the BUT-1838 digest
+lesson ("`git commit -- <pathspec>` silently drops every NEW file"): here it is a DELETION
+nobody staged, equally invisible to a review scope built from `--cached`.
+
+Deadness itself checks out: after the staged facade change the only remaining references to
+`AddUnifiedShoppingItemDialog` are the file itself and its test.
+`lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart` is a NAME COLLISION
+(class `ShoppingItemDialogs`), not a caller — it neither imports nor references the widget.
+
+### The two dialog_form_fields suites are NOT duplicates, and the mirroring one over-claims
+- A = `test/widget/common/dialogs/dialog_form_fields_test.dart`, 1210 L, 68 tests, path
+  mirrors production. Per-method groups, render + validator composition.
+- B = `test/widget/dialogs/dialog_form_fields_test.dart`, 949 L, 44 tests, non-mirroring
+  path. Overlaps A on render/validation, and additionally holds the ONLY
+  `Content filter bypass prevention (BUT-517 follow-up)` group (3 tests, incl. "profanity is
+  rejected even when customValidator returns null") and the ONLY `Accessibility` group.
+
+A's header (lines 5-9) claims: "Goal: cover … validator composition (the BUT-517 follow-up
+that customValidator no longer bypasses contentFilter, …)". It does not.
+`grep -in 'contentFilter|profan|olämplig'` over A hits ONE line — the header itself. A has
+zero fixtures carrying profane content, so no assertion in it can observe whether
+`FormValidators.contentFilter` runs. Analytic, no mutant owed: revert `buildTextFormField`'s
+validator to the pre-BUT-517 `customValidator ?? FormValidators.combine([...])` and every A
+test stays green — each either passes NO customValidator (identical behaviour) or passes one
+that itself produces the asserted error (email/password/url/phone/amount/search). A's
+"customValidator error wins on its own concern" pins ORDER, not composition, and is green
+under the bypass.
+
+Consequence for whoever consolidates: deleting B as "the duplicate at the wrong path" would
+silently retire the BUT-517 security regression guard for a UGC-bearing dialog field. Keep
+B's two unique groups; fix A's header. Predates BUT-1849 — advisory, not this diff's fault.
+
+Suite state at review: 104 tests green across A + B + input_components_test.
+
+### Dead production surface pinned by tests
+`DialogFormFields` exposes 13 public statics; production calls exactly TWO —
+`buildNameField` and `buildDescriptionField`, both in `create_group_dialog.dart` (:250, :260,
+verified by `grep -rn 'DialogFormFields\.' lib/`; the only other hits are l10n `@description`
+strings). So ~2,159 lines of test across the two suites pin 11 methods no user can reach.
+The new `Code smells: One production caller only (create_group_dialog.dart)` line is the
+honest flag; the staged `input_components.dart` comment already points at BUT-1859 for
+`common/input/` reachability, and this is its sibling.
+
+### Header claims in dialog_form_fields.dart, each verified
+- "Analytics: None" (was "Form interaction tracking") — no analytics reference in the file.
+  Correct.
+- "Code smells: One production caller only (create_group_dialog.dart)" — correct, grepped.
+- "Connected to: FormValidators", dropping `BaseFormDialog` and "dialog implementations" —
+  `BaseFormDialog` DOES exist (`lib/widgets/common/dialogs/base_dialog.dart`), so a future
+  reader grepping the removed name will find it and suspect an over-correction. It is not:
+  base_dialog neither imports nor calls DialogFormFields, and DialogFormFields does not
+  reference it. Removal accurate.
+- Removed class-doc list ("Consolidates form field patterns found across: create_group,
+  edit_group, shopping_item_dialog, menu_save_dialog, dialog_factory … And 8+ other dialog
+  files") — false in its entirety before this fix. Correct removal.
+- UNCHANGED and still incomplete: "Dependencies IN: FormValidators, AppDimensions, Material
+  UI" omits `ValidationUtils` (used inside `buildTextFormField`) and
+  `localization_extension`. Pre-existing nit, outside this diff.
+
+### The two views lose no coverage
+`test/widget/views/focus_traversal_group_test.dart` drives BOTH `EditRecipeView` and
+`SkrivSjalvReceptView` with real Tab keypresses and asserts scroll-independent reading order.
+Its own header already records that removing the `FocusTraversalGroup` wrapper leaves it
+green (the wrapper is a no-op in a plain top-to-bottom Column), so the BUT-701 contract is
+pinned behaviourally and is untouched by dropping a cross-reference in a comment.
+`shopping_item_dialog.dart` is one of 10 `FocusTraversalGroup` sites in `lib/` and is not one
+of the five views that suite covers, so its deletion drops zero test coverage.
+
+### Out of scope but in the same staged commit
+`lib/views/pantry/add_pantry_item_sheet.dart` (+22 executable lines) and
+`test/widget/views/pantry/add_pantry_item_sheet_test.dart` (+109) are also staged. The commit
+is NOT comment-only overall — only the three files I was pointed at are. Matches the
+`lessons-digest-testing` BUT-1849 entry about a delete-me test holding the suite's only
+`PantryItem.unit` assertion; not re-reviewed here.
+
+### Closing bytes
+edit_recipe_view.dart 724 L 228da312845f931fefd685a5effd2d92
+skriv_sjalv_recept_view.dart 980 L 3e7d6e5a302868ba1c26fafc974a7c9d
+dialog_form_fields.dart 412 L b1b8cfe53c372eca4d0c9427163edd09
+
+## 2026-08-15 — BUT-1849 round 4: pantry unit read/write split + the doomed shopping dialog
+
+Scope: `lib/views/pantry/add_pantry_item_sheet.dart`, `lib/widgets/common/input_components.dart`,
+`lib/widgets/common/input/shopping_item_dialog.dart` (restored on disk so the gate can pin the
+HEAD blob of a file being `git rm`'d — expected state, not a finding).
+
+### Deleting the 453-line suite costs nothing measurable
+18 tests over a widget with zero `lib/` callers (`showShoppingItemDialog` was the only entry
+point; nothing called it). Graded: 4 icon/action-count renders, 2 pre-fill, 3 interaction
+(two asserting only `takeException(), isNull`), 2 validation, 3 submission-payload, 1 cancel,
+1 pure `Expanded.flex` topology (DO-NOT-WRITE), 2 edge cases that duplicate the dropdown and
+cancel tests verbatim. Only the 3 submission tests + the 2 validation tests carried intent,
+and all of it was over dead code. Codecov: ~357 near-fully-covered lib lines out of 48,191, so
+expect roughly -0.3 pp on the project figure — inside the 2 % tolerance and the right direction.
+
+Intents worth inheriting by the LIVE dialog (`lib/views/unified_shopping/widgets/dialogs/
+shopping_item_dialogs.dart`, zero tests, BUT-1860): comma decimal (`'1,5'` → 1.5, both
+`_onSave`s); empty-name validation blocks the pop, with the valid-input pop as its control;
+add-payload defaults (`category` → `ShoppingCategory.other` on empty free text, `note`
+preserved through the `.basic(...).copyWith(...)` fix at :239); edit preserving `id`,
+`priority`, `bought` plus the `?? widget.item.amount` fallback on unparseable text; and
+`_CategorySuggester` + the `_categoryManuallyEdited` double-reset (:162/:164), where the
+ordering is load-bearing and nothing pins it.
+Two notes for that ticket: (a) the deleted suite asserted `unit == 'st'` as the add default —
+the live dialog's unit is a FREE-TEXT controller defaulting to `''`, so the expectation
+INVERTS, and that empty/free-text unit is the upstream source of the BUT-1858 pantry clamp;
+(b) `_priceController` is constructed, disposed and read in both `_onSave`s but bound to NO
+input, so `estimatedPrice` is always null on add — the :239 comment's "the price the user
+typed" half describes a field that does not render. Advisory, outside the reviewed three.
+
+### The read/write split, and what BUT-1858's deletion leaves open
+Kill matrix, analytic (no production mutation run — parallel session live in the tree):
+dropping `unit: _unit` from the EDIT branch's `copyWith` keeps the stored `'g'`, so test 3
+(read leg) stays green while test 6 (`'g'` → picks `'dl'`) and the defect test (`'knippe'` →
+`'st'`) both redden; dropping the initState read reddens test 3. Matches the brief.
+Unclosed by the split: `_submit`'s two ADD call sites (`addItemFromIngredient(unit: _unit)`
+:153, `addItemFromText(unit: _unit)` :162) are matched by tests 1-2 with `any(named: 'unit')`,
+so a hardcoded `unit: 'st'` there survives the whole suite before AND after BUT-1858. Same for
+`location`. And once the defect test goes, no fixture holds an off-list unit at all — nothing
+pins that such an item renders instead of tripping `DropdownButtonFormField`'s one-match assert
+(SDK `dropdown.dart`:1794-1801; in release `_updateSelectedIndex` leaves `_selectedIndex` null
+and the control renders the hint slot). So BUT-1858 must REPLACE that test with its inverse,
+not delete it, and should pin the offered item list against `_units`.
+
+### Every cross-file claim in the new production comment — all five verified
+Chain `onItemCheckedOff` → `addFromShoppingItem` → `addFromText` (checkoff service :64,
+pantry service :123). `UnifiedShoppingItem.unit` is `final String unit` defaulting `''`
+(:194/:296), so `unit ?? match?.typicalUnit` (:88) and `_buildItem`'s `unit ?? 'st'` (:259)
+neither fire — verbatim storage confirmed. `autoAddBoughtToPantry` defaults false
+(`user_profile.dart`:159), gates at checkoff :47, is live-wired at
+`unified_shopping_viewmodel.dart`:433 and shipped as `AutoAddPantryTile`
+(`settings_hub_view.dart`:82) — "off by default but shipped" is exact. Dedup is name
+(case-insensitive) + unit, :52-56. Clamp is in `b67aafe49` (2026-04-10), which
+`--diff-filter=A` confirms is the file's creation commit, while the checkoff flow arrives in
+`5aede8841` (2026-06-14) — "predates" holds. Free-text unit sources corroborated: the live
+add/edit dialogs' `_unitController`, and `MenuShoppingAggregator`:89 (lowercased, `''` when
+amount-less) over the `swedish_units.dart` vocabulary that really does contain `förp`, `påse`,
+`krm`. Also confirmed the checkoff flow is the ONLY live producer of an off-list pantry unit:
+the sheet is the sole caller of both VM add methods and always passes an on-list `_unit`.
+
+### Two stale sentences, both in the TEST file, both non-blocking
+(1) Test 6's header calls the defect test "the suite's only other assertion on `unit`" —
+false, and falsified by the SAME edit that wrote it: test 3's predicate was strengthened to
+assert `item.unit == 'g'` in this change, and its own comment says so 90 lines above.
+(2) Test 3's "would stay green ... because the fixture stores what the default would be" —
+the fixture stores `'g'`, the dropdown default is `'st'`; the real reason is that `copyWith`
+without `unit:` preserves the stored value. Both are the "measured claim in a comment rots
+predictably" family; neither weakens an assertion, so advisory.
+
+### Runs
+`flutter test test/widget/views/pantry/add_pantry_item_sheet_test.dart` → 7/7 green.
+`flutter test test/widget/common/input_components_test.dart` → 7/7 green (no orphan import).
+
+### Closing bytes
+add_pantry_item_sheet.dart 359 L fe32a5f037075fd2a1a6ded87d8d8bf0
+input_components.dart 84 L 3fe32e6220ed242cc0a6a549f82bcb75
+shopping_item_dialog.dart 357 L 5fb5899cb2aee35ab586a18d77463b79
+add_pantry_item_sheet_test.dart fa2277d959dd58433e31a6f35d8400e8
+shopping_item_dialog_test.dart d127ff07f3d266be1baa0106192b354a
+input_components_test.dart 39d168cf45db62ee14b798724a2944ee
+
+## 2026-08-15 — BUT-1849 final testing pass: a comment-only diff split across index and worktree
+
+Trigger: final review round on three comment-only files (`lib/views/edit_recipe_view.dart`,
+`lib/views/skriv_sjalv_recept_view.dart`, `lib/widgets/common/dialogs/dialog_form_fields.dart`)
+for BUT-1849, which deletes `lib/widgets/common/input/shopping_item_dialog.dart` (357 lines)
+plus its 453-line suite. Brief said the code was frozen after five rounds.
+
+What the round produced:
+
+1. Comment-only confirmed by `git diff --cached` + `git diff` per file. Both views drop the
+   clause "(matches the shopping_item_dialog pattern)" from the BUT-701 `FocusTraversalGroup`
+   comment; file 3 rewrites its AI INFO header, its class docstring and one member docstring.
+   No executable token moves.
+
+2. NEW OBSERVATION worth a principle: `git status` showed file 3 as `MM`. The header's
+   Quick Guide / Dependencies IN / Dependencies OUT lines AND the class docstring sentence I
+   was explicitly asked to grade were UNSTAGED; the index still carried
+   `/// Common form field factory that eliminates duplicate form field patterns.` — i.e. the
+   exact sentence the round replaced. A bare `git commit` would have shipped the stale claim
+   under a passing review, and nothing (analyzer, tests, review gate) can see that in a
+   comment-only diff. Folded into the "verifier's RED COUNT / MM" bullet under Re-review
+   economics.
+
+3. Claim checks (the class that had failed this diff five times):
+   - "Every TEXT variant funnels through [buildTextFormField]; the dropdown, checkbox and
+     switch builders stand on their own." TRUE. All 12 public statics read: name, description,
+     amount, email, url, password, search, phone all delegate; dropdown/checkbox/switch build
+     `DropdownButtonFormField` / `CheckboxListTile` / `SwitchListTile` directly. No exception.
+   - "Dependencies OUT: create_group_dialog.dart" + "Code smells: One production caller only"
+     TRUE — `grep -rn DialogFormFields lib/` yields create_group_dialog.dart:16/250/260 and two
+     doc-comment mentions in generated `app_localizations.dart` (not callers).
+   - "Analytics: None" TRUE.
+   - Nit: "Dependencies IN" omits `package:flutter/services.dart` (`FilteringTextInputFormatter`
+     for amount + phone).
+   - Both views: `FocusTraversalGroup` present, wrapping the form's `ListView`; "no visual
+     change" holds.
+   - `docs/architecture/ACCEPTED_LARGE_FILES.md` claims skriv_sjalv is "980 after BUT-1849
+     shortened a comment" — measured 980. TRUE.
+   - Survivor of the same genre, out of the frozen fileset: `create_group_dialog.dart:21`
+     "Enhanced consolidation using DialogFormFields, eliminating 40+ lines of duplicate".
+
+4. Coverage consequence: none. `grep -i shopping test/widget/views/focus_traversal_group_test.dart`
+   → zero hits, and it drives both views with real `LogicalKeyboardKey.tab`. The deleted suite
+   only ever constructed `AddUnifiedShoppingItemDialog`, which does not touch `DialogFormFields`.
+   No other file under `lib/` or `test/` imports the deleted widget; the only survivor is a
+   historical note in `test/widget/common/input_components_test.dart:6`.
+
+5. BUT-1861 (only `test/widget/dialogs/dialog_form_fields_test.dart` holds the BUT-517
+   content-filter group; the mirror-path suite's header claims it) is NOT made worse — neither
+   suite moved and the production BUT-517 rationale comment is untouched. Addendum for the
+   ticket: that same header says "the 10 public static field factory helpers" and then lists
+   twelve. Both suites do exercise all 12 builders (measured by
+   `grep -o "DialogFormFields\.build[A-Za-z]*" | sort | uniq -c`), so the count is the false
+   part, not the coverage.
+
+Closing state — md5 / wc -l:
+- 228da312845f931fefd685a5effd2d92  lib/views/edit_recipe_view.dart (724)
+- 3e7d6e5a302868ba1c26fafc974a7c9d  lib/views/skriv_sjalv_recept_view.dart (980)
+- 7d4521ee51c390b7194a187952275b56  lib/widgets/common/dialogs/dialog_form_fields.dart (414)
+No probe/mutant leftovers (`grep MUTANT|THROWAWAY|if (false)` clean, no untracked test files).
+
+## 2026-08-15 — BUT-1849 round 2: the false deletion claim MOVED into `lib/`
+
+Trigger: parent asked for a final two-file comment-accuracy pass (`add_pantry_item_sheet.dart`,
+`input_components.dart`) after applying my own round-1 findings. Brief said "index and worktree
+byte-identical". Report-only, no test edits.
+
+### Freeze check
+`add_pantry_item_sheet.dart` worktree md5 6719f7ce1fd6b26f1161480afa3a1853 != index
+963e48b5d69896cdaef2c40041989cd1 — but `git show :<path> | diff --strip-trailing-cr -` is
+IDENTICAL and `file` says CRLF. Line endings only; the brief's freeze claim holds. The sibling
+`input_components.dart` is LF and hashes equal both sides, which is why the pair disagreed.
+Worth remembering: a CRLF file makes the standard md5 freeze check produce a false alarm.
+
+### BLOCKING — `add_pantry_item_sheet.dart:66-68` asserts a deletion that never happened
+The new parenthetical reads "(plural: NOT the singular `common/input/shopping_item_dialog.dart`,
+deleted by BUT-1849)". That file is present three ways: `git cat-file -e HEAD:<path>` succeeds,
+`git ls-files --stage` prints blob f436cfb49b12…, and it is on disk at 13,435 bytes. Its
+453-line test still imports it. BUT-1849 deleted the facade METHOD `showShoppingItemDialog` and
+its import from `input_components.dart` — not the file.
+
+This is round 1's blocking finding wearing new clothes. That round flagged the same false claim
+in the staged `input_components_test.dart` header ("BUT-1849 removed … the dead dialog behind
+it"). A tree-wide grep now shows the test-side copy IS repaired — the only surviving instance is
+the new `lib/` comment. So the repair moved the claim from a test file into production, where it
+is more trusted, and grepping the file I had named would have shown it fixed.
+
+Sharpest irony: the parenthetical exists to stop a future reader grepping the near-identical
+name and concluding the mechanism died with the deleted file. As written the reader greps, finds
+the file PRESENT, and distrusts the whole (correct) mechanism chain above it.
+
+### BLOCKING — `input_components.dart:6-7` bounds the facade non-transitively
+"The four modules this facade still wraps. Nothing else in `common/input/` is routed through
+here; BUT-1859 audits which of those are reachable." Direct imports: exactly four, true. But the
+second clause makes REACHABILITY the operative frame, and the closure is nine:
+`portion_scaler.dart` pulls `portion_scaler_logic.dart` + `portion_scaler_ui.dart`;
+`shopping_list_selector.dart` pulls `shopping_list_card.dart` + `shopping_list_actions.dart` +
+`editable_menu_items_preview_dialog.dart`. Those last three have NO other route —
+`ShoppingListSelector` is mounted only by `InputComponents.showListSelector`
+(`veckomeny_dialogs.dart:156`). A BUT-1859 auditor trusting the sentence would mark exactly
+those as unreached. `PortionScaler` does have a non-facade caller (`edit_recipe_view.dart:495`).
+
+### Everything else in both files: verified TRUE, claim by claim
+`add_pantry_item_sheet.dart`
+- `_submit` writes `_unit` unconditionally — all three branches pass `unit: _unit`.
+- Chain: `ShoppingCheckoffPantryService.onItemCheckedOff` (:64) -> `addFromShoppingItem`
+  (`pantry_service.dart:117`, passes `unit: item.unit`) -> `addFromText`.
+- `UnifiedShoppingItem.unit` is `final String unit` (:194), default `''`, so `addFromText`'s
+  `unit ?? match?.typicalUnit` (:88) and `_buildItem`'s `unit ?? 'st'` (:259) cannot fire.
+- Free-text source: `_unitController` is a bare `StyledInput` with no validator, written as
+  `unit: _unitController.text.trim()` (:248 add, :387 edit); `ShoppingItemDialogs` is reached
+  from `unified_shopping_view.dart` via `shopping_dialogs.dart`; the VM passes `unit` through
+  unnormalised (`unified_shopping_viewmodel.dart:326`).
+- Parsed-unit source: `menu_shopping_aggregator.dart:89` takes `entry.unit` verbatim and `''`
+  when the line has no amount; 'krm'/'påse'/'förp' are real tokens in the import parsers and in
+  `UnifiedShoppingItem`'s abbreviation map (:461-464).
+- Opt-in: `autoAddBoughtToPantry` defaults false (`user_profile.dart:159`), gated at :47, and
+  the settings switch ships (`settings_hub_view.dart:299`).
+- Dedup: `p.ingredientName.toLowerCase() == item.name.toLowerCase() && p.unit == item.unit`
+  (:52-56) — so a clamped 'förp' row genuinely stops aggregating and a duplicate is created.
+- Provenance: b67aafe49 (2026-04-10) is the file's creation commit AND contains the clamp;
+  the checkoff service arrived 5aede8841 (2026-06-14). "Predates" is correct.
+- `hasError` / `isLoading` comments: `executeAsyncVoid` (`base_viewmodel.dart:219-239`) does
+  `clearError(); setLoading(true)`, and swallows into `setError`. Both true.
+
+`input_components.dart`
+- PortionScaler doc: `initialPortions` pre-selects (`portion_scaler.dart:62`), `originalPortions`
+  stays the scaling base (:151, :158). BUT-444/BUT-1322 attributions consistent with the file.
+- BUT-1859 is NOT verifiable from the repo — it appears only in this comment and my own archive;
+  `.claude/linear-tracker.json` is stale (2026-07-31). Advisory only.
+
+Closing state — md5 / wc -l (worktree):
+- 6719f7ce1fd6b26f1161480afa3a1853  lib/views/pantry/add_pantry_item_sheet.dart (361, CRLF)
+- 5b4d15f2214c3cb77c601aefaf400ea3  lib/widgets/common/input_components.dart (83)
+No production or test bytes changed by this round.
+
+Verdict: fail (2 blocking).
+
+## 2026-08-15 — BUT-1849 round 9: both blocking findings confirmed fixed
+
+**Trigger:** re-review after the parent repaired round 8's two blocking findings.
+
+**Motion check first, and it is the interesting part.** `add_pantry_item_sheet.dart` is
+md5-IDENTICAL to round 8's closing hash (6719f7ce…, 361 lines) — its blocking finding was
+resolved OUTSIDE the file, by making the deletion actually happen, so a hash-only motion check
+would have read "nothing moved" and missed the fix. `input_components.dart` moved
+5b4d15f2 → 55f7dbc2 (83 → 84). `git show :<path> | diff --strip-trailing-cr -` is IDENTICAL
+for both, so worktree == index — no comment-only worktree/index split this round.
+
+**Finding 1 (deletion claim) — real now, and the root cause is reusable.** The parent's
+`git rm` had been CHAINED with `git commit` in one shell string; the gate rejects the whole
+command string, so the rm never ran either and the comment described a still-tracked file.
+Settled on the INDEX, not the diff: `git diff --cached --name-status` shows
+`D lib/widgets/common/input/shopping_item_dialog.dart` and
+`D test/widget/common/input/shopping_item_dialog_test.dart`; `git ls-files --stage <path>` is
+empty; `git cat-file -e HEAD:<path>` still succeeds; the worktree dir no longer holds it.
+`grep -rn "shopping_item_dialog\.dart\|ShoppingItemDialog\b" lib/ test/` returns only the two
+COMMENTS discussing the removal — no dangling reference, and `flutter analyze` on both files
+is clean (92.4 s).
+Round 8 never checked whether the disambiguation was MEANINGFUL; it is. `git show HEAD:<deleted
+file>` shows its unit input was a fixed `_getUnits()` DROPDOWN (st/liter/msk/krm/förp/påse/…),
+so it genuinely is not the free-text source, which is the plural `shopping_item_dialogs.dart`.
+Advisory: the claim is true only if the `D` rides in the SAME commit — a pathspec-scoped commit
+can drop it.
+
+**Finding 2 (facade bound) — the rewrite is exactly true, and deliberately weaker.** Verified
+by a per-file intra-directory import grep over all 13 files in `lib/widgets/common/input/`:
+named directly (4) `instruction_editor`, `portion_scaler`, `debounced_checkbox`,
+`shopping_list_selector`; pulled in by those four (5) `portion_scaler` →
+`portion_scaler_logic` + `portion_scaler_ui`, `shopping_list_selector` → `shopping_list_card`
++ `shopping_list_actions` + `editable_menu_items_preview_dialog` (`shopping_list_card` also
+imports `shopping_list_actions`, which does not falsify "BY these four"); unreached (4)
+`adaptive_switch`, `adaptive_text_field`, `debounced_button`, `ingredient_suggestion_list`.
+4+5+4 = 13. Crucially it does NOT claim facade-EXCLUSIVITY, which would have been false in the
+opposite direction — `portion_scaler_logic` is also imported by `cooking_mode_viewmodel.dart`
+and `recipe_detail_actions.dart`, and `portion_scaler` itself by `edit_recipe_view.dart`; only
+three of the five are facade-only.
+
+**Re-derived independently rather than inherited from round 8** (the pantry file is
+byte-identical, so those checks still hold, but the two the earlier entry did not run):
+- `DropdownButton` assert + release-blank, Flutter 3.38.5: `dropdown.dart` :1794-1802 is the
+  `DropdownButtonFormField` constructor assert over `initialValue ?? value` — its message even
+  spells "[DropdownButton]'s value", so the comment matches the framework's own wording; in
+  release `_updateSelectedIndex` :1390-1410 leaves `_selectedIndex` null for a non-null
+  off-list value and :1570 `IndexedStack(index: _selectedIndex ?? hintIndex)` with no `hint`
+  paints nothing. Both halves of the sentence hold.
+- `setError` (`base_viewmodel.dart`:125-131) sets `_isLoading = false`, so the retry the
+  `_submit` comment promises is actually reachable — a sticky `isLoading` would have left the
+  primary button disabled forever, which is the failure the comment would have hidden.
+- The second-order dedup cost is PINNED, not merely true: `pantry_from_shopping_test.dart:137`
+  "adds a new item when name matches but unit differs".
+- `ACCEPTED_DEVIATIONS.md` read in full (1747 lines): nothing decides the pantry unit clamp or
+  the input facade.
+
+**Tests run (read-only; none written or edited):** `input_components_test.dart` +
+`add_pantry_item_sheet_test.dart` → 14 passed, including
+`an off-list unit is clamped to st, and saving rewrites it`.
+
+**Advisory left open (non-blocking):** "The four modules this facade imports directly" is
+scoped by POSITION — the file imports six things directly, four of them from `common/input/`.
+Fine as a block header; "the four `common/input/` modules" would close it.
+
+Closing state — md5 / wc -l (worktree):
+- 6719f7ce1fd6b26f1161480afa3a1853  lib/views/pantry/add_pantry_item_sheet.dart (361, CRLF)
+- 55f7dbc2cc6be1480e8ecbb5a94e913e  lib/widgets/common/input_components.dart (84)
+No production or test bytes changed by this round.
+
+Verdict: pass (0 blocking).

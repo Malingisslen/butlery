@@ -112,3 +112,15 @@
 {"ts":"2026-08-13T21:22:32.224Z","type":"trigger","fired":true,"signals":"auth,delete,deletion,firestore.rules,functions/src,gdpr,trust & safety","ran":null}
 {"ts":"2026-08-13T21:22:50.185Z","type":"trigger","fired":true,"signals":"auth,delete,deletion,firestore.rules,functions/src,gdpr,trust & safety","ran":null}
 {"type": "review", "tier": "full", "panel": ["Trust & Safety", "Security Architect", "Privacy/DPO", "DBA/Data-layer", "Software Architect", "Codebase Archaeologist"], "stakeholders": 6, "outcome": "approve-with-conditions", "must_haves": 27, "conflicts": 0, "escalations": 1, "adrs": [], "rubber_stamp": false, "via": "exit-plan", "plan": "BUT-1838 chat_groups redesign", "ran": true, "ts": "2026-08-13T21:23:52.607444+00:00"}
+{"ts":"2026-08-14T06:13:27.105Z","type":"trigger","fired":true,"signals":"delete,functions/src","ran":null}
+{"ts":"2026-08-14T06:14:05.998Z","type":"trigger","fired":true,"signals":"delete,firestore.rules,functions/src","ran":null}
+{"ts":"2026-08-14T13:28:46.296Z","type":"trigger","fired":true,"signals":"llm","ran":null}
+{"ts":"2026-08-14T13:29:00.326Z","type":"trigger","fired":true,"signals":"llm","ran":null}
+{"ts":"2026-08-14T20:44:11.884Z","type":"trigger","fired":true,"signals":"firestore.rules,functions/src","ran":null}
+{"ts":"2026-08-14T20:48:43.608Z","type":"trigger","fired":true,"signals":"firestore.rules,functions/src","ran":null}
+{"ts":"2026-08-14T20:48:53.093Z","type":"trigger","fired":true,"signals":"firestore.rules,functions/src","ran":null}
+{"ts":"2026-08-15T09:23:01.890Z","type":"trigger","fired":true,"signals":"auth,deletion,firestore.rules,functions/src","ran":null}
+{"ts":"2026-08-15T09:32:09.686Z","type":"trigger","fired":true,"signals":"auth,delete,deletion,firestore.rules,functions/src,trust & safety","ran":null}
+{"type": "review", "tier": "full", "panel": ["Security Architect", "Privacy / Data Protection Officer (GDPR)", "Performance Engineer"], "outcome": "approve-with-conditions", "must_haves": 7, "conflicts": 1, "escalations": 0, "adrs": ["ADR-0006"], "rubber_stamp": false, "approx_tokens": 340000, "via": "exit-plan", "plan": "BUT-1838 whole-range review fixes: dead unread-index branch + four stale control rationales", "ts": "2026-08-15T09:58:02.952194+00:00"}
+{"ts":"2026-08-15T17:43:26.038Z","type":"trigger","fired":true,"signals":"delete,deletion","ran":null}
+{"ts":"2026-08-15T17:44:19.151Z","type":"trigger","fired":true,"signals":"delete,deletion,gdpr,security rule","ran":null}
