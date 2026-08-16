@@ -39,90 +39,58 @@ export const TILLAMPLIGHET = Object.freeze({
 export const OBSERVATION = Object.freeze({
   VISIBLE_TEXT_PRESENT: 'VISIBLE_TEXT_PRESENT' });
 
-/* Visuella ledtradar. De redovisas DIAGNOSTISKT. Antalet avgor ingenting.
+/* Omstandigheter i scenen. RAPPORTERANDE ENDAST. De beskrivs som fri text
+ * och deltar ALDRIG i verdictlogiken — varken till antal eller till klass.
  *
- * FELET SOM RATTADES 2026-08-16
- * En tidigare version krayde "minst tva oberoende ledtradar" for att skarma
- * av en del som tillracklig. Det ar ingen giltig normativ regel. SC 1.4.11
- * vilar pa TILLRACKLIGHET i den faktiska scenen, inte pa ett minsta antal
- * signaler. EN stark signal kan racka. TRE svaga kan vara otillrackliga. */
-export const LEDTRAD = Object.freeze({
-  GLYPH_PRESENT: 'GLYPH_PRESENT',
-  TYPOGRAPHY_DISTINCT_FROM_NEIGHBOURING_TEXT: 'TYPOGRAPHY_DISTINCT_FROM_NEIGHBOURING_TEXT',
-  OTHER_PAINTED_DIFFERENTIATOR_ON_SAME_CONTROL: 'OTHER_PAINTED_DIFFERENTIATOR_ON_SAME_CONTROL',
-  AUTHORED_INSTRUCTION_IN_CONTEXT: 'AUTHORED_INSTRUCTION_IN_CONTEXT',
-  ESTABLISHED_POSITION_IN_LAYOUT: 'ESTABLISHED_POSITION_IN_LAYOUT',
-  CONTROL_CONTENT_ITSELF: 'CONTROL_CONTENT_ITSELF' });
-
-/* STYRKAN ar en bedomning per forekomst, inte en summa. En ledtrad ar STARK
- * bara nar den i DEN HAR scenen ensam identifierar att kontrollen finns och
- * hur den anvands. Allt annat ar SVAGT och kan aldrig, i nagot antal, bli
- * tillrackligt. */
-export const STYRKA = Object.freeze({ STARK: 'STARK', SVAG: 'SVAG' });
-
-/* Den enda vagen till tillracklighet: minst en ledtrad som ar bedomd STARK.
- * Det ar ingen rakning — en STARK ar en bedomning om att just den signalen
- * identifierar kontrollen. Hundra SVAGA ger fortfarande ingenting. */
-function harStark(bedomda) {
-  return (Array.isArray(bedomda) ? bedomda : []).some(b => b && b.styrka === STYRKA.STARK);
-}
+ * TVA RATTNINGAR HAR GJORTS HAR
+ *   1  "minst tva oberoende ledtradar" var en rakningsgrind. Borttagen.
+ *   2  STARK/SVAG var en styrketaxonomi som producerade verdict. Borttagen.
+ *
+ * Bada var uppfunna grindar. SC 1.4.11 vilar pa TILLRACKLIGHET av visuell
+ * identifiering i den faktiska scenen, betraktad SOM HELHET. Flera
+ * omstandigheter som var for sig ar otillrackliga kan tillsammans racka, och
+ * inget enskilt attribut och inget antal attribut far ge verdict.
+ */
 
 /**
- * Tillamplighetsprovet, per forekomst. Returnerar ALDRIG ett konformansutfall.
+ * Tillamplighetsprovet, per forekomst.
  *
- * DEN NORMATIVA FRAGAN — counterfactual i den faktiska scenen:
+ * DEN ENDA NORMATIVA FRAGAN — counterfactual i den faktiska scenen:
  *   Om den undersokta icke-textdelen inte kunde urskiljas, finns det anda
- *   TILLRACKLIG visuell information for att identifiera att kontrollen finns,
- *   hur den anvands, och relevant tillstand nar tillstandet ar fragan?
+ *   tillracklig visuell information, betraktad som helhet, for att
+ *   identifiera att kontrollen finns, hur den kan anvandas, och relevant
+ *   tillstand nar tillstandet ar det som undersoks?
  *
  * f = {
- *   harSynligText            bool  OBSERVATION, aldrig avgorande
- *   bedomdaLedtradar         [{ ledtrad, styrka, skal }]  styrkan ar bedomd,
- *                                  aldrig raknad
- *   ingenAlternativIdentifiering  bool  positiv evidens for att INGEN annan
- *                                  visuell identifiering finns i scenen
- *   tillstandBerorGrafiken   bool
- *   manskligBedomning        'REQUIRED' | 'SUFFICIENT' | null
+ *   harSynligText           bool          OBSERVATION, aldrig avgorande
+ *   evidens                 [string]      RAPPORTERANDE. Beskriver scenen.
+ *                                         Paverkar aldrig returklassen.
+ *   holistiskBedomning      'SUFFICIENT' | 'NOT_SUFFICIENT' | null
+ *                                         Den enda normativa ingangen.
+ *   bedomningsskal          string
+ *   tillstandBerorGrafiken  bool
  * }
  */
 export function tillamplighet(f) {
-  const bedomda = Array.isArray(f.bedomdaLedtradar) ? f.bedomdaLedtradar : [];
-  const ledtradar = bedomda.map(b => b.ledtrad);
-  const starka = bedomda.filter(b => b.styrka === STYRKA.STARK).map(b => b.ledtrad);
-  const svaga = bedomda.filter(b => b.styrka !== STYRKA.STARK).map(b => b.ledtrad);
-  const diagnostik = { ledtradar, starka, svaga, antalLedtradar: ledtradar.length,
-    $not: 'Antalet redovisas diagnostiskt och avgor ingenting.' };
+  const evidens = Array.isArray(f.evidens) ? f.evidens.slice() : [];
+  const diagnostik = { evidens,
+    $not: 'Rapporterande. Varken innehallet eller antalet paverkar klassen.' };
 
-  /* En levererad bedomning gar fore. Den raknas aldrig fram ur kvoten. */
-  if (f.manskligBedomning === 'REQUIRED')
-    return { klass: f.tillstandBerorGrafiken
-        ? TILLAMPLIGHET.NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_STATE
-        : TILLAMPLIGHET.NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL,
-      diagnostik, skal: 'levererad bedomning: grafiken kravs i den faktiska scenen' };
-  if (f.manskligBedomning === 'SUFFICIENT')
+  if (f.holistiskBedomning === 'SUFFICIENT')
     return { klass: TILLAMPLIGHET.TEXT_OR_CONTEXT_SUFFICIENT, diagnostik,
-      skal: 'levererad bedomning: ovrig visuell information identifierar kontrollen' };
+      skal: f.bedomningsskal || 'holistisk bedomning: scenen identifierar kontrollen aven ' +
+        'utan den undersokta delen' };
 
-  /* TILLRACKLIGHET: minst en ledtrad ar bedomd STARK i denna forekomst. */
-  if (harStark(bedomda))
-    return { klass: TILLAMPLIGHET.TEXT_OR_CONTEXT_SUFFICIENT, diagnostik,
-      skal: 'minst en ledtrad ar bedomd STARK i den faktiska scenen: ' + starka.join(', ') +
-        '. Bedomningen galler den signalens identifierande kraft, inte antalet signaler.' };
-
-  /* KRAV: positiv evidens for att ingen annan visuell identifiering finns. */
-  if (f.ingenAlternativIdentifiering === true)
+  if (f.holistiskBedomning === 'NOT_SUFFICIENT')
     return { klass: f.tillstandBerorGrafiken
         ? TILLAMPLIGHET.NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_STATE
         : TILLAMPLIGHET.NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL,
       diagnostik,
-      skal: 'ingen alternativ visuell identifiering finns i scenen — utan delen aterstar ' +
-        'ingen markor for att en kontroll finns' };
+      skal: f.bedomningsskal || 'holistisk bedomning: scenen identifierar INTE kontrollen ' +
+        'utan den undersokta delen' };
 
-  /* Allt annat faller stangt. Svaga ledtradar summerar aldrig till nagot. */
   return { klass: TILLAMPLIGHET.UNKNOWN_APPLICABILITY, diagnostik,
-    skal: 'tillrackligheten ar inte bedomd' +
-      (svaga.length ? ' — ' + svaga.length + ' svaga ledtradar finns men svaga signaler ' +
-        'summerar aldrig till tillracklighet' : '') +
+    skal: 'den holistiska tillrackligheten ar inte bedomd for denna forekomst' +
       (f.harSynligText ? '. Synlig text ar noterad som observation, inte som svar.' : '') };
 }
 
