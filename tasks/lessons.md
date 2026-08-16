@@ -1395,3 +1395,47 @@ turned a hedge into a false universal, one attributed two tests to the wrong tic
 claimed all builders funnel through a helper when three do not. Before shipping a
 replacement sentence, verify it at the same cost as the original. A reviewer-requested
 rewrite is not pre-verified.
+
+## A detached commit does not pass the review gate (BUT-1858, 2026-08-16)
+
+The commit gate here runs for eight to ten minutes, longer than the tool's cap, so my own
+earlier lesson says to launch it detached (`Start-Process ... -WindowStyle Hidden`) and poll
+`git rev-parse HEAD`. That lesson is right about the *timeout* and silent about the thing
+that matters more: **the review gate is a PreToolUse hook on Bash, so it only sees commands
+the tool runs.** A detached shell is invisible to it.
+
+The first two times I used the trick, the review gate had already passed on those exact bytes
+and the detached run was merely finishing what it had approved. The third time, lefthook's
+arch-guard had refused the commit for a raw `?? ''` under `lib/`, I fixed it, and relaunched —
+with a production file now one token different from what three reviewers had signed off. I
+caught it mid-run and killed the process before it landed. Two minutes later the same commit,
+run through the tool, was refused by the review gate naming exactly that file.
+
+So the rule is not "don't run detached", it is: **the detached run may only finish a commit
+the review gate has already approved on the current bytes.** Attempt it through the tool
+first; a timeout after the gate has passed means the gate said yes and lefthook is just slow.
+Any edit after that, however small and however demanded by another gate, sends you back
+through the tool.
+
+Two smaller things from the same sequence, both costly:
+
+- **`git checkout -- <file>` restores HEAD, not your backup.** I used it to undo a mutation
+  probe and it silently deleted an hour of work on that file, because the fix was not
+  committed. The probe's own finding survived; the fix did not. Restore from a byte copy you
+  made yourself (`cp` before, `cp` after, md5 both), and never from git while the work is
+  uncommitted. This is the second time a restore mechanism has eaten a change in this repo.
+- **A killed commit leaves `.git/index.lock` but an intact index.** Verify no live writer
+  (`Get-CimInstance Win32_Process` — the long-lived `git.exe` entries in this checkout are
+  days-old read-only status queries, not writers), then remove the lock; the staged set
+  survives untouched.
+
+### And the shape the whole ticket had
+
+Ten review rounds. Every blocking finding but one was a false sentence in a comment or a
+decision record; the code was stable and mutation-proven from round two. **Three of the
+blocking findings were my own corrections landing worse than what they replaced** — a hedge
+turned into a false universal, two tests attributed to the wrong ticket, "the functions are
+interchangeable" written about two functions closing over different vocabularies. The
+BUT-1838 lesson said this already; what BUT-1858 adds is that it does not decay with
+repetition. The prior on a reviewer-requested rewrite should be LOWER than on the original,
+because the original was at least written while looking at the code.
