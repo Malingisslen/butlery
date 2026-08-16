@@ -282,11 +282,60 @@ export const NONTEXT_MEASURE = `(() => {
         el: c, mot: 'yttre' });
     }
 
+    /* ── STEG 1b · KONTROLLENS EGEN MALADE GRANS ───────────────────────
+     *
+     * En malad kontrollgrans ar en grans oavsett om kontrollen bar text,
+     * glyf eller bada. Fram till hit rakenades gransen BARA i den
+     * textmarkta grenen. Exakt samma fysiska kant blev darfor en grafisk
+     * del pa en textknapp men foll bort pa en ikonknapp — inte for att
+     * kanten skilde sig, utan for att en textnod fanns eller saknades.
+     * Textnoder ar ingen egenskap hos en kant.
+     *
+     * Gransen enumereras darfor har, en gang, for det element som
+     * FAKTISKT malar den. Dubbletter avvisas pa elementidentitet plus typ,
+     * sa att samma fysiska kant aldrig ger tva delar. Bararrollen ar
+     * OFORANDRAD: den avgors fortfarande av bararrollsmodellen ovan.
+     * Detta steg andrar vad som RAKNAS och MATS, aldrig vad som kravs. */
+    //
+    // NAR den maladea bararen ar utpekad av den strukturella analysen racker
+    // en malad kant, precis som i den textmarkta grenen. NAR steget i stallet
+    // faller tillbaka pa kontrollelementet sjalvt kravs en OMSLUTANDE kant:
+    // en enda sida ar en avdelare mellan rader och ritar ingen kontroll, och
+    // ett fallback som raknade avdelare skulle uppfinna granser som inte finns.
+    const gransEl = (bararEl && bararEl !== c && harRam(bararEl)) ? bararEl
+      : (harRam(c) && (bararEl === c ? true : harOmslutandeRam(c)) ? c : null);
+    if (gransEl && !delar.some(d => d.el === gransEl && d.typ === 'ram'))
+      delar.push({ typ: 'ram', roll_i_kontrollen: 'supplemental',
+        motivering: 'kontrollens egen malade grans; enumererad oberoende av text och glyf',
+        el: gransEl, motEl: gransEl.parentElement || c, mot: 'yttre' });
+
     /* ── STEG 2 · KONTRASTEN, bara for carriers ───────────────────────── */
     const matta = delar.map(d => {
       const bas = { typ: d.typ, carrier: d.roll_i_kontrollen, motivering: d.motivering,
         ikon: d.el && d.el.getAttribute ? (d.el.getAttribute('data-icon') || null) : null,
         descent: !!d.descent };
+      /* GRANSMATNING · en malad kontrollgrans mats ALLTID, oberoende av
+       * bararrollen och oberoende av om kontrollen bar text. Detta ar en
+       * REDOVISNING: carrier och status styrs fortfarande av
+       * bararrollsmodellen och paverkas inte av matningen. Falten ligger i
+       * ett eget objekt sa att ingen befintlig lasare byter betydelse. */
+      if (d.typ === 'ram' && d.el && d.el.getAttribute) {
+        const gcs = getComputedStyle(d.el);
+        const gsidor = ['Top','Right','Bottom','Left'].filter(s =>
+          (parseFloat(gcs['border' + s + 'Width']) || 0) > 0 &&
+          gcs['border' + s + 'Style'] !== 'none');
+        const gbg = bakgrundBakom(d.motEl || d.el.parentElement || c);
+        const gf = gsidor.length ? parse(gcs['border' + gsidor[0] + 'Color']) : null;
+        if (gsidor.length && gf && !gbg.oreducerbar) {
+          const gfk = gf[3] < 1 ? over(gf, gbg.rgb) : gf.slice(0, 3);
+          bas.grans = { sidor: gsidor.length, bredd: gcs['border' + gsidor[0] + 'Width'],
+            stil: gcs['border' + gsidor[0] + 'Style'], farg: fargRgb(gfk),
+            angransande: fargRgb(gbg.rgb), kvot: kvot(gfk, gbg.rgb) };
+        } else bas.grans = { sidor: gsidor.length, bredd: null, stil: null, farg: null,
+          angransande: null, kvot: null,
+          varfor: !gsidor.length ? 'ingen malad kant' :
+            (!gf ? 'kantfargen kunde inte tolkas' : 'oreducerbar angransande farg') };
+      }
       if (d.roll_i_kontrollen === 'supplemental' || d.roll_i_kontrollen === 'decorative' ||
           d.roll_i_kontrollen === 'unknown' || !d.mot)
         return { ...bas, kvot: null, status: d.roll_i_kontrollen === 'unknown' ? 'unknown' : 'ejKravd' };
