@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// F2 · METODPROV FOR KONTROLLDEKLARATIONSSKRIVAREN.  CW-01 … CW-13
+// F2 · METODPROV FOR KONTROLLDEKLARATIONSSKRIVAREN.  CW-01 … CW-18
 //
 // FELKLASSEN PROVEN FINNS FOR
 // En skrivare som "nastan" traffar ratt element ar varre an ingen skrivare:
@@ -68,11 +68,21 @@ const nyFil = () => { writeFileSync(tmp, HTML); return tmp; };
   prov('CW-06', 'befintligt annat stilvarde ger konflikt; samma varde ar idempotent',
     r.ok === false && q.ok === true && q.ny === false, r.skal + ' | ' + q.skal); }
 
-/* CW-07 · bara min-height far skrivas */
+/* CW-07 · PENSIONERAT — RETIRED_SCOPE_EXTENDED.
+ * Ursprunglig lydelse (0884b25): "ingen annan stilegenskap an min-height kan
+ * skrivas", med assertionen TILLATNA_STILEGENSKAPER.length === 1. Utsagan var
+ * sann for sitt scope men ar inte en metodregel: listan ar en beslutslista, och
+ * ett godkant beslut (VAG 2, saffransramen) pekade ut border, box-sizing och de
+ * tva sidospecifika paddingarna. Assertionen far INTE tyst skrivas om under
+ * samma id. Den levande garantin — att farg och bakgrund aldrig kan skrivas —
+ * bars nu av CW-17, och att kortformen padding aldrig kan skrivas av CW-14. */
 { const r = skrivStil('<span style="a:b">', 'background', '#fff');
-  prov('CW-07', 'ingen annan stilegenskap an min-height kan skrivas',
-    r.ok === false && TILLATNA_STILEGENSKAPER.length === 1 &&
-    TILLATNA_STILEGENSKAPER[0] === 'min-height', r.skal); }
+  prov('CW-07', 'PENSIONERAT — RETIRED_SCOPE_EXTENDED: listan ar en beslutslista, ' +
+    'inte ett metodpastaende om antalet',
+    r.ok === false,
+    'lydelse bevarad: "ingen annan stilegenskap an min-height kan skrivas" (0884b25). ' +
+    'Provet gor numera ingen utsaga om listans langd. Nuvarande lista: ' +
+    TILLATNA_STILEGENSKAPER.join(', ') + '. Ersatt av CW-14 och CW-17.'); }
 
 /* CW-08 · ordinalankaret traffar samma element som DOM-ordningen */
 { const fil = nyFil();
@@ -138,7 +148,52 @@ const nyFil = () => { writeFileSync(tmp, HTML); return tmp; };
     'extra i DOM: ok | annat varde: ' + felVarde.skal + ' | okant i kallan: ' +
       okantIKallan.skal + ' | fel tagg: ' + taggfel.skal + ' | fel text: ' + textfel.skal); }
 
-const ANTAL = 13;
+/* CW-14 · nya stilegenskaper skrivs, kortformen padding gor det inte */
+{ const bs = skrivStil('<span style="width:48px">', 'box-sizing', 'border-box');
+  const br = skrivStil('<span style="width:48px">', 'border', '1.5px solid #3F5145');
+  const kort = skrivStil('<span style="padding:8px">', 'padding', '6.5px');
+  prov('CW-14', 'box-sizing och border far skrivas, kortformen padding far det aldrig',
+    bs.ok && bs.text === '<span style="width:48px;box-sizing:border-box">' &&
+    br.ok && br.text === '<span style="width:48px;border:1.5px solid #3F5145">' &&
+    !kort.ok,
+    'box-sizing ok, border ok, padding avvisad: ' + kort.skal); }
+
+/* CW-15 · en sidospecifik padding laggs EFTER kortformen och ror den inte */
+{ const r = skrivStil('<span style="padding:10px 18px;color:#111">', 'padding-left', '16.5px');
+  prov('CW-15', 'padding-left laggs sist och lamnar kortformen orord',
+    r.ok && r.ny &&
+    r.text === '<span style="padding:10px 18px;color:#111;padding-left:16.5px">',
+    r.text); }
+
+/* CW-16 · border-radius ar inte border och far aldrig forvaxlas */
+{ const r = skrivStil('<span style="border-radius:999px">', 'border', '1.5px solid #3F5145');
+  const konflikt = skrivStil('<span style="border:1px solid #000">', 'border', '1.5px solid #3F5145');
+  prov('CW-16', 'border-radius blockerar inte border, men en befintlig border gor det',
+    r.ok && r.ny && r.text === '<span style="border-radius:999px;border:1.5px solid #3F5145">' &&
+    !konflikt.ok,
+    'radius: skrev igenom | befintlig border: ' + konflikt.skal); }
+
+/* CW-17 · fargskrivning ar fortfarande omojlig genom skrivaren */
+{ const c = skrivStil('<span style="color:#24382C">', 'color', '#17251D');
+  const bg = skrivStil('<span style="a">', 'background', '#CE7C1E');
+  prov('CW-17', 'color och background star inte i listan och kan darfor inte skrivas',
+    !c.ok && !bg.ok, 'color: ' + c.skal + ' | background: ' + bg.skal); }
+
+/* CW-18 · flera stilegenskaper i samma jobb skrivs alla eller ingen */
+{ const fil = nyFil();
+  const r = migreraFil(fil, [{ art: 'prov', ordinal: 4,
+    stil: { 'box-sizing': 'border-box', 'border': '1.5px solid #3F5145' },
+    ankare: { tagg: 'span', attribut: {} } }], { torr: true });
+  const rFel = migreraFil(fil, [{ art: 'prov', ordinal: 4,
+    stil: { 'box-sizing': 'border-box', 'min-height': '99px' },
+    ankare: { tagg: 'span', attribut: {} } }], { torr: true });
+  prov('CW-18', 'ett jobb med flera stilegenskaper faller helt om en enda krockar',
+    r.logg[0].utfall === 'SKRIVEN' && r.logg[0].skrivna.length === 2 &&
+    rFel.logg[0].utfall === 'KONFLIKT' && rFel.skrivningar === 0,
+    'tva skrivna: ' + JSON.stringify(r.logg[0].skrivna) + ' | krock: ' + rFel.logg[0].skal);
+  rmSync(fil, { force: true }); }
+
+const ANTAL = 18;
 for (const x of resultat) console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
 const ok = resultat.filter(x => x.ok).length;
 console.log('');

@@ -21,7 +21,14 @@ import { artefaktBlock, elementIArtefakt } from './scope-migrator.mjs';
 
 export const TILLATNA_ATTRIBUT = Object.freeze([
   'data-a11y-role', 'data-a11y-name', 'data-a11y-state', 'data-hit', 'data-hit-target']);
-export const TILLATNA_STILEGENSKAPER = Object.freeze(['min-height']);
+/* Stilegenskaper som far skrivas. Listan ar avsiktligt liten: varje post ar en
+ * egenskap som ett godkant beslut har pekat ut. 'border', 'box-sizing' och
+ * 'padding-left'/'padding-right' tillkom for den obligatoriska kontrollgransen
+ * pa primarknappen. Kortformen 'padding' star INTE med — en kortform skulle
+ * kunna radera sidor som beslutet inte namnt. */
+export const TILLATNA_STILEGENSKAPER = Object.freeze([
+  'min-height', 'border', 'box-sizing',
+  'padding-top', 'padding-right', 'padding-bottom', 'padding-left']);
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
   .replace(/</g, '&lt;').replace(/>/g, '&gt;');
