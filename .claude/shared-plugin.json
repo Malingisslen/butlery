@@ -374,7 +374,9 @@
     },
     "patchSubdir": "sprint-patches",
     "worktreeSetup": "flutter pub get --offline",
+    "_cleanTreeIgnore": "The agent .knowledge/.knowledge.archive files are written BY THE SPRINT'S OWN REVIEWER AGENTS mid-run (CLAUDE.md → Agents), so they are the run's noise, not a human's in-flight work. Left out until 2026-08-16, when two of them made the close-out read the tree as lost work and suppressed every Linear transition. Scoped to .claude/agents/ deliberately — a knowledge file is prose about principles and can never carry product code.",
     "cleanTreeIgnore": [
+      "\\.claude/agents/.*\\.knowledge(\\.archive)?\\.md$",
       "\\.stale$",
       "docs/org/dossier-staleness/",
       "docs/org/metrics/events\\.jsonl$",
