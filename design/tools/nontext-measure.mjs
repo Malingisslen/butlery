@@ -2,17 +2,30 @@
 //
 // TVA STEG, I DEN HAR ORDNINGEN:
 //
-//   1  ROLLEN avgors. Vilken grafik BEHOVS for att se att kontrollen finns
-//      (componentIdentityCarrier) och for att uppfatta dess tillstand
-//      (stateCarrier)? Vad forstarker bara nagot som redan ar identifierbart
-//      (supplemental)? Vad betyder ingenting (decorative)?
+//   1  DELARNA hittas och beskrivs strukturellt. Bararhinken
+//      (componentIdentityCarrier / stateCarrier / supplemental / decorative)
+//      ar en TEKNISK beskrivning av vad delen ar for slags grafik i
+//      kontrollen. Den ar INTE en normativ dom.
 //
-//   2  KONTRASTEN mats — men bara for carriers, och alltid mot den yta
-//      carriern faktiskt ligger MOT.
+//   2  KONTRASTEN mats mot den yta delen faktiskt ligger MOT. Allt som gar
+//      att mata mats.
 //
 // Kontrastvardet far ALDRIG paverka steg 1. En yta pa 1,00 kan vara helt
 // redundant ELLER den enda avsedda signalen, och skillnaden avgors av
 // komponentens struktur, inte av hur svag fargen rakar vara.
+//
+// VAD SOM INTE LANGRE FINNS HAR (borttaget 2026-08-16)
+// Matningen grindades tidigare av bararhinken: allt som hamnat i
+// 'supplemental' fick kvot null och status ejKravd. Hinken sattes bland annat
+// av regeln "kontrollen har egen synlig text", sa en malad grans blev omatt —
+// i praktiken ej kravd — darfor att det stod ett ord bredvid den. Det var en
+// normativ slutsats dragen ur en textnod.
+//
+// Efter andringen svarar den har filen ALDRIG pa fragan om nagot kravs.
+// Den svarar bara pa: vad ar malat, av vad, mot vilken yta, med vilken kvot.
+// Tillampligheten avgors per forekomst i tools/part-relation.mjs och
+// tools/nontext-applicability.mjs och ar UNKNOWN tills occurrence-specifik
+// evidens finns.
 //
 // Fargmotorn ar R-01:s verifierade — luminans, alfakomposition och
 // bakgrundsupplosning. Text-run-modellen anvands inte: ett grafiskt element
@@ -246,7 +259,7 @@ export const NONTEXT_MEASURE = `(() => {
       // Ikonkontroll: glyfen ar det enda som visar att kontrollen finns.
       if (g.length) for (const e of g) delar.push({ typ: 'ikon',
         roll_i_kontrollen: 'componentIdentityCarrier',
-        motivering: 'kontrollen har ingen synlig text — glyfen ar det enda som identifierar den',
+        motivering: 'glyf i en kontroll utan egen synlig text. OBSERVATION, inte dom om kravet.',
         el: e, motEl: e.parentElement || c, mot: 'yttre' });
       else {
         const form = visuellForm(c);
@@ -271,14 +284,16 @@ export const NONTEXT_MEASURE = `(() => {
           roll_i_kontrollen: barState ? 'stateCarrier' : 'supplemental',
           motivering: barState
             ? 'kontrollen har ett tillstand och glyfen ar riktningsbarande — den visar oppet eller stangt'
-            : 'kontrollen identifieras av sin synliga text; glyfen forstarker men behovs inte for identiteten',
+            : 'glyf i en kontroll som ocksa bar synlig text. OBSERVATION, inte dom om kravet.',
           el: e, motEl: e.parentElement || c, mot: 'yttre' });
       }
       if (harFyllning(c)) delar.push({ typ: 'fyllning', roll_i_kontrollen: 'supplemental',
-        motivering: 'kontrollen identifieras av sin synliga text; fyllningen forstarker',
+        motivering: 'kontrollens egen fyllning. OBSERVATION: kontrollen bar synlig text. '
+          + 'Observationen ar inte en dom om kravet.',
         el: c, mot: 'yttre' });
       if (harRam(c)) delar.push({ typ: 'ram', roll_i_kontrollen: 'supplemental',
-        motivering: 'kontrollen identifieras av sin synliga text; ramen forstarker',
+        motivering: 'kontrollens egen ram. OBSERVATION: kontrollen bar synlig text. '
+          + 'Observationen ar inte en dom om kravet.',
         el: c, mot: 'yttre' });
     }
 
@@ -336,9 +351,23 @@ export const NONTEXT_MEASURE = `(() => {
           varfor: !gsidor.length ? 'ingen malad kant' :
             (!gf ? 'kantfargen kunde inte tolkas' : 'oreducerbar angransande farg') };
       }
-      if (d.roll_i_kontrollen === 'supplemental' || d.roll_i_kontrollen === 'decorative' ||
-          d.roll_i_kontrollen === 'unknown' || !d.mot)
-        return { ...bas, kvot: null, status: d.roll_i_kontrollen === 'unknown' ? 'unknown' : 'ejKravd' };
+      /* MATNINGEN GRINDAS INTE AV BARARHINKEN.
+       *
+       * Fram till 2026-08-16 returnerade den har raden kvot null och status
+       * ejKravd for allt som hamnat i hinken 'supplemental'. Hinken satts
+       * bland annat av regeln "kontrollen har egen synlig text", och effekten
+       * var att en malad grans blev OMATT — alltsa i praktiken ej kravd —
+       * darfor att det stod ett ord bredvid den. Det ar en normativ slutsats
+       * dragen ur en textnod, och den ar nu borta.
+       *
+       * Efter andringen mats allt som gar att mata. Bararhinken ar kvar som
+       * TEKNISK beskrivning och besvarar inte langre fragan om kravet. Den
+       * normativa tillampligheten avgors per forekomst i
+       * tools/part-relation.mjs och tools/nontext-applicability.mjs, och ar
+       * UNKNOWN tills occurrence-specifik evidens finns. */
+      if (!d.mot)
+        return { ...bas, kvot: null, status: 'unknown',
+          varfor: 'delen har ingen yta att jamforas mot' };
       // Vilken yta ska den kontrastera MOT? Den yta som FAKTISKT ar malad
       // direkt bakom bararen, enligt malnings- och innehallsstrukturen. En
       // ikon som ligger pa knappens egen fyllning jamfors med fyllningen,

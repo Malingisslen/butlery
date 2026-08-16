@@ -39,17 +39,34 @@ const BEHALLARE = { kontrollroll: null, harEgenText: false, harRam: false,
   harSkugga: false, harBakgrundsbild: false, barText: false };
 
 /* SC-01 · textmarkt knapp far INGET ytkrav */
+/* SC-01 · PENSIONERAT — RETIRED_TEXT_HEURISTIC_REMOVED.
+ * Ursprunglig lydelse: "en textmarkt kontroll far inget 3:1-krav pa sin yta".
+ * Utsagan var sann i modellen men av fel skal: det var textens narvaro som
+ * tog bort kravet. Efter borttagningen harleds inget krav alls for en
+ * icke-valkontroll, oavsett text, och fragan ar OAVGJORD. Provet gor darfor
+ * ingen utsaga om text langre. Ersatt av AP-01 och AP-02. */
 { const r = ytkrav(KNAPP);
   const harIckeText = r.krav.some(k => k.typ === 'ICKE_TEXT');
-  prov('SC-01', 'en textmarkt kontroll far inget 3:1-krav pa sin yta',
-    !harIckeText && !r.ytanIdentifierar && r.krav.length === 1 && r.krav[0].typ === 'TEXT',
-    r.$not); }
+  prov('SC-01', 'PENSIONERAT — RETIRED_TEXT_HEURISTIC_REMOVED: fragan ar oavgjord, ' +
+    'inte besvarad av texten',
+    !harIckeText && r.ytanOavgjord === true,
+    'lydelse bevarad: "en textmarkt kontroll far inget 3:1-krav pa sin yta". ' +
+    'Nu: ytanOavgjord=' + r.ytanOavgjord + ' · ' + (r.$not || '')); }
 
-/* SC-02 · ikonknapp far ytkrav */
+/* SC-02 · PENSIONERAT — RETIRED_TEXT_HEURISTIC_REMOVED.
+ * Ursprunglig lydelse: "en kontroll utan egen text far 3:1-krav pa sin yta".
+ * Det ar den motsatta riktningen av samma metodfel: franvaro av text gav
+ * automatiskt REQUIRED. Franvaro av text ar en observation. Ersatt av AP-03
+ * och AP-04, som visar att en ikonknapp varken automatiskt kravs eller
+ * automatiskt ar supplemental. */
 { const r = ytkrav(IKONKNAPP);
-  prov('SC-02', 'en kontroll utan egen text far 3:1-krav pa sin yta',
-    r.ytanIdentifierar && r.krav.some(k => k.typ === 'ICKE_TEXT' && k.minsta === 3),
-    r.krav.map(k => k.typ + ' ' + k.minsta).join(', ') + ' · ' + KRAVKALLA.WCAG_1_4_11); }
+  prov('SC-02', 'PENSIONERAT — RETIRED_TEXT_HEURISTIC_REMOVED: franvaro av text ger ' +
+    'inget automatiskt krav',
+    !r.ytanIdentifierar && r.ytanOavgjord === true &&
+    !r.krav.some(k => k.typ === 'ICKE_TEXT'),
+    'lydelse bevarad: "en kontroll utan egen text far 3:1-krav pa sin yta". ' +
+    'Nu: ytanIdentifierar=' + r.ytanIdentifierar + ' ytanOavgjord=' + r.ytanOavgjord +
+    ' · ' + KRAVKALLA.WCAG_1_4_11); }
 
 /* SC-03 · valkontroll far ytkrav aven med etikett */
 { const r = ytkrav(KRYSSRUTA);

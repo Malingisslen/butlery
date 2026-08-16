@@ -143,10 +143,21 @@ const del = (a, typ) => { const c = k(a); return c ? c.delar.find(d => d.typ ===
 const resultat = [];
 const prov = (id, vad, ok, diag) => resultat.push({ id, vad, ok: !!ok, diag });
 
+/* NT-01 · PENSIONERAT — RETIRED_TEXT_HEURISTIC_REMOVED.
+ * Ursprunglig lydelse (F2-NT): "textknapp med svag fyllning: fyllningen ar
+ * supplemental", med assertionen carrier === 'supplemental' && kvot === null.
+ * Kvot null var HELA felet: delen blev omatt — i praktiken ej kravd — darfor
+ * att kontrollen bar synlig text. Utsagan far inte skrivas om under samma id.
+ * Den levande garantin bars nu av AP-01 och AP-02 i
+ * tools/applicability-fixtures.mjs: synlig text ger ingen automatisk dom, och
+ * tillampligheten avgors per forekomst. */
 { const d = del('nt01-textknapp-svag-fyllning', 'fyllning');
-  prov('NT-01', 'textknapp med svag fyllning: fyllningen ar supplemental',
-    !!d && d.carrier === 'supplemental' && d.kvot === null,
-    d ? d.carrier + ' · kvot ' + d.kvot : 'delen saknas'); }
+  prov('NT-01', 'PENSIONERAT — RETIRED_TEXT_HEURISTIC_REMOVED: matningen grindas inte ' +
+    'langre av bararhinken',
+    !!d && d.kvot !== null && !/identifieras av sin synliga text/.test(d.motivering || ''),
+    'lydelse bevarad: "textknapp med svag fyllning: fyllningen ar supplemental" ' +
+    '(carrier supplemental, kvot null). Delen ar nu matt: kvot ' + (d ? d.kvot : '?') +
+    '. Ersatt av AP-01 och AP-02.'); }
 
 { const d = del('nt02-ikonknapp', 'ikon');
   prov('NT-02', 'ikonknapp: glyfen ar componentIdentityCarrier och mats',
@@ -172,10 +183,18 @@ const prov = (id, vad, ok, diag) => resultat.push({ id, vad, ok: !!ok, diag });
     ram.motYta !== bock.motYta,
     ram && bock ? 'ram ' + ram.kvot + ' mot ' + ram.motYta + ' · bock ' + bock.kvot + ' mot ' + bock.motYta : 'delar saknas'); }
 
+/* NT-06 · PENSIONERAT — RETIRED_TEXT_HEURISTIC_REMOVED.
+ * Ursprunglig lydelse (F2-NT): "textmarkt kontroll med ikon utan egen
+ * funktion: supplemental", med assertionen carrier === 'supplemental' &&
+ * kvot === null. Samma fel som NT-01, pa en glyf i stallet for en fyllning.
+ * Ersatt av AP-03 och AP-04. */
 { const d = del('nt06-text-med-svag-ikon', 'ikon');
-  prov('NT-06', 'textmarkt kontroll med ikon utan egen funktion: supplemental',
-    !!d && d.carrier === 'supplemental' && d.kvot === null,
-    d ? d.carrier + ' · kvot ' + d.kvot : 'delen saknas'); }
+  prov('NT-06', 'PENSIONERAT — RETIRED_TEXT_HEURISTIC_REMOVED: glyfen mats aven i en ' +
+    'kontroll som bar text',
+    !!d && d.kvot !== null && !/behovs inte for identiteten/.test(d.motivering || ''),
+    'lydelse bevarad: "textmarkt kontroll med ikon utan egen funktion: supplemental" ' +
+    '(carrier supplemental, kvot null). Delen ar nu matt: kvot ' + (d ? d.kvot : '?') +
+    '. Ersatt av AP-03 och AP-04.'); }
 
 { const d = del('nt07-text-med-state-ikon', 'ikon');
   prov('NT-07', 'chevron som bar oppet/stangt ar stateCarrier trots att kontrollen har text',

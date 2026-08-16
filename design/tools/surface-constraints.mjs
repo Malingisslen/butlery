@@ -99,17 +99,29 @@ export function ytkrav(el) {
   const krav = [];
   const arKontroll = !!el.kontrollroll;
   const valkontroll = arKontroll && VALKONTROLL.has(el.kontrollroll);
-  const ytanIdentifierar = arKontroll && (valkontroll || !el.harEgenText) &&
-    !el.harRam && !el.harSkugga && !el.harBakgrundsbild;
+  /* BORTTAGET 2026-08-16 · den gamla raden var
+   *   ytanIdentifierar = arKontroll && (valkontroll || !el.harEgenText) && ...
+   * Frånvaro av egen synlig text gjorde alltsa ytan automatiskt identifierande,
+   * och narvaro av text gjorde den automatiskt icke-identifierande. Bada
+   * riktningarna ar samma metodfel: en normativ dom dragen ur en textnod.
+   *
+   * Kvar star bara det som INTE ar en dom: en valkontroll identifieras av sin
+   * egen ruta enligt kontrollens struktur, inte enligt sin etikett. For alla
+   * andra kontroller ar fragan OAVGJORD har och avgors per forekomst av den
+   * holistiska tillamplighetsmodellen. Fail closed: ingen ytterligare
+   * requiredness harleds i den har filen. */
+  const utanEgenGrafik = !el.harRam && !el.harSkugga && !el.harBakgrundsbild;
+  const ytanIdentifierar = arKontroll && valkontroll && utanEgenGrafik;
+  const ytanOavgjord = arKontroll && !valkontroll && utanEgenGrafik;
   if (ytanIdentifierar) krav.push({ typ: 'ICKE_TEXT', minsta: 3, kalla: KRAVKALLA.WCAG_1_4_11,
     motpart: 'omgivande yta',
-    skal: valkontroll ? 'valkontrollens egen ruta identifierar den'
-      : 'kontrollen har ingen egen synlig text — ytan ar det enda som identifierar den' });
+    skal: 'valkontrollens egen ruta identifierar den enligt kontrollens struktur' });
   if (el.barText) krav.push({ typ: 'TEXT', minsta: 4.5, kalla: KRAVKALLA.WCAG_1_4_3,
     motpart: 'texten pa ytan', skal: 'ytan ar bakgrund for text' });
-  return { krav, ytanIdentifierar,
-    $not: arKontroll && el.harEgenText && !valkontroll
-      ? 'kontrollen har egen synlig text — texten identifierar komponenten och ytan ar ingen componentIdentityCarrier'
+  return { krav, ytanIdentifierar, ytanOavgjord,
+    $not: ytanOavgjord
+      ? 'om ytan ar componentIdentityCarrier avgors per forekomst av den holistiska ' +
+        'tillamplighetsmodellen. Synlig text ar en observation, aldrig svaret.'
       : null }; }
 
 /**
