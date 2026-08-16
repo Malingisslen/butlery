@@ -324,11 +324,47 @@ export const NONTEXT_MEASURE = `(() => {
         motivering: 'kontrollens egen malade grans; enumererad oberoende av text och glyf',
         el: gransEl, motEl: gransEl.parentElement || c, mot: 'yttre' });
 
+    /* ── STEG 1c · KONTROLLENS EGEN MALADE FYLLNING ────────────────────
+     *
+     * Samma felklass som gransen hade, en niva ner. Kontrollens egen
+     * fyllning enumererades BARA i den textmarkta grenen: ikongrenen tittade
+     * aldrig pa den, och i valkontrollgrenen enumererades bara den utpekade
+     * formens malning, inte agarens egen. En knapp med orange fyllning blev
+     * darfor en matbar del nar det stod ett ord i den och foll bort nar det
+     * bara fanns en glyf. En malad yta ar malad oavsett vad som star i den.
+     *
+     * DETECTION SVARAR BARA PA EN FRAGA: finns det en faktiskt malad
+     * fyllning som tillhor kontrollens visuella kropp? Varken text,
+     * tillgangligt namn, tillamplighet eller kvot deltar. Genomskinlig
+     * bakgrund ar ingen malning och blir ingen del.
+     *
+     * Dubblettsparren gar pa elementidentitet plus typ, sa att samma malade
+     * yta aldrig kan registreras tva ganger — oavsett vilken gren som hittade
+     * den forst. Text ar inte en del av fyllningens identitet. */
+    //
+    // MALANDE AGARE. Steget enumererar AGARENS egen malning. En kropp som
+    // malas av ett barn tacks redan av child-descent i de grenar som anvander
+    // visuellForm, och att lagga en generell fallback hit skulle dra in inre
+    // former som inte ar kontrollkroppen: en provkorning gav 44 extra delar
+    // utan att en enda av dem var en omalad kontrollkropp i korpusen. Den
+    // kvarstaende luckan ar darfor MEDVETEN och matt: 0 forekomster i
+    // korpusen, last av provet FI-08.
+    const fyllEl = harFyllning(c) ? c : null;
+    if (fyllEl && !delar.some(d => d.el === fyllEl && d.typ === 'fyllning'))
+      delar.push({ typ: 'fyllning', roll_i_kontrollen: 'supplemental',
+        motivering: 'kontrollens egen malade fyllning; enumererad oberoende av text och glyf',
+        el: fyllEl, motEl: fyllEl.parentElement || c, mot: 'yttre' });
+
     /* ── STEG 2 · KONTRASTEN, bara for carriers ───────────────────────── */
     const matta = delar.map(d => {
       const bas = { typ: d.typ, carrier: d.roll_i_kontrollen, motivering: d.motivering,
         ikon: d.el && d.el.getAttribute ? (d.el.getAttribute('data-icon') || null) : null,
-        descent: !!d.descent };
+        descent: !!d.descent,
+        /* MALANDE AGARE · sitter delen pa kontrollelementet sjalvt eller pa ett
+         * barn? Rent diagnostiskt falt: det gor det mojligt att avstamma
+         * enumereringen mot en oberoende raknning av faktiskt malade ytor utan
+         * att gissa fran farg. Deltar aldrig i nagon dom. */
+        paKontrollen: d.el === c };
       /* GRANSMATNING · en malad kontrollgrans mats ALLTID, oberoende av
        * bararrollen och oberoende av om kontrollen bar text. Detta ar en
        * REDOVISNING: carrier och status styrs fortfarande av
