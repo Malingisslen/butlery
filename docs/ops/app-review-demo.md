@@ -201,8 +201,7 @@ flows behave identically in both locales.
 DATA RESIDENCY
 ----------------------------------------------------------------
 
-  - Firestore + Cloud Storage: EU multi-region (eur3) — see
-    docs/ops/data-residency.md.
+  - Firestore + Cloud Storage: EU multi-region (eur3).
   - Vertex AI (recipe parsing + OCR): europe-west1.
   - Cloud Functions: europe-west1.
 
@@ -245,7 +244,7 @@ Run **immediately before** clicking Submit on Apple / Play.
 - [ ] **No production beta user data** has leaked into the reviewer account (search Firestore for any document referencing the reviewer UID with non-demo email addresses; should be zero).
 - [ ] Privacy policy URL (`https://butlery.app/privacy`) returns 200 and matches `assets/legal/privacy_policy_en.md` v1.2.0 or later.
 - [ ] Community Guidelines URL (`https://butlery.app/community-guidelines`) returns 200 and matches `assets/legal/community_guidelines_en.md`.
-- [ ] Terms URL (`https://butlery.app/terms`) returns 200 and matches `assets/legal/terms_en.md`.
+- [ ] Terms URL (`https://butlery.app/terms`) returns 200 and matches `assets/legal/terms_of_service_en.md`.
 - [ ] Reviewer notes block (§4) pasted into both stores' fields, with the freshly generated password.
 - [ ] If admin-side moderation demo is requested: `admins/{reviewerUid}` doc created in Firestore. **Calendar reminder set to revoke admin within 7 days.**
 - [ ] Test sign-in with the reviewer credentials on a clean device or simulator one final time. Verify all six demo-flow steps work end-to-end.

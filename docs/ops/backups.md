@@ -32,7 +32,7 @@ in the Evidence column. Do not edit a row without re-running its command.
 | Weekly GCS export | SCHEDULED — Sundays 03:00 UTC, in **europe-west3** (not europe-west1) | Cloud Scheduler job `firestore-weekly-export`; last run wrote 2026-08-09T03:00Z |
 | Backup bucket | CREATED — `gs://butlery-firestore-backups`, **europe-west3** | `gcloud storage buckets describe`: `location: EUROPE-WEST3` — in-region with the database, so exports are NOT cross-region |
 | Retention policy (bucket) | 30 days auto-delete — CONFIRMED live | `buckets describe` returns the `Delete`/`age: 30` lifecycle rule |
-| Firestore region | **europe-west3 (Frankfurt, EU)** — data; compute pinned to europe-west1 | Resolved per `docs/operations/data-residency.md` (**BUT-819**, 2026-06-14). The EU-region split is **accepted** (both EU → GDPR satisfied). |
+| Firestore region | **europe-west3 (Frankfurt, EU)** — data; compute pinned to europe-west1 | Resolved in **BUT-819**, 2026-06-14. The EU-region split is **accepted** (both EU → GDPR satisfied). |
 | Restore drill | NEVER PERFORMED | now unblocked — a managed backup exists to restore from |
 
 ⚠️ The weekly export writes every run to the same `gs://.../weekly/` prefix, so each run
