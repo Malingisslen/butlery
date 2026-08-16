@@ -39,71 +39,91 @@ export const TILLAMPLIGHET = Object.freeze({
 export const OBSERVATION = Object.freeze({
   VISIBLE_TEXT_PRESENT: 'VISIBLE_TEXT_PRESENT' });
 
-/* Sjalvstandiga visuella ledtradar. Var och en far RAKNAS, ingen far AVGORA. */
+/* Visuella ledtradar. De redovisas DIAGNOSTISKT. Antalet avgor ingenting.
+ *
+ * FELET SOM RATTADES 2026-08-16
+ * En tidigare version krayde "minst tva oberoende ledtradar" for att skarma
+ * av en del som tillracklig. Det ar ingen giltig normativ regel. SC 1.4.11
+ * vilar pa TILLRACKLIGHET i den faktiska scenen, inte pa ett minsta antal
+ * signaler. EN stark signal kan racka. TRE svaga kan vara otillrackliga. */
 export const LEDTRAD = Object.freeze({
   GLYPH_PRESENT: 'GLYPH_PRESENT',
   TYPOGRAPHY_DISTINCT_FROM_NEIGHBOURING_TEXT: 'TYPOGRAPHY_DISTINCT_FROM_NEIGHBOURING_TEXT',
   OTHER_PAINTED_DIFFERENTIATOR_ON_SAME_CONTROL: 'OTHER_PAINTED_DIFFERENTIATOR_ON_SAME_CONTROL',
-  AUTHORED_INSTRUCTION_IN_CONTEXT: 'AUTHORED_INSTRUCTION_IN_CONTEXT' });
+  AUTHORED_INSTRUCTION_IN_CONTEXT: 'AUTHORED_INSTRUCTION_IN_CONTEXT',
+  ESTABLISHED_POSITION_IN_LAYOUT: 'ESTABLISHED_POSITION_IN_LAYOUT',
+  CONTROL_CONTENT_ITSELF: 'CONTROL_CONTENT_ITSELF' });
 
-/* Minst tva OBEROENDE ledtradar kravs for att skarma av som tillracklig.
- * En ensam ledtrad ar aldrig nog — det ar hela poangen med korrigeringen. */
-export const MINST_ANTAL_LEDTRADAR = 2;
+/* STYRKAN ar en bedomning per forekomst, inte en summa. En ledtrad ar STARK
+ * bara nar den i DEN HAR scenen ensam identifierar att kontrollen finns och
+ * hur den anvands. Allt annat ar SVAGT och kan aldrig, i nagot antal, bli
+ * tillrackligt. */
+export const STYRKA = Object.freeze({ STARK: 'STARK', SVAG: 'SVAG' });
+
+/* Den enda vagen till tillracklighet: minst en ledtrad som ar bedomd STARK.
+ * Det ar ingen rakning — en STARK ar en bedomning om att just den signalen
+ * identifierar kontrollen. Hundra SVAGA ger fortfarande ingenting. */
+function harStark(bedomda) {
+  return (Array.isArray(bedomda) ? bedomda : []).some(b => b && b.styrka === STYRKA.STARK);
+}
 
 /**
- * Skarmningsprov, per forekomst. Returnerar ALDRIG ett konformansutfall —
- * bara vilken tillamplighetsklass forekomsten hamnar i, och varfor.
+ * Tillamplighetsprovet, per forekomst. Returnerar ALDRIG ett konformansutfall.
+ *
+ * DEN NORMATIVA FRAGAN — counterfactual i den faktiska scenen:
+ *   Om den undersokta icke-textdelen inte kunde urskiljas, finns det anda
+ *   TILLRACKLIG visuell information for att identifiera att kontrollen finns,
+ *   hur den anvands, och relevant tillstand nar tillstandet ar fragan?
  *
  * f = {
- *   harSynligText            bool   OBSERVATION, aldrig avgorande
- *   ledtradar                [LEDTRAD]
- *   ensamMaladDifferentiator bool   ar DENNA del det enda malade som skiljer
- *                                   kontrollen fran omgivningen?
- *   typografiskSkild         bool
- *   harGlyf                  bool
+ *   harSynligText            bool  OBSERVATION, aldrig avgorande
+ *   bedomdaLedtradar         [{ ledtrad, styrka, skal }]  styrkan ar bedomd,
+ *                                  aldrig raknad
+ *   ingenAlternativIdentifiering  bool  positiv evidens for att INGEN annan
+ *                                  visuell identifiering finns i scenen
  *   tillstandBerorGrafiken   bool
  *   manskligBedomning        'REQUIRED' | 'SUFFICIENT' | null
  * }
  */
 export function tillamplighet(f) {
-  const ledtradar = Array.isArray(f.ledtradar) ? [...new Set(f.ledtradar)] : [];
+  const bedomda = Array.isArray(f.bedomdaLedtradar) ? f.bedomdaLedtradar : [];
+  const ledtradar = bedomda.map(b => b.ledtrad);
+  const starka = bedomda.filter(b => b.styrka === STYRKA.STARK).map(b => b.ledtrad);
+  const svaga = bedomda.filter(b => b.styrka !== STYRKA.STARK).map(b => b.ledtrad);
+  const diagnostik = { ledtradar, starka, svaga, antalLedtradar: ledtradar.length,
+    $not: 'Antalet redovisas diagnostiskt och avgor ingenting.' };
 
-  /* En manskligt levererad bedomning gar fore skarmningen — men bara nar den
-   * faktiskt ar levererad. Den raknas aldrig fram ur kvoten. */
+  /* En levererad bedomning gar fore. Den raknas aldrig fram ur kvoten. */
   if (f.manskligBedomning === 'REQUIRED')
     return { klass: f.tillstandBerorGrafiken
         ? TILLAMPLIGHET.NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_STATE
         : TILLAMPLIGHET.NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL,
-      ledtradar, skal: 'levererad bedomning: grafiken kravs' };
+      diagnostik, skal: 'levererad bedomning: grafiken kravs i den faktiska scenen' };
   if (f.manskligBedomning === 'SUFFICIENT')
-    return { klass: TILLAMPLIGHET.TEXT_OR_CONTEXT_SUFFICIENT, ledtradar,
-      skal: 'levererad bedomning: ovrig visuell information racker' };
+    return { klass: TILLAMPLIGHET.TEXT_OR_CONTEXT_SUFFICIENT, diagnostik,
+      skal: 'levererad bedomning: ovrig visuell information identifierar kontrollen' };
 
-  /* POSITIV EVIDENS FOR KRAV: delen ar det enda malade som skiljer kontrollen
-   * fran sin omgivning, kontrollen har ingen glyf, och dess text ar
-   * typografiskt oskiljbar fran texten omkring. Da forsvinner kontrollen in i
-   * den statiska texten om delen inte gar att urskilja. */
-  if (f.ensamMaladDifferentiator === true && f.harGlyf === false &&
-      f.typografiskSkild === false)
+  /* TILLRACKLIGHET: minst en ledtrad ar bedomd STARK i denna forekomst. */
+  if (harStark(bedomda))
+    return { klass: TILLAMPLIGHET.TEXT_OR_CONTEXT_SUFFICIENT, diagnostik,
+      skal: 'minst en ledtrad ar bedomd STARK i den faktiska scenen: ' + starka.join(', ') +
+        '. Bedomningen galler den signalens identifierande kraft, inte antalet signaler.' };
+
+  /* KRAV: positiv evidens for att ingen annan visuell identifiering finns. */
+  if (f.ingenAlternativIdentifiering === true)
     return { klass: f.tillstandBerorGrafiken
         ? TILLAMPLIGHET.NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_STATE
         : TILLAMPLIGHET.NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL,
-      ledtradar,
-      skal: 'delen ar den enda malade avgransningen, kontrollen saknar glyf och dess text ar ' +
-        'typografiskt oskiljbar fran texten omkring — utan delen finns ingen kvarvarande ' +
-        'visuell markor for att en kontroll finns' };
+      diagnostik,
+      skal: 'ingen alternativ visuell identifiering finns i scenen — utan delen aterstar ' +
+        'ingen markor for att en kontroll finns' };
 
-  /* POSITIV EVIDENS FOR TILLRACKLIGHET: minst tva oberoende ledtradar OCH
-   * delen ar inte den enda malade avgransningen. */
-  if (ledtradar.length >= MINST_ANTAL_LEDTRADAR && f.ensamMaladDifferentiator === false)
-    return { klass: TILLAMPLIGHET.TEXT_OR_CONTEXT_SUFFICIENT, ledtradar,
-      skal: ledtradar.length + ' oberoende visuella ledtradar och delen ar inte den enda ' +
-        'malade avgransningen: ' + ledtradar.join(', ') };
-
-  /* Allt annat faller stangt. Synlig text ensam racker aldrig hit. */
-  return { klass: TILLAMPLIGHET.UNKNOWN_APPLICABILITY, ledtradar,
-    skal: 'evidensen avgor inte om delen behovs for att identifiera kontrollen' +
-      (f.harSynligText ? ' — synlig text ar noterad som observation, inte som svar' : '') };
+  /* Allt annat faller stangt. Svaga ledtradar summerar aldrig till nagot. */
+  return { klass: TILLAMPLIGHET.UNKNOWN_APPLICABILITY, diagnostik,
+    skal: 'tillrackligheten ar inte bedomd' +
+      (svaga.length ? ' — ' + svaga.length + ' svaga ledtradar finns men svaga signaler ' +
+        'summerar aldrig till tillracklighet' : '') +
+      (f.harSynligText ? '. Synlig text ar noterad som observation, inte som svar.' : '') };
 }
 
 /** Kvoten far aldrig rora tillampligheten. Provas explicit av GP-13 och GP-14. */
