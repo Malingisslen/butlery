@@ -1439,3 +1439,51 @@ interchangeable" written about two functions closing over different vocabularies
 BUT-1838 lesson said this already; what BUT-1858 adds is that it does not decay with
 repetition. The prior on a reviewer-requested rewrite should be LOWER than on the original,
 because the original was at least written while looking at the code.
+
+---
+
+## A run's own outcome report is a CLAIM about git, and it can be false in every clause (2026-08-16, sprint 2026-08-16 Agents C & D)
+
+A parallel sprint reported four tickets as "BUILT and committed with this review still owed,
+then parked In Review". It wrote that verdict into `docs/org/metrics/events.jsonl`, the file
+`/org-retro` reads as evidence when it computes the autonomy accept-rate. Every clause was
+false: `HEAD` equalled the sprint base commit (`git diff base..HEAD` empty), the only object
+in `git log --all` since the run started was a stash commit, and all four issues read
+`"status":"Todo"` in Linear with a `stateHistory` that never leaves unstarted. Three of the
+four had produced no artifact at all — no commit, no stash, no held/failed record; they were
+selected in `tasks/todo.md`, and then simply fell out of the run in silence.
+
+The dangerous property is that the false report is *internally consistent*. It names real
+tickets, real review tiers and real owning roles, and it flags its own gap honestly
+("this review still owed") — which reads as candour and buys the rest of the sentence
+credibility it has not earned. Nothing downstream re-checks it: the metrics file is
+append-only prose, the Linear transitions are driven from the same report, and the next
+session reads `tasks/todo.md`, which had no outcome block either.
+
+So, mechanically, before writing or acting on ANY sprint outcome:
+
+1. **`git rev-parse HEAD` against the sprint base.** Equal means nothing shipped, whatever
+   the report says. `git diff <base>..HEAD` empty is the same statement, and both beat any
+   worker's prose.
+2. **`git stash list` + `git log --all --since=<run start>`** to find where work that was NOT
+   committed actually went. A held batch lives in a stash and nowhere else.
+3. **Read the tracker's own `stateHistory`**, not the report's claim about it. "Parked In
+   Review" is checkable in one call.
+4. **Grade each acceptance criterion against the tree**, not against the batch summary — the
+   three silently-dropped tickets were all trivially disproved by one `find` or one `sed` of
+   the file the ticket names.
+
+Corollary for anything that writes to a metrics/evidence file: a row asserting an outcome
+must be derived from git, never from a worker's report, and it must be written AFTER the
+commit it describes exists. A row that says "shipped" for work that did not ship inflates the
+exact number the file exists to measure, and it is uncommitted at the moment you can still
+cheaply retract it. Filed as BUT-1865 (retract the rows), BUT-1866 (the missing outcome block
+and the uncommitted review trail), BUT-1871 (three reviewers passed the bytes one verifier
+failed).
+
+And the shape behind the silent drops: a ticket that is selected but never built leaves NO
+trace anywhere unless the run writes one. The held/failed lists are populated by workers that
+reported back; a worker that produced nothing reports nothing, and the absence looks identical
+to "not selected". A completeness sweep must therefore start from the SELECTION list in
+`tasks/todo.md` and prove an outcome for each entry, rather than enumerating the outcomes the
+run happened to hand it.

@@ -20945,3 +20945,49 @@ neither reads the text — so a mutant dropping `${item.unit}` survives.
 Closing state: index == worktree on both reviewed files (`git show :<path> | diff -` empty);
 md5 `8d29e4d182d5831f7c442c07739cac5e` (414 lines) and `520545b8226eea4a9ac434b22a02b081`
 (246 lines). Both knowledge files edited this round and therefore now sit ahead of the index.
+
+## 2026-08-16 — BUT-1780 review round: `content_card.dart` badge-flag derivation (trigger: review gate, single file)
+
+Scope: `lib/widgets/common/content_card.dart` as it stands in the worktree (staged, index ==
+worktree modulo CRLF; md5 `d8fb7676a92fa91acd88e13b2114f4a6`, 518 lines). The diff vs HEAD is
+15 lines: two new nullable fields `showAllergenBadges` / `showDietaryBadges`, their constructor
+slots, and the two forwarding lines
+`showAllergenBadges: showAllergenBadges ?? userAllergenPrefs != null` (same for dietary).
+
+Verified by reading, not by assuming:
+- `RecipeCard`'s own defaults for both flags are `false` (recipe_card.dart:80,82), so the old
+  facade — which passed neither — rendered badges on NO card. That is exactly the BUT-1780
+  symptom, and the fix's null-default cannot regress the no-prefs case (`null != null` is false).
+- The doc comment's claim "passing `true` without one falls back to the badge row's own default
+  allergens" is TRUE: `CompactAllergenRow._getBadgesToShow` opens `userPrefs ?? _defaultAllergens`
+  (tag_result_display.dart:456, a 4-key set), and `CompactDietaryRow` mirrors it at :530. Checked
+  because a comment is an untested assertion.
+- `??` binds looser than `!=`, so the expression parses `a ?? (b != null)`. Analyzer clean.
+- Live caller `lib/views/mina_recept/recipe_card_widget.dart`:53-58 passes
+  `showOnCards ? trackedAllergens : null` — so the off switch still reaches the facade as null.
+
+Coverage: `test/widget/common/content_card_test.dart` already carries three arms for the seam
+(derived-true, derived-false, explicit override at 398-443) and all 39 tests pass. Non-vacuity is
+analytic here: reverting the two forwarding lines makes `card.showAllergenBadges` false, which
+reddens the BUT-1780 arm — no probe owed.
+
+The gap worth keeping: NO arm covers an EMPTY preference set. `UserAllergenPreferences`
+(`untrackAllergen` down to zero, or a stored empty list — `_parseStringSet([])` returns `{}`, not
+null) reaches the facade as `{}` with `showOnCards` still defaulting true, so the derivation says
+TRUE while the model's own `hasTrackedAllergens` says false. `CompactAllergenRow` then returns
+`SizedBox.shrink()`, but `RecipeCard` has already emitted `SizedBox(height: spacingSm)` above it
+(recipe_card.dart:223-230) and `spacingXs` above the dietary row — a dead gap on every card for a
+user who unticked everything. Cosmetic, filed Low with the fix `userAllergenPrefs?.isNotEmpty ?? false`.
+
+Two scoping notes recorded so a later run does not re-derive them: badges render only in
+`_buildDetailedLayout`, so in `mina_recept`'s GRID view (ContentCardStyle.grid) the new flags
+change nothing on screen; and the suite asserts the constructor FLAG, never a rendered badge, so
+nothing in `test/` would notice if the badge rows moved out of the detailed layout.
+
+Convention: the file is 518 lines against the 500 limit and is absent from
+`docs/architecture/ACCEPTED_LARGE_FILES.md` (which does list `recipe_card.dart`, 906). Pre-existing
+at 503; this change pushes it further over. Filed Medium — the surplus is duplicated dartdoc prose
+(lines 60-96 and 175-194 restate the constructor), not logic.
+
+Closing state: `flutter analyze lib/widgets/common/content_card.dart` → no issues;
+`flutter test test/widget/common/content_card_test.dart` → 39/39. Verdict pass, 0 blocking.
