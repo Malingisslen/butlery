@@ -161,6 +161,12 @@ Learnings from corrections. Claude reviews at session start and adds entries aft
 
 <!-- Entries added automatically after user corrections -->
 <!-- Format: ### [Category] Title -->
+<!-- HEADING LEVELS ARE LOAD-BEARING. The drift tripwire in knowledge-freshness.mjs
+     counts `^### ` as one lesson each, so a lesson at `## ` is invisible to it and a
+     sub-section at `### ` is counted as a lesson. Between 2026-08-12 and 2026-08-17 the
+     file drifted to `## Title` for lessons with `### ` sub-sections, and the tripwire
+     silently measured a mix — 131 where the truth was 140. Normalised 2026-08-17.
+     One lesson = `### `. A sub-section inside one = `#### `. -->
 <!-- Date | Trigger | Rule | Example -->
 
 ### [Workflow] /sprint-execute Phase 1 plan-write is non-optional, even mid-streak
@@ -754,26 +760,26 @@ Trigger: BUT-1816's orphan-tail trim. I hand-graded the ten corpus pages the rul
 Rule: When the artefact under judgement is an IMAGE, text derived from it is evidence about the derivation, not about the artefact. Layout, type size, column structure, what is physically absent from the frame, and what belongs to a different object in the photo are all invisible in the extracted string, and every one of them decided a case here. So: before grading, labelling, or writing a verdict about photographed material — and always before recording one in a decision log — open the images. Ten JPEGs is a few minutes; a wrong verdict in `ACCEPTED_DEVIATIONS.md` outlives the session that wrote it. The corollary is the harder one: a GROUND TRUTH built the same way inherits the same blindness, so before quoting precision/recall as evidence, ask who graded the gold and by what method. Gold that never asked "is the whole recipe even on this page?" does not merely add noise — it encodes the opposite policy from the one being built, and the metric then penalises the feature for doing the right thing.
 Example: 2026-08-09 — all ten shipped cases and all nine band cases re-read against the photographs; `orphan_tail.dart`'s library doc now lists all ten with what each actually is and ends with "if you are about to re-judge this list, open the images"; both deviation files carry a dated correction that keeps the retracted reasoning visible; the gold defect is written up with photographs and filed as its own ticket rather than folded into this one.
 
-## A sentence about code in another file is a claim; open that file or do not write it
+### A sentence about code in another file is a claim; open that file or do not write it
 Date: 2026-08-10
 Trigger: BUT-1819 — one ticket, three commit gates, four review passes. Zero defects were found in the LOGIC after the first pass. **Eleven** were found in my prose, every one a confident assertion about code I had not opened: (1) "eleven scheme checks exist, none view-callable, none requires a host" — `FormValidators.url()` is public, in `lib/core/`, and requires a host WITH a dot; (2) the correction then called its sibling `recipeSourceUrl()` stricter too, when it returns valid for anything containing the word `Butlery`, so the seed string this very ticket introduced passes it — wrong in both directions on two consecutive passes; (3) a citation to a BUT-1819 accepted-deviation entry that did not exist in either deviation file; (4) "only 2 of the 30 files in `core/utils` import a model and a service" — zero do both, three do one, and there are 31 files; (5) "every other field is passed through untouched" while `copyWith` restamped `updatedAt` and recomputed `dataChecksum`; (6) the fix's own justification then invented a "last-write-wins reconciliation" on the offline path — grepped by a reviewer, no such code anywhere, the real reasons being sort order and caller honesty; (7) "the complete set of writers for this collection" — four more partial-field writers on the client, five in `functions/src`; (8) `updateBatch` listed as a covered path when it lives on a mixin this class does not use, so it cannot be called at all; (9) "nothing populates `ingredientsNormalized` before a write" — two copy factories do, both currently uncalled; (10) a security fix's comment claiming it now rejects control-character titles, when `validateRequiredFields` tests key PRESENCE only and the accepted set is provably identical; (11) a test header claiming every fixture is a real stored value, in the same commit that renamed one of them. Three separate specialists caught them; I caught none. The two that mattered most were (5), a real behaviour bug the comment concealed, and (10), the sentence a future reader would have cited as proof that empty titles are rejected.
 Rule: Treat a sentence naming a symbol, file, count or behaviour outside the file you are editing as a CLAIM with a verification cost, and pay it before writing: open the file, run the expression, count the matches. Three shapes recur and each has a cheap check. A claim about which methods a class HAS is settled by its declaration line, not by the base class's source — a mixin the class does not use contributes nothing. A claim of the form "nothing does X" must grep including dead and uncalled code, then say "nothing on a live path" if that is what the grep supports. A claim that a guard REJECTS something must be read in the guard's own body — `containsKey` is not emptiness — and if it turns out not to reject, that is a product decision to surface, not a comment to write. When a reviewer disproves one claim, re-read every other claim in that file: they were written in the same state of belief, and (2) above is what happens when only the disproved one is fixed.
 Example: 2026-08-10 — every one of the eleven rewritten to state what the code does, several keeping a dated note of what the false version said so the next reader can see the trap; the ticket's four guards mutation-tested separately, which is what kept the logic clean while the prose was not.
 
-## Routing a call through a new helper adds a DEPENDENCY every existing test double must model
+### Routing a call through a new helper adds a DEPENDENCY every existing test double must model
 Date: 2026-08-10
 Trigger: BUT-1819 routed `LinkifiedText._openUrl` through a shared `openExternalLink` helper — labelled defence in depth, "cannot change behaviour", because the regex upstream only matches `https?://`. It did change behaviour. The helper asks `canLaunchUrl` before launching; the old code did not. `linkified_text_test.dart`'s `_RecordingUrlLauncher` implements `launchUrl` and not `canLaunch`, so the base method's `UnimplementedError` fired, the tap recorded nothing, and "tapping a linkified URL opens it via url_launcher" went red — a real user-facing regression in ordinary comment links. It survived six review passes and four full test runs because every run named the folders I had EDITED (`test/unit/repositories/`, `test/widget/recipe/`, `test/unit/services/offline/`) and the broken test lives in `test/unit/widgets/common/`, which I never had reason to open. Worse, the same commit had just added a `try/catch` to that call site, so the loud `UnimplementedError` became a silent swallow — my own change hid the symptom from the only place it would have shown.
 Rule: A call site rerouted through a shared helper inherits the helper's whole dependency list. The first repair was to complete the double (`canLaunch => true`); a reviewer then asked the better question — should the helper ask at all? It should not: the plugin documents `canLaunchUrl` as answering a PERMISSION question ("will always return false unless the application has been configured to allow querying"), Android declares the `<queries>` entries and `ios/Runner/Info.plist` declares no `LSApplicationQueriesSchemes`, so on iOS the gate could refuse links that would have opened — silently, since `_openUrl` does not read the result. Dropping it left the test double byte-identical to HEAD, which is the tell: **a test that only passes once you extend a double is asking whether the new dependency belongs there at all.** Answer that before extending. So before calling any such reroute "defence in depth, behaviour unchanged": diff the helper's calls against what the old line did (`canLaunchUrl` was the entire difference here), then run the suite that covers the REROUTED file, found by grepping the dependency's name across `test/` — not the folders you edited. The changed-file set is the wrong unit for a change whose blast radius is a shared function. And when adding a `catch` in the same commit as a behaviour change, remember it can convert the new failure into silence: add the catch after the suite is green, or run once without it.
 Example: 2026-08-10 — five files in the repo touch url_launcher; all five now run and pass, and the double carries a `canLaunch` override with a comment naming BUT-1819 as the reason it exists.
 
-## A model field that reaches Firestore is a RULES change, and `hasOnly` fails closed in silence
+### A model field that reaches Firestore is a RULES change, and `hasOnly` fails closed in silence
 Date: 2026-08-12
 Trigger: BUT-1482 added `configRevision` to `TagResult` on 2026-07-23 and did not touch `firestore.rules`. `isValidTagResult` gates recipe writes with `tagResult.keys().hasOnly([...11 names...])`, so from that day **every recipe create AND update was denied in production** — for every user, because the five `tagConfigs` documents exist and carry a `version`, which makes `TagGenerator` stamp the field on every run. It shipped, and nobody noticed for three weeks: the last recipe in the account was saved 12 July, eleven days before the break. I found it on 2026-08-12 while reading `firestore.rules` for an unrelated plan (BUT-1817's tagResult merge), not from a bug report, and confirmed it in three escalating steps — an emulator probe against the real rules file, the DEPLOYED rules read in the console (identical), and finally a real save on Malin's phone: `PERMISSION_DENIED` at `users/{uid}/recipes/{id}`, "Failed to create Recipe". The fix was one name in a list.
 Rule: A field added to a model that serializes into Firestore is a two-sided change — the model AND the rules — and the rules side has no compiler, no analyzer and no test unless you write one. `hasOnly` is the most dangerous shape in the file: it fails CLOSED, silently, on the WRITE, so nothing in the app logs an error the user would report; it simply stops working. So: (a) when you add a field to any model with a `toFirestore`, grep `firestore.rules` for that model's validator in the SAME edit; (b) a `hasOnly` allowlist gets a rules test the day it is written, asserting one allowed key set and one rejected extra key — the suite here had eleven recipe tests and none of them would have caught this; (c) "nobody has reported it" is not evidence a write path works, because a write path that nobody exercised for three weeks reports nothing. The generalisation of the wrong-path-Firestore-read lesson: a write that passes Dart and is denied by rules is invisible from the Dart side, and only a rules test or a real device sees it.
 Example: 2026-08-12 — `configRevision` added to the allowlist with a bounded-int check, two regression tests (one allow, one reject a non-int) in `firestore-rules.test.ts` naming the outage in their comment, rules deployed, and a real save on the device verified in Firestore carrying `configRevision: 999697`.
 
 
-## A formatter race can revert your CODE and keep your COMMENTS (2026-08-12, BUT-1693)
+### A formatter race can revert your CODE and keep your COMMENTS (2026-08-12, BUT-1693)
 
 Twice in one session an external writer (formatter hook, or the parallel session) rewrote
 `household_service.dart` from a stale buffer between my Edit and my next command. Both times
@@ -818,7 +824,7 @@ routine, not in trust: after ANY review round that mentions probing, run
 never shows in `git diff` — only `status` and the filesystem see it, and a parallel session's
 `git add .` would sweep it in.
 
-## A rules branch that keys on an ABSENT parent cannot tell "not yet" from "gone" (2026-08-12)
+### A rules branch that keys on an ABSENT parent cannot tell "not yet" from "gone" (2026-08-12)
 
 `conversations/{id}/participants` got its first `match` block this sprint. Group creation
 writes the roster before the top-level conversation document exists, so the read rule needs
@@ -854,7 +860,7 @@ Three things worth keeping:
    names both remaining cases — the pre-seat hole and the user-initiated delete — rather
    than asserting a closure that a five-minute probe disproves.
 
-## Fixing the ARB after running gen-l10n ships the OLD string (2026-08-12, BUT-1693)
+### Fixing the ARB after running gen-l10n ships the OLD string (2026-08-12, BUT-1693)
 
 I corrected one character in `app_sv.arb` — a German low-9 opening quote `„` to the Swedish
 `”` — in an Art. 9 consent body, minutes after `flutter gen-l10n` had already run. The
@@ -873,7 +879,7 @@ Two mechanical habits:
   source of truth (the approved annex), not visually — `„` and `”` are one glyph apart on
   screen and one code point apart in the file.
 
-## A multi-edit script that asserts before it writes loses EVERY edit, silently (2026-08-12)
+### A multi-edit script that asserts before it writes loses EVERY edit, silently (2026-08-12)
 
 Pattern used all sprint: read a file, apply N `assert old in s; s = s.replace(...)` pairs,
 write once at the end. It is atomic, which is the point — but the failure mode is that a
@@ -901,7 +907,7 @@ The deeper point is the one already in the digest and now proven from the other 
 an Edit tool success is not proof the bytes moved, and a claim about your own edits is a
 claim like any other — it needs evidence, and the evidence costs one command.
 
-## A rules block that ATTESTS on a parent must first establish WHERE that parent is written, and WHEN (2026-08-12)
+### A rules block that ATTESTS on a parent must first establish WHERE that parent is written, and WHEN (2026-08-12)
 
 `conversations/{id}/participants/{participantId}` had no `match` block at all — it fell to the
 terminal default-deny, so `ConversationParticipantModule.addParticipants` was refused on every
@@ -939,7 +945,7 @@ Four things worth keeping:
    the parent document that does not exist yet. Enumerate actors and lifecycle states, not
    just the happy path.
 
-## A 403 that names a permission can still be a wrong-identifier bug (2026-08-13)
+### A 403 that names a permission can still be a wrong-identifier bug (2026-08-13)
 
 `firebase deploy --only firestore:rules --project butlery-app` failed four times across a
 session with `HTTP Error: 403, Caller does not have required permission to use project
@@ -967,7 +973,7 @@ Corollary already in the digest, from the other direction: a deterministic tool'
 must be RUN, not predicted. This one was run — four times — and the output was read through a
 theory instead of literally.
 
-## A comment that MAPS assertions to failures is itself an untested assertion, and mine was inverted (2026-08-13)
+### A comment that MAPS assertions to failures is itself an untested assertion, and mine was inverted (2026-08-13)
 
 Two assertions pinned a two-sided invariant, each mutation-proven against the edit it exists
 for. I then wrote a summary line — "the first assertion below catches (1); the second catches
@@ -996,7 +1002,7 @@ Three things worth keeping:
 
 ---
 
-## 2026-08-13 — Loosening a gate means finding the OTHER gate that enforced it
+### 2026-08-13 — Loosening a gate means finding the OTHER gate that enforced it
 
 Malin decided the sprint engine may build routed rules/GDPR tickets and park them In Review
 instead of refusing them. The selection-time gate was four lines and obvious. Changing only
@@ -1034,7 +1040,7 @@ move under them.
 
 ---
 
-## 2026-08-13 — "It's the tooling, not the app" is a claim, and half of it was false
+### 2026-08-13 — "It's the tooling, not the app" is a claim, and half of it was false
 
 Malin asked me to prove or disprove BUT-1779 by driving the real app. The app came up blank
 and clicks kept landing on the wrong widget. I reported both as local tooling flakiness and
@@ -1074,7 +1080,7 @@ every web start), the semantics DOM is what receives clicks, so a malformed node
 automation *and* real users identically. That equivalence is why the automation trouble was
 worth diagnosing rather than working around — the workaround would have hidden a live defect.
 
-## 2026-08-13 — a helper's logs are only as safe as its CALLER LIST (BUT-1822)
+### 2026-08-13 — a helper's logs are only as safe as its CALLER LIST (BUT-1822)
 
 `tryClearRoster` had logged a bare `conversationId` since it was written, and that was
 fine: its only caller was a group-only trigger, and a group id is a client-minted UUIDv4.
@@ -1109,7 +1115,7 @@ What generalises:
 
 ---
 
-## An ARB edit rewrites the WHOLE file, which a parallel session makes uncommittable (BUT-1783, 2026-08-13)
+### An ARB edit rewrites the WHOLE file, which a parallel session makes uncommittable (BUT-1783, 2026-08-13)
 
 Removing two strings from `lib/l10n/app_sv.arb` and `app_en.arb` produced a **918-line
 diff** in each: a PostToolUse hook re-serialises the ARB with a JSON pretty-printer, so
@@ -1140,7 +1146,7 @@ What generalises:
    file and why, and verify the remaining diff still compiles and analyses clean on its
    own. An ARB key with no reader is inert; a Dart reference to a deleted getter is not.
 
-## `git commit -- <pathspec>` silently drops every NEW file (BUT-1838, 2026-08-14)
+### `git commit -- <pathspec>` silently drops every NEW file (BUT-1838, 2026-08-14)
 
 Staging by explicit pathspec is the repo rule when a parallel session shares the working
 copy, and `git commit -F msg -- <paths>` honours it — for **tracked** files. Untracked ones
@@ -1177,13 +1183,13 @@ hidden exactly the failure this lesson is about.
 
 ---
 
-## "Affected users" is a claim with a timestamp, and an enum is not coverage (BUT-1846, 2026-08-14)
+### "Affected users" is a claim with a timestamp, and an enum is not coverage (BUT-1846, 2026-08-14)
 
 A retired dropdown value (`digestFrequency: 'daily'`) crashed the notification settings
 screen. The fix was right. Two things I wrote around it were not, and both were caught by
 reviewers rather than by me.
 
-### 1. I asserted an affected population I had never counted
+#### 1. I asserted an affected population I had never counted
 
 The doc comment said "these users have been receiving the weekly digest all along" and
 "most affected documents still say `'daily'`". Two independent reviewers ran the same two
@@ -1206,7 +1212,7 @@ timestamp check. So: before writing a sentence about who is affected, date the w
 it doesn't matter", say that — "whether such a document exists is beside the point, the
 parse has to be total" is a stronger argument than an invented user anyway.
 
-### 2. The enum killed the crash class, and killed my test with it
+#### 2. The enum killed the crash class, and killed my test with it
 
 Making the field `enum DigestFrequency { never, weekly }` makes the SDK's exactly-one-match
 assert unreachable for every inhabitant of the type. That is the fix working. It also made
@@ -1227,7 +1233,7 @@ whether anything still catches it. Here the honest replacements were an item-lis
 hand-writes the list again) and a test that taps the control and captures the save. Both
 mutation-proven; the unfailable line stayed, relabelled as the cheap guard it is.
 
-### 3. Operational: a commit gate that outlives the tool timeout
+#### 3. Operational: a commit gate that outlives the tool timeout
 
 The pre-commit suite here runs 400–600s. The Bash tool caps at 600s, and `run_in_background`
 plus `nohup` both died with the shell — the log stopped after the first gate. What survived
@@ -1245,7 +1251,7 @@ anything but read-only status queries, before removing one.
 
 ---
 
-## BUT-1838 — a correction to a false comment fails the same way the original did (2026-08-15)
+### BUT-1838 — a correction to a false comment fails the same way the original did (2026-08-15)
 
 A whole-range gate caught four code comments justifying live controls with a `firestore.rules`
 branch BUT-1838 had deleted two days earlier. Fixing them took **six review rounds**, and every
@@ -1253,7 +1259,7 @@ round found a fresh false sentence *in the text I had just written to replace a 
 Zero logic defects the whole time. The failure mode was identical every time, and it is not
 carelessness — it is the shape of the sentence.
 
-### The shape: an unqualified claim about a qualified fact
+#### The shape: an unqualified claim about a qualified fact
 
 Each wrong sentence generalised something true **per verb**, **per caller**, or **per branch**:
 
@@ -1271,7 +1277,7 @@ rewrite invented a route that does not exist (a direct conversation's roster hol
 client-written rows — `directIdBinds` forces `p.size() == 2` and `participantIds` is in the
 update deny-list, so it can never reach a 2000-row cap).
 
-### Three habits, in the order they pay
+#### Three habits, in the order they pay
 
 1. **Write the qualifier or write nothing.** "Every predicate that could SURFACE a row reads
    through the parent" is true; "every predicate reads through the parent" is false, and the
@@ -1285,7 +1291,7 @@ update deny-list, so it can never reach a 2000-row cap).
    my edit, inside the same comment block. They cannot appear in a diff, and they now contradicted
    the paragraph above them — which is strictly worse than being uniformly stale.
 
-### The other half: a decision record ages the same way
+#### The other half: a decision record ages the same way
 
 `.claude/rules/accepted-deviations.md` justified `MAX_ROSTER_SWEEP_ROWS` ("do not remove the cap")
 with the same deleted branch — written one day before the branch died. A record that is wrong on
@@ -1295,7 +1301,7 @@ itself panel-reviewed: the Security Architect refused the draft that said the pa
 client-writable, because `attestedWriter()` lets either participant of a direct chat write the
 other's roster row. The phrase "not a live client write path" is now banned by name at every site.
 
-### Also, the underlying bug was bigger than reported
+#### Also, the underlying bug was bigger than reported
 
 The reviewer reported "group chats are invisible to the unread badge". The badge read **0 for
 everyone**: its inverse index is written `hasUnread: false` and the only writer that would flip it
@@ -1304,7 +1310,7 @@ helped — they would arrive `false` too. **When a reviewer reports a symptom, f
 before accepting the scope**; the reported scope is a lower bound on the defect, not a description
 of it.
 
-## "Not a live bug" is a claim about CALLERS, not about a fallback (BUT-1849, 2026-08-15)
+### "Not a live bug" is a claim about CALLERS, not about a fallback (BUT-1849, 2026-08-15)
 
 Deleting a dead widget, I documented a clamp in a neighbouring file and wrote the sentence that
 made both reviewers fail the diff:
@@ -1334,7 +1340,7 @@ Two habits:
    fix, and it is the sentence the next reader trusts instead of re-deriving. It had propagated
    into the Linear ticket too (as a "Nej" heading), so the correction was two documents, not one.
 
-### The test-side twin: deleting a defect test can unpin the field
+#### The test-side twin: deleting a defect test can unpin the field
 
 The defect is pinned by a test explicitly labelled *delete this when BUT-1858 lands*. Nothing else
 in the suite asserted `unit` at all — so the day the fix arrives and that test is removed as
@@ -1343,11 +1349,11 @@ would pass. **A test written to be deleted must ship with the assertion that out
 one clause on the happy-path predicate checking an on-list unit round-trips. Ask, of every
 temporary test, what goes unguarded on the day it is removed.
 
-## A gate can be structurally unsatisfiable, and a chained command dies whole (BUT-1849, 2026-08-15)
+### A gate can be structurally unsatisfiable, and a chained command dies whole (BUT-1849, 2026-08-15)
 
 Two failures of the same family, one day, both about the machinery rather than the code.
 
-### The gate could never pass, and that is a fact about the gate
+#### The gate could never pass, and that is a fact about the gate
 
 `require-review-before-commit` proves a review by recording which bytes a reviewer opened,
 comparing against `git rev-parse :<file>`. For a path staged as DELETED that command fails,
@@ -1371,7 +1377,7 @@ performable. Both block messages now say how to read a file that is already gone
 the old remedy — "open each file with Read" — was an instruction that could not be carried
 out, and a reader following it loops.
 
-### A PreToolUse hook rejects the whole command string
+#### A PreToolUse hook rejects the whole command string
 
 I ran `git rm -- <two files> && git commit -F msg -- <ten paths>`. The commit gate matched
 the string, refused it, and **neither half ran** — so the deletion I believed I had staged
@@ -1386,7 +1392,7 @@ with the intention. And never write a factual claim about repo state into a brie
 comment — from what you meant to do; three of the nine review rounds on this ticket were
 spent on exactly that.
 
-### Corollary on reporting
+#### Corollary on reporting
 
 The lesson from BUT-1838 ("a correction fails the same way the original did") repeated here
 in a new place: of nine review rounds, every blocking finding was a sentence about code
@@ -1396,7 +1402,7 @@ claimed all builders funnel through a helper when three do not. Before shipping 
 replacement sentence, verify it at the same cost as the original. A reviewer-requested
 rewrite is not pre-verified.
 
-## A detached commit does not pass the review gate (BUT-1858, 2026-08-16)
+### A detached commit does not pass the review gate (BUT-1858, 2026-08-16)
 
 The commit gate here runs for eight to ten minutes, longer than the tool's cap, so my own
 earlier lesson says to launch it detached (`Start-Process ... -WindowStyle Hidden`) and poll
@@ -1429,7 +1435,7 @@ Two smaller things from the same sequence, both costly:
   days-old read-only status queries, not writers), then remove the lock; the staged set
   survives untouched.
 
-### And the shape the whole ticket had
+#### And the shape the whole ticket had
 
 Ten review rounds. Every blocking finding but one was a false sentence in a comment or a
 decision record; the code was stable and mutation-proven from round two. **Three of the
@@ -1442,7 +1448,7 @@ because the original was at least written while looking at the code.
 
 ---
 
-## A run's own outcome report is a CLAIM about git, and it can be false in every clause (2026-08-16, sprint 2026-08-16 Agents C & D)
+### A run's own outcome report is a CLAIM about git, and it can be false in every clause (2026-08-16, sprint 2026-08-16 Agents C & D)
 
 A parallel sprint reported four tickets as "BUILT and committed with this review still owed,
 then parked In Review". It wrote that verdict into `docs/org/metrics/events.jsonl`, the file
@@ -1490,7 +1496,7 @@ run happened to hand it.
 
 ---
 
-## A content-addressed gate is the only kind that converges (BUT-1801 salvage, 2026-08-17)
+### A content-addressed gate is the only kind that converges (BUT-1801 salvage, 2026-08-17)
 
 Eight review gates, six rounds, ~15 specialist passes over one 42-file commit. Every round
 found real defects and every round found FEWER. What made it terminate is that the gate
@@ -1521,7 +1527,7 @@ So the loop is expensive and it is not optional. The cheap-looking alternative �
 verdict rather than the bytes — is exactly how the batch being salvaged reached "six
 specialist reviewers passed" over files none of them had opened.
 
-### The corollaries worth carrying
+#### The corollaries worth carrying
 
 **A verifier's FAIL is a hypothesis, and can be right for the wrong reason.** BUT-1801's
 verifier failed the batch saying "only 1 of the 6 named sites was fixed". Three of the six

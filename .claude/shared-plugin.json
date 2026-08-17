@@ -43,7 +43,7 @@
       ".claude/rules/workflow-discipline.md"
     ],
     "memoryIndex": "C:/Users/malla/.claude/projects/C--Butlery-butlery/memory/MEMORY.md",
-    "budgetChars": 21000,
+    "budgetChars": 45000,
     "neverMove": [
       "allergen",
       "TriState",
@@ -153,7 +153,7 @@
       ".claude/rules/lessons-digest-delivery.md",
       ".claude/rules/lessons-digest-testing.md"
     ],
-    "digestCoreMaxChars": 7500
+    "digestCoreMaxChars": 14000
   },
   "docsSweep": {
     "exemptGlobs": [

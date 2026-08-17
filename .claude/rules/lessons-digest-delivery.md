@@ -78,6 +78,7 @@ Read this before starting a sprint, a backlog scan, or a ship pass.
 
 ## Authoring gates and shared config
 
+- A gate that discards results by a criterion it knew BEFORE running (session ownership, changed-file set) should filter its INPUT, not its output. Narrowing a checker's input can silently change its OUTPUT FORMAT (`dart analyze` on explicit files prints bare basenames) — mutation-test a gate AFTER every change, not only before.
 - A gate's block message may only name remedies that SHIP with the gate (same plugin / inlined procedure) — test the message from every repo the gate is installed in.
 - Hardening a proof-of-review gate: the content check is `.every` protected file named + EXACT full-path identity (not `.some`/basename), fail-closed on empty; a green happy-path fixture suite hides the partial-overlap fail-open — run an adversarial "find the fail-open" review of gate machinery and add a partial-overlap fixture; producer and checker must agree on the identity form (BUT-1599/1619).
 - Port per-repo configs from the RETIRED implementation's real paths/semantics — structurally different machinery keeps its native hook + opts out of the shared one.
