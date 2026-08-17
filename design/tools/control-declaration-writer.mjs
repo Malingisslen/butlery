@@ -28,7 +28,14 @@ export const TILLATNA_ATTRIBUT = Object.freeze([
  * kunna radera sidor som beslutet inte namnt. */
 export const TILLATNA_STILEGENSKAPER = Object.freeze([
   'min-height', 'border', 'box-sizing',
-  'padding-top', 'padding-right', 'padding-bottom', 'padding-left']);
+  'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+  /* 'border-color' tillkom for de 15 gransfynden. Den skrivs som en EGEN
+   * deklaration efter den befintliga border-kortformen, sa att bredd och stil
+   * aldrig ror sig: en senare deklaration i samma style-attribut vinner bara
+   * over fargkomponenten. Kortformen 'border' star kvar i listan for de fall
+   * dar ingen kant finns alls, men de tva far aldrig anvandas pa samma
+   * element i samma jobb. */
+  'border-color']);
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
   .replace(/</g, '&lt;').replace(/>/g, '&gt;');

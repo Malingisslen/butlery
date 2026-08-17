@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// F2 · METODPROV FOR KONTROLLDEKLARATIONSSKRIVAREN.  CW-01 … CW-18
+// F2 · METODPROV FOR KONTROLLDEKLARATIONSSKRIVAREN.  CW-01 … CW-19
 //
 // FELKLASSEN PROVEN FINNS FOR
 // En skrivare som "nastan" traffar ratt element ar varre an ingen skrivare:
@@ -193,7 +193,19 @@ const nyFil = () => { writeFileSync(tmp, HTML); return tmp; };
     'tva skrivna: ' + JSON.stringify(r.logg[0].skrivna) + ' | krock: ' + rFel.logg[0].skal);
   rmSync(fil, { force: true }); }
 
-const ANTAL = 18;
+/* CW-19 · border-color skrivs som egen deklaration och ror aldrig bredd eller stil */
+{ const r = skrivStil('<span style="border:1.5px solid rgba(245, 244, 237, 0.35)">',
+    'border-color', 'rgba(245, 244, 237, 0.6)');
+  const krock = skrivStil('<span style="border-color:#111">', 'border-color', '#788477');
+  const bredd = /border:1\.5px solid/.test(r.text);
+  prov('CW-19', 'border-color laggs efter kortformen och lamnar bredd och stil ororda',
+    r.ok && r.ny && bredd &&
+    r.text === '<span style="border:1.5px solid rgba(245, 244, 237, 0.35);' +
+      'border-color:rgba(245, 244, 237, 0.6)">' &&
+    !krock.ok,
+    r.text + ' | befintlig border-color: ' + krock.skal); }
+
+const ANTAL = 19;
 for (const x of resultat) console.log((x.ok ? '✔ ' : '✖ ') + x.id + '  ' + x.vad + '\n     ' + x.diag);
 const ok = resultat.filter(x => x.ok).length;
 console.log('');
