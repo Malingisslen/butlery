@@ -1,0 +1,281 @@
+#!/usr/bin/env node
+// F2-NT · PROV FOR LOW-CONTRAST UNKNOWN APPLICABILITY PLANNER.  ACR-01 … ACR-15
+//
+// Kör: node tools/low-contrast-planner-fixtures.mjs --out=<katalog utanfor repot>
+//
+// FELKLASSEN PROVEN FINNS FOR
+// Nar 1736 relationer saknar dom ar frestelsen att lata maskinen doma at oss:
+// lata kvoten avgora vad som kravs, lata en grupp arva en dom, lata samma
+// farg eller samma roll smitta, eller lata en supplemental-dom vila pa en
+// barare som ingen har matt. Proven laser varje sadan genvag.
+
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { resolve, join } from 'node:path';
+
+const arg = n => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1];
+const OUT = arg('out');
+if (!OUT) { console.error('✖ ange --out=<katalog utanfor reporoten>'); process.exit(2); }
+const outAbs = resolve(OUT);
+if (outAbs.startsWith(resolve('.') + '\\') || outAbs.startsWith(resolve('.') + '/')) {
+  console.error('✖ --out ligger inne i reporoten.'); process.exit(2); }
+mkdirSync(outAbs, { recursive: true });
+const resultat = [];
+const prov = (id, vad, ok, diag) => resultat.push({ id, vad, ok: !!ok, diag: String(diag) });
+const kastar = f => { try { f(); return false; } catch { return true; } };
+
+const AP = await import('file://' + resolve('tools/applicability-planner.mjs').replace(/\\/g,'/'));
+const A = JSON.parse(readFileSync(resolve('fas2/lagkontrast-planering.json'), 'utf8'));
+const INV = A.C_riskpopulation.poster;
+const GRP = A.D_reviewGroups.grupper;
+const PIL = A.H_forslag.poster;
+const PROBE = A.G_probe.resultat;
+
+/* Ett komplett, giltigt bevis som proven varierar. Malets kvot saknas med flit. */
+const barare = (pid, kvot) => ({ PART_ID: pid, typ: 'BOUNDARY', KANONISK_DEL: true,
+  MATT: true, OMFATTAS_AV_1_4_11: true, SYNLIG_I_SCENEN: true, kvot });
+const bevis = (over = {}) => ({ COUNTERFACTUAL_KORD: true,
+  SCENIDENTIFIERING: AP.SCENIDENTIFIERING.SCENE_IDENTIFIES_WITHOUT_TARGET,
+  ALTERNATIVE_CARRIERS: [barare('x|1#ram#0', 1.41)],
+  STATE_UNDER_TEST: 'STATIC_DEFAULT', ...over });
+
+/* ── ACR-01 ─────────────────────────────────────────────────────────────── */
+{ const d = A.A_delning;
+  const summaKorstab = Object.entries(d.KORSTAB).filter(([k]) => k !== 'SUMMA')
+    .reduce((a,[,v]) => a + v, 0);
+  prov('ACR-01', 'current UNKNOWN rekoncilierar exakt mot LT3 + GE3',
+    d.LT3_UNKNOWN + d.GE3_UNKNOWN === d.CURRENT_UNKNOWN_APPLICABILITY &&
+    d.RECONCILES === true && d.OMATT_UNKNOWN === 0 &&
+    d.KORSTAB.LT3_UNKNOWN === d.LT3_UNKNOWN && d.KORSTAB.GE3_UNKNOWN === d.GE3_UNKNOWN &&
+    summaKorstab === d.GRAPHICAL_PARTS && d.KORSTAB_SLUTEN === true &&
+    A.A2_harkomst.RECONCILED === true && A.A2_harkomst.DELTA_SUMMA === 0 &&
+    INV.length === d.LT3_UNKNOWN,
+    d.LT3_UNKNOWN + ' + ' + d.GE3_UNKNOWN + ' = ' + d.CURRENT_UNKNOWN_APPLICABILITY +
+    ', korstaben sluter pa ' + summaKorstab + ' av ' + d.GRAPHICAL_PARTS +
+    ', harkomstdelta ' + A.A2_harkomst.DELTA_SUMMA + ', inventeringen ' + INV.length); }
+
+/* ── ACR-02 ─────────────────────────────────────────────────────────────── */
+{ const serKvot = kastar(() => AP.forslag(bevis({ MEASURED_RATIO: 2.9 })));
+  const serKvot2 = kastar(() => AP.forslag(bevis({ CURRENT_RATIO: 9.9 })));
+  const lag = AP.forslag(bevis({ ALTERNATIVE_CARRIERS: [barare('a|1#ram#0', 1.01)] }));
+  const hog = AP.forslag(bevis({ ALTERNATIVE_CARRIERS: [barare('b|1#ram#0', 13.4)] }));
+  const hogFaller = AP.forslag(bevis({ ALTERNATIVE_CARRIERS: [barare('c|1#ram#0', 13.4)],
+    SCENIDENTIFIERING: AP.SCENIDENTIFIERING.SCENE_FAILS_WITHOUT_TARGET }));
+  const statusVarden = [1.0, 2.99, 3.0, 21].map(k =>
+    AP.statusSeparation({ APPLICABILITY_VERDICT: 'UNKNOWN', MEASURED_RATIO: k }));
+  prov('ACR-02', 'ratio kan aldrig skapa REQUIRED eller SUPPLEMENTAL',
+    serKvot && serKvot2 && lag.FORSLAG === hog.FORSLAG &&
+    lag.FORSLAG === AP.FORSLAG.PROPOSED_SUPPLEMENTAL_NOT_REQUIRED &&
+    hogFaller.FORSLAG === AP.FORSLAG.PROPOSED_REQUIRED &&
+    statusVarden.every(s => s.APPLICABILITY_VERDICT === 'UNKNOWN') &&
+    !PIL.some(x => x.COUNTERFACTUAL.KORD === false &&
+      x.PROPOSED_VERDICT !== AP.FORSLAG.PROPOSED_UNKNOWN),
+    'forslag() kastar pa kvot: ' + (serKvot && serKvot2) + '; barare 1.01 och 13.4 ger ' +
+    lag.FORSLAG + ' / ' + hog.FORSLAG + '; hog kvot hindrar inte REQUIRED: ' +
+    hogFaller.FORSLAG); }
+
+/* ── ACR-03 ─────────────────────────────────────────────────────────────── */
+{ const j = A.J_ge3;
+  prov('ACR-03', 'GE3_UNKNOWN forblir applicability UNKNOWN',
+    j.ALLA_APPLICABILITY_UNKNOWN === true && j.ALLA_KONFORMANS_UNKNOWN === true &&
+    j.APPLICABILITY_STATUS === 'APPLICABILITY_UNKNOWN' &&
+    j.ADJUDICERADE_I_DETTA_BLOCK === 0 &&
+    j.GE3_UNKNOWN === A.A_delning.GE3_UNKNOWN && j.MIN_RATIO >= 3,
+    j.GE3_UNKNOWN + ' relationer, alla UNKNOWN, lagsta kvot ' + j.MIN_RATIO +
+    ', adjudicerade i blocket ' + j.ADJUDICERADE_I_DETTA_BLOCK); }
+
+/* ── ACR-04 ─────────────────────────────────────────────────────────────── */
+{ const s = AP.statusSeparation({ APPLICABILITY_VERDICT: 'UNKNOWN', MEASURED_RATIO: 3.0 });
+  const varden = JSON.stringify(s);
+  const kastarPaDom = kastar(() =>
+    AP.statusSeparation({ APPLICABILITY_VERDICT: 'REQUIRED', MEASURED_RATIO: 9 }));
+  prov('ACR-04', 'GE3_UNKNOWN kan bara fa matfaktumet NON_FAIL_IF_APPLICABLE',
+    s.CURRENT_RATIO_OUTCOME === AP.RATIO_UTFALL.NON_FAIL_IF_APPLICABLE &&
+    !/REQUIRED_PASS|SUPPLEMENTAL|NOT_APPLICABLE/.test(varden) && kastarPaDom &&
+    A.J_ge3.ALLA_NON_FAIL_IF_APPLICABLE === true &&
+    A.J_ge3.CURRENT_RATIO_OUTCOME === 'NON_FAIL_IF_APPLICABLE' && s.R04_CREDIT === 0,
+    'utfall ' + s.CURRENT_RATIO_OUTCOME + '; inga domord i objektet; kastar pa dom: ' +
+    kastarPaDom); }
+
+/* ── ACR-05 ─────────────────────────────────────────────────────────────── */
+{ const felmarkta = INV.filter(x => x.CURRENT_RATIO_OUTCOME !== 'POSSIBLE_FAIL_IF_REQUIRED' ||
+    x.CURRENT_APPLICABILITY !== 'UNKNOWN' || x.APPLICABILITY_STATUS !== 'APPLICABILITY_UNKNOWN');
+  const overGolvet = INV.filter(x => x.CURRENT_RATIO >= 3);
+  prov('ACR-05', 'LT3_UNKNOWN markt enbart POSSIBLE_FAIL_IF_REQUIRED fore adjudicering',
+    felmarkta.length === 0 && overGolvet.length === 0 &&
+    A.B_statusseparation.LT3_CURRENT_RATIO_OUTCOME === 'POSSIBLE_FAIL_IF_REQUIRED' &&
+    A.M_status.APPLICABILITY_RECORDS_WRITTEN === 0,
+    INV.length + ' poster, felmarkta ' + felmarkta.length + ', over golvet ' +
+    overGolvet.length + ', skrivna registerdomar ' + A.M_status.APPLICABILITY_RECORDS_WRITTEN); }
+
+/* ── ACR-06 ─────────────────────────────────────────────────────────────── */
+{ const avvisar = kastar(() => AP.grupperingsnyckel({ RAW_COLOUR: '#ccd1c2' }));
+  const perFarg = new Map();
+  for (const x of INV) { if (!perFarg.has(x.PART_PAINT)) perFarg.set(x.PART_PAINT, new Set());
+    perFarg.get(x.PART_PAINT).add(x.GROUP_ID); }
+  const fargSomSpannerFleraGrupper = [...perFarg.values()].filter(s => s.size > 1).length;
+  const enfargadeGrupper = GRP.filter(g => g.RAW_COLOUR_UNIFORM);
+  const IP = A.D_reviewGroups.GRUPPERINGSREGLER.ICKE_PROPAGERING;
+  prov('ACR-06', 'samma rafarg kan inte propagera dom',
+    avvisar && !AP.TILLATNA_GRUPPFAKTA.includes('RAW_COLOUR') &&
+    fargSomSpannerFleraGrupper > 0 && IP.PER_RAW_COLOUR.medFleraDomar > 0 &&
+    enfargadeGrupper.every(g => g.GROUP_VERDICT === null) &&
+    !Object.keys(INV[0].GROUPING_FACTS).some(k => AP.OTILLATNA_GRUPPFAKTA.includes(k)),
+    'nyckeln avvisar RAW_COLOUR: ' + avvisar + '; ' + fargSomSpannerFleraGrupper +
+    ' rafarger spanner over flera grupper i LT3; ' + IP.PER_RAW_COLOUR.medFleraDomar +
+    ' av ' + IP.PER_RAW_COLOUR.totalt + ' rafarger i hela populationen bar flera olika ' +
+    'domar; ' + enfargadeGrupper.length + ' enfargade grupper, alla utan dom'); }
+
+/* ── ACR-07 ─────────────────────────────────────────────────────────────── */
+{ const avvisar = kastar(() => AP.grupperingsnyckel({ CONTROL_ROLE_ALONE: 'button' }));
+  const avvisarTyp = kastar(() => AP.grupperingsnyckel({ CONTROL_TYPE_ALONE: 'checkbox' }));
+  const perRoll = new Map();
+  for (const x of INV) { if (!perRoll.has(x.CONTROL_ROLE)) perRoll.set(x.CONTROL_ROLE, new Set());
+    perRoll.get(x.CONTROL_ROLE).add(x.GROUP_ID); }
+  const rollSomSpanner = [...perRoll.values()].filter(s => s.size > 1).length;
+  const IP = A.D_reviewGroups.GRUPPERINGSREGLER.ICKE_PROPAGERING;
+  prov('ACR-07', 'samma control role eller control type kan inte propagera dom',
+    avvisar && avvisarTyp && rollSomSpanner > 0 &&
+    IP.PER_CONTROL_ROLE.medFleraDomar > 0 && IP.PER_PART_TYPE.medFleraDomar > 0 &&
+    GRP.every(g => g.GROUP_VERDICT === null),
+    'nyckeln avvisar roll och typ ensamma: ' + (avvisar && avvisarTyp) + '; ' +
+    rollSomSpanner + ' roller spanner over flera grupper; ' +
+    IP.PER_CONTROL_ROLE.medFleraDomar + ' av ' + IP.PER_CONTROL_ROLE.totalt +
+    ' roller och ' + IP.PER_PART_TYPE.medFleraDomar + ' av ' + IP.PER_PART_TYPE.totalt +
+    ' deltyper bar flera olika domar; alla ' + GRP.length + ' grupper utan dom'); }
+
+/* ── ACR-08 ─────────────────────────────────────────────────────────────── */
+{ const text = AP.provaCarrier({ typ: 'TEXT', SYNLIG_I_SCENEN: true, KANONISK_DEL: true, MATT: true });
+  const namn = AP.provaCarrier({ typ: 'ACCESSIBLE_NAME', SYNLIG_I_SCENEN: true });
+  const baraText = AP.forslag(bevis({ ALTERNATIVE_CARRIERS: [
+    { typ: 'TEXT', SYNLIG_I_SCENEN: true, KANONISK_DEL: true, MATT: true }] }));
+  const medText = PIL.filter(x => x.VISIBLE_TEXT_FACT === 'VISIBLE_TEXT_PRESENT');
+  const textSomCarrier = PIL.flatMap(x => x.ANVANDA_CARRIERS)
+    .filter(c => !/#(ram|ikon|bock|thumb|glyf|fyllning)#\d+$/.test(String(c)));
+  prov('ACR-08', 'synlig text kan inte propagera en supplemental-dom',
+    !text.godkand && !namn.godkand &&
+    baraText.FORSLAG === AP.FORSLAG.PROPOSED_UNKNOWN &&
+    medText.length > 0 && textSomCarrier.length === 0,
+    'text avvisad: ' + !text.godkand + '; enbart text ger ' + baraText.FORSLAG + '; ' +
+    medText.length + ' pilotposter har synlig text; ' + textSomCarrier.length +
+    ' icke-delbarare i ANVANDA_CARRIERS'); }
+
+/* ── ACR-09 ─────────────────────────────────────────────────────────────── */
+{ const d = AP.gruppdom({ GROUP_ID: 'RG-prov', OCCURRENCES: 9 });
+  prov('ACR-09', 'en review group skapar inga semantiska domar',
+    d.APPLICABILITY_VERDICT === null && d.GROUP_VERDICT === null &&
+    d.HUMAN_EQUIVALENCE_GATE === 'NOT_PASSED' &&
+    GRP.every(g => g.GROUP_VERDICT === null && g.HUMAN_EQUIVALENCE_GATE === 'NOT_PASSED') &&
+    A.D_reviewGroups.GRUPPER_MED_SEMANTISK_DOM === 0,
+    GRP.length + ' grupper, ' + A.D_reviewGroups.GRUPPER_MED_SEMANTISK_DOM +
+    ' med dom, ' + A.D_reviewGroups.SINGLETON_GROUPS + ' singletons'); }
+
+/* ── ACR-10 ─────────────────────────────────────────────────────────────── */
+{ const fullt = Object.fromEntries(AP.EKVIVALENSKRAV.map(k => [k, true]));
+  const utanKalla = AP.farFaGemensamDom({ ...fullt });
+  const maskinkalla = AP.farFaGemensamDom({ ...fullt, BESLUTSKALLA: 'GROUPING_ALGORITHM' });
+  const ettSaknas = AP.farFaGemensamDom({ ...fullt, BESLUTSKALLA: 'HUMAN_ACTUAL_SCENE_EVIDENCE',
+    'carrier responsibility': false });
+  const avvikande = AP.farFaGemensamDom({ ...fullt, BESLUTSKALLA: 'HUMAN_ACTUAL_SCENE_EVIDENCE',
+    avvikandeMedlemmar: ['x|3#ram#0'] });
+  const ok = AP.farFaGemensamDom({ ...fullt, BESLUTSKALLA: 'HUMAN_ACTUAL_SCENE_EVIDENCE' });
+  prov('ACR-10', 'ekvivalensgrinden kravs fore varje framtida gruppdom',
+    !utanKalla.tillatet && !maskinkalla.tillatet &&
+    !ettSaknas.tillatet && ettSaknas.atgard === 'SPLIT_GROUP' &&
+    !avvikande.tillatet && avvikande.atgard === 'SPLIT_GROUP' && ok.tillatet &&
+    A.E_ekvivalensgrind.GRUPPER_SOM_PASSERAT_GRINDEN === 0 &&
+    A.E_ekvivalensgrind.AUTOMATISK_VERDICT_PROPAGATION === 'FORBJUDEN' &&
+    A.E_ekvivalensgrind.KRAV.length === 5,
+    'utan kalla ' + utanKalla.tillatet + ', maskinkalla ' + maskinkalla.tillatet +
+    ', ett kriterium saknas ' + ettSaknas.tillatet + ', avvikande medlem ' +
+    avvikande.tillatet + ', fullt bevis ' + ok.tillatet + '; passerade grupper ' +
+    A.E_ekvivalensgrind.GRUPPER_SOM_PASSERAT_GRINDEN); }
+
+/* ── ACR-11 ─────────────────────────────────────────────────────────────── */
+{ const g = A.G_probe;
+  const rorda = PROBE.filter(x => x.GEOMETRY_DELTA !== 0 || x.CLIPPING_DELTA !== 0);
+  const iso = g.isoleringsbevis;
+  prov('ACR-11', 'den kontrafaktiska sonden andrar 0 geometri',
+    g.GEOMETRY_DELTA_TOTALT === 0 && g.CLIPPING_DELTA_TOTALT === 0 &&
+    rorda.length === 0 && PROBE.length === A.F_pilot.PILOT_OCCURRENCES &&
+    g.COLLATERAL_PAINT_DELTA_TOTALT === 0 &&
+    iso.length > 0 && iso.every(x => x.ISOLERING_PAVERKAR_INTE_ARTEFAKTEN) &&
+    PROBE.every(x => x.JAMFORDA_ELEMENT > 0),
+    PROBE.length + ' sonder, geometri ' + g.GEOMETRY_DELTA_TOTALT + ', klipp ' +
+    g.CLIPPING_DELTA_TOTALT + ', kollateral ' + g.COLLATERAL_PAINT_DELTA_TOTALT +
+    ', isoleringsbevis ' + iso.length); }
+
+/* ── ACR-12 ─────────────────────────────────────────────────────────────── */
+{ let d = '', fel = null;
+  try { d = execFileSync('git', ['status','--porcelain'], { cwd: resolve('.'), encoding: 'utf8' }); }
+  catch (e) { fel = e.message; }
+  const produkt = d.split('\n').map(x => x.slice(3).replace(/^"|"$/g,''))
+    .filter(f => f.endsWith('.dc.html'));
+  prov('ACR-12', 'sonden lamnar kallan bitidentisk',
+    !fel && produkt.length === 0 && A.G_probe.SOURCE_BIT_IDENTICAL === true &&
+    A.G_probe.PERMANENT_WRITES === 0 && A.G_probe.ALLA_ATERSTALLDA === true &&
+    A.G_probe.RESTORATION_DELTA_TOTALT === 0,
+    (fel || produkt.length + ' andrade produktfiler') + '; bitidentisk ' +
+    A.G_probe.SOURCE_BIT_IDENTICAL + '; aterstallningsdelta ' +
+    A.G_probe.RESTORATION_DELTA_TOTALT); }
+
+/* ── ACR-13 ─────────────────────────────────────────────────────────────── */
+{ const utanKanon = AP.provaCarrier({ typ: 'BOUNDARY', OMFATTAS_AV_1_4_11: true,
+    KANONISK_DEL: false, MATT: false, SYNLIG_I_SCENEN: true });
+  const f = AP.forslag(bevis({ ALTERNATIVE_CARRIERS: [{ typ: 'BOUNDARY',
+    OMFATTAS_AV_1_4_11: true, KANONISK_DEL: false, MATT: false, SYNLIG_I_SCENEN: true }] }));
+  const supplemental = PIL.filter(x => x.PROPOSED_VERDICT === AP.FORSLAG.PROPOSED_SUPPLEMENTAL_NOT_REQUIRED);
+  const alltKanoniskt = supplemental.every(x => x.ANVANDA_CARRIERS.length > 0 &&
+    x.ANVANDA_CARRIERS.every(pid => { const c = x.ALTERNATIVE_CARRIERS.find(y => y.PART_ID === pid);
+      return c && c.KANONISK_DEL && c.MATT && c.SYNLIG_I_SCENEN; }));
+  prov('ACR-13', 'alternativ barare maste finnas i den kanoniska matningen',
+    utanKanon.MEASUREMENT_GAP === true && !utanKanon.godkand &&
+    f.FORSLAG === AP.FORSLAG.PROPOSED_UNKNOWN && f.MEASUREMENT_GAP === true &&
+    alltKanoniskt && A.I_carriers.ALLA_CARRIERS_KANONISKA === true &&
+    A.H_forslag.MEASUREMENT_GAP_ANTAL === A.I_carriers.MEASUREMENT_GAP.length,
+    'omatt barare ger MEASUREMENT_GAP och ' + f.FORSLAG + '; ' + supplemental.length +
+    ' supplemental-forslag, alla med kanonisk matt barare: ' + alltKanoniskt); }
+
+/* ── ACR-14 ─────────────────────────────────────────────────────────────── */
+{ let d = '', fel = null;
+  try { d = execFileSync('git', ['status','--porcelain'], { cwd: resolve('.'), encoding: 'utf8' }); }
+  catch (e) { fel = e.message; }
+  const produkt = d.split('\n').map(x => x.slice(3).replace(/^"|"$/g,''))
+    .filter(f => f.endsWith('.dc.html'));
+  const L = A.L_regression;
+  prov('ACR-14', 'ingen produkt-, farg- eller R-04-skrivning sker',
+    !fel && produkt.length === 0 && L.PRODUCT_WRITES === 0 && L.COLOR_WRITES === 0 &&
+    L.R04_WRITES === 0 && L.R04_CREDIT === 0 && A.$produktfilerOrorda === true &&
+    A.M_status.APPLICABILITY_RECORDS_WRITTEN === 0 &&
+    PIL.every(x => x.APPLICABILITY_RECORD_WRITTEN === false && x.R04_CREDIT === 0) &&
+    AP.farSkrivasSomRegisterdom() === false,
+    (fel || produkt.length + ' andrade produktfiler') + '; produktskrivningar ' +
+    L.PRODUCT_WRITES + ', fargskrivningar ' + L.COLOR_WRITES + ', R-04 ' + L.R04_WRITES +
+    '/' + L.R04_CREDIT); }
+
+/* ── ACR-15 ─────────────────────────────────────────────────────────────── */
+{ const utanfor = AP.forslag(bevis({ STATE_UNDER_TEST: 'STATE_OUT_OF_SCOPE' }));
+  const flaggade = INV.filter(x => x.STATE_UNDER_TEST === 'STATE_OUT_OF_SCOPE');
+  const borde = INV.filter(x => x.STATE && /^(disabled|pressed|focus)/.test(x.STATE));
+  prov('ACR-15', 'pressed, inactive och focus far ingen credit',
+    utanfor.FORSLAG === AP.FORSLAG.PROPOSED_UNKNOWN && utanfor.R04_CREDIT === 0 &&
+    flaggade.length === borde.length && borde.length > 0 &&
+    A.F_pilot.STATE_OUT_OF_SCOPE === 0 &&
+    !PIL.some(x => x.STATE && /^(disabled|pressed|focus)/.test(x.STATE)) &&
+    A.M_status.PRESSED === 'UNTESTED' && A.M_status.INACTIVE === 'UNTESTED' &&
+    A.M_status.FOCUS === 'UNTESTED',
+    'utanfor scope ger ' + utanfor.FORSLAG + '; ' + flaggade.length +
+    ' flaggade av ' + borde.length + ' i inventeringen; i piloten ' +
+    A.F_pilot.STATE_OUT_OF_SCOPE); }
+
+const ANTAL = 15;
+for (const r of resultat) {
+  console.log((r.ok ? '✔ ' : '✖ ') + r.id.padEnd(9) + r.vad);
+  console.log('     ' + r.diag); }
+const godkanda = resultat.filter(r => r.ok).length;
+const status = godkanda === ANTAL && resultat.length === ANTAL ? 'godkand' : 'FALLD';
+writeFileSync(join(outAbs, 'lagkontrastprov.json'), JSON.stringify({
+  $schema: 'butlery-lagkontrastprov/1', kontroll: 'CHK-ACR-01',
+  godkanda, total: ANTAL, status, prov: resultat }, null, 1) + '\n');
+console.log('LAGKONTRASTPROV status=' + status + ' godkanda=' + godkanda + ' av ' + ANTAL);
+process.exit(status === 'godkand' ? 0 : 1);
