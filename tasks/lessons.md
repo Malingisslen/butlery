@@ -1487,3 +1487,68 @@ reported back; a worker that produced nothing reports nothing, and the absence l
 to "not selected". A completeness sweep must therefore start from the SELECTION list in
 `tasks/todo.md` and prove an outcome for each entry, rather than enumerating the outcomes the
 run happened to hand it.
+
+---
+
+## A content-addressed gate is the only kind that converges (BUT-1801 salvage, 2026-08-17)
+
+Eight review gates, six rounds, ~15 specialist passes over one 42-file commit. Every round
+found real defects and every round found FEWER. What made it terminate is that the gate
+measures BYTES, not claims: a PostToolUse hook records which reviewer opened which file and
+the verdict its run ended on, content-addressed, so any edit after a review silently
+un-proves the file it touched. I could not talk my way past it, and neither could a reviewer
+— one passed while only *reasoning* about a file it never opened with Read, and the gate held
+until it did.
+
+The distribution of what the loop caught is the finding:
+
+* **Zero logic defects in my own fixes.** Not one round found the code wrong.
+* **Eight false SENTENCES from me.** A comment citing a rules line number that had already
+  drifted; "all three `FirestoreCollections.recipes` sites" when there are five; "300 lines
+  down" for 159; "the suite stays 32/32" for a 33-test suite; "no code writes that array any
+  more" about an array still emitted (empty); a justification citing an error path that
+  cannot occur; a comment describing the pre-BUT-1721 truncation walk and concluding a live
+  line was inert; and "formatting only" said to a REVIEWER about a file carrying a whole
+  document-id scheme change, which I had not opened.
+* **Four tests that could not fail.** Two proved vacuous by mutation probe (one of them my
+  own first attempt at closing a gap the reviewer had just named), one whose two halves were
+  the same observable, one whose branch the test fake could not stage at all.
+* **One real bug nobody was looking for**, found only because a reviewer read the whole file:
+  poll hydration capped from the HEAD of an oldest-first list, so the polls it dropped were
+  the ones on screen, rendering "0 röster" over real votes.
+
+So the loop is expensive and it is not optional. The cheap-looking alternative — trusting a
+verdict rather than the bytes — is exactly how the batch being salvaged reached "six
+specialist reviewers passed" over files none of them had opened.
+
+### The corollaries worth carrying
+
+**A verifier's FAIL is a hypothesis, and can be right for the wrong reason.** BUT-1801's
+verifier failed the batch saying "only 1 of the 6 named sites was fixed". Three of the six
+were already correct at HEAD — the ticket was stale — and the Art. 17 site it named was not
+broken at all. But one layer down there WAS a defect neither the ticket nor the verifier
+named: `probeResidualData` counted recipes on a path where documents cannot exist, so the
+post-erasure residual check returned zero on every deletion without ever looking at a recipe.
+Re-derive the verdict; do not implement it and do not dismiss it.
+
+**"No client can write it" is not "nothing can be there."** I deleted a top-level read from
+the deletion cascade as provably dead, citing an admin-only read-only rule. The Admin SDK
+needs no rule, and a registered integration test plants a document there precisely to prove
+the cascade sweeps it. Reverted. Before deleting a defensive read, grep `__tests__` — the
+fixture is both the counterexample and the alarm.
+
+**An error handler returning an EMPTY collection is fail-CLOSED.** The live poll-vote stream
+mapped an error to an empty tally, which is *present* in the map, so the merge ran and blanked
+every stored vote — under a comment claiming the same fail-open contract as its sibling, which
+leaves the id OUT of its map. Only a null/absent marker is fail-open. Same shape as a probe
+that reads an empty collection and reports "clean".
+
+**A cosmetic edit is still a code change.** A test rename in the last minutes, after eight
+gates had passed, put an apostrophe inside a single-quoted Dart string and stopped the file
+compiling. Analyze the file you EDITED, not its neighbours — the suite passed in isolation and
+only failed when run beside its sibling.
+
+**Ask what goes unguarded when a test is deleted.** Removing a probe correctly removed five
+tests for it, and with them the section's only assertion that its truncation flag can be
+ABSENT — so an unconditional flag would have told every data subject their export was clipped
+when it was complete. The deletion was right; the missing replacement was not.

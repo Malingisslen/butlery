@@ -1,3 +1,40 @@
+# SALVAGE 2026-08-17 — DONE. Shipped as `a329de0f5`, pushed as `2d021a4dc`.
+
+All six tickets shipped in one commit, 42 files. BUT-1832, BUT-1835, BUT-1833, BUT-1801 and
+BUT-1812 are closed in Linear with commit references; BUT-1792 is In Review and `need-malin`,
+because two of its acceptance criteria (a `gcloud firestore fields ttls list` showing ACTIVE,
+and a document count before deploy) can only be met by the deploy itself.
+
+**Acceptance criteria, graded:**
+
+1. ✅ No top-level `recipes` read remains in the cascade *as the sole path* — but note the plan
+   got this WRONG. It said to delete the read from `deleteRecipes`; that was reverted after
+   `cloud-functions-specialist` showed a registered integration test plants a document there
+   through the Admin SDK, which needs no rule. The genuine defect was the one the plan found
+   in step 0: `probeResidualData` reading the same impossible path.
+2. ✅ The residual probe reddens when a recipe is left behind — mutation-proved, and the same
+   was done for two poll residues found during review.
+3. ✅ `npx tsc --noEmit` clean; deletion cascade 114/114; poll-votes rules 33/33; TTL 15/15;
+   account-deletion integration 61/61.
+4. ✅ `dart analyze --fatal-infos` clean on all 18 changed Dart files.
+5. ✅ Every gated file named in a review that actually opened it — enforced by the ledger, not
+   by assertion. Eight gates, six rounds.
+
+**Step 3 was the whole job.** The plan called re-review non-optional and it earned that: the
+loop found zero logic defects in the fix and eight false sentences in my prose, four tests that
+could not fail, and one real bug nobody was looking for (poll hydration capped from the wrong
+end of an oldest-first list). Full account in `tasks/lessons.md`.
+
+**Scope grew, deliberately and recorded:** the poll-creator scrub gained a cap (it was
+attacker-sized, not self-bounded), its NOT_FOUND tolerance gained a test seam, the live vote
+stream was changed from fail-closed to fail-open, and two deviations were recorded in Malin's
+name after she was shown the harm bound.
+
+**Still open, as the plan said it would be:** the nine tickets three sprint agents never built,
+and the BUT-1780 rebuild. Neither had code in the tree; both are a separate run.
+
+---
+
 # SALVAGE 2026-08-17 — finish BUT-1801, re-review the held batch, ship the five that passed
 
 **Approved by Malin, 2026-08-17: "rädda och arbeta enligt din plan."** She was shown the
