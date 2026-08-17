@@ -1164,7 +1164,165 @@ prov('ACR-62', 'varje redundansset ar maskinlasbart och stodjer tre members',
     (fel || produkt.length + ' andrade produktfiler') + '; ' + M2.HIT_TARGETS + ', ' +
     M2.GRAPHICAL_PARTS + ' delar, KNOWN_REQUIRED_FAIL ' + M2.KNOWN_REQUIRED_FAIL); }
 
-const ANTAL = 71;
+/* ═══ DIRECT-147 REGISTRERAD · ACR-72 … ACR-86 ════════════════════════════
+ * De forsta verkliga bristerna namnges har. Proven laser att de kommer ur
+ * scenfragan och inte ur kvoten, att den strukturella klassen aldrig blir en
+ * automatisk regel, och att state-deferred inte atercirkulerar. */
+const R6 = JSON.parse(readFileSync(resolve('fas2/lagkontrast-register-direct147.json'), 'utf8'));
+const PL = JSON.parse(readFileSync(resolve('fas2/lagkontrast-planerare-190.json'), 'utf8'));
+const R6REC = R6.I_records, R6REQ = R6.A_required.records, R6SUP = R6.D_supplemental.records,
+      R6DEF = R6.F_deferred.records;
+
+prov('ACR-72', '147 = 87 REQUIRED + 58 SUPPLEMENTAL + 2 DEFERRED',
+  R6REC.length === 147 && R6REQ.length === 87 && R6SUP.length === 58 && R6DEF.length === 2 &&
+  new Set(R6REC.map(x => x.RELATION_ID)).size === 147 &&
+  R6.G_rubrikrattelse.NORMATIV_TOTAL.SUMMA === 147 && R6.H_grindar.every(g => g.ok),
+  R6REQ.length + ' + ' + R6SUP.length + ' + ' + R6DEF.length + ' = ' + R6REC.length);
+
+prov('ACR-73', 'REQUIRED bestar av 12 ytor och 75 fyrsidiga rutor',
+  R6.A_required.YTA_SOM_ENDA_SYNLIGA_GRAFIK === 12 &&
+  R6.A_required.FYRSIDIG_RUTA_SOM_ENDA_SYNLIGA_GRAFIK === 75 &&
+  R6REQ.filter(x => x.STRUKTURELL_KLASS === 'SOLE_FILL').length === 12 &&
+  R6REQ.filter(x => x.STRUKTURELL_KLASS === 'SOLE_BOX').length === 75,
+  '12 + 75 = ' + R6REQ.length);
+
+prov('ACR-74', 'SUPPLEMENTAL bestar av 53 ytor och 5 ensidiga avskiljare',
+  R6.D_supplemental.YTA_MED_KVARVARANDE_KONTROLLRUTA === 53 &&
+  R6.D_supplemental.ENSIDIG_RADAVSKILJARE === 5 &&
+  R6SUP.filter(x => x.STRUKTURELL_KLASS === 'FILL_WITH_VISIBLE_BOX').length === 53 &&
+  R6SUP.filter(x => x.STRUKTURELL_KLASS === 'ROW_SEPARATOR').length === 5,
+  '53 + 5 = ' + R6SUP.length);
+
+prov('ACR-75', 'de tva state-fallen ar UNKNOWN och uppskjutna, inte ogranskade',
+  R6DEF.every(x => x.APPLICABILITY_VERDICT === 'UNKNOWN' &&
+    x.REVIEW_STATUS === AP.REVIEW_STATUS.DEFERRED_STATE_OUT_OF_SCOPE &&
+    x.CURRENT_OUTCOME === 'UNKNOWN' && x.PASS_FAIL_CREDIT === 0 &&
+    x.STATE_SCOPE === AP.STATE_SCOPE.INACTIVE &&
+    typeof x.STATE_PROVENANS === 'string' && typeof x.$ejOgranskad === 'string') &&
+  R6.F_deferred.STATE_SCOPE.length === 1 &&
+  R6.F_deferred.STATE_SCOPE[0] === AP.STATE_SCOPE.INACTIVE &&
+  typeof R6.F_deferred.$rattelse === 'string',
+  'bada ar ' + R6.F_deferred.STATE_SCOPE.join(',') + ' — ingen ar ett nedtryckt lage');
+
+prov('ACR-76', 'kvoten skapar aldrig requiredness',
+  R6REQ.every(x => x.REQUIREDNESS_PROVENANCE.startsWith('COUNTERFACTUAL_ACTUAL_SCENE_REVIEW') &&
+    /FORST efter domen/.test(x.RATIO_ROLE)) &&
+  R6.B_provenians.RATIO_SKAPAR_ALDRIG_REQUIRED === true &&
+  R6.B_provenians.SVAR_FOR_DE_87 === 'NO' &&
+  kastar(() => AP.forslag({ COUNTERFACTUAL_KORD: true, MEASURED_RATIO: 1.41 })) &&
+  R6SUP.some(x => x.CURRENT_RATIO < 3),
+  'alla 87 har scen-proveniens; supplemental finns ocksa under 3.0');
+
+prov('ACR-77', 'den strukturella klassen ar aldrig en automatisk verdict-regel',
+  R6.C_strukturellKlass.AR_INTE_VERDICT_REGEL === true &&
+  R6.C_strukturellKlass.FORBJUDNA_REGLER.includes('FOUR_SIDED_BOUNDARY => REQUIRED') &&
+  R6.C_strukturellKlass.FORBJUDNA_REGLER.includes('ONE_SIDED_DIVIDER => SUPPLEMENTAL') &&
+  R6REC.every(x => x.DOES_NOT_IMPLY.includes('STRUCTURAL_CLASS_RULE') &&
+    typeof x.STRUKTURELL_KLASS_AR_INTE_REGEL === 'string'),
+  'alla ' + R6REC.length + ' record avvisar klassregeln');
+
+prov('ACR-78', 'REQUIRED under kravet ger exakt 87 REQUIRED_FAIL',
+  R6.A_required.REQUIRED_FAIL === 87 && R6.A_required.REQUIRED_PASS === 0 &&
+  R6REQ.every(x => x.CURRENT_RATIO < 3 && x.CURRENT_OUTCOME === 'REQUIRED_FAIL') &&
+  R6.A_required.KNOWN_REQUIRED_FAIL_FORE === 0 &&
+  R6.A_required.KNOWN_REQUIRED_FAIL_EFTER === 87 &&
+  PL.H_rekonciliation.EFTER.KNOWN_REQUIRED_FAIL === 87,
+  '87 REQUIRED_FAIL, hogsta kvot ' + Math.max(...R6REQ.map(x => x.CURRENT_RATIO)));
+
+prov('ACR-79', 'en supplemental-dom skapar ingen requiredness pa ett syskon',
+  R6SUP.every(x => x.DOES_NOT_IMPLY.includes('SIBLING_REQUIRED') &&
+    x.DOES_NOT_IMPLY.includes('CONTROL_CONFORMING') &&
+    x.OTHER_CARRIERS_UNCHANGED.every(c => !c.CHANGED_BY_THIS_RECORD &&
+      c.APPLICABILITY_BEFORE === c.APPLICABILITY_AFTER)) &&
+  typeof R6.D_supplemental.$ejFranSyskon === 'string' &&
+  AP.harleddDom('SIBLING_REQUIRED','TARGET_SUPPLEMENTAL').tillatet === false,
+  'alla ' + R6SUP.length + ' lamnar syskonen oforandrade');
+
+prov('ACR-80', 'inga nya redundansset behovdes och alla 44 haller',
+  R6.E_redundansset.NEW_REDUNDANCY_SETS === 0 &&
+  R6.E_redundansset.NYA_BEROENDEN_UPPTACKTA === 0 &&
+  R6.E_redundansset.AKTIVA === 44 && R6.E_redundansset.ALLA_HOLLER === true &&
+  R6.E_redundansset.set.every(s => s.CURRENT_VALIDITY === 'HOLDS' &&
+    s.JOINTLY_REMOVABLE === false),
+  R6.E_redundansset.AKTIVA + ' aktiva set, alla HOLDS, ' +
+  R6.E_redundansset.NEW_REDUNDANCY_SETS + ' nya');
+
+prov('ACR-81', 'UNKNOWN rekoncilierar exakt och kon delas i tre spar',
+  PL.H_rekonciliation.FORE.UNKNOWN_APPLICABILITY === 1526 &&
+  PL.H_rekonciliation.EFTER.UNKNOWN_APPLICABILITY === 1381 &&
+  PL.H_rekonciliation.FORE.LT3_UNKNOWN === 335 &&
+  PL.H_rekonciliation.EFTER.LT3_UNKNOWN === 190 &&
+  PL.H_rekonciliation.EFTER.GE3_UNKNOWN === 1191 &&
+  PL.H_rekonciliation.EFTER.REVIEWED_UNKNOWN === 12 &&
+  PL.H_rekonciliation.EFTER.DEFERRED_STATE_OUT_OF_SCOPE === 2 &&
+  PL.H_rekonciliation.EFTER.UNREVIEWED === 176 &&
+  PL.H_rekonciliation.ANDRADE_UTANFOR.length === 0 &&
+  PL.H_rekonciliation.SLUTER === true,
+  '1526 -> 1381, LT3 335 -> 190 = 12 + 2 + 176');
+
+prov('ACR-82', 'kon ar omraknad och state-deferred halls utanfor',
+  PL.L_planner.LT3_UNKNOWN === 190 && PL.L_planner.SPAR_SUMMERAR === true &&
+  PL.L_planner.SPAR.DEFERRED_STATE_OUT_OF_SCOPE === 2 &&
+  PL.L_planner.STATISKA_I_KON === 188 &&
+  PL.L_planner.PARTITION_SUMMERAR === true &&
+  PL.L_planner.rader.filter(x => x.SPAR === 'DEFERRED_STATE_OUT_OF_SCOPE')
+    .every(x => !PL.M_frontier.poster.some(f => f.BLOCKERAR.includes(x.TARGET_RELATION_ID))) &&
+  AP.farIngaIStatiskKo({ APPLICABILITY_VERDICT: 'UNKNOWN',
+    REVIEW_STATUS: AP.REVIEW_STATUS.DEFERRED_STATE_OUT_OF_SCOPE }) === false &&
+  AP.STATE_ATEROPPNINGSSKAL.length === 2,
+  PL.L_planner.STATISKA_I_KON + ' statiska av ' + PL.L_planner.LT3_UNKNOWN);
+
+prov('ACR-83', 'blocker-frontiern ar harledd pa nytt utan extrapolering',
+  PL.M_frontier.UNIQUE_BLOCKERS > 0 &&
+  PL.M_frontier.LT3_BLOCKERS + PL.M_frontier.GE3_BLOCKERS === PL.M_frontier.UNIQUE_BLOCKERS &&
+  PL.M_frontier.NEW_BLOCKERS + PL.M_frontier.ATERKOMMANDE_FRAN_DE_66 === PL.M_frontier.UNIQUE_BLOCKERS &&
+  PL.M_frontier.poster.every(f => f.UNLOCK_COUNT === f.BLOCKERAR.length &&
+    f.APPLICABILITY === 'UNKNOWN') &&
+  typeof PL.M_frontier.$ingenDom === 'string',
+  PL.M_frontier.UNIQUE_BLOCKERS + ' unika, ' + PL.M_frontier.LT3_BLOCKERS + ' LT3 / ' +
+  PL.M_frontier.GE3_BLOCKERS + ' GE3');
+
+prov('ACR-84', 'nasta batch ar presentation utan domar',
+  PL.N_nastaBatch.GROUP_VERDICT === 0 && PL.N_nastaBatch.AUTOMATIC_EQUIVALENCE === 0 &&
+  PL.N_nastaBatch.VERDICT_PROPAGATION === 0 &&
+  PL.N_nastaBatch.ROLL === 'PRESENTATION_OCH_REVIEW' &&
+  PL.N_nastaBatch.poster.every(x => x.APPLICABILITY === 'UNKNOWN') &&
+  typeof PL.N_nastaBatch.$gemensamma === 'string' &&
+  PL.N_nastaBatch.MULTIPLE_BLOCKER_TARGETS >= PL.N_nastaBatch.MULTIPLE_BLOCKER_TARGETS_HELT_I_BATCHEN,
+  PL.N_nastaBatch.BATCH_STORLEK + ' blockerare tacker ' + PL.N_nastaBatch.TACKTA_TARGETS +
+  ' targets');
+
+prov('ACR-85', 'censusen for de 87 ar read-only utan remedieringsidentitet',
+  PL.O_census.ANTAL === 87 && PL.O_census.TYP === 'READ_ONLY_CENSUS' &&
+  PL.O_census.INGA_REMEDIATION_DECISION_UNITS === true &&
+  PL.O_census.INGA_FARGFORSLAG === true && PL.O_census.INGA_PREVIEWS === true &&
+  PL.O_census.INGA_PRODUKTWRITES === true &&
+  typeof PL.O_census.$regel === 'string' &&
+  PL.O_census.poster.length === 87 &&
+  PL.O_census.poster.every(x => x.RAW_PAINT && x.ADJACENT_SURFACE && x.SOURCE_ANCHOR) &&
+  PL.K_ingenRemediering.STOPPAD === true &&
+  PL.K_ingenRemediering.DE_87_AR.includes('LAST FAILURE INVENTORY'),
+  PL.O_census.ANTAL + ' poster, ' + PL.O_census.DELADE_KALLDEKLARATIONER +
+  ' delade kalldeklarationer');
+
+{ let d = '', fel = null;
+  try { d = execFileSync('git', ['status','--porcelain'], { cwd: resolve('.'), encoding: 'utf8' }); }
+  catch (e) { fel = e.message; }
+  const produkt = d.split('\n').map(x => x.slice(3).replace(/^"|"$/g,''))
+    .filter(f => f.endsWith('.dc.html'));
+  const J2 = PL.J_regression;
+  prov('ACR-86', 'produkten ar bitidentisk och inga skrivningar har skett',
+    !fel && produkt.length === 0 && J2.PRODUCT_WRITES === 0 && J2.COLOR_WRITES === 0 &&
+    J2.R04_WRITES === 0 && J2.R04_CREDIT === 0 && J2.PRODUKTBASELINE_BITIDENTISK === true &&
+    J2.R02_PASS === 1375 && J2.GRAPHICAL_PARTS === 1879 && J2.BOUNDARIES === 689 &&
+    J2.PAINTED_CONTROL_SURFACES === 420 && J2.STANDALONE_GRAPHICS === 32 &&
+    J2.R01_FINDINGS === 0 && J2.KNOWN_REQUIRED_FAIL === 87 &&
+    J2.CURRENT_NON_TEXT_CONTRAST === 'OPEN · KNOWN FAILURES PRESENT' &&
+    R6.$produktfilerOrorda === true && PL.$produktfilerOrorda === true,
+    (fel || produkt.length + ' andrade produktfiler') + '; ' + J2.HIT_TARGETS +
+    ', KNOWN_REQUIRED_FAIL ' + J2.KNOWN_REQUIRED_FAIL); }
+
+const ANTAL = 86;
 for (const r of resultat) {
   console.log((r.ok ? '✔ ' : '✖ ') + r.id.padEnd(9) + r.vad);
   console.log('     ' + r.diag); }

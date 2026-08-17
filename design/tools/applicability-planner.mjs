@@ -258,7 +258,36 @@ export function malstatusRecord(indata) {
 
 export const REVIEW_STATUS = Object.freeze({
   UNREVIEWED_UNKNOWN: 'UNREVIEWED_UNKNOWN',
-  REVIEWED_UNKNOWN: 'REVIEWED_UNKNOWN' });
+  REVIEWED_UNKNOWN: 'REVIEWED_UNKNOWN',
+  /* Identifierad, granskad sa langt scopet racker, men delens tillstand
+   * ligger utanfor det tillstandsspar som ar provat. Inte ogranskad. */
+  DEFERRED_STATE_OUT_OF_SCOPE: 'DEFERRED_STATE_OUT_OF_SCOPE' });
+
+export const STATE_SCOPE = Object.freeze({
+  STATIC_DEFAULT: 'STATIC_DEFAULT',
+  PRESSED: 'PRESSED', INACTIVE: 'INACTIVE', FOCUS: 'FOCUS' });
+
+/* Vilket tillstandsspar en forekomst hor till. Harleds ur det deklarerade
+ * tillstandet, aldrig ur kvot eller utseende. */
+export function stateScope(state) {
+  const s = String(state || '').toLowerCase();
+  if (/^disabled|inaktiv|avst[aä]ngd/.test(s)) return STATE_SCOPE.INACTIVE;
+  if (/^pressed|nedtryckt/.test(s)) return STATE_SCOPE.PRESSED;
+  if (/^focus/.test(s)) return STATE_SCOPE.FOCUS;
+  return STATE_SCOPE.STATIC_DEFAULT;
+}
+
+/* En state-deferred post far inte atercirkulera i den mekaniska
+ * static/default-kon. Den oppnas nar tillstandssparet omfattar just det
+ * tillstandet, eller vid explicit mansklig re-review. */
+export function farIngaIStatiskKo(record) {
+  if (!record) return false;
+  if (record.REVIEW_STATUS === REVIEW_STATUS.DEFERRED_STATE_OUT_OF_SCOPE) return false;
+  return farIngaIMekaniskPilot(record);
+}
+export const STATE_ATEROPPNINGSSKAL = Object.freeze([
+  'STATE_TRACK_NOW_COVERS_THIS_STATE',
+  'EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION' ]);
 
 export const BLOCKERKLASS = Object.freeze({
   ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED:
