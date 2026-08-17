@@ -247,6 +247,89 @@ export function malstatusRecord(indata) {
       'ingenting om nagon annan barares tillamplighet eller konformans.' };
 }
 
+/* ── 7 · REVIEW STATUS · granskad utan dom ar inte ogranskad ────────────── */
+//
+// FELKLASSEN DEN HAR SKILLNADEN FINNS FOR
+// En forekomst som har granskats occurrence for occurrence, fatt en
+// kontrafaktisk sond och en identifierad blockerare ar INTE i samma lage som
+// en forekomst ingen har tittat pa. Utan skillnaden hamnar de granskade i
+// varje ny "lagsta kvot forst"-pilot om och om igen, och kon ser aldrig ut
+// att krympa.
+
+export const REVIEW_STATUS = Object.freeze({
+  UNREVIEWED_UNKNOWN: 'UNREVIEWED_UNKNOWN',
+  REVIEWED_UNKNOWN: 'REVIEWED_UNKNOWN' });
+
+export const BLOCKERKLASS = Object.freeze({
+  ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED:
+    'ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED',
+  ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED:
+    'ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED',
+  STATE_SIGNAL_REDUNDANCY_NOT_ADJUDICATED:
+    'STATE_SIGNAL_REDUNDANCY_NOT_ADJUDICATED' });
+
+export const ATEROPPNINGSSKAL = Object.freeze([
+  'NEW_ACTUAL_EVIDENCE',
+  'BLOCKING_CARRIER_ADJUDICATED',
+  'OTHER_DEPENDENCY_RESOLVED',
+  'EXPLICIT_HUMAN_RE_REVIEW_AUTHORIZATION' ]);
+
+/* Blockerklassen harleds ur forekomstens EGNA maskinfakta, aldrig ur en
+ * grannes dom. */
+export function blockerklass(fakta) {
+  const barare = fakta.ALTERNATIVE_CARRIERS || [];
+  if (!barare.length) return BLOCKERKLASS.ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED;
+  if (fakta.EXPLICIT_STATE && barare.length >= 1 &&
+      barare.every(c => c.APPLICABILITY === 'UNKNOWN'))
+    return BLOCKERKLASS.STATE_SIGNAL_REDUNDANCY_NOT_ADJUDICATED;
+  if (barare.every(c => c.APPLICABILITY === 'UNKNOWN' && typeof c.kvot === 'number' && c.kvot < 3))
+    return BLOCKERKLASS.ALTERNATIVE_CARRIER_ITSELF_LOW_CONTRAST_AND_UNADJUDICATED;
+  return BLOCKERKLASS.ALTERNATIVE_CARRIER_SUFFICIENCY_NOT_ESTABLISHED;
+}
+
+/* En granskad-utan-dom-record. Tillampligheten forblir UNKNOWN. */
+export function reviewedUnknownRecord(indata) {
+  if (indata.HUMAN_APPROVED !== true)
+    return { REGISTRERBAR: false, skal: 'ingen mansklig occurrence-approval' };
+  if (!indata.COUNTERFACTUAL_KORD)
+    return { REGISTRERBAR: false, skal: 'ingen kontrafaktisk sond mot faktisk scen' };
+  return { REGISTRERBAR: true,
+    APPLICABILITY_VERDICT: 'UNKNOWN',
+    REVIEW_STATUS: REVIEW_STATUS.REVIEWED_UNKNOWN,
+    BLOCKER: blockerklass(indata),
+    REOPEN_REQUIRES_ANY_OF: ATEROPPNINGSSKAL,
+    ELIGIBLE_FOR_MECHANICAL_PILOT: false,
+    R04_CREDIT: 0,
+    $intePropagerat: 'Att en blockerande barare star UNKNOWN gor inte malet REQUIRED. Att ' +
+      'malet syns gor det inte REQUIRED. Att malet ar en av flera tillstandssignaler gor det ' +
+      'varken REQUIRED eller SUPPLEMENTAL. Kvoten avgor ingenting.' };
+}
+
+/* Far forekomsten ingaa i en mekanisk lagsta-kvot-pilot? */
+export function farIngaIMekaniskPilot(record) {
+  if (!record || record.APPLICABILITY_VERDICT !== 'UNKNOWN') return false;
+  if (record.REVIEW_STATUS !== REVIEW_STATUS.REVIEWED_UNKNOWN) return true;
+  return false;
+}
+
+/* Far en granskad-utan-dom oppnas igen? */
+export function farAterOppnas(record, utlosare) {
+  if (!record || record.REVIEW_STATUS !== REVIEW_STATUS.REVIEWED_UNKNOWN)
+    return { tillatet: true, skal: 'posten ar inte REVIEWED_UNKNOWN' };
+  if (!utlosare || !ATEROPPNINGSSKAL.includes(utlosare.SKAL))
+    return { tillatet: false, skal: 'REVIEWED_UNKNOWN aterocirkulerar inte enbart for att ' +
+      'tillampligheten fortfarande ar UNKNOWN', kravs: ATEROPPNINGSSKAL };
+  if (utlosare.SKAL === 'BLOCKING_CARRIER_ADJUDICATED') {
+    const kvar = (record.BLOCKING_CARRIERS || []).filter(c =>
+      !(utlosare.ADJUDICERADE || []).includes(c.PART_ID));
+    if (kvar.length === (record.BLOCKING_CARRIERS || []).length)
+      return { tillatet: false, skal: 'ingen av forekomstens egna blockerande barare har ' +
+        'adjudicerats', kvar: kvar.map(c => c.PART_ID) };
+    return { tillatet: true, skal: 'blockerande barare adjudicerad',
+      kvarstaende: kvar.map(c => c.PART_ID) }; }
+  return { tillatet: true, skal: utlosare.SKAL };
+}
+
 /* Grind mot arv: en dom om en del far aldrig harleda en dom om en annan. */
 export function farArvaDom() { return false; }
 export function harleddDom(fran, till) {

@@ -420,7 +420,189 @@ const REC = REG.F_records;
     ' fristaende, R-01 ' + L.R01_FINDINGS + ', KNOWN_REQUIRED_FAIL ' +
     L.KNOWN_REQUIRED_FAIL); }
 
-const ANTAL = 25;
+/* ═══ PILOT 2 REGISTRERAD + PILOT 3 VALD · ACR-26 … ACR-35 ════════════════
+ * Har laser proven den nya bokforingen: att granskad-utan-dom ar skilt fran
+ * ogranskad, att de granskade inte atercirkulerar, och att preview-isolering
+ * ar en villkorlig optimering med negativ sentinel — inte en verifierad metod. */
+const PI = await import('file://' + resolve('tools/preview-isolation.mjs').replace(/\\/g,'/'));
+const R2 = JSON.parse(readFileSync(resolve('fas2/lagkontrast-register-pilot2.json'), 'utf8'));
+const P3 = JSON.parse(readFileSync(resolve('fas2/lagkontrast-pilot-3.json'), 'utf8'));
+const SUP2 = R2.B_supplemental.records, RU = R2.C_reviewedUnknown.records;
+
+/* ── ACR-26 ─────────────────────────────────────────────────────────────── */
+{ const r = R2.A_registrering;
+  prov('ACR-26', 'pilot 2 registrerad som exakt 43 supplemental och 12 reviewed unknown',
+    r.REGISTERED_OCCURRENCES === 55 && r.NEW_SUPPLEMENTAL === 43 &&
+    r.NEW_REVIEWED_UNKNOWN === 12 && r.DUPLICATES === 0 && r.OMITTED === 0 &&
+    r.OUT_OF_SCOPE === 0 && SUP2.length === 43 && RU.length === 12 &&
+    new Set([...SUP2, ...RU].map(x => x.RELATION_ID)).size === 55 &&
+    SUP2.every(x => x.APPLICABILITY_VERDICT === 'SUPPLEMENTAL_NOT_REQUIRED' &&
+      x.VERDICT_SCOPE === 'TARGET_PART_ONLY' &&
+      x.VERDICT_BASIS === 'TARGET_OWN_VISUAL_STATUS' &&
+      x.EVIDENCE.VISUAL_DIFFERENCE === 'NONE') &&
+    R2.E_grindar.every(g => g.ok),
+    r.NEW_SUPPLEMENTAL + ' supplemental + ' + r.NEW_REVIEWED_UNKNOWN +
+    ' reviewed unknown = ' + r.REGISTERED_OCCURRENCES + ', ' + R2.E_grindar.length +
+    ' grindar passerade'); }
+
+/* ── ACR-27 ─────────────────────────────────────────────────────────────── */
+{ const klasser = Object.values(AP.BLOCKERKLASS);
+  prov('ACR-27', 'de 12 ar varken REQUIRED eller SUPPLEMENTAL utan granskade utan dom',
+    RU.every(x => x.APPLICABILITY_VERDICT === 'UNKNOWN' &&
+      x.REVIEW_STATUS === AP.REVIEW_STATUS.REVIEWED_UNKNOWN &&
+      klasser.includes(x.BLOCKER) && Array.isArray(x.BLOCKING_CARRIERS) &&
+      x.BLOCKING_CARRIERS.length > 0 &&
+      x.EVIDENCE.VISUAL_DIFFERENCE === 'PRESENT' &&
+      x.TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION === 'YES' &&
+      x.R04_CREDIT === 0) &&
+    !RU.some(x => /REQUIRED|SUPPLEMENTAL/.test(x.APPLICABILITY_VERDICT)) &&
+    Object.keys(R2.C_reviewedUnknown.blockerfordelning).every(k => klasser.includes(k)),
+    RU.length + ' poster, blockerfordelning ' +
+    JSON.stringify(R2.C_reviewedUnknown.blockerfordelning)); }
+
+/* ── ACR-28 ─────────────────────────────────────────────────────────────── */
+{ const rec = { REVIEW_STATUS: AP.REVIEW_STATUS.REVIEWED_UNKNOWN,
+    APPLICABILITY_VERDICT: 'UNKNOWN',
+    BLOCKING_CARRIERS: [{ PART_ID: 'a|1#ram#0' }, { PART_ID: 'a|1#ikon#0' }] };
+  const utan = AP.farAterOppnas(rec, null);
+  const fel = AP.farAterOppnas(rec, { SKAL: 'RATIO_STILL_LOW' });
+  const felBarare = AP.farAterOppnas(rec,
+    { SKAL: 'BLOCKING_CARRIER_ADJUDICATED', ADJUDICERADE: ['b|9#ram#0'] });
+  const rattBarare = AP.farAterOppnas(rec,
+    { SKAL: 'BLOCKING_CARRIER_ADJUDICATED', ADJUDICERADE: ['a|1#ram#0'] });
+  const alla = AP.ATEROPPNINGSSKAL.map(s => AP.farAterOppnas(rec,
+    { SKAL: s, ADJUDICERADE: ['a|1#ram#0'] }).tillatet);
+  const ogranskad = AP.farIngaIMekaniskPilot(
+    { APPLICABILITY_VERDICT: 'UNKNOWN', REVIEW_STATUS: AP.REVIEW_STATUS.UNREVIEWED_UNKNOWN });
+  prov('ACR-28', 'REVIEWED_UNKNOWN ar skilt fran UNREVIEWED_UNKNOWN och atercirkulerar inte',
+    AP.REVIEW_STATUS.REVIEWED_UNKNOWN !== AP.REVIEW_STATUS.UNREVIEWED_UNKNOWN &&
+    !utan.tillatet && !fel.tillatet && !felBarare.tillatet && rattBarare.tillatet &&
+    alla.every(Boolean) && AP.ATEROPPNINGSSKAL.length === 4 &&
+    AP.farIngaIMekaniskPilot(rec) === false && ogranskad === true &&
+    RU.every(x => x.ELIGIBLE_FOR_MECHANICAL_PILOT === false &&
+      x.REOPEN_REQUIRES_ANY_OF.length === 4),
+    'utan skal ' + utan.tillatet + ', fel skal ' + fel.tillatet + ', fel barare ' +
+    felBarare.tillatet + ', ratt barare ' + rattBarare.tillatet +
+    '; ogranskad far ingaa: ' + ogranskad); }
+
+/* ── ACR-29 ─────────────────────────────────────────────────────────────── */
+{ const a = P3.A_rekonciliation;
+  prov('ACR-29', 'rekonciliationen efter pilot 2 gar exakt jamnt ut',
+    a.BEFORE.LT3_UNKNOWN === 467 && a.AFTER.LT3_UNKNOWN === 424 &&
+    a.BEFORE.GE3_UNKNOWN === 1218 && a.AFTER.GE3_UNKNOWN === 1218 &&
+    a.BEFORE.TOTAL_UNKNOWN === 1685 && a.AFTER.TOTAL_UNKNOWN === 1642 &&
+    a.AFTER.KNOWN_REQUIRED_FAIL === 0 && a.DELTA.KNOWN_REQUIRED_FAIL === 0 &&
+    a.NEW_SUPPLEMENTAL === 43 && a.NEW_REVIEWED_UNKNOWN === 12 &&
+    a.LT3_TOTAL === 424 && a.LT3_REVIEWED_UNKNOWN === 12 &&
+    a.UNREVIEWED_LT3_QUEUE === 412 &&
+    a.LT3_TOTAL === a.LT3_REVIEWED_UNKNOWN + a.UNREVIEWED_LT3_QUEUE &&
+    a.ANDRADE_UTANFOR_REGISTRERINGEN.length === 0 &&
+    a.STATUSANDRINGAR_UTANFOR.length === 0 && a.KORSTAB_SLUTEN === true &&
+    a.RECONCILED === true,
+    'LT3 ' + a.BEFORE.LT3_UNKNOWN + '->' + a.AFTER.LT3_UNKNOWN + ', totalt ' +
+    a.BEFORE.TOTAL_UNKNOWN + '->' + a.AFTER.TOTAL_UNKNOWN + '; ' + a.LT3_TOTAL +
+    ' = ' + a.LT3_REVIEWED_UNKNOWN + ' + ' + a.UNREVIEWED_LT3_QUEUE); }
+
+/* ── ACR-30 ─────────────────────────────────────────────────────────────── */
+{ const h = P3.B_reviewedUnknown;
+  const ruIds = new Set(RU.map(x => x.RELATION_ID));
+  const iPilot = P3.G_pilot3.poster.filter(x => ruIds.has(x.RELATION_ID));
+  prov('ACR-30', 'de 12 granskade atercirkulerar inte till nasta pilot',
+    h.REVIEWED_UNKNOWN === 12 && h.I_KANDIDATPOOLEN === 0 && h.I_PILOT_3 === 0 &&
+    iPilot.length === 0 && h.farAterOppnasUtanSkal === false &&
+    P3.G_pilot3.REVIEWED_UNKNOWN_I_PILOTEN === 0 &&
+    P3.G_pilot3.KANDIDATPOOL === 'UNREVIEWED_LT3_UNKNOWN' &&
+    P3.G_pilot3.KANDIDATPOOL_STORLEK === P3.A_rekonciliation.UNREVIEWED_LT3_QUEUE,
+    h.REVIEWED_UNKNOWN + ' granskade, ' + h.I_KANDIDATPOOLEN + ' i poolen, ' +
+    h.I_PILOT_3 + ' i pilot 3; poolen ar ' + P3.G_pilot3.KANDIDATPOOL + ' = ' +
+    P3.G_pilot3.KANDIDATPOOL_STORLEK); }
+
+/* ── ACR-31 ─────────────────────────────────────────────────────────────── */
+{ const rent = { geometry: 0, paint: 0, clipping: 0, content_state: 0 };
+  const omatt = { geometry: 0, paint: 0, clipping: 0 };
+  const flertagg = { geometry: 2, paint: 0, clipping: 0, content_state: 0 };
+  const g1 = PI.isolationSafe(rent), g2 = PI.isolationSafe(omatt), g3 = PI.isolationSafe(flertagg);
+  const D = P3.D_isoleringsgrind;
+  const blandat = PI.farBlandas({ ISOLERING_ANVAND: true }, { ISOLERING_ANVAND: false });
+  prov('ACR-31', 'isoleringsgrinden ar fail closed i fyra dimensioner med negativ sentinel',
+    PI.ISOLATION_DIMENSIONS.length === 4 &&
+    g1.ISOLATION_SAFE === true && g2.ISOLATION_SAFE === false &&
+    g2.omatta.includes('content_state') && g3.ISOLATION_SAFE === false &&
+    PI.evidensbeslut(flertagg).BESLUT === PI.EVIDENSBESLUT.DISCARD_AND_RERENDER_WITHOUT_ISOLATION &&
+    PI.isolationSafe(null).ISOLATION_SAFE === false &&
+    !blandat.tillatet && PI.matningAnvanderIsolering() === false &&
+    D.SENTINEL.SENTINEL_HALLER === true && D.SENTINEL.UTFALL === false &&
+    D.UNDERKANDA >= 1 && D.ALLA_UNDERKANDA_OMRENDERADE === true &&
+    D.MATNINGEN_ANVANDER_ISOLERING === false,
+    'ren ' + g1.ISOLATION_SAFE + ', omatt dimension ' + g2.ISOLATION_SAFE +
+    ', flertagg ' + g3.ISOLATION_SAFE + '; sentinel haller ' + D.SENTINEL.SENTINEL_HALLER +
+    '; ' + D.UNDERKANDA + ' underkanda, alla omrenderade ' + D.ALLA_UNDERKANDA_OMRENDERADE); }
+
+/* ── ACR-32 ─────────────────────────────────────────────────────────────── */
+{ const g = P3.G_pilot3;
+  const registrerade = new Set([...REC, ...SUP2, ...RU].map(x => x.RELATION_ID));
+  prov('ACR-32', 'pilot 3 ar byggt ur den ogranskade kon med samma lasta regel',
+    g.KANDIDATPOOL === 'UNREVIEWED_LT3_UNKNOWN' && g.SAMMA_REGEL_SOM_TIDIGARE === true &&
+    g.INOM_GRANS === true && g.PILOT_OCCURRENCES >= 50 && g.PILOT_OCCURRENCES <= 80 &&
+    g.OVERLAPP_MED_TIDIGARE_REGISTRERADE === 0 && g.STATE_OUT_OF_SCOPE === 0 &&
+    g.poster.every(x => x.CURRENT_APPLICABILITY === 'UNKNOWN' &&
+      x.REVIEW_STATUS === 'UNREVIEWED_UNKNOWN' && x.APPLICABILITY_RECORD_WRITTEN === false) &&
+    g.poster.filter(x => registrerade.has(x.RELATION_ID)).length === 0 &&
+    g.REGISTRERADE_DOMAR === 0,
+    g.PILOT_OCCURRENCES + ' i ' + g.PILOT_GROUPS + ' grupper ur en pool om ' +
+    g.KANDIDATPOOL_STORLEK + ', kvot ' + g.MIN_RATIO + '-' + g.MAX_RATIO +
+    ', overlapp ' + g.OVERLAPP_MED_TIDIGARE_REGISTRERADE); }
+
+/* ── ACR-33 ─────────────────────────────────────────────────────────────── */
+{ const d = R2.D_reviewGroups;
+  prov('ACR-33', 'pilot 2:s grupper bar fortfarande ingen dom',
+    d.GRUPPER_MED_DOM === 0 && d.AUTOMATIC_EQUIVALENCE === 0 &&
+    d.VERDICT_PROPAGATION === 0 && d.PERSISTENT_SEMANTIC_DECISION_IDENTITY_SKAPAD === 0 &&
+    d.HUMAN_EQUIVALENCE_GATE === 'NOT_PASSED' &&
+    d.grupper.every(g => g.GROUP_VERDICT === null && g.HUMAN_EQUIVALENCE_GATE === 'NOT_PASSED') &&
+    [...SUP2, ...RU].every(x => x.GROUP_VERDICT === null &&
+      x.REVIEW_GROUP_ROLE === 'PRESENTATION_ONLY' &&
+      x.PERSISTENT_SEMANTIC_DECISION_IDENTITY === null) &&
+    P3.C_reviewGroups.GRUPPER_MED_VERDICT === 0,
+    d.ANTAL + ' grupper, ' + d.GRUPPER_MED_DOM + ' med dom, ' + d.VERDICT_PROPAGATION +
+    ' propagering'); }
+
+/* ── ACR-34 ─────────────────────────────────────────────────────────────── */
+{ const sex = RU.filter(x => x.FAMILY === 'flermeny');
+  const alltTargetScope = [...SUP2, ...RU].every(x =>
+    !x.VERDICT_SCOPE || x.VERDICT_SCOPE === 'TARGET_PART_ONLY');
+  const barare = sex.flatMap(x => x.OTHER_CARRIERS_UNCHANGED);
+  prov('ACR-34', 'ingen generell princip skapas for de sex dagrutorna',
+    sex.length === 6 &&
+    sex.every(x => x.REVIEW_STATUS === AP.REVIEW_STATUS.REVIEWED_UNKNOWN &&
+      x.APPLICABILITY_VERDICT === 'UNKNOWN' &&
+      x.BLOCKER === AP.BLOCKERKLASS.STATE_SIGNAL_REDUNDANCY_NOT_ADJUDICATED) &&
+    barare.every(c => c.APPLICABILITY === 'UNKNOWN' && !c.CHANGED_BY_THIS_RECORD) &&
+    alltTargetScope && typeof R2.C_reviewedUnknown.$sexDagrutor === 'string',
+    sex.length + ' dagrutor, alla REVIEWED_UNKNOWN med blockeraren ' +
+    AP.BLOCKERKLASS.STATE_SIGNAL_REDUNDANCY_NOT_ADJUDICATED + '; ' + barare.length +
+    ' barare oforandrade; allt target-scope: ' + alltTargetScope); }
+
+/* ── ACR-35 ─────────────────────────────────────────────────────────────── */
+{ let d = '', fel = null;
+  try { d = execFileSync('git', ['status','--porcelain'], { cwd: resolve('.'), encoding: 'utf8' }); }
+  catch (e) { fel = e.message; }
+  const produkt = d.split('\n').map(x => x.slice(3).replace(/^"|"$/g,''))
+    .filter(f => f.endsWith('.dc.html'));
+  const L = P3.L_regression;
+  prov('ACR-35', 'baselinet ar bitidentiskt efter registreringen av pilot 2',
+    !fel && produkt.length === 0 && L.PRODUKTBASELINE_BITIDENTISK === true &&
+    L.R02_PASS === 1375 && L.R02_MEASURED === 1375 && L.GRAPHICAL_PARTS === 1879 &&
+    L.BOUNDARIES === 689 && L.PAINTED_CONTROL_SURFACES === 420 &&
+    L.STANDALONE_GRAPHICS === 32 && L.R01_FINDINGS === 0 && L.KNOWN_REQUIRED_FAIL === 0 &&
+    L.GEOMETRY_DELTA === 0 && L.CLIPPING_DELTA === 0 && L.PRODUCT_WRITES === 0 &&
+    L.COLOR_WRITES === 0 && L.R04_WRITES === 0 && L.R04_CREDIT === 0 &&
+    R2.$produktfilerOrorda === true,
+    (fel || produkt.length + ' andrade produktfiler') + '; ' + L.HIT_TARGETS +
+    ', ' + L.GRAPHICAL_PARTS + ' delar, ' + L.BOUNDARIES + ' kanter, ' +
+    L.PAINTED_CONTROL_SURFACES + ' malade ytor, R-01 ' + L.R01_FINDINGS); }
+
+const ANTAL = 35;
 for (const r of resultat) {
   console.log((r.ok ? '✔ ' : '✖ ') + r.id.padEnd(9) + r.vad);
   console.log('     ' + r.diag); }
