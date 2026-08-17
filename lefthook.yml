@@ -27,11 +27,34 @@ pre-commit:
 
     # Run Flutter analyze (fatal on infos).
     # Wrapped in `timeout` because `dart analyze` has hung indefinitely on Windows
-    # mid-commit (zombie dart.exe), deadlocking the commit (sprint iter-147). A full
-    # run measured 4m10s warm / 6m47s cold on 2026-08-07, so 300s is a real ceiling
-    # rather than headroom; -k 30 SIGKILLs a hung process so the commit fails fast
-    # (recoverable) instead of freezing forever. Workflow sprint commits skip this
-    # step via LEFTHOOK_EXCLUDE=analyze (already run upstream).
+    # mid-commit (zombie dart.exe), deadlocking the commit (sprint iter-147);
+    # -k 30 SIGKILLs a hung process so the commit fails fast (recoverable) instead
+    # of freezing forever. Workflow sprint commits skip this step via
+    # LEFTHOOK_EXCLUDE=analyze (already run upstream).
+    #
+    # 2026-08-17: RAISED 300 -> 600. The run time had drifted onto the ceiling, so
+    # the gate had become a COIN FLIP — and it lost in the worst way, as a hang
+    # with no findings rather than as a verdict. Four measurements the same day,
+    # same machine, same unchanged tree:
+    #
+    #     273.31s  under the gate  -> PASSED
+    #     301.58s  under the gate  -> TIMED OUT, killed at the ceiling
+    #     309s     standalone      -> exit 0, "No issues found!"
+    #     250s / 407s              -> the warm/cold pair this comment already
+    #                                 recorded from 2026-08-07
+    #
+    # Nothing was wrong with the analyzer or the machine on any of those runs. The
+    # recovery ladder was walked twice for nothing (2.4 GB free, one zombie
+    # flutter_tester killed with no effect, both dart.exe under 15 MB). The old
+    # comment even called 300s "a real ceiling rather than headroom" — that was an
+    # accurate warning that nobody acted on, and a cold run has been able to blow
+    # this budget since the day it was written.
+    #
+    # 600 clears the 407s cold run with margin. If a commit now takes ten minutes
+    # that is the gate's honest cost: it reads the WHOLE project deliberately, so
+    # it can catch a file broken BY a staged change without being staged itself.
+    # Do not lower this without re-measuring; two runs either side of a threshold
+    # cannot tell you where the threshold should be.
     #
     # glob-gated so a docs/config-only commit does not pay for it — that was 255s
     # on a commit with zero code files (2026-08-07). Deliberately NOT scoped to
@@ -45,8 +68,8 @@ pre-commit:
         - "analysis_options.yaml"
         - "pubspec.yaml"
         - "pubspec.lock"
-      run: timeout -k 30 300 dart analyze --fatal-infos
-      fail_text: "dart analyze found issues, OR timed out after 5m. If it TIMED OUT, a zombie analyzer deadlocked the commit (see iter-147): kill the stuck process (Windows: taskkill /F /IM dart.exe), stop any running 'Continuous dart analyze' monitor so two analyzers don't contend, then retry. Otherwise, fix the reported issues before committing."
+      run: timeout -k 30 600 dart analyze --fatal-infos
+      fail_text: "dart analyze found issues, OR timed out after 10m. FIX THE REPORTED ISSUES FIRST — that is the common case and the output above names them. On a TIMEOUT WITH NO ISSUES LISTED, do NOT assume a zombie: this gate reads the WHOLE project and a cold run legitimately takes 5-7 minutes. MEASURE before diagnosing — run `timeout -k 30 700 dart analyze --fatal-infos` in a separate shell and time it. Clean in under 10m means the budget drifted again: raise it here and record the number, do not retry hoping. Only if it truly hangs, or the machine is starved, follow docs/ops/analyzer-recovery.md IN ORDER (memory first, then zombies, then two-analyzer contention). LEFTHOOK_EXCLUDE=analyze is not available to you when the staged diff contains .dart files."
       priority: 2
 
     # BUT-1217: catch CI-only architecture-guard violations in the staged diff

@@ -75,7 +75,15 @@ class ShoppingItemDialogs {
           quantity: result.amount,
           unit: result.unit,
           category: result.category,
-          notes: result.note,
+          // Every layer under `updateItem` reads a null `notes` as "leave this
+          // field alone" (`UnifiedShoppingService.updateItemInActiveList` ->
+          // `ShoppingItemManagementModule`, and the personal-list operation
+          // beside it), so a cleared note has to travel as an empty string or
+          // the old text is written straight back. Readers already treat an
+          // empty note as no note — the item tile renders it only on
+          // `note?.isNotEmpty == true` — and reopening this dialog shows an
+          // empty field either way (BUT-1874).
+          notes: result.note.orEmpty(),
           estimatedPrice: result.estimatedPrice,
           priority: result.priority,
         );
@@ -116,7 +124,6 @@ class _AddItemDialogState extends State<_AddItemDialog> {
   final _unitController = TextEditingController();
   final _categoryController = TextEditingController();
   final _noteController = TextEditingController();
-  final _priceController = TextEditingController();
 
   // UI Redesign: Track if user has manually edited category
   bool _categoryManuallyEdited = false;
@@ -138,7 +145,6 @@ class _AddItemDialogState extends State<_AddItemDialog> {
     _unitController.dispose();
     _categoryController.dispose();
     _noteController.dispose();
-    _priceController.dispose();
     super.dispose();
   }
 
@@ -236,9 +242,8 @@ class _AddItemDialogState extends State<_AddItemDialog> {
 
   void _onSave() {
     if (_formKey.currentState!.validate()) {
-      // basic() omits note/price, so layer them on with copyWith — otherwise
-      // the price and note the user typed are silently dropped on add (the
-      // edit dialog already preserves both).
+      // basic() omits note, so layer it on with copyWith — otherwise the note
+      // the user typed is silently dropped on add.
       final item =
           UnifiedShoppingItem.basic(
             name: _nameController.text.trim(),
@@ -253,9 +258,6 @@ class _AddItemDialogState extends State<_AddItemDialog> {
             note: _noteController.text.trim().isEmpty
                 ? null
                 : _noteController.text.trim(),
-            estimatedPrice: _priceController.text.trim().isEmpty
-                ? null
-                : double.tryParse(_priceController.text.replaceAll(',', '.')),
           );
 
       Navigator.pop(context, item);
@@ -280,7 +282,6 @@ class _EditItemDialogState extends State<_EditItemDialog> {
   late final TextEditingController _unitController;
   late final TextEditingController _categoryController;
   late final TextEditingController _noteController;
-  late final TextEditingController _priceController;
 
   @override
   void initState() {
@@ -292,9 +293,6 @@ class _EditItemDialogState extends State<_EditItemDialog> {
     _unitController = TextEditingController(text: widget.item.unit);
     _categoryController = TextEditingController(text: widget.item.category);
     _noteController = TextEditingController(text: widget.item.note.orEmpty());
-    _priceController = TextEditingController(
-      text: (widget.item.estimatedPrice?.toString()).orEmpty(),
-    );
   }
 
   @override
@@ -304,7 +302,6 @@ class _EditItemDialogState extends State<_EditItemDialog> {
     _unitController.dispose();
     _categoryController.dispose();
     _noteController.dispose();
-    _priceController.dispose();
     super.dispose();
   }
 
@@ -379,6 +376,7 @@ class _EditItemDialogState extends State<_EditItemDialog> {
 
   void _onSave() {
     if (_formKey.currentState!.validate()) {
+      final note = _noteController.text.trim();
       final item = widget.item.copyWith(
         name: _nameController.text.trim(),
         amount:
@@ -388,12 +386,12 @@ class _EditItemDialogState extends State<_EditItemDialog> {
         category: _categoryController.text.trim().isEmpty
             ? ShoppingCategory.other
             : _categoryController.text.trim(),
-        note: _noteController.text.trim().isEmpty
-            ? null
-            : _noteController.text.trim(),
-        estimatedPrice: _priceController.text.trim().isEmpty
-            ? null
-            : double.tryParse(_priceController.text.replaceAll(',', '.')),
+        note: note.isEmpty ? null : note,
+        // A null `note` alone cannot express "the user emptied the field" —
+        // copyWith reads it as "leave unchanged", so an erased note came back
+        // on the next save. Emptying the field is a real edit and needs its own
+        // signal (BUT-1874).
+        clearNote: note.isEmpty,
         priority: widget.item.priority,
       );
 
@@ -402,7 +400,43 @@ class _EditItemDialogState extends State<_EditItemDialog> {
   }
 }
 
-/// UI Redesign: Category auto-suggestion based on Swedish ingredient names
+/// Category auto-suggestion based on Swedish ingredient names.
+///
+/// **This is a DUPLICATE, and `IngredientCategorizer` is the source of truth.**
+/// That one is the maintained engine (`lib/services/shopping/ingredient_categorizer.dart`,
+/// used by `menu_shopping_aggregator.dart` and `shopping_list_generator.dart`).
+/// This map is a second, older implementation of the same job, and it still
+/// carries defects that were fixed centrally and never ported back. Measured by
+/// running this class, not by reading it (BUT-1890, 2026-08-17):
+///
+///     Rostbiff -> dairy        Ostbågar -> dairy       Kokosmjölk -> dairy
+///     Rostat bröd -> dairy     Diskborste -> drinks    Vitlökspulver -> fruit_veg
+///
+/// FIVE of those six ANSWERS CHANGE when routed centrally; only four become
+/// right. `Ostbågar` does NOT change — `IngredientCategorizer` answers `dairy`
+/// too, deliberately: its cheese rule is "at least one word boundary", because
+/// cheese legitimately LEADS a Swedish compound ("ostskiva"). And
+/// `Vitlökspulver` only moves `fruit_veg` -> `veg`; it is a spice in neither
+/// engine. So do not read the table as six bugs.
+///
+/// The cause of the rest is a lowercased unbounded `contains` over ordered
+/// buckets, first match wins: `ost` matches inside "r-ost-biff", and the
+/// two-letter `te` makes a dish brush a beverage. BUT-1666 replaced exactly that
+/// bare `ost` with Swedish-aware lookarounds. BUT-1004 split meat/fish and
+/// fruit/veg into the fine-grained `meat`/`fish`/`fruit`/`veg`; the legacy
+/// `meatFish`/`fruitVeg` constants survive for stored documents and are still
+/// user-selectable, but `IngredientCategorizer` no longer PRODUCES them — while
+/// this class still does.
+///
+/// One trap for whoever routes this (BUT-1890): `IngredientCategorizer.categorize`
+/// returns `ShoppingCategory.other` for no match, never null, and `_suggestCategory`
+/// relies on null to leave the field alone. A naive delegation stamps `other` into
+/// every unrecognised item.
+///
+/// Do NOT extend the map to patch a case. Route this through
+/// `IngredientCategorizer` instead — that is BUT-1890, kept separate because it
+/// changes what the user sees. Until then, `category_suggester_test.dart` pins
+/// what this DOES, not what it should do.
 class _CategorySuggester {
   static const Map<String, List<String>> _categoryKeywords = {
     ShoppingCategory.dairy: [

@@ -544,6 +544,10 @@ class UnifiedShoppingItem {
   /// consistent state management for collaborative tracking. Automatically updates modification
   /// timestamps and user attribution when collaborative metadata is provided.
   /// Returns a new [UnifiedShoppingItem] instance with updated values.
+  ///
+  /// [clearNote] erases the note. A bare `note: null` cannot mean that — the
+  /// same value already means "leave it alone" — so removing a note needs its
+  /// own signal, as on [PantryItem.copyWith].
   UnifiedShoppingItem copyWith({
     String? name,
     double? amount,
@@ -551,6 +555,7 @@ class UnifiedShoppingItem {
     String? category,
     bool? bought,
     String? note,
+    bool clearNote = false,
     double? estimatedPrice,
     int? priority,
     String? lastModifiedByUserId,
@@ -591,7 +596,7 @@ class UnifiedShoppingItem {
       lastModifiedByDisplayName:
           lastModifiedByDisplayName ?? this.lastModifiedByDisplayName,
       lastModifiedAt: lastModifiedAt ?? clock.now(),
-      note: note ?? this.note,
+      note: clearNote ? null : (note ?? this.note),
       estimatedPrice: estimatedPrice ?? this.estimatedPrice,
       priority: priority ?? this.priority,
       assignedToUserId: assignedToUserId,
