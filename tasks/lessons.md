@@ -1617,3 +1617,89 @@ content-addressed against the worktree blob, so a probe would re-score its own r
 AND every sibling reviewer's to `drifted` — routinely un-proving the review it strengthens.
 Writing a mutant into `lib/` is also refused by the auto-mode classifier, silently, poisoning
 the run's next action. The cheap read fixes the same miss with none of that.
+
+### [Tooling] Python's `/tmp` and Git Bash's `/tmp` are different directories on Windows
+
+Five consecutive answers to "which functions would `--force` delete?" were wrong, and each
+looked plausible: 69 deployed vs 71 exported with 8 overlap and 61 orphans — internally
+impossible arithmetic that I re-derived rather than distrusted.
+
+Two independent causes, stacked:
+
+1. **Different filesystems.** A `python -c` heredoc wrote `/tmp/src.txt`, which Windows Python
+   resolves as `C:\tmp\src.txt`. Git Bash's `/tmp` maps to the Windows temp dir. Every `comm`
+   compared fresh gcloud output against a stale file from an earlier, cruder extraction that
+   happened to still be sitting there. The Python printed a correct count each time, so the
+   write looked confirmed.
+2. **Different line endings.** `gcloud` emits `\r\n`; the parser emitted `\n`. `comm` requires
+   both inputs sorted in the same collation and compares whole lines, so a trailing `\r` makes
+   nearly every line unequal — which reads as "no overlap", not as "encoding problem".
+
+The tell was there from the first run and I explained it away twice: **the two `comm`
+directions did not add up.** 71 exported, 69 deployed, 8 overlap and an EMPTY
+"exported-but-not-deployed" list cannot all be true. When a set comparison's complements are
+inconsistent, the inputs are wrong — stop and check the files, don't refine the regex.
+
+Rules that follow:
+
+- Do the whole comparison **in one language**. Mixing a Python writer with a bash reader on
+  Windows crosses a path-resolution boundary that neither tool reports.
+- Normalise line endings at the boundary (`tr -d '\r'`) before any `comm`/`diff`/`sort` on
+  tool output, always.
+- Prefer `mktemp -d` over a hardcoded `/tmp/name` — a fresh directory cannot serve a stale
+  file from a previous attempt.
+- A parser that "mostly works" on a structured source is a smell: the third failure here was a
+  `sed` that handled single-line `export { a } from "..."` but silently dropped multi-line
+  blocks, hiding five real exports. Parse the language with a parser, and sanity-check the
+  count against a crude `grep -c` before trusting a diff built on it.
+
+### [Testing] An SDK's "unset" can be a sentinel OBJECT, so `== null` guards it vacuously
+
+A new suite pinned `maxInstances` on every deployed Cloud Function endpoint. It went green,
+and its "no export ships without an instance ceiling" check was **incapable of failing**.
+
+`firebase-functions` does not leave an unset `maxInstances` as `null` or `undefined` — it
+stores a sentinel object whose `toJSON` renders as `null`. So every diagnostic agreed with the
+wrong conclusion: `JSON.stringify(v)` printed `null`, `"maxInstances" in endpoint` was `true`,
+and `typeof v` was `"object"` — while `v == null` was **false**. The vacuous check passed under
+a mutant that deleted the option from every one of 70 functions.
+
+It was caught only because the mutation probe reddened the *wrong assertion*: the mutant that
+removed the ceiling failed the "is it the expected VALUE" check while the "is it PRESENT" check
+stayed green. Two assertions over one invariant, and the mutant separated them — that
+disagreement is the signal, and running only one mutant, or reading only the summary count,
+would have hidden it.
+
+Rules that follow:
+
+- Never write `== null` / `!= null` against a value whose producer you have not read. Test the
+  shape you actually require (`typeof x === "number"`), which fails closed on null, undefined
+  AND a sentinel.
+- `JSON.stringify` is not an identity check. A `toJSON` can make any object print as anything,
+  including `null`.
+- When one mutant reddens a *different* assertion than the one you predicted, stop and probe
+  the raw value. A passing sibling assertion in that state is the vacuity showing itself.
+- Type the field as `unknown` rather than `number | null` — a narrow type invites exactly the
+  null check that cannot fire.
+
+## `node --check` does not prove the sprint engine parses (2026-08-17)
+
+Adding a sentence to a prompt inside `sprint-execute-parallel.js` broke the engine twice in a
+row, and `node --check plugins/delivery/workflows/sprint-execute-parallel.js` printed nothing
+both times.
+
+It cannot: the harness evaluates that file as a FUNCTION BODY via `new AsyncFunction`, not as
+a script. `--check` parses it under different rules and is happy.
+
+The actual break was ordinary and easy to repeat — **a backtick inside a template literal**.
+The prompt strings in that file are huge template literals, and writing a natural
+"`<lens>: <verdict>`" or "a bare `pass`/`fail`" inside one terminates the literal at the first
+backtick. Markdown habit and template literals are the same character.
+
+**So: run `node test/delivery-engine-fixtures.mjs` after ANY edit to that file, including a
+comment-only or prose-only one.** It evaluates the engine the way the runtime does and fails
+loudly with the line number. The outer `test/run-fixtures.mjs` reported "219 checks passed,
+0 failed" for its own suite while the engine underneath was unparseable, so read the
+`delivery-engine:` line specifically, not the summary.
+
+Inside those prompts, quote code with plain double quotes, not backticks.
