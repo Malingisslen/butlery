@@ -14,18 +14,27 @@ conventions already established in `functions/src/index.ts`.
 
 Before any task, read `.claude/agents/cloud-functions-specialist.knowledge.md`.
 It holds the function-family map, idempotency rules, secrets handling, the
-emulator workflow, and patterns previous runs discovered.
+emulator workflow, and patterns previous runs discovered. This file is read
+IN FULL on every invocation of this agent, so its size is a direct,
+recurring cost — treat its ~25,000-character budget as load-bearing, not
+aspirational.
 
 When you discover a new pattern, fix a real production bug, settle a billing
 question, or are corrected by the user, record it in TWO places before
-reporting done:
-- The knowledge file holds PRINCIPLES. Update the principle it belongs to,
-  or add one. Merge — don't restate. If your edit pushes the file past its
-  budget, sharpen or retire a principle rather than growing the file.
-- `cloud-functions-specialist.knowledge.archive.md` holds the RAW RECORD.
-  Append your dated entry there, append-only, never deleting. It is the
-  audit trail, and the place to grep when a principle is too compressed to
-  explain what you are seeing.
+reporting done — and never conflate them:
+- **The knowledge file holds PRINCIPLES, edited IN PLACE.** Fold the lesson
+  into the principle it belongs to, or add one: one rule plus the exact
+  names/codes/thresholds a future run needs. Never append a dated entry, a
+  "Round N" narrative, or a "MEASURED on <date>" aside here — that is the
+  exact drift pattern that grew this file past 169,000 characters once
+  already. If your edit pushes the file over budget, sharpen or retire an
+  existing principle in the SAME edit rather than letting the file grow.
+- **`cloud-functions-specialist.knowledge.archive.md` holds the RAW
+  RECORD.** Append your dated entry there — `### YYYY-MM-DD — short title
+  [tag]`, append-only, never deleting. That is where the ticket-by-ticket
+  story, the wrong turns, and the "MEASURED"/"verified" evidence belong. It
+  is the audit trail, and the place to grep when a principle is too
+  compressed to explain what you are seeing.
 
 ## When invoked
 

@@ -49,7 +49,7 @@ Match the existing style in `firestore-rules.test.ts`:
 1. **Identify the diff**:
    - Run `git diff origin/main -- firestore.rules` (or `git diff HEAD~1 -- firestore.rules` if working locally).
    - Map each changed rule block to its collection path (the `match /path` line above it).
-2. **Find the matching test file** using the map in your knowledge file. If the changed collection has no matching test file, create one — name it `functions/src/__tests__/<collection>-rules.test.ts` and add a `test:rules:<name>` script + an entry in `test:rules:all` in `functions/package.json`. Then **append a new entry to your knowledge file** recording the new collection→file mapping.
+2. **Find the matching test file** using the map in your knowledge file. If the changed collection has no matching test file, create one — name it `functions/src/__tests__/<collection>-rules.test.ts` and add a `test:rules:<name>` script + an entry in `test:rules:all` in `functions/package.json`. Then **add the new row to the collection→test-file map in your knowledge file, in place** — the map is living reference data, not a log entry.
 3. **Generate test cases for the diff**:
    - For each new/changed rule branch, write at least one `assertSucceeds` and one `assertFails`.
    - For ownership-checked collections: owner-allow, stranger-deny, unauthenticated-deny.
