@@ -957,7 +957,214 @@ prov('ACR-47', 'de sex REQUIRED ligger samtliga pa eller over 3.0 och passerar',
     ', LT3 ' + e2.FORE.LT3_UNKNOWN + ' -> ' + e2.EFTER.LT3_UNKNOWN +
     ', GE3 ' + e2.FORE.GE3_UNKNOWN + ' -> ' + e2.EFTER.GE3_UNKNOWN); }
 
-const ANTAL = 57;
+/* ═══ ATOMISK REGISTRERING + DIRECT FRONTIER · ACR-58 … ACR-71 ════════════
+ * Har laser proven det farligaste steget hittills: att en fyllning aldrig far
+ * bli SUPPLEMENTAL utan att dess redundansskydd finns i samma transaktion. */
+const R5 = JSON.parse(readFileSync(resolve('fas2/lagkontrast-register-rereview50.json'), 'utf8'));
+const DF = JSON.parse(readFileSync(resolve('fas2/lagkontrast-direct-147.json'), 'utf8'));
+const R5REC = R5.F_records, RSETS = R5.D_redundansset.set, DISP = R5.C_safeguardDisposition.poster;
+
+/* ── ACR-58 ─────────────────────────────────────────────────────────────── */
+prov('ACR-58', 'exakt 50 supplemental-domar pa 50 target-identiteter',
+  R5.A_registrering.REGISTERED === 50 && R5REC.length === 50 &&
+  new Set(R5REC.map(x => x.RELATION_ID)).size === 50 &&
+  R5.A_registrering.DUPLICATES === 0 && R5.A_registrering.OMITTED === 0 &&
+  R5.A_registrering.OUT_OF_SCOPE === 0 &&
+  R5REC.every(x => x.APPLICABILITY_VERDICT === 'SUPPLEMENTAL_NOT_REQUIRED' &&
+    x.VERDICT_SCOPE === 'TARGET_PART_ONLY' && x.TARGET === 'FILL_RELATION' &&
+    x.GRAPHICAL_PART_TYPE === 'fyllning') &&
+  R5.E_grindar.every(g => g.ok),
+  R5REC.length + ' record, ' + new Set(R5REC.map(x => x.RELATION_ID)).size +
+  ' unika, ' + R5.E_grindar.length + ' grindar');
+
+/* ── ACR-59 ─────────────────────────────────────────────────────────────── */
+prov('ACR-59', 'ingen dom propagerade fran en barare',
+  R5.A_registrering.PROPAGATED_VERDICTS === 0 &&
+  R5REC.every(x => x.PROPAGATED_FROM_CARRIER === false &&
+    x.DEPENDENCY_PROPAGATION === false && x.DEPENDENCY_EVIDENCE_ANVAND === true &&
+    x.DOES_NOT_IMPLY.includes('SIBLING_REQUIRED') &&
+    x.DOES_NOT_IMPLY.includes('SIBLING_SUPPLEMENTAL') &&
+    x.DOES_NOT_IMPLY.includes('CONTROL_CONFORMING') &&
+    x.OTHER_CARRIERS_UNCHANGED.every(c => !c.CHANGED_BY_THIS_RECORD)) &&
+  AP.harleddDom('SIBLING_SUPPLEMENTAL','TARGET_REQUIRED').tillatet === false,
+  R5.A_registrering.PROPAGATED_VERDICTS + ' propagerade; alla ' + R5REC.length +
+  ' bar DOES_NOT_IMPLY med ' + R5.A_registrering.OMFATTAR_INTE.length + ' poster');
+
+/* ── ACR-60 ─────────────────────────────────────────────────────────────── */
+{ const idn = new Set(RSETS.map(s => s.REDUNDANCY_SET_ID));
+  const utanSkydd = R5REC.filter(x => x.SAFEGUARD_DISPOSITION !== 'NO_RSET_REQUIRED' &&
+    (!x.REDUNDANCY_SET_ID || !idn.has(x.REDUNDANCY_SET_ID) ||
+     !RSETS.find(s => s.REDUNDANCY_SET_ID === x.REDUNDANCY_SET_ID)
+       .MEMBER_RELATION_IDS.includes(x.RELATION_ID)));
+  prov('ACR-60', 'dom och redundansset registreras atomiskt utan mellanstatus',
+    utanSkydd.length === 0 && typeof R5.$atomicitet === 'string' &&
+    R5.D_redundansset.NYA_I_DENNA_TRANSAKTION > 0 &&
+    R5.D_redundansset.AKTIVA_TOTALT === R5.D_redundansset.BEFINTLIGA +
+      R5.D_redundansset.NYA_I_DENNA_TRANSAKTION &&
+    RSETS.filter(s => s.NY_I_DENNA_TRANSAKTION).every(s =>
+      Array.isArray(s.SKAPAT_TILLSAMMANS_MED) && s.SKAPAT_TILLSAMMANS_MED.length > 0),
+    utanSkydd.length + ' domar utan aktivt skydd; ' + R5.D_redundansset.AKTIVA_TOTALT +
+    ' aktiva set varav ' + R5.D_redundansset.NYA_I_DENNA_TRANSAKTION + ' nya'); }
+
+/* ── ACR-61 ─────────────────────────────────────────────────────────────── */
+{ const p2 = R5.C_safeguardDisposition.PARTITION;
+  const summa = Object.values(p2).reduce((a,b)=>a+b,0);
+  prov('ACR-61', 'varje forekomst har exakt en safeguard-disposition',
+    DISP.length === 50 && new Set(DISP.map(d => d.RELATION_ID)).size === 50 &&
+    summa === 50 && !p2.OKANT &&
+    DISP.every(d => ['EXISTING_RSET','NEW_RSET_REQUIRED','NO_RSET_REQUIRED']
+      .includes(d.SAFEGUARD_DISPOSITION)) &&
+    R5REC.every(x => DISP.some(d => d.RELATION_ID === x.RELATION_ID &&
+      d.SAFEGUARD_DISPOSITION === x.SAFEGUARD_DISPOSITION)),
+    JSON.stringify(p2) + ' = ' + summa); }
+
+/* ── ACR-62 ─────────────────────────────────────────────────────────────── */
+prov('ACR-62', 'varje redundansset ar maskinlasbart och stodjer tre members',
+  RSETS.every(s => typeof s.REDUNDANCY_SET_ID === 'string' &&
+    Array.isArray(s.MEMBER_RELATION_IDS) && s.MEMBER_RELATION_IDS.length >= 2 &&
+    Number.isInteger(s.MIN_DISTINGUISHABLE_MEMBERS) &&
+    s.PROVENANCE === RS.PROVENANS.HUMAN_OCCURRENCE_ADJUDICATION &&
+    ['HOLDS','VIOLATED'].includes(s.CURRENT_VALIDITY) &&
+    s.GROUP_VERDICT === null && s.IMPLIES_MEMBER_REQUIRED === false) &&
+  RSETS.some(s => s.MEMBER_RELATION_IDS.length === 3) &&
+  R5.D_redundansset.MED_TRE_MEMBERS > 0 &&
+  R5.D_redundansset.falt.length === 5 &&
+  R5.D_redundansset.AR_INTE.length === 5,
+  RSETS.length + ' set, ' + R5.D_redundansset.MED_TRE_MEMBERS + ' med tre members');
+
+/* ── ACR-63 ─────────────────────────────────────────────────────────────── */
+{ const treSet = RSETS.find(s => s.MEMBER_RELATION_IDS.length === 3);
+  const alla = RSETS.map(s => RS.redundancyGate(
+    { MEMBERS: s.MEMBER_RELATION_IDS, MIN_DISTINGUISHABLE_MEMBERS: s.MIN_DISTINGUISHABLE_MEMBERS },
+    Object.fromEntries(s.MEMBER_RELATION_IDS.map(m => [m, false]))));
+  const en = RSETS.map(s => RS.redundancyGate(
+    { MEMBERS: s.MEMBER_RELATION_IDS, MIN_DISTINGUISHABLE_MEMBERS: s.MIN_DISTINGUISHABLE_MEMBERS },
+    Object.fromEntries(s.MEMBER_RELATION_IDS.map((m,i) => [m, i === 0]))));
+  const treUtanTva = treSet ? RS.redundancyGate(
+    { MEMBERS: treSet.MEMBER_RELATION_IDS, MIN_DISTINGUISHABLE_MEMBERS: 1 },
+    Object.fromEntries(treSet.MEMBER_RELATION_IDS.map((m,i) => [m, i === 2]))) : null;
+  prov('ACR-63', 'MIN_DISTINGUISHABLE_MEMBERS upprätthålls i alla aktiva set',
+    RSETS.every(s => s.MIN_DISTINGUISHABLE_MEMBERS >= 1) &&
+    R5.D_redundansset.ALLA_HOLDS === true &&
+    RSETS.every(s => s.CURRENT_VALIDITY === 'HOLDS') &&
+    alla.every(g => g.HALLER === false) && en.every(g => g.HALLER === true) &&
+    !!treSet && treUtanTva.HALLER === true,
+    RSETS.length + ' set: alla neutraliserade faller, en kvar haller, ' +
+    'tremedlemsset med bara en kvar haller ' + (treUtanTva ? treUtanTva.HALLER : '-')); }
+
+/* ── ACR-64 ─────────────────────────────────────────────────────────────── */
+{ const domar = new Map([...R5REC, ...R4.F_records].map(x => [x.RELATION_ID, x.APPLICABILITY_VERDICT]));
+  const badaSupp = RSETS.filter(s => s.MEMBER_RELATION_IDS
+    .every(m => domar.get(m) === 'SUPPLEMENTAL_NOT_REQUIRED'));
+  const nekas = RSETS.map(s => RS.farNeutraliseraSamtidigt(
+    { MEMBERS: s.MEMBER_RELATION_IDS, MIN_DISTINGUISHABLE_MEMBERS: s.MIN_DISTINGUISHABLE_MEMBERS },
+    Object.fromEntries(s.MEMBER_RELATION_IDS.map(m => [m, 'SUPPLEMENTAL_NOT_REQUIRED']))));
+  prov('ACR-64', 'individuellt frivilliga delar far aldrig tas bort tillsammans',
+    badaSupp.length > 0 && nekas.every(x => x.tillatet === false) &&
+    nekas.every(x => x.grind.HALLER === false) &&
+    nekas.filter(x => x.allaSupplemental).length === badaSupp.length,
+    badaSupp.length + ' set dar samtliga members ar supplemental; alla ' + nekas.length +
+    ' nekar samtidig neutralisering'); }
+
+/* ── ACR-65 ─────────────────────────────────────────────────────────────── */
+{ const utan = DISP.filter(d => d.SAFEGUARD_DISPOSITION === 'NO_RSET_REQUIRED');
+  prov('ACR-65', 'NO_RSET_REQUIRED kraver en positiv occurrence-orsak',
+    utan.length > 0 &&
+    utan.every(d => /POSITIV ORSAK/.test(d.REASON) && d.REQUIRED_SYSKON.length > 0 &&
+      d.OMSESIDIGT_MOTIVERADE_BARARE.length === 0) &&
+    !utan.some(d => /^inget set behovs\.?$/i.test(d.REASON.trim())) &&
+    R5REC.filter(x => x.SAFEGUARD_DISPOSITION === 'NO_RSET_REQUIRED')
+      .every(x => x.REDUNDANCY_SET_ID === null && /POSITIV ORSAK/.test(x.SAFEGUARD_REASON)),
+    utan.length + ' med NO_RSET_REQUIRED, alla med namngivet REQUIRED-syskon'); }
+
+/* ── ACR-66 ─────────────────────────────────────────────────────────────── */
+{ const e3 = DF.E_rekonciliation;
+  prov('ACR-66', 'UNKNOWN och REVIEWED_UNKNOWN rekoncilierar exakt',
+    e3.FORE.UNKNOWN_APPLICABILITY === 1576 && e3.EFTER.UNKNOWN_APPLICABILITY === 1526 &&
+    e3.FORE.LT3_UNKNOWN === 385 && e3.EFTER.LT3_UNKNOWN === 335 &&
+    e3.FORE.REVIEWED_UNKNOWN_LT3 === 62 && e3.EFTER.REVIEWED_UNKNOWN_LT3 === 12 &&
+    e3.FORE.UNREVIEWED_UNKNOWN_LT3 === 323 && e3.EFTER.UNREVIEWED_UNKNOWN_LT3 === 323 &&
+    e3.FORE.GE3_UNKNOWN === 1191 && e3.EFTER.GE3_UNKNOWN === 1191 &&
+    e3.EFTER.KNOWN_REQUIRED_FAIL === 0 && e3.DELTA.KNOWN_REQUIRED_FAIL === 0 &&
+    e3.NEW_SUPPLEMENTAL_NOT_REQUIRED === 50 &&
+    e3.ANDRADE_UTANFOR_REGISTRERINGEN.length === 0 && e3.SLUTER === true &&
+    e3.EFTER.LT3_UNKNOWN === e3.EFTER.REVIEWED_UNKNOWN_LT3 + e3.EFTER.UNREVIEWED_UNKNOWN_LT3,
+    e3.FORE.UNKNOWN_APPLICABILITY + ' -> ' + e3.EFTER.UNKNOWN_APPLICABILITY +
+    ', REVIEWED ' + e3.FORE.REVIEWED_UNKNOWN_LT3 + ' -> ' + e3.EFTER.REVIEWED_UNKNOWN_LT3 +
+    ', UNREVIEWED ' + e3.EFTER.UNREVIEWED_UNKNOWN_LT3); }
+
+/* ── ACR-67 ─────────────────────────────────────────────────────────────── */
+{ const f3 = DF.F_frontier;
+  const summa = Object.values(f3.DEPENDENCY_PARTITION).reduce((a,b)=>a+b,0);
+  prov('ACR-67', 'frontiern ar omraknad ur aktuell population',
+    f3.TOTAL_UNREVIEWED_LT3 === 323 && summa === 323 && f3.PARTITION_SUMMERAR === true &&
+    f3.DIRECTLY_REVIEWABLE === f3.DEPENDENCY_PARTITION.NO_OTHER_PART +
+      f3.DEPENDENCY_PARTITION.RESOLVED_PARTS_ONLY &&
+    f3.BLOCKED === f3.DEPENDENCY_PARTITION.ONE_UNRESOLVED_BLOCKER +
+      f3.DEPENDENCY_PARTITION.MULTIPLE_UNRESOLVED_BLOCKERS &&
+    f3.DIRECTLY_REVIEWABLE + f3.BLOCKED === 323 &&
+    DF.G_frontier.ANTAL === f3.DIRECTLY_REVIEWABLE &&
+    DF.G_frontier.poster.length === f3.DIRECTLY_REVIEWABLE,
+    f3.DIRECTLY_REVIEWABLE + ' direkt + ' + f3.BLOCKED + ' blockerade = ' +
+    f3.TOTAL_UNREVIEWED_LT3); }
+
+/* ── ACR-68 ─────────────────────────────────────────────────────────────── */
+{ const f3 = DF.F_frontier, d3 = f3.DIRECT_TYPE_CENSUS, u3 = f3.UNREVIEWED_TYPE_CENSUS;
+  const sum = c => c.FILL + c.BOUNDARY + c.ICON + c.THUMB + c.OTHER;
+  prov('ACR-68', 'bada typcensusarna summerar exakt och den felaktiga raden ar rattad',
+    sum(d3) === d3.TOTAL && d3.TOTAL === f3.DIRECTLY_REVIEWABLE && d3.UNCLASSIFIED === 0 &&
+    sum(u3) === u3.TOTAL && u3.TOTAL === 323 && u3.UNCLASSIFIED === 0 &&
+    f3.DIRECT_SUMMERAR === true && f3.UNREVIEWED_SUMMERAR === true &&
+    typeof f3.$rattelse === 'string' &&
+    !(d3.FILL === u3.FILL && d3.BOUNDARY === u3.BOUNDARY),
+    'direkt ' + JSON.stringify(d3) + '; ogranskade ' + JSON.stringify(u3)); }
+
+/* ── ACR-69 ─────────────────────────────────────────────────────────────── */
+{ const k3 = DF.K_grupper;
+  prov('ACR-69', 'presentationsgrupperna skapar inga domar',
+    k3.GRUPPER_MED_DOM === 0 && k3.HUMAN_EQUIVALENCE_GATE === 'NOT_PASSED' &&
+    k3.grupper.every(g => g.GROUP_VERDICT === null &&
+      g.HUMAN_EQUIVALENCE_GATE === 'NOT_PASSED') &&
+    k3.grupper.reduce((a,g) => a + g.OCCURRENCES, 0) === DF.G_frontier.ANTAL &&
+    DF.G_frontier.poster.every(x => x.GROUP_ID && x.PROPOSED_VERDICT),
+    k3.ANTAL + ' grupper over ' + k3.grupper.reduce((a,g)=>a+g.OCCURRENCES,0) +
+    ' forekomster, ' + k3.GRUPPER_MED_DOM + ' med dom');
+
+/* ── ACR-70 ─────────────────────────────────────────────────────────────── */
+  const g3 = DF.G_frontier;
+  prov('ACR-70', 'granskningen av frontiern registrerar inga slutliga domar',
+    g3.REGISTRERADE_DOMAR === 0 &&
+    g3.poster.every(x => x.APPLICABILITY_RECORD_WRITTEN === false &&
+      x.CURRENT_APPLICABILITY === 'UNKNOWN' &&
+      x.CURRENT_REVIEW_STATUS === 'UNREVIEWED_UNKNOWN' &&
+      ['PROPOSED_REQUIRED','PROPOSED_SUPPLEMENTAL_NOT_REQUIRED','PROPOSED_UNKNOWN']
+        .includes(x.PROPOSED_VERDICT) &&
+      x.R04_CREDIT === 0) &&
+    DF.J_prospektiva.SKAPADE === 0 &&
+    DF.J_prospektiva.foreslagna.every(s => s.STATUS && /FORESLAGET/.test(s.STATUS)) &&
+    DF.L_blockerade.ANTAL === 176 && DF.L_blockerade.BEDOMDA === 0,
+    g3.ANTAL + ' granskade, ' + g3.REGISTRERADE_DOMAR + ' registrerade, ' +
+    DF.J_prospektiva.foreslagna.length + ' prospektiva set foreslagna, ' +
+    DF.J_prospektiva.SKAPADE + ' skapade'); }
+
+/* ── ACR-71 ─────────────────────────────────────────────────────────────── */
+{ let d = '', fel = null;
+  try { d = execFileSync('git', ['status','--porcelain'], { cwd: resolve('.'), encoding: 'utf8' }); }
+  catch (e) { fel = e.message; }
+  const produkt = d.split('\n').map(x => x.slice(3).replace(/^"|"$/g,''))
+    .filter(f => f.endsWith('.dc.html'));
+  const M2 = DF.M_regression;
+  prov('ACR-71', 'inga produkt-, farg- eller R-04-skrivningar och bitidentiskt baseline',
+    !fel && produkt.length === 0 && M2.PRODUCT_WRITES === 0 && M2.COLOR_WRITES === 0 &&
+    M2.R04_WRITES === 0 && M2.R04_CREDIT === 0 && M2.PRODUKTBASELINE_BITIDENTISK === true &&
+    M2.R02_PASS === 1375 && M2.GRAPHICAL_PARTS === 1879 && M2.BOUNDARIES === 689 &&
+    M2.PAINTED_CONTROL_SURFACES === 420 && M2.STANDALONE_GRAPHICS === 32 &&
+    M2.R01_FINDINGS === 0 && M2.KNOWN_REQUIRED_FAIL === 0 &&
+    R5.$produktfilerOrorda === true && DF.$produktfilerOrorda === true,
+    (fel || produkt.length + ' andrade produktfiler') + '; ' + M2.HIT_TARGETS + ', ' +
+    M2.GRAPHICAL_PARTS + ' delar, KNOWN_REQUIRED_FAIL ' + M2.KNOWN_REQUIRED_FAIL); }
+
+const ANTAL = 71;
 for (const r of resultat) {
   console.log((r.ok ? '✔ ' : '✖ ') + r.id.padEnd(9) + r.vad);
   console.log('     ' + r.diag); }
