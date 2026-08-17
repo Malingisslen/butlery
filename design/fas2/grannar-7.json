@@ -26,13 +26,13 @@
  },
  "D_domar": {
   "REQUIRED": 4,
-  "SUPPLEMENTAL_NOT_REQUIRED": 1,
-  "UNKNOWN": 2,
+  "SUPPLEMENTAL_NOT_REQUIRED": 3,
+  "UNKNOWN": 0,
   "konformans": {
    "REQUIRED_FAIL": 4,
    "REQUIRED_PASS": 0,
-   "NOT_APPLICABLE": 1,
-   "UNKNOWN": 2
+   "NOT_APPLICABLE": 3,
+   "UNKNOWN": 0
   },
   "poster": [
    {
@@ -422,9 +422,9 @@
      }
     ],
     "STATE_RELEVANCE": null,
-    "APPLICABILITY_VERDICT": "UNKNOWN",
-    "CONFORMANCE_VERDICT": "UNKNOWN",
-    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION · COUNTERFACTUAL_SCENE_REVIEW (detta block)",
+    "APPLICABILITY_VERDICT": "SUPPLEMENTAL_NOT_REQUIRED",
+    "CONFORMANCE_VERDICT": "NOT_APPLICABLE",
+    "APPLICABILITY_PROVENANCE": "HUMAN_OCCURRENCE_ADJUDICATION",
     "kontrafaktisktUtfall": "Utan gransen aterstar en accentfargad etikett \"Starta timer · 8:00\" med en klockglyf, ensam i en stor tom yta under stegrubriken. Ingen annan statisk text i scenen ar accentfargad.",
     "evidens": [
      "VISIBLE_TEXT_PRESENT: \"Starta timer · 8:00\", en handlingsetikett",
@@ -433,8 +433,35 @@
      "SHAPE_CARRIER: 182x48 med 8 px radie, ritad enbart av gransen",
      "OTHER_VISUAL_CARRIERS: accentfargad etikett"
     ],
-    "saknadEvidens": "Om accentfargad etikettext ar en ETABLERAD och dokumenterad kontrollsignal i designsystemet — alltsa om accentfarg pa text systematiskt betyder \"detta gar att trycka pa\" — sa racker etiketten plus klockglyfen och gransen ar supplemental. Nagon sadan regel gar inte att belagga i tokens.json eller i den grafiska manualen. Utan den vilar domen pa en fargkonvention som inte ar nedskriven, och det ar ett designsystembeslut, inte nagot en render kan avgora.",
-    "alternativCarrier": null
+    "saknadEvidens": null,
+    "alternativCarrier": {
+     "PART_ID": "lagaliggande|11#ikon#0",
+     "typ": "ikon",
+     "ikon": "clock",
+     "finnsIKanoniskMatning": true,
+     "kvot": 7.52,
+     "farg": "rgb(220, 169, 104)",
+     "angransande": "rgb(23, 37, 29)"
+    },
+    "OCCURRENCE_RECORD_ID": "NB-LAGALIGGANDE-11-BOUNDARY",
+    "beslutsdatum": "2026-08-17",
+    "motivering": "Utan gransen finns fortfarande en explicit handlingsetikett \"Starta timer\", en semantiskt tydlig klockglyf och en placering i steget som tillsammans identifierar kontrollens operation och gor kontrollen visuellt identifierbar.",
+    "EVIDENCE": [
+     "explicit action label: \"Starta timer · 8:00\"",
+     "clock glyph: kanonisk grafisk del lagaliggande|11#ikon#0, kvot 7.52 mot rgb(23, 37, 29)",
+     "actual scene context / placement: handlingen ligger direkt under stegets instruktion och hor till just det steget"
+    ],
+    "EJ_EVIDENCE": [
+     "same color",
+     "global accent convention",
+     "neighboring control verdict",
+     "same operation across occurrences"
+    ],
+    "observeradStyling": {
+     "guldfargadEtikett": "rgb(220, 169, 104)",
+     "$status": "OBSERVERAT STYLINGFAKTUM — ar INTE verdict provenance och ar inte den barare beslutet vilar pa"
+    },
+    "$separatIdentitet": "Egen occurrence-level-post. Ingen gemensam beslutsidentitet skapas med den andra timerkontrollen, och ingen systemregel harleds ur de tva."
    },
    {
     "SCREEN": "Matlagning — flera timers",
@@ -502,9 +529,9 @@
      }
     ],
     "STATE_RELEVANCE": null,
-    "APPLICABILITY_VERDICT": "UNKNOWN",
-    "CONFORMANCE_VERDICT": "UNKNOWN",
-    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION · COUNTERFACTUAL_SCENE_REVIEW (detta block)",
+    "APPLICABILITY_VERDICT": "SUPPLEMENTAL_NOT_REQUIRED",
+    "CONFORMANCE_VERDICT": "NOT_APPLICABLE",
+    "APPLICABILITY_PROVENANCE": "HUMAN_OCCURRENCE_ADJUDICATION",
     "kontrafaktisktUtfall": "Utan gransen aterstar samma accentfargade etikett med klockglyf. I DEN HAR scenen finns dessutom en annan accentfargad textlank, \"Sla pa notiser\", inuti notisrutan — vilket talar for att accentfarg anvands for handling har.",
     "evidens": [
      "VISIBLE_TEXT_PRESENT: \"Starta timer · 9:00\", en handlingsetikett",
@@ -513,8 +540,35 @@
      "SHAPE_CARRIER: 182x48 med 8 px radie, ritad enbart av gransen",
      "OTHER_VISUAL_CARRIERS: accentfargad etikett; scenen har aven en accentfargad textlank"
     ],
-    "saknadEvidens": "Samma sak som for lagaliggande|11. Scenen ger ett INDICIUM att accentfarg betyder handling, men ett indicium i en scen ar inte en etablerad systemregel, och de tva forekomsterna far inte avgoras tillsammans enbart for att de har samma funktion.",
-    "alternativCarrier": null
+    "saknadEvidens": null,
+    "alternativCarrier": {
+     "PART_ID": "lagatimers|30#ikon#0",
+     "typ": "ikon",
+     "ikon": "clock",
+     "finnsIKanoniskMatning": true,
+     "kvot": 7.52,
+     "farg": "rgb(220, 169, 104)",
+     "angransande": "rgb(23, 37, 29)"
+    },
+    "OCCURRENCE_RECORD_ID": "NB-LAGATIMERS-30-BOUNDARY",
+    "beslutsdatum": "2026-08-17",
+    "motivering": "Utan gransen finns fortfarande en explicit handlingsetikett \"Starta timer\", en semantiskt tydlig klockglyf och en placering i steget som tillsammans identifierar kontrollens operation och gor kontrollen visuellt identifierbar.",
+    "EVIDENCE": [
+     "explicit action label: \"Starta timer · 9:00\"",
+     "clock glyph: kanonisk grafisk del lagatimers|30#ikon#0, kvot 7.52 mot rgb(23, 37, 29)",
+     "actual scene context / placement: handlingen ligger direkt under stegets instruktion och hor till just det steget"
+    ],
+    "EJ_EVIDENCE": [
+     "same color",
+     "global accent convention",
+     "neighboring control verdict",
+     "same operation across occurrences"
+    ],
+    "observeradStyling": {
+     "guldfargadEtikett": "rgb(220, 169, 104)",
+     "$status": "OBSERVERAT STYLINGFAKTUM — ar INTE verdict provenance och ar inte den barare beslutet vilar pa"
+    },
+    "$separatIdentitet": "Egen occurrence-level-post. Ingen gemensam beslutsidentitet skapas med den andra timerkontrollen, och ingen systemregel harleds ur de tva."
    },
    {
     "SCREEN": "Matlagningsläget — timrar och röst",
@@ -626,6 +680,26 @@
     "kvot": 11.36,
     "farg": "rgb(245, 244, 237)",
     "angransande": "rgb(36, 56, 44)"
+   },
+   {
+    "CONTROL_ID": "lagaliggande|11",
+    "PART_ID": "lagaliggande|11#ikon#0",
+    "typ": "ikon",
+    "ikon": "clock",
+    "finnsIKanoniskMatning": true,
+    "kvot": 7.52,
+    "farg": "rgb(220, 169, 104)",
+    "angransande": "rgb(23, 37, 29)"
+   },
+   {
+    "CONTROL_ID": "lagatimers|30",
+    "PART_ID": "lagatimers|30#ikon#0",
+    "typ": "ikon",
+    "ikon": "clock",
+    "finnsIKanoniskMatning": true,
+    "kvot": 7.52,
+    "farg": "rgb(220, 169, 104)",
+    "angransande": "rgb(23, 37, 29)"
    }
   ],
   "$ingaDubbletter": "Ingen ny relation har skapats. Den utpekade bararen fanns redan i den ordinarie matmotorn."
@@ -921,10 +995,20 @@
   "TARGET_REVIEWED": 7,
   "avDeSju": {
    "REQUIRED": 4,
-   "SUPPLEMENTAL": 1,
-   "UNKNOWN": 2
+   "SUPPLEMENTAL": 3,
+   "UNKNOWN": 0
   },
-  "UNKNOWN_APPLICABILITY_AFTER": 1738,
+  "UNKNOWN_APPLICABILITY_AFTER": 1736,
+  "$steg": [
+   {
+    "block": "950494a",
+    "efter": 1738
+   },
+   {
+    "block": "detta",
+    "efter": 1736
+   }
+  ],
   "andradeUtanforDeSju": 0,
   "$regel": "Ingen annan UNKNOWN-identitet har rorts."
  },
@@ -932,13 +1016,20 @@
   "dettaBlock": "SEVEN-NEIGHBOUR APPLICABILITY REVIEW · CLOSED / VERIFIED",
   "15-BOUNDARY REMEDIATION": "CLOSED / VERIFIED",
   "KNOWN_REQUIRED_FAIL": 4,
-  "$nya": "De 4 nya REQUIRED_FAIL kommer ur denna granskning och ar INTE atgardade. De ligger som en egen post infor ett separat design- och remedieringspaket.",
+  "$nya": "De 4 REQUIRED_FAIL ar registrerade och OATGARDADE. De ligger som egen post infor ett separat design- och remedieringspaket.",
   "CURRENT_NON_TEXT_CONTRAST": "OPEN",
-  "UNKNOWN_APPLICABILITY": 1738,
+  "UNKNOWN_APPLICABILITY": 1736,
   "SAFFRON_REMEDIATION": "CLOSED / VERIFIED",
   "PRESSED": "UNTESTED",
   "INACTIVE": "UNTESTED",
   "FOCUS": "UNTESTED",
   "R04_CREDIT": 0
+ },
+ "$uppdaterad": "Tva manskliga occurrence-domar registrerade efter 950494a.",
+ "B2_guldregeln": {
+  "$beslut": "NO_GLOBAL_GOLD_RULE",
+  "$vad": "Guldfargad text ar INTE en etablerad global designsystemregel for att nagot gar att trycka pa. Ingen sadan regel skapas, guld eller accent registreras inte som CONTROL_SIGNAL, och beslutet propageras inte till andra guldfargade texter eller kontroller.",
+  "$logik": "NO_GLOBAL_GOLD_RULE innebar INTE automatiskt REQUIRED_BOUNDARY. Requiredness avgors fortsatt ur den faktiska scenen och samtliga kvarvarande visuella barare.",
+  "$tillampat": "For de tva timerkontrollerna vilar domen pa handlingsetiketten, klockglyfen och placeringen i steget. Guldfargen ar noterad som observerat stylingfaktum."
  }
 }
