@@ -1,7 +1,8 @@
 {
-  "lastRun": "2026-08-12",
+  "lastRun": "2026-08-17",
   "dossiersRefreshed": 0,
-  "acceptRate": 0.688,
-  "scratchCleared": 0,
-  "notes": "No stale dossier markers. .claude/state/ does not exist, tasks/ has no shipped *-plan.md to archive — scratch sweep was a no-op. Accept-rate 0.688, essentially flat from 0.689 last week, above the 0.5 floor."
+  "worldWatchRoles": 2,
+  "retroDue": true,
+  "acceptRate": 0.742,
+  "notes": "No stale dossiers; scanned Security Architect + Release/Compliance (both weekly, no material deltas); full retro overdue since 2026-07-25; accept-rate healthy."
 }
