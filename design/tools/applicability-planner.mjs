@@ -178,3 +178,79 @@ export function forslag(bevis) {
 
 /* Ett forslag far aldrig skrivas som en applicability record i detta skede. */
 export function farSkrivasSomRegisterdom() { return false; }
+
+/* ── 6 · MALSTATUS · dom pa targetdelens EGEN visuella status ───────────── */
+//
+// FELKLASSEN DEN HAR VAGEN FINNS FOR
+// Nar en fyllning inte bidrar med nagon synlig distinktion ar det frestande
+// att motivera domen med "kanten och etiketten racker". Den motiveringen
+// smyger in en dom om KANTEN. Ar kantens egen fraga olost far den inte
+// avgoras pa det sattet. Den har vagen vilar darfor uteslutande pa
+// targetdelens egen matbara status och sager ingenting om nagon annan barare.
+
+export const MALBIDRAG = Object.freeze({
+  TARGET_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION_YES: 'YES',
+  TARGET_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION_NO: 'NO',
+  TARGET_CONTRIBUTION_UNDETERMINED: 'UNDETERMINED' });
+
+export const SONDOPERATION = Object.freeze({
+  TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT:
+    'TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT' });
+
+/* Sonden neutraliserar targetdelens malning till omgivningens effektiva
+ * malning. Den TAR INTE BORT delen: geometri, box, tjocklek och allt annat
+ * star kvar. Bitidentisk rendering betyder att targetens malning inte skapar
+ * nagon synlig distinktion i den nu matta scenen. Ingenting mer. */
+export function malbidrag(sond) {
+  if (!sond || sond.OPERATION !== SONDOPERATION.TARGET_PAINT_NEUTRALIZED_TO_EFFECTIVE_SURROUNDING_PAINT)
+    return MALBIDRAG.TARGET_CONTRIBUTION_UNDETERMINED;
+  const rent = sond.GEOMETRY_DELTA === 0 && sond.CLIPPING_DELTA === 0 &&
+    sond.COLLATERAL_CHANGES === 0 && sond.CLEAN_RESTORATION === true;
+  if (!rent) return MALBIDRAG.TARGET_CONTRIBUTION_UNDETERMINED;
+  if (sond.VISUAL_DIFFERENCE === 'NONE')
+    return MALBIDRAG.TARGET_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION_NO;
+  if (sond.VISUAL_DIFFERENCE === 'PRESENT')
+    return MALBIDRAG.TARGET_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION_YES;
+  return MALBIDRAG.TARGET_CONTRIBUTION_UNDETERMINED;
+}
+
+/* Vad domen ALDRIG far tolkas som. Foljer med varje record. */
+export const OMFATTAR_INTE = Object.freeze([
+  'BOUNDARY_REQUIRED', 'ICON_REQUIRED', 'TEXT_SUFFICIENT', 'CONTROL_CONFORMING',
+  'ANY_OTHER_CARRIER_VERDICT', 'GROUP_VERDICT', 'R04_EVIDENCE' ]);
+
+/* Occurrence-record for den har vagen. Scope ar strikt targetdelen. */
+export function malstatusRecord(indata) {
+  const bidrag = malbidrag(indata.sond);
+  if (bidrag !== MALBIDRAG.TARGET_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION_NO)
+    return { REGISTRERBAR: false, APPLICABILITY_VERDICT: 'UNKNOWN',
+      TARGET_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION: bidrag,
+      skal: 'sonden styrker inte att targetdelen saknar synlig distinktion' };
+  if (indata.HUMAN_APPROVED !== true)
+    return { REGISTRERBAR: false, APPLICABILITY_VERDICT: 'UNKNOWN',
+      TARGET_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION: bidrag,
+      skal: 'ingen mansklig occurrence-approval' };
+  if (indata.STATE_UNDER_TEST === 'STATE_OUT_OF_SCOPE')
+    return { REGISTRERBAR: false, APPLICABILITY_VERDICT: 'UNKNOWN',
+      TARGET_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION: bidrag,
+      skal: 'pressed / inactive / focus ar oprovade och far varken dom eller credit' };
+  return { REGISTRERBAR: true,
+    APPLICABILITY_VERDICT: 'SUPPLEMENTAL_NOT_REQUIRED',
+    VERDICT_SCOPE: 'TARGET_PART_ONLY',
+    TARGET_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION: bidrag,
+    VERDICT_BASIS: 'TARGET_OWN_VISUAL_STATUS',
+    DOES_NOT_IMPLY: OMFATTAR_INTE,
+    R04_CREDIT: 0,
+    skal: 'targetdelens malning ar visuellt identisk med den faktiska omgivande ytan; ' +
+      'neutralisering av targetens malning till omgivningens effektiva malning ger ingen ' +
+      'synlig skillnad i den nu matta scenen. Domen galler exakt denna del och sager ' +
+      'ingenting om nagon annan barares tillamplighet eller konformans.' };
+}
+
+/* Grind mot arv: en dom om en del far aldrig harleda en dom om en annan. */
+export function farArvaDom() { return false; }
+export function harleddDom(fran, till) {
+  return { tillatet: false, fran, till,
+    skal: 'applicability propagerar aldrig mellan grafiska delar, inte heller genom ' +
+      'uteslutningsmetod. Varje barare behaller sin egen applicability-identitet.' };
+}
