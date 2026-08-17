@@ -781,7 +781,183 @@ const CENSUS = C66.N_census;
     ' unknown = ' + CAR.length + ' forslag, ' + m.REGISTRERADE_CARRIER_VERDICTS +
     ' registrerade'); }
 
-const ANTAL = 45;
+/* ═══ BARARDOMARNA REGISTRERADE · ACR-46 … ACR-57 ═════════════════════════
+ * Den farligaste genvagen i det har steget ar summering: tva korrekta
+ * enskilda SUPPLEMENTAL-domar far aldrig laggas ihop till "bada far tas
+ * bort". Proven laser den invarianten maskinellt, inte i prosa. */
+const RS = await import('file://' + resolve('tools/redundancy-set.mjs').replace(/\\/g,'/'));
+const R4 = JSON.parse(readFileSync(resolve('fas2/lagkontrast-register-barare66.json'), 'utf8'));
+const RR = JSON.parse(readFileSync(resolve('fas2/lagkontrast-rereview-50.json'), 'utf8'));
+const REQ = R4.A_required.records, SUP = R4.B_supplemental.records;
+const SETS = R4.C_redundansset.set;
+
+/* ── ACR-46 ─────────────────────────────────────────────────────────────── */
+prov('ACR-46', 'exakt 6 REQUIRED och 60 SUPPLEMENTAL_NOT_REQUIRED registrerade',
+  REQ.length === 6 && SUP.length === 60 && R4.F_records.length === 66 &&
+  new Set(R4.F_records.map(x => x.RELATION_ID)).size === 66 &&
+  R4.F_records.filter(x => x.APPLICABILITY_VERDICT === 'UNKNOWN').length === 0 &&
+  R4.F_records.every(x => x.VERDICT_SCOPE === 'TARGET_PART_ONLY' &&
+    x.VERDICT_PROVENANCE === 'HUMAN_OCCURRENCE_ADJUDICATION') &&
+  R4.E_grindar.every(g => g.ok),
+  REQ.length + ' + ' + SUP.length + ' = ' + R4.F_records.length + ', ' +
+  R4.E_grindar.length + ' grindar');
+
+/* ── ACR-47 ─────────────────────────────────────────────────────────────── */
+prov('ACR-47', 'de sex REQUIRED ligger samtliga pa eller over 3.0 och passerar',
+  REQ.every(x => x.CURRENT_RATIO >= 3 && x.CURRENT_OUTCOME === 'REQUIRED_PASS') &&
+  R4.A_required.REQUIRED_PASS === 6 && R4.A_required.REQUIRED_FAIL === 0 &&
+  REQ.every(x => x.CARRIER_CLASS === 'DRAG_HANDLE') &&
+  REQ.every(x => x.DOES_NOT_IMPLY.includes('PROPAGATION_TO_OTHER_DRAG_ICONS')) &&
+  RR.E_rekonciliation.EFTER.KNOWN_REQUIRED_FAIL === 0,
+  'kvoter ' + [...new Set(REQ.map(x => x.CURRENT_RATIO))].join(',') + ', REQUIRED_PASS ' +
+  R4.A_required.REQUIRED_PASS + ', REQUIRED_FAIL ' + R4.A_required.REQUIRED_FAIL);
+
+/* ── ACR-48 ─────────────────────────────────────────────────────────────── */
+{ const suppBadaBand = new Set(SUP.map(x => x.CURRENT_RATIO < 3 ? 'LT_3' : 'GE_3'));
+  const kastar1 = kastar(() => AP.forslag({ COUNTERFACTUAL_KORD: true, MEASURED_RATIO: 9 }));
+  prov('ACR-48', 'kvoten skapar aldrig en applicability-dom',
+    kastar1 && suppBadaBand.size === 2 &&
+    REQ.every(x => x.CURRENT_RATIO >= 3) &&
+    SUP.some(x => x.CURRENT_RATIO >= 3) && SUP.some(x => x.CURRENT_RATIO < 3) &&
+    R4.F_records.every(x => x.VERDICT_PROVENANCE === 'HUMAN_OCCURRENCE_ADJUDICATION'),
+    'supplemental forekommer i ' + [...suppBadaBand].join('+') +
+    '; forslagsfunktionen kastar pa kvot: ' + kastar1); }
+
+/* ── ACR-49 ─────────────────────────────────────────────────────────────── */
+{ const smitta = R4.F_records.filter(x => x.OTHER_CARRIERS_UNCHANGED
+    .some(c => c.CHANGED_BY_THIS_RECORD || c.APPLICABILITY_BEFORE !== c.APPLICABILITY_AFTER));
+  prov('ACR-49', 'en supplemental-dom skapar aldrig requiredness pa en syskonbarare',
+    smitta.length === 0 &&
+    SUP.every(x => x.DOES_NOT_IMPLY.includes('OTHER_CARRIER_REQUIRED') &&
+      x.DOES_NOT_IMPLY.includes('OTHER_CARRIER_SUPPLEMENTAL') &&
+      x.DOES_NOT_IMPLY.includes('CONTROL_CONFORMING')) &&
+    RS.harledMedlemsdom().tillatet === false && AP.farArvaDom() === false,
+    smitta.length + ' record som andrat en syskonbarare; alla ' + SUP.length +
+    ' bar DOES_NOT_IMPLY'); }
+
+/* ── ACR-50 ─────────────────────────────────────────────────────────────── */
+{ const s = SETS[0];
+  const bada = RS.redundancyGate(s, Object.fromEntries(s.MEMBERS.map(m => [m, false])));
+  const en = RS.redundancyGate(s, Object.fromEntries(s.MEMBERS.map((m,i) => [m, i === 0])));
+  const omatt = RS.redundancyGate(s, {});
+  prov('ACR-50', 'ett redundansset kraver minst en urskiljbar member',
+    SETS.length >= 1 && SETS.every(x => x.MIN_DISTINGUISHABLE_MEMBERS === 1 &&
+      x.MEMBERS.length >= 2 &&
+      x.PROVENANCE === RS.PROVENANS.HUMAN_OCCURRENCE_ADJUDICATION) &&
+    !bada.HALLER && en.HALLER && !omatt.HALLER &&
+    kastar(() => RS.redundancySet({ REDUNDANCY_SET_ID: 'X', MEMBERS: ['a'],
+      PROVENANCE: RS.PROVENANS.HUMAN_OCCURRENCE_ADJUDICATION })) &&
+    kastar(() => RS.redundancySet({ REDUNDANCY_SET_ID: 'X', MEMBERS: ['a','b'],
+      PROVENANCE: 'GROUPING_ALGORITHM' })),
+    SETS.length + ' set; bada neutraliserade ' + bada.HALLER + ', en kvar ' + en.HALLER +
+    ', omatt ' + omatt.HALLER); }
+
+/* ── ACR-51 ─────────────────────────────────────────────────────────────── */
+{ const alla = SETS.map(s => RS.farNeutraliseraSamtidigt(s,
+    Object.fromEntries(s.MEMBERS.map(m => [m, 'SUPPLEMENTAL_NOT_REQUIRED']))));
+  const domar = new Map(R4.F_records.map(x => [x.RELATION_ID, x.APPLICABILITY_VERDICT]));
+  const badaSupp = SETS.filter(s => s.MEMBERS.filter(m =>
+    domar.get(m) === 'SUPPLEMENTAL_NOT_REQUIRED').length >= 1);
+  prov('ACR-51', 'tva supplemental-domar gor inte samtidigt forsvinnande giltigt',
+    alla.every(x => x.tillatet === false) &&
+    alla.every(x => x.grind.HALLER === false) &&
+    alla.some(x => x.allaSupplemental === true || x.allaSupplemental === false) &&
+    badaSupp.length > 0 &&
+    SETS.every(s => s.IMPLIES_MEMBER_REQUIRED === false && s.GROUP_VERDICT === null),
+    'alla ' + SETS.length + ' set nekar samtidig neutralisering; grinden faller i samtliga'); }
+
+/* ── ACR-52 ─────────────────────────────────────────────────────────────── */
+{ const svaga = R4.F_records.filter(x => x.ALL_REMAINING_SIGNALS_BELOW_FLOOR);
+  prov('ACR-52', 'svaga kvarvarande signaler ger ingen control-level closure',
+    R4.D_svagaSignaler.ANTAL === svaga.length && svaga.length === 50 &&
+    R4.D_svagaSignaler.CONTROL_LEVEL_CLOSURE === false &&
+    R4.F_records.every(x => x.CONTROL_LEVEL_CLOSURE === false) &&
+    RS.gerControlLevelClosure() === false &&
+    svaga.every(x => x.OTHER_CARRIERS_UNCHANGED.every(c =>
+      c.APPLICABILITY_BEFORE === c.APPLICABILITY_AFTER)),
+    svaga.length + ' med svaga kvarvarande signaler, ' +
+    R4.F_records.filter(x => x.CONTROL_LEVEL_CLOSURE).length + ' control-level closure'); }
+
+/* ── ACR-53 ─────────────────────────────────────────────────────────────── */
+{ const f = RR.F_de50, g = RR.G_rereview;
+  prov('ACR-53', 'en upplast blockerare skapar bara RE_REVIEW_ELIGIBLE',
+    f.ALL_REFERENCED_BLOCKERS_RESOLVED === 50 && f.RE_REVIEW_ELIGIBLE === 50 &&
+    f.KVARSTAENDE_BLOCKERADE.length === 0 && f.ALLA_FORTFARANDE_UNKNOWN === true &&
+    f.AUTOMATISKA_DOMAR === 0 && g.ALLA_FORTFARANDE_UNKNOWN === true &&
+    g.REGISTRERADE_DOMAR === 0 &&
+    g.poster.every(x => x.ATEROPPNINGSSKAL === 'BLOCKING_CARRIER_ADJUDICATED' &&
+      x.CURRENT_APPLICABILITY === 'UNKNOWN'),
+    f.RE_REVIEW_ELIGIBLE + ' av 50 upplasta, ' + f.AUTOMATISKA_DOMAR + ' automatiska domar'); }
+
+/* ── ACR-54 ─────────────────────────────────────────────────────────────── */
+{ const g = RR.G_rereview;
+  prov('ACR-54', 'ett bararedomslut propagerar aldrig till en fyllningsdom',
+    g.DEPENDENCY_PROPAGATION === 0 &&
+    g.poster.every(x => x.DEPENDENCY_PROPAGATION === false &&
+      x.FORBJUDNA_HARLEDNINGAR.length === 4 &&
+      x.FORBJUDNA_HARLEDNINGAR.includes('BOUNDARY_SUPPLEMENTAL -> FILL_REQUIRED') &&
+      x.FORBJUDNA_HARLEDNINGAR.includes('ICON_REQUIRED -> FILL_SUPPLEMENTAL') &&
+      x.APPLICABILITY_RECORD_WRITTEN === false) &&
+    AP.harleddDom('ICON_SUPPLEMENTAL','FILL_REQUIRED').tillatet === false &&
+    g.FORESLAGNA_NYA_SET > 0 && g.REGISTRERADE_DOMAR === 0 &&
+    RR.C_redundansset.foreslagna.every(s => s.PROVENANCE === null &&
+      s.GROUP_VERDICT === null && /FORESLAGET/.test(s.STATUS)) &&
+    RR.C_redundansset.foreslagna.length === g.FORESLAGNA_NYA_SET,
+    g.DEPENDENCY_PROPAGATION + ' propageringar; ' + g.FORESLAGNA_NYA_SET +
+    ' nya redundansset foreslagna, inga skapade'); }
+
+/* ── ACR-55 ─────────────────────────────────────────────────────────────── */
+{ const h = RR.H_census, e = RR.E_rekonciliation;
+  const partition = Object.values(h.EXKLUSIV_PARTITION).reduce((a,b)=>a+b,0);
+  prov('ACR-55', 'no-blocker-frontiern ar omraknad, inte aterbrukad',
+    h.UNREVIEWED_UNKNOWN === 323 && h.UNREVIEWED_UNKNOWN !== 362 &&
+    partition === h.UNREVIEWED_UNKNOWN && h.PARTITION_SUMMERAR === true &&
+    h.LT3_UNKNOWN === 385 && h.REVIEWED_UNKNOWN === 62 &&
+    h.LT3_UNKNOWN === h.REVIEWED_UNKNOWN + h.UNREVIEWED_UNKNOWN &&
+    typeof h.GAMLA_147_FAR_EJ_ANVANDAS === 'string' &&
+    typeof h.$gamla147 === 'string' && h.MEASUREMENT_GAP === 0 &&
+    e.EFTER.LT3_UNKNOWN === h.LT3_UNKNOWN,
+    'population ' + h.UNREVIEWED_UNKNOWN + ' (var 362), partition ' + partition +
+    ', LT3 ' + h.LT3_UNKNOWN + ' = ' + h.REVIEWED_UNKNOWN + ' + ' + h.UNREVIEWED_UNKNOWN); }
+
+/* ── ACR-56 ─────────────────────────────────────────────────────────────── */
+{ const i = RR.I_typrakning;
+  const summa = Object.values(i.TYPE_COUNTS).reduce((a,b)=>a+b,0);
+  prov('ACR-56', 'typrakningen for de 362 summerar exakt',
+    summa === 362 && i.TOTAL === 362 && i.UNCLASSIFIED === 0 &&
+    i.SAKNADE_TRE.length === 3 &&
+    i.SAKNADE_TRE.every(x => x.kanoniskTyp === 'thumb') &&
+    Object.keys(i.TYPE_COUNTS).length === 4 && i.SUMMERAR === true &&
+    i.RAPPORTERAT_I_PROSA.fyllning + i.RAPPORTERAT_I_PROSA.ram +
+      i.RAPPORTERAT_I_PROSA.ikon === 359,
+    JSON.stringify(i.TYPE_COUNTS) + ' = ' + summa + '; de tre saknade ar ' +
+    i.SAKNADE_TRE.map(x => x.kanoniskTyp).join(',')); }
+
+/* ── ACR-57 ─────────────────────────────────────────────────────────────── */
+{ let d = '', fel = null;
+  try { d = execFileSync('git', ['status','--porcelain'], { cwd: resolve('.'), encoding: 'utf8' }); }
+  catch (e) { fel = e.message; }
+  const produkt = d.split('\n').map(x => x.slice(3).replace(/^"|"$/g,''))
+    .filter(f => f.endsWith('.dc.html'));
+  const K = RR.K_regression, e2 = RR.E_rekonciliation;
+  prov('ACR-57', 'inga produkt-, farg- eller R-04-skrivningar och exakt rekonciliation',
+    !fel && produkt.length === 0 && K.PRODUCT_WRITES === 0 && K.COLOR_WRITES === 0 &&
+    K.R04_WRITES === 0 && K.R04_CREDIT === 0 && K.PRODUKTBASELINE_BITIDENTISK === true &&
+    K.R02_PASS === 1375 && K.GRAPHICAL_PARTS === 1879 && K.BOUNDARIES === 689 &&
+    K.PAINTED_CONTROL_SURFACES === 420 && K.STANDALONE_GRAPHICS === 32 &&
+    K.R01_FINDINGS === 0 && K.KNOWN_REQUIRED_FAIL === 0 &&
+    e2.FORE.UNKNOWN_APPLICABILITY === 1642 && e2.EFTER.UNKNOWN_APPLICABILITY === 1576 &&
+    e2.FORE.LT3_UNKNOWN === 424 && e2.EFTER.LT3_UNKNOWN === 385 &&
+    e2.FORE.GE3_UNKNOWN === 1218 && e2.EFTER.GE3_UNKNOWN === 1191 &&
+    e2.NEW_REQUIRED_PASS === 6 && e2.NEW_SUPPLEMENTAL_NOT_REQUIRED === 60 &&
+    e2.ANDRADE_UTANFOR_REGISTRERINGEN.length === 0 && e2.SLUTER === true &&
+    RR.M_status.REGISTRERADE_FILL_VERDICTS_I_DETTA_BLOCK === 0,
+    (fel || produkt.length + ' andrade produktfiler') + '; ' +
+    e2.FORE.UNKNOWN_APPLICABILITY + ' -> ' + e2.EFTER.UNKNOWN_APPLICABILITY +
+    ', LT3 ' + e2.FORE.LT3_UNKNOWN + ' -> ' + e2.EFTER.LT3_UNKNOWN +
+    ', GE3 ' + e2.FORE.GE3_UNKNOWN + ' -> ' + e2.EFTER.GE3_UNKNOWN); }
+
+const ANTAL = 57;
 for (const r of resultat) {
   console.log((r.ok ? '✔ ' : '✖ ') + r.id.padEnd(9) + r.vad);
   console.log('     ' + r.diag); }
