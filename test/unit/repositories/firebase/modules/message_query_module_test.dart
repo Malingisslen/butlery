@@ -416,4 +416,222 @@ void main() {
       expect(hits, isEmpty);
     });
   });
+
+  group('poll-vote hydration (BUT-1832)', () {
+    // Votes are stored at `messages/{messageId}/poll_votes/{voterUid}`, because
+    // only a message's SENDER may update the message — which denied a vote to
+    // everyone except the poll's own author. Nothing ABOVE the repository was
+    // changed to suit that: the poll widget, `Poll.totalVotes` and
+    // `closePoll`'s winner resolution all still read
+    // `metadata.poll.options[].voterIds`, so this module folds the
+    // subcollection back into that shape on the way out. An unhydrated poll is
+    // not a rendering nit — it reads "0 röster" over real votes and makes
+    // `closePoll` resolve every poll to its first option.
+
+    Future<void> seedPollMessage(
+      CollectionReference<Map<String, dynamic>> messagesRef, {
+      String id = 'poll-1',
+      DateTime? sentAt,
+    }) async {
+      await messagesRef.doc(id).set({
+        'id': id,
+        'conversationId': _conversationId,
+        'senderId': 'user-a',
+        'senderDisplayName': 'user-a',
+        'content': 'Vad ska vi äta?',
+        'type': MessageType.poll.name,
+        'status': MessageStatus.sent.name,
+        'sentAt': Timestamp.fromDate(sentAt ?? DateTime.utc(2026, 1, 1, 10)),
+        'metadata': {
+          'poll': {
+            'id': 'p1',
+            'question': 'Vad ska vi äta?',
+            'creatorId': 'user-a',
+            'isClosed': false,
+            'options': [
+              {'id': 'opt-a', 'text': 'Tacos', 'voterIds': <String>[]},
+              {'id': 'opt-b', 'text': 'Pasta', 'voterIds': <String>[]},
+            ],
+          },
+        },
+      });
+    }
+
+    Future<void> castVote(
+      CollectionReference<Map<String, dynamic>> messagesRef,
+      String messageId,
+      String voterId,
+      List<String> optionIds,
+    ) => messagesRef.doc(messageId).collection('poll_votes').doc(voterId).set({
+      'voterId': voterId,
+      'optionIds': optionIds,
+    });
+
+    List<String> votersFor(Message message, String optionId) {
+      final options =
+          (message.metadata!['poll'] as Map)['options'] as List<dynamic>;
+      final option = options.firstWhere(
+        (o) => (o as Map)['id'] == optionId,
+      );
+      return List<String>.from((option as Map)['voterIds'] as List);
+    }
+
+    test('getMessage folds the subcollection into voterIds', () async {
+      // This path is not cosmetic: `MessagingService.closePoll` reads the poll
+      // through `getMessage` and picks the winner by vote count.
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = firestore.collection('messages');
+      await seedPollMessage(messagesRef);
+      await castVote(messagesRef, 'poll-1', 'user-b', ['opt-b']);
+      await castVote(messagesRef, 'poll-1', 'user-c', ['opt-b']);
+
+      final message = await MessageQueryModule(
+        messagesRef: messagesRef,
+      ).getMessage('poll-1');
+
+      expect(votersFor(message!, 'opt-b'), ['user-b', 'user-c']);
+      expect(votersFor(message, 'opt-a'), isEmpty);
+    });
+
+    test('the stream folds votes in, and re-emits when one changes', () async {
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = firestore.collection('messages');
+      await seedPollMessage(messagesRef);
+      await castVote(messagesRef, 'poll-1', 'user-b', ['opt-a']);
+
+      final stream = MessageQueryModule(
+        messagesRef: messagesRef,
+      ).getConversationMessages(conversationId: _conversationId);
+
+      final first = await stream.first;
+      expect(votersFor(first.single, 'opt-a'), ['user-b']);
+
+      // A vote arriving with no new message must still reach the screen —
+      // otherwise a tap does nothing visible until somebody says something.
+      final later = stream.firstWhere(
+        (msgs) => votersFor(msgs.single, 'opt-a').length == 2,
+      );
+      await castVote(messagesRef, 'poll-1', 'user-c', ['opt-a']);
+      await expectLater(later, completes);
+    });
+
+    test('a multi-choice row counts toward every option it names', () async {
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = firestore.collection('messages');
+      await seedPollMessage(messagesRef);
+      await castVote(messagesRef, 'poll-1', 'user-b', ['opt-a', 'opt-b']);
+
+      final message = await MessageQueryModule(
+        messagesRef: messagesRef,
+      ).getMessage('poll-1');
+
+      expect(votersFor(message!, 'opt-a'), ['user-b']);
+      expect(votersFor(message, 'opt-b'), ['user-b']);
+    });
+
+    test('a stale inline voterIds array is REPLACED, not merged', () async {
+      // Rows written before the move still carry the old array. The tally is
+      // the truth; leaving the array to win would show votes that no
+      // `poll_votes` row backs and that no erasure sweep could ever reach.
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = firestore.collection('messages');
+      await seedPollMessage(messagesRef);
+      await messagesRef.doc('poll-1').update({
+        'metadata.poll.options': [
+          {
+            'id': 'opt-a',
+            'text': 'Tacos',
+            'voterIds': ['ghost-uid'],
+          },
+          {'id': 'opt-b', 'text': 'Pasta', 'voterIds': <String>[]},
+        ],
+      });
+      await castVote(messagesRef, 'poll-1', 'user-b', ['opt-b']);
+
+      final message = await MessageQueryModule(
+        messagesRef: messagesRef,
+      ).getMessage('poll-1');
+
+      expect(votersFor(message!, 'opt-a'), isEmpty);
+      expect(votersFor(message, 'opt-b'), ['user-b']);
+    });
+
+    test('a non-poll message is passed through untouched', () async {
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = firestore.collection('messages');
+      await _seedMessage(
+        messagesRef,
+        id: 'm-1',
+        content: 'hej',
+        sentAt: DateTime.utc(2026, 1, 1, 10),
+      );
+
+      final page = await MessageQueryModule(
+        messagesRef: messagesRef,
+      ).getConversationMessagesPage(conversationId: _conversationId);
+
+      expect(page.single.content, 'hej');
+      expect(page.single.metadata?['poll'], isNull);
+    });
+
+    test('the page reader hydrates too', () async {
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = firestore.collection('messages');
+      await seedPollMessage(messagesRef);
+      await castVote(messagesRef, 'poll-1', 'user-b', ['opt-a']);
+
+      final page = await MessageQueryModule(
+        messagesRef: messagesRef,
+      ).getConversationMessagesPage(conversationId: _conversationId);
+
+      expect(votersFor(page.single, 'opt-a'), ['user-b']);
+    });
+
+    test('the cap hydrates the NEWEST polls, not the oldest', () async {
+      // The cap existed with nothing pinning WHICH polls it keeps, and it kept
+      // the wrong ones: both readers hand the hydrator its list oldest-first,
+      // so taking the first N dropped the polls at the BOTTOM of the chat —
+      // the ones on screen. They rendered "0 röster" over real votes, which is
+      // exactly the failure the module's own header says must not happen.
+      //
+      // Seeded one past the cap so precisely one poll is dropped, and votes are
+      // cast on both ends: without an assertion at each end, selecting from the
+      // wrong end still satisfies the other. Deleting `.reversed` from
+      // `_pollIds` reddens this test and nothing else.
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = firestore.collection('messages');
+
+      const cap = MessageQueryModule.maxHydratedPolls;
+      for (var i = 0; i <= cap; i++) {
+        await seedPollMessage(
+          messagesRef,
+          id: 'poll-$i',
+          // Ascending, so `poll-0` is the oldest and `poll-$cap` the newest.
+          sentAt: DateTime.utc(2026, 1, 1, 10).add(Duration(minutes: i)),
+        );
+      }
+      await castVote(messagesRef, 'poll-0', 'user-oldest', ['opt-a']);
+      await castVote(messagesRef, 'poll-$cap', 'user-newest', ['opt-a']);
+
+      final page = await MessageQueryModule(
+        messagesRef: messagesRef,
+      ).getConversationMessagesPage(conversationId: _conversationId);
+
+      final newest = page.firstWhere((m) => m.id == 'poll-$cap');
+      final oldest = page.firstWhere((m) => m.id == 'poll-0');
+
+      expect(
+        votersFor(newest, 'opt-a'),
+        ['user-newest'],
+        reason: 'the newest poll is on screen and must be hydrated',
+      );
+      expect(
+        votersFor(oldest, 'opt-a'),
+        isEmpty,
+        reason:
+            'the one poll past the cap is the OLDEST, not the newest — '
+            'its stored (empty) array is passed through untouched',
+      );
+    });
+  });
 }

@@ -28,6 +28,9 @@ class MessageMutationModule {
     this.timestampProvider = const ServerTimestampProvider(),
   });
 
+  CollectionReference<Map<String, dynamic>> pollVotesRef(String messageId) =>
+      messagesRef.doc(messageId).collection(FirestoreCollections.pollVotes);
+
   /// Send message with atomic conversation update (complex 175-line operation).
   Future<void> sendMessage(Message message) async {
     try {
@@ -477,54 +480,73 @@ class MessageMutationModule {
     }
   }
 
-  /// Vote on a poll option in a message.
+  /// Vote on (or toggle off) a poll option.
+  ///
+  /// Writes `messages/{messageId}/poll_votes/{voterId}` — one row per voter,
+  /// doc id == voter uid — never the message document (BUT-1832). Casting a
+  /// vote used to be an update of `metadata.poll.options[].voterIds` on the
+  /// message, and `firestore.rules` lets only a message's SENDER update it, so
+  /// every vote by anyone other than the poll's own author was denied. The
+  /// permission is not something a wider message rule could grant: a rule
+  /// cannot walk a list of maps, so "change only your own entry inside
+  /// options[i].voterIds" is not expressible, while any rule loose enough to
+  /// permit the write would also let a participant rewrite the question and
+  /// everybody else's votes. With the voter in the PATH the rule is exact.
+  ///
+  /// The transaction is on the voter's own row, so two people voting at once no
+  /// longer contend for one document the way the old whole-metadata rewrite did.
   Future<void> votePoll({
     required String messageId,
     required String optionId,
     required String voterId,
     required bool allowMultiple,
   }) async {
-    final messageRef = messagesRef.doc(messageId);
+    final voteRef = pollVotesRef(messageId).doc(voterId);
 
     await firestore.runTransaction((transaction) async {
-      final doc = await transaction.get(messageRef);
-      if (!doc.exists) return;
+      final doc = await transaction.get(voteRef);
+      final existing = doc.exists
+          ? List<String>.from(
+              (doc.data()?['optionIds'] as List<dynamic>? ?? const [])
+                  .whereType<String>(),
+            )
+          : <String>[];
 
-      final data = doc.data()!;
-      final metadata = Map<String, dynamic>.from(data['metadata'] ?? {});
-      final pollMap = Map<String, dynamic>.from(metadata['poll'] ?? {});
-      final options =
-          (pollMap['options'] as List<dynamic>?)
-              ?.map((o) => Map<String, dynamic>.from(o as Map))
-              .toList() ??
-          [];
-
-      // Remove user from all options if single choice
-      if (!allowMultiple) {
-        for (final option in options) {
-          final voters = List<String>.from(option['voterIds'] ?? []);
-          voters.remove(voterId);
-          option['voterIds'] = voters;
+      // Behaviour preserved from the inline version, both branches:
+      //   multi-choice — tapping an option toggles it, leaving the others alone;
+      //   single-choice — the pick REPLACES the previous one, and re-tapping
+      //   your current choice leaves it selected rather than clearing it. The
+      //   old code reached that second one by stripping every option and then
+      //   adding back, which nets to "stays voted"; stated directly here so it
+      //   reads as the decision it is and not as a missing toggle.
+      final List<String> next;
+      if (allowMultiple) {
+        next = List<String>.from(existing);
+        if (next.contains(optionId)) {
+          next.remove(optionId);
+        } else {
+          next.add(optionId);
         }
+      } else {
+        next = <String>[optionId];
       }
 
-      // Toggle vote on target option
-      for (final option in options) {
-        if (option['id'] == optionId) {
-          final voters = List<String>.from(option['voterIds'] ?? []);
-          if (voters.contains(voterId)) {
-            voters.remove(voterId);
-          } else {
-            voters.add(voterId);
-          }
-          option['voterIds'] = voters;
-          break;
-        }
+      if (next.isEmpty) {
+        // No selection left. Delete rather than keep an empty row: an empty row
+        // is still a uid on a document other participants read, and Art. 17
+        // should not have to erase what carries no information.
+        if (doc.exists) transaction.delete(voteRef);
+        return;
       }
 
-      pollMap['options'] = options;
-      metadata['poll'] = pollMap;
-      transaction.update(messageRef, {'metadata': metadata});
+      transaction.set(voteRef, {
+        // Duplicated from the doc id on purpose — the erasure sweep queries by
+        // FIELD (`collectionGroup('poll_votes').where('voterId', ...)`), and a
+        // document id is not a field any query or `hasOnly` can see.
+        'voterId': voterId,
+        'optionIds': next,
+        'votedAt': timestampProvider.serverTimestamp(),
+      });
     });
 
     AppLogger.debug('Poll vote recorded for message $messageId');

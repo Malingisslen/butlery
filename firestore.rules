@@ -64,11 +64,6 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
     
-    // Check if user is the owner of the document
-    function isDocumentOwner() {
-      return isAuthenticated() && request.auth.uid == resource.data.userId;
-    }
-    
     // Check if user is creating their own document
     function isCreatingOwnDocument() {
       return isAuthenticated() && request.auth.uid == request.resource.data.userId;
@@ -77,11 +72,6 @@ service cloud.firestore {
     // Check if user is in a list of users
     function isInList(field) {
       return isAuthenticated() && request.auth.uid in resource.data[field];
-    }
-    
-    // Check if user is creating a document with themselves in a list
-    function isAddingSelfToList(field) {
-      return isAuthenticated() && request.auth.uid in request.resource.data[field];
     }
     
     // Validate that required fields exist
@@ -754,10 +744,47 @@ service cloud.firestore {
         || isSharedMember('shared_content', contentId)
         || request.auth.uid in resource.data.sharedToUserIds
       );
+      // BUT-1812. `contentId` is an AUTO-ID for all three content types: every
+      // share writes its own row. It used to be the recipeId for recipes only,
+      // which made a second share of the same recipe an UPDATE of whatever row
+      // already sat there — including one another user had created, which the
+      // update branch below then refused, so the re-share added nobody to
+      // `sharedToUserIds` and the intended recipients got neither the read grant
+      // nor their Art. 15 row. Nothing in the rule could fix that: `allow get`
+      // and `allow update` are both false for a stranger's document, by design.
+      // The id is what had to change. Do NOT re-derive `contentId` from the
+      // content's own id in any writer — that reintroduces the collision, and
+      // it also turns this collection into an existence oracle over recipe ids.
+      //
+      // `sharedToUserIds` joins the required set because it is the only
+      // membership this collection can be QUERIED on. The recipient's `list`
+      // branch above reads it and nothing else — there is no `isSharedMember`
+      // limb on `list` — and every reader that arrives by query rather than by
+      // document id filters on it: the group shared-content feed
+      // (`arrayContainsAny` over the group's uids), the Art. 15 export, and the
+      // Art. 17 cascade's scrub. A row created without it is reachable only by
+      // someone who already knows its id, which is the same silent loss
+      // BUT-1812 produced, arrived at from the other direction.
+      //
+      // What makes the requirement satisfiable is `BaseSharedContentRepository
+      // .createSharedContent`, which stamps the field on every create at the
+      // one point where the row is built — NOT the three models' `toFirestore`,
+      // none of which emits it, and not the callers: only the recipe repository
+      // passes a list, and the other THREE call sites (the menu repository, the
+      // shopping-list repository, and `BaseSocialCoordinator`, which calls the
+      // method directly rather than through either) pass none at all. Do not
+      // move the stamp back out to the call sites: this rule
+      // then denies the menu and shopping-list share flows outright, which is
+      // exactly what it did on the day it was written.
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
-        && hasRequiredFields(['sharedByUserId', 'contentType', 'sharedAt'])
+        && hasRequiredFields(['sharedByUserId', 'contentType', 'sharedAt', 'sharedToUserIds'])
+        && request.resource.data.sharedToUserIds is list
         && rateLimitWrite('shared_content', 10);
+
+      // Update stays for the in-place edits the menu and shopping-list flows
+      // make to a row they already own (title, isActive, recipient list). It is
+      // no longer on the recipe re-share path at all — that is a create now.
       allow update: if isAuthenticated()
         && cannotModify(['sharedByUserId', 'contentType', 'sharedAt'])
         && (request.auth.uid == resource.data.sharedByUserId
@@ -1993,8 +2020,144 @@ service cloud.firestore {
         && request.resource.data.content.size() <= 5000
         && cannotModify(['senderId', 'conversationId', 'sentAt']);
 
+      // RECEIPTS. A SEPARATE `allow update` statement, deliberately not OR'd
+      // into the sender branch above (BUT-1832). Two rules that grant different
+      // things to different callers must not share one predicate: an `||` makes
+      // every conjunct on one side reachable by the other side's caller, and the
+      // whole point here is that a RECIPIENT gets a strictly smaller grant than
+      // the sender. Firestore evaluates `allow` statements independently and
+      // permits the write if ANY of them passes, so splitting costs nothing and
+      // makes each grant readable on its own.
+      //
+      // `markMessageAsRead` and `batchMarkAsDelivered` both write exactly these
+      // keys, and both are called by the person RECEIVING the message — so under
+      // the sender-only rule above every read receipt in the app was denied, the
+      // repository rethrew, and the service swallowed it. Same rule, same trap as
+      // the poll vote: a write that only the message's author was allowed to make,
+      // on behalf of everybody else.
+      allow update: if isAuthenticated()
+        && request.auth.uid in convOf(resource.data.conversationId).data.participantIds
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'deliveredAt', 'readAt', 'updatedAt']);
+
       // Can delete your own messages
       allow delete: if isAuthenticated() && request.auth.uid == resource.data.senderId;
+
+      // POLL VOTES — one document per voter, doc id == voter uid (BUT-1832).
+      //
+      // Votes used to live inline, in `metadata.poll.options[].voterIds` on the
+      // message itself, so casting one was an UPDATE of the message — which the
+      // sender-only rule above denied for everyone except the poll's author. The
+      // fix is not a wider message rule: a rule cannot walk a list of maps, so
+      // "you may change only your own entry in options[i].voterIds" is not
+      // expressible, and any rule permissive enough to allow the vote would also
+      // allow a participant to rewrite the question, the other options and other
+      // people's votes. Making the doc id the voter's uid moves that constraint
+      // into the PATH, where a rule can enforce it exactly.
+      //
+      // Erasure: `deletePollVotes` in the account-deletion cascade sweeps these
+      // by `voterId` (BUT-1835). The Admin SDK bypasses rules, so no
+      // collection-group `match` is added here — one would only widen client
+      // reach past the per-conversation gate below.
+      match /poll_votes/{voterId} {
+        function pollMessage() {
+          return get(/databases/$(database)/documents/messages/$(messageId));
+        }
+
+        // Membership in the poll's conversation decides who may see or cast a
+        // vote. That is the membership HALF of the message read rule, and ONLY
+        // that half: BUT-1838's `memberSince` cut-off is not reproduced here.
+        //
+        // Measured 2026-08-17 on a group whose `memberSince` postdates the poll
+        // — a late joiner is DENIED the poll message but ALLOWED to read the
+        // tally AND to cast a vote in it. The write half is the part a
+        // read-focused reading misses, so an editor repairing "the read" would
+        // have no reason to look at `create`.
+        //
+        // Deliberately out of scope for the BUT-1801 salvage; recorded in
+        // `.claude/rules/accepted-deviations.md`. The fix is the same cut-off on
+        // the read AND the create/update limbs, not just the read.
+        function inPollConversation() {
+          return request.auth.uid in get(/databases/$(database)/documents/conversations/$(pollMessage().data.conversationId)).data.participantIds;
+        }
+
+        // A nullable map has FOUR states here, not two, and this chain gives
+        // three different answers. Measured 2026-08-17:
+        //   · `metadata` absent            → defaults cascade → reads OPEN → ALLOWS
+        //   · `metadata: null`             → `.get` on a present-null key returns
+        //     null, the next `.get` is a CEL error → DENIES
+        //   · `metadata` a map, no `poll`  → `.get('poll', {})` → `{}` →
+        //     `.get('isClosed', false)` → false → reads OPEN → ALLOWS
+        //   · a real open poll             → ALLOWS
+        //
+        // Row 2 is what `MessageDto.toFirestore` writes for a plain message: it
+        // emits `'metadata': message.metadata` unconditionally, so an ordinary
+        // message stores null and denies — by CEL accident, not design.
+        //
+        // ROW 3 IS THE LIVE GAP, and it is not exotic: `Message.recipeShare`,
+        // `Message.menuShare` and `Message.shoppingListShare` all store
+        // `{'recipeId': …}`-shaped maps, and the group system-message CF writes
+        // another. Every share card in every chat accepts a vote today, creating
+        // a junk `poll_votes` row on a non-poll.
+        //
+        // Note what that costs the owed repair: an `is map` guard CANNOT close
+        // row 3, because a map without the key IS a map. A repair written from a
+        // three-row reading would land the ternary, believe the gap decided, and
+        // leave the live case open. Whoever repairs this must test `poll` for
+        // presence, not `metadata` for type.
+        //
+        // Harm is low either way — the row carries the caller's own uid, reading
+        // the tally is membership-gated, `isValidVote()` bounds it to three keys
+        // and ≤20 ids, and `deletePollVotes` erases it by collection group
+        // wherever it sits — so this is pinned as today's behaviour in
+        // `poll-votes-rules.test.ts` rather than changed inside a salvage.
+        //
+        // Two earlier claims were removed rather than reworded, both false: that
+        // the `{}` defaults keep the branch evaluable (they do not, for null),
+        // and that a bad chain here would make a poll UNREADABLE (`allow read`
+        // never calls this function).
+        //
+        // The repair is the `x is map ? ... : null` ternary BUT-1788 established
+        // for the conversations rule, and it must also decide the absent case on
+        // purpose. Owed, not done here — this is a salvage, and widening it into
+        // a rules-semantics change is how the last one grew out of control.
+        // Measured: with `: null` as the else branch the suite stays green; with
+        // `: {}` it reddens the null test. That else branch IS the security
+        // decision, so do not pick it by reflex.
+        function pollIsOpen() {
+          return pollMessage().data.get('metadata', {})
+                   .get('poll', {}).get('isClosed', false) == false;
+        }
+
+        // The whole document, allow-listed. A DENY-list here would let a voter
+        // stamp arbitrary keys onto a row every other participant reads.
+        function isValidVote() {
+          return request.resource.data.keys().hasOnly(['voterId', 'optionIds', 'votedAt'])
+            && request.resource.data.voterId == voterId
+            && request.resource.data.optionIds is list
+            && request.resource.data.optionIds.size() <= 20;
+        }
+
+        // Every participant reads the tally; only the voter writes their row.
+        allow read: if isAuthenticated() && inPollConversation();
+
+        allow create: if isAuthenticated()
+          && request.auth.uid == voterId
+          && inPollConversation()
+          && pollIsOpen()
+          && isValidVote();
+
+        allow update: if isAuthenticated()
+          && request.auth.uid == voterId
+          && inPollConversation()
+          && pollIsOpen()
+          && isValidVote();
+
+        // Un-voting stays possible after the poll closes: the row is the
+        // voter's own personal data, and Art. 17 erasure must not depend on
+        // whether somebody else pressed "avsluta".
+        allow delete: if isAuthenticated() && request.auth.uid == voterId;
+      }
 
       // Moderation override: admins may read + delete any reported message.
       // Read needed for moderator preview — base read rule restricts to

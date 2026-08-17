@@ -14,6 +14,14 @@ abstract final class FirestoreCollections {
   static const String socialRequests = 'social_requests';
   static const String conversations = 'conversations';
   static const String messages = 'messages';
+
+  /// Subcollection of `messages/{messageId}` — one row per voter, doc id ==
+  /// voter uid (BUT-1832). Named here rather than inline in the two modules
+  /// that speak it, because the writer, the reader and the Art. 17 sweep must
+  /// agree on the spelling and a typo in any of them is a query that matches
+  /// nothing and throws nothing.
+  static const String pollVotes = 'poll_votes';
+
   static const String ingredients = 'ingredients';
   static const String ingredientSuggestions = 'ingredient_suggestions';
   static const String auditLogs = 'audit_logs';

@@ -53,6 +53,15 @@ it after rule changes — don't write rules tests yourself.
 
 ## Cost principles (CLAUDE.md)
 
+- **A read budget must count the RULE's `get()`s, not just the client's read.**
+  `get()`/`exists()`/`getAfter()` in `firestore.rules` are billed as document reads, and the
+  per-evaluation cache only collapses repeats of the SAME document inside ONE request — so a
+  per-document probe behind a rule that chains two lookups costs 3×, re-billed on every probe.
+  Butlery's poll-vote export leg (2026-08-17): `inPollConversation()` fetches the message then
+  its conversation, so `maxConversations × cap × 3` = 100 × 200 × 3 ≈ 60 000, against the 50 000
+  the comment claimed the cap avoided. A missing document still bills one read, so a probe that
+  fires unconditionally charges the user who has nothing there. Re-derive any "N reads worst
+  case" sentence by opening the rule the read passes through.
 - Avoid unnecessary Firebase reads/writes.
 - Batch operations (Firestore batch limit: **500 ops per batch**;
   consolidated updates = 1 op per doc).
@@ -78,7 +87,14 @@ Critical finding if any of these is missing for a new user-data feature.
 
 - Input validation and sanitization on every write boundary.
 - Error handling must NOT leak sensitive data (no raw Firestore error
-  messages to the user).
+  messages to the user). **Grade an interpolated `$e` by its SINK and by the SHAPE OF THE READ,
+  never by the word "exception."** In Butlery, `AppLogger.warning` reaches `developer.log` only,
+  while `AppLogger.error` also reaches Crashlytics + analytics and runs the uid redactor — so
+  promoting a log level is a privacy change. And the `create_composite` URL that carries another
+  user's uid (BUT-1721/BUT-1732) can only come from a QUERY: a single-document `get()` cannot
+  produce a `FAILED_PRECONDITION` index hint. Check separately that the string never reaches the
+  Art. 15 bundle — `DataExportService` derives its warning from `error_code` and never copies
+  `error` through, which is the shape to keep.
 - Audit logging for security-critical operations (rule grants, role
   changes, deletions).
 - No exposed API keys or credentials — `.env` is gitignored; check
@@ -100,6 +116,27 @@ Critical finding if any of these is missing for a new user-data feature.
 - Listeners attached in `initState`/ViewModel `init`.
 - Listeners disposed in `dispose()` — leak finder catches violations.
 - Stream errors handled (don't let an unhandled stream crash the UI).
+- **HYDRATING a page of parents with a per-parent SUBCOLLECTION has three failure modes, and
+  only the first is about leaks (BUT-1832, `message_query_module.dart`).** (a) `switchMap` over
+  the parent stream tears down and rebuilds EVERY inner listener on every parent emission — no
+  leak, but a fresh billed query plus the rule's own `get()` reads each time, and a chat's
+  parents re-emit constantly (status flips, delivery + read receipts). Key the inner set by the
+  parent-ID SET (`distinct`) so it only rebuilds when that set changes. (b) A `.take(n)` cap
+  applied AFTER the list has been `.reversed` to oldest-first keeps the WRONG END — the rows the
+  user is looking at are the ones left unhydrated. Cap on the same end the user reads from.
+  (c) The hydration must reach EVERY reader that hands the entity out — stream, page, single-doc
+  AND search. A comment in the file saying "anything that hands one out must hydrate" is not a
+  control; grep the class's own public methods and check each. Also verify what the UNHYDRATED
+  value actually causes before writing it down: here the comment claimed a failed tally makes
+  `closePoll` pick the first option, but `_resolveWinner` returns null at `voteCount == 0`, so
+  the real outcome is a silent no-resolution. **Status 2026-08-17: (b) and (c) are FIXED; (a) is
+  still open — `getConversationMessages` still `switchMap`s straight off the message stream with
+  no `distinct` on the poll-ID set.** (d) A fourth mode, and the subtlest: **an error handler that
+  returns an EMPTY collection is fail-CLOSED, not fail-open.** `onErrorReturnWith((e,_) => {})`
+  put a PRESENT empty tally in the map, so the merge ran and blanked every option's stored
+  `voterIds`; only a null/absent marker that the combiner FILTERS OUT leaves the entity untouched,
+  which is what the sibling one-shot `catch` achieves by never adding the key. Read what the
+  fallback value does DOWNSTREAM in the merge, not what the comment beside it claims.
 
 ## Severity tagging for findings
 
@@ -316,6 +353,19 @@ personal→collaborative leg only.
 - A collection with no rule block silently default-denies
   (`match /{document=**}{allow read,write:if false}`) — writes look implemented but are
   rejected. Grep `firestore.rules` for every new collection path in a diff first.
+  **A denied READ is worse than dead code when it shares a `try` with siblings: it DISCARDS
+  what they already collected.** BUT-1801 — `ContentExportManager.exportRecipes` read
+  `users/{uid}/recipes`, then probed a top-level `recipes` collection no rule grants;
+  `ExportPaginationHelper.fetchCapped` does not catch, so the `permission-denied` unwound past
+  the personal rows into the one section-level catch and every Art. 15 bundle returned
+  `recipes-export-failed` with zero recipes. So on any multi-probe section, check EACH read in
+  the try against the rules and ask what the other reads lose when it throws; the shipped
+  correct shape is `shared_shopping_list_export.dart`, whose refusable third probe carries its
+  own inner try. Note the ADMIN-ONLY collection-group rule (`match /{path=**}/recipes/{id}
+  { allow read: if isAdmin(); }`) is the trap: it makes "no match block at all" a false
+  sentence while changing nothing for a real user, so word the finding as "no rule grants a
+  client this read" and cite the line. And a `FakeFirebaseFirestore` test is evidence about the
+  QUERY, never about the PERMISSION — five green tests covered that probe for its whole life.
 - **A DETERMINISTIC COMPOSITE DOC ID (`{parentId}_{uid}`) is an identity claim only if
   something BINDS the body to the path.** Butlery's models parse identity from the body
   (`fromMap(String id, data)` routinely ignores its `id` parameter) while the rule that is
@@ -1187,6 +1237,31 @@ personal→collaborative leg only.
   checks on any "never invent state from a network blip" fix: follow the fallback's own loader to
   the parser and require an unusable payload to be indistinguishable from an absent one (null,
   not a populated default), and grep for the LEGACY on-disk shape the previous version wrote.
+- **RELOCATING a field out of a document into a subcollection silently drops it from every
+  DERIVED surface, and the erasure ticket is the one that gets written.** BUT-1832 moved poll
+  votes from `messages/{id}.metadata.poll.options[].voterIds` into
+  `messages/{id}/poll_votes/{voterUid}` and shipped a rules block, a `COLLECTION_GROUP`
+  fieldOverride and an Art. 17 sweep (BUT-1835) — but the Art. 15 export reads raw message
+  documents, so the requester's own votes left the bundle, and the section's own
+  `data_minimisation` prose still named poll `voterIds` as kept. Rule: when a write path moves
+  data, enumerate FOUR consumers and say what each one now reads — display/read path, Art. 15
+  export, Art. 17 cascade + `probeResidualData`, and the rules validator — never just the two the
+  ticket names. Two traps in the export half specifically: a client-side export CANNOT reach the
+  new rows by `collectionGroup` unless a collection-group `match` exists (Butlery deliberately
+  omitted one, so the export must hydrate per parent document, which the participant read rule
+  allows); and a bundle that describes its own contents in prose becomes FALSE the moment the
+  storage shape moves under it, which is the same "a comment is an untested assertion" failure
+  with legal weight. BUT-1832/BUT-1835, 2026-08-16
+- **A per-item live fan-out placed under `switchMap` re-subscribes the WHOLE fan on every
+  upstream emission.** `MessageQueryModule` opens one `poll_votes` listener per visible poll and
+  rebuilds all of them each time any message document changes (a send, the `status:sent` flip
+  100 ms later, every read receipt) — each rebuild re-reads every visible poll's subcollection,
+  billed. `CombineLatestStream.list` also withholds the FIRST emission until every inner stream
+  has answered, so the message list itself is gated on the overlay's reads. Key inner listeners
+  by id and reuse them across emissions, and give the overlay a `startWith` so the payload
+  renders without it. Same review question for any "hydrate a list from N subcollections" design:
+  which stream operator owns the subscription lifetime, and does the cap select the items the
+  user is actually looking at (a `.take(N)` after a `.reversed` picks the OLDEST N). 2026-08-16
 
 ### Age gating & minors (server-authoritative — protected category)
 - Swedish legal floor is **15** (Dataskyddslagen 2 kap. 4§, information-society + social

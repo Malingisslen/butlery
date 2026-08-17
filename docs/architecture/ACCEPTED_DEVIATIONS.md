@@ -1813,3 +1813,95 @@ harmonisation mutant — test 8 is the one that catches it.
 `pantry_item_card.dart`'s `'${item.formattedQuantity} ${item.unit}'`. Filed as BUT-1863, and
 that line carries a pointer back. It existed before, but this change makes it durable, because
 opening and saving no longer normalises the unit away.
+
+## Poll votes on non-poll messages, and the missing `memberSince` cut-off (BUT-1832, 2026-08-17)
+
+**Decision (Malin, 2026-08-17): ship, fix separately, record it.**
+
+### What the gap is
+
+`match /messages/{messageId}/poll_votes/{voterId}` gates writes on `pollIsOpen()`:
+
+```
+pollMessage().data.get('metadata', {}).get('poll', {}).get('isClosed', false) == false
+```
+
+A nullable map has four states here and this chain gives three answers. Measured 2026-08-17,
+and each row has its own green test in `functions/src/__tests__/poll-votes-rules.test.ts`:
+
+| `metadata` | result | test |
+| -- | -- | -- |
+| absent | ALLOWS a vote | V10e |
+| `null` | DENIES (CEL error on the second `.get`) | V10d |
+| a map with no `poll` key | **ALLOWS a vote** | V10f |
+| a real open poll | ALLOWS | V1 / V2 |
+
+Row 3 is the live one. `Message.recipeShare`, `Message.menuShare`, `Message.shoppingListShare`
+and the group system-message Cloud Function all write a metadata map with no `poll` key, so every
+share card and every system row in every chat currently accepts a `poll_votes` row.
+
+Eleven further shapes were swept during review; every one either falls inside row 3's class or
+fails closed. Notably `isClosed: "true"` denies, so a tampered client cannot force the branch open
+with a non-boolean.
+
+### Why it ships
+
+The harm bound Malin was shown, and decided on:
+
+- the row carries only the caller's own uid — `isValidVote()` pins `data.voterId == voterId` and
+  every write verb pins `request.auth.uid == voterId`;
+- it is limited to three keys and at most 20 option ids;
+- reading the tally is gated on conversation membership;
+- `deletePollVotes` erases it by collection group at account deletion;
+- no UI renders it.
+
+And the counter-argument against fixing it here: this is a salvage of a batch that was already
+held once, and a rules-semantics change inside a salvage is precisely how the preceding sprint
+lost three tickets. The rule is new but the *shape* is not a regression this change introduced.
+
+### The repair, and the trap in it
+
+**Test `poll` for PRESENCE, not `metadata` for TYPE.** The obvious repair — the
+`x is map ? ... : null` ternary BUT-1788 established for the conversations rule — does NOT close
+row 3, because a map without the key is still a map. A repair written from the null case alone
+would land, look finished, and leave the live case open.
+
+Mutation-probed during review, all three through a copy (the rules file was never written):
+
+| mutant | result |
+| -- | -- |
+| the owed repair (`is map && 'poll' in metadata && ...`) | 31/33 — reddens exactly V10e and V10f |
+| `is map ? metadata : null` | 33/33 — the gap stays open, silently |
+| `is map ? metadata : {}` | 32/33 — reddens V10d; flips null to ALLOW |
+
+So the tests do not *force* the repair; they register which cases it has decided. That is stated
+in their own comments rather than left to be discovered.
+
+**Art. 15 / Art. 17 asymmetry to close in the same change:** the export probes only messages where
+`metadata['poll'] is Map`, while the cascade erases by collection group regardless of parent shape.
+A vote row planted on a share card is therefore erasable but not exportable. Cover both sides.
+
+### The second entry: `inPollConversation()` is not full parity
+
+The helper's own comment introduced it as "the same membership test the message read rule uses,
+one document further out". The membership half is the same; the rest is not. BUT-1838's
+`memberSince` history cut-off is **not** reproduced. Measured 2026-08-17 on a group whose
+`memberSince` postdates the poll:
+
+- late joiner reads the poll MESSAGE → **DENIED** (the cut-off)
+- late joiner reads the poll_votes TALLY → **ALLOWED**
+- late joiner CASTS a vote in it → **ALLOWED**
+
+The write half is the part a read-focused reading misses; a future editor repairing "the read"
+would have no reason to look at `create`. Also deferred out of the salvage, for the same reason,
+and the fix is the cut-off on the read AND the create/update limbs.
+
+**Second Art. 15 route, orthogonal to the map-without-`poll` one above.** Because a late
+joiner may CAST a vote in a pre-join poll, and the conversations export applies the
+`memberSince` filter that drops that message before the vote probe runs, such a row is
+erasable (the collection-group sweep ignores parent shape) but never exportable. The entry
+above names the export gap for the map-without-`poll` case only; this is a different way in
+to the same shortfall, and the repair must cover both. Raised by the
+`firebase-backend-security` gate, 2026-08-17.
+
+Both raised by the `firestore-rules-tester` gate during the BUT-1801 salvage review.

@@ -1,24 +1,42 @@
 /// GDPR Article 20 export operations for the recipe repository — extracted
-/// from `firebase_recipe_repository.dart` per BUT-536. Both methods cover
-/// one of the two storage shapes recipes have lived in: the per-user
-/// subcollection (`users/{userId}/recipes`) and the legacy top-level
-/// `recipes` collection with a `userId` field. Together they fully cover
-/// the personal-recipes export surface (BUT-501).
+/// from `firebase_recipe_repository.dart` per BUT-536.
+///
+/// There is ONE storage shape: `users/{userId}/recipes`. A second method here
+/// used to query a top-level `recipes` collection alongside it, described as a
+/// legacy shape carrying a `userId` field. No rule grants a CLIENT that read —
+/// the only other `recipes` block in `firestore.rules` is the admin-only,
+/// READ-ONLY collection-group catch-all, `match /{path=**}/recipes/{recipeId}`
+/// — so the query fell to the default deny. And because
+/// `ContentExportManager.exportRecipes` wraps both halves in ONE try/catch, the
+/// denial threw away the personal recipes it had already collected and returned
+/// `recipes-export-failed`. Every Art. 15 bundle lost its whole recipe section
+/// (BUT-1801).
+///
+/// Do not reinstate it HERE. Every recipe this app writes goes to
+/// `users/{userId}/recipes`, which the surviving method reads.
+///
+/// Note the scope of that claim: it is about CLIENTS. The Admin SDK needs no
+/// rule, so "no client can read it" was never the same as "nothing can be
+/// there" — which is why the account-deletion cascade still sweeps the
+/// top-level collection, and why an integration test plants a document there to
+/// prove it. Two earlier drafts of this comment got that wrong, first by
+/// claiming no rule existed at all and then by inferring write-impossibility
+/// from a read denial. Cited by match pattern, not line number, because the
+/// first correction cited a line that had already moved.
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:butlery/core/constants/firestore_collections.dart';
-
 class RecipeGdprExportOperations {
   RecipeGdprExportOperations({
-    required this.firestore,
     required this.getCollectionForUser,
     required this.requireCurrentUserId,
     required this.validateOwnership,
   });
 
-  final FirebaseFirestore firestore;
+  // No `FirebaseFirestore` handle: the only method left reaches its collection
+  // through `getCollectionForUser`, which is already user-scoped. A raw handle
+  // here is what let the removed top-level query exist at all.
   final CollectionReference<Map<String, dynamic>> Function(String userId)
   getCollectionForUser;
   final String Function() requireCurrentUserId;
@@ -45,28 +63,6 @@ class RecipeGdprExportOperations {
     final snapshot = await getCollectionForUser(
       userId,
     ).limit(maxDocuments).get();
-    return snapshot.docs
-        .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
-        .toList();
-  }
-
-  /// BUT-501: Export every top-level `recipes` doc owned by [userId]
-  /// (legacy `userId` field). Used alongside [exportPersonalRecipesByUser]
-  /// to fully cover both storage shapes.
-  Future<List<Map<String, dynamic>>> exportTopLevelRecipesByOwner(
-    String userId, {
-    int maxDocuments = 1000,
-  }) async {
-    await validateOwnership(
-      currentUserId: requireCurrentUserId(),
-      resourceOwnerId: userId,
-      resourceType: 'recipes',
-    );
-    final snapshot = await firestore
-        .collection(FirestoreCollections.recipes)
-        .where('userId', isEqualTo: userId)
-        .limit(maxDocuments)
-        .get();
     return snapshot.docs
         .map((doc) => <String, dynamic>{'id': doc.id, 'data': doc.data()})
         .toList();

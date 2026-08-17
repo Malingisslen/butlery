@@ -3935,3 +3935,297 @@ the testing specialist's method — recover the pre-format blobs from `.git` and
 whitespace-stripped content — is sound and I did not redo it. It proves no TOKEN moved, which is
 the right claim for a formatter; it would not catch a same-token semantic edit, and does not need
 to, because I read both files in full at the current bytes.
+
+### 2026-08-16 — BUT-1832/BUT-1835 poll votes: the erasure got a ticket, the export did not
+
+Fileset reviewed at working-tree bytes: `lib/repositories/firebase/firebase_recipe_repository.dart`,
+`lib/repositories/firebase/modules/message_mutation_module.dart`,
+`lib/repositories/firebase/modules/message_query_module.dart`,
+`lib/repositories/firebase/modules/recipe_gdpr_export_operations.dart`. Verdict: FAIL, 1 blocking.
+
+**The blocking finding.** BUT-1832 moves a poll vote off the message document
+(`metadata.poll.options[].voterIds`) into `messages/{messageId}/poll_votes/{voterUid}`, because
+the message update rule is sender-only and a rule cannot walk a list of maps. The change shipped
+with everything except the export: a `match /poll_votes/{voterId}` block (read = any participant
+of the poll's conversation; create/update = the voter, poll open, `hasOnly(['voterId','optionIds',
+'votedAt'])`; delete = the voter unconditionally, so Art. 17 self-service survives a closed poll),
+a `COLLECTION_GROUP` fieldOverride on `voterId` in `firestore.indexes.json`, and `deletePollVotes`
+in the account-deletion cascade (collection-group sweep on `voterId` plus
+`metadata.poll.creatorId` -> `"deleted"`, capped at 2000 rows, declining loudly rather than
+truncating). What is missing is Art. 15: `grep -rn -i poll lib/services/account/` returns exactly
+one hit, a COMMENT in `social_export_manager.dart:303` that names poll `voterIds` among what the
+messages section keeps. The messages section exports raw message documents, so after this change
+the requester's own votes are in no bundle at all — a REGRESSION, since the same fact used to ride
+along inside the message document, and a bundle that describes its own contents in prose now
+states something false about itself.
+
+Note the fix cannot be the obvious one: there is no collection-group `match` for `poll_votes`
+(deliberately — the cascade uses the Admin SDK, which bypasses rules), so a client-side
+`collectionGroup('poll_votes').where('voterId','==',uid)` is denied. The export has to hydrate per
+exported poll message, which the participant read rule permits.
+
+**Non-blocking, all in `message_query_module.dart` unless noted.**
+(1) `_pollIds` is `.take(20)` over a list already `.reversed` to oldest-first, so on a page with
+more than 20 polls it hydrates the OLDEST twenty and the newest, most likely active polls render
+"0 röster" over real votes. (2) `switchMap(_withLivePollVotes)` rebuilds up to 20 subcollection
+listeners on EVERY message emission — a send, the `status:sent` flip 100 ms later, every read
+receipt — each rebuild re-reading every visible poll's votes; and `CombineLatestStream.list`
+withholds the first emission until every inner stream answers, so the message list is gated on the
+overlay. (3) `getMessage` hydration fails OPEN: `_hydratePollVotes` swallows a per-poll read
+failure, and `MessagingService.closePoll` then resolves the winner from an empty tally — the first
+option — and writes that recipe into the week's plan, which is the exact outcome the comment at
+`:128` says the hydration exists to prevent. (4) `deleteMessage` (mutation module) leaves the
+`poll_votes` subcollection orphaned; the rows are unreadable afterwards (`pollMessage().data` on a
+missing parent is a CEL error, hence deny) but still on disk, reachable by the account cascade's
+collection-group sweep and by their own subject's `allow delete`, which is parent-free. (5)
+Single-choice `votePoll` re-tap writes the identical row again (`next` is unconditionally
+`[optionId]`), one transaction + write per repeat tap. (6) `ACCEPTED_LARGE_FILES.md` records
+`message_mutation_module.dart` at 557 lines (now 579) and `firebase_recipe_repository.dart` at
+1022 (now 1064).
+
+**Clean, and worth recording because the claim was checkable and true.** The removal of
+`exportTopLevelRecipesByOwner` from `recipe_gdpr_export_operations.dart` (and its forwarder on the
+repository) is correct and creates no Art. 15 gap: the only top-level `recipes` rule is
+`match /{path=**}/recipes/{recipeId} { allow read: if isAdmin(); }` (firestore.rules:2737), so the
+query WAS denied for every real caller and, wrapped with the personal-recipe read in one try/catch
+in `ContentExportManager`, took the whole recipe section down with it (BUT-1801). No writer to the
+top-level collection exists in `lib/` or in `functions/src` — the only reader there is the deletion
+cascade's defensive legacy sweep (`account-deletion-cascade.ts:478`), which correctly STAYS. Export
+drops the legacy shape, erasure keeps sweeping it: the conservative direction on both sides.
+`grep -rn exportTopLevelRecipesByOwner lib test` is empty, so nothing dangles.
+
+### 2026-08-16 — BUT-1832 poll-vote subcollection + BUT-1801 export removal: gate re-review
+
+Fileset: `message_query_module.dart`, `message_mutation_module.dart`,
+`recipe_gdpr_export_operations.dart`, `firebase_recipe_repository.dart`. Verified clean on
+security/GDPR; three Medium correctness/cost findings, no blocking issue. `dart analyze` clean,
+51/51 green across the three module suites, index == worktree at verdict time (md5 pinned).
+
+**What is right.** Moving the vote from `metadata.poll.options[].voterIds` on the message to
+`messages/{id}/poll_votes/{voterUid}` is the correct shape: the old write was an UPDATE of the
+message, and the message update rule is sender-only, so every vote by anyone but the poll's own
+author was denied. The client payload `{voterId, optionIds, votedAt}` matches the rule's
+`keys().hasOnly([...])` allow-list exactly (firestore.rules:2084-2088); the doc id carries the
+identity and `voterId` is duplicated as a FIELD on purpose, because the cascade sweeps by
+`collectionGroup('poll_votes').where('voterId', ...)` and a doc id is not a field any query can
+see. Erasure (`deletePollVotes`, account-deletion-cascade.ts:1532), the per-parent export
+(`firebase_data_export_repository.dart:472`), the rules block and the collectionGroup index
+(`firestore.indexes.json:751`) all exist — the full four-way set, checked rather than assumed.
+Single/multi-choice semantics are byte-for-byte the old behaviour (single-choice re-tap keeps the
+vote, because the old code stripped-then-added and netted to that), and an emptied row is DELETED
+rather than left as a bare uid.
+
+**Finding 1 (Medium) — the take() cap keeps the wrong end.** `_pollIds` runs on a list already
+`.reversed` to oldest-first, so `.take(maxHydratedPolls)` hydrates the 20 OLDEST polls on the page
+and drops the newest — precisely the ones on screen and being voted on.
+
+**Finding 2 (Medium) — `searchMessages` does not hydrate**, in the same file whose section comment
+says "anything that hands out a poll message must hydrate". Votes no longer live on the message, so
+a poll in search results renders 0 röster.
+
+**Finding 3 (Medium) — `switchMap(_withLivePollVotes)` re-subscribes all inner listeners on every
+message emission.** No leak (switchMap cancels), but message docs churn constantly (the 100 ms
+status flip in `sendMessage`, `batchMarkAsDelivered`, `markMessageAsRead`), and each rebuild is a
+fresh billed query on up to 20 subcollections plus the rule's two `get()`s per query.
+
+**Finding 4 (Medium) — false claim about `firestore.rules` in the export-removal comment.**
+`recipe_gdpr_export_operations.dart` now says the top-level `recipes` collection "has no `match`
+block in `firestore.rules` at all, so the default deny ... refused the query". There IS one:
+`match /{path=**}/recipes/{recipeId} { allow read: if isAdmin(); }` at firestore.rules:2748, and a
+`{path=**}` prefix binds zero segments, so it reaches the top-level collection. The VERDICT is
+still right and the removal still correct — a non-admin was denied, which is what broke the whole
+section through `ContentExportManager`'s single try/catch — but the stated reason is wrong, and the
+2026-08-01 archive entry from the previous round already had the accurate wording. Second loose
+inference in the same comment: "a client cannot read the top-level collection, so nothing the app
+writes can ever be there" — read-denial does not imply write-denial (the real argument is that no
+writer exists in `lib/` or `functions/src`, which I re-verified), and an ADMIN client can in fact
+read it. Corroborating: the deletion cascade still sweeps `db.collection("recipes").where("userId",
+"==", uid)` (account-deletion-cascade.ts:478), so erasure covers a shape the export no longer
+probes — harmless while no writer exists, but the asymmetry should be stated, not implied.
+
+**Finding 5 (Low) — the "closePoll picks the first option" claim is false**, stated twice
+(`message_query_module.dart:128-131` and `:152-155`). `MessagingService._resolveWinner`
+(messaging_service.dart:732-742) returns null when `best.voteCount == 0`, and `closePoll` writes a
+plan only when `winner?.recipeId != null`. An unhydrated poll therefore resolves to NO winner and
+NO plan write — milder than advertised, and the fail-open swallow in `_hydratePollVotes` is
+justified by the wrong consequence.
+
+Also checked and clean: no top-level `recipes` writer anywhere (every production reference is
+`users/{uid}/recipes`); `exportTopLevelRecipesByOwner` fully removed with zero dangling references
+and its caller `ContentExportManager.exportRecipes` still compiles against one source; poll options
+capped at 4 in the creation dialog, well under the rule's `optionIds.size() <= 20`; no raw uid in
+any log on the changed paths; both oversized files are on the ACCEPTED_LARGE_FILES allowlist.
+
+### 2026-08-17 — BUT-1801 first-reader review (held batch, ledger had passed the files unopened)
+
+Fileset: `recipe_gdpr_export_operations.dart`, `firebase_recipe_repository.dart`,
+`content_export_manager.dart` (all STAGED — `git diff` prints nothing, `git diff --cached` is the
+diff). The sprint ledger recorded a `firebase-backend-security` pass over two of these WITHOUT the
+files having been opened, so the two archive entries above (2026-08-16) are that run's. This is the
+first byte-level read. **Verdict: pass, 0 blocking.** `flutter analyze` on all five changed files:
+"No issues found" (110.8s). `flutter test` on the two named suites: **48/48, All tests passed** —
+the "65-test run" figure was a larger sweep, these two files are 48.
+
+**Premise verified independently, both halves, and it HOLDS.**
+(1) Rules: the ONLY `recipes` block outside `users/{userId}` is `match /{path=**}/recipes/{recipeId}
+{ allow read: if isAdmin(); }` (firestore.rules:2748, `rules_version = '2'`). Under v2 a recursive
+wildcard matches one or MORE segments, so it does not even reach the top-level collection; and even
+if it did, it demands `isAdmin()`. Either way the exporting user's
+`collection('recipes').where('userId','==',uid)` hit the `match /{document=**} { allow read, write:
+if false; }` catch-all at :3094. The rule is read-only, so no client can write there either, and
+`grep -rn "collection(\"recipes\")" functions/src` shows every production hit is
+`users/{uid}/recipes` — the collection is empty by construction, not merely denied.
+(2) The swallow is real: `ExportPaginationHelper.fetchCapped` (:241-252) has NO catch, so the
+`permission-denied` unwound out of the second probe, past the personal rows already appended to
+`recipes`, into the single section-level catch at `exportRecipes`. Every Art. 15 bundle returned
+`{'error': …, 'error_code': 'recipes-export-failed'}` with ZERO recipes — a deterministic total loss
+of the recipe section, not an edge case (a list query with no matching rule is denied even when the
+collection holds nothing). **This change fixes a live Art. 15 defect; it is not a narrowing.**
+
+**Completeness after the removal.** Recipes reachable for a user: `users/{uid}/recipes` (the
+surviving read), `realtime_recipes` (own section, `exportRealtimeRecipes`), `shared_content` (own
+sections), `butlery_archive` / `globalRecipeCache` (not user data). Ownership still validated on the
+surviving path (`validateOwnership(requireCurrentUserId(), userId, 'recipes')` before the query);
+dropping the `FirebaseFirestore` field breaks nothing — the repository still passes `firestore` to
+`RecipeLegacyValidator` and `RecipeTagOperations` and uses it for `butlery_archive`. DI registers
+`FirebaseRecipeRepository` as `RecipeRepository` (`content_module.dart:390`), so the manager's
+`is FirebaseRecipeRepository` branch is live. No `currentUserProfile`/`currentUserId` mixing.
+
+**CORRECTION to the 2026-08-16 entry above:** it states the deletion cascade's legacy top-level
+sweep "correctly STAYS". It does not — `deleteRecipes` (account-deletion-cascade.ts:501-517) now
+carries a BUT-1801 comment removing that read for the mirror reason (Admin SDK ignores rules, so the
+query returned an EMPTY snapshot rather than a denial, and the same wrong path had been copied into
+`probeResidualData`, where empty is indistinguishable from clean). Art. 15 and Art. 17 are therefore
+symmetric, which is the correct outcome given no writer exists — but the earlier entry's cited line
+number and its "erasure keeps sweeping it" clause are stale against today's bytes.
+
+**Non-blocking findings.** (a) Medium, pre-existing and now sharper: `exportMenus` still runs two
+reads under one catch, so a failure of the shared-menus leg discards the personal menus — the leg is
+legitimately readable (`match /menus/{menuId}` allows `sharedByUserId == uid`, so the query passes),
+which is why it is not the same bug, but it is the same SHAPE. (b) Medium: with one source left, the
+`if (repoConcrete is FirebaseRecipeRepository)` guard is now the only thing standing between the
+bundle and a silent empty recipe section — a non-Firebase implementation would yield
+`total_count: 0` with no error, the BUT-1697 disease. (c) Low: the new doc comment's "That
+collection has no `match` block in `firestore.rules` at all" is false as written (see :2748), and
+"a client cannot read the top-level collection, so nothing the app writes can ever be there" is a
+non-sequitur whose conclusion happens to hold for a different reason (read-only rule + no writer).
+
+### 2026-08-17 — BUT-1832/BUT-1801 salvage re-review: rules `get()`s are part of a read budget
+
+Re-gate of the same three files after the previous round's findings were addressed
+(`base_shared_content_repository.dart`, `firebase_data_export_repository.dart`,
+`modules/recipe_gdpr_export_operations.dart`). Verdict clean; suite 61/61, `dart analyze
+--fatal-infos` clean on the three; index == worktree checksummed at the end.
+
+**The one durable rule.** The poll-vote probe's read budget was documented as "one read per
+poll". It is THREE: the client `get()` on `messages/{id}/poll_votes/{uid}`, plus the two
+`get()`s the READ rule performs — `inPollConversation()` fetches `messages/{messageId}` and
+then `conversations/{conversationId}` (firestore.rules:2059-2079) — and rules
+`get()`/`exists()`/`getAfter()` are billed as document reads. The per-evaluation cache does not
+help: the two documents are distinct, and each probe is its own request, so the conversation doc
+is re-fetched and re-billed 200 times over one conversation. Worst case `maxConversations × cap ×
+3` = 100 × 200 × 3 ≈ 60 000, i.e. ABOVE the 50 000 the old comment quoted as the thing the cap
+existed to avoid. A non-existent vote row still bills one read, so the probe costs 3 for a user
+who voted in nothing. Corrected docstring now states the ×3 and the fires-regardless fact.
+
+**The log-line question (previous round's L1), answered.** The probe's catch now interpolates the
+exception: `AppLogger.warning('… : $e')`. Safe here, for three reasons worth checking separately
+next time: (1) `warning` goes to `developer.log` ONLY — no Crashlytics, no analytics callback
+(logger.dart:157-163), unlike `error`, which does both and runs `_sanitizeForCrashlytics`; (2) the
+failing read is a single-document `get()`, so a `FAILED_PRECONDITION` with a `create_composite`
+URL — the BUT-1721/BUT-1732 leak shape, which encodes `memberPermissions.<uid>` and the project id
+— is structurally unreachable; only a QUERY can produce one; (3) the string never reaches the
+bundle: `DataExportService` DERIVES its warning sentence from `error_code` and deliberately never
+copies `error` through (data_export_service.dart:347-357). The only identifiers on the failing path
+are the requester's own uid and a message id. Rule of thumb: grade an interpolated exception by
+SINK + SHAPE OF THE READ, not by the word "exception".
+
+**Claims verified rather than trusted.** (a) `SocialExportManager` really does copy both
+`poll_votes_truncated` and `poll_votes_error_code` up (social_export_manager.dart:279-290), so the
+corrected "this DOES need plumbing above" comment is true and the `_declaresTruncation` walk can
+reach the flag. (b) Three `createSharedContent` call sites pass no list — menu repo, shopping repo,
+`BaseSocialCoordinator` (which calls the base method directly); the recipe repo passes
+`[sharedByUserId]`. No model `toFirestore` emits `sharedToUserIds`. (c) Every claim in the recipe
+export module's rewritten header checks out: the catch-all really is `match /{path=**}/recipes/{recipeId}
+{ allow read: if isAdmin(); }` (read-only), and the cascade's `deleteRecipes` really does still sweep
+the top-level collection, planted and asserted by `request-account-deletion.integration.test.ts:152`.
+
+**Supersedes part of the 2026-08-16 entry above:** its "CORRECTION" paragraph says `deleteRecipes`
+removed the legacy top-level sweep. Against today's bytes that is false — the sweep is present and
+carries a comment explaining that removing it was wrong twice over (Admin SDK needs no rule; the
+integration test exercises it). Art. 15 and Art. 17 are deliberately ASYMMETRIC here, not symmetric.
+
+**Non-blocking, reported to the caller.** (a) Low: `firestore.rules`:772 still says the callers are
+"two of which pass no list at all" — the same miscount just corrected in the Dart file one file
+over; scope it to the two repositories or say three. (b) Low, and a gap neither of the day's two
+accepted deviations names: `inPollConversation()` lacks BUT-1838's `memberSince` cut-off, so a late
+joiner may CAST a vote in a pre-join poll — and the export's own `memberSince` filter drops that
+message before the probe runs, so that vote row is erasable (collection-group sweep, Admin SDK) but
+never exportable. The BUT-1832 deviation entry names the export gap for the map-without-`poll` case
+only; this is the second, orthogonal route to the same Art. 15 shortfall.
+
+### 2026-08-17 — BUT-1832 write/read modules: first security read of the poll surface
+
+`message_mutation_module.dart`, `message_query_module.dart` (neither previously read by a security
+reviewer) and `firebase_recipe_repository.dart` (construction-only change). Suites 47/47 green,
+`dart analyze --fatal-infos` clean on all three. No security defect; findings are cost and comment.
+
+**`votePoll` vs the rules, field by field.** `transaction.set` (no merge) writes exactly
+`{voterId, optionIds, votedAt}`. `isValidVote()` pins `keys().hasOnly` those three, `voterId ==
+voterId` (the path segment), `optionIds is list`, `size() <= 20`; the path itself is pinned to
+`request.auth.uid`. So the two identity facts are pinned twice over and a caller passing someone
+else's uid is denied server-side. What is NOT pinned: the ELEMENTS of `optionIds` (no type, no
+length, no membership test against the poll's real option ids) and `votedAt` (no type, not tied to
+`request.time`). A hand-rolled client can therefore park 20 arbitrary values in another user's
+message subtree. Harm stays inside the recorded deviation's bound: `_tally` filters
+`whereType<String>()` and `_merge` writes `voterIds` only onto option ids the poll itself declares,
+so junk cannot reach a render path or skew a tally. Worth knowing as a review pattern: a `hasOnly`
+allowlist bounds the SHAPE of a document and says nothing about the VALUES; check both before
+calling a write "pinned".
+
+**`closePoll` cannot resurrect voter uids — traced, not assumed.** It re-reads the message with a
+raw `messageRef.get()` and rebuilds `metadata` from `doc.data()`, so the hydrated `Message` never
+touches the write. The service (`messaging_service.closePoll`) does hold a hydrated copy for winner
+resolution but passes only `{messageId, closerId}` down. The remaining route would be a resend —
+there is none: every `sendMessage` caller composes a fresh `Message`. This matters because the Art.
+15 export dumps the stored message document verbatim, so a hydrated write-back would put every
+voter's uid into every participant's bundle.
+
+**The one false claim.** `message_query_module.dart`:258 justifies the fail-open fix with "(a
+message whose `metadata` is null denies by CEL error)". `allow read` on `poll_votes` is
+`isAuthenticated() && inPollConversation()` and never calls `pollIsOpen()`, so metadata shape
+cannot deny a READ — and `firestore.rules`:2112-2115, staged in the SAME commit, records that exact
+claim as one of two "removed rather than reworded, both false". The conclusion survives (the error
+path is live: a deleted message makes `pollMessage().data` null, a removed participant fails the
+membership test, and `unavailable` is routine on a stream), only the example is wrong. Lesson
+shape: when a rules file in your own diff documents a claim as false, grep the codebase for that
+sentence — it propagates.
+
+**Cost, still open from the earlier BUT-1832 record.** `getConversationMessages` ends
+`.map(...).switchMap(_withLivePollVotes)` with no `distinct` on the poll-ID set, so every message
+snapshot — and messages re-emit on the 100 ms status flip after each send, and on every
+delivered/read batch — tears down and re-subscribes up to 20 `poll_votes` listeners, each
+re-establishing a query whose rule does two `get()`s. The fix recorded a fortnight ago (key the
+inner set by the parent-ID SET) is still not applied; (b) the tail-vs-head cap and (c) hydrate
+every reader both ARE, this commit.
+
+**Also verified:** neither module touches `userService.currentUserProfile` — `votePoll`'s uid comes
+from `_authRepository.currentUserId` at the service, the correct auth-only handle, and no
+data-source mixing exists in either file. `_tally` reads the voter from `doc.id` rather than the
+`voterId` field, i.e. from the fact the rule guarantees, which is the shape this file has argued
+for since BUT-1693. The `firebase_recipe_repository.dart` change drops only the now-unused
+`firestore` argument to `RecipeGdprExportOperations`; the handle is still needed by the legacy
+validator, the tag operations and the archive reads, and no permission surface moved.
+
+**Checked my own note from yesterday** (the late-joiner-votes-in-a-pre-join-poll Art. 15 route):
+recorded correctly and in both deviation files, including the part that makes it orthogonal to the
+map-without-`poll` route rather than a restatement of it.
+
+**CLOSED same day (2026-08-17), verified on the replacement bytes.** The `message_query_module.dart`
+:258 parenthetical now names three reachable causes instead of the false one — deleted message
+(`get()` on a missing doc is null, so `pollMessage().data` raises a CEL error and the read denies),
+removed participant (fails the `participantIds` membership test), and `unavailable` on a long-lived
+stream — states outright that metadata SHAPE cannot deny a read because `allow read` never calls
+`pollIsOpen()`, and points at the rules file's own correction in the same commit. All five claims
+re-checked against `firestore.rules`:2059-2156; comment-only change, analyze clean, 22/22 green.
+Only imprecision left, deliberately not chased: it is `pollMessage()` that is null, not its `.data`.

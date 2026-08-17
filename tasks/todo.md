@@ -1,3 +1,414 @@
+# SALVAGE 2026-08-17 — finish BUT-1801, re-review the held batch, ship the five that passed
+
+**Approved by Malin, 2026-08-17: "rädda och arbeta enligt din plan."** She was shown the
+state first: five tickets verified 3/3, one failed 3/3, everything loose in the working tree
+with a byte-identical copy in `stash@{0}` / `5a19f29bc`, plus a third copy as patch files
+outside the repo. She was also told, before deciding, that the review ledger shows several
+files were passed by reviewers that never opened them — that is why step 3 below is not
+optional.
+
+## What the held batch contains
+
+One batch, six tickets, 28 changed files. Verification verdicts from the run:
+
+| Ticket | Verdict | What it does |
+| -- | -- | -- |
+| BUT-1832 | pass 3/3 | poll votes move to `messages/{id}/poll_votes/{voterUid}` |
+| BUT-1835 | pass 3/3 | erasure reaches the new vote shape |
+| BUT-1833 | pass 3/3 | two dead rules helpers deleted |
+| BUT-1792 | pass 3/3 | four TTL policies incl. `activeUsers.expiresAt` |
+| BUT-1812 | pass 3/3 | auto-id `shared_content` rows per share |
+| BUT-1801 | **fail 3/3** | recipe reads on a collection that does not exist |
+
+## Step 0 — the verifier's verdict re-derived, because it is a hypothesis
+
+The verifier failed BUT-1801 saying "only 1 of the 6 named sites was fixed". Checked each
+named site against `git show HEAD:` rather than trusting either the ticket or the verdict:
+
+- `admin/bulk-retag.ts` — already `collectionGroup("recipes")` at HEAD. **Correct shape; the
+  ticket is stale here.**
+- `analytics/compute-feature-retention.ts:351` — already `users/{userId}/recipes` at HEAD.
+  **Stale.**
+- `ratings/canonical-rating-aggregation.ts:157` — already `users/{uid}/recipes/{recipeId}`
+  at HEAD. **Stale.**
+- `recipe_gdpr_export_operations.dart` — **fixed by this batch**, and the fix is larger than
+  the ticket described: the top-level probe threw `permission-denied` inside the SAME
+  try/catch as the personal-recipes read, so every Art. 15 bundle lost its whole recipe
+  section to `recipes-export-failed`. Removing it makes the export work at all.
+- `account/account-deletion-cascade.ts:477-478` — **untouched, and this is the real
+  remainder.** Line 477 reads `users/{uid}/recipes` and does erase the recipes, so Art. 17
+  itself is NOT broken; the verifier's data-safety conclusion overstates it. Line 478 is a
+  dead read of the non-existent top-level collection.
+
+So three of six were never broken, one is fixed, and the true defect is one the ticket does
+not name:
+
+**`probeResidualData` counts `recipes` on the top-level collection.** The post-cascade
+residual check loops a fixed list of collections with `.where("userId","==",uid).count()`,
+and `"recipes"` is the first entry. That collection has no documents, so the probe returns
+zero every time — a permanent all-clear that is true by accident and would stay true if the
+deletion ever stopped working. The file's own comment two blocks down names this exact class
+("the realtime_recipes wrong-field trap"). A blind safety net is worse than none.
+
+## The work
+
+1. **`deleteRecipes`** — drop the dead top-level read (line 478). Correctness-neutral, one
+   fewer query per deletion, and it removes the line the probe was copied from.
+2. **`probeResidualData`** — take `"recipes"` out of the userId-keyed loop and probe
+   `users/{uid}/recipes` directly with `.count()`. Deliberately NOT a
+   `collectionGroup("recipes")` query: that would need a COLLECTION_GROUP index this repo
+   does not declare for `userId`, and it assumes recipe documents carry a top-level `userId`
+   field, which is not established. A direct subcollection count needs no index and no field
+   assumption.
+3. **Re-review the WHOLE staged diff with the real specialists** — not the sprint's ledger.
+   The run recorded that `code-reviewer` and `integration-reviewer` each passed 12 files
+   they never opened, `firebase-backend-security` 4, and `firestore-rules-tester` 2
+   (including `firestore.rules` itself). Those verdicts do not cover the bytes about to
+   ship. Batch to ≤3 files per agent per the repo's own advisory.
+4. **Re-review the fix from step 1-2 on its own diff** — the fix round is the last thing to
+   touch the bytes and therefore the least reviewed.
+5. **Commit and push.** One commit; the five that passed plus BUT-1801 now complete.
+
+## Acceptance
+
+1. `functions/src/account/account-deletion-cascade.ts` has no read of a top-level `recipes`
+   collection anywhere, `deleteRecipes` or probe. Proven by grep, pasted.
+2. A test proves the residual probe SEES a recipe left behind — i.e. it reddens if the
+   deletion step is removed. A probe that cannot fail is the bug being fixed.
+3. `npx tsc --noEmit` clean and the CF unit suite green, counts pasted.
+4. `dart analyze --fatal-infos` clean on the changed Dart files.
+5. Every gated file named in a specialist review that actually opened it.
+
+## Open questions
+
+None architecture-changing. Assumptions stated and checkable: recipes live only at
+`users/{uid}/recipes` (established by `firestore.rules` having no top-level `recipes` match
+block, and by three call sites at HEAD already using that path); and the residual probe is
+meant to be a real check rather than a formality (established by the file's own comment
+about the wrong-field trap it was written to avoid).
+
+## Explicitly NOT in this salvage
+
+The nine tickets three of the four sprint agents never built (BUT-1869, BUT-1870, BUT-1857,
+BUT-1853, BUT-1872, BUT-1873, BUT-1874, BUT-1860) and the BUT-1780 rebuild. They have no
+code in the tree; rebuilding them is a separate run, not part of rescuing this batch.
+
+---
+
+# SPRINT 2026-08-16 (continued) — the stalled sprint's decisions, now applied
+
+Phase 1 (Selection) only. Linear is up. This is a re-selection, not a fresh scan: the
+previous run today selected 11 tickets, built one (BUT-1780) badly, shipped nothing, and
+stashed everything. Malin then answered every open question on all 11 tickets plus their
+five review-round offshoots, in comments on the tickets themselves (dated 2026-08-16
+18:07-18:10, titled "Malins beslut" / "Grönt ljus från Malin" — distinguished from the
+sprint's own "Sprintnotis" comments by content, since Linear attributes every comment to
+her account regardless of author). This run reads those decisions and turns them into a
+buildable plan. **15 tickets, 4 batches, N sized above the usual 6-10 because today's
+backlog volume is genuinely this large — a stalled sprint's full decided backlog, not
+padding.**
+
+## Step-0 obsolete check
+
+- **BUT-1845** — confirmed **Done** in Linear already (measured mid-vocabulary option,
+  closed 2026-08-16 18:28, commit `8343d74e5`). No action.
+- **BUT-1838** — NOT obsolete, NOT closeable. See `alreadyDecided` below — one of its three
+  decisions is still unexecuted and needs console access.
+
+## Already decided (Malin's comments, applied verbatim)
+
+Full quotes live on the tickets; this table is the summary. All fifteen are `build` —
+she resolved every open design question, so none of the code choices below are this
+session's judgment call.
+
+| Ticket | Her call | Applied as |
+|---|---|---|
+| BUT-1780 | `showOnCards` default → **false**; badges on Mina Recept list + ingredient search ONLY (not grid, not archive import); UNKNOWN filtered in `CompactAllergenRow` too; test must find the rendered badge, not read a constructor flag | build |
+| BUT-1869 | Fold into the BUT-1780 rebuild — "Ta den här" | build (same batch) |
+| BUT-1870 | Must be resolved before BUT-1780 grows the file further | build (same batch) |
+| BUT-1832 | Move votes to `messages/{messageId}/poll_votes/{voterUid}`; ship WITH BUT-1835 in one change | build |
+| BUT-1835 | Same change as BUT-1832; cascade leg must target the new subcollection shape, not the old inline array | build |
+| BUT-1833 | Delete `isDocumentOwner` + `isAddingSelfToList`; ship with BUT-1832/1835 (same file, same gate) | build |
+| BUT-1801 | Green light, same reply as BUT-1835/1833; build the six-site fix per the ticket's own 3 ACs | build |
+| BUT-1792 | All four TTL policies including presence (`activeUsers.expiresAt`, not `expireAt`); never `false`, never `--force` | build |
+| BUT-1812 | Option 2 — auto-id `shared_content` docs, not a widened rule; coordinate migration with BUT-1809, don't run it here | build |
+| BUT-1857 | (no design question — just unbuilt; corrected file paths recorded on the ticket) | build |
+| BUT-1853 | (no design question — security bug, unbuilt) | build |
+| BUT-1872 | Filed by the post-sprint sweep after BUT-1853's deviation log named it | build |
+| BUT-1860 | (no design question — test-only, unbuilt) | build |
+| BUT-1873 | **No price field** — remove `_priceController` from both dialogs entirely | build |
+| BUT-1874 | (no design question — real bug, `copyWith` null-means-unchanged trap) | build |
+| BUT-1838 | Decisions 1+2 (group-as-object, memberSince) confirmed built. **Decision 3 (delete pre-existing group conversations) still open** — waits on an admin count of `conversations` docs + her disposal call | **blocked**, see below |
+
+**BUT-1838 detail (blocked, not built, not re-asked):** her 2026-08-16 18:29 comment is
+explicit: count `conversations` documents (and how many lack `groupId`), show her the
+number, get her decision (delete now vs. leave until launch) in writing, then execute and
+re-verify. That's Tier D (needs production/console access) — no code to write here. Left
+exactly as-is: still Backlog, still open, not transitioned, not closed. Do not apply the
+BUT-1839 "app isn't live, it's all test data" reasoning to this by analogy — her own
+comment calls that out as the exact shortcut to avoid.
+
+## Needs Malin (genuinely undecided, not touched this round)
+
+- **BUT-1480** — unify the two URL-import pipelines. Six separate comments back to
+  2026-07-22, every one hers, every one "not yet, real regression risk, no urgency." No
+  comment reverses that. Recommendation unchanged: worth doing as its own dedicated,
+  tested migration pass; not a sprint drive-by. Left in Todo where it's sat for weeks;
+  not rebuilt, not re-asked.
+- **BUT-1875** (new today, follow-up to BUT-1845) — import writes English meal-type
+  values, edit screens offer Swedish. This is the same "what vocabulary, and how tolerant"
+  product question BUT-1845 flagged for the closed-enum follow-up, now needing its own
+  answer for the import side. Recommend: fold into whatever follow-up ticket eventually
+  picks the closed-enum vocabulary for BUT-1845's tolerant fix, rather than deciding the
+  import half in isolation.
+
+## Agent A — backend-rules-social (6 tickets, Tier C, full-panel router tier)
+
+Router: `firestore.rules` + `account-deletion-cascade.ts` → full-panel (Security
+Architect, Trust & Safety, DBA, Privacy/DPO, Legal, Product, Software Architect, FinOps,
+Vendor/Procurement, Customer Support). `panelPolicy: park` — build it, land in In Review,
+let the specialist gates + Malin's own review substitute for the panel an unattended run
+can't convene. `requiresPlanMode: true` on all six (full-panel).
+
+**All six share `firestore.rules` and/or `account-deletion-cascade.ts` — one batch, one
+worktree, sequenced commits inside it.** BUT-1812 was originally scoped to a separate
+agent, but its rules rewrite (confirmed in the ticket body and Malin's own comment) touches
+the same file, so it moved in here to keep batches file-disjoint.
+
+- [ ] **BUT-1832** — Poll voting denied for everyone but the creator.
+  Files: `firestore.rules`, `lib/repositories/firebase/modules/message_mutation_module.dart`,
+  `functions/src/__tests__/*-rules.test.ts`.
+  Change: move votes to `messages/{messageId}/poll_votes/{voterUid}` (doc id == voter);
+  separate `allow update` statements per branch, never OR'd; `metadata` read via
+  `.get(k,{}) is map ? ... : null` (the BUT-1788 null-trap); ship
+  `markMessageAsRead`/`batchMarkAsDelivered` in the same change (same rule, same trap).
+  Acceptance:
+  1. Any participant can cast a poll vote (not just the creator); writes land in
+     `messages/{id}/poll_votes/{voterUid}`, doc id == voter uid.
+  2. `markMessageAsRead` and `batchMarkAsDelivered` succeed for non-sender participants.
+  3. A rules test proves a voter cannot delete or overwrite another voter's vote doc.
+  4. No `allow update` branch is combined with another via `||`.
+
+- [ ] **BUT-1835** — Poll voter uids survive account erasure. Ships in the SAME change as
+  BUT-1832 (her explicit instruction — splitting them widens the leak in between).
+  Files: `functions/src/account/account-deletion-cascade.ts`.
+  Change: cascade rewrites `metadata.poll.creatorId` → `"deleted"` and removes/anonymises
+  the deleted user's `poll_votes/{uid}` docs — against the NEW subcollection shape BUT-1832
+  ships, not the old inline `voterIds` array.
+  Acceptance:
+  1. Account deletion removes/anonymises the deleted user's `poll_votes` doc(s) across every
+     poll they voted in.
+  2. `metadata.poll.creatorId` is rewritten to `"deleted"` when the creator's account is
+     erased.
+  3. A CF test seeds a vote in the shipped `poll_votes` subcollection shape (not the old
+     array) and asserts it's gone/anonymised post-deletion.
+
+- [ ] **BUT-1833** — Two dead rules helpers, one a trap. Ships with BUT-1832/1835 (same
+  file, same gate, one deploy instead of two — her instruction).
+  Files: `firestore.rules`.
+  Change: delete `isDocumentOwner` (~line 68) and `isAddingSelfToList` (~line 83).
+  Acceptance:
+  1. Neither helper appears in `firestore.rules` afterward.
+  2. Full rules test suite still passes (no behaviour change).
+
+- [ ] **BUT-1801** — Six sites read recipes from an empty top-level `recipes` collection.
+  Files: `functions/src/admin/bulk-retag.ts`, `functions/src/analytics/compute-feature-retention.ts`,
+  `functions/src/ratings/canonical-rating-aggregation.ts`,
+  `functions/src/account/account-deletion-cascade.ts`,
+  `lib/repositories/firebase/modules/recipe_gdpr_export_operations.dart`,
+  `firestore.indexes.json`.
+  Acceptance (ticket's own three, verbatim):
+  1. All six sites read a path that real recipe documents exist at.
+  2. A seeded test proves the GDPR export returns a recipe and the deletion cascade deletes
+     one.
+  3. Any index the rewritten queries need is declared in `firestore.indexes.json`; each
+     rewritten path is checked against `firestore.rules` for a real `match` block.
+
+- [ ] **BUT-1792** — Three more `expireAt` collections + presence, no TTL policy.
+  Files: `firestore.indexes.json`, `functions/src/__tests__/firestore-ttl-policies.test.ts`,
+  `functions/src/notifications/record-notification-opened.ts`.
+  Acceptance:
+  1. `fieldOverrides` with `"ttl": true` declared for `notification_opened_events`,
+     `report_processing_markers`, `system_ip_audit_caps`, AND `activeUsers.expiresAt`
+     (correct field name — not `expireAt`); `EXPECTED_TTL_GROUPS` updated in the same
+     change.
+  2. No entry anywhere in the diff sets `"ttl": false`; deploy never runs with `--force`.
+  3. The stale "Manual setup required" heading in `record-notification-opened.ts` is
+     replaced.
+  4. `[run]` `gcloud firestore fields ttls list --project=butlery-app-1` shows ACTIVE for
+     all four post-deploy, pasted as evidence; document counts for all four collections
+     captured before deploy.
+
+- [ ] **BUT-1812** — Re-sharing a recipe silently adds nobody.
+  Files: `lib/services/unified/operations/modules/recipe_sharing_manager.dart`,
+  `firestore.rules`, `functions/src/__tests__/*-rules.test.ts`.
+  Change: Option 2 (Malin's decision) — stop reusing `recipeId` as the `shared_content` doc
+  id; each share writes its own auto-id document (matching `social_menu_operations` /
+  `shopping_social_share_module`). Rewrite the rule for the new shape. Do NOT implement
+  Option 1 (widening `allow update` with `sharedToUserIds`) — explicitly declined.
+  Acceptance:
+  1. A second sharer re-sharing a recipe someone else already shared writes a NEW auto-id
+     `shared_content` doc; their recipients gain read access via `sharedToUserIds`.
+  2. `firestore.rules` is rewritten for the auto-id shape with an allow/deny rules-test
+     pair.
+  3. Existing `recipeId`-keyed rows are left untouched by this change — no migration is
+     executed here; note explicitly in the PR that migration coordinates with BUT-1809.
+
+## Agent B — recipe-safety-ui (3 tickets, Tier B, single router tier)
+
+Router: `recipe_card.dart` → single (Creative Director/Brand Lead). `requiresPlanMode:
+true` for BUT-1780 (single + priority High); `false` for BUT-1869/1870 (single, priority
+Low/Medium, no security label) — but they ship in the same batch/commit as BUT-1780
+regardless, since they're the same files and she asked for that explicitly.
+
+- [ ] **BUT-1780** — Allergen/dietary badges never render on any card.
+  Files: `lib/widgets/common/content_card.dart`, `lib/widgets/recipe/recipe_card.dart`,
+  `lib/views/mina_recept/recipe_card_widget.dart`,
+  `lib/views/ingredient_search/ingredient_search_view.dart`,
+  `lib/widgets/tagging/tag_result_display.dart`, the `UserAllergenPreferences` model,
+  `test/widget/common/content_card_test.dart`.
+  Acceptance:
+  1. `UserAllergenPreferences.showOnCards` default changes from `true` to `false`.
+  2. Badges render (flag true + tracked allergen/diet) on Mina Recept's list view AND
+     ingredient search ONLY — not the grid layout, not archive import.
+  3. `CompactAllergenRow` filters UNKNOWN the same way its sibling widget already does.
+  4. A widget test renders a card with a tracked allergen and finds the rendered badge
+     widget in the tree — not a constructor-flag read. (This is the exact gap the verifier
+     failed the previous attempt on; re-derive the test, don't reuse the stashed one as-is.)
+
+- [ ] **BUT-1869** — Empty allergen selection leaves a dead gap on every card.
+  Files: same as BUT-1780.
+  Acceptance:
+  1. Derivation uses `userAllergenPrefs?.isNotEmpty ?? false` (content), not a non-null
+     check.
+  2. A widget test covers an empty (all-unchecked) preference set and shows no spacing row
+     is drawn.
+
+- [ ] **BUT-1870** — `content_card.dart` at 503 lines, no `ACCEPTED_LARGE_FILES` entry.
+  Files: `lib/widgets/common/content_card.dart`, optionally
+  `docs/architecture/ACCEPTED_LARGE_FILES.md`.
+  Acceptance:
+  1. File under 500 lines (prefer trimming the duplicated dartdoc at ~60-96/175-194) OR a
+     justified `ACCEPTED_LARGE_FILES.md` entry.
+  2. The size guard does not fire on the next write to the file (i.e. after BUT-1780/1869
+     land in the same commit).
+
+## Agent C — social-messaging-client (3 tickets, Tier A/B, single router tier)
+
+Router: `sync-conversation-last-message.ts` → single (Vendor/Procurement — a generic hit;
+treat as ordinary CF review). `requiresPlanMode: true` on all three — BUT-1857/1853 are
+priority High, BUT-1872 carries the security label.
+
+- [ ] **BUT-1857** — Gruppinfo from the conversations list crashes.
+  Files: `lib/views/messaging/conversations_list_view.dart` (~517-523),
+  `lib/core/router/modules/social_deferred_module.dart`.
+  **Corrected paths from the last attempt's post-mortem:** the router is
+  `lib/core/router/app_router.dart` (not `core/navigation/...`, which doesn't exist), and
+  it has no named group route — the working in-chat path pushes a `MaterialPageRoute`
+  directly. Copy that shape; don't register a new named route.
+  Acceptance:
+  1. Gruppinfo from the conversations list opens the SAME screen as Gruppinfo from inside
+     the chat, no cast error.
+  2. A navigation test asserts the pushed screen + argument type from both entry points and
+     fails if they diverge.
+
+- [ ] **BUT-1853** — Missing `sentAt` makes the chat-history cut-off fail OPEN.
+  Files: `functions/src/messaging/sync-conversation-last-message.ts` (~119-135).
+  Change: skip the projection (or clear `lastMessage`) when the delete-recompute path's
+  surviving message has no `sentAt` — matching the create/update path's existing guard
+  (~142-149).
+  Acceptance:
+  1. A message with no `sentAt` cannot become a conversation's `lastMessage` via the
+     delete-recompute path.
+  2. A CF test covers the delete-recompute path with a `sentAt`-less survivor and is
+     mutation-proven (goes red when the guard is removed) — put it in the emulator-backed
+     integration suite, per the ticket's own note about coverage gaps.
+  3. A comment at `canReadMessageAt` records both inputs now fail in the same (closed)
+     direction.
+
+- [ ] **BUT-1872** — Raw `conversationId` logged (`direct_` = two uids in clear text).
+  Files: `functions/src/messaging/sync-conversation-last-message.ts`.
+  Change: both `logger.warn` calls → `logSafeConversationId(conversationId)`.
+  Acceptance:
+  1. No `logger.*` call in the file sends a raw `conversationId`.
+  2. Grep for `conversationId,` in the file's log objects returns zero hits outside the
+     helper.
+
+## Agent D — shopping-dialogs (3 tickets, Tier A/B, single router tier)
+
+Router: `shopping_item_dialogs.dart` + `unified_shopping_item.dart` → single (Software
+Architect, Product Manager). `requiresPlanMode: true` per the mechanical formula
+(single + priority ≤ 2) for all three, including BUT-1860 — it's test-only in production
+impact, but its priority is High, so the formula still fires; document that in the risk
+note rather than skip it. **Order inside the batch matters: fix BUT-1873 and BUT-1874
+first, then write BUT-1860's tests against the corrected dialog** — writing tests against
+soon-to-be-removed price UI would waste the work.
+
+- [ ] **BUT-1873** — No price field is wired up; the product answer is "remove it."
+  Files: `lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart`.
+  Change: delete `_priceController` and its two save-time reads (~256-258, ~394-396) from
+  both dialogs. Do not add a price input field.
+  Acceptance:
+  1. `_priceController` and both save-time reads are gone from both dialogs.
+  2. `estimatedPrice` on the model is left alone unless another live reader/writer is found
+     (check, don't assume).
+
+- [ ] **BUT-1874** — A cleared note field doesn't save as cleared.
+  Files: `lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart`,
+  `lib/models/unified/unified_shopping_item.dart`.
+  Change: give the edit dialog a real "clear" signal for `note` instead of relying on
+  `copyWith`'s null-means-unchanged semantics (build the object explicitly for that field,
+  or add a `clearNote` parameter).
+  Acceptance:
+  1. A widget test empties the note field and saves; the saved item has `note == null`.
+  2. Mutation-proof: reverting the fix turns that test red.
+
+- [ ] **BUT-1860** — The real shopping-item dialog has zero tests.
+  Files (new): `test/widget/views/unified_shopping/shopping_item_dialogs_test.dart`,
+  a unit-test file for `_CategorySuggester`.
+  DI rig to copy: `test/widget/views/recipe_form_meal_type_dropdown_test.dart`.
+  Acceptance:
+  1. A widget test proves a written name and note survive save (add + edit flow) — price
+     assertion dropped per BUT-1873's decision.
+  2. Unit tests cover `_CategorySuggester.suggest`, explicitly including the known false
+     positives (Kycklingfilé→mejeri via "fil", Rostbiff→"ost", Krossade tomater→fruit/veg)
+     in a clearly labeled false-positive group.
+  3. Removing BUT-1874's `copyWith`-note fix turns the new note-survives-save test red
+     (mutation-proof pasted as evidence).
+  4. No production file outside BUT-1873/BUT-1874's scope is touched by this ticket.
+
+## Post-sprint (mandatory)
+
+1. Full `dart analyze --fatal-infos`.
+2. File follow-up tickets for anything deferred mid-batch, before commit.
+3. Commit through the gates in `shared-plugin.json → reviewGates`. Agent A's batch
+   triggers `firebase-backend-security`, `firestore-rules-tester`, and
+   `cloud-functions-specialist` at minimum (full-panel router tier, `panelPolicy: park`).
+   Agent C's batch triggers `cloud-functions-specialist` (BUT-1853/1872 touch
+   `functions/src`).
+4. Push (`ship.pushTriggersDeploy: false` — push does not auto-deploy here).
+5. Transition: Tier A build + all-pass → Done. Tier B/C, or any failed/unclear criterion →
+   In Review + plain-language comment + PushNotification. Given the full-panel router tier
+   on Agent A and the design-decision weight on BUT-1780/BUT-1812, expect most of this
+   round to land In Review rather than auto-Done, by design (`panelPolicy: park`).
+6. Do NOT transition BUT-1838 (blocked) or BUT-1480/BUT-1875 (needs-Malin) — leave exactly
+   as found.
+7. Report written for Malin: plain-language paragraph per shipped ticket, and an explicit
+   note on BUT-1838's still-open decision 3.
+
+## Deviation log
+
+(append here as execution diverges from plan)
+
+---
+
+# ARCHIVE — SPRINT 2026-08-16 — Agents C & D (0 delivered), poll/GDPR selection, and earlier archives
+
+Everything below is prior history, kept for record. The section immediately below (Agents
+C & D outcome + the poll/GDPR selection it drew from) is what today's "already decided"
+table above is built from — Malin's decisions quoted there are now on the tickets
+themselves, not only in this file.
+
 # SPRINT 2026-08-16 — Agents C & D: recipe-safety-ui + social-messaging-client
 
 Plan section for THIS run, written before any work starts. This is the record the sprint is

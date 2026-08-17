@@ -502,20 +502,50 @@ void main() {
     });
   });
 
-  group('MessageMutationModule.votePoll', () {
-    test('adds a voter to the target option (single-choice)', () async {
+  group('MessageMutationModule.votePoll (BUT-1832)', () {
+    // Votes live at `messages/{messageId}/poll_votes/{voterUid}` — one row per
+    // voter, doc id == voter — because only a message's SENDER may update the
+    // message, so the inline `metadata.poll.options[].voterIds` write was
+    // denied for everyone except the poll's own author. The message document is
+    // now NEVER touched by a vote, which is what these tests assert first.
+    //
+    // `FakeFirebaseFirestore.runTransaction` is a no-op passthrough with no
+    // isolation and no retry, so nothing here says anything about concurrency;
+    // it exercises the read-modify-write shape only.
+
+    Future<Map<String, dynamic>?> voteRow(
+      FakeFirebaseFirestore firestore,
+      String messageId,
+      String voterId,
+    ) async {
+      final doc = await firestore
+          .collection(_messagesPath)
+          .doc(messageId)
+          .collection('poll_votes')
+          .doc(voterId)
+          .get();
+      return doc.exists ? doc.data() : null;
+    }
+
+    Future<void> seedPoll(FakeFirebaseFirestore firestore) =>
+        firestore.collection(_messagesPath).doc('msg-1').set({
+          'senderId': 'author-uid',
+          'metadata': {
+            'poll': {
+              'options': [
+                {'id': 'opt-a', 'voterIds': <String>[]},
+                {'id': 'opt-b', 'voterIds': <String>[]},
+              ],
+            },
+          },
+        });
+
+    test('writes the voter row and leaves the message untouched', () async {
       final firestore = FakeFirebaseFirestore();
       final module = _newModule(firestore);
-      await firestore.collection(_messagesPath).doc('msg-1').set({
-        'metadata': {
-          'poll': {
-            'options': [
-              {'id': 'opt-a', 'voterIds': <String>[]},
-              {'id': 'opt-b', 'voterIds': <String>[]},
-            ],
-          },
-        },
-      });
+      await seedPoll(firestore);
+      final before =
+          (await firestore.collection(_messagesPath).doc('msg-1').get()).data();
 
       await module.votePoll(
         messageId: 'msg-1',
@@ -524,189 +554,209 @@ void main() {
         allowMultiple: false,
       );
 
-      final doc = await firestore.collection(_messagesPath).doc('msg-1').get();
-      final opts = (doc.data()?['metadata']['poll']['options'] as List)
-          .cast<Map<String, dynamic>>();
-      expect(
-        opts.firstWhere((o) => o['id'] == 'opt-a')['voterIds'],
-        equals(['user-1']),
-      );
-      expect(opts.firstWhere((o) => o['id'] == 'opt-b')['voterIds'], isEmpty);
+      expect(await voteRow(firestore, 'msg-1', 'user-1'), {
+        'voterId': 'user-1',
+        'optionIds': ['opt-a'],
+        'votedAt': anything,
+      });
+      // The whole point of the ticket: a vote is not a message update.
+      final after =
+          (await firestore.collection(_messagesPath).doc('msg-1').get()).data();
+      expect(after, equals(before));
     });
 
-    test(
-      'multi-choice: second vote on the SAME option toggles the vote off',
-      () async {
-        // Single-choice runs strip-then-add and net-zeros to "user stays
-        // voted" on a same-option re-vote (see the strip-all-options branch
-        // in votePoll). The honest toggle-off contract lives on the
-        // multi-choice path, which skips the strip.
-        final firestore = FakeFirebaseFirestore();
-        final module = _newModule(firestore);
-        await firestore.collection(_messagesPath).doc('msg-1').set({
-          'metadata': {
-            'poll': {
-              'options': [
-                {
-                  'id': 'opt-a',
-                  'voterIds': <String>['user-1'],
-                },
-              ],
-            },
-          },
-        });
-
-        await module.votePoll(
-          messageId: 'msg-1',
-          optionId: 'opt-a',
-          voterId: 'user-1',
-          allowMultiple: true,
-        );
-
-        final doc = await firestore
-            .collection(_messagesPath)
-            .doc('msg-1')
-            .get();
-        final opts = (doc.data()?['metadata']['poll']['options'] as List)
-            .cast<Map<String, dynamic>>();
-        expect(opts.first['voterIds'], isEmpty);
-      },
-    );
-
-    test(
-      'single-choice: re-vote on already-selected option is a no-op '
-      '(strip-then-add nets to staying voted)',
-      () async {
-        final firestore = FakeFirebaseFirestore();
-        final module = _newModule(firestore);
-        await firestore.collection(_messagesPath).doc('msg-1').set({
-          'metadata': {
-            'poll': {
-              'options': [
-                {
-                  'id': 'opt-a',
-                  'voterIds': <String>['user-1'],
-                },
-              ],
-            },
-          },
-        });
-
-        await module.votePoll(
-          messageId: 'msg-1',
-          optionId: 'opt-a',
-          voterId: 'user-1',
-          allowMultiple: false,
-        );
-
-        final doc = await firestore
-            .collection(_messagesPath)
-            .doc('msg-1')
-            .get();
-        final opts = (doc.data()?['metadata']['poll']['options'] as List)
-            .cast<Map<String, dynamic>>();
-        expect(opts.first['voterIds'], equals(['user-1']));
-      },
-    );
-
-    test(
-      'single-choice vote removes user from previous option before adding new',
-      () async {
-        final firestore = FakeFirebaseFirestore();
-        final module = _newModule(firestore);
-        await firestore.collection(_messagesPath).doc('msg-1').set({
-          'metadata': {
-            'poll': {
-              'options': [
-                {
-                  'id': 'opt-a',
-                  'voterIds': <String>['user-1'],
-                },
-                {'id': 'opt-b', 'voterIds': <String>[]},
-              ],
-            },
-          },
-        });
-
-        await module.votePoll(
-          messageId: 'msg-1',
-          optionId: 'opt-b',
-          voterId: 'user-1',
-          allowMultiple: false,
-        );
-
-        final doc = await firestore
-            .collection(_messagesPath)
-            .doc('msg-1')
-            .get();
-        final opts = (doc.data()?['metadata']['poll']['options'] as List)
-            .cast<Map<String, dynamic>>();
-        expect(opts.firstWhere((o) => o['id'] == 'opt-a')['voterIds'], isEmpty);
-        expect(
-          opts.firstWhere((o) => o['id'] == 'opt-b')['voterIds'],
-          equals(['user-1']),
-        );
-      },
-    );
-
-    test(
-      'multi-choice vote leaves the previous option intact',
-      () async {
-        final firestore = FakeFirebaseFirestore();
-        final module = _newModule(firestore);
-        await firestore.collection(_messagesPath).doc('msg-1').set({
-          'metadata': {
-            'poll': {
-              'options': [
-                {
-                  'id': 'opt-a',
-                  'voterIds': <String>['user-1'],
-                },
-                {'id': 'opt-b', 'voterIds': <String>[]},
-              ],
-            },
-          },
-        });
-
-        await module.votePoll(
-          messageId: 'msg-1',
-          optionId: 'opt-b',
-          voterId: 'user-1',
-          allowMultiple: true,
-        );
-
-        final doc = await firestore
-            .collection(_messagesPath)
-            .doc('msg-1')
-            .get();
-        final opts = (doc.data()?['metadata']['poll']['options'] as List)
-            .cast<Map<String, dynamic>>();
-        expect(
-          opts.firstWhere((o) => o['id'] == 'opt-a')['voterIds'],
-          equals(['user-1']),
-        );
-        expect(
-          opts.firstWhere((o) => o['id'] == 'opt-b')['voterIds'],
-          equals(['user-1']),
-        );
-      },
-    );
-
-    test('silently no-ops when message does not exist', () async {
+    test('the row carries voterId as a FIELD, not only as the doc id', () async {
+      // The Art. 17 sweep is `collectionGroup('poll_votes').where('voterId',
+      // '==', uid)`. A document id is invisible to any query, so dropping this
+      // field would leave the erasure cascade matching nothing — silently.
       final firestore = FakeFirebaseFirestore();
       final module = _newModule(firestore);
+      await seedPoll(firestore);
 
-      // The transaction returns early without writing; just assert no throw.
-      await expectLater(
-        module.votePoll(
-          messageId: 'missing',
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-a',
+        voterId: 'user-1',
+        allowMultiple: false,
+      );
+
+      final swept = await firestore
+          .collection(_messagesPath)
+          .doc('msg-1')
+          .collection('poll_votes')
+          .where('voterId', isEqualTo: 'user-1')
+          .get();
+      expect(swept.docs.map((d) => d.id), ['user-1']);
+    });
+
+    test('each vote lands in its OWN row, keyed by the voter', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = _newModule(firestore);
+      await seedPoll(firestore);
+
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-a',
+        voterId: 'user-1',
+        allowMultiple: false,
+      );
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-b',
+        voterId: 'user-2',
+        allowMultiple: false,
+      );
+
+      expect((await voteRow(firestore, 'msg-1', 'user-1'))?['optionIds'], [
+        'opt-a',
+      ]);
+      expect((await voteRow(firestore, 'msg-1', 'user-2'))?['optionIds'], [
+        'opt-b',
+      ]);
+    });
+
+    test('single-choice: a new pick REPLACES the previous one', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = _newModule(firestore);
+      await seedPoll(firestore);
+
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-a',
+        voterId: 'user-1',
+        allowMultiple: false,
+      );
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-b',
+        voterId: 'user-1',
+        allowMultiple: false,
+      );
+
+      expect((await voteRow(firestore, 'msg-1', 'user-1'))?['optionIds'], [
+        'opt-b',
+      ]);
+    });
+
+    test(
+      'single-choice: re-picking the current option leaves it selected',
+      () async {
+        // Preserved from the inline implementation, which stripped every option
+        // then added back, netting to "stays voted". Not a toggle — asserted
+        // here so that making it one is a deliberate act with a red test first.
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(firestore);
+        await seedPoll(firestore);
+
+        await module.votePoll(
+          messageId: 'msg-1',
           optionId: 'opt-a',
           voterId: 'user-1',
           allowMultiple: false,
-        ),
-        completes,
+        );
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-a',
+          voterId: 'user-1',
+          allowMultiple: false,
+        );
+
+        expect((await voteRow(firestore, 'msg-1', 'user-1'))?['optionIds'], [
+          'opt-a',
+        ]);
+      },
+    );
+
+    test('multi-choice: a second option is added, not replaced', () async {
+      final firestore = FakeFirebaseFirestore();
+      final module = _newModule(firestore);
+      await seedPoll(firestore);
+
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-a',
+        voterId: 'user-1',
+        allowMultiple: true,
       );
+      await module.votePoll(
+        messageId: 'msg-1',
+        optionId: 'opt-b',
+        voterId: 'user-1',
+        allowMultiple: true,
+      );
+
+      expect((await voteRow(firestore, 'msg-1', 'user-1'))?['optionIds'], [
+        'opt-a',
+        'opt-b',
+      ]);
     });
+
+    test(
+      'multi-choice: re-tapping toggles off, and the last one deletes the row',
+      () async {
+        // An empty row is still a uid on a document every participant reads, so
+        // "no selection" must leave nothing behind rather than an empty list.
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(firestore);
+        await seedPoll(firestore);
+
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-a',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-b',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-a',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+
+        expect((await voteRow(firestore, 'msg-1', 'user-1'))?['optionIds'], [
+          'opt-b',
+        ]);
+
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-b',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+
+        expect(await voteRow(firestore, 'msg-1', 'user-1'), isNull);
+      },
+    );
+
+    test(
+      'multi-choice: toggling off a vote that was never cast writes nothing',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(firestore);
+        await seedPoll(firestore);
+
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-a',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+        await module.votePoll(
+          messageId: 'msg-1',
+          optionId: 'opt-a',
+          voterId: 'user-1',
+          allowMultiple: true,
+        );
+
+        expect(await voteRow(firestore, 'msg-1', 'user-1'), isNull);
+      },
+    );
   });
 
   group('MessageMutationModule.closePoll', () {

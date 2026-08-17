@@ -1,7 +1,7 @@
 /// Direct unit tests for [ContentExportManager] (BUT-1438, BUT-1401 follow-up).
 ///
 /// Proves the GDPR Article-15/20 *content* export contract across every
-/// record type this manager owns: recipes (personal + unified), menus
+/// record type this manager owns: recipes (personal), menus
 /// (personal + shared), shopping lists with items, personal tags, personal
 /// tag groups, cook snaps, cook events, pantry items, activity events,
 /// weekly menu plans, and group weekly menu plans. Each method must surface
@@ -37,21 +37,14 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 
 class _FakeRecipeRepository extends Fake implements FirebaseRecipeRepository {
-  _FakeRecipeRepository({this.personal = const [], this.unified = const []});
+  _FakeRecipeRepository({this.personal = const []});
   final List<Map<String, dynamic>> personal;
-  final List<Map<String, dynamic>> unified;
 
   @override
   Future<List<Map<String, dynamic>>> exportPersonalRecipesByUser(
     String userId, {
     int maxDocuments = 1000,
   }) async => personal;
-
-  @override
-  Future<List<Map<String, dynamic>>> exportTopLevelRecipesByOwner(
-    String userId, {
-    int maxDocuments = 1000,
-  }) async => unified;
 }
 
 class _FakeDataExportRepository extends Fake
@@ -376,19 +369,20 @@ ContentExportManager _manager({
 
 void main() {
   group('ContentExportManager.exportRecipes (BUT-1438)', () {
-    test('includes personal and unified recipes, each typed', () async {
+    // BUT-1801 removed the second source. A "top-level legacy" leg used to be
+    // exported beside this one under `'type': 'unified'`; it read a collection
+    // no rule grants, so in production it threw `permission-denied` and the
+    // catch around BOTH legs returned `recipes-export-failed` for the whole
+    // section. Nothing here caught it because `Fake` answers whatever the test
+    // asks for. There is one source now, and it is still typed, because the
+    // key is in every shipped bundle's schema.
+    test('includes personal recipes, typed', () async {
       final manager = _manager(
         recipes: _FakeRecipeRepository(
           personal: [
             {
               'id': 'rp1',
               'data': {'title': 'Soup'},
-            },
-          ],
-          unified: [
-            {
-              'id': 'ru1',
-              'data': {'title': 'Stew'},
             },
           ],
         ),
@@ -405,20 +399,14 @@ void main() {
         isNotEmpty,
         reason: 'the is-FirebaseRecipeRepository export branch must have run',
       );
-      // Order is deterministic: personal recipes are appended before unified.
       expect(result['recipes'], [
         {
           'recipe_id': 'rp1',
           'type': 'personal',
           'data': {'title': 'Soup'},
         },
-        {
-          'recipe_id': 'ru1',
-          'type': 'unified',
-          'data': {'title': 'Stew'},
-        },
       ]);
-      expect(result['total_count'], 2);
+      expect(result['total_count'], 1);
     });
   });
 
@@ -735,83 +723,69 @@ void main() {
       },
     );
 
-    test(
-      'exportRecipes does not stamp truncated when two complete sub-queries '
-      'happen to sum past the cap (BUT-1662)',
-      () async {
-        // The recipe cap applies PER sub-query — personal and top-level are
-        // separate Firestore reads. Comparing the MERGED length to one cap
-        // stamped a fully complete export as truncated as soon as the two
-        // halves added up past it. Each leg here holds three quarters of the
-        // cap: neither is clipped, but together they exceed it.
-        final cap = ExportPaginationHelper.getLimitForType('recipes');
-        final perLeg = (cap * 3) ~/ 4;
-        expect(perLeg, lessThanOrEqualTo(cap), reason: 'fixture premise');
-        expect(perLeg * 2, greaterThan(cap), reason: 'fixture premise');
-
-        final manager = _manager(
-          recipes: _FakeRecipeRepository(
-            personal: List.generate(perLeg, (i) => _recipeRow('p', i)),
-            unified: List.generate(perLeg, (i) => _recipeRow('u', i)),
-          ),
-        );
-
-        final result = await manager.exportRecipes('user-uid');
-
-        expect(result['total_count'], perLeg * 2);
-        expect(result.containsKey('truncated'), isFalse);
-      },
-    );
+    // The recipes counterpart of the BUT-1662 "two complete legs sum past the
+    // cap" test is GONE, not forgotten, and so is its "only the top-level leg
+    // clipped" sibling: recipes have ONE source since BUT-1801, so no fixture
+    // can stage a second leg. The menus tests below still stage both halves of
+    // that OR, and `exportRecipes`'s own flag stays pinned by the clipped-leg
+    // test immediately following.
 
     test(
       'exportRecipes stamps truncated when the personal-recipe leg clipped '
       '(BUT-1662)',
       () async {
-        // Positive control for the OR: without it the "sum past the cap"
-        // test above passes even if the flag were dropped from exportRecipes
-        // entirely — and a clipped bundle silently claiming completeness is
-        // the dangerous direction for Art. 15.
+        // The whole guard for `exportRecipes`'s truncation flag now that
+        // there is one source: drop the flag and this test reddens.
         final cap = ExportPaginationHelper.getLimitForType('recipes');
 
         final manager = _manager(
           recipes: _FakeRecipeRepository(
             personal: List.generate(cap + 1, (i) => _recipeRow('p', i)),
-            unified: [_recipeRow('u', 0)],
           ),
         );
 
         final result = await manager.exportRecipes('user-uid');
 
         expect(result['truncated'], isTrue);
-        // Personal trimmed back to the cap; the intact unified leg still lands.
-        expect(result['total_count'], cap + 1);
-        expect((result['recipes'] as List).last, {
-          'recipe_id': 'u0',
-          'type': 'unified',
-          'data': {'title': 'r0'},
-        });
+        // Trimmed back to the cap. The flag is the only thing that tells the
+        // reader of the bundle rows are missing, so a clipped export claiming
+        // completeness is the dangerous direction for Art. 15.
+        expect(result['total_count'], cap);
       },
     );
 
     test(
-      'exportRecipes stamps truncated when only the top-level leg clipped '
-      '(BUT-1662)',
+      'exportRecipes omits truncated below the cap AND exactly at it '
+      '(BUT-1662 recall control)',
       () async {
-        // The second half of the OR: a regression keeping only
-        // `personal.truncated` would leave the test above green.
+        // The other half of the boundary, and the one BUT-1801 accidentally
+        // removed: deleting the two-leg test took the section's ONLY assertion
+        // that the flag can be ABSENT. Measured — with that gone, making the
+        // stamp unconditional left the whole suite green, so every Art. 15
+        // bundle would have claimed its recipe section was clipped when it was
+        // complete. That is the BUT-1662 false-positive direction, and recipes
+        // was the only capped section in this file without a control for it.
+        //
+        // Both sides asserted, because `>= cap` and `> cap` differ only at the
+        // boundary: the pre-BUT-1662 rule stamped an exactly-cap-sized export
+        // as truncated. The pantry section above ships the same trio.
         final cap = ExportPaginationHelper.getLimitForType('recipes');
 
-        final manager = _manager(
+        final below = await _manager(
           recipes: _FakeRecipeRepository(
-            personal: [_recipeRow('p', 0)],
-            unified: List.generate(cap + 1, (i) => _recipeRow('u', i)),
+            personal: List.generate(cap - 1, (i) => _recipeRow('p', i)),
           ),
-        );
+        ).exportRecipes('user-uid');
+        expect(below.containsKey('truncated'), isFalse);
+        expect(below['total_count'], cap - 1);
 
-        final result = await manager.exportRecipes('user-uid');
-
-        expect(result['truncated'], isTrue);
-        expect(result['total_count'], cap + 1);
+        final atCap = await _manager(
+          recipes: _FakeRecipeRepository(
+            personal: List.generate(cap, (i) => _recipeRow('p', i)),
+          ),
+        ).exportRecipes('user-uid');
+        expect(atCap.containsKey('truncated'), isFalse);
+        expect(atCap['total_count'], cap);
       },
     );
 

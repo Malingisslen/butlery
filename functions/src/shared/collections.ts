@@ -21,6 +21,14 @@ export const Collections = {
   // `leave-group-conversation.ts`.) This is the home the next writer should use,
   // not yet the only one.
   participants: "participants",
+  // BUT-1832: one row per voter under `messages/{messageId}`, doc id == voter
+  // uid. Votes moved off the message document because only a message's SENDER
+  // may update it, which denied the vote to everyone but the poll's author. The
+  // cascade sweeps this as a COLLECTION GROUP keyed on `voterId` (BUT-1835), so
+  // the Dart writer (`FirestoreCollections.pollVotes`) and this constant must
+  // stay the same string — a mismatch is a query that matches nothing and
+  // throws nothing.
+  pollVotes: "poll_votes",
   // BUT-1838: the shared group object a group chat now hangs off. Named
   // `chat_groups`, not `groups`, because this repo already calls three unrelated
   // things a "group": `friend_categories` (a user's own list of friends, used for

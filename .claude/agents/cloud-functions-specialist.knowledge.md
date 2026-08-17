@@ -109,6 +109,125 @@ idempotent:
 8. **Sanitisation must never shrink the value a security gate's THRESHOLD is
    computed from** — sanitise for the *use*, gate on the *raw* shape/count.
 9. Can't be idempotent? Document why + add a `processed-events`-style guard.
+10. **"Sequential-after, so no race" is a claim about ONE step; the cascade's
+    Tier 1 runs `Promise.all` over ~25 of them, and more than one writes
+    `messages`.** `deleteChatGroupMemberships` deletes a whole thread when the
+    erased user was the last member (`account-deletion-cascade.ts`:2443-2447),
+    so anything sequenced inside `deleteMessages` still races it. Consequence
+    for an UPDATE leg: a batch is atomic, so one NOT_FOUND fails the whole
+    ≤500-doc chunk, and `commitInChunks(..., strict:false)` warns and moves on
+    — every other doc in that chunk is silently un-erased while the step still
+    returns true. Before writing "deterministic order", grep the OTHER Tier-1
+    entries for writers of the same collection; make an anonymising leg
+    NOT_FOUND-tolerant per document, and give every new sweep an uncapped
+    `count()` leg in `probeResidualData` (the `participants` leg at :424 is the
+    shape) so a swallowed chunk cannot certify `gdprCompliant: true`.
+    **Re-verified 2026-08-16 (BUT-1835): the same diff repeated BOTH halves.**
+    `deletePollVotes` was sequenced inside `deleteMessages` under a comment saying
+    "Sequential-after is the only deterministic order" — false for the same reason
+    as before, `deleteChatGroupMemberships` deletes whole `messages` threads from
+    the sibling Tier-1 slot — and it shipped with NO probe leg while both its
+    writes are `commitInChunks(strict:false)`. So make it a two-item checklist on
+    any new erasure leg: (a) grep the OTHER Tier-1 entries for writers of the same
+    collection before writing "no race"; (b) the probe leg lands in the SAME edit
+    as the deleter, or the swallow is invisible. The `chat_groups` leg (BUT-1838)
+    is the worked example of doing it right — its probe row carries a comment
+    saying it ships in the same edit as its deleter.
+11. **A sweep CAP's stated threat model must be re-derived from the write RULE of
+    the collection it bounds, never copied from the cap beside it.**
+    `MAX_POLL_VOTE_SWEEP_ROWS` was documented "Same contract as
+    `MAX_ROSTER_SWEEP_ROWS` … the row count is chosen by OTHER PEOPLE. Anyone who
+    can start a conversation with this user can post polls into it" — false twice:
+    every verb on `poll_votes/{voterId}` requires `request.auth.uid == voterId`
+    plus `isValidVote()`'s `data.voterId == voterId` (firestore.rules:2085-2108),
+    so no peer can seat a row keyed on this uid, and posting a poll creates ZERO
+    rows (a row exists only when this user votes). The roster cap's peer-writable
+    argument (`attestedWriter()` on `direct_A_B`) does NOT transfer. The cap still
+    earns its place — self-inflation and a non-standard Admin-SDK writer — so fix
+    the RATIONALE, not the number, and grep the phrase across `__tests__` too: the
+    false sentence was in the suite's scenario docstring as well.
+    **The FIX ROUND then made the MIRROR error one hunk away (2026-08-17), which is
+    the durable half.** Having correctly narrowed the cap's threat model, the same
+    diff justified leaving the poll-CREATOR scrub UNCAPPED with "the rows are
+    self-bounded — only this user can author this user's polls". False: the
+    `messages` create rule (firestore.rules, `allow create` under
+    `match /messages/{messageId}`) has `hasRequiredFields([...])` and NO `hasOnly`,
+    so any participant may plant `metadata.poll.creatorId: <victimUid>` on a message
+    in their own DM — and this same FILE already says so, 300 lines up, in
+    `anonymizeSystemMessagesAboutUser`'s log comment about `metadata.subjectUserId`.
+    So: a bound's absence needs the write rule read exactly as hard as a bound's
+    presence, `hasRequiredFields` is not `hasOnly`, and the cheapest check is
+    grepping the collection name in the FILE YOU ARE EDITING before writing
+    "self-bounded". Rate limits do not rescue it: `rateLimitWrite('messages', 5)`
+    reads a SELF-WRITTEN bucket.
+12. **A rules LINE NUMBER inside a `functions/src` comment is wrong on arrival and
+    wronger every commit.** Both citations shipped by the 2026-08-17 fix round were
+    wrong against every version of the file: `firestore.rules:2748` for the
+    `match /{path=**}/recipes/{recipeId}` catch-all (HEAD 2636, index 2738, worktree
+    2766 — and 2748 is inside the `comments` block), and `:2093-2108` for "every
+    write verb on `poll_votes/{voterId}`" (the write verbs are 2111/2117/2126; the
+    named range stops before all three). The first number came from THIS agent's own
+    archive entry, i.e. a reviewer's suggested wording is a coordinate you still owe
+    a check. Cite the `match` pattern or the rule FUNCTION name (`isValidVote()`),
+    never a line — greppable, and it cannot drift.
+13. **A fake whose `update()` resolves on a missing document cannot stage NOT_FOUND,
+    so every grpc-code-5 tolerance branch written against it is untested and looks
+    covered.** `FakeFirestore.applyUpdate` is `if (!existing) return;`
+    (`account-deletion-cascade.test.ts`), which is the whole point of the
+    `updatedPaths` array beside it — yet the 2026-08-17 round moved the poll-creator
+    scrub from `commitInChunks(strict:false)` to per-document
+    `Promise.allSettled` + "tolerate code 5, fail on anything else" and shipped it
+    with no fixture. MEASURED: inverting the predicate to `?.code === 5` (tolerate
+    everything EXCEPT the one case it was written for) leaves the suite **110/110
+    GREEN**. Any NOT_FOUND-tolerance leg needs either a seam that rejects with
+    `{code:5}` / another code, or the emulator lane — and until it has one, do not
+    let the comment claim "every other error marks the step incomplete".
+    **CLOSED 2026-08-17, and the closing shape is reusable:** a
+    `readonly updateFailures = new Map<path, grpcCode>()` on the fake, thrown from
+    `makeRef().update` before `applyUpdate`, with BOTH directions asserted (code 5 ⇒
+    step stays complete, code 13 ⇒ step reports incomplete). Empty by default, so no
+    existing scenario moves. Two things to state when you add one: it sits on the REF
+    verb only — `batch().update` goes straight to `applyUpdate`, so an injection on a
+    `commitInChunks` path passes VACUOUSLY — and the mutant that proves it is inverting
+    the predicate, not deleting it.
+14. **Deleting a cascade LEG needs a `__tests__` grep for writers of that path, and
+    the fixture you find is both the counterexample and the alarm.** The 2026-08-17
+    round removed `deleteRecipes`' top-level `recipes` read under a comment reading
+    "no writer of a top-level `recipes` collection exists anywhere in `lib/` or
+    `functions/src` (verified by grep)" — while
+    `functions/src/__tests__/request-account-deletion.integration.test.ts`:152 does
+    `db.collection("recipes").doc('r-own-…').set({userId: TARGET})` and :724 asserts
+    `!exists('recipes/r-own-…')`. That suite is registered in `test:rules:all` AND in
+    both `paths:` blocks of `firestore-rules.yml`, so the removal turns a green
+    emulator lane red, and the grep that would have caught it is the same one the
+    comment claims to have run. Two rules: an unqualified "nothing writes X" must be
+    greped INCLUDING `__tests__` (say "no PRODUCTION writer" if that is what you
+    mean), and a leg is only dead once its integration fixture and assertion are
+    retired in the SAME edit.
+    **CLOSED 2026-08-17 (leg restored, wording corrected) — and the REPLACEMENT sentence
+    then failed on its COUNT, which is the durable half.** "All three
+    `FirestoreCollections.recipes` sites in `lib/` resolve there" is false under every
+    reading: the grep returns FIVE, four build a path (including
+    `firestore_repository.userRecipesCollection`, whose live caller is
+    `offline_sync_manager.dart`), and the fifth is a
+    `collectionGroup(FirestoreCollections.recipes)` that resolves to NO path and SPANS the
+    top-level collection the sentence is arguing about. So when you defend a leg by
+    enumerating its writers, paste the grep and count it — and prefer the PROPERTY
+    ("every production writer is user-scoped") over a tally that a new call site falsifies.
+    Related: `probeResidualData` is a highest-risk SAMPLE, not a per-leg mirror (`menus`,
+    `cook_snaps`, `pantry`, `households` have no row either), so the invariant is
+    "deleter ⊇ probe" — an unprobed deleter leg is not a coverage gap on its own.
+    **Round 4 (2026-08-17) — the corrected sentence's TWIN, and its neighbouring COUNT.**
+    Fixing the property in the production docstring left the test file's paraphrase ("no code
+    writes `metadata.poll.options[].voterIds` any more") standing, so one diff asserted both
+    sides of the same fact; grep the distinctive phrase across `functions/src` INCLUDING
+    `__tests__` before calling such a correction taken. Two more shapes from the same round:
+    a claim that a field "is only ever EMPTY / never carries personal data" is about DISK, so
+    read the writer the diff REPLACES (`git show HEAD:<file>` + HEAD's rules) — the old inline
+    vote path stored the poll author's own uid there, which the new scrub and both probe legs
+    miss; and a suite-size figure in a comment ("stays 32/32") is falsified by the very
+    fixture the same review asked you to add, so re-count `grep -c "^test("` in the edit that
+    adds one.
 
 ## Cost & cold-start
 
@@ -1956,13 +2075,36 @@ see "When to consult the archive" at the end.
   Sweep ALL of them at once** (`grep -rn expireAt functions/src lib`), map each
   to the `fieldOverrides` ttl set, and treat any writer still carrying a
   "manual one-off gcloud command" header as unenabled — those commands do not
-  get run. Open as of 2026-07-31 (BUT-1699 fixed only the first two):
-  `notification_opened_events` (30d, `record-notification-opened.ts`, still has
-  the stale header), `report_processing_markers` (180d),
-  `system_ip_audit_caps` (2h, unbounded one-doc-per-IP-hour growth), and
-  `activeUsers.expiresAt` (`docs/ops/presence-ttl-runbook.md`). Anchor check
-  while you are there: `expireAt` computed from NOW must exceed the doc's own
-  functional lifetime (`scheduled_notifications` is now+7d against a
+  get run. **CLOSED 2026-08-17 (BUT-1792)** — the four that were open
+  (`notification_opened_events` 30d, `report_processing_markers` 180d,
+  `system_ip_audit_caps` 2h, `activeUsers.expiresAt` 60s) are now DECLARED, and
+  three reusable checks come out of it:
+  (a) **The suite's field name must be PER TARGET, never a shared constant.**
+  `activeUsers` spells it `expiresAt`; every TS writer spells it `expireAt`. A
+  policy names exactly one field, so the wrong spelling arms a policy that is
+  live, valid and deletes nothing — no error anywhere. Mutation-proven
+  2026-08-17: flipping the `activeUsers` fieldPath to `expireAt` reddens exactly
+  one check (13/13 → 12/13, exit 1).
+  (b) **The stamp anchor must cover EVERY writer of the collection GROUP, not
+  one.** `activeUsers` has FOUR write sites across two Dart repos
+  (`firebase_recipe_presence_repository.dart`,
+  `firebase_shopping_presence_repository.dart`); TARGETS anchors one, so a
+  rename in the other leaves the suite green and those rows unreaped. When the
+  group is a SUBCOLLECTION, enumerate its parents before writing the pin. And say
+  "one writer OF THIS FIELD" — the comment added with the second entry read "every
+  entry above names a single writer because its collection has one", which is false
+  under the plain reading (`deliver-scheduled-notifications.ts` updates
+  `scheduled_notifications`; `on-user-deleted.ts` deletes three of them) and true
+  only of writers that STAMP the expiry.
+  (c) **Before arming a policy, read the READER, not just the writer.** A TTL is
+  safe against a reader whose window equals the retention (`suppressLowPerformers`
+  aggregates `openedAt >= now-30d` against a 30d TTL — the TTL is the lagging
+  side, so a row leaves the window before it is deleted), and safe against a
+  bucket-keyed rate limit only while the TTL exceeds the bucket window
+  (`system_ip_audit_caps` is a 1h bucket refreshed to now+2h on every hit ⇒ ≥1h
+  margin; a 1h TTL there would reset a live cap and defeat the control).
+  Anchor check while you are there: `expireAt` computed from NOW must exceed the
+  doc's own functional lifetime (`scheduled_notifications` is now+7d against a
   quiet-hours `deliverAt` ≤24h out — safe; a >7d deferral would be deleted
   before delivery).
 - **A retention bucket selected by an ENUMERATED allowlist fails silently toward

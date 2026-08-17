@@ -1,14 +1,15 @@
 // test/unit/services/unified/operations/modules/recipe_sharing_manager_test.dart
 
-// BUT-1798 mocks two sealed cloud_firestore types; that is the only way to
-// make the shared_content existence probe THROW permission-denied the way
-// real Firestore does on a document that does not exist yet
-// (fake_cloud_firestore evaluates no rules at all). Same convention and the
-// same reason as shopping_repository_routing_module_test.dart.
+// BUT-1812 mocks two sealed cloud_firestore types so the payload of the
+// auto-id `shared_content` create can be captured off the DocumentReference
+// itself. `fake_cloud_firestore` evaluates no rules, so nothing about
+// `allow create` can be provoked here — the payload is what a unit test can
+// see, and what the rule's required set is checked against. Same convention
+// and the same reason as shopping_repository_routing_module_test.dart.
 // ignore_for_file: subtype_of_sealed_class
 
 import 'package:cloud_firestore/cloud_firestore.dart'
-    show CollectionReference, DocumentReference, FirebaseException, Timestamp;
+    show CollectionReference, DocumentReference, Timestamp;
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -403,31 +404,29 @@ void main() {
         },
       );
 
-      /// BUT-1798. The existence probe must fail OPEN toward "new".
+      /// BUT-1812. The write is a single unconditional create, and it stamps
+      /// `sharedAt`.
       ///
-      /// `firestore.rules:724` dereferences `resource.data.sharedByUserId` in
-      /// `allow get`, and on a document that does not exist `resource` is null
-      /// — so the very FIRST share of any recipe gets PERMISSION_DENIED on the
-      /// probe. Failing closed there skips the whole write, and the catch
-      /// around the method swallows it, costing the recipient both their read
-      /// grant and their Art. 15 row.
+      /// There is nothing to read before writing any more: the row is keyed on
+      /// an auto-id, so it is this share's own document and always a create.
+      /// The predecessor of this test pinned an existence probe that decided
+      /// create-vs-update; that probe is gone with the recipeId key, and this
+      /// is the assertion that outlives it — `allow create` refuses a row
+      /// without `sharedAt`, the catch around the whole method swallows the
+      /// denial, and the recipient silently loses both their read grant and
+      /// their Art. 15 row.
       ///
-      /// `fake_cloud_firestore` evaluates no rules, so the denial is INJECTED
-      /// rather than provoked. The manager takes its `FirestoreRepository` by
-      /// constructor precisely so this is reachable.
+      /// The capture is on a mocked `DocumentReference` rather than the fake
+      /// Firestore because it also pins that the write goes through
+      /// `collection(...).doc()` with NO id argument — re-deriving the id from
+      /// the recipe is exactly what BUT-1812 had to undo.
       test(
-        'a permission-denied probe still writes, and still stamps sharedAt',
+        'the shared_content create is unconditional and stamps sharedAt',
         () async {
           final docRef = _MockSharedContentDoc();
           final captured = <Map<String, dynamic>>[];
+          final repository = _CapturingRepository(docRef);
 
-          when(() => docRef.get()).thenThrow(
-            FirebaseException(
-              plugin: 'cloud_firestore',
-              code: 'permission-denied',
-              message: 'null resource on a not-yet-existing document',
-            ),
-          );
           when(() => docRef.set(any(), any())).thenAnswer((invocation) async {
             captured.add(
               invocation.positionalArguments[0] as Map<String, dynamic>,
@@ -444,7 +443,7 @@ void main() {
             createPersonalRecipe: mockParentService.createPersonalRecipe,
             updateRecipe: (_) async => true,
             notificationService: mockNotificationService,
-            firestoreRepository: _ProbeDenyingRepository(docRef),
+            firestoreRepository: repository,
           );
 
           await manager.shareRecipe(
@@ -457,38 +456,51 @@ void main() {
             captured,
             isNotEmpty,
             reason:
-                'a denied probe must not skip the write — that is the first '
-                'share of every recipe',
+                'the row is written on every share, with nothing read first — '
+                'the whole method sits inside a catch, so a skipped write is '
+                'invisible everywhere except here',
           );
           expect(
             captured.first.containsKey('sharedAt'),
             isTrue,
             reason:
-                'the create rule requires sharedAt via hasRequiredFields, so '
-                'an inconclusive probe has to assume "new"',
+                'the create rule requires sharedAt via hasRequiredFields, and '
+                'this row IS this share, so there is no earlier value to '
+                'preserve and no reason to stamp it conditionally',
+          );
+          expect(
+            repository.requestedDocIds,
+            [null],
+            reason:
+                'exactly one auto-id create. An id passed here would be the '
+                'recipeId key BUT-1812 removed, which made a re-share an '
+                'update of whatever row already sat at that slot',
           );
         },
       );
 
-      /// BUT-1775 follow-up. `shared_content/{recipeId}` is written with
-      /// `set(merge: true)`, so the FIRST share is a create and every re-share
-      /// is an UPDATE — and `firestore.rules` guards that update with
-      /// `cannotModify(['sharedByUserId', 'contentType', 'sharedAt'])`. A
-      /// resolved `serverTimestamp` never equals the stored one, so stamping
-      /// `sharedAt` unconditionally put it in `affectedKeys()` and the rules
-      /// engine refused the WHOLE write. The failure was invisible: the writer
-      /// catches and logs. Net effect — re-sharing a recipe to more people
-      /// added nobody to `sharedToUserIds`, so the new recipient's `allow list`
-      /// grant and their Art. 15 rows never materialised, while the code
-      /// comment right above claimed the opposite.
+      /// BUT-1812. A re-share writes its OWN `shared_content` row.
       ///
-      /// No fake can see a rules denial, so the assertion is on the payload the
-      /// denial was caused by: `sharedAt` must not be re-stamped on a document
-      /// that already exists. Restoring the unconditional stamp reddens the
-      /// first expectation.
+      /// This used to key the row on the recipeId and `set(merge: true)` into
+      /// it, so the first share was a create and every re-share an update —
+      /// which `firestore.rules` guards with `cannotModify(['sharedByUserId',
+      /// 'contentType', 'sharedAt'])`. Two failures came of that. A resolved
+      /// `serverTimestamp` never equals the stored one, so an unconditional
+      /// `sharedAt` put it in `affectedKeys()` and the engine refused the whole
+      /// write (BUT-1775, fixed by stamping create-only). And if the row at
+      /// that id belonged to ANOTHER user, `allow get` and `allow update` are
+      /// both false for us by design, so no payload could ever add our
+      /// recipients — not fixable from the client at all (BUT-1812). Malin's
+      /// call was one row per share, matching the menu and shopping-list
+      /// writers, over widening `allow update` to let recipients extend the
+      /// recipient list.
+      ///
+      /// No fake evaluates rules, so the assertion is on the shape the denial
+      /// was caused by: a pre-existing row is left untouched, and the new
+      /// recipient reaches `sharedToUserIds` on a row of this share's own.
       test(
-        're-sharing does not re-stamp sharedAt, so the update is not refused '
-        'by cannotModify (BUT-1775)',
+        're-sharing writes a NEW row and never touches the existing one '
+        '(BUT-1812)',
         () async {
           final userService =
               app_provider.ServiceLocator.get<UserService>() as MockUserService;
@@ -499,9 +511,9 @@ void main() {
           final repository =
               app_provider.ServiceLocator.get<FirestoreRepository>()
                   as FakeFirestoreRepository;
-          // The document a FIRST share already created. `collab_1` is
-          // collaborative, so shareRecipe takes the re-share branch and writes
-          // this same doc id.
+          // The row a FIRST share left behind, still keyed on the recipeId the
+          // way pre-BUT-1812 shares were. `collab_1` is collaborative, so
+          // shareRecipe takes the re-share branch.
           final firstSharedAt = Timestamp.fromDate(DateTime.utc(2026, 1, 2, 3));
           await repository.collection('shared_content').doc('collab_1').set({
             'contentType': 'recipe',
@@ -529,29 +541,45 @@ void main() {
             memberDisplayNames: {'new_member': 'New Member'},
           );
 
-          final after =
-              (await repository
-                      .collection('shared_content')
-                      .doc('collab_1')
-                      .get())
-                  .data()!;
+          final rows = await repository.collection('shared_content').get();
+          final fresh = rows.docs.where((d) => d.id != 'collab_1').toList();
 
           expect(
-            after['sharedAt'],
-            firstSharedAt,
+            fresh,
+            hasLength(1),
             reason:
-                'a re-share must leave sharedAt alone — a fresh serverTimestamp '
-                'lands in affectedKeys() and cannotModify([...,"sharedAt"]) '
-                'then refuses the entire update, silently',
+                'each share is its own document — writing into the recipeId '
+                'slot is what made a re-share collide with a stranger row no '
+                'payload of ours could ever update',
           );
           expect(
-            after['sharedToUserIds'],
+            fresh.single.data()['sharedToUserIds'],
             contains('new_member'),
             reason:
                 'the whole point of the write: the new recipient must reach '
                 'the field their allow-list grant and their Art. 15 rows '
                 'depend on',
           );
+          expect(
+            fresh.single.data()['sharedAt'],
+            isNotNull,
+            reason:
+                'always stamped now — this row IS this share, so there is no '
+                'earlier value to preserve, and `allow create` requires it',
+          );
+
+          final old =
+              (await repository
+                      .collection('shared_content')
+                      .doc('collab_1')
+                      .get())
+                  .data()!;
+          expect(
+            old['sharedAt'],
+            firstSharedAt,
+            reason: 'the pre-existing row is not written at all any more',
+          );
+          expect(old['sharedToUserIds'], isNot(contains('new_member')));
         },
       );
 
@@ -937,33 +965,39 @@ void main() {
   });
 }
 
-/// BUT-1798. `_writeToSharedRecipesCollection` probes whether the
-/// `shared_content` document already exists, to decide whether to stamp
-/// `sharedAt`. `firestore.rules:724` dereferences `resource.data.sharedByUserId`
-/// in `allow get`, so on a document that does not exist yet `resource` is null
-/// and the probe is DENIED — on the very first share of any recipe.
+/// BUT-1812. `_writeToSharedRecipesCollection` builds its own `shared_content`
+/// payload and writes it to an AUTO id — `collection(...).doc()` with no
+/// argument, then a plain `set`. Nothing is read first.
 ///
-/// The probe must therefore fail OPEN toward "new". Failing closed loses the
-/// row, and the catch wrapped around the whole method swallows it, costing the
-/// recipient both their read grant and their Art. 15 export row.
-///
-/// The production comment says no unit test can see this. That is true of the
-/// rules DENIAL and false of the CATCH — the manager takes its
-/// `FirestoreRepository` by constructor, so the denial can just be injected.
+/// These mocks exist to capture that payload and that id. `fake_cloud_firestore`
+/// evaluates no rules, so a unit test can never see `allow create` refuse a row;
+/// what it CAN see is whether the payload carries the fields the rule requires,
+/// and whether the write still asks for a document id of its own choosing. Both
+/// failures are silent in production — the method sits inside a catch, and the
+/// cost lands on the recipient, who loses their read grant and their Art. 15 row.
 class _MockSharedContentCollection extends Mock
     implements CollectionReference<Map<String, dynamic>> {}
 
 class _MockSharedContentDoc extends Mock
     implements DocumentReference<Map<String, dynamic>> {}
 
-class _ProbeDenyingRepository extends Fake implements FirestoreRepository {
-  _ProbeDenyingRepository(this.docRef);
+class _CapturingRepository extends Fake implements FirestoreRepository {
+  _CapturingRepository(this.docRef);
   final DocumentReference<Map<String, dynamic>> docRef;
+
+  /// The id each `.doc(...)` call asked for. `null` is the auto-id case; a
+  /// non-null entry means a writer re-derived the document id from the content,
+  /// which is the collision BUT-1812 removed.
+  final List<String?> requestedDocIds = <String?>[];
 
   @override
   CollectionReference<Map<String, dynamic>> collection(String path) {
     final col = _MockSharedContentCollection();
-    when(() => col.doc(any())).thenReturn(docRef);
+    when(() => col.doc(any())).thenAnswer((invocation) {
+      final args = invocation.positionalArguments;
+      requestedDocIds.add(args.isEmpty ? null : args.first as String?);
+      return docRef;
+    });
     return col;
   }
 }

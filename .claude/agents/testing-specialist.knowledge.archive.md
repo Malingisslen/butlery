@@ -20991,3 +20991,365 @@ at 503; this change pushes it further over. Filed Medium — the surplus is dupl
 
 Closing state: `flutter analyze lib/widgets/common/content_card.dart` → no issues;
 `flutter test test/widget/common/content_card_test.dart` → 39/39. Verdict pass, 0 blocking.
+
+## 2026-08-16 — BUT-1812/BUT-1832/BUT-1801 fix-round re-review (7 lib files)
+
+Trigger: "these files were just changed by an automated fix round — attack the fix".
+Scope: `firestore_collections.dart`, `firebase_recipe_repository.dart`,
+`message_mutation_module.dart`, `message_query_module.dart`,
+`recipe_gdpr_export_operations.dart`, `content_export_manager.dart`,
+`recipe_sharing_manager.dart`. Index == worktree for all seven
+(`git show :<f> | diff --strip-trailing-cr -` → SAME), md5 stable across the round.
+
+**1. BUT-1812 — `shared_content` recipe rows move from `doc(recipeId)` to `doc()` auto-id.**
+Graded against `firestore.rules`:776-780: create requires
+`['sharedByUserId','contentType','sharedAt','sharedToUserIds']` plus `sharedToUserIds is list`;
+the payload emits all four, so the now-unconditional `sharedAt` is required, not optional. The
+two sibling writers (`social_menu_operations.dart`:123-124,
+`shopping_social_share_module.dart`:96-97) already use `.doc()`, so the fix converges rather
+than diverges, and `FirestoreRepository.collection()` (`firestore_repository.dart`:125) returns
+a real `CollectionReference`, so no-arg `doc()` exists through the seam.
+
+What the ID change costs, and what no suite sees: `recipe_service_adapter.dart`:173-176 cleans
+up on recipe deletion with `where('originalRecipeId', isEqualTo: recipeId)` — a field this
+writer has NEVER emitted (it writes `'recipeId'`). Before, the row at least had a deterministic
+address; now it has neither an address nor a matching field, and there are N of them instead of
+1. Separately `FirebaseGroupSharedContentRepository._mergeChunks` dedupes by DOC ID, so two
+shares of one recipe used to collapse into one feed card and now render twice. Filed Medium
+(leak amplified, not created; the duplicate card is Malin's decided one-row-per-share).
+
+**2. BUT-1832 — poll votes move to `messages/{id}/poll_votes/{voterUid}`.** Write payload
+`{voterId, optionIds, votedAt}` matches `isValidVote()`'s `hasOnly` allow-list exactly
+(`firestore.rules`:2084-2087); `firestore.indexes.json`:750-757 carries the
+`poll_votes/voterId` override at BOTH `COLLECTION` and `COLLECTION_GROUP` scope, which the
+Art. 17 sweep (`account-deletion-cascade.ts`:1532) needs. Toggle semantics are equivalent to
+the deleted inline version on both branches (single-choice re-tap nets to "stays voted" because
+the old code stripped-then-added). `closePoll` is safe: it rewrites metadata read from the RAW
+doc, so hydrated `voterIds` are never persisted back into the message.
+
+Two gaps found by reading the file's own comment against the file. (a) The header states
+"Anything that hands out a poll message must hydrate" and `searchMessages` (same file, :265)
+does not; its callers are "rensa chatt" (deletes, never renders) and
+`MessagingService.searchMessages` (renders) — filed Low. (b) `_pollIds` caps with `.take(20)`
+over a list already reversed to oldest-first, so the 20 hydrated polls are the OLDEST on the
+page and the newest — bottom of the screen, still open — show "0 röster". Filed Medium.
+
+**3. BUT-1801 — `exportTopLevelRecipesByOwner` deleted.** The justifying claim is checkable and
+true: `grep "match /recipes" firestore.rules` returns exactly one hit, :360, nested under
+`users/{userId}`; no top-level block ⇒ default deny ⇒ the probe threw inside the single
+try/catch and discarded the personal recipes already collected. `grep -rn
+exportTopLevelRecipesByOwner --include=*.dart .` is empty, so nothing dangles.
+
+Closing state: `flutter analyze` over the 7 files → no issues (2.9 s); the five sibling suites
+(`message_mutation_module_test`, `message_query_module_test`,
+`recipe_gdpr_export_operations_test`, `content_export_manager_test`,
+`recipe_sharing_manager_test`) → 111/111 green. Verdict pass, 0 blocking.
+
+## 2026-08-17 — BUT-1832 / BUT-1801 / BUT-1812 gate review (second pass, 4 suites + 5 prod files)
+
+Scope handed over: `base_shared_content_repository.dart`, `firebase_data_export_repository.dart`,
+`social_export_manager.dart`, `recipe_gdpr_export_operations.dart`, `content_export_manager.dart`
+and four suites. A PRIOR round on an overlapping fileset closed `pass, 0 blocking` (entry above,
+7 files / 111 tests). This round found three blocking items that round did not, all by mutation
+rather than reading. Baseline: 103/103 green over the four suites; `dart analyze --fatal-infos`
+over the five production files → "No issues found!".
+
+**M1 — `exportRecipes`'s `truncated` flag survives being stuck TRUE.** Mutant:
+`content_export_manager.dart:160` `if (truncated) 'truncated': true,` → unconditional. Result
+`00:00 +43: All tests passed!`. BUT-1801 deleted the two-leg test "does not stamp truncated when
+two complete sub-queries happen to sum past the cap", which held the section's ONLY
+`containsKey('truncated'), isFalse`. The deletion RATIONALE is half right: the two-leg FIXTURE is
+genuinely unstageable with one source, but the ASSERTION is not — a below-cap/at-cap single-leg
+pair reproduces it, and the pantry section in the same file (:684-724) already ships exactly that
+below/at/over trio while the shared-list section ships the at-cap control (:1188). Recipes is now
+the only capped section in the file with no recall control.
+
+**M4 — same shape, new code: `poll_votes_truncated` survives being stuck TRUE.** Mutant:
+`firebase_data_export_repository.dart:455` `var pollVotesTruncated = false;` → `= true;`. Result
+`00:00 +9: All tests passed!`. Nothing asserts the flag ABSENT on a complete conversation, and
+`DataExportService`'s nested walk lifts any `*_truncated` into the bundle's truncation notice, so
+a stuck flag tells every data subject their export is clipped — the BUT-1721 false-positive
+direction whose fix is the TOP half of this very file, which does carry its at-cap control
+(:98-118). One test closes it.
+
+**M2 — `_hasPoll`'s named test tests neither half of its own name.** Mutant:
+`if (_hasPoll(msgDoc.data()))` → `if (true)`. RED, but the single failure is
+`BUT-1832: past the lookup cap the conversation reports itself clipped` — the test
+"a message with no poll is not probed and carries no vote key" passed unchanged. Mechanism:
+with the guard gone, `msg-0` IS probed, `messages/msg-0/poll_votes/user-abc` does not exist,
+`voteDoc.exists` is false, no key is written. "Guard held" and "probe found nothing" are one
+observable. So `_hasPoll`'s only guard is an INCIDENTAL kill inside the cap test, which depends
+on that fixture keeping a non-poll message ordered first; retune it and `_hasPoll` is
+deletable-green. Repair is the decoy-retarget shape: seed a trap row at
+`messages/msg-0/poll_votes/{userId}` — production's `votePoll` only ever writes under a poll
+message, so the row is a shape production never writes — and assert the key still absent.
+M3 (control, `poll_votes_truncated` key deleted) → RED, so that emission itself is pinned.
+
+**Zero-token finding: the whole `SocialExportManager` half of BUT-1832 is untested.**
+`grep -rl your_poll_vote test/` → the repository suite only; `poll_votes_error_code` and
+`conversation-poll-votes-read-failed` → ZERO files. Three new blocks
+(`social_export_manager.dart` :253-260, :275-281, :282-290) and the seam already exists:
+`social_export_manager_test.dart:23` has `_FakeDataExportRepository` overriding
+`exportConversationsAndMessages` (:122) and a `messages_truncated` pass-through test (:1097-1155)
+that is a line-for-line template. Sharpest sub-item: every real vote row carries `votedAt` as a
+`serverTimestamp` (`message_mutation_module.dart:548`), so `sanitizeForJson(msg['your_poll_vote'])`
+is the only thing between a live poll vote and `JsonEncoder.convert` at
+`data_export_service.dart:415`; delete that call and nothing reddens, though the two sibling
+"a Timestamp cannot break jsonEncode" tests in `content_export_manager_test` exist for precisely
+this. The repository-level `poll_votes_error_code` catch is NOT stageable (the fake cannot fire
+`permission-denied`) — which is exactly why the manager-level test is the one that must exist.
+Also unasserted: the precedence between `error_code ??=` (:289) and the unconditional
+`error_code =` (:305), i.e. the messages code always wins across conversations.
+
+**Endorsed as correct:** the five `exportTopLevelRecipesByOwner` tests. The header's argument
+("a fake-backed test is evidence about the query, never about the permission") is TRUE but is not
+the operative reason — the method and the module's `firestore` constructor param are both gone,
+so the tests cannot compile, and compiler enforcement is strictly stronger than a counter-test.
+`grep -rn exportTopLevelRecipesByOwner lib/ test/ functions/` is empty. No re-introduction guard
+is owed or possible: the module has no `FirebaseFirestore` handle left to reach a top-level
+collection with. Worth one clause in the header so a future reader does not generalise it into
+"fake-backed repository tests may be deleted".
+
+**Endorsed as correct:** BUT-1812's new
+`base_shared_content_repository_test.dart` case. Both arms of
+`initialSharedToUserIds ?? <String>[uid]` are pinned over one fixture (the pre-existing
+explicit-list test asserts `['friend-1','friend-2']`, the new one asserts `[_userId]`), the
+assertion is on the FIELD the create rule reads (`firestore.rules`:777-780,
+`hasRequiredFields([... 'sharedToUserIds'])` + `is list`), and a revert to the conditional makes
+the key vanish. Non-vacuous analytically, no mutant owed. Checked the `??`-catches-null-but-not-
+empty trap: the only caller passing a list is `firebase_shared_recipe_repository.dart:262` with
+`[sharedByUserId]`; nobody passes `[]`, which would satisfy `hasRequiredFields` and still leave
+the row unlistable.
+
+**Fixture realism:** vote-row shape `{voterId, optionIds, votedAt}` matches the writer exactly
+(`message_mutation_module.dart:542-549`), and `metadata.poll.options[].voterIds: []` matches the
+"written empty and never updated" reality — good. Two small ones: `seedPollMessage` gives both
+poll messages an identical `sentAt` (`DateTime.utc(2026,1,2)`), so which one the cap consumes is
+undefined (harmless today, a coin flip for any future per-poll assertion); and `seedConversation`
+writes a conversation carrying only `participantIds`, so the `memberSince` group-history branch
+(:416-426) has no fixture in this file — pre-existing BUT-1838, not caused by this diff.
+
+**Deviation check:** `docs/architecture/ACCEPTED_DEVIATIONS.md`:260-262 records poll
+`metadata.options[].voterIds` as a decided KEEP. BUT-1832 does not violate it (the field is still
+exported inside `data`) but it now records nothing, and the new leg exports only the requester's
+own row — stricter than the decided balance, correctly explained at
+`social_export_manager.dart`:331-338. That entry also says "Both halves are pinned by unit tests
+in `social_export_manager_test.dart`, in both directions", which a reader will over-read as
+covering the poll leg beside them. A dated amendment belongs with the fix.
+
+Probe hygiene: both drivers backed up with `cp`, restored in `finally` AND on
+SIGINT/SIGTERM/SIGBREAK, md5 re-verified equal after every arm; `git status --porcelain` shows
+all five production files back at `M ` (staged, worktree clean), index untouched. Closing state:
+4 suites 103/103 green, analyze clean. Verdict: fail, 3 blocking.
+
+## 2026-08-17 — BUT-1832 re-review round 3 (poll votes: export facade, repo leg, hydration cap)
+
+Trigger: gate re-review of the staged test+production files after three blocking gaps
+(H1 SocialExportManager facade untested, H2 exportRecipes truncation recall control lost,
+H3 poll_votes_truncated recall control) plus M-1 (the "not probed" test tested neither
+half of its name) were reported closed, with one NEW production fix on top
+(`message_query_module._pollIds` capped from the HEAD of an oldest-first list).
+
+Files read: the four staged suites + `social_export_manager.dart`,
+`content_export_manager.dart`, and (for the attack) `message_query_module.dart`,
+`firebase_data_export_repository.dart` (poll leg), `export_pagination_helper.dart`.
+
+Run: `flutter test` on the four suites -> 122 passed. `dart analyze --fatal-infos` on the
+two managers -> No issues found.
+
+### The newest test, attacked as asked (`the cap hydrates the NEWEST polls, not the oldest`)
+
+Probe: three scratchpad replicas of `MessageQueryModule` (control; `.reversed` deleted;
+hydration short-circuited), graded per assertion so neither aborts the other, run in ONE
+`flutter test` on an absolute scratchpad path (production is staged, so no `lib/` mutant).
+Output:
+
+    page order (control): [poll-0, poll-1, poll-2] ... poll-20 (len 21)
+    CONTROL          -> {newest hydrated: true,  oldest NOT hydrated: true}
+    MUTANT head-take -> {newest hydrated: false, oldest NOT hydrated: false}
+    MUTANT no-hydrate-> {newest hydrated: false, oldest NOT hydrated: true}
+    CONTROL rev-insert-> {newest hydrated: true, oldest NOT hydrated: true}
+
+Reads: the fix is pinned at BOTH ends (head-selection breaks both assertions, not one);
+an unhydrated page cannot satisfy the pair, because the positive assertion is the control;
+and seeding in reverse insertion order changes nothing, so the outcome is decided by the
+`sentAt` orderBy, not by fixture order or the fake's document iteration. The claim
+"reddens exactly that test" also holds analytically — every other poll fixture in the file
+has one poll, i.e. under the cap, where both selections agree. Probes deleted in the same
+call; `git status --porcelain` shows no scratchpad residue and no `lib/` motion.
+
+### The one blocking residual
+
+`social_export_manager.dart:289` — `messagesData['error_code'] ??=
+'conversation-poll-votes-read-failed';` — is NEW in this diff and asserted NOWHERE.
+`grep -rn conversation-poll-votes-read-failed test/` returns two hits, both inside the H1
+test: the fixture map it seeds, and the assertion on the CONVERSATION-level copy. By the
+production comment's own account (repo lines 515-519) and the `messages_truncated` test's
+comment (lines 1105-1110), the conversation-level key lives inside the `conversations`
+LIST and `DataExportService`'s nested walk reaches only `section.values.whereType<Map>()`
+and only keys on `*_truncated` — so the copy the test pins reaches no user, and the root
+lift it does not pin is the only path into `export_metadata.warnings`. Deleting line 289
+leaves the whole suite green. The chat-groups test's `containsKey('error_code'), isFalse`
+is the recall control for the healthy path, not the true direction. One line closes it in
+the existing H1 test. Same shape, one branch below and pre-existing (BUT-1838):
+`conversation-messages-read-failed` has ZERO hits anywhere under `test/`.
+
+### Advisories
+
+- The M-1 trap seeds `firestore.collection('messages').doc('msg-0').collection('poll_votes')`
+  with string literals while the rest of that file uses `FirestoreCollections.messages` /
+  `.pollVotes`. Values agree today (verified). If either constant is re-spelled, production
+  moves and the trap sits at a dead path — the test silently returns to the vacuity it was
+  written to close.
+- H1 asserts `vote['votedAt'], isNot(isA<Timestamp>())`. `sanitizeForJson` maps Timestamp ->
+  ISO String, so it does kill the named mutant; the section contract's fourth proof
+  (`expect(() => json.encode(result), returnsNormally)`, as `content_export_manager_test`
+  writes it) additionally survives a half-fix converting to `DateTime`.
+- H2 and H3 verified analytically: an unconditional `'truncated': true` reddens the new
+  below/at-cap pair; `var pollVotesTruncated = true` reddens the complete-conversation
+  control and nothing else.
+- ACCEPTED_LARGE_FILES: HEAD line counts were 499 and 497 (now 528 / 501), so both
+  "crossed the limit in this change" claims are true, and the content growth really is
+  BUT-1801's removal + doc comment (read the diff). Content rationale fine. The social row
+  is sound on substance but one sentence mis-cites its own evidence: BUT-1801's defect was
+  two reads sharing ONE catch, i.e. too little separation, so it does not argue against
+  splitting. Unmentioned natural extraction: `_redactOtherParticipants` + the conversation
+  loop as a `ConversationExport`, mirroring the already-extracted `ChatGroupExport`.
+
+Closing state: `social_export_manager.dart` 528 lines, `content_export_manager.dart` 501,
+`message_query_module.dart` 335; the four suites 1786 / 1491 / 418 / 638 lines. Worktree
+clean apart from two `MM` knowledge files belonging to a parallel agent.
+
+## 2026-08-17 — BUT-1832 re-review round 4 (write side, shared constant, two comment-only files)
+
+Trigger: final gate pass. Round 3's one blocking item and both advisories reported closed;
+four files named that no testing reviewer had read at these bytes.
+
+Closures verified byte-wise, not taken on trust:
+`social_export_manager_test.dart`:1247 now holds `expect(result['error_code'],
+'conversation-poll-votes-read-failed')` with a comment stating why the per-conversation
+copy is not the user-visible half; the conversations trap row now reads
+`FirestoreCollections.messages` / `.pollVotes` (lines 322-324); the allowlist row no longer
+cites BUT-1801 against splitting and names the `_redactOtherParticipants` + conversation-loop
+extraction as the candidate.
+
+Runs: `flutter test` on message_mutation / base_shared_content / recipe_gdpr_export -> 76
+passed. `dart analyze --fatal-infos` on the four production files -> No issues found.
+
+### The poll write suite, attacked (11 cases, `FakeFirebaseFirestore`)
+
+Switchable-mutant replica of `MessageMutationModule` in the scratchpad (production staged,
+so no `lib/` mutant), 11 shipped cases mirrored as named checks, one run:
+
+    NONE (control)     -> reddens: NOTHING
+    shared-doc         -> reddens: v1, v2, v3, v4, v5, v6, v7
+    no-voterid-field   -> reddens: v1, v2
+    keep-empty         -> reddens: v7, v8
+    single-toggle      -> reddens: v5
+    no-creator-check   -> reddens: c2
+
+No dead case (c1 and c3 are closePoll's own positive/no-op controls, killed by mutants not
+worth running: "close writes nothing" and removing the `!doc.exists` guard). Answers to
+"which can pass with the feature broken", in the two senses the fake cannot stage:
+(1) ALL ELEVEN are green if `firestore.rules` refuses the write — the exact BUT-1832
+defect. Covered in another lane; `functions/src/__tests__/poll-votes-rules.test.ts` is new
+in this diff, so the division is real and not a hole.
+(2) ALL EIGHT votePoll cases are green with `runTransaction` replaced by a plain
+read-modify-write — analytic from the fake's documented passthrough, no probe owed. The
+group header says exactly this in its own words, which is the right call while the emulator
+lane does not run in CI.
+The residual is naming: `one voter cannot disturb another voter row` pins the per-voter
+DOC KEYING (kills `shared-doc` only, a strict subset of v1's set through the same seam) and
+is best kept as the two-voter CONTROL for the pre-fix clobber class, under a name that does
+not read as isolation. Same class one group up: `atomically writes message + conversation
+update + sender rate-limit doc` and the file header's "atomic 3-doc batch" — the fake cannot
+fail a batch, so what is proven is that three documents land at their exact paths. The
+repo's own testing digest forbids exactly that wording on a fake-backed test.
+
+### The three smaller files
+
+- `firestore_collections.dart`: `pollVotes = 'poll_votes'` — value matches every speaker
+  (writer, reader, export repo, and the trap row that now uses the constant). Doc comment
+  accurate.
+- `base_shared_content_repository.dart`: the corrected comment's arithmetic CHECKS OUT, and
+  I checked rather than assumed. Three no-arg call sites — `firebase_shared_menu_repository`
+  :200, `firebase_shared_shopping_repository`:201, `base_social_coordinator`:166 — and
+  `firebase_shared_recipe_repository`:262 is the one that passes a list. `grep "'sharedToUserIds'"
+  lib/models/` is empty, so "no content model's toFirestore emits it" holds. The suite's own
+  comment (lines 258-263) tells the same story with the same count, so the two did not drift.
+- `recipe_gdpr_export_operations_test.dart` header: states the narrow claim I asked for —
+  "a fake-backed test is evidence about the query, never about the permission" — and does
+  NOT generalise to "fake-backed tests may be deleted". Caveat honoured.
+
+Verdict: pass, 0 blocking, two naming advisories. Closing bytes: message_mutation_module
+579 lines, base_shared_content_repository 799, firestore_collections 166,
+recipe_gdpr_export_operations 70; suites 822 / 76-case run. Probes deleted in the same call.
+
+## 2026-08-17 — BUT-1832 round 5 (final pass: a rename, a comment, two files I had never opened)
+
+Trigger: three files moved after the round-4 pass; last stop before commit.
+
+1. **The rename.** `one voter cannot disturb another voter row` -> `each vote lands in its
+OWN row, keyed by the voter` (message_mutation_module_test.dart:592). Off the isolation
+wording, matching what the round-4 kill matrix showed it actually pins (the `doc(voterId)`
+derivation). The coordinator's first attempt put an apostrophe inside a single-quoted Dart
+string and stopped the file compiling; that is why the rule above exists. Verified at these
+bytes: `dart analyze --fatal-infos` on the TEST FILE ITSELF is clean, the three suites run
+together green (64 tests), and `grep -rn disturb test/ lib/ docs/ .claude/` finds no stale
+citation of the retired name. The group header two hundred lines up still disclaims
+concurrency, so header and name now say the same thing.
+
+2. **The reworded fail-open comment** (`message_query_module.dart`, `_withLivePollVotes`).
+Every limb checked against `firestore.rules`:2062-2142, because a comment about another
+file is a claim with a verification cost:
+   · "`allow read` never calls `pollIsOpen()`" — :2142 is `isAuthenticated() &&
+     inPollConversation()`. TRUE, so metadata SHAPE genuinely cannot deny a read.
+   · "a deleted message makes `pollMessage().data` null and the read denies on a CEL error"
+     — `inPollConversation()` (:2081) dereferences `pollMessage().data.conversationId`.
+     TRUE, and reachable: an orphaned vote row outliving its message is the case.
+   · "a removed participant fails the membership test" — same line, `uid in participantIds`.
+     TRUE.
+   · "`firestore.rules` records the same mistake being corrected in this very commit" —
+     :2115-2118 does, in those words. TRUE, and both files are staged together.
+   Executable lines unchanged from the round-1 read (same `onErrorReturnWith` -> null,
+   same `whereType` filter), so this really is comment-only.
+
+3. **The two files described to me as "unchanged beyond formatting".** I had never opened
+either, so there was nothing to compare against — said so rather than confirming it. What
+they contain now: `firebase_recipe_repository.dart` drops the `firestore:` argument and the
+wrapper for the deleted `exportTopLevelRecipesByOwner` (no caller remains anywhere —
+grep + analyze), consistent with `recipe_gdpr_export_operations.dart` and with
+`ContentExportManager.exportRecipes`. `recipe_sharing_manager.dart` is NOT formatting: it is
+the BUT-1812 document-id scheme change, deterministic `doc(recipeId)` -> `doc()` auto-id,
+with `sharedAt` now unconditional and `SetOptions(merge: true)` dropped. That is the exact
+shape the "DOCUMENT-ID SCHEME" principle in the knowledge file was written for, and its
+suite does cover it (`recipe_sharing_manager_test.dart`: unconditional create + `sharedAt`
+stamped, "exactly one auto-id create", fresh-vs-old row). Cascade side still queries
+`shared_content` by `sharedToUserIds` array-contains, which the payload writes, so the
+id change costs the erasure sweep no address.
+
+Runs: `dart analyze --fatal-infos` on the renamed test + both message modules + the two
+files above + recipe_gdpr_export -> No issues found. `flutter test` on
+message_mutation + message_query + recipe_sharing_manager -> 64 passed.
+
+Verdict: pass, 0 blocking, nothing outstanding. Probes: none written this round.
+
+### 2026-08-17 — round 5 addendum: sign-off read of `message_query_module.dart`
+
+Full-file Read at md5 `b3e7a7a40b3055d2bc651807c70e5807` (worktree AND `git show :` index —
+identical, and the same hash `firebase-backend-security` recorded). Everything concluded in
+rounds 1-5 holds at these bytes; nothing new found. What the FULL read added over the
+targeted ones:
+· the `searchMessages` carve-out comment ("no view, viewmodel or widget calls it… only the
+  service passthrough and rensa chatt, which deletes rather than draws") is TRUE — one grep:
+  hits are the repository passthrough, the interface declaration, `messaging_service`, and
+  `message_management_operations`:112, which is the delete path (`query: ''`, limit 1000,
+  BUT-1838 `historyStart`). Zero hits under views/viewmodels/widgets. A carve-out comment is
+  a claim about callers and this one pays.
+· `onErrorReturnWith(... => null)` does double duty nobody wrote down: besides the fail-open
+  tally, it converts an inner error into an EMISSION, so a failing poll stream cannot kill
+  the CombineLatestStream and take the whole message list down with it. Worth knowing before
+  anyone "simplifies" it back to rethrowing.
+· `_tally` keys the voter off `doc.id` (what the rule guarantees) and skips a non-List
+  `optionIds`; `_merge`'s three shape guards fail open toward the stored message. Both pinned
+  by `message_query_module_test.dart`.

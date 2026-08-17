@@ -426,3 +426,30 @@ files in the same edit.
   deletion module and the list view both refuse one carrying a `groupId`, but `firestore.rules`
   still allows any participant to delete it, so those two are UX, not controls. Raised by the
   `firebase-backend-security` and `integration-reviewer` gates. BUT-1838, 2026-08-14
+
+- **A message whose `metadata` is a MAP WITHOUT a `poll` key accepts a vote — every share card in
+  every chat is votable, and that ships knowingly.** `pollIsOpen()` reads
+  `.get('metadata', {}).get('poll', {}).get('isClosed', false)`, so a map with no `poll` defaults
+  all the way to "open". Four live writers hit it: `Message.recipeShare`, `Message.menuShare`,
+  `Message.shoppingListShare` and the group system-message CF. **Malin's explicit call,
+  2026-08-17.** She was shown the harm bound before deciding: the row carries only the caller's
+  own uid, `isValidVote()` limits it to three keys and ≤20 option ids, reading the tally is
+  membership-gated, and `deletePollVotes` erases it by collection group. No UI renders it. The
+  defect pre-dates BUT-1832 in kind — the rule is new, but nothing about the salvage created the
+  shape — and a rules change inside a salvage is how the previous sprint broke itself.
+  **The repair must test `poll` for PRESENCE, not `metadata` for TYPE.** An `is map` guard does
+  not close this: a map without the key is still a map, so a repair written from the null case
+  alone lands looking finished and leaves the live case open. `poll-votes-rules.test.ts` pins all
+  four states (absent / null / map-without-poll / real poll) with one green test each, and the
+  owed repair was mutation-probed: it reddens exactly V10e and V10f and nothing else.
+  Art. 15/17 note for whoever lands it: the export probes only `metadata['poll'] is Map` while the
+  cascade erases by collection group regardless, so such a row is erasable but not exportable —
+  cover both sides. BUT-1832, 2026-08-17
+
+- **`inPollConversation()` reproduces only the MEMBERSHIP half of the message read rule, not
+  BUT-1838's `memberSince` cut-off.** Measured 2026-08-17 against a group whose `memberSince`
+  postdates the poll: the late joiner is DENIED the poll message, and ALLOWED both to read the
+  tally and to CAST a vote in it. The write half is the part a read-focused reading misses.
+  Deliberately out of scope for the BUT-1801 salvage — it is a rules change, and the fix is the
+  same cut-off on the read AND the create/update limbs, not just the read. **Second Art. 15 route, orthogonal to the BUT-1832 entry's:** because a late joiner may CAST a vote in a pre-join poll, and the conversations export applies the `memberSince` filter that drops that message before the vote probe runs, such a row is erasable (the collection-group sweep ignores parent shape) but never exportable. The BUT-1832 entry names the export gap for the map-without-`poll` case only; this is a different way in to the same shortfall, and the repair must cover both. Raised by the
+  `firestore-rules-tester` gate. BUT-1832, 2026-08-17

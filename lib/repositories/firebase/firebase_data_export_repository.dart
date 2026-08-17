@@ -86,7 +86,34 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   FirebaseDataExportRepository({
     super.firestore,
     required super.authRepository,
+    this.maxPollVoteLookupsPerConversation = 200,
   });
+
+  /// How many poll messages in ONE conversation get their vote row looked up.
+  ///
+  /// A vote lives in a subcollection, so there is one probe per poll and no
+  /// query that can batch them (a `collectionGroup('poll_votes')` read is
+  /// denied — that path has no collection-group match block).
+  ///
+  /// Each probe costs about THREE reads, not one: the client read plus the two
+  /// `get()`s the rule itself performs, since `inPollConversation()` fetches the
+  /// message and then its conversation, and rules `get()`s are billed. So the
+  /// worst case is roughly `maxConversations × cap × 3` — at 100 conversations
+  /// and this cap, ~60 000 reads. The probe also fires on every poll whether or
+  /// not the user voted in it, so somebody who voted in nothing still pays.
+  ///
+  /// (An earlier version of this comment said "one read per poll" and quoted
+  /// 50 000 as the number the cap exists to avoid — understating the real cost
+  /// by about 3× and landing above its own threshold. If this budget is ever
+  /// argued about, argue it with the ×3.)
+  ///
+  /// Past the cap the conversation says so, and `DataExportService` lifts that
+  /// into the bundle's truncation notice.
+  ///
+  /// Constructor-injected rather than a parameter on
+  /// [exportConversationsAndMessages]: several test doubles OVERRIDE that
+  /// method, and every named argument added to it breaks them at compile time.
+  final int maxPollVoteLookupsPerConversation;
 
   @override
   String get collectionName => 'users';
@@ -329,6 +356,15 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     limit: maxDocuments,
   );
 
+  /// Whether a message document carries a poll, i.e. whether it can have a vote
+  /// row at all. Mirrors `MessageQueryModule`'s test, deliberately loose: a
+  /// malformed poll must still be probed, because the vote row is written
+  /// against the message id and does not care what the poll map looks like.
+  bool _hasPoll(Map<String, dynamic> data) {
+    final metadata = data['metadata'];
+    return metadata is Map && metadata['poll'] is Map;
+  }
+
   /// `conversations` where `participantIds arrayContains userId`, each carrying
   /// the top-level `messages` written against that conversation (limited).
   ///
@@ -346,6 +382,10 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   /// The `conversationId ASC + sentAt ASC` composite is declared in
   /// `firestore.indexes.json`; the existing entry is `sentAt DESCENDING` (the
   /// chat UI's newest-first order) and does not serve this ascending read.
+  ///
+  /// BUT-1832: each exported POLL message also carries the requester's own vote
+  /// row, read one document at a time — see the comment at the probe.
+  /// [maxPollVoteLookupsPerConversation] is the read budget for that leg.
   Future<List<Map<String, dynamic>>> exportConversationsAndMessages(
     String userId, {
     int maxConversations = 100,
@@ -411,17 +451,82 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
           : messagesSnapshot.docs;
 
       final messages = <Map<String, dynamic>>[];
+      var pollsProbed = 0;
+      var pollVotesTruncated = false;
+      var pollVotesFailed = false;
       for (final msgDoc in kept) {
-        messages.add(<String, dynamic>{
+        final entry = <String, dynamic>{
           'id': msgDoc.id,
           'data': msgDoc.data(),
-        });
+        };
+        // BUT-1832: a poll vote is no longer part of the message document. It
+        // used to live in `metadata.poll.options[].voterIds` and therefore left
+        // with the message; it now lives at
+        // `messages/{id}/poll_votes/{voterUid}`, which the rules, the
+        // collection-group index and the Art. 17 sweep all reached and Art. 15
+        // did not. The message copy of `voterIds` is written empty and never
+        // updated again, so without this leg the requester's own votes are in
+        // the bundle as zeroes.
+        //
+        // Per PARENT, never `collectionGroup('poll_votes')`: there is no
+        // collection-group match block for this path, so that read is denied
+        // outright. The per-document read is the one the participant rule
+        // allows.
+        if (_hasPoll(msgDoc.data())) {
+          if (pollsProbed >= maxPollVoteLookupsPerConversation) {
+            pollVotesTruncated = true;
+          } else {
+            pollsProbed++;
+            try {
+              final voteDoc = await firestore
+                  .collection(FirestoreCollections.messages)
+                  .doc(msgDoc.id)
+                  .collection(FirestoreCollections.pollVotes)
+                  .doc(userId)
+                  .get();
+              // Only the requester's own row. The other voters' rows are third-
+              // party behaviour, and the tally they add up to is not something
+              // the requester sees attributed in the app either.
+              if (voteDoc.exists) entry['your_poll_vote'] = voteDoc.data();
+            } catch (e) {
+              // Never fatal — one unreadable vote must not cost the requester
+              // the conversation. It is reported instead: an Art. 15 bundle
+              // that quietly omits a row states something false about itself.
+              //
+              // Logged as well as flagged. The flag tells the requester the
+              // overlay is incomplete; it cannot tell anyone WHY, and
+              // `permission-denied`, `unavailable` and a malformed row are three
+              // different problems with three different fixes.
+              AppLogger.warning(
+                'Poll-vote probe failed for one message; the conversation is '
+                'exported without that vote overlay: $e',
+              );
+              pollVotesFailed = true;
+            }
+          }
+        }
+        messages.add(entry);
       }
       results.add(<String, dynamic>{
         'id': convoDoc.id,
         'data': convoDoc.data(),
         'messages': messages,
         'messages_truncated': truncated,
+        // `DataExportService`'s nested walk lifts any `*_truncated` into
+        // `truncated_collections` — but only from a map it can actually reach.
+        // `SocialExportManager` rebuilds each conversation map key by key, so
+        // it MUST copy this one across, exactly as it does for
+        // `messages_truncated`. The walk finds it there; it cannot find it here.
+        // (An earlier version of this comment said "so this needs no plumbing
+        // above", which invited deleting the facade line that carries it.)
+        if (pollVotesTruncated) 'poll_votes_truncated': true,
+        // Deliberately NOT the `error_code` key beside it: that one means the
+        // conversation's MESSAGES could not be read, and the facade turns it
+        // into exactly that sentence for the whole section. A vote overlay that
+        // failed while every message came through is a smaller, different
+        // claim, and one key cannot make both.
+        if (pollVotesFailed)
+          'poll_votes_error_code': 'conversation-poll-votes-read-failed',
       });
     }
     return results;

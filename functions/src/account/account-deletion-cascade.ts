@@ -96,8 +96,14 @@ export async function probeResidualData(
   uid: string,
   result: DeletionResult,
 ): Promise<void> {
+  // `recipes` is NOT in this list, and must never be added back. These probes are
+  // top-level collections filtered by a `userId` FIELD; recipes live in the
+  // subcollection `users/{uid}/recipes` and are probed separately below. Reading
+  // them here counted a collection with no documents, so the probe returned zero
+  // on every deletion — an all-clear that was true by accident and would have
+  // stayed true if `deleteRecipes` ever stopped working. Exactly the failure the
+  // comment further down calls "the realtime_recipes wrong-field trap" (BUT-1801).
   const probes = [
-    "recipes",
     "user_notifications",
     "user_fcm_tokens",
     // BUT-1450: notification analytics the cascade erases (all userId-scoped).
@@ -124,6 +130,65 @@ export async function probeResidualData(
       residual += 1;
       logger.error(`[deletion-cascade] residual probe failed: ${col}`, { err });
     }
+  }
+  // BUT-1801: recipes are a SUBCOLLECTION, so they need a path-scoped probe
+  // rather than a userId-field filter. Counted directly under the user document:
+  // no index is required for a bare `count()`, and it makes no assumption about
+  // recipe documents carrying a top-level `userId` field (they are not known to).
+  // A `collectionGroup("recipes").where("userId","==",uid)` probe would need both
+  // — a COLLECTION_GROUP index this repo does not declare for that field, and the
+  // field itself — and would fail the same silent way the top-level read did.
+  try {
+    const snap = await db
+      .collection("users")
+      .doc(uid)
+      .collection("recipes")
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn(`[deletion-cascade] residual in recipes: ${count} docs`);
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: recipes", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
+  // BUT-1801: poll VOTES. `deletePollVotes` deletes through `batchDeleteAll` →
+  // `commitInChunks(strict:false)`, which catches a whole failed chunk and still
+  // lets the step report success; only the CAP can falsify it. So a single
+  // failed commit can leave up to 500 rows whose DOCUMENT ID is the erased uid,
+  // with the step reporting a clean erasure. This leg is the only thing that
+  // contradicts it. Uncapped and separate for the same reason as the roster leg
+  // below: `count()` is cheap, and it must stay loud exactly when the deleter
+  // DECLINED. It also fails CLOSED while the collection-group index builds —
+  // FAILED_PRECONDITION lands in the catch as a false alarm, never a false
+  // all-clear.
+  try {
+    const snap = await db
+      .collectionGroup(Collections.pollVotes)
+      .where("voterId", "==", uid)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual poll votes", {
+        uid_prefix: uid.slice(0, 6),
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: poll_votes", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
   }
   // BUT-1450: notification_delivery is scoped by senderId / targetUserId, NOT
   // userId, so it needs its own two-field probe — a userId==uid probe would
@@ -191,6 +256,14 @@ export async function probeResidualData(
     // again. Single-field array-contains is served by the automatic index; no
     // composite entry needed.
     ["shared_content", "sharedToUserIds", "array-contains"],
+    // BUT-1801: poll AUTHORSHIP. `deletePollVotes` rewrites this field to
+    // "deleted" and REPORTS ON ITSELF — it decides its own `complete` flag. This
+    // row is the independent check on that self-report, which is the whole point
+    // of a probe: it also sees a document written or re-written after the scrub
+    // passed over it, which the scrub by construction cannot. The
+    // `metadata.subjectUserId` entry earlier in this same list proves a nested
+    // equality filter needs no declared index.
+    [Collections.messages, "metadata.poll.creatorId", "=="],
   ] as const) {
     try {
       const snap = await db.collection(col).where(field, op, uid).count().get();
@@ -469,6 +542,33 @@ async function batchDeleteAll(
 
 // ─── Tier 1: own content ──────────────────────────────────────────────────
 
+// The SUBCOLLECTION read is what erases a real user's recipes: `users/{uid}/recipes`
+// is the only shape any production writer uses. Every `FirestoreCollections.recipes`
+// site in `lib/` that BUILDS A PATH is user-scoped — the repository's
+// `collectionName` under `UserScopedFirebaseRepository`,
+// `firestore_repository.userRecipesCollection`, `family_rating_service` and
+// `rating_statistics`. The remaining site, `recipe_stats_repository`, is a
+// `collectionGroup` READ and builds no path at all. (Stated as a property rather
+// than a tally: an earlier version said "all three sites", which was wrong when
+// written and would have gone stale by addition anyway.)
+//
+// The top-level read beside it finds nothing IN PRODUCTION — no client can write
+// that collection, since the only rule reaching it is an admin-only, read-only
+// collection-group catch-all — so it returns an empty snapshot on every real
+// deletion.
+//
+// BUT-1801 removed it as dead weight and that was WRONG, twice over. It is
+// exercised: `request-account-deletion.integration.test.ts` plants a top-level
+// `recipes` doc through the Admin SDK and asserts the cascade deletes it, and
+// that suite runs in CI. And an Admin-SDK writer needs no rule, so "no client
+// can write it" was never the same claim as "nothing can be there". Erasure is
+// the wrong place to trade defence-in-depth for one saved query.
+//
+// What BUT-1801 genuinely fixed is one layer down: the same top-level path had
+// been copied into `probeResidualData`, where an empty result is
+// indistinguishable from a clean one — a permanent all-clear that never looked
+// at a recipe. The probe now counts the subcollection. Deleter stays a superset
+// of the probe, which is the invariant that matters.
 export async function deleteRecipes(
   db: admin.firestore.Firestore,
   uid: string,
@@ -1367,6 +1467,22 @@ export async function deleteMessages(
 
   const swept = await deleteOwnRosterRows(db, uid);
 
+  // BUT-1835. Called from inside this step, not registered as its own, for the
+  // reason spelled out on `deleteOwnRosterRows`: Tier 1 steps run in PARALLEL,
+  // and both this and the conversation loop above write to `messages`. Running
+  // it sequentially after the loop removes THIS step's own race with itself.
+  //
+  // It does NOT remove every race, and the previous version of this comment
+  // claimed it did ("sequential-after is the only deterministic order").
+  // `request-account-deletion.ts` puts `chat_groups` and `messages` in the same
+  // `Promise.all`, and `deleteChatGroupMemberships` deletes an emptied group's
+  // whole thread — so a message this step is about to update can vanish under
+  // it from a SIBLING step. That is why the creator scrub below tolerates
+  // NOT_FOUND per document instead of relying on ordering, and why BUT-1801
+  // added a residual probe on `metadata.poll.creatorId`: ordering is not a
+  // control, and a swallowed chunk failure here is silent by construction.
+  const pollVotesCleared = await deletePollVotes(db, uid);
+
   if (conversationFailures.length > 0) {
     logger.error("[deletion-cascade] conversations failed to erase", {
       uid_prefix: uid.slice(0, 6),
@@ -1375,7 +1491,7 @@ export async function deleteMessages(
     });
     return false;
   }
-  return complete && swept;
+  return complete && swept && pollVotesCleared;
 }
 
 /**
@@ -1468,6 +1584,176 @@ async function deleteOwnRosterRows(
   }
   await batchDeleteAll(db, snap.docs);
   return true;
+}
+
+/**
+ * Cap on one erasure's poll-vote sweep. Same contract as `MAX_ROSTER_SWEEP_ROWS`
+ * above and set to the same number — but NOT for the same reason, and the
+ * difference is worth stating because the first version of this docstring
+ * borrowed the roster's argument and was wrong (BUT-1801 review, 2026-08-17).
+ *
+ * The roster cap exists because a PEER can seat rows keyed on this user.
+ * Here they cannot: in `firestore.rules`, every write verb under
+ * `match /messages/{messageId}/poll_votes/{voterId}` requires
+ * `request.auth.uid == voterId`, and `isValidVote()` additionally pins
+ * `request.resource.data.voterId == voterId`. Posting a poll into a conversation
+ * creates ZERO rows for anyone; a row exists only when this user votes. So the
+ * count is chosen by the user themselves.
+ *
+ * (Cited by match pattern and function name, not line number. An earlier version
+ * gave a line range that was already wrong when it was written — a rules file
+ * renumbers on every edit, so a coordinate in a comment rots faster than the
+ * claim it supports.)
+ *
+ * The cap stays anyway, for the two reasons that do survive: self-inflation
+ * (nothing rate-limits how many polls one person votes in), and a tampered or
+ * non-standard Admin-SDK writer, which rules never see. Above the cap the sweep
+ * DECLINES rather than truncating — a
+ * truncated sweep reports a clean erasure over rows it never looked at, which
+ * is the one outcome Art. 17 cannot tolerate. Declining lands the step in
+ * `failedCollections`, which is loud.
+ */
+const MAX_POLL_VOTE_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-1835: the erased user's poll votes, and their authorship of polls.
+ *
+ * TWO distinct residues, and neither one covers the other.
+ *
+ * (1) THEIR VOTES. Since BUT-1832 a vote is a document at
+ * `messages/{messageId}/poll_votes/{voterUid}` — the uid is the document ID and
+ * is also copied into a `voterId` field, which is the only one a query can see.
+ * They live under messages this user may never have sent, in conversations
+ * `deleteMessages` leaves standing (any group, and any 1:1 whose roster clear
+ * declined), so nothing else in this cascade reaches them. Written against the
+ * subcollection shape, NOT the inline `metadata.poll.options[].voterIds` array
+ * it replaced. That array is still EMITTED — `Poll.toMap` writes it and
+ * `closePoll` rewrites the whole metadata map — but nothing has written a VOTER
+ * UID into it since BUT-1832: `closePoll` reads the raw snapshot rather than the
+ * hydrated model, so the display tally cannot round-trip back into storage.
+ *
+ * Careful with the tense. That is a claim about WRITERS, not about disk. A poll
+ * created by the PRE-BUT-1832 client can still hold its author's own uid there,
+ * because the old message update rule (`request.auth.uid == resource.data
+ * .senderId`) let exactly one person write it. On such a row the scrub rewrites
+ * only `creatorId`, and both probe legs then read zero — a certified-clean
+ * erasure over a raw uid. Dev-project data only, on the same reasoning that
+ * closed BUT-1839 unbuilt; whether it earns a backfill is Malin's call.
+ *
+ * So a cascade that scrubbed the array INSTEAD of the subcollection would be
+ * chasing a field no live writer fills while missing the one that carries every
+ * vote made since.
+ *
+ * (2) THEIR AUTHORSHIP. `metadata.poll.creatorId` names the person who opened
+ * the poll. `deleteMessages` anonymises `senderId` on their own messages but
+ * never looks inside `metadata`, so on every surviving poll the raw uid stayed
+ * in the document — including polls in groups they had left, where no other
+ * field of theirs remains. The dotted-path update rewrites that one key and
+ * leaves the question, the options and everyone else's data untouched; blanking
+ * `metadata` wholesale would delete a poll the remaining members still use.
+ *
+ * The equality filter on `metadata.poll.creatorId` needs no composite index
+ * (automatic single-field indexes cover an equality on a nested map key), but
+ * the collection-group sweep on `voterId` DOES need a `COLLECTION_GROUP`
+ * fieldOverride — automatic single-field indexes are collection-scoped, and
+ * without the override this query fails with FAILED_PRECONDITION rather than
+ * matching nothing. It is declared in `firestore.indexes.json`.
+ */
+export async function deletePollVotes(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  let complete = true;
+
+  const votes = await db
+    .collectionGroup(Collections.pollVotes)
+    .where("voterId", "==", uid)
+    .limit(MAX_POLL_VOTE_SWEEP_ROWS + 1)
+    .get();
+
+  if (votes.size > MAX_POLL_VOTE_SWEEP_ROWS) {
+    logger.error(
+      "[deletion-cascade] implausible poll-vote count; not sweeping",
+      { uid_prefix: uid.slice(0, 6), rows: votes.size },
+    );
+    complete = false;
+  } else {
+    await batchDeleteAll(db, votes.docs);
+  }
+
+  // Runs even when the vote sweep declined: the two residues are independent,
+  // and half an erasure beats none as long as the step still REPORTS itself
+  // incomplete, which `complete` does.
+  // CAPPED, exactly like the vote sweep. An earlier version of this call was
+  // uncapped, justified as "self-bounded — only this user authors this user's
+  // polls". That is false, and `anonymizeSystemMessagesAboutUser` in this file
+  // already says so: the `messages`
+  // create rule pins required fields but carries NO `hasOnly`, so `metadata` is
+  // unconstrained and any participant can plant
+  // `metadata.poll.creatorId: <victimUid>` on a message in their own DM. The row
+  // count is chosen by other people — the one argument that does NOT hold for
+  // `poll_votes` and DOES hold here. Do not "simplify" the two to match.
+  const authored = await db
+    .collection(Collections.messages)
+    .where("metadata.poll.creatorId", "==", uid)
+    .limit(MAX_POLL_VOTE_SWEEP_ROWS + 1)
+    .get();
+
+  if (authored.size > MAX_POLL_VOTE_SWEEP_ROWS) {
+    logger.error(
+      "[deletion-cascade] implausible poll-authorship count; not scrubbing",
+      { uid_prefix: uid.slice(0, 6), rows: authored.size },
+    );
+    return false;
+  }
+
+  // Per document, NOT one batch. A `WriteBatch` is atomic, so a single message
+  // deleted underneath us by a SIBLING step — `deleteChatGroupMemberships`
+  // deletes an emptied group's whole thread, and it runs in the same
+  // `Promise.all` as this one — takes NOT_FOUND and kills the entire ≤500-doc
+  // chunk with it. `commitInChunks(strict:false)` then swallows that, and the
+  // step still returns success: up to 500 messages keep the raw uid in
+  // `metadata.poll.creatorId` while the audit says the erasure was clean.
+  //
+  // NOT_FOUND (grpc code 5) is therefore tolerated per document and ONLY here:
+  // the message is gone, which is the outcome this scrub wanted. Every other
+  // error marks the step incomplete, so a real failure still reaches
+  // `failedCollections` — and BUT-1801's residual probe on this same field is
+  // the independent check that the two never disagree silently.
+  //
+  // In waves, not one fan-out. The set is capped above but still up to 2000
+  // documents, and the file's own convention for a per-document pass is a
+  // bounded slice at a time (`deleteMessages`, `scrubLastEditor`) rather than
+  // 2000 simultaneous write RPCs.
+  const SCRUB_WAVE = 10;
+  const hardFailures: PromiseRejectedResult[] = [];
+  for (let i = 0; i < authored.docs.length; i += SCRUB_WAVE) {
+    const wave = await Promise.allSettled(
+      authored.docs
+        .slice(i, i + SCRUB_WAVE)
+        .map((doc) => doc.ref.update({ "metadata.poll.creatorId": "deleted" })),
+    );
+    hardFailures.push(
+      ...wave.filter(
+        (r): r is PromiseRejectedResult =>
+          r.status === "rejected" &&
+          (r.reason as { code?: number } | undefined)?.code !== 5,
+      ),
+    );
+  }
+  if (hardFailures.length > 0) {
+    complete = false;
+    logger.error("[deletion-cascade] poll-creator scrub failed", {
+      uid_prefix: uid.slice(0, 6),
+      failed: hardFailures.length,
+      total: authored.docs.length,
+      errCodes: hardFailures.map(
+        (r) => (r.reason as { code?: number } | undefined)?.code ?? null,
+      ),
+    });
+  }
+
+  return complete;
 }
 
 /**

@@ -131,9 +131,17 @@ abstract class BaseSharedContentRepository<T>
       // Create new instance with correct ID
       final entityData = toFirestore(entity);
       entityData['contentType'] = contentType;
-      if (initialSharedToUserIds != null) {
-        entityData['sharedToUserIds'] = initialSharedToUserIds;
-      }
+      // Stamped on EVERY create, not only when a caller passes a list.
+      // `firestore.rules` requires `sharedToUserIds` on a `shared_content`
+      // create (BUT-1812), and no `toFirestore` of the three content models
+      // emits it — so the THREE call sites that pass nothing were denied
+      // outright: the menu repository, the shopping-list repository, and
+      // `BaseSocialCoordinator`, which calls this method directly rather than
+      // through either of them. Seeding the sharer keeps the row reachable
+      // by its own author from the moment it exists; the recipients arrive via
+      // `addMember`, which arrayUnions them into this same field, exactly as
+      // before.
+      entityData['sharedToUserIds'] = initialSharedToUserIds ?? <String>[uid];
       await docRef.set(entityData);
 
       logPermissionCheck(

@@ -10847,3 +10847,456 @@ That check is what the verdict rests on, not the wording.
 now reads against the new clause — the entry carries a cap that charges nothing; and this test
 file's docstring line 2, "per-user daily cap on LLM-backed operations", which the non-LLM
 `createChatGroup` pin (added round 12) made imprecise, and which the runner-label fix did not reach.
+
+### 2026-08-16 — BUT-1835 poll-vote erasure review [Pattern discovered]
+
+Reviewed the fix round on `deletePollVotes` (`account-deletion-cascade.ts`:1525-1567),
+`Collections.pollVotes`, the `record-notification-opened.ts` TTL docstring, and the three
+suites. Ran everything: `test:account-deletion-cascade` 105/105, `test:firestore-ttl-policies`
+13/13, `npm run build` clean, and `test:rules:poll-votes` 26/26 against the live emulator.
+Proved the two closed-poll rules cases non-vacuous with the file's own `PROBE_RULES_PATH`
+seam — a scratchpad copy of `firestore.rules` with `pollIsOpen()` mutated to `return true`
+reddens EXACTLY V7 and V14 (24/26), so the "evaluation error at L2093/L2099" noise in the
+emulator log is not what produces those denies. Repo tree untouched by the probe.
+
+Verified rather than assumed: the Dart writer stamps `voterId` as a FIELD as well as the doc
+id (`message_mutation_module.dart`:546), `FirestoreCollections.pollVotes == 'poll_votes'`, the
+`poll_votes`/`voterId` fieldOverride carries a `COLLECTION_GROUP` scope
+(`firestore.indexes.json`:750-757), `metadata.poll.creatorId` is the real path
+(`message.dart`:364), and both `activeUsers` writers (recipe + shopping presence) stamp
+`expiresAt` via `PresenceTtl.computeExpiresAt()`, so the shared collection-group id is safe
+for the new TTL.
+
+THE FINDING WORTH KEEPING (now folded into idempotency rule 10). The new comment at :1370-1376
+justifies calling `deletePollVotes` from inside `deleteMessages` as "sequential-after is the
+only deterministic order" — true of `deleteMessages`' own 1:1 thread delete, and NOT true of
+the parallel Tier-1 sibling `deleteChatGroupMemberships`, which deletes a whole thread at
+:2443-2447 when the erased user was a group's last member. The authorship update is a batch,
+batches are atomic, and `strict:false` swallows the chunk: one NOT_FOUND from that race drops
+up to 499 other polls' `metadata.poll.creatorId` scrubs with a warn, and the step still
+returns true. Same exposure already exists on `anonymizeOwnMessages` (:1207), so the class is
+pre-existing — filed Medium, not blocking.
+
+Second Medium: `probeResidualData` gained an uncapped `count()` leg for `participants` in
+BUT-1822 precisely so a swallowed delete stays loud; `poll_votes` got no such leg, so only the
+CAP decline (2001+ rows) is reported, not a failed sweep.
+
+Low: the docstring's "no code writes that array any more" about
+`metadata.poll.options[].voterIds` is false as written — `PollOption.toMap`
+(`lib/models/messaging/poll.dart`:64) still writes it, always EMPTY, and the Dart-side sibling
+comment (`firebase_data_export_repository.dart`:455) states it correctly. The paragraph's
+conclusion survives; the premise does not.
+
+Operational note for the deploy: the `poll_votes.voterId` COLLECTION_GROUP override must be
+deployed with/before the functions, or every erasure's `messages` step throws
+FAILED_PRECONDITION (loud — `runStep` catches it into `failedCollections`, so no false
+all-clear), and `--force` on an index deploy still prunes all 19 TTL policies.
+
+### 2026-08-16 — BUT-1835/BUT-1792/BUT-1801 held-batch re-review (three files) [Bug fixed] [Pattern discovered]
+
+Reviewed the uncommitted worktree of `account/account-deletion-cascade.ts`,
+`shared/collections.ts`, `notifications/record-notification-opened.ts`. `npx tsc --noEmit`
+exit 0; `npx tsx src/__tests__/account-deletion-cascade.test.ts` → `107/107 passing`,
+exit 0 — both confirm the author's measured figures.
+
+**Blocking 1 — `deletePollVotes` ships with no `probeResidualData` leg.** Both its writes
+go through `commitInChunks(..., strict:false)` (`shared/batch-update.ts`:258-271 swallows
+the whole chunk with `v1Logger.warn(label, { err })`, and an Error nested in a payload
+serialises to `{}`), and it returns `complete`, which only the CAP can falsify. So a failed
+chunk leaves up to 500 vote rows (doc id == the erased uid, plus a `voterId` field) or 500
+messages carrying `metadata.poll.creatorId: <raw uid>`, the step reports success, and
+nothing in the probe contradicts it → audit row `gdprCompliant: true`. Enumerated the whole
+probe: 6 top-level userId, the new `users/{uid}/recipes` count, `notification_delivery`
+×2, the 12-entry owner-keyed loop, `canonical_rating_events`, `unified_shopping_lists`,
+`unified_shared_shopping_lists` ×2, contributor/lastActivity ×2, `feature_retention`,
+collectionGroup `participants`. Every one has a matching deleter; `poll_votes` and
+`metadata.poll.creatorId` are the only deleter legs with no probe.
+
+**Blocking 2 — the "no race" comment is false, again.** `request-account-deletion.ts`:207-226
+puts `chat_groups` and `messages` in ONE `Promise.all`, and
+`deleteChatGroupMemberships`:2478-2482 deletes an emptied group's whole thread. So the
+`anonymizePollCreators` `batch.update()` can hit a concurrently deleted message → NOT_FOUND
+→ atomic chunk fails → swallowed → true. Being sequential-after the conversation loop
+bounds nothing outside its own step. Identical to the shape already recorded under
+idempotency rule 10.
+
+**Blocking 3 — the index was stale against the worktree.** `git diff --cached --stat` = 98
+insertions (BUT-1835 only); worktree-vs-HEAD = 138 insertions (BUT-1835 + the BUT-1801 fix).
+`md5sum` worktree `8b1884832781bd80e57d056c5b1f2434` vs `git show :<path>` →
+`998bc8ec4357d8f3b12cf5ea58b322c5`. A commit made against that index ships the poll work
+without the recipes fix, and the ledger would pin bytes I never read.
+
+**Verified TRUE (the author asked for these to be attacked):**
+- BUT-1801(b) both halves. `firestore.indexes.json` declares exactly three recipes
+  COLLECTION_GROUP overrides — `core.ingredientsNormalized`, `core.tagResult.generatorVersion`,
+  `core.createdBy` (pinned as an exact set by `recipe-collection-group-indexes.test.ts`) —
+  none on `userId`; and no recipe writer emits a top-level `userId` (ownership is
+  `core.createdBy`). `count()` is also the right shape here: unlike
+  `unified_shopping_lists`, a user recipe has NO subcollection (rules:360 block holds no
+  nested `match`), so there is no missing-parent-with-children case to miss.
+- BUT-1801(a) substantively. No writer of a top-level `recipes` collection exists in `lib/`
+  or `functions/src`; every access is `users/{uid}/recipes` or `collectionGroup("recipes")`.
+  The removed query was dead.
+- BUT-1792. `firestore.indexes.json`:711-713 carries the `notification_opened_events` /
+  `expireAt` / `ttl:true` override, `firestore-ttl-policies.test.ts` pins group+field+source
+  and the write regex `expireAt:\s*admin\.firestore\.Timestamp\.`, and
+  `cleanup-old-notifications.ts`:110-112 sweeps three sibling collections but NOT this one —
+  so "nothing deleted any of them" is true of the code.
+- `Collections.pollVotes === 'poll_votes'` matches `FirestoreCollections.pollVotes`
+  (`lib/core/constants/firestore_collections.dart`:23), the rules path (:2059) and the index
+  (:751). New suite is wired: `test:rules:poll-votes` exists, is chained into
+  `test:rules:all`, and appears in both `paths:` blocks of `firestore-rules.yml`.
+
+**FALSE claims found (this is the recurring tax):**
+- `deleteRecipes`' new comment: "it has no `match` block in `firestore.rules`, so the default
+  deny stops the app writing there". There IS one — `match /{path=**}/recipes/{recipeId}`
+  (rules:2748), and under `rules_version = '2'` a recursive wildcard matches ZERO or more
+  segments, so it reaches a top-level `/recipes/{id}`. The conclusion survives because that
+  block grants only `read: isAdmin()`, but the reason as written is wrong. Correct form:
+  "the only rule reaching that path is the admin-only read-only collection-group catch-all
+  at rules:2748, and no writer exists in `lib/` or `functions/src`."
+- The cap rationale — see the new principle 11.
+- "no code writes that array any more" (`metadata.poll.options[].voterIds`): `PollOption.toMap`
+  (`lib/models/messaging/poll.dart`:64) still writes it, always EMPTY and never updated
+  (`firebase_data_export_repository.dart`:451-457 says so). No uid residual, so the decision
+  is right; the sentence is not.
+
+Also filed: the new recipes probe catch uses `{ err }` (records nothing) beside siblings on
+`{errCode, errName}`; the `authored` query is uncapped while the vote sweep is capped; and
+the two thread-delete sites (`deleteMessages`:1318-1322, `deleteChatGroupMemberships`:2478-2482)
+orphan `poll_votes` subcollections — unreadable forever (the read rule resolves through
+`get(messages/{messageId})`, a CEL error on a missing parent), though a third party's own
+later erasure still reaches them by collection group.
+
+No mutation probe was written; `git status --porcelain` on the three files was unchanged
+across the whole review.
+
+### 2026-08-17 — BUT-1801/BUT-1835 fix-round re-review (account-deletion-cascade) [Bug fixed] [User correction]
+
+Re-review of the H1/H2/M1/M2/M3 responses on
+`functions/src/account/account-deletion-cascade.ts` + its unit suite. Measured, not argued:
+`npx tsc --noEmit` exit 0; `npx tsx src/__tests__/account-deletion-cascade.test.ts` →
+**110/110 passing** (matches the requester's figure). Two mutation probes, backup + restore,
+file md5 `2fe8431a44f375a2e8e4aaa61c158e91` before and after both.
+
+**What was RIGHT.** H1's two probe legs are real and non-vacuous — deleting the
+`[Collections.messages, "metadata.poll.creatorId", "=="]` row reddens exactly ONE test
+(109/110), and the collection-group `poll_votes.voterId` count leg is backed by a declared
+`COLLECTION_GROUP` fieldOverride in `firestore.indexes.json`:751-756. The nested-equality
+claim is true on the merits (automatic single-field indexes cover map subfields), though
+"its sibling two entries up" is off by ten — `metadata.subjectUserId` is entry 2 of 12 and
+the new row is entry 12. H2's tolerance is NOT backwards: `commitInChunks(strict:false)`
+swallowed EVERY failure and still returned success, so the new "code 5 only" is strictly
+stricter, `Promise.allSettled` never rejects, and a non-object `reason` falls to the loud
+side. grpc 5 is the right code and `(err as {code?:number}).code` the right place to read it.
+M1's substance is right (create/update/delete on `poll_votes/{voterId}` all require
+`request.auth.uid == voterId`; `isValidVote()` pins the field). M3 landed.
+
+**Blocking findings.**
+
+1. *(High)* **H2's uncapped fan-out rests on a false claim, and it is the mirror of the
+   error M1 just fixed.** "the rows are self-bounded — only this user can author this user's
+   polls" — the `messages` create rule uses `hasRequiredFields([...])` with no `hasOnly`
+   (firestore.rules:2003-2011), so any participant may plant
+   `metadata.poll.creatorId: <victimUid>`. The same FILE says so 300 lines up, in
+   `anonymizeSystemMessagesAboutUser`'s log comment about `metadata.subjectUserId`
+   ("a sender can plant that field on a message in their own DM"). `rateLimitWrite('messages', 5)`
+   reads a self-written bucket. So a peer chooses N, and N is now N individual write RPCs in
+   one unbounded `Promise.allSettled` where it used to be ceil(N/500) batched commits — and
+   the previous review had already filed the uncapped `authored` query. Remedy: `.limit(MAX+1)`
+   + decline like the vote sweep, plus waves of 10 (the file's own convention in
+   `deleteMessages`/`scrubLastEditor`) or `db.bulkWriter()` with `onWriteError` tolerating 5.
+
+2. *(High)* **The tolerance branch is untested and the fake cannot stage it.**
+   `FakeFirestore.applyUpdate` is `if (!existing) return;`, so `doc.ref.update()` on a missing
+   doc RESOLVES. MEASURED: inverting `?.code !== 5` to `?.code === 5` leaves the suite
+   **110/110 GREEN**. This is exactly the "passes because the fake is permissive" mode the
+   requester asked about.
+
+3. *(High)* **The `deleteRecipes` top-level removal breaks a registered emulator suite, and
+   M2's second half is false.** `functions/src/__tests__/request-account-deletion.integration.test.ts`:152
+   writes `recipes/r-own-<RUN>` and :724 asserts it is deleted; the file is unmodified in this
+   diff and is registered in `test:rules:all` and both `paths:` blocks of `firestore-rules.yml`.
+   So "no writer … exists anywhere in `lib/` or `functions/src` (verified by grep)" is false,
+   and the grep that disproves it is the one the comment claims to have run.
+
+**Comment falsehoods shipped by the fix round itself.**
+
+- Probe row comment (`:259-264`): "`anonymizePollCreators` rewrites this field … it commits
+  through `strict:false`, which swallows a failed chunk and still lets the step return
+  success". H2 deleted that label (grep finds it only in this comment and in this archive)
+  and removed the swallow. The justification for the leg is now false in both halves.
+- Test docstring `scenario_probeSeesLeftoverRecipes`: "`firestore.rules` has no `match` block
+  for it, so the app cannot write there" — the disproved claim the production comment was
+  corrected for, re-introduced in the SAME round, in the suite file. Under
+  `rules_version='2'` `{path=**}` matches zero segments, so the catch-all does reach
+  `recipes/{id}`. Also "No such collection exists" — the integration fixture creates it.
+- `firestore.rules:2748` — wrong in every version (HEAD 2636, index 2738, worktree 2766;
+  2748 is inside the `comments` catch-all). The number came from THIS agent's own previous
+  archive entry. `:2093-2108` is wrong too: the write verbs are at 2111/2117/2126.
+
+**Fixture quality.** The three poll fixtures are well separated (the leftover-vote message
+carries `creatorId: OTHER`, the leftover-author message carries no vote row), the clean case
+seats OTHER's row so a uid-blind sweep would cry wolf, and the fake's `collectionGroup`
+(second-to-last segment) and `readField` (dotted path walk) model the real semantics. One
+weakness: every assertion is on the aggregate `residual_data_detected` flag rather than on
+which leg fired, so attribution rests on the mutation probes rather than on the assertions.
+
+Probes restored; `git status --porcelain -- functions/` unchanged across the review; no
+MUTANT/THROWAWAY residue.
+
+### 2026-08-17 — BUT-1801 review round 3 (poll cascade + recipes revert) [Pattern discovered]
+
+Third pass over the same three files (`account-deletion-cascade.ts`,
+`account-deletion-cascade.test.ts`, `poll-votes-rules.test.ts`). Measured: `npx tsc
+--noEmit` clean, `npx tsx src/__tests__/account-deletion-cascade.test.ts` **114/114**.
+No production code mutated by this review; `git status --porcelain` unchanged.
+
+**Round-2 findings verified CLOSED.**
+- H3 (top-level `recipes` leg): restored. `request-account-deletion.integration.test.ts`:152
+  plants `recipes/r-own-<RUN>` and :724 asserts the delete; the deleter now reads BOTH
+  shapes and the probe reads only `users/{uid}/recipes`. Superset invariant (deleter ⊇
+  probe) intact. The asymmetry is DEFENSIBLE, not untidy: `probeResidualData` is a
+  highest-risk sample, not a per-leg mirror — `menus`, `weekly_menu_plans`, `cook_snaps`,
+  `activity_events`, `pantry` and `households` have no probe row either.
+- H1 (self-bounded false): authorship scrub now `.limit(MAX+1)` + decline above the cap,
+  with the rules-derived rationale (the `messages` create rule has `hasRequiredFields` and
+  NO `hasOnly`, verified at firestore.rules `allow create` under `match
+  /messages/{messageId}`). The honest "the `.limit()` itself is not pinned" note in the
+  scenario docstring is correct.
+- H2 (tolerance untestable): closed by `FakeFirestore.updateFailures` (path -> grpc code,
+  thrown from `makeRef().update`), both directions asserted. Verified the seam cannot
+  change any existing scenario: the map is empty by default AND `batch().update` writes
+  through `applyUpdate` directly, never through `makeRef`.
+- Rules claims re-derived from the file, not the diff: every write verb under `match
+  /poll_votes/{voterId}` (create/update/delete) requires `request.auth.uid == voterId`, and
+  `isValidVote()` pins `request.resource.data.voterId == voterId`. TRUE as written.
+- Tier-1 race claim TRUE: `request-account-deletion.ts`'s tier1 array holds `chat_groups`
+  and `messages` in the same `Promise.all`.
+- Wiring complete: `test:rules:poll-votes` script, appended to `test:rules:all`, and in
+  BOTH `paths:` blocks of `firestore-rules.yml`.
+
+**New finding (blocking): the replacement sentence's COUNT.** `account-deletion-cascade.ts`:546
+says "all three `FirestoreCollections.recipes` sites in `lib/` resolve there". `grep -r
+"FirestoreCollections\.recipes" lib/ --include=*.dart` returns **5** sites in 5 files; four
+BUILD a path (`firebase_recipe_repository.collectionName` via `UserScopedFirebaseRepository`,
+`firestore_repository.userRecipesCollection` — whose live caller is
+`offline_sync_manager.dart`:103 — `family_rating_service.dart`:146,
+`rating_statistics.dart`:276) and the fifth,
+`recipe_stats_repository.dart`:35, is `collectionGroup(FirestoreCollections.recipes)`, which
+resolves to no path at all and SPANS the top-level collection the sentence is arguing about.
+No reading yields three. The twin is `account-deletion-cascade.test.ts`:1538 ("every
+… site in `lib/` resolves to `users/{uid}/recipes`"), false for that same collectionGroup
+site. The SUBSTANCE — no production writer puts a recipe in the top-level collection — was
+verified true across all four writers.
+
+**Other comment nits reported (non-blocking).**
+- `:1668` "this file says so 300 lines down" — the `hasOnly` sentence is at `:1828`, 159
+  lines down. Only two `hasOnly` mentions exist in the file; cite
+  `anonymizeSystemMessagesAboutUser` by name.
+- "no code writes that array any more" (`metadata.poll.options[].voterIds`, prod `:1621` and
+  test `:2107`): `PollOption.toFirestore` (`lib/models/messaging/poll.dart`:64) still emits
+  `voterIds`, and `closePoll` (`message_mutation_module.dart`:575) rewrites the whole
+  `metadata` map — always EMPTY, never a uid (verified: `closePoll` reads the raw snapshot,
+  not the hydrated model, so `MessageQueryModule._merge`'s display tally cannot round-trip).
+  Substance safe, wording checkable-false.
+- Seam docstring should say `batch().update` bypasses it, or a future injection test on a
+  `commitInChunks` path passes vacuously.
+
+**Ops note.** The `poll_votes/voterId` COLLECTION_GROUP fieldOverride must be READY before
+these functions deploy: the SWEEP (not only the probe) is a collection-group query, so while
+the index builds every `deleteMessages` throws FAILED_PRECONDITION into `runStep`.
+
+**Pre-existing gap, not introduced here.** Both thread deletes (`deleteMessages`' ≤2 branch
+and `deleteChatGroupMemberships`' emptied-group branch) `batchDeleteAll` message documents
+without touching their `poll_votes` children, so OTHER participants' vote rows orphan under
+deleted parents — the BUT-1825 class. The erased user's own rows are safe (a collection-group
+query returns children of an absent parent). `deleteRealtimeDocsWithChildren` is the
+in-file shape for fixing it.
+
+### 2026-08-17 — BUT-1801/BUT-1835 gate review, round 4 (final) [User correction / Pattern discovered]
+
+Files: `functions/src/account/account-deletion-cascade.ts`,
+`functions/src/__tests__/account-deletion-cascade.test.ts`,
+`functions/src/__tests__/poll-votes-rules.test.ts` (staged bytes).
+Measured: `npx tsc --noEmit` clean; `npx tsx src/__tests__/account-deletion-cascade.test.ts`
+**114/114 passing**.
+
+**Round-3 fixes verified TRUE.**
+- The recipes enumeration is now a PROPERTY and it is complete: `grep -rn
+  "FirestoreCollections\.recipes" lib/` returns exactly 5 sites in 5 files —
+  `rating_statistics.dart`:276 (`users/{ownerId}/recipes`), `family_rating_service.dart`:146
+  (`users/{uid}/recipes`), `firestore_repository.dart`:121 (`userRecipesCollection`, builds
+  `users/{uid}/recipes`), `firebase_recipe_repository.dart`:106 (`collectionName`, and the
+  class declares `with StreamManagementMixin, UserScopedFirebaseRepository<Recipe>`), and
+  `recipe_stats_repository.dart`:35 (`collectionGroup`, builds no path). The sibling constant
+  `FirestoreCollections.userRecipes` ('recipes', firestore_collections.dart:90) has one path
+  site, `report_service.dart`:277, also `users/{ownerId}/recipes` — so the wider claim
+  ("`users/{uid}/recipes` is the only shape any production writer uses") survives it too.
+  Top-level rules check: the only `match` reaching it is `match /{path=**}/recipes/{recipeId}
+  { allow read: if isAdmin(); }` (firestore.rules:2785) — admin-only, read-only. TRUE.
+- "300 lines down" → `anonymizeSystemMessagesAboutUser` by name: the named function's own log
+  comment does carry the no-`hasOnly`/plant-in-a-DM claim (`:1839-1842`). TRUE.
+- Seam docstring's `batch().update` caveat: verified against the fake — `batch()` takes the
+  ref object and calls `this.applyUpdate(ref.path, ...)` directly, never `makeRef().update`.
+  TRUE.
+- Rules claims re-read: create/update/delete under `match /poll_votes/{voterId}` all carry
+  `request.auth.uid == voterId` (2130-2145) and `isValidVote()` pins
+  `request.resource.data.voterId == voterId` (2120-2125). `messages` create is
+  `hasRequiredFields([...])` with NO `hasOnly` (metadata unconstrained). TRUE.
+
+**Blocking 1 — the correction stopped one file short.** The production docstring was fixed to
+"That array is still EMITTED …", and the TEST twin
+(`account-deletion-cascade.test.ts`:2112-2115) still reads "no code writes that array any
+more, so a cascade scrubbing it would be erasing a field nothing produces". FALSE, and now
+contradicted by the production file in the SAME diff: `PollOption.toMap`
+(`poll.dart`:60-69) emits `voterIds`, `Poll.toMap` maps every option through it (:175), the
+live poll-create path serialises with `poll.toMap()`
+(`social_group_detail_viewmodel.dart`:500, `chat_input_section.dart`:189 →
+`messaging_service.dart`:603), and `closePoll` rewrites the whole `metadata` map
+(`message_mutation_module.dart`:565-575).
+
+**Blocking 2 — "only ever EMPTY" is a claim about DISK, not about code.** Same paragraph,
+production side: "it is only ever EMPTY … A cascade that scrubbed it would be erasing a field
+that never carries personal data". The mechanism half is right (verified: `closePoll` reads
+the RAW snapshot, so `MessageQueryModule._merge`'s display tally cannot round-trip). But the
+writer this very diff REPLACES did store uids there: `git show
+HEAD:lib/repositories/firebase/modules/message_mutation_module.dart` lines 505-520 write
+`option['voterIds']`, and HEAD's `messages` update rule (`request.auth.uid ==
+resource.data.senderId`) allowed exactly one voter through it — the poll's own author. So a
+pre-BUT-1832 poll can hold its author's raw uid in `metadata.poll.options[].voterIds`, the
+scrub rewrites only `metadata.poll.creatorId`, and BOTH probe legs then read zero (creatorId
+is now "deleted", no `poll_votes` row exists) — a certified-clean erasure over a raw uid.
+Scope: dev/test data only, app not live, same reasoning that closed BUT-1839 unbuilt; the
+remedy asked for is the qualification, not code.
+
+**Blocking 3 — a stale suite-size count in the rules suite.**
+`poll-votes-rules.test.ts`:482 says the null-ternary repair leaves "the suite … 32/32 and
+both stay green", while the file now declares **33** tests (`grep -c "^test("`), because the
+same review round added the `SHARE_META_MSG_ID` case the sentence's "both" refers to. The
+runner prints `${tests.length - failed}/${tests.length}`, so no run of these bytes can print
+32/32. Substance holds (a map without `poll` still takes the ternary's map branch → `{}` →
+open → ALLOW), only the count is false.
+
+**Earlier non-blocking notes, re-graded on request.**
+- `probeResidualData`'s "must never be added back" + "counted a collection with no
+  documents": stays NON-blocking. The code is right (deleter ⊇ probe holds; the probe is a
+  highest-risk SAMPLE, not a per-leg mirror), and no erasure outcome changes. The wording is
+  in tension with the deleter comment's own "an Admin-SDK writer needs no rule", so the
+  honest form is "no PRODUCTION writer puts one there" + "do not swap the subcollection leg
+  for it".
+- Ops sequencing (poll_votes/voterId COLLECTION_GROUP index READY before the functions
+  deploy): stays NON-blocking, because both legs fail CLOSED — the sweep throws into
+  `runStep` (`failedCollections`) and the probe's catch adds `residual += 1`. It is a
+  deploy-order instruction, not a defect.
+- Orphaned `poll_votes` under deleted message parents: stays NON-blocking and pre-existing.
+  The erased user's own rows are still reachable (a collection-group query returns children
+  of an absent parent); what orphans is OTHER participants' rows, i.e. the BUT-1825 class.
+- Item 5's `SHARE_META_MSG_ID` fixture does not disturb the cascade suite: different file,
+  different runner, no shared state — 114/114 with it in the tree.
+
+### 2026-08-17 — BUT-1792 TTL declarations: the four never-reviewed files [Pattern discovered]
+
+Gate review of `record-notification-opened.ts`, `shared/collections.ts`,
+`__tests__/firestore-ttl-policies.test.ts` and the staged `firestore.indexes.json` — the
+original sprint output that every earlier round skipped in favour of the deletion cascade.
+Verdict PASS, 0 blocking. `npx tsc --noEmit` exit 0; `npx tsx
+src/__tests__/firestore-ttl-policies.test.ts` 13/13.
+
+**Item 1 — the field-name trap, checked against each WRITER, not the ticket's table.**
+`notification_opened_events` → `record-notification-opened.ts:124`
+`expireAt: admin.firestore.Timestamp.fromDate(expireAt)`; `report_processing_markers` →
+`feedback/on-report-created.ts:105`; `system_ip_audit_caps` →
+`account/verify-signup-age.ts:381`; `activeUsers` → `'expiresAt':
+PresenceTtl.computeExpiresAt()` at `firebase_recipe_presence_repository.dart:79,145` AND
+`firebase_shopping_presence_repository.dart:67,118`. All four declarations
+(`firestore.indexes.json:711,721,731,741`) match. Mutation probe: flipping the `activeUsers`
+fieldPath to `expireAt` gives exactly one FAIL, exit 1, message naming the trap; restore
+md5-identical (`9bdc8c47…`), tree byte-clean, no untracked probe files.
+
+**Item 2 — no policy deletes live data.** `system_ip_audit_caps` keys on
+`hashUid(ip)_<floor(now/1h)>` and re-stamps `expireAt = now + 2h` on every hit, so the
+earliest expiry is 1h past the end of the bucket's own consultation window — the cap cannot
+be reset while live. `report_processing_markers` is an eventId idempotency marker at 180d
+against a ≤7d trigger-retry ceiling. `notification_opened_events`' 30d exactly matches
+`suppressLowPerformers`' `openedAt >= now-30d` window, and TTL deletion lags expiry, so it is
+always the trailing side; both CTR numerator and denominator expire on the same rule.
+`activeUsers` heartbeats every 30s (`PresenceTtl.ttl = 60s`, refresh ttl/2) and readers
+already drop stale rows in memory (`filterStaleRows`), so the policy is pure GC.
+
+**Item 3 — the suite pins group + field + write site.** `match.fieldPath === target.field`
+plus a per-target `stamp` RegExp anchored on the assignment (not `src.includes`, the vacuous
+form BUT-1699 proved). Gap found: only ONE of `activeUsers`' four write sites is anchored —
+the shopping presence repo is unpinned, so a rename there stays green. Filed Medium.
+
+**Item 4 — the replacement header.** True on every mechanical claim (policy in
+`firestore.indexes.json` with `ttl: true`, arms on `--only firestore:indexes`, suite reddens
+on drop or rename, `--force` prunes). One unqualified quantifier: "nothing deleted any of
+them" is false of `cleanup/on-user-deleted.ts:430`, which purges this collection for a deleted
+user — and the same docstring names that cascade 12 lines above. Filed Low; the true form is
+"nothing but the account-deletion cascade".
+
+**Item 5 — `poll_votes`, four definitions, all agreeing.**
+`functions/src/shared/collections.ts:31`, `lib/core/constants/firestore_collections.dart:23`,
+`firestore.rules:2059` (`match /poll_votes/{voterId}`), `firestore.indexes.json:751`. The
+`voterId` FIELD the collection-group index targets is really written
+(`message_mutation_module.dart:546`, duplicated from the doc id on purpose).
+
+**Deploy order — AGREED, and it belongs in the release note.** The
+`poll_votes`/`voterId` COLLECTION_GROUP override must be READY before the functions deploy:
+`firebase deploy --only firestore:indexes` returns before the build finishes, and
+`deletePollVotes` (`account-deletion-cascade.ts:1668`) is an unguarded `.get()` that throws
+FAILED_PRECONDITION until then. Both legs fail CLOSED (sweep → `runStep`/`failedCollections`;
+probe → `residual += 1`), so this is an ordering instruction, not a defect — but a deletion
+run in the gap reports INCOMPLETE and needs a rerun. The `--force` warning is likewise
+correct and now load-bearing over 19 policies rather than 15.
+
+### 2026-08-17 — BUT-1792/1801/1835 final CF pass (five files) [Pattern discovered]
+
+`npx tsc --noEmit` exit 0; TTL suite 15/15; `account-deletion-cascade.test.ts` 114/114.
+One Low, nothing blocking.
+
+**The second `activeUsers` TARGETS entry is correct** — the shopping-presence stamp
+(`firebase_shopping_presence_repository.dart`:67,118) matches the same regex, and the
+suite went 13→15 (one new stamp check, one duplicate declaration check, since both entries
+resolve the same `overrides.find`). LOW: the comment beside it, "Every entry above names a
+single writer because its collection has one", is false under the plain reading — enumerated
+each of the five: `scheduled_notifications` is also written by
+`deliver-scheduled-notifications.ts` (`tx.update` :91, `doc.ref.update` :120) and three of
+them are deleted by `on-user-deleted.ts`. True only of writers that STAMP the field. One-word
+fix ("a single STAMPING writer"); the pin itself is right.
+
+**`record-notification-opened.ts` header verified TRUE, no new false clause.**
+`on-user-deleted.ts`:427-438 deletes `notification_opened_events` with
+`where("userId","==",userId)` — per uid, by owner, not by age, exactly as the parenthetical
+says. Enumerated every reference to the collection across `functions/src` + `lib`: one writer
+(this file), one reader (`suppress-low-performers.ts`), one deleter (that cascade). So
+"nothing but the account-deletion cascade ever deleted one" holds.
+
+**Cascade docstrings — every external claim checked, all TRUE.** The `recipes` PROPERTY
+claim: `grep FirestoreCollections.recipes lib` returns exactly 5; the four path-builders
+(`firebase_recipe_repository.collectionName`, `firestore_repository.userRecipesCollection`,
+`family_rating_service`:146, `rating_statistics`:276) all build `users/{uid}/recipes` — read
+each; the fifth (`recipe_stats_repository`:35) is a `collectionGroup`. The top-level rules
+claim: `firestore.rules`:360 is NESTED under `users/{userId}`, and the only rule reaching the
+top-level collection is :2799 `match /{path=**}/recipes/{recipeId} { allow read: if isAdmin(); }`
+— admin-only, read-only. The cap docstring cites by match pattern and `isValidVote()` rather
+than line numbers (principle 12 applied) and is accurate: create/update/delete all require
+`request.auth.uid == voterId`, `isValidVote()` pins `data.voterId == voterId` and
+`optionIds.size() <= 20`. The forward-only tense qualification is right too: `closePoll`
+(`message_mutation_module.dart`:556-578) reads `doc.data()!` and rewrites `metadata` from the
+RAW snapshot, and the only other `metadata` writers are `MessageDto.toFirestore`/`toMap`,
+both create-path — so no hydrated tally can round-trip.
+
+**The `updateFailures` seam is the shape principle 13 prescribed, and it is NOT vacuous
+here** — the poll-creator scrub uses `doc.ref.update()`, which is the verb the seam
+intercepts, and both directions are asserted (code 5 ⇒ complete, code 13 ⇒ incomplete). The
+authorship-cap scenario also states honestly what it does NOT pin (`.limit(MAX+1)` is
+invisible from the assertion).
+
+**CI wiring complete** for `poll-votes-rules.test.ts`: `test:rules:poll-votes`, inside
+`test:rules:all`, and BOTH `paths:` blocks of `firestore-rules.yml` (:45, :100) — the
+recurring trap, checked rather than assumed.
+
+Deploy-order and `--force` findings from the previous pass are unchanged and still belong in
+the release note.

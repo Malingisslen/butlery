@@ -14,6 +14,7 @@ library;
 
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
@@ -1155,6 +1156,110 @@ void main() {
         expect(complete.containsKey('messages_truncated'), isFalse);
         // Positive control: the absence above is not a build that fell over.
         expect((complete['messages'] as List), hasLength(1));
+      },
+    );
+
+    // BUT-1832. The repository probes each poll message for the requester's own
+    // vote row and hands three new keys up; the manager REBUILDS every
+    // conversation map key by key, so each one has to be copied across or it
+    // silently never reaches the bundle. Before this test, deleting all three
+    // facade blocks left the entire suite green and the user's votes simply
+    // vanished from their Art. 15 export — the repository-side tests cannot see
+    // it, because they stop at the repository.
+    test(
+      'carries a poll vote, its truncation flag and its error code through, '
+      'and omits both flags on a complete conversation',
+      () async {
+        const userId = 'user-uid';
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'polls',
+                'data': {'title': 'Middagsomröstning'},
+                'messages': [
+                  {
+                    'id': 'p1',
+                    'data': {
+                      'senderId': 'other-uid',
+                      'text': 'Vad ska vi äta?',
+                    },
+                    // Shaped like a real row: `votedAt` is a server timestamp in
+                    // production, which is why the facade must run it through
+                    // `sanitizeForJson` — `JsonEncoder.convert` throws on a
+                    // Timestamp, and that would take down the whole bundle.
+                    'your_poll_vote': {
+                      'voterId': userId,
+                      'optionIds': ['opt-a'],
+                      'votedAt': Timestamp.fromDate(DateTime.utc(2026, 8, 17)),
+                    },
+                  },
+                ],
+                'poll_votes_truncated': true,
+                'poll_votes_error_code': 'conversation-poll-votes-read-failed',
+              },
+              {
+                'id': 'clean',
+                'data': {'title': 'Vanlig tråd'},
+                'messages': [
+                  {
+                    'id': 'm1',
+                    'data': {'senderId': userId, 'text': 'hej'},
+                  },
+                ],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final conversations = (result['conversations'] as List)
+            .cast<Map<String, dynamic>>();
+        final polls = conversations.firstWhere(
+          (c) => c['conversation_id'] == 'polls',
+        );
+        final clean = conversations.firstWhere(
+          (c) => c['conversation_id'] == 'clean',
+        );
+
+        final vote =
+            ((polls['messages'] as List).first
+                    as Map<String, dynamic>)['your_poll_vote']
+                as Map<String, dynamic>;
+        expect(vote['voterId'], userId);
+        expect(vote['optionIds'], ['opt-a']);
+        // Sanitised, not raw: a surviving Timestamp here is the defect that
+        // would throw at `JsonEncoder.convert` and lose the entire export.
+        expect(vote['votedAt'], isNot(isA<Timestamp>()));
+
+        expect(polls['poll_votes_truncated'], isTrue);
+        expect(
+          polls['poll_votes_error_code'],
+          'conversation-poll-votes-read-failed',
+        );
+        // The SECTION-ROOT lift, which is a SEPARATE path from the flag above,
+        // not a better one. `DataExportService` builds
+        // `export_metadata.warnings` by scanning each section's own `error` /
+        // `error_code` at its ROOT — the per-conversation copy asserted above is
+        // never consulted for that, so only this key produces a warning. (The
+        // truncation walk is the other mechanism, and it DOES recurse lists
+        // since BUT-1721, which is why `poll_votes_truncated` on a conversation
+        // map reaches `truncated_collections`. Two mechanisms, two keys; an
+        // earlier version of this comment described the pre-BUT-1721 walk and
+        // concluded the conversation-level key was inert, which is false.)
+        //
+        // Without this line the `??=` that sets the root key could be deleted
+        // and the whole suite would stay green.
+        expect(result['error_code'], 'conversation-poll-votes-read-failed');
+
+        // Recall controls. A flag stuck true tells every data subject their
+        // export is incomplete when it is not — the false-positive direction
+        // BUT-1721 exists to prevent.
+        expect(clean.containsKey('poll_votes_truncated'), isFalse);
+        expect(clean.containsKey('poll_votes_error_code'), isFalse);
+        expect(clean.containsKey('your_poll_vote'), isFalse);
+        // Positive control: the absences above are not a build that fell over.
+        expect((clean['messages'] as List), hasLength(1));
       },
     );
   });

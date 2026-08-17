@@ -133,6 +133,11 @@ class FakeFirestore {
    */
   readonly updatedPaths: string[] = [];
   /**
+   * Path -> grpc code that `ref.update()` should reject with. Empty by default,
+   * so every existing scenario is untouched. See the seam in `makeRef`.
+   */
+  readonly updateFailures = new Map<string, number>();
+  /**
    * Every path deleted, in order. BUT-1822 turns on an ORDERING invariant —
    * roster rows before the conversation document — and "both are gone at the
    * end" is exactly the assertion that cannot tell the fixed code from the
@@ -183,6 +188,24 @@ class FakeFirestore {
         this.docs.delete(path);
       },
       update: async (data: DocData) => {
+        // BUT-1801: the failure seam. Real Firestore REJECTS `update()` on a
+        // missing document with grpc code 5 (NOT_FOUND); this stub silently
+        // resolved, because `applyUpdate` returns on a missing doc. That made
+        // the poll-creator scrub's code-5 tolerance unstageable — inverting the
+        // predicate to tolerate everything EXCEPT code 5 left the whole suite
+        // green, so the branch was dead weight to the tests that were meant to
+        // hold it. Tests opt in by path; nothing else changes behaviour.
+        //
+        // Reaches `ref.update()` ONLY. A `batch().update` does not go through
+        // `makeRef`, so an injection aimed at a `commitInChunks` path would pass
+        // vacuously — check which write shape the code under test uses before
+        // trusting a green result from this seam.
+        const injected = this.updateFailures.get(path);
+        if (injected !== undefined) {
+          throw Object.assign(new Error(`injected update failure on ${path}`), {
+            code: injected,
+          });
+        }
         this.applyUpdate(path, data);
       },
       // Subcollections are real in Firestore and NOT deleted with their parent
@@ -1513,6 +1536,69 @@ async function scenario_probeSeesLeftoverRosterRows(): Promise<void> {
 }
 
 /**
+ * BUT-1801: the recipes leg of the residual probe.
+ *
+ * Until this fix, `probeResidualData` counted `recipes` as a TOP-LEVEL collection
+ * filtered by a `userId` field, alongside `user_notifications` and friends. No
+ * production writer puts a recipe there — every `FirestoreCollections.recipes`
+ * site in `lib/` that builds a path is user-scoped (the one that does not,
+ * `recipe_stats_repository`, is a `collectionGroup` read and builds none), and
+ * no rule lets a client write the top-level collection — so the count returned
+ * zero on every real deletion. The probe certified every erasure clean without ever looking at a
+ * recipe, and would have gone on saying so if `deleteRecipes` broke.
+ *
+ * Note "no production writer", not "no such collection": the Admin SDK needs no
+ * rule, and `request-account-deletion.integration.test.ts` plants a document
+ * there deliberately to prove the cascade's top-level leg still sweeps it. An
+ * earlier draft of this docstring said the collection could not exist, which is
+ * the claim that briefly justified deleting that leg.
+ *
+ * That is the failure mode this scenario exists to make impossible to reintroduce:
+ * the dirty half seeds a recipe at the ONLY path recipes live at,
+ * `users/{uid}/recipes`, and requires the probe to see it. Point the probe back at
+ * the top-level collection and the dirty half goes green — which is the bug.
+ *
+ * The clean half runs first for the same reason as the roster scenario above: a
+ * stub method the probe needs but does not have would land in a per-leg catch,
+ * count as residual, and make the dirty half pass for the wrong reason.
+ */
+async function scenario_probeSeesLeftoverRecipes(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const clean = new FakeFirestore();
+  // Somebody else's recipe. If the probe were user-blind — a collection-group
+  // sweep with no uid scoping, say — this is what would make it cry wolf.
+  clean.set(`users/${OTHER}/recipes/r-other`, { core: { title: "Pannkakor" } });
+  const cleanResult = {
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  };
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "another user's recipes do not read as residual for this user",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const dirty = new FakeFirestore();
+  dirty.set(`users/${OTHER}/recipes/r-other`, { core: { title: "Pannkakor" } });
+  dirty.set(`users/${UID}/recipes/r-mine`, { core: { title: "Köttbullar" } });
+  const dirtyResult = {
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  };
+  await probeResidualData(asDb(dirty), UID, dirtyResult);
+  check(
+    "one leftover recipe under users/{uid}/recipes is reported as residual data",
+    dirtyResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+  );
+}
+
+/**
  * The collection-group query the two legs above depend on needs a declared
  * index; Firestore's automatic single-field indexes cover COLLECTION scope only.
  * Nothing in a stub-backed suite can notice a missing or misspelled one — the
@@ -2012,6 +2098,399 @@ async function scenario_probeSeesLeftoverChatGroupMembership(): Promise<void> {
   );
 }
 
+/**
+ * BUT-1835 — the erased user's poll votes and their authorship of polls.
+ *
+ * Two residues, and neither covers the other. The VOTE rows live at
+ * `messages/{id}/poll_votes/{uid}` under messages this user may never have
+ * sent, in conversations `deleteMessages` leaves standing, so no other leg of
+ * this cascade reaches them. The AUTHORSHIP lives at
+ * `metadata.poll.creatorId` inside a message document; `deleteMessages`
+ * anonymises `senderId` on their own messages and never looks inside
+ * `metadata`, so on every surviving poll the raw uid stayed.
+ *
+ * Written against the SUBCOLLECTION shape BUT-1832 introduced, not the inline
+ * `metadata.poll.options[].voterIds` array it replaced. That array is still
+ * emitted (`Poll.toMap` writes it, `closePoll` rewrites the whole metadata map)
+ * but no VOTER uid has landed in it since BUT-1832 — `closePoll` reads the raw
+ * snapshot, not the hydrated model, so the display tally cannot round-trip.
+ * A poll from the PRE-BUT-1832 client can still hold its author's own uid there;
+ * dev-project data only, and the production comment on `deletePollVotes` carries
+ * the full reasoning. Scrubbing the array instead of the subcollection would
+ * chase a field no live writer fills while missing every vote made since.
+ */
+async function scenario_pollVotesAndAuthorshipAreErased(): Promise<void> {
+  const db = new FakeFirestore();
+  // A GROUP conversation, so `deleteMessages` scrubs membership and leaves the
+  // conversation and its messages standing — which is what makes these rows
+  // survivable in the first place.
+  db.set("conversations/group-1", {
+    participantIds: [UID, OTHER, "third-uid"],
+    participantDisplayNames: { [UID]: "Raderad", [OTHER]: "Kvar" },
+    isGroup: true,
+  });
+  // A poll SOMEBODY ELSE opened. The erased user only voted in it — nothing
+  // else in the cascade would ever touch this message.
+  db.set("messages/poll-theirs", {
+    conversationId: "group-1",
+    senderId: OTHER,
+    content: "Vad ska vi äta?",
+    metadata: {
+      poll: {
+        id: "p1",
+        creatorId: OTHER,
+        question: "Vad ska vi äta?",
+        options: [{ id: "opt-a", text: "Tacos" }],
+      },
+    },
+  });
+  db.set("messages/poll-theirs/poll_votes/" + UID, {
+    voterId: UID,
+    optionIds: ["opt-a"],
+  });
+  db.set("messages/poll-theirs/poll_votes/" + OTHER, {
+    voterId: OTHER,
+    optionIds: ["opt-a"],
+  });
+  // A poll the erased user OPENED, in the same surviving conversation.
+  db.set("messages/poll-mine", {
+    conversationId: "group-1",
+    senderId: UID,
+    content: "Pizza på fredag?",
+    metadata: {
+      poll: {
+        id: "p2",
+        creatorId: UID,
+        question: "Pizza på fredag?",
+        options: [{ id: "opt-x", text: "Ja" }],
+      },
+    },
+  });
+  db.set("messages/poll-mine/poll_votes/" + OTHER, {
+    voterId: OTHER,
+    optionIds: ["opt-x"],
+  });
+
+  await deleteMessages(asDb(db), UID);
+
+  check(
+    "the erased user's vote is gone from a poll they did not open",
+    !db.has(`messages/poll-theirs/poll_votes/${UID}`),
+    `left: ${JSON.stringify(db.pathsUnder("messages/poll-theirs/poll_votes"))}`,
+  );
+  check(
+    "another member's vote in the same poll is untouched",
+    db.has(`messages/poll-theirs/poll_votes/${OTHER}`),
+  );
+  check(
+    "another member's vote in the ERASED user's poll is untouched too",
+    db.has(`messages/poll-mine/poll_votes/${OTHER}`),
+  );
+
+  const mine = (db.get("messages/poll-mine") ?? {}) as DocData;
+  const poll = ((mine.metadata ?? {}) as DocData).poll as DocData | undefined;
+  check(
+    "the erased user's poll authorship is anonymised",
+    poll?.creatorId === "deleted",
+    `creatorId: ${JSON.stringify(poll?.creatorId)}`,
+  );
+  check(
+    "…and the rest of the poll survives — the remaining members still use it",
+    poll?.question === "Pizza på fredag?" &&
+      Array.isArray(poll?.options) &&
+      (poll?.options as unknown[]).length === 1,
+    `poll: ${JSON.stringify(poll)}`,
+  );
+
+  const theirs = (db.get("messages/poll-theirs") ?? {}) as DocData;
+  const theirPoll = ((theirs.metadata ?? {}) as DocData).poll as
+    | DocData
+    | undefined;
+  check(
+    "somebody else's poll keeps ITS creator — the scrub is keyed on the uid",
+    theirPoll?.creatorId === OTHER,
+    `creatorId: ${JSON.stringify(theirPoll?.creatorId)}`,
+  );
+}
+
+/**
+ * BUT-1801: the residual probe must SEE both poll residues.
+ *
+ * `deletePollVotes` deletes votes through `commitInChunks(strict:false)`, which
+ * catches a whole failed chunk and lets the step return success anyway — only
+ * the cap can falsify it. And the creator scrub, before BUT-1801, was one atomic
+ * batch, so a single message deleted by a sibling step took the whole chunk with
+ * it, silently. In both cases the step reports a clean erasure over rows that are
+ * still there. The probe is the only thing that can contradict that, and it had
+ * no leg for either — the same shape as the `participants` gap BUT-1822 found.
+ *
+ * Two residues, asserted separately, because a probe that catches one and misses
+ * the other still certifies a bad erasure clean.
+ */
+async function scenario_probeSeesLeftoverPollResidues(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const cleanCase = new FakeFirestore();
+  // Somebody else's vote on somebody else's poll: neither leg may fire on it.
+  cleanCase.set("messages/poll-theirs", {
+    conversationId: "group-1",
+    senderId: OTHER,
+    metadata: { poll: { id: "p1", creatorId: OTHER, options: [] } },
+  });
+  cleanCase.set("messages/poll-theirs/poll_votes/" + OTHER, {
+    voterId: OTHER,
+    optionIds: ["opt-a"],
+  });
+  const cleanResult = {
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  };
+  await probeResidualData(asDb(cleanCase), UID, cleanResult);
+  check(
+    "another member's poll vote and authorship do not read as this user's residual",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  // Residue 1: a vote row the sweep failed to delete.
+  const leftoverVote = new FakeFirestore();
+  leftoverVote.set("messages/poll-theirs", {
+    conversationId: "group-1",
+    senderId: OTHER,
+    metadata: { poll: { id: "p1", creatorId: OTHER, options: [] } },
+  });
+  leftoverVote.set("messages/poll-theirs/poll_votes/" + UID, {
+    voterId: UID,
+    optionIds: ["opt-a"],
+  });
+  const voteResult = {
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  };
+  await probeResidualData(asDb(leftoverVote), UID, voteResult);
+  check(
+    "a poll vote the sweep failed to delete is reported as residual data",
+    voteResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(voteResult.failedCollections)}`,
+  );
+
+  // Residue 2: authorship the scrub failed to anonymise. Distinct from residue
+  // 1 — the message carries the raw uid in a FIELD, with no vote row at all.
+  const leftoverAuthor = new FakeFirestore();
+  leftoverAuthor.set("messages/poll-mine", {
+    conversationId: "group-1",
+    senderId: "deleted",
+    metadata: { poll: { id: "p2", creatorId: UID, options: [] } },
+  });
+  const authorResult = {
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+  };
+  await probeResidualData(asDb(leftoverAuthor), UID, authorResult);
+  check(
+    "poll authorship the scrub failed to anonymise is reported as residual data",
+    authorResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(authorResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-1801: the poll-creator scrub tolerates NOT_FOUND and ONLY NOT_FOUND.
+ *
+ * The scrub updates each authored message individually rather than in one batch,
+ * because a sibling step (`deleteChatGroupMemberships` deleting an emptied
+ * group's whole thread) can delete a message out from under it — and a batch is
+ * atomic, so one NOT_FOUND would take the whole chunk down while
+ * `commitInChunks(strict:false)` swallowed the error and the step still reported
+ * success.
+ *
+ * So code 5 means "the message is already gone", which is the outcome the scrub
+ * wanted: tolerate it, stay complete. Every OTHER code is a real failure and must
+ * mark the step incomplete, or a half-erased account passes as `gdprCompliant`.
+ *
+ * Both directions are asserted here because the fake could not stage either one
+ * until this ticket added the `updateFailures` seam: inverting the predicate —
+ * tolerating everything except code 5, the exact opposite of the intent — left
+ * the suite 110/110 green.
+ */
+async function scenario_pollCreatorScrubToleratesOnlyNotFound(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { deletePollVotes } = require("../account/account-deletion-cascade");
+
+  const authoredPoll = (db: FakeFirestore, id: string): void => {
+    db.set(`messages/${id}`, {
+      conversationId: "group-1",
+      senderId: UID,
+      metadata: { poll: { id: `p-${id}`, creatorId: UID, options: [] } },
+    });
+  };
+
+  // NOT_FOUND: the message was deleted by a sibling step mid-cascade.
+  const vanished = new FakeFirestore();
+  vanished.set("conversations/group-1", { participantIds: [UID, OTHER] });
+  authoredPoll(vanished, "poll-gone");
+  vanished.updateFailures.set("messages/poll-gone", 5);
+  check(
+    "a message deleted mid-cascade does NOT make the poll scrub incomplete",
+    (await deletePollVotes(asDb(vanished), UID)) === true,
+    "code 5 must be tolerated — the row is already gone",
+  );
+
+  // Any other code: a real write failure, and the step must own up to it.
+  const broken = new FakeFirestore();
+  broken.set("conversations/group-1", { participantIds: [UID, OTHER] });
+  authoredPoll(broken, "poll-broken");
+  broken.updateFailures.set("messages/poll-broken", 13); // INTERNAL
+  check(
+    "a real write failure DOES make the poll scrub report incomplete",
+    (await deletePollVotes(asDb(broken), UID)) === false,
+    "only NOT_FOUND may be tolerated",
+  );
+}
+
+/**
+ * BUT-1835 + BUT-1830: an implausibly large vote sweep DECLINES rather than
+ * truncating, and says so.
+ *
+ * NOT because a peer can inflate the count — they cannot. `firestore.rules`
+ * requires `request.auth.uid == voterId` on every write verb of
+ * `poll_votes/{voterId}`, and posting a poll creates zero rows; a row exists
+ * only when this user votes. That sentence stood here and in the constant's own
+ * docstring until the BUT-1801 review disproved it (2026-08-17); it was borrowed
+ * from the roster cap, where peer-seeding IS the threat.
+ *
+ * What the cap still guards: self-inflation, and a tampered or non-standard
+ * Admin-SDK writer that rules never see. A truncated sweep would report a clean
+ * erasure over rows it never looked at, which is the one outcome Art. 17 cannot
+ * tolerate; declining lands the step in `failedCollections`, which is loud.
+ */
+async function scenario_implausiblePollVoteCountDeclines(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set("conversations/group-2", {
+    participantIds: [UID, OTHER],
+    isGroup: true,
+  });
+  // 2000 is MAX_POLL_VOTE_SWEEP_ROWS; the read is `.limit(MAX + 1)`, so 2001
+  // rows is the smallest sweep that refuses.
+  for (let i = 0; i < 2001; i++) {
+    db.set(`messages/poll-${i}/poll_votes/${UID}`, {
+      voterId: UID,
+      optionIds: ["opt-a"],
+    });
+  }
+
+  const ok = await deleteMessages(asDb(db), UID);
+
+  check(
+    "an implausible poll-vote count is not swept",
+    db.has(`messages/poll-0/poll_votes/${UID}`),
+  );
+  check(
+    "…and the step reports INCOMPLETE, so the audit cannot say gdprCompliant",
+    ok === false,
+    `deleteMessages returned ${ok}`,
+  );
+}
+
+/**
+ * BUT-1801: poll AUTHORSHIP is capped too, and for a reason the vote sweep does
+ * NOT share.
+ *
+ * A peer cannot seat a `poll_votes` row for someone else — the rules pin
+ * `request.auth.uid == voterId` on every write verb — so that cap guards only
+ * self-inflation. Authorship is the opposite: the `messages` create rule pins
+ * required fields but carries no `hasOnly`, so `metadata` is unconstrained and
+ * any participant can plant `metadata.poll.creatorId: <victimUid>` on a message
+ * in their own DM. The row count is chosen by other people, which is exactly the
+ * shape that lets somebody else size a victim's erasure bill.
+ *
+ * The scrub was briefly UNCAPPED, justified in a comment as "self-bounded — only
+ * this user authors this user's polls". That claim was false, and this file
+ * already said so elsewhere. Declining beats truncating for the same reason as
+ * every other cap here: a truncated scrub reports a clean erasure over rows it
+ * never touched.
+ *
+ * What this pins is the DECLINE DECISION — mutation-proved: delete the
+ * `authored.size > MAX` block and both checks below redden. It does NOT pin the
+ * `.limit(MAX + 1)` on the query, and cannot: removing that limit leaves the
+ * suite fully green, because the decision still sees 2001 rows and still
+ * declines. The limit bounds the READ (cost), the check bounds the WRITE
+ * (correctness), and only the second is observable from here. Do not read a
+ * green suite as evidence the read stayed bounded.
+ */
+async function scenario_implausiblePollAuthorshipDeclines(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { deletePollVotes } = require("../account/account-deletion-cascade");
+
+  const db = new FakeFirestore();
+  db.set("conversations/group-3", { participantIds: [UID, OTHER] });
+  // 2001 is the smallest count that trips a `.limit(MAX + 1)` read.
+  for (let i = 0; i < 2001; i++) {
+    db.set(`messages/planted-${i}`, {
+      conversationId: "group-3",
+      senderId: OTHER,
+      metadata: { poll: { id: `p-${i}`, creatorId: UID, options: [] } },
+    });
+  }
+
+  const ok = await deletePollVotes(asDb(db), UID);
+
+  check(
+    "an implausible poll-authorship count reports INCOMPLETE",
+    ok === false,
+    `deletePollVotes returned ${ok}`,
+  );
+  const planted = db.get("messages/planted-0") as
+    | { metadata?: { poll?: { creatorId?: string } } }
+    | undefined;
+  check(
+    "…and scrubs nothing rather than truncating",
+    planted?.metadata?.poll?.creatorId === UID,
+    `creatorId was ${planted?.metadata?.poll?.creatorId}`,
+  );
+}
+
+/**
+ * The collection-group index the sweep needs. Firestore's AUTOMATIC single-field
+ * indexes are COLLECTION-scoped, so a `collectionGroup('poll_votes')` query
+ * filtered on `voterId` fails with FAILED_PRECONDITION without an explicit
+ * `COLLECTION_GROUP` fieldOverride — the erasure would go from working to
+ * throwing on every account deletion. Pinned here because a `--force` index
+ * deploy prunes anything absent from that file.
+ */
+async function scenario_pollVoteIndexIsDeclared(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const indexes = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "..", "..", "..", "firestore.indexes.json"),
+      "utf8",
+    ),
+  ) as {
+    fieldOverrides?: {
+      collectionGroup: string;
+      fieldPath: string;
+      indexes?: { order?: string; queryScope?: string }[];
+    }[];
+  };
+  const override = (indexes.fieldOverrides ?? []).find(
+    (o) => o.collectionGroup === "poll_votes" && o.fieldPath === "voterId",
+  );
+  check(
+    "poll_votes.voterId has a COLLECTION_GROUP single-field index declared",
+    (override?.indexes ?? []).some(
+      (i) => i.queryScope === "COLLECTION_GROUP" && i.order === "ASCENDING",
+    ),
+    `override: ${JSON.stringify(override)}`,
+  );
+}
+
 async function main(): Promise<void> {
   await scenario_directConversationIsErasedWhole();
   await scenario_readsTopLevelNotSubcollection();
@@ -2032,6 +2511,7 @@ async function main(): Promise<void> {
   await scenario_rosterIsClearedBeforeTheParentDelete();
   await scenario_unclearableRosterLeavesTheParentStanding();
   await scenario_probeSeesLeftoverRosterRows();
+  await scenario_probeSeesLeftoverRecipes();
   await scenario_rosterIndexIsDeclared();
   await scenario_chatGroupMembershipIsErasedEverywhere();
   await scenario_createdByIsReHomedWhenTheCreatorIsErased();
@@ -2040,6 +2520,12 @@ async function main(): Promise<void> {
   await scenario_implausibleChatGroupCountDeclines();
   await scenario_deleteMessagesSkipsGroupOwnedConversations();
   await scenario_probeSeesLeftoverChatGroupMembership();
+  await scenario_pollVotesAndAuthorshipAreErased();
+  await scenario_probeSeesLeftoverPollResidues();
+  await scenario_pollCreatorScrubToleratesOnlyNotFound();
+  await scenario_implausiblePollVoteCountDeclines();
+  await scenario_implausiblePollAuthorshipDeclines();
+  await scenario_pollVoteIndexIsDeclared();
 
   let failed = 0;
   for (const r of results) {
