@@ -602,7 +602,186 @@ const SUP2 = R2.B_supplemental.records, RU = R2.C_reviewedUnknown.records;
     ', ' + L.GRAPHICAL_PARTS + ' delar, ' + L.BOUNDARIES + ' kanter, ' +
     L.PAINTED_CONTROL_SURFACES + ' malade ytor, R-01 ' + L.R01_FINDINGS); }
 
-const ANTAL = 35;
+/* ═══ BLOCKING-CARRIER PILOT · ACR-36 … ACR-45 ════════════════════════════
+ * Proven nedan laser bararfrontiern: att den ar exakt fryst, att sonden ar
+ * lika ren for ikoner som for kanter, att konformans hålls skild fran
+ * tillamplighet, att en bararedom aldrig avgor en beroende fyllning, och —
+ * viktigast — att ingen extrapolerar de 66:s rackvidd till hela kon. */
+const R3 = JSON.parse(readFileSync(resolve('fas2/lagkontrast-register-pilot3.json'), 'utf8'));
+const C66 = JSON.parse(readFileSync(resolve('fas2/lagkontrast-barare-66.json'), 'utf8'));
+const CAR = C66.M_humanReviewPackage.poster;
+const CENSUS = C66.N_census;
+
+/* ── ACR-36 ─────────────────────────────────────────────────────────────── */
+{ const r = R3.A_registrering, rec = R3.D_records;
+  prov('ACR-36', 'de 50 fyllningarna i pilot 3 ar registrerade som granskade utan dom',
+    r.REGISTERED_OCCURRENCES === 50 && r.NEW_REVIEWED_UNKNOWN === 50 &&
+    r.NEW_REQUIRED === 0 && r.NEW_SUPPLEMENTAL === 0 && r.DUPLICATES === 0 &&
+    r.OMITTED === 0 && r.OUT_OF_SCOPE === 0 && rec.length === 50 &&
+    rec.every(x => x.APPLICABILITY_VERDICT === 'UNKNOWN' &&
+      x.REVIEW_STATUS === AP.REVIEW_STATUS.REVIEWED_UNKNOWN &&
+      Array.isArray(x.BLOCKER_RELATION_IDS) && x.BLOCKER_RELATION_IDS.length > 0 &&
+      x.ELIGIBLE_FOR_MECHANICAL_PILOT === false &&
+      x.TARGET_FILL_CONTRIBUTES_DISTINGUISHABLE_VISUAL_INFORMATION === 'YES') &&
+    R3.C_grindar.every(g => g.ok),
+    r.REGISTERED_OCCURRENCES + ' registrerade, ' + r.UNIKA_BLOCKER_RELATIONER +
+    ' unika blockerare, ' + R3.C_grindar.length + ' grindar'); }
+
+/* ── ACR-37 ─────────────────────────────────────────────────────────────── */
+{ const q = C66.Q_status, P_ = C66.P_regression;
+  prov('ACR-37', 'LT3 delas exakt i granskade och ogranskade',
+    q.LT3_UNKNOWN === 424 && q.REVIEWED_UNKNOWN_LT3 === 62 &&
+    q.UNREVIEWED_UNKNOWN_LT3 === 362 &&
+    q.LT3_UNKNOWN === q.REVIEWED_UNKNOWN_LT3 + q.UNREVIEWED_UNKNOWN_LT3 &&
+    q.GE3_UNKNOWN === 1218 && q.UNKNOWN_APPLICABILITY === 1642 &&
+    q.UNKNOWN_APPLICABILITY === q.LT3_UNKNOWN + q.GE3_UNKNOWN &&
+    q.KNOWN_REQUIRED_FAIL === 0 && P_.REVIEWED_UNKNOWN === 62 && P_.UNREVIEWED_UNKNOWN === 362,
+    q.LT3_UNKNOWN + ' = ' + q.REVIEWED_UNKNOWN_LT3 + ' + ' + q.UNREVIEWED_UNKNOWN_LT3 +
+    ', totalt ' + q.UNKNOWN_APPLICABILITY + ', KNOWN_REQUIRED_FAIL ' + q.KNOWN_REQUIRED_FAIL); }
+
+/* ── ACR-38 ─────────────────────────────────────────────────────────────── */
+{ const b = C66.B_frontier, d = C66.D_inventering;
+  const fills = new Set(R3.D_records.map(x => x.RELATION_ID));
+  const allaLankar = CAR.every(x => x.DEPENDENT_FILL_COUNT > 0 &&
+    x.DEPENDENT_FILL_RELATIONS.every(id => fills.has(id)));
+  prov('ACR-38', 'bararfrontiern ar exakt 66 och fordelningen sluter',
+    b.BLOCKING_CARRIER_RELATIONS === 66 && b.ICONS === 55 && b.BOUNDARIES === 11 &&
+    b.ICON_GE3 === 22 && b.ICON_LT3 === 33 && b.BOUNDARY_GE3 === 5 && b.BOUNDARY_LT3 === 6 &&
+    b.LT3_BLOCKERS === 39 && b.GE3_BLOCKERS === 27 && b.SUMMERAR === true &&
+    b.DUPLICATES === 0 && b.UNRESOLVED_IDENTITY === 0 && b.MISSING_BLOCKER_LINK === 0 &&
+    b.ALLA_UNKNOWN === true && b.TACKTA_FILLS === 50 &&
+    d.ANTAL === 66 && d.DUPLICATES === 0 && d.UNRESOLVED_IDENTITY === 0 &&
+    d.MISSING_BLOCKER_LINK === 0 && allaLankar,
+    b.BLOCKING_CARRIER_RELATIONS + ' = ' + b.ICONS + ' ikoner + ' + b.BOUNDARIES +
+    ' kanter; ' + b.LT3_BLOCKERS + ' LT3 / ' + b.GE3_BLOCKERS + ' GE3; alla lankar tillbaka: ' +
+    allaLankar); }
+
+/* ── ACR-39 ─────────────────────────────────────────────────────────────── */
+{ const c = C66.C_scope, n = CENSUS;
+  const partition = Object.values(n.EXKLUSIV_PARTITION).reduce((a,b)=>a+b,0);
+  prov('ACR-39', 'de 66:s rackvidd extrapoleras aldrig till hela kon',
+    c.BEVISAT_SCOPE.includes('50 fills i pilot 3') &&
+    typeof c.EJ_PASTATT === 'string' && c.UNREVIEWED_LT3_UTANFOR_PILOT_3 === 362 &&
+    n.UNREVIEWED_LT3 === 362 && partition === 362 && n.PARTITION_SUMMERAR === true &&
+    n.OVERLAPPANDE_KATEGORIER.DEPENDENT_ON_EXISTING_66 < 362 &&
+    n.NYA_BLOCKERARE_UNIKA > 0 &&
+    typeof n.OVERLAPPANDE_KATEGORIER.MEASUREMENT_GAP === 'number' &&
+    typeof n.OVERLAPPANDE_KATEGORIER.MULTIPLE_BLOCKERS === 'number' &&
+    typeof n.OVERLAPPANDE_KATEGORIER.$overlapp === 'string',
+    'bevisat scope ' + c.BEVISAT_SCOPE + '; av ' + n.UNREVIEWED_LT3 + ' kvarvarande beror ' +
+    n.OVERLAPPANDE_KATEGORIER.DEPENDENT_ON_EXISTING_66 + ' pa de 66, ' +
+    n.NYA_BLOCKERARE_UNIKA + ' nya blockerare finns'); }
+
+/* ── ACR-40 ─────────────────────────────────────────────────────────────── */
+{ const g = C66.E_G_sond;
+  const rena = CAR.filter(x => x.COUNTERFACTUAL.GEOMETRY_DELTA === 0 &&
+    x.COUNTERFACTUAL.CONTENT_STATE_DELTA === 0 &&
+    x.COUNTERFACTUAL.UNRELATED_PAINT_DELTA === 0 &&
+    x.COUNTERFACTUAL.RESTORATION_DELTA === 0 &&
+    x.COUNTERFACTUAL.GEOMETRIEGENSKAPER_BEVARADE === true &&
+    x.COUNTERFACTUAL.NEUTRALISERAD === true);
+  const ingenArv = CAR.every(x => x.ARV.anvanderCurrentColor === false);
+  const utanDom = CAR.filter(x => x.SOURCE_PROBE_STATUS === 'PROBE_UNSAFE' &&
+    x.PROPOSED_VERDICT !== AP.FORSLAG.PROPOSED_UNKNOWN);
+  prov('ACR-40', 'kontrafaktisk sond for alla 66 ar ren och lokal',
+    g.PROBES === 66 && g.PROBE_CLEAN === 66 && g.PROBE_UNSAFE === 0 &&
+    g.GEOMETRY_DELTA_TOTALT === 0 && g.CONTENT_STATE_DELTA_TOTALT === 0 &&
+    g.UNRELATED_PAINT_DELTA_TOTALT === 0 && g.RESTORATION_DELTA_TOTALT === 0 &&
+    g.SOURCE_BIT_IDENTICAL === true && g.PERMANENT_WRITES === 0 &&
+    rena.length === 66 && ingenArv && utanDom.length === 0 &&
+    CAR.every(x => /NEUTRALIZED/.test(x.COUNTERFACTUAL.OPERATION)),
+    g.PROBES + ' sonder, ' + g.PROBE_CLEAN + ' rena, ' + g.PROBE_UNSAFE +
+    ' unsafe; geometri ' + g.GEOMETRY_DELTA_TOTALT + ', innehall/tillstand ' +
+    g.CONTENT_STATE_DELTA_TOTALT + ', ovrig malning ' + g.UNRELATED_PAINT_DELTA_TOTALT); }
+
+/* ── ACR-41 ─────────────────────────────────────────────────────────────── */
+{ const h = C66.H_konformitetsutfall;
+  const suppBadaBand = new Set(CAR.filter(x => x.PROPOSED_VERDICT ===
+    AP.FORSLAG.PROPOSED_SUPPLEMENTAL_NOT_REQUIRED).map(x => x.band));
+  const reqBand = new Set(CAR.filter(x => x.PROPOSED_VERDICT ===
+    AP.FORSLAG.PROPOSED_REQUIRED).map(x => x.band));
+  const tabell = CAR.every(x => x.KONFORMITETSUTFALL.OM_REQUIRED ===
+      (x.CURRENT_RATIO < 3 ? 'REQUIRED_FAIL' : 'REQUIRED_PASS') &&
+    x.KONFORMITETSUTFALL.OM_UNKNOWN === 'fortsatt UNKNOWN');
+  prov('ACR-41', 'konformans hålls skilt fran tillamplighet och kvoten domer aldrig',
+    h.LT3_OM_REQUIRED === 'REQUIRED_FAIL' && h.GE3_OM_REQUIRED === 'REQUIRED_PASS' &&
+    h.OM_UNKNOWN === 'fortsatt UNKNOWN' && tabell &&
+    suppBadaBand.has('LT_3') && suppBadaBand.has('GE_3') &&
+    reqBand.size === 1 && CAR.every(x => x.APPLICABILITY_RECORD_WRITTEN === false),
+    'supplemental forekommer i band ' + [...suppBadaBand].join('+') +
+    ', required i ' + [...reqBand].join('+') + '; utfallstabellen stammer for alla ' +
+    CAR.length); }
+
+/* ── ACR-42 ─────────────────────────────────────────────────────────────── */
+{ const i = C66.I_alternativaSignaler;
+  const supp = CAR.filter(x => x.PROPOSED_VERDICT === AP.FORSLAG.PROPOSED_SUPPLEMENTAL_NOT_REQUIRED);
+  const utpekade = supp.every(x => x.ALTERNATIVE_SIGNALS_IF_SUPPLEMENTAL &&
+    x.ALTERNATIVE_SIGNALS_IF_SUPPLEMENTAL.grafiskaBarare.length > 0 &&
+    x.ALTERNATIVE_SIGNALS_IF_SUPPLEMENTAL.grafiskaBarare.every(y => y.KANONISK_RELATION) &&
+    typeof x.ALTERNATIVE_SIGNALS_IF_SUPPLEMENTAL.$ejUteslutning === 'string');
+  const forbjuden = /darfor att den andra bararen ar required|because the other carrier is required/i;
+  const smitta = CAR.filter(x => forbjuden.test(x.PROPOSAL_SKAL));
+  prov('ACR-42', 'alternativa signaler pekas ut exakt och ingen dom harleds genom uteslutning',
+    i.MED_UTPEKADE_SIGNALER === supp.length && i.ALLA_SIGNALER_KANONISKA === true &&
+    utpekade && smitta.length === 0 && i.JOINT_CONSTRAINTS > 0 &&
+    typeof i.$ejUteslutning === 'string' &&
+    CAR.filter(x => x.JOINT_CONSTRAINT).every(x => /minst en av/.test(x.JOINT_CONSTRAINT)),
+    supp.length + ' supplemental-forslag, alla med utpekade kanoniska signaler: ' + utpekade +
+    '; ' + i.JOINT_CONSTRAINTS + ' joint constraints; ' + smitta.length +
+    ' uteslutningsformuleringar'); }
+
+/* ── ACR-43 ─────────────────────────────────────────────────────────────── */
+{ const j = C66.J_dependencyEffekt;
+  const rec = R3.D_records;
+  prov('ACR-43', 'en bararedom avgor aldrig automatiskt nagon beroende fyllning',
+    j.PAVERKAR_BEROENDE_FILLS_AUTOMATISKT === false &&
+    j.SKAPAR_ENDAST === 'BLOCKING_CARRIER_ADJUDICATED' &&
+    j.FORBJUDNA_REGLER.length === 4 &&
+    j.FORBJUDNA_REGLER.includes('BOUNDARY_REQUIRED -> FILL_SUPPLEMENTAL') &&
+    j.FORBJUDNA_REGLER.includes('ICON_SUPPLEMENTAL -> FILL_REQUIRED') &&
+    j.BEROENDE_FILLS === 50 &&
+    CAR.every(x => x.DEPENDENCY_EFFEKT.PAVERKAR_BEROENDE_FILLS_AUTOMATISKT === false) &&
+    rec.every(x => x.APPLICABILITY_VERDICT === 'UNKNOWN') &&
+    AP.farArvaDom() === false &&
+    AP.harleddDom('BOUNDARY_REQUIRED','FILL_SUPPLEMENTAL').tillatet === false,
+    j.BEROENDE_FILLS + ' beroende fyllningar, alla fortfarande UNKNOWN; ' +
+    j.FORBJUDNA_REGLER.length + ' forbjudna regler listade'); }
+
+/* ── ACR-44 ─────────────────────────────────────────────────────────────── */
+{ const k = C66.K_grupper;
+  prov('ACR-44', 'bararpilotens presentationsgrupper bar ingen dom',
+    k.GRUPPER_MED_DOM === 0 && k.HUMAN_EQUIVALENCE_GATE === 'NOT_PASSED' &&
+    k.grupper.every(g => g.GROUP_VERDICT === null &&
+      g.HUMAN_EQUIVALENCE_GATE === 'NOT_PASSED') &&
+    k.grupper.reduce((a,g) => a + g.OCCURRENCES, 0) === 66 &&
+    k.TILLATNA_FAKTA.length === 6,
+    k.ANTAL + ' grupper over ' + k.grupper.reduce((a,g)=>a+g.OCCURRENCES,0) +
+    ' forekomster, ' + k.GRUPPER_MED_DOM + ' med dom'); }
+
+/* ── ACR-45 ─────────────────────────────────────────────────────────────── */
+{ let d = '', fel = null;
+  try { d = execFileSync('git', ['status','--porcelain'], { cwd: resolve('.'), encoding: 'utf8' }); }
+  catch (e) { fel = e.message; }
+  const produkt = d.split('\n').map(x => x.slice(3).replace(/^"|"$/g,''))
+    .filter(f => f.endsWith('.dc.html'));
+  const L = C66.P_regression, m = C66.M_humanReviewPackage;
+  prov('ACR-45', 'inget carrier verdict registrerat och baselinet ar bitidentiskt',
+    !fel && produkt.length === 0 && m.REGISTRERADE_CARRIER_VERDICTS === 0 &&
+    m.SUMMERAR === true && CAR.length === 66 &&
+    CAR.every(x => x.APPLICABILITY_RECORD_WRITTEN === false &&
+      x.CURRENT_APPLICABILITY === 'UNKNOWN' && x.R04_CREDIT === 0) &&
+    L.PRODUKTBASELINE_BITIDENTISK === true && L.R02_PASS === 1375 &&
+    L.GRAPHICAL_PARTS === 1879 && L.BOUNDARIES === 689 &&
+    L.PAINTED_CONTROL_SURFACES === 420 && L.STANDALONE_GRAPHICS === 32 &&
+    L.R01_FINDINGS === 0 && L.KNOWN_REQUIRED_FAIL === 0 && L.PRODUCT_WRITES === 0 &&
+    L.COLOR_WRITES === 0 && L.R04_WRITES === 0 && L.R04_CREDIT === 0 &&
+    C66.$produktfilerOrorda === true,
+    (fel || produkt.length + ' andrade produktfiler') + '; ' + m.PROPOSED_REQUIRED_GE3 +
+    ' required + ' + m.PROPOSED_SUPPLEMENTAL + ' supplemental + ' + m.PROPOSED_UNKNOWN +
+    ' unknown = ' + CAR.length + ' forslag, ' + m.REGISTRERADE_CARRIER_VERDICTS +
+    ' registrerade'); }
+
+const ANTAL = 45;
 for (const r of resultat) {
   console.log((r.ok ? '✔ ' : '✖ ') + r.id.padEnd(9) + r.vad);
   console.log('     ' + r.diag); }
