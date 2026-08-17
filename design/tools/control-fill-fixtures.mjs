@@ -156,12 +156,15 @@ const fyll = a => { const c = k(a); return c ? c.delar.filter(d => d.typ === 'fy
  * omedelbart syns. */
 { const c = k('fi08-barnkropp');
   const f = c.delar.filter(d => d.typ === 'fyllning');
-  const iKorpusen = RAPPORT.A_kodvag.barnmaladeKropparUtanFyllning;
+  /* Nollan kommer fran en OBEROENDE strukturell census som gar direkt pa DOM,
+   * inte fran samma extractor som saknar stodet. */
+  const iKorpusen = RAPPORT.N_kandBegransning.CURRENT_CORPUS_OCCURRENCES;
+  const kandidater = RAPPORT.N_kandBegransning.kandidaterBredDefinition;
   prov('FI-08', 'barnmalad kropp med glyf ar en MEDVETEN avgransning och forekommer inte ' +
     'i korpusen',
     f.length === 0 && iKorpusen === 0,
-    'fixturen ger ' + f.length + ' fyllningsdelar · korpusen innehaller ' + iKorpusen +
-    ' sadana forekomster'); }
+    'fixturen ger ' + f.length + ' fyllningsdelar · oberoende census: ' + kandidater +
+    ' kandidater, ' + iKorpusen + ' av dem malar faktiskt kontrollkroppen'); }
 /* FI-09 */
 { const r = relation({ PART_DETECTED: true, PART_IDENTITY: 'fyllning',
     CONTROL_IDENTITY: 'x|1', MEASURED_RATIO: 1.2 });
@@ -194,11 +197,18 @@ const fyll = a => { const c = k(a); return c ? c.delar.filter(d => d.typ === 'fy
     J.hittade + ' saffransfyllningar, alla UNKNOWN: ' + J.allaUNKNOWN); }
 /* FI-14 */
 { const D = RAPPORT.D_rekonciliation, K = RAPPORT.K_korstab;
-  prov('FI-14', 'hela grafikpopulationen rekoncilerar exakt',
-    D.PREVIOUS_ONLY_FILL === 0 && D.DUPLICATE_FILL === 0 &&
-    D.UNRESOLVED_FILL_IDENTITY === 0 && K.SUMMA === RAPPORT.E_population.FAKTISKT,
-    'korstab ' + K.SUMMA + ' = population ' + RAPPORT.E_population.FAKTISKT +
-    ' · dubbletter ' + D.DUPLICATE_FILL + ' · olosta ' + D.UNRESOLVED_FILL_IDENTITY); }
+  /* Tva enheter, medvetet atskilda: ytrekonciliationen raknar malade
+   * kontrollkroppar, korstabben raknar grafiska delar. Provet laser bada och
+   * att de INTE blandas. */
+  const ytaSluten = D.PREVIOUSLY_CANONICAL + D.PREVIOUSLY_MISSING_NOW_CANONICAL === D.TOTAL &&
+    D.PREVIOUS_ONLY === 0 && D.DUPLICATE === 0 && D.UNRESOLVED === 0 && D.$sluten === true;
+  const delarSluten = K.SUMMA === RAPPORT.E_population.FAKTISKT;
+  const skildaEnheter = D.TOTAL !== RAPPORT.C_dubbelrakning.FILL_PARTS_NU;
+  prov('FI-14', 'ytrekonciliationen och delrakningen ar bada slutna och halls isar',
+    ytaSluten && delarSluten && skildaEnheter,
+    'ytor ' + D.PREVIOUSLY_CANONICAL + ' + ' + D.PREVIOUSLY_MISSING_NOW_CANONICAL + ' = ' +
+    D.TOTAL + ' · delar ' + K.SUMMA + ' = ' + RAPPORT.E_population.FAKTISKT +
+    ' · fyllningsdelar ' + RAPPORT.C_dubbelrakning.FILL_PARTS_NU); }
 /* FI-15 */
 { let d = '', fel = null;
   try { d = execFileSync('git', ['status', '--porcelain'], { cwd: resolve('.'), encoding: 'utf8' }); }
