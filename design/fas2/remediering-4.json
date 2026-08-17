@@ -1004,7 +1004,7 @@
   "R04credit": 0
  },
  "M_status": {
-  "dettaBlock": "PRE-WRITE PACKAGE KLART — vantar pa manskligt val per beslutsenhet",
+  "dettaBlock": "PREVIEW-CORRECTION KLART — DU-A1 och DU-A2 godkanda, DU-B vantar pa val",
   "KNOWN_REQUIRED_FAIL": 4,
   "CURRENT_NON_TEXT_CONTRAST": "OPEN",
   "kvarstaendeUNKNOWN": 1736,
@@ -1013,6 +1013,170 @@
   "SAFFRON_REMEDIATION": "CLOSED / VERIFIED",
   "PRESSED": "UNTESTED",
   "INACTIVE": "UNTESTED",
-  "FOCUS": "UNTESTED"
+  "FOCUS": "UNTESTED",
+  "godkanda": 2,
+  "vantande": 1,
+  "$ingenSkrivning": "Ingen produktskrivning har gjorts. De godkanda vardena ar registrerade som beslut, inte implementerade."
+ },
+ "$uppdaterad": "DU-A1 och DU-A2 godkanda. DU-B fick en korrigerad preview och vantar fortfarande pa val.",
+ "N_beslut": {
+  "DU-A1": {
+   "status": "HUMAN_APPROVED",
+   "varde": "rgba(245, 244, 237, 0.6)",
+   "beslutsidentitet": "COOKING_TEXTSIZE_BOUNDARY_LIGHT_THEME",
+   "MEMBER_OCCURRENCES": [
+    "lagastaende|3",
+    "lagastaende320|3"
+   ],
+   "beslutsdatum": "2026-08-17"
+  },
+  "DU-A2": {
+   "status": "HUMAN_APPROVED",
+   "varde": "rgba(245, 244, 237, 0.6)",
+   "beslutsidentitet": "COOKING_TEXTSIZE_BOUNDARY_DARK_THEME",
+   "MEMBER_OCCURRENCES": [
+    "lagamorkt|3"
+   ],
+   "beslutsdatum": "2026-08-17"
+  },
+  "DU-B": {
+   "status": "AWAITING_HUMAN_CHOICE",
+   "varde": null,
+   "beslutsidentitet": "TIMER_CHIP_BOUNDARY_LANDSCAPE",
+   "MEMBER_OCCURRENCES": [
+    "lgbtimer|37"
+   ],
+   "$skal": "Previewen i cd16b86 visade dokumentationsdelen runt produktvyn i stallet for timerlisten. Villkoret om actual scene for manskligt designval var darfor inte uppfyllt, aven om samtliga tekniska grindar var grona."
+  },
+  "$tvaIdentiteter": "DU-A1 och DU-A2 forblir TVA separata beslutsidentiteter. Samma numeriska varde innebar INTE sammanslagen beslutsenhet, gemensam tokenidentitet, mappningsevidens, observerad light-till-dark-mappning eller R-04-credit.",
+  "$R04": "DU-A2 ar NON_TEXT_REMEDIATION och ger exakt 0 R-04-credit. Provenanstagg NON_TEXT_REMEDIATION_ONLY · NOT_DARK_MAPPING_EVIDENCE."
+ },
+ "O_previewkorrigering": {
+  "$fel": "Kandidatbilderna for DU-B visade dokumentations- och forklaringsdelen runt produktvyn, inte timerlisten med malet.",
+  "$rotorsak": "Utsnittet raknades ur getBoundingClientRect, som ar viewportrelativ. Page.captureScreenshot klipper i sidkoordinater, och captureBeyondViewport later dessutom om en 1024 px bred landskapsartefakt i en 390 px viewport. Koordinaterna pekade darfor fel. Tva mellanlosningar provades och forkastades: rullningsoffset racker inte, och DOM.getBoxModel loser inte omlayouten.",
+  "$atgard": "Utsnittet tas nu pa artefaktrutan, den enda ruta som bevisligen traffar ratt i den har korpusen. Rapporten ramar in timerlisten med de UPPMATTA relativa koordinaterna, sa att bilden ar en akta render och inramningen bara ar presentation.",
+  "inramning": {
+   "vanster": 0.0009746588693957114,
+   "topp": 0.777250435057744,
+   "bredd": 0.9980506822612085,
+   "hojd": 0.11215362710379322
+  },
+  "innehallIUtsnittet": [
+   "TIMRAR",
+   "Steg 1 · 4:12",
+   "Steg 4 · 12:00",
+   "Steg 2 klar",
+   "",
+   ""
+  ],
+  "bilder": [
+   {
+    "kandidat": "BASELINE",
+    "fil": "DU-B-baseline.png"
+   },
+   {
+    "kandidat": "#788477",
+    "fil": "DU-B-788477.png"
+   },
+   {
+    "kandidat": "#7D897C",
+    "fil": "DU-B-7D897C.png"
+   },
+   {
+    "kandidat": "#93A48D",
+    "fil": "DU-B-93A48D.png"
+   },
+   {
+    "kandidat": "rgba(245, 244, 237, 0.6)",
+    "fil": "DU-B-rgba24524423706.png"
+   }
+  ],
+  "katalog": "C:/Users/malla/claude-reports/Butlery design system/bilder/dub",
+  "kallfilOforandrad": true,
+  "$krav": [
+   "exakt target scoped",
+   "endast gransfargen varierar",
+   "0 produktskrivningar",
+   "0 kallskrivningar",
+   "0 geometridelta",
+   "0 textregression",
+   "0 regression i required grafik",
+   "0 kollaterala andringar",
+   "samma innehall och samma tillstand",
+   "kallan bit-identisk efter aterstallning",
+   "R-04 credit 0"
+  ],
+  "matning": [
+   {
+    "kandidat": "#788477",
+    "satta": 1,
+    "aterstallda": 1,
+    "GEOMETRY_DELTA": 0,
+    "TEXT_REGRESSION": 0,
+    "OTHER_GRAPHICS_REGRESSION": 0,
+    "SOURCE_COLLATERAL": 0,
+    "uppmattGrans": {
+     "sidor": 4,
+     "bredd": "1px",
+     "stil": "solid",
+     "farg": "rgb(120, 132, 119)",
+     "angransande": "rgb(230, 234, 217)",
+     "kvot": 3.19
+    }
+   },
+   {
+    "kandidat": "#7D897C",
+    "satta": 1,
+    "aterstallda": 1,
+    "GEOMETRY_DELTA": 0,
+    "TEXT_REGRESSION": 0,
+    "OTHER_GRAPHICS_REGRESSION": 0,
+    "SOURCE_COLLATERAL": 0,
+    "uppmattGrans": {
+     "sidor": 4,
+     "bredd": "1px",
+     "stil": "solid",
+     "farg": "rgb(125, 137, 124)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 3.42
+    }
+   },
+   {
+    "kandidat": "#93A48D",
+    "satta": 1,
+    "aterstallda": 1,
+    "GEOMETRY_DELTA": 0,
+    "TEXT_REGRESSION": 0,
+    "OTHER_GRAPHICS_REGRESSION": 0,
+    "SOURCE_COLLATERAL": 0,
+    "uppmattGrans": {
+     "sidor": 4,
+     "bredd": "1px",
+     "stil": "solid",
+     "farg": "rgb(147, 164, 141)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 4.73
+    }
+   },
+   {
+    "kandidat": "rgba(245, 244, 237, 0.6)",
+    "satta": 1,
+    "aterstallda": 1,
+    "GEOMETRY_DELTA": 0,
+    "TEXT_REGRESSION": 0,
+    "OTHER_GRAPHICS_REGRESSION": 0,
+    "SOURCE_COLLATERAL": 0,
+    "uppmattGrans": {
+     "sidor": 4,
+     "bredd": "1px",
+     "stil": "solid",
+     "farg": "rgb(161, 169, 160)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 5.19
+    }
+   }
+  ],
+  "avvikelserMotCd16b86": 0,
+  "$oforandrat": "Kandidatuniversumet och de tidigare tekniska resultaten ar OFORANDRADE. Endast utsnittet har rattats."
  }
 }
