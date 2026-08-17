@@ -61,7 +61,7 @@
           "type": "release-notes"
         }
       ],
-      "lastScan": "2026-08-10",
+      "lastScan": "2026-08-17",
       "snapshot": {
         "https://github.com/talsec/Free-RASP-Flutter/releases.atom": "2026-08-10: direct fetch succeeded — new release v8.1.0 (2026-08-05): Swift Package Manager support for iOS, improved hook detection, jailbreak false-positive fixes on iOS 13/14, no breaking API changes (unlike 8.0.0). pubspec.yaml stays PINNED at 8.0.0 (BUT-1218 review); root/hook/tamper callback surface unchanged. Not filed — bug-fix release, no CVE, no breaking change; noted for a future deliberate bump review.",
         "https://github.com/OWASP/owasp-mastg/releases.atom": "2026-08-10: direct fetch succeeded — still v2.0.0 (2026-06-30) as latest, no new release since baseline. No change.",
@@ -72,7 +72,14 @@
         "https://support.google.com/googleplay/android-developer/answer/16550159": "2026-08-10: egress-blocked/403 again; cross-checked via the sibling developer.android.com/distribute/play-policies page (direct WebFetch succeeded this cycle) — same item set as baseline: Families/Age-Restricted/Child-Safety (Aug26 2026, N/A — not a chat app), Foreground-Services geofencing removal (Aug26 2026, N/A), Android Developer Verification (Sep30 2026, already filed as issue #223 by the Compliance role), Contacts/Location policies (Oct28 2026, already ruled N/A — AndroidManifest.xml has no READ_CONTACTS/location permission), SMS/READ_CALL_LOG (Jan27 2027, N/A). No new item since 2026-08-03.",
         "https://github.com/ggml-org/whisper.cpp/releases.atom": "2026-08-10: direct fetch succeeded — new release v1.9.2 (2026-08-04): VAD/UTF-8 (CJK) improvements, pkgconfig/build fixes, parakeet-model hyperparameter verification added. Release page shows no memory-safety/GGML-parsing/WAV-decoding fix documented. Not material — no security-relevant fix found; noted for awareness."
       },
-      "_lastScanCoverage": "5/8 sources reached directly via WebFetch (talsec, owasp-mastg, apple-upcoming, whisper.cpp, and google-play-policy via its distribute/play-policies sibling), the remaining 3 (ghsa-pub, gcp-bulletins, dart-pub-advisories) via WebSearch fallback after 406/egress-block, 0 unreachable, no material findings this cycle (two upstream releases noted — freeRASP 8.1.0 and whisper.cpp v1.9.2 — neither meets the auto-ticket bar: no CVE, no breaking API change, no documented memory-safety fix)."
+      "_lastScanCoverage": "5/8 sources reached directly via WebFetch (talsec, owasp-mastg, apple-upcoming, whisper.cpp, and google-play-policy via its distribute/play-policies sibling), the remaining 3 (ghsa-pub, gcp-bulletins, dart-pub-advisories) via WebSearch fallback after 406/egress-block, 0 unreachable, no material findings this cycle (two upstream releases noted — freeRASP 8.1.0 and whisper.cpp v1.9.2 — neither meets the auto-ticket bar: no CVE, no breaking API change, no documented memory-safety fix).",
+      "_janitorLeanScans": [
+        {
+          "date": "2026-08-17",
+          "via": "weekly-janitor-sweep",
+          "note": "Lean WebSearch check of top CVE/policy surfaces (pub CVEs, freeRASP release, App Store/Play policy churn). No material delta vs 2026-08-10 baseline. Full per-source snapshot not refreshed this cycle."
+        }
+      ]
     },
     {
       "role": "Legal Counsel",
@@ -189,7 +196,7 @@
           "type": "rss"
         }
       ],
-      "lastScan": "2026-08-10",
+      "lastScan": "2026-08-17",
       "snapshot": {
         "https://developer.apple.com/news/rss/news.rss": "2026-08-10: direct WebFetch succeeded (recovered from last cycle's 500) — new since 07-27: 'Hello Developer: August 2026' and 'Get ready for new creative assets on the App Store' (both Aug5, routine content/marketing/design-asset updates, no compliance impact); same Jul9 age-rating/social-media-questionnaire item as baseline (already issue #215). No new App Review Guideline or DPLA item found. No change from baseline.",
         "https://developer.apple.com/news/upcoming-requirements/": "2026-08-10: direct WebFetch succeeded — unchanged: SDK minimum (Xcode 26+, since 2026-04-28), age-rating migration (deadline 2026-01-31, passed). No new hard gate.",
@@ -199,7 +206,14 @@
         "https://support.google.com/googleplay/android-developer/answer/10787469": "2026-08-10: egress-blocked/403 again. WebSearch: no Data-Safety-form-specific update found beyond the already-known 2026-07-15 User Data/third-party-AI-endpoint disclosure requirement, already folded into issue #220/BUT-646. No new form or deadline change found.",
         "https://play.google.com/about/developer-content-policy/": "2026-08-10: egress-blocked/403 again. WebSearch reaffirms the 2026-07-15 update only (User Data/third-party AI — already issue #220; AI-Generated Content policy still targets apps that produce/distribute AI content for others, not Butlery's internal recipe-parsing/OCR use case). No new update found."
       },
-      "_lastScanCoverage": "4/7 sources reached directly via WebFetch this cycle (apple-news-rss — recovered from last cycle's 500, apple-upcoming-requirements, play-policies, releases.rss), the remaining 3 (privacy-manifest doc, data-safety form, developer-content-policy) via WebSearch fallback after JS-render/403/egress-block; no new material item this cycle, everything reconfirms baseline or the already-filed issues #215/#220/#223."
+      "_lastScanCoverage": "4/7 sources reached directly via WebFetch this cycle (apple-news-rss — recovered from last cycle's 500, apple-upcoming-requirements, play-policies, releases.rss), the remaining 3 (privacy-manifest doc, data-safety form, developer-content-policy) via WebSearch fallback after JS-render/403/egress-block; no new material item this cycle, everything reconfirms baseline or the already-filed issues #215/#220/#223.",
+      "_janitorLeanScans": [
+        {
+          "date": "2026-08-17",
+          "via": "weekly-janitor-sweep",
+          "note": "Lean WebSearch check of top CVE/policy surfaces (pub CVEs, freeRASP release, App Store/Play policy churn). No material delta vs 2026-08-10 baseline. Full per-source snapshot not refreshed this cycle."
+        }
+      ]
     }
   ]
 }
