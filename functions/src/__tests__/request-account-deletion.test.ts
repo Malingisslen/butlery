@@ -78,6 +78,7 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
     const query: {
       get(): Promise<ReturnType<typeof emptySnapshot>>;
       where(): typeof query;
+      limit(): typeof query;
       orderBy(): typeof query;
       startAt(): typeof query;
       endAt(): typeof query;
@@ -90,6 +91,27 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
         return emptySnapshot();
       },
       where() {
+        return query;
+      },
+      // BUT-1838/BUT-1801 gave the capped sweeps a `.limit(CAP + 1)` so they can
+      // DECLINE an implausible row count instead of truncating one. Without this
+      // method the `chat_groups` and `messages` steps threw
+      // `…where(...).limit is not a function`, and the orchestration test read
+      // that as two failed GDPR erasure steps — a cascade failure that has
+      // nothing to do with orchestration, exactly as the `listDocuments` note
+      // below describes. Returning `query` keeps the chain resolving to `get()`
+      // — the real Admin SDK's `Query.limit()` is chainable, so this models it
+      // honestly rather than papering over a production defect.
+      //
+      // Be clear about what this buys: the fake holds nothing, so both steps now
+      // sweep an EMPTY result and neither the cap branch nor the delete branch
+      // is taken. All this suite proves is that the orchestrator invokes them
+      // and neither throws — which is its job. Their real behaviour, including
+      // the decline above the cap, is proven in
+      // `account-deletion-cascade.test.ts`
+      // (`scenario_implausibleChatGroupCountDeclines`,
+      // `scenario_implausiblePollVoteCountDeclines`), not here.
+      limit() {
         return query;
       },
       // BUT-1390 added a documentId() range chain to the subcollection
@@ -264,7 +286,13 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
   );
 
   if (!result.success) {
-    throw new Error(`expected success, got failed: ${JSON.stringify(result.failedCollections)}`);
+    // `result.errors` and not just the collection names: a failing step here is
+    // a GDPR erasure step, and "chat_groups failed" alone sends the next reader
+    // to read the whole cascade rather than the one line that threw.
+    throw new Error(
+      `expected success, got failed: ${JSON.stringify(result.failedCollections)}`
+        + ` — errors: ${JSON.stringify(result.errors)}`,
+    );
   }
   if (authCalls.deleteUserUid !== "uid-alice") {
     throw new Error(`auth.deleteUser uid mismatch: ${authCalls.deleteUserUid}`);

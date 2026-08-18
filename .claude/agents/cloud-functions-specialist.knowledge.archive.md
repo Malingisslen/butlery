@@ -13371,3 +13371,670 @@ logger.info("descriptive event", { userId, recipeId, action });
   `functions/src/**` — `account-deletion-cascade.ts`'s `system_rate_limits`
   range still carries the raw form, including inside its own comment prose.
 
+
+### 2026-08-17 — `maxInstances: 10` added to `setGlobalOptions` to make the project deployable [deploy][quota][region][measured]
+
+Reviewed a one-line change in `functions/src/index.ts`:
+`setGlobalOptions({ region: "europe-west1" })` →
+`setGlobalOptions({ region: "europe-west1", maxInstances: 10 })`, plus a
+13-line comment. Context given: that day's `firebase deploy --only functions`
+failed on 53 of 71 functions with "Quota exceeded for total allowable CPU per
+project per region", each surfacing as `Container Healthcheck failed`; all
+services at `cpu=1`; no `maxInstances` anywhere; app pre-launch, zero users.
+
+**Verdict: no blocking findings.** Everything below was MEASURED, not reasoned.
+
+**Method that settled every question at once.** `npm run build`, then require
+`lib/index.js` in a scratch script and print each export's `__endpoint`. That
+object IS the deploy manifest the CLI ships, so it answers ordering, merge and
+per-function-override questions in one run and needs no emulator:
+
+    process.env.GCLOUD_PROJECT = "butlery-dev";
+    const mod = require("<abs>/functions/lib/index.js");
+    for (const [n, f] of Object.entries(mod)) if (f && f.__endpoint) ...
+
+Result: **71 exported endpoints.** 70 are `gcfv2` and every one of them carries
+`maxInstances: 10` AND `region: ["europe-west1"]`. Zero endpoints off-region.
+
+**Q1 — ordering.** Honoured. The concern is real: `firebase-functions` 7.2.5
+reads `getGlobalOptions()` EAGERLY inside each trigger factory
+(`makeEndpoint` in `lib/v2/providers/firestore.js:236`, scheduler.js:71,
+https.js:90), i.e. at module-eval time of the file DEFINING the trigger.
+`import` statements hoist to the top of the compiled JS and therefore run
+BEFORE the `setGlobalOptions` call at line 46 — but the only top-of-file
+imports (lines 19-32, `./ratings/*`) define no triggers (grepped
+`onDocument|onSchedule|onCall|onRequest|onObject` in all four: no matches).
+Every deployed function arrives via `export ... from` BELOW line 46, which
+compiles to a `require` at that source position. The line-181 comment
+protecting this for `./scheduled/maintenance-dispatchers` still holds:
+`dailyAnalytics`/`weeklyReports`/`drainAggregations` all show
+`europe-west1` + `maxInstances: 10` in the manifest.
+
+**Q2 — merge vs replace: MERGE, key-by-key. Nothing is lost.** Read the SDK
+source rather than trusting docs. Each provider builds
+`{...initV2Endpoint(global, opts), platform, ...baseOpts, ...specificOpts,
+labels: {...base, ...specific}}` where `baseOpts = optionsToEndpoint(
+getGlobalOptions())` and `specificOpts = optionsToEndpoint(opts)`.
+`optionsToEndpoint` uses `copyIfPresent`/`convertIfPresent`, so a key absent
+from the per-function object is simply not in `specificOpts` and the global
+value survives the spread. Per-function wins on collision.
+Confirmed against the functions the reviewer was told to watch:
+- `onIngredientSoftDeleted`: kept `memory 512 / timeout 540 / retry true`,
+  gained `maxInstances 10`. Same for `onIngredientPropertiesChanged`.
+- `onRecipeRatingWrittenForPool`, `onPooledRatingEventWritten`: `retry: true`
+  intact.
+- `onFeedbackCreated`: kept its only secret, `FEEDBACK_EMAIL_API_KEY`
+  (`defineSecret` appears exactly once in `src/`, in
+  `feedback/on-feedback-created.ts`).
+- `structureRecipe` 512/60s, `ocrRecipeImage` 1024/120s,
+  `requestAccountDeletion` 512/540s, `logWebError` 256/10s — all preserved.
+
+**The one function the cap does NOT reach: `onUserDeleted`.** Its endpoint is
+`platform: "gcfv1"`, `maxInstances: null`. It is the repo's only v1 deployed
+function — `src/cleanup/on-user-deleted.ts` uses
+`v1.region("europe-west1").runWith({timeoutSeconds:540, memory:"512MB"})
+.auth.user().onDelete(...)`, because a v1 auth trigger has no v2 equivalent.
+`setGlobalOptions` is a v2 API and cannot touch it. Consequence for the
+comment's arithmetic: the Cloud Run population is 70 services, not 71, so the
+reservation was ~7000 vCPU rather than "~7100". `grep -rln
+"firebase-functions/v1" src/` returns only this file and
+`shared/batch-update.ts` (a helper, not a function). Any future "every
+function" claim must exclude it.
+
+**Q3 — is a cap of 10 harmful anywhere? No, and the framing "10 concurrent"
+is itself wrong.** The installed SDK's own JSDoc
+(`lib/v2/options.d.ts:88-97`) states: *"A value of null restores the default
+concurrency (80 when CPU >= 1, 1 otherwise)"*, and for `cpu` (lines 98-107)
+*"Defaults to 1 for functions with <= 2GB RAM"*. Every endpoint in the dump
+has `concurrency: null`, and the reported live services are `cpu=1`. So the
+real ceiling is ~10 x 80 = **800 concurrent requests per function**, not 10.
+Per named worry:
+- *Scheduled sweeps* (`dailyAnalytics`, `weeklyReports`, `drainAggregations`,
+  `purgeDormantFamilyData`, `pingSweeper`, all `cleanup*`,
+  `deliverScheduledNotifications`): Cloud Scheduler fires ONE invocation per
+  tick. They need one instance. `drainAggregations` is the only overlap
+  candidate (every 60s, 120s timeout) → at most ~2. Cap is 5-10x headroom.
+- *Notification fan-out*: in-process, not per-invocation.
+  `deliverScheduledNotifications` has `MAX_PER_RUN = 200` inside one scheduled
+  run; `sendNotificationBatch` handles up to `MAX_BATCH_NOTIFICATIONS = 100`
+  via `Promise.all` inside ONE callable invocation. `maxInstances` caps
+  concurrent CALLERS, never the size of a batch, so no batch can be split.
+- *LLM callables*: 800 concurrent `structureRecipe`/`ocrRecipeImage` calls
+  pre-launch is unreachable, and here the cap is a genuine COST brake on the
+  most expensive functions in the project.
+- *Firestore triggers* are the only true per-document fan-out class. The two
+  that can realistically burst (`onIngredientSoftDeleted`,
+  `onIngredientPropertiesChanged` — an admin bulk ingredient sync fires one
+  event per changed doc, each a 540s paginated collectionGroup cascade) are
+  BOTH `retry: true`, so a throttled event is redelivered (up to 7 days),
+  not dropped. That is the reassuring half.
+
+A concern I formed and then DISPROVED, worth recording so it is not re-raised:
+"capping instances packs more concurrent executions onto each 512MiB instance,
+risking OOM on the long cascades." False. Cloud Run scales OUT when instances
+reach the concurrency target; per-instance packing is bounded by `concurrency`
+(80) regardless of `maxInstances`. Lowering `maxInstances` changes when
+requests start queueing/429ing, not how densely one instance is packed.
+
+**Q4 — comment accuracy.** Substantively correct; two nits filed Low.
+(a) "~7100 vCPU at 71 services" — 70 Cloud Run services (see `onUserDeleted`
+above), so ~7000. (b) "A function that genuinely needs more **concurrency**
+raises it in its OWN options object" — the mechanism claim is verified true
+(spread order), but `concurrency` is a DISTINCT option in this SDK meaning
+requests-per-instance; the sentence means `maxInstances`. Using the other
+option's name in a comment about instance caps is the kind of drift the repo's
+"a comment is an untested assertion" lesson targets. The claims about the
+platform default of 100/function and about Cloud Run reserving
+`cpu x maxInstances` region-wide are consistent with the SDK, the observed
+error string and the arithmetic.
+
+**Two now-stale comments the change did not update (the real findings):**
+1. `src/ingredients/on-ingredient-soft-deleted.ts:40` —
+   "`setGlobalOptions` in index.ts sets the region **and nothing else**, so
+   this ran at the v2 event DEFAULT of 60s". The first clause is now FALSE.
+   It is load-bearing: it is the recorded rationale (BUT-1781) for declaring
+   `timeoutSeconds` locally, so a future reader who believes it may reason
+   that global options now supply a timeout. Recommended rewording states the
+   rule (global options carry no timeout) instead of an inventory.
+2. `src/index.ts:184` quotes the call as
+   `setGlobalOptions({ region: "europe-west1" })` inside the DO-NOT-HOIST
+   comment — a stale literal 138 lines below the line it quotes.
+
+**My own knowledge file carried the same stale fact** and was corrected in
+place: the Cost & cold-start bullet read "`setGlobalOptions` sets only
+`region`". It also claimed "LLM functions: `timeoutSeconds:540` (v2 max)",
+which the manifest disproves (`structureRecipe` 60s, `ocrRecipeImage` 120s).
+Both fixed. Net file size 25,690 → ~25,700 chars while adding ~1,600 chars of
+new deploy/quota content, paid for by tightening ~10 verbose principles.
+
+**Test state.** `npm run build` clean. `node scripts/run-ci-unit-tests.js`:
+**86/87 suites passed (305s)**, one failure — `test:request-account-deletion`,
+3/4 tests, "expected success, got failed: [chat_groups, messages]" from
+`runStep` in `account/account-deletion-cascade.ts:82`. **Pre-existing and
+unrelated**, proven cheaply rather than by rebuilding a clean tree: that suite
+`require`s `../account/request-account-deletion` directly and never imports
+`index.ts`, so `setGlobalOptions` is never executed in its process; and
+`account-deletion-cascade.ts` is unmodified in the working tree. It arrived
+with `a329de0f5` (poll voting / Art. 15 recipe section).
+
+**Recommendation left with the user, not blocking:** nothing pins
+`maxInstances` in the manifest, so a future edit can delete the option and
+every test plus `tsc` stays green while the next deploy fails again the same
+way. The repo already has the exact pattern to copy —
+`src/__tests__/cleanup-cache.test.ts:426-440` asserts
+`cleanupExpiredCache.__endpoint.timeoutSeconds`, with a comment explaining
+that comparing two constants does NOT pin the declaration site.
+
+**Parallel-session note:** `.claude/agents/code-reviewer.md` and
+`.claude/agents/integration-reviewer.md` were modified in the working tree by
+another session during this review. Not touched, not staged.
+
+### 2026-08-17 — final-bytes re-review of the maxInstances deploy fix [deploy][cost][review]
+
+Second review round on the same change (an earlier round passed an intermediate
+version that had shipped several false comment sentences, so every factual claim
+in the new `index.ts` comment was re-derived from the installed SDK rather than
+trusted).
+
+**Files on disk reviewed:** `functions/src/index.ts`,
+`functions/src/ingredients/on-ingredient-soft-deleted.ts`,
+`functions/package.json`, plus the untracked
+`functions/src/__tests__/deploy-manifest.test.ts` and the working-tree edit to
+`functions/src/__tests__/request-account-deletion.test.ts`.
+
+**Every claim in the comment, verified:**
+
+- *"70 gen2 services"* — TRUE. `npm run build`, then required `lib/index.js`
+  with `GCLOUD_PROJECT`/`FIREBASE_CONFIG` stubbed and read `__endpoint` off
+  every export: 71 total, 70 `platform:"gcfv2"`, 1 `gcfv1`. All 71 regions =
+  `["europe-west1"]`. `maxInstances` = 10 on all 70 gen2, none on the gen1.
+- *"`onUserDeleted` is gen1"* — TRUE. `cleanup/on-user-deleted.ts` uses
+  `import * as v1 from "firebase-functions/v1"` and
+  `v1.region("europe-west1").runWith({timeoutSeconds:540, memory:"512MB"})
+  .auth.user().onDelete(...)`; manifest says `platform:"gcfv1"`. *"consumes no
+  Cloud Run CPU"* is a Google-platform fact NOT checkable from the SDK or the
+  repo — it is consistent with the gcfv1 platform field and with that function
+  having survived the failed deploy, and it was recorded as consistent-but-not-
+  locally-provable rather than as verified.
+- *"`concurrency` defaults to 80 at cpu >= 1"* — TRUE, in firebase-tools 15.26.0
+  (installed globally at `C:/Users/malla/AppData/Roaming/npm/node_modules/`):
+  `lib/deploy/functions/backend.js:117 DEFAULT_CONCURRENCY = 80`;
+  `lib/deploy/functions/prepare.js:456 e.concurrency = e.cpu >= 1 ?
+  DEFAULT_CONCURRENCY : 1`; `lib/gcp/runv2.js:256 maxInstanceRequestConcurrency:
+  endpoint.concurrency || DEFAULT_CONCURRENCY`. `memoryToGen2Cpu` returns 1 for
+  memory <= 2048MiB; the repo's largest is `ocrRecipeImage` at 1GiB and no export
+  declares `cpu` or `concurrency` (grepped `src/`, excluding `__tests__`). So
+  cpu = 1 everywhere → the "~800 simultaneous requests" and "70 x 1 vCPU x 100 =
+  ~7000 vCPU" arithmetic both hold.
+- *"per-function options win over global ones key-by-key"* — TRUE, in
+  firebase-functions 7.2.5: `lib/v2/providers/firestore.js:235-256` builds
+  `baseOpts = optionsToEndpoint(getGlobalOptions())`,
+  `specificOpts = optionsToEndpoint(opts)` and returns
+  `{...initV2Endpoint(global, opts), platform, ...baseOpts, ...specificOpts,
+  labels:{...}}`. `optionsToEndpoint` uses `copyIfPresent`, so an absent
+  per-function key leaves the global value standing. Same shape in
+  `https.js:166-169`.
+
+**Blocking finding (High): `deploy-manifest.test.ts` is UNTRACKED.**
+`git status --porcelain` reports `?? functions/src/__tests__/deploy-manifest.test.ts`
+while `package.json` already registers `test:deploy-manifest`.
+`scripts/run-ci-unit-tests.js` discovers every `test:*` script that is not
+`test:rules*`/`test:integration:*`, so committing package.json without the file
+turns the whole CI unit lane red on MODULE_NOT_FOUND. Remedy: stage both in one
+commit. The script name/command match the repo convention exactly
+(`test:cleanup-cache` -> `cleanup-cache.test.ts`), and
+`npm run test:script-test-registration` passes 20/20 with the new entry.
+
+**Medium — concurrency packing, made 10x more likely by this change.**
+`sync-ingredients.ts:532-544` writes `status:"deleted"` for every removed row in
+one 500-op batch, firing that many `onIngredientSoftDeleted` events at once. Each
+is 540s (`CASCADE_TIMEOUT_SECONDS`) at 512MiB and holds a 500-doc page of recipe
+snapshots (`batchUpdateQueryPaginated`, `BATCH_LIMIT`). With `maxInstances: 100`
+a burst of N spread across up to 100 containers; with 10, the same N packs ~10x
+denser per container. OOM kills the container, `retry: true` re-delivers into the
+same packing, and the 1h `CASCADE_MAX_EVENT_AGE_MS` guard then abandons the
+cascade permanently — leaving every matching recipe with allergen tags computed
+from the deleted ingredient, with nothing that re-runs it. Remediation given:
+`concurrency: 1` on `onIngredientSoftDeleted` and
+`onIngredientPropertiesChanged` (per-function options merge key-by-key, so
+nothing else is lost).
+
+**Medium — rolling-deploy quota.** 70 x 1 x 10 = 700 vCPU after the change, but
+the 18 services that succeeded today still hold revisions at 100 until replaced.
+Told the user to confirm the real quota rather than infer it, and to deploy in
+`--only functions:<names>` batches if the wall fires again.
+
+**Low — two comment defects.** (1) `index.ts:38-40` is ungrammatical: "Across the
+70 gen2 services that reserved ~7000 vCPU, and the 2026-08-17 deploy failed on 53
+functions with ..." — a leftover edit in a comment whose entire value is being
+trusted on facts; also "53 functions" against "70 gen2 services" in a 71-export
+repo should read "53 of the 70". (2) `on-ingredient-soft-deleted.ts:40` now says
+"Global options carry no timeout", which is true of THIS repo's call but reads as
+an SDK capability claim, and `optionsToEndpoint` DOES copy `timeoutSeconds` from
+globals — so the sentence silently becomes false the day someone adds one.
+Suggested "The `setGlobalOptions` call in index.ts declares no `timeoutSeconds`".
+The BUT-1781 rationale itself survives the rewrite intact (guard could never
+fire, collectionGroup fan-out, 500 writes per page, silent platform kill, ticket
+tag) — not a regression.
+
+**Also observed, out of scope:** the working tree's
+`request-account-deletion.test.ts` edit adds `limit()` to the fake query and
+widens the failure message with `result.errors`. That repairs exactly the
+pre-existing failure the previous round of this review recorded as unrelated
+(`expected success, got failed: [chat_groups, messages]`) — test-only, no
+production effect.
+
+**Verdict:** fail (1 blocking) — the untracked test file. Everything else is
+Medium or Low.
+
+---
+
+### 2026-08-17 — Reviewing the deploy-manifest suite and the account-deletion fake [review][testing][deploy]
+
+Review of two test files, no production code changed by me.
+
+**File 1 — `functions/src/__tests__/deploy-manifest.test.ts` (new).**
+Imports the ENTRY POINT after setting `FIREBASE_CONFIG`/`GCLOUD_PROJECT`, then
+asserts region + instance ceiling on every `platform:"gcfv2"` `__endpoint`.
+Measured baseline: **71 exports, 71 endpoints, 70 gcfv2 + 1 gcfv1
+(`onUserDeleted`)**; every gcfv2 endpoint `maxInstances: 10`; `onUserDeleted`
+carries `object:null:ResetValue`.
+
+**The `typeof x === "number"` fix is genuine — proved by mutating the SDK seam,
+not the source.** Patched `setGlobalOptions` in `require.cache`'s
+`firebase-functions/lib/v2/options.js` before requiring `../index`, which is
+exactly equivalent to editing the call and touches no tracked file. Results:
+
+| mutant | region check | uncapped (`typeof`) | uncapped (old `== null`) | value pin (`!== 10`) |
+|---|---|---|---|---|
+| none | PASS | PASS | PASS | PASS |
+| drop `maxInstances` | PASS | **FAIL n=70** | PASS | PASS |
+| region → us-central1 | **FAIL n=64** | PASS | PASS | PASS |
+| global → 100 | PASS | PASS | PASS | **FAIL n=70** |
+
+Row 2 confirms both halves at once: the new check reddens, the OLD `== null`
+check would still have passed. `RESETTABLE_OPTIONS` in
+`lib/esm/runtime/manifest.mjs` lists `maxInstances`, so `initV2Endpoint` writes
+`RESET_VALUE` (a `ResetValue` with `toJSON() → null`) when it is unset.
+
+An earlier in-place probe (overwriting `endpoint.maxInstances` on the collected
+objects) reported **n=69, not 70**, and under a `platform`-rename probe left
+`gen2=1`. Cause: exactly one export's `__endpoint` is a live GETTER that
+regenerates on access, so in-place tampering silently under-counts. That
+discrepancy is what sent me to the seam-patch method.
+
+**Findings filed (all Medium, none blocking):**
+1. The value pin `notAtGlobalDefault` is VACUOUS under the primary mutant
+   (row 2) — it filters non-numbers out before comparing. Its justifying
+   comment ("without this, deleting the global and adding it to one function
+   would satisfy the check above") is false: the presence check iterates every
+   gen2 endpoint and fails at n=68 in that scenario (measured). It earns its
+   place for row 4 only.
+2. `testManifestIsReadable` guards a `__endpoint` rename but NOT the `gcfv2`
+   filter — the actual vacuity surface. Measured: renaming `platform` leaves 71
+   endpoints readable, `gen2` at ~0, all three checks green.
+3. Header's mutation record says removing `maxInstances` reddens "with every
+   endpoint named". It does not: `uncapped.length === gen2.length` fires the
+   "EVERY endpoint is uncapped" SUMMARY branch. The region mutant is the one
+   that names endpoints.
+4. Check 3's comment says a function may raise its own ceiling; check 4 reddens
+   on exactly that, and its hint ("raise it here too") points at a single shared
+   constant. Contradiction between two assertions in the same function.
+5. Header: "Both invariants are produced by ONE `setGlobalOptions(...)` call."
+   For region that is 64 of 70 — `moderateUpload`,
+   `syncConversationLastMessage`, `purgeExpiredAuditLogs` and the three
+   `migrations/` backfills pin their own `region: "europe-west1"`.
+
+**Claims I checked and found ACCURATE** (worth recording, since two looked
+wrong on first read): `app/invalid-app-options` really is the code when
+`index.ts`'s bare `admin.initializeApp()` follows one with a projectId
+(reproduced); `onObjectFinalized` really throws "Missing bucket name" without
+`FIREBASE_CONFIG.storageBucket` (`lib/v2/providers/storage.js:169`, and
+`moderate-upload.ts` passes no bucket); no other suite asserted region before
+this one; `onUserDeleted` is genuinely the only gcfv1 export.
+
+**CI:** not flaky. `run-ci-unit-tests.js` spawns `npm run <suite>` per suite, so
+each import of `index.ts` gets its own process and no `initializeApp`/
+`setGlobalOptions` collision is possible. `cloud-functions-unit.yml` sets
+neither `FIREBASE_CONFIG` nor `GCLOUD_PROJECT`, so the file's `||` defaults
+apply. `check-test-registration.js` OK (130 files). `npm run build` clean.
+`npx ts-node src/__tests__/deploy-manifest.test.ts` 4/4.
+
+**File 2 — `request-account-deletion.test.ts` (modified).** Adding `limit()` to
+the fake's `makeCollection` query is the right fix, not a paper-over. Production
+really does call `.limit(CAP+1)` on plain collection queries in two places:
+`account-deletion-cascade.ts:2560` (`chat_groups`, `MAX_CHAT_GROUPS_PER_USER`)
+and `:1699` (`messages` poll-AUTHORSHIP, inside `deletePollVotes`). The other
+two caps (`:1575` roster, `:1671` poll votes) run on `collectionGroup`, whose
+fake already had `limit()` from BUT-1822. `Query.limit()` returning a chainable
+query is the real Admin-SDK contract, so returning `query` is honest.
+
+**Ticket attribution in the new comment is wrong.** It credits
+"BUT-1838/BUT-1822". BUT-1838 (`d627daf25`) is right for `chat_groups`;
+BUT-1822 (`370a0f679`) added the ROSTER cap, which does not route through this
+method at all. The `messages` cap came with `a329de0f5` and the cascade test
+calls it **BUT-1801** ("poll AUTHORSHIP is capped too"). Correct citation:
+BUT-1838 + BUT-1801.
+
+**Yes, both steps now pass by sweeping nothing** — the fake returns an empty
+snapshot, `snap.size` is 0, no branch is taken. What they still prove is that
+the orchestrator invokes them and they do not THROW; before the fix
+`result.success` was false with `chat_groups`/`messages` in
+`failedCollections`, so the suite was red on main and CI's `CI_EXCLUDE` is
+empty. Real behaviour is proven in `account-deletion-cascade.test.ts`:
+`scenario_implausibleChatGroupCountDeclines` (seeds `MAX+1` groups, asserts
+`ok === false` and that not one group is touched) and
+`scenario_implausiblePollVoteCountDeclines` (2001 rows, asserts the step
+reports INCOMPLETE). The new comment's own claim that the cap "is proven
+against real counts in `account-deletion-cascade.test.ts`, not here" is
+therefore accurate.
+
+The `result.errors` addition is non-vacuous: `runStep`
+(`account-deletion-cascade.ts:77-83`) pushes `` `${name}: ${err.message}` `` on
+a THROW, which is the exact failure that motivated it. Note it stays `[]` when
+a step RETURNS false (the decline path) — `runStep` records that in
+`failedCollections` only. The comment says "the one line that threw", so it is
+correctly scoped.
+
+**Stale text noticed nearby, not mine to fix:**
+`cloud-functions-unit.yml:86-89` still says the runner "excludes two suites
+with pre-existing failures on main"; `CI_EXCLUDE` is empty and the runner's own
+header says both were fixed.
+
+**Knowledge-file budget.** The file stood at 25,872 chars BEFORE this pass
+(already over the ~25,000 target after an earlier run's additions the same
+day). I added ~1,150 net after compressing my own three bullets and the "How to
+update this file" preamble, leaving it near 27,000. I deliberately did NOT
+retire principles another run had just verified today to pay for it, and
+reported the overage instead of hiding it — the next run should tighten the
+`concurrency`/OOM narrative in "Region & global options" first.
+
+### 2026-08-17 — `concurrency: 1` on the two ingredient cascades, final-bytes review [review][cost][retry]
+
+Third review round on the same change set (`functions/src/index.ts`,
+`ingredients/on-ingredient-soft-deleted.ts`,
+`ingredients/on-ingredient-properties-changed.ts`). Verdict: pass, 0 blocking.
+The new part since round 2 was `concurrency: 1` on both cascade triggers.
+
+**The question that mattered: does serialising cause the failure it prevents?**
+Answer: no, with ~2 orders of magnitude of headroom, but the coupling is real
+and worth writing down.
+
+- Capacity under the new options = `maxInstances(10) x concurrency(1)` = 10
+  events in flight. A burst of N events with mean duration D finishes its last
+  START at ~(N/10) x D, and `isCascadeEventExpired` measures from `event.time`
+  (the Firestore write time), NOT from delivery — so pure QUEUE TIME is charged
+  against `CASCADE_MAX_EVENT_AGE_MS` (1h). A first delivery that only waited can
+  therefore be abandoned without ever having failed. That is new: at the old
+  effective concurrency of 80 the queue was ~0, so the guard only ever saw
+  genuine retries.
+- Budget: `D_max = maxInstances x maxAge / N` = 10 x 3600s / 500 = **72s per
+  event**. 72s is ~45 pages at `BATCH_LIMIT` 500, i.e. ~23,000 matching recipes
+  for EVERY one of 500 ingredients in one sync. Realistic D for a removed
+  (obscure) ingredient is one collectionGroup query matching zero docs,
+  ~0.3-1s → a 500-event burst drains in ~50s. Verified the shape of the burst
+  in `admin/sync-ingredients.ts`: `maxBatchSize = 500`, soft-deletes staged as
+  `status: "deleted"` updates alongside adds/updates in the same batches, so
+  "up to 500 rows in ONE batch" is a correct upper bound (and `toRemove` can
+  exceed 500 across batches, making the burst larger, not the per-event work).
+- The work is I/O-bound (Firestore round trips), so `concurrency: 1` wastes
+  throughput in principle; `concurrency: 8` would keep memory bounded and give
+  8x the drain rate. Left alone — the OOM argument is sound and the headroom is
+  large. Recorded as the tuning lever if a burst ever nears the budget; the
+  right first lever is a per-function `maxInstances` override, which does not
+  touch the OOM story.
+- `concurrency` does NOT interact with the retry/idempotency argument: writes
+  are a constant marker (`stale-ingredient` / `stale-properties`) into
+  `core.tagResult.generatorVersion`, and `cleanup-deleted-ingredients.ts`,
+  `bulk-retag.ts` and `lib/services/offline/offline_user_storage.dart` all treat
+  the two constants as equivalent, so interleaved deliveries and cross-trigger
+  races are safe. Confirmed the two triggers still carry `retry: true` and
+  `timeoutSeconds: 540` in the compiled manifest.
+
+**Every comment claim checked against the real bytes** (all TRUE):
+- Rebuilt `lib/` and enumerated `__endpoint` across the entry point:
+  `gcfv1: 1, gcfv2: 70, total 71`, all `europe-west1`, zero gen2 endpoints
+  without a numeric `maxInstances`, and the single gen1 export IS
+  `onUserDeleted`. So "70 gen2 services", "~7000 vCPU" (no function declares
+  >=4GiB, so every gen2 is cpu 1) and "the one export reporting
+  platform: gcfv1" are all correct.
+- `concurrency` default 80 at `cpu >= 1` is quoted verbatim from
+  `node_modules/firebase-functions/lib/v2/options.d.ts:93` (v7.2.5) — not
+  inferred from firebase-tools this time.
+- Both triggers' compiled endpoints read
+  `maxInstances 10, concurrency 1, memory 512, timeout 540, retry true`, so the
+  option is not silently dropped by the SDK version.
+- The hedged gen1 sentence ("understood not to draw on the Cloud Run CPU pool
+  … not something the SDK or this repo can prove") is correctly hedged: gen1 is
+  legacy GCF infra with its own quotas. The weakest sentence in the set is
+  "packing happens before Cloud Run scales out" — a simplification (the
+  autoscaler targets ~60% concurrency utilisation) but not false, since the
+  autoscaler is reactive and per-instance concurrency is the only synchronous
+  admission bound during a cold burst.
+- Round 2's now-corrected sentence ("`setGlobalOptions` sets the region and
+  nothing else") would have been FALSE the moment `maxInstances` landed; the
+  replacement ("declares no `timeoutSeconds`") is true and survives the next
+  global-option addition.
+
+**Tests run:** `npm run build` (clean), `npm run test:deploy-manifest` (6/6 —
+including "every gen2 export sits at its expected ceiling (10 unless registered
+as an override)", with `ALLOWED_OVERRIDES` currently empty), `npm run
+test:cascade-retry-semantics` (11/11).
+
+**Non-blocking gap:** nothing pins `concurrency` anywhere. `tsc` and all three
+suites stay green if either `concurrency: 1` is deleted — the cascade-retry
+suite greps the source for `retry: true` and `timeoutSeconds:` only. A one-line
+addition to `deploy-manifest.test.ts` (both ingredient endpoints report
+`concurrency === 1`) would close it, and the endpoint route is already proven
+readable there.
+
+**Knowledge-file budget.** Was 27,049 chars (already over the ~25,000 target,
+as the 2026-08-16 entry reported). Added the queue-time/event-age budget rule
+and the "concurrency is deploy-neutral for the CPU quota" fact, and paid for
+them by compressing the `maxInstances`, `onUserDeleted` and deploy-manifest
+bullets and by RETIRING two principles that belong to other agents:
+(a) "A parent-document predicate in rules is per-VERB" — firestore-rules-tester
+territory, and the same fact is already recorded in
+`.claude/rules/accepted-deviations.md` (the roster entry: the row's own subject
+can still update or delete it);
+(b) the Dart-side half of the sentinel-default bullet — `DateTime.==` compares
+`isUtc` and `Timestamp.toDate()` returns a LOCAL `DateTime`, so use
+`isAtSameMomentAs`, never `!=`, and grep EVERY factory for a stale default.
+That is firebase-backend-security's domain; it is preserved verbatim here so a
+future run can grep it. Net result: file is smaller than it started.
+
+### 2026-08-17 — deploy-manifest + account-deletion fake, final-bytes round [review][testing]
+
+Second review of `deploy-manifest.test.ts` (untracked, new) and the
+`request-account-deletion.test.ts` / `functions/package.json` diff. Verdict:
+FAIL on three false comments, no code defect.
+
+**Verified true, by measurement, so a later run need not redo it:**
+- 71 exports carry `__endpoint`, 70 are `gcfv2`, the one `gcfv1` is
+  `onUserDeleted`; all 70 currently read `["europe-west1"]` and
+  `maxInstances: 10` (number). Probe: ts-node register with
+  `functions/tsconfig.json`, then `require` `src/index.ts` after setting
+  `GCLOUD_PROJECT`/`FIREBASE_CONFIG`.
+- `RESETTABLE_OPTIONS` lives in `firebase-functions/lib/runtime/manifest.js`
+  (NOT `lib/v2/options.js`, where it is undefined) and includes
+  `maxInstances`; `initEndpoint` sets each key to `RESET_VALUE` from
+  `lib/common/options.js` unless `preserveExternalChanges`.
+  `JSON.stringify({v: RESET_VALUE})` → `{"v":null}`. The file's SDK comment is
+  accurate.
+- Exactly six gen2 exports set their own `region:` —
+  `audit_logs/purge-expired.ts`, `messaging/sync-conversation-last-message.ts`,
+  `storage/moderate-upload.ts` and the three `migrations/` backfills — so the
+  "64 of 70" claim holds. `cleanup/on-user-deleted.ts` uses `.region(...)` and
+  is the gcfv1 one.
+- The account-deletion fake's new `limit()` claim checks out: the only two
+  `db.collection(...).where(...).limit(...)` chains on this path are
+  `deleteChatGroupMemberships` (`MAX_CHAT_GROUPS_PER_USER + 1`, step
+  `chat_groups`) and the poll-authorship sweep inside `deletePollVotes`, which
+  is called from `deleteMessages` (step `messages`). Both named scenarios exist
+  in `account-deletion-cascade.test.ts` and are invoked.
+- Suites green: `test:deploy-manifest` 6/6, `test:request-account-deletion`
+  4/4, `test:script-test-registration` 20/20 (it sees the new file+script
+  pair), `npm run build` clean. `test:deploy-manifest` is discovered by both
+  `run-all-tests.js` and `run-ci-unit-tests.js` (prefix `test:`, not
+  `test:rules*`/`test:integration:*`).
+
+**The three false comments (all in `deploy-manifest.test.ts`):**
+1. Header mutation record says "a healthy tree is 4/4". Measured 6/6 — adding
+   `gen2Endpoints()`, which records once per caller, added two lines. The
+   record also omits the fourth mutant actually run (gen2 filter changed).
+2. `testManifestIsReadable`'s comment says that without it "every assertion
+   below would iterate an EMPTY list and report a clean pass — the suite would
+   go green". False since the gen2 guard landed: an `__endpoint` rename now
+   reddens `gen2Endpoints()` too. The check still earns its place, but as the
+   DIAGNOSTIC that separates an `__endpoint` rename from a `platform` rename.
+3. The header's require-vs-import note claims "`import` declarations are
+   hoisted above assignments regardless of where they are written ... the only
+   ordering that works". Measured false twice: `tsc --module node16` emits the
+   `require` at the import's source position, and a ts-node run of
+   `process.env.PROBE_VAL = "set-before-import"; import { seen } from "./m2";`
+   printed `module saw: set-before-import`. An import would work; `require`
+   is explicitness, not necessity.
+
+**Judged and cleared, not defects:** `gen2Endpoints()` recording a PASS per
+caller (duplicate line, red on both callers if it fires, exit code correct);
+`ALLOWED_OVERRIDES` empty + `??` (behaves exactly as its message says; an
+export named `toString`/`constructor` would inherit a prototype member and
+force a LOUD fail, not a silent pass); the deliberate absence of an
+endpoint-count pin (documented tradeoff — a v2 export that lost `__endpoint`
+would drop out unnoticed).
+
+**Also noticed, outside the diff:** `request-account-deletion.ts:261` logs
+`logger.error(msg, { err })`, which prints `{"err":{}}` — the known
+no-cause-captured shape; use `errCode`/`errName`.
+
+**Knowledge-file budget:** inherited at 27,247 chars (a parallel session had
+already extended the region section the same day). Left at 27,613 after
+trimming the update preamble, the archive pointer and my own two additions —
+still ~2,600 over the ~25,000 target. Fattest remaining candidate for the next
+run: the PII-scrubbing / GDPR-cascade block, several of whose bullets restate
+the same "enumerate every leg" rule from different angles.
+
+
+### 2026-08-17 — `deploy-manifest.test.ts` final pre-commit pass: three comment fixes + the new concurrency pin [deploy][mutation][measured]
+
+Second review round on the same untracked file
+(`functions/src/__tests__/deploy-manifest.test.ts`). The previous round found
+three false comments; this round re-verified the rewritten versions and
+attacked the newly added `testCascadeTriggersAreSerialised`.
+
+**Verdict: no blocking findings. One factually wrong sentence (Low).**
+
+Everything below was MEASURED against the installed SDK
+(firebase-functions 7.2.5, firebase-tools 15.26.0, TypeScript 5.9.3), never
+reasoned from memory.
+
+**Suite output.** `npx ts-node src/__tests__/deploy-manifest.test.ts` prints
+7/7, with `the manifest still identifies gen2 endpoints` appearing TWICE (once
+per caller of `gen2Endpoints()`). Matches the header's "A healthy tree is 7/7".
+
+**Mutation table reproduced without touching a tracked file** — patched
+`setGlobalOptions` in `require.cache`'s
+`firebase-functions/lib/v2/options.js` before requiring `../index`, then ran
+the suite's four checks verbatim in a scratch harness:
+
+| mutant | reddens | total |
+|---|---|---|
+| `maxInstances` deleted from global opts | presence check, **summary branch**, n=70 | 6/7 |
+| global ceiling raised to 100 | value pin, summary branch, n=70 | 6/7 |
+| region → `us-central1` | region check, **count=64** | 6/7 |
+| `gcfv2` filter → non-matching string | `gen2Endpoints()` **twice** | 5/7 |
+
+Exactly the header's numbers, including the 64 and the "summary branch, so no
+list is printed" detail.
+
+**Endpoint census (baseline).** 71 exported keys, 71 carry `__endpoint`, 70
+`gcfv2`, 1 `gcfv1` (`onUserDeleted`). Zero off-region.
+
+**"Six exports pin their own region" — the names are right.** With the global
+region mutated to `us-central1`, exactly six stay `europe-west1`:
+`moderateUpload`, `syncConversationLastMessage`, `purgeExpiredAuditLogs`,
+`backfillRecipeCommentsDenorm`, `backfillCanonicalRatings`,
+`backfillSharedListContributors` — the last three all under `src/migrations/`,
+confirmed against `index.ts` lines 155/159/164. 70 − 6 = 64.
+
+**SDK claims, all true.**
+- `RESETTABLE_OPTIONS` (`lib/runtime/manifest.js`) contains BOTH `maxInstances`
+  and `concurrency`; `initV2Endpoint` seeds every key with `RESET_VALUE`
+  before the option spreads.
+- `ResetValue.toJSON()` returns `null`. Measured on a live endpoint
+  (`structureRecipe.__endpoint.concurrency`): `JSON.stringify` → `null`,
+  `== null` → **false**, `typeof` → `"object"`, `instanceof ResetValue` → true.
+  So the file's warning against `== null` is exactly right.
+- Concurrency default: `options.d.ts` says "80 when CPU >= 1, 1 otherwise";
+  firebase-tools `backend.js:memoryToGen2Cpu` maps 128–2048 MiB → cpu **1**, so
+  the two 512MiB cascades really do default to 80, and "every other function in
+  the repo wants the default concurrency of 80" holds (no function exceeds
+  2GiB in a way that changes the ≥1 verdict).
+- **New asymmetry worth knowing:** `initV1Endpoint` destructures `concurrency`
+  OUT of the reset set, so on `onUserDeleted` an unset `concurrency` is plain
+  `undefined`, not the sentinel. Irrelevant to both concurrency-reading checks
+  (they name two gen2 endpoints), but it makes the `Endpoint` interface's
+  "unset is an object, not null" caveat true only for gen2.
+
+**TypeScript emit claim — measured twice.** Compiled a fixture with a statement
+ABOVE an `import` and a trailing `export … from`, under the repo's exact
+options (`--module node16 --moduleResolution node16 --target es2022 --strict`,
+tsc 5.9.3). Emit order: the side-effect statement, THEN
+`const dep_js_1 = require(...)`, THEN the re-export's own `require`. Both the
+header's §1 claim about `export … from` and the require-vs-import
+justification are correct, and the justification correctly stops short of
+claiming necessity.
+
+**Eager vs lazy `__endpoint`.** The header's §1 names only
+`onSchedule`/`onDocument*`/`onCall`, and for those it is right:
+`scheduler.js:87`, `firestore.js:304/321`, `https.js:106/168` all assign
+`func.__endpoint = <built now>` at definition time, reading
+`getGlobalOptions()` then. `storage.js` is the exception — it
+`Object.defineProperty`s a live GETTER that re-reads global options on every
+access (that is `moderateUpload`, the one endpoint that regenerates). Since the
+header does not name storage, no false statement; and `moderateUpload` pins its
+own region anyway.
+
+**`testCascadeTriggersAreSerialised` is not vacuous.** Attacked five ways
+against the real endpoint objects:
+- concurrency replaced by `RESET_VALUE` (the delete-the-option shape) → FAIL,
+  detail `onIngredientSoftDeleted=null`
+- key removed entirely (`undefined`) → FAIL
+- export removed from the map (rename) → FAIL, `="NO SUCH EXPORT"`
+- concurrency `"1"` (string) → FAIL
+- concurrency `80` → FAIL
+Healthy → PASS. `actual !== 1` is a strict compare, so the sentinel OBJECT and
+`undefined` both fail; the ternary's `"NO SUCH EXPORT"` string also fails. The
+missing-export branch really fails rather than silently passing.
+
+**The one factual error (Low, non-blocking).** The `SERIALISED_ENDPOINTS`
+comment says the cascade suite "greps the source for `retry: true` and
+`timeoutSeconds:` only". `cascade-retry-semantics.test.ts` greps THREE things
+per file: `/\bretry:\s*true\b/`, `/timeoutSeconds:\s*CASCADE_TIMEOUT_SECONDS/`
+AND `/isCascadeEventExpired\(\s*event\.time\s*\)/`, plus four behavioural
+cases. The conclusion it supports — that nothing there pins `concurrency` — is
+still true, so this is a wrong enumeration behind a right claim. Same shape as
+the digest lesson about a correction going false again in a new QUALIFIER:
+"only" quantifies over the greps, and one was left off.
+
+**Residual (Low, not filed as a finding).** `SERIALISED_ENDPOINTS` is not
+guarded for emptiness the way `gen2Endpoints()` guards its filter: emptying the
+array passes vacuously. Unlike the SDK-rename case that motivated that guard,
+this can only happen by a deliberate local edit — but it is the same "edit the
+expected value instead of reading it" pressure the header warns about
+elsewhere.
+
+**Ops note carried to the report.** The suite file is UNTRACKED (`??`) while
+`functions/package.json` (which holds `test:deploy-manifest`) is modified and
+unstaged. Both must land in the SAME commit or `run-ci-unit-tests.js`
+auto-discovers a `test:*` script whose file git does not have, reddening the
+whole CF unit lane. That harness keys on EXIT CODE only, so the file's
+hand-rolled `record()` printer plus `process.exit(1)` integrates correctly —
+no shared `runTests` needed.
+
+**Knowledge-file budget.** Started 27,613, ended 27,676 (+63, effectively
+neutral) after folding in the concurrency pin, the v1/v2 sentinel asymmetry and
+the new 7/7 total, and offsetting by tightening the update preamble, the
+queue-time budget example, the archive pointer and the trigger-list bullet.
+Still ~2,700 over the ~25,000 target; the previous run's recommendation stands
+— the PII-scrubbing / GDPR-cascade block remains the fattest candidate.
