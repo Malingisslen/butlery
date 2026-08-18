@@ -1182,6 +1182,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeAnalyzingA11y => 'Ingredients being analyzed';
 
   @override
+  String get recipeAllergensUnassessed => 'Allergens not assessed';
+
+  @override
+  String get recipeAllergensUnassessedA11y =>
+      'Allergens have not been assessed for this recipe';
+
+  @override
   String get recipeSearchHint => 'search recipes...';
 
   @override

@@ -31,9 +31,14 @@ import 'package:butlery/widgets/common/content_cards/friend_card.dart';
 import 'package:butlery/widgets/common/content_cards/menu_card.dart';
 import 'package:butlery/widgets/common/content_cards/shopping_list_card.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
+import 'package:butlery/widgets/tagging/tag_result_display.dart';
 import 'package:butlery/theme/app_theme.dart';
 
 import '../../infrastructure/factories/recipe_factory.dart';
+import '../../infrastructure/builders/recipe_builder.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   locale: const Locale('sv'),
@@ -394,6 +399,53 @@ void main() {
         expect(card.matchPercent, 0.75);
       },
     );
+
+    testWidgets(
+      'badge flags derive from the preference sets (BUT-1780)',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            ContentCard(
+              item: _recipe(),
+              type: ContentCardType.recipe,
+              userAllergenPrefs: const {'gluten'},
+              userDietaryPrefs: const {'vegan'},
+            ),
+          ),
+        );
+        final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
+        expect(card.showAllergenBadges, isTrue);
+        expect(card.showDietaryBadges, isTrue);
+      },
+    );
+
+    testWidgets('badge flags stay off without preference sets', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(item: _recipe(), type: ContentCardType.recipe),
+        ),
+      );
+      final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
+      expect(card.showAllergenBadges, isFalse);
+      expect(card.showDietaryBadges, isFalse);
+    });
+
+    testWidgets('explicit badge flags override the derivation', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          ContentCard(
+            item: _recipe(),
+            type: ContentCardType.recipe,
+            userAllergenPrefs: const {'gluten'},
+            showAllergenBadges: false,
+            showDietaryBadges: true,
+          ),
+        ),
+      );
+      final card = tester.widget<RecipeCard>(find.byType(RecipeCard));
+      expect(card.showAllergenBadges, isFalse);
+      expect(card.showDietaryBadges, isTrue);
+    });
   });
 
   group('ContentCard - prop forwarding (friend)', () {
@@ -696,4 +748,96 @@ void main() {
       expect(d, 1);
     });
   });
+
+  // ── BUT-1780: the test that proves the TICKET, not just the diff ──────────
+  //
+  // BUT-1871's whole conclusion was that this file's other BUT-1780 cases pin
+  // ContentCard's DERIVATION of the flags and would redden if it were removed —
+  // but that nothing anywhere renders a badge, so none of them can fail on the
+  // thing the ticket is about: "allergenmärkena visas aldrig på receptkorten".
+  //
+  // The missing link was the fixture, not the assertion. `RecipeFactory` has no
+  // `tagResult` parameter, and the card's badge block is gated on there being
+  // badges to DRAW — and `badgesFor` returns empty for a null tagResult — so a
+  // factory-built recipe can never render one.
+  // `RecipeBuilder.withTagResult` can, and in production the tagging pipeline
+  // populates that field (import_manager, tagging_service, retagging_scheduler).
+  //
+  // Delete the derivation in ContentCard and this goes red — not because a flag
+  // changed, but because the badge disappears from the screen.
+  group(
+    'ContentCard - allergen badges actually reach the screen (BUT-1780)',
+    () {
+      Recipe taggedRecipe() => RecipeBuilder()
+          .withId('r-tagged')
+          .withTitle('Köttbullar')
+          .withTagResult(
+            TagResult(
+              tags: const {},
+              allergenStatus: const {
+                'gluten': TriState.contains,
+                'mjölk': TriState.free,
+              },
+              dietaryStatus: const {},
+              coverage: 1.0,
+              generatedAt: DateTime(2026, 1, 1),
+              generatorVersion: '1.0',
+              hasCoverageAnomaly: false,
+            ),
+          )
+          .build();
+
+      testWidgets('a tracked allergen renders a badge on the card', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          _wrap(
+            ContentCard(
+              item: taggedRecipe(),
+              type: ContentCardType.recipe,
+              style: ContentCardStyle.detailed,
+              userAllergenPrefs: const {'gluten', 'mjölk'},
+            ),
+          ),
+        );
+        await tester.pump();
+
+        expect(
+          find.byType(CompactAllergenRow),
+          findsOneWidget,
+          reason:
+              'the allergen row must be built at all — this is the link '
+              'BUT-1780 says never fires',
+        );
+        expect(
+          find.byType(AllergenStatusBadge),
+          findsWidgets,
+          reason:
+              'a badge must actually be painted; asserting the flag alone is '
+              'what let BUT-1780 look fixed while the screen stayed empty',
+        );
+      });
+
+      testWidgets('no preferences means no badge row', (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            ContentCard(
+              item: taggedRecipe(),
+              type: ContentCardType.recipe,
+              style: ContentCardStyle.detailed,
+            ),
+          ),
+        );
+        await tester.pump();
+
+        expect(
+          find.byType(AllergenStatusBadge),
+          findsNothing,
+          reason:
+              'the opposite direction — without this an always-on derivation '
+              'would satisfy the case above',
+        );
+      });
+    },
+  );
 }

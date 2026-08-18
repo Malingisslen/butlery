@@ -864,6 +864,8 @@
   "recipeAnalyzing": "Analyzing...",
   "recipeAnalysisFailedA11y": "Ingredient analysis failed",
   "recipeAnalyzingA11y": "Ingredients being analyzed",
+  "recipeAllergensUnassessed": "Allergens not assessed",
+  "recipeAllergensUnassessedA11y": "Allergens have not been assessed for this recipe",
   "recipeSearchHint": "search recipes...",
   "recipeShowMore": "Show more recipes",
   "recipeCountBadge": "{count, plural, =0{No recipes} =1{1 recipe} other{{count} recipes}}",

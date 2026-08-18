@@ -452,27 +452,52 @@ class CompactAllergenRow extends StatelessWidget {
     );
   }
 
-  List<String> _getBadgesToShow() {
+  /// What this row WOULD draw, without building it.
+  ///
+  /// Public and static so a caller can gate its own spacer on real content
+  /// rather than guessing from the preference set. `RecipeCard` needs that:
+  /// this row collapses to `SizedBox.shrink()` when it has nothing to say, and
+  /// a spacer emitted beside a collapsed row is a visible dead gap (BUT-1869).
+  static List<String> badgesFor(TagResult tagResult, Set<String>? userPrefs) {
     final allergensToCheck = userPrefs ?? _defaultAllergens;
 
-    // SAFETY: Show CONTAINS first (warnings are most important)
+    // SAFETY: CONTAINS first — a warning outranks everything else here.
     final containsAllergens = allergensToCheck.where((a) {
       return tagResult.getAllergenStatus(a) == TriState.contains;
     }).toList();
 
-    // Then FREE status (good news for the user)
+    // Then FREE — the good news.
     final freeAllergens = allergensToCheck.where((a) {
       return tagResult.getAllergenStatus(a) == TriState.free;
     }).toList();
 
-    // Then UNKNOWN if space allows
-    final unknownAllergens = allergensToCheck.where((a) {
-      return tagResult.getAllergenStatus(a) == TriState.unknown;
-    }).toList();
-
-    // Priority: warnings first, then positive, then uncertain
-    return [...containsAllergens, ...freeAllergens, ...unknownAllergens];
+    // UNKNOWN is deliberately NOT shown. Malin's call, 2026-06-22, recorded in
+    // docs/architecture/ACCEPTED_DEVIATIONS.md, and re-confirmed 2026-08-18 when
+    // BUT-1780 made this row live on every recipe card for the first time:
+    // a grey question mark reads as a verdict when it is the absence of one.
+    //
+    // An earlier version of this comment also claimed the uncertain badges
+    // "pushed out the real answers". That was FALSE and is worth recording so
+    // nobody re-derives it: UNKNOWN sorted LAST and `.take(maxBadges)` runs
+    // after the concatenation, so an uncertain badge could never displace a
+    // CONTAINS or a FREE. The real cost is the opposite shape — on an UNTAGGED
+    // recipe the tagger settled NOTHING about, every default allergen is UNKNOWN,
+    // so four grey question marks were not part of the row, they WERE the row.
+    //
+    // `TagResultDisplay._getAllergensToShow` (the detail view) filters them out
+    // on its no-prefs fallback branch from day one, and on its user-prefs
+    // branch since the UI redesign (668a68b25) — so "has always filtered them"
+    // would be false, and a user WITH prefs did see UNKNOWN there until that
+    // commit. This row was still the odd one out, invisibly, because until
+    // BUT-1780 it had no live construction site at all.
+    //
+    // Do NOT "restore" unknown badges to make an older ordering test pass —
+    // `compact_tag_rows_test.dart`'s CONTAINS-before-FREE-before-UNKNOWN case
+    // was rewritten deliberately in the same change.
+    return [...containsAllergens, ...freeAllergens];
   }
+
+  List<String> _getBadgesToShow() => badgesFor(tagResult, userPrefs);
 
   static const _defaultAllergens = {
     'gluten',
@@ -526,14 +551,24 @@ class CompactDietaryRow extends StatelessWidget {
     );
   }
 
-  List<String> _getBadgesToShow() {
+  /// What this row WOULD draw, without building it. See
+  /// [CompactAllergenRow.badgesFor] — same contract, same reason.
+  ///
+  /// This one matters MORE than its allergen twin: a non-empty preference set
+  /// is no guarantee of content here, because only FREE diets are shown. An
+  /// ordinary meat recipe against the default {vegetarisk, vegansk} yields
+  /// nothing, which is the common case rather than the edge one.
+  static List<String> badgesFor(TagResult tagResult, Set<String>? userPrefs) {
     final dietsToCheck = userPrefs ?? _defaultDietaryOrder;
 
-    // Only show FREE status (recipe IS vegan/vegetarian/etc)
+    // Only FREE — the badge means "this recipe IS vegan/vegetarian", so
+    // CONTAINS and UNKNOWN have nothing to say.
     return dietsToCheck.where((diet) {
       return tagResult.getDietaryStatus(diet) == TriState.free;
     }).toList();
   }
+
+  List<String> _getBadgesToShow() => badgesFor(tagResult, userPrefs);
 }
 
 class AllergenDisclaimer extends StatelessWidget {

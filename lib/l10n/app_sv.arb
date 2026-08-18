@@ -870,6 +870,8 @@
   "recipeAnalyzing": "Analyseras...",
   "recipeAnalysisFailedA11y": "Ingrediensanalys misslyckades",
   "recipeAnalyzingA11y": "Ingredienser analyseras",
+  "recipeAllergensUnassessed": "Allergener ej bedömda",
+  "recipeAllergensUnassessedA11y": "Allergener är inte bedömda för det här receptet",
   "recipeSearchHint": "sök bland recepten...",
   "recipeShowMore": "Visa fler recept",
   "recipeCountBadge": "{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}",

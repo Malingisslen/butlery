@@ -2054,6 +2054,18 @@ abstract class AppLocalizations {
   /// **'Ingredienser analyseras'**
   String get recipeAnalyzingA11y;
 
+  /// No description provided for @recipeAllergensUnassessed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergener ej bedömda'**
+  String get recipeAllergensUnassessed;
+
+  /// No description provided for @recipeAllergensUnassessedA11y.
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergener är inte bedömda för det här receptet'**
+  String get recipeAllergensUnassessedA11y;
+
   /// No description provided for @recipeSearchHint.
   ///
   /// In sv, this message translates to:

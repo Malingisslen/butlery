@@ -188,7 +188,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `personal_tag_viewmodel.dart` | 798 | Personal tag management VM |
 | `recipe_detail_content.dart` | 859 | Body content widget for recipe detail |
 | `mina_recept_view.dart` | 687 | Main recipe list screen — facade-extracted to `lib/views/mina_recept/` per BUT-441 (was 687, drifted to 1017, now 687) |
-| `recipe_card.dart` | 906 | Recipe list card widget |
+| `recipe_card.dart` | 1085 | Recipe list card widget. Row re-measured 2026-08-18 and it moved four times in one change, which is why the trail is here: recorded 906, measured 941 at HEAD (+35 pre-existing drift), 950 after BUT-1869's first empty-preference guard, and 969 once that guard was replaced by the `badgesFor` content gate. Re-measured a THIRD time after the review round added the "Allergener ej bedömda" marker — which is the point: a row that records a trail has to be measured after the LAST edit, not the last-but-one. 1085 is the current figure. |
 | `adaptive_icon.dart` | 672 | Platform-adaptive icon widget |
 | `di_container.dart` | 585 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 858 | DI registrations for content layer |
@@ -243,7 +243,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `veckomeny_view.dart` | 519 | **candidate**: top-level weekly-menu view pulling many widget builders — split candidates exist |
 | `collection_stats_view.dart` | 521 | **candidate**: stats view splittable into section sub-widgets (_HeroBanner, _SectionHeader, etc.) |
 | `collaborative_shopping_items.dart` | 595 | **candidate**: mixes 3 view-mode rendering paths + claim logic — splittable by mode |
-| `tag_result_display.dart` | 565 | **candidate**: displays allergen, dietary, and coverage sections — could split into sub-widgets |
+| `tag_result_display.dart` | 600 | **candidate**: displays allergen, dietary, and coverage sections — could split into sub-widgets. Re-measured 2026-08-18, twice, ending at 600 (565 at HEAD) when both compact rows gained a public `badgesFor` and their comments were corrected, so a caller can gate its own spacer on real content instead of guessing from the preference set. |
 | `onboarding_viewmodel.dart` | 565 | **candidate**: multi-step wizard VM mixing age-gate, allergens, seeding, and analytics |
 | `photo_import_viewmodel.dart` | 872 | **candidate**: mixes OCR, multi-page, heirloom form, draft, and quality-score concerns |
 | `friends_viewmodel.dart` | 578 | **candidate**: VM mixing search, profile-cache, selection, group-creation, and stream subscriptions |
@@ -265,7 +265,7 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 | `performance_monitoring_service.dart` | 516 | Frame, network, cache, memory, and custom metrics can each be a focused sub-service |
 | `social_group_detail_viewmodel.dart` | 511 | Group load, events, leave, ownership transfer, content sharing — extract managers |
 | `collaborative_shopping_items.dart` | 595 | Three view-mode rendering paths + claim logic — split by mode |
-| `tag_result_display.dart` | 565 | Allergen, dietary, and coverage sections are independently renderable sub-widgets |
+| `tag_result_display.dart` | 600 | Allergen, dietary, and coverage sections are independently renderable sub-widgets. Re-measured 2026-08-18. NOTE this file is listed TWICE in this document (see the Views/Widgets table above) — pre-existing, and it means a refresh has to touch both rows or one silently rots. |
 | `onboarding_viewmodel.dart` | 565 | Age-gate, allergens, seeding, analytics — each a candidate for an extracted manager |
 | `photo_import_viewmodel.dart` | 872 | OCR, multi-page, heirloom form, draft, quality-score concerns are independently extractable |
 | `friends_viewmodel.dart` | 578 | Search, profile-cache, selection, group-creation, stream subscriptions — extract managers |

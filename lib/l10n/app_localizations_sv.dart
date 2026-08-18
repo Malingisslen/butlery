@@ -1184,6 +1184,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeAnalyzingA11y => 'Ingredienser analyseras';
 
   @override
+  String get recipeAllergensUnassessed => 'Allergener ej bedömda';
+
+  @override
+  String get recipeAllergensUnassessedA11y =>
+      'Allergener är inte bedömda för det här receptet';
+
+  @override
   String get recipeSearchHint => 'sök bland recepten...';
 
   @override
