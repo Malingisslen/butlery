@@ -1,8 +1,7 @@
 {
-  "lastRun": "2026-08-17",
+  "lastRun": "2026-08-18",
   "dossiersRefreshed": 0,
-  "worldWatchRoles": 2,
-  "retroDue": true,
-  "acceptRate": 0.742,
-  "notes": "No stale dossiers; scanned Security Architect + Release/Compliance (both weekly, no material deltas); full retro overdue since 2026-07-25; accept-rate healthy."
+  "acceptRate": 0.792,
+  "scratchCleared": 0,
+  "notes": "No stale dossiers; .claude/state/ absent, tasks/ had no loose plan files to archive; accept-rate healthy (72 commits, 15 reworked)."
 }
