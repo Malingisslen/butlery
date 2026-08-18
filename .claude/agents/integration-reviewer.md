@@ -27,7 +27,7 @@ gate only ever saw one batch — a defect spanning two of them is invisible to a
 refused until ONE run of this agent has read every reviewable file in the range being pushed. That is
 why "one reviewer saw them together" is the requirement and N per-batch reviews do not add up to it.
 
-You are also the ONLY gate that sees a generated-only diff (`*.g.dart` / `*.freezed.dart`) — the
+You are also the ONLY gate that sees a generated-only diff (`*.g.dart`) — the
 code-reviewer gate excludes those. Never wave one through as "just generated".
 
 ## Step 0 (mandatory)
@@ -38,8 +38,8 @@ them. A genuinely new one gets appended there (dated), not argued in a finding.
 `git diff --cached` in full, as one change set. Your lens is **relationships between the changed
 files**, not the quality of any single file:
 
-1. **Source ↔ generated coherence** — a `@freezed` / `json_serializable` model changed without its
-   `.g.dart`/`.freezed.dart` regenerated and staged, or generated files staged that no longer match
+1. **Source ↔ generated coherence** — a `drift` table or DAO changed without its
+   `.g.dart` regenerated and staged, or generated files staged that no longer match
    their source. Read the generated diff and check the fields line up with the model's. A
    generated-only diff arriving alone is itself the finding to explain: what source produced it?
 2. **Contract drift across layers** — a signature, return type, thrown exception or field changed on

@@ -96,7 +96,7 @@ service cloud.firestore {
     // Treats a missing user doc / missing createdAt as "not matured" so
     // pre-onboarding bots cannot bypass the gate.
     //
-    // Constant kept in sync with `kAccountMaturityMinutes` on the Dart
+    // Constant kept in sync with `kAccountMaturityWindow` on the Dart
     // side (lib/services/auth/account_maturity_helper.dart).
     function isAccountMatured() {
       return isAuthenticated() && (

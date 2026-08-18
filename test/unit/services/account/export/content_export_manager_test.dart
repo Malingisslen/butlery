@@ -963,7 +963,7 @@ void main() {
             'assignedToDisplayName': 'Bob B',
             // BUT-1732 review: the two fields the first minimisation map
             // MISSED. They are stamped on every tick of a shared list
-            // (`markAsBought`), which makes them the most frequently populated
+            // (`togglePurchased`), which makes them the most frequently populated
             // attribution fields on the collection — and the bundle's own
             // data_minimisation line claimed they were dropped.
             'purchasedByUserId': 'bob',
