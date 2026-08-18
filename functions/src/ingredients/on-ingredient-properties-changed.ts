@@ -66,6 +66,12 @@ export const onIngredientPropertiesChanged = onDocumentUpdated(
     // CASCADE_TIMEOUT_MS guard, and a platform kill mid-cascade is silent and
     // does not resume. BUT-1781.
     timeoutSeconds: CASCADE_TIMEOUT_SECONDS,
+    // See the identical note on onIngredientSoftDeleted: `concurrency` defaults
+    // to 80, one admin sync fires hundreds of these at once, and each holds a
+    // 500-document page for up to 540s — sharing a 512MiB container OOMs, and
+    // `retry: true` then re-delivers into the same packing until the event-age
+    // guard abandons the cascade permanently.
+    concurrency: 1,
     // See the identical note on onIngredientSoftDeleted: v2 event triggers do
     // not retry by default, so without this the `throw` below is dropped and a
     // half-finished fan-out leaves recipes tagged from the ingredient's OLD

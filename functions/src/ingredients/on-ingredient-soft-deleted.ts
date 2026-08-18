@@ -37,14 +37,25 @@ const getDb = () => admin.firestore();
 export const onIngredientSoftDeleted = onDocumentUpdated(
   {
     document: "ingredients/{ingredientId}",
-    // `setGlobalOptions` in index.ts sets the region and nothing else, so this
-    // ran at the v2 event DEFAULT of 60s — shorter than its own
+    // The `setGlobalOptions` call in index.ts declares no `timeoutSeconds`, so
+    // this ran at the v2 event DEFAULT of 60s — shorter than its own
     // `CASCADE_TIMEOUT_MS` guard, which therefore could never fire. Now that the
     // query is a collectionGroup that actually matches documents, a common
     // ingredient (salt, socker, mjöl) fans out across every user's recipes at
     // 500 writes per page, and a platform kill mid-cascade is silent and does
     // not resume. BUT-1781.
     timeoutSeconds: CASCADE_TIMEOUT_SECONDS,
+    // One cascade per container. `concurrency` defaults to 80 at cpu >= 1, and
+    // an admin ingredient sync soft-deletes up to 500 rows in ONE batch, firing
+    // that many events at once — each holding a 500-document page of recipe
+    // snapshots for up to 540s. Sharing a 512MiB container between them OOMs,
+    // and the failure is not self-correcting: `retry: true` re-delivers into the
+    // same packing until the event-age guard below abandons the cascade for
+    // good, leaving every matching recipe tagged from the deleted ingredient
+    // with nothing that re-runs it. Instance count is NOT the control here —
+    // packing happens before Cloud Run scales out, so this must be declared even
+    // when `maxInstances` is generous.
+    concurrency: 1,
     // v2 event triggers do NOT retry by default — without this the `throw` at
     // the bottom is logged and dropped, so a timeout or a transient Firestore
     // error at page N leaves every remaining recipe carrying allergen tags
