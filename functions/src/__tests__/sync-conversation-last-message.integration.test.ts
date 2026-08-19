@@ -28,9 +28,16 @@
  *      `clock.now()` and defeat the group history cut-off).
  *
  *   8. A message whose `sentAt` is a STRING is refused by BOTH the create and
- *      the delete path (BUT-1853). The create rule tests only that the key
- *      exists, and Firestore sorts strings above every timestamp, so a planted
+ *      the delete path (BUT-1853). The create RULE used to test only that the
+ *      key exists, which is how such a row could be written at all; BUT-1896
+ *      closed that on 2026-08-19. These guards stay, because the rule bounds
+ *      what can be written from now on and says nothing about rows already on
+ *      disk. Firestore sorts strings above every timestamp, so a planted
  *      string wins `orderBy('sentAt','desc').limit(1)` outright.
+ *
+ *      This sentence was the THIRD copy of one claim. The other two were
+ *      corrected the same day and this one was missed — the digest already
+ *      says to grep a phrase across the whole tree before writing it.
  *
  * Isolation: per-run unique conversation + message ids; every doc this suite
  * writes is deleted in cleanup so the shared demo-test namespace stays

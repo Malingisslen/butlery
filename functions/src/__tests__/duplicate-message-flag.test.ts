@@ -1,9 +1,18 @@
 /**
  * duplicate-message-flag.ts — the chat duplicate guard's kill switch (BUT-1898).
  *
- * The integration suite seeds the cache directly, so `defaultLoader` and the
- * `catch` were the two branches nothing executed. That is exactly where this
- * file's contract lives, and the contract is the OPPOSITE of its sibling's:
+ * The integration suite seeds the cache directly, so nothing exercised the
+ * reader itself. This file drives it through the `loader` seam.
+ *
+ * What it does NOT cover, said plainly because an earlier header claimed the
+ * opposite: `defaultLoader` is still executed by nothing. Every case here
+ * injects a loader, so the two properties the module header advertises — an
+ * ABSENT Remote Config parameter reading as false ("ships OFF with no console
+ * step"), and only the literal string "true" enabling — remain unpinned. They
+ * need a stubbed `admin.remoteConfig()`, which is its own piece of work.
+ *
+ * What it DOES cover is the contract, and that contract is the OPPOSITE of its
+ * sibling's:
  *
  *   - determinate true / false from the loader;
  *   - 5-min TTL cache reuse + expiry;
