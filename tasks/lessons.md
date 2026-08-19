@@ -1704,7 +1704,7 @@ loudly with the line number. The outer `test/run-fixtures.mjs` reported "219 che
 
 Inside those prompts, quote code with plain double quotes, not backticks.
 
-### A Python heredoc turns a backslash escape into a CONTROL BYTE, and it bit four times in one commit (2026-08-19)
+### A Python heredoc turns a backslash escape into a CONTROL BYTE, and one of the four hits was where no sweep can reach (2026-08-19)
 
 Writing Dart or TypeScript through `python3 - <<'PYEOF'` is a good way to make a precise
 multi-line edit. It is also a good way to write an invisible 0x08 into a source file.
@@ -1715,9 +1715,14 @@ explains the bug — gets written to disk as `^H`, and the sentence renders as
 "the `` anchors never fire". The compiler does not care. `dart analyze` is clean. Every
 test passes. Only a reader loses.
 
-It landed FOUR times in one change set, in four different files: the original comment, a
-rewrite of a related comment one file over, a new comment in a third, and finally the commit
-message describing the bug. Three of the four were caught by review agents rather than by me.
+It landed FOUR times in one change set: in THREE source files — the original comment, a
+rewrite of a related comment one file over, and a new comment in a third — and then in the
+COMMIT MESSAGE describing the bug. Three of the four were caught by review agents, not by me.
+
+That fourth one is the part worth remembering. The remedy below is a file sweep scoped by
+extension, so replay it against its own four events and it fires on three and is structurally
+blind to the last. A commit message is not a file. Byte-check the message too, before
+`git commit -F`.
 
 Not all four were corrections — that qualifier was in an earlier draft of this entry and was
 wrong. What they share is only the mechanism: every one of them was written through a Python
@@ -1730,14 +1735,22 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
 
 **The fixes, in order of preference:**
 
-1. Use a Python RAW string — `r"\\b"` — or build the character explicitly with
-   `chr(92) + "b"`. The explicit form is ugly and never wrong.
+1. Use a Python RAW string — `r"\b"` — or build the character explicitly with
+   `chr(92) + "b"`. The explicit form is ugly and never wrong, and it is the one to reach
+   for: this very line first shipped as `r"\\b"`, which is TWO backslashes and a `b`,
+   i.e. the wrong answer inside the fix list of the lesson about getting it wrong.
 2. After any heredoc edit that mentions a regex escape, run
    `grep -rlP '[\x00-\x08]' --include='*.dart' --include='*.ts' lib/ test/ functions/src/`
-   The correct baseline on this tree is ONE file, not zero:
+   Under THAT pattern the baseline on this tree is ONE file, not zero:
    `test/unit/services/ocr_extraction_service_test.dart` holds deliberate control-character
-   OCR fixtures. Anything else is yours. (PNG fixtures match a broader sweep too, which is
-   why the pattern is scoped by extension.)
+   OCR fixtures. Anything else under it is yours. (PNG fixtures match a broader sweep, which
+   is why the pattern is scoped by extension.)
+
+   Widen the sweep to `*.md` and there is a SECOND, and it is not deliberate:
+   `.claude/agents/testing-specialist.knowledge.archive.md:1143` reads `lutter^Hin` where
+   `C:\tools\flutter\bin` was meant — its `\t`, `\n` and `\b` were all eaten by this same
+   mechanism on 2026-07-04, in a file a commit gate reads. Two years of "the sweep is clean"
+   would never have found it, because nobody ran the sweep over prose.
 3. Do not trust an earlier clean sweep. The sweep proves the bytes at that moment; the next
    heredoc reintroduces it.
 
