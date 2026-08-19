@@ -38,6 +38,11 @@ on:
       - SBOM (CycloneDX)
       - Prompt Changelog Gate
       - Cloud Functions Unit Tests
+      # Added 2026-08-19: the control-character guard moved out of `Run Tests`
+      # into its own workflow (BUT-1901) and silently left this alarm behind.
+      # Every commit here is bot-authored, so a red check nobody is told about
+      # is a red check nobody sees.
+      - Text integrity
     types: [completed]
 
 permissions:
@@ -69,6 +74,7 @@ jobs:
               'SBOM (CycloneDX)',
               'Prompt Changelog Gate',
               'Cloud Functions Unit Tests',
+              'Text integrity',
             ];
             const TITLE = '🔴 main CI is failing';
             const OWNER_HANDLE = 'Malingisslen'; // solo founder — assign + @mention so it actually notifies

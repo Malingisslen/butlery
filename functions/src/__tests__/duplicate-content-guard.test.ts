@@ -141,6 +141,40 @@ const cases: UnitCase[] = [
     },
   },
   {
+    name: "BUT-1898: an entry stamped EXACTLY at this document's createTime is not evidence",
+    fn: () => {
+      // The boundary case, and the only thing in either suite that tells `<`
+      // from `<=`. Every other fixture sits clear of the bound, so a flipped
+      // comparator passed all of them.
+      //
+      // It is the entry this document's own accepted delivery wrote: same
+      // hash, stamped at the same createTime, because the stamp IS the
+      // createTime. In the shipped trigger the `selfWrite` fast path catches
+      // that case first on `eventId`, which is why a flip would surface as
+      // same-millisecond twins being deleted rather than as a redelivery
+      // deletion — measured by a reviewer, and the reason the comment at the
+      // comparator was rewritten.
+      //
+      // This helper is nonetheless specified to hold ON ITS OWN, with
+      // `eventId` absent. That is what this pins.
+      const created = 1_000_000;
+      const recent = [{ hash: "abc", at: ts(created) }] as any;
+      assertEqual(
+        isDuplicate("abc", recent, created + 1000, 5 * 60 * 1000, created),
+        false,
+        "an entry at exactly this document's createTime must not condemn it",
+      );
+      // The control, one millisecond earlier: still a duplicate, so the test
+      // above is about the boundary rather than about the guard being off.
+      const earlier = [{ hash: "abc", at: ts(created - 1) }] as any;
+      assertEqual(
+        isDuplicate("abc", earlier, created + 1000, 5 * 60 * 1000, created),
+        true,
+        "one millisecond earlier is still evidence",
+      );
+    },
+  },
+  {
     name: "BUT-1898: eviction cannot re-arm the retry hole",
     fn: () => {
       // The sequence the cloud-functions gate found, which the previous
@@ -237,7 +271,8 @@ const cases: UnitCase[] = [
   {
     name: "BUT-1898: NFC and NFD spellings of the same word hash alike",
     fn: () => {
-      // "då" is one code point in NFC and two in NFD. Both render
+      // å is ONE code point in NFC and two in NFD, so "då" is two and
+      // three. Both spellings render
       // identically, and two clients can genuinely produce either. Without
       // normalisation they hash differently, which makes switching form a
       // one-line way to defeat the guard.

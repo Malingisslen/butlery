@@ -114,7 +114,8 @@ export function computeDuplicateHash(
   scope?: string,
 ): string {
   // NFC before casefolding. Two clients can send the same visible Swedish word
-  // as different byte sequences — "då" is one code point in NFC and two in NFD
+  // as different byte sequences — å is ONE code point in NFC and two in NFD,
+  // so "då" is two and three
   // — and without this they hash differently, so switching normalisation form
   // is a one-line evasion. Measured: the two forms have different `.length`
   // too, which means NFD text also sits differently against the chat surface's
@@ -175,6 +176,54 @@ export function isDuplicate(
       // re-derives the same bound from the document's own server-assigned
       // creation time, so an entry written by a LATER message can never
       // condemn an earlier one.
+      //
+      // STRICT `<`, and it must stay strict — but NOT for the reason an
+      // earlier draft of this comment gave. That draft said a `<=` flip would
+      // delete a message on redelivery, because the first delivery's entry is
+      // stamped exactly at the bound. Measured: it would not. The `selfWrite`
+      // fast path in `evaluateAndRecord` matches that entry on `eventId`
+      // FIRST and returns `retry-noop`, and that is the only case in which an
+      // entry can sit exactly on the bound for the same event. A fast path
+      // upstream had made the boundary unreachable, so the stated failure was
+      // not the one a flip would produce.
+      //
+      // What `<=` would actually do is delete ONE of two DIFFERENT messages
+      // with the same hash created in the same millisecond — the inverse.
+      // One, not both: a rejected document returns before `appendAndPrune`,
+      // so it never writes its own entry and cannot condemn its twin back.
+      //
+      // The strictness still matters, for the reason `RecentHash.eventId`
+      // already states: this test is specified to hold ON ITS OWN, with that
+      // field absent. Do not lean on the fast path to make the comparator
+      // safe. `duplicate-content-guard.test.ts` has a fixture sitting exactly
+      // on the boundary for this, and it is the only thing anywhere that
+      // tells `<` from `<=` — measured: the flipped comparator passes the
+      // whole of `duplicate-message-guard.integration.test.ts` (9/9) and
+      // every other case in the unit suite.
+      //
+      // The residual, unchanged: those same-millisecond twins both survive,
+      // because the stamp is truncated to milliseconds ON BOTH SIDES of the
+      // comparison — by this code, not by Firestore. `createTime` itself
+      // carries sub-millisecond precision, so `.toMillis()` in
+      // `selfCreatedAtMs` and `Timestamp.fromMillis` on the entry are where it
+      // dies. Said precisely because "createTime is ms-truncated" would send a
+      // fixer looking for precision that is already there.
+      //
+      // Measured 2026-08-19, eight writes against the emulator: every
+      // `createTime.nanoseconds` was divisible by 1000 and every one carried a
+      // non-zero sub-millisecond remainder (e.g. 33354000 = 33ms + 354µs). So
+      // the sub-ms precision is MEASURED; that Firestore stores commit stamps
+      // at microsecond granularity in PRODUCTION is inferred from its
+      // documented Timestamp precision, not measured here.
+      //
+      // It fails toward not-deleting. Two routes close it, and neither is a
+      // comparator flip:
+      //
+      //   · store `createTime` itself instead of `Timestamp.fromMillis` — the
+      //     precision dies in the WRITE, not in the compare, so touching only
+      //     the comparator buys nothing;
+      //   · or tiebreak at equal stamps on `eventId`, which is already on
+      //     the entry.
       e.at.toMillis() < selfCreatedAtMs,
   );
 }

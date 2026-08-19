@@ -1748,7 +1748,10 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
    `.claude/`. A later one used `grep -r … .`, which walks 15,000 files where only 3,200 are
    tracked — ~12,000 of them vendored — so "a third hit is yours" would have become false the
    next time anyone ran `npm install`. `git ls-files` is the idiom
-   `.github/workflows/test.yml:76` already uses for the same job. Extension scoping stays:
+   `.github/workflows/text-integrity.yml` already uses for the same job — it
+   lived in `test.yml` until 2026-08-19, when it had to move because that
+   workflow's `paths-ignore` excluded the very directories the guard exists
+   for. Extension scoping stays:
    PNG fixtures match otherwise.
 
    `--others --exclude-standard` is the third clause, and it closes a hole the second one
@@ -1806,3 +1809,43 @@ The general form: **a source edit performed through another language inherits th
 language's escape rules, and the result is compiler-invisible.** The same trap ate a `\n`
 inside a Dart string literal in the same session, which DID fail the analyzer — the
 difference is that a control byte inside a comment has nothing to fail.
+
+### A comment that QUOTES another comment breaks when you fix the thing it quotes (2026-08-19)
+
+A false sentence appeared in five places. I corrected three, wrote a note saying so, and the
+note said:
+
+> this claim had FIVE sites, not three ... The header says three because that is how many I
+> had found when I wrote it.
+
+Then I fixed the header to say FIVE. The note now pointed at a header that said the opposite
+of what the note promised — **a new falsehood created by the fix to an old one, in the same
+commit**. The same note also said "the two just above" about two sites, one of which is 31
+lines *below* it.
+
+**A sentence that quotes another comment's wording, or its position, is a DEPENDENCY on that
+wording and that layout.** Both are things you are actively editing. State the fact instead of
+pointing at where the fact is written.
+
+The count itself was wrong twice, for the ordinary reason: an unscoped number invites the next
+correction. "Five sites" was true of the trigger and its test suite; `firestore.rules` and its
+rules test carried the same claim, correctly tensed. Scope a count to what it counts.
+
+#### The related trap, from the same review: a fast path can make a boundary unreachable
+
+Separately in the same file, I wrote that flipping a comparator from `<` to `<=` would delete
+a message on redelivery. A reviewer measured it and it would not: an `eventId` fast path
+upstream catches that case and returns before the comparator ever runs. What the flip would
+actually do is the inverse — delete one of two DIFFERENT messages written in the same
+millisecond.
+
+Two things follow, and the second is the sharper one:
+
+1. **The stated failure mode was not the one a flip produces.** A guard's justification is an
+   assertion about control flow, so trace what SHORT-CIRCUITS above it before writing why it
+   matters.
+2. **The mutant survived both suites.** No fixture sat on the boundary, so `<=` passed 20/20
+   and 9/9. A comment calling something "load-bearing" is an untested assertion until a
+   fixture sits exactly ON the bound — and a fast path upstream is exactly what makes such a
+   fixture easy to forget, because the boundary looks unreachable from the outside.
+

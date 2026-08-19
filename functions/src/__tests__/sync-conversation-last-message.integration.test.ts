@@ -35,9 +35,10 @@
  *      disk. Firestore sorts strings above every timestamp, so a planted
  *      string wins `orderBy('sentAt','desc').limit(1)` outright.
  *
- *      This sentence was the THIRD copy of one claim. The other two were
- *      corrected the same day and this one was missed — the digest already
- *      says to grep a phrase across the whole tree before writing it.
+ *      Corrected 2026-08-19. The counting note at I8 below is the single
+ *      record of which copies of this claim were wrong and how many — kept in
+ *      one place on purpose, because two copies of one fact is the drift that
+ *      note is about, and a count is a fact like any other.
  *
  * Isolation: per-run unique conversation + message ids; every doc this suite
  * writes is deleted in cleanup so the shared demo-test namespace stays
@@ -280,12 +281,34 @@ async function run(): Promise<void> {
   // writing this test is what found the second half.
   //
   // Measured against the live rules on the emulator: the messages CREATE rule
-  // checks that `sentAt` EXISTS, never what type it holds — `sentAt: "nope"`
-  // returns ALLOW. And Firestore sorts STRINGS above every timestamp
+  // USED TO check that `sentAt` EXISTS and never what type it holds, so
+  // `sentAt: "nope"` returned ALLOW. BUT-1896 closed that on 2026-08-19. This
+  // test STILL reaches the shape — it always did, through the Admin SDK, which
+  // bypasses rules — so it could not have reddened when the rule changed.
+  //
+  // The guard stays for TWO reasons, and the second is the one that survives:
+  // the rule bounds new writes and says nothing about rows already on disk,
+  // AND a well-typed but FUTURE-DATED Timestamp still passes it (BUT-1903).
+  // Do not read this as a guard that expires once the old rows age out.
+  //
+  // And Firestore sorts STRINGS above every timestamp
   // (`string > new ts > old ts > null`), so a planted string does not merely
   // survive the recompute query, it WINS `orderBy('sentAt','desc').limit(1)`.
   //
   // Reverting either guard turns this red, and they fail differently:
+  //
+  // (Counting note, and the ONLY enumeration of these five — the header points
+  // here rather than repeating it. FIVE sites carried the claim WRONG, all in
+  // the trigger and this suite: two in `sync-conversation-last-message.ts`,
+  // this file's header, the paragraph above, and the inline note on the
+  // planted write further down. `firestore.rules` and
+  // `conversations-rules.test.ts` carry the same claim correctly tensed, so
+  // the repo-wide count is higher; five counts only the ones that were wrong.
+  // An earlier correction found three of them and said so. The count is
+  // stated here rather than by pointing at the header, because a sentence
+  // quoting another comment's wording breaks the moment that comment is
+  // fixed — which is exactly what happened to the first version of this
+  // note.)
   //  · create path back to `!after?.sentAt` — the write throws
   //    "candidateSentAt.toMillis is not a function", measured, because the
   //    string reaches the comparator; and when the conversation happens to
@@ -316,7 +339,9 @@ async function run(): Promise<void> {
       content: "planterad",
       type: "text",
       status: "sent",
-      // Not a Timestamp. A client can write exactly this today.
+      // Not a Timestamp. A client could write exactly this until BUT-1896;
+      // this write has ALWAYS gone through the Admin SDK, which bypasses
+      // rules, so the case stays reachable for the rows already on disk.
       sentAt: "nope" as unknown as FirebaseFirestore.Timestamp,
     });
 
