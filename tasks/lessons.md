@@ -1578,7 +1578,7 @@ TICKET nothing was pinned, and the verifier failed it correctly.
 **Two graders, two rubrics, and nobody had said which one "a regression test" is graded
 against.** That gap is the defect; hunting for a careless reviewer was chasing the wrong one.
 
-### The three mechanical causes, none of which a new rule would have fixed
+#### The three mechanical causes, none of which a new rule would have fixed
 
 The probe requirement already existed — `testing-specialist.md` says "Confirm it would fail if
 that behaviour broke", and its knowledge file carries a whole *Vacuity patterns* section
@@ -1597,7 +1597,7 @@ because:
    The field where "I could not show this would fail" already landed was a dead letter, so a
    new rule written above it would have repeated the miss one layer up.
 
-### And the reviewers were structurally denied the evidence
+#### And the reviewers were structurally denied the evidence
 
 `runGateReviews` said "Review ONLY these files", computed from what the patch touched. Seeing
 the vacuity required three files; one was in the diff. The other two were not merely
@@ -1606,7 +1606,7 @@ agent Reads, opening them was unrewarded work on top of that. The 2026-08-01 sal
 already measured the same shape from the other end: seven of its nine blocking findings were
 "this file is correct on its own but disagrees with something else".
 
-### What shipped
+#### What shipped
 
 The severity class, a consumer for `notVerified`, and the removal of the word ONLY — reviewers
 are now told to open siblings, and a doubt parks the ticket for Malin instead of closing it.
