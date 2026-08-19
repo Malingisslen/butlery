@@ -1746,7 +1746,7 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
    included. Every clause was learned the hard way. An earlier draft swept `lib/ test/ functions/src/` and therefore
    could not find the very instance this entry cites as its own proof, which lived in
    `.claude/` until BUT-1902 repaired it. A later one used `grep -r … .`, which walks the whole working tree — an order of
-   magnitude more files than are tracked, nearly all of them vendored — so the baseline's
+   magnitude more files than are tracked, nearly all of them machine-generated — so the baseline's
    "anything else is yours" would have become false the next time anyone ran `npm install`.
    (Deliberately no figures: this entry has had three sets of them and all three expired.
    Measure when you need the number.) `git ls-files` is the idiom
@@ -1784,17 +1784,18 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
      fixtures, with a comment saying so. It is the same file
      `.github/workflows/text-integrity.yml` names — but the two do not do the same job, in
      three ways. CI EXCLUDES the file and so expects NOTHING back; this sweep expects exactly
-     that file. CI scans nine more extensions (`.yml .yaml .json .js .mjs .sh .arb .xml
-     .plist`). And CI sweeps TRACKED files only, so it is blind to the brand-new uncommitted
-     file the third clause above exists to catch. A clean run here does not predict a green
-     guard there, in either direction.
+     that file. CI scans a longer extension list — read it off the workflow
+     rather than trusting a copy here. And CI sweeps TRACKED files only, so on a LOCAL tree
+     it cannot see the not-yet-added file that `--others --exclude-standard` exists to catch;
+     on CI itself everything present is tracked, so nothing that LANDS escapes it. A clean
+     run here does not predict a green guard there, in either direction.
 
    It was TWO until 2026-08-19, and saying so here after the repair landed would have been
    FAIL-OPEN: a session that swept, got two hits and dismissed the second as "the known
    baseline" would have been dismissing a real one. Corrected the same day the reviewer
    caught it.
 
-   The second entry was `.claude/agents/testing-specialist.knowledge.archive.md:1143`, and
+   The second entry was `.claude/agents/testing-specialist.knowledge.archive.md`, and
    the story is worth keeping even though the file is clean now. It read `lutter^Hin` where
    `C:\tools\flutter\bin` was meant. FOUR escapes were eaten across two Windows paths on
    that line — `\v` (from `\v1.0`), `\t`, `\f` and `\b`. Introduced 2026-06-14 in
