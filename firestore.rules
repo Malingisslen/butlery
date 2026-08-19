@@ -2009,6 +2009,41 @@ service cloud.firestore {
         && hasRequiredFields(['senderId', 'conversationId', 'content', 'sentAt'])
         && request.resource.data.content is string
         && request.resource.data.content.size() <= 5000
+        // BUT-1896. `hasRequiredFields` pins the KEY, never its TYPE, and this
+        // field is SORTED ON. Measured on the emulator 2026-08-19:
+        // `sentAt: "nope"` used to return ALLOW, and Firestore orders strings
+        // ABOVE every timestamp — so a planted string does not merely survive
+        // `orderBy('sentAt','desc')`, it wins it. In a DM the client adds no
+        // range filter on sentAt (only a group's memberSince cut-off does
+        // that), so one such message pinned itself to the top of BOTH
+        // participants' history, permanently.
+        //
+        // Only THIS conjunct closes it. The Cloud Function guards that landed
+        // the same day stop `syncConversationLastMessage` from crashing or
+        // projecting the string; they cannot stop the client-side pin, because
+        // the row is still there and still sorts first.
+        //
+        // CREATE ONLY, deliberately. There are TWO `allow update` statements
+        // on this block and rules OR them, so both have to be checked: the
+        // sender branch carries `cannotModify([... 'sentAt'])`, and the
+        // receipts branch is held by an `affectedKeys().hasOnly([...])` that
+        // does not list the field. Measured on the emulator — a sender doing
+        // `.update({sentAt: "nope"})` is denied by BOTH. So no update path can
+        // introduce or change a malformed stamp.
+        //
+        // "Unreachable" would be the wrong word for a conjunct there, and the
+        // first draft of this comment used it: a sender editing the CONTENT of
+        // a legacy row whose `sentAt` is already a string is ALLOWED today, so
+        // such a conjunct would flip a non-empty set of documents to deny. It
+        // is unnecessary, not unreachable.
+        //
+        // What this does NOT close: the VALUE. A well-typed Timestamp of
+        // 9999-12-31 is still accepted, wins the same `orderBy` in a DM, and
+        // unlike a string also passes the group `memberSince` cut-off and the
+        // client's range filter — so it pins harder than what BUT-1896 fixed.
+        // Own ticket; an upper bound needs clock-skew tolerance because every
+        // `Message` stamps the DEVICE clock.
+        && request.resource.data.sentAt is timestamp
         && isAccountMatured()
         && isAgeCompliant()
         && rateLimitWrite('messages', 5);

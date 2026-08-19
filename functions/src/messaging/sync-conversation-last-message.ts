@@ -147,8 +147,9 @@ export const syncConversationLastMessage = onDocumentWritten(
         // here, and the gap is reachable by any participant rather than by
         // accident. Measured against the live rules on the emulator:
         //
-        //   · the messages CREATE rule checks that the key `sentAt` EXISTS,
-        //     never what TYPE it holds — `sentAt: "nope"` returns ALLOW;
+        //   · the messages CREATE rule USED TO check only that the key
+        //     `sentAt` EXISTS, never what TYPE it holds — `sentAt: "nope"`
+        //     returned ALLOW. Closed by BUT-1896 on 2026-08-19;
         //   · Firestore's type ordering sorts STRINGS above every timestamp,
         //     measured `string > new ts > old ts > null`.
         //
@@ -157,11 +158,21 @@ export const syncConversationLastMessage = onDocumentWritten(
         // their own message the permanent recomputed preview for everyone else.
         // Require a real Timestamp; anything else clears.
         //
-        // The rules-side close (`request.resource.data.sentAt is timestamp` on
-        // the create) is deliberately NOT in this change — it needs its own
-        // rules tests beside M1-M9, which today have no missing- or
-        // malformed-`sentAt` case at all. Filed separately; do not assume this
-        // guard makes the rule unnecessary.
+        // The rules-side close LANDED (BUT-1896, 2026-08-19):
+        // `request.resource.data.sentAt is timestamp` on the create, with
+        // M10-M13 beside the older M1-M9 — string, number, missing and
+        // Timestamp-shaped map. This paragraph said the opposite for a few
+        // hours, because it was written in the same session that then filed
+        // and built the rule.
+        //
+        // This guard STAYS, and not out of caution: the rule bounds what can
+        // be WRITTEN from today, and says nothing about rows already on disk
+        // from before it. Do not delete it because the rule exists.
+        //
+        // Still open, and worse than what was closed: a well-typed Timestamp
+        // far in the FUTURE. It passes the rule, wins the same ordering, and
+        // unlike a string also clears the group `memberSince` cut-off and the
+        // client's range filter. BUT-1903.
         if (
           !(replacementData.sentAt instanceof admin.firestore.Timestamp)
         ) {
@@ -208,9 +219,14 @@ export const syncConversationLastMessage = onDocumentWritten(
       //    `Timestamp.fromDate`. Skipping is the fail-closed choice: the
       //    preview waits for the next well-formed message, which is what test
       //    I7 pins.
-      //  · WRONG TYPE — nothing catches up, ever. `sentAt: "nope"` passes the
-      //    create rule (which only tests that the key exists), is truthy, and
-      //    then reached `candidateSentAt.toMillis()` and threw; measured
+      //  · WRONG TYPE — nothing catches up, ever. `sentAt: "nope"` USED TO
+      //    pass the create rule, which tested only that the key exists;
+      //    BUT-1896 closed that on 2026-08-19. The guard stays for the two
+      //    reasons the delete branch above gives: the rule bounds what can be
+      //    WRITTEN from now on and says nothing about rows already on disk,
+      //    and a future-dated but well-typed Timestamp still passes it
+      //    (BUT-1903). The string was truthy, so it reached
+      //    `candidateSentAt.toMillis()` and threw; measured
       //    2026-08-19 by the integration test below. Worse, when the
       //    conversation had no lastMessage the string was PROJECTED, after
       //    which every later write in that conversation threw on the stored

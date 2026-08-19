@@ -181,8 +181,10 @@ export async function cleanupUserSocialData(
   //     the moderation sprint:
   //       - users/{uid}/notificationCounters/{YYYY-MM-DD}: per-day push
   //         fatigue counters. PII-linked via path.
-  //       - users/{uid}/recentContentHashes/rolling: rolling SHA-1 hashes
-  //         of comment/chat content the user wrote. SHA-1 + truncation is
+  //       - users/{uid}/recentContentHashes/{rolling,chat}: rolling SHA-1
+  //         hashes of comment/chat content the user wrote. Two docs since
+  //         BUT-1898 split the surfaces; the sweep enumerates, so the count
+  //         does not matter to it. SHA-1 + truncation is
   //         not reversible without the original text, but the doc still
   //         records authorship metadata under the user path → linked PII.
   //     Firestore does not cascade-delete subcollections when the parent
@@ -286,7 +288,10 @@ export async function tombstoneSharedByDisplayNameWithDb(
  * Both subcollections are bounded in size:
  *   - `notificationCounters` accumulates one doc per day; even a year-old
  *     account has < 400 docs.
- *   - `recentContentHashes` is a single `rolling` doc.
+ *   - `recentContentHashes` holds at most two docs (`rolling` for comments,
+ *     `chat` since BUT-1898). It was one until 2026-08-19; the sweep
+ *     enumerates the subcollection rather than naming ids, so the split
+ *     needed no change here.
  * A single batch (≤ 500 ops) is sufficient. Best-effort per subcollection:
  * one failure logs a warn and proceeds — partial cleanup beats total
  * failure for GDPR cascade purposes.
@@ -304,8 +309,9 @@ async function cleanupContentGuardSubcollections(
       for (const doc of snap.docs) {
         batch.delete(doc.ref);
         // BUT-886: own-data delete under users/{userId}/{subcoll}. Bounded
-        // size (counters <400, recentContentHashes is a single doc) — within
-        // the 500-op cap even doubled for audit rows.
+        // size (counters <400, recentContentHashes at most two docs since
+        // BUT-1898 split comments from chat) — within the 500-op cap even
+        // doubled for audit rows.
         stageCascadeAuditEntry(db, batch, {
           subjectUserId: userId,
           targetUid: null,

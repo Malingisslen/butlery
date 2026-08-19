@@ -1171,6 +1171,116 @@ test("messages: the same actor can create a message in a conversation they are i
   );
 });
 
+// M10: DENY — a STRING where the timestamp belongs. Before BUT-1896 this
+// SUCCEEDED: `hasRequiredFields` pins the key, never the type, and nothing else
+// in the create rule looked at `sentAt`.
+//
+// It is not a cosmetic malformation. Firestore orders values by TYPE and puts
+// strings ABOVE every timestamp, so this row wins `orderBy('sentAt','desc')`
+// outright — and a DM's message query carries no range filter on the field
+// (only a group's memberSince cut-off adds one). One planted message therefore
+// pins itself to the top of both participants' history for good.
+//
+// M9 above is the ALLOW control that makes this deny attributable to the type:
+// same actor, same claims, same conversation, same body shape. Only `sentAt`
+// differs.
+test("messages: a string sentAt is refused (it would win orderBy desc)", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-sentat-string-${RUN}`)
+      .set({
+        ...messageBody(MSG_DIRECT, STRANGER_UID, new Date()),
+        sentAt: "nope",
+      })
+  );
+});
+
+// M11: DENY — a NUMBER, the other shape a hand-rolled client reaches for.
+// `hasRequiredFields` accepts it too.
+//
+// NOT for the reason the first draft of this comment gave. It claimed the
+// client cannot parse an int and substitutes `clock.now()`; measured against
+// `SerializationUtils.parseDateTimeValue:104`, an int parses fine
+// (`DateTime.fromMillisecondsSinceEpoch`). That `clock.now()` fallback belongs
+// to the STRING and MISSING cases, i.e. M10 and M12 — the claim was
+// transplanted from the Cloud Function's comment, where it is about a missing
+// stamp and correct.
+//
+// The real cost of a number: it sorts BELOW every timestamp, so the message
+// buries itself out of the `limit(50)` window instead of pinning, and in a
+// group it makes the read rule's `sentAt >= memberSince` a cross-type
+// comparison.
+test("messages: a numeric sentAt is refused", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-sentat-number-${RUN}`)
+      .set({
+        ...messageBody(MSG_DIRECT, STRANGER_UID, new Date()),
+        sentAt: 1755561600000,
+      })
+  );
+});
+
+// M12: DENY — the key missing entirely.
+//
+// This test pins BEHAVIOUR, and it does NOT guard the required-fields list.
+// The first draft claimed the opposite ("if someone trims that list this is
+// what goes red"), and the rules gate disproved it by running the mutation:
+// drop `'sentAt'` from `hasRequiredFields` and NOTHING reddens — not this test
+// and not M10, M11 or M13 either. (The first correction wrote a suite total
+// here, and it was stale by the time it landed, because M13 arrived in the
+// same commit. Name the tests that move; a total is a fact about the file's
+// length.) The new
+// type conjunct now masks the missing case — indexing an absent key is a CEL
+// evaluation error, which denies — so the older conjunct beside it has become
+// invisible to this test.
+//
+// Masking runs in both directions, which is the general lesson: a NEW conjunct
+// can hide an OLD one standing next to it. A future editor who trims the list,
+// sees green and believes M12 covered them is the specific harm.
+test("messages: a missing sentAt is refused", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  const body = messageBody(MSG_DIRECT, STRANGER_UID, new Date());
+  delete body.sentAt;
+  await assertFails(
+    ctx.firestore().doc(`messages/m-sentat-missing-${RUN}`).set(body)
+  );
+});
+
+// M13: DENY — a MAP shaped like a serialised Timestamp,
+// `{seconds, nanoseconds}`.
+//
+// That is the RAW FIRESTORE map shape, which is what `parseDateTimeValue`'s
+// own comment calls it. It is not what a JS SDK emits: measured on the
+// installed SDK, `Timestamp.toJSON()` produces a three-key map with a `type`
+// field, and the Dart-flavoured variant uses `_seconds`/`_nanoseconds`. All
+// three are maps and `is timestamp` denies them identically, so coverage is
+// unaffected — but the first draft credited the wrong producer, which is the
+// same transplanted-rationale slip M11 records.
+//
+// The rules gate flagged this as the case a hand-rolled client reaches for
+// FIRST, and the worst pin shape of the three: maps sit at the very top of
+// Firestore's type order — above strings — and `parseDateTimeValue` parses
+// this one happily, so it renders as a perfectly normal message while sitting
+// permanently at the head of the list. The shipped conjunct closes it, because
+// `is timestamp` is false for a map; nothing pinned that until now.
+test("messages: a Timestamp-shaped MAP is refused", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-sentat-map-${RUN}`)
+      .set({
+        ...messageBody(MSG_DIRECT, STRANGER_UID, new Date()),
+        sentAt: { seconds: 1755561600, nanoseconds: 0 },
+      })
+  );
+});
+
 // ============================================================================
 // CONVERSATION PARTICIPANTS — roster subcollection (BUT-1482 sprint,
 // re-authorized by BUT-1838)
