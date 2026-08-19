@@ -1740,17 +1740,22 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
    for: this very line first shipped as `r"\\b"`, which is TWO backslashes and a `b`,
    i.e. the wrong answer inside the fix list of the lesson about getting it wrong.
 2. After any heredoc edit that mentions a regex escape, run
-   `grep -rlP '[\x00-\x08]' --include='*.dart' --include='*.ts' lib/ test/ functions/src/`
-   Under THAT pattern the baseline on this tree is ONE file, not zero:
-   `test/unit/services/ocr_extraction_service_test.dart` holds deliberate control-character
-   OCR fixtures. Anything else under it is yours. (PNG fixtures match a broader sweep, which
-   is why the pattern is scoped by extension.)
+   `grep -rlP '[\x00-\x08]' --include='*.dart' --include='*.ts' --include='*.md' .`
 
-   Widen the sweep to `*.md` and there is a SECOND, and it is not deliberate:
-   `.claude/agents/testing-specialist.knowledge.archive.md:1143` reads `lutter^Hin` where
-   `C:\tools\flutter\bin` was meant — its `\t`, `\n` and `\b` were all eaten by this same
-   mechanism on 2026-07-04, in a file a commit gate reads. Two years of "the sweep is clean"
-   would never have found it, because nobody ran the sweep over prose.
+   From the REPO ROOT with no path argument, and `*.md` included. Both halves are load-bearing
+   and both were learned the hard way: an earlier draft swept `lib/ test/ functions/src/` and
+   therefore could not find the very instance this entry cites as its own proof, which lives
+   in `.claude/`. Scoping by extension is still needed — PNG fixtures match otherwise.
+
+   **The expected set is TWO files. A third is yours.**
+   * `test/unit/services/ocr_extraction_service_test.dart` — deliberate control-character OCR
+     fixtures, with a comment saying so.
+   * `.claude/agents/testing-specialist.knowledge.archive.md:1143` — NOT deliberate. It reads
+     `lutter^Hin` where `C:\tools\flutter\bin` was meant; its `\t`, `\n` and `\b` were all eaten by
+     this same mechanism. Introduced 2026-06-14 in `3bf7a50f3`, in
+     `testing-specialist.knowledge.md` — the file agents LOAD — and moved into the append-only
+     archive three weeks later by `58bae2954`. Repair tracked on BUT-1900; until it lands, it
+     is part of the baseline. Nobody found it in two months because nobody swept over prose.
 3. Do not trust an earlier clean sweep. The sweep proves the bytes at that moment; the next
    heredoc reintroduces it.
 

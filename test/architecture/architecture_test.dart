@@ -446,8 +446,8 @@ void main() {
     // — and that asymmetry is not a policy anyone decided. Only `error`
     // reaches Crashlytics, so `error` is where the leak was. Forty-odd
     // non-`error` sites (`info`, `debug`, `success`, `warning`) still print
-    // raw ids; they are device-local, and one of them was masked in this same
-    // batch, so "unswept" describes them better than any policy does.
+    // raw ids; they are device-local, and BUT-1872 masked one of them anyway,
+    // so "unswept" describes them better than any policy does.
     // BUT-1897 owns reconciling them. Counting them precisely has now been
     // wrong twice in this comment's history — measure before quoting a
     // number, or leave it approximate as it is here.
