@@ -1,3 +1,5 @@
+import 'package:butlery/core/utils/crypto_utils.dart';
+
 /// Log sanitization utilities for PII protection in logs and exports.
 /// Provides consistent masking patterns for sensitive data like emails
 /// and user IDs that should not appear in production logs.
@@ -49,6 +51,37 @@ class LogSanitizer {
     return '${phone.substring(0, 4)}***${phone.substring(phone.length - 4)}';
   }
 
+  /// Masks a conversation id for safe logging.
+  ///
+  /// A DIRECT conversation's id is derived from its two members —
+  /// `direct_<uidA>_<uidB>` — so logging it raw prints two user ids in clear
+  /// text. A group id is an opaque auto-id and carries nothing, so it passes
+  /// through unchanged here.
+  ///
+  /// "Unchanged here" is the honest limit: on the Crashlytics path a 20-char
+  /// group id still matches `AppLogger`'s bare-token rule and arrives as
+  /// `abcd***`. Harmless for privacy, but it means a group id does NOT read
+  /// identically in a crash report and a Cloud Functions log. Only the direct
+  /// ids do, and that parity is pinned by a literal in both languages' tests.
+  ///
+  /// Mirrors `logSafeConversationId` in
+  /// `functions/src/messaging/enforce-group-minor-membership.ts`, deliberately
+  /// down to the `direct_#` shape and the 12-char SHA-256 prefix, so one
+  /// conversation reads the same in a Crashlytics report and a Cloud Functions
+  /// log. Change one and you must change the other, or correlating an incident
+  /// across the two stops working.
+  ///
+  /// Hashed rather than blanked (`direct_***`) on purpose: these are ERROR
+  /// logs, and being able to tell "this one conversation failed nine times"
+  /// from "nine conversations failed once" is the whole reason the id is in the
+  /// message. A stable hash keeps that and reveals neither uid.
+  static String maskConversationId(String? conversationId) {
+    if (conversationId == null) return 'null';
+    if (conversationId.isEmpty) return '[empty]';
+    if (!conversationId.startsWith('direct_')) return conversationId;
+    return 'direct_#${CryptoUtils.sha256Hash(conversationId).substring(0, 12)}';
+  }
+
   /// Masks a display name for safe logging.
   /// Example: "Anna Svensson" -> "An***"
   static String maskDisplayName(String? name) {
@@ -66,6 +99,9 @@ extension LogSanitizationExtensions on String? {
 
   /// Masks userId for safe logging.
   String get maskedUserId => LogSanitizer.maskUserId(this);
+
+  /// Masks a conversation id for safe logging (BUT-1872).
+  String get maskedConversationId => LogSanitizer.maskConversationId(this);
 
   /// Masks phone number for safe logging.
   String get maskedPhone => LogSanitizer.maskPhoneNumber(this);

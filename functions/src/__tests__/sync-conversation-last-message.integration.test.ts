@@ -23,9 +23,19 @@
  *   5. Delete the latest → lastMessage recomputed from the next-most-recent
  *      surviving message (transactional recompute query).
  *   6. Delete the last remaining message → lastMessage cleared to null.
+ *   7. Delete when the only survivor carries no `sentAt` → lastMessage cleared
+ *      rather than projected undated (BUT-1853; the client would substitute
+ *      `clock.now()` and defeat the group history cut-off).
  *
- * Isolation: per-run unique conversation + message ids; docs are deleted in
- * cleanup so the shared demo-test namespace stays unpolluted.
+ *   8. A message whose `sentAt` is a STRING is refused by BOTH the create and
+ *      the delete path (BUT-1853). The create rule tests only that the key
+ *      exists, and Firestore sorts strings above every timestamp, so a planted
+ *      string wins `orderBy('sentAt','desc').limit(1)` outright.
+ *
+ * Isolation: per-run unique conversation + message ids; every doc this suite
+ * writes is deleted in cleanup so the shared demo-test namespace stays
+ * unpolluted. That includes I8's deliberately malformed row — the emulator
+ * keeps data across runs, so a leftover would be permanent.
  *
  * Skip gate (local machines without the emulator / Java): if 8080 doesn't
  * answer, print SKIP and exit 0 — unless CI is set, where a missing emulator
@@ -51,6 +61,13 @@ const RUN = Date.now().toString(36);
 const CONV = `conv-${RUN}`;
 const M1 = `msg1-${RUN}`;
 const M2 = `msg2-${RUN}`;
+// BUT-1853 only: a dated survivor and an undated one, seeded after the suite
+// above has emptied the conversation.
+const M3 = `msg3-${RUN}`;
+const M4 = `msg4-${RUN}`;
+// I8 (BUT-1853): the planted-string pair.
+const M5 = `msg5-${RUN}`;
+const M6 = `msg6-${RUN}`;
 
 type TestFn = () => Promise<void>;
 const tests: { name: string; fn: TestFn }[] = [];
@@ -207,6 +224,110 @@ async function run(): Promise<void> {
     assert(lm === null, `lastMessage must be null for an empty conversation, got ${JSON.stringify(lm)}`);
   });
 
+  // I7 (BUT-1853): the delete-path recompute must not project a survivor that
+  // carries no `sentAt`. The client reads a missing stamp as `clock.now()`
+  // (`MessageDto.fromMap`), which always clears `Conversation.canReadMessageAt`
+  // — so such a projection would show a member added to a running group the
+  // preview of a message sent before they joined. Clearing is the fail-closed
+  // outcome. DELETING the guard turns this red (`id === M4` instead of null);
+  // WEAKENING it to `!replacementData.sentAt` does NOT, because null is falsy
+  // and the reverted check still clears. I8 is the test that kills the
+  // truthiness mutant, and that split is why both tests exist.
+  test("delete: survivor with no sentAt clears lastMessage instead of projecting it", async () => {
+    // Re-seed: I6 left the conversation empty.
+    await writeAndFire(M3, {
+      conversationId: CONV,
+      senderId: `a-${RUN}`,
+      content: "daterad",
+      type: "text",
+      status: "sent",
+      sentAt: ts(T1),
+    });
+    // An undated message never becomes lastMessage on its own (the create-path
+    // guard), so the conversation still points at M3 here.
+    await writeAndFire(M4, {
+      conversationId: CONV,
+      senderId: `b-${RUN}`,
+      content: "odaterad",
+      type: "text",
+      status: "sent",
+      sentAt: null,
+    });
+    const before = await lastMessage();
+    assert(
+      before!.id === M3,
+      `precondition: an undated message must not take over lastMessage, got ${before!.id}`,
+    );
+
+    await deleteAndFire(M3);
+
+    const lm = await lastMessage();
+    assert(
+      lm === null,
+      `lastMessage must be cleared when the only survivor has no sentAt, got ${JSON.stringify(lm)}`,
+    );
+  });
+
+  // I8 (BUT-1853, 2026-08-19): the case a truthiness check CANNOT catch. It is
+  // why BOTH paths in the handler test the TYPE rather than the value, and
+  // writing this test is what found the second half.
+  //
+  // Measured against the live rules on the emulator: the messages CREATE rule
+  // checks that `sentAt` EXISTS, never what type it holds — `sentAt: "nope"`
+  // returns ALLOW. And Firestore sorts STRINGS above every timestamp
+  // (`string > new ts > old ts > null`), so a planted string does not merely
+  // survive the recompute query, it WINS `orderBy('sentAt','desc').limit(1)`.
+  //
+  // Reverting either guard turns this red, and they fail differently:
+  //  · create path back to `!after?.sentAt` — the write throws
+  //    "candidateSentAt.toMillis is not a function", measured, because the
+  //    string reaches the comparator; and when the conversation happens to
+  //    have no lastMessage it is projected instead, after which every later
+  //    write in that conversation throws on the STORED value.
+  //  · delete path back to `!replacementData.sentAt` — the string is truthy,
+  //    so the recompute projects it and `lm.id === M6`.
+  test("a STRING sentAt is refused by both the create and the delete path", async () => {
+    // I7 leaves M4 (`sentAt: null`) behind. Remove it FIRST so the planted
+    // string is the only survivor of the delete below. Otherwise the
+    // delete-path mutant-kill would rest on Firestore ordering a string above
+    // a null — which it does, but if that ever flipped, the reverted guard's
+    // truthiness test would clear on the falsy null and this test would go
+    // GREEN with the mutant live.
+    await msgRef(M4).delete();
+
+    await writeAndFire(M5, {
+      conversationId: CONV,
+      senderId: `a-${RUN}`,
+      content: "daterad",
+      type: "text",
+      status: "sent",
+      sentAt: ts(T1),
+    });
+    await writeAndFire(M6, {
+      conversationId: CONV,
+      senderId: `b-${RUN}`,
+      content: "planterad",
+      type: "text",
+      status: "sent",
+      // Not a Timestamp. A client can write exactly this today.
+      sentAt: "nope" as unknown as FirebaseFirestore.Timestamp,
+    });
+
+    const afterPlant = await lastMessage();
+    assert(
+      afterPlant !== null && afterPlant.id === M5,
+      `create path: the planted string must not take over the preview, got ${JSON.stringify(afterPlant)}`,
+    );
+
+    await deleteAndFire(M5);
+
+    const lm = await lastMessage();
+    assert(
+      lm === null,
+      `delete path: a string sentAt must clear lastMessage, not become the preview; got ${JSON.stringify(lm)}`,
+    );
+  });
+
   let failed = 0;
   for (const t of tests) {
     try {
@@ -223,6 +344,13 @@ async function run(): Promise<void> {
   await convRef.delete();
   await msgRef(M1).delete();
   await msgRef(M2).delete();
+  await msgRef(M3).delete();
+  await msgRef(M4).delete();
+  // I8's pair. M6 carries `sentAt: "nope"` and MUST go: the emulator keeps
+  // data between runs, so leaving it behind plants a permanent malformed row
+  // in the shared top-level `messages` collection.
+  await msgRef(M5).delete();
+  await msgRef(M6).delete();
 
   console.log(
     `\n${tests.length - failed}/${tests.length} passed` +

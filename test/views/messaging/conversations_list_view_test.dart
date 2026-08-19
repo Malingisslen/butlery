@@ -31,6 +31,9 @@ import 'package:provider/provider.dart';
 import 'package:butlery/views/messaging/conversations_list_view.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/widgets/messaging/conversation_list_item.dart';
+import 'package:butlery/views/messaging/group_detail_view.dart';
+import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
@@ -105,6 +108,51 @@ Conversation _directConversation({
   );
 }
 
+/// A GROUP conversation — the only kind that offers the "Gruppinformation"
+/// action in the long-press sheet.
+Conversation _groupConversation({
+  required String id,
+  required String title,
+  String groupId = 'chat-group-77',
+}) {
+  final created = DateTime(2026, 6, 2, 12);
+  return Conversation(
+    id: id,
+    participantIds: [_currentUserId, 'other-1', 'other-2'],
+    participantDisplayNames: const {
+      _currentUserId: 'Jag',
+      'other-1': 'Anna',
+      'other-2': 'Björn',
+    },
+    participantAvatarUrls: const {
+      _currentUserId: null,
+      'other-1': null,
+      'other-2': null,
+    },
+    lastReadTimestamps: {_currentUserId: DateTime(2100)},
+    createdAt: created,
+    updatedAt: created,
+    isGroup: true,
+    title: title,
+    // Deliberately DIFFERENT from `id`. With both the same, "passes the
+    // conversation id" and "passes the group id" are indistinguishable — in
+    // the one test whose whole point is that the old route confused them.
+    groupId: groupId,
+  );
+}
+
+/// Records every route pushed onto the navigator so a test can inspect what
+/// the view asked for, rather than what the destination happened to render.
+class _RouteRecorder extends NavigatorObserver {
+  final List<Route<dynamic>> pushed = [];
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    pushed.add(route);
+    super.didPush(route, previousRoute);
+  }
+}
+
 void main() {
   late MockMessagingService messagingService;
   late StreamController<List<Conversation>> conversationsController;
@@ -153,8 +201,24 @@ void main() {
     await ViewTestHelpers.teardownViewTestEnvironment();
   });
 
-  Widget testApp() {
+  Widget testApp({
+    List<NavigatorObserver> observers = const [],
+    List<String>? namedRouteRequests,
+  }) {
     return MaterialApp(
+      navigatorObservers: observers,
+      // BUT-1857: a generator that RECORDS the name and returns a blank page.
+      // Without it a `pushNamed` regression blows up inside the tap handler
+      // with the framework's "Could not find a generator for route" assert,
+      // and the test fails on that exception before any expectation runs — so
+      // the failure would say nothing about what the view actually asked for.
+      onGenerateRoute: (settings) {
+        namedRouteRequests?.add(settings.name ?? '<null>');
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => const SizedBox.shrink(),
+        );
+      },
       locale: const Locale('sv', 'SE'),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
@@ -176,7 +240,11 @@ void main() {
   // vertically. That overflow is a layout artifact of the surrounding scaffold,
   // orthogonal to the state behaviour under test — so we ignore RenderFlex
   // overflow FlutterErrors ONLY, letting every other error fail as normal.
-  Future<void> pumpView(WidgetTester tester) async {
+  Future<void> pumpView(
+    WidgetTester tester, {
+    List<NavigatorObserver> observers = const [],
+    List<String>? namedRouteRequests,
+  }) async {
     tester.view.physicalSize = const Size(1200, 2600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -193,7 +261,9 @@ void main() {
     };
     addTearDown(() => FlutterError.onError = previousOnError);
 
-    await tester.pumpWidget(testApp());
+    await tester.pumpWidget(
+      testApp(observers: observers, namedRouteRequests: namedRouteRequests),
+    );
   }
 
   group('ConversationsListView — inbox states', () {
@@ -368,6 +438,114 @@ void main() {
         // No list and no loading copy once the error state is shown.
         expect(find.byType(ConversationListItem), findsNothing);
         expect(find.text(_loadingCopy), findsNothing);
+      },
+    );
+  });
+
+  group('ConversationsListView — group info destination (BUT-1857)', () {
+    const conversationId = 'group-conv-1';
+    const chatGroupId = 'chat-group-77';
+
+    testWidgets(
+      'Gruppinformation pushes the CHAT group screen for this conversation',
+      (tester) async {
+        // The destination builds for real here, and resolves MessagingService,
+        // UnifiedFriendsService and ChatGroupRepository through ServiceLocator
+        // while doing it. The bridge registers the friends service already;
+        // these two it does not.
+        TestServiceLocator.registerMock<MessagingService>(messagingService);
+        TestServiceLocator.registerMock<ChatGroupRepository>(
+          MockChatGroupRepository(),
+        );
+
+        final recorder = _RouteRecorder();
+        final namedRoutes = <String>[];
+        await pumpView(
+          tester,
+          observers: [recorder],
+          namedRouteRequests: namedRoutes,
+        );
+        await tester.pump();
+
+        conversationsController.add([
+          _groupConversation(
+            id: conversationId,
+            title: 'Middagsgänget',
+            groupId: chatGroupId,
+          ),
+        ]);
+        await tester.pumpAndSettle();
+
+        await tester.longPress(find.byType(ConversationListItem));
+        await tester.pumpAndSettle();
+
+        namedRoutes.clear();
+        recorder.pushed.clear(); // drop the bottom sheet's own route
+        await tester.tap(find.text('Gruppinformation'));
+        await tester.pumpAndSettle();
+
+        // No named route was ever requested. This is the assertion that
+        // reddens on the regression: restoring `pushNamed('/group-detail')`
+        // records the name here.
+        expect(
+          namedRoutes,
+          isEmpty,
+          reason:
+              'the group screen is pushed directly, never by name — the '
+              'named route belongs to SOCIAL groups',
+        );
+
+        expect(recorder.pushed, hasLength(1));
+        expect(recorder.pushed.single.settings.name, isNull);
+
+        // The destination and, more importantly, the ARGUMENT it was handed.
+        // The old route's generator does `settings.arguments as String?` and
+        // this call site passed a Map, so it threw on every tap — the bug was
+        // louder than "wrong screen", and the social screen was never reached.
+        // The fixture still keeps conversation id and group id DIFFERENT, so
+        // that a future fix which passes the wrong one of the two cannot slip
+        // through here.
+        final destination = tester.widget<ConversationGroupDetailView>(
+          find.byType(ConversationGroupDetailView),
+        );
+        expect(destination.conversationId, conversationId);
+        expect(destination.conversationId, isNot(chatGroupId));
+
+        // The inbox is still mounted underneath — Navigator marks it offstage
+        // rather than disposing it, so this is a state check, not a find.
+        expect(
+          find.byType(ConversationsListView, skipOffstage: false),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'a DIRECT conversation offers no Gruppinformation action at all',
+      (tester) async {
+        // The other half of the `isGroup` gate. Without this, deleting the
+        // gate leaves the group test green and ships the action on DMs.
+        await pumpView(tester);
+        await tester.pump();
+
+        conversationsController.add([
+          _directConversation(
+            id: 'direct-conv-1',
+            otherUserId: 'other-1',
+            otherDisplayName: 'Anna Andersson',
+          ),
+        ]);
+        await tester.pumpAndSettle();
+
+        await tester.longPress(find.byType(ConversationListItem));
+        await tester.pumpAndSettle();
+
+        // The positive control comes first on purpose. Without it, a change
+        // that stopped the sheet opening at all would make both findsNothing
+        // assertions pass for the wrong reason.
+        expect(find.text('Visa profil'), findsOneWidget);
+        expect(find.text('Gruppinformation'), findsNothing);
+        expect(find.text('Lämna grupp'), findsNothing);
       },
     );
   });

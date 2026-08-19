@@ -434,6 +434,59 @@ void main() {
       );
     });
 
+    // BUT-1872: the same rule for CONVERSATION ids, scoped to the calls that
+    // actually leave the device. A direct conversation's id is
+    // `direct_<uidA>_<uidB>` — two raw uids — so it is uid-grade PII wearing a
+    // different field name, which is exactly why the uid arm above never
+    // caught it.
+    //
+    // Scoped to `AppLogger.error` on purpose, and that is narrower than the
+    // uid arm above, which bans a raw uid at EVERY level. The two rules
+    // therefore disagree about identical bytes — a direct id IS two raw uids
+    // — and that asymmetry is not a policy anyone decided. Only `error`
+    // reaches Crashlytics, so `error` is where the leak was; the ~30 non-
+    // `error` sites still printing raw ids — `info`, `debug`, `success` and
+    // `warning` — are device-local and simply unswept. BUT-1897 owns
+    // reconciling them.
+    //
+    // KNOWN GAPS, same spirit as the uid arm's own list above. This matches
+    // the bare identifier only, so an error log written as
+    // `${message.conversationId}`, `${conversation.id}` or `${convId}` is
+    // invisible to it — zero instances today, checked. And it cannot see the
+    // channel that actually leaked in BUT-1872: the exception OBJECT handed
+    // to `recordError`, which no regex anchored on `AppLogger.error(` can
+    // reach. So this catches the sixteenth LOG SITE, not the sixteenth leak.
+    test('no raw \$conversationId interpolated into AppLogger.error calls in '
+        'lib/ (use .maskedConversationId)', () {
+      final pattern = RegExp(
+        r'AppLogger\.error\([^;]*(\$conversationId\b|\$\{conversationId\})',
+      );
+
+      final violations = <String>[];
+
+      for (final file in dartFiles) {
+        final relPath = relPathOf(file);
+        final content = file.readAsStringSync();
+        final stripped = content
+            .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+            .replaceAll(RegExp(r'//.*'), '');
+
+        if (pattern.hasMatch(stripped)) {
+          violations.add(relPath);
+        }
+      }
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'A direct conversation id is `direct_<uidA>_<uidB>` — two raw '
+            'user ids. Mask with `\${conversationId.maskedConversationId}` '
+            '(log_sanitizer.dart).\n'
+            'Violations:\n${violations.join('\n')}',
+      );
+    });
+
     // BUT-836: forbid raw `data['x'] as DateTime` / `as Timestamp` casts in
     // lib/models/. They crash if the repository forwards a raw Firestore
     // Timestamp/Map shape rather than a pre-coerced DateTime. The safe path

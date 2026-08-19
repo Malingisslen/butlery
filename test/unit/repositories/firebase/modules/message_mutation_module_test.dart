@@ -438,6 +438,71 @@ void main() {
         throwsA(isA<PermissionDeniedException>()),
       );
     });
+
+    test(
+      'BUT-1872: neither thrown exception carries a raw id',
+      () async {
+        // The exception OBJECT is the one channel AppLogger cannot sanitize —
+        // `recordError(error, ...)` masks only the reason string, while
+        // `PermissionDeniedException.toString()` prints both `Resource:` and
+        // `User:`, and `ResourceNotFoundException.toString()` prints `ID:`.
+        // Both throws below are caught by this method's own handler, which
+        // logs the exception object at error level.
+        //
+        // Two assertions per throw, because the two fields were masked in
+        // separate passes: the conversation id was caught by one reviewer and
+        // the uid by another, a line apart, in the same hunk.
+        const uidA = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ12';
+        const uidB = 'zZyYxXwWvVuUtTsSrRqQpPoO3456';
+        const directId = 'direct_${uidA}_$uidB';
+        const outsider = 'qQwWeErRtTyYuUiIoOpP12345678';
+
+        Future<String> renderedThrowFrom(Future<void> Function() op) async {
+          try {
+            await op();
+          } catch (e) {
+            return e.toString();
+          }
+          throw StateError('expected a throw');
+        }
+
+        final missing = await renderedThrowFrom(
+          () =>
+              _newModule(
+                FakeFirebaseFirestore(),
+                readConversation: (_) async => null,
+              ).markConversationAsRead(
+                conversationId: directId,
+                userId: outsider,
+              ),
+        );
+        expect(missing, isNot(contains(uidA)));
+        expect(missing, isNot(contains(uidB)));
+        expect(missing, contains('direct_#'));
+
+        final convo = _twoPersonConvo();
+        final denied = await renderedThrowFrom(
+          () =>
+              _newModule(
+                FakeFirebaseFirestore(),
+                readConversation: (_) async => convo,
+              ).markConversationAsRead(
+                conversationId: directId,
+                userId: outsider,
+              ),
+        );
+        expect(denied, isNot(contains(uidA)));
+        expect(denied, isNot(contains(uidB)));
+        expect(
+          denied,
+          isNot(contains(outsider)),
+          reason:
+              'the CALLER uid too — it rode in on `userId:` for a week '
+              'after the conversation id beside it was masked',
+        );
+        expect(denied, contains('direct_#'));
+      },
+    );
   });
 
   group('MessageMutationModule.updateMessageContent', () {

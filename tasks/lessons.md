@@ -1703,3 +1703,48 @@ loudly with the line number. The outer `test/run-fixtures.mjs` reported "219 che
 `delivery-engine:` line specifically, not the summary.
 
 Inside those prompts, quote code with plain double quotes, not backticks.
+
+## A Python heredoc turns a backslash escape into a CONTROL BYTE, and it bit three times in one commit (2026-08-19)
+
+Writing Dart or TypeScript through `python3 - <<'PYEOF'` is a good way to make a precise
+multi-line edit. It is also a good way to write an invisible 0x08 into a source file.
+
+In Python source, `'\b'` is BACKSPACE. So a comment explaining that Dart's
+`\b` word-boundary anchor cannot fire inside `direct_a_b` — the exact sentence that
+explains the bug — gets written to disk as `^H`, and the sentence renders as
+"the `` anchors never fire". The compiler does not care. `dart analyze` is clean. Every
+test passes. Only a reader loses.
+
+It happened three times in one change set, each time in the SAME sentence, because each
+correction of the comment was written through another heredoc. Two of the three were caught
+by review agents, not by me, and the third only because I finally swept for the byte.
+
+**The fixes, in order of preference:**
+
+1. Use a Python RAW string — `r"\\b"` — or build the character explicitly with
+   `chr(92) + "b"`. The explicit form is ugly and never wrong.
+2. After any heredoc edit that mentions a regex escape, run
+   `grep -rlP '[\x00-\x08]' --include='*.dart' --include='*.ts' lib/ test/ functions/src/`
+   and expect zero hits. PNG fixtures will match a broader sweep; scope it by extension.
+3. Do not trust an earlier clean sweep. The sweep proves the bytes at that moment; the next
+   heredoc reintroduces it.
+
+**And the sweep itself has a trap, which this entry originally walked into.** Written without
+the brackets — `\x00-\x08` instead of `[\x00-\x08]` — the pattern is not a range at
+all. It is the three literal bytes NUL, hyphen, BACKSPACE, which nothing contains, so the
+command reports CLEAN unconditionally. Measured: `printf 'X\x08Y'` piped to the
+bracketless form matches 0 lines and to the bracketed form matches 1. A guard that always
+says clean is worse than no guard, and it survived into a lesson about false assurance until
+a reviewer ran it. **Test the sweep against a file you have deliberately corrupted, before
+you trust it on a file you have not.**
+
+This is the same family as the 2026-07-16 entry above ("Backslash/NUL content dies crossing
+tool layers"), which said the same thing about `printf` and YAML and was not enough to stop
+this: that entry names the layers to avoid, this one names the ONE layer that keeps being
+reached for anyway, because a Python heredoc is the most convenient way to make a precise
+multi-line edit. It is also the repo's "invisible codepoint" lesson (BUT-1690) with a
+mechanism attached.
+The general form: **a source edit performed through another language inherits that
+language's escape rules, and the result is compiler-invisible.** The same trap ate a `\n`
+inside a Dart string literal in the same session, which DID fail the analyzer — the
+difference is that a control byte inside a comment has nothing to fail.

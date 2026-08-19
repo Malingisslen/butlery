@@ -22,6 +22,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
+import 'package:butlery/views/messaging/group_detail_view.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Conversations list view showing all user's messaging conversations.
@@ -514,11 +515,20 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     );
   }
 
+  // Pushes the CHAT group screen directly, the same way the in-chat
+  // "conversation info" action does (`ChatActionHandler`). Deliberately not the
+  // `Routes.groupDetail` named route: that one belongs to SOCIAL groups
+  // (`views/social/group_detail_view.dart`), and its generator does
+  // `settings.arguments as String?` while this call site passed a Map — so it
+  // threw a TypeError on EVERY tap and the social screen was never actually
+  // reached. The "wrong screen" the ticket describes was unreachable
+  // (BUT-1857).
   void _navigateToGroupInfo(BuildContext context, Conversation conversation) {
-    Navigator.pushNamed(
-      context,
-      '/group-detail',
-      arguments: {'groupId': conversation.id},
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            ConversationGroupDetailView(conversationId: conversation.id),
+      ),
     );
   }
 

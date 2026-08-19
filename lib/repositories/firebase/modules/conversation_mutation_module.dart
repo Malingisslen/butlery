@@ -162,10 +162,23 @@ class ConversationMutationModule {
       final docRef = firestore.collection(collectionName).doc(conversationId);
       final snapshot = await docRef.get();
       if (!snapshot.exists) {
+        // Masked at the throw as well as at the log, and the throw is the
+        // half that is easy to miss. `ResourceNotFoundException` prints
+        // `ID: <resourceId>` from `toString()`, and AppLogger hands the raw
+        // exception OBJECT to Crashlytics' recordError while sanitising only
+        // the reason string — so a raw id here would ship both uids in the
+        // same report whose reason was masked.
+        //
+        // Safe because nothing reads `ResourceNotFoundException.resourceId`
+        // for logic: the only code that destructures this class
+        // (`shopping_failure_message.dart`) matches on `resourceType`. Other
+        // classes DO read a field of that name, so do not generalise this.
+        // The field consequently no longer holds the literal id, which is the
+        // cost of fixing it here rather than at the sink (BUT-1897).
         throw ResourceNotFoundException(
           'Conversation not found',
           resourceType: 'conversation',
-          resourceId: conversationId,
+          resourceId: conversationId.maskedConversationId,
         );
       }
 
@@ -205,7 +218,10 @@ class ConversationMutationModule {
 
       AppLogger.debug('Conversation updated: $conversationId');
     } catch (e) {
-      AppLogger.error('Failed to update conversation $conversationId', e);
+      AppLogger.error(
+        'Failed to update conversation ${conversationId.maskedConversationId}',
+        e,
+      );
       rethrow;
     }
   }
@@ -260,7 +276,10 @@ class ConversationMutationModule {
 
       AppLogger.success('✅ Successfully deleted conversation $conversationId');
     } catch (e) {
-      AppLogger.error('Failed to delete conversation $conversationId', e);
+      AppLogger.error(
+        'Failed to delete conversation ${conversationId.maskedConversationId}',
+        e,
+      );
       rethrow;
     }
   }
@@ -304,7 +323,8 @@ class ConversationMutationModule {
       );
 
       AppLogger.debug(
-        'Updated conversation settings for user ${userId.maskedUserId} in $conversationId',
+        'Updated conversation settings for user ${userId.maskedUserId} in '
+        '${conversationId.maskedConversationId}',
       );
     } catch (e) {
       AppLogger.error('Failed to update conversation user settings', e);

@@ -196,7 +196,10 @@ class MessagingService extends BaseService with StreamManagementMixin {
     try {
       return await _messagingRepository.getConversation(conversationId);
     } catch (e) {
-      AppLogger.error('Failed to get conversation $conversationId', e);
+      AppLogger.error(
+        'Failed to get conversation ${conversationId.maskedConversationId}',
+        e,
+      );
       return null;
     }
   }
@@ -236,7 +239,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
       return _filterBlocked(messages);
     } catch (e) {
       AppLogger.error(
-        'Failed to get conversation messages page for $conversationId',
+        'Failed to get conversation messages page for '
+        '${conversationId.maskedConversationId}',
         e,
       );
       return [];
@@ -357,7 +361,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
       AppLogger.debug('Conversation marked as read: $conversationId');
     } catch (e) {
       AppLogger.error(
-        'Failed to mark conversation as read: $conversationId',
+        'Failed to mark conversation as read: '
+        '${conversationId.maskedConversationId}',
         e,
       );
     }
@@ -505,7 +510,10 @@ class MessagingService extends BaseService with StreamManagementMixin {
         limit: limit,
       );
     } catch (e) {
-      AppLogger.error('Failed to search messages in $conversationId', e);
+      AppLogger.error(
+        'Failed to search messages in ${conversationId.maskedConversationId}',
+        e,
+      );
       return [];
     }
   }

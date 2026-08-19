@@ -46,7 +46,10 @@ import { stageMemberRemoval } from "../groups/chat-group-writes";
 /**
  * A conversation id that is safe to put in Cloud Logging.
  *
- * A GROUP id is a client-minted UUIDv4 and discloses nothing. A DIRECT id is
+ * A GROUP id is a server-minted Firestore auto-id (`createChatGroup` uses
+ * `chat_groups.doc().id` as the conversation id) and discloses nothing. It was
+ * described here as a client-minted UUIDv4 until 2026-08-19; the conclusion
+ * held, the shape did not. A DIRECT id is
  * `direct_<uidA>_<uidB>` — two raw uids, one of which may belong to someone who
  * just had their account erased. This helper exists because BUT-1822 gave
  * `tryClearRoster` a second caller (the account-deletion cascade) that hands it

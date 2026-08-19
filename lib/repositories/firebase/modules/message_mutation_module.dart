@@ -58,7 +58,12 @@ class MessageMutationModule {
           throw ResourceNotFoundException(
             'Conversation not found',
             resourceType: 'conversation',
-            resourceId: message.conversationId,
+            // Masked even though the branch above proves this id does NOT
+            // start with `direct_`, so the mask is the identity here. The
+            // point is that the safety stops depending on a guard three lines
+            // up: this exception's toString() reaches Crashlytics through
+            // recordError, which sanitises nothing.
+            resourceId: message.conversationId.maskedConversationId,
           );
         }
       }
@@ -71,12 +76,14 @@ class MessageMutationModule {
 
         if (!conversation.isParticipant(message.senderId)) {
           AppLogger.error(
-            '❌ [MessageMutation] User ${message.senderId} is not a participant',
+            '❌ [MessageMutation] User ${message.senderId.maskedUserId} is '
+            'not a participant',
           );
           throw PermissionDeniedException(
             'User is not a participant in this conversation',
-            resource: 'conversation:${message.conversationId}',
-            userId: message.senderId,
+            resource:
+                'conversation:${message.conversationId.maskedConversationId}',
+            userId: message.senderId.maskedUserId,
           );
         }
         AppLogger.debug(
@@ -376,15 +383,15 @@ class MessageMutationModule {
         throw ResourceNotFoundException(
           'Conversation not found',
           resourceType: 'conversation',
-          resourceId: conversationId,
+          resourceId: conversationId.maskedConversationId,
         );
       }
 
       if (!conversation.isParticipant(userId)) {
         throw PermissionDeniedException(
           'User is not a participant in this conversation',
-          resource: 'conversation:$conversationId',
-          userId: userId,
+          resource: 'conversation:${conversationId.maskedConversationId}',
+          userId: userId.maskedUserId,
         );
       }
 
@@ -412,7 +419,8 @@ class MessageMutationModule {
       );
     } catch (e) {
       AppLogger.error(
-        'Failed to mark conversation as read: $conversationId',
+        'Failed to mark conversation as read: '
+        '${conversationId.maskedConversationId}',
         e,
       );
       rethrow;

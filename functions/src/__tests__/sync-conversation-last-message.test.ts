@@ -64,6 +64,32 @@ test("BUT-778: replaces on equal sentAt (edit case)", () => {
   assertEqual(shouldReplaceLastMessage({ sentAt: ts(1000) }, ts(1000)), true);
 });
 
+test("BUT-1853: replaces a STORED sentAt that is not a Timestamp", () => {
+  // `current` comes off a stored document, so its type is whatever a past
+  // write left there — and until 2026-08-19 the guard was `!current?.sentAt`,
+  // which a string walks straight past on its way to `.toMillis()`. That threw
+  // on EVERY later message write in the affected conversation, freezing its
+  // preview for good. Replaceable means a real message heals the document.
+  assertEqual(
+    shouldReplaceLastMessage({ sentAt: "nope" as unknown as admin.firestore.Timestamp }, ts(1000)),
+    true
+  );
+  assertEqual(
+    shouldReplaceLastMessage({ sentAt: 1000 as unknown as admin.firestore.Timestamp }, ts(1000)),
+    true
+  );
+  // A plain object with the right shape is still not a Timestamp — the check
+  // is `instanceof`, deliberately, because duck-typing is how the string got
+  // this far in the first place.
+  assertEqual(
+    shouldReplaceLastMessage(
+      { sentAt: { toMillis: () => 9_000_000 } as unknown as admin.firestore.Timestamp },
+      ts(1000)
+    ),
+    true
+  );
+});
+
 test("BUT-778: does NOT replace when candidate is older", () => {
   // Out-of-order CF firings could otherwise overwrite the latest message
   // with a stale one. The version-stamped check keeps the lastMessage

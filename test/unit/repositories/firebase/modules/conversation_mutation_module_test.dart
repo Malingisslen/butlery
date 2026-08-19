@@ -125,6 +125,45 @@ void main() {
       },
     );
 
+    test(
+      'BUT-1872: the thrown exception carries no raw conversation id',
+      () async {
+        // The exception OBJECT is the one channel AppLogger cannot sanitize:
+        // `recordError(error, ...)` masks only the reason string, and
+        // `ResourceNotFoundException.toString()` prints `ID: <resourceId>`.
+        // So a raw direct id here reaches Crashlytics with both uids in it,
+        // in the very report whose reason was masked.
+        //
+        // Without this test, deleting `.maskedConversationId` from the throw
+        // reddens nothing anywhere in the repo — the control's only barrier
+        // would be a comment.
+        const uidA = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ12';
+        const uidB = 'zZyYxXwWvVuUtTsSrRqQpPoO3456';
+        const directId = 'direct_${uidA}_$uidB';
+
+        final module = ConversationMutationModule(
+          firestore: FakeFirebaseFirestore(),
+          collectionName: _convoCollection,
+        );
+
+        Object? thrown;
+        try {
+          await module.updateConversation(
+            conversationId: directId,
+            title: 'New Title',
+          );
+        } catch (e) {
+          thrown = e;
+        }
+
+        expect(thrown, isA<ResourceNotFoundException>());
+        final rendered = thrown.toString();
+        expect(rendered, isNot(contains(uidA)));
+        expect(rendered, isNot(contains(uidB)));
+        expect(rendered, contains('direct_#'));
+      },
+    );
+
     // BUT-1838: the contract CHANGED here, and both halves of the change are
     // load-bearing, so both are pinned.
     //

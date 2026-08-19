@@ -6,6 +6,7 @@ import 'package:butlery/repositories/firebase/dtos/message_dto.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 
 /// Message query module for read-only message operations.
 class MessageQueryModule {
@@ -70,7 +71,8 @@ class MessageQueryModule {
           .switchMap(_withLivePollVotes);
     } catch (e) {
       AppLogger.error(
-        '❌ [MessageQuery] Failed to get messages for conversation $conversationId',
+        '❌ [MessageQuery] Failed to get messages for conversation '
+        '${conversationId.maskedConversationId}',
         e,
       );
       return const Stream.empty();
@@ -113,7 +115,8 @@ class MessageQueryModule {
       );
     } catch (e) {
       AppLogger.error(
-        'Failed to get messages page for conversation $conversationId',
+        'Failed to get messages page for conversation '
+        '${conversationId.maskedConversationId}',
         e,
       );
       return [];
@@ -331,7 +334,8 @@ class MessageQueryModule {
           .toList();
     } catch (e) {
       AppLogger.error(
-        'Failed to search messages in conversation $conversationId',
+        'Failed to search messages in conversation '
+        '${conversationId.maskedConversationId}',
         e,
       );
       return [];

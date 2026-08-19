@@ -7,6 +7,7 @@ library;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 void main() {
   group('maskEmail', () {
@@ -68,6 +69,117 @@ void main() {
 
     test('first 4 + *** + last 4', () {
       expect(LogSanitizer.maskPhoneNumber('+46701234567'), '+467***4567');
+    });
+  });
+
+  group('maskConversationId (BUT-1872)', () {
+    // The two uids a real direct id is built from. What makes the fixture
+    // realistic is the SHAPE, not the length: the bare-uid rule at the
+    // Crashlytics chokepoint cannot touch either half at any length, because
+    // `_` is a word character and its `\b` never fires inside the id. That
+    // inability is the bug BUT-1872 exists for.
+    const uidA = 'aBcDeFgHiJkLmNoPqRsT';
+    const uidB = 'zYxWvUtSrQpOnMlKjIhG';
+    const directId = 'direct_${uidA}_$uidB';
+
+    test('null → "null"', () {
+      expect(LogSanitizer.maskConversationId(null), 'null');
+    });
+
+    test('empty → "[empty]"', () {
+      expect(LogSanitizer.maskConversationId(''), '[empty]');
+    });
+
+    test('a direct id reveals NEITHER uid', () {
+      final masked = LogSanitizer.maskConversationId(directId);
+      expect(masked, isNot(contains(uidA)));
+      expect(masked, isNot(contains(uidB)));
+      expect(masked, startsWith('direct_#'));
+    });
+
+    test('two different conversations do NOT collapse to the same string', () {
+      // The reason it is hashed rather than blanked: nine failures on one
+      // conversation must still be distinguishable from one failure on nine.
+      //
+      // Only the INEQUALITY is asserted. Calling the same pure function twice
+      // and expecting the same answer is green for any implementation,
+      // including `return 'direct_#'` — the stability that actually matters is
+      // pinned by the literal below.
+      expect(
+        LogSanitizer.maskConversationId(directId),
+        isNot(LogSanitizer.maskConversationId('direct_${uidB}_$uidA')),
+      );
+    });
+
+    test('the masked value matches the Cloud Functions helper EXACTLY', () {
+      // The doc comment on maskConversationId promises that one conversation
+      // reads the same in a Crashlytics report and in a Cloud Functions log.
+      // That promise spans two languages, so nothing but a pinned value can
+      // hold it — neither compiler can see the other side.
+      //
+      // Produced 2026-08-19 by `logSafeConversationId` in
+      // `functions/src/messaging/enforce-group-minor-membership.ts`, which
+      // hashes through `hashUid` in `functions/src/shared/hash-uid.ts`
+      // (sha256 hex, first 12 chars, over the WHOLE id). Reproduce with:
+      //
+      //   node -e "const c=require('crypto');console.log(c.createHash('sha256')
+      //     .update('direct_aBcDeFgHiJkLmNoPqRsT_zYxWvUtSrQpOnMlKjIhG')
+      //     .digest('hex').substring(0,12))"
+      //
+      // IF THIS FAILS, one of the two sides drifted. Fix the drift. Do NOT
+      // re-baseline this literal to whatever Dart now prints — that "fixes"
+      // the test and kills the contract in the same commit.
+      expect(
+        LogSanitizer.maskConversationId(directId),
+        'direct_#12fc49f947ab',
+      );
+    });
+
+    test('a group id is opaque already and passes through unchanged', () {
+      // Both shapes: the 20-char auto-id `createChatGroup` actually mints
+      // today, and a dashed uuid, which is what the doc comment said until
+      // 2026-08-19 and what any legacy row still carries. Neither starts with
+      // `direct_`, and that — not the shape — is what makes them safe here.
+      for (final groupId in const <String>[
+        'kPq7Rw2LmNc4Xy9Zt1Bv',
+        '3f2a9c1e-7b4d-4a5e-9c8f-1d2e3a4b5c6d',
+      ]) {
+        expect(LogSanitizer.maskConversationId(groupId), groupId);
+      }
+    });
+
+    test('the helper and the chokepoint agree on every id of the MINTED '
+        'shape, at any half-length', () {
+      // The two nets used to disagree: the chokepoint bounded each half to
+      // 20-28 chars, so a direct id built from short ids was hashed HERE and
+      // passed the chokepoint RAW. Nothing live fell in the gap — real
+      // Firebase uids are 28 chars — but "safe only for well-formed input" is
+      // not a property a safety net should have.
+      //
+      // The chokepoint now delegates its format to this helper and matches
+      // unbounded halves, so the two agree for any `direct_<a>_<b>` — which
+      // is the only shape anything mints (`ConversationMutationModule` joins
+      // exactly two sorted uids). They still differ on `direct_abc` and
+      // `direct_a_b_c`; those are deliberately NOT asserted here, because
+      // making the regex match them would mean hashing arbitrary
+      // underscore-joined text.
+      for (final id in <String>[
+        'direct_abc_def', // short: was the gap
+        'direct_aBcDeFgHiJkLmNoPqRsTuVwXyZ12_zZyYxXwWvVuUtTsSrRqQpPoO3456',
+        'direct_${'a' * 40}_${'b' * 40}', // longer than the old ceiling
+      ]) {
+        expect(
+          AppLogger.sanitizeForCrashlyticsForTesting(id),
+          LogSanitizer.maskConversationId(id),
+          reason: 'the two nets must not disagree on $id',
+        );
+      }
+    });
+
+    test('the extension getter masks too', () {
+      // Against the LITERAL, not against the static it delegates to —
+      // comparing the two is green when both are broken the same way.
+      expect(directId.maskedConversationId, 'direct_#12fc49f947ab');
     });
   });
 

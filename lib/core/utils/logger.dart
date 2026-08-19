@@ -40,6 +40,8 @@
 
 import 'dart:async';
 import 'dart:developer' as developer;
+
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:butlery/core/utils/correlation_id.dart';
@@ -204,11 +206,78 @@ class AppLogger {
   }
 
   /// Redact Firebase UIDs and other PII before sending to Crashlytics.
+  ///
+  /// BUT-1872: the uid rule below is anchored on a word boundary, and an
+  /// UNDERSCORE is a word character — so the boundary never fires inside
+  /// `direct_<a>_<b>`, the id a direct conversation derives from its two
+  /// members. The whole 64-character token failed the {20,28} length test and
+  /// reached Crashlytics with BOTH uids in clear text, while a bare uid one
+  /// word away was correctly masked. Measured BEFORE the fix, not reasoned —
+  /// these two lines are the BROKEN behaviour:
+  ///
+  ///     'conversation aBcDeFgHiJkLmNoPqRsTuVwXyZ12'      -> 'conversation aBcD***'
+  ///     'conversation direct_aBcDeF..._zZyYxX...'        -> unchanged
+  ///
+  /// It now reads `conversation direct_#<12 hex>`.
+  ///
+  /// The composite rule runs FIRST. Not because the uid rule would otherwise
+  /// half-mask the halves — it provably cannot, since `_` is a word character
+  /// and `\b` never fires inside the id, which is the whole bug — but so that
+  /// a future loosening of the uid rule cannot introduce that failure quietly.
+  ///
+  /// Hashed rather than blanked because these are ERROR logs: telling "one
+  /// conversation failed nine times" from "nine conversations failed once" is
+  /// why the id is in the message at all. The hash itself is NOT computed
+  /// here — it delegates to `LogSanitizer.maskConversationId`, so the
+  /// `direct_#` format has ONE definition in Dart, and that one mirrors the
+  /// Cloud Functions `logSafeConversationId`.
+  ///
+  /// This is the chokepoint for the MESSAGE, and only for the message. Every
+  /// sink that carries a message OFF THE DEVICE runs it through here, so a
+  /// call site added tomorrow has its message covered whether or not its
+  /// author remembers.
+  /// Per-call-site masking is still worth doing: it is what makes the LOCAL
+  /// `developer.log` output safe, and that one never passes through here.
+  ///
+  /// Two other things leave the device without touching this function, and
+  /// neither is a message: `setUserIdentifier` and `setCrashlyticsKey` send
+  /// their values raw. Both have zero callers repo-wide today.
+  ///
+  /// What it does NOT cover, measured rather than assumed: the raw `error`
+  /// OBJECT handed to `FirebaseCrashlytics.recordError`. Sanitizing it here
+  /// is possible but wrong — passing `_sanitizeForCrashlytics(error
+  /// .toString())` would group every report under type `String` and lose the
+  /// stack association, so this is a design choice, not an impossibility.
+  /// The fix therefore belongs at the throw site: an exception whose
+  /// `toString()` embeds a resource id defeats the mask on the very line
+  /// beside it. Grep `resourceId:` before putting a conversation or user id
+  /// into one (BUT-1897).
   static String _sanitizeForCrashlytics(String message) {
-    return message.replaceAllMapped(
-      RegExp(r'\b[a-zA-Z0-9]{20,28}\b'),
-      (m) => '${m.group(0)!.substring(0, 4)}***',
-    );
+    return message
+        .replaceAllMapped(
+          // Unbounded halves and a left boundary, both deliberate. Bounding
+          // them to {20,28} matched only well-formed live ids: a short one
+          // (test data, or any future id scheme) passed through RAW, and a
+          // half LONGER than 28 got its tail left behind outside the hash.
+          // The left boundary stops the `direct_` inside a word like
+          // `redirect_` from being hashed as if it were an id.
+          //
+          // The result is that this rule and `LogSanitizer.maskConversationId`
+          // agree on every id of the MINTED SHAPE — `direct_<a>_<b>`, exactly
+          // two segments, any length — rather than only on today's 28+28 live
+          // ids. They still differ on shapes nothing mints: `direct_abc` is
+          // hashed by the helper and untouched here, and `direct_a_b_c` would
+          // have its tail left outside the hash. The single mint site is
+          // `ConversationMutationModule` (`direct_${sorted[0]}_${sorted[1]}`),
+          // so neither shape exists; widening this to match them would mean
+          // hashing arbitrary underscore-joined text.
+          RegExp(r'(?<![a-zA-Z0-9_])direct_[a-zA-Z0-9]+_[a-zA-Z0-9]+'),
+          (m) => LogSanitizer.maskConversationId(m.group(0)!),
+        )
+        .replaceAllMapped(
+          RegExp(r'\b[a-zA-Z0-9]{20,28}\b'),
+          (m) => '${m.group(0)!.substring(0, 4)}***',
+        );
   }
 
   /// Test-only wrapper around `_sanitizeForCrashlytics` so logger_test.dart
@@ -268,11 +337,20 @@ class AppLogger {
       // Use Future.microtask to avoid blocking the error logging
       Future.microtask(() async {
         try {
+          // Sanitized, like the Crashlytics path. This sink is a second way
+          // off the device and took the message raw.
+          //
+          // It is DORMANT and always has been: nothing in the repo calls
+          // `configureAnalytics`, so `_analyticsCallback` is null on every
+          // platform and the guard above returns first. Nothing has actually
+          // left this way — sanitizing now means wiring it later cannot
+          // reopen the hole. It matters most on web, where Crashlytics is
+          // skipped entirely and this would be the only route (BUT-1872).
           await _analyticsCallback!(
             name ?? 'app_error',
             error?.runtimeType.toString() ?? 'unknown',
-            message,
-            error?.toString(),
+            _sanitizeForCrashlytics(message),
+            error == null ? null : _sanitizeForCrashlytics(error.toString()),
           );
         } catch (e) {
           // Silently fail if analytics callback throws

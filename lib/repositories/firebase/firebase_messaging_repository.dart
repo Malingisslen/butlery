@@ -2,6 +2,7 @@
 /// Supports direct/group conversations, real-time delivery, read receipts, and participant management.
 
 import 'dart:async';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -235,7 +236,10 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
       if (!doc.exists) return null;
       return fromFirestore(doc);
     } catch (e) {
-      AppLogger.error('Failed to read conversation $conversationId', e);
+      AppLogger.error(
+        'Failed to read conversation ${conversationId.maskedConversationId}',
+        e,
+      );
       return null;
     }
   }
