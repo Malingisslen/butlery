@@ -1740,19 +1740,30 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
    for: this very line first shipped as `r"\\b"`, which is TWO backslashes and a `b`,
    i.e. the wrong answer inside the fix list of the lesson about getting it wrong.
 2. After any heredoc edit that mentions a regex escape, run
-   `grep -rlP '[\x00-\x08]' --include='*.dart' --include='*.ts' --include='*.md' .`
+   `grep -rlP '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]' --include='*.dart' --include='*.ts' --include='*.md' .`
 
    From the REPO ROOT with no path argument, and `*.md` included. Both halves are load-bearing
    and both were learned the hard way: an earlier draft swept `lib/ test/ functions/src/` and
    therefore could not find the very instance this entry cites as its own proof, which lives
    in `.claude/`. Scoping by extension is still needed — PNG fixtures match otherwise.
 
+   The class is wider than `\b`, and that is not defensive padding. This entry's own worked
+   example ate FOUR escapes, and the first version of this sweep — `[\x00-\x08]` — could see
+   only ONE of them. `\v` is 0x0B and `\f` is 0x0C; both sit above the old ceiling. The test
+   passed anyway, purely because `\b` happened to be in the same file. Probed on one-byte
+   fixtures: the old class matched the backspace file only, the new class matched all three.
+
+   `\t` stays OUT, and that is a real hole rather than an oversight: a tab is legal in
+   source, so no sweep can flag it. The `\t` half of the example below is invisible to this
+   command and always will be — it shows as `C:^Iools` and only a reader catches it.
+
    **The expected set is TWO files. A third is yours.**
    * `test/unit/services/ocr_extraction_service_test.dart` — deliberate control-character OCR
      fixtures, with a comment saying so.
    * `.claude/agents/testing-specialist.knowledge.archive.md:1143` — NOT deliberate. It reads
-     `lutter^Hin` where `C:\tools\flutter\bin` was meant; its `\t`, `\n` and `\b` were all eaten by
-     this same mechanism. Introduced 2026-06-14 in `3bf7a50f3`, in
+     `lutter^Hin` where `C:\tools\flutter\bin` was meant. FOUR escapes were eaten across two
+     Windows paths on that line — `\v` (from `\v1.0`), `\t`, `\f` and `\b` — by this same
+     mechanism. Introduced 2026-06-14 in `3bf7a50f3`, in
      `testing-specialist.knowledge.md` — the file agents LOAD — and moved into the append-only
      archive three weeks later by `58bae2954`. Repair tracked on BUT-1900; until it lands, it
      is part of the baseline. Nobody found it in two months because nobody swept over prose.
