@@ -5792,6 +5792,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Kunde inte skicka meddelandet. Försök igen.';
 
   @override
+  String get chatSendFailedDeviceClockAhead =>
+      'Kunde inte skicka. Telefonens klocka ligger för långt fram — kontrollera datum och tid i inställningarna.';
+
+  @override
   String get chatLoadingMessages => 'Laddar meddelanden...';
 
   @override

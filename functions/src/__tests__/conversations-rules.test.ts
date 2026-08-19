@@ -1281,6 +1281,66 @@ test("messages: a Timestamp-shaped MAP is refused", async () => {
   );
 });
 
+// M14-M16: BUT-1903, the VALUE route. M10-M13 above all attack the TYPE, and
+// the conjunct that stops them says nothing about which instant a well-typed
+// Timestamp names. A future one is worse than the string M10 plants: it wins
+// the same `orderBy('sentAt','desc')` in a DM AND, being a real timestamp,
+// clears the group `memberSince` cut-off and the client's range filter that
+// the string tripped over. `shouldReplaceLastMessage` compares with `>=`, so it
+// also freezes the chat-list preview every participant sees without opening
+// the thread.
+//
+// The bound is ONE HOUR. It is a chosen ceiling, not a measured skew figure —
+// `Message` stamps the device clock, so a tighter number risks locking a real
+// user out of chat entirely.
+//
+// M15 and M16 build their fixtures from `Date.now()` AT TEST-RUN TIME, unlike
+// the fixed ISO constants most of this file uses. That is deliberate: they test
+// a ROLLING window against `request.time`, and a hardcoded date would silently
+// change what it means as real time passes. Do not "fix" them to constants.
+// M14 can be a literal, because 9999-12-31 denies whenever it runs.
+
+// M14: DENY — the ticket's own case, a timestamp nine thousand years out.
+test("messages: a far-future sentAt is refused", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-sentat-year9999-${RUN}`)
+      .set(
+        messageBody(MSG_DIRECT, STRANGER_UID, new Date("9999-12-31T00:00:00Z"))
+      )
+  );
+});
+
+// M15: DENY — one minute PAST the bound. This is the case that makes the
+// conjunct's NUMBER load-bearing rather than its mere existence: M14 would
+// still fail under a bound of a century.
+test("messages: a sentAt just outside the one-hour bound is refused", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  const justOutside = new Date(Date.now() + 61 * 60 * 1000);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`messages/m-sentat-outside-${RUN}`)
+      .set(messageBody(MSG_DIRECT, STRANGER_UID, justOutside))
+  );
+});
+
+// M16: ALLOW — inside the bound. Without it, tightening the bound to zero would
+// pass every other test in this block, and a device running a few minutes fast
+// would be locked out of chat with nothing red to show for it.
+test("messages: a sentAt inside the one-hour bound is allowed", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID, MSG_CLAIMS);
+  const justInside = new Date(Date.now() + 55 * 60 * 1000);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`messages/m-sentat-inside-${RUN}`)
+      .set(messageBody(MSG_DIRECT, STRANGER_UID, justInside))
+  );
+});
+
 // ============================================================================
 // CONVERSATION PARTICIPANTS — roster subcollection (BUT-1482 sprint,
 // re-authorized by BUT-1838)

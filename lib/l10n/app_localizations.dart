@@ -9721,6 +9721,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte skicka meddelandet. Försök igen.'**
   String get chatCouldNotSendMessage;
 
+  /// No description provided for @chatSendFailedDeviceClockAhead.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skicka. Telefonens klocka ligger för långt fram — kontrollera datum och tid i inställningarna.'**
+  String get chatSendFailedDeviceClockAhead;
+
   /// No description provided for @chatLoadingMessages.
   ///
   /// In sv, this message translates to:

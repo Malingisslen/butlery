@@ -131,6 +131,21 @@ abstract final class AnalyticsEvents {
   static const userBlocked = 'user_blocked';
   static const userUnblocked = 'user_unblocked';
   static const messageSent = 'message_sent';
+
+  // BUT-1903. Counted when a chat send is refused and the client can prove the
+  // DEVICE CLOCK is the cause (a force-refreshed ID token's server-stamped
+  // issuedAtTime is more than the rule's own bound behind `clock.now()`). This
+  // is the ONLY signal for that population: the message is never written, so
+  // the server-side skew log in `syncConversationLastMessage` structurally
+  // cannot see it.
+  //
+  // Read it as a lower bound, for TWO reasons and not one. Analytics consent
+  // fails closed, so anyone without an explicit stored grant is invisible; and
+  // the classification is wired only on the TEXT send path. A poll, photo,
+  // recipe, menu or shopping-list share builds a `Message` from the same device
+  // clock and hits the same rule, and none of them is classified or counted.
+  // "Denied sends" is therefore wider than this number.
+  static const messageSendDeniedClockAhead = 'message_send_denied_clock_ahead';
   static const commentCreated = 'comment_created';
   static const recipeRated = 'recipe_rated';
   static const groupCreated = 'group_created';

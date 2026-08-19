@@ -15,6 +15,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/errors/message_send_error_mapper.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/theme/butlery_colors_extension.dart';
 
 /// Consolidated state class for ChatInputSection to reduce setState calls
@@ -142,11 +147,59 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       AppLogger.error('❌ [ChatInputSection] Failed to send message', e);
       AppLogger.error('❌ [ChatInputSection] Stack trace: $stackTrace');
 
-      // Keep text in field so user can retry
-      // Show error to user
-      if (mounted) {
-        SnackBarUtils.showError(context, context.l10n.chatCouldNotSendMessage);
+      // Keep text in field so user can retry.
+      //
+      // The single display point for a failed send (BUT-1903). ChatActionHandler
+      // rethrows without showing anything, precisely so the cause can be named
+      // once, here.
+      final failure = await MessageSendErrorMapper.classify(
+        e,
+        // Through the repository, not `FirebaseAuth.instance` — a View reaching
+        // for a Firebase singleton is the layering violation this repo's rules
+        // name explicitly, and the injected seam is also the only thing that
+        // would ever make this branch testable.
+        readServerIssuedAt: () async =>
+            (await ServiceLocator.get<AuthRepository>().currentUser
+                    ?.getIdTokenResult(true))
+                ?.issuedAtTime,
+      );
+
+      if (failure == MessageSendFailure.clockAhead) {
+        // Counted BEFORE the mounted guard, deliberately: a denial that
+        // resolves after the user has navigated away is exactly the frustrated
+        // case, and dropping it would bias the count toward users who waited.
+        //
+        // `AnalyticsService`, not `AppMonitoringService.recordBusinessMetric` —
+        // the latter is `if (kIsWeb) return;` followed by a Crashlytics CUSTOM
+        // KEY, which is metadata attached to a later crash report rather than
+        // an event stream, so it would have counted nothing on web and next to
+        // nothing on native.
+        //
+        // Still not a census. `logEvent` gates on `ConsentService.checkSafely`,
+        // which fails CLOSED — a missing consent record or a lookup that throws
+        // reads the same as a refusal — so the invisible population is everyone
+        // without an explicit stored grant, not merely those who declined. Read
+        // it as a lower bound; ADR-0008 says the same.
+        //
+        // It has to be counted somewhere, because the Cloud Function's skew log
+        // structurally cannot see a denial — the message it would measure is
+        // never written.
+        //
+        // `tryLog`, not a hand-rolled `tryGet` + `unawaited`: it already does
+        // the null-guard and attaches its own `catchError`. The hand-rolled
+        // version leaked a rejection into the zone handler, which `main.dart`
+        // reports to Crashlytics as FATAL — a telemetry line must never be able
+        // to outrank the sentence this branch exists to show.
+        AnalyticsService.tryLog(AnalyticsEvents.messageSendDeniedClockAhead);
       }
+
+      if (!mounted) return;
+      SnackBarUtils.showError(
+        context,
+        failure == MessageSendFailure.clockAhead
+            ? context.l10n.chatSendFailedDeviceClockAhead
+            : context.l10n.chatCouldNotSendMessage,
+      );
     }
   }
 

@@ -1872,3 +1872,93 @@ Two things follow, and the second is the sharper one:
    fixture sits exactly ON the bound — and a fast path upstream is exactly what makes such a
    fixture easy to forget, because the boundary looks unreachable from the outside.
 
+
+### A value bound on one collection does not bound a COPY of it on another — and "how long does it persist" is a claim about the writer you did not read (BUT-1903, 2026-08-19)
+
+**What happened.** BUT-1903 bounded `messages.sentAt` at `request.time + 1h` in
+`firestore.rules`, to stop a future-dated stamp pinning a chat message to the top and
+freezing the chat-list preview. The rules-tester gate found the bound reaches neither harm
+completely: `conversations.lastMessage` is a **denormalised copy** of `sentAt` on a
+different collection, and that collection's `allow update` deny-list
+(`['participantIds','createdAt','memberSince','groupId']`) does not name it. Any
+participant can write `lastMessage.sentAt` directly, at any value, never touching the rule
+the whole ticket is about.
+
+**Then the duration claim was wrong twice, in the same comment.** Draft one said the whole
+residual was "up to an hour" — false, because the copy is not covered. Draft two said the
+copy's freeze was "PERMANENT", reasoned from `shouldReplaceLastMessage`'s self-heal firing
+only on a non-Timestamp. Also false: `MessageMutationModule.sendMessage` merge-sets the
+whole `lastMessage` map on **every** send with no comparison at all, so the next real
+message clears it. The truth is "until the next message in that conversation — indefinite
+in a quiet one, and re-poisonable after every send", which is a *different severity* from
+either draft, and a future ticket would have sized its work against whichever was written.
+
+**Same shape, one round later, in the same change.** Adding a gate that skips Admin-SDK
+system rows from a telemetry sample silently falsified the paragraph two lines above it,
+which had listed "an Admin-SDK write" as one of two causes for an empty bucket. The gate
+removed the only such writer. The other listed cause was impossible too — the sample fires
+at CREATE, so a pre-existing row can never produce one.
+
+**The rules.**
+
+1. When a rule bounds a field's VALUE, grep for other collections that store a
+   **projection** of it before writing what the bound closes. `hasOnly`/deny-list rules on
+   the copy are a separate surface and usually do not name the field.
+2. A sentence about **how long** a bad value survives is a claim about *every* writer of
+   that field. Enumerate them — server trigger AND client repository — before writing a
+   duration. Reasoning from the path you happen to be editing is how both drafts went wrong.
+3. **Your own fix in the same commit can falsify a comment you just wrote.** After adding
+   any guard, re-read the paragraphs around it for claims the guard has just made false.
+4. Do not cite a rules **line number** in a comment. This very edit moved everything below
+   it by 55 lines; a reader following a stale number lands in an unrelated rule and
+   concludes the claim is false. Name the block.
+5. **A correction's SUPPORTING detail is as falsifiable as the claim it supports, and this
+   is where the loop lives.** One paragraph in `message_send_error_mapper.dart` shipped five
+   false supporting claims in a row, each after the first introduced by the fix to the one
+   before it — the fifth of those corrections is this clause, because the draft said "each"
+   and the opening claim was original rather than fix-induced, which is the exact standard
+   this rule sets. The five: a
+   four-link chain that had five links; "untested by anything" when three links were already
+   pinned by type-identity assertions; "the shape link 1 already uses" when link 1 has no
+   `on <Type> catch` at all; "nineteen methods apart" when it is twenty-six; and "fails
+   LOUDLY" for a drift that is *silent* — it clears the user's text and reports success.
+   Each was cheap to check and none was checked, because finishing a correction feels like
+   the end of the work rather than the start of a new claim. **Rule: after correcting a
+   comment, re-read the corrected sentence as if someone else wrote it, and grep every noun
+   in it.** A reviewer who disproves one supporting detail in thirty seconds stops trusting
+   the whole paragraph, which costs more than the overstatement bought.
+
+
+## A gold set graded from TEXT undercounts, and a downscaled image lies about edges (BUT-1847, 2026-08-19)
+
+The cookbook corpus's frame-cut set stood at 14 entries, hand-graded from what a word-shape
+screen surfaced, and every published trim figure rested on it. Grading all 242 verified
+entries against the PHOTOGRAPHS put it at 23 — and the screen, re-run over the finished set,
+recovers only 9 of them (13 if it also looks for an explicit `...`; the other ten are clean
+prose that simply stops). Five of the nine new entries are not camera cuts at all: a recipe
+that starts at the foot of one page and finishes on a page the photo does not include. No
+screen aimed at broken words can see that class — the gold ends on a clean full stop — so
+"floor, not a count" was right and the floor was 40 % low.
+
+1. **A screen finds the failures it is shaped like.** The word-shape screen looks for lines
+   broken mid-word, so it finds vertical slices and misses clean truncation at a page break.
+   Before trusting a hand-graded set, ask which failure the screen that produced its
+   candidates could not have seen.
+2. **A 1600 px view of a 3000×4000 photo invents edges.** `Pernillas festfisk` read as
+   sliced by the frame and was intact at full resolution; the page's own `ocr.txt` carried
+   the full line. Crop the ORIGINAL before labelling any edge, and cross-check against the
+   stored OCR — it is free and it is from the same capture.
+3. **The label that is cheap to get wrong is the one that deletes evidence.** `Inlagd sill`
+   was called `fragment` on a first pass. `--no-frame-cut` DROPS fragments, so that label
+   would have removed real recipe text from the gold and made the 200-character budget look
+   free in the very table that exists to price it. When a label decides what leaves the
+   denominator, the safe error is the one that keeps the row.
+4. **Re-grading moves only the de-biased column.** The default arm never reads the marker,
+   so every biased figure kept reproducing byte for byte while the `--no-frame-cut` figures
+   all moved. A number from a corrected population must be quoted with the correction that
+   produced it named, or the next reader diffs two gradings and calls it drift.
+5. **Price the refusal you argued.** The 120-200 band had been declined by reading nine
+   tails; it had never been measured on de-biased gold, and the entry said so. It costs 23
+   real gold tokens and one right block count. Reading and measurement agreed — but one of
+   the nine, `Mixade vitaminer`, turned out to be debris by the corpus's own grading, so the
+   argument had a hole the measurement did not.

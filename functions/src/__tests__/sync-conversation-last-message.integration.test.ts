@@ -288,7 +288,8 @@ async function run(): Promise<void> {
   //
   // The guard stays for TWO reasons, and the second is the one that survives:
   // the rule bounds new writes and says nothing about rows already on disk,
-  // AND a well-typed but FUTURE-DATED Timestamp still passes it (BUT-1903).
+  // AND a well-typed Timestamp up to an hour ahead still passes it — BUT-1903
+  // bounded the value at `request.time + 1h` rather than removing it.
   // Do not read this as a guard that expires once the old rows age out.
   //
   // And Firestore sorts STRINGS above every timestamp

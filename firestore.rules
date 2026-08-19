@@ -2037,13 +2037,62 @@ service cloud.firestore {
         // such a conjunct would flip a non-empty set of documents to deny. It
         // is unnecessary, not unreachable.
         //
-        // What this does NOT close: the VALUE. A well-typed Timestamp of
-        // 9999-12-31 is still accepted, wins the same `orderBy` in a DM, and
-        // unlike a string also passes the group `memberSince` cut-off and the
-        // client's range filter — so it pins harder than what BUT-1896 fixed.
-        // Own ticket; an upper bound needs clock-skew tolerance because every
-        // `Message` stamps the DEVICE clock.
+        // BUT-1903 closed the VALUE route beside it. A well-typed Timestamp of
+        // 9999-12-31 used to pass: it wins the same `orderBy` in a DM and,
+        // unlike a string, also clears the group `memberSince` cut-off and the
+        // client's range filter — so it pinned HARDER than what BUT-1896 fixed.
+        // Because `shouldReplaceLastMessage` compares with `>=`, it also froze
+        // the conversation's chat-list preview, which every participant sees
+        // WITHOUT opening the thread.
+        //
+        // ONE HOUR IS A CHOSEN CEILING, NOT A MEASURED SKEW TOLERANCE. There is
+        // no field data on device-clock skew; the number was picked against a
+        // named harm window and shipped together with the client-side error
+        // message that tells a user with a wrong clock what is actually wrong
+        // (`lib/core/errors/message_send_error_mapper.dart`, mirroring the
+        // constant here — the same sync convention `isAccountMatured` uses).
+        // Neither half is defensible alone: without the message, a skewed
+        // device is silently locked out of chat forever.
+        //
+        // THE HOUR LIVES IN THREE LANGUAGES, not two. Besides that Dart mirror,
+        // `clockSkewBucket` in `functions/src/messaging/sync-conversation-last-
+        // message.ts` keys its top bucket on the same 60 minutes, and its
+        // "should be empty" reasoning breaks if this number moves. A tightening
+        // that finds only two of the three ships a silently wrong histogram.
+        //
+        // What it does NOT close, deliberately: an attacker can still hold the
+        // top of the MESSAGE LIST for up to an hour. That is a trade, not an
+        // oversight.
+        //
+        // The CHAT-LIST PREVIEW is not hour-bounded, and a first draft of this
+        // comment said it was. `conversations.lastMessage` is a denormalised
+        // COPY of this field on another collection, and the `conversations`
+        // `allow update` deny-list does not name it — so any participant can
+        // write `lastMessage.sentAt` directly, at any value, bypassing this
+        // rule entirely.
+        //
+        // How long it lasts, stated carefully because a second draft got this
+        // wrong too: the SERVER never heals it. `shouldReplaceLastMessage`'s
+        // self-healing branch fires only when the stored stamp is NOT a
+        // Timestamp, and a well-typed far-future one is exactly the un-healable
+        // case. What clears it is the next message sent through the real
+        // client, which merge-sets the whole `lastMessage` map with no
+        // comparison at all (`MessageMutationModule.sendMessage`). So the
+        // freeze lasts until the next message in that conversation — which in
+        // a quiet one is indefinite, and that is precisely where a frozen
+        // preview is both most visible and least likely to clear itself — and
+        // it can be re-poisoned after every send.
+        //
+        // Found by the firestore-rules-tester gate on this diff; pre-existing,
+        // not introduced here, and it has its own ticket.
+        //
+        // The lesson generalises: bounding a field's VALUE on one collection
+        // does not bound a projection of it stored on another. The complete
+        // close for both routes is ordering the preview on a server-written
+        // stamp instead of this device-written one; a tighter number here is
+        // not a substitute for it.
         && request.resource.data.sentAt is timestamp
+        && request.resource.data.sentAt <= request.time + duration.value(1, 'h')
         && isAccountMatured()
         && isAgeCompliant()
         && rateLimitWrite('messages', 5);

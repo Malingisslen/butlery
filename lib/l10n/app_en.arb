@@ -3929,6 +3929,7 @@
   "chatAttachmentTypes": "Attachments: Recipe, Menu, Shopping list, Photo",
   "chatCannotMessageNonFriend": "You cannot send messages to this person",
   "chatCouldNotSendMessage": "Could not send the message. Try again.",
+  "chatSendFailedDeviceClockAhead": "Could not send. Your phone's clock is too far ahead — check the date and time in settings.",
   "chatLoadingMessages": "Loading messages...",
   "chatNoMessages": "No messages yet",
   "chatSend": "Send",

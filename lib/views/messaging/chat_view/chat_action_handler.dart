@@ -143,8 +143,11 @@ class ChatActionHandler {
     } catch (e, stackTrace) {
       AppLogger.error('❌ [ChatActionHandler] Failed to send message', e);
       AppLogger.error('❌ [ChatActionHandler] Stack trace: $stackTrace');
-      if (!context.mounted) rethrow;
-      _showErrorSnackBar(context.l10n.chatErrorOccurred);
+      // No SnackBar here, deliberately (BUT-1903). This method's ONLY consumer
+      // is ChatInputSection, via `onSendMessage` in chat_view_facade.dart, and
+      // that catch shows its own error — so one failed send used to raise two
+      // toasts with two different wordings. The rethrow is what carries the
+      // failure to the one place that can name the cause.
       rethrow;
     }
   }

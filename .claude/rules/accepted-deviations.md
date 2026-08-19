@@ -170,6 +170,21 @@ files in the same edit.
   self checks, measured — so do not argue from "un-deletable".)
   BUT-1795/BUT-1825, 2026-08-12; amended BUT-1838, 2026-08-15
 
+- **A chat message's `sentAt` may sit at most ONE HOUR ahead of the server, and that number
+  ships together with the client-side error message that explains a refusal.** Malin's explicit
+  call, 2026-08-19 (BUT-1903), shown against the alternative of 24 hours with no app change.
+  Do not propose tightening it to minutes: `Message` stamps the DEVICE clock, there is no field
+  skew data, and a bound too tight silently locks a real user out of chat entirely. Do not
+  propose loosening it either — the residual it buys is a chat-list preview an attacker can
+  freeze, and 24 hours of that on a minor's device is what the panel weighed. The two halves are
+  ONE decision: a later change that loosens the bound must revisit the message, and vice versa.
+  The number lives in THREE languages — `firestore.rules`, `MessageSendErrorMapper.maxSentAtLead`
+  and `clockSkewBucket` — and a tightening that finds only two ships a wrong histogram. Full
+  reasoning and the five-seat panel: `docs/org/adr/ADR-0008-clock-bound-on-message-timestamps-and-its-error-message.md`.
+  **Not closed by it:** `conversations.lastMessage` is a denormalised copy of `sentAt` whose
+  update deny-list does not name it, so the preview can still be frozen without touching this
+  rule. Own ticket; a tighter number here is not a substitute for it. BUT-1903, 2026-08-19
+
 - **A minor may be added to a group by any of their FRIENDS, and the strangers already in that
   group can then message them** — the gate checks the person doing the inviting, not everybody
   present. **Malin's explicit call, 2026-08-13 (BUT-1838).** She was shown the alternative and

@@ -5785,6 +5785,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not send the message. Try again.';
 
   @override
+  String get chatSendFailedDeviceClockAhead =>
+      'Could not send. Your phone\'s clock is too far ahead — check the date and time in settings.';
+
+  @override
   String get chatLoadingMessages => 'Loading messages...';
 
   @override
