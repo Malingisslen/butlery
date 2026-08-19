@@ -1744,10 +1744,10 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
 
    From the REPO ROOT, over files git knows about but NOT ones it ignores, with `*.md`
    included. Every clause was learned the hard way. An earlier draft swept `lib/ test/ functions/src/` and therefore
-   could not find the very instance this entry cites as its own proof, which lives in
-   `.claude/`. A later one used `grep -r … .`, which walks 15,000 files where only 3,200 are
-   tracked — ~12,000 of them vendored — so "a third hit is yours" would have become false the
-   next time anyone ran `npm install`. `git ls-files` is the idiom
+   could not find the very instance this entry cites as its own proof, which lived in
+   `.claude/` until BUT-1902 repaired it. A later one used `grep -r … .`, which walks 15,000 files where only 3,200 are
+   tracked — ~12,000 of them vendored — so the baseline's "anything else is yours" would have
+   become false the next time anyone ran `npm install`. `git ls-files` is the idiom
    `.github/workflows/text-integrity.yml` already uses for the same job — it
    lived in `test.yml` until 2026-08-19, when it had to move because that
    workflow's `paths-ignore` excluded the very directories the guard exists
@@ -1758,9 +1758,12 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
    opened: plain `git ls-files` lists TRACKED files, so a file the heredoc has just CREATED is
    invisible until you `git add` it — which is exactly when you would be running this. Measured
    in a throwaway repo: without the flags a brand-new corrupted file returns nothing; with them
-   it is found, and `node_modules` stays excluded because it is gitignored. On this repo both
-   forms list the same 3,179 files and return the same two hits, so the flags cost nothing
-   today and cover the case that matters tomorrow.
+   it is found, and `node_modules` stays excluded because it is gitignored. On this repo the
+   two forms list the same files and return the same hits, so the flags cost nothing and
+   cover the case that matters tomorrow. **The baseline is stated below, once, and not
+   here** — a second copy of it in this same item is what a reviewer caught after the first
+   correction: the number was still "two" up here while the real statement below already
+   said one.
 
    The class is wider than `\b`, and that is not defensive padding. This entry's own worked
    example ate FOUR escapes, and the first version of this sweep — `[\x00-\x08]` — could see
@@ -1769,13 +1772,18 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
    fixtures: the old class matched the backspace file only, the new class matched all three.
 
    `\t` stays OUT, and that is a real hole rather than an oversight: a tab is legal in
-   source, so no sweep can flag it. The `\t` half of the example below is invisible to this
-   command and always will be — it shows as `C:^Iools` and only a reader catches it.
+   source, so no sweep can flag it. The `\t` half of the worked example below was invisible
+   to this command and always would have been — it showed as `C:^Iools`, and only a reader
+   catches that. `.github/workflows/text-integrity.yml` makes the same point generically, in
+   the guard itself.
 
    **The expected set is ONE file. A SECOND is yours.**
    * `test/unit/services/ocr_extraction_service_test.dart` — deliberate control-character OCR
-     fixtures, with a comment saying so. It is also the one file
-     `.github/workflows/text-integrity.yml` excludes, so the CI guard and this sweep agree.
+     fixtures, with a comment saying so. It is the same file
+     `.github/workflows/text-integrity.yml` excludes — but the two do not do the same job:
+     CI EXCLUDES it and so expects ZERO hits, this sweep expects it as its ONE, and CI also
+     scans nine more extensions (`.yml .yaml .json .js .mjs .sh .arb .xml .plist`). A clean
+     run here does not predict a green guard there.
 
    It was TWO until 2026-08-19, and saying so here after the repair landed would have been
    FAIL-OPEN: a session that swept, got two hits and dismissed the second as "the known
@@ -1852,9 +1860,10 @@ Two things follow, and the second is the sharper one:
    assertion about control flow, so trace what SHORT-CIRCUITS above it before writing why it
    matters.
 2. **The mutant survived both suites.** No fixture sat on the boundary, so `<=` passed
-   19/19 — the unit suite as it then stood — and 9/9. It is 20 cases now, and the twentieth
-   is the boundary fixture that kills it, so quoting today's total would name a suite the
-   mutant demonstrably does NOT pass. Scope a count to what it counted. A comment calling something "load-bearing" is an untested assertion until a
+   19/19 — the unit suite as it then stood — and 9/9. It is 20 cases now, the extra one being
+   the boundary fixture ADDED to kill it (not the twentieth in file order), so quoting today's
+   total would name a suite the mutant demonstrably does NOT pass. Scope a count to what it
+   counted. A comment calling something "load-bearing" is an untested assertion until a
    fixture sits exactly ON the bound — and a fast path upstream is exactly what makes such a
    fixture easy to forget, because the boundary looks unreachable from the outside.
 
