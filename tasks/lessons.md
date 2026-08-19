@@ -1704,7 +1704,7 @@ loudly with the line number. The outer `test/run-fixtures.mjs` reported "219 che
 
 Inside those prompts, quote code with plain double quotes, not backticks.
 
-### A Python heredoc turns a backslash escape into a CONTROL BYTE, and it bit three times in one commit (2026-08-19)
+### A Python heredoc turns a backslash escape into a CONTROL BYTE, and it bit four times in one commit (2026-08-19)
 
 Writing Dart or TypeScript through `python3 - <<'PYEOF'` is a good way to make a precise
 multi-line edit. It is also a good way to write an invisible 0x08 into a source file.
@@ -1715,9 +1715,18 @@ explains the bug — gets written to disk as `^H`, and the sentence renders as
 "the `` anchors never fire". The compiler does not care. `dart analyze` is clean. Every
 test passes. Only a reader loses.
 
-It happened three times in one change set, each time in the SAME sentence, because each
-correction of the comment was written through another heredoc. Two of the three were caught
-by review agents, not by me, and the third only because I finally swept for the byte.
+It landed FOUR times in one change set, in four different files: the original comment, a
+rewrite of a related comment one file over, a new comment in a third, and finally the commit
+message describing the bug. Three of the four were caught by review agents rather than by me.
+
+Not all four were corrections — that qualifier was in an earlier draft of this entry and was
+wrong. What they share is only the mechanism: every one of them was written through a Python
+heredoc, which is simply how a precise multi-line edit gets made here, so the trap is armed on
+every edit rather than on careless ones.
+
+A fifth escape mistake in the same change set was a different bug with the same root: the
+sweep prescribed below was written as a bare `\x00-\x08`, with no character class
+around it, so it matched nothing. Count it separately; it is not a backspace.
 
 **The fixes, in order of preference:**
 
