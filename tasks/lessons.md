@@ -1740,16 +1740,24 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
    for: this very line first shipped as `r"\\b"`, which is TWO backslashes and a `b`,
    i.e. the wrong answer inside the fix list of the lesson about getting it wrong.
 2. After any heredoc edit that mentions a regex escape, run
-   `git ls-files -z -- '*.dart' '*.ts' '*.md' | xargs -0 -r grep -laP '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'`
+   `git ls-files -z --cached --others --exclude-standard -- '*.dart' '*.ts' '*.md' | xargs -0 -r grep -laP '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'`
 
-From the REPO ROOT, over TRACKED files only, with `*.md` included. Every clause was
-   learned the hard way. An earlier draft swept `lib/ test/ functions/src/` and therefore
+   From the REPO ROOT, over files git knows about but NOT ones it ignores, with `*.md`
+   included. Every clause was learned the hard way. An earlier draft swept `lib/ test/ functions/src/` and therefore
    could not find the very instance this entry cites as its own proof, which lives in
    `.claude/`. A later one used `grep -r … .`, which walks 15,000 files where only 3,200 are
    tracked — ~12,000 of them vendored — so "a third hit is yours" would have become false the
    next time anyone ran `npm install`. `git ls-files` is the idiom
    `.github/workflows/test.yml:76` already uses for the same job. Extension scoping stays:
    PNG fixtures match otherwise.
+
+   `--others --exclude-standard` is the third clause, and it closes a hole the second one
+   opened: plain `git ls-files` lists TRACKED files, so a file the heredoc has just CREATED is
+   invisible until you `git add` it — which is exactly when you would be running this. Measured
+   in a throwaway repo: without the flags a brand-new corrupted file returns nothing; with them
+   it is found, and `node_modules` stays excluded because it is gitignored. On this repo both
+   forms list the same 3,179 files and return the same two hits, so the flags cost nothing
+   today and cover the case that matters tomorrow.
 
    The class is wider than `\b`, and that is not defensive padding. This entry's own worked
    example ate FOUR escapes, and the first version of this sweep — `[\x00-\x08]` — could see
