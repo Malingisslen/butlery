@@ -1772,21 +1772,28 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
    source, so no sweep can flag it. The `\t` half of the example below is invisible to this
    command and always will be — it shows as `C:^Iools` and only a reader catches it.
 
-   **The expected set is TWO files. A third is yours.**
+   **The expected set is ONE file. A SECOND is yours.**
    * `test/unit/services/ocr_extraction_service_test.dart` — deliberate control-character OCR
-     fixtures, with a comment saying so.
-   * `.claude/agents/testing-specialist.knowledge.archive.md:1143` — NOT deliberate. It reads
-     `lutter^Hin` where `C:\tools\flutter\bin` was meant. FOUR escapes were eaten across two
-     Windows paths on that line — `\v` (from `\v1.0`), `\t`, `\f` and `\b` — by this same
-     mechanism. Introduced 2026-06-14 in `3bf7a50f3`, in
-     `testing-specialist.knowledge.md` — the file agents LOAD — and moved into the append-only
-     archive three weeks later by `58bae2954`. Repair tracked on BUT-1900; until it lands, it
-     is part of the baseline. Nobody found it in two months because nobody swept over prose.
+     fixtures, with a comment saying so. It is also the one file
+     `.github/workflows/text-integrity.yml` excludes, so the CI guard and this sweep agree.
 
-     Reading it today shows only TWO of the four: the 0x08 on line 1143 and the tab on 1142.
-     A later rewrite normalised the 0x0B and 0x0C into line breaks, which is why the damage
-     now spans lines 1141-1143 and why an earlier draft of THIS entry read those breaks as
-     `\n` and got the escape list wrong. Do not re-derive the four from what survives.
+   It was TWO until 2026-08-19, and saying so here after the repair landed would have been
+   FAIL-OPEN: a session that swept, got two hits and dismissed the second as "the known
+   baseline" would have been dismissing a real one. Corrected the same day the reviewer
+   caught it.
+
+   The second entry was `.claude/agents/testing-specialist.knowledge.archive.md:1143`, and
+   the story is worth keeping even though the file is clean now. It read `lutter^Hin` where
+   `C:\tools\flutter\bin` was meant. FOUR escapes were eaten across two Windows paths on
+   that line — `\v` (from `\v1.0`), `\t`, `\f` and `\b`. Introduced 2026-06-14 in
+   `3bf7a50f3`, in `testing-specialist.knowledge.md` — the file agents LOAD — moved into the
+   append-only archive three weeks later by `58bae2954`, and repaired by BUT-1902 on
+   2026-08-19. Nobody found it in two months because nobody swept over prose.
+
+   Before the repair it showed only TWO of the four: the 0x08 on line 1143 and the tab on
+   1142. A later rewrite had normalised the 0x0B and 0x0C into line breaks, which is why the
+   damage spanned lines 1141-1143 and why an earlier draft of THIS entry read those breaks as
+   `\n` and got the escape list wrong. Do not re-derive escapes from what survives.
 3. Do not trust an earlier clean sweep. The sweep proves the bytes at that moment; the next
    heredoc reintroduces it.
 
@@ -1844,8 +1851,10 @@ Two things follow, and the second is the sharper one:
 1. **The stated failure mode was not the one a flip produces.** A guard's justification is an
    assertion about control flow, so trace what SHORT-CIRCUITS above it before writing why it
    matters.
-2. **The mutant survived both suites.** No fixture sat on the boundary, so `<=` passed 20/20
-   and 9/9. A comment calling something "load-bearing" is an untested assertion until a
+2. **The mutant survived both suites.** No fixture sat on the boundary, so `<=` passed
+   19/19 — the unit suite as it then stood — and 9/9. It is 20 cases now, and the twentieth
+   is the boundary fixture that kills it, so quoting today's total would name a suite the
+   mutant demonstrably does NOT pass. Scope a count to what it counted. A comment calling something "load-bearing" is an untested assertion until a
    fixture sits exactly ON the bound — and a fast path upstream is exactly what makes such a
    fixture easy to forget, because the boundary looks unreachable from the outside.
 
