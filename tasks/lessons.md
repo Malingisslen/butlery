@@ -1745,10 +1745,12 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
    From the REPO ROOT, over files git knows about but NOT ones it ignores, with `*.md`
    included. Every clause was learned the hard way. An earlier draft swept `lib/ test/ functions/src/` and therefore
    could not find the very instance this entry cites as its own proof, which lived in
-   `.claude/` until BUT-1902 repaired it. A later one used `grep -r … .`, which walks 15,000 files where only 3,200 are
-   tracked — ~12,000 of them vendored — so the baseline's "anything else is yours" would have
-   become false the next time anyone ran `npm install`. `git ls-files` is the idiom
-   `.github/workflows/text-integrity.yml` already uses for the same job — it
+   `.claude/` until BUT-1902 repaired it. A later one used `grep -r … .`, which walks the whole working tree — an order of
+   magnitude more files than are tracked, nearly all of them vendored — so the baseline's
+   "anything else is yours" would have become false the next time anyone ran `npm install`.
+   (Deliberately no figures: this entry has had three sets of them and all three expired.
+   Measure when you need the number.) `git ls-files` is the idiom
+   `.github/workflows/text-integrity.yml` already uses to enumerate files — it
    lived in `test.yml` until 2026-08-19, when it had to move because that
    workflow's `paths-ignore` excluded the very directories the guard exists
    for. Extension scoping stays:
@@ -1760,8 +1762,8 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
    in a throwaway repo: without the flags a brand-new corrupted file returns nothing; with them
    it is found, and `node_modules` stays excluded because it is gitignored. On this repo the
    two forms list the same files and return the same hits, so the flags cost nothing and
-   cover the case that matters tomorrow. **The baseline is stated below, once, and not
-   here** — a second copy of it in this same item is what a reviewer caught after the first
+   cover the case that matters tomorrow. **The baseline is stated below, and nowhere
+   else** — a second copy of it in this same item is what a reviewer caught after the first
    correction: the number was still "two" up here while the real statement below already
    said one.
 
@@ -1780,10 +1782,12 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
    **The expected set is ONE file. A SECOND is yours.**
    * `test/unit/services/ocr_extraction_service_test.dart` — deliberate control-character OCR
      fixtures, with a comment saying so. It is the same file
-     `.github/workflows/text-integrity.yml` excludes — but the two do not do the same job:
-     CI EXCLUDES it and so expects ZERO hits, this sweep expects it as its ONE, and CI also
-     scans nine more extensions (`.yml .yaml .json .js .mjs .sh .arb .xml .plist`). A clean
-     run here does not predict a green guard there.
+     `.github/workflows/text-integrity.yml` names — but the two do not do the same job, in
+     three ways. CI EXCLUDES the file and so expects NOTHING back; this sweep expects exactly
+     that file. CI scans nine more extensions (`.yml .yaml .json .js .mjs .sh .arb .xml
+     .plist`). And CI sweeps TRACKED files only, so it is blind to the brand-new uncommitted
+     file the third clause above exists to catch. A clean run here does not predict a green
+     guard there, in either direction.
 
    It was TWO until 2026-08-19, and saying so here after the repair landed would have been
    FAIL-OPEN: a session that swept, got two hits and dismissed the second as "the known
