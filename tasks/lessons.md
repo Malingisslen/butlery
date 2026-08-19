@@ -1740,12 +1740,16 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
    for: this very line first shipped as `r"\\b"`, which is TWO backslashes and a `b`,
    i.e. the wrong answer inside the fix list of the lesson about getting it wrong.
 2. After any heredoc edit that mentions a regex escape, run
-   `grep -rlP '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]' --include='*.dart' --include='*.ts' --include='*.md' .`
+   `git ls-files -z -- '*.dart' '*.ts' '*.md' | xargs -0 -r grep -laP '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'`
 
-   From the REPO ROOT with no path argument, and `*.md` included. Both halves are load-bearing
-   and both were learned the hard way: an earlier draft swept `lib/ test/ functions/src/` and
-   therefore could not find the very instance this entry cites as its own proof, which lives
-   in `.claude/`. Scoping by extension is still needed — PNG fixtures match otherwise.
+From the REPO ROOT, over TRACKED files only, with `*.md` included. Every clause was
+   learned the hard way. An earlier draft swept `lib/ test/ functions/src/` and therefore
+   could not find the very instance this entry cites as its own proof, which lives in
+   `.claude/`. A later one used `grep -r … .`, which walks 15,000 files where only 3,200 are
+   tracked — ~12,000 of them vendored — so "a third hit is yours" would have become false the
+   next time anyone ran `npm install`. `git ls-files` is the idiom
+   `.github/workflows/test.yml:76` already uses for the same job. Extension scoping stays:
+   PNG fixtures match otherwise.
 
    The class is wider than `\b`, and that is not defensive padding. This entry's own worked
    example ate FOUR escapes, and the first version of this sweep — `[\x00-\x08]` — could see
@@ -1767,6 +1771,11 @@ around it, so it matched nothing. Count it separately; it is not a backspace.
      `testing-specialist.knowledge.md` — the file agents LOAD — and moved into the append-only
      archive three weeks later by `58bae2954`. Repair tracked on BUT-1900; until it lands, it
      is part of the baseline. Nobody found it in two months because nobody swept over prose.
+
+     Reading it today shows only TWO of the four: the 0x08 on line 1143 and the tab on 1142.
+     A later rewrite normalised the 0x0B and 0x0C into line breaks, which is why the damage
+     now spans lines 1141-1143 and why an earlier draft of THIS entry read those breaks as
+     `\n` and got the escape list wrong. Do not re-derive the four from what survives.
 3. Do not trust an earlier clean sweep. The sweep proves the bytes at that moment; the next
    heredoc reintroduces it.
 
