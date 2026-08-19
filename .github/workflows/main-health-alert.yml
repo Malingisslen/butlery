@@ -88,14 +88,45 @@ jobs:
             const CONCLUSIVE = new Set(['success', 'failure', 'timed_out']);
             const RED = new Set(['failure', 'timed_out']);
 
-            // Latest completed main run per gating workflow (one API page).
-            const runs = (await github.rest.actions.listWorkflowRunsForRepo({
-              owner, repo, branch: 'main', status: 'completed', per_page: 100,
-            })).data.workflow_runs;
-            const latest = gates
-              .map((name) => runs.find((r) => r.name === name && CONCLUSIVE.has(r.conclusion)))
-              .filter(Boolean);
+            // One query PER GATE against its own run history, instead of one
+            // shared page of 100 runs for all thirteen (BUT-1905). That page
+            // was a budget every gate drew from: ~12 workflows fire per push,
+            // so it covered roughly the last eight pushes, and a gate that runs
+            // rarely could have its latest run pushed off it by a busy day.
+            // `find()` then returned undefined, `.filter(Boolean)` dropped it,
+            // and a RED gate read as ABSENT rather than red — with every red
+            // gate off the page, `failing.length === 0` took the else branch and
+            // auto-closed the tracking issue saying all gates were green while
+            // main was broken. Thirteen small calls have no shared budget.
+            const workflows = await github.paginate(github.rest.actions.listRepoWorkflows, {
+              owner, repo, per_page: 100,
+            });
+            const idByName = new Map(workflows.map((w) => [w.name, w.id]));
+
+            // A gate name matching no workflow is a typo or a rename, and under
+            // the old code it was indistinguishable from a green gate. It means
+            // this alarm is silently not watching something, so it is reported
+            // rather than filtered away.
+            const unresolved = gates.filter((name) => !idByName.has(name));
+
+            const latest = [];
+            for (const name of gates) {
+              const id = idByName.get(name);
+              if (id === undefined) continue;
+              // 10 rows of ONE gate's own history. It only has to outlast a run
+              // of cancelled/skipped verdicts on that gate, not the repo's whole
+              // traffic. A gate that has never run on main yields nothing and is
+              // still absent from `latest` — same as before.
+              const runs = (await github.rest.actions.listWorkflowRuns({
+                owner, repo, workflow_id: id, branch: 'main', status: 'completed', per_page: 10,
+              })).data.workflow_runs;
+              const run = runs.find((r) => CONCLUSIVE.has(r.conclusion));
+              if (run) latest.push(run);
+            }
             const failing = latest.filter((r) => RED.has(r.conclusion));
+            const unresolvedNote = unresolved.length
+              ? `\n\n⚠️ NOT CHECKED — these gate names match no workflow in this repo (typo, or the workflow was renamed): ${unresolved.join(', ')}`
+              : '';
 
             // Find our existing open tracking issue by exact title.
             const openIssues = (await github.rest.issues.listForRepo({
@@ -107,7 +138,7 @@ jobs:
               const list = failing
                 .map((r) => `- ❌ **${r.name}** — ${r.html_url} (\`${r.head_sha.slice(0, 8)}\`)`)
                 .join('\n');
-              const body = `@${OWNER_HANDLE} — \`main\` CI is red:\n\n${list}\n\n_Auto-updated by Main CI Health Alert. This issue closes itself when all gates are green again._`;
+              const body = `@${OWNER_HANDLE} — \`main\` CI is red:\n\n${list}${unresolvedNote}\n\n_Auto-updated by Main CI Health Alert. This issue closes itself when all gates are green again._`;
 
               // Stable identity of "which gates are red right now". Embedded as
               // an HTML comment in every re-notification so the next run can
@@ -160,6 +191,17 @@ jobs:
               // whose own badge is always green is worse than no badge.
               core.setFailed(
                 `main is red: ${fingerprint} — tracking issue #${issueNumber}`
+              );
+            } else if (unresolved.length > 0) {
+              // Nothing is red among the gates we could resolve — but "all
+              // green" is a claim we cannot make while a gate name resolves to
+              // no workflow at all. Leave any tracking issue open and go red, so
+              // the broken list gets fixed instead of quietly narrowing what
+              // this alarm watches.
+              core.setFailed(
+                `Gate name(s) match no workflow in this repo: ${unresolved.join(', ')} — ` +
+                'fix the `gates` array and the `workflow_run.workflows` list above it. ' +
+                'Not auto-closing the tracking issue while a gate is unwatched.'
               );
             } else if (issue) {
               await github.rest.issues.createComment({
