@@ -444,10 +444,13 @@ void main() {
     // uid arm above, which bans a raw uid at EVERY level. The two rules
     // therefore disagree about identical bytes — a direct id IS two raw uids
     // — and that asymmetry is not a policy anyone decided. Only `error`
-    // reaches Crashlytics, so `error` is where the leak was; the ~30 non-
-    // `error` sites still printing raw ids — `info`, `debug`, `success` and
-    // `warning` — are device-local and simply unswept. BUT-1897 owns
-    // reconciling them.
+    // reaches Crashlytics, so `error` is where the leak was. Forty-odd
+    // non-`error` sites (`info`, `debug`, `success`, `warning`) still print
+    // raw ids; they are device-local, and one of them was masked in this same
+    // batch, so "unswept" describes them better than any policy does.
+    // BUT-1897 owns reconciling them. Counting them precisely has now been
+    // wrong twice in this comment's history — measure before quoting a
+    // number, or leave it approximate as it is here.
     //
     // KNOWN GAPS, same spirit as the uid arm's own list above. This matches
     // the bare identifier only, so an error log written as

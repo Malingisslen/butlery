@@ -1559,7 +1559,7 @@ tests for it, and with them the section's only assertion that its truncation fla
 ABSENT — so an unconditional flag would have told every data subject their export was clipped
 when it was complete. The deletion was right; the missing replacement was not.
 
-## A reviewer and a verifier can BOTH be right, because they grade different things (BUT-1871, 2026-08-16 / resolved 2026-08-17)
+### A reviewer and a verifier can BOTH be right, because they grade different things (BUT-1871, 2026-08-16 / resolved 2026-08-17)
 
 Three specialist reviewers passed a diff with zero blocking findings. The outcome verifier
 failed the same bytes on two of three criteria. The ticket filed for it assumed one side had
@@ -1682,7 +1682,7 @@ Rules that follow:
 - Type the field as `unknown` rather than `number | null` — a narrow type invites exactly the
   null check that cannot fire.
 
-## `node --check` does not prove the sprint engine parses (2026-08-17)
+### `node --check` does not prove the sprint engine parses (2026-08-17)
 
 Adding a sentence to a prompt inside `sprint-execute-parallel.js` broke the engine twice in a
 row, and `node --check plugins/delivery/workflows/sprint-execute-parallel.js` printed nothing
@@ -1704,7 +1704,7 @@ loudly with the line number. The outer `test/run-fixtures.mjs` reported "219 che
 
 Inside those prompts, quote code with plain double quotes, not backticks.
 
-## A Python heredoc turns a backslash escape into a CONTROL BYTE, and it bit three times in one commit (2026-08-19)
+### A Python heredoc turns a backslash escape into a CONTROL BYTE, and it bit three times in one commit (2026-08-19)
 
 Writing Dart or TypeScript through `python3 - <<'PYEOF'` is a good way to make a precise
 multi-line edit. It is also a good way to write an invisible 0x08 into a source file.
@@ -1725,7 +1725,10 @@ by review agents, not by me, and the third only because I finally swept for the 
    `chr(92) + "b"`. The explicit form is ugly and never wrong.
 2. After any heredoc edit that mentions a regex escape, run
    `grep -rlP '[\x00-\x08]' --include='*.dart' --include='*.ts' lib/ test/ functions/src/`
-   and expect zero hits. PNG fixtures will match a broader sweep; scope it by extension.
+   The correct baseline on this tree is ONE file, not zero:
+   `test/unit/services/ocr_extraction_service_test.dart` holds deliberate control-character
+   OCR fixtures. Anything else is yours. (PNG fixtures match a broader sweep too, which is
+   why the pattern is scoped by extension.)
 3. Do not trust an earlier clean sweep. The sweep proves the bytes at that moment; the next
    heredoc reintroduces it.
 
