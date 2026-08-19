@@ -24,7 +24,12 @@ OcrLine line(String text, {required double wordHeight, int words = 4}) {
   final tokens = text.trim().split(RegExp(r'\s+'));
   return OcrLine(
     text: text,
-    box: LayoutBox(left: 0, top: 0, width: text.length * 18, height: wordHeight),
+    box: LayoutBox(
+      left: 0,
+      top: 0,
+      width: text.length * 18,
+      height: wordHeight,
+    ),
     words: [
       for (var i = 0; i < words; i++)
         OcrWord(
@@ -94,7 +99,8 @@ void main() {
       expect(
         HeadingDetector.headingLines(page(secondPage)),
         [0, 7],
-        reason: 'premise: page two really is the TWO-heading page it reads '
+        reason:
+            'premise: page two really is the TWO-heading page it reads '
             'as — this is what the `Recept` descender broke',
       );
 
@@ -176,7 +182,11 @@ void main() {
       final tailOnly = withoutOrphanTail(input, layout);
 
       expect(cut.text, tailOnly.text);
-      expect(cut.text.contains('42'), isTrue, reason: 'the head cut is dropped');
+      expect(
+        cut.text.contains('42'),
+        isTrue,
+        reason: 'the head cut is dropped',
+      );
       expect(cut.layout!.matchesLineCountOf(cut.text), isTrue);
     });
 
