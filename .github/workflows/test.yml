@@ -53,15 +53,27 @@ env:
   FLUTTER_VERSION: '3.38.5'
 
 jobs:
-  # ── Binary-file guard (BUT-1624) ────────────────────────────────────────
-  # A data-writing Cloud Function once landed as a git BINARY blob: a NUL (\0)
-  # byte used as a Map-key separator made the whole file undiffable and
-  # unreviewable (it slipped a code review because no diff could render). Fail
-  # the build if ANY tracked file under functions/src/ contains a NUL byte —
-  # source there must always be diffable text. Cheap (checkout + grep only), so
-  # it runs on every push/PR without a Flutter toolchain.
+  # ── Text-integrity guard (BUT-1624, widened by BUT-1901) ─────────────
+  # Two steps, two failure modes, one cheap job (checkout + grep, no Flutter
+  # toolchain, so it runs on every push/PR).
+  #
+  # Step 1 — BUT-1624. A data-writing Cloud Function once landed as a git
+  # BINARY blob: a NUL (\0) byte used as a Map-key separator made the whole file
+  # undiffable and unreviewable, and it slipped a code review because no diff
+  # could render. Source under functions/src/ must always be diffable text.
+  #
+  # Step 2 — BUT-1901. NUL is not the only byte that does this, and
+  # functions/src is not the only place it lands. On 2026-08-19 four literal
+  # 0x08 bytes were written into Dart comments by Python heredocs, and a
+  # corrupted Windows path had been sitting unreadable in .claude/ since
+  # 2026-06-14 (BUT-1902). Step 1 could see none of them: wrong byte, wrong
+  # path, wrong extension. Step 2 is the general case.
+  #
+  # The job id stays `functions-binary-guard` on purpose — three dated entries
+  # in .claude/agents/*.knowledge.archive.md name it, and renaming it would
+  # strand them.
   functions-binary-guard:
-    name: functions/src binary guard
+    name: binary + control-character guard
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -80,6 +92,42 @@ jobs:
             exit 1
           fi
           echo "No binary files under functions/src/."
+
+      - name: Fail on stray control characters in tracked source and docs
+        shell: bash
+        run: |
+          # The class is everything a compiler ignores and a reader cannot see:
+          # C0 controls and DEL, MINUS tab (0x09), newline (0x0A) and carriage
+          # return (0x0D), which are legal. Same class as
+          # lib/services/parsing/sanitizers/html_sanitizer.dart.
+          #
+          # 0x0B and 0x0C earn their place: a `\v` or `\f` eaten by an escaping
+          # layer lands as one of those, and a narrower [\x00-\x08] sees neither.
+          # Measured 2026-08-19 against the four escapes the known corruption
+          # actually ate.
+          #
+          # Tab is deliberately OUT, and that is a real hole rather than an
+          # oversight: a tab is legal, so `C:\tools` mangled to `C:<TAB>ools` is
+          # invisible here and always will be. Only a reader catches that one.
+          #
+          # Extension-scoped because PNG goldens and other tracked binaries
+          # would otherwise match everything. The single exclusion is a test
+          # whose fixtures ARE control characters, deliberately and with a
+          # comment saying so; excluding the file rather than filtering the
+          # results keeps this readable, at the cost of not guarding that file.
+          #
+          # `|| true` plus the variable: same reason as the step above.
+          matches="$(git ls-files -z \
+            -- '*.dart' '*.ts' '*.md' '*.yml' '*.yaml' '*.json' '*.js' '*.mjs' \
+               '*.sh' '*.arb' '*.xml' '*.plist' \
+               ':!test/unit/services/ocr_extraction_service_test.dart' \
+            | xargs -0 -r grep -laP '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]' || true)"
+          if [ -n "$matches" ]; then
+            echo "::error::Stray control character(s) in tracked text. They are invisible to the compiler and to a diff, so a comment or a path can read as broken while every test passes. Usually an escape eaten by an editing layer — see the heredoc entry in tasks/lessons.md:"
+            echo "$matches"
+            exit 1
+          fi
+          echo "No stray control characters in tracked source or docs."
 
   # ── Per-commit fast path ────────────────────────────────────────────────
   # Ubuntu-only, no coverage, unit suite sharded 3 ways. Each shard runs ~1/3
