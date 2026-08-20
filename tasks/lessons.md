@@ -1933,8 +1933,8 @@ at CREATE, so a pre-existing row can never produce one.
 
 The cookbook corpus's frame-cut set stood at 14 entries, hand-graded from what a word-shape
 screen surfaced, and every published trim figure rested on it. Grading all 242 verified
-entries against the PHOTOGRAPHS put it at 23 — and the screen, re-run over the finished set,
-recovers only 9 of them (13 if it also looks for an explicit `...`; the other ten are clean
+entries against the PHOTOGRAPHS put it at 23 — and a DIFFERENT, terminal-punctuation screen,
+run over the finished set, recovers only 9 of them (13 if it also looks for an explicit `...`; the other ten are clean
 prose that simply stops). Five of the nine new entries are not camera cuts at all: a recipe
 that starts at the foot of one page and finishes on a page the photo does not include. No
 screen aimed at broken words can see that class — the gold ends on a clean full stop — so
@@ -1948,20 +1948,33 @@ screen aimed at broken words can see that class — the gold ends on a clean ful
    sliced by the frame and was intact at full resolution; the page's own `ocr.txt` carried
    the full line. Crop the ORIGINAL before labelling any edge, and cross-check against the
    stored OCR — it is free and it is from the same capture.
-3. **The label that is cheap to get wrong is the one that deletes evidence.** `Inlagd sill`
-   was called `fragment` on a first pass. `--no-frame-cut` DROPS fragments, so that label
-   would have removed real recipe text from the gold and made the 200-character budget look
-   free in the very table that exists to price it. When a label decides what leaves the
-   denominator, the safe error is the one that keeps the row.
-4. **Re-grading moves only the de-biased column.** The default arm never reads the marker,
-   so every biased figure kept reproducing byte for byte while the `--no-frame-cut` figures
-   all moved. A number from a corrected population must be quoted with the correction that
+3. **A borderline label that decides what LEAVES the denominator has to be argued from a
+   written criterion, never from the transcription and never from the number it produces.**
+   `Inlagd sill` (159 chars) and `Mixade vitaminer` (166) are the same case: the next recipe's
+   opening, taken by the bottom frame edge, no ingredient block, a line or two of method. Their
+   gold READS differently only because one cut landed after a full stop — an accident of where
+   the frame fell. I labelled them apart on that accident, and a reviewer was able to cite the
+   rubric for BOTH answers, which is the tell that the rubric was under-determined. Settled by
+   writing the criterion down (does the capture hold the recipe's SUBSTANCE?) and applying it to
+   both: `fragment`. It moves the headline figure from 23 real gold tokens to 9, so the
+   sensitivity is published beside the number rather than buried.
+4. **Re-grading moves only the de-biased column.** The default arm reads the marker only to
+   tally the census it prints — nothing downstream of that tally touches a score — so every
+   biased figure kept reproducing byte for byte while the `--no-frame-cut` figures all moved.
+   (That clause used to read "never reads the marker". It was true until this same batch made
+   the read unconditional, and it survived three sweeps because it says "the marker" where its
+   two corrected siblings say `frameCut`. Grep the CONCEPT, not the spelling.) A number from a corrected population must be quoted with the correction that
    produced it named, or the next reader diffs two gradings and calls it drift.
 5. **Price the refusal you argued.** The 120-200 band had been declined by reading nine
-   tails; it had never been measured on de-biased gold, and the entry said so. It costs 23
-   real gold tokens and one right block count. Reading and measurement agreed — but one of
-   the nine, `Mixade vitaminer`, turned out to be debris by the corpus's own grading, so the
-   argument had a hole the measurement did not.
+   tails; it had never been measured on de-biased gold, and the entry said so. It costs 9
+   real gold tokens and one right block count, against exactly zero for the shipped 120.
+   Reading and measurement agreed — but TWO of the nine turned out to be debris by the
+   corpus's own grading, so the argument had a hole the measurement did not.
+6. **Editing the measured input mid-review invalidates the review, silently.** I flipped one
+   gold entry while three reviewers were reading the diff that quoted figures derived from it;
+   one of them re-ran the arms, found the corpus no longer matched the docs, and blocked. It
+   was right to. Freeze the inputs a review is reading, or re-run the review after touching
+   them — a verdict is only about the bytes it saw.
 
 
 ## Main was red for three unrelated reasons and none of them was a bug (BUT-1905, 2026-08-20)

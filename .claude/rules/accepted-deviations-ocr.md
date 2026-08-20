@@ -3,6 +3,9 @@ paths:
   - "lib/services/import/**"
   - "lib/services/ocr/**"
   - "tools/corpus_split_eval.dart"
+  # Carries the same corpus figures in its own comment, so the session most
+  # likely to touch it after a re-grade needs this file loaded too.
+  - "lib/services/feature_flags/feature_flag_service.dart"
 ---
 
 # Accepted Deviations — OCR, import and page splitting
@@ -29,27 +32,42 @@ A new deviation in this area is appended HERE and in that document, in the same 
   at 139 (fixed 0, broke 0 — the arm prints the split, so "unchanged" is not a
   masked swap). The arm also prints WHICH ten pages, with each heading and its
   character count, so `orphan_tail.dart`'s list is checkable by command.
-  **RECALL IS BIASED AGAINST THIS RULE (BUT-1818):** the gold records frame-cut half
-  recipes as complete ones (14 of 242 graded, of which 11 bias recall — both FLOORS, not
-  counts, since an unfound fragment only makes the trim look worse), so retained
+  **RECALL IS BIASED AGAINST THIS RULE (BUT-1818, re-graded BUT-1847):** the gold records
+  frame-cut half recipes as complete ones (23 of 242 graded, of which 13 bias recall — both
+  FLOORS, not counts, since an unfound fragment only makes the trim look worse), so retained
   debris scores as a hit and the
   trim is penalised for doing its job. **RE-MEASURED 2026-08-09 (BUT-1818): the cost is
-  ZERO.** 14 gold entries were graded against their photographs and marked `frameCut`;
-  `--no-frame-cut` drops the 11 `fragment` ones — never the 3 `tail` ones, which are real
+  ZERO, and BUT-1847's re-grade of every verified entry left the zero standing.**
+  `--no-frame-cut` drops the 13 `fragment` ones — never the 10 `tail` ones, which are real
   recipes and whose removal would only cost a page — and over the SAME 181 pages the trim
-  then scores 91.59 -> 91.59 %, with block counts moving 139 -> 144 BETWEEN THE TWO GOLDS
-  (the trim itself moves them 144 -> 144) as SIX pages gained
+  then scores 91.64 -> 91.64 % (raw: 15925 -> 15925 of 17378), with block counts moving
+  139 -> 145 BETWEEN THE TWO GOLDS
+  (the trim itself moves them 145 -> 145) as SEVEN pages gained
   and ONE lost — the arm prints the per-page movement, because the lost one is the
   informative case (the splitter made 3 blocks of a 1-recipe page and the biased gold
   called that right). The table's `91.54 -> 91.52` keeps the bias
-  and is an upper bound. A zero-ingredient gold entry is NOT a defect signal, and no text
-  screen reproduces the 14 — each was opened as an image.
+  and is an upper bound. **The de-biased figures move whenever the grading does, so quote
+  them with the grading named; the BIASED ones have not moved.** A zero-ingredient gold
+  entry is NOT a defect signal, and no text screen reproduces the set — each entry was
+  opened as an image, and a screen run over the finished grading recovers only 9 of the 23
+  (13 if it also looks for an explicit `...`).
+  Rubric and traps: `docs/testing/cookbook-corpus-gold-grading.md`.
   **Dark until the geometry flag is on:** with
   `enable_layout_recipe_split` false — the code default — no layout reaches the
   splitter, so `withoutOrphanTail` returns its input untouched and nothing is cut.
   Do not read "BUILT" as "live for every user".
   **The 120-200 band was designed as a third outcome (show it unticked in the picker)
-  and then declined by its own gate.** Every tail in that band carries READABLE CONTENT
+  and then declined by its own gate — and BUT-1847 PRICED the refusal (2026-08-19):** on
+  de-biased gold the 200 budget costs **9 real gold tokens** (15925 -> 15916) and one right
+  block count (145 -> 144), while the shipped 120 costs exactly zero. Reading and measurement
+  agree. (TWO of the nine band tails, `Mixade vitaminer` and `Inlagd sill`, are themselves
+  marked `fragment` — the same case seven characters apart — so cutting either costs nothing.
+  ONE of them is the label BUT-1847 decided: with `Inlagd sill` a `tail` the row reads 23
+  tokens, not 9, and that state was measured. `Mixade vitaminer` has been a `fragment` since
+  BUT-1818, and flipping BOTH was never measured — it would cost MORE than 23. The verdict
+  holds in every measured state; the magnitude does not. Criterion:
+  `docs/testing/cookbook-corpus-gold-grading.md`.)
+  Every tail in that band carries READABLE CONTENT
   under the heading — a whole small recipe (`Chokladkräm`), an intro paragraph
   (`Annas hurtbullar`), the start of the next recipe (`Inlagd sill`, `Mixade vitaminer`),
   a tip section with its own list (`I stället för sås`). Below 120 there is only
@@ -64,9 +82,10 @@ A new deviation in this area is appended HERE and in that document, in the same 
   images are 10 of 10 CORRECT, and two are the back-cover blurb of a different book
   lying behind the cookbook). Never re-judge either set from the text — open the images.
   Do not raise the budget above 120 without re-reading those nine that way; the corpus
-  measurement at 200 shows the cost — recall 91.33 %, one page lost. That row has NOT
-  been re-measured against the corrected gold and is the most bias-exposed figure in this
-  entry; do not cite it as a clean cost when re-opening the band.
+  measurement at 200 shows the cost — recall 91.33 %, one page lost. **That row WAS
+  re-measured against the corrected gold in BUT-1847 and is no longer the most bias-exposed
+  figure here: 9 real gold tokens and one right block count, priced above. The BIASED
+  91.33 % stays an upper bound, so do not cite THAT one as a clean cost.**
   Re-open the band the day the picker can MERGE two blocks (BUT-1817): a wrong guess
   becomes undoable and the trade changes. PROXY — Windows offline OCR, not ML Kit.
   BUT-1816, 2026-08-08, corrected 2026-08-09

@@ -147,31 +147,36 @@ class FeatureFlagService {
     // (fixed 0, broke 0). All 10 trimmed pages were read against the PHOTOS on
     // 2026-08-09 and all 10 are correct cuts. The 120-200 band was designed and
     // then DECLINED by its own gate — every tail up there carries readable
-    // content under the heading, in one case a whole small recipe. (An earlier
+    // content under the heading, in one case a whole small recipe. **Two of the
+    // nine are `frameCut: fragment` though (`Mixade vitaminer`, `Inlagd sill`),
+    // so cutting either costs no GOLD even though there is ink on the page; the
+    // band is priced at 9 real gold tokens in `orphan_tail.dart`.** (An earlier
     // version of this line called those tails "subheadings inside a recipe",
     // read off the bare text and wrong on both examples it named.)
     //
-    // **RE-MEASURED 2026-08-09 (BUT-1818): the trim's text cost is ZERO.** The
-    // gold is not corrected — 14 entries were MARKED `frameCut`, and a default
+    // **RE-MEASURED 2026-08-09 (BUT-1818), re-graded 2026-08-19 (BUT-1847):
+    // the trim's text cost is ZERO under both gradings.** The
+    // gold is not corrected — 23 entries are MARKED `frameCut`, and a default
     // run still scores every one of them as a complete recipe. What changed is
     // that the bias can now be excluded on request: `corpus_split_eval.dart
-    // --trim --no-frame-cut` scores 15974 -> 15974 of 17441 gold tokens over the same
+    // --trim --no-frame-cut` scores 15925 -> 15925 of 17378 gold tokens over the same
     // 181 pages — the `91.54 -> 91.52` above was the biased gold in full, and
     // is therefore an UPPER BOUND on the cost rather than the cost. The
     // paragraph below explains why.
     //
-    // With the bias excluded the same blocks score 144 of 181 instead of 139.
+    // With the bias excluded the same blocks score 145 of 181 instead of 139.
     // **That is the GOLD moving, not the splitter** — the blocks are identical
     // in both runs, and the trim's own effect on right block counts is zero
-    // under either gold (139 -> 139 and 144 -> 144, fixed 0 / broke 0 in each).
+    // under either gold (139 -> 139 and 145 -> 145, fixed 0 / broke 0 in each).
     // Nothing here is a benefit of turning this flag ON.
     //
     // **Why the figure above understates the trim.** The corpus gold records
-    // frame-cut half recipes as complete ones. 14 of the 242 verified entries
-    // were graded that way against their photographs, of which 11 bias recall
+    // frame-cut half recipes as complete ones. 23 of the 242 verified entries
+    // are graded that way against their photographs, of which 13 bias recall
     // (`frameCut: fragment` — debris of the KIND this trim removes, though only one
-    // of the 11 sits on a page it actually cuts); the other 3 are `tail`
-    // and bias nothing. Both are floors rather than counts, and an unfound
+    // of the 13 sits on a page it actually cuts); the other 10 are `tail`
+    // and bias nothing. Both are floors rather than counts — the rubric and the
+    // traps are in `docs/testing/cookbook-corpus-gold-grading.md` — and an unfound
     // FRAGMENT only makes the trim look worse (an unfound `tail` biases
     // nothing either way). So recall scores retained debris as a hit
     // and the trim is penalised for removing exactly what it was built to
