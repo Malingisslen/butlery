@@ -69,6 +69,9 @@ Read this before starting a sprint, a backlog scan, or a ship pass.
 
 - A new test can be born unrunnable — `functions/.gitignore` ignores `*.js` and re-includes only `!scripts/*.js` (never reaching `scripts/__tests__/`), and `run-ci-unit-tests.js` EXCLUDES any npm script named `test:rules*` from the unit lane. After writing a test in an unfamiliar dir run `git check-ignore -v <path>`; after adding a script, find it by name in the runner's resolved suite list.
 
+- Two red workflows are NOT one incident — date each one's first red separately. Build Validation had been red three days longer than Run Tests, for an unrelated reason, and arrived described as the same failure; a third red workflow was not in the report at all and surfaced only by asking what else was failing (BUT-1905).
+- A red gate takes its whole CHAIN down silently: `test:rules:all` is one `&&` chain of 41 suites and the failure was second, so 39 never executed — in the rules workflow AND the pre-deploy gate — while the `Rules coverage report + new-block gate` step, lacking `if: always()`, was skipped every run. That is how an unguarded allowlist shipped two days later. Measure what a red is dark-firing before calling it low priority (BUT-1905).
+
 ## Worktrees
 
 - A fresh parallel worktree without `.dart_tool` makes analyze report PHANTOM undefined-member errors (`package:<self>` resolves to the MAIN checkout) — run `dart pub get --offline`/`flutter pub get` in the worktree before trusting analyze.

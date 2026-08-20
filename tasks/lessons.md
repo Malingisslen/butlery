@@ -1962,3 +1962,72 @@ screen aimed at broken words can see that class — the gold ends on a clean ful
    real gold tokens and one right block count. Reading and measurement agreed — but one of
    the nine, `Mixade vitaminer`, turned out to be debris by the corpus's own grading, so the
    argument had a hole the measurement did not.
+
+
+## Main was red for three unrelated reasons and none of them was a bug (BUT-1905, 2026-08-20)
+
+Three workflows red, up to eight days, zero user impact. `Run Tests` since 08-15, `Build
+Validation` since 08-12, `Firestore Rules` since 08-15. Two of the three needed no commit
+to break, and the repair was worth less than what the repair uncovered.
+
+1. **A test can go red with no commit behind it.** Six cache tests seeded documents dated
+   `2026-05-20` against a 90-day TTL, and `isExpired` reads `clock.now()`. On 2026-08-18 the
+   fixtures expired for real and the assertions started reading `null` — correct behaviour
+   from the code, a lit fuse from May. The whole 61-commit window was innocent. **Triage
+   move: date the first red RUN, then ask whether any commit even lands in that window
+   before reading diffs.** A literal past date next to a TTL is a time bomb; derive the
+   fixture from the clock, and reserve absolute instants for the boundary tests that pin
+   one inside `withClock`.
+
+2. **Two red workflows are not one incident.** `Build Validation` had been red three days
+   longer than `Run Tests` and for an unrelated reason (three unformatted test files), but
+   arrived described as part of the same failure. Folding them together would have hidden
+   the older one behind the newer fix. Date each workflow's first red separately before
+   accepting any story that covers both. A third red — `Firestore Rules` — was not in the
+   report at all and was found only by asking what else was failing.
+
+3. **A red gate takes its whole chain down with it, silently.** `test:rules:all` is one
+   `&&` chain of 41 suites and the failing one was second, so the other 39 never executed —
+   in the rules workflow and in the pre-deploy gate alike. The `Rules coverage report +
+   new-block gate` step carries no `if: always()`, so it was skipped every run too: the gate
+   that catches a new `match` block nobody has asserted on had not fired since 08-15. That
+   is the mechanism behind the poll-vote allowlist shipping unguarded on 08-17, one file
+   over in the same repair. A chronically red gate is not one dark check, it is every check
+   downstream of it, and the count is worth measuring before deciding a red is low priority.
+
+4. **A rules TIGHTENING makes every older DENY test on that path vacuous, and nothing goes
+   red to say so.** Two live instances found in one file. BUT-1838 added a membership
+   conjunct to `messages` create: the ALLOW test failed loudly (that was the red), but the
+   two DENY tests beside it started passing on the missing conversation rather than on the
+   age claim they are named for. BUT-1419 had done the same to `recipe_comments` months
+   earlier and nothing failed at all — deleting `isAgeCompliant()` from that rule left the
+   entire suite green, and it was the repo's only guard on it. **After tightening a rule,
+   re-attribute every existing DENY on that path: name the single-variable ALLOW control it
+   differs from, and if two variables differ, the deny is over-determined and proves
+   nothing.** Emulator output cannot tell you — every deny prints an interchangeable
+   `PERMISSION_DENIED` naming a rule line, not a reason.
+
+5. **Over-determined is not the same as short-circuited, and the difference is per
+   collection.** Correcting (4) I wrote that both comment tests were "denied on maturity
+   before the age gate was consulted". False: in `recipe_comments` the age check is the
+   EARLIER conjunct and did fire — both checks failed, which is why deleting one changed
+   nothing. The phrasing had been carried over from the `messages` block, where the order
+   genuinely is the other way round. **A sentence about which conjunct denied first is a
+   per-collection fact; state the property the test depends on (over-determination), not the
+   order.**
+
+6. **A probe that deletes only a helper's CALL SITES does not compile.** `noUnusedLocals` is
+   on, so removing the three calls to a seed helper makes ts-node abort with TS6133 before a
+   single test runs — and that exit code is indistinguishable from a red assertion. The
+   first run of that probe reported a confident wrong answer. Delete the declaration too, or
+   mutate the fixture data. (Same family as "a mutant that fails to COMPILE is not a red
+   test", now with the specific setting that causes it.)
+
+7. **The count that matters: six false sentences, all in comments, none catchable by any
+   test.** A wrong date, a wrong count, a wrong universal ("names the METHOD wherever one
+   exists" — false for two of four entries), a wrong ticket attribution, a wrong conjunct
+   order, and one claim about a probe I had not run. Every one was caught by a reviewer, at
+   roughly ten minutes per round, and four of them were introduced BY the correction to the
+   one before it. The code in both commits was right the first time. **The prose is the
+   defect surface on this kind of work, and a correction is a new claim, not the end of the
+   work** — this is the third entry in this file to say so, which is itself the finding.
