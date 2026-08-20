@@ -151,7 +151,8 @@
     "digestFiles": [
       ".claude/rules/lessons-digest.md",
       ".claude/rules/lessons-digest-delivery.md",
-      ".claude/rules/lessons-digest-testing.md"
+      ".claude/rules/lessons-digest-testing.md",
+      ".claude/rules/lessons-digest-flutter.md"
     ],
     "digestCoreMaxChars": 14000
   },
