@@ -7,6 +7,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/models/pantry/pantry_item.dart';
+import 'package:butlery/core/utils/swedish_decimal_input.dart';
 
 PantryItem _item({
   String id = 'p1',
@@ -171,12 +172,29 @@ void main() {
       expect(_item(quantity: 3.0).formattedQuantity, '3');
     });
 
-    test('fractional values render with decimal', () {
-      expect(_item(quantity: 2.5).formattedQuantity, '2.5');
+    // BUT-1910: the separator is a COMMA. This used to be a period, so a
+    // shopping item read "1,5" and a pantry item "1.5" one screen apart, for
+    // the same kind of number.
+    test('fractional values render with a Swedish comma', () {
+      expect(_item(quantity: 2.5).formattedQuantity, '2,5');
     });
 
     test('zero renders as "0"', () {
       expect(_item(quantity: 0).formattedQuantity, '0');
+    });
+
+    // This getter seeds the edit sheet's amount field, so the string it emits
+    // has to be readable by the parser that field submits through. A format
+    // the parser cannot read would silently fall back to the stored amount and
+    // look like nothing happened.
+    test('round-trips through the parser the edit sheet submits with', () {
+      for (final q in <double>[2.5, 0.5, 3.0, 0.25, 1000.75]) {
+        expect(
+          parseSwedishDecimal(_item(quantity: q).formattedQuantity),
+          q,
+          reason: 'quantity $q did not survive format -> parse',
+        );
+      }
     });
   });
 

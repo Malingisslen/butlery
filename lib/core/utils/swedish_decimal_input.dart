@@ -2,6 +2,30 @@
 
 import 'package:flutter/services.dart';
 
+// WHICH FORMATTER APPLIES (BUT-1910)
+//
+// This app has several places that turn a period into a comma and read one
+// back, and nothing said when each wins, so the next reader picks at random.
+// This is a ROUTING rule, not a census — deliberately, because a count of them
+// would be wrong the week after it was written. Each entry carries the property
+// that decides it.
+//
+//   * `parseSwedishDecimal` / `formatSwedishDecimal` (here) — every hand-typed,
+//     round-tripped field. The parser returns NULL and lets the caller decide
+//     what an unreadable field means.
+//   * `TextFormatting.parseSwedishNumber` / `formatFractional` — non-interactive
+//     recipe-text parsing. `parseSwedishNumber` falls back to 1.0 on input it
+//     cannot read, which is an accepted default when scraping a recipe and a
+//     silent corruption in a form field. `formatFractional` also ROUNDS to two
+//     decimals, so it cannot round-trip what this file's parser accepts.
+//   * `formatRatingComma` (`butlery_betyg_pill.dart`) — rating pills. It forces
+//     exactly one decimal place, which the ones above must not.
+//
+// They are not merged because those behaviours are genuinely different answers,
+// not several spellings of one. Note that a comma-aware parse also lives inside
+// `FormValidators.numberRange` — which is why the rating field could report
+// itself VALID while its `onChanged` silently dropped the value.
+
 /// Input plumbing for a quantity a Swedish user types by hand.
 ///
 /// Swedish writes the decimal separator as a comma, Dart's `double` parses only
@@ -96,10 +120,12 @@ double? parseSwedishDecimal(String raw) {
 ///
 /// [parseSwedishDecimal] is NOT the culprit and a fix aimed at it is a no-op:
 /// `double.tryParse` reads `5e-7` correctly. The repair belongs here, in what
-/// this function is allowed to emit, or in the formatter. Stated rather than
-/// guarded because seven decimal places on a shopping quantity is not a real
-/// path; BUT-1912 carries it, along with the large end, where `round()`
-/// saturates at int64 and `1e21` is written as `9223372036854775807`.
+/// this function is allowed to emit, or in the formatter. It reaches the
+/// PANTRY field too since BUT-1910: `PantryItem.formattedQuantity` seeds
+/// that field through this same function. Stated rather than
+/// guarded because seven decimal places on a quantity is not a real path;
+/// BUT-1912 carries it, along with the large end, where `round()` saturates
+/// at int64 and `1e21` is written as `9223372036854775807`.
 String formatSwedishDecimal(double amount) {
   // Infinity is what this guards. `round()` throws on it, and this function now
   // seeds the edit dialog's field where a plain `toString()` used to sit — so

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show immutable;
 
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/core/utils/swedish_decimal_input.dart';
 
 /// Physical location where a pantry item is stored.
 ///
@@ -151,9 +152,11 @@ class PantryItem {
     );
   }
 
-  String get formattedQuantity => quantity == quantity.truncate()
-      ? quantity.toInt().toString()
-      : quantity.toString();
+  /// BUT-1910: this used to `toString()` the fraction, so a shopping item read
+  /// "1,5" and a pantry item "1.5" — one screen apart, for the same kind of
+  /// number. It is also what seeds the edit sheet's amount field, and that
+  /// field parses both separators, so the comma round-trips.
+  String get formattedQuantity => formatSwedishDecimal(quantity);
 
   bool get isExpired {
     final exp = expiryDate;

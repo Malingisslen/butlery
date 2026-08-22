@@ -39,6 +39,7 @@ import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/core/validators/form_validators.dart';
+import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
@@ -546,12 +547,20 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
 
       // Rating field
       TextFormField(
-        initialValue: (viewModel.rating?.toString()).orEmpty(),
+        // BUT-1910. The TWIN of the field in `skriv_sjalv_recept_view.dart`.
+        // Fixing one without the other leaves the bug on the other screen, and
+        // this is the one reached by editing a saved recipe. `initialValue`
+        // seeds a comma too, so the field no longer opens with a period it
+        // then rewrites.
+        initialValue: viewModel.rating == null
+            ? ''
+            : formatSwedishDecimal(viewModel.rating!),
         decoration: InputDecoration(labelText: context.l10n.recipeRating),
         style: AppTextStyles.bodyMedium,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: const [SwedishDecimalInputFormatter()],
         textInputAction: TextInputAction.next,
-        onChanged: (value) => viewModel.setRating(double.tryParse(value)),
+        onChanged: (value) => viewModel.setRating(parseSwedishDecimal(value)),
         validator: FormValidators.rating(),
       ),
       const SizedBox(height: AppDimensions.spacingXl),
