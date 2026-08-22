@@ -24081,3 +24081,190 @@ Also confirmed: `flutter test test/unit/core/utils/log_sanitizer_test.dart` → 
 no assertion moved (the diff is comment-only in the test file).
 
 Verdict: pass, 0 blocking.
+
+### 2026-08-22 — BUT-1831 re-review round 2 (three test files, after the first round's fixes)
+
+Trigger: parent actioned round 1 (docstring strike, `_ThrowingOnConversations` doc rewrite,
+`firestore.rules` clause strike) and added the coverage gap I named — a round-trip test in
+`message_mutation_module_test.dart`. Asked me to judge the new test, and to re-check finding 2
+(the widget test's "a disposed ChangeNotifier assertion in debug" clause) since I had measured
+the SDK.
+
+Three claims graded, all three against code rather than prose:
+
+1. FALSE, struck by me. The new test's block comment: "This send stages the conversation as a
+   merge-set carrying the FULL DTO, so every one of those keys is re-sent on every message",
+   where "those keys" = the update rule's deny-list `['participantIds','createdAt',
+   'memberSince','groupId']` (verified verbatim, `firestore.rules` `allow update` on
+   `/conversations/{conversationId}`). `ConversationDto.toFirestore` emits neither `memberSince`
+   nor `groupId` — deliberately, with its own comment saying adding them would fail the diff
+   check on every ordinary write — so the claim is false for half the enumerated set. Replaced
+   the false universal with a pointer to the function, and added one sentence answering why the
+   two keys are not asserted (absence already pinned in `conversation_dto_test.dart:225-226`,
+   through the same function this module calls; a module-level copy is a strict duplicate).
+2. FALSE, struck by me. Test NAME read "round-trips every deny-listed key unchanged — createdAt,
+   participantIds and metadata.creatorId": four keys are deny-listed, three are named, and
+   `metadata.creatorId` is not on the deny-list at all — it is a separate equality conjunct, as
+   the comment one line above correctly says. Struck the quantifier, kept the readable list.
+3. FALSE, confirmed and struck (finding 2, carried from round 1). `_handleSendMessage` without
+   the entry guard reads `_textController.text` on a disposed State. Measured against the
+   installed SDK (Flutter 3.38.5): `TextEditingController.text` => `value.text`,
+   `ValueNotifier.value` => `T get value => _value;` — no `debugAssertNotDisposed` anywhere on
+   the read path. The assertion exists only on the WRITE side (`notifyListeners`), which this
+   branch never reaches: the failure path returns at `if (!mounted) return;` before the snackbar,
+   and `_textController.clear()` sits on the success path. Struck the debug/release contrast,
+   left "a send from a dead State" — which is exactly what the test's own `attempts == 1`
+   assertion pins, so the strike costs no meaning.
+
+Graded and NOT filed:
+- The recipient direction on the new test is documentary, not discriminating: the payload derives
+  from the injected `Conversation`, so sending as `user-a` produces byte-identical output. It is
+  the right choice anyway (free, models the historical direction), and the comment already says
+  the fallback is DELETED, which is the honest framing — a forward pin, per the dead-code rule.
+- Non-vacuity of the new test confirmed by construction plus the parent's probe: the document
+  does not pre-exist, so the whole payload comes from the write; a `copyWith` that dropped
+  `metadata` would write `'metadata': null`, which overwrites on the fake and reddens the
+  `as Map` cast. The parent's `createdAt` re-stamp probe reddened exactly this test (27/1).
+- "the rules half is pinned by C11B through C11E" is under-cited, not false: C11B/C11E ALLOW,
+  C11C `createdAt` DENY, C11D `participantIds` DENY; the creatorId INEQUALITY direction is
+  C12A/C12B, outside the range. The sentence claims no exhaustiveness, so left alone.
+- Finding 5 (bare-contract test a strict subset of the no-write test) and finding 6 (hardcoded
+  `'conversations'` in the test-local wrapper) kept by the parent — both Low, no disagreement.
+- Finding 3's replacement doc comment on `_ThrowingOnConversations` is accurate: it declares
+  `noSuchMethod` forwarding to `_delegate.noSuchMethod`, which is `Object`'s on a non-Mock class
+  and throws. The green `isA<FirebaseException>()` assertion proves nothing else is reached first.
+
+Verified after my strikes: `flutter analyze` on the three files clean; 48/48 green
+(28 + 6 + 14 by `test(`/`testWidgets(` count — the brief said 47, measured 48); all three paths
+unstaged, `git diff --numstat` index == HEAD, so the copy graded is the copy that will be staged.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-22 — BUT-1831 batch B (generated l10n): a false ambiguity premise, and an ARB regen that actually happened
+
+Trigger: commit-gate coverage pass over the three staged generated l10n files
+(`lib/l10n/app_localizations.dart`, `_sv.dart`, `_en.dart`) for one ARB value change —
+`chatCouldNotSendMessage` losing its trailing "Försök igen." / "Try again." now that the
+send-failure snackbar carries a real retry action (`commonRetry`).
+
+Verified:
+- HEAD -> index diff is exactly ONE hunk per file, at that key only (`diff <(git show HEAD:$f)
+  <(git show :$f)`); `git diff --numstat` empty on all three, so index == worktree and the copy
+  graded is the copy that will be committed. Parallel session left no trace here.
+- ARB sources agree with the generated getters byte-for-byte (`app_sv.arb` ->
+  'Kunde inte skicka meddelandet.', `app_en.arb` -> 'Could not send the message.'), so
+  `flutter gen-l10n` was genuinely re-run. The repo's standing ARB lesson (generated file keeps
+  the OLD string, `dart analyze` compiles it happily) did NOT bite.
+- `test/widget/messaging/chat_input_section_clock_ahead_test.dart` declares
+  `const _genericMessage = 'Kunde inte skicka meddelandet.'` as a deliberate LITERAL (the file's
+  own comment forbids reaching for the getter, since a getter-based assertion survives two ARB
+  values being swapped). It matches the generated value exactly. Two POSITIVE pins
+  (`findsOneWidget`, in the ten-minutes test and the retry test) carry the discrimination; the
+  two `findsNothing` pins would stay green under drift, so the suite is non-vacuous by
+  construction without any probe. 6/6 green.
+- `commonRetry` = 'Försök igen' reaches the snackbar via
+  `SnackBarUtils.showErrorWithRetry -> showError(actionLabel: context.l10n.commonRetry)`
+  (`lib/core/utils/snackbar_utils.dart:103`); `chat_input_section.dart:214` is one of its two
+  call sites.
+
+THE CORRECTION (why this entry exists): the review brief asked me to confirm that shortening the
+message makes 'Försök igen' "the ONLY place that phrase appears in the failure path — if the
+message still contained it, `find.text` would match two widgets and the tap would be ambiguous."
+That premise is FALSE. `find.text` matches a `Text`/`EditableText` whose `data` EQUALS the
+argument; it is not a substring match. The old message's `data` was the whole sentence
+'Kunde inte skicka meddelandet. Försök igen.', which never equals 'Försök igen', so
+`find.text(_retryLabel)` resolved to the `SnackBarAction` label alone both before and after.
+The shortening is right for the copy reason the code and test comments actually give (saying it
+twice reads as an instruction to do by hand what the button now does) — not for a tap-ambiguity
+reason. Nothing in the repo asserts the false version: `chat_input_section.dart:211-213` and the
+test's lines 57-62 both state the copy rationale, so there was no sentence to strike. The false
+claim lived only in the brief.
+
+Related but NOT a finding: three ARB keys share the exact value 'Försök igen'
+(`commonRetry`, `myReportsRetry`, `importPendingRetry`) — the genuine `find.text` hazard shape.
+Harmless here because only `commonRetry` is reachable in `ChatInputSection`'s tree; a repoint
+among the three would leave the test green but the user experience identical.
+
+Butler-voice: 'Kunde inte skicka meddelandet.' — no exclamation, no congratulation. Clean.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-22 — BUT-1831 batch A, production-file coverage pass (trigger: commit gate asked for coverage on the 3 production files the tests pin)
+
+Reviewed at index==worktree bytes (`git diff --numstat` on all three printed nothing):
+`lib/repositories/firebase/firebase_messaging_repository.dart`,
+`lib/repositories/firebase/modules/message_mutation_module.dart`,
+`lib/core/errors/message_send_error_mapper.dart`.
+
+THE TECHNIQUE THIS ROUND ADDED (now a principle under Re-review economics): the brief's three
+questions were all "is X reached / is X pinned", and two of them were answerable by COVERAGE
+rather than by a mutation probe. Run:
+
+    flutter test --coverage --coverage-path=<scratchpad>/lcov.info <suite> <suite>
+    awk '/^SF:.*firebase_messaging_repository.dart/,/^end_of_record/' lcov.info | grep -E '^DA:24[0-6],'
+
+~10s, no `lib/` write, so none of the probe hazards apply (no backup/restore, no `finally`
+clobbering a parallel session's in-flight write, no auto-mode classifier firing on a production
+edit, no stale-incremental-kernel phantom red). The limitation is real and worth stating: a
+`1` proves REACHED, not ASSERTED — for "does any test discriminate this expression" a mutant is
+still the only instrument. Here a `0` was itself the whole finding, so the cheap tool sufficed.
+
+MEASURED RESULTS (42/42 green on the two suites, same run):
+- `firebase_messaging_repository.dart` `DA:238..243` all >=1, **`DA:244,0`** — i.e.
+  `_readTopLevelConversation`'s `return fromFirestore(doc)` is reached by NOTHING. Both BUT-1831
+  facade tests drive failure arms only (the `_ThrowingOnConversations` wrapper, and an empty
+  Firestore). Filed non-blocking, Medium.
+- `message_mutation_module.dart` `DA:198,0 / 199,0 / 204,0 / 206,0 / 207,0 / 208,0` — the
+  fire-and-forget status-update catch AND the whole batch-commit `catch (batchError)` with its
+  `UNAVAILABLE`/network swallow. Pre-existing, and `message_send_error_mapper.dart`'s own
+  docstring already declares it ("The module suite's assertions sit above the batch and never
+  reach that inner catch"). Confirmed accurate rather than filed as new.
+
+QUESTION 2 — "is the now-documented reachable path (other party deletes the thread while this
+one is open) covered, or is that a gap?" ANSWER: covered, compositionally, and a dedicated test
+would be a strict-subset duplicate through the same seam. Three measured legs:
+  a) `ConversationMutationModule.deleteConversation` deletes the top-level document
+     UNCONDITIONALLY — `historyStart` narrows the message sweep only and never guards the parent
+     delete (read the whole body via awk, not the diff).
+  b) The facade suite's `deleteConversation removes the top-level doc` pins (a) with
+     `exists, isFalse`, having seeded BOTH the top-level and user-scoped copies.
+  c) `_readTopLevelConversation` `!exists -> null` is `DA:243,1`, and null -> ResourceNotFound is
+     pinned twice (facade + module).
+Also verified the comment's own reachability claim rather than trusting it: `getConversation` is
+a one-shot `await` at `chat_viewmodel.dart:193` and `chat_action_handler.dart:215`; the only
+stream in the chat tree is `getConversationMessages` over the MESSAGES collection. So nothing
+watches the conversation document and nothing closes the screen — "no chat screen watches it" is
+true as written.
+
+QUESTION 3 — `MessageSendFailure.other` for the new `ResourceNotFoundException` arm: adequate.
+`classify`'s guard is `error is! FirebaseException || error.code != 'permission-denied'`.
+`message_send_error_mapper_test.dart`'s "a plain exception is not a permission denial" drives
+`StateError('boom')` down that identical branch and additionally asserts `probeCalls == 0`. A
+`ResourceNotFoundException` fixture has no discriminating field (no `code`, no subtype relation)
+and would traverse byte-identically — a duplicate by the measurable definition.
+
+QUESTION 1 — one seam, confirmed. `_ThrowingOnConversations` is the sole binding site;
+the module suite injects `readConversation` in every one of its constructions
+(`_newModule(..., readConversation: ...)`, default `(_) async => null`), and
+`messaging_repository_integration_test.dart` is `@Skip`-ed at file level.
+Bonus, reasoned not measured: the wrapper intercepts `collection('conversations')` by NAME, so a
+regression that repoints the wiring back to the user-scoped `read` (the BUT-1838 defect the
+constructor comment warns about) reddens the throwing test — it would resolve through
+`collection('users')` instead, never throw, and yield ResourceNotFound where a FirebaseException
+is asserted. The surviving mutant is narrower than it first looks: only "returns null for a doc
+that EXISTS".
+
+REMEDY NAMED (not written — review pass, no production or test edits): one facade test that
+seeds the top-level conversation, calls `repo.sendMessage`, and asserts the message document
+landed. ~15 lines, and known feasible on `FakeFirebaseFirestore` because the module suite's
+happy-path test performs the same 3-doc batch with the same default `ServerTimestampProvider`.
+
+HOUSEKEEPING: `testing-specialist.knowledge.md` is 74k chars against its own stated ~25k budget
+(3x), and its own convention says to sharpen rather than grow. This round added ~600 chars
+without a compensating trim; a compression pass is owed and was surfaced in the report rather
+than done silently mid-batch. Also note the knowledge file reported "modified since read"
+between a Read and an Edit seconds apart with identical visible bytes at the target — re-read
+and retried rather than forcing.
+
+Verdict: pass, 0 blocking (2 non-blocking: the `DA:244,0` success arm, Medium; the batch-commit
+swallow, Low and already declared in the mapper's docstring).

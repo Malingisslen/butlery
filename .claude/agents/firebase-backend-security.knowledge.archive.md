@@ -5797,3 +5797,157 @@ emit" — two of three, per the probe table above.
 Scope note: `log_sanitizer.dart`, `logger.dart` and `permission_exceptions.dart` are staged and
 are the core of the same BUT-1897 fix, but were not in this review's file list. They need their
 own pass before the marker can name every staged file.
+
+---
+
+## 2026-08-22 — BUT-1831: the swallowed conversation read and the deleted fabricate-a-conversation fallback
+
+Files reviewed (all opened with Read): `lib/repositories/firebase/firebase_messaging_repository.dart`,
+`lib/repositories/firebase/modules/message_mutation_module.dart`,
+`lib/views/messaging/chat_view/chat_input_section.dart`. Verdict: pass, 0 blocking.
+
+**What changed.** `_readTopLevelConversation` lost its `try/catch → return null`; a read that
+FAILS now throws and `null` means `!doc.exists` only. `MessageMutationModule.sendMessage` lost
+both the `direct_`-scoped catch around the read and the ~90-line branch that rebuilt a
+`Conversation` from the message's own sender data (plus a cross-user `users/{otherUserId}` read
+for the peer's `displayName`/`avatarUrl`) and merge-set it into the atomic batch. An absent
+document is now a `ResourceNotFoundException` with a masked `resourceId`. The chat input gained
+an entry `if (!mounted) return;` and a retry action on the failure SnackBar.
+
+**PII, traced end to end.** Nothing new leaves the device.
+- The removed `catch` used `AppLogger.error('Failed to read conversation ${masked}', e)` — the
+  raw `e` object already reached `recordError` there, so a propagating `FirebaseException` is
+  not a new Crashlytics exposure, only a different call site. On the new path the accompanying
+  message is `'Failed to send message ${message.id}'` (a uuid) — the conversation id is no
+  longer in the message string at all, i.e. strictly less.
+- `AppLogger.error` masks the MESSAGE via `LogSanitizer.maskIdentifiers` (both the Crashlytics
+  `log`/`reason` and the dormant analytics callback) and hands the raw object to `recordError`.
+  A `cloud_firestore` single-doc `get()` denial is `[cloud_firestore/permission-denied] The
+  caller does not have permission…` — no path, no uid; and a single-doc get cannot produce the
+  `create_composite` index-hint URL that is the known uid-bearing shape.
+- `ResourceNotFoundException.toString()` runs `maskIdentifiers` over its own parts, so the
+  double-mask at the throw site is belt-and-braces and STABLE: `maskConversationId` emits
+  `direct_#<12 hex>`, which rule 1 cannot re-match (`#` after `direct_`) and rule 2 cannot
+  (12 chars < 20).
+- Deleted on the way out: `AppLogger.debug('Fetching profile for user: $otherUserId')` (raw
+  peer uid) and `AppLogger.success('… profile: $otherUserDisplayName')` (raw peer display name),
+  plus the write that copied a peer's name and avatar into the conversation document. Net
+  privacy improvement.
+- The user-visible surface is a fixed l10n string (`chatCouldNotSendMessage` /
+  `chatSendFailedDeviceClockAhead`) — no `sanitizeErrorForUser`, no exception text on screen.
+
+**Does removing the fallback weaken a control? No.** The write it staged was denied on both
+horns and always had been: create needs `request.resource.data.metadata.creatorId ==
+request.auth.uid` (bare equality since the 2026-08-13 correction, so absent/null denies
+cleanly rather than by CEL error) plus `directIdBinds`, which makes a client-side GROUP create
+unreachable; update deny-lists `createdAt`/`participantIds`. Because the batch was atomic, the
+denial took the message with it. Nothing depends on the deleted code: no caller uses the base
+`create`/`update`/`read` (the `MessagingRepository` interface does not expose them), the only
+conversation writers are `ConversationMutationModule` (top-level, `metadata: {'creatorId':
+user1Id}`) and the `createChatGroup` callable under the Admin SDK, and both direct-chat entry
+points I checked (`friend_profile_view._startConversation`,
+`shared_with_me/shared_recipe_card._startConversation`) await `startDirectConversation`
+(get-or-create) before navigating.
+
+**Propagation of the read failure leaks nothing the swallow was hiding.** `readConversation`
+has exactly two consumers: `sendMessage` (failure now surfaces as a generic SnackBar; a
+`permission-denied` from the READ reaches `MessageSendErrorMapper.classify`, which is the same
+input it already got from the commit) and `markConversationAsRead`, whose own catch logs a
+MASKED id and rethrows into callers that all swallow (`MessagingService`,
+`ConversationsViewModel`, `ChatViewModel._markAsRead`) — no unhandled-zone/fatal path.
+
+**Findings filed (all non-blocking).**
+1. `firestore.rules:1605-1607` still says the `metadata.creatorId` conjunct "is what stops
+   `MessageMutationModule`'s fallback materialising a conversation it does not own", and
+   `firestore.rules:1856` still says "Still true: `MessageMutationModule`'s fallback create is
+   denied". The fallback no longer exists. STRIKE both clauses; the conjunct and test C7B
+   stand on the tampered-client case alone (which is exactly how
+   `conversations-rules.test.ts:353` was already updated for this ticket).
+2. `message_send_error_mapper.dart`'s "the ordinary offline case never reaches here at all:
+   `MessageMutationModule` swallows `UNAVAILABLE`/network" now overclaims — the swallow wraps
+   `batch.commit()` only, and the READ is a second, unswallowed failure point on the same
+   send. Classification is still correct (`code != 'permission-denied'` → `other`), so this is
+   a false sentence, not a behaviour bug. Strike rather than reword: which way an offline
+   `get()` resolves (cached miss vs `unavailable`) is a measurement, not a reading.
+3. `_readTopLevelConversation`'s new comment — "`null` means the document is ABSENT and
+   nothing else" — is stronger than the code: a `!exists` snapshot resolved from cache while
+   offline is not proof of absence, and this repo already has the `metadata.isFromCache`
+   principle for exactly that. Consequence is fail-CLOSED (a refused send with a retry
+   button), so it is a wording/robustness note, not a hole.
+4. Low: the retry action can be tapped repeatedly with no in-flight guard; each tap mints a
+   fresh message uuid, so a rapid double-tap is two sends, bounded by
+   `rateLimitWrite('messages', …)`. Pre-existing for the send button too.
+
+**GDPR: no change.** No model field, `toFirestore`, rules validator, export selector or
+deletion-cascade query is touched; the only storage-shape delta is the removal of a write
+that Firestore always refused.
+
+**Verification hygiene.** Per the BUT-1831 lesson itself, I re-verified the three files by
+CONTENT after the review (`BUT-1831` markers present 1/3/2; `otherUserAvatarUrl` and
+"Fetching profile for user" absent) rather than trusting the earlier `git diff`.
+
+---
+
+## 2026-08-22 — BUT-1831 re-review against CURRENT bytes (coverage pass, 3 files)
+
+Re-opened `conversation_dto.dart`, `firebase_messaging_repository.dart` and
+`message_mutation_module.dart` after three further review rounds had rewritten the comments
+my earlier `pass` was recorded against. All three earlier findings are now closed IN THE CODE,
+and I verified each against the tree rather than against the change description:
+
+- **Pointer accuracy (`conversation_dto.dart`).** The comment now says the unconditional
+  `metadata` emission is "Pinned by conversation_dto_test.dart — BUT-1831 deleted the
+  assertions in message_mutation_module_test.dart along with the fallback writer they sat
+  inside." Verified: `test/unit/repositories/firebase/dtos/conversation_dto_test.dart:232`
+  asserts `data.containsKey('metadata')` on a `Conversation` built with no `metadata`, i.e.
+  the key is emitted while null; the staged test diff shows the old
+  `convoDoc.data()!.containsKey('metadata')` / `expect(..., isNull)` assertions removed.
+  Its rules claim also holds: the create conjunct is the bare
+  `request.resource.data.metadata.creatorId == request.auth.uid` (`firestore.rules:1622`),
+  and `git log -S "!('metadata' in request.resource.data)"` shows the `||` hatches removed in
+  `d627daf25` (BUT-1838) — so the "(firestore.rules, BUT-1838)" attribution is measured, not
+  assumed.
+- **Softened `!exists` docstring (`_readTopLevelConversation`).** Now "`null` reports a
+  `!exists` SNAPSHOT — which offline may be answered from cache, so it is a strong signal of
+  absence rather than a proof of it." That is exactly the overclaim I filed last round, and
+  the wording no longer exceeds what the code can show. The `try/catch → return null` is gone,
+  and with it the `log_sanitizer` import; nothing on the widened path logs the raw id.
+- **Reachability paragraph (`message_mutation_module.dart`).** "This branch IS reachable …
+  `deleteConversation` removes the shared top-level document and no chat screen watches it."
+  Both halves verified: `ConversationMutationModule.deleteConversation:275` deletes
+  `conversations/{id}` at the top level, and `ChatViewModel:193` takes a ONE-SHOT
+  `getConversation` — no listener on the conversation document anywhere in
+  `lib/views/messaging/`. The unwrap-chain pointer is honest too: the five links live in
+  `message_send_error_mapper.dart`'s own docstring, not duplicated here.
+
+**Prior findings re-confirmed on current bytes.** (1) PII: the widened throw carries
+`message.conversationId.maskedConversationId`, and `LogSanitizer.maskConversationId` hashes
+`direct_` ids to `direct_#<12 hex>` (group ids are opaque and pass through). The remaining raw
+`conversationId`/`senderId`/`content` lines in `sendMessage` are `AppLogger.debug`, which is
+wrapped in `assert(() {...}())` — debug builds, `developer.log` only, no Crashlytics. (2)
+Removing the fallback weakens no control: the write it attempted is refused by the
+conversations rules on both horns (update deny-list `['participantIds','createdAt',
+'memberSince','groupId']`; create requires the caller as `metadata.creatorId`), and removing
+it also drops a cross-user `users/{otherUserId}` profile read plus one billed read per
+occurrence. Net: strictly less surface and less cost.
+
+**Exception-type check.** `readConversation` failures now surface as raw `FirebaseException`
+instead of `ResourceNotFoundException` on the `markConversationAsRead` path too. Grepped every
+`ResourceNotFoundException` reference in `lib/`: the only type-keyed catch is in
+`base_shared_content_repository.dart:329`, unrelated to messaging, so no message-mapping seam
+loses an arm. Both paths already threw before, so caller behaviour is unchanged.
+
+**GDPR: no change.** No model field, `toFirestore` key set, rules validator, export selector or
+deletion-cascade query moves.
+
+**Non-blocking observation (not filed as a defect, no edit made).**
+`FirebaseMessagingRepository._readTopLevelConversation`'s "Mirrors
+`ConversationQueryModule.getConversation`" is accurate about the user-scoped-path bug they
+shared, but the two now differ in the dimension this ticket is about:
+`ConversationQueryModule.getConversation` still `catch`es and returns null, collapsing FAILED
+into ABSENT for its own callers (`ChatViewModel:193`, `getConversationParticipants`). Both of
+those default fail-CLOSED (null conversation, empty participant list), so there is no live
+hole — but it is the next place this bug class would resurface, and a future author reading
+"mirrors" could harmonise the wrong direction.
+
+**Verdict: pass (0 blocking).**

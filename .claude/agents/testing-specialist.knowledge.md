@@ -65,6 +65,13 @@ you want the revert-probe that proved it; or this file itself reads too compress
   reach (a fixture that never enters the mutated branch). Never loop probes in one Bash call;
   run each in its own call and RE-RUN any surprising red alone before filing it (BUT-1897:
   two of four probe results were phantom, both reproduced clean on re-run).
+- **When the question is only "is this line REACHED at all", coverage answers it with no
+  `lib/` write** — `flutter test --coverage --coverage-path=<scratchpad>/lcov.info <suites>`,
+  then `awk '/^SF:.*<file>/,/^end_of_record/' | grep '^DA:<line>,'`; a `0` is the finding.
+  No backup, no restore, no parallel-session clobber, no auto-mode classifier, ~10s. Reach
+  for a mutant only for the harder question ("does any test DISCRIMINATE this expression"),
+  since a reached line can still be unasserted (BUT-1831: a private read seam's success arm
+  read `DA:244,0` while its two failure arms were pinned).
 - **"Only `dart format`" is provable, not assumed**: walk `git cat-file --batch-all-objects`,
   compare whitespace-stripped bytes blob-to-blob (not blob-to-disk — CRLF differs by one
   byte/line). The formatter can insert a trailing comma, so fall back to raw `diff` if a
@@ -272,7 +279,12 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   production CONSTANTS (a literal drifts dead on a rename).
 - **A write the RULES refuse is 100% green under mocks, and its TWINS stay refused — grep
   the file, not the ticket.** Every field the write touches: grep `firestore.rules` for a
-  deny; each surviving twin owes a comment naming the rule LINE.
+  deny; each surviving twin owes a comment naming the rule LINE. A comment quoting a
+  deny-list beside a round-trip assertion names TWO populations that legitimately differ —
+  the RULE's key list and the SERIALIZER's emitted set — so "every one of those keys is
+  re-sent" is a measured claim to check against the DTO, not a restatement. The keys a
+  client never writes are pinned by an ABSENCE test at the serializer, and a module-level
+  copy is a strict duplicate through the same function (BUT-1831: `groupId`/`memberSince`).
 - A source-text guard pinning `keys().hasOnly([...])` has five vacuity seams: widest
   payload; complete writer set (forever); anchor sentinel checked against the NEXT match,
   not global uniqueness; blind to the `hasAll` mirror; can't see a SWAP (delete+add, count
@@ -347,7 +359,10 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   decision usually lives on a surface it never renders (both snackbars, title, body).
 - `MaterialApp(routes:{...})` never reads `settings.arguments` — nav tests on it pin the
   SHAPE vacuously; push through `onGenerateRoute` mirroring the real decode.
-- Two l10n keys with the SAME string make `find.text` unfalsifiable — grep the ARB.
+- Two l10n keys with the SAME string make `find.text` unfalsifiable — grep the ARB for EXACT
+  value equality, since `find.text` is whole-`Text.data` equality, never substring. So a
+  message CONTAINING an action label as a trailing sentence never made the tap ambiguous, and
+  "shortening it disambiguates the tap" is a false premise to accept or file (BUT-1831).
 - "Returns null on X" needs a positive control in the same fixture — where every layer
   swallows to null, null is the NORMAL shape of denied/offline/deleted, so grep the suite
   for `async => null` on the loader; zero hits IS the finding.
@@ -616,7 +631,11 @@ The single most repeated finding across two months of review.
   `StreamController`, assert `hasListener` true-before/false-after.
 - A throw-on-disposed guard inside a shared builder is safe only at callers that catch —
   `notifyListeners()` post-dispose is DEBUG-ONLY, so never conclude "unreachable" from a
-  debug-mode trace.
+  debug-mode trace. The MIRROR is the commoner comment defect: only the WRITE side asserts.
+  `TextEditingController.text` resolves to `ValueNotifier.value`, a bare field read with no
+  `debugAssertNotDisposed` (measured, Flutter 3.38.5), so "reads the controller on a disposed
+  State → an assertion in debug" is false — the read is silent and the real harm is the work
+  that follows it. Grade a disposal comment by which MEMBER it names (BUT-1831).
 - A `manager.dispose()` fix's wiring half ships untested — delete the OWNER's `dispose()`
   line as a probe; if the suite stays green, the fix is deletable. The flip is the returned
   future THROWING instead of resolving null.

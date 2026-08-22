@@ -14038,3 +14038,365 @@ the new 7/7 total, and offsetting by tightening the update preamble, the
 queue-time budget example, the archive pointer and the trigger-list bullet.
 Still ~2,700 over the ~25,000 target; the previous run's recommendation stands
 — the PII-scrubbing / GDPR-cascade block remains the fattest candidate.
+
+### 2026-08-21 — BUT-1831 conversations rules-test trio: a fixture justified by a rule that never runs [rules-tests][review]
+
+Reviewed ONE file, `functions/src/__tests__/conversations-rules.test.ts` (no
+Cloud Function source in the diff; `firestore.rules` unchanged). Added: C11C
+(DENY re-stamped `createdAt`), C11D (DENY recipient reverses `participantIds`
+on a direct conversation), C11E (ALLOW control with the stored order), plus a
+`DIRECT_CONVO` fixture seeded in `seedUpdateFixtures`.
+
+VERIFIED CLEAN (measured, not reasoned):
+- `cd functions && npx tsc --noEmit` → exit 0. The addition uses no `as`, no
+  `any`, no `[string, any][]`; `directConvoPayload(extra = {})` mirrors
+  `conversationDtoPayload`'s second parameter, and `[...DIRECT_PARTICIPANTS]`
+  copies the module constant the same way `[...FIXTURE_PARTICIPANTS]` does.
+- Cross-run state: `DM_INITIATOR`/`DM_RECIPIENT` are built by `peer()` over a
+  tag ending in RUN, so `DIRECT_CONVO` embeds RUN twice; and
+  `clearFirestore()` in `setup()` DELETEs the whole `/documents` root for
+  PROJECT_ID before any seeding, so the new doc is covered either way.
+  PROJECT_ID is per-suite, so no cross-suite leak.
+- Within-run: `DIRECT_CONVO` cannot collide with `MSG_DIRECT` (ADULT/STRANGER),
+  `STAMP_DIRECT` (FRIEND/STRANGER) or `P_BATCH_DIRECT` (ADULT/FRIEND). The
+  collision the new comment records — first draft reused ADULT/STRANGER, and
+  `seedMessageFixtures` runs AFTER `seedUpdateFixtures` in `run()` — is real
+  and now avoided. C11E is the only writer of `DIRECT_CONVO` and nothing reads
+  it afterwards. C11C denies, so `NULL_METADATA_GROUP` keeps `metadata: null`
+  and C12B further down stays attributable.
+- Registration: not needed. `functions/scripts/check-test-registration.js`
+  keys on the FILE; `test:rules:conversations` exists (package.json:48) and the
+  file is already in the `test:rules:all` chain. Guard run: "OK — 132 test
+  files registered, 41 rules suites triggered by 2 paths blocks, 2 guard suites
+  on the unit lane, 4 accepted-debt warning(s)."
+- Suite run against the parallel session's emulator
+  (`FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 npx ts-node ...`): **87/87 passed.**
+- C11D non-vacuity: C11E is a true single-variable ALLOW control (same doc,
+  same actor, same payload, only the array order differs), so the deny is
+  attributable to the `affectedKeys().hasAny(['participantIds', ...])`
+  conjunct rather than to the actor or the fixture.
+
+BLOCKING FINDING (1). The new fixture's header comment (around line 580) says
+`conversationDtoPayload` "would deny on `directIdBinds(p.size() == 2)` before
+any other conjunct is reached". Measured: `directIdBinds` appears at
+firestore.rules:1555 (definition) and :1596 — inside `allow create` ONLY. The
+`allow update` limb (:1638-1647) has no such conjunct. C11D/C11E are
+`set(..., {merge:true})` on a document `seedUpdateFixtures` writes under
+`withSecurityRulesDisabled`, so neither the seed nor either test evaluates the
+create rule at all; a three-participant group fixture at a `direct_`-shaped id
+would NOT deny on `directIdBinds`, and a reversed three-element array would
+deny on the very same deny-list conjunct C11D exercises. The sentence is the
+one that tells the next editor WHY the dedicated fixture must exist, and its
+stated mechanism is false, so an editor who checks it will conclude the fixture
+is redundant and fold C11D/C11E back onto a group fixture — losing both the
+production-fidelity scenario and C11E's uncontended control document. Same
+class as the corrections already recorded at C7B, M11 and M12 in this very
+file. Remediation: restate the reason as (a) fidelity — the reversed array is
+what a RECIPIENT's client produces, `createDirectConversation` writing
+`participantIds: [user1Id, user2Id]` and merge-setting when its existence read
+falls through — and (b) C11E needing a document no other test writes.
+
+NON-BLOCKING (2). C11C's "neither test could fail for the reason its comment
+gives" is loose: C11/C11B are ALLOW tests whose comments give METADATA reasons,
+and they can and do fail for exactly those. The true statement is that nothing
+in the file varied `createdAt`, so the deny-list entry for it was unpinned
+until C11C. "Byte-identical to C11B" is also approximate — `updatedAt`,
+`lastMessage.sentAt` and `lastReadTimestamps` are fresh `new Date()`s per call;
+they sit outside the deny list, so the attribution survives.
+
+NON-BLOCKING (3). `peer()` is used as an authenticated ACTOR for the first
+time (`env.authenticatedContext(DM_RECIPIENT)`). Its own comment describes it
+as "a throwaway counterparty with no users/{uid} profile", and every prior use
+is a DM target. It works — no conjunct on the conversations UPDATE path reads
+`users/{uid}` — but the helper's comment now under-describes it.
+
+KNOWLEDGE FILE: folded the verb/fixture lesson into the existing "Rules are not
+filters" principle, and recorded that `check-test-registration.js` mechanises
+the "grep package.json FIRST" rule per FILE. Offset by tightening four
+principles (the header, the deploy-manifest bullet, the concurrency bullet, the
+duplicate CI-lane bullet, the archive pointer): net +54 chars, 27,676 →
+27,730. The file remains ~2,700 over the ~25,000 target — standing debt from
+earlier runs, and the PII-scrubbing / GDPR-cascade block is still the fattest
+candidate for the next run that needs room.
+
+### 2026-08-22 — BUT-1831 round 2: the fix landed, and deleting a client writer left its old topic sentence standing [rules-tests][review]
+
+Re-read the full current bytes of `functions/src/__tests__/conversations-rules.test.ts`
+after the coordinator's fixes. Round-one blocking finding is CLOSED: the
+`directIdBinds` sentence is struck, the replacement gives FIDELITY + CONTROL as
+the two reasons and states plainly that `directIdBinds` is called only from
+`allow create` (re-verified: firestore.rules 1555 def, 1587 comment, 1596 use,
+and 1596 sits inside the create limb). `peer()` now records the
+authenticated-ACTOR use with the `users/{uid}` caveat. Re-ran both checks
+myself rather than citing: `npx tsc --noEmit` exit 0, suite 87/87 with all four
+BUT-1831 tests green.
+
+NEW BLOCKING FINDING, from the unprompted C7B edit. The edit added "It no
+longer stops OUR client, because our client no longer sends it: BUT-1831
+deleted the `MessageMutationModule` fallback ..." — which is TRUE (verified in
+the working tree: that module now throws `ResourceNotFoundException` where the
+fabricated `Conversation` used to be, and its own comment says the branch could
+never have repaired anything because the rules refuse it on both horns). But
+the paragraph's OLD topic sentence four lines above still reads "That
+evaluation error is currently the only thing stopping a NON-CREATOR from
+materialising a group's top-level conversation document THROUGH THE APP",
+which the deletion makes false; and further down the same comment still says,
+in the present tense, "The `metadata: null` fallback from
+`MessageMutationModule` is now refused by the presence requirement ... binds
+our own client". One comment now asserts both halves of a contradiction about
+whether an app path exists.
+
+THE GENERAL SHAPE, and why it is worth recording: deleting a WRITER named in a
+test comment obliges a sweep of every other sentence in that comment that names
+it. The correcting sentence gets added where the author is looking; the topic
+sentence that framed the whole paragraph survives and silently inverts.
+
+Also measured while there, both pre-existing and non-blocking: the comment
+cites the emulator printing an error at `L1565`, but firestore.rules:1565 is
+today a comment line and the create rule starts at 1592 — the drift my own
+knowledge file already forbids (cite the `match` pattern or function name);
+and the same paragraph says the rule comment "still claims harmonising the
+spellings would disarm this", which is false against current bytes —
+firestore.rules 1608-1618 now carries the CORRECTED note retracting exactly
+that claim.
+
+Three more Low items: C11C calls `createdAt` "the one field the update deny-list
+pins" when the list holds four keys and U1-U5 plus C11D vary three of them;
+"Everything else here is byte-identical to C11B" is STILL PRESENT although the
+coordinator reported dropping it (and is inexact about the payload, whose
+`updatedAt`/`lastMessage.sentAt`/`lastReadTimestamps` are fresh per call —
+exact about the CALL); and the fixture comment's present-tense "actually
+produces" sits against C11D's past-tense "produced", the honest version being
+that the deleted fallback produced it and `createDirectConversation` still can
+when its existence read falls through.
+
+No principle added to the knowledge file this round: the lesson is already
+carried by the always-on core digest ("when a reviewer disproves one claim,
+re-check every other claim in the file"), and the file is ~2,700 over target,
+so a near-duplicate would cost budget for nothing.
+
+### 2026-08-22 — BUT-1831 round 3: PASS at final bytes [rules-tests][review]
+
+Re-read the whole of `functions/src/__tests__/conversations-rules.test.ts` at
+final bytes and graded by whether the false claims are GONE, not by whether
+true sentences were added beside them. All three are gone:
+
+  * The C7B topic sentence ("currently the only thing stopping a NON-CREATOR
+    ... THROUGH THE APP") is DELETED. The paragraph now opens at "That
+    evaluation error is not a security bound", which keeps the BUT-1830
+    hand-rolled-create point and no longer contradicts the next paragraph.
+  * The later paragraph no longer names `MessageMutationModule` as the
+    producer ("The shape is now refused by the presence requirement").
+  * `L1565` is replaced by the match pattern with an explicit note that a line
+    number moves; "still claims harmonising the spellings would disarm this"
+    now reads that the rule comment has since been CORRECTED — verified true
+    against firestore.rules 1608-1618.
+
+Also verified: C11C says "the call is otherwise identical to C11B's" (the
+payload-level "byte-identical" claim is gone) and "the one deny-listed key
+this section never moved"; the fixture comment now splits the LIVE producer
+(`createDirectConversation`'s existence-read fall-through, which merge-sets
+[user1Id, user2Id]) from the deleted `sendMessage` fallback. Ran both gates
+myself: `npx tsc --noEmit` exit 0, suite 87/87 with no FAIL lines.
+
+Left as NON-blocking wobbles, recorded so a later run does not re-litigate
+them: the probe bullet still says "the edit the rule comment warns against" in
+the present tense, reconciled 16 lines later by "has since been corrected", and
+it points at "the paragraph above" positionally; C11D still says the recipient
+"produced" the opposite order while the fixture comment says a live path still
+can; and "the one deny-listed key this section never moved" is exact only for
+the C8-C14 block (memberSince/groupId are moved in the U-section, not here).
+None of these is a false operative claim with no correction nearby, which is
+the bar the previous two rounds used — three rounds of blocking over tense
+markers would be the reviewer drifting, not the file.
+
+THE REVIEW LESSON, folded into the principles file this round: grade a comment
+repair at FINAL BYTES. Two rounds were spent because a correct sentence was
+added BESIDE a false one instead of replacing it, and the survivor was the
+paragraph's topic sentence. Offset the addition by cutting an unprovable
+parenthetical from the `onUserDeleted` bullet and a redundant clause from the
+deploy-manifest bullet.
+
+Addendum, same date: reviewing C7B also caught a STALE principle in my own
+knowledge file. It read "a rules DENY (e.g. a CEL error on null-metadata
+access) can be what keeps a safety trigger armed ... 'harmonising' it with a
+sibling rule can disarm it" — which is exactly the claim the 2026-08-13
+mutation probe refuted (harmonising the create conjunct with the update rule's
+`is map` ternary reddens NOTHING, because BUT-1838's bare equality carries the
+deny on its own). Rewritten to the durable half: a PRESENCE requirement binds a
+tampered client, a CEL evaluation error only binds our own. Net for the round
+after that cut: 27,730 -> 27,706 (measured after the edit, not estimated).
+
+### 2026-08-22 — BUT-1831 round 4: the paragraph kept "on record" describes a trigger that no longer exists [rules-tests][review]
+
+Re-read the full current bytes of
+`functions/src/__tests__/conversations-rules.test.ts` (2,222 lines). Round 3's
+three closures still hold at these bytes — the C7B topic sentence is gone, the
+later paragraph no longer names `MessageMutationModule` as the producer, and
+`L1565` is still replaced by the `match` pattern — so no parallel session has
+reverted them. Ran the gate myself rather than citing the coordinator: 87/87,
+with `a create carrying metadata: null`, `a merge-set that re-stamps
+createdAt`, `the recipient cannot send back participantIds in the opposite
+order` and `the same recipient write SUCCEEDS ...` all PASS.
+
+Verified the diff's own claims:
+  * The `MessageMutationModule` fallback IS deleted — `sendMessage` now awaits
+    `readConversation` with no swallow and throws `ResourceNotFoundException`
+    on absence.
+  * The DIRECT fixture cannot collide. `DM_INITIATOR`/`DM_RECIPIENT` carry RUN,
+    and every other `direct_`-shaped fixture in the file names a different
+    pair (`MSG_DIRECT` = ADULT+STRANGER, `STAMP_DIRECT` = FRIEND+STRANGER,
+    `P_BATCH_DIRECT` = ADULT+FRIEND). The comment's account of the first
+    draft's collision reproduces: `seedMessageFixtures` runs AFTER
+    `seedUpdateFixtures` and `.set()`s `MSG_DIRECT` without metadata, which
+    would have turned C11E's ALLOW into a creatorId injection deny.
+  * C11D/C11E are a single-variable pair (array order), C11C's "otherwise
+    identical to C11B's" is exact at the CALL, and the fixture comment's
+    live-producer split is right: `createDirectConversation` writes
+    `[user1Id, user2Id]` and its existence read is wrapped in a try/catch that
+    falls through to `.set(..., merge: true)` on failure.
+
+NEW BLOCKING FINDING, in the paragraph this diff ADDED to C7B: "The harm it
+bounded is worth keeping on record, because it is what a future writer of the
+same shape would re-open: had such a create landed,
+`enforceGroupMinorMembership` would return early on it — that payload trips
+BOTH halves of the trigger's guard (`isGroup: false` AND a single participant)
+... and `onDocumentCreated` cannot fire twice, so the child-safety cut would
+never run for that group at all." Measured against the code: the trigger is
+`onDocumentWritten` on `chat_groups/{groupId}`
+(`functions/src/messaging/enforce-group-minor-membership.ts`:279/286), its
+early returns are `!after.exists`, empty `memberIds` and the size cap — there
+is no `isGroup`/participant-count guard — and a grep of every `document:`
+option in `functions/src` shows NO trigger on `conversations/{id}`. A client
+also cannot create a group conversation at all (`directIdBinds`). So the
+paragraph asserts a present/future harm that no code path can produce.
+Remediation given as a STRIKE of the whole paragraph, not a rewrite.
+
+Second finding, OUT OF THIS GATE'S FILE and handed to `firestore-rules-tester`:
+`firestore.rules`:1604-1606 still says, present tense, "A create carrying
+`metadata: null` denies here, and test C7B pins it — it is what stops
+`MessageMutationModule`'s fallback materialising a conversation it does not
+own." The fallback was deleted by this same ticket. Round 2 read 1608-1618 (the
+CORRECTED note) and did not look four lines up.
+
+THE SHAPE: round 2 recorded that deleting a writer obliges a sweep of every
+sentence naming it. This round adds the other half — a repoint of the TRIGGER
+those sentences describe does the same, and a paragraph explicitly preserved
+"on record" is where it hides, because its subjunctive framing reads as history
+while its topic sentence claims a live future harm.
+
+KNOWLEDGE FILE: superseded the minor-safety bullet IN PLACE. Retired text,
+verbatim: "- Rules can't iterate an array field for a per-member rule on
+GROUP-shaped data — needs a companion `onDocumentCreated` backstop, with the
+create RULE binding any trusted client field to `request.auth.uid`." — stale in
+two ways (the backstop is `onDocumentWritten` on `chat_groups`, and the primary
+control moved into the callables). Offset by cutting the cross-agent pointer
+from the sentinel-default bullet and shortening the archive pointer: 27,706 ->
+27,727 measured, i.e. flat, and the file stays ~2,700 over the ~25,000 target.
+
+### 2026-08-22 — BUT-1831 round 5: the struck paragraph stayed struck, and nothing grew back [rules-tests][review]
+
+Re-read the full current bytes of
+`functions/src/__tests__/conversations-rules.test.ts` (2,209 lines, index blob
+`96ab86e1` — worktree hash identical, so no parallel session had reverted the
+round-4 fix under a `M ` status). Round 4's blocking paragraph is gone and its
+replacement makes NO claim about a trigger: C7B now reads only "It no longer
+stops OUR client, because our client no longer sends it: BUT-1831 deleted the
+`MessageMutationModule` fallback ... The assertion stands on the tampered-client
+case alone". Grepped every surviving mention of `enforceGroupMinorMembership`
+in the file (4: C6, the BUT-1788 section header, P_EVICTED's comment, P12B) —
+each is past tense or names the repoint to `chat_groups.memberAddedBy`, and
+none describes the live trigger's shape. The one `onDocumentCreated` left
+(line ~429, BUT-1830 squat history, untouched by this diff) is corroborated by
+the CF's OWN header, `enforce-group-minor-membership.ts`:5, which records the
+same history above an `onDocumentWritten` export at :279.
+
+The rules-tester's three strikes hold at final bytes: "a hand-rolled create
+carrying a real metadata map is allowed today" is gone (it was refuted by C5,
+C5B and `directIdBinds` in the same file); the trigger paragraph is gone; and
+C11C carries no "the one deny-listed key this section never moved" — it now
+says only that C11/C11B hold `FIXTURE_CREATED_AT` on BOTH fixture and payload,
+which is true at the bytes (both fixtures and `conversationDtoPayload` use the
+constant). Neighbours read correctly; the `L1565` citation is still the `match`
+pattern.
+
+Re-verified rather than cited: 87/87 green, `npm run build` clean. Fixture
+isolation survives — `DM_INITIATOR`/`DM_RECIPIENT` are RUN-scoped and grep
+shows the pair only at its own declaration, the seeder, C11D and C11E.
+Confirmed against `firestore.rules` (staged blob): `directIdBinds` has exactly
+ONE call site, inside `allow create`, so the added comment's "it never runs on
+C11D or C11E" is exact; `participantIds` and `createdAt` are both in the update
+deny-list; and the conversations `allow update` limb has NO `rateLimitWrite`
+and no `users/{uid}` read at all, which is what makes an unseeded `peer()` uid
+sound as the ACTOR and makes the new `peer()` caveat correctly scoped.
+
+ONE LOW, NOT BLOCKING: C7B renders the deleted fallback as
+`Conversation(participantIds: [senderId], isGroup: false)`; the deleted code
+actually built `[message.senderId, ?otherUserId]` (a null-aware element), so
+the one-element spelling is only the branch where the id fails to split into
+three parts. Inherited wording, about code that no longer exists, and the two
+load-bearing halves (no metadata, staged a top-level create) are true — so a
+rewrite would buy a new unmeasured claim for nothing. Left alone deliberately.
+
+NO KNOWLEDGE-FILE EDIT: nothing durable was learned that a bullet does not
+already carry, and the file is ~2,700 over its ~25,000 target (27,727; HEAD is
+27,676, so the overage predates this session). Flagged to the parent rather
+than opened as a compression edit inside a commit gate.
+
+### 2026-08-22 — BUT-1831 coverage re-read after the C7B rewrite [review]
+
+Re-read at index blob `0ea2d6b2c` (worktree == index, verified with
+`git hash-object` vs `git rev-parse :<path>`), so this pass is graded at the
+same bytes the gate holds. `npm run test:rules:conversations` → 87/87.
+
+The rewritten C7B paragraph carries FOUR claims and all four are checkable
+without counting anything:
+  * "BUT-1831 deleted the `MessageMutationModule` fallback that built a
+    creator-less `Conversation` with no metadata and staged a top-level
+    create" — read off the staged Dart diff: the deleted constructor call
+    passes no `metadata:` argument, and the fabricated conversation was
+    merge-set beside the message, which is a CREATE when the document is
+    absent (the branch's own precondition).
+  * "the corrected account of who can still reach this limb lives at the rule
+    itself" — true: `firestore.rules`, `allow create` in
+    `match /conversations/{conversationId}`, records that a `merge: true` set
+    is a create when the document is absent, so the limb is still reachable by
+    shipped code.
+  * "the rule comment ... no longer claims harmonising the spellings would
+    disarm this" — true; the rules comment now says that warning is FALSE of
+    the bare-equality spelling.
+  * the emulator citation. MEASURED this run, and it is why striking the old
+    literal was right: the C7B deny prints
+    `Null value error. for 'create' @ L1592` — operation plus a LINE, never a
+    match pattern, and L1592 is the `allow create:` line, i.e. the old `L1565`
+    had already moved 27 lines. The same run prints `@ L1874`/`@ L1886` for the
+    roster limbs, so the format is uniform.
+
+My earlier Low is resolved: the `Conversation(participantIds: [senderId],
+isGroup: false)` spelling is gone from the file (grepped), struck rather than
+re-rendered. The rules-tester's two reachability sentences are gone (grepped by
+their exact wording, no hits), and the `enforceGroupMinorMembership` paragraph
+that was my blocking finding is gone — the three remaining mentions of that
+symbol in the file are the BUT-1788 section and the roster section, both
+pre-existing and correct. `DM_INITIATOR`/`DM_RECIPIENT` isolation survives:
+RUN-scoped, and `DIRECT_CONVO` appears only at its declaration, the seeder,
+C11D and C11E, with no other fixture naming that pair.
+
+TWO LOWS, NEITHER BLOCKING, BOTH PRE-EXISTING AND BOTH PURE STRIKES:
+  * The paragraph two above the probe note still says the create rule
+    "evaluates `!('creatorId' in request.resource.data.metadata)` against null"
+    and that "the named equality conjunct below it is never reached". Measured
+    against the shipped rule (a bare `metadata.creatorId == request.auth.uid`),
+    there is no `in` conjunct at all and the equality IS the limb that errors.
+    The deny reason itself is unchanged (still a CEL null error), so only the
+    spelling and the "never reached" sentence are false.
+  * Deleting a paragraph RE-ANCHORS its neighbours' positional references: the
+    probe note's "recorded here because the paragraph above is inherited from
+    the OLD one" pointed at the deleted fallback paragraph, and now points at
+    the freshly written BUT-1831 one, which is not inherited from anything.
+
+NO KNOWLEDGE-FILE EDIT AGAIN: the anchor-drift shape is already carried by the
+"grade a comment repair at FINAL BYTES" clause plus the global digest's "never
+state another comment's wording or position", and the file is still ~2,700 over
+its ~25,000 target (27,727), so a near-duplicate bullet would be the drift the
+budget exists to stop.

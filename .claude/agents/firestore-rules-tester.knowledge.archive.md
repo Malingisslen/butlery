@@ -2573,3 +2573,281 @@ with X" comment asserts both the SYMBOL and the VALUE; a drift sweep that repair
 the symbol can leave the stronger claim broken.
 
 Verdict: PASS, 0 blocking.
+
+---
+
+## 2026-08-22 — BUT-1831: conversations update deny-list (C11C/C11D/C11E)
+
+Scope: ONE file, `functions/src/__tests__/conversations-rules.test.ts`.
+`firestore.rules` unchanged (`git status --short firestore.rules` empty, re-verified
+after the probe). Three tests added to close a stated gap: every prior update test built
+`conversationDtoPayload(null)` with FIXTURE_CREATED_AT against fixtures seeded with the
+same FIXTURE_CREATED_AT, so `createdAt` was never varied on the update path and
+`participantIds` was never attacked there at all — the two keys BUT-1831's client defect
+turned on.
+
+Run: 87/87 pass. C11C, C11D, C11E all green by name.
+
+Mutation probe (env-var seam, mutant copy in scratchpad, real file byte-identical
+throughout): drop `'participantIds', 'createdAt'` from the conversations update
+`.hasAny([...])` deny-list -> 85/87, reddening EXACTLY C11C and C11D; C11E stays green.
+So both denies are attributable to the deny-list and the ALLOW control is not a
+by-product of it. First mutator attempt produced `[memberSince, groupId]` — bash ate the
+single quotes inside a `node -e '...'` string, yielding undefined CEL identifiers, i.e. a
+deny-everything mutant that would have "reddened" plenty and proved nothing. Caught by
+diffing the mutant; write the mutator to a heredoc FILE, and diff before running.
+
+Fixture isolation (asked, and load-bearing): a direct id is a pure function of its two
+uids, so DIRECT_CONVO could only be safe if no other fixture names the same pair. Grepped
+every `conversations/` path in the file: DIRECT_CONVO appears at exactly three sites (the
+seed, C11D, C11E). Every other `directId()` call pairs STRANGER/MINOR/FRIEND/ADULT or a
+`peer("cNN")` tag; neither `dm-init` nor `dm-recip` recurs, and both uids embed RUN. The
+in-file comment records that the FIRST draft reused ADULT_UID/STRANGER_UID, collided with
+`seedMessageFixtures`' MSG_DIRECT (seeded later in `run()`), and the overwrite made the
+ALLOW control deny — verified as mechanism: MSG_DIRECT stores no `metadata` key, so the
+control's `{creatorId: ...}` would resolve non-null == null and deny. Accurate.
+
+C11E does control for C11D: same actor, same document, same merge-set, same `createdAt`,
+same `metadata`; the ONLY difference is the array order, and `updatedAt` (not deny-listed,
+not read by any conjunct). Single-variable. C11B is the equivalent control for C11C.
+
+THREE FALSE SENTENCES FOUND AND STRUCK in the diff's own new/rewrapped comment text.
+All three were claims about rules or Cloud Function behaviour, none was a code defect:
+
+1. C7B: "a hand-rolled create carrying a real metadata map is allowed today and ends the
+   window irreversibly (BUT-1830)". Refuted by C5 and C5B IN THE SAME FILE, both passing:
+   `directIdBinds` requires `p.size() == 2` and an id derived from the pair, so a client
+   cannot create a group conversation at any id. `firestore.rules` says so itself ("not
+   merely bounded, it is unreachable"), and the same comment contradicts it four
+   paragraphs later ("refused by the presence requirement ... binds a tampered one too").
+   The diff had also deleted the sentence that gave "the window" its antecedent, so the
+   phrase dangled.
+2. C7B: the `enforceGroupMinorMembership` harm paragraph — "trips BOTH halves of the
+   trigger's guard (`isGroup: false` AND a single participant)" and "`onDocumentCreated`
+   cannot fire twice". The live function is `onDocumentWritten` on `chat_groups/{groupId}`
+   with neither guard; its own file header calls the `onDocumentCreated` trigger on
+   `conversations/{id}` the OLD one, in the past tense. Present-tense claim about a live
+   symbol that has not behaved that way since BUT-1838.
+3. C11C: "the one deny-listed key this section never moved". The deny-list holds four keys
+   and, pre-diff, the BUT-1788 section moved NONE of them — `participantIds` least of all,
+   since it is the second key this very commit adds a test for (C11D, eight lines below).
+   The same sentence's "nothing in the file varied `createdAt` at all" is an unscoped
+   quantifier falsified by `convBody`'s `createdAt: new Date()` on the create path.
+
+All three struck rather than reworded: a truer count would have needed measuring, and
+(2) would have needed a new claim about what the OLD trigger did, sourced from git
+history. Re-ran after the edits: 87/87.
+
+Verdict: PASS, 0 blocking (the three defects were fixed in this run, not left open).
+
+---
+
+## 2026-08-22 — BUT-1831 re-verify: `firestore.rules` comment-only diff (conversations)
+
+Second pass on the same ticket, this time with `firestore.rules` in the diff. Nine lines,
+all comment, in two hunks: the `allow create` limb of `match /conversations/{conversationId}`
+and the `participants` roster read-rule comment. Both struck sentences named
+`MessageMutationModule`'s deleted fallback in the present tense.
+
+**Inertness, proven two ways** (the principle held, no change needed): `grep -c '://'` = 0,
+so `//`-stripping is safe; comment-stripped + blank-stripped + CR-stripped HEAD vs worktree
+gave md5 `9442377d4eb0e38b260852f067f3ca39` on both sides over 1380 surviving code lines,
+and `git diff -U0 | grep '^[+-]' | grep -v '^[+-][[:space:]]*//'` came back empty. Index
+matched HEAD (` M`), so HEAD→worktree is the whole shippable change.
+
+**The replacement text judged.** "A create carrying `metadata: null` denies here, and test
+C7B pins it. The assertion rests on a TAMPERED client: BUT-1831 deleted the app's only
+writer of that shape, so no shipped code sends it any more."
+- Deny is real: the conjunct is a bare `request.resource.data.metadata.creatorId ==
+  request.auth.uid`, and `.creatorId` on null is a CEL error.
+- "C7B pins it" is attributable, not vacuous: C7B's fixture uses `directId(STRANGER_UID,
+  peer("c7b"))`, so `directIdBinds` passes and the metadata conjunct is the failing one;
+  C7 is its single-variable ALLOW control. The recorded probe (delete the conjunct → C6,
+  C6B, C7B redden) agrees.
+- It does NOT re-introduce the sentence I struck last run ("a hand-rolled create carrying a
+  real metadata map is allowed today"). It makes no claim about what a tampered create is
+  ALLOWED to do — only about who can still emit the denied shape.
+- The fallback really is gone: `message_mutation_module.dart` now throws
+  `ResourceNotFoundException` on `conversation == null`.
+
+**The one soft spot, and the new principle.** "the app's only writer of that shape" is a
+quantifier over writers, so I measured it — four `ConversationDto.toFirestore` call sites:
+`conversation_mutation_module.dart:111` (create, ships `metadata: {'creatorId': user1Id}`),
+`firebase_messaging_repository.dart:101` (base-class override, path-rewritten by
+`UserScopedFirebaseRepository` to `users/{uid}/conversations/{id}`, a different rule block),
+a doc comment, and `message_mutation_module.dart:140` — a `set(..., SetOptions(merge: true))`
+which is an UPDATE only while the document exists. Firestore evaluates a merge-set against
+an ABSENT document as a CREATE, so a read-then-delete race still routes shipped code into
+the create rule with `metadata` = whatever was stored (null on a legacy pre-BUT-1830 row;
+`chat-group-writes.ts:154` stamps a map on every group conversation, and the create rule
+forces one on every new direct, so live nulls are legacy-only). Doubly conditional, fails
+closed, and identical in substance to the wording already accepted in the test file's own
+C7B comment last run — reported as an observation, not a block. Generalised into
+"Proving a deny test is not vacuous" in the knowledge file: a merge-set is a create when
+the doc is absent, so "no shipped code sends X on create" must enumerate merge-sets too.
+
+**The orphaned paragraph.** With its "Still true:" lead-in struck, the roster block's
+"NOT still true, and corrected above on the same day: that the create and update rules must
+keep DIFFERENT null-metadata spellings…" stands alone and reads correctly; "corrected above"
+resolves to the create-limb `CORRECTED 2026-08-13` paragraph, and "the same day" to the
+2026-08-13 dates in the paragraph immediately above it. Ragged line wrap only.
+
+**Run:** `npm run test:rules:conversations` → 87/87, reproducing the founder's figure.
+
+**Deferral confirmed as correct.** The update rule's `request.auth.uid in
+resource.data.participantIds`, plus `allow read` and `allow delete` on the conversation
+document, still have no deny test anywhere (every C8–C14/U1–U6 actor is a participant; no
+test reads or deletes a conversation document). Pre-existing, untouched by a comment-only
+diff, and the ticket needs allow controls built alongside the denies — `read` and `delete`
+have neither today.
+
+Verdict: PASS, 0 blocking.
+
+## 2026-08-22 — BUT-1831 third pass: the rewritten create-limb comment, and its un-swept twin
+
+Same ticket, same file, now STAGED. The soft spot from the previous entry ("BUT-1831 deleted
+the app's **only** writer of that shape") has been rewritten; my recorded coverage was against
+the pre-rewrite bytes, hence a third pass.
+
+**Inertness, re-proven at the staged bytes.** `git show HEAD:firestore.rules` vs
+`git show :firestore.rules`, both CR-stripped, `//`-stripped and blank-stripped: md5
+`6cf1210c689e2c7143c3cf21104a2369` on both sides over 1380 surviving lines. `grep -c '://'`
+= 0 on the index copy, so the naive strip is sound. `git diff --cached -U0 | grep '^[+-]' |
+grep -v '^[+-][[:space:]]*//'` returned nothing. Twelve changed lines, all comment, two hunks.
+
+**The replacement text judged: accurate, and not an overcorrection.** It now reads "…the
+assertion mainly binds a tampered client now — but do not read it as unreachable by shipped
+code: a `merge: true` set is a CREATE when the document is absent, so any merge-set carrying
+a null metadata still arrives at this limb. It fails closed either way."
+- The mechanism is real and reachable at the current bytes:
+  `MessageMutationModule.sendMessage` step 2 merge-sets the WHOLE conversation document
+  (`ConversationDto.toFirestore(updatedConversation)`, `SetOptions(merge: true)`), and
+  `toFirestore` emits `'metadata': conversation.metadata` unconditionally with
+  `Map<String, dynamic>?` nullable — so a conversation stored with a null metadata (the very
+  population BUT-1788's `is map` ternary exists for) yields a payload carrying `metadata:
+  null`. If the document is deleted between the module's existence read and the batch commit,
+  that merge-set lands on `allow create` and is denied. The module's own new comment names
+  that race ("the other party deleting the thread while this one is open").
+- It states a RULE (merge-set-is-a-create) rather than naming one call site, so it does not
+  rot when the call site moves. No count, no "only", no line number, no suite total — nothing
+  that would need re-measuring. Hedged with "mainly", which is the honest quantifier.
+- `conversation_mutation_module.dart`'s merge-set is the harmless twin: it ships
+  `metadata: {'creatorId': user1Id}`, so it satisfies the limb rather than tripping it. The
+  comment correctly does not claim otherwise.
+
+**The finding this round: the same claim survived in the TEST file.** C7B's comment in
+`functions/src/__tests__/conversations-rules.test.ts` is NEW text in this staged diff and
+says "It no longer stops OUR client, because our client no longer sends it… The assertion
+stands on the tampered-client case alone, which is why it is not weakened by that deletion."
+That is the struck sentence's claim, verbatim in substance, in the file that pins the rule.
+Reported as non-blocking (a comment, not logic — same severity call as the rules-side
+sentence last round) with a STRIKE, not a rewrite: a truer version would have to re-measure
+the merge-set population, and the corrected explanation already lives at the rules limb.
+Generalised into the knowledge file: a reachability claim about a rule lives in TWO files,
+and a finding filed against one is half-fixed until the other is swept.
+
+**The orphaned paragraph, re-checked at the staged bytes.** "NOT still true, and corrected
+above on the same day: that the create and update rules must keep DIFFERENT null-metadata
+spellings…" stands alone correctly; "corrected above" resolves to the create-limb
+`CORRECTED 2026-08-13` block in the same match. Ragged wrap only, no dangling referent.
+
+**Run:** `npm run test:rules:conversations` → 87/87, unchanged.
+
+**Gap carried, not re-filed:** no non-participant deny on the conversations `update`/`read`/
+`delete` rules — six tests, not three, since `read` and `delete` have no ALLOW controls
+either. On BUT-1831 as follow-up #4.
+
+Verdict: PASS, 0 blocking.
+
+---
+
+## 2026-08-22 — BUT-1831, coverage re-read #3: the twinned claim, resolved by strike-and-point
+
+**Scope.** Staged diff, `firestore.rules` + `functions/src/__tests__/conversations-rules.test.ts`.
+Both opened with Read in full. Re-review of my own prior finding after it was actioned.
+
+**Retired verbatim from the knowledge file** (superseded in place by the bullet quoting this
+entry; kept here because the archive is the audit trail):
+
+> **A reachability claim about a rule usually exists in TWO files — the rules comment and the
+> pinning test's comment — so a finding filed against one is only half-fixed until the other
+> is swept: BUT-1831's rules-side sentence was struck while the identical claim rode into the
+> same commit at test C7B.** Grep the test file for the claim's keywords whenever a rules
+> comment is corrected, and the reverse.
+
+**What was actioned.** C7B's comment now reads: "BUT-1831 deleted the `MessageMutationModule`
+fallback that built a creator-less `Conversation` with no metadata and staged a top-level
+create. The corrected account of who can still reach this limb lives at the rule itself; do
+not restate it here, where nothing keeps the copy honest." Struck, not reworded: both
+sentences I flagged ("It no longer stops OUR client, because our client no longer sends it";
+"The assertion stands on the tampered-client case alone…") are gone.
+
+**Judgment 1 — new unmeasured claims?** None. Three claims, each directly readable from the
+staged Dart diff, none requiring a count:
+- "BUT-1831 deleted the `MessageMutationModule` fallback" — the whole `if (conversation ==
+  null) { … conversation = Conversation(…) }` block is removed in
+  `lib/repositories/firebase/modules/message_mutation_module.dart`.
+- "creator-less … with no metadata" — the deleted constructor call passes id,
+  participantIds, participantDisplayNames, participantAvatarUrls, lastReadTimestamps,
+  isGroup, createdAt, updatedAt. No `metadata:` argument, and the deleted comment beside it
+  said so explicitly ("DO NOT give this conversation a `metadata.creatorId`").
+- "staged a top-level create" — the fabricated conversation flowed into the atomic batch's
+  merge-set on `conversations/{id}`, which is a CREATE when the document is absent, i.e.
+  exactly C7B's case.
+
+This also resolves the cloud-functions gate's Low on the same paragraph without inheriting
+it: the old text rendered the deleted code as `Conversation(participantIds: [senderId],
+isGroup: false)`, which was only the branch where the id fails to split (the real list was
+`[message.senderId, ?otherUserId]`). "Creator-less" drops the spelling entirely rather than
+correcting it — the right move, since the correct spelling was a thing you had to read the
+deleted code to write, and it would rot the moment anyone described the branch differently.
+
+**Judgment 2 — does the pointer resolve?** YES, and this is the part worth generalising. The
+account is at the `allow create` limb of `match /conversations/{conversationId}` (immediately
+above `request.resource.data.metadata.creatorId == request.auth.uid`, inside the create
+statement that runs lines 1592–1623 at these bytes — cited by match pattern, not line):
+"A create carrying `metadata: null` denies here, and test C7B pins it. BUT-1831 deleted the
+branch that sent that shape deliberately, so the assertion mainly binds a tampered client
+now — but do not read it as unreachable by shipped code: a `merge: true` set is a CREATE when
+the document is absent, so any merge-set carrying a null metadata still arrives at this limb.
+It fails closed either way."
+
+Re-checked that this is still true after the Dart deletion, since the deletion is what could
+have hollowed it: `conversation_mutation_module.dart:107-113`
+(`createDirectConversation`) still merge-sets the conversation after a swallowed
+existence-read, but ships `metadata: {'creatorId': user1Id}` — the harmless twin, satisfying
+the limb rather than tripping it. The rules comment does not claim a specific live null-
+metadata caller; it states the merge-set RULE and refuses to assert unreachability, which is
+the safe direction and needs no re-measuring. Hedge "mainly" is the honest quantifier.
+
+**Judgment 3 — rules unchanged since the last pass.** Proven two independent ways rather than
+eyeballed, per the probe-mechanics principle and the 2026-08-22 parallel-session lesson (a
+reverted file also shows as `M `):
+- Comment-only: `git show HEAD:firestore.rules` vs `git show :firestore.rules`, CR stripped,
+  `//` comments and blank lines removed → **1380 surviving lines on both sides, md5
+  `9442377d4eb0e38b260852f067f3ca39` on both**. Grep for `://` first returned nothing, so no
+  URL inside a string literal was eaten by the comment strip.
+- Line filter: `git diff --cached -U0 | grep '^[+-]' | grep -v '^[+-][[:space:]]*//'` → empty.
+- Worktree == index (`git diff --stat` on both files → empty), and the two corrected
+  passages were confirmed BY CONTENT during the Read, not inferred from the status letter.
+The staged rules diff is exactly the two comment hunks I passed last round: nothing touched
+it this round.
+
+**Run.** `npm run test:rules:conversations` → **87/87 passed**, zero failures. 87 `test("`
+declarations in the file, so nothing was skipped; the three BUT-1831 tests (C11C re-stamped
+createdAt deny, C11D reversed participantIds deny, C11E its single-variable ALLOW control)
+are among them and green.
+
+**Durable rule extracted.** The sweep of a twinned claim is a STRIKE-AND-POINT, not a matching
+correction written into both files. Correcting both is what created the twin in the first
+place: two copies of one measured fact, each free to rot separately, and the second copy is
+the one nobody re-checks. The repair keeps ONE canonical site (the rule, where the code that
+falsifies it lives) and makes the other a pointer that carries no claim. The pointer itself
+needs verifying — open the named limb and confirm it actually carries the account — or a
+false claim has merely become a dangling one.
+
+**Gap carried, not re-filed (third time):** no non-participant deny on the conversations
+`update`/`read`/`delete` rules — six tests, not three, since `read` and `delete` have no
+ALLOW controls either. On BUT-1831 as follow-up #4. Pre-existing, out of this diff's scope.
+
+Verdict: PASS, 0 blocking.

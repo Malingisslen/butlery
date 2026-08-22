@@ -153,7 +153,12 @@ Standard deny matrix for ownership-checked collections:
   make — leaves 26/26 green while handing every participant the whole inline poll store.
   `hasOnly` is TOP-LEVEL, so a nested privilege escalation is caught only because the
   parent key is named; enumerate the collection's real top-level keys and pin the
-  privileged ones by name (BUT-1832).
+  privileged ones by name (BUT-1832). **The DENY-list mirror
+  (`!affectedKeys().hasAny([...])`) fails more quietly still: a key that every fixture
+  AND every payload holds CONSTANT is never varied, so nothing tests it while the suite
+  reads as covered** — `conversations`' `createdAt` and `participantIds` sat that way
+  through two tickets because ONE builder supplied both sides. Audit a deny-list key by
+  key, asking which test MOVES it; "the payload round-trips" is the smell (BUT-1831).
 - **A conjunct ADDED to `hasRequiredFields`/`hasOnly` is a claim about EVERY WRITER of
   that collection, and the rules comment beside it is not evidence.** BUT-1812 added
   `'sharedToUserIds'` under "all three writers already stamp it"; only one of three did,
@@ -185,7 +190,21 @@ Standard deny matrix for ownership-checked collections:
   PRE-SEEDED lands on UPDATE and proves nothing about CREATE.** A cross-actor deny needs
   a path no fixture has written yet (or twice, once per verb) — make the fixture
   self-checking: assert the row doesn't exist via `withSecurityRulesDisabled` before
-  `assertFails`.
+  `assertFails`. The same fact binds PROSE, not just fixtures: `set(..., merge: true)` is
+  a CREATE whenever the document is absent, so a client the code reads as "update-only"
+  still reaches the create rule under a read-then-delete race. Never pass a comment
+  claiming "no shipped code sends shape X on create" without enumerating every merge-set
+  of X, not just the literal creates (BUT-1831). **A reachability claim about a rule
+  usually exists in TWO files — the rules comment and the pinning test's comment — so a
+  finding filed against one is only half-fixed until the other is swept: BUT-1831's
+  rules-side sentence was struck while the identical claim rode into the same commit at
+  test C7B.** Grep the test file for the claim's keywords whenever a rules comment is
+  corrected, and the reverse. **Sweep it by STRIKE-AND-POINT, never by writing the
+  correction into both files** — the copy names the canonical site ("the account lives at
+  the rule itself; do not restate it here") and makes no claim of its own, so there is one
+  thing to re-measure instead of two that drift. Verify the pointer RESOLVES: open the
+  named limb and confirm it carries the account, or you have replaced a false claim with a
+  dangling one.
 - An `allow update` textually identical to `allow create` still needs its OWN allow
   test — a client `set()` on an existing doc is an update, and a toggle/edit path can
   live entirely there, unproven by create-side coverage alone.
@@ -219,6 +238,14 @@ Standard deny matrix for ownership-checked collections:
 - A decision record or comment quoting mutation-probe figures inherits their staleness
   at one remove — re-run every quoted mutant against the CURRENT file before trusting a
   written figure; arithmetic on an old run is not measurement.
+- **A paragraph a diff merely REWRAPS ships as new text and gets judged as new.** Two
+  inherited sentences rode a rewrap into BUT-1831: one claimed a squat closed by
+  `directIdBinds` was "allowed today", the other described a Cloud Function's guard that
+  had moved to another collection (`onDocumentCreated` on `conversations` ->
+  `onDocumentWritten` on `chat_groups`) a ticket earlier. Re-verify every sentence a diff
+  touches, including the ones it did not intend to change — and note that a stale "this
+  hole is OPEN" claim is often refutable by passing tests in the SAME file, which is the
+  cheapest disproof available. Struck, never reworded: a truer count needs measuring.
 
 ### Probe & mutation-testing mechanics
 - **Probe by ENV VAR, never by editing `firestore.rules` or copying the test file.**
@@ -236,7 +263,10 @@ Standard deny matrix for ownership-checked collections:
 - **`firestore.rules` is CRLF** — a literal template-string `.replace()`/`.includes()`
   never matches; use a whitespace-tolerant regex, assert the match count, and use the
   `/g` flag whenever the mutated literal appears more than once (a non-global replace
-  silently patches only the first occurrence and reports a false "still denied").
+  silently patches only the first occurrence and reports a false "still denied"). Write
+  the mutator to a heredoc FILE and `diff` the mutant before running it — quoting a CEL
+  string list inside `node -e '...'` lets bash eat the quotes, yielding undefined
+  identifiers, i.e. a deny-everything mutant that reddens plenty and proves nothing.
 - **Proving a "comment-only" rules diff is mechanical, not eyeballable**: recover every
   previously-staged revision with `git cat-file --batch-all-objects --batch-check`, strip
   `//` comments (only after grepping for `://` first) AND blank lines AND `\r`, then
@@ -256,7 +286,12 @@ Standard deny matrix for ownership-checked collections:
 - The emulator PERSISTS DATA ACROSS `npm run` invocations — suffix create-allow doc ids
   with a per-run token, or a second local run silently becomes update-not-create and
   fails wrong. CI is unaffected (fresh emulator per job); "fails locally, green in CI"
-  means clear-and-retry, not a regression.
+  means clear-and-retry, not a regression. **A DETERMINISTIC id is the same hazard WITHIN
+  one run**: `direct_<a>_<b>` is a pure function of its two uids, so any two fixtures
+  naming that pair ARE one document and the later seeder silently overwrites the earlier —
+  turning an ALLOW control into a deny while its DENY twin stays green and pins nothing.
+  Give a new fixture DEDICATED uids and grep every path in the file before calling it
+  isolated (BUT-1831).
 - Never import server-value sentinels (`serverTimestamp`, `increment`, `arrayUnion`,
   `deleteField`) from `firebase-admin/firestore` in a `*-rules.test.ts` — the test
   context is the CLIENT SDK; an admin sentinel throws before any rule runs, which also

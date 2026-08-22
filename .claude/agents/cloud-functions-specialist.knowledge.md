@@ -1,16 +1,13 @@
 # cloud-functions-specialist — accumulated knowledge
 
 Step 0 of every Cloud Functions task. Durable PRINCIPLES only, edited IN
-PLACE. **Target: under ~25,000 characters** — an edit that would push it
-over must tighten or retire an existing principle in the same edit.
-
-## How to update this file
-
-- **Principles here, edited in place; dated narrative to
-  `cloud-functions-specialist.knowledge.archive.md` (append-only).** A
-  principle earns its place only if a future run would act DIFFERENTLY —
-  keep exact names/codes/thresholds, cut the story, merge duplicates. Bias
-  toward writes/deletes, idempotency, retry, cost, region, GDPR.
+PLACE; dated narrative goes to
+`cloud-functions-specialist.knowledge.archive.md` (append-only). **Target:
+under ~25,000 characters** — an edit that would push it over must tighten or
+retire a principle in the same edit. A principle earns its place only if a
+future run would act DIFFERENTLY: keep exact names/codes/thresholds, cut the
+story, merge duplicates. Bias toward writes/deletes, idempotency, retry,
+cost, region, GDPR.
 
 ---
 
@@ -42,8 +39,7 @@ New family → append a row.
 `index.ts`, above every `export … from`. Never re-region per-function
 without approval (mismatch = silent client-side "not found").
 `admin.initializeApp()` runs once, after that call.
-- **Global and per-function options MERGE key-by-key**
-  (`{...optionsToEndpoint(global), ...optionsToEndpoint(own)}` via
+- **Global and per-function options MERGE key-by-key** (via
   `copyIfPresent`) — declaring `memory`/`timeoutSeconds`/`retry`/`secrets`
   loses nothing and still inherits the rest; per-function wins on collision.
 - **`maxInstances: 10` is a DEPLOY gate, not tuning.** Unset = the v2
@@ -53,9 +49,8 @@ without approval (mismatch = silent client-side "not found").
   Raising it globally re-arms the wall; a rolling deploy can trip it too
   (old revisions hold their reservation until replaced) — batch it.
 - **10 instances != 10 concurrent executions, and a LOW cap PACKS.**
-  `concurrency` defaults to 80 at `cpu >= 1`, and firebase-tools'
-  `memoryToGen2Cpu` gives 1 for 128MiB–2GiB, so 80 holds for every function
-  here → ~800 in flight, packed ~N/10 per container. A handler both
+  `concurrency` defaults to 80 at `cpu >= 1` (true for every function here,
+  128MiB–2GiB) → ~800 in flight, packed ~N/10 per container. A handler both
   LONG-LIVED and memory-hungry per request declares its OWN `concurrency: 1`
   — the two ingredient cascades (540s/512MiB holding a 500-doc page; ≤500
   events per `sync-ingredients` batch). It never changes the
@@ -73,26 +68,23 @@ without approval (mismatch = silent client-side "not found").
   `MAX_BATCH_NOTIFICATIONS=100`), so a cap never splits a batch.
 - **`onUserDeleted` is the ONLY gcfv1 export** — a v1 auth trigger with its
   own `.region("europe-west1").runWith(...)`, unreachable by
-  `setGlobalOptions`, so no instance cap and (platform property, unprovable
-  here) a CPU pool separate from Cloud Run's. Exclude it from any
+  `setGlobalOptions`, so no instance cap. Exclude it from any
   "every function" claim.
 - **Prove endpoint config, never reason about it:** `npm run
   test:deploy-manifest` imports the ENTRY POINT (the only way the global
   call runs) and asserts region + a numeric `maxInstances` on every
   `platform:"gcfv2"` endpoint, plus `concurrency === 1` on the two cascades
-  — 71 exports, 70 gen2, healthy total 7/7. An unset v2 option is a sentinel
-  OBJECT (`RESET_VALUE`; `toJSON()` → null, so `JSON.stringify` prints
-  "null" while `== null` is FALSE) — check `typeof x === "number"`. `gcfv2`
-  resets `maxInstances` AND `concurrency`; `initV1Endpoint` drops
-  `concurrency`, so on the one gcfv1 export it is plain `undefined`. Nothing
-  else reddens: `tsc` and every other suite stay green when any of these is
-  deleted. VACUITY SURFACE is the `gcfv2` FILTER: rename `platform` and every
-  assertion passes over ~0 endpoints — guard the FILTERED count (it reddens
-  on an `__endpoint` rename too, demoting the readability check to a
-  DIAGNOSTIC) and it records once per CALLER. A value pin (`!== 10`) misses
-  the delete-the-option mutant (non-numbers drop first), so keep the presence
-  check. A by-NAME pin must treat a missing export as FAIL, not skip.
-  Re-measure every "N/N" a header quotes after adding an assertion.
+  (71 exports, 70 gen2, healthy total 7/7). Nothing else reddens when one is
+  deleted. An unset v2 option is a
+  sentinel OBJECT (`RESET_VALUE`; `toJSON()` → null, so `JSON.stringify`
+  prints "null" while `== null` is FALSE) — check `typeof x === "number"`.
+  `gcfv2` resets `maxInstances` AND `concurrency`; `initV1Endpoint` drops
+  `concurrency`, so on the one gcfv1 export it is plain `undefined`. VACUITY
+  SURFACE is the `gcfv2` FILTER: rename `platform` and every assertion passes
+  over ~0 endpoints — guard the FILTERED count, once per CALLER. A value pin
+  (`!== 10`) misses the delete-the-option mutant (non-numbers drop first), so
+  keep the presence check. A by-NAME pin must FAIL on a missing export, not
+  skip. Re-measure every "N/N" a header quotes after adding an assertion.
 - **Six gen2 exports pin their OWN region** — `moderateUpload`,
   `syncConversationLastMessage`, `purgeExpiredAuditLogs` and the three
   `migrations/` backfills. A global-region change moves 64 of 70, so never
@@ -167,8 +159,11 @@ idempotent:
 
 - `npm run build` — must pass before any commit. `npm test` =
   `run-all-tests.js`: auto-discovers every `test:*` script. **A new
-  `__tests__/*.test.ts` is invisible until its `test:*` script exists** —
-  grep package.json FIRST on any new test file.
+  `__tests__/*.test.ts` is invisible until its `test:*` script exists**, and
+  `node scripts/check-test-registration.js` proves it — per FILE, so tests
+  ADDED to an existing suite need no registration. A `test:*` naming a file
+  git does not TRACK reddens the whole CI unit lane, so the file and its
+  package.json line stage in the SAME commit.
 - `npm run test:rules:all` — a new `test:integration:*` suite must ALSO be
   appended to both `paths:` blocks in `firestore-rules.yml`, or it never
   runs in CI despite passing by hand.
@@ -196,10 +191,8 @@ from `(err as {code?}).code` instead.
   a deployed function; no trigger without an idempotency story; no
   `retry:true` without a missing-doc audit.
 - Don't trust a client-controlled field for a security decision unless the
-  create/update RULE pins it to `request.auth.uid`. Converse: a rules DENY
-  (e.g. a CEL error on null-metadata access) can be what keeps a safety
-  trigger armed against a degenerate first write — "harmonising" it with a
-  sibling rule can disarm it.
+  create/update RULE pins it to `request.auth.uid` — a PRESENCE requirement
+  binds a tampered client, a CEL evaluation error only binds our own.
 
 ---
 
@@ -229,7 +222,14 @@ from `(err as {code?}).code` instead.
 - **Rules are not filters** — a client query with NO condition is DENIED
   wholesale on a member-scoped collection; only the RULES emulator lane
   proves it, and that emulator KEEPS data across runs, so give an "empty"
-  fixture a uid no other test seeds.
+  fixture a uid no other test seeds. The VERB decides which conjuncts run: a
+  merge-`set` on a seeded doc is an UPDATE, and a `withSecurityRulesDisabled`
+  seed evaluates none — so a create-only conjunct (`directIdBinds`) can never
+  justify how an update-path fixture is shaped; justify one by production
+  FIDELITY and by the ALLOW control needing a doc no other test writes. Grade
+  a comment repair at FINAL BYTES: a true sentence added BESIDE a false one
+  leaves both, and deleting a WRITER obliges a sweep of every sentence naming
+  it (including the rules comment it cites).
 - **A fake `commit()` that RE-DERIVES the intended effect instead of
   APPLYING the write payload makes the write vacuous** — dispatch on the
   `FieldValue` transform's `constructor.name`; reject `update()` on a
@@ -380,9 +380,12 @@ from `(err as {code?}).code` instead.
   `nextCursor`; only a filter-mutating sweep may skip the cursor.
 
 ### Verify-signup-age, account callables & minor-safety triggers
-- Rules can't iterate an array field for a per-member rule on GROUP-shaped
-  data — needs a companion `onDocumentCreated` backstop, with the create
-  RULE binding any trusted client field to `request.auth.uid`.
+- Rules can't iterate an array for a per-member rule on GROUP-shaped data —
+  the check lives in the CALLABLES (`groups/minor-membership-gate.ts`),
+  backstopped by `enforceGroupMinorMembership`, `onDocumentWritten` on
+  `chat_groups/{groupId}`. NO trigger watches `conversations/{id}`, so "a
+  conversation create disarms child safety" is stale. Create RULES still
+  bind a trusted client field to `request.auth.uid`.
 - **A callable that READS a doc before checking caller membership is an
   ORACLE, and its idempotent no-op branch is the leak** — collapse
   `!exists` + non-member into ONE uniform response, no count.
@@ -399,9 +402,7 @@ from `(err as {code?}).code` instead.
   FIRST. Module-scope `/g` regexes are stateful with `.test()`/`.exec()`
   in long-lived CF isolates. Shared word lists: compiled-in consts pinned
   by JSON-fixture parity tests on BOTH sides, never a runtime JSON load.
-- A sentinel default must be ROUND-TRIP STABLE through Firestore; the
-  Dart-side `DateTime`/`isUtc` half of that rule belongs to
-  `firebase-backend-security` (archive, 2026-08-17).
+- A sentinel default must be ROUND-TRIP STABLE through Firestore.
 
 ### LLM prompts & prompts-config
 - Compiled-in prompt edits are INERT while a Firestore `system/prompts`
@@ -445,12 +446,9 @@ from `(err as {code?}).code` instead.
   not `md5sum` (CRLF moves the md5, not the blob hash). Read
   `.claude/state/review-ledger.jsonl` with the **Grep tool** (Bash `grep` is
   refused by its own hook).
-- **A `test:*` script naming a file git does not TRACK reddens the whole CI
-  unit lane** — `run-ci-unit-tests.js` auto-discovers every `test:*` that is
-  not `test:rules*`/`test:integration:*`, so a new suite's file and its
-  package.json line must be staged in the SAME commit.
+- `run-ci-unit-tests.js` auto-discovers every `test:*` that is not
+  `test:rules*`/`test:integration:*` (see the registration bullet above).
 
 ### When to consult the archive
-Grep it when a principle here is too compressed — probe-vs-deleter
-disagreements, cascade ordering, the roster-cap saga, a TTL not reaping, a
-ticket's round chain, or whether a config value existed at some past date.
+Grep it when a principle here is too compressed, or for a ticket's round
+chain or a past config value.

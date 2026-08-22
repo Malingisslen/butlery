@@ -395,7 +395,11 @@ name which doc each end touches before approving it.
 - A per-doc visibility rule needs a SPLIT query (owner branch unfiltered, friend branch
   STRICT equality) — a "field absent" looseness re-opens the leak.
 - Judge "is swallowing this read safe" by whether the downstream safety verdict defaults
-  permissive on missing input (permissive-default = Critical). A parser/lookup that can
+  permissive on missing input (permissive-default = Critical). A `catch → return null`
+  collapses FAILED into ABSENT, and the caller then "repairs" a document that exists;
+  rethrowing and reserving null for `!exists` is the fix, but a `!exists` answer resolved
+  from CACHE is still not proof of absence, so any comment claiming null means absent "and
+  nothing else" overclaims unless it checks `metadata.isFromCache`. A parser/lookup that can
   turn 1 input into N reads needs a cap at the split site.
 - A write-coalescing guard ("once per day") keyed off a stored timestamp is inert for a doc
   whose PARSER defaults that field to `now()` on absence — check what an absent field
@@ -484,6 +488,13 @@ name which doc each end touches before approving it.
 - A standalone admin script is safe to delete once: no exports; not exported from
   `index.ts`; no `package.json` entry; no dedicated test; not named in CI/deploy config.
   Reference `firestore.rules` branches by path+rule type in comments, never line number.
+  Deleting a client symbol that a RULES comment cites as the reason a conjunct exists leaves
+  a false sentence in `firestore.rules` (and often in the rules tests): grep both for the
+  deleted symbol in the same edit, and STRIKE the clause rather than reword it — the
+  conjunct usually still stands on its own, only its stated motive died. Mirror case: a
+  comment naming the TEST that pins an invariant dies when that test is deleted along with
+  the code it sat inside — re-point only to an assertion GREPPED in the current tree (the
+  invariant often survives in the DTO/serializer test), never to where you remember it.
 
 ### Superseded
 - `activity_events` and comment-image Storage orphans (both previously open follow-ups

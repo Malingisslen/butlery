@@ -26,6 +26,9 @@ and names the allowlist, the facade option, and the local-override sentinel.
 - WHY not WHAT — code shows what, comments explain intent.
 - No doc comments on simple getters or private methods; no section dividers.
 - Comments in English. UI strings stay Swedish.
+- A wrong comment gets STRUCK, not reworded — delete the false sentence rather than write a
+  truer version; correct in place only when the true wording is directly readable from the
+  code and needs no counting.
 
 ## Documentation files
 
