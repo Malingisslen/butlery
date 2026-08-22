@@ -11,10 +11,12 @@ enum MessageSendFailure {
   clockAhead,
 
   /// Anything else — a new account inside its maturity window, the rate
-  /// limiter, a lost membership, or a network fault that SURFACES rather than
-  /// queueing offline (the ordinary offline case never reaches here at all:
-  /// `MessageMutationModule` swallows `UNAVAILABLE`/network and the send
-  /// returns normally).
+  /// limiter, a lost membership, a conversation that no longer exists, or a
+  /// network fault. The batch-commit path swallows `UNAVAILABLE`/network and
+  /// returns normally, but that swallow covers the COMMIT only; BUT-1831 left
+  /// the conversation read as a second, unswallowed failure point on the same
+  /// send. Either way the classification is the same — not `permission-denied`
+  /// means `other` — so do not turn that into a claim about what offline does.
   other,
 }
 

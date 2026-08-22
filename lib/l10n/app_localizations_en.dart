@@ -5781,8 +5781,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You cannot send messages to this person';
 
   @override
-  String get chatCouldNotSendMessage =>
-      'Could not send the message. Try again.';
+  String get chatCouldNotSendMessage => 'Could not send the message.';
 
   @override
   String get chatSendFailedDeviceClockAhead =>

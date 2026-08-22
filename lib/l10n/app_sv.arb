@@ -3934,7 +3934,7 @@
   "chatAttachments": "Bilagor",
   "chatAttachmentTypes": "Bilagor: Recept, Meny, Handlingslista, Foto",
   "chatCannotMessageNonFriend": "Du kan inte skicka meddelanden till denna person",
-  "chatCouldNotSendMessage": "Kunde inte skicka meddelandet. Försök igen.",
+  "chatCouldNotSendMessage": "Kunde inte skicka meddelandet.",
   "chatSendFailedDeviceClockAhead": "Kunde inte skicka. Telefonens klocka ligger för långt fram — kontrollera datum och tid i inställningarna.",
   "chatLoadingMessages": "Laddar meddelanden...",
   "chatNoMessages": "Inga meddelanden än",

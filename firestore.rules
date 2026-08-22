@@ -1601,9 +1601,12 @@ service cloud.firestore {
         // backstop both read a creator identity, and "records no creator" used
         // to be a reachable state that authorizeDeparture read as "no admin".
         //
-        // A create carrying `metadata: null` denies here, and test C7B pins it —
-        // it is what stops `MessageMutationModule`'s fallback materialising a
-        // conversation it does not own.
+        // A create carrying `metadata: null` denies here, and test C7B pins it.
+        // BUT-1831 deleted the branch that sent that shape deliberately, so the
+        // assertion mainly binds a tampered client now — but do not read it as
+        // unreachable by shipped code: a `merge: true` set is a CREATE when the
+        // document is absent, so any merge-set carrying a null metadata still
+        // arrives at this limb. It fails closed either way.
         //
         // CORRECTED 2026-08-13, by the probe that reddened NOTHING. The old
         // conjunct here was `!('metadata' in d) || !('creatorId' in d.metadata)
@@ -1853,8 +1856,7 @@ service cloud.firestore {
         //     live, so every one of them belongs to a test account. They are now
         //     unreadable regardless.
         //
-        // Still true: `MessageMutationModule`'s fallback create is denied, and
-        // test C7B pins it. NOT still true, and corrected above on the same
+        // NOT still true, and corrected above on the same
         // day: that the create and update rules must keep DIFFERENT
         // null-metadata spellings. The create rule is now a bare equality,
         // which denies a null cleanly, so the asymmetry the old comment

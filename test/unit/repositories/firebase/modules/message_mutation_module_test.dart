@@ -2,7 +2,7 @@
 ///
 /// Targets the sendMessage write module that handles its atomic
 /// 3-doc batch + poll mutation. Tests focus on the documented contracts
-/// (atomic write, fallback conversation construction, permission gates,
+/// (atomic write, a missing or unreadable conversation, permission gates,
 /// poll vote toggling) rather than method-call presence.
 library;
 
@@ -129,109 +129,89 @@ void main() {
       );
     });
 
+    // The SURVIVING happy path, and the assertion that guards the whole
+    // feature. The conversations update rule deny-lists `participantIds`,
+    // `createdAt`, `memberSince` and `groupId` on any diff, and separately
+    // requires `metadata.creatorId` to compare equal before and after. This
+    // send stages the conversation as a merge-set carrying
+    // `ConversationDto.toFirestore`, so every key that DTO emits is re-sent on
+    // every message. They must round-trip byte-identically or the rules refuse
+    // the batch — and because the batch is atomic, that takes the message with
+    // it.
+    //
+    // `memberSince` and `groupId` are absent from the assertions below because
+    // that DTO does not write them at all; the omission is pinned in
+    // `conversation_dto_test.dart`, through the same function this module
+    // calls, so re-asserting it here would be a second copy of one decision.
+    //
+    // No fake can rule on any of this (rules are not modelled here), so this
+    // test pins the INPUT half — that the module hands the rules back exactly
+    // what it was given. The rules half is pinned on the emulator in
+    // `conversations-rules.test.ts`.
     test(
-      'falls back to constructed conversation when readConversation returns null '
-      '— for ANY id; the direct_ check lives only in the catch, so a null RETURN '
-      'reaches the fallback whatever the id looks like. This case uses a direct_ '
-      'id because it also exercises the other-participant profile fetch',
+      'the conversation merge-set round-trips createdAt, participantIds and '
+      'metadata.creatorId unchanged',
       () async {
         final firestore = FakeFirebaseFirestore();
-        // Pre-seed the other user's public profile doc.
-        await firestore.collection('users').doc('user-b').set({
-          'displayName': 'B from profile',
-          'avatarUrl': 'https://x/b.png',
-        });
-
+        final convo = Conversation(
+          id: 'direct_user-a_user-b',
+          participantIds: const ['user-a', 'user-b'],
+          participantDisplayNames: const {'user-a': 'A', 'user-b': 'B'},
+          participantAvatarUrls: const {},
+          lastReadTimestamps: const {},
+          isGroup: false,
+          createdAt: DateTime.utc(2026, 1, 1),
+          updatedAt: DateTime.utc(2026, 1, 1),
+          metadata: const {'creatorId': 'user-a'},
+        );
         final module = _newModule(
           firestore,
-          readConversation: (_) async => null, // simulate missing conversation
+          readConversation: (id) async => id == convo.id ? convo : null,
         );
 
-        final msg = _textMessage(
-          conversationId: 'direct_user-a_user-b',
-          senderId: 'user-a',
+        // Sent by the RECIPIENT, because that is the direction the deleted
+        // fallback got wrong: it rebuilt the array as [sender, other], the
+        // opposite of the stored order, and the deny-list refuses that.
+        await module.sendMessage(
+          _textMessage(conversationId: convo.id, senderId: 'user-b'),
         );
 
-        await module.sendMessage(msg);
+        final data =
+            (await firestore.collection(_convoCollection).doc(convo.id).get())
+                .data()!;
 
-        // The fallback conversation should have been merged in with both
-        // participants' display names populated.
-        final convoDoc = await firestore
-            .collection(_convoCollection)
-            .doc('direct_user-a_user-b')
-            .get();
-        expect(convoDoc.exists, isTrue);
-        final participantNames = Map<String, dynamic>.from(
-          convoDoc.data()?['participantDisplayNames'] as Map,
-        );
-        expect(participantNames['user-a'], equals('A'));
-        expect(participantNames['user-b'], equals('B from profile'));
-
-        // The fallback must write `metadata` PRESENT and NULL. Both halves are
-        // load-bearing, and neither is obvious, which is why this is a test and
-        // not only a comment.
-        //
-        // WHY, restated for BUT-1838 — the old reason is retired and repeating
-        // it would mislead. It used to be that the conversations CREATE rule
-        // read `'creatorId' in request.resource.data.metadata`, that an `in` on
-        // a null was an evaluation error, and that this error was the only
-        // thing stopping a non-creator from materialising a group's top-level
-        // document and thereby disarming an `onDocumentCreated` child-safety
-        // trigger. The rule is now a bare
-        // `request.resource.data.metadata.creatorId == request.auth.uid`, a
-        // client cannot create a group conversation at all, and the safety gate
-        // runs before the write in the `chat_groups` callables.
-        //
-        // What still holds, and what these two assertions pin:
-        //   1. stamping `metadata: {'creatorId': senderId}` here would claim a
-        //      creator this caller is not — the second assertion catches it,
-        //      because the VALUE stops being null;
-        //   2. making `ConversationDto.toFirestore` skip a null metadata (the
-        //      standard "don't write nulls" cleanup) changes a write path the
-        //      rules govern — the first assertion catches it, because the KEY
-        //      disappears.
-        // That way round, and it is worth stating because getting it backwards
-        // is how the load-bearing one gets deleted: under (1) the key is still
-        // present so `containsKey` does not fire; under (2) the key is absent
-        // and `data()['metadata']` returns null, so `isNull` passes VACUOUSLY.
-        // Measured, not reasoned: each mutant reddens exactly one of them.
-        //
-        // AND: green here is the FAKE, not production. This payload is still
-        // refused against the real rules, now by the bare equality on create
-        // and by the update rule's `createdAt` pin when the document exists
-        // (BUT-1831). Do not read this passing test as proof the fallback
-        // works.
         expect(
-          convoDoc.data()!.containsKey('metadata'),
-          isTrue,
-          reason:
-              'the metadata KEY must be written even when null — omitting it '
-              "satisfies the rule's !(metadata in data) disjunct and lets a "
-              "non-creator's conversation create land",
+          data['participantIds'],
+          equals(['user-a', 'user-b']),
+          reason: 'the STORED creation order, not the sender-first order',
         );
         expect(
-          convoDoc.data()!['metadata'],
-          isNull,
+          (data['createdAt'] as Timestamp).toDate().toUtc(),
+          equals(DateTime.utc(2026, 1, 1)),
+          reason: 'a re-stamp here denies every send in this conversation',
+        );
+        expect(
+          (data['metadata'] as Map)['creatorId'],
+          equals('user-a'),
           reason:
-              'the fallback conversation must record NO creator — a creatorId '
-              'here makes the create land and disarms the minor-eviction '
-              'trigger for that group',
+              'the update rule compares creatorId before and after; the sender '
+              'is not the creator and must not become one',
         );
       },
     );
 
-    // The SAME invariant on a GROUP-shaped id, and it is not redundant.
-    //
-    // The test above reaches the fallback through a `direct_` id, so its payload
-    // has two participants. The payload the invariant is actually about is the
-    // one-participant shape a group id produces — `otherUserId` is parsed only
-    // from a `direct_` id, so it stays null. Without this fixture a
-    // BRANCH-CONDITIONAL disarming edit survives the whole suite: stamping a
-    // creatorId only when the id does NOT start with `direct_` is mutant (1)
-    // applied exactly where it matters, and every other test stays green.
+    // BUT-1831 replaced three tests here that pinned a fabricate-a-conversation
+    // fallback. They were sound descriptions of what the code did and are gone
+    // with it, not weakened: `firestore.rules` refuses that write on both
+    // horns, so what they certified is a shape the server declines. The
+    // `metadata` invariant they carried has two halves and two homes — the
+    // RULES half is C6B (key absent) and C7B (key present, null) in
+    // `conversations-rules.test.ts`, which a fake Firestore cannot rule on;
+    // the DTO half, that the key is emitted even when the value is null, is
+    // `conversation_dto_test.dart`.
     test(
-      'the fallback records no creator and keeps the metadata key for a '
-      'GROUP-shaped id too — the one-participant payload the squat is about',
+      'throws ResourceNotFoundException when the conversation is ABSENT, and '
+      'for a direct_ id too — the id no longer selects a softer path',
       () async {
         final firestore = FakeFirebaseFirestore();
         final module = _newModule(
@@ -239,51 +219,98 @@ void main() {
           readConversation: (_) async => null,
         );
 
-        await module.sendMessage(
-          _textMessage(conversationId: 'group-abc', senderId: 'user-a'),
+        await expectLater(
+          module.sendMessage(
+            _textMessage(
+              conversationId: 'direct_user-a_user-b',
+              senderId: 'user-a',
+            ),
+          ),
+          throwsA(isA<ResourceNotFoundException>()),
         );
-
-        final convoDoc = await firestore
-            .collection(_convoCollection)
-            .doc('group-abc')
-            .get();
-        expect(convoDoc.exists, isTrue);
-        expect(
-          convoDoc.data()!['participantIds'],
-          equals(['user-a']),
-          reason:
-              'a group id yields no otherUserId, so the fallback builds a '
-              'ONE-participant conversation — the exact shape that makes '
-              'enforceGroupMinorMembership return early',
-        );
-        expect(convoDoc.data()!['isGroup'], isFalse);
-        expect(
-          convoDoc.data()!.containsKey('metadata'),
-          isTrue,
-          reason:
-              'same invariant as the direct_ case, on the shape it matters for',
-        );
-        expect(convoDoc.data()!['metadata'], isNull);
       },
     );
 
     test(
-      'throws ResourceNotFoundException when conversation missing AND id is '
-      'not a deterministic direct_ id',
+      'writes NOTHING when the conversation is absent — the batch is atomic, so '
+      'a message must not survive a send that could not name its conversation',
       () async {
         final firestore = FakeFirebaseFirestore();
         final module = _newModule(
           firestore,
-          // Throwing read short-circuits to the not-found branch since the id
-          // doesn't start with `direct_`.
-          readConversation: (_) async => throw StateError('not found'),
+          readConversation: (_) async => null,
         );
-
-        final msg = _textMessage(conversationId: 'random-uuid-not-direct');
+        final msg = _textMessage(
+          conversationId: 'direct_user-a_user-b',
+          senderId: 'user-a',
+        );
 
         await expectLater(
           module.sendMessage(msg),
           throwsA(isA<ResourceNotFoundException>()),
+        );
+
+        final convoDoc = await firestore
+            .collection(_convoCollection)
+            .doc('direct_user-a_user-b')
+            .get();
+        expect(
+          convoDoc.exists,
+          isFalse,
+          reason: 'no conversation may be materialised by a send',
+        );
+        expect(
+          (await firestore.collection(_messagesPath).doc(msg.id).get()).exists,
+          isFalse,
+          reason: 'the message must not outlive the refusal that killed it',
+        );
+      },
+    );
+
+    // The other half of the BUT-1831 split, and the one that was the live
+    // defect: a read that FAILS is not a read that found nothing.
+    test(
+      'propagates a FAILING read unchanged, for a direct_ id too — a momentary '
+      'failure must not be laundered into "this conversation does not exist"',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(
+          firestore,
+          readConversation: (_) async => throw StateError('transient'),
+        );
+
+        // `isA<StateError>()`, not merely "it threw": the error must arrive
+        // WRAPPED IN NOTHING. `MessageSendErrorMapper.classify` reads the
+        // concrete `FirebaseException` to tell a clock-skew denial from
+        // anything else, so a repackaging here would silently downgrade every
+        // failed send to the generic message.
+        await expectLater(
+          module.sendMessage(
+            _textMessage(
+              conversationId: 'direct_user-a_user-b',
+              senderId: 'user-a',
+            ),
+          ),
+          throwsA(isA<StateError>()),
+        );
+      },
+    );
+
+    test(
+      'a failing read on a NON-direct id propagates too — the surviving '
+      'ResourceNotFoundException is now the absence signal only',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final module = _newModule(
+          firestore,
+          readConversation: (_) async => throw StateError('transient'),
+        );
+
+        await expectLater(
+          module.sendMessage(
+            _textMessage(conversationId: 'random-uuid-not-direct'),
+          ),
+          throwsA(isA<StateError>()),
         );
       },
     );

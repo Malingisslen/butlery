@@ -111,6 +111,13 @@ class _ChatInputSectionState extends State<ChatInputSection> {
   }
 
   Future<void> _handleSendMessage() async {
+    // BUT-1831: the entry guard exists because of the retry action, not the
+    // send button. A SnackBar lives on the app-level `ScaffoldMessenger`, above
+    // the Navigator, so it outlives this route — tapping "Försök igen" after
+    // leaving the chat re-enters here on a disposed State and touches
+    // `_textController` before any of the `mounted` checks further down.
+    if (!mounted) return;
+
     final text = _textController.text.trim();
     if (text.isEmpty) {
       return;
@@ -194,11 +201,22 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       }
 
       if (!mounted) return;
-      SnackBarUtils.showError(
+      // BUT-1831: with a retry action, because the text is still in the
+      // controller — `_textController.clear()` sits after the await inside the
+      // try above, so a throw never reaches it. `onRetry` re-entering
+      // `_handleSendMessage` therefore re-reads the same text; it needs no
+      // captured copy, and capturing one would go stale the moment the user
+      // edits the field before tapping.
+      //
+      // The strings carry no "försök igen" of their own any more — the action
+      // label is `commonRetry`, and saying it twice read as an instruction to
+      // do by hand what the button now does.
+      SnackBarUtils.showErrorWithRetry(
         context,
         failure == MessageSendFailure.clockAhead
             ? context.l10n.chatSendFailedDeviceClockAhead
             : context.l10n.chatCouldNotSendMessage,
+        onRetry: _handleSendMessage,
       );
     }
   }

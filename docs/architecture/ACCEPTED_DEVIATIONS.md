@@ -1287,6 +1287,37 @@ rule for "any colon blanks the field". BUT-1819, 2026-08-10
 
 ## Messaging — the conversation roster (2026-08-12)
 
+> **SUPERSEDED IN PART, 2026-08-22 (BUT-1831).** The section below describes
+> `MessageMutationModule`'s fabricate-a-conversation fallback in the PRESENT tense and
+> counts two of its Dart tests as pinning an invariant. **That branch and those two tests
+> are deleted.** The fallback's write is refused by `firestore.rules` on both horns as the
+> rules stand today — update deny-lists the re-stamped `createdAt`, create requires
+> `metadata.creatorId == request.auth.uid`. Read every sentence below about "the module
+> falls through to its fallback" as history.
+>
+> **What still stands, unchanged:** the create rule's behaviour on `metadata: null`, and
+> test C7B that pins it. What changed is only WHO sends that shape. It is no longer sent
+> deliberately by our own client — but it is not unreachable either: a `merge: true` set is
+> a CREATE when the document is absent, so a merge-set carrying a null metadata still
+> arrives at that limb. It fails closed.
+>
+> **What is NO LONGER pinned where this section says.** The claim "the invariant is
+> THREE-sided, and all three sides are pinned as of this commit" is now false as written.
+> Side 1 (the rule denies `metadata: null`) is still C7B, and C6B covers the key being
+> absent. Side 2 (the fallback records no `creatorId`) has no subject any more — there is
+> no caller constructing a creator-less conversation on that path, so there is nothing left
+> to assert. Side 3 (`ConversationDto.toFirestore` emits the KEY even when the value is
+> null) lives in `conversation_dto_test.dart`, untouched by this ticket — what changed is
+> that the duplicate in `message_mutation_module_test.dart` was deleted. It sits there as a
+> control line inside the BUT-1838 test, so it survives only while nobody trims that control.
+>
+> **The BUT-1830 squat this section describes is separately stale**, and not by this
+> ticket: `directIdBinds` (BUT-1838) requires `participantIds.size() == 2` and an id
+> derived from the pair, so the one-participant create at a known group id described below
+> is refused. `firestore.rules` says so at that limb. Left in place rather than rewritten,
+> per the rule that a decision record is superseded and not deleted.
+
+
 ### The bootstrap branch, and why it cannot just be tightened
 
 `conversations/{conversationId}/participants/{participantId}` had **no `match` block at

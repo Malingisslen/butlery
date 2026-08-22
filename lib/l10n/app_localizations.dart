@@ -9718,7 +9718,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatCouldNotSendMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte skicka meddelandet. Försök igen.'**
+  /// **'Kunde inte skicka meddelandet.'**
   String get chatCouldNotSendMessage;
 
   /// No description provided for @chatSendFailedDeviceClockAhead.

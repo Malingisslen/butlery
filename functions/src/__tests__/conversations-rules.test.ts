@@ -88,6 +88,10 @@ function directId(a: string, b: string): string {
 // exists()-guarded and fails OPEN to "adult", so an unseeded uid is a valid
 // adult DM target — and a per-test uid keeps every create test on its OWN
 // document id, so an earlier ALLOW never turns a later create into an update.
+//
+// BUT-1831 also uses one as an authenticated ACTOR (`authenticatedContext`),
+// not only as a DM target. Sound on paths where no conjunct reads
+// `users/{uid}` — check that before reusing it as an actor on a rule that does.
 function peer(tag: string): string {
   return `conv-peer-${tag}`;
 }
@@ -330,9 +334,8 @@ test("conversations: a create with no metadata key at all is denied", async () =
   );
 });
 
-// C7B: DENY — a create carrying `metadata: null`, which is the ONLY shape the
-// non-creator fallback writer sends, and the shape this whole suite never put
-// through the CREATE rule (C1-C5 omit the key, C6/C7 send a map, and every
+// C7B: DENY — a create carrying `metadata: null`, the shape this whole suite
+// never put through the CREATE rule (C1-C5 omit the key, C6/C7 send a map, and every
 // `conversationDtoPayload(null)` write is a merge-set onto a seeded document,
 // i.e. an update).
 //
@@ -343,18 +346,10 @@ test("conversations: a create with no metadata key at all is denied", async () =
 // `in` on a null is a CEL EVALUATION ERROR, which denies. The named equality
 // conjunct below it is never reached.
 //
-// That evaluation error is currently the only thing stopping a NON-CREATOR from
-// materialising a group's top-level conversation document THROUGH THE APP. It is
-// not a security bound — a hand-rolled create carrying a real metadata map is
-// allowed today and ends the window irreversibly (BUT-1830). What it stops is
-// our own client: `MessageMutationModule` falls through to a fallback that builds
-// `Conversation(participantIds: [senderId], isGroup: false)` with no metadata and
-// stages a top-level create. If it landed, `enforceGroupMinorMembership` would
-// return early on it — that payload trips BOTH halves of the trigger's guard
-// (`isGroup: false` AND a single participant), so do not read the flag alone as
-// sufficient: a false flag with >2 participants does not return early — and
-// `onDocumentCreated` cannot fire
-// twice, so the child-safety cut would never run for that group at all.
+// BUT-1831 deleted the `MessageMutationModule` fallback that built a
+// creator-less `Conversation` with no metadata and staged a top-level create.
+// The corrected account of who can still reach this limb lives at the rule
+// itself; do not restate it here, where nothing keeps the copy honest.
 //
 // WHAT THE MUTATION PROBE ACTUALLY SAYS, measured 2026-08-13 against the
 // BUT-1838 rule and recorded here because the paragraph above is inherited from
@@ -372,12 +367,13 @@ test("conversations: a create with no metadata key at all is denied", async () =
 //     C6B (74/77).
 //
 // So the ASSERTION is load-bearing and the deny is attributable — the emulator
-// prints `Null value error. for 'create' @ L1565` — but the stated MECHANISM has
-// changed. The `metadata: null` fallback from `MessageMutationModule` is now
-// refused by the presence requirement, not only by a CEL accident, which is a
-// stronger bound: a CEL accident binds our own client, a presence requirement
-// binds a tampered one too. Reported against the rule comment, which still
-// claims harmonising the spellings would disarm this.
+// names the `allow create` limb of `match /conversations/{conversationId}` (it
+// prints a line number, which moves; cite the match pattern) — but the stated
+// MECHANISM has changed. The shape is now refused by the presence requirement,
+// not only by a CEL accident, which is a stronger bound: a CEL accident binds
+// our own client, a presence requirement binds a tampered one too. The rule
+// comment has since been corrected and no longer claims harmonising the
+// spellings would disarm this.
 //
 // BUT-1838, 2026-08-13 — the ASSERTION is untouched (still DENY) and the reason
 // is untouched (still the CEL evaluation error on a null `metadata`), but the
@@ -577,6 +573,52 @@ const NO_METADATA_INJECT_GROUP = `c-no-metadata-inject-${RUN}`;
 const FIXTURE_CREATED_AT = new Date("2026-01-15T09:00:00.000Z");
 const FIXTURE_PARTICIPANTS = [ADULT_UID, STRANGER_UID, FRIEND_UID];
 
+// BUT-1831: a DIRECT conversation, which the group fixtures above cannot stand
+// in for, for two reasons that survive independently:
+//   * FIDELITY — C11D stages what a RECIPIENT's client sends when a merge-set
+//     rebuilds the array: TWO elements, opposite order to the stored one.
+//     `createDirectConversation` writes [user1Id, user2Id], and its
+//     existence-read fall-through can still merge-set over it; the deleted
+//     `sendMessage` fallback used to as well. A three-person group fixture
+//     cannot express that shape at all.
+//   * CONTROL — C11E needs a document no other test writes. Share it with the
+//     metadata fixtures and any write of theirs changes what C11E asserts
+//     against, at which point the ALLOW control stops being a control.
+// Creation order here is [initiator, recipient].
+//
+// `directIdBinds` is NOT the reason, however much it looks like one: it is
+// called only from `allow create`, so it never runs on C11D or C11E, which are
+// updates against a rules-disabled seed. An earlier version of this comment
+// said otherwise, and a reader who believed it would conclude the update path
+// is already id-bound and that `participantIds` is redundant in the deny-list
+// — which is the exact regression C11D exists to catch.
+//
+// BOTH uids are dedicated, per the `peer()` convention above, and the id
+// carries RUN. A direct id is a pure function of its two participants, so any
+// two fixtures naming the same pair ARE the same document — measured: the
+// first draft reused ADULT_UID/STRANGER_UID, `seedMessageFixtures` seeds
+// `MSG_DIRECT` at that same pair and runs after `seedUpdateFixtures`, and the
+// overwrite made the ALLOW control deny. C11D would have stayed green on its
+// own and pinned nothing, which is the whole failure mode this trio exists to
+// close.
+const DM_INITIATOR = peer(`dm-init-${RUN}`);
+const DM_RECIPIENT = peer(`dm-recip-${RUN}`);
+const DIRECT_PARTICIPANTS = [DM_INITIATOR, DM_RECIPIENT];
+const DIRECT_CONVO = `direct_${DM_INITIATOR}_${DM_RECIPIENT}`;
+
+function directConvoPayload(
+  extra: Record<string, unknown> = {}
+): Record<string, unknown> {
+  return {
+    participantIds: [...DIRECT_PARTICIPANTS],
+    createdAt: FIXTURE_CREATED_AT,
+    updatedAt: new Date(),
+    isGroup: false,
+    metadata: { creatorId: DM_INITIATOR },
+    ...extra,
+  };
+}
+
 // The payload a real client actually sends, mirroring
 // ConversationDto.toFirestore (lib/repositories/firebase/dtos/conversation_dto.dart
 // :128-145) key for key, with lastMessage mirroring MessageDto.toMap
@@ -665,6 +707,9 @@ async function seedUpdateFixtures(): Promise<void> {
       isGroup: true,
       metadata: null,
     });
+    // BUT-1831: the direct conversation C11D/C11E use. DM_INITIATOR created
+    // it, so the stored array order is [DM_INITIATOR, DM_RECIPIENT].
+    await db.doc(`conversations/${DIRECT_CONVO}`).set(directConvoPayload());
   });
 }
 
@@ -756,6 +801,60 @@ test("conversations: a conversation whose stored metadata is null is still updat
       .firestore()
       .doc(`conversations/${NULL_METADATA_GROUP}`)
       .set(conversationDtoPayload(null), { merge: true })
+  );
+});
+
+// C11C: DENY — a re-stamped `createdAt`, the gap BUT-1831 named. C11 and C11B
+// hold FIXTURE_CREATED_AT on BOTH the fixture and the payload, so neither of
+// them moves the key; they remain sound for the metadata cases they describe.
+// The call is otherwise identical to C11B's, which is what makes this deny
+// attributable: C11B is its single-variable ALLOW control.
+test("conversations: a merge-set that re-stamps createdAt is denied, even when metadata round-trips untouched", async () => {
+  const ctx = env.authenticatedContext(STRANGER_UID);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${NULL_METADATA_GROUP}`)
+      .set(
+        conversationDtoPayload(null, {
+          createdAt: new Date("2026-02-20T09:00:00.000Z"),
+        }),
+        { merge: true }
+      )
+  );
+});
+
+// C11D: DENY — the RECIPIENT's reversed participantIds, on a direct
+// conversation. `createdAt` is held at the fixture instant on purpose: this
+// test must fail for the array and nothing else, or it duplicates C11C.
+// Sent as the recipient, because that is the only party whose client produced
+// the opposite order.
+test("conversations: the recipient cannot send back participantIds in the opposite order", async () => {
+  const ctx = env.authenticatedContext(DM_RECIPIENT);
+  await assertFails(
+    ctx
+      .firestore()
+      .doc(`conversations/${DIRECT_CONVO}`)
+      .set(
+        directConvoPayload({
+          participantIds: [DM_RECIPIENT, DM_INITIATOR],
+        }),
+        { merge: true }
+      )
+  );
+});
+
+// C11E: ALLOW — the control. Same document, same sender, same everything, with
+// the stored order kept. Without it C11D proves only that SOMETHING about a
+// recipient writing to a direct conversation is refused, which is the failure
+// mode the whole BUT-1831 gap was made of.
+test("conversations: the same recipient write SUCCEEDS when participantIds keeps the stored order", async () => {
+  const ctx = env.authenticatedContext(DM_RECIPIENT);
+  await assertSucceeds(
+    ctx
+      .firestore()
+      .doc(`conversations/${DIRECT_CONVO}`)
+      .set(directConvoPayload(), { merge: true })
   );
 });
 

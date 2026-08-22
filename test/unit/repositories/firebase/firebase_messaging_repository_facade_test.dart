@@ -10,17 +10,22 @@
 /// Conversation entities.
 library;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/repositories/firebase/firebase_messaging_repository.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 
+// Widened from FakeFirebaseFirestore for BUT-1831: the error-injection test
+// passes a delegating wrapper, and the repository takes the interface anyway.
 FirebaseMessagingRepository _repo(
-  FakeFirebaseFirestore firestore, {
+  FirebaseFirestore firestore, {
   String authedUserId = 'alice',
 }) {
   final mockAuth = FakeAuthRepository();
@@ -210,4 +215,90 @@ void main() {
       },
     );
   });
+
+  // BUT-1831: the ONLY place the root-cause half of the fix is bound.
+  //
+  // `_readTopLevelConversation` is private, so restoring the try/catch this
+  // change removed leaves the whole tree green while the defect returns: a
+  // momentary read
+  // failure becomes "conversation does not exist", `sendMessage` reports
+  // ResourceNotFound, and `MessageSendErrorMapper.classify` never sees the raw
+  // FirebaseException it needs to tell a clock-skew denial from anything else.
+  //
+  // Failure is injected at `collection()` rather than at `.get()` because
+  // CollectionReference and Query are sealed in cloud_firestore 6.x and cannot
+  // be implemented — the same reason and the same shape as `_FlakyFirestore`
+  // in firebase_ingredient_repository_offline_degrade_test.dart.
+  group('BUT-1831 conversation read', () {
+    test(
+      'a FAILING read surfaces the raw FirebaseException, not ResourceNotFound',
+      () async {
+        final repo = _repo(_ThrowingOnConversations(FakeFirebaseFirestore()));
+
+        await expectLater(
+          repo.sendMessage(
+            Message.text(
+              conversationId: 'direct_alice_bob',
+              senderId: 'alice',
+              senderDisplayName: 'Alice',
+              content: 'hej',
+            ),
+          ),
+          throwsA(
+            allOf(
+              isA<FirebaseException>(),
+              isNot(isA<ResourceNotFoundException>()),
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'an ABSENT conversation is still ResourceNotFound — the two answers stay '
+      'distinguishable, which is the whole point of removing the catch',
+      () async {
+        final repo = _repo(FakeFirebaseFirestore());
+
+        await expectLater(
+          repo.sendMessage(
+            Message.text(
+              conversationId: 'direct_alice_bob',
+              senderId: 'alice',
+              senderDisplayName: 'Alice',
+              content: 'hej',
+            ),
+          ),
+          throwsA(isA<ResourceNotFoundException>()),
+        );
+      },
+    );
+  });
+}
+
+/// Overrides `collection()` only: `conversations` throws, anything else goes
+/// to a real fake. Every OTHER member falls to `noSuchMethod`, which on a
+/// non-Mock class is `Object`'s and throws `NoSuchMethodError` — fine here
+/// because the intended throw happens first, but do not reuse this as a
+/// general passthrough. See the group above for why `collection()` is the seam.
+class _ThrowingOnConversations implements FirebaseFirestore {
+  _ThrowingOnConversations(this._delegate);
+
+  final FirebaseFirestore _delegate;
+
+  @override
+  CollectionReference<Map<String, dynamic>> collection(String collectionPath) {
+    if (collectionPath == 'conversations') {
+      throw FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'permission-denied',
+        message: 'injected',
+      );
+    }
+    return _delegate.collection(collectionPath);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      _delegate.noSuchMethod(invocation);
 }

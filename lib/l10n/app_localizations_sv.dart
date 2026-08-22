@@ -5788,8 +5788,7 @@ class AppLocalizationsSv extends AppLocalizations {
       'Du kan inte skicka meddelanden till denna person';
 
   @override
-  String get chatCouldNotSendMessage =>
-      'Kunde inte skicka meddelandet. Försök igen.';
+  String get chatCouldNotSendMessage => 'Kunde inte skicka meddelandet.';
 
   @override
   String get chatSendFailedDeviceClockAhead =>

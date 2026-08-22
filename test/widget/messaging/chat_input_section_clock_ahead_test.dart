@@ -51,8 +51,15 @@ class _MockIdTokenResult extends Mock implements IdTokenResult {}
 const _clockAheadMessage =
     'Kunde inte skicka. Telefonens klocka ligger för långt fram — '
     'kontrollera datum och tid i inställningarna.';
-const _genericMessage = 'Kunde inte skicka meddelandet. Försök igen.';
+const _genericMessage = 'Kunde inte skicka meddelandet.';
 const _deniedEventName = 'message_send_denied_clock_ahead';
+
+/// BUT-1831: the snackbar's ACTION label, not part of either sentence.
+/// `chatCouldNotSendMessage` lost its trailing "Försök igen." when the action
+/// arrived, because saying it twice reads as an instruction to do by hand what
+/// the button does. `chatSendFailedDeviceClockAhead` never carried that
+/// sentence and is unchanged. A literal again, for the reason stated above.
+const _retryLabel = 'Försök igen';
 
 void main() {
   late _MockAuthRepository authRepository;
@@ -200,4 +207,139 @@ void main() {
     );
     expect(find.text(_clockAheadMessage), findsNothing);
   });
+
+  testWidgets(
+    'a failed send keeps the typed text AND offers a retry that resends it',
+    (tester) async {
+      when(
+        () => user.getIdTokenResult(true),
+      ).thenAnswer((_) async => tokenIssuedAt(t0));
+
+      // Two separate promises to the user, and they fail to different bugs.
+      //
+      // The text: `_textController.clear()` sits AFTER the await inside the
+      // try, so a throw skips it. Moving it before the await — or into a
+      // `finally` — clears the field on a failure that never sent anything,
+      // and no other test here would notice.
+      //
+      // The retry: without an `onRetry` the snackbar has no action at all, and
+      // the user is told what went wrong with nothing to do about it.
+      var attempts = 0;
+      await withClock(
+        Clock.fixed(t0.add(const Duration(minutes: 10))),
+        () async {
+          await tester.pumpWidget(
+            subject(
+              onSend: () async {
+                attempts++;
+                throw denied();
+              },
+            ),
+          );
+          await typeAndSend(tester);
+          await tester.pumpAndSettle();
+
+          expect(attempts, 1);
+          expect(find.text(_genericMessage), findsOneWidget);
+          expect(
+            tester
+                .widget<TextField>(find.byType(TextField).first)
+                .controller!
+                .text,
+            'hej hej',
+            reason: 'a send that threw must leave the message in the field',
+          );
+
+          await tester.tap(find.text(_retryLabel));
+          await tester.pumpAndSettle();
+        },
+      );
+
+      expect(
+        attempts,
+        2,
+        reason:
+            'the retry action must re-enter the send, not merely dismiss the '
+            'snackbar',
+      );
+    },
+  );
+
+  testWidgets('a SUCCESSFUL send clears the field and shows no error', (
+    tester,
+  ) async {
+    // The other side of the invariant above. Without it, a "fix" that simply
+    // never clears the controller would satisfy the retry test and quietly
+    // leave every sent message sitting in the box.
+    //
+    // The `attempts` assertion is what stops this test being all-negative. The
+    // send IconButton is ALWAYS in the tree — only its `onPressed` is nulled
+    // when `isComposing` is false — so `find.byIcon(Icons.send)` never throws
+    // and a tap on the disabled button is a silent no-op. Every other
+    // expectation below is satisfied by a send that never happened.
+    var attempts = 0;
+    await withClock(Clock.fixed(t0), () async {
+      await tester.pumpWidget(subject(onSend: () async => attempts++));
+      await typeAndSend(tester);
+      await tester.pumpAndSettle();
+    });
+
+    expect(attempts, 1, reason: 'the send must actually have been attempted');
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller!.text,
+      isEmpty,
+    );
+    expect(find.text(_genericMessage), findsNothing);
+    expect(find.text(_retryLabel), findsNothing);
+  });
+
+  testWidgets(
+    'tapping the retry AFTER leaving the chat does nothing and does not throw',
+    (tester) async {
+      // A SnackBar lives on the app-level ScaffoldMessenger, above the
+      // Navigator, so it outlives the route that raised it. Without the entry
+      // guard this re-enters `_handleSendMessage` on a disposed State and
+      // reads `_textController` before any `mounted` check — a send from a
+      // dead State. Found by review, not by the tests above: every one of them
+      // taps the action while the widget is still mounted.
+      when(
+        () => user.getIdTokenResult(true),
+      ).thenAnswer((_) async => tokenIssuedAt(t0));
+
+      var attempts = 0;
+      await withClock(
+        Clock.fixed(t0.add(const Duration(minutes: 10))),
+        () async {
+          await tester.pumpWidget(
+            subject(
+              onSend: () async {
+                attempts++;
+                throw denied();
+              },
+            ),
+          );
+          await typeAndSend(tester);
+          await tester.pumpAndSettle();
+          expect(attempts, 1);
+          expect(find.text(_retryLabel), findsOneWidget);
+
+          // Leave the chat. The snackbar and its action survive.
+          await tester.pumpWidget(
+            createLocalizedTestApp(child: const SizedBox.shrink()),
+          );
+          await tester.pump();
+
+          await tester.tap(find.text(_retryLabel));
+          await tester.pumpAndSettle();
+        },
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(
+        attempts,
+        1,
+        reason: 'a retry from a dead route must not send anything',
+      );
+    },
+  );
 }
