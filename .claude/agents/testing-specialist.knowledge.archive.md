@@ -24268,3 +24268,521 @@ and retried rather than forcing.
 
 Verdict: pass, 0 blocking (2 non-blocking: the `DA:244,0` success arm, Medium; the batch-commit
 swallow, Low and already declared in the mapper's docstring).
+
+### 2026-08-22 — BUT-1915 review: masking a raw uid at four participant throw sites (trigger: review of a staged 4-file diff)
+
+SCOPE. `lib/services/realtime/modules/menu_participants.dart` and `recipe_participants.dart`
+each had two `l.validationUserNotParticipant(userId)` throw sites passing a RAW Firebase uid;
+all four now pass `userId.maskedUserId`. Two new tests per suite, plus the menu suite's
+existing Swedish-message assertion updated from `owner_123` to `owner_12...`.
+
+HARM PATH, verified by reading rather than assumed. `MenuOperationError.toString()` is
+`'MenuOperationError(${operation.name}): $message'` and `RecipeOperationError.toString()` is
+the same shape; `resourceId` is NOT rendered. `realtime_participant_manager.dart` catches and
+calls `AppLogger.error('...', e)`; `AppLogger._logToCrashlytics` sanitizes only the MESSAGE
+argument and hands the error OBJECT to `recordError`, which sends `exception.toString()`.
+`logger.dart`'s own docstring already names BUT-1915 as its measured example. So the message
+IS observed off-device — which is why this one owes a fixture, unlike the BUT-1897 cases where
+the string died in-method.
+
+Q1 — CAN THE NEW TESTS FAIL FOR THEIR STATED REASON. Yes. Fixture
+`aBcDeFgHiJkLmNoPqRsTuVwXyZ01` (28 chars). `LogSanitizer.maskUserId` returns `<first8>...`
+above 8 chars and the input UNCHANGED at 8 or fewer, so a short fixture would make
+`isNot(contains(uid))` fail outright rather than pass vacuously — the comment's "would prove
+nothing" is loose in wording but the mechanism it cites is exact and is the clause that stops
+a future maintainer from "simplifying" the fixture to `user_123`. Not filed. Routing checked
+against the builders: both default `ownerId = 'owner_123'` with an EMPTY participants map, so
+both fixtures reach the not-participant branch. Recipe's `removeParticipant` checks owner
+FIRST, and the fixture is deliberately not the owner.
+
+Q2 — `error.message` AND `error.toString()` ARE ONE OBSERVABLE, NOT TWO. `toString()` is
+`prefix + $message` with no other field interpolated, so the `toString` assertion is entailed
+by the message assertion and cannot fail alone. Kept as documentation of the sink shape
+(`recordError` sends `toString()`), not counted as coverage. Non-blocking, not filed.
+
+Q3 — `contains('aBcDeFgH...')` IS THE REAL DISCRIMINATOR, and it is a hardcoded literal rather
+than a call to the function under test (no circular determinism). It survives no partial mask:
+a raw id has no `...`; a 16-char-prefix mask yields `aBcDeFgHiJkLmNoP...` which does NOT
+contain the 8-char substring; a blanket `[redacted]` fails it; a wrong masker (`maskEmail`)
+fails it. It also route-checks — if recipe's owner-first guard had swallowed the fixture, the
+message would be `Kan inte ta bort receptägaren` and only this positive assertion would redden.
+
+Q4 — BRANCHES LEFT UNASSERTED. (a) The empty-`userId` throws use
+`validationUserIdCannotBeEmpty`, which interpolates nothing, so there is no masking obligation
+there; correctly untested for this ticket. (b) Recipe's owner-protection throw that fires
+BEFORE the participant check is pinned by the pre-existing "should provide error messages in
+Swedish" test (`Kan inte ta bort receptägaren`), and the new fixture deliberately avoids it.
+(c) THE REAL GAP, non-blocking and outside this diff: `addParticipant` in BOTH files throws
+`validationUserAlreadyParticipant(userDisplayName)` with a RAW display name, while the
+`AppLogger.info` two lines below masks the same value with `.maskedName`. Identical class,
+identical sink, and BUT-1915's own rationale reads verbatim for it. The two existing duplicate
+tests assert only `throwsA(isA<...>())`, so nothing would catch a fix either way. Follow-up
+ticket, not a review edit.
+
+ALSO SEEN (not testing): `MenuParticipants.validateParticipantState` returns hardcoded ENGLISH
+strings (`'Menu has no owner'`) where `RecipeParticipants` uses l10n keys; the menu suite's
+assertion is `errors.any((e) => e.contains('owner'))`, which is satisfied by either language.
+
+INDEX CHECK AT VERDICT TIME: `git diff --numstat` over all four reviewed paths returned
+nothing, so worktree == index and the verdict is against the copy the parent will commit.
+`git diff --cached --stat`: 108 insertions / 6 deletions across the four.
+
+Verdict: pass, 0 blocking (1 non-blocking follow-up: the raw `userDisplayName` twin at the two
+`addParticipant` throw sites).
+
+### 2026-08-22 — BUT-1915 re-review round 2 (trigger: parent acted on my own non-blocking follow-up inside the diff)
+
+Scope: `lib/services/realtime/modules/{menu,recipe}_participants.dart` line 46 now passes
+`userDisplayName.maskedName` to `validationUserAlreadyParticipant`, plus one new test per
+suite (`addParticipant masks an existing participant display name`, fixture
+`'Annika Bergström'`).
+
+**Q1 — non-vacuous by construction?** Yes, verified end to end rather than assumed.
+`RealtimeMenuBuilder`/`RealtimeRecipeBuilder` default `participants = {}` and
+`ownerId = 'owner_123'` (owner deliberately NOT in the map), so the first
+`addParticipant(realisticUid, …)` clears the empty-id and empty-name guards, hits
+`isParticipant == false`, and `RealtimeMenu.addParticipant` does
+`updatedParticipants[userId] = permission` (recipe goes through
+`RealtimeParticipants.addParticipant`). Second call therefore lands in the duplicate branch.
+Route is over-determined in the safe direction: it is the ONLY `MenuOperationError` reachable
+with a non-empty id and name, and the recipe's 50-cap sits BELOW the duplicate check with
+length 1. Had the seat silently failed, no throw → `fail()` inside the `try` → caught → the
+`e as XOperationError` cast throws → RED, not a vacuous green.
+
+**Q2 — is `'An***'` discriminating?** Yes, against every realistic partial break. Killed:
+`.maskedName` removed (raw name, both assertions fail); `maskUserId` ('Annika B...', 16 > 8);
+`maskEmail` ('***@invalid'); `maskPhoneNumber` ('Anni***tröm'); `maskIdentifiers` (IDENTITY —
+no 20-28 alnum token in 'Annika'/'Bergstr'/'m', so the raw name survives); substring(0,1) and
+substring(0,3) off-by-ones ('A***' / 'Ann***' — neither contains 'An***'). Survives exactly
+one class: a mask that elides only the LEADING token and leaves a tail ('An*** Bergström'),
+because `isNot(contains('Annika Bergström'))` is satisfied by any elision. Filed non-blocking:
+add `isNot(contains('Bergström'))`.
+
+**Q3 — non-ASCII.** `od -c` on the fixture line: `... B e r g s t r 303 266 m` = UTF-8 C3 B6,
+i.e. NFC U+00F6, identical in both files; `grep -P '\x{00F6}'` matches, control-byte sweep
+clean, LF endings. The 'ö' is at index 13 and `maskDisplayName` slices `substring(0, 2)` =
+'An' (ASCII, no surrogate/combining risk). NFC-vs-NFD cannot bite because `displayName` is ONE
+Dart const used as both the input and the `isNot(contains(...))` operand. Both files already
+carried Swedish literals before this round ('Kan inte ta bort receptägaren', 'Ägare: Test
+Owner'), so encoding was already established. `dart format` unchanged (0 changed).
+
+**Q4 — regressions.** None. Only two `lib/` call sites of `validationUserAlreadyParticipant`
+exist and both are fixed (grep by name, not path — no third sibling). No test anywhere pins
+'redan deltagare' / 'already a participant', and the two exact-message tests that DO exist
+assert other branches ('Användaren är inte deltagare: owner_12...', 'Kan inte ta bort
+receptägaren'), untouched by line 46.
+
+**Live-path check (the premise the whole ticket rests on), traced for the ADD route
+specifically:** `RealtimeParticipantManager.addParticipant` → `_menuService.addParticipant` →
+`MenuParticipants.addParticipant` throws → caught at `realtime_participant_manager.dart:79` →
+`AppLogger.error('❌ Failed to add participant: ${userDisplayName.maskedName}', e)` — the
+message arg masks, the OBJECT does not — → `_logToCrashlytics` → `recordError`, which sends
+`exception.toString()`, and `MenuOperationError.toString()` is
+`'MenuOperationError(${operation.name}): $message'`. So the leak was live on the same sink as
+the two uid leaks, and the comment's "the `AppLogger.info` line already masked the same value"
+is true in BOTH the module (line 52) and the manager (line 64).
+
+**Two comment defects, applied myself (zero-risk, test-side, comment-only).** The menu test's
+new block carried two positional counts: "The same leak one line up" (resolves to no true line
+pair — the display-name throw is at 46, the two previously-tested ones at 76 and 114) and "the
+`AppLogger.info` line six lines below" (the statement starts at 51, five below; only its masked
+interpolation is at 52). Struck the first; replaced the second with "in the same method", which
+is directly readable and needs no count. The recipe twin already worded it countlessly ("the
+`AppLogger.info` line below"), so the repair makes menu match recipe. Re-ran: format clean, no
+line I touched exceeds 80, `flutter test` on the menu suite 40/40 green including the new test.
+
+**Staging state at verdict time — the round's real finding.** All four files are `MM`.
+`git show :<path>` proves the INDEX still holds the PRE-FIX bytes:
+`validationUserAlreadyParticipant(userDisplayName)` unmasked in both production files, and
+zero occurrences of `An***` or the new test name in either staged test file. `git diff
+--numstat` (index vs worktree) = 1/1, 1/1, 30/0, 28/0. The previous round's archive entry
+closed with "worktree == index"; the fix round edited the worktree and never re-staged. A
+commit from the current index would ship the leak AND none of the tests. Named as a hard
+precondition, not counted as a blocking finding, per the fix-loop convention.
+
+Verdict: pass, 0 blocking (2 non-blocking: pin the surname absent; re-stage before commit).
+
+### 2026-08-22 — BUT-1915 FINAL re-review (trigger: parent re-review after two optional items + two gate findings applied)
+
+Files re-Read: `lib/services/realtime/modules/menu_participants.dart`,
+`lib/services/realtime/modules/recipe_participants.dart`, `lib/core/utils/logger.dart`
+(new to the diff), and both `*_participants_test.dart`. 67/67 green over the two suites;
+`git diff --numstat` over all five returned nothing and all five are staged.
+
+**The replacement comment is TRUE, verified against the sink rather than accepted.**
+`_sanitizeForCrashlytics` = `LogSanitizer.maskIdentifiers(message)`; `_logToCrashlytics`
+sanitizes only the message and passes `error` to `recordError` untouched (logger.dart
+332-343). The struck predecessor ("a human name is not a 20-28 character alphanumeric
+token") was false in general — `maskIdentifiers`' rule 2 is
+`[a-zA-Z0-9]{20,28}` with lookarounds, and a single 21-letter Swedish surname matches it;
+it was only true of THIS fixture ('Annika Bergström' splits into 6- and 4-char ASCII runs
+because 'ö' breaks the class). Replacing a fixture-true clause with the mechanism was the
+right repair.
+
+**Two routes, opposite answers — the thing a single-file read misses.** Both realtime
+services' `_handleError` calls `AppLogger.error('🔥 XOperationError: $message',
+originalError)`, so the exception OBJECT reaches `recordError` from inside the SERVICE, with
+no ViewModel in the chain (`RealtimeParticipantManager`, which the menu comment names, is
+real — constructed at `realtime_menu_viewmodel.dart:66` — but is not the only route, and no
+production consumer of `RealtimeRecipeService` exists at all, so the recipe suite's claim
+would have failed a VM-only reachability check while being true). The same `_handleError`
+also interpolates `'$e'` into the MESSAGE arg via
+`errorCouldNotPerformOperation(operationName, '$e')`, and that string DOES pass through
+`maskIdentifiers`. So "maskIdentifiers never runs on this path" is true ONLY as scoped to
+the object route — which the comment's own colon-clause scopes it to. Not filed; the
+conclusion holds on both routes anyway, since `maskIdentifiers` is the identity on the name.
+
+**The added `isNot(contains('Bergström'))` closes the named class, and its marginal value is
+smaller than it looks.** `maskDisplayName` returns `'${name.substring(0,2)}***'` for the
+WHOLE string, so 'An*** Bergström' can only come from a mutant; the assertion kills it.
+But `log_sanitizer_test.dart` already pins both maskers by EXACT EQUALITY
+(`maskDisplayName('Anna Svensson') == 'An***'`, `maskUserId('abcdefghijk') == 'abcdefgh...'`),
+so every tail-leaking MASKER mutant was already dead there. What the call-site tail pin
+uniquely catches is a hand-rolled partial mask written at the throw. Surviving variant,
+named and deliberately NOT filed: `'An***gström'` (a mask leaking a proper substring of the
+surname) passes all four assertions. Closing it needs an exact-value pin on the message,
+which would couple the test to the ARB string — worse than the residual.
+
+**Consequence for the four UID tests, which got no symmetric tail assertion:** correctly so.
+`maskUserId`'s equality pin kills the uid tail-leak mutant at the masker. Adding
+`isNot(contains('VwXyZ01'))` for symmetry would be theatre; said explicitly to stop a fourth
+round from adding it.
+
+**Q3 (does any test lean on the struck logger.dart passage): no.** The struck text was the
+BUT-1915 "measured example" this commit falsifies, plus a `RepositoryException` /
+`StorageUploadException` aside. The sentence the test comments actually cite —
+"`_logToCrashlytics` hands `error` to `recordError` untouched, so on native those leave the
+device raw today" — is one paragraph above and SURVIVES, as does the OPEN RESIDUAL paragraph
+and the new BUT-1907 pointer. The strike therefore removed a falsified claim without
+removing the record of unresolved work.
+
+**Q4 (redundancy):** `expect(error.toString(), isNot(contains(X)))` in all six tests is
+entailed by the `.message` assertion, because both classes' `toString()` is
+`'XOperationError(${operation.name}): $message'` and the label carries neither a uid nor a
+name — it cannot fail alone. The test NAMES ("masks the id in message and toString")
+advertise two guarantees where there is one. Not filed: the assertion is cheap insurance
+against a `toString()` that later adds `resourceId`, and renaming six tests to be pedantic
+is not worth a round. Also noted: on this fixture `isNot(contains(displayName))` is now the
+weakest of the three name assertions, subsumed by the positive plus the surname pin.
+
+Also found, out of scope: `log_sanitizer_test.dart` exists TWICE
+(`test/unit/core/utils/` and `test/unit/utils/`) with overlapping but non-identical
+fixtures. Not graded — per the duplicate-test principle, retiring by path convention alone
+is forbidden and neither was touched by this diff.
+
+Verdict: pass, 0 blocking (3 non-blocking observations, none requiring an edit).
+
+### 2026-08-22 — BUT-1910 review: a "regression guard" that is green on the bug, and an untested middle fallback arm
+
+**Trigger:** review of the staged 7-file BUT-1910 diff (Swedish decimal comma on the recipe
+rating field and the pantry amount sheet). Parent supplied the measurement: analyze clean,
+84 tests pass, a revert of `parseSwedishDecimal` → `double.tryParse` in the rating field
+reddened exactly 3 of the 5 new rating cases.
+
+**Q1 — which rating cases can fail.** Predicted the reddened set from reading alone and it
+matched the parent's 3: `a comma decimal sets the rating` (4,5 → tryParse null), `a period
+decimal still sets the rating` (the FORMATTER rewrites `.`→`,` before onChanged, so the
+period case also arrives as `4,5` and dies on the same mutant), and `an empty field leaves
+the rating unset` — but that last one reddens on its FIRST assertion, which is a duplicate
+of case 1; the empty-field assertion it is NAMED for is INVARIANT under this mutant (both
+parsers answer null on ''). It is killed instead by the looser-parser mutant
+(`TextFormatting.parseSwedishNumber('')` = 1.0, measured), which is the right guard to
+claim for it. Survivors: `a whole number is unaffected` (tryParse reads '4' fine) and the
+plain `test()`. The whole-number case earns its place as the overshoot control — its unique
+kill set is "a comma-focused fix that now requires a separator" — but it is a control, not
+evidence. Also noted: case 2's controller-text assertion is the ONLY thing pinning that
+`SwedishDecimalInputFormatter` is attached to the rating field at all; deleting the
+formatter there leaves every other case green.
+
+**Q2 — the plain `test()` is dead weight AND carries a false justification.**
+`test/unit/core/utils/swedish_decimal_input_test.dart:100-107` already asserts
+`parseSwedishDecimal('')`, `('   ')`, `(',')`, `('Infinity')`, `('NaN')` all null — a strict
+superset of the four assertions in the rating file, through the SAME seam (a direct call),
+so it is a duplicate by the measurable definition. Its comment claims "it pins that the
+FIELD is wired to the helper's contract rather than to a second, looser parser. A field
+reading through `TextFormatting.parseSwedishNumber` would store 1.0 here" — but there is no
+field in a plain `test()`, so the claim is unsatisfiable by the test's own shape. The
+contract IS pinned at the field, by case 4's empty-field arm. Filed blocking with a
+DELETION remedy (test + comment), not a reword.
+
+**Q3 — the "1,5,5" controller-text assertion is the right observable.** The controller's
+text is what the user sees in the field; for an input formatter it is the whole contract,
+and reading it off the field found by label is more precise than `find.text`. Confirmed
+`tester.enterText` does run `inputFormatters` (it goes through
+`TestTextInput.updateEditingValue` → `EditableText.updateEditingValue`), unlike a
+programmatic controller seed — the distinction the BUT-1912 principle records. Not a
+finding.
+
+**Q4 — the pantry round-trip loop.** Acceptable shape: the `reason:` interpolates `$q`, so
+the failing value is named in the output. The residual is the fixture LIST, not the loop —
+2.5 / 0.5 / 3.0 / 0.25 / 1000.75 are all inside the notation-safe band, so per the BUT-1891
+principle it proves nothing about the boundaries. Explicitly did NOT ask for an exponent
+fixture: `parseSwedishDecimal(formatSwedishDecimal(5e-7))` round-trips EXACTLY through the
+direct seam, so adding it would go green and would assert the OPPOSITE of the field truth
+that `swedish_decimal_input.dart`'s own doc records (the field eats the `e`). A green test
+contradicting the production doc is worse than the gap BUT-1912 already carries.
+
+**Q5 — the edit-mode fallback is untested, and so is the add-mode one.** The new chain is
+`parseSwedishDecimal(text) ?? existing?.quantity ?? 1.0`. Every edit fixture in the suite
+(tests 3, 6, 7, 8, 9) seeds the field from `formattedQuantity` with a parseable value, so
+the middle arm is unreachable across the whole suite; the add-mode arm is worse than
+untested, because the seeded '1' parses to 1.0 anyway, making the fallback and the parse
+agree by construction (production-twin vacuity). Reachable in production: the formatter
+permits an empty field and `_submit` only early-returns on an empty NAME. Filed blocking —
+the behaviour CHANGED (edit used to write 1.0 over a 250 g item) and nothing reddens if the
+new arm is deleted.
+
+**The finding nobody asked for, and the biggest one.** Ran the pre-fix expression over the
+new tests' own fixtures (`git show HEAD:lib/views/pantry/add_pantry_item_sheet.dart` → the
+old `_submit` was `double.tryParse(text.replaceAll(',', '.')) ?? 1.0`, and the old field had
+`numberWithOptions(decimal: true)` with NO formatter, so the comma did reach the parse).
+Measured in a scratchpad replica: `,5` → **0.5**, `0,5` → 0.5, `1,5,5` → 1.0. So the claim
+repeated in THREE places — `add_pantry_item_sheet.dart:176-178`, the test file's BUT-1910
+header at 726-727, and the `,5` test's own comment at 769-770 — that the old code "read ',5'
+as no number at all and fell back to 1.0" is false. The consequence is behavioural, not
+cosmetic: two of the three new pantry cases are GREEN at HEAD and are controls, not
+regression guards. Only the `1,5,5` case discriminates (old: text stays `1,5,5`, parse falls
+to 1.0; new: text `1,55`). The two controls are still worth keeping — they kill "the
+formatter eats the separator", the BUT-1891 defect class — but the sentences naming the
+wrong defect must be STRUCK rather than reworded, since a truer version would be a fresh
+measured claim.
+
+Also filed: the test file's header still reads "Four contracts, added by four tickets" while
+BUT-1910 adds a fifth block below it — strike the count rather than renumber to five.
+
+Also found, non-blocking: the rating field's controller is seeded with
+`viewModel.rating?.toString()`, which emits `4.5` with a PERIOD, while the pantry sheet is
+seeded from `formattedQuantity` and now emits a comma. One ticket, two surfaces, opposite
+treatment of the same decision, and nothing tests the rating field's seeded text. No data is
+lost (an untouched field never re-enters onChanged), so it is a display inconsistency —
+`formatSwedishDecimal(viewModel.rating!)` is the one-line close.
+
+Checked and clear: `git diff --numstat` is empty for all seven paths, so every finding is
+against the copy the parent will commit. The new doc block's "every hand-typed,
+round-tripped field" quantifier holds — `SwedishDecimalInputFormatter` has exactly three
+`lib/` call sites (pantry sheet, recipe form, shopping dialogs) and every surviving
+`replaceAll(',', '.')` is a non-interactive parser or a validator.
+
+Verdict: fail, 4 blocking.
+
+### 2026-08-22 — BUT-1910 final re-review (trigger: re-review after fixes; verdict pass, 0 blocking)
+
+Eight files, all opened with Read: `swedish_decimal_input.dart`, `pantry_item.dart`,
+`add_pantry_item_sheet.dart`, `skriv_sjalv_recept_view.dart`, `edit_recipe_view.dart`,
+`pantry_item_test.dart`, `add_pantry_item_sheet_test.dart`, `recipe_form_rating_field_test.dart`.
+
+THE BLOCKING FIX LANDED, AND IN THE RIGHT FORM. The banner sentence "Only the 1,5,5 case …
+The other two are CONTROLS" is absent from the worktree AND from `git show :<path>` (grepped
+both, per the removal rule — a file that moved for the round's other edits passes every hash
+test with the sentence still in it). The replacement names two LITERALS instead of positions:
+"The '0,5' and ',5' cases are CONTROLS: measured, the old path already read both as 0.5." No
+count, no "other", so an inserted case cannot falsify it.
+
+I re-derived the factual half against HEAD rather than trusting the prior round. HEAD's
+`_submit` is `double.tryParse(_quantityController.text.replaceAll(',', '.')) ?? 1.0` and the
+field carries NO `inputFormatters`. So `'0,5'`->`'0.5'`->0.5 and `',5'`->`'.5'`->0.5: both
+control claims true, and "had no input formatter at all" true. The controls do kill the named
+BUT-1891 class — under a digitsOnly formatter `0,5`->`05`->5.0 and `,5`->`5`->5.0.
+
+RESIDUAL 1, THE OVER-DETERMINED TEST, IS PROPERLY CLOSED — and the new sibling kills a mutant
+neither the report nor the A-case comment claims. Mutant table over the pair:
+  - drop `quantity:` from the edit `copyWith`      -> A green (250 preserved), B RED
+  - delete `existing?.quantity ??`                 -> A RED, B green
+  - SWAP the order to `existing?.quantity ?? parse` -> A green, B RED
+B is the only killer of the precedence swap. Three distinct literals (250 / 0.5 / 1.0) mean no
+single wrong write source satisfies both assertions; a stale finder or an uncalled `updateItem`
+makes both RED, never green. Residual 2 (the unasserted premise) is closed by A's
+`expect(controller.text, isEmpty)` before the tap, which shuts the "field still reads 250" route.
+
+INSERTION-SEAM CHECK (the class that bit BUT-1847): the new sibling falsified none of its
+neighbours. "every other edit fixture seeds the amount from `formattedQuantity` with a
+parseable value" survives (B seeds 250 then retypes); "deleting `existing?.quantity ??` reddens
+exactly this case and nothing else" survives, because B stays GREEN under that mutant, which is
+what the sentence requires; test 3's tests-6/7-9/10 comment is `unit`-scoped and a `quantity`
+test cannot reach it. The new claim "nothing else in this file pinned that write" is correctly
+scoped to the EDIT branch by its preceding sentence — 3/6/7/8/9 all capture `updateItem` and
+assert only `unit`, while the add-path quantity is pinned by the two control cases.
+
+THE SHARED `ratedRecipe` CHANGED NOTHING. The suite is UNTRACKED at HEAD, so there is no git
+"before" to diff the moved body against — graded from code and said so. `pumpForm`'s new
+`initialRecipe` defaults null and is forwarded to the constructor and nowhere else, so the four
+pre-existing outer cases are unchanged; the inner group still picks its own rating through the
+parameter. The shared `id: 'recipe-but-1910'` is inert: fresh tree per test, VM built by
+`create:`, `CollaborativeStatusViewModel` registered as a FACTORY, `TestServiceLocator.reset()`
+per test. The new seed case puts `SkrivSjalvReceptView` in edit mode, which is a real
+production shape (import/template route) and inert to an assertion that reads only the text.
+
+`editRatingField()` IS a byte-identical duplicate of `ratingField()`, and the inner group is
+nested inside the outer, so the original is already in scope — same for the two reveal helpers.
+NOT filed, and deliberately not asked for. It fails SAFE (a label change reddens the stale
+finder rather than passing green), shadowing is unambiguous, and the two groups legitimately
+read DIFFERENT members off the found widget: the skriv field is a `StyledInput` read via
+`controller!.text`, the edit field a bare `TextFormField` read via `initialValue`. One finder
+feeding two different readers is worse than two finders; collapsing them is symmetry theatre.
+
+NOTHING BROKE. Staged set == the eight reviewed files exactly (the messaging/l10n/poll churn in
+the tree is a parallel session's and is unstaged). Unmoved-suite sweep on the changed getter:
+`formattedQuantity` is also rendered by `pantry_item_card.dart:137`, and all four card suites
+fixture `quantity: 1`, where the old `truncate()` path and `formatSwedishDecimal` both emit
+'1' — so nothing outside the eight broke, and equally none of those suites can SEE the change;
+the fractional case is pinned only at `pantry_item_test.dart:178`. `pantry_item_test.dart:354`
+still asserts `contains('1.5')` and that is CORRECT, not stale: it reads `toString()`, which
+interpolates the raw double, not `formattedQuantity`.
+
+Also confirmed: the earlier round's "Four contracts, added by four tickets" header count WAS
+struck rather than renumbered, so the header now reading a list without BUT-1910 is the
+intended terminal state, not a fresh staleness. Did not file it.
+
+TWO WAYS THE STAGING CHECK LIES (the durable lesson, merged into Re-review economics):
+(1) My first `git diff --numstat` ran WITHOUT an explicit `cd` and printed nothing — which is
+byte-identical to "index == worktree". A path-scoped git command from the wrong cwd fails
+silently into the reassuring answer. Every verification call now echoes `pwd`.
+(2) `git status --porcelain` then printed `MM` on `swedish_decimal_input.dart` and
+`edit_recipe_view.dart` while `git diff` stayed empty — a direct contradiction. Neither is the
+tiebreaker. `git ls-files -s` blob == `git hash-object` for both (45ea4d23…, 53f94854…), so the
+content is identical and status was reading a stale stat cache; `git update-index --refresh`
+made it agree (`M `). The parent's "index equals worktree for all eight" is TRUE, and the bytes
+graded are the bytes that will be committed.
+
+Verdict: pass, 0 blocking.
+
+### 2026-08-22 — BUT-1910 SHIP re-review, round 3 (rating/quantity Swedish decimals)
+
+Trigger: re-review after four code-reviewer findings were acted on. Eight files, all opened
+with Read. Judged the four questions the brief posed.
+
+Q1 — is the new `1,5,5` edit-screen case observing the FORMATTER? YES, and the parser alone
+cannot satisfy it. Mutant table, reasoned then cross-checked against the brief's own probe:
+
+| mutant | TA `4,5`→4.5 | TB `1,5,5`→'1,55'/1.55 | TC seed `4,5` |
+|---|---|---|---|
+| delete edit `inputFormatters` | green | **RED (both asserts)** | green |
+| edit `onChanged` parse → `double.tryParse` | RED | RED (rating half) | green |
+| edit seed `formatSwedishDecimal` → `toString()` | green | green | **RED** |
+
+`enterText` flows through `EditableText._formatAndSetValue`, so formatters DO run; formatter
+over "1,5,5" with the caret at end yields '1,55' (second separator dropped, digits kept), and
+`parseSwedishDecimal('1,55')` is 1.55. So TB is the sole killer of the formatter line — matches
+the reported probe.
+
+Q2 — `EditableText.controller` vs `TextFormField.controller`: correct observable. A
+`TextFormField` seeded with `initialValue` has a NULL `.controller` (the FormField owns a
+private one), which is why the first attempt died on a null check. `EditableText` is stable
+public Flutter API present under every text field, and the descendant lookup is unique here
+(the sibling tests already do `tester.widget<TextFormField>(ratingField())`, which throws on
+multiples). Rot risk low. `find.text('1,55')` would have worked too; not better.
+
+Q3 — duplication: full kill-set walk over all eight cases. Uniquely-killing pairs: T3 (period
+on skriv-sjalv) is the sole killer of THAT screen's formatter; T2/TC the two seed lines; T5 a
+parser fallback; T4 ("whole number", labelled CONTROL) the sole killer of a parser that starts
+demanding a separator, so it is not kill-set-empty. Only TA's kill set is a strict subset of
+TB's. Kept deliberately: TA is the named-defect fixture on the twin screen and TB's own comment
+depends on TA existing; TB's fixture is not something a user types. Not filed.
+
+Q4 — header: "It turns on ONE property" is gone; "Each entry carries the property that decides
+it" is verifiable by reading the three entries (returns NULL / falls back to 1.0 + rounds to 2
+/ forces one decimal) and adds no unmeasured claim. Spot-verified all three against source:
+`formatRatingComma` = `toStringAsFixed(1)`, `parseSwedishNumber` returns 1.0 on failure,
+`formatFractional` = `toStringAsFixed(2)`, `FormValidators.numberRange` does its own
+`replaceAll(',', '.')`. Observation, NOT filed (pre-existing, unmoved bytes): `parseSwedishNumber`
+has ZERO `lib/` callers — only its own suite — so calling it "non-interactive recipe-text
+parsing" describes intent, not a live route.
+
+Q5 — THE ROUND'S FINDING, and how it resolved. Item 3's repair swapped a measured count ("six")
+for a QUANTIFIER: "this screen is what the app opens for an EXISTING recipe, from every list
+and detail surface", in both the production comment and the test group header. That universal
+is FALSE, and the falsifier is in the code, no counting needed:
+`recipe_detail_view.dart:1046` asserts `!widget.readOnly, 'edit must be unreachable in readOnly
+mode'` — a DETAIL surface that deliberately opens no edit — and the shared-with-me, public-profile
+and weekly-menu recipe lists carry no `Routes.editRecipe` push at all (the full entry set is six
+route pushes: recipe_card_widget ×2, quick_capture, recipe_management_handler,
+recipe_detail_shared_widgets, collection_stats — two of which are neither a list nor a detail).
+
+THE TREE MOVED THREE TIMES DURING THE ROUND. `edit_recipe_view.dart` mtime jumped to 18:13 while
+I was reading; `git diff` then showed index (the copy I had Read) 4 lines behind the worktree;
+minutes later BOTH carriers had a further unstaged edit; by verdict time all eight were staged,
+index == worktree, and both copies of the false phrase were GONE. Verified with `git show :<path>
+| grep -c`, never from the worktree alone. Diffed the originally-graded blobs (53f94854e,
+daff1e587) against the staged ones: comment-only, so the brief's analyze/89-tests/format
+measurements still hold. Re-Read both moved files rather than re-stamping the earlier read.
+
+Left as NON-blocking, phrased as a strike: `recipe_form_rating_field_test.dart:245` still reads
+"i.e. the original defect back on the screen this diff argues matters most" — a dangling
+reference, since the strike removed every place the diff argued that. Delete the trailing clause;
+do not reword it into a new claim. Did NOT edit it myself: a live session had written to that
+file twice in the preceding ten minutes and a write would risk clobbering an in-flight edit.
+
+Verdict: pass, 0 blocking (against the INDEX, which is what the parent commits).
+
+### 2026-08-22 — BUT-1908/BUT-1909 poll-close guard: review of five suites (trigger: commit gate, twelve files)
+
+Reviewed the unstaged worktree for the poll-hydration marker (BUT-1908) and the blocked-ballot
+filter (BUT-1909). Seven production files + five suites, all opened with Read. Did NOT run
+mutation probes — concurrent gate reviewers shared the checkout — so every claim below is
+reasoned from the code and paired with the probe that would settle it.
+
+WHAT DISCRIMINATES. The close-refusal group in `messaging_service_close_poll_test.dart` is the
+strongest thing in the diff: `ok` control + `capped` + `failed` + absent-marker, each able to
+redden on its own mutant, and `isUnread` covering both non-ok members is pinned by the pair
+(mutate `isUnread` to `this == capped` and only the `failed` case reddens). The blocked-majority
+fixture genuinely discriminates: 2 blocked ballots vs 1 clean, `_resolveWinner` takes strictly-
+greater with first-wins ties, so filtered → `recipe-clean` and unfiltered → `recipe-blocked`, and
+the control beside it pins the unfiltered answer so the filtered assertion cannot be satisfied by
+a winner resolution that never worked. The two omissions each refusal asserts ARE two observables:
+a guard narrowed to the creator block (`&& !hydration.isUnread`, throw deleted) reddens the
+`messagingRepo.closePoll` verifyNever alone, while moving the throw below the plan block reddens
+the `groupPlanService.save` verifyNever alone. The widget suite's `ok` control + non-creator
+control bracket the gate from both sides.
+
+WHAT CANNOT FAIL. `message_query_module_test.dart`'s "a poll past the cap ... keeps its stored
+votes" asserts `isEmpty` over a fixture whose stored `voterIds` is ALREADY empty — the classic
+identity-on-a-normal-fixture; a `_markUnread` that blanked every option stays green. "A non-poll
+message is never marked" seeds a text row with NO metadata at all, and `_markUnread` returns
+early on `metadata == null`, so a mark-everything mutant (`if (_isPoll(m))` → `if (true)`) stays
+green too. And `fromMetadata` has no `'ok' =>` arm — a written 'ok' falls through the same
+default an ABSENT key does — so "a poll whose votes WERE read is marked ok" is byte-identical in
+outcome to the zero-votes test beside it, and the `..[metadataKey] = ok.name` write in `_merge`
+is mutation-dead by construction (behaviour-neutral, like a dead-code deletion; say so rather
+than manufacture an assertion).
+
+THE `failed` STATE IS NEVER PRODUCED BELOW THE SERVICE. Both `_markUnread(m, failed)` branches
+(the one-shot `catch`, and the live stream's `onErrorReturnWith` → null) need `poll_votes.get()`
+/ `.snapshots()` to throw, which `FakeFirebaseFirestore` never does. The group header claims
+"one green test per state" over three tests covering two states. The module takes `messagesRef`
+as a plain `CollectionReference`, so a delegating wrapper whose `.doc(id).collection(...)` throws
+is the available seam.
+
+THE SEAM NOBODY TOUCHES. `grep -rn "onPollClose\|SnackBarUtils.showError" test/` returns nothing,
+and no test file names `MessageContentBuilder`. So `_buildPollContent`'s
+`voteHydration: PollVoteHydration.fromMetadata(message.metadata)` is deletable-green — deleting it
+falls back to the widget's `ok` default and redraws the close button on a capped poll, i.e. the
+exact BUT-1908 UI harm — and `ChatMessageStream._closePoll`'s snackbar is the reader for the
+Swedish sentence the whole ViewModel change exists to produce. `chat_message_stream_joined_divider_test.dart`
+already renders the real widget over a mocked `MessagingService`, so both are ~30 lines away.
+
+TWO FALSE SENTENCES, SAME SHAPE, THREE COPIES. `messaging_service_test.dart`'s new group says
+that without its `production.ServiceLocator.initialize(DIContainer())` the group would be "every
+case green, including the one that is supposed to strip a voter", and that a `FakeMessage`
+fixture would have "passed while asserting the opposite". Traced both: with the bridge missing,
+`tryGet` returns null, `_filterBlocked` returns the page unfiltered, and the strip test asserts
+`['clean-1']` against `['blocked-1','clean-1']` — RED, not green. With `FakeMessage`, the control
+takes `_withoutBlockedBallots`' `blockedIds.isEmpty` early return (no `copyWith`, passes for the
+right reason), the throwing-filter case throws before any `copyWith`, and only the strip case
+reaches `copyWith` and goes RED. No test in the group both passes and asserts the opposite. The
+first sentence's mechanism half is TRUE and verified (`TestServiceLocator.initialize` never calls
+the production locator; `BaseUnitTest.setupUnit` doesn't either — `setupUnitWithProductionLocator`
+is the helper that does); only the consequence clause is false. Same false clause is a third copy
+in `.claude/rules/lessons-digest-testing.md` ("every case green, measuring nothing"). Filed as
+strikes, not rewordings.
+
+UNTESTED INTERACTION BETWEEN THE TWO TICKETS. `_stripBlockedBallots` rebuilds metadata with
+`Map<String, dynamic>.from(metadata)..['poll'] = rebuiltPoll`, and `Message.copyWith(metadata:)`
+REPLACES wholesale — so the BUT-1908 marker survives the BUT-1909 strip only because that copy is
+whole-map. Nothing asserts it. A strip written as `{'poll': rebuiltPoll}` drops the marker,
+`fromMetadata` falls back to `ok`, and a capped poll gets its close button back on screen.
+
+VERIFIED IN PASSING: the four new Swedish strings are unique values in `app_sv.arb`;
+"Stäng omröstning" is two keys (`pollClose`, `pollCloseAction`) but they never co-occur in the
+poll widget's tree, so the finder is unambiguous — it pins the STRING, not the key.
+
+Verdict: fail, 6 blocking.

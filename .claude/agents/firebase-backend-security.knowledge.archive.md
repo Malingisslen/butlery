@@ -5951,3 +5951,73 @@ hole — but it is the next place this bug class would resurface, and a future a
 "mirrors" could harmonise the wrong direction.
 
 **Verdict: pass (0 blocking).**
+
+---
+
+## Poll close: an unreachable refusal and a frozen screen (BUT-1908 / BUT-1909, 2026-08-22)
+
+Review of the unstaged worktree change: a three-state in-memory hydration marker
+(`PollVoteHydration` — `ok`/`capped`/`failed`) stamped as a SIBLING of `poll` inside a
+message's metadata, a `PollCloseRefusedException` on `MessagingService.closePoll`, and
+`_stripBlockedBallots` applied on both the display path (`_filterBlocked`) and inside
+`closePoll`. Stated contract: display fails OPEN, close REFUSES (Trust & Safety condition).
+
+**Clean, verified rather than assumed.**
+- *The marker cannot reach Firestore.* Every writer of `metadata` under `lib/repositories/`
+  is field-targeted: `MessageDto.toFirestore`/`toMap` are called only from `sendMessage`
+  (freshly constructed `Message`) and from `ConversationDto` for `lastMessage` (raw, from
+  `MessageDto.fromMap`); `updateMessageStatus`, `updateMessageContent` and
+  `batchMarkAsDelivered` name their keys; `MessageMutationModule.closePoll` re-reads the RAW
+  document and rebuilds `metadata` from it, so nothing hydrated round-trips. No
+  forward/resend path exists to feed a read `Message` back into `sendMessage`.
+- *No new rules dependency.* The close write is the sender updating their own message, which
+  the existing `messages` rule already allows; `poll_votes` read stays membership-gated. The
+  marker never reaches a rule, an export or a cascade (memory-only).
+- *No disclosure from the strip.* Neither `_stripBlockedBallots` nor `_withoutBlockedBallots`
+  logs; the plan entry and the reshare carry the recipe only; nothing states that a tally was
+  filtered or by how much.
+- *Logging.* The new cap log carries counts only (no conversation id — a DM's is two raw
+  uids). The refusal logs carry a UUID message id and a bounded enum name.
+
+**BLOCKING 1 (Critical) — the `blockListUnknown` refusal is dead code.**
+`closePoll` wraps `blockFilter.currentBlockedIds()` in a `try/catch` and throws
+`PollCloseRefusal.blockListUnknown`. `BlockedUserFilter.currentBlockedIds()`
+(`lib/services/social/blocking/blocked_user_filter.dart:38`) cannot throw: it catches its
+own fetch failure, logs a warning and returns `const <String>{}` — and sets
+`_initialized = true` BEFORE the `try`, so the empty set is served for the rest of the
+session with no retry. Production therefore fails OPEN exactly where the stakeholder review
+required a refusal: blocked ballots are counted and can decide the recipe written into the
+household's week. The test that "proves" the refusal
+(`messaging_service_close_poll_test.dart:869`) stubs `currentBlockedIds()` to throw — a
+behaviour the real collaborator does not have. The display half's throwing stub
+(`messaging_service_test.dart:1703`) is harmless only by luck: `{}` and a swallowed throw
+produce the same unfiltered page there.
+
+**BLOCKING 2 (High) — the chat screen never applies a metadata-only update.**
+`ChatMessageStream._updateMessagesIncremental` replaces an existing message only when
+`content`, `status` or `readAt` differ, so a poll's `voterIds` AND its hydration marker
+freeze at first render; pull-to-refresh runs the same method. Creator opens a chat at 0
+votes, members vote, creator taps "avsluta": `closePoll` re-reads through
+`MessageQueryModule.getMessage` (fully hydrated, uncapped), resolves the real winner and
+writes it into the plan. That is the BUT-1908 harm reproduced without the cap, so the
+ticket's guarantee does not hold on the live surface. Mechanism predates this change (Dart
+`Map` `==` is identity, so the fix is `!mapEquals(...)`, not `!=`).
+
+**Non-blocking.** (a) Nothing but "no writer exists today" keeps the marker out of Firestore
+— `hasOnly` cannot see inside `metadata`, and if it ever landed it would disable the close
+button on that poll permanently; stripping the key in `MessageDto.toFirestore`/`toMap` is
+cheap insurance. (b) `getConversationMessages` is subscribed twice per open chat
+(`ChatViewModel:272` and `ChatMessageStream:144`), each opening up to `maxHydratedPolls`
+per-poll listeners, and the widget's copy of those updates is then discarded by blocking 2.
+(c) `AppLogger.error('Failed to close poll …', e)` reports every refusal to Crashlytics as
+an error while the viewmodel treats refusals as the guard working. (d) Because the strip is
+viewer-scoped, another member can compare their own visible tally against the winner in the
+shared plan and infer that the closer blocked a voter — inherent to per-viewer blocking,
+recorded rather than filed.
+
+**Agreed out of scope, as the task stated:** a blocked user may still WRITE a `poll_votes`
+row and every other member still counts it, and `getBlockedUserIds` is one-directional.
+Rules-level block enforcement is owed its own ticket. The BUT-1832 poll deviations were not
+re-argued.
+
+**Verdict: fail (2 blocking).**

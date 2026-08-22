@@ -16,6 +16,53 @@ rule is internalised (roughly six weeks).
 
 ## Current
 
+### [Testing] A `Fake` fixture inside a fail-open catch makes the test measure the CATCH
+- **Date**: 2026-08-22
+- **Trigger**: BUT-1909's display-path test asserted that a blocked voter is stripped from a poll tally. It failed, showing the voter still present — and the fail-open sibling case beside it passed. Both were consistent with "the filter was never found", which is where I looked first. The real cause was two layers down: the fixture used the suite's own `FakeMessage`, and `_stripBlockedBallots` rebuilds the message with `copyWith`. A `Fake` throws on any member it does not implement, that throw landed in `_filterBlocked`'s deliberate fail-open `catch`, and the service served the page unfiltered. The test was measuring the catch.
+- **Rule**:
+  1. When the code under test is wrapped in a fail-open `catch`, a fixture that throws is INDISTINGUISHABLE from the feature not running. Use the real model type, not a `Fake`, for anything the production path calls a method on.
+  2. A fail-open test and its fail-closed sibling behaving "consistently with X" is not evidence for X — enumerate every state consistent with the pair before diagnosing.
+  3. Same suite, second trap: `TestServiceLocator.initialize()` deliberately SKIPS the production `ServiceLocator`, so `ServiceLocator.tryGet<T>()` reads a null container and returns null for everything. A group that needs `tryGet` must stand up its own `ServiceLocator.initialize(DIContainer())` in `setUp` — and until it does, the service never finds the collaborator at all.
+- **Example**: `test/unit/services/messaging_service_test.dart`, group "blocked ballots on the read path (BUT-1909)". Both fixes were needed. A third round then measured my own account of it and struck two consequence clauses as overstated — the strip case goes RED without the bridge rather than green, and no case in the group both passed and asserted the opposite. The mechanism was right; the blast radius I claimed for it was not.
+- **Files**: `test/unit/services/messaging_service_test.dart`
+
+### [Testing] Inserting a test falsifies any comment above it that counts the tests
+- **Date**: 2026-08-22
+- **Trigger**: A BUT-1910 review round told me two of three new pantry cases were CONTROLS, green on pre-fix code. I wrote that in the block banner: "Only the 1,5,5 case discriminates; the other two are CONTROLS." The NEXT round's blocking finding added a fourth case below it — which is also a discriminator — so "only" and "the other two" were both false, in the same comment block whose neighbouring clause the previous round had struck for the same reason.
+- **Rule**:
+  1. A comment that quantifies over the tests below it has an insertion seam, and the next legitimate test is what breaks it. Name the LITERALS instead ("the 0,5 and ,5 cases are controls") — a literal survives an insert; a count and an "only" do not.
+  2. This is the "every number must be measured" family, but the failure mode differs: the number was correct when written and was falsified by your own later work, not by drift.
+  3. When a review round makes you ADD a test, re-read the comments above the insertion point before finishing the round.
+- **Example**: `test/widget/views/pantry/add_pantry_item_sheet_test.dart`, the BUT-1910 banner. Two other counts in the same file — "Four contracts" and "Two disclosed reads of internals" — were falsified by the same batch and struck rather than renumbered.
+- **Files**: `test/widget/views/pantry/add_pantry_item_sheet_test.dart`
+
+### [Testing] A widget test finds nothing when the form body is a lazy list
+- **Date**: 2026-08-22
+- **Trigger**: A new widget test for the recipe rating field reported "Bad state: No element" on a finder that was correct. The form body is a `ListView`, so the field is not built until it is scrolled near — only two `TextFormField`s existed in the tree at all. The failure reads exactly like a missing widget or a wrong label.
+- **Rule**: Before concluding a finder is wrong, count how many widgets of that TYPE the tree holds. A lazy `ListView`/`CustomScrollView` needs `scrollUntilVisible` first, and that belongs in a named helper so the next case cannot forget it. Second gotcha from the same file: a field seeded with `initialValue` has a NULL `TextFormField.controller` — read its text off the descendant `EditableText`, which also survives a later conversion to a controller.
+- **Example**: `test/widget/views/recipe_form_rating_field_test.dart` — `revealRatingField` / `revealEditRatingField`.
+- **Files**: `test/widget/views/recipe_form_rating_field_test.dart`
+
+### [Delivery] A shell gate's cost is PROCESSES, not the grep
+- **Date**: 2026-08-22
+- **Trigger**: BUT-1894 — `real-time-guard` cost 646-859 s on every commit that staged a test file, three times the cost of analyzing the whole project, while the comment beside it promised "sub-second". The ticket blamed a full-tree search and prescribed scoping to the staged files.
+- **Rule**:
+  1. Measure the SEARCH and the LOOP separately. Both greps here finished in about 0.4 s; `DateTime.now()` matched over a thousand lines, and each match spawned an `awk` plus an `echo|sed|sed|grep` pipeline — roughly four processes per hit, some four thousand per commit. Process creation is the expensive primitive on Windows, so the fix is one `awk` pass per check, not a narrower grep. Scoping was right and worth about a tenth of a second.
+  2. `set -euo pipefail` turns `grep`'s exit 1 ("no matches") into a pipeline failure. Read the status explicitly and separate 1 from >1, or the gate refuses every clean commit.
+  3. A gate with no fixtures cannot be rewritten safely — that is how a previous rewrite claiming byte-identical behaviour reached review while failing OPEN on two inputs. Write the fixtures before the rewrite, and put a binary `*_test.dart` among them: `grep` prints "Binary file X matches" with no line number, and silently dropping an unparseable line is the fail-open shape.
+- **Example**: 859 s to 0.52 s over the whole tree, 0.24 s measured on a real commit. Fifteen fixtures at `scripts/__tests__/check_test_real_time_test.sh`, wired into lefthook and CI.
+- **Files**: `scripts/check_test_real_time.sh`, `scripts/__tests__/check_test_real_time_test.sh`, `lefthook.yml`, `.github/workflows/test.yml`
+
+### [Delivery] A ticket's REMEDY can be refuted while its problem stands
+- **Date**: 2026-08-22
+- **Trigger**: BUT-1906 asked for the dietary badge row in the recipe grid card and prescribed the fix: if it does not fit, raise `_gridAspectRatio`. Building it overflowed the tile at every text scale — and raising the aspect ratio changed NOTHING, measured at 0.75 / 0.70 / 0.66 / 0.62. The constraint the ticket named was height; a ratio buys height, and the tile was already documented as needing an absolute `mainAxisExtent` instead.
+- **Rule**:
+  1. Step 0 checks the PROBLEM's premise. Check the REMEDY's premise too, and check it by MEASUREMENT rather than by reading — a prescribed fix that cannot work looks exactly like a fix that has not been tried yet.
+  2. A stakeholder's alternative is also a premise. The Creative Director offered icon-only badges for spatial parity; that option did not exist, because the badge picks its icon from the STATUS, so two different diets render the same icon.
+  3. When every named remedy is refuted, ship NOTHING and hand back the measurements. A reverted branch plus three numbers is a better deliverable than a silent 23px clip.
+- **Example**: BUT-1906 parked In Review, blocked by BUT-1911, with the four aspect-ratio measurements in the ticket.
+- **Files**: `tasks/todo.md` (deviation log)
+
 ### A shared choke point makes OTHER files' tests vacuous, and only a whole-diff read sees it (2026-08-20)
 - **Date**: 2026-08-20
 - **Trigger**: Six single-file reviewers passed a PII change. The integration pass then found

@@ -395,8 +395,14 @@ name which doc each end touches before approving it.
 - A per-doc visibility rule needs a SPLIT query (owner branch unfiltered, friend branch
   STRICT equality) — a "field absent" looseness re-opens the leak.
 - Judge "is swallowing this read safe" by whether the downstream safety verdict defaults
-  permissive on missing input (permissive-default = Critical). A `catch → return null`
-  collapses FAILED into ABSENT, and the caller then "repairs" a document that exists;
+  permissive on missing input (permissive-default = Critical). A collaborator whose own
+  `catch` returns a NEUTRAL value (`{}`, empty list) has no error channel, so every
+  caller's `catch → refuse` branch is DEAD CODE that reviews and unit-tests green against
+  a throwing mock while production fails OPEN — read the helper's body, not the call site,
+  and give the safety caller a variant that propagates (latching an `_initialized` flag
+  before the `try` also makes the neutral answer stick for the whole session). A
+  `catch → return null` collapses FAILED into ABSENT, and the caller then "repairs" a
+  document that exists;
   rethrowing and reserving null for `!exists` is the fix, but a `!exists` answer resolved
   from CACHE is still not proof of absence, so any comment claiming null means absent "and
   nothing else" overclaims unless it checks `metadata.isFromCache`. A parser/lookup that can

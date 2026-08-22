@@ -80,7 +80,14 @@ you want the revert-probe that proved it; or this file itself reads too compress
   can sit behind graded bytes across rounds; close every round naming unstaged hunks. Close
   the POSITIVE direction mechanically at verdict time: `git diff --numstat` every reviewed
   path (0 lines = index matches worktree) in one call, so the verdict names the copy the
-  parent will commit.
+  parent will commit. **Two ways that check answers "clean" while proving nothing.** (1) A
+  path-scoped git command run from the WRONG cwd prints nothing, byte-identical to "no
+  differences" — every verification call gets an explicit `cd` and an echoed `pwd`, because
+  this one fails SILENTLY into the reassuring answer. (2) `git status --porcelain` and `git
+  diff` genuinely DISAGREE: status prints `MM` off a stale stat cache (mtime touched by a
+  formatter/hook, content unchanged) while `git diff` is empty. Neither is the tiebreaker —
+  compare `git ls-files -s <f>`'s blob to `git hash-object <f>`; `update-index --refresh`
+  then makes status agree (BUT-1910).
 - **An analyze finding contradicting the source you just read, or a suite passing against
   code analyze says can't compile, means re-md5sum BOTH files** — a timestamp-preserving
   restore can leave stale bytes running.
@@ -95,7 +102,12 @@ you want the revert-probe that proved it; or this file itself reads too compress
   absent (twice measured: a false sentence outliving the production edit, and a two-repair
   round that landed the blocking fix and silently dropped the non-blocking reword, reported as
   done), and a parallel session can land the removal between two of your own greps: say which COPY the
-  finding is against, since the parent commits the INDEX (BUT-1897).
+  finding is against, since the parent commits the INDEX (BUT-1897). **Then grade the
+  REPLACEMENT as a fresh claim** — a strike that swaps a measured count for a quantifier
+  ("six call sites" → "from every list and detail surface") is unmeasured by construction, and
+  the falsifier is usually an explicit exception in the same code (`assert(!readOnly, 'edit
+  must be unreachable')`). The repair is to STRIKE the quantifier, never to re-measure it
+  (BUT-1910).
 
 ### Project-specific test infrastructure (full detail in `testing-specialist.md`)
 - Production ServiceLocator bridge: `production.ServiceLocator.initialize(DIContainer())`
@@ -450,6 +462,9 @@ ever on screen. Use `RecipeBuilder().withTagResult(...)` for anything badge- or 
   `ConversationsViewModel.leaveGroup` + `MessageDeletionModule`). Check "no production
   caller" yourself — it decides the verdict — and note that a residual-throw branch above
   `batchDeleteDocs` is unreachable on `FakeFirebaseFirestore`, whose deletes always succeed.
+  **The skip INVERTS once the throwing class's own `toString()` interpolates the message** —
+  `recordError` sends `exception.toString()` and the object crosses unsanitized, so a fixture
+  IS owed, not a lint. Read that `toString()` before citing this bullet (BUT-1915).
 - **A "sole guard"/KNOWN-GAPS comment is a CLAIM until a test enters that exact branch** —
   verify against the model's SERIALIZER, never read a rules subcollection match or a
   cascade's defensive sweep as evidence the client writes it. A rationale citing a backend
@@ -527,7 +542,28 @@ The single most repeated finding across two months of review.
   `maskConversationId`, untouched by `maskIdentifiers`' two-segment rule), which ties the test
   to a divergence `log_sanitizer.dart` itself calls incidental. Pin the exception FIELD
   (`ResourceNotFoundException.resourceId`) instead: it discriminates on the REAL id and cannot
-  be satisfied by the class rule.
+  be satisfied by the class rule. **MIRROR, at a class that does NOT mask**: when `toString()`
+  is `'Label(op): $message'`, asserting both `.message` and `.toString()` is ONE observable —
+  the second is entailed by the first and cannot fail alone. The discriminator is the POSITIVE
+  `contains('<first8>...')`, which also ROUTE-CHECKS: it reddens if an earlier guard (recipe's
+  owner-first check) caught the fixture instead. Fixture uid must exceed 8 chars or
+  `maskUserId` is the identity (BUT-1915). That positive also separates every SIBLING helper in
+  the utility class (each mints a different shape, and `maskIdentifiers` is the IDENTITY on a
+  human NAME — so a display name needs `maskedName` at the throw and no sink rule can rescue
+  it). What it cannot see is a PARTIAL mask: `isNot(contains(<whole value>))` passes on ANY
+  elision, so pin the TAIL token absent too — but FIRST read the masker's OWN suite: an
+  exact-EQUALITY pin there (`maskUserId('abcdefghijk') == 'abcdefgh...'`) already kills every
+  tail-leaking masker mutant, leaving the call-site tail pin to catch only a HAND-ROLLED mask
+  at the throw. Demanding it symmetrically at every call site after that is symmetry theatre;
+  say so and end the round. **Grade "the exception object reaches Crashlytics" against the
+  SERVICE's own error handler, not only the ViewModel a comment names** — `_handleError`
+  reached `AppLogger.error(msg, e)` with no VM in the chain, so the sink survives even where
+  the named caller is dead, AND it interpolates `'$e'` into the MESSAGE arg, which DOES run
+  `maskIdentifiers` while the object arg does not. Two routes, opposite answers: scope any
+  "the masker never runs here" sentence to the OBJECT route or it is false. A duplicate-branch
+  fixture built by calling the seating method TWICE is non-vacuous by construction when the
+  seat is the branch's only route — a failed seat throws nothing and `fail()` inside the `try`
+  dies on the cast, so it reddens rather than passing.
 - **A round-trip over a `double` is bound by its fixture LIST, and Dart's own notation
   switches inside the domain** — `toString()` goes EXPONENTIAL below 1e-6 (so a
   format→retype invariant breaks: `1,5e-7` re-formats to `1,57`) and `round()` SATURATES at
@@ -561,7 +597,33 @@ The single most repeated finding across two months of review.
 - "Returns null on permission denial" needs a positive control same fixture — where every
   layer swallows to null, it's the NORMAL shape; grep for `async => null` on the loader.
 - A `??` wiring needs a fixture where the arms DISAGREE. "Does less work now" needs a
-  discriminator (something only the naive path pulls in), not a convergence test.
+  discriminator (something only the naive path pulls in), not a convergence test. A chain
+  gaining a MIDDLE arm (`parse(field) ?? existing ?? default`) is born unreachable whenever
+  every fixture seeds a PARSEABLE field — the arm needs the field CLEARED, which no
+  seeded-fixture test does, so a changed fallback ships with nothing to redden (BUT-1910).
+- **An `inputFormatters:` line is mutation-dead until one fixture types a string the formatter
+  CHANGES and the test reads the RENDERED text** — a comma/period-tolerant parser answers "4,5"
+  and "4.5" alike and `initialValue` never runs formatters, so both the parse case and the seed
+  case survive deleting it; the killer is a second separator ("1,5,5" → "1,55"). On an
+  `initialValue`-seeded `TextFormField`, `.controller` is NULL — read the descendant
+  `EditableText`'s controller, which also survives a later switch to a controller (BUT-1910).
+- **"The old code did X" is a claim about a GIT REVISION — run the old expression over the
+  new test's own fixture before believing it, `git show HEAD:<file>` then a scratchpad
+  replica.** When it is false the "regression guard" is usually a CONTROL that is GREEN on
+  the bug: BUT-1910's `,5` case cited a 1.0 fallback that never happened
+  (`double.tryParse('.5')` is 0.5, so old and new agree), leaving 1 of 3 new cases able to
+  discriminate. Grade a bug-fix suite by which cases fail at HEAD, not by which read as the
+  headline. Corollary at a widget suite: a plain `test()` calling the pure helper pins NO
+  wiring by construction — it renders nothing, so a comment saying it proves the field uses
+  this parser is false, and the real discriminator is an input the two candidate parsers
+  ANSWER DIFFERENTLY through the FIELD (empty → null vs `parseSwedishNumber`'s 1.0).
+  **Same class, opposite direction: "without this setUp line every case would be GREEN,
+  measuring nothing" is a claim about a REMOVAL — delete the line mentally down each test's
+  own path before writing it.** A missing DI bridge or a `Fake` fixture inside a fail-open
+  catch makes the UNFILTERED-asserting tests pass and the one test that asserts the FILTERED
+  result go RED — which is how the author found it — so the sentence inverts the observable it
+  was written from. Scope it to the cases it is true of, or strike the clause; BUT-1909 shipped
+  it in three copies (two test comments + `lessons-digest-testing.md`).
 - A guard classifying OLD vs NEW mutation is untested when every fixture base is EMPTY or
   same LENGTH — need the MIXED case. Same for a re-found index after `await` (identical to
   stale when the collection has one element) and a field-exclusion decision (byte-identical
