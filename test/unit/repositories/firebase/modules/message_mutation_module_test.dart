@@ -452,6 +452,17 @@ void main() {
         // Two assertions per throw, because the two fields were masked in
         // separate passes: the conversation id was caught by one reviewer and
         // the uid by another, a line apart, in the same hunk.
+        //
+        // Since BUT-1897 the exception CLASS masks inside its own `toString()`,
+        // so the id assertions below no longer discriminate the throw site's
+        // `.maskedConversationId` on their own — the class rule would hold them
+        // up anyway. Nor does the `outsider` assertion — a bare uid passed as
+        // `userId:` is masked by the class rule too, measured: deleting
+        // `.maskedUserId` from the throw site leaves this suite green.
+        //
+        // The one-segment check at the end of this test is the ONLY assertion
+        // here that pins a per-site call, because the class rule's composite
+        // pattern needs TWO segments and cannot hash `direct_abc`.
         const uidA = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ12';
         const uidB = 'zZyYxXwWvVuUtTsSrRqQpPoO3456';
         const directId = 'direct_${uidA}_$uidB';
@@ -501,6 +512,28 @@ void main() {
               'after the conversation id beside it was masked',
         );
         expect(denied, contains('direct_#'));
+
+        // The discriminating half. A one-segment `direct_` id is hashed by
+        // `maskConversationId` at the throw site and NOT by the class-level
+        // rule, which matches two segments — so this is what reddens if the
+        // per-site masking is removed.
+        final shortId = await renderedThrowFrom(
+          () =>
+              _newModule(
+                FakeFirebaseFirestore(),
+                readConversation: (_) async => null,
+              ).markConversationAsRead(
+                conversationId: 'direct_abc',
+                userId: outsider,
+              ),
+        );
+        expect(
+          shortId,
+          contains('direct_#'),
+          reason:
+              'a one-segment id is masked only by the throw site, so this is '
+              'what proves the per-site call is still there',
+        );
       },
     );
   });

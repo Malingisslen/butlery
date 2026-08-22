@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -196,7 +197,15 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                     controller: _amountController,
                     label: context.l10n.shoppingAmount,
                     hint: '1',
-                    keyboardType: TextInputType.number,
+                    // decimal: true asks the OS for a keyboard that HAS a
+                    // separator key; the formatter decides what may land in the
+                    // field. Both are needed - a numeric pad without the key
+                    // makes the formatter unreachable on a phone, and the
+                    // keyboard alone would let "1,5,5" through.
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: const [SwedishDecimalInputFormatter()],
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
@@ -247,9 +256,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
       final item =
           UnifiedShoppingItem.basic(
             name: _nameController.text.trim(),
-            amount:
-                double.tryParse(_amountController.text.replaceAll(',', '.')) ??
-                1.0,
+            amount: parseSwedishDecimal(_amountController.text) ?? 1.0,
             unit: _unitController.text.trim(),
             category: _categoryController.text.trim().isEmpty
                 ? ShoppingCategory.other
@@ -287,8 +294,11 @@ class _EditItemDialogState extends State<_EditItemDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.item.name);
+    // The field is seeded in the same spelling the formatter enforces while
+    // typing, so reopening an edited item does not show a period the user can
+    // no longer type.
     _amountController = TextEditingController(
-      text: widget.item.amount.toString(),
+      text: formatSwedishDecimal(widget.item.amount),
     );
     _unitController = TextEditingController(text: widget.item.unit);
     _categoryController = TextEditingController(text: widget.item.category);
@@ -330,7 +340,15 @@ class _EditItemDialogState extends State<_EditItemDialog> {
                     controller: _amountController,
                     label: context.l10n.shoppingAmount,
                     hint: '1',
-                    keyboardType: TextInputType.number,
+                    // decimal: true asks the OS for a keyboard that HAS a
+                    // separator key; the formatter decides what may land in the
+                    // field. Both are needed - a numeric pad without the key
+                    // makes the formatter unreachable on a phone, and the
+                    // keyboard alone would let "1,5,5" through.
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: const [SwedishDecimalInputFormatter()],
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
@@ -380,8 +398,7 @@ class _EditItemDialogState extends State<_EditItemDialog> {
       final item = widget.item.copyWith(
         name: _nameController.text.trim(),
         amount:
-            double.tryParse(_amountController.text.replaceAll(',', '.')) ??
-            widget.item.amount,
+            parseSwedishDecimal(_amountController.text) ?? widget.item.amount,
         unit: _unitController.text.trim(),
         category: _categoryController.text.trim().isEmpty
             ? ShoppingCategory.other

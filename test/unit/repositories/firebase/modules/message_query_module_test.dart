@@ -425,8 +425,16 @@ void main() {
     // `closePoll`'s winner resolution all still read
     // `metadata.poll.options[].voterIds`, so this module folds the
     // subcollection back into that shape on the way out. An unhydrated poll is
-    // not a rendering nit — it reads "0 röster" over real votes and makes
-    // `closePoll` resolve every poll to its first option.
+    // not a rendering nit — it reads "0 röster" over real votes.
+    //
+    // The harm is a DISPLAY harm, and this comment stated it wrongly for days,
+    // in the same words the module itself did: an unhydrated poll does NOT make
+    // `closePoll` resolve to the first option. `_resolveWinner` returns null
+    // once every option reads zero votes, so it writes no plan at all. What
+    // really happens is that the close button is drawn on a poll showing
+    // "0 röster", the close re-reads the message on its own uncapped path and
+    // resolves the REAL winner, and a recipe lands in the week's plan the
+    // creator was never shown a vote for (BUT-1883, measured 2026-08-20).
 
     Future<void> seedPollMessage(
       CollectionReference<Map<String, dynamic>> messagesRef, {

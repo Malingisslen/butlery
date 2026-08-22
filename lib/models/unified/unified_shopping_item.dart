@@ -60,6 +60,7 @@
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -422,23 +423,18 @@ class UnifiedShoppingItem {
   double get quantity => amount;
 
   /// Formats the item amount with intelligent decimal precision for optimal display.
-  /// Implements smart formatting that removes unnecessary decimal places for whole numbers
-  /// while preserving decimal precision when needed. Optimizes display text for better
-  /// user experience and cleaner shopping list appearance.
-  /// Returns formatted amount string without unnecessary decimal places.
+  /// Drops the decimals from a whole number, and writes a fraction the Swedish
+  /// way.
+  ///
+  /// The separator is a comma because that is what the user typed and what
+  /// [displayText] has always promised in its own examples; `toString()` spells
+  /// it with a period, so every fractional amount used to be shown back in a
+  /// notation the quantity field will not even accept (BUT-1891).
   /// **Examples:**
   /// - 2.0 → "2"
-  /// - 1.5 → "1.5"
+  /// - 1.5 → "1,5"
   /// - 10.0 → "10"
-  String get formattedAmount {
-    // If it's a whole number, display without decimals
-    if (amount == amount.roundToDouble()) {
-      return amount.round().toString();
-    }
-
-    // Otherwise show with minimal precision
-    return amount.toString();
-  }
+  String get formattedAmount => formatSwedishDecimal(amount);
 
   /// Formats the item unit with Swedish abbreviations and mappings for optimal display.
   /// Implements intelligent unit formatting with comprehensive Swedish unit mapping system.

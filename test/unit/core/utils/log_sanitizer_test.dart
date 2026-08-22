@@ -75,9 +75,29 @@ void main() {
   group('maskConversationId (BUT-1872)', () {
     // The two uids a real direct id is built from. What makes the fixture
     // realistic is the SHAPE, not the length: the bare-uid rule at the
-    // Crashlytics chokepoint cannot touch either half at any length, because
-    // `_` is a word character and its `\b` never fires inside the id. That
-    // inability is the bug BUT-1872 exists for.
+    // Crashlytics chokepoint never gets to either half, because the composite
+    // rule runs FIRST and consumes the whole id.
+    //
+    // That safety comes from the ORDER, not from the anchoring — see
+    // [LogSanitizer.maskIdentifiers], which owns why the order is load-bearing
+    // and what `\b` used to do here (BUT-1872 / BUT-1897). Locally: reverse the
+    // two rules and rule 2 masks each 20-28 CHARACTER half separately, giving
+    // `direct_aBcD***_zYxW***` for THESE two (the minted-shape fixture below is
+    // a different pair and reverses to `direct_aBcD***_zZyY***` — the two-letter
+    // difference is the fixture, not a typo). That is what the qualifier is for:
+    // the short-half case below and the 40-char one are BOTH untouched by such
+    // a reversal: the short halves fall below the {20,28} window and the 40-char
+    // ones overshoot it, so rule 2 cannot match either way.
+    //
+    // But none of that makes THIS fixture a guard. Every test that uses THESE
+    // TWO constants calls `maskConversationId` directly, never the chokepoint,
+    // so a rule reorder cannot move any of them.
+    //
+    // The one test in THIS group that does reach the chokepoint is the
+    // minted-shape case below, and its 28+28 fixture is the file's only reorder
+    // guard — it compares the chokepoint against the helper. See
+    // [LogSanitizer.maskIdentifiers], which names it. Do not trim that fixture
+    // list to the cases that look interesting.
     const uidA = 'aBcDeFgHiJkLmNoPqRsT';
     const uidB = 'zYxWvUtSrQpOnMlKjIhG';
     const directId = 'direct_${uidA}_$uidB';

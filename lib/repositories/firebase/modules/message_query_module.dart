@@ -130,8 +130,16 @@ class MessageQueryModule {
       if (doc.exists) {
         // Hydration matters here beyond display: `MessagingService.closePoll`
         // reads the poll through this method and picks the winner by vote
-        // count, so an unhydrated poll would resolve every close to the first
-        // option and put the wrong recipe in the week's plan.
+        // count.
+        //
+        // Note what this does NOT mean. The cap below cannot reach this path:
+        // the list here holds ONE message, so `.take(maxHydratedPolls)` is a
+        // no-op, and a poll's close is hydrated however far down the chat it
+        // sits. Nor would an unhydrated poll close on the first option —
+        // `_resolveWinner` returns null once every option reads zero votes, so
+        // it writes no plan at all. Both claims were made in this file and both
+        // were false; they cost a ticket that specified a guard against a state
+        // the code cannot enter (BUT-1883, measured 2026-08-20).
         return (await _hydratePollVotes([MessageDto.fromFirestore(doc)])).first;
       }
       return null;
@@ -153,9 +161,14 @@ class MessageQueryModule {
   // sees exactly what it saw before, which is why the change stops here.
   //
   // Anything that RENDERS a poll message must hydrate. An unhydrated poll is
-  // not a rendering nit — it shows "0 röster" over real votes, and it makes
-  // `closePoll` pick the first option as the winner and write that recipe into
-  // the week's plan.
+  // not a rendering nit — it shows "0 röster" over real votes.
+  //
+  // The harm is a DISPLAY harm, and it is worth stating precisely because the
+  // wrong version of this sentence lived here for days: the close button is
+  // still drawn on a poll showing "0 röster", the close then re-reads the
+  // message on its own uncapped path and resolves the REAL winner, and a recipe
+  // lands in the week's plan that the creator was never shown a vote for. The
+  // write is correct; the screen that led to it was not.
   //
   // `searchMessages` below is the deliberate exception and stays unhydrated: its
   // only callers are the service passthrough (no view, viewmodel or widget calls

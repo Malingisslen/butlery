@@ -491,6 +491,37 @@ void main() {
         // Should only keep digits
         expect(controller.text, equals('123456'));
       });
+
+      // BUT-1891 gave the shopping quantity fields a decimal separator by
+      // passing their own formatter, deliberately NOT by widening this shared
+      // default. The portions and time fields in `skriv_sjalv_recept_view` are
+      // the production callers that reach this branch, and a decimal point in
+      // either is a defect. This case is the negative half of that fix: it
+      // reddens if someone later "simplifies" the two call-site formatters back
+      // into the default.
+      //
+      // Named by file rather than by concept on purpose: the app has other
+      // portions, time and MFA-code fields that never route through
+      // `StyledInput`, so this default protects nothing in those.
+      testWidgets('the shared number default still refuses both separators', (
+        WidgetTester tester,
+      ) async {
+        final controller = TextEditingController();
+
+        await tester.pumpWidget(
+          createTestWidget(
+            StyledInput.number(
+              controller: controller,
+            ),
+          ),
+        );
+
+        await tester.enterText(find.byType(TextFormField), '1,5');
+        expect(controller.text, equals('15'));
+
+        await tester.enterText(find.byType(TextFormField), '1.5');
+        expect(controller.text, equals('15'));
+      });
     });
 
     group('Search Constructor', () {

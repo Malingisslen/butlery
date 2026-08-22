@@ -5680,3 +5680,120 @@ provenance, since the 2026-08-17 rewrite dropped the dates from the correspondin
 ## How new learning enters this file (updated 2026-07-24 — knowledge-diet pass)
 ## Principles (distilled from 153 dated incident entries, 2026-04-25 to 2026-07-20)
 2026-07-20 (153 entries) until it cost ~66k tokens per Step-0 read with the actual patterns
+
+
+### 2026-08-20 -- BUT-1897 commit gate: the web stack-trace carve-out re-exports the message it just masked
+Reviewed staged: `message_deletion_module.dart`, `message_query_module.dart` (comment-only),
+`web_error_reporter.dart`, `conversations_viewmodel.dart`.
+
+**Verified good.** `.maskedConversationId` is the right helper at all three throw sites: the
+value is a conversation DOC ID, and `LogSanitizer.maskConversationId` hashes the
+`direct_<uidA>_<uidB>` shape while passing an opaque group auto-id through. `StateError` is a
+Dart-core type, so it cannot mask in its own `toString()` the way
+`core/exceptions/permission_exceptions.dart` does — masking at the throw is the only option, and
+it is the one that also covers the raw ERROR OBJECT handed to `FirebaseCrashlytics.recordError`
+(`logger.dart` sanitizes the message only; measured, `_logToCrashlytics` passes `error` untouched,
+and only `AppLogger.error` forwards off-device at all — `info`/`debug`/`warning` are
+`developer.log` only). At the `conversations_viewmodel` site the leave-group menu is gated on
+`conversation.isGroup`, an ordinary CLIENT field, while `groupId` is the server-written authority
+(`conversations_list_view.dart` ~L416) — so the `groupId == null` branch is exactly where a
+`direct_` id can arrive despite the gate. Defensive, not inert.
+
+**Blocking finding: `payload['stack']` is masked by `scrubPii` only, deliberately, and the stated
+reason is false on the only platform this file runs on.** The comment argues "a stack trace is
+frames and file paths; the identifiers live in the message, which IS masked." On dart2js,
+`js_helper.dart` `initializeExceptionWrapper` (L1385-1409) wraps every thrown Dart object in
+`new Error()` with `name = ""` and a `message` getter defined as `toStringWrapper`, which returns
+`this.dartException.toString()`; `_StackTrace.toString()` (L2137-2151) returns that wrapper's
+`.stack`, and V8 formats `.stack` as `name: message` + frames, i.e. with an empty name, the FIRST
+LINE is the Dart exception's message verbatim. So the payload ships a second, unmasked copy of the
+string the `message` field was just masked from. `scrubPii` does not help: measured, it is
+email/personnummer/phone/address/relation-name only — `_longAlphanumericRun` and `_uuidRegex` in
+that file belong to `scrubUrlParams`, not `scrubPii`. Not a regression (both fields were unmasked
+before), but it is the ticket's own bug still open on the ticket's own sink.
+Remedy that keeps the readable-frames goal: split the stack at the first frame marker
+(`^\s*(#\d+|at )`, multiline), run the full `scrub` on the head and `scrubPii` on the frames. Do
+NOT run `maskIdentifiers` over whole frames — the {20,28} rule turns
+`#0 AllergenPreferencesViewModel.build` into `#0 Alle***.build`, and the `direct_` rule would hash
+a future `direct_message_view.dart` path segment (no such file today; checked).
+
+**Second finding, ordering:** `_truncate` runs BEFORE the scrub on both fields. A 2000-char cut
+landing inside a uid drops it below the `{20,28}` window and it passes through RAW; a cut inside a
+`direct_` id's second half still matches the composite rule but hashes to a value that no longer
+equals the same conversation's hash elsewhere, breaking exactly the cross-sink parity
+`maskConversationId` exists for. Masking only ever shortens, so scrub-then-truncate is safe.
+
+**Third finding, tests:** `test/unit/services/monitoring/web_error_reporter_test.dart` is untouched
+by this diff (last written by da5dfcac0) and pins only email/personnummer scrubbing. Nothing
+asserts a uid or `direct_` id is masked in `message`/`context`, and nothing pins the carve-out — so
+a later "consistency" edit adding `maskIdentifiers` to the stack would mangle every frame with
+nothing red, and deleting the message mask reddens nothing either.
+
+**Comment-only file verified against the code, and it is now accurate.** `MessagingService.closePoll`
+re-reads via `getMessage` (single message, so `_pollIds().take(maxHydratedPolls)` is a no-op — the
+cap genuinely cannot reach that path); `_resolveWinner` (`messaging_service.dart` L740-750) returns
+null when `best.voteCount == 0`, so an unhydrated poll writes no plan rather than picking option
+one; and the close affordance is gated on `poll.isActive && poll.creatorId == currentUserId`
+(`poll_message_widget.dart` L97-100), NOT on vote count — which is what makes the corrected
+"display harm" wording right: the button is drawn over "0 röster", and the close then resolves the
+real winner on the uncapped path.
+
+---
+
+## 2026-08-20 — BUT-1897 re-review: the web stack carve-out, closed and measured
+
+Re-review of the four files after my own `fail (1 blocking)`. Files read in full:
+`web_error_reporter.dart`, `message_deletion_module.dart`, `message_query_module.dart`,
+`conversations_viewmodel.dart`. Verdict: pass (0 blocking).
+
+**The blocking finding is closed, and I verified the split myself rather than from the diff.**
+`_scrubStack` splits on `RegExp(r'^\s*(#\d+|at )', multiLine: true)`, masks the head with
+`maskIdentifiers(scrubPii(...))` — byte-identical order to the `message` field, so a `direct_` id
+hashes to the same value in both — and runs `scrubPii` alone on the frames. Ran the suite (14/14
+green) and a standalone Dart probe of the regex against ten stack shapes. Results worth keeping:
+
+| shape | split |
+|---|---|
+| V8 `StateError: direct_a_b gone` + `    at foo (…)` | head = line 1, masked. Correct. |
+| Dart `Bad state: uid X` + `#0      Foo.bar (…)` | head = line 1, masked. Correct. |
+| SpiderMonkey `foo@http://h/main.dart.js:1:2` | NO frame match → whole trace masked |
+| JSC `global code@http://h/…` | NO frame match → whole trace masked |
+| `Error uid X\n\n#0 …` (blank line) | head = line 1 only; `\s*` eats the blank line |
+| `#0 Foo.bar (…)` alone | `firstFrame == 0` → `scrubPii` only. Correct. |
+| `Parse failed for uid X:\n#1 kg mjol\n#2 dl vatten` | splits at `#1`; lines 2-3 escape `maskIdentifiers` |
+| frames + `<asynchronous suspension>` | suspension marker lands on the frames side (benign) |
+
+So the answer to "does anything reach `payload['stack']` that is neither head nor frame" is: on
+V8 and Dart shapes, no. Two residuals, neither blocking. (1) Firefox/Safari produce no header
+line at all, so `firstFrame < 0` and the whole trace goes through `maskIdentifiers` — fail-SAFE,
+but it mangles frames on 100% of reports from those engines, which is the exact outcome
+`_scrubStack`'s own doc comment says makes a web crash report worthless. Counted the exposure:
+`grep '^class '` over `lib/` gives **821** class names 20-28 chars, **622** of them
+pure-alphanumeric and therefore inside the `{20,28}` rule — so "hundreds of class names in `lib/`
+are exactly that shape" is TRUE as written. (2) A multi-line exception message whose later line
+starts `#<digit>` or `at ` splits early; line 1 is still masked, the tail is not. Tightening to
+`^\s*(#\d+\s|at \S+:\d+)` would shrink it; filed Low, not worth a block.
+
+**I have to correct myself.** My own 2026-08-19 archive entry ended "Masking only ever shortens,
+so scrub-then-truncate is safe," and that sentence was copied into the production comment at
+`_scrubPayload`. It is false: `scrubPii` replaces a 13-char `19900101-1234` with a 14-char
+`[PERSONNUMMER]`, a 6-char `a@b.co` with a 7-char `[EMAIL]`, and the minimal 6-char Swedish phone
+match with a 7-char `[PHONE]`; `maskIdentifiers` turns a 10-char `direct_a_b` into a 20-char hash.
+The scrub-then-truncate ORDER is still right, for the second half of the comment (a cut inside an
+identifier), not the first half (capacity). Filed Medium: delete the first clause. This is the
+digest's rule about corrections being as falsifiable as the claim they repair, landing on me.
+
+**Comment audit on the other three files — all verified against code, all true.**
+`_resolveWinner` (`messaging_service.dart` L740-750) does return null when `best.voteCount == 0`,
+so the corrected `message_query_module.dart` comment ("writes no plan at all") holds.
+`AppLogger.error` passes the raw error OBJECT to `_logToCrashlytics`/`developer.log` while
+`_sanitizeForCrashlytics` covers the MESSAGE string only, so the `conversations_viewmodel`
+comment ("handed to `AppLogger.error` as the ERROR OBJECT, which no sanitizer sees") is accurate;
+both `StateError`s there now carry `conversationId.maskedConversationId`, and the second one (no
+chat group) is the reachable path on which a `direct_` id can arrive. `message_deletion_module`
+masks both ids at the throw. The one over-claim is `_frameStart`'s "both spellings the web engines
+emit" — two of three, per the probe table above.
+
+Scope note: `log_sanitizer.dart`, `logger.dart` and `permission_exceptions.dart` are staged and
+are the core of the same BUT-1897 fix, but were not in this review's file list. They need their
+own pass before the marker can name every staged file.

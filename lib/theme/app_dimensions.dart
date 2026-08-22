@@ -598,6 +598,44 @@ class AppDimensions {
     );
   }
 
+  /// How tall a recipe tile is, relative to its width.
+  ///
+  /// A CONSTANT aspect ratio cannot hold text that scales. At the OS's largest
+  /// text sizes a recipe tile's title, metadata and allergen row overflowed the
+  /// [gridAspectRatio] box on a 2-column phone even after the card gave up its
+  /// entire image height — measured, and in a release build that is silent
+  /// clipping rather than the debug stripes (BUT-1895). The tile therefore
+  /// grows taller as the text grows.
+  ///
+  /// The extra height is a QUARTER of the text growth, not all of it: only the
+  /// text blocks scale, while the image keeps whatever is left over. That
+  /// factor is the measured shortfall at 2x, not a guess.
+  ///
+  /// KNOWN RESIDUAL, accepted rather than overlooked: the clamp stops at 2x.
+  /// Past 2x this ratio freezes while the text keeps growing — so the clipping
+  /// comes back. Whether any shipped OS asks for more than 2x is not measured
+  /// here, so no platform ceiling is claimed. That is the better of two bad outcomes; a tile that grows
+  /// without limit is taller than the screen and shows one recipe at a time.
+  ///
+  /// SECOND KNOWN RESIDUAL, and the nearer one: this correction is proportional
+  /// to tile WIDTH, while the shortfall it covers is text, which wraps MORE on a
+  /// narrow screen. The two diverge, so no single factor closes both. Measured:
+  /// a 360dp phone is clean to 2x, but a 320dp phone still clips from 1.3x —
+  /// an ordinary user at an ordinary text size. Closing that needs an absolute
+  /// tile height (`mainAxisExtent`) rather than a ratio: BUT-1911.
+  ///
+  /// `recipe_card_grid_badges_test.dart` pins both ends AS THEY ARE — clean to
+  /// 2x on 360dp, clean at 1.0 on 320dp — so "covered by a test" here means the
+  /// boundary is recorded, not that it is clean everywhere.
+  ///
+  /// Lives here rather than in the view so that test can build its grid from
+  /// the SAME number the app uses. It was written twice for one afternoon, and
+  /// a retuned factor would have left the test green against its own stale copy.
+  static double recipeGridAspectRatio(BuildContext context) {
+    final textScale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 2.0);
+    return gridAspectRatio / (1 + (textScale - 1) * 0.25);
+  }
+
   /// Get responsive card padding
   /// Returns padding for cards:
   /// - Mobile: 16px

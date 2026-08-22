@@ -210,7 +210,12 @@ Standard deny matrix for ownership-checked collections:
   added.** Name which tests move, by comment ID, instead.
 - A rules comment asserting what a Cloud Function does with the document is a claim
   about another file's boolean — read that line, don't infer it from the comment
-  (`enforceGroupMinorMembership`'s `isGroup` computation, BUT-1838).
+  (`enforceGroupMinorMembership`'s `isGroup` computation, BUT-1838). Same for a
+  **"kept in sync with `<symbol>`" comment: it makes TWO claims — the symbol exists at
+  that path, and the VALUES actually agree.** Fixing only the NAME (a comment-drift
+  sweep's natural instinct) can leave a false sync claim standing, so read the literal on
+  both sides and grep for OTHER mirrors the comment doesn't name — `isAccountMatured()`'s
+  60 min has three (`kAccountMaturityWindow`, `kAccountMaturityWindowMs`, the rule).
 - A decision record or comment quoting mutation-probe figures inherits their staleness
   at one remove — re-run every quoted mutant against the CURRENT file before trusting a
   written figure; arithmetic on an old run is not measurement.

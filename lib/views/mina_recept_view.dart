@@ -637,7 +637,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                         mainAxisSpacing: AppDimensions.responsiveGridSpacing(
                           context,
                         ),
-                        childAspectRatio: 0.75,
+                        childAspectRatio: AppDimensions.recipeGridAspectRatio(
+                          context,
+                        ),
                       ),
                       itemCount: recipes.length,
                       itemBuilder: (context, index) => MinaReceptRecipeCard(
@@ -660,7 +662,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                           context,
                         ),
                         shrinkWrap: false,
-                        gridChildAspectRatio: 0.75,
+                        gridChildAspectRatio:
+                            AppDimensions.recipeGridAspectRatio(context),
                         animate: true,
                         itemBuilder: (context, recipe) => MinaReceptRecipeCard(
                           viewModel: viewModel,

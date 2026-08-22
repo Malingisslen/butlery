@@ -3,6 +3,7 @@
 import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
@@ -223,15 +224,24 @@ class ConversationsViewModel extends ChangeNotifier
         throw Exception('User not authenticated');
       }
 
+      // Masked at the throw, not at the log. Both of these are caught below
+      // and handed to `AppLogger.error` as the ERROR OBJECT, which no sanitizer
+      // sees — and a DM's id is `direct_<uidA>_<uidB>`, two raw user ids. This
+      // is the reachable one of the sites BUT-1897 names: it fires on an
+      // ordinary "leave group" tap.
       final conversation = _allConversations.firstWhere(
         (c) => c.id == conversationId,
         orElse: () => throw StateError(
-          'Conversation $conversationId not in the loaded list',
+          'Conversation ${conversationId.maskedConversationId} not in the '
+          'loaded list',
         ),
       );
       final groupId = conversation.groupId;
       if (groupId == null) {
-        throw StateError('Conversation $conversationId has no chat group');
+        throw StateError(
+          'Conversation ${conversationId.maskedConversationId} has no chat '
+          'group',
+        );
       }
 
       // Omitting `userId` is the repository's "leave yourself" contract.

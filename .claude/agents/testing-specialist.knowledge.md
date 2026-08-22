@@ -59,12 +59,21 @@ you want the revert-probe that proved it; or this file itself reads too compress
   their in-flight write — prefer a production-free `test/`-side probe beside a live session.
 - **The tree moves DURING your round** — re-read before filing (a stale stack-trace line
   number is the cheapest tell); back up/restore your own probes in ONE Bash call.
+- **A mutate→run→restore→mutate LOOP can be served the PREVIOUS mutant's kernel** — mutate
+  and restore inside one second and `flutter test` reuses a stale incremental build, so the
+  run reports failures belonging to the mutant before it. Tell: a red test the mutant cannot
+  reach (a fixture that never enters the mutated branch). Never loop probes in one Bash call;
+  run each in its own call and RE-RUN any surprising red alone before filing it (BUT-1897:
+  two of four probe results were phantom, both reproduced clean on re-run).
 - **"Only `dart format`" is provable, not assumed**: walk `git cat-file --batch-all-objects`,
   compare whitespace-stripped bytes blob-to-blob (not blob-to-disk — CRLF differs by one
   byte/line). The formatter can insert a trailing comma, so fall back to raw `diff` if a
   token-signature match misses a genuine format-only file.
 - **"Staging — resolved" isn't resolved until `git show :<path>` diff is empty** — an index
-  can sit behind graded bytes across rounds; close every round naming unstaged hunks.
+  can sit behind graded bytes across rounds; close every round naming unstaged hunks. Close
+  the POSITIVE direction mechanically at verdict time: `git diff --numstat` every reviewed
+  path (0 lines = index matches worktree) in one call, so the verdict names the copy the
+  parent will commit.
 - **An analyze finding contradicting the source you just read, or a suite passing against
   code analyze says can't compile, means re-md5sum BOTH files** — a timestamp-preserving
   restore can leave stale bytes running.
@@ -73,7 +82,13 @@ you want the revert-probe that proved it; or this file itself reads too compress
   add a control arm.
 - When a parallel session lands a test for the same guard, delete yours with a pointer
   comment. A measured claim in a comment is one command to verify — agreement across files
-  often just means one was copied.
+  often just means one was copied. **A reported REMOVAL or REWORD is verified by grepping the
+  OLD STRING in the worktree AND `git show :<path>` AT VERDICT TIME, never by the motion
+  check** — a file that moved for the round's OTHER edits passes every hash test with that one
+  absent (twice measured: a false sentence outliving the production edit, and a two-repair
+  round that landed the blocking fix and silently dropped the non-blocking reword, reported as
+  done), and a parallel session can land the removal between two of your own greps: say which COPY the
+  finding is against, since the parent commits the INDEX (BUT-1897).
 
 ### Project-specific test infrastructure (full detail in `testing-specialist.md`)
 - Production ServiceLocator bridge: `production.ServiceLocator.initialize(DIContainer())`
@@ -104,6 +119,95 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   a query filter — three sibling suites untouched).
 - When a fix SPLITS one write/event across destinations, or teaches a method a new
   side-field, grep every WRITER/reader's OWN SUITE (not `lib/`) — the list grows mid-round.
+- **A figure measured OUTSIDE the repo (corpus gold, an eval sweep) has no test holding it,
+  and manufacturing a fixture is worse than saying so plainly** — grep the marker's own FIELD
+  NAME across `test/`; zero hits IS the answer, and the in-repo fixture corpus usually does
+  not model the graded axis at all. The review a test cannot do is ARITHMETIC ACROSS THE
+  COPIES: recompute every stated delta (before + added − relabelled) against the totals in
+  each file quoting them; prose like "confirmed all 14, re-labelled one and added nine" can
+  admit two readings whose splits differ while the total agrees. Grade a stated COUNTERFACTUAL
+  the same way — "had the PAIR gone the other way it would read N" prices an UNMEASURED state
+  when only ONE label was ever in play; the giveaway is the paragraph's own header saying
+  "sensitive to ONE label". A `tools/` script with `main()` + private helpers is untestable
+  by construction — an EXTRACTION ticket, not a missing test. But a hardcoded count in its own
+  printed BANNER is neither: delete the literal and interpolate the runtime tally, which makes
+  the drift class impossible instead of watched (a test would be a tautology afterwards). It
+  misreports only on the arm that computes nothing — check for a short-circuited
+  `if (flag && probe(x))` leaving the DEFAULT arm with no number to interpolate. **HOISTING
+  that probe out of the short-circuit falsifies every doc sentence explaining why the default
+  arm was safe ("never reads X") — grep the CONCEPT, not the field name; the clause that
+  survives a sweep is the one spelling it in prose. A DATED `lessons.md` record is exempt only for FIGURES a later re-grade
+  falsifies; a mechanism claim that was FALSE WHEN WRITTEN gets corrected there like
+  anywhere else, or the batch ships two answers to one question.** A hoisted tally is
+  population-independent, so
+  `gateCounter == tally` holds ONLY on the gated arm — verify the OTHER arm's banner reads the
+  tally, not the zero counter. **Then grep the file for the numbers the fix says it removed:
+  "this file now contains NO count" survived a round as the stated justification for dropping
+  the tool from a hand-carrier list, while a ticket-scoped historical count sat in its header.
+  That count is legitimately exempt (anchored to a past grading, it cannot drift) — the defect
+  is the unqualified absolute, so the fix is "no count of the CURRENT set", not a deletion.
+  **That correction then becomes a STANDING INVARIANT THE SAME BATCH VIOLATES**: a later
+  comment-only round re-typed the live tally (`fragment+tail`, the value the census class's
+  own doc says to never type) into a NEW comment far from the promise. So re-grep the current-set VALUE, not the phrase, every round of a
+  multi-round batch; the tell is a figure carrying no ticket and no date, since the carve-out
+  saves an attributed-and-superseded figure and nothing else. Same round, same file: a
+  comment advising "check X before quoting" while itself quoting an X derivable from nothing
+  the tool prints — state the RULE and how you'd tell, never the current reading.
+  **Deleting the stale figure is only HALF that repair: name what the run CANNOT print, or
+  the next writer re-derives it and re-types it.** But grade an "unprintable" claim against
+  EVERY printed artifact, not the two counters the sentence itself names: the ENTRY-scoped
+  tally and the POPULATION-scoped page count genuinely fail to reconcile, yet a THIRD table
+  (per-page movement deltas) settles half the claim — deltas sum to the tally, and an
+  undercount cannot be masked because each page contributes at most once. Confirming the
+  broad version on the named pair's merits alone is how one reviewer said "nothing printed
+  can settle it" while another correctly found the table that does. An ENUMERATING doc ("four
+  states, not three") is the same class of claim: a returning helper's list of named values
+  + sentinel drops the PASS-THROUGH state (any other value returned VERBATIM), which is the
+  state the sentinel exists to expose and the one a call site's `else { /* absent */ }`
+  silently eats. Grade a private `tools/` helper's return contract by RUNNING a scratchpad
+  replica of the function AND its caller's classification chain over the full input lattice
+  (13 cases, ~30s) — reading is how the doc came out one state short.**
+  **A new declaration inserted above a function silently RE-PARENTS the doc comment that sat
+  there** — the const gets a doc describing the function, the function gets none, and the
+  orphaned first line usually also states the return contract the new declaration just
+  widened. `git show HEAD:<f> | grep -B6` every symbol the change ADDS. A guard for MALFORMED
+  external input (unrecognised-enum counter + warning) is watched, not impossible, so the
+  tautology argument above does NOT cover it; it owes no test because the helper is private
+  AND reachable only through a `main()` resolving its data root from the ENVIRONMENT —
+  subprocess-only, NOT "untestable by construction". Say that: the extraction is ~10 lines
+  into `tools/corpus/`, where `test/corpus/corpus_multi_layout_test.dart` already builds a
+  synthetic corpus in a temp dir and constructs `CorpusPaths(tmp)` directly. Probe BOTH
+  disjuncts of a `v is! String || v.isEmpty` sentinel — a wrong-TYPE injection leaves the
+  empty-string half deletable-green, and the guard's own comment names both shapes. A
+  sentinel added to a returning helper changes NO count when it is chosen for values the old
+  code already mapped to the same downstream branch — prove that by equality of the two
+  return tables, not by a probe. Its discriminating evidence is then the new OBSERVABLE it
+  unlocks (a WARNING naming the offending path), which HEAD cannot emit — never a count,
+  because every count in sight moves at HEAD too. **A comment-only INSERT between two existing
+  sentences inherits BOTH neighbours' references**: a bare "the nine" lands with no antecedent
+  in that file, and the retraction it was pushed above ("wrong on both examples it named") now
+  trails a pair the retraction never meant. Grade an insertion's SEAMS, not only its claims —
+  and when two independently-derived figures collide numerically (9 band TAILS vs 9 gold
+  TOKENS), the conflation lands in the carrier that never says what the first nine counts, even
+  though the sibling file already carries the disambiguator. (BUT-1847)
+- **A comment's POSITIONAL safety argument ("the token must be the very first thing in the
+  string") is graded against every ITERATION of the loop that consumes it** — a head-parser
+  that peels twice exempts slot 2 too, so the argument is falsified by the file's own
+  neighbouring comment ("peeled TWICE, because V8 nests them"). Scratchpad replica over the
+  input lattice, 30s; the remedy is a qualifier, not code. Grade a QUANTIFIER in the same
+  file by the population it ranges over and by EXPOSURE — "most of this app's exception names
+  sit in the 20-28 window" is 12/31 by name, ~62% weighted by throw site; the durable repair
+  is the most-THROWN spelling with the measured pair (90 family sites of 168 constructions).
+  One `grep -c` is NOT the verifier and saying so was itself the error repeated: the naive
+  count reads 173, because it also catches switch-PATTERN arms (`PermissionDeniedException()
+  =>` in `shopping_failure_message.dart`) and a substring sibling (`TagConfigValidationException`).
+  Require a `throw|return|=>` prefix, and say "family" — 89 of the 90 are the base class and
+  one is `StaleAccessControlBaseException`, whose own label is a different 31 characters.
+  **Then check the repaired bound is PINNED, because a widened qualifier is a NEW claim with
+  no test**: mutating the loop 2→4 left all 21 green while 2→1 reddened exactly one, so the
+  suite pins "at least two slots" and nothing pins "at most two" — the exemption can silently
+  grow to slot 3+. The killer fixture is a digit-free 20-28 LETTER token, capital-initial,
+  in the slot just past the last legitimate label (BUT-1897).
 - **A collection's DOCUMENT-ID SCHEME change (deterministic→auto-id) breaks every reader
   that addresses/dedupes by it, invisibly** — grade writers keyed on `doc(x)`, mergers doing
   `byId[doc.id]=doc` (silent double-render), and field-keyed cascades (can lose their
@@ -148,6 +252,14 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
 - **A dropdown widened to keep an off-vocabulary value needs FOUR fixtures**: off-list-
   untouched; pick-something-then-pick-back (only killer of keying the list off current vs
   stored selection); empty-stored; literal vocabulary pin (BUT-1858).
+- **A fix that DELETES dead code is mutation-dead by construction** — reverting it restores
+  behaviour identical to the fix, so no test can redden. Only the FORWARD direction is
+  pinnable ("the field must not come back"); say that in the name, and never also assert the
+  VALUE the deleted code could not produce — that half is a tautology (BUT-1873).
+- **A `StyledInput` with `keyboardType: TextInputType.number` silently gets
+  `FilteringTextInputFormatter.digitsOnly`**, so any `replaceAll(',', '.')` decimal parse
+  below it is DEAD and "1,5" reaches the model as 15. A suite over a numeric field that never
+  types a DECIMAL cannot see it — measured, shopping add/edit dialogs, 2026-08-17.
 - A flag selecting between two values is pinned by both arms over one fixture with
   observably different values — no production mutant needed. A nullable override deriving
   its default from a nullable payload owes a third arm: the EMPTY (non-null) payload.
@@ -172,8 +284,47 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   verdict can't see "writes no second message"; the missing fixture is always the
   outsider-vs-member split the gate eats first.
 - A guard replicated across sibling fields is tested on one field only — enumerate fields,
-  one fixture per field per branch. `hasRequiredFields` checks presence+non-null ONLY, never
-  TYPE — every shape check needs a companion `is! Map`/`is! List` row.
+  one fixture per field per branch. **A multi-alternative REGEX is that same shape**: pin one
+  fixture per alternative its own doc comment enumerates, or deleting a branch reddens
+  nothing. BUT-1897's frame splitter named three stack spellings (`#0 `, V8 `at `,
+  `fn@url:line:col`) and shipped with the V8 one — the majority browser — unpinned, because
+  the two tests written were for the two spellings the ticket's prose talked about (closed
+  2026-08-20). Grade the whole family in ONE cheap run: a scratchpad replica of the
+  consuming function plus a MATRIX of full-regex × one-alternative-deleted variants over
+  every fixture — no `lib/` write, so the auto-mode classifier never fires, and the
+  alternative each fixture uniquely kills is read straight off the table. Two things only
+  the matrix shows: an alternative can be killed by TWO fixtures (fine) or by NONE (the
+  finding), and in a MASK-head/PRESERVE-frames splitter only the PRESERVE assertion pins the
+  split — the privacy assertion beside it is satisfied under every split mutant (a
+  no-match falls back to masking EVERYTHING), so it is a control against un-masking, not
+  evidence the split works. `hasRequiredFields` checks presence+non-null ONLY, never
+  TYPE — every shape check needs a companion `is! Map`/`is! List` row. **Same for a guard
+  replicated across sibling CLASSES** (one masking call in six `toString()`s): mutate PER
+  CLASS, because a class whose output is already safe for another reason is deletable-green
+  — `ValidationException` prints `Value: <Type>` and its only masking-adjacent assertion is
+  `isNot(contains('@'))`, which the type-description satisfies alone (BUT-1897). A stated
+  red count must name its SCOPE: "removing the mask reddened 4" was true for ONE class and
+  8 for the family, and the smaller number reads as "the other five are unpinned".
+- **A source-scanning guard enforces its REGEX, not its TITLE — cite what it matches, never
+  what it is called.** `architecture_test.dart`'s "no raw user ids in AppLogger calls"
+  matches `$userId`/`$uid` only, so `$conversationId` walks past it in 9+ `lib/` files while
+  literally being two raw uids (`direct_<a>_<b>`). Before leaning on a guard as a
+  contract, read its pattern and name the aliases of the guarded DATA that the pattern
+  cannot see; a guard whose own doc comment lists "known gaps" is naming variables, and the
+  gap that matters is usually a different NAME for the same secret (BUT-1897, 2026-08-20).
+- **A comment naming WHICH test guards an ORDERING dependency is graded by performing the
+  reorder, never by reading the suite — and the decoy is systematic**: a test pinning the same
+  literal through the HELPER the mutated caller delegates to is invariant BY CONSTRUCTION, so
+  it reads like the closest guard and can never redden. Route-check each candidate (does the
+  fixture enter the mutated seam?), then check the surviving test's fixtures one by one — only
+  the REALISTIC-length one usually straddles the swap. Swapping `maskIdentifiers`' two rules:
+  5 red across 4 suites, all through `sanitizeForCrashlyticsForTesting`; both `direct_#<hash>`
+  literal pins stayed green (BUT-1897, 2026-08-20). **The comment REPAIRING that attribution
+  then failed on SCOPE, the same day**: "every test in this group calls the helper directly,
+  never the chokepoint" named as its own counterexample a test 70 lines below — inside that
+  same `group(`. Scope the sentence to the FIXTURE it sits beside, and `grep -n '^  group('`
+  the counterexample's line before writing "in this group"; the guard-bearing test is the
+  file's ONLY caller of the mutated seam, so it is always one grep away (BUT-1897, 2026-08-21).
 - The in-memory version DELETES data instead of failing to write it (a model field + N
   field-by-field rebuilds) — `copyWith` is the durable fix, it can't forget what it never
   enumerates; assert an UNTOUCHED member survives.
@@ -212,7 +363,9 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
 - Round-trips must drive the REAL serializer, never `copyWith`; a DateTime sentinel needs
   zone normalisation checked via round trip.
 - A two-sided guard (å/ä/ö boundaries) needs a discriminator PER SIDE and a recall control on
-  tightening — classify by which side the diacritic sits. Boundary shape is decided by the
+  tightening — classify by which side the diacritic sits, and print each candidate pattern
+  over all three fixture histories (old-matched, new-matched, never-matched) before writing
+  rationale. Boundary shape is decided by the
   CONSUMER, not tidiness — never harmonise two deliberately different guards in this repo.
 - A hand-built narrow write payload needs BOTH the carried and omitted keys pinned — for the
   omission, drive a mutator that moves the excluded key as its OWNER.
@@ -231,6 +384,12 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
 | All production mocks | `test/infrastructure/mocks/production_mocks.dart` |
 | Typed mock factory | `test/infrastructure/factories/mock_factory.dart` |
 | `MockMenuService` (NOT in production_mocks.dart) | `test/infrastructure/mocks/service_mocks.dart` |
+
+**`RecipeFactory.build` has NO `tagResult`/`tagOverrides` param; `RecipeBuilder` does.** Every
+tagging-gated render (`recipe.tagResult != null` guards the card's allergen/dietary rows) is
+UNREACHABLE from a factory-built fixture, so a test written on the factory passes vacuously
+rather than failing to compile — that is exactly how BUT-1780 shipped "fixed" with no badge
+ever on screen. Use `RecipeBuilder().withTagResult(...)` for anything badge- or tag-related.
 
 ### FakeFirebaseFirestore vs emulator decision tree
 | Behaviour under test | Use |
@@ -262,7 +421,20 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   --name-only` — no new surface if the pure-logic file is absent.
 - `SemanticsService.announce` in a fire-and-forget handler is skippable UNTIL the view gains
   a DI seam — dated, not permanent. A comment-only diff owes no test IF the claim is already
-  pinned by a fail-loud spy — verify, don't trust.
+  pinned by a fail-loud spy — verify, don't trust. But a comment-only CORRECTION owes a grep
+  of the CORRECTED SENTENCE across `test/`: a covering suite's group header quotes production
+  prose, so the false claim has a third copy there and the batch ships two answers to one
+  question (BUT-1883 — "an unhydrated poll makes `closePoll` resolve to the first option" was
+  still live in `message_query_module_test.dart` after both `lib/` copies were fixed;
+  `_resolveWinner` returns null at zero votes).
+- **A mask-at-the-throw fix owes NO test when nothing observes the message**: the string is
+  caught in-method and handed to `AppLogger.error` as the ERROR OBJECT (only the MESSAGE
+  arg is sanitized), the user-visible text is a generic fallback, and asserting
+  `isNot(contains(id))` on that fallback is the classic type-description vacuity. Say so;
+  the durable pin is a source lint in `test/architecture/`, not a fixture (BUT-1897,
+  `ConversationsViewModel.leaveGroup` + `MessageDeletionModule`). Check "no production
+  caller" yourself — it decides the verdict — and note that a residual-throw branch above
+  `batchDeleteDocs` is unreachable on `FakeFirebaseFirestore`, whose deletes always succeed.
 - **A "sole guard"/KNOWN-GAPS comment is a CLAIM until a test enters that exact branch** —
   verify against the model's SERIALIZER, never read a rules subcollection match or a
   cascade's defensive sweep as evidence the client writes it. A rationale citing a backend
@@ -272,7 +444,11 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   invariant — verify the lint is byte-identical to HEAD and the pre-fix set had exactly ONE
   element.
 - A behaviour-neutral respelling owes no test — earn that by MUTATION-COUNTING the existing
-  suite, then fix the comment/header claim the respelling falsified.
+  suite, then fix the comment/header claim the respelling falsified. Before writing "the
+  suite had nothing to say", grep `test/architecture/architecture_test.dart`: style bans
+  (BUT-581 raw `?? ''`) ARE tests there, repo-walking source lints run in two CI workflows,
+  with `tools/check_staged_arch_guards.sh` as the pre-commit twin. Behavioural suites cannot
+  see a respelling by construction — that split is correct, not a gap.
 
 ### Vacuity patterns — the recurring ways a "passing" test proves nothing
 The single most repeated finding across two months of review.
@@ -280,8 +456,12 @@ The single most repeated finding across two months of review.
   fixture where they DISAGREE. Every pattern below is an instance.**
 - Circular determinism (calling the same pure function twice, or deriving expected from the
   const under test) — pin the literal OUTPUT.
-- Sibling-OR-branch short-circuit: for `if(A) return true; if(B) return true;`, check no
-  fixture satisfies a branch other than the named one.
+- Sibling-branch short-circuit, BOTH polarities: for `if(A) return true; if(B) return
+  true;`, check no fixture satisfies a branch other than the named one. MIRROR (AND-chain +
+  `findsNothing`): a negative test naming ONE conjunct needs every OTHER conjunct
+  SATISFIED, or the conjunct it names is deletable-green — assert the premise in the test
+  itself (BUT-1869 "badges off" ran on a fixture WITH badges, so `.isEmpty` withheld the
+  marker and the flag was never exercised).
 - Fake-default-same-as-expected: use a sentinel no real caller would pass.
 - **DESERIALIZER-DEFAULT vacuity**: a save-retrieve test asserting the parser's own
   `defaultValue` is unfailable — missing doc, dropped write, empty map all answer the same.
@@ -294,6 +474,10 @@ The single most repeated finding across two months of review.
   DERIVED value, not "no value").
 - A collection-SHAPE assertion instead of the skipped element's VALUE (a Map can't hold a
   dup key, so "appears once" can't distinguish skip-vs-overwrite).
+- **A guard wrapping [spacer + a child that self-collapses to `SizedBox.shrink()`] is pinned
+  ONLY by `find.byType(<ChildWidget>)`** — the child-CONTENT assertion (badge, row item) is
+  vacuous, because deleting the guard rebuilds the child, which then draws nothing and leaves
+  the dead spacer the ticket was about (BUT-1869, `CompactAllergenRow` on an empty pref set).
 - A Fake with two branches answering the same success value, driven by one UI flag, eats a
   routing test whole — test the FAILURE arm. An enum-driven `defaults()` owes a
   KEY-SET-COMPLETENESS test — a forgotten member is DEAD, not "off by default."
@@ -314,9 +498,49 @@ The single most repeated finding across two months of review.
   flips at MIDNIGHT, not a duration. `DateTime.utc(...)` fixtures can't assert zone
   normalisation — feed `Timestamp.fromDate(x).toDate()`.
 - Any normalizer/sanitizer is the IDENTITY on an already-normal fixture, and realistic
-  fixtures usually are — enumerate what the helper changes, plant one instance each.
+  fixtures usually are — enumerate what the helper changes, plant one instance each. MIRROR:
+  a "the masker LEFT X alone" assertion is vacuous unless X sits inside the domain the
+  masker would otherwise change — a 16-char class name under a {20,28} identifier rule
+  survives for an unrelated reason, making the whole test byte-identical under the mutant its
+  own `reason:` line names (BUT-1897, `_scrubStack`). Compute the fixture against the
+  guard's BOUNDS, not against plausibility.
+- **Moving a mask INTO `toString()` silently subsumes every per-site mask assertion** — after
+  the class masks, `isNot(contains(uid))` on the RENDERED string is held up by the class rule,
+  so the throw site's own `.masked*` call is deletable-green. Measured (BUT-1897): dropping
+  `.maskedUserId` from both `MessageMutationModule` throw sites left the suite GREEN. The only
+  surviving discriminator was a shape production never mints (`direct_abc` — hashed by
+  `maskConversationId`, untouched by `maskIdentifiers`' two-segment rule), which ties the test
+  to a divergence `log_sanitizer.dart` itself calls incidental. Pin the exception FIELD
+  (`ResourceNotFoundException.resourceId`) instead: it discriminates on the REAL id and cannot
+  be satisfied by the class rule.
+- **A round-trip over a `double` is bound by its fixture LIST, and Dart's own notation
+  switches inside the domain** — `toString()` goes EXPONENTIAL below 1e-6 (so a
+  format→retype invariant breaks: `1,5e-7` re-formats to `1,57`) and `round()` SATURATES at
+  int64 rather than throwing, while `infinity` DOES throw `toInt`. Friendly fixtures
+  (1.5, 0.5, 2.25) prove none of it; enumerate the NOTATION boundaries, not more nice
+  numbers (BUT-1891). A comment naming the strategy an assertion beats is itself untested —
+  measured, the caret fixture made "counted" and "length-delta" AGREE and only separated
+  "naive"; the two differ only when a character is dropped AFTER the caret.
+  **A "round trip" over a UI value is TWO seams, and the doc always blames the wrong one**:
+  format→parse and format→FIELD→parse. Measured, `parseSwedishDecimal` reads `1e-7` back
+  EXACTLY (`double.tryParse` takes exponent notation); what loses it is the input
+  FORMATTER's character filter dropping `e`/`-` → `17`. So "the parser cannot read it" would
+  send the fix to the component that works. Resolve which seam by grepping the CALLERS: if no
+  production line pairs the two functions directly, the direct round trip is the path that
+  does not exist and the field one is the contract (BUT-1912). **The field seam has a
+  TRIGGER, and it is not opening the dialog**: `inputFormatters` run on KEYSTROKES only, so a
+  controller seeded programmatically keeps `5e-7` verbatim and saves the right value —
+  measured with a `TextField` probe, seeded `"5e-7"` survives the pump, one keystroke makes it
+  `"571"`. A `typed()` helper models RETYPING, not seeding, so any sentence about "what comes
+  out of the field" owes the qualifier or it overstates the blast radius. Corollary for
+  the suite: the test modelling the REAL seam is the one whose fixture list must straddle the
+  flip (1e-6 holds / 5e-7 breaks), and a test name stating an unqualified universal the
+  production doc now DENIES is the two-answers-to-one-question split — the name and the doc
+  sentence are one claim in two files and land in one edit.
 - A measurement harness's failure mode is a confident number from a broken rig — demand a
-  positive control that the engine produced anything at all.
+  deliberately-broken POSITIVE CONTROL, not just "the engine produced something". Two rigs
+  that read 0-diff for free: a `--output=none`/dry-run flag (the tool never writes the file
+  you then diff), and leaving the ORIGINALS inside the directory the tool rewrites.
 - A hand-rolled double MODELLING a write's effect (not applying its payload) is blind to
   field NAMES, and a migration IS a field name — union under `Object.keys(op.data)[0]`.
 - "Returns null on permission denial" needs a positive control same fixture — where every
@@ -327,14 +551,9 @@ The single most repeated finding across two months of review.
   same LENGTH — need the MIXED case. Same for a re-found index after `await` (identical to
   stale when the collection has one element) and a field-exclusion decision (byte-identical
   round-trips hide it).
-- A SCOPE guard (suffix-not-substring) needs a fixture inside the vocabulary that fails ONLY
-  on the guarded shape.
-- A two-sided guard needs a discriminator PER SIDE and a tightening needs a recall control —
-  print each candidate pattern over all three fixture histories (old-matched, new-matched,
-  never-matched) before writing rationale.
-- A hand-built narrow payload needs both carried and omitted keys pinned. A `continue`-style
-  skip-list disagrees with its absence only when a skipped token shares a LINE with a
-  matched one — if that's also where the real answer is lost, it's a design finding.
+- A `continue`-style skip-list disagrees with its absence only when a skipped token shares a
+  LINE with a matched one — if that's also where the real answer is lost, it's a design
+  finding. (Scope guards, two-sided guards, narrow payloads: Coverage decisions holds them.)
 - A PLACEMENT claim un-pinnable when wrong-placement is benign — say so, don't force a test.
   A signature-only narrowing opens no gap by construction — the question is whether the
   DISPATCHER calls the narrowed overload (2-arm replica, 10s).
@@ -416,6 +635,10 @@ The single most repeated finding across two months of review.
   manufacture a fixture just to satisfy a mutant.
 - A colour pin is legitimate only when the row's semantics ARE the colour, and must name the
   theme TOKEN, not a raw hex — grep the hex across the theme's own fields too.
+- `expect(x, isEmpty)` DOES discriminate `''` from `null` — matcher's body is `(item as
+  dynamic).isEmpty`, so null throws NoSuchMethodError and the test goes red (as an error,
+  not a clean mismatch). So an `isEmpty` pin on a nullable "cleared vs unchanged" field is
+  real coverage, not vacuous; don't downgrade it to `equals('')` on suspicion (BUT-1874).
 - `tester.widget<T>(find.byIcon(...))` throws StateError on "more than one," not a clean red
   — scope it. Ordering needs `verifyInOrder`, not call-count. Revert-to-start: mutate, THEN
   revert, then assert.
@@ -491,7 +714,10 @@ directly; a corrupt-value test ALSO asserting a sibling merged field survives (o
 settings doc has it and the public doc does NOT, plus a round trip; one test per
 serialization surface. Sentinel params (`Object? field=_unset`) need both quadrants:
 omit→preserved, explicit-null→cleared. Capture the forwarded ARGUMENT IDENTITY, not a
-downstream no-op.
+downstream no-op. An EMPTY-STRING sentinel (`''`=cleared, `null`=leave alone) is a contract
+between TWO files: a widget test pinning what LEAVES the emitter is green forever if a
+consumer later re-collapses `''` to "unchanged" — pin the consumer's own `x ?? current` line
+in ITS suite, same edit (BUT-1874: emitter pinned, `ShoppingItemManagementModule` untouched).
 
 ### Age/maturity/consent gates
 - A field moved client→CF-authoritative: invert the old round-trip into an ABSENCE
@@ -584,7 +810,17 @@ downstream no-op.
 ### One-off gotchas, Windows/runner notes, and the revert-probe technique
 - An overflow probe MUST mount `AppTheme.lightTheme` — the bare `MaterialApp`'s smaller
   default typography can hide a real overflow. Pin with SYNTHETIC tall content, never real
-  ARB copy (dies with the flag).
+  ARB copy (dies with the flag). `expect(takeException(), isNull)` is ALSO satisfied by a
+  tile that rendered nothing, so co-assert the content under test is present — otherwise a
+  regression in the flag that ADDS the content turns the geometry case green. A ladder that
+  SKIPS cases per fixture (`cleanUpTo`) is honest only if the skipped ones are MEASURED
+  (320dp really does overflow from 1.3x, BUT-1895); the residual is then un-pinned in the
+  reverse direction, so a source comment claiming "both ends are covered" goes stale in
+  silence the day someone retunes the factor. Register those cases as NAMED `skip:`, never a
+  `continue` — `testWidgets`' skip takes no reason, so the reason and ticket go in the NAME,
+  which the runner prints every run. Two residuals survive that: the co-assert closes only
+  "the ADDED content vanished" (a tile fitting because something ELSE shrank still passes),
+  and a named skip goes stale GREEN the day the residual is actually fixed.
 - A page-size guard is only testable on a TALL surface (`tester.view.physicalSize =
   Size(800,14000)`, dpr 1.0) — a short surface auto-scrolls and hides item 0.
 - `Semantics(label:)` on a tooltip'd button MERGES into one node — match with `RegExp`,

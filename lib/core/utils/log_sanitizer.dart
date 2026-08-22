@@ -59,7 +59,7 @@ class LogSanitizer {
   /// through unchanged here.
   ///
   /// "Unchanged here" is the honest limit: on the Crashlytics path a 20-char
-  /// group id still matches `AppLogger`'s bare-token rule and arrives as
+  /// group id still matches rule 2 of [maskIdentifiers] and arrives as
   /// `abcd***`. Harmless for privacy, but it means a group id does NOT read
   /// identically in a crash report and a Cloud Functions log. Only the direct
   /// ids do, and that parity is pinned by a literal in both languages' tests.
@@ -80,6 +80,80 @@ class LogSanitizer {
     if (conversationId.isEmpty) return '[empty]';
     if (!conversationId.startsWith('direct_')) return conversationId;
     return 'direct_#${CryptoUtils.sha256Hash(conversationId).substring(0, 12)}';
+  }
+
+  /// Masks every identifier EMBEDDED in a free-text string.
+  ///
+  /// The other helpers here take one id and mask it. This one takes a sentence
+  /// and finds the ids inside it, which is what an exception message, a
+  /// resource path or a log line actually is. Moved here from `AppLogger` so
+  /// the crash-report path and the exception classes apply ONE rule rather than
+  /// two copies of it — this repo has paid repeatedly for the same decision
+  /// spelled twice (BUT-1897).
+  ///
+  /// Two rules, and rule 1 MUST run first — that is a dependency, not a
+  /// preference. Rule 2's lookarounds treat `_` as a boundary, so on a raw
+  /// `direct_<a>_<b>` it would mask each half separately and leave
+  /// `direct_aBcD***_zZyY***` for the minted-shape test's fixture, destroying
+  /// the `direct_#<12 hex>` shape that
+  /// `logSafeConversationId` in `functions/src` produces for the same
+  /// conversation. Reordering these two breaks that parity — and it does NOT go
+  /// unnoticed: five cases across four suites redden, the closest being
+  /// `log_sanitizer_test.dart`'s minted-shape test, which asserts that this
+  /// chokepoint and [maskConversationId] agree. (The cases that pin the literal
+  /// hash call the helper directly and are invariant under a reorder — they are
+  /// not the guard here.) Measured by actually swapping them, because the first
+  /// version of this sentence claimed the suites stayed green and that was
+  /// false in the dangerous direction: it would have told a maintainer the
+  /// dependency was unguarded, so a red suite after a reorder reads as noise.
+  ///
+  /// (It was safe either way while rule 2 was `\b`-anchored, because `\b` does
+  /// not fire beside an underscore. Widening the anchors for composite ids is
+  /// what made the order load-bearing.)
+  ///
+  /// Two rules, in order:
+  ///
+  /// 1. `direct_<a>_<b>` — a DM's id is derived from its two members, so it is
+  ///    a social-graph edge, not just an identifier. Hashed via
+  ///    [maskConversationId] so one conversation still reads the same across a
+  ///    Crashlytics report and a Cloud Functions log.
+  ///
+  ///    Unbounded halves and a left boundary, both deliberate. Bounding them to
+  ///    {20,28} matched only well-formed live ids: a short one (test data, or
+  ///    any future id scheme) passed through RAW, and a half LONGER than 28 got
+  ///    its tail left behind outside the hash. The left boundary stops the
+  ///    `direct_` inside a word like `redirect_` from being hashed as an id.
+  ///
+  ///    This rule and [maskConversationId] therefore agree on every id of the
+  ///    MINTED SHAPE — exactly two segments, any length — rather than only on
+  ///    today's 28+28 live ids. They still differ on shapes nothing mints:
+  ///    `direct_abc` is hashed by the helper and untouched here, and
+  ///    `direct_a_b_c` would have its tail left outside the hash. The single
+  ///    mint site is `ConversationMutationModule`, so neither shape exists;
+  ///    widening this would mean hashing arbitrary underscore-joined text.
+  ///
+  /// 2. Any 20-28 character alphanumeric token — the shape of a Firebase uid —
+  ///    truncated to its first four characters. A uid is personal data: anyone
+  ///    with console access joins it against `users/{uid}` in one step.
+  ///
+  ///    Bounded by explicit lookarounds rather than by `\b`, and that is the
+  ///    difference between covering the case and missing it. `\b` counts `_` as
+  ///    a word character, so a COMPOSITE document id built as `<uid>_<suffix>`
+  ///    never matched — and those are everywhere: a weekly menu plan is
+  ///    `${userId}_${weekKey}`, a retention row is `{uid}_{date}`. The rule was
+  ///    written with `\b` first and let
+  ///    `AbCdEfGhIjKlMnOpQrStUvWx1234_2026-W34` through whole, in a message
+  ///    `base_firebase_repository` really throws.
+  static String maskIdentifiers(String text) {
+    return text
+        .replaceAllMapped(
+          RegExp(r'(?<![a-zA-Z0-9_])direct_[a-zA-Z0-9]+_[a-zA-Z0-9]+'),
+          (m) => maskConversationId(m.group(0)!),
+        )
+        .replaceAllMapped(
+          RegExp(r'(?<![a-zA-Z0-9])[a-zA-Z0-9]{20,28}(?![a-zA-Z0-9])'),
+          (m) => '${m.group(0)!.substring(0, 4)}***',
+        );
   }
 
   /// Masks a display name for safe logging.

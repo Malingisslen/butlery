@@ -324,9 +324,18 @@ class RecipeCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Image
+        // The image is the SLACK in this layout, not a fixed block.
+        //
+        // A grid tile's height is decided by the delegate's aspect ratio, so
+        // unlike the detailed layout this Column cannot grow. A fixed 150px
+        // image plus text that grows with the OS text scale therefore is not a
+        // tight layout, it is an overflow: measured at 70px past the bottom at
+        // 1x and 175px at 2x, on a 2-column phone, for every recipe including a
+        // one-word title. In release that is silent clipping, which is why it
+        // survived. Expanded lets the image give up its own height so the title,
+        // the metadata and the allergen row keep theirs.
         if (showImage) ...[
-          _buildRecipeImage(context, height: 150, width: double.infinity),
+          Expanded(child: _buildRecipeImage(context, width: double.infinity)),
           const SizedBox(height: AppDimensions.spacingSm),
         ],
         // Title + favorite
@@ -340,6 +349,35 @@ class RecipeCard extends StatelessWidget {
         if (showMetadata) ...[
           const SizedBox(height: AppDimensions.spacingXs),
           _buildMetadataRow(context, compact: true),
+        ],
+        // BUT-1895: allergen information must not depend on which view toggle
+        // happens to be saved. The badges were drawn in the detailed layout
+        // only, and `MinaReceptRecipeCard` picks the GRID style the moment the
+        // user turns grid view on — so on Mina recept the setting that shows
+        // allergen status on recipe cards (`allergenDisplayOnCardsTitle`) was
+        // honoured in list mode and silently ignored in grid mode, on the same
+        // screen.
+        //
+        // The unassessed marker SHIPS with the row and is never left behind —
+        // at runtime the two are mutually exclusive, since the marker is what a
+        // card shows INSTEAD of the row when the user asked for allergen
+        // information and there is nothing to say. On a screen of mostly-green
+        // cards a silent card reads as "nothing flagged", and that inference is
+        // exactly what the marker exists to block, so moving the row here
+        // without it would reopen a fixed bug in a new place.
+        //
+        // The dietary row is deliberately NOT here — see BUT-1906.
+        if (showAllergenBadges && _allergenBadges.isNotEmpty) ...[
+          const SizedBox(height: AppDimensions.spacingXs),
+          CompactAllergenRow(
+            tagResult: recipe.tagResult!,
+            userPrefs: userAllergenPrefs,
+            maxBadges: 4,
+          ),
+        ],
+        if (_showUnassessedIndicator) ...[
+          const SizedBox(height: AppDimensions.spacingXs),
+          _buildUnassessedIndicator(context),
         ],
       ],
     );

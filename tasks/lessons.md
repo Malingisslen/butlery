@@ -16,6 +16,124 @@ rule is internalised (roughly six weeks).
 
 ## Current
 
+### A shared choke point makes OTHER files' tests vacuous, and only a whole-diff read sees it (2026-08-20)
+- **Date**: 2026-08-20
+- **Trigger**: Six single-file reviewers passed a PII change. The integration pass then found
+  three things none of them could see. (a) The exception classes were fixed to keep their TYPE
+  LABEL outside the mask — and the web sink, a different file, re-applied the mask over the
+  whole string and ate the label again. (b) Two pre-existing tests in *untouched* files became
+  unfailable: once the class masks itself, deleting the per-throw-site mask reddened nothing,
+  while their comments still boasted the opposite. (c) Widening a regex anchor turned rule
+  ORDER into a correctness dependency that no file recorded.
+- **Rule**: When a fix moves a rule into a shared place, three questions are cross-file and a
+  per-file reviewer cannot answer any of them: which OTHER callers now apply the rule where
+  they did not, which existing tests are now held up by the new central rule instead of the
+  thing they claim to pin, and did a widened pattern make some ordering or precedence
+  load-bearing. Run a whole-diff pass, and when centralising, re-probe the tests of every
+  caller — a green suite in an untouched file is the evidence that goes stale silently.
+- **Example**: The tests were repaired with a case the CENTRAL rule cannot satisfy (a
+  one-segment `direct_abc`, which the composite pattern needs two segments to match), so they
+  discriminate the per-site call again.
+- **Files**: `lib/services/monitoring/web_error_reporter.dart`, `lib/core/utils/log_sanitizer.dart`
+
+### Seven review rounds, and every block was a sentence I wrote, not code (2026-08-20)
+- **Date**: 2026-08-20
+- **Trigger**: A four-ticket sprint went through seven specialist rounds. Four rounds blocked.
+  Not one block was about behaviour — every single one was a MEASURED or CAUSAL claim in a
+  comment that the code contradicted: "the most throw sites of the family" (measured 20 vs
+  90), "roughly fifty throw sites" (173), an MFA field cited as protected by a default it
+  never touches, "an empty set is what an opted-out user reaches the card with" (they reach it
+  with null), a fabricated re-confirmation date, and a positional claim ("three lines from")
+  that pointed at nothing. Two of those were themselves CORRECTIONS of an earlier wrong
+  sentence.
+- **Rule**: Treat every number, "most/every/only", causal "because", and provenance date in a
+  comment as an assertion that must be MEASURED before it is written — `grep -c` it, or do not
+  write it. Prefer the rule over the evidence: "`details:` is where callers put an id" needs no
+  maintenance; "this class has the most throw sites" rots and misleads. And when a reviewer
+  disproves one sentence, re-check every other sentence in the same edit — the repair is as
+  falsifiable as the original, and here it was wrong twice.
+- **Example**: Cheapest guard found: before writing a comparative, run the count for EVERY
+  member of the set, not just the one being described. Two minutes; it would have caught three
+  of the six.
+- **Files**: `tasks/lessons.md`, `.claude/rules/lessons-digest.md`
+
+### A mutation probe's restore can silently revert an unrelated fix (2026-08-20)
+- **Date**: 2026-08-20
+- **Trigger**: A comment fix landed and its assertion passed. A later mutation probe on the
+  SAME file backed up, mutated, and restored from a backup taken BEFORE that fix — quietly
+  putting the false sentence back. It was caught only because a reviewer grepped for the
+  claim after I had "already fixed" it.
+- **Rule**: A probe's backup is a snapshot of a moment, so take it immediately before the
+  mutation and never reuse one across edits. After any probe, `git diff` the probed file and
+  confirm it holds the CURRENT intended content, not merely that it is unchanged since the
+  backup. And verify a removal against `git show :<path>` — the index is what commits, and a
+  worktree fix that never reached it looks identical to a fix that did.
+- **Files**: `lib/core/exceptions/permission_exceptions.dart`
+
+### A ticket's stated harm can be REFUTED, and the source is often a comment (BUT-1883, 2026-08-20)
+- **Date**: 2026-08-20
+- **Trigger**: BUT-1883 specified a guard: stop `closePoll` acting on a poll whose votes were
+  never loaded, because it "resolves to the first option and writes the wrong recipe into the
+  week's plan". Neither half is reachable. `closePoll` re-reads the single message on a path
+  the 20-poll cap cannot touch (`.take(20)` over a one-element list), and `_resolveWinner`
+  returns null once every option reads zero. The ticket was written FROM two comments in
+  `message_query_module.dart` that asserted both, and both were false.
+- **Rule**: Step 0 has a third outcome besides fits/plan-stale: the premise can be *inverted*.
+  When a ticket cites a mechanism, trace the mechanism, not the symptom — and when it turns
+  out false, ask what the ticket was written from. A wrong comment does not just mislead a
+  reader; it manufactures work, and the work looks legitimate all the way to the commit gate.
+  Fix the comment, rewrite the ticket with the measurement, and file the real defect
+  separately — do NOT build the specified guard to close the ticket.
+- **Example**: The real defect was the inverse: the write is correct and the SCREEN lies. A
+  capped poll shows "0 röster", the close button is still drawn, and closing then resolves the
+  real winner. Filed as BUT-1908; nothing was built under BUT-1883.
+- **Files**: `lib/repositories/firebase/modules/message_query_module.dart`
+
+### Masking by SHAPE eats whatever shares the shape, and `\b` is not the boundary you want (BUT-1897, 2026-08-20)
+- **Date**: 2026-08-20
+- **Trigger**: A rule truncating any 20-28 char alphanumeric run — the shape of a Firebase uid —
+  was applied to an exception's whole `toString()`. `PermissionDeniedException` is 25 characters,
+  so every one of them became `Perm***`. Caught by the existing tests on the first run. Then a
+  verifier found the opposite failure: `\b` counts `_` as a word character, so a COMPOSITE id
+  (`<uid>_2026-W34`, which is literally how a weekly menu plan is keyed) never matched at all.
+- **Rule**: A shape-based redaction has two failure directions and you must test both. Keep
+  anything that is NOT data outside the masked span (the type label, the frame names in a stack
+  trace), and bound the pattern with explicit lookarounds — `(?<![a-zA-Z0-9])…(?![a-zA-Z0-9])` —
+  because `\b` silently exempts every underscore-joined id. Ask "what else in this string is
+  the same shape as the secret?" before shipping, and name a composite id in the tests.
+- **Example**: Also stopped masking web STACK TRACES: hundreds of class names in `lib/` are
+  20-28 chars, and on web that reporter is the only sink, so masked frames make the report
+  useless. The message is masked; the frames are not.
+- **Files**: `lib/core/utils/log_sanitizer.dart`, `lib/core/exceptions/permission_exceptions.dart`,
+  `lib/services/monitoring/web_error_reporter.dart`
+
+### Measure the CONTAINER before adding to it — it may already be overflowing (BUT-1895, 2026-08-20)
+- **Date**: 2026-08-20
+- **Trigger**: The ticket asked for an allergen row in the recipe grid tile. Before writing the
+  row I pumped the real grid geometry and found the tile already overflowed its own box by 70px
+  at normal text size and 175px at 2x — for every recipe, including a one-word title. In release
+  that is silent clipping, no stripes, which is why it had survived unreported.
+- **Rule**: When a change adds content to a fixed-size container, measure the container empty
+  first. "Add a row" is not implementable into something that already clips, and the honest fix
+  is usually the container (make the image the layout's slack; scale the tile with the text),
+  not smaller content. A fixed aspect ratio cannot hold text that scales — treat that as a bug
+  class, not a tuning question.
+- **Example**: A throwaway probe test printing `tester.takeException()` at scales 1.0/1.3/1.5/
+  1.75/2.0 gave the numbers in about a minute and became the committed regression test.
+- **Files**: `lib/widgets/recipe/recipe_card.dart`, `lib/theme/app_dimensions.dart`
+
+### A formula copied into its own test measures the copy (BUT-1895, 2026-08-20)
+- **Date**: 2026-08-20
+- **Trigger**: The overflow test hardcoded the tile's aspect-ratio formula because the production
+  one was a private function in the view. A verifier flagged it: retune the real formula and the
+  test stays green against its own stale number while the real grid overflows.
+- **Rule**: A test that re-derives the value under test proves the test agrees with itself. Move
+  the function somewhere importable and import it. Doing so also re-runs the test against reality
+  — here it immediately failed, because the delegate was reading `MediaQuery` from a context ABOVE
+  the override the test installed, so the "2x" cases had been measuring a 1x tile all along. The
+  hardcoded copy had hidden that by passing the scale in by hand.
+- **Files**: `lib/theme/app_dimensions.dart`, `test/widget/recipe/recipe_card_grid_badges_test.dart`
+
 ### Main was red for three unrelated reasons and none of them was a bug (BUT-1905, 2026-08-20)
 
 Three workflows red, up to eight days, zero user impact. `Run Tests` since 08-15, `Build

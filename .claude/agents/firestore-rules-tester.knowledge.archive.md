@@ -2541,3 +2541,35 @@ as a story-of-the-day log.
 - **A comment saying a rule uses "the same test as" a SIBLING RULE is a parity claim, and parity is measured, never read** (2026-08-17, `poll_votes`). `inPollConversation()` was introduced as "the same membership test the message read rule uses, one document further out": the membership half is identical, but the `messages` read rule also carries BUT-1838's `memberSince` cut-off, and the subcollection does not. Measured on a group conversation whose `memberSince` postdates the poll — late joiner DENIED the poll message, ALLOWED the tally read, and ALLOWED to CAST a vote in it. **Check the WRITE verb too**: a read-focused reading of this divergence names the tally leak and misses that the same predicate gates `create`. Generalises the older "a rules comment asserting what a Cloud Function does is a claim about another file's boolean" — a sibling rule ten lines away is exactly as unread as another file. A parent rule and its subcollection are two rules; enumerate every conjunct on the parent and ask which the child dropped.
 - **A "comment-only" rules diff is provable across MANY rounds at once**: `git cat-file --batch-all-objects` finds every previously-staged revision, and all of them sharing one comment-stripped md5 proves the code never moved through the whole review. Size-filter on the CRLF size (~158 KB here, not the ~85 KB an LF-era guess finds) or the sweep silently returns only ancient revisions and reads as "no prior version exists".
 - **Registering a new rules suite has FOUR mechanical steps** (`functions/scripts/check-test-registration.js` fails the commit otherwise): the `test:rules:<name>` script, an entry in the `test:rules:all` chain, AND the path in **both** `paths:` blocks of `.github/workflows/firestore-rules.yml` (pull_request + push). Verify with `node scripts/check-test-registration.js`.
+
+## 2026-08-18 — comment-drift sweep on `isAccountMatured()`: name corrected, value re-verified
+
+Nightly comment sweep changed exactly one word in `firestore.rules`:
+`kAccountMaturityMinutes` -> `kAccountMaturityWindow` in the comment above
+`isAccountMatured()`. Gate review, no emulator run (no rule change to prove).
+
+Mechanical comment-only proof (both methods from the principles file):
+- `git diff -U0 -- firestore.rules | grep '^[+-]' | grep -v '^[+-][+-]' | grep -v '^[+-][[:space:]]*//'`
+  -> empty.
+- Comment-stripped + CRLF-stripped + blank-stripped md5 of `HEAD:firestore.rules` vs
+  worktree: identical (`1720ff7e...`), 1378 surviving lines on both sides, so the
+  equality is visibly non-vacuous.
+
+Name claim: `kAccountMaturityMinutes` matches NOWHERE in the repo after the edit (rg,
+whole tree). `lib/services/auth/account_maturity_helper.dart:8` declares
+`const Duration kAccountMaturityWindow = Duration(minutes: 60)` — path in the comment
+is correct.
+
+Value claim (the part a name-only fix would have missed): rules use
+`>= 60 * 60 * 1000` ms = 60 min; Dart is `Duration(minutes: 60)`. Agree. A THIRD mirror
+the comment does not name also agrees:
+`functions/src/ratings/canonical-rating-aggregation.ts:67`
+`export const kAccountMaturityWindowMs = 60 * 60 * 1000`. Had any of the three
+disagreed, the corrected comment would itself have been false and the sweep would have
+had to BLOCK rather than commit a tidier-looking lie.
+
+Lesson merged into the principles file (Rule parity / comments bullet): a "kept in sync
+with X" comment asserts both the SYMBOL and the VALUE; a drift sweep that repairs only
+the symbol can leave the stronger claim broken.
+
+Verdict: PASS, 0 blocking.

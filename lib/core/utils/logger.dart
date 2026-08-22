@@ -207,23 +207,21 @@ class AppLogger {
 
   /// Redact Firebase UIDs and other PII before sending to Crashlytics.
   ///
-  /// BUT-1872: the uid rule below is anchored on a word boundary, and an
-  /// UNDERSCORE is a word character — so the boundary never fires inside
-  /// `direct_<a>_<b>`, the id a direct conversation derives from its two
-  /// members. The whole 64-character token failed the {20,28} length test and
-  /// reached Crashlytics with BOTH uids in clear text, while a bare uid one
-  /// word away was correctly masked. Measured BEFORE the fix, not reasoned —
-  /// these two lines are the BROKEN behaviour:
+  /// BUT-1872: a `direct_<a>_<b>` id — the id a direct conversation derives from
+  /// its two members — once reached Crashlytics with BOTH uids in clear text,
+  /// while a bare uid one word away was correctly masked. Measured before the
+  /// fix, not reasoned:
   ///
   ///     'conversation aBcDeFgHiJkLmNoPqRsTuVwXyZ12'      -> 'conversation aBcD***'
   ///     'conversation direct_aBcDeF..._zZyYxX...'        -> unchanged
   ///
   /// It now reads `conversation direct_#<12 hex>`.
   ///
-  /// The composite rule runs FIRST. Not because the uid rule would otherwise
-  /// half-mask the halves — it provably cannot, since `_` is a word character
-  /// and `\b` never fires inside the id, which is the whole bug — but so that
-  /// a future loosening of the uid rule cannot introduce that failure quietly.
+  /// The rules themselves, and the reason their ORDER is load-bearing, live in
+  /// [LogSanitizer.maskIdentifiers] — this function is a delegate. Stated there
+  /// rather than restated here: two copies of one decision is how they drift,
+  /// and the sentence that used to sit at this spot outlived the rule it
+  /// described (BUT-1897).
   ///
   /// Hashed rather than blanked because these are ERROR logs: telling "one
   /// conversation failed nine times" from "nine conversations failed once" is
@@ -233,9 +231,11 @@ class AppLogger {
   /// Cloud Functions `logSafeConversationId`.
   ///
   /// This is the chokepoint for the MESSAGE, and only for the message. Every
-  /// sink that carries a message OFF THE DEVICE runs it through here, so a
-  /// call site added tomorrow has its message covered whether or not its
-  /// author remembers.
+  /// sink IN THIS CLASS that carries a message off the device runs it through
+  /// here, so a call site added tomorrow has its message covered whether or not
+  /// its author remembers. (`WebErrorReporter` is a separate off-device sink
+  /// and does not come through here; it applies the same `LogSanitizer` rule by
+  /// its own route.)
   /// Per-call-site masking is still worth doing: it is what makes the LOCAL
   /// `developer.log` output safe, and that one never passes through here.
   ///
@@ -243,42 +243,67 @@ class AppLogger {
   /// neither is a message: `setUserIdentifier` and `setCrashlyticsKey` send
   /// their values raw. Both have zero callers repo-wide today.
   ///
-  /// What it does NOT cover, measured rather than assumed: the raw `error`
-  /// OBJECT handed to `FirebaseCrashlytics.recordError`. Sanitizing it here
-  /// is possible but wrong — passing `_sanitizeForCrashlytics(error
-  /// .toString())` would group every report under type `String` and lose the
-  /// stack association, so this is a design choice, not an impossibility.
-  /// The fix therefore belongs at the throw site: an exception whose
-  /// `toString()` embeds a resource id defeats the mask on the very line
-  /// beside it. Grep `resourceId:` before putting a conversation or user id
-  /// into one (BUT-1897).
-  static String _sanitizeForCrashlytics(String message) {
-    return message
-        .replaceAllMapped(
-          // Unbounded halves and a left boundary, both deliberate. Bounding
-          // them to {20,28} matched only well-formed live ids: a short one
-          // (test data, or any future id scheme) passed through RAW, and a
-          // half LONGER than 28 got its tail left behind outside the hash.
-          // The left boundary stops the `direct_` inside a word like
-          // `redirect_` from being hashed as if it were an id.
-          //
-          // The result is that this rule and `LogSanitizer.maskConversationId`
-          // agree on every id of the MINTED SHAPE — `direct_<a>_<b>`, exactly
-          // two segments, any length — rather than only on today's 28+28 live
-          // ids. They still differ on shapes nothing mints: `direct_abc` is
-          // hashed by the helper and untouched here, and `direct_a_b_c` would
-          // have its tail left outside the hash. The single mint site is
-          // `ConversationMutationModule` (`direct_${sorted[0]}_${sorted[1]}`),
-          // so neither shape exists; widening this to match them would mean
-          // hashing arbitrary underscore-joined text.
-          RegExp(r'(?<![a-zA-Z0-9_])direct_[a-zA-Z0-9]+_[a-zA-Z0-9]+'),
-          (m) => LogSanitizer.maskConversationId(m.group(0)!),
-        )
-        .replaceAllMapped(
-          RegExp(r'\b[a-zA-Z0-9]{20,28}\b'),
-          (m) => '${m.group(0)!.substring(0, 4)}***',
-        );
-  }
+  /// What it does NOT cover: the raw `error` OBJECT handed to
+  /// `FirebaseCrashlytics.recordError`. It is not sanitized here because the
+  /// exception classes mask at BUILD time instead — see below — and because the
+  /// label's position is what carries grouping.
+  ///
+  /// An earlier version of this paragraph gave the WRONG REASON: it claimed
+  /// sanitizing here would "group every report under type `String` and lose the
+  /// stack association". Both clauses are false against the locked
+  /// `firebase_crashlytics`, whose `recordError` already sends
+  /// `exception.toString()` and takes the stack as a separate argument, so
+  /// nothing collapses to `String` and nothing loses its stack.
+  ///
+  /// The real cost is the LABEL. Masking a second time here runs
+  /// [LogSanitizer.maskIdentifiers] over a string whose label the class
+  /// deliberately built OUTSIDE its own masked span — putting it back inside
+  /// one. Most of these class names fall in the masker's window, so those
+  /// reports would arrive truncated — `Perm***: …`. That is exactly the
+  /// regression the web sink had to grow `_scrubThrownHead` to avoid, because
+  /// it has no build-time alternative.
+  ///
+  /// OPEN RESIDUAL on the NATIVE path: any exception whose CLASS the masker
+  /// does not own. That is every third-party one — build-time masking cannot
+  /// reach an object this app does not construct — and, just as live, every
+  /// app-owned class outside `core/exceptions/permission_exceptions.dart` that
+  /// never grew a mask. `_logToCrashlytics` hands `error` to `recordError`
+  /// untouched, so on native those leave the device raw today.
+  ///
+  /// "Third-party" was the wrong boundary and is worth correcting, because the
+  /// app-owned half is both reachable and the cheaper fix. A measured example
+  /// (BUT-1915): `MenuOperationError.toString()` does not mask, and
+  /// `menu_participants.dart` builds its message from a localized string that
+  /// interpolates a RAW uid — the sibling `AppLogger.info` on the same method
+  /// masks, the throw does not. It is rethrown and reaches `AppLogger.error`.
+  /// `RepositoryException` and `StorageUploadException` have the same shape.
+  ///
+  /// On WEB none of this applies, for a reason unrelated to any of it:
+  /// `_safeCrashlytics` returns on `kIsWeb`, so this route is simply dead
+  /// there. `WebErrorReporter` is the web sink, and `AppLogger` is not among
+  /// its feeders — those are the uncaught handlers and, on web,
+  /// `AppMonitoringService.recordError`. Its `_scrubThrownHead` is what
+  /// a sink-level mask has to look like: it had to buy a label exemption to
+  /// afford one. Said explicitly because an earlier version called the residual
+  /// uncovered everywhere, which would invite adding a plain mask here and
+  /// re-buying that regression.
+  ///
+  /// Do not read the paragraph below as closing the native case.
+  ///
+  /// That object is covered instead where it is BUILT. The exception classes in
+  /// `core/exceptions/permission_exceptions.dart` mask inside their own
+  /// `toString()` using the same [LogSanitizer.maskIdentifiers] rule this
+  /// function now delegates to — which reaches every throw site of those classes
+  /// at once, and
+  /// also reaches the paths that never come through here at all: an UNCAUGHT
+  /// exception goes straight to `recordError` from `main.dart`, and on web
+  /// Crashlytics is skipped entirely. The type Crashlytics groups on survives
+  /// because those classes build their label OUTSIDE their masked span — not
+  /// because the object is passed through, since `recordError` sends
+  /// `exception.toString()` and the object never crosses. Still grep `resourceId:` before putting an
+  /// id into an exception the masker does not own (BUT-1897).
+  static String _sanitizeForCrashlytics(String message) =>
+      LogSanitizer.maskIdentifiers(message);
 
   /// Test-only wrapper around `_sanitizeForCrashlytics` so logger_test.dart
   /// can pin the PII-redaction contract without a Crashlytics channel mock.

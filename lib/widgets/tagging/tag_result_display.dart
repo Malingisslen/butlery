@@ -24,8 +24,12 @@ class TagResultDisplay extends StatelessWidget {
   /// The tag result to display.
   final TagResult tagResult;
 
-  /// Allergen keys the user wants to track (shows only these).
-  /// If null, shows all allergens with non-unknown status.
+  /// Allergen keys the user wants to track (considers only these).
+  /// Null — and, here, an EMPTY set — mean every allergen the tagger settled.
+  /// That differs from [CompactAllergenRow], where an empty set means silence,
+  /// and a card that emitted a spacer above that silence is what BUT-1869
+  /// fixed. On BOTH allergen paths UNKNOWN is dropped, so a tracked allergen is
+  /// no guarantee of a badge.
   final Set<String>? userAllergenPrefs;
 
   /// Dietary keys the user wants to track.
@@ -409,12 +413,16 @@ class TagResultDisplay extends StatelessWidget {
 
 /// Compact row of allergen badges for recipe cards.
 ///
-/// Shows only FREE status badges for user's preferred allergens.
+/// Draws CONTAINS and FREE, in that order — CONTAINS first because a warning
+/// outranks reassurance. UNKNOWN is never drawn (see [badgesFor]).
+///
 /// Limited to maxBadges to fit on cards.
 class CompactAllergenRow extends StatelessWidget {
   final TagResult tagResult;
 
-  /// Only show badges for these allergens.
+  /// Only consider these allergens; null falls back to a default four. A badge
+  /// is drawn only where the status is CONTAINS or FREE, so a non-empty set is
+  /// no guarantee that this row draws anything — see [badgesFor].
   final Set<String>? userPrefs;
 
   /// Maximum number of badges to show.
@@ -514,7 +522,9 @@ class CompactAllergenRow extends StatelessWidget {
 class CompactDietaryRow extends StatelessWidget {
   final TagResult tagResult;
 
-  /// Only show badges for these diets. If null, shows vegetarisk/vegansk.
+  /// Only consider these diets. Null falls back to every configured dietary
+  /// key, not to a pair of them — and in either case a badge is drawn only
+  /// where the status is FREE (BUT-1895).
   final Set<String>? userPrefs;
 
   /// Maximum number of badges to show.
@@ -555,9 +565,7 @@ class CompactDietaryRow extends StatelessWidget {
   /// [CompactAllergenRow.badgesFor] — same contract, same reason.
   ///
   /// This one matters MORE than its allergen twin: a non-empty preference set
-  /// is no guarantee of content here, because only FREE diets are shown. An
-  /// ordinary meat recipe against the default {vegetarisk, vegansk} yields
-  /// nothing, which is the common case rather than the edge one.
+  /// is no guarantee of content here, because only FREE diets are shown.
   static List<String> badgesFor(TagResult tagResult, Set<String>? userPrefs) {
     final dietsToCheck = userPrefs ?? _defaultDietaryOrder;
 

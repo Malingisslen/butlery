@@ -341,15 +341,29 @@ name which doc each end touches before approving it.
   `error.toString()` to analytics, and the uid redactor applies to the MESSAGE string only.
   Never assume "stays on the device"; think before logging an exception whose text embeds a
   query built from a uid (a `memberPermissions.<uid>` index-hint URL is the realistic
-  shape).
+  shape). A Dart-core throw (`StateError`, `Exception`) is NOT covered by the exception
+  classes that mask in `toString()` — mask at the throw site.
+- On WEB Crashlytics is skipped, so `WebErrorReporter` is the only sink, and a "mask the
+  message, leave the STACK readable" carve-out there does not hold: a web `StackTrace`
+  is the JS engine's `Error.stack`, whose HEAD line is the exception's own `toString()` —
+  re-exporting every identifier the message field just masked. Mask the head up to the
+  first frame; frames stay raw (the {20,28} uid rule eats class names). Mask BEFORE
+  truncating: a cap applied first cuts a 28-char uid below the window (passes RAW) and
+  re-hashes a `direct_` id out of parity with the same conversation elsewhere — that, and
+  NOT capacity, is the reason for the order, because scrubbing can LENGTHEN
+  (`[PERSONNUMMER]` is 14 chars for an 11-13 char match).
+- A head/frame SPLIT covers only the line-prefixed engines — V8 `at `, Dart `#N`.
+  SpiderMonkey/JSC emit `fn@url:line:col` with no header line, so those traces match no
+  frame and are masked WHOLE (safe, but every frame mangled on Firefox/Safari), and a
+  message line beginning `#1`/`at ` splits early, dropping its tail outside the mask.
+  Probe any such regex against all three engine spellings before writing "both spellings
+  the web engines emit."
 - A log line's PII profile changes when its function gains a new CALLER, with no edit to
-  the logging code — re-derive what each argument can contain whenever a helper gets a new
-  call site. A composite doc id (`direct_{uidA}_{uidB}`, `{uid}_{date}`) is personal data
-  wherever it lands; hash it through one chokepoint helper. The redactor's ASCII `\b`
-  treats `_` as a word character (ECMAScript), so it has NO boundary between a prefix like
-  `direct_` and the uid after it — verify a "this gets masked" claim by running the regex on
-  the exact shape, not by reading it. A raw-uid-interpolation log guard doesn't catch
-  structured-arg leaks (`AppLogger.x({'uid': uid})`).
+  the logging code. A composite doc id (`direct_{uidA}_{uidB}`, `{uid}_{date}`) is personal
+  data wherever it lands; hash it through one chokepoint helper. `\b` treats `_` as a word
+  character, so it never fires inside such an id — run the regex on the exact shape rather
+  than reading it, and note a raw-uid log guard misses structured args
+  (`AppLogger.x({'uid': uid})`).
 - A field on a world-readable doc must be audited individually — a boolean gating SEARCH
   does not gate DIRECT-FETCH. A moderation "hide" flag is search-suppression + UI-
   placeholder only unless every direct-fetch consumer also filters it. A presence opt-out
