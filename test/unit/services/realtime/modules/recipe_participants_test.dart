@@ -429,6 +429,91 @@ void main() {
           expect(error.message, 'Kan inte ta bort receptägaren');
         }
       });
+
+      // BUT-1915. The twin of the menu leak, one module away and the same
+      // shape: `RecipeOperationError` carries the message into `toString()`,
+      // and `AppLogger.error` hands the object to Crashlytics unaltered on a
+      // phone. Found by the Localization/i18n stakeholder review, which noted
+      // the menu ticket named only its own file.
+      //
+      // A real Firebase uid is 28 characters. A short fixture id would prove
+      // nothing, because `LogSanitizer.maskUserId` returns anything of 8
+      // characters or fewer unchanged.
+      group('raw user id never reaches the exception (BUT-1915)', () {
+        const realisticUid = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ01';
+
+        test('removeParticipant masks the id in message and toString', () {
+          final recipe = recipeBuilder
+              .withOwner('owner_123', 'Recipe Owner')
+              .build();
+
+          try {
+            RecipeParticipants.removeParticipant(recipe, userId: realisticUid);
+            fail('Should have thrown');
+          } catch (e) {
+            final error = e as RecipeOperationError;
+            expect(error.message, isNot(contains(realisticUid)));
+            expect(error.toString(), isNot(contains(realisticUid)));
+            expect(error.message, contains('aBcDeFgH...'));
+          }
+        });
+
+        test(
+          'updateParticipantPermission masks the id in message and toString',
+          () {
+            final recipe = recipeBuilder
+                .withOwner('owner_123', 'Recipe Owner')
+                .build();
+
+            try {
+              RecipeParticipants.updateParticipantPermission(
+                recipe,
+                userId: realisticUid,
+                newPermission: ResourcePermission.editor,
+              );
+              fail('Should have thrown');
+            } catch (e) {
+              final error = e as RecipeOperationError;
+              expect(error.message, isNot(contains(realisticUid)));
+              expect(error.toString(), isNot(contains(realisticUid)));
+              expect(error.message, contains('aBcDeFgH...'));
+            }
+          },
+        );
+        // The display-name twin, same sink, found by the code-reviewer gate on
+        // this diff. `LogSanitizer.maskIdentifiers` never runs on this
+        // path: `_sanitizeForCrashlytics` masks the message STRING handed to
+        // `AppLogger.error`, while `_logToCrashlytics` passes the exception
+        // OBJECT to `recordError` untouched. So the name left the phone in
+        // cleartext while the `AppLogger.info` line below masked it.
+        test('addParticipant masks an existing participant display name', () {
+          const displayName = 'Annika Bergström';
+          final recipe = RecipeParticipants.addParticipant(
+            recipeBuilder.withOwner('owner_123', 'Recipe Owner').build(),
+            userId: realisticUid,
+            userDisplayName: displayName,
+            permission: ResourcePermission.editor,
+          );
+
+          try {
+            RecipeParticipants.addParticipant(
+              recipe,
+              userId: realisticUid,
+              userDisplayName: displayName,
+              permission: ResourcePermission.viewer,
+            );
+            fail('Should have thrown');
+          } catch (e) {
+            final error = e as RecipeOperationError;
+            expect(error.message, isNot(contains(displayName)));
+            expect(error.toString(), isNot(contains(displayName)));
+            expect(error.message, contains('An***'));
+            // Without this, a mask that elided only the GIVEN name
+            // ('An*** Bergström') satisfies every other assertion here.
+            expect(error.message, isNot(contains('Bergström')));
+          }
+        });
+      });
     });
   });
 }

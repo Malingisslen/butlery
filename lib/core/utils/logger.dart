@@ -271,12 +271,8 @@ class AppLogger {
   /// untouched, so on native those leave the device raw today.
   ///
   /// "Third-party" was the wrong boundary and is worth correcting, because the
-  /// app-owned half is both reachable and the cheaper fix. A measured example
-  /// (BUT-1915): `MenuOperationError.toString()` does not mask, and
-  /// `menu_participants.dart` builds its message from a localized string that
-  /// interpolates a RAW uid — the sibling `AppLogger.info` on the same method
-  /// masks, the throw does not. It is rethrown and reaches `AppLogger.error`.
-  /// `RepositoryException` and `StorageUploadException` have the same shape.
+  /// app-owned half is both reachable and the cheaper fix. BUT-1907 carries the
+  /// architecture-test arm that finds the rest.
   ///
   /// On WEB none of this applies, for a reason unrelated to any of it:
   /// `_safeCrashlytics` returns on `kIsWeb`, so this route is simply dead

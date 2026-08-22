@@ -43,7 +43,7 @@ class MenuParticipants {
     if (isParticipant(menu, userId)) {
       throw MenuOperationError(
         operation: MenuOperationType.addParticipant,
-        message: l.validationUserAlreadyParticipant(userDisplayName),
+        message: l.validationUserAlreadyParticipant(userDisplayName.maskedName),
         resourceId: menu.id,
       );
     }
@@ -73,7 +73,7 @@ class MenuParticipants {
     if (!isParticipant(menu, userId)) {
       throw MenuOperationError(
         operation: MenuOperationType.removeParticipant,
-        message: l.validationUserNotParticipant(userId),
+        message: l.validationUserNotParticipant(userId.maskedUserId),
         resourceId: menu.id,
       );
     }
@@ -111,7 +111,7 @@ class MenuParticipants {
     if (!isParticipant(menu, userId)) {
       throw MenuOperationError(
         operation: MenuOperationType.updatePermissions,
-        message: l.validationUserNotParticipant(userId),
+        message: l.validationUserNotParticipant(userId.maskedUserId),
         resourceId: menu.id,
       );
     }

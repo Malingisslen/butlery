@@ -753,9 +753,94 @@ void main() {
         } catch (e) {
           expect(e, isA<MenuOperationError>());
           final error = e as MenuOperationError;
-          // Owner not in participants, so get "not a participant" error
-          expect(error.message, 'Användaren är inte deltagare: owner_123');
+          // Owner not in participants, so get "not a participant" error.
+          // The id is masked at the throw (BUT-1915); `owner_123` is 9 chars,
+          // so masking keeps the first 8 and elides the rest.
+          expect(error.message, 'Användaren är inte deltagare: owner_12...');
         }
+      });
+
+      // BUT-1915. This exception's `toString()` reaches Crashlytics unaltered
+      // on a phone: `realtime_participant_manager.dart` passes the object to
+      // `AppLogger.error`, which hands it to `recordError` untouched. So the
+      // id has to be masked where it is put INTO the message — the neighbouring
+      // `AppLogger.info` lines in the same methods already do.
+      //
+      // A real Firebase uid is 28 characters. A short fixture id would prove
+      // nothing here, because `LogSanitizer.maskUserId` returns anything of
+      // 8 characters or fewer unchanged.
+      group('raw user id never reaches the exception (BUT-1915)', () {
+        const realisticUid = 'aBcDeFgHiJkLmNoPqRsTuVwXyZ01';
+
+        test('removeParticipant masks the id in message and toString', () {
+          final menu = menuBuilder.build();
+
+          try {
+            MenuParticipants.removeParticipant(menu, userId: realisticUid);
+            fail('Should have thrown');
+          } catch (e) {
+            final error = e as MenuOperationError;
+            expect(error.message, isNot(contains(realisticUid)));
+            expect(error.toString(), isNot(contains(realisticUid)));
+            expect(error.message, contains('aBcDeFgH...'));
+          }
+        });
+
+        test(
+          'updateParticipantPermission masks the id in message and toString',
+          () {
+            final menu = menuBuilder.build();
+
+            try {
+              MenuParticipants.updateParticipantPermission(
+                menu,
+                userId: realisticUid,
+                newPermission: ResourcePermission.editor,
+              );
+              fail('Should have thrown');
+            } catch (e) {
+              final error = e as MenuOperationError;
+              expect(error.message, isNot(contains(realisticUid)));
+              expect(error.toString(), isNot(contains(realisticUid)));
+              expect(error.message, contains('aBcDeFgH...'));
+            }
+          },
+        );
+        // The same leak, found by the code-reviewer gate on this very diff:
+        // `validationUserAlreadyParticipant` carried a raw DISPLAY NAME.
+        // `LogSanitizer.maskIdentifiers` never runs on this
+        // path: `_sanitizeForCrashlytics` masks the message STRING handed to
+        // `AppLogger.error`, while `_logToCrashlytics` passes the exception
+        // OBJECT to `recordError` untouched. So the name reached Crashlytics
+        // in cleartext while the `AppLogger.info` line in the same method
+        // already masked the same value.
+        test('addParticipant masks an existing participant display name', () {
+          const displayName = 'Annika Bergström';
+          final menu = MenuParticipants.addParticipant(
+            menuBuilder.build(),
+            userId: realisticUid,
+            userDisplayName: displayName,
+            permission: ResourcePermission.editor,
+          );
+
+          try {
+            MenuParticipants.addParticipant(
+              menu,
+              userId: realisticUid,
+              userDisplayName: displayName,
+              permission: ResourcePermission.viewer,
+            );
+            fail('Should have thrown');
+          } catch (e) {
+            final error = e as MenuOperationError;
+            expect(error.message, isNot(contains(displayName)));
+            expect(error.toString(), isNot(contains(displayName)));
+            expect(error.message, contains('An***'));
+            // Without this, a mask that elided only the GIVEN name
+            // ('An*** Bergström') satisfies every other assertion here.
+            expect(error.message, isNot(contains('Bergström')));
+          }
+        });
       });
     });
   });
