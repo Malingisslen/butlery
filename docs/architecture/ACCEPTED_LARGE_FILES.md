@@ -179,7 +179,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 |------|-------|--------|
 | `recipe_image_manager.dart` | 1,374 | Already uses facade pattern (5 sub-managers) |
 | `personal_tag_dialogs.dart` | 899 | 14 static dialog functions — already extracted from view |
-| `skriv_sjalv_recept_view.dart` | 996 | Recipe creation screen — refactored from 836. Row refreshed 2026-08-14: recorded 959, measured 972 before BUT-1845 (+13 pre-existing drift) and 981 after it; 980 after BUT-1849 shortened a comment. Refreshed again 2026-08-22: 996 after BUT-1910 added the Swedish-comma parse, its formatter and their comments (+16, comments only bar two lines). |
+| `skriv_sjalv_recept_view.dart` | 996 | Recipe creation screen — refactored from 836. Row refreshed 2026-08-14: recorded 959, measured 972 before BUT-1845 (+13 pre-existing drift) and 981 after it; 980 after BUT-1849 shortened a comment. Refreshed again 2026-08-22 after BUT-1910 added the Swedish-comma parse and its formatter. |
 | `personal_tag_rule_dialog.dart` | 839 | Complex rule editing dialog — many condition types |
 | `recipe_parser_service.dart` | 915 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,177 | Recipe list with filtering, search, tags |
@@ -191,7 +191,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `adaptive_icon.dart` | 672 | Platform-adaptive icon widget |
 | `di_container.dart` | 585 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 858 | DI registrations for content layer |
-| `edit_recipe_view.dart` | 734 | Recipe editing screen (drifted +29 from 639 — BUT-550 reconciled 2026-05-28). Row refreshed 2026-08-14: recorded 707, measured 715 before BUT-1845 (+8 pre-existing drift) and 724 after it. Refreshed again 2026-08-22: 734 after BUT-1910 fixed the rating field's twin here (+10). |
+| `edit_recipe_view.dart` | 733 | Recipe editing screen (drifted +29 from 639 — BUT-550 reconciled 2026-05-28). Row refreshed 2026-08-14: recorded 707, measured 715 before BUT-1845 (+8 pre-existing drift) and 724 after it. Refreshed again 2026-08-22 after BUT-1910 fixed the rating field's twin here. |
 | `user_profile_edit_view.dart` | 390 | Facade-extracted to `lib/views/social/user_profile_edit/` per BUT-1154 (was 832, now 390 — well under 500; kept in table for history) |
 | `ocr_extraction_service.dart` | 1,253 | OCR-based recipe image extraction (+121 for the free on-device tier 0, 2026-08-02) |
 | `text_layout.dart` (`lib/services/ocr/`) | 558 | The OCR page model: pure value types plus the contract prose every consumer defers to (line-index-is-row-number, the sanitize law, capture-vs-reading order, which figures are proxy). ~55 % is doc comment, and that is the point — the split path has already shipped four false comments about this file, so the prose is load-bearing. `glyph_metrics.dart` was extracted from it 2026-08-07; what remains is one cohesive contract that a facade would only scatter. 2026-08-08 |
