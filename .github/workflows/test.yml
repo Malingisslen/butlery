@@ -96,9 +96,18 @@ jobs:
 
       # Real-time guard (BUT-393). Static grep over test files — only needs to
       # run once per pipeline, so gate it to shard 0.
+      # Called with NO arguments on purpose: lefthook scopes the same script to
+      # the staged files for speed, and this full-tree run is what makes that
+      # scoping safe. Do not narrow it here.
       - name: Real-time regression guard
         if: matrix.shard == 0
         run: bash scripts/check_test_real_time.sh
+
+      # The guard's own fixtures (BUT-1894). It had none, and a rewrite that
+      # failed open on two inputs got as far as review before anyone built one.
+      - name: Real-time guard fixtures
+        if: matrix.shard == 0
+        run: bash scripts/__tests__/check_test_real_time_test.sh
 
       - name: Run unit tests (shard ${{ matrix.shard }}/3, no coverage)
         run: |

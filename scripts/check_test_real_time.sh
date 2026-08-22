@@ -22,6 +22,22 @@
 # line or the line immediately above the violation. Each suppression
 # needs a one-line comment justifying it.
 #
+# ARGUMENTS (BUT-1894). With no arguments the whole scope is scanned — that is
+# what CI does. With arguments, only those paths are scanned; lefthook passes
+# the staged files, so a commit pays for the files it actually changes. The
+# full-tree sweep still runs in CI, so scoping here narrows WHEN a violation is
+# caught, never WHETHER.
+#
+# COST (BUT-1894). Grep was never the expensive part: the two searches finish
+# in well under a second, while `DateTime.now()` alone matches over a thousand
+# lines under test/unit. The old shape spawned an `awk` for the suppression
+# check and an `echo|sed|sed|grep` pipeline for the baseline check ON EVERY
+# MATCH — roughly four processes per hit, and process creation is the costly
+# primitive on Windows. Measured at 646-859 s per commit across three commits
+# on 2026-08-17. Each check is now ONE awk pass that reads the baseline once and
+# each violating file once. Keep it that way: any per-match subprocess
+# reintroduces the whole cost.
+#
 # Run locally: bash scripts/check_test_real_time.sh
 # CI wires this in .github/workflows/test.yml before `flutter analyze`.
 
@@ -38,28 +54,39 @@ DATETIME_SCOPE=("test/unit")
 # fixtures legitimately seed DateTime; only the long-delay rule applies here.)
 DELAYED_SCOPE=("test/unit" "test/widget" "test/views" "test/integration" "test/e2e")
 
-BASELINE_FILE="scripts/test_real_time_baseline.txt"
+BASELINE_FILE="${BASELINE_FILE:-scripts/test_real_time_baseline.txt}"
 
-# Normalize baseline paths to forward-slash, no leading ./, one per line.
-BASELINE_SET=""
-if [[ -f "$BASELINE_FILE" ]]; then
-  BASELINE_SET=$(grep -v '^\s*$\|^\s*#' "$BASELINE_FILE" | sed 's|\\|/|g' | sed 's|^\./||' | sort -u)
-fi
+# Caller-supplied paths, normalised to forward slashes with any leading ./
+# stripped, so they compare against grep's output and the baseline in one form.
+TARGETS=()
+for arg in "$@"; do
+  TARGETS+=("$(printf '%s' "$arg" | sed 's|\\|/|g; s|^\./||')")
+done
 
-is_baselined() {
-  local file="$1"
-  # Normalize incoming path the same way.
-  local norm
-  norm=$(echo "$file" | sed 's|\\|/|g' | sed 's|^\./||')
-  grep -qxF "$norm" <<< "$BASELINE_SET"
-}
-
-is_suppressed() {
-  local file="$1"
-  local line="$2"
-  awk -v target="$line" '
-    NR == target - 1 || NR == target { print }
-  ' "$file" | grep -qE '// *ignore: *butlery_fake_time'
+# Emit the paths to search for one scope. With no caller-supplied targets this
+# is the scope directories themselves (grep recurses). With targets it is the
+# subset of them that is a *_test.dart file under one of those directories —
+# printing nothing when the intersection is empty, which the caller reads as
+# "this scope has nothing to check".
+scope_paths() {
+  local dirs=("$@")
+  local dir target
+  if [[ ${#TARGETS[@]} -eq 0 ]]; then
+    for dir in "${dirs[@]}"; do
+      [[ -d "$dir" ]] && printf '%s\n' "$dir"
+    done
+    return
+  fi
+  for target in "${TARGETS[@]}"; do
+    [[ "$target" == *_test.dart ]] || continue
+    [[ -f "$target" ]] || continue
+    for dir in "${dirs[@]}"; do
+      if [[ "$target" == "$dir"/* ]]; then
+        printf '%s\n' "$target"
+        break
+      fi
+    done
+  done
 }
 
 check_pattern() {
@@ -71,25 +98,109 @@ check_pattern() {
   local dirs=("$@")
 
   echo "Checking ${label}..."
-  local violations=0
-  while IFS=: read -r file line match; do
-    [[ -z "$file" ]] && continue
-    if is_suppressed "$file" "$line"; then
-      continue
-    fi
-    if [[ "$mode" == "baseline" ]] && is_baselined "$file"; then
-      continue
-    fi
-    echo "::error file=$file,line=$line::${hint}"
+
+  local paths=()
+  while IFS= read -r p; do
+    [[ -n "$p" ]] && paths+=("$p")
+  done < <(scope_paths "${dirs[@]}")
+
+  if [[ ${#paths[@]} -eq 0 ]]; then
+    echo "  OK (nothing in scope)"
+    return
+  fi
+
+  local baseline_arg=""
+  if [[ "$mode" == "baseline" && -f "$BASELINE_FILE" ]]; then
+    baseline_arg="$BASELINE_FILE"
+  fi
+
+  # grep's exit codes are read explicitly rather than piped straight into awk.
+  # Under `pipefail` a pipeline reports grep's 1 — "no matches", the success
+  # case — as a failure, which would make the guard refuse every clean commit.
+  # Reading the status here also separates that 1 from a real grep error (>1),
+  # which must not pass for "nothing to see".
+  local grep_out grep_rc=0
+  set +e
+  grep_out="$(grep -rEn --include='*_test.dart' "$pattern" "${paths[@]}" 2>/dev/null)"
+  grep_rc=$?
+  set -e
+
+  if [[ "$grep_rc" -gt 1 ]]; then
+    echo "::error::${label}: grep failed (exit ${grep_rc}) — the guard could not read its own scope."
     fail=1
-    violations=$((violations + 1))
-  done < <(
-    for dir in "${dirs[@]}"; do
-      [[ -d "$dir" ]] || continue
-      grep -rEn --include='*_test.dart' "$pattern" "$dir" 2>/dev/null || true
-    done
-  )
-  if [[ "$violations" -eq 0 ]]; then
+    return
+  fi
+
+  if [[ -z "$grep_out" ]]; then
+    echo "  OK"
+    return
+  fi
+
+  local rc=0
+  printf '%s\n' "$grep_out" |
+    awk -v hint="$hint" -v mode="$mode" -v baselinefile="$baseline_arg" '
+      function norm(p) { gsub(/\\/, "/", p); sub(/^\.\//, "", p); return p }
+
+      BEGIN {
+        # A baseline holding nothing but comments and blank lines yields an
+        # EMPTY set, and enforcement continues against it. It must never be
+        # read as "everything is baselined": that is the fail-open shape this
+        # rewrite exists to avoid. (The old code died here instead — `grep -v`
+        # exiting 1 under `set -e` — which stopped the same hole by accident
+        # and also killed the run when there was nothing wrong.)
+        if (baselinefile != "") {
+          while ((getline bl < baselinefile) > 0) {
+            sub(/^[ \t]+/, "", bl); sub(/[ \t]+$/, "", bl)
+            if (bl == "" || bl ~ /^#/) continue
+            baseline[norm(bl)] = 1
+          }
+          close(baselinefile)
+        }
+      }
+
+      {
+        # grep prints `path:line:text`. It prints `Binary file X matches` for a
+        # binary blob, with no line number — a *_test.dart that is not text is
+        # itself a defect (a source file can land as a git binary blob), so it
+        # is reported rather than skipped. Dropping an unparseable line is how
+        # a rewrite goes quietly fail-open.
+        if (!match($0, /:[0-9]+:/)) {
+          printf "::error file=%s::Unreadable test file (grep could not report a line number — a *_test.dart committed as a binary blob does this).\n", $0
+          bad = 1
+          next
+        }
+        f = norm(substr($0, 1, RSTART - 1))
+        ln = substr($0, RSTART + 1, RLENGTH - 2) + 0
+        if (!(f in seen)) { seen[f] = 1; files[++nf] = f }
+        vline[f, ++count[f]] = ln
+      }
+
+      END {
+        for (i = 1; i <= nf; i++) {
+          f = files[i]
+          if (mode == "baseline" && (f in baseline)) continue
+
+          delete txt
+          n = 0
+          while ((getline l < f) > 0) txt[++n] = l
+          close(f)
+
+          for (c = 1; c <= count[f]; c++) {
+            ln = vline[f, c]
+            sup = ((ln in txt)     && txt[ln]     ~ /\/\/ *ignore: *butlery_fake_time/) ||
+                  ((ln - 1 in txt) && txt[ln - 1] ~ /\/\/ *ignore: *butlery_fake_time/)
+            if (sup) continue
+            printf "::error file=%s,line=%d::%s\n", f, ln, hint
+            bad = 1
+          }
+        }
+        exit bad ? 1 : 0
+      }
+    ' || rc=$?
+
+  if [[ "$rc" -ne 0 ]]; then
+    fail=1
+  else
     echo "  OK"
   fi
 }
