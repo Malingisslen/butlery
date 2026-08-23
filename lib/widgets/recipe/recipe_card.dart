@@ -384,10 +384,12 @@ class RecipeCard extends StatelessWidget {
         // size, growing to 188 and 255 at 2x. There is no text size and no
         // phone width where it fits.
         //
-        // Icon-only was the alternative and it does not exist: the badge picks
-        // its icon from the STATUS, so vegansk and vegetarisk both render the
-        // same green leaf. Dropping the word without first giving each diet
-        // its own icon replaces the row with two identical marks.
+        // Icon-only was the alternative, and the badge does support it
+        // (`showLabel: false`, which is how the allergen row is drawn). It is
+        // useless here: the badge picks its icon from the STATUS, so vegansk
+        // and vegetarisk both render the same green leaf. Dropping the word
+        // without first giving each diet its own icon replaces the row with
+        // two identical marks.
         //
         // Diet keeps its word in the DETAILED layout, which is full-width and
         // has the room. The compact layout draws neither badge row at all.
@@ -981,6 +983,7 @@ class RecipeCard extends StatelessWidget {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
               hasFailed ? Icons.error_outline : Icons.pending_outlined,
@@ -1061,10 +1064,13 @@ class RecipeCard extends StatelessWidget {
             // "nothing flagged", and "Alle…" says less than nothing. The card
             // sizes to its content now, so it can afford the extra lines.
             //
-            // The untagged and completeness chips below are the same shape and
-            // get the same treatment. Only this one reaches the grid layout
-            // today, but fixing one of three identical rows is how a codebase
-            // ends up with two answers to one question.
+            // The untagged and completeness chips below are the same shape
+            // and get the same treatment — BOTH halves of it: `Flexible` so
+            // the label wraps, and `CrossAxisAlignment.start` so the icon
+            // stays on the first line once it does. Half of it would leave a
+            // 14px icon centred against a three-line block. Only this chip
+            // reaches the grid layout today, but fixing one of three identical
+            // rows is how a codebase ends up with two answers to one question.
             Flexible(
               child: Text(
                 context.l10n.recipeAllergensUnassessed,
@@ -1090,6 +1096,7 @@ class RecipeCard extends StatelessWidget {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(Icons.pie_chart_outline, size: 14, color: cs.outline),
             const SizedBox(width: AppDimensions.spacingXs),

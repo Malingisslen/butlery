@@ -334,6 +334,13 @@ class LayoutComponents {
   /// scale and shrinks with width — so a ratio is wrong at one end whatever it
   /// is set to, and being wrong means silent clipping in a release build. Use
   /// `ContentSizedGrid` for those (BUT-1911).
+  ///
+  /// The one production caller does exactly what this warns against: Mina
+  /// recept's LIST toggle passes recipe cards here with
+  /// `AppDimensions.recipeGridAspectRatio`. That path renders a grid only on
+  /// tablet and desktop, where the tile is wide enough that nothing has been
+  /// measured to clip — unmeasured rather than proven, and scoped out of
+  /// BUT-1911 deliberately. Read this as a warning for the NEXT caller.
   static Widget responsiveListGrid<T>({
     required List<T> items,
     required Widget Function(BuildContext context, T item) itemBuilder,

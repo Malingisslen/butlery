@@ -49,7 +49,8 @@ void main() {
       // silences `FlutterError.onError` immediately before `expectLater`, and
       // the comparator throws through that, so a mismatch writes
       // `failures/*_{master,test}Image.png` and still reports a pass. Filed
-      // separately; it affects all five goldens, not just this one.
+      // separately as BUT-1931; the silencing is unconditional, so it affects
+      // every golden that goes through `butleryGolden`, not just this one.
       width: 180,
       height: null,
       target: find.byType(ContentCard),

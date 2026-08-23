@@ -2035,9 +2035,10 @@ margin and the container padding are taken off. The allergen badges fit because 
 icon-only. A dietary badge carries its word, and the word does not fit at any text size on
 any phone.
 
-**Alternative 1 — icon-only, matching the allergen row.** Does not exist.
-`DietaryStatusBadge` selects its icon from the STATUS, not from the diet, so vegansk and
-vegetarisk both render `Icons.eco_outlined`. Dropping the label would replace the row with
+**Alternative 1 — icon-only, matching the allergen row.** Available, and useless. The badge
+takes a `showLabel` flag and the allergen row already passes `showLabel: false`, so it is one
+argument away — but `DietaryStatusBadge` selects its icon from the STATUS, not from the diet,
+so vegansk and vegetarisk both render `Icons.eco_outlined`. Dropping the label would replace the row with
 two identical green leaves: not a compact treatment, an information loss. Giving each diet
 its own icon is a real option, and a real design decision — it is not this ticket.
 

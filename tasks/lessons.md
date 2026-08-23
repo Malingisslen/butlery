@@ -2300,3 +2300,16 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   the harness to the widget's real usage (here: a grid card only ever lives in a 2-to-4
   column cell) and say so in the test, rather than capping the widget to keep an
   unrealistic box green.
+
+### [Engineering] A line-count row cannot be typed; it has to be computed at commit time
+- **Date**: 2026-08-23 (BUT-1911)
+- **Trigger**: `ACCEPTED_LARGE_FILES.md` wants a measured `wc -l` per oversized file.
+  I wrote that number THREE times in one change and it was wrong all three times —
+  774 when the file was 801, 1148 when it was 1165, 1165 when it was 1176 — each one
+  correct when measured and falsified minutes later by my own next edit. Two review
+  rounds spent a finding on it. The third would have too.
+- **Rule**: Never type a count that describes a file you are still editing. Recompute
+  the row from `wc -l` in the SAME Bash call that stages and commits, so the number
+  cannot be older than the bytes it describes. This generalises: any figure in a
+  committed file that measures another file in the same commit is a derived value, and
+  a derived value that a human types is a value that is wrong.

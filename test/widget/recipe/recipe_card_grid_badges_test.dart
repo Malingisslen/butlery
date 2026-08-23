@@ -463,9 +463,9 @@ void main() {
       // badge carries its WORD and the word does not fit: the row has 88
       // logical pixels on a 360dp tile and 68 on a 320dp one, while "vegansk"
       // needs 111 and "vegetarisk" 145 at NORMAL text size, growing to 188 and
-      // 255 at 2x. Icon-only was the alternative and it does not exist — the
-      // badge takes its icon from the STATUS, so both diets render the same
-      // green leaf.
+      // 255 at 2x. Icon-only is supported (`showLabel: false`) and useless —
+      // the badge takes its icon from the STATUS, so both diets render the
+      // same green leaf.
       //
       // `assessed()` is FREE on a diet and the card is handed dietary
       // preferences, so this case fails the moment the row is added back.
