@@ -5,12 +5,12 @@
 // list mode and silently ignored in grid mode — quite possibly the mode the
 // original report was written from.
 //
-// The suite is geometry-first on purpose. A grid tile's height comes from the
-// delegate's aspect ratio, so it cannot grow the way the detailed Column can:
-// before this change the tile overflowed its own box by 70px at 1x and 175px at
-// 2x for EVERY recipe, and in a release build that is silent clipping with no
-// stripes to see. A test that only asserted "the badge widget is in the tree"
-// would have passed over a tile whose bottom was being cut off.
+// The suite is geometry-first on purpose. A tile used to get its height from a
+// grid delegate and so could not grow the way the detailed Column can, and it
+// overflowed its own box for EVERY recipe — in a release build that is silent
+// clipping with no stripes to see. BUT-1911 removed the delegate; the geometry
+// cases stay, because a test that only asserted "the badge widget is in the
+// tree" would pass over a tile whose bottom was being cut off.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
@@ -20,6 +20,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/widgets/common/content_sized_grid.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
@@ -43,9 +44,16 @@ void main() {
             ..withTagResult(
               TagResult(
                 tags: const {},
+                // Four SETTLED allergens, not two. The geometry cases run on
+                // this fixture and their whole subject is how the badge row
+                // wraps; an UNKNOWN allergen draws nothing, so a fixture that
+                // settles two while the harness tracks four measures a
+                // two-badge row under a four-badge name.
                 allergenStatus: const {
                   'gluten': TriState.free,
                   'mjölk': TriState.contains,
+                  'ägg': TriState.free,
+                  'fisk': TriState.free,
                 },
                 dietaryStatus: const {'vegansk': TriState.free},
                 coverage: 1.0,
@@ -103,14 +111,16 @@ void main() {
     required Recipe recipe,
     required RecipeCardStyle style,
     Set<String>? allergenPrefs = const {'gluten', 'mjölk'},
+    Set<String>? dietaryPrefs,
   }) async {
     await tester.pumpWidget(
       createLocalizedTestApp(
         wrapInScaffold: false,
         child: Scaffold(
           // Wide enough that the DETAILED layout's own rows are not the thing
-          // under test — a narrow box makes the completeness chip overflow
-          // horizontally, which has nothing to do with the badge rows.
+          // under test. It used to be load-bearing for a different reason —
+          // the completeness chip overflowed in a narrow box — and that is no
+          // longer true: all three chips wrap since BUT-1911.
           body: SizedBox(
             width: 360,
             child: RecipeCard(
@@ -118,6 +128,8 @@ void main() {
               style: style,
               showAllergenBadges: true,
               userAllergenPrefs: allergenPrefs,
+              showDietaryBadges: dietaryPrefs != null,
+              userDietaryPrefs: dietaryPrefs,
             ),
           ),
         ),
@@ -246,119 +258,240 @@ void main() {
   });
 
   group('a grid tile holds its content at every text size', () {
-    // The tile height comes from `AppDimensions.recipeGridAspectRatio`, the same
-    // function the view calls — imported rather than copied. An earlier version
-    // of this file hardcoded the formula, which meant a retuned factor in
-    // production would have left these cases green against their own stale
-    // number while the real grid overflowed.
-
-    // Two widths, and they are held to DIFFERENT limits on purpose.
+    // These cases build their grid from `ContentSizedGrid`, the SAME widget
+    // Mina recept builds its grid from — imported, not reproduced. The
+    // previous version of this suite imported the production aspect ratio for
+    // the same reason, and the reason outlived the number: a layout copied
+    // into a test goes stale silently, and the suite then reports on a grid
+    // the app no longer ships.
     //
-    // The correction is an aspect RATIO, so the extra height it buys is
-    // proportional to tile WIDTH — while the shortfall it has to cover is text,
-    // which wraps MORE on a narrow screen. The two therefore diverge, and no
-    // single factor closes both: measured on a 320dp phone the tile still
-    // overflows by 0.07px at 1.3x, 10px at 1.5x, 22px at 1.75x and 60px at 2x,
-    // and a factor big enough to cover that makes a 360dp tile roughly a
-    // quarter taller than it needs to be, which is a worse screen for everyone.
+    // The widths are held to ONE standard — clean everywhere — and that is the
+    // change. The old suite had to record a boundary instead, because an
+    // aspect ratio cannot be right at both ends.
     //
-    // So the boundary is written down here rather than papered over. 360dp — a
-    // modern phone — is clean all the way to 2x. 320dp — an old small phone —
-    // is clean only at normal text size, which is still better than the 70px it
-    // clipped at normal size before this change. Closing the rest needs an
-    // absolute tile height (`mainAxisExtent`) instead of a ratio: BUT-1911.
-    const geometries = <String, ({Size size, double cleanUpTo})>{
-      '360dp phone': (size: Size(1080, 2400), cleanUpTo: 2.0),
-      '320dp phone': (size: Size(960, 1704), cleanUpTo: 1.0),
+    // 280dp is below the two-column threshold, so it is here to prove the
+    // single-column fallback and not a two-column tile: measured, two columns
+    // at that width leaves the title row 48 logical pixels while its two
+    // trailing icons alone need 52.
+    const geometries = <String, Size>{
+      '412dp phone': Size(1236, 2600),
+      '360dp phone': Size(1080, 2400),
+      '320dp phone': Size(960, 1704),
+      '280dp phone': Size(840, 1704),
     };
 
-    for (final entry in geometries.entries) {
-      for (final scale in <double>[1.0, 1.3, 1.5, 1.75, 2.0]) {
-        // Registered and SKIPPED, not silently dropped. A `continue` here left
-        // the residual visible only in a comment, and a comment is not a signal
-        // — the runner showed six passes and no trace of the four cases that
-        // cannot pass yet. As a skip they are named in every run.
-        final beyond = scale > entry.value.cleanUpTo;
-        testWidgets(
-          // `testWidgets` takes a bool skip, with no room for a reason — so the
-          // reason goes in the NAME, where the runner prints it.
-          beyond
-              ? 'KNOWN RESIDUAL (BUT-1911): a ${entry.key} still clips at text '
-                    'scale $scale — an aspect ratio cannot cover it'
-              : 'no overflow on a ${entry.key} at text scale $scale',
-          skip: beyond,
-          (tester) async {
-            tester.view.physicalSize = entry.value.size;
-            tester.view.devicePixelRatio = 3.0;
-            addTearDown(tester.view.reset);
+    Future<void> pumpGrid(
+      WidgetTester tester, {
+      required Size size,
+      required double scale,
+      Set<String> allergenPrefs = const {'gluten', 'mjölk', 'ägg', 'fisk'},
+      Recipe? recipe,
+    }) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.reset);
 
-            await tester.pumpWidget(
-              createLocalizedTestApp(
-                wrapInScaffold: false,
-                child: Builder(
-                  builder: (context) => MediaQuery(
-                    data: MediaQuery.of(
-                      context,
-                    ).copyWith(textScaler: TextScaler.linear(scale)),
-                    // A second Builder, and it is load-bearing: the delegate must
-                    // read the text scale from BELOW the MediaQuery above, exactly
-                    // as the view's own build does. Reading it from the outer
-                    // context returns the unscaled 0.75 and the case silently
-                    // measures the wrong tile — which is what happened the moment
-                    // the formula stopped being passed in by hand.
-                    child: Builder(
-                      builder: (context) => Scaffold(
-                        body: GridView.builder(
-                          padding: const EdgeInsets.all(16),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                childAspectRatio:
-                                    AppDimensions.recipeGridAspectRatio(
-                                      context,
-                                    ),
-                              ),
-                          itemCount: 2,
-                          itemBuilder: (context, i) => ContentCard(
-                            item: assessed(),
-                            type: ContentCardType.recipe,
-                            style: ContentCardStyle.grid,
-                            userAllergenPrefs: const {'gluten', 'mjölk'},
-                          ),
-                        ),
-                      ),
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: Builder(
+            builder: (context) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(scale)),
+              // A second Builder, and it is load-bearing: the card must read
+              // the text scale from BELOW the MediaQuery above, exactly as the
+              // view's own build does. Reading it from the outer context
+              // silently measures an unscaled tile, which happened here once.
+              child: Builder(
+                builder: (context) => Scaffold(
+                  body: ContentSizedGrid(
+                    padding: const EdgeInsets.all(16),
+                    spacing: 16,
+                    // The app's own rule, not a hardcoded 2. A test that pins
+                    // two columns at a width the app renders in one reports
+                    // coverage it does not have.
+                    columns: AppDimensions.recipeGridColumns(context),
+                    itemCount: 2,
+                    itemBuilder: (context, _) => ContentCard(
+                      item: recipe ?? assessed(),
+                      type: ContentCardType.recipe,
+                      style: ContentCardStyle.grid,
+                      userAllergenPrefs: allergenPrefs,
+                      // `MinaReceptRecipeCard` always passes one outside
+                      // selection mode, and it puts a 32px button in the title
+                      // row. Without it the harness measures a card the screen
+                      // never draws — and the title row is the tightest thing
+                      // on a narrow tile.
+                      onFavoriteToggle: () {},
                     ),
                   ),
                 ),
               ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    for (final entry in geometries.entries) {
+      for (final scale in <double>[1.0, 1.3, 1.5, 1.75, 2.0]) {
+        testWidgets('no overflow on a ${entry.key} at text scale $scale', (
+          tester,
+        ) async {
+          await pumpGrid(tester, size: entry.value, scale: scale);
+
+          // Premise first: "no overflow" is satisfied for free by a tile that
+          // rendered nothing. Without this line a regression in ContentCard's
+          // badge derivation would turn the whole group green while measuring
+          // the wrong tile.
+          expect(
+            find.byType(CompactAllergenRow),
+            findsWidgets,
+            reason:
+                'the geometry cases must be measuring a tile that actually '
+                'draws the badge row whose wrapping is the thing under test',
+          );
+          // And the row must carry FOUR badges, not merely be present. The
+          // row collapses to nothing when empty, so its presence proves one
+          // badge — never four. Lower `maxBadges` in `_buildGridLayout` from
+          // 4 to 2, a plausible narrow-tile tweak, and every case here stays
+          // green while measuring a row half the width of the one the fixture
+          // was built to produce.
+          expect(
+            find.byType(AllergenStatusBadge),
+            findsNWidgets(8),
+            reason: 'four settled allergens on each of two cards',
+          );
+
+          expect(
+            tester.takeException(),
+            isNull,
+            reason:
+                'nothing in a grid tile may be clipped away — in a release '
+                'build there are no stripes to see, only missing content: '
+                '${entry.key} at scale $scale',
+          );
+        });
+
+        testWidgets(
+          'no overflow on the unassessed marker, ${entry.key} at scale $scale',
+          (tester) async {
+            // The OTHER thing a grid tile can draw, and the loop above cannot
+            // see it: an assessed recipe draws the badge row INSTEAD of this
+            // marker, so twenty green cases said nothing about a chip that
+            // overflowed at every width and every text size. It is the marker
+            // that stops a quiet card reading as "nothing flagged", so a
+            // clipped one is worse than a missing one.
+            await pumpGrid(
+              tester,
+              size: entry.value,
+              scale: scale,
+              recipe: unassessed(),
             );
 
-            // Premise first: "no overflow" is satisfied for free by a tile that
-            // rendered nothing. Without this line a regression in ContentCard's
-            // badge derivation would turn the whole group green while measuring
-            // the wrong tile — and this suite has already measured the wrong tile
-            // once, when the delegate read its text scale from the wrong context.
+            expect(
+              find.textContaining('bedömda'),
+              findsWidgets,
+              reason: 'the premise: this tile must draw the marker at all',
+            );
             expect(
               find.byType(CompactAllergenRow),
-              findsWidgets,
+              findsNothing,
               reason:
-                  'the geometry cases must be measuring a tile that actually '
-                  'draws the row this change adds',
+                  'and it must be drawing the marker INSTEAD of the badge row '
+                  '— otherwise this case duplicates the one above',
             );
-
             expect(
               tester.takeException(),
               isNull,
               reason:
-                  'a grid tile cannot grow, so anything that does not fit is '
-                  'clipped away silently in release — ${entry.key} at scale '
-                  '$scale',
+                  'the unassessed marker must not be clipped either: '
+                  '${entry.key} at scale $scale',
             );
           },
         );
       }
     }
+
+    testWidgets('the picture survives at the largest text size', (
+      tester,
+    ) async {
+      // The bug this replaced was not only clipped text. The image was the
+      // slack in a fixed box, so it lost its height first — on the narrower
+      // phones it reached zero outright while the text kept growing. A card
+      // sized to its own content cannot do that, and this is the assertion
+      // that reddens if a fixed tile height ever comes back — the no-overflow
+      // cases above do not, since a collapsed image leaves MORE room, not
+      // less.
+      await pumpGrid(
+        tester,
+        size: const Size(960, 1704),
+        scale: 2.0,
+        allergenPrefs: const {'gluten', 'mjölk'},
+      );
+
+      // The invariant is the SHAPE, not a pixel count: the photo is the one
+      // fixed dimension left in the card, so it keeps its declared ratio no
+      // matter how tall the text under it grows. A pixel threshold would have
+      // to be re-tuned for every screen width and would say nothing about why.
+      final photo = tester.getRect(
+        find
+            .descendant(
+              of: find.byType(RecipeCard).first,
+              matching: find.byType(AspectRatio),
+            )
+            .first,
+      );
+      expect(photo.width, greaterThan(0));
+      // The LITERAL 0.75, not `recipeGridImageAspectRatio`. Dividing by the
+      // same constant the widget reads restates `AspectRatio`'s own guarantee
+      // and cannot fail; the finder above is then the only thing doing work.
+      // The number is the covered fact here, so it is written out.
+      expect(
+        photo.height,
+        closeTo(photo.width * 0.75, 0.5),
+        reason:
+            'the recipe photo must keep its 4:3 shape at 2x on a 320dp phone '
+            '— it was the slack in a fixed box before BUT-1911 and rendered '
+            'zero pixels tall there',
+      );
+    });
+
+    testWidgets('the grid draws no dietary row', (tester) async {
+      // A decision, not an omission (BUT-1906, Malin 2026-08-23). A dietary
+      // badge carries its WORD and the word does not fit: the row has 88
+      // logical pixels on a 360dp tile and 68 on a 320dp one, while "vegansk"
+      // needs 111 and "vegetarisk" 145 at NORMAL text size, growing to 188 and
+      // 255 at 2x. Icon-only was the alternative and it does not exist — the
+      // badge takes its icon from the STATUS, so both diets render the same
+      // green leaf.
+      //
+      // `assessed()` is FREE on a diet and the card is handed dietary
+      // preferences, so this case fails the moment the row is added back.
+      await pumpCard(
+        tester,
+        recipe: assessed(),
+        style: RecipeCardStyle.grid,
+        dietaryPrefs: const {'vegansk'},
+      );
+
+      expect(find.byType(CompactDietaryRow), findsNothing);
+      expect(find.textContaining('vegansk'), findsNothing);
+    });
+
+    testWidgets('the detailed layout still draws it', (tester) async {
+      // The control. Without it the case above is satisfied by a card that
+      // lost the dietary row everywhere, which is a different, worse bug.
+      await pumpCard(
+        tester,
+        recipe: assessed(),
+        style: RecipeCardStyle.detailed,
+        dietaryPrefs: const {'vegansk'},
+      );
+
+      expect(find.byType(CompactDietaryRow), findsOneWidget);
+      expect(find.textContaining('vegansk'), findsWidgets);
+    });
   });
 }

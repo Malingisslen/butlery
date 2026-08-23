@@ -226,10 +226,21 @@ void main() {
     testWidgets('grid -> RecipeCardStyle.grid', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          ContentCard(
-            item: _recipe(),
-            type: ContentCardType.recipe,
-            style: ContentCardStyle.grid,
+          // A grid card is only ever built inside a 2-to-4 column cell, and
+          // since BUT-1911 it sizes to its content instead of squeezing its
+          // photo to fit whatever box it is handed. Given the full 800px test
+          // surface its 4:3 photo alone would be 552px tall. The cell width is
+          // the harness's job, not the card's.
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 180,
+              child: ContentCard(
+                item: _recipe(),
+                type: ContentCardType.recipe,
+                style: ContentCardStyle.grid,
+              ),
+            ),
           ),
         ),
       );

@@ -206,11 +206,20 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
-            child: SizedBox(
-              width: 200,
-              child: RecipeCard(
-                recipe: testRecipe,
-                style: RecipeCardStyle.grid,
+            // topLeft, so the card is given a LOOSE height and takes the one
+            // its content needs — which is how the grid lays it out
+            // (BUT-1911). A tight box would measure the card's willingness to
+            // be squeezed, and it is no longer willing: the recipe photo used
+            // to be the slack and gave up its whole height before anything
+            // complained.
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: 200,
+                child: RecipeCard(
+                  recipe: testRecipe,
+                  style: RecipeCardStyle.grid,
+                ),
               ),
             ),
           ),
@@ -229,11 +238,20 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(
             wrapInScaffold: false,
-            child: SizedBox(
-              width: 200,
-              child: RecipeCard(
-                recipe: testRecipe,
-                style: RecipeCardStyle.grid,
+            // topLeft, so the card is given a LOOSE height and takes the one
+            // its content needs — which is how the grid lays it out
+            // (BUT-1911). A tight box would measure the card's willingness to
+            // be squeezed, and it is no longer willing: the recipe photo used
+            // to be the slack and gave up its whole height before anything
+            // complained.
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: 200,
+                child: RecipeCard(
+                  recipe: testRecipe,
+                  style: RecipeCardStyle.grid,
+                ),
               ),
             ),
           ),

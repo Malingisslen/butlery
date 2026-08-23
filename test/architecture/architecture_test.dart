@@ -368,6 +368,46 @@ void main() {
     // regression — `EdgeInsets.only(left:)` / `(right:)` is LTR-fixed and
     // breaks RTL languages (Arabic, Hebrew). The directional variant flips
     // automatically when the ambient `Directionality` is RTL.
+    test("Mina recept's grid toggle does not go back to a grid delegate", () {
+      // A grid delegate has to be told each tile's height BEFORE it lays
+      // anything out, and neither answer it accepts can be right for a card
+      // carrying text: a ratio of the tile's own width is wrong at one end
+      // whatever it is set to, and a fixed number has to predict every Wrap
+      // inside the card. When the prediction came out short the tile clipped,
+      // silently — a release build draws no overflow stripes (BUT-1911).
+      //
+      // The widget suite cannot see this. Its geometry cases construct
+      // `ContentSizedGrid` themselves, so a view that regressed to a
+      // `GridView` would leave all of them green while the app clipped again.
+      // The ingredients are still in the tree: `recipeGridAspectRatio` stays
+      // live for the LIST toggle's tablet grid.
+      //
+      // It lives here rather than in that suite so it runs on every commit,
+      // and it asserts the IMPORT rather than a constructor spelling —
+      // an import cannot be satisfied by prose.
+      final view = File('lib/views/mina_recept_view.dart');
+      expect(view.existsSync(), isTrue, reason: 'the guard has lost its file');
+
+      final stripped = view
+          .readAsStringSync()
+          .replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '')
+          .replaceAll(RegExp(r'//.*'), '');
+
+      expect(
+        stripped,
+        contains('widgets/common/content_sized_grid.dart'),
+        reason:
+            'the grid toggle must keep building rows that size to their '
+            'tallest card',
+      );
+      expect(
+        stripped,
+        isNot(contains('SliverGridDelegate')),
+        reason: 'a grid delegate needs a tile height before layout',
+      );
+      expect(stripped, isNot(contains('GridView.builder')));
+    });
+
     test('no LTR-fixed EdgeInsets.only(left:|right:) in lib/ '
         '(use EdgeInsetsDirectional.only)', () {
       final pattern = RegExp(r'EdgeInsets\.only\([^)]*\b(left|right):');

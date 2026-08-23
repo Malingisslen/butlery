@@ -1668,6 +1668,12 @@
       "path": "lib/services/messaging_service.dart"
     },
     {
+      "id": "svc-blocked-user-filter",
+      "label": "BlockedUserFilter",
+      "context": "service",
+      "path": "lib/services/social/blocking/blocked_user_filter.dart"
+    },
+    {
       "id": "svc-group-shared-content",
       "label": "GroupSharedContentService",
       "context": "service",
@@ -6072,7 +6078,7 @@
     {
       "id": "flow-grp-5",
       "label": "Måltidsomröstning",
-      "description": "Skapa och rösta i en middagsomröstning i gruppchatten, med automatisk planering vid stängning. BUT-1856: omröstningen återanvänder EN chatt per social grupp — den skapas vid första omröstningen och rostern synkas mot gruppen vid varje senare, i stället för en ny oraderbar gruppchatt per omröstning.",
+      "description": "Skapa och rösta i en middagsomröstning i gruppchatten, med automatisk planering vid stängning. BUT-1856: omröstningen återanvänder EN chatt per social grupp — den skapas vid första omröstningen och rostern synkas mot gruppen vid varje senare, i stället för en ny oraderbar gruppchatt per omröstning. BUT-1908/BUT-1909: en omröstning vars röster aldrig lästes ritar ingen avsluta-knapp, en stängning som inte kan läsa blockeringslistan vägras med ett svenskt besked i stället för att gissa en vinnare, och blockerade personers röster räknas varken i siffran på skärmen eller när vinnaren avgörs.",
       "features": [
         "GRP-09"
       ],
@@ -6178,14 +6184,21 @@
         {
           "from": "v-poll-message-widget",
           "to": "vm-chat",
-          "payload": "closePoll(messageId) (endast skapare)",
+          "payload": "closePoll(messageId) — endast skaparen, och bara när rösterna verkligen lästes",
           "transport": "call",
           "verified": true
         },
         {
           "from": "vm-chat",
           "to": "svc-messaging",
-          "payload": "closePoll — beräknar vinnare, lägger till i grupp-/veckoplan, delar med gruppen",
+          "payload": "closePoll — kräver blockeringslistan, räknar bort blockerade röster, beräknar vinnare, lägger till i grupp-/veckoplan, delar med gruppen",
+          "transport": "call",
+          "verified": true
+        },
+        {
+          "from": "svc-messaging",
+          "to": "svc-blocked-user-filter",
+          "payload": "requireBlockedIds() — vägrar stängningen om listan inte går att läsa",
           "transport": "call",
           "verified": true
         },
@@ -6201,6 +6214,13 @@
           "to": "ds-messages",
           "payload": "poll.isClosed=true",
           "transport": "write",
+          "verified": true
+        },
+        {
+          "from": "vm-chat",
+          "to": "v-chat-view",
+          "payload": "svensk vägran-text vid PollCloseRefusedException (snackbar)",
+          "transport": "call",
           "verified": true
         }
       ],

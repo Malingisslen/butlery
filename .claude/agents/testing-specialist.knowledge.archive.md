@@ -25252,3 +25252,92 @@ the list (the group names below carry the same information and cannot drift), ne
 re-enumerate it.
 
 **Process note.** Edited nothing but my own two knowledge files, as instructed.
+
+### 2026-08-23 — BUT-1911 commit-gate review: ContentSizedGrid + recipe grid card (trigger: review round 3, "check the fixes, not just the original code")
+
+Files reviewed (all opened with Read): `lib/widgets/common/content_sized_grid.dart` (new),
+`lib/widgets/recipe/recipe_card.dart`, `test/widget/common/content_sized_grid_test.dart` (new),
+`test/widget/recipe/recipe_card_grid_badges_test.dart`. Suites green: 56/56.
+
+**Measured with a throwaway `test/_zz_probe_but1911_test.dart` (deleted at the end of the
+round; no `lib/` write, so the auto-mode classifier never fired).**
+
+1. **Two-axis parameter, one axis pinned.** Copied `ContentSizedGrid` into the probe file as
+   `MutantGrid` with `if (column > 0) SizedBox(width: spacing)` DELETED, and re-ran all six
+   assertions of `content_sized_grid_test.dart` against it. **6/6 green.** The between-column
+   half of `spacing` is unpinned, and the recipe geometry suite cannot see it either (wider
+   tiles overflow LESS, so `takeException(), isNull` gets easier). Production doc claims both
+   axes: "Used between columns AND between rows, so a caller cannot set the two to different
+   values by accident." Why the six survive: the short-last-row case compares `last.width` to
+   `first.width` (both move together), `last.left` to `first.left` (both 0), the row-spacing
+   case measures the vertical axis, the one-column case never enters `column > 0`, and the
+   empty/laziness cases are blind by construction.
+
+2. **The 48/52 measurement in the geometry group's header is TRUE.** Doubted it from
+   arithmetic (116 card − 32 margin − 32 padding = 52, not 48) and measured instead: at 280dp
+   with columns FORCED to 2, `RecipeCard` outer width = 116.0, the title `Row` = **48.0**, and
+   two `RenderFlex overflowed by 4.0 pixels on the right`. The missing 4 is
+   `InputThemes.recipeCardDecoration`'s left border, which a `BoxDecoration` border deducts
+   from the container's inner box. `AppDimensions.recipeGridColumns` at 280dp measured = 1.
+   Recording this because the arithmetic route gave the wrong answer twice; measure the row,
+   don't sum the constants.
+
+3. **Vacuity the author had not probed: the geometry premise cannot see the badge COUNT.**
+   `expect(find.byType(CompactAllergenRow), findsWidgets)` proves the row is in the tree.
+   `CompactAllergenRow.build` returns `SizedBox.shrink()` on an empty badge list, and the card
+   gates on the same `badgesFor`, so today the row implies >=1 badge — but never FOUR. The
+   `assessed()` fixture comment exists specifically to guarantee four settled allergens
+   ("a fixture that settles two while the harness tracks four measures a two-badge row under a
+   four-badge name"), and `children: badges.take(maxBadges)` is what decides it. Drop
+   `maxBadges` from 4 to 2 in `_buildGridLayout` and all twenty assessed cases stay green while
+   measuring exactly the row the comment forbids. One-line remedy: co-assert
+   `find.byType(AllergenStatusBadge)` (already imported in the file).
+
+4. **The `unassessed()` premises are sound** — the author asked directly. Both are co-asserted
+   (`find.textContaining('bedömda') findsWidgets` + `find.byType(CompactAllergenRow)
+   findsNothing`), `_showUnassessedIndicator`'s third conjunct `!_showUntaggedIndicator` cannot
+   flip on this fixture (`tagResult` non-null, `hasFailed` false), and `ContentCard`'s
+   `showAllergenBadges ?? userAllergenPrefs != null` derivation is caught by the premise if it
+   changes. One fragility worth naming: `'bedömda'` is a SUBSTRING finder and the fixture title
+   is `'Obedömd rätt'` — no trailing 'a', so it misses by one character. `grep 'bedömd'
+   app_sv.arb` returns exactly the two marker keys.
+
+**False sentences filed (remedy is a strike, not a reword).**
+- Suite header, `recipe_card_grid_badges_test.dart` lines 8-13: "A grid tile's height comes
+  from the delegate's aspect ratio, so it cannot grow the way the detailed Column can" —
+  present tense, and this diff is what removed the delegate. It contradicts
+  `content_sized_grid.dart`'s doc in the same commit: two answers to one question.
+- Line 413-416: "a mutation probe that restores the old `Expanded` image leaves the twenty
+  no-overflow cases GREEN and reddens only this one." The round's own new group makes it
+  FORTY (20 assessed + 20 unassessed), and the probe is absent from the author's stated
+  measured set of five. Same insertion-seam shape as BUT-1910's counted comment.
+
+**Claims checked and TRUE** (recording so a later round does not re-spend them): "its only
+production caller" (grep: `mina_recept_view.dart:560` alone); "`recipeGridAspectRatio` remains
+live for the list toggle's tablet grid" (`mina_recept_view.dart:671`, inside the non-grid
+branch's `responsiveListGrid`); the scroll arithmetic 40+24+40=104, 104−60=44, +24=68;
+`ContentCard` really forwards `onFavoriteToggle` to the 32px title-row button
+(`content_card.dart:210`); the view really calls `AppDimensions.recipeGridColumns`
+(`mina_recept_view.dart:569`), so the harness and production agree on the column rule.
+
+**The source-text guard** (`test('the view still builds its grid from ContentSizedGrid')`,
+reading `lib/views/mina_recept_view.dart` as text). Verdict: the NEGATIVE half earns its
+brittleness — a silent return to a fixed tile height is exactly the regression every other
+case is blind to — but it is in the wrong home and wrong shape. It does not strip comments, so
+`contains('ContentSizedGrid(')` is satisfiable by a doc comment (the file already carries
+`/// [ContentSizedGrid]` at line 552 and "Kept from the GridView this replaced" at 561), and
+`isNot(contains('SliverGridDelegate'))` reddens on a comment that merely NAMES the retired
+delegate — false in both directions. `test/architecture/architecture_test.dart` already runs 14
+file-reading lints, in two CI workflows plus the `tools/check_staged_arch_guards.sh`
+pre-commit twin; there it fires on every commit instead of only when someone runs one widget
+suite.
+
+**Coverage `ContentSizedGrid` still lacks with all six green**: every cell in the suite is a
+fixed-height `SizedBox`, so nothing exercises the one thing the widget exists for — a cell
+whose height is a FUNCTION of the width the row hands it (a wrapping `Text`, a `Wrap`). The
+killer fixture is two cells of wrapping text in a 2-column grid, asserting the row height
+equals the taller cell's wrapped height at the COLUMN width, not the full width. `padding` and
+`primary` are forwarded and never asserted; `assert(columns > 0)` is untested.
+
+**Verdict: fail (3 blocking)** — the unpinned column spacing, the unpinned badge count, and
+the two false comment sentences.

@@ -161,7 +161,7 @@ Intentionally centralized reference data.
 | File | Lines | Reason |
 |------|-------|--------|
 | `cuisine_config.dart` | 683 | Cuisine classification config — 22-cuisine data table; splitting harms lookup clarity |
-| `app_dimensions.dart` | 783 | Theme dimension constants — intentionally centralized |
+| `app_dimensions.dart` | 801 | Theme dimension constants — intentionally centralized |
 | `swedish_line_classifier.dart` | 582 | Swedish text line classification — enum + classification rules |
 | `recipe_section_detector.dart` | 502 | The single audited heading/ingredient safety hinge — the heuristics must be read together, and each carries the reasoning that stops an allergen-dropping regression; vocabularies already extracted to `heading_word_lists.dart` (BUT-1714) |
 | `html_sanitizer.dart` | 549 | HTML sanitizer rules — cleaning rules table |
@@ -186,8 +186,8 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `recipe_detail_view.dart` | 1,273 | Recipe detail screen (source-artefact sheet + stale banner extracted to recipe_detail/recipe_source_artefact_sheet.dart, BUT-1205) |
 | `personal_tag_viewmodel.dart` | 798 | Personal tag management VM |
 | `recipe_detail_content.dart` | 859 | Body content widget for recipe detail |
-| `mina_recept_view.dart` | 687 | Main recipe list screen — facade-extracted to `lib/views/mina_recept/` per BUT-441 (was 687, drifted to 1017, now 687) |
-| `recipe_card.dart` | 1123 | Recipe list card widget. Row re-measured 2026-08-18 and it moved four times in one change, which is why the trail is here: recorded 906, measured 941 at HEAD (+35 pre-existing drift), 950 after BUT-1869's first empty-preference guard, and 969 once that guard was replaced by the `badgesFor` content gate. Re-measured a THIRD time after the review round added the "Allergener ej bedömda" marker — which is the point: a row that records a trail has to be measured after the LAST edit, not the last-but-one. |
+| `mina_recept_view.dart` | 697 | Main recipe list screen — facade-extracted to `lib/views/mina_recept/` per BUT-441 |
+| `recipe_card.dart` | 1165 | Recipe list card widget. |
 | `adaptive_icon.dart` | 672 | Platform-adaptive icon widget |
 | `di_container.dart` | 585 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 858 | DI registrations for content layer |

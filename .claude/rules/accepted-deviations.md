@@ -122,6 +122,19 @@ files in the same edit.
 
 ## Engineering
 
+- **The recipe GRID card draws no dietary row, and that is a measurement, not a deferral
+  (BUT-1906, Malin's explicit call 2026-08-23).** A dietary badge carries its WORD; the
+  allergen badges beside it are icon-only. Measured on a 2-column tile: the row has 88
+  logical pixels on a 360dp phone and 68 on a 320dp one, while "vegansk" needs 111 and
+  "vegetarisk" 145 at NORMAL text size, growing to 188 and 255 at 2x. There is no text size
+  and no phone width where it fits. Icon-only was the alternative and does not exist:
+  `DietaryStatusBadge` takes its icon from the STATUS, so both diets render the same green
+  leaf — dropping the word without first giving each diet its own icon replaces the row with
+  two identical marks. Do not propose adding it back "for consistency with the list view":
+  the DETAILED layout is full-width and keeps the word, and that asymmetry is the decision.
+  (The compact layout draws neither badge row — it is not evidence either way.) `recipe_card_grid_badges_test.dart` pins both halves — the grid draws none,
+  the detailed layout still does. BUT-1906, 2026-08-23
+
 
 
 - **The conversation roster's bootstrap branch is GONE, and so is the read fallback that

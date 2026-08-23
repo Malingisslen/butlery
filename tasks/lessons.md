@@ -2241,3 +2241,62 @@ Example: lib/services/menu/parser/text_normalizer.dart _noWordBefore/_noWordAfte
   is load-bearing, replace the prose with a test that derives it (the rate limiter's
   daily-cap coverage check now fails on the next unpinned entry instead of quoting a
   total).
+
+### [Flutter] A plan's own mechanism can be refuted by the same measurement that refuted the ticket's
+- **Date**: 2026-08-23 (BUT-1911 / BUT-1906)
+- **Trigger**: BUT-1906's prescribed remedy (raise the grid aspect ratio) had already
+  been refuted by measurement. The approved plan replaced it with a computed absolute
+  tile height, and named that computation as its weakest assumption. It was: measured
+  across WIDTHS rather than only text scales, the text block needs 244 logical pixels on
+  a 360dp phone at 2x and 272 on a 320dp one, and keeps growing as the tile narrows
+  because the badge row wraps onto another run. Where that run lands is a step, not a
+  curve, so every formula fitted to a few points is a guess that clips on some device,
+  silently, in release.
+- **Rule**: When a fix's job is to predict a layout, vary the axis you were NOT worried
+  about before believing the formula. A prediction that comes out short does not fail
+  loudly — a release build draws no overflow stripes, it just removes content. Two
+  refuted remedies in one ticket family is a signal to change the SHAPE of the answer
+  (here: let the row size to its tallest card, so nothing predicts anything) rather than
+  to fit a third curve.
+- **Also**: the same pass found the grid card's photo was already collapsing to 28 logical
+  pixels at normal text size, 1 pixel on a 320dp phone and ZERO from 1.5x — an `Expanded`
+  image is the slack, and the slack runs out before anyone reports a bug about it. Nobody
+  had filed that; it was invisible because it degrades smoothly.
+
+### [Flutter] The dietary badge does not fit a grid tile, and only width says so
+- **Date**: 2026-08-23 (BUT-1906)
+- **Trigger**: The plan reserved vertical space for a dietary row. The row overflowed
+  HORIZONTALLY at normal text size on a modern phone: a 2-column tile gives that row 88
+  logical pixels on a 360dp screen and 68 on a 320dp one, while "vegansk" needs 111 and
+  "vegetarisk" 145 — 188 and 255 at 2x. The card's whole content column is 68px wide
+  there once margin and padding come off.
+- **Rule**: Before budgeting height for a new row, measure its WIDTH against the box. A
+  height budget written for a row that cannot fit horizontally looks finished and ships
+  a clipped badge. And check the stated fallback exists: "icon-only" was not available,
+  because the badge picks its icon from the STATUS, so two different diets render the
+  same green leaf.
+
+### [Testing] A harness that pumps repeatedly in one test cannot search for an overflow
+- **Date**: 2026-08-23 (BUT-1911)
+- **Trigger**: A measurement harness raised a candidate tile height by 1px per iteration
+  inside ONE `testWidgets`, calling `pumpWidget` each time and stopping at the first
+  `takeException() == null`. It reported the SAME answer for every screen width and text
+  scale — the first candidate above the starting point. `pumpWidget` reuses the element
+  tree, so the overflow does not re-report per iteration, and the search reads as "it
+  fits" instead of "the instrument is broken".
+- **Rule**: One pump per test when the thing being measured is a layout error. To get a
+  number, pump once with generous constraints and read the geometry off the rendered
+  tree; a suspiciously CONSTANT answer across inputs that should differ is the harness,
+  not the finding.
+
+### [Testing] A widget that stops squeezing reddens the tests that measured its squeeze
+- **Date**: 2026-08-23 (BUT-1911)
+- **Trigger**: Three green tests failed once the grid card sized to its content. All
+  three handed the card a box that could not hold it — a 200px-wide `SizedBox` with a
+  tight height, and the full 800px test surface where a 4:3 photo alone is 552px tall.
+  They had passed because the card gave up its image height rather than complain.
+- **Rule**: When a fix removes a widget's ability to shrink, the tests that break are
+  usually asserting the OLD contract by accident — they were never about geometry. Fix
+  the harness to the widget's real usage (here: a grid card only ever lives in a 2-to-4
+  column cell) and say so in the test, rather than capping the widget to keep an
+  unrealistic box green.

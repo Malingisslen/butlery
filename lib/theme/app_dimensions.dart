@@ -598,39 +598,57 @@ class AppDimensions {
     );
   }
 
-  /// How tall a recipe tile is, relative to its width.
+  /// Below this screen width a recipe grid drops to a single column.
   ///
-  /// A CONSTANT aspect ratio cannot hold text that scales. At the OS's largest
-  /// text sizes a recipe tile's title, metadata and allergen row overflowed the
-  /// [gridAspectRatio] box on a 2-column phone even after the card gave up its
-  /// entire image height — measured, and in a release build that is silent
-  /// clipping rather than the debug stripes (BUT-1895). The tile therefore
-  /// grows taller as the text grows.
+  /// Measured, and it is the TITLE ROW that decides it, not the photo: on a
+  /// 280dp screen a two-column tile leaves that row 48 logical pixels, while
+  /// the visibility icon and the favourite button alone need 52 — so the row
+  /// overflowed by 4 pixels at NORMAL text size, before the title had a
+  /// character in it. One column gives the card the full width and the
+  /// question does not arise (BUT-1911).
+  static const double recipeGridMinTwoColumnWidth = 300.0;
+
+  /// How many recipe cards sit side by side.
   ///
-  /// The extra height is a QUARTER of the text growth, not all of it: only the
-  /// text blocks scale, while the image keeps whatever is left over. That
-  /// factor is the measured shortfall at 2x, not a guess.
+  /// Lives here rather than in the view so the widget test can build its grid
+  /// from the SAME rule the app uses. A test that hardcodes two columns claims
+  /// coverage at a width the app renders differently.
+  static int recipeGridColumns(BuildContext context) {
+    if (MediaQuery.sizeOf(context).width < recipeGridMinTwoColumnWidth) {
+      return 1;
+    }
+    return Breakpoints.valueFor<int>(
+      context: context,
+      mobile: 2,
+      tablet: 3,
+      desktop: 4,
+    );
+  }
+
+  /// The recipe photo's shape on a grid tile.
   ///
-  /// KNOWN RESIDUAL, accepted rather than overlooked: the clamp stops at 2x.
-  /// Past 2x this ratio freezes while the text keeps growing — so the clipping
-  /// comes back. Whether any shipped OS asks for more than 2x is not measured
-  /// here, so no platform ceiling is claimed. That is the better of two bad outcomes; a tile that grows
-  /// without limit is taller than the screen and shows one recipe at a time.
+  /// A shape rather than a height, because the tile's width is decided by the
+  /// column count and the screen. Nothing below the photo is measured against
+  /// it — that content sizes to itself and the row sizes to its tallest card —
+  /// so this number decides how much picture a grid tile shows and nothing
+  /// else (BUT-1911).
+  static const double recipeGridImageAspectRatio = 4 / 3;
+
+  /// How tall a card is relative to its width, in the LIST toggle's grid.
   ///
-  /// SECOND KNOWN RESIDUAL, and the nearer one: this correction is proportional
-  /// to tile WIDTH, while the shortfall it covers is text, which wraps MORE on a
-  /// narrow screen. The two diverge, so no single factor closes both. Measured:
-  /// a 360dp phone is clean to 2x, but a 320dp phone still clips from 1.3x —
-  /// an ordinary user at an ordinary text size. Closing that needs an absolute
-  /// tile height (`mainAxisExtent`) rather than a ratio: BUT-1911.
+  /// One caller: `LayoutComponents.responsiveListGrid` on Mina recept, which
+  /// lays out DETAILED cards in a grid on tablet and desktop and a plain list
+  /// on a phone. The grid toggle no longer reads it — that layout sizes each
+  /// row to its tallest card and needs no ratio at all (BUT-1911).
   ///
-  /// `recipe_card_grid_badges_test.dart` pins both ends AS THEY ARE — clean to
-  /// 2x on 360dp, clean at 1.0 on 320dp — so "covered by a test" here means the
-  /// boundary is recorded, not that it is clean everywhere.
+  /// The growth factor came from measuring the GRID card, which is a different
+  /// card in a different layout. Whether it is right for a detailed card on a
+  /// tablet has not been measured, and no test pins it. Named rather than
+  /// tuned blind: BUT-1911 scoped it out deliberately.
   ///
-  /// Lives here rather than in the view so that test can build its grid from
-  /// the SAME number the app uses. It was written twice for one afternoon, and
-  /// a retuned factor would have left the test green against its own stale copy.
+  /// What the factor does: a constant ratio cannot hold text that scales, so
+  /// the box grows with the text scale, clamped at 2x. Past 2x it freezes while
+  /// the text keeps growing.
   static double recipeGridAspectRatio(BuildContext context) {
     final textScale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 2.0);
     return gridAspectRatio / (1 + (textScale - 1) * 0.25);

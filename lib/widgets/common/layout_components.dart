@@ -329,6 +329,11 @@ class LayoutComponents {
   ///   animate: true, // Staggered entrance animations
   /// );
   /// ```
+  /// NOT for cells that carry TEXT. `childAspectRatio` ties a tile's height to
+  /// its width, and a text block does the opposite — it grows with the OS text
+  /// scale and shrinks with width — so a ratio is wrong at one end whatever it
+  /// is set to, and being wrong means silent clipping in a release build. Use
+  /// `ContentSizedGrid` for those (BUT-1911).
   static Widget responsiveListGrid<T>({
     required List<T> items,
     required Widget Function(BuildContext context, T item) itemBuilder,

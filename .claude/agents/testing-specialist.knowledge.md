@@ -558,6 +558,11 @@ The single most repeated finding across two months of review.
   ONLY by `find.byType(<ChildWidget>)`** — the child-CONTENT assertion (badge, row item) is
   vacuous, because deleting the guard rebuilds the child, which then draws nothing and leaves
   the dead spacer the ticket was about (BUT-1869, `CompactAllergenRow` on an empty pref set).
+- **ONE parameter feeding TWO axes is pinned on the easy axis only** — a grid's `spacing`
+  used between rows AND columns: deleting the between-COLUMN spacer left all six tests in
+  the widget's own new suite green (measured, BUT-1911), because a short-last-row width
+  comparison and a one-column case both move together under it. Enumerate the axes the
+  parameter's own doc comment claims, one assertion each.
 - A Fake with two branches answering the same success value, driven by one UI flag, eats a
   routing test whole — test the FAILURE arm. An enum-driven `defaults()` owes a
   KEY-SET-COMPLETENESS test — a forgotten member is DEAD, not "off by default."
@@ -943,7 +948,11 @@ in ITS suite, same edit (BUT-1874: emitter pinned, `ShoppingItemManagementModule
   default typography can hide a real overflow. Pin with SYNTHETIC tall content, never real
   ARB copy (dies with the flag). `expect(takeException(), isNull)` is ALSO satisfied by a
   tile that rendered nothing, so co-assert the content under test is present — otherwise a
-  regression in the flag that ADDS the content turns the geometry case green. A ladder that
+  regression in the flag that ADDS the content turns the geometry case green. **That
+  co-assert must reach the DIMENSION the geometry depends on, not the container type**: when
+  the subject is how a row WRAPS, `find.byType(<Row>)` is satisfied by a one-item row, so a
+  narrowed `take(maxBadges)` measures a two-badge row under a four-badge fixture comment and
+  all cases stay green — assert the CHILD COUNT (BUT-1911). A ladder that
   SKIPS cases per fixture (`cleanUpTo`) is honest only if the skipped ones are MEASURED
   (320dp really does overflow from 1.3x, BUT-1895); the residual is then un-pinned in the
   reverse direction, so a source comment claiming "both ends are covered" goes stale in

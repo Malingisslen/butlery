@@ -323,19 +323,28 @@ class RecipeCard extends StatelessWidget {
   Widget _buildGridLayout(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      // The tile sizes to this Column, not the other way round (BUT-1911). Its
+      // caller lays the grid out as rows of cards whose height comes from the
+      // tallest card in the row, so there is no fixed box left to overflow and
+      // the image no longer has to be the slack.
+      //
+      // It used to be. A grid delegate's tile height came from the tile WIDTH,
+      // and the text block does not scale with width — so `Expanded` handed the
+      // image whatever the text had not already taken, and by the time the text
+      // grew there was nothing left. On the narrower phones it reached zero
+      // while the text kept growing, and the text was then clipped away with no
+      // stripes to see in a release build.
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // The image is the SLACK in this layout, not a fixed block.
-        //
-        // A grid tile's height is decided by the delegate's aspect ratio, so
-        // unlike the detailed layout this Column cannot grow. A fixed 150px
-        // image plus text that grows with the OS text scale therefore is not a
-        // tight layout, it is an overflow: measured at 70px past the bottom at
-        // 1x and 175px at 2x, on a 2-column phone, for every recipe including a
-        // one-word title. In release that is silent clipping, which is why it
-        // survived. Expanded lets the image give up its own height so the title,
-        // the metadata and the allergen row keep theirs.
         if (showImage) ...[
-          Expanded(child: _buildRecipeImage(context, width: double.infinity)),
+          AspectRatio(
+            aspectRatio: AppDimensions.recipeGridImageAspectRatio,
+            child: _buildRecipeImage(
+              context,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+          ),
           const SizedBox(height: AppDimensions.spacingSm),
         ],
         // Title + favorite
@@ -366,7 +375,22 @@ class RecipeCard extends StatelessWidget {
         // exactly what the marker exists to block, so moving the row here
         // without it would reopen a fixed bug in a new place.
         //
-        // The dietary row is deliberately NOT here — see BUT-1906.
+        // The dietary row is NOT here, and that is now a decision rather than
+        // a deferral (BUT-1906, Malin 2026-08-23). The allergen badges above
+        // are icon-only and 28px wide; a dietary badge carries its WORD, and
+        // the word does not fit. Measured on a 2-column tile: the row has 88
+        // logical pixels on a 360dp phone and 68 on a 320dp one, while
+        // "vegansk" needs 111 and "vegetarisk" needs 145 — at NORMAL text
+        // size, growing to 188 and 255 at 2x. There is no text size and no
+        // phone width where it fits.
+        //
+        // Icon-only was the alternative and it does not exist: the badge picks
+        // its icon from the STATUS, so vegansk and vegetarisk both render the
+        // same green leaf. Dropping the word without first giving each diet
+        // its own icon replaces the row with two identical marks.
+        //
+        // Diet keeps its word in the DETAILED layout, which is full-width and
+        // has the room. The compact layout draws neither badge row at all.
         if (showAllergenBadges && _allergenBadges.isNotEmpty) ...[
           const SizedBox(height: AppDimensions.spacingXs),
           CompactAllergenRow(
@@ -416,6 +440,13 @@ class RecipeCard extends StatelessWidget {
               )
             : Hero(
                 tag: ImageConfig.recipeHeroTag(recipe.id),
+                // The placeholder is still sized from the 64px default rather
+                // than from its box, so on a grid tile it no longer fills the
+                // 4:3 shape around it. Deliberately left: the obvious fix is a
+                // LayoutBuilder, and this subtree is measured by an
+                // IntrinsicHeight — a LayoutBuilder there reports zero height
+                // in release and throws only in debug, which is the silent
+                // clipping BUT-1911 exists to remove.
                 child: VegetableIllustration(
                   type: VegetableIllustration.randomForRecipe(recipe.id),
                   size: imageSize * 0.7,
@@ -957,12 +988,15 @@ class RecipeCard extends StatelessWidget {
               color: hasFailed ? cs.error : context.butleryColors.warning,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
-            Text(
-              hasFailed
-                  ? context.l10n.recipeAnalysisFailed
-                  : context.l10n.recipeAnalyzing,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: hasFailed ? cs.error : context.butleryColors.warning,
+            // Flexible for the reason on the unassessed marker above.
+            Flexible(
+              child: Text(
+                hasFailed
+                    ? context.l10n.recipeAnalysisFailed
+                    : context.l10n.recipeAnalyzing,
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: hasFailed ? cs.error : context.butleryColors.warning,
+                ),
               ),
             ),
           ],
@@ -1014,12 +1048,28 @@ class RecipeCard extends StatelessWidget {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(Icons.help_outline, size: 14, color: cs.outline),
             const SizedBox(width: AppDimensions.spacingXs),
-            Text(
-              context.l10n.recipeAllergensUnassessed,
-              style: AppTextStyles.labelSmall.copyWith(color: cs.outline),
+            // Flexible, and allowed to WRAP rather than ellipsize. A grid tile
+            // gives this chip 72 logical pixels on a 360dp phone while the
+            // icon and the sentence need about 254, so unconstrained it
+            // overflowed at every width and every text size — silently, since
+            // a release build draws no stripes. Ellipsis is the wrong recovery
+            // here: this is the marker that stops a quiet card being read as
+            // "nothing flagged", and "Alle…" says less than nothing. The card
+            // sizes to its content now, so it can afford the extra lines.
+            //
+            // The untagged and completeness chips below are the same shape and
+            // get the same treatment. Only this one reaches the grid layout
+            // today, but fixing one of three identical rows is how a codebase
+            // ends up with two answers to one question.
+            Flexible(
+              child: Text(
+                context.l10n.recipeAllergensUnassessed,
+                style: AppTextStyles.labelSmall.copyWith(color: cs.outline),
+              ),
             ),
           ],
         ),
@@ -1043,9 +1093,12 @@ class RecipeCard extends StatelessWidget {
           children: [
             Icon(Icons.pie_chart_outline, size: 14, color: cs.outline),
             const SizedBox(width: AppDimensions.spacingXs),
-            Text(
-              context.l10n.recipeCompleteness(score),
-              style: AppTextStyles.labelSmall.copyWith(color: cs.outline),
+            // Flexible for the reason on the unassessed marker above.
+            Flexible(
+              child: Text(
+                context.l10n.recipeCompleteness(score),
+                style: AppTextStyles.labelSmall.copyWith(color: cs.outline),
+              ),
             ),
           ],
         ),

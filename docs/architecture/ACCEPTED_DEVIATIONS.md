@@ -2009,3 +2009,54 @@ to the same shortfall, and the repair must cover both. Raised by the
 `firebase-backend-security` gate, 2026-08-17.
 
 Both raised by the `firestore-rules-tester` gate during the BUT-1801 salvage review.
+
+## BUT-1906 — the recipe grid card draws no dietary row
+
+**Decided 2026-08-23 by Malin, shown against two alternatives and their costs.**
+
+The ticket asked for the vegansk/vegetarisk row to appear on grid cards, so that a recipe
+does not appear to lose its dietary information when the user flips the view toggle. Its
+prescribed remedy was to raise the tile's aspect ratio to make room. That remedy was already
+refuted by measurement under BUT-1906's first pass: the shortfall is not vertical.
+
+It is horizontal, and it does not close. Measured on a 2-column tile with the production
+card:
+
+| | needs | has on 360dp | has on 320dp |
+|---|---|---|---|
+| `vegansk` at 1.0 | 111 px | 88 px | 68 px |
+| `vegetarisk` at 1.0 | 145 px | 88 px | 68 px |
+| `vegansk` at 2.0 | 188 px | 88 px | 68 px |
+| `vegetarisk` at 2.0 | 255 px | 88 px | 68 px |
+| any allergen badge | 28 px | 88 px | 68 px |
+
+A grid tile's whole content column is 68 logical pixels wide on a 320dp phone once the card
+margin and the container padding are taken off. The allergen badges fit because they are
+icon-only. A dietary badge carries its word, and the word does not fit at any text size on
+any phone.
+
+**Alternative 1 — icon-only, matching the allergen row.** Does not exist.
+`DietaryStatusBadge` selects its icon from the STATUS, not from the diet, so vegansk and
+vegetarisk both render `Icons.eco_outlined`. Dropping the label would replace the row with
+two identical green leaves: not a compact treatment, an information loss. Giving each diet
+its own icon is a real option, and a real design decision — it is not this ticket.
+
+**Alternative 2 — ellipsize the word.** Fits by definition, and reads as broken: at normal
+text size roughly half of `vegetarisk` survives, and at 2x about two characters do. It also
+degrades precisely for the user who most needs the label.
+
+**What was chosen.** Neither. The grid keeps its icon-only allergen row and no dietary row;
+the DETAILED layout is full-width, has the room, and keeps the word. The asymmetry between
+the two view toggles is therefore the decision rather than the gap the ticket described.
+
+*(Corrected 2026-08-23, before the commit landed: the first draft of this entry, and the two
+comments quoting it, offered the COMPACT layout as further evidence that the word survives
+outside the grid. It draws neither badge row, so it was never evidence. The decision is
+unchanged; only the false half of its supporting sentence is struck. Raised by the
+`integration-reviewer` gate.)*
+
+**Pinned by** `test/widget/recipe/recipe_card_grid_badges_test.dart`: one case asserts the
+grid draws no `CompactDietaryRow` when the card is handed dietary preferences and the recipe
+is FREE on a diet, and its control asserts the detailed layout still does — so a change that
+removed the row everywhere cannot pass as satisfying this decision.
+

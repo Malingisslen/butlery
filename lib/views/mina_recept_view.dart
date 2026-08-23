@@ -9,9 +9,9 @@
 ///
 /// BUT-441: facade pattern. Per-recipe rendering, empty/onboarding states,
 /// discovery shelves, selection-mode AppBar, and filter-chip helpers live
-/// in `lib/views/mina_recept/`. Was 1017 lines (+48% over the accepted-large
-/// entry of 687 in `docs/architecture/ACCEPTED_LARGE_FILES.md`); now under
-/// that entry. Future slice candidates if the 500-line code-style cap
+/// in `lib/views/mina_recept/`. It carries a rationale row in
+/// `docs/architecture/ACCEPTED_LARGE_FILES.md`, which is where its measured
+/// length lives. Future slice candidates if the 500-line code-style cap
 /// becomes binding: `_buildCookingSessionCard` + `_safeLoadSocialData` +
 /// `_safeLoadRecipeData`.
 
@@ -40,6 +40,7 @@ import 'package:butlery/core/constants/routes.dart';
 
 // Widget components for modern UI architecture
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/content_sized_grid.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/common/search_filter/quick_filter_chips.dart';
@@ -546,6 +547,37 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
+  /// The grid toggle on Mina recept.
+  ///
+  /// [ContentSizedGrid] rather than a `GridView`, and its doc carries the
+  /// measurements behind that (BUT-1911).
+  Widget _buildRecipeGrid(
+    BuildContext context, {
+    required RecipeListViewModel viewModel,
+    required List<Recipe> recipes,
+    required UserAllergenPreferences allergenPrefs,
+  }) {
+    return ContentSizedGrid(
+      // Kept from the GridView this replaced. The two toggle branches are
+      // different widget types today, so the element is replaced with or
+      // without it — it is insurance for the day they converge, not the thing
+      // that keeps two Scrollables off one PrimaryScrollController.
+      key: const ValueKey('recipe-grid-scrollable'),
+      primary: true,
+      padding: AppDimensions.responsiveContentPadding(context),
+      spacing: AppDimensions.responsiveGridSpacing(context),
+      columns: AppDimensions.recipeGridColumns(context),
+      itemCount: recipes.length,
+      itemBuilder: (context, index) => MinaReceptRecipeCard(
+        viewModel: viewModel,
+        recipe: recipes[index],
+        allergenPrefs: allergenPrefs,
+        onDelete: (recipe) => _handleDeleteWithUndo(viewModel, recipe),
+        index: index,
+      ),
+    );
+  }
+
   Widget _buildContent(
     RecipeListViewModel viewModel,
     bool isOnline,
@@ -618,38 +650,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             child: PrimaryScrollController(
               controller: _scrollController,
               child: viewModel.isGridView
-                  ? GridView.builder(
-                      // Distinct key so toggling view mode tears down this
-                      // Scrollable before the list-mode one attaches to the
-                      // shared controller (avoids a transient double-attach).
-                      key: const ValueKey('recipe-grid-scrollable'),
-                      primary: true,
-                      padding: AppDimensions.responsiveContentPadding(context),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: LayoutComponents.isMobile(context)
-                            ? 2
-                            : LayoutComponents.isTablet(context)
-                            ? 3
-                            : 4,
-                        crossAxisSpacing: AppDimensions.responsiveGridSpacing(
-                          context,
-                        ),
-                        mainAxisSpacing: AppDimensions.responsiveGridSpacing(
-                          context,
-                        ),
-                        childAspectRatio: AppDimensions.recipeGridAspectRatio(
-                          context,
-                        ),
-                      ),
-                      itemCount: recipes.length,
-                      itemBuilder: (context, index) => MinaReceptRecipeCard(
-                        viewModel: viewModel,
-                        recipe: recipes[index],
-                        allergenPrefs: allergenPrefs,
-                        onDelete: (recipe) =>
-                            _handleDeleteWithUndo(viewModel, recipe),
-                        index: index,
-                      ),
+                  ? _buildRecipeGrid(
+                      context,
+                      viewModel: viewModel,
+                      recipes: recipes,
+                      allergenPrefs: allergenPrefs,
                     )
                   : KeyedSubtree(
                       key: const ValueKey('recipe-list-scrollable'),
