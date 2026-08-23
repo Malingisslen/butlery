@@ -302,10 +302,9 @@
       "lib/services/monitoring/web_error_reporter.dart"
     ],
     "Software Architect": [
+      ".claude/commands/butlery-architecture.md",
       ".claude/rules/accepted-deviations.md",
       ".claude/rules/code-style.md",
-      ".claude/skills/**",
-      ".claude/skills/butlery-architecture.md",
       "CLAUDE.md",
       "docs/architecture/ACCEPTED_LARGE_FILES.md",
       "lib/core/base/**",
@@ -377,22 +376,22 @@
       "tasks/lessons.md"
     ],
     "Engineering Manager / Release Manager": [
-      ".claude/commands/**",
-      ".claude/commands/janitor.md",
-      ".claude/commands/linear.md",
-      ".claude/commands/sprint-execute.md",
-      ".claude/commands/sprint-parallel.md",
-      ".claude/commands/stakeholder-review.md",
       ".claude/hooks/loop-pace-guard.sh",
       ".claude/rules/git-workflow.md",
       ".claude/settings.json",
       ".claude/settings.local.json",
       ".claude/shared-plugin.json",
-      ".claude/workflows/**",
-      ".claude/workflows/sprint-execute-parallel.js",
       ".github/workflows/**",
       ".github/workflows/test.yml",
-      "CLAUDE.md"
+      "CLAUDE.md",
+      "skills/**",
+      "skills/janitor",
+      "skills/linear",
+      "skills/sprint-execute",
+      "skills/sprint-parallel",
+      "skills/stakeholder-review",
+      "workflows/**",
+      "workflows/sprint-execute-parallel.js"
     ],
     "Technical Writer / Documentation": [
       ".claude/plan-review-checklist.md",

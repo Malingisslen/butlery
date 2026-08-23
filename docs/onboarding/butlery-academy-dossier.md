@@ -127,7 +127,9 @@ Butlery har tre olika typer av skyddsnät. De är lätta att blanda ihop, så h�
 | **Agent** | En specialist-granskare med egen instruktion, som granskar en diff *efteråt* | Körs när du (eller en gate) skickar en diff till den | En besiktningsman som signerar innan du får committa |
 | **Hook** | Ett litet bash-skript som körs automatiskt på en livscykelhändelse | *Innan* ett verktyg körs, *efter* en fil skrivs, när Claude försöker stanna | En dörrvakt som antingen vinkar in dig eller stoppar dig |
 
-**Skills** (i `.claude/skills/`) faller i fyra familjer:
+**Skills** (i `.claude/commands/` — mappen heter *commands*, men en fil där och en skill
+är samma sak för Claude Code; en platt `.md` i `.claude/skills/` laddas däremot inte alls,
+vilket är varför alla ligger här) faller i fyra familjer:
 - **Generators** skapar ny kod som redan följer husreglerna (`repository-generator`, `viewmodel-generator`, `serialization-generator`, `permission-test-generator`).
 - **Validators** fångar farliga mönster (`tri-state-validator`, `data-source-enforcer`, `responsive-layout-validator`, `facade-pattern-detector`, `mixin-advisor`).
 - **Domain-knowledge** kodar affärsregler Claude inte får gissa om (`butlery-architecture`, `tagging-domain-knowledge`, `firebase-ingredient-patterns`).
@@ -146,7 +148,7 @@ Varför detta inte är byråkrati: `tri-state-validator` förhindrar bokstavlige
 
 ### Riktiga referenser
 
-- `C:/Butlery/butlery/.claude/skills/` — alla 17 skills; t.ex. `butlery-architecture.md`, `data-source-enforcer.md`, `tri-state-validator.md`, `mixin-advisor.md`
+- `C:/Butlery/butlery/.claude/commands/` — alla 22 skills; t.ex. `butlery-architecture.md`, `data-source-enforcer.md`, `tri-state-validator.md`, `mixin-advisor.md`
 - `C:/Butlery/butlery/.claude/agents/` — `code-reviewer.md`, `testing-specialist.md`, `firebase-backend-security.md`, `firestore-rules-tester.md`, `debugger.md`
 - `C:/Butlery/butlery/.claude/hooks/` — t.ex. `require-review-before-commit.sh`, `file-size-guard.sh`, `regenerate-l10n.sh`, `safety-skill-trigger.sh`
 - `C:/Butlery/butlery/.claude/settings.json` — kopplar varje hook till en händelse + matcher
@@ -175,7 +177,7 @@ PostToolUse → matcher "Write|Edit" → regenerate-l10n.sh
 
 ### Prova nu
 
-Öppna `C:/Butlery/butlery/.claude/skills/viewmodel-generator.md` och `C:/Butlery/butlery/.claude/skills/drift-migration.md` sida vid sida och läs ENDAST frontmatter (mellan `---`-raderna). Hitta `disable-model-invocation: true` i den ena. Förutsäg: om du säger "skapa en ny ViewModel", vilken laddas automatiskt och vilken måste du anropa med `/drift-migration`?
+Öppna `C:/Butlery/butlery/.claude/commands/viewmodel-generator.md` och `C:/Butlery/butlery/.claude/commands/drift-migration.md` sida vid sida och läs ENDAST frontmatter (mellan `---`-raderna). Hitta `disable-model-invocation: true` i den ena. Förutsäg: om du säger "skapa en ny ViewModel", vilken laddas automatiskt och vilken måste du anropa med `/drift-migration`?
 
 ### Checkpoint
 
@@ -671,8 +673,8 @@ Butlery skyddar data med **TVÅ oberoende väggar**, inte en.
 - `C:/Butlery/butlery/lib/services/account/account_deletion_service.dart` — GDPR Art. 17
 - `C:/Butlery/butlery/lib/services/account/data_export_service.dart` — GDPR Art. 20
 - `C:/Butlery/butlery/.claude/agents/firestore-rules-tester.md` — agenten som bevisar rules
-- `C:/Butlery/butlery/.claude/skills/data-source-enforcer.md` — data-source-regeln
-- `C:/Butlery/butlery/.claude/skills/permission-audit.md` — kvartalssvep
+- `C:/Butlery/butlery/.claude/commands/data-source-enforcer.md` — data-source-regeln
+- `C:/Butlery/butlery/.claude/commands/permission-audit.md` — kvartalssvep
 
 ### Kodexempel
 
