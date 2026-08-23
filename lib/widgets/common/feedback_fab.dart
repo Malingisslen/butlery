@@ -65,6 +65,15 @@ class _FeedbackFABState extends State<FeedbackFAB> {
           bottom: AppDimensions.feedbackFabBottomOffset,
           right: 16,
           child: Semantics(
+            // BUT-1837: `container: true` is load-bearing, not decoration.
+            // Left at its default these annotations get no node of their own —
+            // they travel up the ancestor chain until some node accepts them,
+            // and the one that accepted them was the screen-sized root. That
+            // node then owned every other control on screen as a descendant
+            // and, since it is also what receives input once semantics are
+            // built (main.dart enables them by default on web), a tap aimed at
+            // any control opened the feedback form instead.
+            container: true,
             label: context.l10n.feedbackSendLabel,
             button: true,
             child: GestureDetector(

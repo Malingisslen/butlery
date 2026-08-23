@@ -29,6 +29,44 @@ Widget _wrap(Widget child) => MaterialApp(
   home: Scaffold(body: Stack(children: [child])),
 );
 
+/// Mirrors the real mount point: `butlery_app.dart` builds the FAB into a
+/// `Stack` beside the whole navigator subtree, inside the `MaterialApp`
+/// builder. `_wrap` above is deliberately thinner and does NOT reproduce
+/// BUT-1837.
+Widget _appLike(Widget page) => MaterialApp(
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('sv'),
+  home: page,
+  builder: (context, child) => SafeArea(
+    top: false,
+    child: Stack(
+      children: [
+        RepaintBoundary(key: feedbackRepaintBoundaryKey, child: child!),
+        const FeedbackFAB(),
+      ],
+    ),
+  ),
+);
+
+SemanticsNode _rootNode(WidgetTester tester) {
+  var node = tester.getSemantics(find.byType(FeedbackFAB));
+  while (node.parent != null) {
+    node = node.parent!;
+  }
+  return node;
+}
+
+/// Every node in the semantics tree, root first.
+List<SemanticsNode> _allNodes(SemanticsNode root) {
+  final out = <SemanticsNode>[root];
+  root.visitChildren((child) {
+    out.addAll(_allNodes(child));
+    return true;
+  });
+  return out;
+}
+
 void _unregisterAuth() {
   final g = GetIt.instance;
   if (g.isRegistered<AuthService>()) {
@@ -230,6 +268,71 @@ void main() {
       // Still rendered, no exception bubbled up.
       expect(find.text('!'), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('FeedbackFAB — semantics node boundary (BUT-1837)', () {
+    /// The page the FAB shares its `Stack` with.
+    Widget page() => Scaffold(
+      body: Column(
+        children: [
+          TextButton(onPressed: () {}, child: const Text('Spara recept')),
+          const TextField(),
+        ],
+      ),
+    );
+
+    setUp(() async {
+      await _bindAuth(isAuthenticated: true);
+    });
+
+    testWidgets('the node carrying the feedback label is the button, not the '
+        'screen', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(_appLike(page()));
+      await tester.pump();
+
+      final root = _rootNode(tester);
+      final labelled = _allNodes(
+        root,
+      ).where((n) => n.label.contains('Skicka feedback')).toList();
+
+      expect(labelled, hasLength(1));
+      // The measured symptom: this rect used to be the whole viewport.
+      expect(labelled.single.rect.width, AppDimensions.minTouchTarget);
+      expect(labelled.single.rect.height, AppDimensions.minTouchTarget);
+      expect(labelled.single.rect.width, lessThan(root.rect.width));
+
+      handle.dispose();
+    });
+
+    testWidgets('the feedback node adopts no other control on the screen', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(_appLike(page()));
+      await tester.pump();
+
+      final root = _rootNode(tester);
+      final feedback = _allNodes(
+        root,
+      ).firstWhere((n) => n.label.contains('Skicka feedback'));
+
+      // The page's button must be reachable WITHOUT descending through the
+      // FAB. Nesting is what let a tap anywhere reach the feedback handler.
+      final underneath = _allNodes(feedback);
+      expect(
+        underneath.any((n) => n.label.contains('Spara recept')),
+        isFalse,
+        reason: 'the page is nested inside the feedback FAB node',
+      );
+      expect(
+        _allNodes(root).any((n) => n.label.contains('Spara recept')),
+        isTrue,
+        reason: 'guards the assertion above from passing vacuously',
+      );
+
+      handle.dispose();
     });
   });
 
