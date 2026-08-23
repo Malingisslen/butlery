@@ -11,16 +11,30 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart'
     show SharedListPermission;
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
 import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
+
+import '../../../infrastructure/di/test_service_locator.dart';
+import '../../../infrastructure/mocks/production_mocks.dart';
+import '../../../test_support/base_unit_test.dart';
 
 class _MockRepo extends Mock implements GroupWeeklyMenuPlanRepository {}
 
 class _FakeGroupPlan extends Fake implements GroupWeeklyMenuPlan {}
 
 void main() {
-  setUpAll(() {
+  // `getOrBuildWeek` goes through `executeServiceOperation`, whose auth
+  // pre-flight reads the PRODUCTION ServiceLocator. Without this harness the
+  // pre-flight fails and the wrapped closure never runs.
+  setUpAll(() async {
+    await BaseUnitTest.setupUnitWithProductionLocator();
     registerFallbackValue(_FakeGroupPlan());
+  });
+
+  tearDownAll(() async {
+    await TestServiceLocator.reset();
+    await BaseUnitTest.teardownUnit();
   });
 
   group('GroupWeeklyMenuPlanService.getOrBuildWeek', () {
@@ -33,6 +47,8 @@ void main() {
 
     setUp(() {
       repo = _MockRepo();
+      (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
+          .setAuthState(userId: creatorId);
       service = GroupWeeklyMenuPlanService(repository: repo);
     });
 
@@ -56,7 +72,9 @@ void main() {
         date: date,
       );
 
-      expect(result.groupId, groupId);
+      // `same` is what proves the repo was actually consulted: a fabricated
+      // empty plan would satisfy `result.groupId == groupId` just as well.
+      expect(result, same(existing));
       verifyNever(() => repo.save(any(), userId: any(named: 'userId')));
     });
 

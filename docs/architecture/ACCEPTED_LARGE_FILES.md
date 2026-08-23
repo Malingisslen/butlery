@@ -97,7 +97,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `tagging_service.dart` | 546 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
 | `realtime_recipe_operations.dart` | 630 | Realtime recipe collaboration ops |
 | `user_service.dart` | 1032 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
-| `messaging_service.dart` | 1,049 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
+| `messaging_service.dart` | 1,104 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
 | `text_import_strategy.dart` | 1038 | Text-based recipe import strategy |
 | `friends_management_operations.dart` | 675 | Add/remove/block friends operations |
 | `collaboration_management_module.dart` | 668 | Realtime collaboration session management |
@@ -134,7 +134,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `url_import_strategy.dart` | 507 | Single multi-tier URL extraction strategy; coherent pipeline |
 | `recipe_auto_save_manager.dart` | 506 | Single-concern auto-save + draft management for recipe form |
 | `recipe_member_manager.dart` | 637 | Focused module for collaborative membership only. The grant algebra behind BUT-1797's real group revoke lives in its own file (`recipe_share_grants.dart`) rather than here, so the decided behaviour is testable without this module's five injected seams. |
-| `weekly_menu_plan_service.dart` | 563 | Single-algorithm service: today-anchored menu auto-distribution; coherent domain |
+| `weekly_menu_plan_service.dart` | 723 | Single-algorithm service: today-anchored menu auto-distribution; coherent domain |
 | `analytics_service.dart` | 575 | Explicit facade delegating to 7 specialized tracker modules |
 | `cache_optimization.dart` | 526 | Single-concern LRU + periodic cache cleanup utility |
 | `social_shopping_coordinator.dart` | 528 | Direct-collaboration coordinator extending base; single shopping-list domain |

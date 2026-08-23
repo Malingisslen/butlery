@@ -133,6 +133,7 @@ void main() {
   late _MockGroupPlanService groupPlanService;
   late _MockSocialMenuOps socialMenuOps;
   late _MockRecipeService recipeService;
+  late _MockBlockedUserFilter defaultBlockFilter;
   late MessagingService service;
 
   const creatorId = 'user-creator';
@@ -176,6 +177,14 @@ void main() {
     getIt.registerSingleton<GroupWeeklyMenuPlanService>(groupPlanService);
     getIt.registerSingleton<SocialMenuOperations>(socialMenuOps);
     getIt.registerSingleton<UnifiedRecipeService>(recipeService);
+    // BUT-1926: closePoll now REFUSES when no block filter is registered —
+    // "not registered" is a build that cannot answer the question, not an
+    // empty block list. The BUT-1909 group swaps in its own.
+    defaultBlockFilter = _MockBlockedUserFilter();
+    when(
+      () => defaultBlockFilter.requireBlockedIds(),
+    ).thenAnswer((_) async => <String>{});
+    getIt.registerSingleton<BlockedUserFilter>(defaultBlockFilter);
 
     when(() => authRepo.currentUserId).thenReturn(creatorId);
     when(
@@ -208,19 +217,24 @@ void main() {
     ).thenAnswer((inv) => inv.namedArguments[#plan] as WeeklyMenuPlan);
     when(() => planService.save(any())).thenAnswer((_) async {});
 
-    // Group plan service stubs (group path).
+    // Group plan service stubs (group path). `readOrBuildWeek`, not
+    // `getOrBuildWeek`: BUT-1928 made the read state part of the answer, and
+    // the close path refuses on a failed read rather than saving over the week.
     when(
-      () => groupPlanService.getOrBuildWeek(
+      () => groupPlanService.readOrBuildWeek(
         groupId: any(named: 'groupId'),
         creatorId: any(named: 'creatorId'),
         date: any(named: 'date'),
         initialParticipants: any(named: 'initialParticipants'),
       ),
     ).thenAnswer(
-      (inv) async => GroupWeeklyMenuPlan.empty(
-        groupId: inv.namedArguments[#groupId] as String,
-        creatorId: inv.namedArguments[#creatorId] as String,
-        date: inv.namedArguments[#date] as DateTime,
+      (inv) async => GroupWeeklyMenuPlanRead(
+        plan: GroupWeeklyMenuPlan.empty(
+          groupId: inv.namedArguments[#groupId] as String,
+          creatorId: inv.namedArguments[#creatorId] as String,
+          date: inv.namedArguments[#date] as DateTime,
+        ),
+        readFailed: false,
       ),
     );
     when(
@@ -307,7 +321,7 @@ void main() {
         ),
       ).called(1);
       verify(
-        () => groupPlanService.getOrBuildWeek(
+        () => groupPlanService.readOrBuildWeek(
           groupId: conversationId,
           creatorId: creatorId,
           date: any(named: 'date'),
@@ -345,8 +359,11 @@ void main() {
       final now = DateTime.now();
       final winnerRecipe = _recipe('recipe-winner', 'Tacos');
       when(() => recipeService.recipes).thenReturn([winnerRecipe]);
-      when(() => planService.getWeek(any())).thenAnswer(
-        (_) async => WeeklyMenuPlan.empty(userId: creatorId, date: now),
+      when(() => planService.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(
+          plan: WeeklyMenuPlan.empty(userId: creatorId, date: now),
+          readFailed: false,
+        ),
       );
       // Override default mock: return a direct (1:1) conversation.
       when(
@@ -393,7 +410,7 @@ void main() {
 
       // Group path MUST NOT fire on 1:1.
       verifyNever(
-        () => groupPlanService.getOrBuildWeek(
+        () => groupPlanService.readOrBuildWeek(
           groupId: any(named: 'groupId'),
           creatorId: any(named: 'creatorId'),
           date: any(named: 'date'),
@@ -804,6 +821,7 @@ void main() {
 
     setUp(() {
       blockFilter = _MockBlockedUserFilter();
+      GetIt.instance.unregister<BlockedUserFilter>();
       GetIt.instance.registerSingleton<BlockedUserFilter>(blockFilter);
       when(() => recipeService.recipes).thenReturn([
         _recipe('recipe-blocked', 'Tacos'),
@@ -913,6 +931,185 @@ void main() {
           actorId: any(named: 'actorId'),
         ),
       );
+    });
+
+    test('NO block filter registered refuses too (BUT-1926)', () async {
+      // The hole this closes: the branch used to be wrapped in
+      // `if (blockFilter != null)`, so a build where the filter never got
+      // registered skipped the whole guard and resolved on the raw tally —
+      // the same fail-open the case above refuses, reached by a different
+      // door. Absence is not an empty block list; it is not knowing.
+      GetIt.instance.unregister<BlockedUserFilter>();
+
+      await expectLater(
+        service.closePoll(messageId: messageId),
+        throwsA(
+          isA<PollCloseRefusedException>().having(
+            (e) => e.reason,
+            'reason',
+            PollCloseRefusal.blockListUnknown,
+          ),
+        ),
+      );
+
+      verifyNever(
+        () => messagingRepo.closePoll(
+          messageId: any(named: 'messageId'),
+          closerId: any(named: 'closerId'),
+        ),
+      );
+      verifyNever(
+        () => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      );
+    });
+  });
+
+  // ══ BUT-1928 — a failed week READ must not be saved over ══
+  //
+  // Both plan services answer a failed fetch with "nothing there": an empty
+  // `WeeklyMenuPlan` and a null `GroupWeeklyMenuPlan`. Appending the winner to
+  // that and saving is an upsert on a deterministic doc id, so the whole week —
+  // every other entry, for every member of a group — is replaced by one recipe.
+  //
+  // Refusing leaves the poll OPEN (the close is written after the plan), so a
+  // retry once the read works is the recovery. The controls beside each case
+  // are what stop the guard from being an unconditional throw.
+  group('closePoll refuses to write over an unread week (BUT-1928)', () {
+    setUp(() {
+      when(() => recipeService.recipes).thenReturn([
+        _recipe('recipe-winner', 'Tacos'),
+      ]);
+    });
+
+    Poll winningPoll(String id) => Poll(
+      id: id,
+      question: 'Vad ska vi äta?',
+      creatorId: creatorId,
+      createdAt: DateTime.now(),
+      options: [
+        PollOption(
+          id: 'opt-1',
+          text: 'Tacos',
+          voterIds: const ['user-2'],
+          recipeId: 'recipe-winner',
+        ),
+      ],
+    );
+
+    test('group: a failed read → no save, poll stays open', () async {
+      when(
+        () => groupPlanService.readOrBuildWeek(
+          groupId: any(named: 'groupId'),
+          creatorId: any(named: 'creatorId'),
+          date: any(named: 'date'),
+          initialParticipants: any(named: 'initialParticipants'),
+        ),
+      ).thenAnswer(
+        (_) async =>
+            const GroupWeeklyMenuPlanRead(plan: null, readFailed: true),
+      );
+      when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+        (_) async => _pollMessage(
+          messageId: messageId,
+          conversationId: conversationId,
+          poll: winningPoll('poll-group-unread'),
+        ),
+      );
+
+      await expectLater(
+        service.closePoll(messageId: messageId),
+        throwsA(
+          isA<StateError>(),
+        ),
+      );
+
+      verifyNever(
+        () => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      );
+      // The poll itself must survive: closing is one-way, and the winner is
+      // still unwritten.
+      verifyNever(
+        () => messagingRepo.closePoll(
+          messageId: any(named: 'messageId'),
+          closerId: any(named: 'closerId'),
+        ),
+      );
+    });
+
+    test('1:1: a failed read → no save, poll stays open', () async {
+      when(() => planService.readWeek(any())).thenAnswer(
+        (_) async => WeeklyMenuPlanRead(
+          plan: WeeklyMenuPlan.empty(
+            userId: creatorId,
+            date: DateTime.now(),
+          ),
+          readFailed: true,
+        ),
+      );
+      when(
+        () => messagingRepo.getConversation(directConversationId),
+      ).thenAnswer(
+        (_) async =>
+            _directConversation(directConversationId, [creatorId, 'user-2']),
+      );
+      when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+        (_) async => _pollMessage(
+          messageId: messageId,
+          conversationId: directConversationId,
+          poll: winningPoll('poll-personal-unread'),
+        ),
+      );
+
+      await expectLater(
+        service.closePoll(messageId: messageId),
+        throwsA(
+          isA<StateError>(),
+        ),
+      );
+
+      verifyNever(() => planService.save(any()));
+      verifyNever(
+        () => messagingRepo.closePoll(
+          messageId: any(named: 'messageId'),
+          closerId: any(named: 'closerId'),
+        ),
+      );
+    });
+
+    test('the CONTROL: a read that SUCCEEDS on an empty week still '
+        'saves', () async {
+      // Without this the two refusals above are satisfied by a service that
+      // never writes a plan at all. An empty-but-read week is exactly the
+      // shape a failed read produces, so this is the case the guard must let
+      // through — it discriminates on `readFailed`, not on emptiness.
+      when(() => messagingRepo.getMessage(messageId)).thenAnswer(
+        (_) async => _pollMessage(
+          messageId: messageId,
+          conversationId: conversationId,
+          poll: winningPoll('poll-group-empty-week'),
+        ),
+      );
+
+      await service.closePoll(messageId: messageId);
+
+      verify(
+        () => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: creatorId,
+        ),
+      ).called(1);
+      verify(
+        () => messagingRepo.closePoll(
+          messageId: messageId,
+          closerId: creatorId,
+        ),
+      ).called(1);
     });
   });
 }

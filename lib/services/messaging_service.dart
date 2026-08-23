@@ -277,20 +277,16 @@ class MessagingService extends BaseService with StreamManagementMixin {
     if (messages.isEmpty) return messages;
     final filter = ServiceLocator.tryGet<BlockedUserFilter>();
     if (filter == null) return messages;
+
+    final Set<String> blocked;
+    final List<Message> visible;
     try {
-      final blocked = await filter.currentBlockedIds();
-      final visible = BlockedUserFilter.filter<Message>(
+      blocked = await filter.currentBlockedIds();
+      visible = BlockedUserFilter.filter<Message>(
         messages,
         authorOf: (m) => m.senderId,
         blockedIds: blocked,
       );
-      // BUT-1909. Hiding what a blocked person SAYS is not the same as removing
-      // what their vote DOES: a poll winner is written into the household's
-      // week, so a blocked ballot steering it survives the message filter
-      // entirely. Applied here and in `closePoll` from the SAME helper, because
-      // filtering the count on screen but not the winner (or the reverse) makes
-      // the number and the outcome contradict each other.
-      return _withoutBlockedBallots(visible, blocked);
     } catch (e) {
       // Fail-open, for DISPLAY only. `closePoll` deliberately does NOT
       // inherit this: see its own guard.
@@ -298,6 +294,27 @@ class MessagingService extends BaseService with StreamManagementMixin {
         'MessagingService: block filter failed; serving unfiltered: $e',
       );
       return messages;
+    }
+
+    // BUT-1909. Hiding what a blocked person SAYS is not the same as removing
+    // what their vote DOES: a poll winner is written into the household's week,
+    // so a blocked ballot steering it survives the message filter entirely.
+    // Applied here and in `closePoll` from the SAME helper, because filtering
+    // the count on screen but not the winner (or the reverse) makes the number
+    // and the outcome contradict each other.
+    //
+    // BUT-1926: its own catch, because falling back to `messages` here would
+    // un-hide every blocked AUTHOR the step above already removed — the ballot
+    // strip is a refinement of that list, so its failure costs the refinement,
+    // never the filtering that succeeded.
+    try {
+      return _withoutBlockedBallots(visible, blocked);
+    } catch (e) {
+      AppLogger.warning(
+        'MessagingService: ballot strip failed; '
+        'serving author-filtered messages with unfiltered tallies: $e',
+      );
+      return visible;
     }
   }
 
@@ -783,29 +800,39 @@ class MessagingService extends BaseService with StreamManagementMixin {
       // screen, which is recoverable. Here it would let a blocked person's
       // ballot decide the recipe that lands in other members' plan — so an
       // unresolvable block list refuses instead. Trust & Safety's condition.
+      //
+      // BUT-1926: an ABSENT filter refuses too. `tryGet` returning null is not
+      // "nobody is blocked", it is "this build cannot tell" — the same state
+      // the catch below refuses on — and skipping the branch on it made the
+      // whole guard conditional on a service registration.
       final blockFilter = ServiceLocator.tryGet<BlockedUserFilter>();
-      var resolvablePoll = existingPoll;
-      if (blockFilter != null) {
-        final Set<String> blocked;
-        try {
-          // `requireBlockedIds`, NOT `currentBlockedIds`: the latter swallows a
-          // failed lookup and returns an empty set, which would make this whole
-          // branch dead code and fail OPEN on exactly the decision that cannot
-          // be taken back. Raised as critical by the firebase-backend-security
-          // gate, which also showed the test here was measuring its own mock.
-          blocked = await blockFilter.requireBlockedIds();
-        } catch (e) {
-          AppLogger.warning(
-            'Refusing to close poll $messageId: block list unreadable ($e)',
-          );
-          throw const PollCloseRefusedException(
-            PollCloseRefusal.blockListUnknown,
-          );
-        }
-        // Through the SAME helper the display path uses.
-        final filtered = _stripBlockedBallots(existing, blocked);
-        resolvablePoll = _extractPoll(filtered) ?? existingPoll;
+      if (blockFilter == null) {
+        AppLogger.warning(
+          'Refusing to close poll $messageId: no block filter registered',
+        );
+        throw const PollCloseRefusedException(
+          PollCloseRefusal.blockListUnknown,
+        );
       }
+      final Set<String> blocked;
+      try {
+        // `requireBlockedIds`, NOT `currentBlockedIds`: the latter swallows a
+        // failed lookup and returns an empty set, which would make this whole
+        // branch dead code and fail OPEN on exactly the decision that cannot
+        // be taken back. Raised as critical by the firebase-backend-security
+        // gate, which also showed the test here was measuring its own mock.
+        blocked = await blockFilter.requireBlockedIds();
+      } catch (e) {
+        AppLogger.warning(
+          'Refusing to close poll $messageId: block list unreadable ($e)',
+        );
+        throw const PollCloseRefusedException(
+          PollCloseRefusal.blockListUnknown,
+        );
+      }
+      // Through the SAME helper the display path uses.
+      final filtered = _stripBlockedBallots(existing, blocked);
+      final resolvablePoll = _extractPoll(filtered) ?? existingPoll;
 
       // Resolve + persist the plan write BEFORE marking the poll closed.
       // If the plan save fails, the poll stays open so the creator can
@@ -845,6 +872,11 @@ class MessagingService extends BaseService with StreamManagementMixin {
         messageId: messageId,
         closerId: currentUserId,
       );
+    } on PollCloseRefusedException {
+      // BUT-1926: already logged, at the warning level the refusal deserves.
+      // Re-logging it as an error made every deliberate guard look like a
+      // crash in the log, twice over.
+      rethrow;
     } catch (e) {
       AppLogger.error('Failed to close poll $messageId', e);
       rethrow;
@@ -934,7 +966,18 @@ class MessagingService extends BaseService with StreamManagementMixin {
     }
 
     final now = clock.now();
-    final plan = await planService.getWeek(now);
+    // BUT-1928. `getWeek` answers a failed read with an EMPTY plan, and the
+    // save below is an upsert on a deterministic doc id — so appending to that
+    // empty plan replaces the whole week with one entry. Throwing leaves the
+    // poll open (the close happens after this returns), which is the
+    // recoverable failure; a silent skip would burn a one-way close instead.
+    final read = await planService.readWeek(now);
+    if (read.readFailed) {
+      throw StateError(
+        'Refusing to write the poll winner: the current week could not be read',
+      );
+    }
+    final plan = read.plan;
     final target = _nextAvailableMiddagSlot(now, plan.isOccupied);
 
     final updatedPlan = planService.addEntry(
@@ -1016,12 +1059,24 @@ class MessagingService extends BaseService with StreamManagementMixin {
     // Build-only (no persist). The single `save()` below persists the
     // plan WITH the winner entry already appended — saves one Firestore
     // write per new-group-week vs. create-then-save.
-    final GroupWeeklyMenuPlan plan = await groupService.getOrBuildWeek(
+    //
+    // BUT-1928, and the reason this is `readOrBuildWeek`: building on a FAILED
+    // read produces a fresh empty plan whose id is the same deterministic
+    // `{groupId}_{ISO week}`, so the save would replace the group's real week
+    // — every member's entries — with the one winner. Throwing leaves the poll
+    // open for a retry, which is the recoverable half of the two failures.
+    final read = await groupService.readOrBuildWeek(
       groupId: conversation.id,
       creatorId: creatorId,
       date: now,
       initialParticipants: initialParticipants,
     );
+    final GroupWeeklyMenuPlan? plan = read.plan;
+    if (read.readFailed || plan == null) {
+      throw StateError(
+        'Refusing to write the poll winner: the group week could not be read',
+      );
+    }
 
     final target = _nextAvailableMiddagSlot(now, plan.isOccupied);
 

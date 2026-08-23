@@ -1750,6 +1750,74 @@ void main() {
 
         expect(votersFor(page.single, 'opt-a'), ['blocked-1', 'clean-1']);
       });
+
+      test('a ballot strip that THROWS still hides the blocked author '
+          '(BUT-1926)', () async {
+        // One catch used to cover both steps, so a throw from the strip
+        // returned the ORIGINAL list — undoing the author filtering that had
+        // already succeeded. Blocking a person then made their messages
+        // reappear whenever a poll in the same page had an odd shape.
+        //
+        // A `FakeMessage` is the throw: the strip rebuilds a message with
+        // `copyWith`, which a `Fake` does not implement. The blocked AUTHOR's
+        // message is a real one, so nothing but the strip can fail.
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          _StubBlockedUserFilter(const {'blocked-1'}),
+        );
+        final unstrippablePoll = FakeMessage(
+          id: 'msg-poll-fake',
+          conversationId: conversationId,
+          senderId: 'clean-author',
+          senderDisplayName: 'Clean',
+          content: 'Vad ska vi äta?',
+          type: MessageType.poll,
+          metadata: {
+            'poll': {
+              'id': 'p2',
+              'question': 'Vad ska vi äta?',
+              'creatorId': 'clean-author',
+              'isClosed': false,
+              'options': [
+                {
+                  'id': 'opt-a',
+                  'text': 'Tacos',
+                  'voterIds': ['blocked-1'],
+                },
+              ],
+            },
+          },
+        );
+        final blockedAuthorMessage = Message(
+          id: 'msg-from-blocked',
+          conversationId: conversationId,
+          senderId: 'blocked-1',
+          senderDisplayName: 'Blocked',
+          content: 'hej',
+          type: MessageType.text,
+          status: MessageStatus.sent,
+          sentAt: DateTime.utc(2026, 1, 1),
+        );
+        when(
+          () => mockMessagingRepo.getConversationMessagesPage(
+            conversationId: conversationId,
+            limit: any(named: 'limit'),
+            startAfter: any(named: 'startAfter'),
+          ),
+        ).thenAnswer((_) async => [unstrippablePoll, blockedAuthorMessage]);
+
+        final page = await messagingService.getConversationMessagesPage(
+          conversationId: conversationId,
+          limit: 50,
+        );
+
+        expect(
+          page.map((m) => m.senderId),
+          ['clean-author'],
+          reason:
+              'the strip failing costs the tally refinement, never the '
+              'author filtering that already succeeded',
+        );
+      });
     });
   });
 }

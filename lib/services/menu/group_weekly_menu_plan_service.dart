@@ -22,6 +22,22 @@ import 'package:butlery/models/unified/unified_shopping_list.dart'
     show SharedListPermission;
 import 'package:butlery/repositories/interfaces/group_weekly_menu_plan_repository.dart';
 
+/// Outcome of a group weekly-plan read (BUT-1928).
+///
+/// A bare `GroupWeeklyMenuPlan?` spells two different situations the same way:
+/// the group has no plan for that week, and the fetch never answered. Only the
+/// first is safe to build an empty plan on top of and save — doing it on the
+/// second upserts an empty week over whatever the group already had.
+///
+/// [plan] is null when the week has no saved plan, and always null when
+/// [readFailed] is true.
+class GroupWeeklyMenuPlanRead {
+  final GroupWeeklyMenuPlan? plan;
+  final bool readFailed;
+
+  const GroupWeeklyMenuPlanRead({required this.plan, required this.readFailed});
+}
+
 class GroupWeeklyMenuPlanService extends BaseService {
   final GroupWeeklyMenuPlanRepository _repository;
 
@@ -38,40 +54,97 @@ class GroupWeeklyMenuPlanService extends BaseService {
   /// Caller-side read permission is enforced by Firestore rules; this
   /// method does not re-check because a forged read would fail at the
   /// wire before reaching us.
+  /// A failed read is reported as `null` here, indistinguishable from "no plan
+  /// yet". Callers that go on to SAVE use [readWeek] or [readOrBuildWeek].
   Future<GroupWeeklyMenuPlan?> getWeek({
     required String groupId,
     required DateTime date,
   }) async {
-    return await executeServiceOperation<GroupWeeklyMenuPlan?>(
+    return (await readWeek(groupId: groupId, date: date)).plan;
+  }
+
+  /// [getWeek] plus the one bit it cannot return: whether the fetch actually
+  /// answered (BUT-1928).
+  ///
+  /// `readFailed` is true when the wrapped read did not answer — a throwing
+  /// repository or a failed auth pre-flight — because either leaves the caller
+  /// holding a null plan that does not describe what is saved. A repository
+  /// that maps an unreachable week to null rather than throwing is NOT covered:
+  /// that route reports `readFailed: false` and is indistinguishable here from
+  /// a week with nothing saved.
+  Future<GroupWeeklyMenuPlanRead> readWeek({
+    required String groupId,
+    required DateTime date,
+  }) async {
+    // A nullable inside a nullable cannot tell "no plan" from "no answer", so
+    // the sentinel is the WRAPPER: a null wrapper is the failure.
+    final read = await executeServiceOperation<GroupWeeklyMenuPlanRead>(
       () async {
         final weekStart = IsoWeekUtils.weekStartOf(date);
-        return await _repository.fetchForWeek(
-          groupId: groupId,
-          weekStart: weekStart,
+        return GroupWeeklyMenuPlanRead(
+          plan: await _repository.fetchForWeek(
+            groupId: groupId,
+            weekStart: weekStart,
+          ),
+          readFailed: false,
         );
       },
       operationName: 'getWeek',
     );
+    return read ?? const GroupWeeklyMenuPlanRead(plan: null, readFailed: true);
   }
 
   /// Load the plan, or build (in memory only) an empty one with [creatorId]
   /// as sole admin if none exists. Callers are responsible for calling
   /// [save] after mutating — this lets callers batch the "add entry +
   /// persist" flow into a single Firestore write instead of two.
+  ///
+  /// Builds on a failed read too, which is why a caller that saves the result
+  /// uses [readOrBuildWeek] instead.
   Future<GroupWeeklyMenuPlan> getOrBuildWeek({
     required String groupId,
     required String creatorId,
     required DateTime date,
     List<GroupMenuParticipant>? initialParticipants,
   }) async {
-    final existing = await getWeek(groupId: groupId, date: date);
-    if (existing != null) return existing;
-
-    return GroupWeeklyMenuPlan.empty(
+    final read = await readOrBuildWeek(
       groupId: groupId,
       creatorId: creatorId,
       date: date,
       initialParticipants: initialParticipants,
+    );
+    return read.plan ??
+        GroupWeeklyMenuPlan.empty(
+          groupId: groupId,
+          creatorId: creatorId,
+          date: date,
+          initialParticipants: initialParticipants,
+        );
+  }
+
+  /// [getOrBuildWeek] that tells the caller whether the read FAILED instead of
+  /// silently building an empty plan over it (BUT-1928).
+  ///
+  /// `plan` is non-null exactly when `readFailed` is false.
+  Future<GroupWeeklyMenuPlanRead> readOrBuildWeek({
+    required String groupId,
+    required String creatorId,
+    required DateTime date,
+    List<GroupMenuParticipant>? initialParticipants,
+  }) async {
+    final read = await readWeek(groupId: groupId, date: date);
+    if (read.readFailed) return read;
+
+    return GroupWeeklyMenuPlanRead(
+      plan:
+          read.plan ??
+          GroupWeeklyMenuPlan.empty(
+            groupId: groupId,
+            creatorId: creatorId,
+            date: date,
+            initialParticipants: initialParticipants,
+          ),
+      readFailed: false,
     );
   }
 

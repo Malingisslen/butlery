@@ -377,7 +377,7 @@ class MessageContentBuilder {
     final pollData = message.metadata?['poll'] as Map<String, dynamic>?;
     if (pollData == null) {
       return Text(
-        'Omröstning',
+        context.l10n.messagingPoll,
         style: AppTextStyles.bodyMedium.copyWith(
           color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
           fontStyle: FontStyle.italic,
