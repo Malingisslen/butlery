@@ -36,6 +36,12 @@ export const Collections = {
   // old `isGroup: true` conversation this replaces. A bare `groups` would make
   // every future grep ambiguous.
   chatGroups: "chat_groups",
+  // A user's own list of friends, at `users/{ownerId}/friend_categories/{id}`.
+  // Read server-side only by BUT-1856's `ensureCategoryChat`, which resolves the
+  // roster of a meal-vote chat from it. The document id is a client-chosen UUID
+  // with no uniqueness across accounts, so anything keyed on it must carry the
+  // owner too.
+  friendCategories: "friend_categories",
   recipeComments: "recipe_comments",
   unifiedShoppingLists: "unified_shopping_lists",
   unifiedSharedShoppingLists: "unified_shared_shopping_lists",

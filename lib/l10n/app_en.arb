@@ -9659,6 +9659,34 @@
   "pollVoteSingular": "vote",
   "pollVotePlural": "votes",
   "pollClosed": "Closed",
+  "pollVotesNotLoadedShort": "Votes not loaded",
+  "@pollVotesNotLoadedShort": {
+    "description": "Shown in place of a vote count when the poll was past the hydration cap (BUT-1908)."
+  },
+  "pollVotesFailedShort": "Votes could not be read",
+  "@pollVotesFailedShort": {
+    "description": "Shown in place of a vote count when reading the poll's votes errored (BUT-1908)."
+  },
+  "pollVotesNotLoadedHint": "Reopen the chat to fetch them.",
+  "@pollVotesNotLoadedHint": {
+    "description": "Second line under pollVotesNotLoadedShort — a re-read repairs this case."
+  },
+  "pollVotesFailedHint": "Try again in a moment.",
+  "@pollVotesFailedHint": {
+    "description": "Second line under pollVotesFailedShort — this case may be persistent."
+  },
+  "pollCloseRefusedVotesUnread": "The poll was not closed — its votes were never loaded, and it must not be closed on numbers nobody read. Reopen the chat and try again.",
+  "@pollCloseRefusedVotesUnread": {
+    "description": "Snackbar when closePoll refused because the tally was never read."
+  },
+  "pollCloseRefusedBlockList": "The poll was not closed — your block list could not be read, so blocked votes cannot be excluded. Try again.",
+  "@pollCloseRefusedBlockList": {
+    "description": "Snackbar when closePoll refused because the viewer's block list was unreadable."
+  },
+  "pollCloseFailed": "The poll could not be closed. Try again.",
+  "@pollCloseFailed": {
+    "description": "Snackbar for any other failure to close a poll."
+  },
   "pollCloseAction": "Close poll",
   "chatGroupChatDefault": "Group chat",
   "chatGroupCreatedMessage": "{name} created the group \"{title}\"",
@@ -11886,6 +11914,8 @@
   },
   "chatGroupAddMembersBlocked": "Some people could not be added to the group.",
   "chatGroupAddMembersFailed": "Could not add members. Please try again.",
+  "chatGroupNeedsAnotherMember": "The group needs at least one more member before you can vote on a meal.",
+  "mealVotePollFailed": "Could not start the vote. Please try again.",
   "chatGroupCreateFailed": "Could not create the group. Please try again.",
   "chatGroupTooManyMembers": "A group can have at most {max} members.",
   "@chatGroupTooManyMembers": {

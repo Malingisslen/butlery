@@ -51,6 +51,7 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: PollMessageWidget(
+              voteHydration: PollVoteHydration.ok,
               poll: poll,
               currentUserId: 'u_1',
               isFromCurrentUser: true,
@@ -94,6 +95,7 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: PollMessageWidget(
+              voteHydration: PollVoteHydration.ok,
               poll: poll,
               currentUserId: 'u_1',
               isFromCurrentUser: true,

@@ -333,7 +333,13 @@ class _GroupDetailViewState extends State<GroupDetailView>
     if (conversationId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(context.l10n.errorServiceUnavailable),
+          // The ViewModel has already mapped the callable's refusal to Swedish
+          // — "the group needs one more member", "some people could not be
+          // added" — and showing the generic line instead threw all of that
+          // away.
+          content: Text(
+            _viewModel.errorMessage ?? context.l10n.errorServiceUnavailable,
+          ),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );

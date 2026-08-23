@@ -46,8 +46,9 @@ import { stageMemberRemoval } from "../groups/chat-group-writes";
 /**
  * A conversation id that is safe to put in Cloud Logging.
  *
- * A GROUP id is a server-minted Firestore auto-id (`createChatGroup` uses
- * `chat_groups.doc().id` as the conversation id) and discloses nothing. It was
+ * A GROUP id is server-minted and discloses nothing: it is either a Firestore
+ * auto-id or, for a meal-vote chat, a hash — never a value derived readably
+ * from a uid. It was
  * described here as a client-minted UUIDv4 until 2026-08-19; the conclusion
  * held, the shape did not. A DIRECT id is
  * `direct_<uidA>_<uidB>` — two raw uids, one of which may belong to someone who
@@ -276,6 +277,40 @@ export async function tryClearRoster(
 }
 
 
+/**
+ * Stage the backstop's evictions — and NEVER a departure tombstone (BUT-1856).
+ *
+ * Everything that tombstones also writes a visible `memberLeft` system row.
+ * This trigger writes none, so a tombstone here would be the one departure with
+ * no counterpart, and `departedUserIds` minus the uids with a `memberLeft` row
+ * would then be exactly "the accounts the child-safety backstop evicted" — a
+ * durable, queryable claim that someone is a minor, on a document every member
+ * of the group can read.
+ *
+ * Leaving it off costs nothing the policy wants: what this trigger removes is a
+ * minor seated by a NON-friend, and the meal-vote category sync re-runs the same
+ * per-inviter gate before it could seat anyone again.
+ *
+ * Exported only so a test can hold that: the trigger itself reads
+ * `admin.firestore()` and has no seam, and the absent argument is a decision at
+ * THIS call site that no assertion on `stageMemberRemoval`'s default can pin.
+ */
+export function stageBackstopRemovals(
+  tx: admin.firestore.Transaction,
+  params: {
+    db: admin.firestore.Firestore;
+    groupId: string;
+    conversationId: string;
+    uids: string[];
+    removedAt: admin.firestore.Timestamp;
+  },
+): void {
+  const { db, groupId, conversationId, uids, removedAt } = params;
+  for (const uid of uids) {
+    stageMemberRemoval(tx, { db, groupId, conversationId, uid, removedAt });
+  }
+}
+
 export const enforceGroupMinorMembership = onDocumentWritten(
   // retry:true — v2 event triggers do NOT retry by default, so a transient
   // failure below would be logged and dropped, leaving a non-friend-added minor
@@ -379,15 +414,13 @@ export const enforceGroupMinorMembership = onDocumentWritten(
           db.collection(Collections.chatGroups).doc(groupId),
         );
         if (!fresh.exists) return;
-        for (const uid of toRemove) {
-          stageMemberRemoval(tx, {
-            db,
-            groupId,
-            conversationId,
-            uid,
-            removedAt,
-          });
-        }
+        stageBackstopRemovals(tx, {
+          db,
+          groupId,
+          conversationId,
+          uids: toRemove,
+          removedAt,
+        });
       });
     } catch (e) {
       // NOT_FOUND (grpc 5) is DETERMINISTIC — the group or its conversation was

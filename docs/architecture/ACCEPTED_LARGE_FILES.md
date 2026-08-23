@@ -97,7 +97,7 @@ Already modular services or well-organized modules within service facades. Furth
 | `tagging_service.dart` | 546 | Auto-tagging orchestrator (BUT-553: per-phase budget runner extracted to `tagging_pipeline_runner.dart`) |
 | `realtime_recipe_operations.dart` | 630 | Realtime recipe collaboration ops |
 | `user_service.dart` | 1032 | User profile + settings service. Row refreshed 2026-07-25 (was recorded at 810, drift unnoticed); BUT-1663 added `lookupUserProfile`, whose result type was put in its own `lib/models/profile_lookup.dart` rather than growing this file further, and folded three copies of the cache-expiry arithmetic into one helper. |
-| `messaging_service.dart` | 903 | Chat/messaging service |
+| `messaging_service.dart` | 1,049 | Chat/messaging service. The poll block (close, winner resolution, plan append, ballot strip) is the obvious next facade module — BUT-1923. |
 | `text_import_strategy.dart` | 1038 | Text-based recipe import strategy |
 | `friends_management_operations.dart` | 675 | Add/remove/block friends operations |
 | `collaboration_management_module.dart` | 668 | Realtime collaboration session management |
@@ -179,7 +179,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 |------|-------|--------|
 | `recipe_image_manager.dart` | 1,374 | Already uses facade pattern (5 sub-managers) |
 | `personal_tag_dialogs.dart` | 899 | 14 static dialog functions — already extracted from view |
-| `skriv_sjalv_recept_view.dart` | 996 | Recipe creation screen — refactored from 836. Row refreshed 2026-08-14: recorded 959, measured 972 before BUT-1845 (+13 pre-existing drift) and 981 after it; 980 after BUT-1849 shortened a comment. Refreshed again 2026-08-22 after BUT-1910 added the Swedish-comma parse and its formatter. |
+| `skriv_sjalv_recept_view.dart` | 996 | Recipe creation screen — refactored from 836. |
 | `personal_tag_rule_dialog.dart` | 839 | Complex rule editing dialog — many condition types |
 | `recipe_parser_service.dart` | 915 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,177 | Recipe list with filtering, search, tags |
@@ -191,7 +191,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `adaptive_icon.dart` | 672 | Platform-adaptive icon widget |
 | `di_container.dart` | 585 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 858 | DI registrations for content layer |
-| `edit_recipe_view.dart` | 733 | Recipe editing screen (drifted +29 from 639 — BUT-550 reconciled 2026-05-28). Row refreshed 2026-08-14: recorded 707, measured 715 before BUT-1845 (+8 pre-existing drift) and 724 after it. Refreshed again 2026-08-22 after BUT-1910 fixed the rating field's twin here. |
+| `edit_recipe_view.dart` | 733 | Recipe editing screen. |
 | `user_profile_edit_view.dart` | 390 | Facade-extracted to `lib/views/social/user_profile_edit/` per BUT-1154 (was 832, now 390 — well under 500; kept in table for history) |
 | `ocr_extraction_service.dart` | 1,253 | OCR-based recipe image extraction (+121 for the free on-device tier 0, 2026-08-02) |
 | `text_layout.dart` (`lib/services/ocr/`) | 558 | The OCR page model: pure value types plus the contract prose every consumer defers to (line-index-is-row-number, the sanitize law, capture-vs-reading order, which figures are proxy). ~55 % is doc comment, and that is the point — the split path has already shipped four false comments about this file, so the prose is load-bearing. `glyph_metrics.dart` was extracted from it 2026-08-07; what remains is one cohesive contract that a facade would only scatter. 2026-08-08 |
@@ -202,11 +202,11 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `adaptive_navigation.dart` | 631 | Bottom nav / side nav adaptive widget |
 | `universal_image_manager.dart` | 590 | Image management widget |
 | `friends_invitations_operations.dart` | 722 | Invitation operations |
-| `chat_viewmodel.dart` | 685 | Chat screen VM |
+| `chat_viewmodel.dart` | 759 | Chat screen VM. |
 | `shopping_item_dialogs.dart` | 579 | Shopping list item dialogs |
 | `shared_content_search_viewmodel.dart` | 567 | Shared content search VM |
 | `consent_management_view.dart` | 705 | GDPR consent management screen |
-| `group_detail_view.dart` | 648 | Group social detail screen |
+| `group_detail_view.dart` | 654 | Group social detail screen |
 | `tag_detail_view.dart` | 591 | Tag detail/editing screen |
 | `conversations_list_view.dart` | 564 | Conversations list screen |
 | `base_dialog.dart` | 541 | Base dialog widget |
@@ -247,7 +247,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `photo_import_viewmodel.dart` | 872 | **candidate**: mixes OCR, multi-page, heirloom form, draft, and quality-score concerns |
 | `friends_viewmodel.dart` | 578 | **candidate**: VM mixing search, profile-cache, selection, group-creation, and stream subscriptions |
 | `performance_monitoring_service.dart` | 516 | **candidate**: mixes frame, network, cache, memory, and custom metrics in one service |
-| `social_group_detail_viewmodel.dart` | 511 | **candidate**: VM mixing group load, events, leave, ownership transfer, and content sharing |
+| `social_group_detail_viewmodel.dart` | 524 | **candidate**: VM mixing group load, events, leave, ownership transfer, and content sharing |
 | `fcm_service.dart` | 728 | **candidate**: mixes FCM token management, permission-gating, deep-link routing, and notification display |
 
 ## Extraction Candidates (follow-up)
@@ -262,7 +262,7 @@ Files marked **candidate** above that are worth splitting in a future refactor s
 | `shopping_sharing_status_dialog.dart` | 533 | 5+ distinct sections in one dialog; extract as private sub-widgets |
 | `menu_content_widgets.dart` | 665 | Multiple static widget builders for distinct menu sections; group by section into separate files |
 | `performance_monitoring_service.dart` | 516 | Frame, network, cache, memory, and custom metrics can each be a focused sub-service |
-| `social_group_detail_viewmodel.dart` | 511 | Group load, events, leave, ownership transfer, content sharing — extract managers |
+| `social_group_detail_viewmodel.dart` | 524 | Group load, events, leave, ownership transfer, content sharing — extract managers |
 | `collaborative_shopping_items.dart` | 595 | Three view-mode rendering paths + claim logic — split by mode |
 | `tag_result_display.dart` | 608 | Allergen, dietary, and coverage sections are independently renderable sub-widgets. Re-measured 2026-08-18. NOTE this file is listed TWICE in this document (see the Views/Widgets table above) — pre-existing, and it means a refresh has to touch both rows or one silently rots. |
 | `onboarding_viewmodel.dart` | 565 | Age-gate, allergens, seeding, analytics — each a candidate for an extracted manager |

@@ -103,6 +103,7 @@
     "test:minor-membership-gate": "ts-node src/__tests__/minor-membership-gate.test.ts",
     "test:remove-chat-group-member": "ts-node src/__tests__/remove-chat-group-member.test.ts",
     "test:chat-group-callables": "ts-node src/__tests__/chat-group-callables.test.ts",
+    "test:ensure-category-chat": "ts-node src/__tests__/ensure-category-chat.test.ts",
     "test:integration:enforce-group-minor-membership": "ts-node src/__tests__/enforce-group-minor-membership.integration.test.ts",
     "test:parse-ingredient-lines": "ts-node src/__tests__/parse-ingredient-lines.test.ts",
     "test:gemini-cache-telemetry": "ts-node src/__tests__/gemini-cache-telemetry.test.ts",

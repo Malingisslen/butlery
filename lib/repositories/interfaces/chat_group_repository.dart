@@ -33,6 +33,21 @@ abstract class ChatGroupRepository {
     required List<String> memberIds,
   });
 
+  /// The ONE chat backing a social group ([FriendCategory]), created on first
+  /// use and reused afterwards. Returns its conversation id (BUT-1856).
+  ///
+  /// The roster is resolved server-side from the category, so the caller passes
+  /// no member list.
+  ///
+  /// Throws `failed-precondition` with `details['reason'] == 'group-too-small'`
+  /// when the social group has nobody but its owner in it. Every refusal the
+  /// caller is not entitled to a reason for arrives as one indistinguishable
+  /// `permission-denied`.
+  Future<String> ensureCategoryChat({
+    required String ownerId,
+    required String categoryId,
+  });
+
   /// Adds members. Admin-only, server-enforced. Returns the uids actually
   /// seated (already-present uids are not repeated).
   Future<List<String>> addMembers({

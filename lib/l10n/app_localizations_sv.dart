@@ -13933,6 +13933,30 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pollClosed => 'Avslutad';
 
   @override
+  String get pollVotesNotLoadedShort => 'Rösterna har inte hämtats';
+
+  @override
+  String get pollVotesFailedShort => 'Rösterna kunde inte läsas';
+
+  @override
+  String get pollVotesNotLoadedHint => 'Öppna chatten igen för att hämta dem.';
+
+  @override
+  String get pollVotesFailedHint => 'Försök igen om en stund.';
+
+  @override
+  String get pollCloseRefusedVotesUnread =>
+      'Omröstningen avslutades inte — rösterna har inte hämtats, och den får inte stängas på siffror som inte är lästa. Öppna chatten igen och försök på nytt.';
+
+  @override
+  String get pollCloseRefusedBlockList =>
+      'Omröstningen avslutades inte — din blockeringslista kunde inte läsas, så blockerade röster går inte att räkna bort. Försök igen.';
+
+  @override
+  String get pollCloseFailed =>
+      'Omröstningen kunde inte avslutas. Försök igen.';
+
+  @override
   String get pollCloseAction => 'Stäng omröstning';
 
   @override
@@ -16321,6 +16345,14 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get chatGroupAddMembersFailed =>
       'Det gick inte att lägga till medlemmar. Försök igen.';
+
+  @override
+  String get chatGroupNeedsAnotherMember =>
+      'Gruppen behöver minst en medlem till innan ni kan rösta om mat.';
+
+  @override
+  String get mealVotePollFailed =>
+      'Det gick inte att starta omröstningen. Försök igen.';
 
   @override
   String get chatGroupCreateFailed =>

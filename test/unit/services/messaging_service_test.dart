@@ -1,10 +1,15 @@
 import 'dart:async';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/services/messaging_service.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
+import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/services/messaging/message_reactions_service.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
@@ -387,6 +392,74 @@ void main() {
           final sentMemberIds = captured.single as List<String>;
           expect(sentMemberIds, isNot(contains('test-user-id')));
           expect(sentMemberIds, containsAll(['user-1', 'user-2']));
+        },
+      );
+
+      test(
+        'ensureCategoryChat forwards the social group and returns its chat '
+        '(BUT-1856)',
+        () async {
+          // The point of the new callable: the roster is resolved server-side
+          // from the category, so nothing the client managed to load — or
+          // failed to — can decide who is in the chat.
+          when(
+            () => mockChatGroupRepo.ensureCategoryChat(
+              ownerId: 'owner-1',
+              categoryId: 'cat-1',
+            ),
+          ).thenAnswer((_) async => 'conv-cat-1');
+
+          final result = await messagingService.ensureCategoryChat(
+            ownerId: 'owner-1',
+            categoryId: 'cat-1',
+          );
+
+          expect(result, equals('conv-cat-1'));
+          verify(
+            () => mockChatGroupRepo.ensureCategoryChat(
+              ownerId: 'owner-1',
+              categoryId: 'cat-1',
+            ),
+          ).called(1);
+        },
+      );
+
+      test(
+        'ensureCategoryChat lets the typed callable failure through unwrapped',
+        () async {
+          // Load-bearing: `ChatGroupErrorMapper` switches on
+          // `FirebaseFunctionsException.code` and reads `details`. Wrap this
+          // delegation in the service's error handling and every typed branch
+          // silently degrades to the generic fallback — the ViewModel suite
+          // cannot see it, because it mocks this service and throws the typed
+          // exception itself.
+          final refusal = FirebaseFunctionsException(
+            code: 'failed-precondition',
+            message: 'This group has no other members.',
+            details: const {'reason': 'group-too-small'},
+          );
+          when(
+            () => mockChatGroupRepo.ensureCategoryChat(
+              ownerId: 'owner-1',
+              categoryId: 'cat-1',
+            ),
+          ).thenThrow(refusal);
+
+          await expectLater(
+            messagingService.ensureCategoryChat(
+              ownerId: 'owner-1',
+              categoryId: 'cat-1',
+            ),
+            throwsA(
+              isA<FirebaseFunctionsException>()
+                  .having((e) => e.code, 'code', 'failed-precondition')
+                  .having(
+                    (e) => (e.details as Map)['reason'],
+                    'details.reason',
+                    'group-too-small',
+                  ),
+            ),
+          );
         },
       );
 
@@ -1561,5 +1634,149 @@ void main() {
       // Additional error tests should be added here from messaging_service_error_test.dart
       // Due to size, only showing first two tests as example
     });
+    // ══ BUT-1909 — the DISPLAY half of the blocked-ballot fix ═══════════════
+    //
+    // The count on screen and the winner written into the week come from the
+    // same helper, deliberately: filtering one and not the other makes them
+    // contradict each other, which is the BUT-1908 harm in a new costume. The
+    // close half is pinned in `messaging_service_close_poll_test.dart`; this is
+    // the read half.
+    //
+    // Fail-open is CORRECT here and wrong there. A transient block-list error
+    // must not blank a conversation, and an over-counted poll on screen is
+    // recoverable; a blocked ballot deciding a recipe other members then see is
+    // not. The asymmetry is the decision, and the last case below pins it.
+    group('blocked ballots on the read path (BUT-1909)', () {
+      const conversationId = 'conv-poll-block';
+
+      // `TestServiceLocator.initialize()` deliberately skips the PRODUCTION
+      // ServiceLocator, so `ServiceLocator.tryGet` reads a null container and
+      // returns null for everything. `_filterBlocked` resolves its filter
+      // through exactly that call, so without this the whole group would
+      // measure a service that never found a block list at all.
+      setUp(() => production.ServiceLocator.initialize(DIContainer()));
+      tearDown(production.ServiceLocator.reset);
+
+      // A REAL `Message`, not this file's `FakeMessage`. The strip rebuilds the
+      // message with `copyWith`, and a `Fake` throws on any member it does not
+      // implement — which `_filterBlocked`'s fail-open catch then swallows,
+      // serving the page unfiltered. With a `Fake` here the strip case measures
+      // the catch rather than the filter.
+      Message pollMessage() => Message(
+        id: 'msg-poll',
+        conversationId: conversationId,
+        senderId: 'other-user',
+        senderDisplayName: 'Other',
+        content: 'Vad ska vi äta?',
+        type: MessageType.poll,
+        status: MessageStatus.sent,
+        sentAt: DateTime.utc(2026, 1, 1),
+        metadata: {
+          'poll': {
+            'id': 'p1',
+            'question': 'Vad ska vi äta?',
+            'creatorId': 'other-user',
+            'isClosed': false,
+            'options': [
+              {
+                'id': 'opt-a',
+                'text': 'Tacos',
+                'voterIds': ['blocked-1', 'clean-1'],
+              },
+              {'id': 'opt-b', 'text': 'Pasta', 'voterIds': <String>[]},
+            ],
+          },
+        },
+      );
+
+      List<String> votersFor(Message m, String optionId) {
+        final options = (m.metadata!['poll'] as Map)['options'] as List;
+        final option = options.firstWhere((o) => (o as Map)['id'] == optionId);
+        return List<String>.from((option as Map)['voterIds'] as List);
+      }
+
+      Future<List<Message>> readPage() {
+        when(
+          () => mockMessagingRepo.getConversationMessagesPage(
+            conversationId: conversationId,
+            limit: any(named: 'limit'),
+            startAfter: any(named: 'startAfter'),
+          ),
+        ).thenAnswer((_) async => [pollMessage()]);
+        return messagingService.getConversationMessagesPage(
+          conversationId: conversationId,
+          limit: 50,
+        );
+      }
+
+      test('the CONTROL: with nobody blocked both voters survive', () async {
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          _StubBlockedUserFilter(const <String>{}),
+        );
+
+        final page = await readPage();
+
+        expect(votersFor(page.single, 'opt-a'), ['blocked-1', 'clean-1']);
+      });
+
+      test('a blocked voter is stripped from the tally', () async {
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          _StubBlockedUserFilter(const {'blocked-1'}),
+        );
+
+        final page = await readPage();
+
+        expect(
+          votersFor(page.single, 'opt-a'),
+          ['clean-1'],
+          reason: 'the count the viewer sees must exclude someone they blocked',
+        );
+      });
+
+      test('an unreadable block list serves the tally UNFILTERED', () async {
+        // Fail-open, and deliberately the opposite of `closePoll`. Blanking a
+        // poll because a lookup blipped is worse than briefly over-counting it.
+        //
+        // A REAL `BlockedUserFilter` over a throwing repository, not a stub
+        // that throws from `currentBlockedIds` — that method CANNOT throw, it
+        // catches internally and returns an empty set, so a stub measures
+        // itself. The sibling suite records the same correction; repeating the
+        // fix in one file and not the other is how the pair drifts.
+        TestServiceLocator.registerMock<BlockedUserFilter>(
+          BlockedUserFilter(blockRepository: _ThrowingBlockRepo()),
+        );
+
+        final page = await readPage();
+
+        expect(votersFor(page.single, 'opt-a'), ['blocked-1', 'clean-1']);
+      });
+    });
   });
+}
+
+/// Returns a fixed blocked set. A stub rather than a mock because the only
+/// behaviour under test is what the SERVICE does with the answer.
+class _StubBlockedUserFilter implements BlockedUserFilter {
+  _StubBlockedUserFilter(this._ids);
+
+  final Set<String> _ids;
+
+  @override
+  Future<Set<String>> currentBlockedIds() async => _ids;
+
+  @override
+  Future<void> dispose() async {}
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// The transient-failure case the fail-open contract exists for, staged at the
+/// REPOSITORY so the filter's own catch is what the test exercises.
+class _ThrowingBlockRepo implements FirebaseBlockRepository {
+  @override
+  Future<Set<String>> getBlockedUserIds() async => throw Exception('offline');
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

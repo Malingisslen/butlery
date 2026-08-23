@@ -6021,3 +6021,333 @@ Rules-level block enforcement is owed its own ticket. The BUT-1832 poll deviatio
 re-argued.
 
 **Verdict: fail (2 blocking).**
+
+### 2026-08-22 — BUT-1908/BUT-1909 re-review: the refusal variant's CACHE is the second fail-open (2 blocking)
+Round 1's critical finding (a refusal branch written against a helper that catches
+internally, so the branch was dead code) was fixed correctly: `BlockedUserFilter`
+gained `requireBlockedIds()` which propagates, `currentBlockedIds()` delegates and
+catches, `MessagingService.closePoll` calls the propagating one, and the refusal test now
+wraps a REAL filter around a throwing `FirebaseBlockRepository` double.
+`FirebaseBlockRepository.getBlockedUserIds()` has no `catch`, and the `_repo` getter is
+dereferenced inside the async body, so a `ServiceLocator.get` failure also arrives as a
+rejected Future — the propagation is real on every path.
+
+The fix moved `_initialized = true` to AFTER the fetch. Two consequences the round missed,
+both in the same three lines:
+(1) **BLOCKING — the watch's `onError` only logs.** Nothing else invalidates the cache
+(no other writer of `_cached` in `lib/`; `blockUser()` does not push). One `unavailable`
+on the long-lived `blocks` listener — routine, as `message_query_module.dart` says in its
+own comment — freezes `_cached` for the session while `_initialized` stays true, so
+`requireBlockedIds()` returns a stale set with NO error and `closePoll` resolves a poll
+winner counting a person the user blocked after the freeze. That is precisely the state
+BUT-1909 says must refuse, reported as success. Fix: in `onError` (and `onDone`) cancel
+the subscription, null it and set `_initialized = false`.
+(2) **BLOCKING — no single-flight.** Pre-fix the latch was synchronous, so a second
+concurrent caller returned immediately. Now N concurrent first callers each fetch and each
+run `_subscription = _repo.watchBlockedUserIds().listen(...)`, so all but the last are
+never cancelled and survive `dispose()`/logout. Reachable on one chat open:
+`ChatViewModel:272`, `ChatMessageStream:145` and `getConversationMessagesPage` all reach
+`currentBlockedIds()` before the first fetch resolves. The added caching test bounds the
+SEQUENTIAL success path only.
+
+Non-blocking: the `mapEquals`-vs-`!=` rationale comment in `chat_message_stream.dart` is
+false where it is cited — `mapEquals` is shallow, so for a poll message (`metadata['poll']`
+is a nested `Map`, identity `==`) it is false on every emission exactly as `!=` would be;
+the call still earns its place for FLAT metadata (image/recipe shares). Strike the sentence.
+Twin field: `reactions` (and `isEdited`/`editedAt`) are still absent from the same change
+test, so a reaction toggled on a rendered message still never reaches the screen — and
+`mapEquals` would not help there either (`List` values compare by identity).
+Two false sentences to strike: "non-creator closes just flip the flag" in
+`MessagingService.closePoll` (the repo returns without writing when
+`pollMap['creatorId'] != closerId`, `message_mutation_module.dart:487`), and "writes
+`isClosed` alone" in `poll.dart` (it writes the whole `metadata` map back; the load-bearing
+fact is the RAW re-read at `message_mutation_module.dart:480`).
+**The DTO strip is NOT blocking, and the reason is measurable:** no current path writes a
+hydrated Message — the only full-document write is `MessageDto.toFirestore` on send
+(freshly constructed) and the repo's `closePoll` re-reads the raw doc — and the messages
+rule's allowlist names `metadata` as a whole without constraining keys inside it, so a
+stray marker would not even be denied. Insurance against a future writer, own ticket.
+
+**Verdict: fail (2 blocking).**
+
+### 2026-08-22 — BUT-1908/BUT-1909 final re-review: both blockers closed, invalidation's own follow-ons (0 blocking)
+Round 2's two blockers are fixed with the shape specified and both mutation probes were
+re-run by the author. Verified by reading, not by the report:
+- `onError` and `onDone` both call `_invalidate()` (latch cleared, subscription cancelled
+  and nulled). `blocked_user_filter_test.dart` pins it by counting a SECOND
+  `getBlockedUserIds()` after the watch errors.
+- `_inFlight ??= _fetchAndWatch().whenComplete(() => _inFlight = null)`. No poisoned future:
+  `whenComplete`'s callback runs BEFORE the derived future completes, so an awaiting caller
+  resumes with `_inFlight` already null and the next call refetches; `??=` returns the
+  existing future, so concurrent callers share one error rather than orphaning one. The
+  `await _subscription?.cancel()` added before the assignment is defensive only — every path
+  that clears the latch also nulls the subscription, so it is a no-op today.
+- The fixture swap (`const Stream.empty()` → an open `StreamController`) is correct and the
+  author's reading of it is right: `Stream.empty()` completes, `onDone` fires, and
+  invalidating there is the real behaviour, not the state a caching test means to describe.
+
+Three residuals, none blocking, all new to this round:
+(1) `_invalidate`'s doc comment claims the retained `_cached` is "kept as a best-effort
+answer for the display path". False — every read goes through the `_initialized` check, so
+after invalidation `currentBlockedIds()` re-fetches and, on failure, returns `const {}`, not
+`_cached`. The retained set is unreachable. STRIKE the sentence (the first sentence already
+states the rule).
+(2) No cool-down after invalidation. `_filterBlocked` runs under `asyncMap` on every message
+snapshot, so a persistently failing watch costs one `blocks` query per emission. Consistent
+with the earlier accepted "a failed lookup must not latch" fix, and the repair must NOT be
+to serve the stale set.
+(3) `dispose()` does not clear `_inFlight`. A fetch in flight at scope pop completes
+afterwards, re-latches `_initialized`, repopulates `_cached` with the previous user's set and
+opens a subscription nobody will cancel — reachable because the DI registration passes
+`dispose: (f) => f.dispose()` (`social_module.dart:328`). Self-healing in practice: the new
+`onError` cancels once the signed-out query denies. One line (`_inFlight = null` in `dispose`,
+or a `_disposed` guard before the latch).
+
+Also measured this round, for the questions the author asked:
+- `requireBlockedIds` CAN still return a stale set with no error, by one route only:
+  `getBlockedUserIds()` is a plain `get()`, which resolves from the OFFLINE CACHE with no
+  error and no `isFromCache` check. "Unreadable refuses" does not cover "readable but stale".
+  Narrow (own-device blocks are in the local mutation queue; the gap is a block made on
+  another device while this one is offline) — Medium, own ticket.
+- Repository-side sign-out fallback `watchBlockedUserIds() → Stream.value({})` emits an empty
+  set BEFORE completing, so a sign-out landing between fetch and subscribe writes `{}` into
+  `_cached` for the microsecond before `onDone` invalidates. Not reachable by `closePoll`,
+  which requires an authenticated caller and whose write the rules would deny anyway.
+- `closePoll`'s guard is opt-in on DI: `ServiceLocator.tryGet<BlockedUserFilter>()` returning
+  null skips the block filter silently. Registration is unconditional in the social module's
+  user scope and nothing else in that scope would work without it, but no test asserts the
+  registration, so a DI move would disable the guard with every suite still green. Low.
+
+Two prior non-blocking findings are already CORRECTED IN PLACE and must not be re-edited:
+`MessagingService.closePoll` now reads "A non-creator's close writes NOTHING: the repository
+returns early when `pollMap['creatorId'] != closerId`" and `poll.dart` now reads "It writes
+the whole `metadata` map, not one field" — both verified true against
+`message_mutation_module.dart` (`get()` → creator check → `update({'metadata': metadata})`).
+The DTO-strip finding stays closed for the same measured reason as last round: the only
+full-document write is `MessageDto.toFirestore` on send; every other writer updates scalar
+fields by id, so no path persists a viewer-scoped stripped tally.
+The `mapEquals` rationale sentence is unchanged and stays non-blocking — it is true for flat
+metadata and behaves as `!=` for polls; zero behavioural cost, strike it if the line is
+touched.
+
+**Scope note:** the change also touches `lib/l10n/*` and four test files not in this review's
+list (`messaging_service_test.dart`, `message_query_module_test.dart`, `chat_viewmodel_test.dart`,
+plus two new widget tests). Unreviewed here; the commit marker must still name them.
+
+**Verdict: pass (0 blocking).**
+
+---
+
+## 2026-08-22 — BUT-1908 / BUT-1909 re-review (round 3): the generation guard, and a file that moved mid-review
+
+Files re-reviewed on their current bytes: `lib/services/social/blocking/blocked_user_filter.dart`
+(169 lines) and `lib/repositories/firebase/modules/message_query_module.dart` (417 lines).
+
+**The fix under review.** Round 2's L2 (dispose does not stop an in-flight fetch) was closed
+with a `_generation` counter bumped by `dispose()` and re-checked at two points in
+`_fetchAndWatch`: after `await _repo.getBlockedUserIds()` and after `watchBlockedUserIds().listen(...)`.
+The integration reviewer then found the first attempt's arms RETURNED an empty set, which
+`closePoll` cannot tell from "nobody is blocked" — the neutral-value trap reproduced inside its
+own fix. Both arms now `throw StateError(_disposedDuringFetch)`.
+
+**Verified correct, with the interleaving argument written down so the next round does not
+re-derive it.** Arm 1 (line 88) sits BEFORE `_initialized = true; _cached = ids;` and lines
+88-94 are synchronous, so `dispose()`'s `_generation++` either precedes the check (throw, no
+latch) or cannot land before the latch — the previous user's list can never latch. Arm 2
+(lines 118-121) cancels the just-opened subscription before throwing; `_initialized`/`_cached`
+are set by then, but `dispose()`'s tail (`_initialized = false; _cached = {}`) always runs
+after its own increment and `_fetchAndWatch` writes neither field past the check, so every
+interleaving ends clean. There is no `await` between `listen()` and `_subscription = subscription`,
+so no stream event can be delivered before that field is assigned.
+
+**Conversion holds for every display caller (grepped, not assumed).**
+`messaging_service.dart:259` (`_filterBlocked`) and
+`comment_crud_operations.dart:149` call `currentBlockedIds()`; only `messaging_service.dart:773`
+(`closePoll`) calls `requireBlockedIds()`. `currentBlockedIds`'s `catch (e)` is untyped, so a
+`StateError` degrades exactly like a Firestore error. Both log sinks on this path are
+`AppLogger.warning` (local log only), and the thrown message is a constant with no PII.
+
+**The load-bearing collaborator check, re-run.** `FirebaseBlockRepository.getBlockedUserIds()`
+(lines 112-119) has NO try/catch — `requireCurrentUserId()` throws when signed out and `.get()`
+propagates. The error channel is real, so `closePoll`'s refusal branch is not dead code. This is
+the check that decides whether the whole BUT-1909 design works, and it is the one to re-run first
+in any later round.
+
+**`_inFlight` cannot be stranded by `_invalidate`.** `whenComplete(() => _inFlight = null)` runs
+on both the value and the throw path, and `_invalidate` cannot fire mid-fetch: a new
+`_fetchAndWatch` starts only when `_initialized == false`, and both routes there (`_invalidate`,
+`dispose`) null `_subscription` first. Either order of `_invalidate` and `whenComplete` leaves
+`_inFlight == null, _initialized == false`.
+
+**One residual, Low, NOT a regression from this round.** `dispose()` nulls `_inFlight` while the
+future it points at still runs, and that future's own `whenComplete` nulls it again later. If the
+instance is read AFTER dispose — reachable because `comment_crud_operations.dart:36` captures the
+filter at construction rather than per call — two `_fetchAndWatch` runs share the new generation,
+both pass the guard, and one subscription is overwritten in `_subscription` and never cancelled.
+Remedy if ever worth it: capture the generation in `requireBlockedIds` and clear `_inFlight` only
+while it still matches. Strictly better than the pre-generation state, so not blocking.
+
+**Round-2 findings re-checked as closed.** The `_invalidate` doc comment (lines 126-130) is now
+true: both public reads gate on `_initialized`, so `_cached` really is unreachable after
+invalidation. `onDone: _invalidate` is present and correctly typed. The already-archived
+offline-cache route and the sign-out `Stream.value({})` window are unchanged and stay ticketed —
+do not re-file either as new.
+
+**`message_query_module.dart`.** The `_pollIds` sink claim is accurate: `AppLogger.warning` reaches
+the local log only, and `capped` IS rendered (`poll_message_widget.dart:97,127`). The `_merge`
+third-early-return note is accurate and agrees with `poll.dart:130-138`; its safety claim was
+verified rather than taken — `Poll.fromMap` parses `options` through
+`SerializationUtils.safeObjectList`, so a non-List yields empty options, `_resolveWinner` returns
+null, and `closePoll` writes no plan (`messaging_service.dart:798`). Note that
+`poll_message_widget.dart` renders only `capped`, not `failed`; `failed` is caught by
+`ChatViewModel.closePoll` and `MessagingService.closePoll` instead, which is fail-closed and fine.
+
+**Process finding worth more than the code findings.** This file presented TWO byte states inside
+one review. The first full `Read` returned 411 lines with a 4-line `_merge` comment; `git diff`,
+`sed`, `od` and a second `Read` all return 417 lines with a 10-line comment (mtime 20:09:34). The
+417-line state is what was reviewed and pinned. The tell was a `git diff` hunk that did not match
+the `Read` output line-for-line — cheap to notice, and per the repo's own lesson a mismatch like
+this indicts the earlier SAMPLE, not the file. When a Read and a diff of the same file disagree,
+stop and re-read before writing a verdict; a verdict pins bytes, and pinning the wrong ones is
+indistinguishable from not having reviewed.
+
+**Verdict: pass (0 blocking).**
+
+## 2026-08-22 — BUT-1909 confirmation round: the latch moved past every await
+
+`lib/services/social/blocking/blocked_user_filter.dart`, single-file confirmation pass (sixth
+round on this change). Three edits since the previous pass, all from the integration reviewer:
+the `_initialized = true; _cached = ids;` pair moved BELOW the second generation check; the
+"ONLY writer of `_cached`" sentence struck; the "caught by three times" count struck along with
+an orphaned comment above `await _subscription?.cancel()`.
+
+**Both arms survive the move, and arm 2 is strictly stronger.** Arm 1 (`if (generation !=
+_generation) throw StateError(...)`) is still the first statement after `await
+_repo.getBlockedUserIds()`, before any state write. Arm 2 still `await subscription.cancel()`s
+the just-opened watch and throws. What changed is that arm 2 now throws with NOTHING latched:
+previously the object was left `_initialized == true` holding the pre-dispose `ids`, and only
+dispose's own trailing reset cleaned it up.
+
+**No interleaving can latch a stale set.** `_fetchAndWatch` has exactly three yields — the fetch
+(line 81), `await _subscription?.cancel()` (line 89), and `await subscription.cancel()` on the
+throw path (line 111). The latch block (119-121) sits after arm 2 with no await between them, so
+check and write are atomic in Dart's single-threaded model; every dispose therefore lands on a
+yield covered by one of the two arms. The other writer of `_cached` is the listener callback
+(line 94), which cannot fire before the latch (no yield between `listen()` and the check) and is
+cancelled by dispose afterwards.
+
+**Nothing broken.** `_cached = ids` now happens after the watch is opened, which raised the
+question of whether a snapshot could arrive and then be clobbered by the older fetch result —
+it cannot, for the same no-yield reason. `return _cached` still returns the value just written.
+Read cost unchanged (one fetch + one listener per session, pinned by "a successful lookup IS
+cached", which verifies `called(1)` on BOTH repo methods).
+
+**One Low, non-blocking, prose.** The new comment at 114-118 claims the old placement meant "a
+`dispose()` landing in that yield ran its own reset first, and the resumed fetch then re-latched
+the PREVIOUS user's list". The re-latch half is not reproducible: a latch statement placed BEFORE
+the yield cannot re-execute on resume, and `_subscription` is null at line 89 in every reachable
+state (`_initialized == false` is only ever produced by `_invalidate()`, `dispose()` or
+construction, and all three null it), so that `await` is `await null` — a microtask yield the
+event-loop drain will not let `dispose()` interleave. What the old placement really left was a
+readable WINDOW: `_initialized == true` over the previous user's `_cached` until dispose's
+trailing reset ran. No test pins either shape; the "dispose cancels an in-flight fetch" test
+awaits `dispose()` fully before completing the gate, so it exercises arm 1 only. Recommendation
+is to STRIKE the two sentences and keep "Latched only HERE, past every await." — the placement is
+right on its own terms, and it is the second time in this file's review history that a comment
+narrated a mechanism sharper than the one that was measured.
+
+**Also noted, unchanged and still not blocking:** the `_inFlight` clobber via `whenComplete`
+after a post-dispose reuse (already archived in round 3), and the fact that line 89's cancel is
+defensive against a state that cannot currently arise. Neither is worth a seventh round.
+
+**Verdict: pass (0 blocking).**
+
+---
+
+## 2026-08-22 — BUT-1909 `blocked_user_filter.dart`, round 7 (strike-only re-check)
+
+Scope was the strike itself: is the surviving sentence true, and does removing the struck
+narrative orphan anything. `git diff --cached` shows the round-6 file with two sentences gone
+and nothing else touched.
+
+**The surviving sentence is true, clause by clause.** "Latched only HERE" — `_initialized = true`
+occurs once (`_fetchAndWatch`); the other three writes are `false` (declaration, `_invalidate`,
+`dispose`). "Past every await" — the function's awaits are the fetch, `await
+_subscription?.cancel()`, and the throw-path `await subscription.cancel()`; all precede the latch
+block. "Check-and-write is atomic" — no yield between generation arm 2 and the three
+assignments, so Dart's single-threaded model admits no interleaving. "Every `dispose()` lands on
+a yield one of the two checks covers" — yield 1 → arm 1, yield 2 → arm 2; the third yield is
+reachable ONLY after arm 2 has already fired, so no dispose can arrive there uncovered, and that
+branch never latches.
+
+**Nothing dangles.** The struck text was the only place that narrated the old latch PLACEMENT.
+The two surviving re-latch narratives are the different, reproducible counterfactual — remove
+the `_inFlight` clear and the generation bump and a fetch resuming after `dispose()` really does
+re-latch the previous user's set — and they are pinned by the "dispose cancels an in-flight
+fetch" test. `firebase-backend-security.knowledge.md` already carries the corrected mechanism
+(readable WINDOW until dispose's trailing reset), so no principle edit was owed.
+
+**Verdict: pass (0 blocking).**
+
+---
+
+## 2026-08-22 — BUT-1856 `ensureCategoryChat`, round 2 (post-fix re-review)
+
+Both round-1 Criticals are closed, verified against current bytes.
+
+**Critical 1 (`sourceCategoryOwnerId` never erased) — closed.**
+`clearUnreachableChatGroupResiduals` (account-deletion-cascade.ts) runs after the membership
+sweep with two capped, declining legs: `departedUserIds array-contains uid` (arrayRemove) and
+`sourceCategoryOwnerId == uid` (deletes BOTH pointer fields, so a dangling `sourceCategoryId`
+cannot be left behind). `probeResidualData` gained the matching pair. The new fixture's owner is
+deliberately NOT in `memberIds`, so the membership leg cannot answer it.
+
+**Critical 2 (tombstone made minors identifiable) — closed, by invariant rather than
+relocation.** `enforce-group-minor-membership.ts` now stages through
+`stageBackstopRemovals`, which passes no `tombstone`. Grepped all four `stageMemberRemoval`
+callers: only `removeChatGroupMember` sets it, and that path writes a `memberLeft` system row.
+So `departedUserIds` ⊆ {uids with a visible `memberLeft` row}, and the array discloses nothing
+the thread does not already show. The extraction is real production code, so the test pins the
+CALL SITE's omission rather than the callee's default — the distinction a round-1 style
+assertion would have missed. The safety half also holds: the sync's `reconcile` re-runs
+`findInadmissibleMembers` against the CALLER before re-seating, so an evicted minor can only be
+re-seated by one of their own friends (the BUT-1838 policy), not by the stranger who first
+seated them.
+
+**Blocking: the new leg's docstring COUNTS.** "the two raw uids on `chat_groups` the sweep above
+cannot reach" is false — at least two more survive. (a) `createdBy` when the erased user had
+already departed the group: the re-home at the membership sweep is gated on `memberIds
+array-contains`, and the `departedUserIds` leg finds the very same document without re-homing
+it. (b) `memberAddedBy` VALUES: `stageMemberRemoval` deletes only the subject's own KEY, so
+`memberAddedBy.<other> = <erasedUid>` survives for every member they seated — and
+`exportChatGroups` hands it to those members as `you_were_added_by`. Both are BUT-1838-era, not
+introduced here, but the sentence is what would stop the next author finding them. Strike the
+count; ticket the residuals.
+
+**Art. 15 asymmetry, surfaced not decided.** `departedUserIds` and `sourceCategoryOwnerId` are
+now erasable but not exportable: `exportChatGroups` filters `memberIds array-contains`, and the
+`chat_groups` read rule refuses a non-member the document outright. That is the shape
+ACCEPTED_DEVIATIONS already settles for lists the user has LEFT (BUT-1732/BUT-1747, "the rules
+refuse the client that read"), so it was not filed as a defect — but BUT-1832's entry asks a
+repair to cover both sides, so it went to Malin rather than being decided here.
+
+**Non-atomic pairing, noted.** `removeChatGroupMember` writes the tombstone inside the
+transaction and the `memberLeft` row outside it, `.catch`-logged. A failed system-message write
+leaves a tombstone with no visible row. Harmless today (the backstop no longer tombstones, so an
+unexplained tombstone can only be that failure), but the invariant the design rests on is
+best-effort on one side.
+
+**Stale-by-addition claims this diff created.** `logSafeConversationId`'s docstring still says a
+group id is "a server-minted Firestore auto-id (`createChatGroup` uses `chat_groups.doc().id`)";
+BUT-1856 added `options.groupId` = `sha256(ownerId:categoryId).slice(0,20)`. Conclusion holds, the
+mechanism no longer does — and this exact sentence was corrected once already on 2026-08-19.
+`rate_limiter.ts`'s "the most write-amplified of the three" went stale the same way, with
+`ensureCategoryChat` (which can create AND churn membership in one call) added directly below it.
+
+**Process note.** `ensure-category-chat.ts` and `enforce-group-minor-membership.ts` were rewritten
+at 23:20–23:21 while this review was reading them; two draft findings (an incomplete "an owner
+outside the chat is one an admin removed or who left" enumeration, and an "Unreachable as the code
+stands" claim on the `memberCountAfter <= 0` guard that a concurrent category edit falsifies) were
+already fixed in that window. Everything above is re-verified against the bytes on disk at 23:22.
+
+**Verdict: fail (1 blocking).**

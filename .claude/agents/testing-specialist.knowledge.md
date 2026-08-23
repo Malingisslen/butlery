@@ -71,7 +71,12 @@ you want the revert-probe that proved it; or this file itself reads too compress
   No backup, no restore, no parallel-session clobber, no auto-mode classifier, ~10s. Reach
   for a mutant only for the harder question ("does any test DISCRIMINATE this expression"),
   since a reached line can still be unasserted (BUT-1831: a private read seam's success arm
-  read `DA:244,0` while its two failure arms were pinned).
+  read `DA:244,0` while its two failure arms were pinned). **The same report settles a
+  widget test's non-vacuity when it turns on a COLLABORATOR's state the test cannot assert**
+  — read the DA hit on the RHS LINE of an `&&`, which evaluates only when the LHS was true,
+  so `DA:<rhs>,>0` proves the null-check passed (BUT-1908: a tap "through the real screen"
+  discriminates the VM's gate only if the VM's own message list was populated first, and
+  `DA:499,3` proved it against a suite that stays green either way).
 - **"Only `dart format`" is provable, not assumed**: walk `git cat-file --batch-all-objects`,
   compare whitespace-stripped bytes blob-to-blob (not blob-to-disk — CRLF differs by one
   byte/line). The formatter can insert a trailing comma, so fall back to raw `diff` if a
@@ -80,7 +85,11 @@ you want the revert-probe that proved it; or this file itself reads too compress
   can sit behind graded bytes across rounds; close every round naming unstaged hunks. Close
   the POSITIVE direction mechanically at verdict time: `git diff --numstat` every reviewed
   path (0 lines = index matches worktree) in one call, so the verdict names the copy the
-  parent will commit. **Two ways that check answers "clean" while proving nothing.** (1) A
+  parent will commit. **A round whose remedy was "strike a false sentence" is the highest-risk
+  shape for this**, because the verdict-time grep of the struck string answers "gone" from the
+  worktree for every copy while the index still carries all of them — grep `git show :<path>`,
+  never the worktree, for a reported strike (BUT-1909/1925: production doc + two suites all
+  `MM`, feature code staged, the whole repair round not). **Two ways that check answers "clean" while proving nothing.** (1) A
   path-scoped git command run from the WRONG cwd prints nothing, byte-identical to "no
   differences" — every verification call gets an explicit `cd` and an echoed `pwd`, because
   this one fails SILENTLY into the reassuring answer. (2) `git status --porcelain` and `git
@@ -107,7 +116,24 @@ you want the revert-probe that proved it; or this file itself reads too compress
   ("six call sites" → "from every list and detail surface") is unmeasured by construction, and
   the falsifier is usually an explicit exception in the same code (`assert(!readOnly, 'edit
   must be unreachable')`). The repair is to STRIKE the quantifier, never to re-measure it
-  (BUT-1910).
+  (BUT-1910). **A test FILE HEADER scoping what the file covers ("tests cover the static
+  helpers; cache behaviour is covered by <other file>") is the same insertion seam as a test
+  COUNT, and the round's own new group is what falsifies it** — so re-read every header whose
+  file gained a group, and resolve the cross-file pointer with one grep of the guarded CLASS
+  name in the cited file: zero hits IS the finding, and a false coverage pointer is worse than
+  a false count because it is the sentence a later run cites to skip writing the test
+  (BUT-1909).
+- **A production edit in the round falsifies comments in files it never touched, in two
+  recurring shapes.** (1) A param promoted DEFAULTED→REQUIRED kills every "delete this
+  argument and it falls back to <default>" mutant sentence — the mutant is now a COMPILE
+  ERROR, and the sentence asserts the fail-open default the round deliberately removed, so
+  it licenses re-adding it; the surviving true mutant is "hardcode the value". Grep the
+  removed default's NAME across `test/`. (2) A gate added at layer N makes every "only this
+  layer can catch it" sentence false, and the disproof is the SIBLING layer's own passing
+  test — grade the quantifier against the other gates, not against the layer it contrasts
+  with. Both shipped in one batch beside a file stating the correct plural version, i.e. two
+  answers to one question. A group header's "each test below asserts X" is the same defect
+  once the group holds positive CONTROLS: strike the quantifier, never re-count (BUT-1908/1909).
 
 ### Project-specific test infrastructure (full detail in `testing-specialist.md`)
 - Production ServiceLocator bridge: `production.ServiceLocator.initialize(DIContainer())`
@@ -250,7 +276,13 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   reachability is a producer question.
 - **Fixture-shape family**: the fixture's own shape answers for the code. An accumulator off
   `.first` hides its loop unless the first item is interior on every axis; enumerate every
-  field production READS, override each independently.
+  field production READS, override each independently. **Two DIFFERENT expressions that
+  evaluate to the SAME fixture literal collapse into ONE observable and the swap mutant is
+  analytically unkillable — no probe needed, just read the fixture** (BUT-1856: a group's
+  `ownerId` and the signed-in uid were both `test_user_123`, so six cases could not see
+  `ownerId: currentUserId`, which breaks the feature for every non-owner because the CF
+  addresses the category by OWNER PATH). Recurring pairs: owner vs caller, creator vs
+  current user, group id vs conversation id.
 - A repository suite where every fixture lives in ONE scope can't see its scoping `where` —
   and habitually leaves inherited CRUD (`read`, `readAll`, `watchAll`) untested though it
   skips every filter the finders apply.
@@ -329,6 +361,10 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
   `isNot(contains('@'))`, which the type-description satisfies alone (BUT-1897). A stated
   red count must name its SCOPE: "removing the mask reddened 4" was true for ONE class and
   8 for the family, and the smaller number reads as "the other five are unpinned".
+  **Same again for a repository's ONE-SHOT reader and its LIVE-STREAM twin** — byte-identical
+  marking/merging branches in two methods, and the suite pins the one-shot half because it is
+  the easier `await`; the stream is the path the open screen actually renders from. `lcov
+  DA=0` on the stream's branch is the whole probe, ~35s, no `lib/` write (BUT-1908).
 - **A source-scanning guard enforces its REGEX, not its TITLE — cite what it matches, never
   what it is called.** `architecture_test.dart`'s "no raw user ids in AppLogger calls"
   matches `$userId`/`$uid` only, so `$conversationId` walks past it in 9+ `lib/` files while
@@ -360,7 +396,14 @@ Codecov: 60% project / 70% new patches / 2% drop tolerance — floors, decided 5
 - A defensive bound on an injected collaborator is mutation-dead when every fake answers
   immediately — `grep 'fakeAsync\|Completer\|TimeoutException'` zero hits IS the finding. A
   new conjunct beside an existing gate is born mutation-dead without a fixture passing the
-  OLD gate and failing ONLY the new one.
+  OLD gate and failing ONLY the new one. **A cache invalidated from a stream's LIFECYCLE has
+  one limb per callback and they need opposite fixtures**: `onError` needs an OPEN controller
+  you `addError` to, `onDone` needs one you CLOSE and then read through. `const Stream.empty()`
+  proves neither — it completes before anything reads the cache again — so a suite split
+  between empty streams and open controllers leaves `onDone` deletable-green while looking
+  covered. Grade its production reachability at the REPOSITORY: a `currentUserId == null ?
+  Stream.value({})` early return is a genuinely completing stream, so the limb is live
+  (BUT-1909, `BlockedUserFilter`).
 - The CONDITIONAL-IMPORT SEAM: `flutter test` compiles the native branch into every unit
   test, web stub into none — the shipping impl runs in zero tests if every test injects a
   fake through the `_testX` seam. Same for `Platform.isX`: guard and no-guard agree on every
@@ -504,6 +547,13 @@ The single most repeated finding across two months of review.
   DERIVED value, not "no value").
 - A collection-SHAPE assertion instead of the skipped element's VALUE (a Map can't hold a
   dup key, so "appears once" can't distinguish skip-vs-overwrite).
+- **A change-detector conjunct in an incremental list updater** (`!mapEquals(old.metadata,
+  new.metadata)` beside `content`/`status`/`readAt` tests) is pinned ONLY by two emissions
+  whose other compared fields are byte-identical — a realistic fixture varies content too and
+  the conjunct is deletable-green. Its comment is the second claim: grade "this always
+  differs" against EVERY producer of the map, because a sibling that SHALLOW-copies the outer
+  map (`Map.from(metadata)..[k]=v`, the unhydrated/marker-only path) hands back the SAME
+  nested instance and `mapEquals` answers TRUE there (BUT-1908).
 - **A guard wrapping [spacer + a child that self-collapses to `SizedBox.shrink()`] is pinned
   ONLY by `find.byType(<ChildWidget>)`** — the child-CONTENT assertion (badge, row item) is
   vacuous, because deleting the guard rebuilds the child, which then draws nothing and leaves

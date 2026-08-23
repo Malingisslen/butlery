@@ -24786,3 +24786,469 @@ VERIFIED IN PASSING: the four new Swedish strings are unique values in `app_sv.a
 poll widget's tree, so the finder is unambiguous — it pins the STRING, not the key.
 
 Verdict: fail, 6 blocking.
+
+### 2026-08-22 — BUT-1908/BUT-1909 final re-review (7 test files, 8 production files)
+
+Round 3. The two blocking findings from round 2 were struck as reported, verified against the
+worktree AND `git show :<path>`: "the `capped` and `failed` markers could never reach this
+widget" is absent from `chat_message_stream_metadata_refresh_test.dart` (HEAD still carries
+nothing of the sort; the file is new), and "reddens this test and nothing else" is gone from
+`message_query_module_test.dart` — the staged copy (== HEAD, nothing is staged this round) still
+shows it at line 608, the worktree does not. Both non-blocking control-scope rewords also
+landed: the close-poll control now reads "the two refusal cases below" (exactly the two refusal
+tests: `capped`, `failed`; the fourth case is the no-marker default, correctly excluded), and the
+blocked-ballot control no longer claims what the cases below it are satisfied by.
+
+TWO NEW SECURITY CASES, BOTH NON-VACUOUS. `a watch error invalidates instead of freezing the
+cache` drives a real `BlockedUserFilter` over a counting repo mock: fetch → latch → subscribe →
+`addError` → `onError` → `_invalidate` → second `requireBlockedIds` refetches, `fetches == 2`.
+Deleting `_invalidate()` from `onError` leaves `_initialized` true and the second read serves the
+cache, `fetches == 1` → red. `concurrent first callers open exactly one watch` launches three
+overlapping calls (two `currentBlockedIds`, one `requireBlockedIds`) against a 5ms fetch;
+`currentBlockedIds` is `async` and runs synchronously to its first await, so all three reach
+`_inFlight ??=` before it resolves. Deleting the guard gives three fetches and three watches →
+red on both verifies. Neither measures its own stub — the throwing/counting is at the REPOSITORY,
+which is what round 2's blocking finding on the old `currentBlockedIds()`-stub test demanded.
+
+THE OPEN-CONTROLLER FIXTURE CHANGES NOTHING ELSE. `openWatch()` is used by exactly two cases
+(`concurrent first callers`, `a successful lookup IS cached`). It is REQUIRED for the caching
+case now: `const Stream.empty()` completes immediately, fires the new `onDone: _invalidate`, and
+the second read would refetch — the case would be red against correct code. The three cases still
+on `const Stream.empty()` are unaffected, each for its own reason: the CONTROL asserts the value
+`_fetchAndWatch` returns, computed BEFORE the subscription; `currentBlockedIds degrades to an
+empty set` never subscribes at all (the fetch throws first); and `a failed lookup does not latch`
+still kills the latch-before-fetch mutant, because call 1 throws above the subscribe and call 2's
+assertion is read before any `onDone` can matter. Also verified the caching case's new
+`verify(watchBlockedUserIds).called(1)` is the line that kills "caches the fetch but re-subscribes
+per read".
+
+`onDone: _invalidate` IS MUTATION-DEAD, AND IS REACHABLE. Walked every case: the two open-
+controller fixtures close only in `addTearDown`, and the three empty-stream fixtures never read
+the cache after completion — so deleting the limb leaves all 13 cases green. Reachability is not
+hypothetical: `FirebaseBlockRepository.watchBlockedUserIds()` returns `Stream.value({})` when
+`currentUserId == null` (line 124), which emits `{}` into the listener (overwriting the just-
+fetched real set) and then COMPLETES. Without `onDone` that empty set is latched for the session —
+the same frozen-empty-list fail-open the other two layers just closed. Recommended, not blocked:
+the trigger is a sign-out race between the fetch and the subscribe, and `dispose()` clears
+`_cached`. Fixture is two lines on the existing helper (`await watch.close()`, re-read, assert
+`fetches == 2`).
+
+TWO BLOCKING, BOTH FALSE MEASURED CLAIMS, BOTH THIS DIFF'S.
+(1) `chat_viewmodel_test.dart:470` — "left all 45 tests in this file green". Counted: HEAD 47,
+worktree 51 (`grep -cE '^ *test\('`). Already off by two at HEAD; this diff's four new closePoll
+cases took it to 51. Exactly the insertion seam `lessons-digest-testing.md` recorded the day
+before (BUT-1910). Strike the count; the paragraph's load-bearing half — the sibling test passes
+`initialConversation`, so it resolves synchronously and cannot see WHEN the stream opens — is
+directly readable two tests above and survives without a number. Do not write "all 51".
+(2) `blocked_user_filter_test.dart:4-6` — "Tests cover the static helpers; cache behavior is
+covered indirectly by the integration-style tests in `comment_crud_operations_test.dart` (and
+similar for messaging)." Both clauses false. The first was TRUE at HEAD and was falsified by this
+diff's own +183-line `currentBlockedIds vs requireBlockedIds` group. The second is falsified by
+`grep -in block test/unit/services/unified/operations/modules/comment_crud_operations_test.dart`
+→ zero lines; that file does not touch `BlockedUserFilter` at all, indirectly or otherwise. Strike
+both clauses rather than re-inventorying — a replacement inventory has the same seam.
+
+NON-BLOCKING, TWIN OF AN ALREADY-ACCEPTED FINDING. `chat_viewmodel_test.dart:850` — "Without it
+every case below is satisfied by a method that returns a message unconditionally." True of the
+three closePoll refusal/failure cases, false of the three cases that follow them in the same
+group (`votePoll` no-op ×2, `closePoll delegates`), none of which that mutant satisfies. Same
+phrase and same over-reach as the close-poll control the parent fixed this round; graded
+non-blocking to match how that copy was graded.
+
+ROUND-2 CARRY-OVERS RE-GRADED, ALL STAY NON-BLOCKING. Marker-survival through the strip: still
+unpinned, but `_stripBlockedBallots` rebuilds via `Map<String, dynamic>.from(metadata)`, which
+cannot forget a key it never enumerates, so only a deliberate rewrite to a literal map would
+redden — and the security round did not touch that method. `verifyNever(planService.save(any()))`:
+positional arg, so the named-arg `verifyNever` trap does not apply, and the 1:1 sibling test is
+its mirror. VM generic-arm `isNotNull`: matches its own title ("rather than swallowing"), and the
+two refusal cases pin their own sentences; demanding a third literal is symmetry theatre. Case
+4's duplicated `pumpChat` body: semantically byte-identical to `await pumpChat(tester,
+pollMessage(const []))`, so it is drift risk, not a correctness gap.
+
+VERIFIED IN PASSING. "Every `failed` in `test/` is injected at the service or the widget"
+(`message_query_module_test.dart:657`) — measured true, exactly two sites
+(`messaging_service_close_poll_test.dart:723`, `poll_message_widget_hydration_test.dart:111,120`).
+"Deleting `.reversed` from `_pollIds` reddens this test" — true by inspection, the cap would keep
+the oldest 20 and both end assertions flip. `poll.dart`'s "the repository's `closePoll` re-reads
+the RAW document before writing... it writes the whole `metadata` map" — true,
+`MessageMutationModule.closePoll` does `messageRef.get()` then `update({'metadata': metadata})`,
+so the in-memory hydration marker never round-trips. `chat_message_stream.dart`'s "`mapEquals` is
+SHALLOW... answers false every emission on a poll message" — true, nested maps compare by
+identity; the flat share-card metadata it claims to benefit really is flat Strings. Nothing is
+staged (`git diff --cached` empty), so every finding is against the worktree, which is the copy
+the parent will add.
+
+Verdict: fail, 2 blocking.
+
+### 2026-08-22 — BUT-1908/1909 SHIP re-review: a production edit rots comments in files it never touched
+
+Trigger: third review round on the poll-hydration + blocked-ballot batch. My two prior
+blocking findings (a "all 45 tests" count, a false coverage pointer to
+`comment_crud_operations_test.dart`) were struck correctly. Three production changes landed
+between rounds; two of them silently falsified sentences in files those changes did not edit.
+
+**Shape 1 — DEFAULTED -> REQUIRED kills the named mutant.**
+`PollMessageWidget.voteHydration` went from `this.voteHydration = PollVoteHydration.ok` to
+`required this.voteHydration`. `test/widget/messaging/chat_message_stream_metadata_refresh_test.dart`
+(NEW in the same batch) carried:
+
+    // `MessageContentBuilder` is what carries the hydration marker off the
+    // message and into the widget. Delete that one argument and the widget falls
+    // back to its `ok` default: the close button reappears on a poll whose votes
+    // were never read, which is the user-visible harm BUT-1908 exists to stop.
+
+Deleting the argument is now a COMPILE ERROR, and there is no `ok` default. The sentence
+asserts the exact fail-open property the round removed on purpose (one-way-door gate, one
+production call site), so it licenses re-adding it. The test itself is fine and
+non-vacuous: the surviving true mutant is "hardcode `voteHydration: PollVoteHydration.ok`
+in `MessageContentBuilder._buildPollContent`", which the capped case reddens. Only the
+sentence naming the mutant is wrong.
+
+**Shape 2 — a new gate at layer N falsifies every "only this layer" sentence.**
+Same batch added `ChatViewModel.closePoll`'s local hydration gate. Three copies resulted:
+
+- `lib/models/messaging/poll.dart` (votesUnread doc): "the gate lives in the widget and in
+  `ChatViewModel.closePoll`, **both** of which hold the copy the user saw."  — CORRECT
+- `lib/services/messaging_service.dart` closePoll: "caught by `ChatViewModel.closePoll` and
+  by the widget's own gate, which are **the two layers** still holding the copy" — CORRECT
+- `lib/viewmodels/chat_viewmodel.dart:494`: "**Only this layer** still holds the copy that
+  says the votes were never read" — FALSE
+- `test/unit/viewmodels/chat_viewmodel_test.dart:857,860`: "this layer is **the only one**
+  that can catch it" / "**Only** the viewmodel still holds the copy" — FALSE
+
+The counterexample is one file away and green: `poll_message_widget_hydration_test.dart`
+'does not offer the close action' pumps `PollVoteHydration.capped` and asserts the button is
+absent. Harm direction is concrete — a later run reads "the VM is the only layer that can
+catch it", removes the widget's `!votesUnread` conjunct as redundant, and the close button
+reappears over "Rösterna har inte hämtats", which is the whole BUT-1908 harm.
+
+**Non-blocking count/quantifier residue found the same round** (all recommended as STRIKES,
+never re-counts):
+- `chat_viewmodel_test.dart:850` "the control for **the two** refusal cases below" — three
+  refusal tests sit below it, all added in the same hunk. Defensible only if "the two" means
+  the two `PollCloseRefusal` enum values, which is not what "cases below" reads as.
+- `messaging_service_close_poll_test.dart:617` "**each test below** asserts BOTH omissions" —
+  two of the group's four tests are positive controls asserting the poll DID close. Same
+  in-group-counterexample shape as BUT-1897's "every test in this group".
+- `messaging_service_close_poll_test.dart:11` "Scenarios covered:" lists five, file now has
+  two further groups (7 tests). The header-insertion seam again, this time as a stale
+  enumeration rather than a false pointer.
+- `blocked_user_filter.dart:86` + `blocked_user_filter_test.dart:261` "the neutral-value trap
+  this file has been caught by **three times**" — the round's own new `onDone` test frames
+  itself as another instance of the same fail-open ("the frozen-empty-list fail-open the
+  other two layers just closed, arriving through the door nobody was watching"), which makes
+  it four. An unattributed, undatable tally: strike the numeral in both copies.
+
+**Things that graded CLEAN and are worth remembering as the good shape:**
+- The new VM gate test is non-vacuous and discriminates from the two service-side refusal
+  tests beside it on two axes: `verifyNever(closePoll)` (which a service-side test cannot
+  assert, since it needs the service CALLED), and a fixture whose service stub SUCCEEDS, so
+  the only route to a non-null return is the local gate. Its `verifyNever` spells the one
+  named param, so it is not the unfailable form.
+- The dispose test's two futures are backed by ONE `_inFlight` future but are TWO observables:
+  `expect(await pending, isEmpty)` uniquely kills "drop `currentBlockedIds`' catch";
+  `expectLater(pendingRequire, throwsStateError)` uniquely kills "generation guard returns an
+  empty set instead of throwing" (the fail-open variant the round replaced). The trailing
+  re-fetch assertion is a third. Neither is entailed by the other.
+- Making `voteHydration` required left BOTH updated suites
+  (`poll_message_widget_recipe_test.dart` +3, `chunk9_semantics_a11y_test.dart` +2) testing
+  exactly what they tested before: every added line is a literal `PollVoteHydration.ok`,
+  byte-equivalent to the removed default. The builder's CHOICE of value — the job the
+  required-ness moves the burden to — is separately pinned by the new
+  `chat_message_stream_metadata_refresh_test.dart` wiring group.
+- The `onDone` limb's production reachability claim checks out:
+  `FirebaseBlockRepository.watchBlockedUserIds` returns `Stream.value({})` for a null uid,
+  which emits an empty set and then COMPLETES.
+
+**Mechanical note:** `lib/models/messaging/poll.dart` and
+`lib/repositories/firebase/modules/message_query_module.dart` were `MM` — comment-only
+worktree edits sitting ABOVE the index, and both of those edits fix real over-claims (the
+`options is! List` hole in `fromMetadata`'s safety argument, and `_merge`'s third early
+return). Verdict was given against the WORKTREE. Committing the index alone would ship the
+weaker sentences. `git diff --numstat` read 10/6 and 9/3 on those two paths, 0 on the other
+nine.
+
+### 2026-08-22 — BUT-1856 (trigger: review of new tests for the meal-vote poll rewrite)
+
+**Diff reviewed:** `startMealVotePoll` repointed from `createGroupConversation` (a new,
+undeletable chat per poll, roster built from `_members`) to a single `ensureCategoryChat`
+callable that resolves the roster server-side; `MessagingService.ensureCategoryChat`
+delegation; `FirebaseChatGroupRepository.ensureCategoryChat` callable wrapper;
+`ChatGroupErrorMapper`'s new `failed-precondition`/`group-too-small` branch; the view's
+snackbar now reads `_viewModel.errorMessage ?? l10n.errorServiceUnavailable`.
+Tests: 6 new VM cases (the method had ZERO before), 1 service delegation case, 2 mapper cases.
+
+**The blocking finding — two arguments, one literal.** The VM sends
+`ensureCategoryChat(ownerId: group.ownerId, categoryId: group.id)`. In the suite's fixture
+`testGroup.ownerId == testUserId == mockPermissionService.currentUserId == 'test_user_123'`,
+so `verify(ensureCategoryChat(ownerId: testUserId, ...)).called(2)` cannot distinguish
+`group.ownerId` from `currentUserId`. Analytic, no probe run or needed: two expressions with
+the same value in every fixture are one observable. Harm is real — `ensure-category-chat.ts`
+reads `users/{ownerId}/friend_categories/{categoryId}`, i.e. the OWNER's path (the file's own
+comment notes a transferred category keeps the old owner's path), so the mutant breaks the
+meal vote for every non-owner member while leaving the owner's path green. Fix is one line:
+a case that flips `currentUserId` to `otherUserId` after `loadGroupData()` and keeps the
+`ownerId: testUserId` verify. `categoryId` is safe — `testGroupId != testUserId`.
+
+**Graded non-vacuous:**
+- The two error cases. `chatGroupNeedsAnotherMember`, `mealVotePollFailed` and
+  `errorServiceUnavailable` are three distinct ARB values (checked in `app_sv.arb`), so
+  `equals(AppLocale.current.X)` discriminates. The parent's reported rethrow-mutant
+  (exactly these two red) matches.
+- All four `verifyNever`s spell EVERY named param (`createGroupConversation` has exactly the
+  four; `sendPollMessage` exactly two; `ensureCategoryChat` exactly two), so none is in the
+  unfailable omitted-named-arg form.
+- The mapper's `failed-precondition` pair: the negative arm sends BOTH a no-details and a
+  wrong-reason error, which is the structured-detail read the branch's own comment claims.
+- The service delegation case uses exact-value matchers, so an argument SWAP inside
+  `MessagingService.ensureCategoryChat` becomes a MissingStubError, not a silent pass.
+
+**Weak but NOT deletable:** "a member profile that fails to load no longer shrinks the chat"
+(`setUserState(users: {})`). The historical bug it names cannot be re-expressed — the fix
+DELETED the client-side roster and `ensureCategoryChat` takes no list — so it is
+mutation-dead in the backward direction, per the "a fix that deletes dead code" principle.
+It does kill one forward mutant nobody should reintroduce: a client-side
+`if (_members.length < 2) return null` guard derived from loaded profiles, which is precisely
+the class of decision BUT-1856 moved to the server. Keep it; do not retire it as a duplicate
+of the `verifyNever(createGroupConversation)` case.
+
+**Named gaps, non-blocking:**
+- `pollData` is `any(named:)` in every case — nothing captures it. `question`,
+  the option texts/recipeIds/portions, and `allowMultipleChoices` (never passed `true`
+  anywhere) are all unpinned, and that block MOVED in this diff. One `captureAny(named:
+  'pollData')` in the happy-path case plus a second arm with `allowMultipleChoices: true`
+  closes it.
+- Nothing pins that `MessagingService.ensureCategoryChat` rethrows the callable's
+  `FirebaseFunctionsException` UNWRAPPED. It is a bare delegation today (no
+  `executeServiceOperation`, no try/catch), and that is load-bearing: wrap it and the
+  mapper's whole `error is FirebaseFunctionsException` switch falls to the generic fallback
+  with nothing red. The VM suite cannot see it — it mocks `MessagingService` and throws the
+  typed exception directly. One `thenThrow` case in `messaging_service_test.dart`.
+- `FirebaseChatGroupRepository` has NO suite at all (`grep -rln FirebaseChatGroupRepository
+  test/` → only mocks and two consumer suites), so the callable NAME `'ensureCategoryChat'`,
+  the payload keys, the `'conversationId'` response key and the new
+  `is! String || isEmpty → ResourceNotFoundException` guard are unpinned on the Dart side —
+  a cross-language literal contract pinned on NEITHER side in this language. Pre-existing
+  shape (the `createGroup` twin is equally unpinned), so it is a ticket, not a blocker.
+- Stale-error window the view change introduced: `executeAsync(clearErrorOnStart: true)`
+  clears the previous message, but the two EARLY RETURNS (`group == null`, `currentUserId ==
+  null`) return null BEFORE it, so a mapped message from an earlier failed poll survives and
+  the snackbar re-shows it. Cheap pin: assert `errorMessage` in the unauthenticated case.
+
+**Widget test for the view: no.** `test/views/social/group_detail_view_test.dart` exists but
+deliberately stops at the early-return states and the app-bar facade — its own header records
+why ("~6 extra services the full loaded body pulls in (PingService /
+GroupSharedContentService / the shared-content VMs), which would be brittle scaffolding").
+Reaching the snackbar means a loaded body, non-empty `pickMealVoteSuggestions()` (MenuGenerator
++ recipe/user services) and driving `PollCreationDialog` to a submit. The channel-agnostic
+version of the same invariant sits at the VM for one line, and `test/views/` is
+`e2e-test-specialist` territory besides.
+
+**Test-name over-claim (non-blocking, strike not reword):** "two polls land in the SAME chat"
+is not observable here — both ids come from ONE stub, and the reuse decision is the
+callable's. The test's own inline comment already scopes it correctly; the claim in the NAME
+is the part with nothing behind it.
+
+### 2026-08-23 — BUT-1908/1909 poll hydration + close refusal: review of a parallel session's diff (trigger: coverage review of 3 production files before a shared commit)
+
+Reviewed `lib/models/messaging/poll.dart`, `lib/repositories/firebase/modules/message_query_module.dart`,
+`lib/viewmodels/chat_viewmodel.dart` against five suites. All green: 92 unit
+(`message_query_module_test`, `chat_viewmodel_test`, `messaging_service_close_poll_test`),
+11 widget (`poll_message_widget_hydration_test`, `chat_message_stream_metadata_refresh_test`).
+
+**What was covered well, and worth copying as a shape.**
+- `PollVoteHydration` is exercised at four layers with a CONTROL at each: module (ok /
+  capped, plus "genuinely zero votes is still ok"), service (ok / capped / failed / marker
+  ABSENT), widget (ok / capped / failed, each with the close-button assertion separate from
+  the text assertion), and viewmodel.
+- The `.isUnread` conjunct in `ChatViewModel.closePoll` would have been deletable-green from
+  the VM suite alone — every VM closePoll case runs with `_messages` EMPTY, so `onScreen` is
+  null and the conjunct is never evaluated in the allow direction. The ALLOW arm is pinned
+  instead in `chat_message_stream_metadata_refresh_test.dart` ("a well-read poll still
+  closes, through the real screen"), which had to emit on the stream first because
+  `ChatMessageStream` seeds its own list from the page read while the viewmodel's stays
+  empty — a tap in that window skips the gate entirely. Its own comment records the trap.
+- `voteHydration` is a REQUIRED param on `PollMessageWidget`, so the "optional param no
+  caller passes" class is closed by the compiler (two unrelated widget suites had to be
+  updated, which is the tell).
+- The module suite carries a source-text LAYERING guard ("the module knows nothing about
+  blocking") that greps for symbol names, not the word "blocked" — deliberately so an honest
+  comment about staying ignorant cannot redden it.
+- `messaging_service_close_poll_test`'s block-list case uses a REAL `BlockedUserFilter` over
+  a throwing `_MockBlockRepo`, after an earlier version stubbed `currentBlockedIds()` to
+  throw — a method that catches internally and cannot throw, so it measured its own mock
+  while production failed open. Recorded in the test's own comment.
+
+**The measured gap (non-blocking, one missing test).**
+`_withLivePollVotes`'s capped/failed marking is UNREACHED. lcov over the three unit suites:
+
+    DA:303,2  DA:304,1  DA:308,1     one-shot  (_hydratePollVotes)   covered
+    DA:355,0  DA:356,0  DA:362,0     live stream (_withLivePollVotes) DARK
+
+The two methods carry byte-identical branches; the stream is the path the open chat renders
+from, so deleting its `capped.contains(m.id)` branch leaves all five suites green and
+restores the BUT-1908 harm (>20 polls: the oldest draw stored numbers with no marker and a
+live close button) on the PRIMARY path. Suggested fixture, mirroring the existing page-reader
+case: seed `maxHydratedPolls + 1` polls ascending, `await module.getConversationMessages(...)
+.first`, assert `stateOf(oldest) == capped` and `stateOf(newest) == ok`.
+
+**Named, correctly, as untestable on the fake.** `failed` needs `poll_votes.get()`/
+`.snapshots()` to throw and `FakeFirebaseFirestore` never does (`DA:295,0`, `DA:343,0` — both
+warning logs dark). The suite says so in a comment and names the delegating
+`CollectionReference` that would stage it, rather than implying coverage by a count. The
+STATE itself is pinned at service and widget level, so only the module's two stamping lines
+are unproven.
+
+**Known gap left as a production comment, agreed:** `_merge`'s third early return (a stored
+poll whose `options` is not a List) leaves the marker unset, i.e. `ok`, so the widget offers
+close on a tally never read. Reachable only from a malformed stored document, and
+`_resolveWinner` writes no plan, so the harm stops at a burnt poll.
+
+**Doc claim verified rather than trusted.** `poll.dart` states the marker never reaches
+Firestore because "the repository's `closePoll` re-reads the RAW document before writing".
+True — `message_mutation_module.dart:475` does `messageRef.get()` and rebuilds the map from
+`doc.data()`, never from a hydrated `Message`. No strike owed.
+
+**Minor:** the VM's generic-catch case asserts only `isNotNull`, so a mutant returning
+`pollCloseRefusedVotesUnread` from that arm survives; asserting the `pollCloseFailed` string
+closes it. `PollCloseRefusedException.toString()` is untested and does not need to be — enum
+name only, log sink, no PII.
+
+**Process note.** Did not apply the missing test myself: the suite file belongs to a live
+parallel session and is heading into a shared commit whose review marker pins staged bytes,
+so an edit landing mid-gate would invalidate their marker. Reported with the fixture instead.
+
+### 2026-08-23 — BUT-1908 poll UI layer: coverage review of the 3 widget/view files (trigger: parallel session's staged diff, second pass after the model/repo/VM one above)
+
+Reviewed `lib/views/messaging/chat_view/chat_message_stream.dart`,
+`lib/widgets/messaging/builders/message_content_builder.dart` and
+`lib/widgets/messaging/poll_message_widget.dart` against four suites
+(`poll_message_widget_hydration_test`, `chat_message_stream_metadata_refresh_test`,
+`poll_message_widget_recipe_test`, `chunk9_semantics_a11y_test`). 16/16 green, plus the
+divider suite in the coverage run (19/19). `flutter analyze --fatal-infos` clean on all five.
+Graded copy = the INDEX: `git diff --numstat` empty on every reviewed path, all seven staged.
+
+**The question asked: is there a dark path like `_withLivePollVotes`? No.** lcov over the
+five suites, every line the diff ADDS is executed:
+
+    chat_message_stream.dart  DA:236-239,5  DA:240,2   the metadata conjunct + the replace
+                              DA:283-285,1  DA:286,2   _closePoll, both arms
+    message_content_builder   DA:399,2                 the voteHydration wiring line
+    poll_message_widget       DA:95-100 / 107-110 / 124-130 / 141-144, all >0
+
+The two candidate twins were checked and are not twins. (1) `_refreshMessages` calls the SAME
+`_updateMessagesIncremental`, not a copy — one method, two call sites, so the stream test
+covers the guard for both (the refresh CALL PATH itself is `DA:252,0`, pre-existing).
+(2) `ChatViewModel` keeps a SECOND copy of the message list off the same stream, which is the
+shape that would carry a duplicated staleness filter — it does `_messages = messages;`
+wholesale (line 306), no filter, nothing to drift.
+
+**Non-vacuity, the parts that could have been fake.**
+- The hydration suite's fixture has TWO real voterIds, so the suppressed string ("2 röster")
+  is one the widget would genuinely render — capped/failed are distinguished from "the count
+  was 0 anyway". Production never mints that shape (stored `voterIds` are written empty and
+  never updated, per `firebase_data_export_repository.dart:467`), which is fine: the branch
+  does not read `totalVotes`, so the unrealistic fixture is a strictly stronger mutant.
+- The close-button gate is asserted with every OTHER conjunct satisfied (creator, active,
+  `onClose` non-null) and with an `ok` control and a non-creator control — the MIRROR rule's
+  requirement, met.
+- Deleting `voteHydration:` from the builder is a COMPILE error (required param), so the
+  wiring test's real job is killing a hardcoded value; both arms exist (capped→hidden,
+  ok→shown), so either constant reddens.
+- The tap test's dependence on the VM list being populated was the one thing unassertable
+  from the widget. Settled by `DA:499,3` on the RHS of `onScreen != null && ...isUnread` —
+  the RHS only evaluates when the LHS was true. New probe technique; promoted to a principle.
+
+**One comment quantifier that is false (Low, non-blocking, no behavioural consequence).**
+`chat_message_stream.dart:229-231`: "`metadata['poll']` is a nested map compared by identity —
+so on a poll message it answers false every emission". True for a HYDRATED poll (`_merge`
+rebuilds the map), false for a capped/failed one: `_markUnread` does
+`Map<String, dynamic>.from(metadata)` — a shallow copy over the SAME `Message` object the
+`CombineLatestStream` re-maps each emission — so `metadata['poll']` is the identical instance
+and `mapEquals` answers TRUE. Harmless (nothing about a capped poll changes between those
+emissions), but the sentence is an unmeasured "every". Repair is to STRIKE the "every
+emission" clause, not to re-derive it.
+
+**Not covered, judged acceptable, listed so a later run does not re-derive them.**
+- `_closePoll`'s `!mounted` arm (dispose mid-close) — no observable beyond the absent snackbar.
+- The other two strings `_closePoll` can show (`pollCloseRefusedVotesUnread` from the VM's
+  local gate, `pollCloseFailed` from its generic catch) reach the screen through the SAME two
+  lines the blockList case pins; `DA:500,0`/`DA:515,0` confirm those VM arms are dark in the
+  widget suites and they belong to the VM suite. The local-gate string is additionally near
+  unreachable THROUGH this screen — the widget hides the button on its own copy, so the two
+  copies must disagree first.
+- `poll_message_widget.dart:113-115` (the "Stängd" closed-poll label) is `DA:0` — pre-existing,
+  no suite renders a closed poll; unchanged by this diff.
+- `DA:379-382,0`: `onLongPress`/`onReply`/`onPollVote` lambdas in the item builder are never
+  invoked by any test. Pre-existing wiring, untouched here.
+
+**Watch, not a finding:** the hydration suite's header says "from the 21st down", derived from
+`maxHydratedPolls = 20`. Correct today and the constant is named in the same sentence, but the
+ordinal is a second copy of the number and goes stale silently if the cap moves.
+
+**Process note.** Edited nothing outside my own two knowledge files: the seven reviewed files
+are staged by a live parallel session heading into a shared commit.
+
+### 2026-08-23 — trigger: re-review of `lib/services/messaging_service.dart` after a strike-only fix round (BUT-1909 / BUT-1925)
+
+The round's brief: three false "reshares the plan with the group" copies had been struck, plus
+two more strikes from a parallel code review (`closePoll`'s "writes to the creator's own plan",
+`_appendWinnerToGroupPlan`'s "logical ownership"). Asked to confirm no surviving test name,
+header or assertion claims something the file no longer says. Both suites green, 74 tests.
+
+**The worktree was clean. The INDEX was not, and it is what ships.**
+`git status --porcelain` printed `MM` for all three reviewed paths, and `git diff --numstat`
+(worktree vs index) read 38/19, 9/8 and 69/0 — real content, not a stat-cache artifact. Every
+struck sentence was still in `git show :<path>`:
+
+- `:lib/services/messaging_service.dart` — L710 "and reshares the plan with the group",
+  L714 "MVP scope: writes to the poll creator's own plan", L890 "and reshares with the group"
+  (`_appendWinnerToWeeklyPlanAndShare`), L957 "…ownership of the resolution".
+- `:test/…/messaging_service_close_poll_test.dart` — L15 "`shareMenuWithFriends` fire, group
+  service untouched" (the Scenarios line), L353 the old test NAME "shares with the other
+  participant, group service untouched", and the pre-repair group header quantifier
+  "each test below asserts BOTH omissions".
+
+The index was one ROUND behind, not one feature behind: `_stripBlockedBallots` (3 hits), the
+two refusal groups and the read-path group are all present in the staged copies. So the motion
+check passes, the suites compile and pass, and only the comment/name repairs are missing —
+which is precisely the state a verdict-time grep of the worktree cannot see. Recorded as a
+sharpening of the existing "Staging — resolved" principle: for a REPORTED STRIKE, grep
+`git show :<path>`, never the worktree.
+
+**Second blocking finding — two answers to one question inside the reviewed file.**
+The round rewrote `closePoll`'s doc to say the pre-read "is the ONLY such guard and it is not
+atomic … a retry after a half-failed close can plant the same recipe in a second slot
+(BUT-1925)". Ten lines below, the inline comment at L748-750 (both copies) still ends
+"…skip both the repo close and the plan write so auto-resolution fires exactly once." False
+even inside its own stated scope: two concurrent callers can both read `isClosed == false`.
+Remedy is a strike of the trailing clause, not a reword; BUT-1925 is already named above it,
+so nothing unresolved is lost. `L813`'s "the pre-read `isClosed` guard above is the idempotency
+anchor" is NOT the same defect — it describes the mechanism and agrees with the new doc.
+
+**Claims graded and found TRUE (so a later round does not re-derive them).**
+- `1:1 direct conversation → writes to the creator's personal plan, group service untouched`
+  and `group conversation → … personal plan service is never touched` — match the
+  `isGroup` branch.
+- Cross-file coverage pointer "the repository stays ignorant of blocking — pinned separately in
+  `message_query_module_test.dart`" RESOLVES: `test('the module knows nothing about blocking
+  (BUT-1909)')` with source-text asserts on `BlockedUserFilter` / `blockedIds` /
+  `currentBlockedIds`.
+- "`ChatViewModel.closePoll` is where the capped case is really caught" — live at
+  `chat_viewmodel.dart:499`; the widget's own gate is live too (`poll_message_widget.dart:50`),
+  so the comment is partial, not false. No action.
+- "the real `currentBlockedIds` CANNOT throw" — true, it catches and returns an empty set;
+  `requireBlockedIds` is the propagating variant `closePoll` calls.
+- "a message with no marker at all is treated as read" — `PollVoteHydration.fromMetadata`'s
+  `_ => ok` arm (`poll.dart:144`).
+- The read-path group's setUp comment ("without this the whole group would measure a service
+  that never found a block list at all") is the CORRECTED wording — it no longer claims every
+  case would be green, which is the version `lessons-digest-testing.md` records as false.
+
+**Non-blocking.** The close-poll suite's `Scenarios covered:` list still enumerates only the
+five BUT-340/405 scenarios while the file has since gained two groups, and `History:` stops at
+BUT-405. Not false, just an enumeration with an insertion seam — the durable fix is to STRIKE
+the list (the group names below carry the same information and cannot drift), never to
+re-enumerate it.
+
+**Process note.** Edited nothing but my own two knowledge files, as instructed.

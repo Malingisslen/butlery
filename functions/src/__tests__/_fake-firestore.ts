@@ -1,9 +1,8 @@
 /**
  * BUT-1838: an in-memory Firestore double for the chat-group unit suites.
  *
- * The suites it serves (`remove-chat-group-member`, `chat-group-callables`) all
- * assert the same class of property: WHICH documents a membership operation
- * touched, and WHAT is left in them afterwards. A recording stub that only
+ * The suites it serves all assert the same class of property: WHICH documents
+ * an operation touched, and WHAT is left in them afterwards. A recording stub that only
  * pushes payloads into an array cannot answer the second half — the repo's own
  * lesson is that a fake which RE-DERIVES the intended effect, instead of
  * APPLYING the recorded write, makes the whole write vacuous. So this one
@@ -25,9 +24,11 @@
  *
  * **What it is NOT**: it evaluates no security rules, it has no isolation,
  * contention, abort or retry (the callback runs exactly once, single-threaded),
- * and its only query primitive is "the direct children of this collection",
- * optionally `.limit()`ed. Nothing here may be cited as evidence about
- * concurrency; that lives on the emulator lane.
+ * and its query primitive is "the direct children of this collection",
+ * optionally `.limit()`ed and filtered by `==` or `array-contains` — no
+ * ordering, no ranges, no indexes, so a query that would need a composite index
+ * in production answers happily here. Nothing may be cited as evidence about
+ * concurrency or index coverage; both live on the emulator lane.
  */
 
 import * as admin from "firebase-admin";
@@ -70,6 +71,8 @@ export interface FakeDocRef {
 
 export interface FakeQuery {
   limit(n: number): FakeQuery;
+  /** Only `==` and `array-contains` are modelled; anything else throws. */
+  where(field: string, op: string, value: unknown): FakeQuery;
   get(): Promise<{ size: number; empty: boolean; docs: FakeDocSnap[] }>;
 }
 
@@ -173,6 +176,30 @@ function deleteAt(doc: FakeDoc, segments: string[]): void {
   }
   if (cursor !== null && typeof cursor === "object") {
     delete (cursor as FakeDoc)[segments[segments.length - 1]];
+  }
+}
+
+interface Filter {
+  field: string;
+  op: string;
+  value: unknown;
+}
+
+/**
+ * The two operators these suites need. Anything else throws rather than
+ * silently matching everything — a query the fake does not understand would
+ * make an assertion pass for the wrong reason.
+ */
+function matches(stored: unknown, filter: Filter): boolean {
+  switch (filter.op) {
+    case "==":
+      return stored === filter.value;
+    case "array-contains":
+      return Array.isArray(stored) && stored.includes(filter.value);
+    default:
+      throw new Error(
+        `fake-firestore: operator ${filter.op} is not modelled — teach the fake about it`,
+      );
   }
 }
 
@@ -302,12 +329,20 @@ export class FakeFirestore {
   }
 
   private colRef(path: string): FakeColRef {
-    const query = (limit: number | null): FakeQuery => ({
-      limit: (n: number) => query(n),
+    const query = (limit: number | null, filters: Filter[]): FakeQuery => ({
+      limit: (n: number) => query(n, filters),
+      where: (field: string, op: string, value: unknown) =>
+        query(limit, [...filters, { field, op, value }]),
       get: async () => {
-        const paths = this.childPaths(path);
-        const page = (limit === null ? paths : paths.slice(0, limit)).map((p) =>
-          this.snapshot(p),
+        const matching = this.childPaths(path).filter((p) => {
+          const stored = this.docs.get(p);
+          return (
+            stored !== undefined &&
+            filters.every((f) => matches(getAt(stored, f.field.split(".")), f))
+          );
+        });
+        const page = (limit === null ? matching : matching.slice(0, limit)).map(
+          (p) => this.snapshot(p),
         );
         return { size: page.length, empty: page.length === 0, docs: page };
       },
@@ -323,7 +358,7 @@ export class FakeFirestore {
         this.apply({ op: "set", path: ref.path, data });
         return ref;
       },
-      ...query(null),
+      ...query(null, []),
     };
   }
 

@@ -13,8 +13,8 @@
  * or fail for reasons unrelated to what ships. Not ONLY that call, though: six
  * gen2 exports pin their own region (`moderateUpload`,
  * `syncConversationLastMessage`, `purgeExpiredAuditLogs` and the three
- * `migrations/` backfills), so a global region change moves 64 of the 70, and
- * the other six are held by their own options objects.
+ * `migrations/` backfills), so a global region change moves every gen2 export
+ * except those six, which are held by their own options objects.
  *
  * 1. REGION. `onSchedule`/`onDocument*`/`onCall` read `getGlobalOptions()`
  *    EAGERLY at module-eval time, and `export … from` compiles to a `require`
@@ -26,8 +26,9 @@
  * 2. MAX INSTANCES. Cloud Run admits a new revision only if the sum of
  *    `cpu x maxInstances` across every service in the region fits the project's
  *    CPU quota, and an UNSET ceiling is not "no reservation" — it is the
- *    platform default of 100 per function. On 2026-08-17 that reserved ~7000
- *    vCPU across 70 services and a deploy failed on 53 of them, reporting
+ *    platform default of 100 per function. On 2026-08-17 that reserved
+ *    thousands of vCPU across this project's services and a deploy failed on
+ *    53 of them, reporting
  *    `Container Healthcheck failed`, which reads like broken code and is not.
  *    Deleting `maxInstances` from `index.ts` keeps `tsc` and every other suite
  *    green and breaks only the next deploy, at the worst possible moment.
@@ -46,7 +47,7 @@
  *
  * That filter is also this suite's real vacuity surface, which is why
  * `gen2Endpoints()` asserts it found some. If the SDK ever renames `platform`,
- * all 71 endpoints still read, the filter silently returns an EMPTY list, and
+ * every endpoint still reads, the filter silently returns an EMPTY list, and
  * every check below passes over nothing — a green run that measures nothing is
  * worse than a red one. `testManifestIsReadable` guards the layer above it
  * (`__endpoint` itself) and does NOT cover this.
@@ -55,7 +56,7 @@
  * nothing else. A healthy tree is 7/7.
  *
  *   maxInstances deleted from `setGlobalOptions` -> the PRESENCE check, via its
- *     summary branch (all 70 uncapped, so no list is printed)          -> 6/7
+ *     summary branch (every export uncapped, so no list is printed)     -> 6/7
  *   global ceiling raised to 100                 -> the VALUE pin      -> 6/7
  *   region changed                               -> the region check,
  *     naming the 64 it moves (six exports pin their own)               -> 6/7
@@ -148,8 +149,8 @@ function testManifestIsReadable(): void {
 
 // Every check below measures gen2 endpoints only, so an empty result from this
 // filter would make all of them pass over nothing. `testManifestIsReadable`
-// does not cover it: rename `platform` in the SDK and all 71 endpoints still
-// carry a `__endpoint`, so that guard stays green while this list collapses to
+// does not cover it: rename `platform` in the SDK and every endpoint still
+// carries a `__endpoint`, so that guard stays green while this list collapses to
 // zero. Asserting here means the alarm fires in whichever check runs first
 // rather than nowhere. It records one PASS per caller by design — a cheap
 // duplicate line beats a silent hole.
@@ -222,7 +223,7 @@ function testEveryGen2EndpointCapsItsInstances(): void {
   // A function that genuinely needs a different ceiling is registered here
   // rather than silently tolerated. An empty map is the current policy: one
   // number for everything. Comparing against a lone shared constant instead
-  // would mean the only way to allow one override is to raise it for all 70,
+  // would mean the only way to allow one override is to raise it for every export,
   // which is how a cap stops being a cap.
   const ALLOWED_OVERRIDES: Record<string, number> = {};
   const notAtExpected = gen2.filter(

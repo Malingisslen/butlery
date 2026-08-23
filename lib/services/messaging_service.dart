@@ -191,6 +191,28 @@ class MessagingService extends BaseService with StreamManagementMixin {
     }
   }
 
+  /// The ONE chat backing a social group, created on first use and reused
+  /// afterwards (BUT-1856). Returns its conversation id.
+  ///
+  /// Unlike [createGroupConversation] this takes no member list: the roster is
+  /// resolved server-side from the social group itself, which also fixes a
+  /// long-standing gap — the client built it from `friendUserIds` profiles it
+  /// managed to load, so a profile that failed to read quietly shrank the chat.
+  ///
+  /// The callable refuses in several distinguishable ways — a group with nobody
+  /// else in it, a minor who may not be seated, the rate limiter — and
+  /// `ChatGroupErrorMapper` turns each into its own Swedish sentence by reading
+  /// the raw `FirebaseFunctionsException`.
+  Future<String> ensureCategoryChat({
+    required String ownerId,
+    required String categoryId,
+  }) async {
+    return _chatGroupRepository.ensureCategoryChat(
+      ownerId: ownerId,
+      categoryId: categoryId,
+    );
+  }
+
   /// Get conversation details
   Future<Conversation?> getConversation(String conversationId) async {
     try {
@@ -257,17 +279,74 @@ class MessagingService extends BaseService with StreamManagementMixin {
     if (filter == null) return messages;
     try {
       final blocked = await filter.currentBlockedIds();
-      return BlockedUserFilter.filter<Message>(
+      final visible = BlockedUserFilter.filter<Message>(
         messages,
         authorOf: (m) => m.senderId,
         blockedIds: blocked,
       );
+      // BUT-1909. Hiding what a blocked person SAYS is not the same as removing
+      // what their vote DOES: a poll winner is written into the household's
+      // week, so a blocked ballot steering it survives the message filter
+      // entirely. Applied here and in `closePoll` from the SAME helper, because
+      // filtering the count on screen but not the winner (or the reverse) makes
+      // the number and the outcome contradict each other.
+      return _withoutBlockedBallots(visible, blocked);
     } catch (e) {
+      // Fail-open, for DISPLAY only. `closePoll` deliberately does NOT
+      // inherit this: see its own guard.
       AppLogger.warning(
         'MessagingService: block filter failed; serving unfiltered: $e',
       );
       return messages;
     }
+  }
+
+  /// Remove blocked voters from every poll option's `voterIds`, in memory.
+  ///
+  /// Viewer-scoped by design: the tally each person sees is filtered by THEIR
+  /// own block list, exactly as the message list already is. Two members can
+  /// therefore see different counts on one poll — inherent to per-viewer
+  /// blocking, and the alternative (the screen and the written winner
+  /// disagreeing for the person closing it) is the BUT-1908 harm.
+  List<Message> _withoutBlockedBallots(
+    List<Message> messages,
+    Set<String> blockedIds,
+  ) {
+    if (blockedIds.isEmpty) return messages;
+    return messages.map((m) => _stripBlockedBallots(m, blockedIds)).toList();
+  }
+
+  /// The single-message half of [_withoutBlockedBallots]. Fails OPEN toward the
+  /// stored message on any unexpected shape, matching the hydration merge it
+  /// mirrors: an unreadable poll is returned untouched, never blanked.
+  Message _stripBlockedBallots(Message message, Set<String> blockedIds) {
+    final metadata = message.metadata;
+    if (metadata == null) return message;
+    final poll = metadata['poll'];
+    if (poll is! Map) return message;
+    final options = poll['options'];
+    if (options is! List) return message;
+
+    var changed = false;
+    final rebuiltOptions = options.map((option) {
+      if (option is! Map) return option;
+      final voterIds = option['voterIds'];
+      if (voterIds is! List) return option;
+      final kept = voterIds
+          .whereType<String>()
+          .where((uid) => !blockedIds.contains(uid))
+          .toList(growable: false);
+      if (kept.length == voterIds.length) return option;
+      changed = true;
+      return Map<String, dynamic>.from(option)..['voterIds'] = kept;
+    }).toList();
+
+    if (!changed) return message;
+    final rebuiltPoll = Map<String, dynamic>.from(poll)
+      ..['options'] = rebuiltOptions;
+    return message.copyWith(
+      metadata: Map<String, dynamic>.from(metadata)..['poll'] = rebuiltPoll,
+    );
   }
 
   /// Send a text message
@@ -648,15 +727,17 @@ class MessagingService extends BaseService with StreamManagementMixin {
   /// Close a poll (creator only).
   ///
   /// When the closed poll has a winning option with a `recipeId`, auto-
-  /// resolution appends that recipe to the creator's current-week plan
-  /// (today-anchored next empty slot) and reshares the plan with the group
-  /// that received the poll. Winner = most votes; ties broken by chronological
-  /// order (first option in the options list wins).
+  /// resolution appends that recipe to a current-week plan (today-anchored
+  /// next empty slot) — which plan depends on the branch below. Winner = most
+  /// votes; ties broken by chronological order (first option in the options
+  /// list wins).
   ///
-  /// MVP scope: writes to the poll creator's own plan. Double-fire across
-  /// concurrent callers is guarded by a pre-read of the poll message — if
-  /// already closed, the plan write is skipped on this call. The underlying
-  /// repo's `closePoll` also re-checks `!isClosed` inside its write path.
+  /// Double-fire across concurrent callers is guarded by a pre-read of the
+  /// poll message — if already closed, the plan write is skipped on this call.
+  /// That pre-read is the ONLY such guard and it is not atomic: the
+  /// repository's re-read checks `creatorId`, never `isClosed`, so a retry
+  /// after a half-failed close can plant the same recipe in a second slot
+  /// (BUT-1925).
   Future<void> closePoll({required String messageId}) async {
     try {
       final currentUserId = _authRepository.currentUserId;
@@ -666,7 +747,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
 
       // Pre-read the message to guard against double-resolution. If the poll
       // is already closed, another caller raced us — skip both the repo
-      // close and the plan write so auto-resolution fires exactly once.
+      // close and the plan write.
       final existing = await _messagingRepository.getMessage(messageId);
       final existingPoll = _extractPoll(existing);
       if (existingPoll == null || existing == null) {
@@ -678,15 +759,64 @@ class MessagingService extends BaseService with StreamManagementMixin {
         return;
       }
 
+      // BUT-1908. Closing is a ONE-WAY door — nothing in the repository resets
+      // `isClosed` — and a creator close writes a recipe into the household's
+      // week. So it must never run on a tally that was not actually read.
+      // Refusing leaves the poll OPEN and writes no plan, so a retry is safe.
+      //
+      // Reachable here only as `failed`: this method reads through
+      // `getMessage`, whose list holds ONE message, so the cap is a no-op on
+      // that path and a capped poll arrives marked `ok`. The capped case is
+      // caught by `ChatViewModel.closePoll` and by the widget's own gate, which
+      // are the two layers still holding the copy the user was shown. This
+      // check is the backstop for a tally that errored.
+      final hydration = PollVoteHydration.fromMetadata(existing.metadata);
+      if (hydration.isUnread) {
+        AppLogger.warning(
+          'Refusing to close poll $messageId: votes were ${hydration.name}',
+        );
+        throw const PollCloseRefusedException(PollCloseRefusal.votesUnread);
+      }
+
+      // BUT-1909, and deliberately NOT the fail-open contract `_filterBlocked`
+      // uses. There, an unknown block list serves an over-counted poll on
+      // screen, which is recoverable. Here it would let a blocked person's
+      // ballot decide the recipe that lands in other members' plan — so an
+      // unresolvable block list refuses instead. Trust & Safety's condition.
+      final blockFilter = ServiceLocator.tryGet<BlockedUserFilter>();
+      var resolvablePoll = existingPoll;
+      if (blockFilter != null) {
+        final Set<String> blocked;
+        try {
+          // `requireBlockedIds`, NOT `currentBlockedIds`: the latter swallows a
+          // failed lookup and returns an empty set, which would make this whole
+          // branch dead code and fail OPEN on exactly the decision that cannot
+          // be taken back. Raised as critical by the firebase-backend-security
+          // gate, which also showed the test here was measuring its own mock.
+          blocked = await blockFilter.requireBlockedIds();
+        } catch (e) {
+          AppLogger.warning(
+            'Refusing to close poll $messageId: block list unreadable ($e)',
+          );
+          throw const PollCloseRefusedException(
+            PollCloseRefusal.blockListUnknown,
+          );
+        }
+        // Through the SAME helper the display path uses.
+        final filtered = _stripBlockedBallots(existing, blocked);
+        resolvablePoll = _extractPoll(filtered) ?? existingPoll;
+      }
+
       // Resolve + persist the plan write BEFORE marking the poll closed.
       // If the plan save fails, the poll stays open so the creator can
       // retry — the pre-read `isClosed` guard above is the idempotency
       // anchor, and it must still be false for a retry to reach here.
       //
-      // Only creator-triggered closes resolve into a plan; non-creator
-      // closes just flip the flag.
-      if (existingPoll.creatorId == currentUserId) {
-        final winner = _resolveWinner(existingPoll);
+      // Only creator-triggered closes resolve into a plan. A non-creator's
+      // close writes NOTHING: the repository returns early when
+      // `pollMap['creatorId'] != closerId`.
+      if (resolvablePoll.creatorId == currentUserId) {
+        final winner = _resolveWinner(resolvablePoll);
         if (winner?.recipeId != null) {
           final conversation = await _messagingRepository.getConversation(
             existing.conversationId,
@@ -779,9 +909,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
   }
 
   /// Appends the winning recipe to the creator's current-week personal plan
-  /// at the next empty middag slot (today-anchored) and reshares with the
-  /// group the poll was sent to. Creates an empty plan first if the creator
-  /// has none.
+  /// at the next empty middag slot (today-anchored). Creates an empty plan
+  /// first if the creator has none.
   Future<void> _appendWinnerToWeeklyPlanAndShare({
     required String winnerRecipeId,
     required Conversation conversation,
@@ -844,12 +973,9 @@ class MessagingService extends BaseService with StreamManagementMixin {
   /// shared `GroupWeeklyMenuPlan` (creates it with all conversation
   /// participants as editors if none exists for the ISO week).
   ///
-  /// Double-fire race: the poll's `isClosed` check in [closePoll] already
-  /// gates this — by the time we reach here, the caller holds logical
-  /// ownership of the resolution. The group-plan upsert itself is
-  /// idempotent by deterministic doc ID (`{groupId}_{YYYY}-W{WW}`), so a
-  /// race with another branch of the same close would overwrite with
-  /// identical content rather than append twice.
+  /// The group plan lives at a deterministic doc ID
+  /// (`{groupId}_{YYYY}-W{WW}`), so two closes race on ONE document; that makes
+  /// the upsert idempotent, not the append (BUT-1925).
   Future<void> _appendWinnerToGroupPlan({
     required String winnerRecipeId,
     required Conversation conversation,

@@ -7,15 +7,6 @@
 /// - BUT-405: routing split. Group conversations now write to a
 ///   `GroupWeeklyMenuPlan` (collaborative, per-group). 1:1 conversations
 ///   retain the BUT-340 personal-plan fallback.
-///
-/// Scenarios covered:
-/// - Group conversation winner → `GroupWeeklyMenuPlanService.addEntry` +
-///   `GroupWeeklyMenuPlanService.save` fire, personal plan untouched.
-/// - 1:1 direct conversation winner → personal `WeeklyMenuPlanService` +
-///   `shareMenuWithFriends` fire, group service untouched.
-/// - Winner without `recipeId` → no plan write on either path.
-/// - Tie on votes → first option (chronological) wins.
-/// - Already-closed poll → no plan write (double-fire guard).
 library;
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -39,6 +30,8 @@ import 'package:butlery/services/messaging/message_reactions_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
+import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 
 class _MockMessagingRepo extends Mock implements MessagingRepository {}
@@ -57,6 +50,10 @@ class _MockGroupPlanService extends Mock
 class _MockSocialMenuOps extends Mock implements SocialMenuOperations {}
 
 class _MockRecipeService extends Mock implements UnifiedRecipeService {}
+
+class _MockBlockedUserFilter extends Mock implements BlockedUserFilter {}
+
+class _MockBlockRepo extends Mock implements FirebaseBlockRepository {}
 
 class _FakeUser extends Fake implements User {
   @override
@@ -343,8 +340,8 @@ void main() {
       );
     });
 
-    test('1:1 direct conversation → writes to the creator\'s personal plan + '
-        'shares with the other participant, group service untouched', () async {
+    test('1:1 direct conversation → writes to the creator\'s personal plan, '
+        'group service untouched', () async {
       final now = DateTime.now();
       final winnerRecipe = _recipe('recipe-winner', 'Tacos');
       when(() => recipeService.recipes).thenReturn([winnerRecipe]);
@@ -595,6 +592,321 @@ void main() {
         ),
       );
       verifyNever(() => planService.save(any()));
+      verifyNever(
+        () => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      );
+    });
+  });
+  // ══ BUT-1908 / BUT-1909 — closePoll refuses rather than guesses ══════════
+  //
+  // Closing is a ONE-WAY door: nothing in the repository resets `isClosed`, and
+  // a creator close writes the winning recipe into the household's week. So the
+  // two ways the tally on screen can be wrong both have to stop it. A REFUSAL
+  // case here asserts BOTH omissions — no plan write AND no `isClosed` flip;
+  // asserting only one would pass a guard that refused the plan but still
+  // burned the poll. The group also holds positive controls, which assert the
+  // opposite.
+  group('closePoll refuses on a tally it cannot trust', () {
+    /// A poll with a real, recipe-backed winner. If the guard fails open, the
+    /// plan write is what happens — so the fixture has to be able to produce
+    /// one, or every "no plan write" assertion below is satisfied for free.
+    Poll winnablePoll() => Poll(
+      id: 'poll-guard',
+      question: 'Vad ska vi äta?',
+      creatorId: creatorId,
+      createdAt: DateTime.now(),
+      options: [
+        PollOption(
+          id: 'opt-1',
+          text: 'Tacos',
+          voterIds: const ['user-2', 'user-3'],
+          recipeId: 'recipe-winner',
+        ),
+        PollOption(id: 'opt-2', text: 'Pasta'),
+      ],
+    );
+
+    Message pollMessageWith(PollVoteHydration? hydration) {
+      final base = _pollMessage(
+        messageId: messageId,
+        conversationId: conversationId,
+        poll: winnablePoll(),
+      );
+      if (hydration == null) return base;
+      return base.copyWith(
+        metadata: {
+          ...base.metadata!,
+          PollVoteHydration.metadataKey: hydration.name,
+        },
+      );
+    }
+
+    void expectNothingHappened() {
+      verifyNever(
+        () => messagingRepo.closePoll(
+          messageId: any(named: 'messageId'),
+          closerId: any(named: 'closerId'),
+        ),
+      );
+      verifyNever(() => planService.save(any()));
+      verifyNever(
+        () => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      );
+    }
+
+    setUp(() {
+      when(() => recipeService.recipes).thenReturn([
+        _recipe('recipe-winner', 'Tacos'),
+      ]);
+    });
+
+    test('the CONTROL: a read tally closes and writes the plan', () async {
+      // Without this the two refusal cases below are satisfied by a service
+      // that refuses everything, and the guard could be an unconditional throw.
+      when(
+        () => messagingRepo.getMessage(messageId),
+      ).thenAnswer((_) async => pollMessageWith(PollVoteHydration.ok));
+
+      await service.closePoll(messageId: messageId);
+
+      verify(
+        () => messagingRepo.closePoll(
+          messageId: messageId,
+          closerId: creatorId,
+        ),
+      ).called(1);
+      verify(
+        () => groupPlanService.save(
+          plan: any(named: 'plan'),
+          actorId: any(named: 'actorId'),
+        ),
+      ).called(1);
+    });
+
+    // Named for the STATE, not for a scenario: a capped poll cannot actually
+    // reach this method (it reads through `getMessage`, a one-element list, so
+    // the cap is a no-op there). Kept as a defensive pin on the state machine —
+    // `ChatViewModel.closePoll` is where the capped case is really caught.
+    test('a poll marked capped → throws, no plan, poll stays open', () async {
+      when(
+        () => messagingRepo.getMessage(messageId),
+      ).thenAnswer((_) async => pollMessageWith(PollVoteHydration.capped));
+
+      await expectLater(
+        service.closePoll(messageId: messageId),
+        throwsA(
+          isA<PollCloseRefusedException>().having(
+            (e) => e.reason,
+            'reason',
+            PollCloseRefusal.votesUnread,
+          ),
+        ),
+      );
+      expectNothingHappened();
+    });
+
+    test('a failed vote read → throws, no plan, poll stays open', () async {
+      // Same refusal, different cause. Both must stop the close identically —
+      // the distinction between them exists only for the wording the user sees.
+      when(
+        () => messagingRepo.getMessage(messageId),
+      ).thenAnswer((_) async => pollMessageWith(PollVoteHydration.failed));
+
+      await expectLater(
+        service.closePoll(messageId: messageId),
+        throwsA(
+          isA<PollCloseRefusedException>().having(
+            (e) => e.reason,
+            'reason',
+            PollCloseRefusal.votesUnread,
+          ),
+        ),
+      );
+      expectNothingHappened();
+    });
+
+    test('a message with no marker at all is treated as read', () async {
+      // The default matters as much as the two states: `fromMetadata` returns
+      // `ok` when the key is absent, and if it did not, this guard would
+      // disable closing for every poll written before the marker existed.
+      when(
+        () => messagingRepo.getMessage(messageId),
+      ).thenAnswer((_) async => pollMessageWith(null));
+
+      await service.closePoll(messageId: messageId);
+
+      verify(
+        () => messagingRepo.closePoll(
+          messageId: messageId,
+          closerId: creatorId,
+        ),
+      ).called(1);
+    });
+  });
+  // ══ BUT-1909 — a blocked person's vote must not decide the household's week ══
+  //
+  // Blocking already hides what someone SAYS. It did not touch what their vote
+  // DOES, and a poll winner is written into the weekly plan — so a blocked
+  // person could steer a recipe into your week from behind a filtered chat.
+  //
+  // The filter is applied by the SERVICE, through the same helper the display
+  // path uses, because filtering the count on screen but not the winner (or the
+  // reverse) makes the number and the outcome contradict each other. The
+  // repository stays ignorant of blocking on purpose — pinned separately in
+  // `message_query_module_test.dart`.
+  group('closePoll excludes blocked voters (BUT-1909)', () {
+    late _MockBlockedUserFilter blockFilter;
+
+    /// Two options where the BLOCKED voters are the majority. That shape is
+    /// load-bearing: with an unfiltered tally `opt-blocked` wins, with a
+    /// filtered one `opt-clean` does, so the assertion below can tell the two
+    /// apart. A fixture where both tallies agree would pass either way.
+    Poll contestedPoll() => Poll(
+      id: 'poll-blocked',
+      question: 'Vad ska vi äta?',
+      creatorId: creatorId,
+      createdAt: DateTime.now(),
+      options: [
+        PollOption(
+          id: 'opt-blocked',
+          text: 'Tacos',
+          voterIds: const ['blocked-1', 'blocked-2'],
+          recipeId: 'recipe-blocked',
+        ),
+        PollOption(
+          id: 'opt-clean',
+          text: 'Pasta',
+          voterIds: const ['user-2'],
+          recipeId: 'recipe-clean',
+        ),
+      ],
+    );
+
+    Message contestedMessage() {
+      final base = _pollMessage(
+        messageId: messageId,
+        conversationId: conversationId,
+        poll: contestedPoll(),
+      );
+      return base.copyWith(
+        metadata: {
+          ...base.metadata!,
+          PollVoteHydration.metadataKey: PollVoteHydration.ok.name,
+        },
+      );
+    }
+
+    setUp(() {
+      blockFilter = _MockBlockedUserFilter();
+      GetIt.instance.registerSingleton<BlockedUserFilter>(blockFilter);
+      when(() => recipeService.recipes).thenReturn([
+        _recipe('recipe-blocked', 'Tacos'),
+        _recipe('recipe-clean', 'Pasta'),
+      ]);
+      when(
+        () => messagingRepo.getMessage(messageId),
+      ).thenAnswer((_) async => contestedMessage());
+    });
+
+    test('the CONTROL: with nobody blocked, the majority wins', () async {
+      // Establishes that the fixture really does resolve to `recipe-blocked`
+      // when nothing is filtered. Without it, the next test's assertion could
+      // be satisfied by a winner resolution that never worked at all.
+      when(
+        () => blockFilter.requireBlockedIds(),
+      ).thenAnswer((_) async => <String>{});
+
+      await service.closePoll(messageId: messageId);
+
+      final saved =
+          verify(
+                () => groupPlanService.addEntry(
+                  plan: any(named: 'plan'),
+                  actorId: any(named: 'actorId'),
+                  day: any(named: 'day'),
+                  slot: any(named: 'slot'),
+                  recipe: captureAny(named: 'recipe'),
+                ),
+              ).captured.single
+              as Recipe;
+      expect(saved.id, 'recipe-blocked');
+    });
+
+    test('a blocked majority does not decide the winner', () async {
+      when(
+        () => blockFilter.requireBlockedIds(),
+      ).thenAnswer((_) async => {'blocked-1', 'blocked-2'});
+
+      await service.closePoll(messageId: messageId);
+
+      final saved =
+          verify(
+                () => groupPlanService.addEntry(
+                  plan: any(named: 'plan'),
+                  actorId: any(named: 'actorId'),
+                  day: any(named: 'day'),
+                  slot: any(named: 'slot'),
+                  recipe: captureAny(named: 'recipe'),
+                ),
+              ).captured.single
+              as Recipe;
+      expect(
+        saved.id,
+        'recipe-clean',
+        reason:
+            'the two blocked ballots outnumber the one clean vote — if they '
+            'still counted, the blocked option would be in the week plan',
+      );
+    });
+
+    test('an unreadable block list REFUSES rather than failing open', () async {
+      // Deliberately the OPPOSITE of the display path's contract. There, a
+      // transient block-list error serves an over-counted poll, which is
+      // recoverable. Here it would let a blocked ballot pick the recipe other
+      // members then see in their plan, which is not.
+      //
+      // A REAL `BlockedUserFilter` over a throwing repository, not the mock the
+      // other cases use. The first version of this test stubbed
+      // `currentBlockedIds()` to throw — and the real method CANNOT throw, it
+      // catches internally and returns an empty set. So it measured its own
+      // mock while production fell open, which is what the
+      // firebase-backend-security gate caught. `requireBlockedIds` is the
+      // propagating variant this path now calls, and the only way to prove it
+      // is to let the repository underneath do the throwing.
+      final throwingRepo = _MockBlockRepo();
+      when(() => throwingRepo.getBlockedUserIds()).thenThrow(
+        Exception('offline'),
+      );
+      GetIt.instance.unregister<BlockedUserFilter>();
+      GetIt.instance.registerSingleton<BlockedUserFilter>(
+        BlockedUserFilter(blockRepository: throwingRepo),
+      );
+
+      await expectLater(
+        service.closePoll(messageId: messageId),
+        throwsA(
+          isA<PollCloseRefusedException>().having(
+            (e) => e.reason,
+            'reason',
+            PollCloseRefusal.blockListUnknown,
+          ),
+        ),
+      );
+
+      // Both omissions, not just one: a guard that skipped the plan but still
+      // flipped `isClosed` would burn the poll with no way back.
+      verifyNever(
+        () => messagingRepo.closePoll(
+          messageId: any(named: 'messageId'),
+          closerId: any(named: 'closerId'),
+        ),
+      );
       verifyNever(
         () => groupPlanService.save(
           plan: any(named: 'plan'),

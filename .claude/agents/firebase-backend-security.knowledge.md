@@ -276,7 +276,13 @@ name which doc each end touches before approving it.
 - "Export ⊇ erasure" is a field-PAIR property — the two filters must target the identical
   field on the identical collection; check both cascades together. A membership MAP KEY is
   itself a raw identifier — clearing the name but leaving the ACL key is incomplete
-  (`FieldValue.delete()` it in the same scrub). A row authored by a SYNTHETIC identity
+  (`FieldValue.delete()` it in the same scrub) — and so is a map VALUE: a per-member
+  `addedBy`/`invitedBy` map is scrubbed only for the DEPARTING subject's own key, so their uid
+  survives as every other member's value, unqueryable by any probe. Same blind spot when an
+  owner/creator field is RE-HOMED only while the subject is still in the membership array —
+  the already-departed case is unreachable by that query, so the departure path needs the
+  re-home too — and never let a residual sweep's own doc COUNT the fields it clears.
+  A row authored by a SYNTHETIC identity
   ("system") naming a real person in FREE TEXT is invisible to every id-keyed cascade — give
   it an erasure HANDLE field. Denormalized PII travels in FIELD GROUPS (`sharedBy*`,
   `lastActivityBy*`); the rename-propagation CF (`on-profile-updated.ts`) is the inventory —
@@ -400,12 +406,34 @@ name which doc each end touches before approving it.
   caller's `catch → refuse` branch is DEAD CODE that reviews and unit-tests green against
   a throwing mock while production fails OPEN — read the helper's body, not the call site,
   and give the safety caller a variant that propagates (latching an `_initialized` flag
-  before the `try` also makes the neutral answer stick for the whole session). A
+  before the `try` also makes the neutral answer stick for the whole session). Review the
+  propagating variant as a CACHE, not just a throw: moving the latch after the `await`
+  needs single-flight, or concurrent first callers each fetch AND each overwrite the
+  subscription field, leaking every listener but the last past `dispose()`; and the
+  refresh stream's `onError` must clear the latch, or a dead watch makes the propagating
+  variant report a frozen cache as authoritative — the same fail-open, one layer over.
+  That invalidation has three follow-ons: clear the IN-FLIGHT future too (a fetch
+  completing after `dispose()` re-latches and re-subscribes, and GetIt's `dispose:` fires
+  on scope pop); the retained value is then DEAD state, so a comment calling it a
+  best-effort answer for the display path is false (that path re-reads and degrades to
+  empty); and with no cool-down every later read re-queries — one read per snapshot on a
+  per-emission path, and never to be repaired by serving the stale set. Clearing the
+  in-flight future does NOT stop a future already RUNNING: add a generation counter bumped
+  by `dispose()` and re-checked after EVERY await (the fetch AND the subscribe, cancelling
+  the just-opened subscription on the second arm), set the latch and the cached value ONLY
+  after the LAST check with no await between them (an earlier latch leaves the previous
+  user's set readable until dispose's trailing reset), and make each arm THROW — a guard that
+  returns the neutral value re-creates, inside the fix, the exact fail-open it closes. Put
+  the throw ONLY on the propagating variant and let the swallowing one convert it, then
+  grep that no display caller reaches the throwing method. Fetch and watch usually resolve
+  the signed-in user INDEPENDENTLY, so a sign-out between them swaps the watch for a
+  signed-out fallback stream that overwrites the cache before completing. A
   `catch → return null` collapses FAILED into ABSENT, and the caller then "repairs" a
   document that exists;
   rethrowing and reserving null for `!exists` is the fix, but a `!exists` answer resolved
   from CACHE is still not proof of absence, so any comment claiming null means absent "and
-  nothing else" overclaims unless it checks `metadata.isFromCache`. A parser/lookup that can
+  nothing else" overclaims unless it checks `metadata.isFromCache` — the same cache path is
+  why a "refuse when unreadable" gate never covers "readable but STALE". A parser/lookup that can
   turn 1 input into N reads needs a cap at the split site.
 - A write-coalescing guard ("once per day") keyed off a stored timestamp is inert for a doc
   whose PARSER defaults that field to `now()` on absence — check what an absent field

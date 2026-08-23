@@ -213,6 +213,10 @@ export async function removeChatGroupMemberWithDeps(
       conversationId,
       uid: targetUid,
       removedAt: admin.firestore.Timestamp.now(),
+      // BUT-1856: somebody decided this person is out — themselves, or an
+      // admin. The meal-vote category sync must not undo that decision on the
+      // next poll just because they are still listed in the social group.
+      tombstone: true,
     });
 
     return {

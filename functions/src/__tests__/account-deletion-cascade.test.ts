@@ -2013,6 +2013,153 @@ async function scenario_implausibleChatGroupCountDeclines(): Promise<void> {
 }
 
 /**
+ * BUT-1856: the departure tombstone is a raw uid the membership sweep cannot
+ * reach.
+ *
+ * `departedUserIds` records who left a chat group so the meal-vote category sync
+ * will not seat them again. The sweep above finds groups by `memberIds
+ * array-contains`, and a tombstoned uid is by definition NOT in `memberIds` — so
+ * without its own leg a deleted account's uid stays on every group it ever left.
+ *
+ * Non-vacuous by construction: the fixture's ONLY trace of the erased user is
+ * the tombstone. They are in no `memberIds` anywhere, so the first leg visits
+ * nothing and every assertion here is answered by the second leg alone.
+ */
+async function scenario_departureTombstoneIsErased(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { deleteChatGroupMemberships } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("chat_groups/g-left", {
+    memberIds: [OTHER],
+    adminIds: [OTHER],
+    departedUserIds: [UID, "someone-else"],
+    conversationId: "cg-left",
+    createdBy: OTHER,
+  });
+  db.set("chat_groups/g-untouched", {
+    memberIds: [OTHER],
+    adminIds: [OTHER],
+    departedUserIds: ["someone-else"],
+    conversationId: "cg-untouched",
+    createdBy: OTHER,
+  });
+
+  const ok = await deleteChatGroupMemberships(asDb(db), UID);
+
+  const after = (db.get("chat_groups/g-left") as DocData)
+    .departedUserIds as string[];
+  check(
+    "the erased uid is gone from departedUserIds",
+    !after.includes(UID),
+    `departedUserIds: ${JSON.stringify(after)}`,
+  );
+  check(
+    "…and the other tombstones survive — this is an erasure, not a reset",
+    after.includes("someone-else"),
+    `departedUserIds: ${JSON.stringify(after)}`,
+  );
+  check("…and the step reports COMPLETE", ok === true, `returned ${ok}`);
+  check(
+    "…and a group that never knew this user is not rewritten",
+    !db.updatedPaths.includes("chat_groups/g-untouched"),
+    `updated: ${JSON.stringify(db.updatedPaths)}`,
+  );
+}
+
+/**
+ * BUT-1856: the residual legs answer different queries from the membership
+ * sweep, so that sweep's own cap must not take them down with it.
+ *
+ * Staged by seeding past `MAX_CHAT_GROUPS_PER_USER` groups the user is a MEMBER
+ * of — which makes the membership sweep decline — while one further group holds
+ * only a tombstone. With the legs below the decline, the tombstone survived for
+ * a reason that had nothing to do with tombstones.
+ */
+async function scenario_residualLegsSurviveTheMembershipDecline(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const {
+    deleteChatGroupMemberships,
+    MAX_CHAT_GROUPS_PER_USER,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  for (let i = 0; i <= MAX_CHAT_GROUPS_PER_USER; i++) {
+    db.set(`chat_groups/g-${i}`, {
+      memberIds: [UID, OTHER],
+      adminIds: [OTHER],
+      conversationId: `cg-${i}`,
+      createdBy: OTHER,
+    });
+  }
+  db.set("chat_groups/g-tomb", {
+    memberIds: [OTHER],
+    adminIds: [OTHER],
+    departedUserIds: [UID],
+    conversationId: "cg-tomb",
+    createdBy: OTHER,
+  });
+
+  const ok = await deleteChatGroupMemberships(asDb(db), UID);
+
+  const tomb = (db.get("chat_groups/g-tomb") as DocData)
+    .departedUserIds as string[];
+  check(
+    "the tombstone is erased even though the membership sweep declined",
+    !tomb.includes(UID),
+    `departedUserIds: ${JSON.stringify(tomb)}`,
+  );
+  check(
+    "…and the declining sweep still reports INCOMPLETE",
+    ok === false,
+    `returned ${ok}`,
+  );
+}
+
+/**
+ * BUT-1856: the meal-vote pointer names the social group's OWNER, on a chat that
+ * outlives them.
+ *
+ * The chat is only torn down when nobody is left, so an owner who deletes their
+ * account normally leaves `sourceCategoryOwnerId` — a raw uid — on a document the
+ * surviving members keep reading. The same residual class `createdBy` is
+ * re-homed for, and the membership sweep cannot reach it: the fixture's owner is
+ * NOT in `memberIds`, because leaving the chat does not stop you owning the
+ * social group.
+ */
+async function scenario_mealVotePointerOwnerIsErased(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { deleteChatGroupMemberships } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  db.set("chat_groups/g-cat", {
+    memberIds: [OTHER],
+    adminIds: [OTHER],
+    conversationId: "cg-cat",
+    createdBy: OTHER,
+    sourceCategoryId: "cat-1",
+    sourceCategoryOwnerId: UID,
+  });
+
+  const ok = await deleteChatGroupMemberships(asDb(db), UID);
+
+  const after = db.get("chat_groups/g-cat") as DocData;
+  check(
+    "the owner uid is gone from the meal-vote pointer",
+    after.sourceCategoryOwnerId === undefined,
+    `sourceCategoryOwnerId: ${JSON.stringify(after.sourceCategoryOwnerId)}`,
+  );
+  check(
+    "…and the dangling category id goes with it, not on its own",
+    after.sourceCategoryId === undefined,
+    `sourceCategoryId: ${JSON.stringify(after.sourceCategoryId)}`,
+  );
+  check(
+    "…while the chat itself is left standing for its remaining members",
+    db.has("chat_groups/g-cat"),
+    "group kept",
+  );
+  check("…and the step reports COMPLETE", ok === true, `returned ${ok}`);
+}
+
+/**
  * THE EXCLUSION. A conversation carrying a `groupId` is owned entirely by
  * `deleteChatGroupMemberships`, which removes the uid from the group AND the
  * conversation in one transaction. `deleteMessages` must not touch it: doing so
@@ -2518,6 +2665,9 @@ async function main(): Promise<void> {
   await scenario_emptiedChatGroupIsTakenDownRosterFirst();
   await scenario_unclearableRosterLeavesTheChatGroupStanding();
   await scenario_implausibleChatGroupCountDeclines();
+  await scenario_departureTombstoneIsErased();
+  await scenario_mealVotePointerOwnerIsErased();
+  await scenario_residualLegsSurviveTheMembershipDecline();
   await scenario_deleteMessagesSkipsGroupOwnedConversations();
   await scenario_probeSeesLeftoverChatGroupMembership();
   await scenario_pollVotesAndAuthorshipAreErased();

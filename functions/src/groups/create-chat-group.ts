@@ -108,7 +108,31 @@ export async function createChatGroupWithDeps(
   callerUid: string,
   name: string,
   memberIds: string[],
+  options?: {
+    adminUids?: string[];
+    sourceCategory?: { categoryId: string; ownerId: string };
+    /**
+     * Use this document id instead of an auto-generated one, and refuse with
+     * `already-exists` if it is taken. Lets a caller that must create AT MOST
+     * ONE group for something derive the id from that thing, so two concurrent
+     * first attempts collide on the document rather than each minting a group.
+     */
+    groupId?: string;
+  },
 ): Promise<CreateChatGroupResponse> {
+  // Duplicated from the onCall wrapper rather than moved out of it. The
+  // wrapper's copy runs BEFORE the age, maturity and rate-limit checks, so a
+  // one-member request there is refused without burning a token; this copy is
+  // what binds every other caller of this core, `ensureCategoryChat` included.
+  // A group you are alone in has no other side to the conversation, and it is
+  // the degenerate shape BUT-1830's squat relied on.
+  if (memberIds.length < 2) {
+    throw new HttpsError(
+      "invalid-argument",
+      "A group needs at least one other member.",
+    );
+  }
+
   // THE GATE, before any write. A refusal names who could not be added so the
   // caller can act on it; the old trigger could only evict silently after the
   // fact, because by then the group already existed.
@@ -123,12 +147,22 @@ export async function createChatGroupWithDeps(
 
   const members: ChatGroupMember[] = await resolveMemberProfiles(db, memberIds);
 
-  const groupRef = db.collection(Collections.chatGroups).doc();
+  const groups = db.collection(Collections.chatGroups);
+  const groupRef =
+    options?.groupId === undefined ? groups.doc() : groups.doc(options.groupId);
   const groupId = groupRef.id;
   const conversationId = groupRef.id;
   const joinedAt = admin.firestore.Timestamp.now();
 
   await db.runTransaction(async (tx) => {
+    if (options?.groupId !== undefined) {
+      // Only for a caller-supplied id. An auto-generated one cannot collide,
+      // and paying a read for that would slow the ordinary path down.
+      const existing = await tx.get(groupRef);
+      if (existing.exists) {
+        throw new HttpsError("already-exists", "Group already exists.");
+      }
+    }
     stageGroupCreation(tx, {
       db,
       groupId,
@@ -137,6 +171,8 @@ export async function createChatGroupWithDeps(
       creatorUid: callerUid,
       members,
       joinedAt,
+      adminUids: options?.adminUids,
+      sourceCategory: options?.sourceCategory,
     });
   });
 

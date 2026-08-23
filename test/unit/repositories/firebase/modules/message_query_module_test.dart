@@ -3,15 +3,19 @@
 /// Exercises the four read paths on the conversation messages collection:
 /// real-time stream, paginated page-by-page reader, single-message
 /// lookup, and the simplified client-side search.
-/// All paths go through `FakeFirebaseFirestore` — the module's only
-/// dependency is a `CollectionReference`, so no auth wiring is needed.
+/// The read paths go through `FakeFirebaseFirestore` — the module takes only a
+/// `CollectionReference`, so no auth wiring is needed. One case instead reads
+/// the module's own SOURCE off disk, to pin that it never learns about blocking.
 library;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'dart:io';
+
 import 'package:butlery/models/messaging/message.dart';
+import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/repositories/firebase/dtos/message_dto.dart';
 import 'package:butlery/repositories/firebase/modules/message_query_module.dart';
 
@@ -424,17 +428,13 @@ void main() {
     // changed to suit that: the poll widget, `Poll.totalVotes` and
     // `closePoll`'s winner resolution all still read
     // `metadata.poll.options[].voterIds`, so this module folds the
-    // subcollection back into that shape on the way out. An unhydrated poll is
-    // not a rendering nit — it reads "0 röster" over real votes.
+    // subcollection back into that shape on the way out.
     //
-    // The harm is a DISPLAY harm, and this comment stated it wrongly for days,
-    // in the same words the module itself did: an unhydrated poll does NOT make
-    // `closePoll` resolve to the first option. `_resolveWinner` returns null
-    // once every option reads zero votes, so it writes no plan at all. What
-    // really happens is that the close button is drawn on a poll showing
-    // "0 röster", the close re-reads the message on its own uncapped path and
-    // resolves the REAL winner, and a recipe lands in the week's plan the
-    // creator was never shown a vote for (BUT-1883, measured 2026-08-20).
+    // This comment stated the harm wrongly for days, in the same words the
+    // module itself did: an unhydrated poll does NOT make `closePoll` resolve
+    // to the first option. `_resolveWinner` returns null once every option
+    // reads zero votes, so it writes no plan at all (BUT-1883, measured
+    // 2026-08-20).
 
     Future<void> seedPollMessage(
       CollectionReference<Map<String, dynamic>> messagesRef, {
@@ -605,7 +605,7 @@ void main() {
       // Seeded one past the cap so precisely one poll is dropped, and votes are
       // cast on both ends: without an assertion at each end, selecting from the
       // wrong end still satisfies the other. Deleting `.reversed` from
-      // `_pollIds` reddens this test and nothing else.
+      // `_pollIds` reddens this test.
       final firestore = FakeFirebaseFirestore();
       final messagesRef = firestore.collection('messages');
 
@@ -640,6 +640,161 @@ void main() {
             'the one poll past the cap is the OLDEST, not the newest — '
             'its stored (empty) array is passed through untouched',
       );
+    });
+    // ── BUT-1908: the hydration states ──────────────────────────────────────
+    //
+    // Before this, "nobody voted" and "the votes were never read" were the same
+    // observable — `voterIds == []` — so nothing downstream could refuse to act
+    // on the second. The cases below pin that they are now distinguishable.
+    //
+    // `failed` is NOT produced anywhere here, and cannot be: both of its
+    // branches need `poll_votes.get()`/`.snapshots()` to throw, and
+    // `FakeFirebaseFirestore` never does. Every `failed` in `test/` is injected
+    // at the service or the widget. Staging it needs a delegating
+    // `CollectionReference` whose `.doc(id).collection(...)` throws — named
+    // here so the gap is on the record rather than implied away by a count.
+
+    PollVoteHydration stateOf(Message m) =>
+        PollVoteHydration.fromMetadata(m.metadata);
+
+    test('a poll whose votes WERE read is marked ok', () async {
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = firestore.collection('messages');
+      await seedPollMessage(messagesRef);
+      await castVote(messagesRef, 'poll-1', 'user-b', ['opt-b']);
+
+      final message = await MessageQueryModule(
+        messagesRef: messagesRef,
+      ).getMessage('poll-1');
+
+      expect(stateOf(message!), PollVoteHydration.ok);
+      expect(stateOf(message).isUnread, isFalse);
+    });
+
+    test('a poll with genuinely zero votes is still ok, not unread', () async {
+      // The distinction the whole ticket rests on. An empty tally is an ANSWER;
+      // if this returned `failed` the close button would vanish from every
+      // brand-new poll and the guard would be useless.
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = firestore.collection('messages');
+      await seedPollMessage(messagesRef);
+
+      final message = await MessageQueryModule(
+        messagesRef: messagesRef,
+      ).getMessage('poll-1');
+
+      expect(stateOf(message!), PollVoteHydration.ok);
+      expect(votersFor(message, 'opt-a'), isEmpty);
+    });
+
+    test(
+      'a poll past the cap is marked capped, and keeps its stored votes',
+      () async {
+        // Two assertions, and the second is the one that matters: marking the
+        // state must not become an excuse to blank the array. The stored value is
+        // passed through untouched, exactly as before — all that changed is that
+        // the message now says the number beside it was never confirmed.
+        final firestore = FakeFirebaseFirestore();
+        final messagesRef = firestore.collection('messages');
+
+        const cap = MessageQueryModule.maxHydratedPolls;
+        for (var i = 0; i <= cap; i++) {
+          await seedPollMessage(
+            messagesRef,
+            id: 'poll-$i',
+            sentAt: DateTime.utc(2026, 1, 1, 10).add(Duration(minutes: i)),
+          );
+        }
+        // A NON-EMPTY stored array on the poll that will be capped. The seed
+        // writes `voterIds: []`, so asserting "keeps its stored votes" against
+        // that is the identity — a `_markUnread` that blanked every option
+        // would stay green. This value is what makes the last assertion able
+        // to fail at all.
+        await messagesRef.doc('poll-0').update({
+          'metadata.poll.options': [
+            {
+              'id': 'opt-a',
+              'text': 'Tacos',
+              'voterIds': ['stored-uid'],
+            },
+            {'id': 'opt-b', 'text': 'Pasta', 'voterIds': <String>[]},
+          ],
+        });
+
+        final page = await MessageQueryModule(
+          messagesRef: messagesRef,
+        ).getConversationMessagesPage(conversationId: _conversationId);
+
+        final oldest = page.firstWhere((m) => m.id == 'poll-0');
+        final newest = page.firstWhere((m) => m.id == 'poll-$cap');
+
+        expect(
+          stateOf(oldest),
+          PollVoteHydration.capped,
+          reason:
+              'the one poll past the cap is the OLDEST — see the case above',
+        );
+        expect(
+          stateOf(newest),
+          PollVoteHydration.ok,
+          reason: 'everything within the cap was actually read',
+        );
+        expect(
+          votersFor(oldest, 'opt-a'),
+          ['stored-uid'],
+          reason:
+              'marking the state must not become an excuse to blank the '
+              'array — the stored value is passed through untouched',
+        );
+      },
+    );
+
+    test('a non-poll message is never marked', () async {
+      // The marker is a claim about a tally. A text message has none, and
+      // stamping one would make `fromMetadata` meaningless on the only field
+      // it reads.
+      final firestore = FakeFirebaseFirestore();
+      final messagesRef = firestore.collection('messages');
+      await seedPollMessage(messagesRef);
+      await messagesRef.doc('text-1').set({
+        'id': 'text-1',
+        'conversationId': _conversationId,
+        'senderId': 'user-a',
+        'senderDisplayName': 'user-a',
+        'content': 'hej',
+        'type': MessageType.text.name,
+        'status': MessageStatus.sent.name,
+        'sentAt': Timestamp.fromDate(DateTime.utc(2026, 1, 1, 11)),
+        // Metadata-BEARING, and that is the point: `_markUnread` returns early
+        // on a null map, so a metadata-less row is left alone by a
+        // mark-everything mutant too. A share card is the real shape of a
+        // non-poll message that carries metadata (BUT-1832).
+        'metadata': {'recipeTitle': 'Köttbullar'},
+      });
+
+      final page = await MessageQueryModule(
+        messagesRef: messagesRef,
+      ).getConversationMessagesPage(conversationId: _conversationId);
+
+      final text = page.firstWhere((m) => m.id == 'text-1');
+      expect(text.metadata?[PollVoteHydration.metadataKey], isNull);
+    });
+
+    test('the module knows nothing about blocking (BUT-1909)', () async {
+      // A negative constraint, stated as a test because it is the kind of
+      // layering that erodes quietly. Blocking is VIEWER-scoped and belongs to
+      // the service; a repository that learned about it would filter one
+      // caller's votes by another caller's list.
+      final source = await File(
+        'lib/repositories/firebase/modules/message_query_module.dart',
+      ).readAsString();
+
+      // Named symbols, not the word "blocked": a prose mention is not a
+      // layering violation, and asserting on it would redden the day someone
+      // writes an honest comment about why this module stays ignorant.
+      expect(source, isNot(contains('BlockedUserFilter')));
+      expect(source, isNot(contains('blockedIds')));
+      expect(source, isNot(contains('currentBlockedIds')));
     });
   });
 }

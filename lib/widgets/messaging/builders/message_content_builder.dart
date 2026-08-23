@@ -392,6 +392,11 @@ class MessageContentBuilder {
       isFromCurrentUser: isFromCurrentUser,
       onVote: onVote,
       onClose: onClose,
+      // BUT-1908. Read off the message's metadata, a SIBLING of `poll` — the
+      // repository stamps it during hydration and it never round-trips to
+      // Firestore. Without it the widget cannot tell "0 röster" from "the votes
+      // were never fetched", and draws an active close button over the latter.
+      voteHydration: PollVoteHydration.fromMetadata(message.metadata),
     );
   }
 }

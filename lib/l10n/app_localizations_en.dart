@@ -13901,6 +13901,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pollClosed => 'Closed';
 
   @override
+  String get pollVotesNotLoadedShort => 'Votes not loaded';
+
+  @override
+  String get pollVotesFailedShort => 'Votes could not be read';
+
+  @override
+  String get pollVotesNotLoadedHint => 'Reopen the chat to fetch them.';
+
+  @override
+  String get pollVotesFailedHint => 'Try again in a moment.';
+
+  @override
+  String get pollCloseRefusedVotesUnread =>
+      'The poll was not closed — its votes were never loaded, and it must not be closed on numbers nobody read. Reopen the chat and try again.';
+
+  @override
+  String get pollCloseRefusedBlockList =>
+      'The poll was not closed — your block list could not be read, so blocked votes cannot be excluded. Try again.';
+
+  @override
+  String get pollCloseFailed => 'The poll could not be closed. Try again.';
+
+  @override
   String get pollCloseAction => 'Close poll';
 
   @override
@@ -16280,6 +16303,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatGroupAddMembersFailed =>
       'Could not add members. Please try again.';
+
+  @override
+  String get chatGroupNeedsAnotherMember =>
+      'The group needs at least one more member before you can vote on a meal.';
+
+  @override
+  String get mealVotePollFailed =>
+      'Could not start the vote. Please try again.';
 
   @override
   String get chatGroupCreateFailed =>

@@ -14400,3 +14400,310 @@ NO KNOWLEDGE-FILE EDIT AGAIN: the anchor-drift shape is already carried by the
 state another comment's wording or position", and the file is still ~2,700 over
 its ~25,000 target (27,727), so a near-duplicate bullet would be the drift the
 budget exists to stop.
+
+### 2026-08-22 — BUT-1856 `ensureCategoryChat` review [review][idempotency][gdpr][cost]
+
+Reviewed the meal-vote "one chat group per social group" diff: new
+`groups/ensure-category-chat.ts` + suite, `chat-group-writes.ts` (`adminUids`,
+`sourceCategory` pointer, `tombstone` flag, `departedUserIds` cleared on an
+explicit add), `create-chat-group.ts` (options object + the <2 guard duplicated
+into the DI'd core), `remove-chat-group-member.ts` and
+`enforce-group-minor-membership.ts` (both pass `tombstone: true`),
+`account-deletion-cascade.ts` (second sweep `clearDepartureTombstones`),
+`rate_limiter.ts` (`ensureCategoryChat` bucket, 5/5/min + dailyLimit 50),
+`collections.ts` (`friendCategories`), `index.ts`, `_fake-firestore.ts`
+(`where()` with `==` / `array-contains`), three test suites, `package.json`.
+
+VERIFIED GREEN, this machine: `npm run build` clean;
+`ensure-category-chat` 17/17, `account-deletion-cascade` 117/117,
+`rate-limiter-daily-cap` 17/17, `app-check-enforcement` 19/19,
+`chat-group-callables` 14/14, `remove-chat-group-member` 23/23,
+`deploy-manifest` 7/7.
+
+MEASURED, entry point loaded with `FIREBASE_CONFIG` set: **72 endpoints, 71
+gen2, 1 gcfv1** after this diff. That falsifies `index.ts`'s own
+`setGlobalOptions` comment ("Across 70 gen2 services", "counts 70 and not 71")
+and `deploy-manifest.test.ts`'s header ("64 of the 70", "~7000 vCPU across 70",
+"all 71 endpoints"). No assertion pins any of those numbers, so nothing
+reddened. Also stale in the knowledge file: "(71 exports, 70 gen2…)" and
+"moves 64 of 70" — both retired to tallies-free wording in the same edit; the
+retired text was `(71 exports, 70 gen2, healthy total 7/7)` and `A
+global-region change moves 64 of 70, so never say a global option "reaches
+every export" without counting.`
+
+MEASURED on the Firestore emulator (127.0.0.1:8080, project butlery-test):
+**two `tx.update()` calls on the SAME document inside one `runTransaction`
+commit fine and COMPOSE** — `arrayRemove("a")` + `m.a` delete, then
+`arrayRemove("b")` + `m.b` delete, left `{memberIds:["c"], m:{c:3}}`. This
+settles the eviction loop in `reconcile()` (and the pre-existing one in
+`enforceGroupMinorMembership`), which stages one `stageMemberRemoval` per uid
+rather than one batched update per document. Not a defect.
+
+MEASURED: `checkRateLimit` (bare, no `system_events` audit row) is used by all
+four `groups/` callables and `sendNotification`; `enforceRateLimit` by
+`verifySignupAge`, `logParseCorrection`, `logParseEvent`, `logWebError`,
+`setProfileSearchability`. The knowledge principle said "standalone callables
+use `enforceRateLimit`" universally, which is false per-family; superseded in
+place. Retired text: `**Standalone callables use \`enforceRateLimit\`, not bare
+\`checkRateLimit\`** — only the former writes the \`system_events\`
+\`rate_limit_violation\` row.`
+
+BLOCKING findings reported (4):
+1. Create path is not idempotent under concurrency —
+   `where('sourceCategoryId').where('sourceCategoryOwnerId').limit(1).get()`
+   runs OUTSIDE any transaction, so two simultaneous first polls both see
+   `existing.empty` and both call `createChatGroupWithDeps`, minting two
+   `chat_groups` docs for one category. `.limit(1)` then resolves to the
+   lowest `__name__` forever and the loser is an orphan chat everyone is in.
+   Remedy: deterministic doc id from `hash(ownerId + '|' + categoryId)` and
+   `tx.create()` (also removes the query, cheaper).
+2. `reconcile()`'s caller check is
+   `callerUid !== ownerId && !memberIds.includes(callerUid)`. A category owner
+   who LEFT the chat or was removed by an admin still passes: they receive
+   `groupId`/`conversationId`/`memberCount` for a chat `firestore.rules` denies
+   them, and they can stage additions and evictions in it. With every other
+   roster member tombstoned, `toAdd` is empty and `toRemove` is everyone, so
+   the transaction drives `memberIds` to ZERO — a `chat_groups` doc and a
+   conversation no client can read, update or delete (every rule in the block
+   gates on membership). Remedy: require `memberIds.includes(callerUid)`
+   unconditionally, plus refuse when `memberCountAfter === 0`.
+3. `clearDepartureTombstones` has no leg in `probeResidualData`, breaking the
+   deleter-⊇-probe invariant the cascade's own comments state ("a leg without
+   one is exactly how an erasure becomes silently incomplete"). Remedy: append
+   `[Collections.chatGroups, "departedUserIds", "array-contains"]` to the
+   owner-keyed probe list.
+4. The stale endpoint tallies in `index.ts` (above).
+
+NON-BLOCKING: NOT_FOUND wedge if the conversation is deleted while the group
+survives (a participant may still delete a group conversation per the BUT-1838
+accepted deviation) — `stageMemberAdditions`/`stageMemberRemoval` do
+`tx.update(convoRef)` and the transaction only checks the GROUP's existence,
+so the poll returns a generic `internal` forever for that category. Art. 15:
+`departedUserIds` is erased by the cascade but the export
+(`exportChatGroups`, filtered `memberIds array-contains`) can never see a
+departed row — erasable-but-not-exportable, same shape as the BUT-1832 poll
+note; needs a decision, not a silent gap. Also: `departedUserIds` grows
+unboundedly on a long-lived group; the
+`failed-precondition "Group has no conversation."` throw sits ABOVE the
+chat-membership check, a weak oracle for a category member removed from the
+chat.
+
+WHAT IS RIGHT and should not be "simplified": the pointer's OWNER half (a
+`friend_categories` id is a client-chosen UUID, and the suite's hijack case is
+what keeps the second `where`); the gate running against the CALLER; `seated`
+being filtered from the already-gated `profiles` rather than from the fresh
+read; both halves re-read inside the transaction; the steady state returning
+BEFORE the transaction (≈4 reads, 1 rate-limit write per poll, no membership
+writes); system messages outside the transaction with per-write `.catch`; the
+tombstone asymmetry (set by explicit removal and by the safety backstop, NOT
+by the category mirror); and the fake's own docstring disclaiming concurrency
+and index coverage.
+
+### 2026-08-22 — BUT-1856 re-review after fixes: two fixes landed incomplete [review][gdpr][deploy]
+
+Re-reviewed the BUT-1856 Cloud Functions diff after the previous pass's four
+blocking findings plus two non-blocking ones were addressed. Verdict: FAIL,
+3 blocking.
+
+Files read in full or in the relevant ranges: `groups/ensure-category-chat.ts`
+(new), `groups/chat-group-writes.ts`, `groups/create-chat-group.ts`,
+`groups/remove-chat-group-member.ts`, `messaging/enforce-group-minor-membership.ts`,
+`shared/collections.ts`, `middleware/rate_limiter.ts`,
+`account/account-deletion-cascade.ts`, `index.ts`, and the suites
+`ensure-category-chat.test.ts` (new), `chat-group-callables.test.ts`,
+`_fake-firestore.ts`, `deploy-manifest.test.ts`, `app-check-enforcement.test.ts`,
+`rate-limiter-daily-cap.test.ts`, `account-deletion-cascade.test.ts`. Also read
+`firestore.rules` (the `chat_groups`, `friend_categories` and collection-group
+blocks) and `firestore.indexes.json` to check the claims the new header comments
+make about them — all of those claims verified TRUE.
+
+WHAT VERIFIED CLEAN
+- Fix 1 (derived id). `categoryChatId = sha256("owner:category").slice(0,20)`,
+  `tx.get` before `tx.set` inside `createChatGroupWithDeps` when `options.groupId`
+  is supplied, `already-exists` caught and reconciled. The derived id ENCODES the
+  pointer pair, so trusting the document at that id is exactly as strong as the
+  two-`where` query — the reconcile-after-race path not re-checking
+  `sourceCategoryId`/`sourceCategoryOwnerId` is safe for that reason, not by luck.
+- Fix 2 (owner bypass). `if (!memberIds.includes(callerUid)) throw notAllowed();`
+  — no escape left. Test at ensure-category-chat.test.ts:564 pins it.
+- Fix 4 (probe legs + cascade). Both probe rows ship with their deleter;
+  `clearUnreachableChatGroupResiduals` caps and DECLINES per leg. Both cascade
+  scenarios (`scenario_departureTombstoneIsErased`,
+  `scenario_mealVotePointerOwnerIsErased`) are non-vacuous by construction — the
+  fixtures put the erased uid in NO `memberIds`, so the primary sweep visits
+  nothing and only the new legs can answer. Verified `friend_categories` is in the
+  cascade's `users/{uid}` subcollection sweep, so the docstring's "the category
+  itself goes in this same cascade, so it is already dangling" is TRUE.
+- Fix 6 (deleted conversation). `tx.get` on the conversation inside the reconcile
+  transaction, distinguishable `failed-precondition`. Correct: `firestore.rules`
+  does still allow any participant to delete a group conversation.
+- Three-file rule for a new `onCall` satisfied: export in `index.ts`, `test:*`
+  script in `package.json`, `USER_FACING` entry in `app-check-enforcement.test.ts`.
+  Region inherited (no per-function override) and the Dart side calls
+  `FirebaseFunctions.instanceFor(region: 'europe-west1')` with the same name.
+- Two-equality query (`sourceCategoryId` + `sourceCategoryOwnerId`) needs no
+  composite index; neither `array-contains` leg does. `firestore.indexes.json`
+  has no `chat_groups` entry and none is required.
+- Rate-limiter coverage check is real: it derives `capped` from
+  `RATE_LIMIT_CONFIGS` and fails on any `dailyLimit` entry absent from `pinned`,
+  so the replacement comment's "adding one without its pin is what the test's own
+  coverage check fails on" is TRUE.
+
+BLOCKING 1 — fix 7 is UNGUARDED. Mutation-probed 2026-08-22: re-adding
+`tombstone: true` to the `stageMemberRemoval` call in
+`enforce-group-minor-membership.ts` leaves enforce-group-minor-membership 28/28,
+chat-group-callables 16/16 and ensure-category-chat 21/21 ALL GREEN. Backup taken
+immediately before, `trap` restore on EXIT/INT/TERM/HUP, `git hash-object`
+identical afterwards, `grep -c` = 0. The two new cases pin `stageMemberRemoval`'s
+DEFAULT (no flag -> no `departedUserIds`), which is a property of the CALLEE; the
+fix deleted an argument at ONE CALLER, and no test reads that caller's group
+document for the field. This is the generalisable lesson and it went into the
+knowledge file.
+
+BLOCKING 2 — a new false reachability sentence. `ensure-category-chat.ts`'s
+`memberCountAfter <= 0` guard carries "Unreachable as the code stands — the caller
+has to be in BOTH the category roster and `memberIds`, and someone in the roster
+is never in `evicted`". That justification describes the STALE outer read; the
+guard sits behind the FRESH in-transaction category read, which the enclosing
+comment itself says can move. Constructed path: owner previously removed AND
+tombstoned (so `toAdd` is empty), group `memberIds = [caller, X]` with X already
+out of the category (so work exists and the transaction is entered), then the
+caller is dropped from `friendUserIds` between the two reads — a member may remove
+their OWN uid under `firestore.rules`. Then `freshRoster = [owner]`,
+`evicted = [caller, X]`, `seated = []`, `memberCountAfter = 0`. The guard FIRES,
+so the code is right and the guard is not dead; the sentence is what is wrong.
+Remedy is a strike, not a rewrite.
+
+BLOCKING 3 — fix 5 is half-applied. Three endpoint tallies survive in the SAME
+file whose header tallies were struck: `deploy-manifest.test.ts:59` ("all 70
+uncapped"), `:152` ("all 71 endpoints"), `:226` ("raise it for all 70"). The
+`:152` string is literally the one the fix description names as struck. All three
+are falsified by this commit's own new export. `index.ts` is clean. The
+generalisable part — the tallies recur in the mutation-probe log and the
+`ALLOWED_OVERRIDES` note, so a header-only sweep reads as done — went into the
+knowledge file.
+
+NON-BLOCKING
+- `deleteChatGroupMemberships` early-`return false`s above the
+  `clearUnreachableChatGroupResiduals` call, so the two independent residual legs
+  are skipped whenever the MEMBERSHIP sweep exceeds `MAX_CHAT_GROUPS_PER_USER`.
+  The step reports incomplete and the probes flag it, so no silent certification,
+  but the legs are lost for a reason unrelated to them. Generalised into the
+  knowledge file.
+- `_fake-firestore.ts`'s header still enumerates "The suites it serves
+  (`remove-chat-group-member`, `chat-group-callables`)"; `ensure-category-chat`
+  now imports it too.
+- `ensure-category-chat.ts` reconcile: "an owner outside the chat is one an admin
+  removed or who left" omits a third producer — the minor backstop can evict a
+  minor owner if the seating friendship is revoked after creation.
+- `stageMemberAdditions`' `arrayRemove` on `departedUserIds` now runs for
+  `addChatGroupMembers` too (untouched file), which materialises an empty array on
+  groups that never had the field. Cosmetic; pinned by
+  ensure-category-chat.test.ts:279.
+- The tombstone/`memberLeft` pairing is best-effort on one side: the system message
+  in `removeChatGroupMember` is written outside the transaction with a `.catch`, so
+  a failed write yields a tombstone with no visible row.
+- `ensureCategoryChat` takes bare `checkRateLimit`, so no `rate_limit_violation`
+  audit row — consistent with its three `groups/` siblings, already recorded as
+  "consistent, not correct".
+
+KNOWLEDGE-FILE EDITS THIS RUN
+Added three principles (whole-file tally sweep; a deleted ARGUMENT is pinned at
+the CALLER not the callee's default; a cascade step's early-`return false` skips
+the legs below it) and compressed nine bullets so the file NET SHRANK
+(28,192 -> 28,177 chars). Still ~3.2k over the 25,000 target — the header now
+says so explicitly and demands every future edit retire more than it adds.
+
+RETIRED VERBATIM (superseded in place, kept here per the archive contract):
+- "region-wide, so 70 gen2 x 1 vCPU x 100 blew "Total allowable CPU per / project
+  per region", surfacing as `Container Healthcheck failed` on 53." — the tally
+  rotted exactly as the file's own principle predicts; replaced with the
+  count-free wording plus the 2026-08-17 date.
+- "Adding an export falsifies every endpoint TALLY in `index.ts`'s
+  `setGlobalOptions` comment and `deploy-manifest.test.ts`'s header — no test
+  guards those numbers; strike a tally rather than re-counting it." — the word
+  "header" is what let this round's strike stop three sentences short.
+- "**`recipe_social_stats` is SERVER-ONLY** — `fake_cloud_firestore` evaluates /
+  no rules, so a green Dart test proves nothing; read firestore.rules." — merged
+  into the recipes-are-user-scoped bullet above it, no content lost.
+- "Doc-ID prefix-range sentinels need the 6-char escape, never a raw / literal —
+  a NUL/odd byte also makes ripgrep skip the file as binary." — retired to pay for
+  the additions; the substance is now carried by the global lessons digest entry
+  on control bytes in source and by `.github/workflows/text-integrity.yml`.
+
+CORRECTS THE PREVIOUS BUT-1856 ENTRY IN THIS ARCHIVE, which ends "the tombstone
+asymmetry (set by explicit removal and by the safety backstop, NOT by the category
+mirror)". As of fix 7 the safety backstop no longer sets it — it writes no
+`memberLeft` row, so a tombstone there made `departedUserIds` minus the uids with
+a visible row equal to "the accounts the child-safety backstop evicted".
+
+### 2026-08-23 — BUT-1856 re-review after the integration-reviewer's eviction block [groups][gdpr][comments]
+
+Re-read `functions/src/groups/ensure-category-chat.ts` and
+`functions/src/__tests__/ensure-category-chat.test.ts` after the roster sync was
+narrowed to evict only its own seats (`categorySeatedUserIds`, stamped by
+`stageGroupCreation` and by `stageMemberAdditions({categorySeated:true})`, cleared
+unconditionally by `stageMemberRemoval`).
+
+VERIFIED CLEAN, and the reasoning is the reusable part:
+
+- **The new field owes the deletion cascade nothing, and that had to be proven per
+  writer.** `chat-group-writes.ts` is the only writer of `memberIds` in
+  `functions/src` (grepped; `firestore.rules` `chat_groups` update is
+  `hasOnly(['name','updatedAt'])`, create/delete `if false`), and all three of its
+  writers keep `categorySeatedUserIds ⊆ memberIds`: creation sets it equal,
+  additions union both, removal removes from both. So
+  `deleteChatGroupMemberships`'s `memberIds array-contains` sweep reaches every
+  residual through `stageMemberRemoval`, and no leg is owed in
+  `clearUnreachableChatGroupResiduals` (which exists precisely because
+  `departedUserIds` and `sourceCategoryOwnerId` BREAK that subset property) and no
+  row in `probeResidualData`. This is now a principle in the knowledge file.
+- Art. 15: `lib/services/account/export/chat_group_export.dart` exports a
+  PROJECTION, so the field never reaches a bundle.
+- The `memberCountAfter <= 0` guard IS reachable, so striking "Unreachable as the
+  code stands" was right — but only via a concurrent category edit: inside one call
+  the `roster.length < 2` pre-check refuses first, and `evicted` excludes `ownerId`
+  while `rosterOf` always re-adds the owner. Reachable shape: the owner is not in
+  `memberIds` (removed with a tombstone), both remaining members are
+  category-seated, and the category shrinks to the owner alone between the
+  pre-check and the transaction.
+- The transferred-category comment's claims check out:
+  `friend_category_repository.transferOwnership` updates the `ownerId` FIELD in
+  place under `users/{oldOwner}/friend_categories/{id}`, and the rules gate on the
+  path segment (`isOwner(userId)`), so the new owner can only add/remove their own
+  uid from `friendUserIds`.
+
+FINDINGS (none blocking):
+
+1. `stageMemberRemoval`'s new `categorySeatedUserIds: arrayRemove(uid)` line is
+   untested — no case in any `__tests__` file names the field, and no case runs the
+   sequence that needs it (category-seated member removed, then re-invited
+   explicitly by an admin while still absent from the category, then a poll). The
+   22 cases stay green with the line deleted.
+2. The test header's "Three properties here exist because removing them is
+   invisible" undercounts: the new admin-invite guard is a fourth, and this round's
+   own mutation probe proves it is invisible when removed. Strike the numeral —
+   writing "Four" is the BUT-1910 insertion seam again.
+3. "Without the asymmetry being symmetric, an admin's invitation is silently
+   deleted by the next poll and re-invited into the same loop" — garbled, and
+   "silently" contradicts the reported bug, which wrote "X har lämnat gruppen" into
+   the thread (the test file's own comment says so). Strike the sentence.
+4. "every rule in the `chat_groups` and `conversations` blocks gates on membership"
+   is false — the `chat_groups` block ends `allow read: if isAdmin();` and
+   `allow create, delete: if false;`. Reported Low and optional: the phrasing
+   echoes the `tryClearRoster` accepted deviation, which is correctly scoped to
+   `conversations`.
+5. Staging: `functions/package.json` (carrying `test:ensure-category-chat`) was
+   UNSTAGED while the new test file was staged. Same commit or the suite never
+   reaches `run-all-tests.js`.
+6. The comment defers the transferred-category regression to "Own ticket" with no
+   ticket id, and it is a real regression (the poll worked before, because the old
+   path never read the category).
+
+RETIRED from the knowledge file to pay for the addition, verbatim:
+- "- **TS's CommonJS emit does NOT hoist an import's `require`** (measured,
+  `module: node16` + ts-node): env set ABOVE an `import` IS visible to that
+  module at eval, so \"env must be set first, therefore `require`\" is a FALSE
+  justification — use `require` for explicitness, never claim necessity." — narrow
+  comment-wording point; the file is over budget and this round's GDPR subset rule
+  outranks it.

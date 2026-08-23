@@ -250,6 +250,14 @@ export async function probeResidualData(
     // with a probe, and a leg without one is exactly how an erasure becomes
     // silently incomplete — so this line ships in the same edit as its deleter.
     [Collections.chatGroups, "memberIds", "array-contains"],
+    // BUT-1856: two more owner handles on the same document that the membership
+    // leg above is structurally blind to. `departedUserIds` holds people who are
+    // no longer in `memberIds` by definition; `sourceCategoryOwnerId` names the
+    // owner of the social group a meal-vote chat was built from, and survives
+    // them leaving it. Each ships with its deleter, per the rule this list
+    // states above.
+    [Collections.chatGroups, "departedUserIds", "array-contains"],
+    [Collections.chatGroups, "sourceCategoryOwnerId", "=="],
     // BUT-1798: shared_content membership. The scrub above is the only thing
     // that clears this, and it was blind to ad-hoc shares for the collection's
     // entire life — so this probe is what stops that ever being invisible
@@ -2547,6 +2555,13 @@ export async function deleteUserProfile(
  * Capped like every other sweep here. Above the cap it DECLINES rather than
  * truncating: a partial pass that reported success would certify an erasure it
  * did not perform.
+ *
+ * A separate sweep handles what the membership query cannot reach at all — a
+ * departure tombstone (the uid is in it precisely because it left `memberIds`)
+ * and the meal-vote pointer's owner uid (they can leave the chat and keep
+ * owning the social group). See `clearUnreachableChatGroupResiduals`, run
+ * BEFORE the loop below so this function's own cap cannot take it down
+ * (BUT-1856).
  */
 export const MAX_CHAT_GROUPS_PER_USER = 200;
 
@@ -2554,6 +2569,11 @@ export async function deleteChatGroupMemberships(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
+  // FIRST, so the membership sweep declining below cannot take the two
+  // independent residual legs down with it — they answer different queries and
+  // a cap reached by one says nothing about the others.
+  const residualsCleared = await clearUnreachableChatGroupResiduals(db, uid);
+
   const snap = await db
     .collection(Collections.chatGroups)
     .where("memberIds", "array-contains", uid)
@@ -2659,5 +2679,83 @@ export async function deleteChatGroupMemberships(
     }
   }
 
+  return complete && residualsCleared;
+}
+
+/**
+ * BUT-1856: raw uids on `chat_groups` the sweep above cannot reach.
+ *
+ * Not an exhaustive list of that document's residuals — `createdBy` is re-homed
+ * only for groups the erased user is still a MEMBER of, and `memberAddedBy`
+ * VALUES survive for everyone they seated. Both predate this change and are
+ * forward-only work; do not read the two legs below as covering the document.
+ *
+ * `departedUserIds` records who left a chat group or was removed from it, so
+ * the meal-vote category sync cannot seat them again — a uid is in it precisely
+ * because it is NOT in `memberIds`. `sourceCategoryOwnerId` names the owner of
+ * the social group a meal-vote chat was built from, and outlives their
+ * membership: they can leave the chat and still own the category. The sweep
+ * above finds groups by `memberIds array-contains`, so it is structurally blind
+ * to both, and each would otherwise sit forever on a document the surviving
+ * members read — the same residual class `createdBy` is re-homed for.
+ *
+ * Dropping the pointer breaks nothing: the category itself goes in this same
+ * cascade, so it is already dangling, and the group simply stops being any
+ * category's chat.
+ *
+ * Capped and DECLINING per leg, like every other sweep here: a partial pass
+ * that reported success would certify an erasure it did not perform.
+ */
+async function clearUnreachableChatGroupResiduals(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const legs = [
+    {
+      field: "departedUserIds",
+      op: "array-contains" as const,
+      patch: { departedUserIds: admin.firestore.FieldValue.arrayRemove(uid) },
+    },
+    {
+      field: "sourceCategoryOwnerId",
+      op: "==" as const,
+      patch: {
+        sourceCategoryId: admin.firestore.FieldValue.delete(),
+        sourceCategoryOwnerId: admin.firestore.FieldValue.delete(),
+      },
+    },
+  ];
+
+  let complete = true;
+  for (const leg of legs) {
+    const snap = await db
+      .collection(Collections.chatGroups)
+      .where(leg.field, leg.op, uid)
+      .limit(MAX_CHAT_GROUPS_PER_USER + 1)
+      .get();
+
+    if (snap.size > MAX_CHAT_GROUPS_PER_USER) {
+      logger.error(
+        "[deletion-cascade] implausible chat-group residual count; declining",
+        { uid_prefix: uid.slice(0, 6), field: leg.field, groups: snap.size },
+      );
+      complete = false;
+      continue;
+    }
+
+    for (const groupDoc of snap.docs) {
+      try {
+        await groupDoc.ref.update(leg.patch);
+      } catch (e) {
+        complete = false;
+        logger.error("[deletion-cascade] chat-group residual removal failed", {
+          uid_prefix: uid.slice(0, 6),
+          field: leg.field,
+          errCode: (e as { code?: number | string } | null)?.code ?? "unknown",
+          errName: (e as Error | null)?.name,
+        });
+      }
+    }
+  }
   return complete;
 }

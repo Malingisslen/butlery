@@ -296,6 +296,44 @@ const cases: UnitCase[] = [
       );
     },
   },
+  // BUT-1856. Write-amplified for the same reason: it can create a group, and it
+  // does so past `createChatGroup`'s own bucket, so its cap is the only thing
+  // bounding that path.
+  {
+    name: "RATE_LIMIT_CONFIGS: ensureCategoryChat daily cap is 50",
+    fn: async () => {
+      assertEqual(
+        RATE_LIMIT_CONFIGS.ensureCategoryChat.dailyLimit,
+        50,
+        "ensureCategoryChat.dailyLimit"
+      );
+    },
+  },
+  // The coverage promise itself, rather than a count of the entries that keep
+  // it. Every previous wording quantified ("three", then "FOUR") and went stale
+  // by ADDITION with its own bytes untouched — twice. This case fails on the
+  // NEXT unpinned `dailyLimit` instead of quietly permitting it.
+  {
+    name: "RATE_LIMIT_CONFIGS: every dailyLimit entry is pinned by a case above",
+    fn: async () => {
+      const pinned = [
+        "structureRecipe",
+        "ocrRecipeImage",
+        "importRecipe",
+        "createChatGroup",
+        "ensureCategoryChat",
+      ];
+      const capped = Object.entries(RATE_LIMIT_CONFIGS)
+        .filter(([, cfg]) => cfg.dailyLimit !== undefined)
+        .map(([name]) => name);
+      const unpinned = capped.filter((name) => !pinned.includes(name));
+      assertEqual(
+        unpinned.join(",") || "(none)",
+        "(none)",
+        "dailyLimit entries with no pinning case"
+      );
+    },
+  },
 
   // ---- BUT-1692: the batch bucket is denominated in NOTIFICATIONS, so its
   // maxTokens and the callable's batch cap are ONE decision held in two files.

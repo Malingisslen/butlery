@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:butlery/repositories/firebase/dtos/message_dto.dart';
 import 'package:butlery/models/messaging/message.dart';
+import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -184,11 +185,25 @@ class MessageQueryModule {
   // Those rendered "0 röster" over real votes, which is the exact symptom the
   // comment above says must not happen, and the cap's own justification ("a
   // screen showing more than this many open polls") argues for the visible end.
-  List<String> _pollIds(List<Message> messages) => messages.reversed
-      .where(_isPoll)
-      .map((m) => m.id)
-      .take(maxHydratedPolls)
-      .toList(growable: false);
+  ({List<String> kept, List<String> capped}) _pollIds(List<Message> messages) {
+    final all = messages.reversed
+        .where(_isPoll)
+        .map((m) => m.id)
+        .toList(growable: false);
+    if (all.length <= maxHydratedPolls) {
+      return (kept: all, capped: const <String>[]);
+    }
+    final capped = all.sublist(maxHydratedPolls);
+    // The cap used to exclude polls in total silence, so "0 röster over real
+    // votes" had no signal at all. This is `warning`, which writes to the local
+    // log only — the on-screen marker is what a user or a report actually sees.
+    // Counts only, no ids: a conversation id would be two raw uids on a DM.
+    AppLogger.warning(
+      'Poll-vote hydration capped at $maxHydratedPolls; '
+      '${capped.length} poll(s) left unread on this page',
+    );
+    return (kept: all.sublist(0, maxHydratedPolls), capped: capped);
+  }
 
   /// optionId -> voter uids, from one poll's `poll_votes` rows.
   Map<String, List<String>> _tally(QuerySnapshot<Map<String, dynamic>> snap) {
@@ -218,6 +233,16 @@ class MessageQueryModule {
     if (poll is! Map) return message;
     final options = poll['options'];
     if (options is! List) return message;
+    // The three early returns above are the fail-open shapes, and they leave
+    // the marker UNSET, i.e. `ok`. For the first two — no metadata, no poll map
+    // — that is right: there is no poll, so no tally to be wrong about.
+    //
+    // The THIRD is a genuine gap, named rather than papered over: a poll whose
+    // `options` is not a List is still a poll to `_isPoll`, so the widget draws
+    // it, reads no votes, and offers the creator a close button on a tally that
+    // was never read. `_resolveWinner` then writes no plan, so the harm stops
+    // at a burnt poll rather than a wrong recipe — which is why this is a note
+    // and not a guard. Only a malformed stored document reaches it.
 
     final rebuiltOptions = options.map((option) {
       if (option is! Map) return option;
@@ -232,39 +257,64 @@ class MessageQueryModule {
     final rebuiltPoll = Map<String, dynamic>.from(poll)
       ..['options'] = rebuiltOptions;
     final rebuiltMetadata = Map<String, dynamic>.from(metadata)
-      ..['poll'] = rebuiltPoll;
+      ..['poll'] = rebuiltPoll
+      // Sibling of `poll`, never inside it: the poll map is the shape Firestore
+      // persists, and this is an in-memory read state.
+      ..[PollVoteHydration.metadataKey] = PollVoteHydration.ok.name;
 
     return message.copyWith(metadata: rebuiltMetadata);
+  }
+
+  /// Stamp a poll the tally never reached, so the UI can tell "no votes" from
+  /// "no answer". Leaves `voterIds` exactly as stored — blanking them would be
+  /// the fail-closed mistake this module already corrected once.
+  Message _markUnread(Message message, PollVoteHydration state) {
+    final metadata = message.metadata;
+    if (metadata == null) return message;
+    return message.copyWith(
+      metadata: Map<String, dynamic>.from(metadata)
+        ..[PollVoteHydration.metadataKey] = state.name,
+    );
   }
 
   /// One-shot hydration for the non-streaming readers.
   Future<List<Message>> _hydratePollVotes(List<Message> messages) async {
     final ids = _pollIds(messages);
-    if (ids.isEmpty) return messages;
+    if (ids.kept.isEmpty && ids.capped.isEmpty) return messages;
 
     final tallies = <String, Map<String, List<String>>>{};
     await Future.wait(
-      ids.map((id) async {
+      ids.kept.map((id) async {
         try {
           tallies[id] = _tally(await _pollVotesRef(id).get());
         } catch (e) {
           // A failed tally must not take the whole page down with it: the
-          // messages are the payload, the votes are an overlay.
+          // messages are the payload, the votes are an overlay. It is no longer
+          // SILENT, though — the message is stamped `failed` below, so the UI
+          // can refuse to act on a tally it never received.
           AppLogger.warning('Could not read poll votes for message $id: $e');
         }
       }),
     );
 
-    return messages
-        .map((m) => tallies.containsKey(m.id) ? _merge(m, tallies[m.id]!) : m)
-        .toList();
+    final capped = ids.capped.toSet();
+    return messages.map((m) {
+      if (tallies.containsKey(m.id)) return _merge(m, tallies[m.id]!);
+      if (capped.contains(m.id)) {
+        return _markUnread(m, PollVoteHydration.capped);
+      }
+      // A poll that was in `kept` but is absent from `tallies` is one whose
+      // read threw. Anything else here is not a poll at all.
+      if (_isPoll(m)) return _markUnread(m, PollVoteHydration.failed);
+      return m;
+    }).toList();
   }
 
   /// Live hydration: re-emits whenever any visible poll's votes change, so a
   /// tap updates the bars without waiting for the next message.
   Stream<List<Message>> _withLivePollVotes(List<Message> messages) {
     final ids = _pollIds(messages);
-    if (ids.isEmpty) return Stream.value(messages);
+    if (ids.kept.isEmpty && ids.capped.isEmpty) return Stream.value(messages);
 
     // Genuinely the same fail-open contract as the one-shot path — which took
     // saying it in code rather than in a comment. `onErrorReturnWith` used to
@@ -280,7 +330,7 @@ class MessageQueryModule {
     // corrected in this very commit.) A null entry is filtered out
     // below instead, so the message passes through untouched, exactly as the
     // one-shot `catch` leaves the id out of its map.
-    final perPoll = ids.map(
+    final perPoll = ids.kept.map(
       (id) => _pollVotesRef(id)
           .snapshots()
           .map<MapEntry<String, Map<String, List<String>>>?>(
@@ -295,13 +345,23 @@ class MessageQueryModule {
           }),
     );
 
+    final capped = ids.capped.toSet();
     return CombineLatestStream.list(perPoll).map((entries) {
       final tallies = Map.fromEntries(
         entries.whereType<MapEntry<String, Map<String, List<String>>>>(),
       );
-      return messages
-          .map((m) => tallies.containsKey(m.id) ? _merge(m, tallies[m.id]!) : m)
-          .toList();
+      return messages.map((m) {
+        if (tallies.containsKey(m.id)) return _merge(m, tallies[m.id]!);
+        if (capped.contains(m.id)) {
+          return _markUnread(m, PollVoteHydration.capped);
+        }
+        // A null entry — the `onErrorReturnWith` above — lands here, which is
+        // the whole point of filtering it out rather than merging an empty
+        // tally: the stored `voterIds` survive untouched AND the message now
+        // says the number beside them was never confirmed.
+        if (_isPoll(m)) return _markUnread(m, PollVoteHydration.failed);
+        return m;
+      }).toList();
     });
   }
 

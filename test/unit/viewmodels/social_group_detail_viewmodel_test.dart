@@ -4,9 +4,17 @@ import 'package:butlery/viewmodels/social_group_detail_viewmodel.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:get_it/get_it.dart';
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/messaging_service.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/mocks/service_mocks.dart';
+import '../../infrastructure/factories/recipe_factory.dart';
 
 class MockFriendCategoryRepository extends Mock
     implements FriendCategoryRepository {}
@@ -389,6 +397,273 @@ void main() {
 
         unAuthViewModel.dispose();
       });
+    });
+
+    /// BUT-1856: the meal-vote poll reuses ONE chat per social group instead of
+    /// minting a new, undeletable one per vote.
+    ///
+    /// The ViewModel resolves `MessagingService` through the production
+    /// `ServiceLocator` INSIDE the method, so these tests stand one up and
+    /// register a mock in GetIt — the rest of the file does not need it, hence
+    /// the group-local setUp rather than a change to the file's setUpAll.
+    group('startMealVotePoll (BUT-1856)', () {
+      late MockMessagingService mockMessaging;
+      final recipes = [
+        RecipeFactory.build(id: 'r1', title: 'Pannkakor'),
+        RecipeFactory.build(id: 'r2', title: 'Lasagne'),
+      ];
+
+      setUp(() {
+        ServiceLocator.initialize(DIContainer());
+        mockMessaging = MockMessagingService();
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<MessagingService>()) {
+          getIt.unregister<MessagingService>();
+        }
+        getIt.registerSingleton<MessagingService>(mockMessaging);
+
+        when(
+          () => mockMessaging.ensureCategoryChat(
+            ownerId: any(named: 'ownerId'),
+            categoryId: any(named: 'categoryId'),
+          ),
+        ).thenAnswer((_) async => 'conv-1');
+        when(
+          () => mockMessaging.sendPollMessage(
+            conversationId: any(named: 'conversationId'),
+            pollData: any(named: 'pollData'),
+          ),
+        ).thenAnswer((_) async {});
+      });
+
+      tearDown(() {
+        final getIt = GetIt.instance;
+        if (getIt.isRegistered<MessagingService>()) {
+          getIt.unregister<MessagingService>();
+        }
+      });
+
+      test('every poll asks for the chat and posts into the answer', () async {
+        await viewModel.loadGroupData();
+
+        final first = await viewModel.startMealVotePoll(
+          question: 'Vad ska vi äta?',
+          recipes: recipes,
+        );
+        final second = await viewModel.startMealVotePoll(
+          question: 'Och på fredag?',
+          recipes: recipes,
+        );
+
+        expect(first, equals('conv-1'));
+        expect(second, equals(first));
+        // The reuse decision is the callable's; what this pins is that the VM
+        // asks the SAME question both times and posts into whatever it gets
+        // back, rather than opening a new conversation itself.
+        verify(
+          () => mockMessaging.ensureCategoryChat(
+            ownerId: testUserId,
+            categoryId: testGroupId,
+          ),
+        ).called(2);
+        verify(
+          () => mockMessaging.sendPollMessage(
+            conversationId: 'conv-1',
+            pollData: any(named: 'pollData'),
+          ),
+        ).called(2);
+      });
+
+      test('never opens a group conversation directly any more', () async {
+        await viewModel.loadGroupData();
+
+        await viewModel.startMealVotePoll(
+          question: 'Vad ska vi äta?',
+          recipes: recipes,
+        );
+
+        // The old path (`createGroupConversation`) is what minted a chat per
+        // poll. It still exists for the messaging screens; this flow must not
+        // reach it.
+        verifyNever(
+          () => mockMessaging.createGroupConversation(
+            participantIds: any(named: 'participantIds'),
+            participantDisplayNames: any(named: 'participantDisplayNames'),
+            participantAvatarUrls: any(named: 'participantAvatarUrls'),
+            title: any(named: 'title'),
+          ),
+        );
+      });
+
+      test(
+        'a member profile that fails to load no longer shrinks the chat',
+        () async {
+          // The roster is resolved server-side now. Before BUT-1856 the VM built
+          // the participant list from these profiles, so an unreadable one
+          // quietly left that person out of the chat.
+          mockUserService.setUserState(users: {});
+          await viewModel.loadGroupData();
+
+          final result = await viewModel.startMealVotePoll(
+            question: 'Vad ska vi äta?',
+            recipes: recipes,
+          );
+
+          expect(result, equals('conv-1'));
+          expect(viewModel.members, isEmpty);
+        },
+      );
+
+      test(
+        'a one-person group returns null with the Swedish explanation',
+        () async {
+          when(
+            () => mockMessaging.ensureCategoryChat(
+              ownerId: any(named: 'ownerId'),
+              categoryId: any(named: 'categoryId'),
+            ),
+          ).thenThrow(
+            FirebaseFunctionsException(
+              code: 'failed-precondition',
+              message: 'This group has no other members.',
+              details: const {'reason': 'group-too-small'},
+            ),
+          );
+          await viewModel.loadGroupData();
+
+          final result = await viewModel.startMealVotePoll(
+            question: 'Vad ska vi äta?',
+            recipes: recipes,
+          );
+
+          // `executeAsync` sets the error AND rethrows, so without the catch in
+          // startMealVotePoll this call THROWS and the view's null branch — the
+          // only thing that shows a message — never runs.
+          expect(result, isNull);
+          expect(
+            viewModel.errorMessage,
+            equals(AppLocale.current.chatGroupNeedsAnotherMember),
+          );
+          verifyNever(
+            () => mockMessaging.sendPollMessage(
+              conversationId: any(named: 'conversationId'),
+              pollData: any(named: 'pollData'),
+            ),
+          );
+        },
+      );
+
+      test(
+        'any other failure returns null with the generic poll message',
+        () async {
+          when(
+            () => mockMessaging.ensureCategoryChat(
+              ownerId: any(named: 'ownerId'),
+              categoryId: any(named: 'categoryId'),
+            ),
+          ).thenThrow(StateError('network down'));
+          await viewModel.loadGroupData();
+
+          final result = await viewModel.startMealVotePoll(
+            question: 'Vad ska vi äta?',
+            recipes: recipes,
+          );
+
+          expect(result, isNull);
+          expect(
+            viewModel.errorMessage,
+            equals(AppLocale.current.mealVotePollFailed),
+          );
+        },
+      );
+
+      test('an unauthenticated caller never reaches the callable', () async {
+        await viewModel.loadGroupData();
+        mockPermissionService.setPermissionState(
+          currentUserId: null,
+          isAuthenticated: false,
+        );
+
+        final result = await viewModel.startMealVotePoll(
+          question: 'Vad ska vi äta?',
+          recipes: recipes,
+        );
+
+        expect(result, isNull);
+        verifyNever(
+          () => mockMessaging.ensureCategoryChat(
+            ownerId: any(named: 'ownerId'),
+            categoryId: any(named: 'categoryId'),
+          ),
+        );
+        // The early returns sit ABOVE `executeAsync`, so its
+        // clear-error-on-start never runs for them. The view reads
+        // `errorMessage` for its snackbar now, so a message left over from an
+        // earlier failed poll would be shown again for an unrelated refusal.
+        expect(viewModel.errorMessage, isNull);
+      });
+
+      test(
+        'the callable is asked for the OWNER, not the signed-in user',
+        () async {
+          // The two are the same uid in every other fixture, which makes a
+          // `group.ownerId` -> `currentUserId` swap unkillable — and that swap
+          // breaks the meal vote for every non-owner member, because the callable
+          // addresses `users/{ownerId}/friend_categories/{categoryId}`.
+          await viewModel.loadGroupData();
+          mockPermissionService.setPermissionState(
+            currentUserId: otherUserId,
+            isAuthenticated: true,
+          );
+
+          await viewModel.startMealVotePoll(
+            question: 'Vad ska vi äta?',
+            recipes: recipes,
+          );
+
+          verify(
+            () => mockMessaging.ensureCategoryChat(
+              ownerId: testUserId,
+              categoryId: testGroupId,
+            ),
+          ).called(1);
+        },
+      );
+
+      test(
+        'the poll itself carries the question, the recipes and the mode',
+        () async {
+          await viewModel.loadGroupData();
+
+          await viewModel.startMealVotePoll(
+            question: 'Vad ska vi äta på fredag?',
+            recipes: recipes,
+            allowMultipleChoices: true,
+          );
+
+          final captured =
+              verify(
+                    () => mockMessaging.sendPollMessage(
+                      conversationId: 'conv-1',
+                      pollData: captureAny(named: 'pollData'),
+                    ),
+                  ).captured.single
+                  as Map<String, dynamic>;
+
+          expect(captured['question'], equals('Vad ska vi äta på fredag?'));
+          expect(captured['allowMultipleChoices'], isTrue);
+          expect(captured['creatorId'], equals(testUserId));
+          final options = captured['options'] as List;
+          expect(
+            options.map((o) => (o as Map)['text']),
+            containsAll(['Pannkakor', 'Lasagne']),
+          );
+          expect(
+            options.map((o) => (o as Map)['recipeId']),
+            containsAll(['r1', 'r2']),
+          );
+        },
+      );
     });
   });
 }

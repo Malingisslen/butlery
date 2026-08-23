@@ -23231,6 +23231,48 @@ abstract class AppLocalizations {
   /// **'Avslutad'**
   String get pollClosed;
 
+  /// Shown in place of a vote count when the poll was past the hydration cap (BUT-1908).
+  ///
+  /// In sv, this message translates to:
+  /// **'Rösterna har inte hämtats'**
+  String get pollVotesNotLoadedShort;
+
+  /// Shown in place of a vote count when reading the poll's votes errored (BUT-1908).
+  ///
+  /// In sv, this message translates to:
+  /// **'Rösterna kunde inte läsas'**
+  String get pollVotesFailedShort;
+
+  /// Second line under pollVotesNotLoadedShort — a re-read repairs this case.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna chatten igen för att hämta dem.'**
+  String get pollVotesNotLoadedHint;
+
+  /// Second line under pollVotesFailedShort — this case may be persistent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Försök igen om en stund.'**
+  String get pollVotesFailedHint;
+
+  /// Snackbar when closePoll refused because the tally was never read.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omröstningen avslutades inte — rösterna har inte hämtats, och den får inte stängas på siffror som inte är lästa. Öppna chatten igen och försök på nytt.'**
+  String get pollCloseRefusedVotesUnread;
+
+  /// Snackbar when closePoll refused because the viewer's block list was unreadable.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omröstningen avslutades inte — din blockeringslista kunde inte läsas, så blockerade röster går inte att räkna bort. Försök igen.'**
+  String get pollCloseRefusedBlockList;
+
+  /// Snackbar for any other failure to close a poll.
+  ///
+  /// In sv, this message translates to:
+  /// **'Omröstningen kunde inte avslutas. Försök igen.'**
+  String get pollCloseFailed;
+
   /// No description provided for @pollCloseAction.
   ///
   /// In sv, this message translates to:
@@ -27148,6 +27190,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Det gick inte att lägga till medlemmar. Försök igen.'**
   String get chatGroupAddMembersFailed;
+
+  /// No description provided for @chatGroupNeedsAnotherMember.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppen behöver minst en medlem till innan ni kan rösta om mat.'**
+  String get chatGroupNeedsAnotherMember;
+
+  /// No description provided for @mealVotePollFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att starta omröstningen. Försök igen.'**
+  String get mealVotePollFailed;
 
   /// No description provided for @chatGroupCreateFailed.
   ///
