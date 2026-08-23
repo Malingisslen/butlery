@@ -8,6 +8,13 @@ PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null || echo
 
 INPUT=$(cat)
 
+# Dispatcher fast path: post-edit-dispatch.sh already parsed the payload, so skip
+# the interpreter spawn when it knows this is not a .dart file. The python guard
+# below still runs on its own — this is a shortcut, not a replacement.
+if [[ "${BUTLERY_HOOK_DISPATCH:-}" == "1" && "${BUTLERY_HOOK_FILE:-}" != *.dart ]]; then
+  exit 0
+fi
+
 $PYTHON -c "
 import json, sys, os
 

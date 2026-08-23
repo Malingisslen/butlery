@@ -98,13 +98,21 @@ def matches(rel, tok):
 
 
 def main():
-    raw = sys.stdin.read()
-    if not raw.strip():
-        return
-    file_path = extract_field(raw, "tool_input.file_path") or extract_field(raw, "tool_response.filePath")
+    # Dispatcher fast path — post-edit-dispatch.sh already parsed the payload.
+    # `root` stays self-derived either way: inheriting the dispatcher's idea of the
+    # repo root could land the marker somewhere else than rel_path() assumes.
+    if os.environ.get("BUTLERY_HOOK_DISPATCH") == "1":
+        file_path = os.environ.get("BUTLERY_HOOK_FILE", "")
+        cwd = os.environ.get("BUTLERY_HOOK_CWD", "")
+    else:
+        raw = sys.stdin.read()
+        if not raw.strip():
+            return
+        file_path = extract_field(raw, "tool_input.file_path") or extract_field(raw, "tool_response.filePath")
+        cwd = extract_field(raw, "cwd")
     if not file_path:
         return
-    root = repo_root(extract_field(raw, "cwd"))
+    root = repo_root(cwd)
     rel = rel_path(file_path, root)
     # anti-loop: edits to the map, the marker, or this machinery never stamp
     if not rel or rel in (MAP_REL, MARKER_REL) or rel.startswith(".claude/"):

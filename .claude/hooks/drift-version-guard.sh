@@ -14,7 +14,14 @@ set -euo pipefail
 
 JSON=$(cat)
 
-# Detect Python (same pattern as track-session-files.sh)
+# Dispatcher fast path — see post-edit-dispatch.sh. Falls back to parsing stdin
+# itself so this script stays runnable standalone.
+if [[ "${BUTLERY_HOOK_DISPATCH:-}" == "1" ]]; then
+  SESSION_ID="${BUTLERY_HOOK_SESSION_ID:-}"
+  FILE="${BUTLERY_HOOK_FILE:-}"
+else
+# Detect Python (same pattern as track-session-files.mjs, the workflow-guards
+# plugin hook that writes the manifest read below — it is not a repo file).
 if command -v py &>/dev/null; then
   PY_CMD="py -3"
 elif command -v python3 &>/dev/null; then
@@ -31,6 +38,7 @@ SESSION_ID=$(echo "$FIELDS" | sed -n '1p')
 FILE_PATH_1=$(echo "$FIELDS" | sed -n '2p')
 FILE_PATH_2=$(echo "$FIELDS" | sed -n '3p')
 FILE="${FILE_PATH_1:-$FILE_PATH_2}"
+fi
 
 [[ -z "${SESSION_ID:-}" || -z "${FILE:-}" ]] && exit 0
 
@@ -40,7 +48,9 @@ case "$FILE" in
   *) exit 0 ;;
 esac
 
-# Look at the session manifest (built by track-session-files.sh).
+# Look at the session manifest, written by the workflow-guards plugin's
+# track-session-files.mjs (a PostToolUse Write|Edit hook declared in that
+# plugin's hooks.json — there is no such script in this repo).
 # Missing manifest = first edit of the session = app_database NOT yet touched.
 MANIFEST_DIR="${TMPDIR:-/tmp}/.claude-session-files"
 MANIFEST="$MANIFEST_DIR/$SESSION_ID"

@@ -81,6 +81,18 @@ pre-commit:
       fail_text: "Architecture guard violation (see above). Use .orEmpty() etc."
       priority: 3
 
+    # The workflow-map relevance gate in post-edit-dispatch.sh duplicates
+    # map_stamp.py's REPO_ROOTS in bash. Neither side reddens when they drift,
+    # and a root missing from the gate means edits under it silently stop
+    # stamping the map stale. Two greps, so it stays sub-second.
+    map-gate-roots:
+      glob:
+        - ".claude/hooks/map_stamp.py"
+        - ".claude/hooks/post-edit-dispatch.sh"
+      run: bash tools/check_map_gate_roots.sh
+      fail_text: "map-freshness gate and map_stamp.py REPO_ROOTS disagree — update BOTH (see above)."
+      priority: 3
+
     # BUT-813 INFRA6 (lefthook<->CI parity): the flaky-test real-time guard ran
     # only in CI (test.yml). Mirror it pre-commit so DateTime.now()/long
     # Future.delayed regressions fail at commit time, not after a CI round-trip.
