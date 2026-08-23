@@ -164,9 +164,12 @@ MUST-HAVE below is now a binding acceptance criterion.
   DEFAULT-vs-NULL.** `parseSwedishNumber`'s silent `1.0` fallback would corrupt a rating
   field invisibly. The sentence says: `parseSwedishDecimal`/`formatSwedishDecimal` for any
   hand-typed, round-tripped field, because they return `null` and let the caller decide;
-  `TextFormatting.parseSwedishNumber`/`formatFractional` only for non-interactive recipe-text
+  `TextFormatting.parseSwedishNumber`/`formatFractional` for non-interactive recipe-text
   parsing, where the `1.0` fallback is an accepted default rather than a form value;
-  `formatRatingComma` only for pooled-rating display, which needs a fixed decimal place.
+  `formatRatingComma` for the rating pills, which need a fixed decimal place. It is a
+  ROUTING rule and must not carry a COUNT of the formatters — the first draft said "a third
+  formatter and a second parser", "truncates", and "pooled-rating display only", and the
+  code-reviewer gate measured all three false.
 * **BUT-1915: the Swedish sentence question is moot — the string never reaches a user.**
   `RealtimeMenuViewModel._onServiceStateChanged` (`:361-364`) runs the error through
   `sanitizeErrorForUser`, which returns a generic localized message. The interpolated uid's
@@ -265,6 +268,75 @@ a blocking fix, and its fail-open clause let a blocked person decide a household
 None in this batch. BUT-1894's timing measurement is a `run` criterion, not Tier D.
 
 ## Deviation log
+
+- [discovery] BUT-1910: the ticket's own worked example is wrong twice. "8,5" is outside the
+  field's 0-5 range, and the claim that ",5 fell back to 1.0" is REFUTED — measured with
+  `dart run`, the old path read ",5" and "0,5" as 0.5 perfectly well. The real defects were
+  "1,5,5" being typeable (parse null, fallback 1.0), the period on the pantry display, and
+  the rating field dropping any comma. Two of the three new pantry cases are therefore
+  CONTROLS, and their comments now say so.
+- [deviation] BUT-1910: `edit_recipe_view.dart` joined the diff. It carried the IDENTICAL
+  rating field and it is the screen the app opens for an EXISTING recipe, from every list
+  and detail surface — `SkrivSjalvReceptView` is reached only when writing, importing or
+  forking. The fix as planned was on the wrong screen for most users. Raised as BLOCKING by
+  `integration-reviewer`; this is the repo's standing twin-class rule, met head-on.
+- [discovery] BUT-1910: my own comment shipped SIX false claims across three rounds — "a
+  third comma formatter", "a second parser", "truncates to two decimals", "pooled-rating
+  display only", "Only the 1,5,5 case discriminates", "the other two are controls". Each was
+  measured false by a gate. One repair silently did not land at all: a multi-edit script
+  asserted on a later anchor and aborted before its single write, discarding the earlier
+  edits — the repo's own lesson, hit live. Every strike is now grep-verified.
+- [discovery] BUT-1909: the display-path test passed while measuring nothing. The fixture
+  used this suite's `FakeMessage`, which has no `copyWith`, so the strip threw and
+  `_filterBlocked`'s fail-open catch swallowed it and served the page unfiltered — i.e. the
+  test measured the CATCH and would have gone green asserting the opposite. Fixed by using a
+  real `Message`. The same suite also skips production `ServiceLocator` init, so
+  `tryGet<BlockedUserFilter>` returned null until the group initialised its own container.
+
+- [needs-human] BUT-1906 NOT SHIPPED — the ticket's REMEDY is refuted, its problem is not.
+  Building it and measuring gave three results, in this order:
+  (1) Adding the dietary row to `_buildGridLayout` overflows the tile at EVERY 360dp text
+      scale, which was clean to 2x before. The two-badge worst case the Creative Director
+      asked for is what exposed it; the one-badge fixture the suite already had did not.
+  (2) The ticket's prescribed fix — raise `_gridAspectRatio` — changes NOTHING. Measured at
+      0.75 / 0.70 / 0.66 / 0.62: five 360dp failures at every value. That matches what
+      `recipe_card_grid_badges_test.dart` already records, that closing the residual needs an
+      absolute `mainAxisExtent` rather than a ratio, which is BUT-1911.
+  (3) The Creative Director's alternative — icon-only badges for spatial parity with the
+      allergen row — is not available. `DietaryStatusBadge` picks its icon from the STATUS,
+      not the diet, so vegansk and vegetarisk both render the same green `Icons.eco_outlined`.
+      Icon-only would put two identical leaves on the card, which is information loss, not a
+      compact treatment.
+  Reverted to keep main clean; a 23px silent clip is worse than the missing badge. BUT-1906
+  is BLOCKED ON BUT-1911 and parks In Review for Malin.
+
+- [discovery] BUT-1894: the recorded decision and the Software Architect critique disagreed
+  on ONE fixture. Malin's comment says a comment-only baseline must still make the guard
+  exit non-zero; the critique's fixture (b) asked for exit 0. Resolved by splitting it,
+  because the two were describing different inputs: a comment-only baseline is now an EMPTY
+  allow-list, so a violation beside it still exits 1 (her case, pinned), while a clean tree
+  beside it exits 0 (the old script died there under `set -e` and failed commits that had
+  done nothing wrong). Both directions have a fixture. Nothing was made more permissive.
+- [discovery] BUT-1894: the root cause was NOT what the ticket guessed. The ticket said the
+  script "does a full-tree search" and proposed scoping it. Scoping was right but is worth
+  ~0.1 s; the 859 s was ~4,300 subprocess spawns, four per matched line. Both were done.
+- [deviation] BUT-1915: the code-reviewer and testing-specialist gates INDEPENDENTLY found a
+  second leak in the same two files — `validationUserAlreadyParticipant` carried a raw
+  DISPLAY NAME to the same Crashlytics sink. Both recommended a follow-up ticket. Fixed in
+  this commit instead: same defect class, same files, same sink, one token each, and this
+  repo's standing rule is that a twin class ships in the same commit. Shipping a PII fix
+  while leaving a known cleartext PII leak in the same method was the worse option.
+- [deviation] BUT-1915: `lib/core/utils/logger.dart` joined the diff. It carried a doc
+  comment citing this exact defect as its live "measured example", which the fix falsifies.
+  Struck rather than reworded, per code-style. Raised as BLOCKING by `integration-reviewer`.
+- [discovery] BUT-1910: the ticket's worked example "8,5" is out of range. The field is
+  labelled "Betyg (0-5)" and `FormValidators.rating()` bounds it to 0-5, so 8,5 fails
+  whichever separator is typed. The defect is the separator, not the magnitude, so the tests
+  use 4,5. The ticket text is not wrong about the bug, only about its example.
+- [discovery] BUT-1910: the pantry sheet's unreadable-field fallback now differs by mode —
+  1.0 on add, the item's existing quantity on edit. That is what `parseSwedishDecimal`'s own
+  doc comment specifies and what the shopping dialogs already do; the sheet had a single
+  `?? 1.0` for both, so an unreadable edit silently reset the amount to 1.
 
 
 ---
