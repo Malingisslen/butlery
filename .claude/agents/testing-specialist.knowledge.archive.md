@@ -25341,3 +25341,59 @@ equals the taller cell's wrapped height at the COLUMN width, not the full width.
 
 **Verdict: fail (3 blocking)** — the unpinned column spacing, the unpinned badge count, and
 the two false comment sentences.
+
+### 2026-08-23 — BUT-1928 review: fail-loud menu-plan reads, and the wrapper that hollowed the suite
+
+**Trigger:** review of `lib/core/exceptions/menu_plan_read_exception.dart`,
+`lib/services/menu/weekly_menu_plan_service.dart`,
+`lib/services/menu/group_weekly_menu_plan_service.dart` (staged), plus their two staged suites.
+
+The fix: both `getWeek` methods stopped going through `executeServiceOperation` and now
+try/catch into a new `MenuPlanReadException`. Before, a failed read and an unplanned week
+shared ONE value (an empty plan / `null`), so `load → mutate → save` wrote a blank week over
+a real one. Live sequences: `MessagingService._appendWinnerToWeeklyPlanAndShare` +
+`_appendWinnerToGroupPlan` (poll close) and `OnboardingViewModel._seedSampleMenu`.
+
+**Non-vacuity, proved analytically with no `lib/` write.** `safeExecute`
+(`lib/core/mixins/error_handling_mixin.dart:125-138`) is `try { return await operation(); }
+catch { … return defaultValue; }` — a total catch. So NOTHING can escape
+`executeServiceOperation`, and therefore no `throwsA(isA<MenuPlanReadException>())` test can
+pass at HEAD. All 5 new personal tests and 3 of 4 new group tests discriminate; the two
+"returns null / empty when the week has no plan" tests are the deliberate positive controls.
+
+**The second half, which is the reusable bit.** Neither suite stands up a DI harness, so at
+HEAD `_isAuthenticated()` → `ServiceLocator.get<AuthRepository>()` → throws → caught →
+`false` → `executeServiceOperation` returned `defaultValue` WITHOUT EVER CALLING THE REPO.
+The pre-existing group test `getOrBuildWeek returns the existing plan …` asserted
+`expect(result.groupId, groupId)` — satisfied by the fabricated empty plan the fallback
+produced. The diff correctly tightened it to `expect(result, same(existing))`, which FAILS at
+HEAD. So an auth-gated wrapper in a raw-mock file is a two-way vacuity source, and stripping
+it is what makes the surrounding assertions mean anything.
+
+**Sibling disagreements found (both filed non-blocking):**
+1. `lib/repositories/firebase/firebase_weekly_menu_plan_repository.dart:92-94` claims a
+   never-cached week "falls back to server and (if unavailable) returns null via the !exists
+   check below rather than letting a server read stall/throw". False: `getDocCacheFirst`
+   (`base_firebase_repository.dart:373-383`) catches only the CACHE `get`; the
+   `Source.serverAndCache` read below it throws `unavailable`. That sentence is the exact
+   premise BUT-1928 disproves, and it now contradicts the new `getWeek` doc two files away —
+   two answers to one question, and the one that licenses reverting the fix. Remedy: STRIKE
+   the clause, do not reword.
+2. `save()` in BOTH reviewed services still runs through `executeServiceOperation`, so a
+   failed save is SWALLOWED. That falsifies `messaging_service.dart:810-813` — "If the plan
+   save fails, the poll stays open so the creator can retry" — because `closePoll` runs
+   regardless. Pre-existing, untouched by this diff, own ticket. It is the WRITE half of the
+   same silent-failure class the READ half just closed.
+
+**Verified-and-clean, for the record:** the two repository INTERFACES both already say
+"Returns `null` when no document exists yet — callers should treat that as an empty plan, not
+an error", so the new null-means-absent contract agrees with its siblings.
+`_loadPlanForWrite` never had the wrapper, so every bulk write path was already fail-loud.
+`AppLogger.error('…: $e', stackTrace)` puts the StackTrace in the `error` positional slot
+(signature is `error(String, [Object?, String?, StackTrace?])`) — but that matches 26+ call
+sites including `base_firebase_repository.dart` and `error_handling_mixin.dart`, so it is a
+repo-wide convention, NOT a defect of this diff. Do not file it here.
+
+56/56 green in the two suites; `test/unit/viewmodels/menu`, `test/unit/services/messaging`,
+`test/unit/services/shopping`, `test/widget/menu` and the slot-picker widget test = 350/350
+green; `flutter analyze --fatal-infos` clean over all three changed paths.

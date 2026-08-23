@@ -527,6 +527,14 @@ ever on screen. Use `RecipeBuilder().withTagResult(...)` for anything badge- or 
 The single most repeated finding across two months of review.
 - **MASTER RULE: name every OTHER mechanism that could satisfy the assertion, then build the
   fixture where they DISAGREE. Every pattern below is an instance.**
+- **An auth-gated `executeServiceOperation` wrapper hollows a raw-mock suite in BOTH
+  directions, and REMOVING it is what un-vacuums them**: `_isAuthenticated()` calls
+  `ServiceLocator.get<AuthRepository>()`, which THROWS in a file with no DI harness, so the
+  method returns `defaultValue` having never touched the repository — every assertion about
+  the repo's return value passed on the fallback (`expect(result.groupId, …)` needed `same(existing)`).
+  And `safeExecute` catches EVERYTHING, so no `throwsA` test can pass while the wrapper is
+  there: that is a free analytic non-vacuity proof for any fail-loud fix that strips one — no
+  `lib/` mutation probe, no parallel-session risk (BUT-1928).
 - Circular determinism (calling the same pure function twice, or deriving expected from the
   const under test) — pin the literal OUTPUT.
 - Sibling-branch short-circuit, BOTH polarities: for `if(A) return true; if(B) return
