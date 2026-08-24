@@ -6,3 +6,4 @@
 {"ts": "2026-08-03", "window_days": 30, "rework_days": 7, "autonomous_commits": 42, "reworked": 6, "accept_rate": 0.857, "verdict": "healthy"}
 {"ts": "2026-08-10", "window_days": 30, "rework_days": 7, "autonomous_commits": 45, "reworked": 14, "accept_rate": 0.689, "verdict": "healthy"}
 {"ts": "2026-08-12", "window_days": 30, "rework_days": 7, "autonomous_commits": 48, "reworked": 15, "accept_rate": 0.688, "verdict": "healthy"}
+{"ts": "2026-08-24", "window_days": 30, "rework_days": 7, "autonomous_commits": 62, "reworked": 16, "accept_rate": 0.742, "verdict": "healthy"}
